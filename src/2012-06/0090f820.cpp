@@ -1,13 +1,8 @@
-// from server: 96% by atomic.potato
-struct S
-{
-    void __cdecl f(void *);
-};
-
+// from server: 100% by tajop
 extern void G1_func_0090f6f0(void *, int);
 extern void G1_func_00982114(void *);
 
-void __cdecl S::f(void *p)
+void __cdecl G1_func_0090f820(void *p)
 {
     if (p)
     {

@@ -1,108 +1,72 @@
-// from server: 38% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: rbxgs roc_unit_e534916f6a3a6f80.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#pragma include_alias("v8datamodel/MouseCommand.h", "roc_unit_9958a7131e20354c.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "roc_unit_ea83e629b1338927.cpp")
+#undef _RELEASEASSERT
+#include "v8datamodel/PartInstance.h"
+#include "roc_unit_a21bf1eef16ceba3.cpp"
+#include "v8datamodel/Selection.h"
+namespace RBX {
+class HandleHitTest { public: static bool hitTestHandleLocal(const Extents&,const G3D::CoordinateFrame&,const G3D::Ray&,G3D::Vector3&,NormalId&); };
+std::vector<boost::shared_ptr<Instance> >::const_iterator Selection::begin() const { return selection->begin(); }
+std::vector<boost::shared_ptr<Instance> >::const_iterator Selection::end() const { return selection->end(); }
+void ResizeTool::findTargetPV(const UIEvent& inputObject)
 {
-	static boost::mutex mutex2;
-	return mutex2;
-}
+	ServiceClient< Selection > selection(reinterpret_cast<Instance*>(this->workspace));
 
-void initMoo()
-{
-	moo2();
-}
+	Instances::const_iterator it;
 
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
+	for (it = selection->begin(); it != selection->end(); ++it) {
+		if (PartInstance* part = dynamic_cast<PartInstance*>(it->get())) {
 
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
+			G3D::Ray gridRay(getUnitMouseRay(inputObject));
+			if (HandleHitTest::hitTestHandleLocal(	part->getExtentsLocal(),
+													part->getLocation(),
+													gridRay, 
+													hitPointGrid, 
+													localNormalId))
 			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
+				targetPV = shared_from(part);
+				return;
 			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
 		}
 	}
+	targetPV.reset();
+}
 
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
+const std::string ResizeTool::getCursorName() const
+{
+	return overHandle ? "ResizeCursor" : Super::getCursorName();
+}
+void ResizeTool::onMouseHover(const UIEvent& inputObject)
+{
+	RBXASSERT(!captured());
 
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
+	findTargetPV(inputObject);
+	overHandle = (!targetPV.expired());
+
+	Super::onMouseHover(inputObject);
+}
+MouseCommand* ResizeTool::onMouseDown(const UIEvent& inputObject)
+{
+	findTargetPV(inputObject);
+
+	if (targetPV.expired()) {
+		return Super::onMouseDown(inputObject);		
 	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
+	else {
+		down = inputObject.mousePosition;
+		moveAxis = 0;
+		movePerp = 0;
+		overHandle = true;
+		capture();
+		return this;	// captured is true....
 	}
+}
 }

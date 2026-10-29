@@ -1,86 +1,108 @@
+// from server: 49% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll gui/GuiDraw.cpp
+// roc-lib: rbxgs util/Name.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/GuiDraw.h"
-#include "AppDraw/Textures.h"
+#include "util/Name.h"
+#include "util/Debug.h"
+#include <boost/thread/once.hpp>
+
+// intentionally outside of the RBX namespace
+boost::once_flag flag = BOOST_ONCE_INIT;
+
+boost::mutex& moo2()
+{
+	static boost::mutex mutex2;
+	return mutex2;
+}
+
+void initMoo()
+{
+	moo2();
+}
 
 namespace RBX
 {
-	static G3D::ReferenceCountedPointer<TextureProxyBase> silentGetTextureProxyBase(Adorn* adorn, const ContentId& id)
+	// seems to be inlined
+	boost::mutex& Name::mutex()
 	{
-		if (ContentProvider::singleton().hasContent(id))
-			return Textures::getTextureProxy(adorn, id);
-		else
-			return NULL;
+		boost::call_once(initMoo, flag);
+		return moo2();
 	}
 
-	void GuiDrawImage::render2d(Adorn* adorn, bool enabled, Rect& rect, Widget::WidgetState state)
+	std::map<int, Name*>& Name::dictionary()
 	{
-		if (!enabled)
-		{
-			draw(adorn, disable, rect, G3D::Color4::clear(), G3D::Color4(1.0f, 1.0f, 1.0f, 0.5f));
-		}
-		else if (state == Widget::NOTHING)
-		{
-			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
-		}
-		else if (state != Widget::HOVER && state != Widget::DOWN_AWAY)
-		{
-			draw(adorn, down, rect, G3D::Color3::blue(), G3D::Color4::clear());
-		}
-		else
-		{
-			draw(adorn, hover, rect, G3D::Color3::yellow(), G3D::Color4::clear());
-		}
+		static std::map<int, Name*> d;
+		return d;
 	}
 
-	void GuiDrawImage::draw(Adorn* adorn, G3D::ReferenceCountedPointer<TextureProxyBase> texture, const Rect& rect, const G3D::Color4& behind, const G3D::Color4& inFront)
+	Name::NamMap& Name::namMap()
 	{
-		G3D::Rect2D rect2D = rect.toRect2D();
-
-		if (texture.notNull())
-		{
-			adorn->setTexture(0, texture);
-			adorn->rect2d(rect2D, G3D::Color4(1.0f, 1.0f, 1.0f, 1.0f));
-			adorn->setTexture(0, NULL);
-		}
-		else if (normal.notNull())
-		{
-			adorn->rect2d(rect2D, behind);
-			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
-			adorn->rect2d(rect2D, inFront);
-		}
+		static NamMap n;
+		return n;
 	}
 
-	bool GuiDrawImage::setImage(Adorn* adorn, const TextureId& textureId)
+	const Name& Name::getNullName()
 	{
-		if (textureId != currentTexture)
+		boost::mutex::scoped_lock scoped_lock(mutex());
+		static const Name& nullName = declare("", 0);
+		return nullName;
+	}
+
+	const Name& Name::declare(const char* sName, int dictionaryIndex)
+	{
+		if (!sName)
 		{
-			currentTexture = textureId;
+			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
+			return getNullName();
+		}
 
-			normal = NULL;
-			hover = NULL;
-			down = NULL;
-			disable = NULL;
+		boost::mutex::scoped_lock scoped_lock(mutex());
 
-			size = G3D::Vector2(0.0f, 0.0f);
-
-			normal = silentGetTextureProxyBase(adorn, currentTexture);
-
-			if (normal.notNull())
+		NamMap::iterator iter = namMap().find(sName);
+		if (iter != namMap().end())
+		{
+			if (dictionaryIndex != -1)
 			{
-				std::string id = textureId.toString();
-				std::string base = id.substr(0, id.size() - 4);
-
-				hover = silentGetTextureProxyBase(adorn, ContentId(base + "_ovr.png"));
-				down = silentGetTextureProxyBase(adorn, ContentId(base + "_dn.png"));
-				disable = silentGetTextureProxyBase(adorn, ContentId(base + "_ds.png"));
+				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
+				dictionary()[dictionaryIndex] = iter->second;
 			}
+			return *iter->second;
+		}
+		else
+		{
+			Name* name = new Name(sName, dictionaryIndex);
+			namMap()[sName] = name;
+			dictionary()[dictionaryIndex] = name;
+			return *name;
+		}
+	}
+
+	const Name& Name::lookup(const std::string& sName)
+	{
+		RBXASSERT(sName.size() < 50);
+		boost::mutex::scoped_lock scoped_lock(mutex());
+
+		NamMap::iterator iter = namMap().find(sName);
+		if (iter != namMap().end())
+		{
+			return *iter->second;
+		}
+		else
+		{
+			return getNullName();
+		}
+	}
+
+	const Name& Name::lookup(const char* sName)
+	{
+		if (!sName)
+		{
+			return getNullName();
 		}
 
-		return normal.notNull();
+		return lookup(std::string(sName));
 	}
 }

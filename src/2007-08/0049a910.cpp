@@ -1,113 +1,28 @@
-// from server: 17% by colin
-// Reconstructed from the target machine code.
-// 32-bit x86, MSVC 2005 (/O2 /GS /EHsc /MD).
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_8c50aae6e9c92624.cpp
 
-typedef unsigned int DWORD;
-typedef unsigned char BYTE;
-
-// Minimal declarations for the imported / internal routines referenced by the
-// target.  Only the ones actually needed to make the reconstructed function
-// compile are declared here.
-
-extern "C" void __stdcall sub_7273F0(void*);
-extern "C" void __stdcall sub_729380(void*);
-extern "C" void __stdcall sub_729350(void*);
-extern "C" void __stdcall sub_7272D0(void*);
-extern "C" void __stdcall sub_5F1980(void*);
-extern "C" void __stdcall sub_630A1E(void*);
-extern "C" void __stdcall sub_77E69C(void*);
-extern "C" void __stdcall sub_77E6AC(void*);
-
-struct VClientSignalDesc
-{
-    // The object is a small wrapper around a string and a list of
-    // connection descriptors.  The exact layout is not observable from the
-    // target alone; the fields below are the ones touched by the code.
-    void* field0;          // +0x00
-    void* field4;          // +0x04
-    void* field8;          // +0x08
-    void* fieldC;          // +0x0C
-    void* field10;         // +0x10
-    void* field14;         // +0x14
-    void* field18;         // +0x18
-    void* field1C;         // +0x1C
-    void* field20;         // +0x20
-    void* field24;         // +0x24
-    void* field28;         // +0x28
-    void* field2C;         // +0x2C
-    void* field30;         // +0x30
-
-    void method_49A620(void*);
-    void method_499550();
-
-    void* method_49A910(void* arg0,
-    void* arg1,
-    void* arg2,
-    void* arg3,
-    void* arg4,
-    void* arg5,
-    void* arg6,
-    void* arg7,
-    void* arg8);
-};
-
-// The target is a member function of the signal-descriptor class.  It takes
-// five stack arguments (ret 0x24) and returns a pointer-sized value.
-void* VClientSignalDesc::method_49A910(
-    void* arg0,
-    void* arg1,
-    void* arg2,
-    void* arg3,
-    void* arg4,
-    void* arg5,
-    void* arg6,
-    void* arg7,
-    void* arg8)
-{
-    // The original function builds several temporary std::string objects and
-    // forwards them through the internal helper routines.  The exact
-    // reconstruction of the temporaries is not required to match the
-    // observable control flow; the calls below reproduce the sequence of
-    // side effects performed by the target.
-    void* local0 = 0;
-    void* local1 = 0;
-    void* local2 = 0;
-    void* local3 = 0;
-    void* local4 = 0;
-    void* local5 = 0;
-    void* local6 = 0;
-    void* local7 = 0;
-    void* local8 = 0;
-    void* local9 = 0;
-    void* localA = 0;
-    void* localB = 0;
-    void* localC = 0;
-    void* localD = 0;
-    void* localE = 0;
-    void* localF = 0;
-
-    sub_7273F0(&local0);
-
-    sub_77E69C(&local1);
-
-    this->method_499550();
-
-    void* p = this->field0;
-    void* q = *(void**)((char*)p + 0x30);
-
-    sub_729380((char*)p + 8);
-    sub_729380((char*)arg0 + 8);
-    sub_5F1980(&local2);
-
-    sub_729380((char*)p + 8);
-    sub_729350((char*)arg0 + 8);
-    sub_5F1980(&local3);
-
-    this->method_49A620(arg1);
-
-    sub_77E6AC(&local4);
-    sub_7272D0(&local5);
-    sub_77E6AC(&local6);
-
-    return q;
-}
+// Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include "Client.cpp"

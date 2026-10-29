@@ -1,95 +1,33 @@
-// from server: 74% by colin
-// roc 2007-08 00627790  unit: RBX::CollisionStage  size: 81 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00627790
-//
-// 00627790  56                   push esi
-// 00627791  8bf1                 mov esi, ecx
-// 00627793  8b4e08               mov ecx, dword ptr [esi + 8]
-// 00627796  8b01                 mov eax, dword ptr [ecx]
-// 00627798  8b5010               mov edx, dword ptr [eax + 0x10]
-// 0062779b  57                   push edi
-// 0062779c  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 006277a0  57                   push edi
-// 006277a1  ffd2                 call edx
-// 006277a3  8b470c               mov eax, dword ptr [edi + 0xc]
-// 006277a6  8b7f08               mov edi, dword ptr [edi + 8]
-// 006277a9  50                   push eax
-// 006277aa  57                   push edi
-// 006277ab  e8c0d6f8ff           call 0x5b4e70
-// 006277b0  8bf8                 mov edi, eax
-// 006277b2  83c408               add esp, 8
-// 006277b5  85ff                 test edi, edi
-// 006277b7  7423                 je 0x6277dc
-// 006277b9  8b4f04               mov ecx, dword ptr [edi + 4]
-// 006277bc  8b01                 mov eax, dword ptr [ecx]
-// 006277be  8b5004               mov edx, dword ptr [eax + 4]
-// 006277c1  53                   push ebx
-// 006277c2  ffd2                 call edx
-// 006277c4  8bd8                 mov ebx, eax
-// 006277c6  8b06                 mov eax, dword ptr [esi]
-// 006277c8  8b5004               mov edx, dword ptr [eax + 4]
-// 006277cb  8bce                 mov ecx, esi
-// 006277cd  ffd2                 call edx
-// 006277cf  3bd8                 cmp ebx, eax
-// 006277d1  5b                   pop ebx
-// 006277d2  7c08                 jl 0x6277dc
-// 006277d4  57                   push edi
-// 006277d5  8bce                 mov ecx, esi
-// 006277d7  e844ffffff           call 0x627720
-// 006277dc  5f                   pop edi
-// 006277dd  5e                   pop esi
-// 006277de  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_physics_e6d9c3b69ca8a6b5.cpp
 
-struct CollisionStage {
-    int field0;
-    void* field4;
-    void* field8;
-    void process(void*);
-    void sub_627720(void*);
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-struct Vtbl1 {
-    void* pad0;
-    void* pad4;
-    void* pad8;
-    void* padC;
-    void (__stdcall* fn10)(void*);
-};
-
-struct Vtbl2 {
-    void* pad0;
-    int (__stdcall* fn4)();
-};
-
-struct Obj1 {
-    Vtbl1* vtbl;
-};
-
-struct Obj2 {
-    Vtbl2* vtbl;
-};
-
-struct ArgObj {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-};
-
-extern "C" void* __cdecl sub_5B4E70(void*, void*);
-
-void CollisionStage::process(void* arg) {
-    Obj1* o1 = (Obj1*)field8;
-    o1->vtbl->fn10(arg);
-
-    ArgObj* a = (ArgObj*)arg;
-    void* r = sub_5B4E70(a->field8, a->fieldC);
-    if (r != 0) {
-        Obj2* o2 = (Obj2*)((char*)r + 4);
-        int v = o2->vtbl->fn4();
-        int w = ((Vtbl2*)(*(void**)this))->fn4();
-        if (v >= w) {
-            sub_627720(r);
-        }
-    }
-}
+#include "v8world/CollisionStage.cpp"

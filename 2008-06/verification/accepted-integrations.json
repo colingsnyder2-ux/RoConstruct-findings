@@ -2411,6 +2411,22 @@
         ]
       },
       "timestamp": 1793268316.9183772
+    },
+    {
+      "job": "72e0cc406874442e92ccf2226772409b",
+      "patches": {
+        "App/v8datamodel/Gyro.cpp": [
+          [
+            "\t\t\tpart = boost::shared_dynamic_cast<PartInstance>(shared_from(event.newParent));\n\t\tupdateWorld();",
+            "\t\t\tpart = shared_from(dynamic_cast<PartInstance*>(event.newParent));\n\t\tWorld* nextWorld = part.lock().get() ? Workspace::getWorldIfInWorkspace(this) : NULL;\n\t\tif (world != nextWorld)\n\t\t{\n\t\t\tif (world)\n\t\t\t\tworld->getKernel().removeConnector2ndPass(this);\n\t\t\tworld = nextWorld;\n\t\t\tif (world)\n\t\t\t\tworld->getKernel().insertConnector2ndPass(this);\n\t\t}"
+          ],
+          [
+            "#include <Network/Players.h>",
+            "#include <Network/Players.h>\n\n// Preserve the existing vendor helper used by other translation units (004ca2b0).\ntemplate boost::shared_ptr<RBX::PartInstance> boost::shared_dynamic_cast<RBX::PartInstance, RBX::Instance>(const boost::shared_ptr<RBX::Instance>&);"
+          ]
+        ]
+      },
+      "timestamp": 1793313530.8047633
     }
   ],
   "initial_patches": {}

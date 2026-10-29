@@ -1,27 +1,27 @@
-// from server: 72% by colin
-struct LuaArguments {
-    int field0;
-    int field4;
-    int construct(int a);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_unit_2aed470d1cc79771.cpp
 
-extern "C" int __cdecl sub_630d36(int, int, int, int, int);
-extern "C" int __cdecl sub_630b9e(int, int);
-extern "C" void __stdcall sub_77e710(int);
-extern "C" int __cdecl sub_5bfa80(int, int, int);
-
-extern int dword_8abc30;
-extern int dword_887174;
-extern int dword_786e04;
-extern int dword_841e0c;
-
-int LuaArguments::construct(int a)
-{
-    int local = 0;
-    int result = sub_630d36(field0, 0, dword_887174, (int)&dword_8abc30, 0);
-    if (result == 0) {
-        sub_77e710((int)&dword_786e04);
-        sub_630b9e((int)&local, (int)&dword_841e0c);
-    }
-    return sub_5bfa80(result, local, field4);
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#include "reflection/property.h"
+#include "reflection/object.h"
+#include "script/ThreadRef.h"
+#include <typeinfo>
+namespace RBX {namespace Reflection {
+template<class T> T ConstProperty::getValue() const {
+    const TypedPropertyDescriptor<T>* typed = dynamic_cast<const TypedPropertyDescriptor<T>*>(&getDescriptor());
+    if (typed == NULL) throw std::bad_cast();
+    return typed->getValue(getInstance());
 }
+template boost::shared_ptr<RBX::Reflection::DescribedBase> ConstProperty::getValue<boost::shared_ptr<RBX::Reflection::DescribedBase>>() const;
+template RBX::Lua::FunctionRef ConstProperty::getValue<RBX::Lua::FunctionRef>() const;
+template boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance> > > ConstProperty::getValue<boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance> > >>() const;
+template std::string ConstProperty::getValue<std::string>() const;
+template bool ConstProperty::getValue<bool>() const;
+template int ConstProperty::getValue<int>() const;
+template float ConstProperty::getValue<float>() const;
+template double ConstProperty::getValue<double>() const;
+template boost::shared_ptr<RBX::Instance> ConstProperty::getValue<boost::shared_ptr<RBX::Instance> >() const;
+}}

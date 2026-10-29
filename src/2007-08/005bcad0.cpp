@@ -1,8 +1,7 @@
-// from server: 80% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/Extents.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client roc_unit_a9d0b2c752da7982.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Extents.h"
@@ -172,7 +171,7 @@ Vector3 Extents::faceCenter(NormalId faceId) const
 bool Extents::containedByFrustum(const G3D::GCamera::Frustum& frustum) const
 {
 	for (int i = 0; i < frustum.faceArray.size(); ++i) {
-		const Plane& plane = frustum.faceArray[i].plane;
+		const Plane& plane = (*(i + frustum.faceArray.getCArray())).plane;
 
 		for (int j = 0; j < 8; ++j) {
 			const Vector3 corner = getCorner(j);

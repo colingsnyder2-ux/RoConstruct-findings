@@ -1,60 +1,108 @@
+// from server: 52% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll v8datamodel/Visit.cpp
+// roc-lib: rbxgs util/Name.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Visit.h"
-#include "util/Http.h"
-#include "util/standardout.h"
-#include <G3D/format.h>
-#include <boost/thread.hpp>
+#include "util/Name.h"
+#include "util/Debug.h"
+#include <boost/thread/once.hpp>
 
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string), 1> UploadUrlFunction(&RBX::Visit::setUploadUrl, "SetUploadUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, std::string(void), 0> getUploadUrl(&RBX::Visit::getUploadUrl, "GetUploadUrl", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string, int), 2> desc_setPing(&RBX::Visit::setPing, "SetPing", "pingUrl", "interval", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+// intentionally outside of the RBX namespace
+boost::once_flag flag = BOOST_ONCE_INIT;
+
+boost::mutex& moo2()
+{
+	static boost::mutex mutex2;
+	return mutex2;
+}
+
+void initMoo()
+{
+	moo2();
+}
 
 namespace RBX
 {
-	Visit::Visit()
-		: uploadUrl("NoVisit")
+	// seems to be inlined
+	boost::mutex& Name::mutex()
 	{
+		boost::call_once(initMoo, flag);
+		return moo2();
 	}
 
-	Visit::~Visit() {}
-
-	void Visit::setPing(std::string url, int interval)
+	std::map<int, Name*>& Name::dictionary()
 	{
-		if (url != "")
+		static std::map<int, Name*> d;
+		return d;
+	}
+
+	Name::NamMap& Name::namMap()
+	{
+		static NamMap n;
+		return n;
+	}
+
+	const Name& Name::getNullName()
+	{
+		boost::mutex::scoped_lock scoped_lock(mutex());
+		static const Name& nullName = declare("", 0);
+		return nullName;
+	}
+
+	const Name& Name::declare(const char* sName, int dictionaryIndex)
+	{
+		if (!sName)
 		{
-			pingThread.reset(new worker_thread(boost::bind(&Visit::ping, url, interval), "rbx_visit"));
+			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
+			return getNullName();
+		}
+
+		boost::mutex::scoped_lock scoped_lock(mutex());
+
+		NamMap::iterator iter = namMap().find(sName);
+		if (iter != namMap().end())
+		{
+			if (dictionaryIndex != -1)
+			{
+				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
+				dictionary()[dictionaryIndex] = iter->second;
+			}
+			return *iter->second;
 		}
 		else
 		{
-			pingThread.reset();
+			Name* name = new Name(sName, dictionaryIndex);
+			namMap()[sName] = name;
+			dictionary()[dictionaryIndex] = name;
+			return *name;
 		}
 	}
 
-	worker_thread::work_result Visit::ping(std::string url, int interval)
+	const Name& Name::lookup(const std::string& sName)
 	{
-		try
+		RBXASSERT(sName.size() < 50);
+		boost::mutex::scoped_lock scoped_lock(mutex());
+
+		NamMap::iterator iter = namMap().find(sName);
+		if (iter != namMap().end())
 		{
-			std::string message;
-			Http(url).get(message);
+			return *iter->second;
 		}
-		catch (std::exception& exp)
+		else
 		{
-			std::string failMessage = G3D::format("ping %s failed: %s", url.c_str(), exp.what());
-			StandardOut::singleton()->print(MESSAGE_WARNING, failMessage.c_str());
+			return getNullName();
+		}
+	}
+
+	const Name& Name::lookup(const char* sName)
+	{
+		if (!sName)
+		{
+			return getNullName();
 		}
 
-		boost::xtime xt;
-		boost::xtime_get(&xt, boost::TIME_UTC);
-
-		xt.sec += interval;
-
-		boost::thread::sleep(xt);
-
-		return worker_thread::more;
+		return lookup(std::string(sName));
 	}
 }

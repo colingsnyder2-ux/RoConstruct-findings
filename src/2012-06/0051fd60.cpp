@@ -1,433 +1,234 @@
-// from server: 57% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/EnumProperty.cpp
+// roc-lib: rbxgs-net-dll roc_unit_e6c2aeb7d3afc09b.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
-#include <g3d/color3.h>
-#include <g3d/vector3.h>
-#include <boost/shared_ptr.hpp>
-#include "v8tree/Instance.h"
-#include "v8datamodel/BrickColor.h"
+#pragma include_alias("Replicator.h", "roc_unit_5e9a43ec03963384.cpp")
+#pragma include_alias("util/Profiling.h", "roc_unit_dc79b233469e3206.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#pragma include_alias("Network/Player.h", "roc_unit_1cb1f788b2f04b82.cpp")
+#undef _RELEASEASSERT
+#include <RakPeer.h>
+#include "v8datamodel/Stats.h"
+#include "Replicator.h"
+#include <RakPeer.h>
+#include "Server.h"
+#include "IdManager.h"
+#include "NetworkSettings.h"
+#include "PacketIds.h"
+#include "API.h"
+#include "util/Http.h"
+#include "util/standardout.h"
+#include <boost/thread.hpp>
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int, int), 2> server_startFunction(&RBX::Network::Server::start, "Start", "port", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int), 1>  f_disconnect(&RBX::Network::Server::stop, "Stop", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, int(void), 0> f_GetClientCount(&RBX::Network::Server::getClientCount, "GetClientCount", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(std::string, std::string, int), 3> server_setServerManagerPingFunction(&RBX::Network::Server::setServerManagerPing, "SetServerManagerPing", "pingUrl", "publicIP", "thumbnailId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+static bool isReplicator(boost::shared_ptr<RBX::Instance> instance)
+{
+	return dynamic_cast<const RBX::Network::Replicator*>(instance.get()) != NULL;
+}
 
 namespace RBX
 {
-	namespace Reflection
+	namespace Network
 	{
-		// TODO: check if type singletons are matching
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
+		Server::Server()
+			: outgoingPort(0)
 		{
-			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
-			return type;
+			setName("NetworkServer");
+			rakPeer->SetMaximumIncomingConnections(32);
+			rakPeer->SetIncomingPassword(API::version.c_str(), (int)API::version.size());
+			updateLogger();
 		}
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instance>>()
+		Server::~Server() {}
+
+		void Server::stop(int blockDuration)
 		{
-			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
-			return type;
+			if (rakPeer->IsActive())
+				rakPeer->Shutdown(blockDuration);
+
+			removeAllChildren();
 		}
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instances>>()
+		void Server::start(int port, int threadSleepTime)
 		{
-			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
-			return type;
-		}
+			SocketDescriptor d(port, "");
 
-		template<>
-		const Type& Type::singleton<int>()
-		{
-			static Type type("int", typeid(int));
-			return type;
-		}
+			if (!rakPeer->Startup(32, threadSleepTime, &d, 1))
+				throw std::runtime_error("Failed to start network server");
 
-		template<>
-		const Type& Type::singleton<bool>()
-		{
-			static Type type("bool", typeid(bool));
-			return type;
-		}
+			outgoingPort = port;
+			StandardOut::singleton()->print(MESSAGE_INFO, "Starting network server on port %d", port);
 
-		template<>
-		const Type& Type::singleton<float>()
-		{
-			static Type type("float", typeid(float));
-			return type;
-		}
+			unsigned numAddresses = rakPeer->GetNumberOfAddresses();
 
-		template<>
-		const Type& Type::singleton<double>()
-		{
-			static Type type("double", typeid(double));
-			return type;
-		}
+			StandardOut::singleton()->print(MESSAGE_INFO, "IP addresses:");
 
-		template<>
-		const Type& Type::singleton<ContentId>()
-		{
-			static Type type("ContentId", typeid(ContentId));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<std::string>()
-		{
-			static Type type("string", typeid(std::string));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<G3D::Vector3>()
-		{
-			static Type type("Vector3", typeid(G3D::Vector3));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<G3D::Color3>()
-		{
-			static Type type("Color3", typeid(G3D::Color3));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<std::vector<Value>>()
-		{
-			static Type type("Table", typeid(std::vector<Value>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<BrickColor>()
-		{
-			static Type type("BrickColor", typeid(BrickColor));
-			return type;
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
-		{
-			return getValue(instance);
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<bool>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<float>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<int>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<ContentId>::convertToString(getValue(instance));
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			setValue(instance, text);
-			return true;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			bool value;
-			if (StringConverter<bool>::convertToValue(text, value))
+			for (unsigned i = 0; i < numAddresses; i++)
 			{
-				setValue(instance, value);
-				return true;
+				StandardOut::singleton()->print(MESSAGE_INFO, "%s", rakPeer->GetLocalIP(i));
 			}
 
-			return false;
+			updateNetworkSimulator();
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
+		int Server::getClientCount()
 		{
-			float value;
-			if (StringConverter<float>::convertToValue(text, value))
+			if (getChildren())
 			{
-				setValue(instance, value);
-				return true;
+				return std::count_if(getChildren()->begin(), getChildren()->end(), &isReplicator);
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
+		void Server::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+		{
+			if (oldProvider)
+			{
+				players->setConnection(NULL);
+
+				if (rakPeer->IsActive())
+					rakPeer->Shutdown(1000);
+
+				removeAllChildren();
+
+				players.reset();
 			}
 
-			return false;
-		}
+			Peer::onServiceProvider(oldProvider, newProvider);
 
-		template<>
-		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			int value;
-			if (StringConverter<int>::convertToValue(text, value))
+			if (newProvider)
 			{
-				setValue(instance, value);
-				return true;
+				players = shared_from(newProvider->create<Players>());
+
+				players->setConnection(peerInterface());
 			}
-
-			return false;
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void Server::setServerManagerPing(std::string pingUrl, std::string publicIP, int thumbnailId)
 		{
-			G3D::Vector3 value;
-			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
+			pingThread.reset(new worker_thread(boost::bind(&Server::ping, boost::weak_ptr<Server>(shared_from(this)), publicIP, thumbnailId, pingUrl), "rbx_serverping"));
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		bool Server::serverIsPresent(const Instance* context, bool testInDatamodel)
 		{
-			G3D::Color3 value;
-			if (StringConverter<G3D::Color3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
 
-			return false;
+			return ServiceProvider::find<Server>(sp) != NULL;
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
+		PluginReceiveResult Server::OnReceive(RakPeerInterface* peer, Packet* packet)
 		{
-			ContentId value;
-			if (StringConverter<ContentId>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
+			if (result != RR_CONTINUE_PROCESSING)
+				return result;
 
-			return false;
-		}
-
-		template<>
-		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
+			if (packet->data[0] == ID_NEW_INCOMING_CONNECTION)
 			{
-				float value;
-				if (element->getValue(value))
+				try
 				{
-					setValue(instance, value);
+					StandardOut::singleton()->print(MESSAGE_INFO, "New connection from %s\n", packet->systemAddress.ToString());
+
+					boost::shared_ptr<ClientProxy> proxy = Creatable::create<ClientProxy>(packet->systemAddress, this);
+					proxy->setParent(this);
+					proxy->sendTop();
+
+					event_IncommingConnection.fire(this, packet->systemAddress.ToString(), proxy);
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Server::OnReceive packet %d: %s", packet->data[0], e.what());
 				}
 			}
+
+			return RR_CONTINUE_PROCESSING;
 		}
 
-		template<>
-		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		worker_thread::work_result Server::ping(boost::weak_ptr<Server> server, std::string publicIP, int thumbnailId, std::string pingUrl)
 		{
-			float value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
+			try
 			{
-				bool value;
-				if (element->getValue(value))
+				std::stringstream nameStream;
+
 				{
-					setValue(instance, value);
+					TextXmlWriter writer(nameStream);
+
+					XmlElement root(Name::declare("root", -1));
+
+					boost::shared_ptr<Server> s = server.lock();
+					if (!s)
+						return worker_thread::done;
+
+					root.addChild(new XmlElement(Name::declare("server", -1), publicIP));
+					root.addChild(new XmlElement(Name::declare("port", -1), s->outgoingPort));
+					root.addChild(new XmlElement(Name::declare("numPlayers", -1), s->players->numPlayers()));
+					root.addChild(new XmlElement(Name::declare("maxPlayers", -1), s->players->getMaxPlayers()));
+					root.addChild(new XmlElement(Name::declare("thumbnailId", -1), thumbnailId));
+
+					writer.serialize(&root);
+
+					nameStream.flush();
 				}
+
+				std::string response;
+				Http(pingUrl).post(nameStream, false, response);
 			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			bool value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
+			catch (std::exception& exp)
 			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, BrickColor(value));
-				}
+				StandardOut::singleton()->print(MESSAGE_ERROR, exp);
 			}
+
+			boost::xtime xt;
+			boost::xtime_get(&xt, boost::TIME_UTC);
+
+			xt.sec += 10;
+
+			boost::thread::sleep(xt);
+
+			return worker_thread::more;
 		}
 
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		Server::ClientProxy::ClientProxy(SystemAddress systemAddress, Server* server)
+			: Replicator(systemAddress, server->peerInterface()),
+			  server(server)
 		{
-			element->setValue(getValue(instance).asInt());
-		}
-
-		template<>
-		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
 		}
 		
-		template<>
-		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		Server::ClientProxy::~ClientProxy() {}
+
+		void Server::ClientProxy::onSentMarker(long id)
 		{
-			int value = getValue(instance);
-			element->setValue(value);
+			sendPhysicsEnabled = true;
 		}
 
-		template<>
-		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		void Server::ClientProxy::sendTop()
 		{
-			if (!element->isXsiNil())
+			RakNet::BitStream bitStream;
+
+			bitStream << (unsigned char)ID_SET_GLOBALS;
+
+			std::vector<Instance*>::iterator end = replicationContainers.end();
+
+			for (std::vector<Instance*>::iterator iter = replicationContainers.begin(); iter != end; iter++)
 			{
-				ContentId value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
+				RBXASSERT(*iter != NULL);
+
+				serializeId(bitStream, *iter);
+				ServiceProvider::create<IdManager>(this)->addInstance(*iter);
 			}
-		}
 
-		template<>
-		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(ContentId(getValue(instance)));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				std::string value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
-				{
-					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
-					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
-
-					G3D::Vector3 value;
-
-					X->getValue(value.x);
-					Y->getValue(value.y);
-					Z->getValue(value.z);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			const Name* xName = &tag_X;
-			XmlElement* xElement = new XmlElement(*xName);
-			element->pushBackChild(xElement);
-
-			const Name* yName = &tag_Y;
-			XmlElement* yElement = new XmlElement(*yName);
-			element->pushBackChild(yElement);
-
-			const Name* zName = &tag_Z;
-			XmlElement* zElement = new XmlElement(*zName);
-			element->pushBackChild(zElement);
-
-			G3D::Vector3 value = getValue(instance);
-
-			xElement->setValue(value.x);
-			yElement->setValue(value.y);
-			zElement->setValue(value.z);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				unsigned int colorValue;
-				if (element->getValue(colorValue))
-				{
-					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
-					setValue(instance, color);	
-				}
-				else
-				{
-					const XmlElement* R = element->findFirstChildByTag(tag_R);
-					const XmlElement* G = element->findFirstChildByTag(tag_G);
-					const XmlElement* B = element->findFirstChildByTag(tag_B);
-
-					G3D::Color3 value;
-
-					R->getValue(value.r);
-					G->getValue(value.g);
-					B->getValue(value.b);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
-			element->setValue(value.asUInt32());
+			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
 		}
 	}
 }

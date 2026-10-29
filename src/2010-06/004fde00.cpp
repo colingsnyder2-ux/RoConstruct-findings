@@ -1,424 +1,459 @@
-// roc-cl: 21022
+// from server: 46% by colin
 // roc-lang: cpp
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: raknet-4.081 MessageFilter.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-net Streaming.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *  Copyright (c) 2014, Oculus VR, Inc.
- *  All rights reserved.
- *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
- */
+#include <BitStream.h>
+#include <StringCompressor.h>
+#include "Streaming.h"
+#include "IdManager.h"
+#include "v8tree/Service.h"
+#include <G3D/vectorMath.h>
+#include <algorithm>
 
-#include "NativeFeatureIncludes.h"
-#if _RAKNET_SUPPORT_MessageFilter==1
-
-#include "MessageFilter.h"
-#include "RakAssert.h"
-#include "GetTime.h"
-#include "MessageIdentifiers.h"
-#include "RakAssert.h"
-#include "RakPeerInterface.h"
-#include "PacketizedTCP.h"
-#include "BitStream.h"
-
-#ifdef _MSC_VER
-#pragma warning( push )
-#endif
-
-using namespace RakNet;
-
-int RakNet::MessageFilterStrComp( char *const &key,char *const &data )
+namespace RBX
 {
-	return strcmp(key,data);
-}
-
-int RakNet::FilterSetComp( const int &key, FilterSet * const &data )
-{
-	if (key < data->filterSetID)
-		return -1;
-	else if (key==data->filterSetID)
-		return 0;
-	else
-		return 1;
-}
-STATIC_FACTORY_DEFINITIONS(MessageFilter,MessageFilter);
-
-MessageFilter::MessageFilter()
-{
-		whenLastTimeoutCheck=RakNet::GetTime();
-}
-MessageFilter::~MessageFilter()
-{
-	Clear();
-}
-void MessageFilter::SetAutoAddNewConnectionsToFilter(int filterSetID)
-{
-	autoAddNewConnectionsToFilter=filterSetID;
-}
-void MessageFilter::SetAllowMessageID(bool allow, int messageIDStart, int messageIDEnd,int filterSetID)
-{
-	RakAssert(messageIDStart <= messageIDEnd);
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	int i;
-	for (i=messageIDStart; i <= messageIDEnd; ++i)
-		filterSet->allowedIDs[i]=allow;
-}
-void MessageFilter::SetAllowRPC4(bool allow, const char* uniqueID, int filterSetID)
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	bool objectExists;
-	unsigned int idx = filterSet->allowedRPC4.GetIndexFromKey(uniqueID, &objectExists);
-	if (allow)
+	namespace Network
 	{
-		if (objectExists==false)
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, bool value)
 		{
-			filterSet->allowedRPC4.InsertAtIndex(uniqueID, idx, _FILE_AND_LINE_);
-			filterSet->allowedIDs[ID_RPC_PLUGIN]=true;
+			stream.Write(value);
+			return stream;
 		}
-	}
-	else
-	{
-		if (objectExists==true)
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, int value)
 		{
-			filterSet->allowedRPC4.RemoveAtIndex(idx);
-			if (filterSet->allowedRPC4.Size()==0)
+			stream.Write(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, long value)
+		{
+			stream.Write(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned int value)
+		{
+			stream.Write(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned char value)
+		{
+			stream.Write(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, float value)
+		{
+			stream.Write(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const std::string& value)
+		{
+			stream.Write((unsigned)value.size());
+			stringCompressor->EncodeString(value.c_str(), (int)value.size() + 1, &stream);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const G3D::Vector3& value)
+		{
+			stream << value.x;
+			stream << value.y;
+			stream << value.z;
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const G3D::Color3& value)
+		{
+			stream << value.r;
+			stream << value.g;
+			stream << value.b;
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, bool& value)
+		{
+			stream.Read(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, int& value)
+		{
+			stream.Read(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, long& value)
+		{
+			stream.Write(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned int& value)
+		{
+			stream.Read(value);
+			return stream;
+		}
+
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned char& value)
+		{
+			stream.Read(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, float& value)
+		{
+			stream.Read(value);
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, std::string& value)
+		{
+			unsigned int strSize;
+			stream >> strSize;
+
+			char* strBuf = new char[strSize + 1];
+			stringCompressor->DecodeString(strBuf, strSize + 1, &stream);
+			value = strBuf;
+
+			delete[] strBuf;
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Vector3& value)
+		{
+			stream >> value.x;
+			stream >> value.y;
+			stream >> value.z;
+			return stream;
+		}
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Color3& value)
+		{
+			stream >> value.r;
+			stream >> value.g;
+			stream >> value.b;
+			return stream;
+		}
+
+		template<typename T>
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, T& value) // TODO: check match
+		{
+			return operator>>(stream, value);
+		}
+
+		bool brickEq(float a, float b)
+		{
+			return a == b || fabs(a - b) <= 0.0005f;
+		}
+
+		static bool isBrickLocation(const G3D::Vector3& v, short& x, unsigned short& y, short& z)
+		{
+			if (v.x >= 512.0f)
+				return false;
+
+			if (v.x <= -512.0f)
+				return false;
+
+			if (v.z >= 512.0f)
+				return false;
+
+			if (v.z <= -512.0f)
+				return false;
+			
+			if (v.y >= 204.8)
+				return false;
+
+			if (v.y < 0.0f)
+				return false;
+
+			float dx = v.x * 2.0f;
+			x = (short)dx;
+
+			if ((float)x != dx)
+				return false;
+
+			float dz = v.z * 2.0f;
+			z = (short)dz;
+
+			if ((float)z != dz)
+				return false;
+
+			float dy = v.y * 10.0f;
+			y = (unsigned short)dy;
+
+			if (!brickEq((float)y, dy))
+				return false;
+
+			return true;
+		}
+
+		void writeBrickVector(RakNet::BitStream& stream, const G3D::Vector3& value)
+		{
+			short x;
+			unsigned short y;
+			short z;
+
+			if (isBrickLocation(value, x, y, z))
 			{
-				filterSet->allowedIDs[ID_RPC_PLUGIN]=false;
+				stream.Write(true);
+				stream.WriteBits((unsigned char*)&x, 11);
+				stream.WriteBits((unsigned char*)&y, 11);
+				stream.WriteBits((unsigned char*)&z, 11);
 			}
-		}
-	}
-}
-void MessageFilter::SetActionOnDisallowedMessage(bool kickOnDisallowed, bool banOnDisallowed, RakNet::TimeMS banTimeMS, int filterSetID)
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->kickOnDisallowedMessage=kickOnDisallowed;
-	filterSet->disallowedMessageBanTimeMS=banTimeMS;
-	filterSet->banOnDisallowedMessage=banOnDisallowed;
-}
-void MessageFilter::SetDisallowedMessageCallback(int filterSetID, void *userData, void (*invalidMessageCallback)(RakPeerInterface *peer, AddressOrGUID systemAddress, int filterSetID, void *userData, unsigned char messageID))
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->invalidMessageCallback=invalidMessageCallback;
-	filterSet->disallowedCallbackUserData=userData;
-}
-void MessageFilter::SetTimeoutCallback(int filterSetID, void *userData, void (*invalidMessageCallback)(RakPeerInterface *peer, AddressOrGUID systemAddress, int filterSetID, void *userData))
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->timeoutCallback=invalidMessageCallback;
-	filterSet->timeoutUserData=userData;
-}
-void MessageFilter::SetFilterMaxTime(int allowedTimeMS, bool banOnExceed, RakNet::TimeMS banTimeMS, int filterSetID)
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->maxMemberTimeMS=allowedTimeMS;
-	filterSet->banOnFilterTimeExceed=banOnExceed;
-	filterSet->timeExceedBanTimeMS=banTimeMS;
-}
-int MessageFilter::GetSystemFilterSet(AddressOrGUID systemAddress)
-{
-// 	bool objectExists;
-// 	unsigned index = systemList.GetIndexFromKey(systemAddress, &objectExists);
-// 	if (objectExists==false)
-// 		return -1;
-// 	else
-// 		return systemList[index].filter->filterSetID;
-
-	DataStructures::HashIndex index = systemList.GetIndexOf(systemAddress);
-	if (index.IsInvalid())
-		return -1;
-	else
-		return systemList.ItemAtIndex(index).filter->filterSetID;
-}
-void MessageFilter::SetSystemFilterSet(AddressOrGUID addressOrGUID, int filterSetID)
-{
-	// Allocate this filter set if it doesn't exist.
-	RakAssert(addressOrGUID.IsUndefined()==false);
-//	bool objectExists;
-// 	unsigned index = systemList.GetIndexFromKey(addressOrGUID, &objectExists);
-// 	if (objectExists==false)
-	DataStructures::HashIndex index = systemList.GetIndexOf(addressOrGUID);
-	if (index.IsInvalid())
-	{
-		if (filterSetID<0)
-			return;
-
-		FilteredSystem filteredSystem;
-		filteredSystem.filter = GetFilterSetByID(filterSetID);
-	//	filteredSystem.addressOrGUID=addressOrGUID;
-		filteredSystem.timeEnteredThisSet=RakNet::GetTimeMS();
-	//	systemList.Insert(addressOrGUID, filteredSystem, true, _FILE_AND_LINE_);
-		systemList.Push(addressOrGUID,filteredSystem,_FILE_AND_LINE_);
-	}
-	else
-	{
-		if (filterSetID>=0)
-		{
-			FilterSet *filterSet = GetFilterSetByID(filterSetID);
-			systemList.ItemAtIndex(index).timeEnteredThisSet=RakNet::GetTimeMS();
-			systemList.ItemAtIndex(index).filter=filterSet;
-		}
-		else
-		{
-			systemList.RemoveAtIndex(index, _FILE_AND_LINE_);
-		}
-	}	
-}
-unsigned MessageFilter::GetSystemCount(int filterSetID) const
-{
-	if (filterSetID==-1)
-	{
-		return systemList.Size();
-	}
-	else
-	{
-		unsigned i;
-		unsigned count=0;
-		DataStructures::List< FilteredSystem > itemList;
-		DataStructures::List< AddressOrGUID > keyList;
-		systemList.GetAsList(itemList, keyList, _FILE_AND_LINE_);
-		for (i=0; i < itemList.Size(); i++)
-			if (itemList[i].filter->filterSetID==filterSetID)
-				++count;
-		return count;
-	}
-}
-unsigned MessageFilter::GetFilterSetCount(void) const
-{
-	return filterList.Size();
-}
-int MessageFilter::GetFilterSetIDByIndex(unsigned index)
-{
-	return filterList[index]->filterSetID;
-}
-void MessageFilter::DeleteFilterSet(int filterSetID)
-{
-	FilterSet *filterSet;
-	bool objectExists;
-	unsigned i,index;
-	index = filterList.GetIndexFromKey(filterSetID, &objectExists);
-	if (objectExists)
-	{
-		filterSet=filterList[index];
-		DeallocateFilterSet(filterSet);
-		filterList.RemoveAtIndex(index);
-
-		DataStructures::List< FilteredSystem > itemList;
-		DataStructures::List< AddressOrGUID > keyList;
-		systemList.GetAsList(itemList, keyList, _FILE_AND_LINE_);
-		for (i=0; i < itemList.Size(); i++)
-		{
-			if (itemList[i].filter==filterSet)
-			{
-				systemList.Remove(keyList[i], _FILE_AND_LINE_);
-			}
-		}
-
-		/*
-		// Don't reference this pointer any longer
-		i=0;
-		while (i < systemList.Size())
-		{
-			if (systemList[i].filter==filterSet)
-				systemList.RemoveAtIndex(i);
 			else
-				++i;
-		}
-		*/
-	}
-}
-void MessageFilter::Clear(void)
-{
-	unsigned i;
-	systemList.Clear(_FILE_AND_LINE_);
-	for (i=0; i < filterList.Size(); i++)
-		DeallocateFilterSet(filterList[i]);
-	filterList.Clear(false, _FILE_AND_LINE_);
-}
-void MessageFilter::DeallocateFilterSet(FilterSet* filterSet)
-{
-	RakNet::OP_DELETE(filterSet, _FILE_AND_LINE_);
-}
-FilterSet* MessageFilter::GetFilterSetByID(int filterSetID)
-{
-	RakAssert(filterSetID>=0);
-	bool objectExists;
-	unsigned index;
-	index = filterList.GetIndexFromKey(filterSetID, &objectExists);
-	if (objectExists)
-		return filterList[index];
-	else
-	{
-		FilterSet *newFilterSet = RakNet::OP_NEW<FilterSet>( _FILE_AND_LINE_ );
-		memset(newFilterSet->allowedIDs, 0, MESSAGE_FILTER_MAX_MESSAGE_ID * sizeof(bool));
-		newFilterSet->banOnFilterTimeExceed=false;
-		newFilterSet->kickOnDisallowedMessage=false;
-		newFilterSet->banOnDisallowedMessage=false;
-		newFilterSet->disallowedMessageBanTimeMS=0;
-		newFilterSet->timeExceedBanTimeMS=0;
-		newFilterSet->maxMemberTimeMS=0;
-		newFilterSet->filterSetID=filterSetID;
-		newFilterSet->invalidMessageCallback=0;
-		newFilterSet->timeoutCallback=0;
-		newFilterSet->timeoutUserData=0;
-		filterList.Insert(filterSetID, newFilterSet, true, _FILE_AND_LINE_);
-		return newFilterSet;
-	}
-}
-void MessageFilter::OnInvalidMessage(FilterSet *filterSet, AddressOrGUID systemAddress, unsigned char messageID)
-{
-	if (filterSet->invalidMessageCallback)
-		filterSet->invalidMessageCallback(rakPeerInterface, systemAddress, filterSet->filterSetID, filterSet->disallowedCallbackUserData, messageID);
-	if (filterSet->banOnDisallowedMessage && rakPeerInterface)
-	{
-		char str1[64];
-		systemAddress.systemAddress.ToString(false, str1);
-		rakPeerInterface->AddToBanList(str1, filterSet->disallowedMessageBanTimeMS);
-	}
-	if (filterSet->kickOnDisallowedMessage)
-	{
-		if (rakPeerInterface)
-			rakPeerInterface->CloseConnection(systemAddress, true, 0);
-#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
-		else
-			tcpInterface->CloseConnection(systemAddress.systemAddress);
-#endif
-	}
-}
-void MessageFilter::Update(void)
-{
-	// Update all timers for all systems.  If those systems' filter sets are expired, take the appropriate action.
-	RakNet::Time curTime = RakNet::GetTime();
-	if (GreaterThan(curTime - 1000, whenLastTimeoutCheck))
-	{
-		DataStructures::List< FilteredSystem > itemList;
-		DataStructures::List< AddressOrGUID > keyList;
-		systemList.GetAsList(itemList, keyList, _FILE_AND_LINE_);
-
-		unsigned int index;
-		for (index=0; index < itemList.Size(); index++)
-		{
-			if (itemList[index].filter &&
-				itemList[index].filter->maxMemberTimeMS>0 &&
-				curTime-itemList[index].timeEnteredThisSet >= itemList[index].filter->maxMemberTimeMS)
 			{
-				if (itemList[index].filter->timeoutCallback)
-					itemList[index].filter->timeoutCallback(rakPeerInterface, keyList[index], itemList[index].filter->filterSetID, itemList[index].filter->timeoutUserData);
+				stream.Write(false);
+				stream.Write(value.x);
+				stream.Write(value.y);
+				stream.Write(value.z);
+			}
+		}
 
-				if (itemList[index].filter->banOnFilterTimeExceed && rakPeerInterface)
+		void readBrickVector(RakNet::BitStream& stream, G3D::Vector3& value)
+		{
+			bool isBrickLocation;
+			stream.Read(isBrickLocation);
+
+			if (isBrickLocation)
+			{
+				short x = 0;
+				unsigned short y = 0;
+				short z = 0;
+
+				stream.ReadBits((unsigned char*)&x, 11);
+				stream.ReadBits((unsigned char*)&y, 11);
+				stream.ReadBits((unsigned char*)&z, 11);
+
+				if (x & 0x400) // sign extend x and z
+					x |= 0xfc00;
+
+				if (z & 0x400)
+					z |= 0xfc00;
+
+				value.x = (float)(x * 0.5);
+				value.y = (float)(y / 10.0);
+				value.z = (float)(z * 0.5);
+			}
+			else
+			{
+				stream.Read(value.x);
+				stream.Read(value.y);
+				stream.Read(value.z);
+			}
+		}
+
+		void rationalize(G3D::CoordinateFrame& value)
+		{
+			if (!value.translation.isFinite())
+			{
+				value.translation = G3D::Vector3(0.0f, -1e+6f, 0.0f);
+			}
+			else
+			{
+				value.translation = G3D::clamp(G3D::Vector3(-1e+6f, -1e+6f, -1e+6f), value.translation, G3D::Vector3(1e+6f, 1e+6f, 1e+6f));
+			}
+		}
+
+		void deserializeEnum(Reflection::Property& property, RakNet::BitStream& bitStream)
+		{
+			const Reflection::EnumPropertyDescriptor& prop = static_cast<const Reflection::EnumPropertyDescriptor&>(property.getDescriptor());
+
+			int value = 0;
+			bitStream.ReadBits((unsigned char*)&value, (int)prop.enumDescriptor.getEnumCountMSB() + 1);
+
+			RBXASSERT(value >= 0);
+			RBXASSERT(value < (int)prop.enumDescriptor.getEnumCount());
+
+			prop.setIndexValue(property.getInstance(), value);
+		}
+
+		void serializeEnum(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
+		{
+			const Reflection::EnumPropertyDescriptor& prop = static_cast<const Reflection::EnumPropertyDescriptor&>(property.getDescriptor());
+
+			int value = prop.getIndexValue(property.getInstance());
+
+			RBXASSERT(value >= 0);
+			RBXASSERT(value < (int)prop.enumDescriptor.getEnumCount());
+
+			bitStream.WriteBits((unsigned char*)&value, (int)prop.enumDescriptor.getEnumCountMSB() + 1);
+		}
+
+		void StringReceiver::receive(RakNet::BitStream& stream, std::string& value)
+		{
+			unsigned char id;
+			stream >> id;
+
+			if (id == 0)
+			{
+				value.clear();
+			}
+			else if (id >> 7)
+			{
+				stream >> value;
+				dictionary[id & 127] = value;
+			}
+			else
+			{
+				value = dictionary[id];
+			}
+		}
+
+		void StringReceiver::receive(RakNet::BitStream& stream, const Name*& value)
+		{
+			std::string s;
+			receive(stream, s);
+
+			value = &Name::declare(s.c_str(), -1);
+		}
+
+		void StringReceiver::deserializeString(Reflection::Property& property, RakNet::BitStream& bitStream)
+		{
+			std::string value;
+			receive(bitStream, value);
+			
+			Instance* instance = static_cast<Instance*>(property.getInstance());
+			const Reflection::PropertyDescriptor& desc = property.getDescriptor();
+
+			desc.setStringValue(instance, value);
+		}
+
+		void StringSender::serializeString(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
+		{
+			const Instance* instance = static_cast<const Instance*>(property.getInstance());
+			const Reflection::PropertyDescriptor& desc = property.getDescriptor();
+
+			std::string value = desc.getStringValue(instance);
+			send(bitStream, value);
+		}
+
+		void StringSender::send(RakNet::BitStream& stream, const std::string& value)
+		{
+			if (value == "")
+			{
+				stream << (unsigned char)0;
+			}
+			else
+			{
+				std::pair<std::map<std::string, unsigned char>::iterator, bool> pair = dictionary.insert(std::pair<const std::string, unsigned char>(value, 0));
+
+				if (!pair.second)
 				{
-					char str1[64];
-					keyList[index].ToString(false, str1);
-					rakPeerInterface->AddToBanList(str1, itemList[index].filter->timeExceedBanTimeMS);
+					stream << pair.first->second;
 				}
-				if (rakPeerInterface)
-					rakPeerInterface->CloseConnection(keyList[index], true, 0);
-#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
 				else
-					tcpInterface->CloseConnection(keyList[index].systemAddress);
-#endif
+				{
+					lastIndex = lastIndex % 127 + 1;
+					dictionary.erase(strings[lastIndex]);
+					pair.first->second = lastIndex;
+					strings[lastIndex] = value;
 
-				systemList.Remove(keyList[index], _FILE_AND_LINE_);
+					stream << (unsigned char)(lastIndex | 0x80);
+					stream << value;
+				}
 			}
 		}
 
-		whenLastTimeoutCheck=curTime+1000;
-	}
-}
-void MessageFilter::OnNewConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, bool isIncoming)
-{
-	(void) systemAddress;
-	(void) rakNetGUID;
-	(void) isIncoming;
-
-	AddressOrGUID aog;
-	aog.rakNetGuid=rakNetGUID;
-	aog.systemAddress=systemAddress;
-
-	// New system, automatically assign to filter set if appropriate
-	if (autoAddNewConnectionsToFilter>=0 && systemList.HasData(aog)==false)
-		SetSystemFilterSet(aog, autoAddNewConnectionsToFilter);
-}
-void MessageFilter::OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason )
-{
-	(void) rakNetGUID;
-	(void) lostConnectionReason;
-
-	AddressOrGUID aog;
-	aog.rakNetGuid=rakNetGUID;
-	aog.systemAddress=systemAddress;
-
-	// Lost system, remove from the list
-	systemList.Remove(aog, _FILE_AND_LINE_);
-}
- PluginReceiveResult MessageFilter::OnReceive(Packet *packet)
-{
-	DataStructures::HashIndex index;
-	unsigned char messageId;
-
-	switch (packet->data[0]) 
-	{
-	case ID_NEW_INCOMING_CONNECTION:
-	case ID_CONNECTION_REQUEST_ACCEPTED:
-	case ID_CONNECTION_LOST:
-	case ID_DISCONNECTION_NOTIFICATION:
-	case ID_CONNECTION_ATTEMPT_FAILED:
-	case ID_NO_FREE_INCOMING_CONNECTIONS:
-	case ID_IP_RECENTLY_CONNECTED:
-	case ID_CONNECTION_BANNED:
-	case ID_INVALID_PASSWORD:
-	case ID_UNCONNECTED_PONG:
-	case ID_ALREADY_CONNECTED:
-	case ID_ADVERTISE_SYSTEM:
-	case ID_REMOTE_DISCONNECTION_NOTIFICATION:
-	case ID_REMOTE_CONNECTION_LOST:
-	case ID_REMOTE_NEW_INCOMING_CONNECTION:
-	case ID_DOWNLOAD_PROGRESS:
-		break;
-	default:
-		if (packet->data[0]==ID_TIMESTAMP)
+		bool StringSender::trySend(RakNet::BitStream& stream, const std::string& value)
 		{
-			if (packet->length<sizeof(MessageID) + sizeof(RakNet::TimeMS))
-				return RR_STOP_PROCESSING_AND_DEALLOCATE; // Invalid message
-			messageId=packet->data[sizeof(MessageID) + sizeof(RakNet::TimeMS)];
-		}
-		else
-			messageId=packet->data[0];
-		// If this system is filtered, check if this message is allowed.  If not allowed, return RR_STOP_PROCESSING_AND_DEALLOCATE
-		// index = systemList.GetIndexFromKey(packet->addressOrGUID, &objectExists);
-		index = systemList.GetIndexOf(packet);
-		if (index.IsInvalid())
-			break;
-		if (systemList.ItemAtIndex(index).filter->allowedIDs[messageId]==false)
-		{
-			OnInvalidMessage(systemList.ItemAtIndex(index).filter, packet, packet->data[0]);
-			return RR_STOP_PROCESSING_AND_DEALLOCATE;
-		}
-		if (packet->data[0]==ID_RPC_PLUGIN)
-		{
-			RakNet::BitStream bsIn(packet->data,packet->length,false);
-			bsIn.IgnoreBytes(2);
-			RakNet::RakString functionName;
-			bsIn.ReadCompressed(functionName);
-			if (systemList.ItemAtIndex(index).filter->allowedRPC4.HasData(functionName)==false)
+			if (value == "")
 			{
-				OnInvalidMessage(systemList.ItemAtIndex(index).filter, packet, packet->data[0]);
-				return RR_STOP_PROCESSING_AND_DEALLOCATE;
+				stream << (unsigned char)0;
+				return true;
+			}
+
+			std::map<std::string, unsigned char>::const_iterator iter = dictionary.find(value);
+
+			if (iter == dictionary.end())
+			{
+				return false;
+			}
+			else
+			{
+				stream << iter->second;
+				return true;
 			}
 		}
-		
-		break;
+
+		void IdSerializer::serializeId(RakNet::BitStream& stream, const Instance* instance)
+		{
+			if (instance)
+			{
+				Guid::Data id;
+				instance->getGuid().extract(id);
+
+				scopeNames.send(stream, id.scope->name);
+
+				RBXASSERT((id.index & 0xff000000) == 0);
+				stream.WriteBits((unsigned char*)&id.index, 24);
+			}
+			else
+			{
+				scopeNames.send(stream, Name::getNullName().name);
+			}
+		}
+
+		bool IdSerializer::trySerializeId(RakNet::BitStream& stream, const Instance* instance)
+		{
+			if (instance)
+			{
+				Guid::Data id;
+				instance->getGuid().extract(id);
+
+				if (!scopeNames.trySend(stream, id.scope->name))
+					return false;
+
+				RBXASSERT((id.index & 0xff000000) == 0);
+				stream.WriteBits((unsigned char*)&id.index, 24);
+				return true;
+			}
+			else
+			{
+				scopeNames.send(stream, Name::getNullName().name);
+				return true;
+			}
+		}
+
+		void IdSerializer::resolvePendingBindings(Instance* instance, Guid::Data id)
+		{
+			std::map<Guid::Data, std::vector<WaitItem>>::iterator iter = waitItems.find(id);
+			if (iter != waitItems.end())
+			{
+				std::for_each(iter->second.begin(), iter->second.end(), boost::bind(&IdSerializer::setRefValue, _1, instance));
+				waitItems.erase(iter);
+			}
+		}
+
+		void IdSerializer::serializeRef(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
+		{
+			const Reflection::RefPropertyDescriptor& prop = static_cast<const Reflection::RefPropertyDescriptor&>(property.getDescriptor());
+			serializeId(bitStream, (Instance*)prop.getRefValue(property.getInstance()));
+		}
+
+		void IdSerializer::setRefValue(WaitItem& wi, Instance* instance)
+		{
+			wi.desc->setRefValue(wi.instance.get(), instance);
+		}
+
+		void IdSerializer::deserializeId(RakNet::BitStream& stream, Guid::Data& id)
+		{
+			scopeNames.receive(stream, id.scope);
+			if (*id.scope != Name::getNullName())
+			{
+				id.index = 0;
+				stream.ReadBits((unsigned char*)&id.index, 24);
+			}
+			else
+			{
+				id.index = 0;
+			}
+		}
 	}
-	
-	return RR_CONTINUE_PROCESSING;
 }
-
-#ifdef _MSC_VER
-#pragma warning( pop )
-#endif
-
-#endif // _RAKNET_SUPPORT_*

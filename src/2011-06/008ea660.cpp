@@ -1,13 +1,14 @@
+// from server: 64% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /MD /GS /EHsc /Ob1
-// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageCustom.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-13.2.1 Source/Controls/XTColorPageCustom.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTColorPageCustom.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
+// (c)1998-2009 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -268,8 +269,14 @@ void CXTColorWnd::UpdateCursorPos(CPoint point)
 
 	m_nHue = (double)point.x / (double)rcClient.Width();
 	m_nSat = (double)(rcClient.Height() - point.y) / (double)rcClient.Height();
+	m_nLum = DEFAULT_LUMINANCE;
 
-	GetParent()->SendMessage(XTWM_UPDATECOLOR, 0, (LPARAM)m_hWnd);
+	CWnd* pWnd = GetOwner();
+	if (pWnd)
+	{
+		pWnd->SendMessage(XTWM_UPDATECOLOR,
+			(WPARAM)HLStoRGB(m_nHue, m_nLum, m_nSat), (LPARAM)m_hWnd);
+	}
 
 	Invalidate(FALSE);
 }
@@ -599,7 +606,12 @@ void CXTColorLum::UpdateCursorPos(CPoint point)
 
 	m_nLum = double(double(cy - (point.y - rcBar.top))/cy);
 
-	GetParent()->SendMessage(XTWM_UPDATECOLOR, 0, (LPARAM)m_hWnd);
+	CWnd* pWnd = GetOwner();
+	if (pWnd)
+	{
+		pWnd->SendMessage(XTWM_UPDATECOLOR,
+			(WPARAM)HLStoRGB(m_nHue, m_nLum, m_nSat), (LPARAM)m_hWnd);
+	}
 
 	m_ptMousePos = point;
 
@@ -854,33 +866,44 @@ LRESULT CXTColorPageCustom::OnUpdateColor(WPARAM wParam, LPARAM lParam)
 {
 	COLORREF clr = (COLORREF)wParam;
 
-	if ((HWND)lParam == m_colorWnd)
+	if ((HWND)lParam == m_colorWnd.m_hWnd)
 	{
 		m_nS = int(m_colorWnd.m_nSat * 255);
 		m_nH = int(m_colorWnd.m_nHue * 255);
 
-		clr = m_colorWnd.HLStoRGB((double)m_nH/255, (double)m_nL/255, (double)m_nS/255);
+		clr = m_colorWnd.HLStoRGB((double)m_nH/255, DEFAULT_LUMINANCE, (double)m_nS/255);
 		m_colorLum.SetColor((double)m_nH/255, (double)m_nS/255);
 	}
 
-	if ((HWND)lParam == m_colorLum)
+	else if ((HWND)lParam == m_colorLum.m_hWnd)
 	{
 		m_nL = int(m_colorLum.m_nLum * 255);
 
 		clr = m_colorWnd.HLStoRGB((double)m_nH/255, (double)m_nL/255, (double)m_nS/255);
 	}
 
-	if (lParam == 0)
+	else
 	{
 		RGBtoHSL(clr, &m_nL, &m_nS, &m_nH);
 
 		m_colorWnd.SetColor((double)m_nH/255, (double)m_nS/255);
 		m_colorLum.SetColor((double)m_nH/255, (double)m_nS/255);
 		m_colorLum.SetLuminance((double)m_nL/255);
+
+		POINT pt;
+		::GetCursorPos(&pt);
+
+		if (::WindowFromPoint(pt) == m_colorLum.m_hWnd)
+			m_colorLum.SetFocus();
+		else
+			m_colorWnd.SetFocus();
 	}
 
-	if (clr != m_pParentSheet->GetColor())
-		m_pParentSheet->SetNewColor(clr, FALSE);
+	if ((HWND)lParam != m_pParentSheet->GetSafeHwnd())
+	{
+		if (clr != m_pParentSheet->GetColor())
+			m_pParentSheet->SetNewColor(clr, FALSE);
+	}
 
 	UpdateRGB(clr);
 	return 0;

@@ -1,433 +1,467 @@
+// from server: 55% by sophus
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.36.0 libs/iostreams/src/mapped_file.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/ContentProvider.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/FileSystem.h"
-#include "v8xml/SerializerV2.h"
-#include <atlutil.h>
-#include <G3D/format.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/iostreams/copy.hpp>
+// (C) Copyright 2008 CodeRage, LLC (turkanis at coderage dot com)
+// (C) Copyright 2004-2007 Jonathan Turkanis
+// (C) Copyright Craig Henderson 2002 'boost/memmap.hpp' from sandbox
+// (C) Copyright Jonathan Graehl 2004.
 
-namespace RBX
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
+
+// See http://www.boost.org/libs/iostreams for documentation.
+
+// Define BOOST_IOSTREAMS_SOURCE so that <boost/iostreams/detail/config.hpp>
+// knows that we are building the library (possibly exporting code), rather
+// than using it (possibly importing code).
+#define BOOST_IOSTREAMS_SOURCE
+
+#include <cassert>
+#ifndef NDEBUG
+# include <boost/iostreams/detail/absolute_path.hpp>
+#endif
+#include <boost/iostreams/detail/config/dyn_link.hpp>
+#include <boost/iostreams/detail/config/windows_posix.hpp>
+#include <boost/iostreams/detail/ios.hpp>  // failure.
+#include <boost/iostreams/detail/system_failure.hpp>
+#include <boost/iostreams/device/mapped_file.hpp>
+
+#ifdef BOOST_IOSTREAMS_WINDOWS
+# define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from Windows headers
+# include <windows.h>
+# ifndef INVALID_SET_FILE_POINTER
+#  define INVALID_SET_FILE_POINTER ((DWORD)-1)
+# endif
+#else
+# include <errno.h>
+# include <fcntl.h>
+# include <sys/mman.h>      // mmap, munmap.
+# include <sys/stat.h>
+# include <sys/types.h>     // struct stat.
+# include <unistd.h>        // sysconf.
+#endif
+
+#include <boost/iostreams/detail/config/disable_warnings.hpp>
+
+namespace boost { namespace iostreams {
+
+namespace detail {
+
+struct mapped_file_impl {
+    mapped_file_impl() { clear(false); }
+    ~mapped_file_impl() { try { close(); } catch (...) { } }
+    void clear(bool error)
+    {
+        data_ = 0;
+        size_ = 0;
+        mode_ = BOOST_IOS::openmode();
+        error_ = error;
+    #ifdef BOOST_IOSTREAMS_WINDOWS
+        handle_ = INVALID_HANDLE_VALUE;
+        mapped_handle_ = NULL;
+    #else
+        handle_ = 0;
+    #endif
+    #ifndef NDEBUG
+        path_.erase();
+    #endif
+    }
+    void close()
+    {
+        bool error = false;
+    #ifdef BOOST_IOSTREAMS_WINDOWS
+        if (handle_ == INVALID_HANDLE_VALUE)
+            return;
+        error = !::UnmapViewOfFile(data_) || error;
+        error = !::CloseHandle(mapped_handle_) || error;
+        error = !::CloseHandle(handle_) || error;
+        handle_ = INVALID_HANDLE_VALUE;
+        mapped_handle_ = NULL;
+    #else
+        if (!handle_)
+            return;
+        error = ::munmap(reinterpret_cast<char*>(data_), size_) != 0 || error;
+        error = ::close(handle_) != 0 || error;
+        handle_ = 0;
+    #endif
+        data_ = 0;
+        size_ = 0;
+        mode_ = BOOST_IOS::openmode();
+        if (error) {
+            std::string msg("error closing mapped file");
+            #ifndef NDEBUG
+                msg += std::string(" (\"") + path_ + "\")";
+            #endif
+            throw_system_failure(msg);
+        }
+    #ifndef NDEBUG
+        path_.erase();
+    #endif
+    }
+    char*                data_;
+    std::size_t          size_;
+    BOOST_IOS::openmode  mode_;
+    bool                 error_;
+#ifdef BOOST_IOSTREAMS_WINDOWS
+    HANDLE               handle_;
+    HANDLE               mapped_handle_;
+#else
+    int                  handle_;
+#endif
+#ifndef NDEBUG
+    std::string          path_;
+#endif
+};
+
+} // End namespace detail.
+
+//------------------Definition of mapped_file_source--------------------------//
+
+mapped_file_source::mapped_file_source(mapped_file_params p) { open(p); }
+
+mapped_file_source::mapped_file_source( const std::string& path,
+                                        mapped_file_source::size_type length,
+                                        boost::intmax_t offset )
+{ open(path, length, offset); }
+
+void mapped_file_source::open(mapped_file_params p)
 {
-	// TODO: check match
-	bool operator<(const ContentId& a, const ContentId& b)
-	{
-		return a.toString() < b.toString();
-	}
-
-	bool operator!=(const ContentId& a, const ContentId& b)
-	{
-		return a.toString() != b.toString();
-	}
-
-	ContentId ContentId::fromAssets(const std::string& filePath)
-	{
-		std::string header = "rbxasset://";
-		return ContentId(header + filePath);
-	}
-
-	ContentProvider::ContentProvider()
-	{
-		char path[MAX_PATH];
-		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
-		{
-			this->singleton().setAssetFolder(path);
-		}
-		else
-		{
-			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
-		}
-
-		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
-	}
-
-	ContentProvider::~ContentProvider()
-	{
-		requestProcessor->join();
-	}
-
-	bool ContentProvider::isHttpUrl(const std::string& s)
-	{
-		if (s.find("http://") == 0)
-			return true;
-
-		if (s.find("https://") == 0)
-			return true;
-
-		return false;
-	}
-
-	std::string ContentProvider::assetFolder() const
-	{
-		return assetFolderPath;
-	}
-
-	bool ContentProvider::isRequestQueueEmpty()
-	{
-		boost::mutex::scoped_lock lock(requestSync);
-		return requestQueue.empty();
-	}
-
-	bool ContentProvider::isUrlBad(const char* url)
-	{
-		boost::mutex::scoped_lock lock(requestSync);
-
-		std::list<FailedUrl>::iterator iter = failedUrls.begin();
-		std::list<FailedUrl>::iterator end = failedUrls.end();
-
-		for (; iter != end; iter++)
-		{
-			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
-			{
-				failedUrls.erase(iter, end);
-				return false;
-			}
-			else if (iter->url == url)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	void ContentProvider::clearContentCache()
-	{
-		boost::mutex::scoped_lock lock(contentCacheMutex);
-		contentCache.clear();
-	}
-
-	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
-	{
-		boost::scoped_ptr<std::istream> stream(getContent(id));
-		
-		TextXmlParser machine(stream->rdbuf());
-		boost::scoped_ptr<XmlElement> root(machine.parse());
-
-		SerializerV2().loadInstances(root.get(), instances);
-	}
-
-	bool ContentProvider::hasContent(ContentId id)
-	{
-		return loadContent(id, NoHttpRequest) != NULL;
-	}
-
-	std::string ContentProvider::getAssetFile(const std::string& filePath)
-	{
-		return getFile(ContentId::fromAssets(filePath));
-	}
-
-	std::string ContentProvider::getFile(ContentId ticket)
-	{
-		CachedContent* content = loadContent(ticket, SyncHttpRequest);
-		if (content && registerFile(content))
-		{
-			return *content->filename;
-		}
-
-		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
-	}
-
-	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
-	{
-		CachedContent* content = loadContent(id, AsyncHttpRequest);
-		if (!content)
-			return false;
-
-		if (!registerFile(content))
-			return false;
-
-		filename = *content->filename;
-		return true;
-	}
-
-	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
-	{
-		CachedContent* content = loadContent(id, AsyncHttpRequest);
-		if (!content)
-			return boost::shared_ptr<const std::string>();
-
-		boost::mutex::scoped_lock lock(contentCacheMutex);
-
-		if (!content->data)
-		{
-			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
-			std::ostringstream data;
-
-			boost::iostreams::copy(stream, data);
-
-			content->data.reset(new std::string(data.str()));
-		}
-
-		return content->data;
-	}
-
-	std::string ContentProvider::findAsset(ContentId contentId)
-	{
-		RBXASSERT(contentId.isAsset());
-
-		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
-		if (!filePath.FileExists())
-			return "";
-
-		return std::string(filePath);
-	}
-
-	std::string ContentProvider::findFile(ContentId contentId)
-	{
-		RBXASSERT(contentId.isFile());
-
-		const char* file = contentId.c_str();
-		file += 7;
-
-		ATL::CPath filePath(file);
-		if (!filePath.FileExists())
-			return "";
-
-		return std::string(filePath);
-	}
-
-	static ATL::CPath getLocalCachePath(bool createPath)
-	{
-		ATL::CPath path;
-
-		if (createPath)
-		{
-			static std::string s = FileSystem::getCacheDirectory(true);
-			path.m_strPath.SetString(s.c_str());
-		}
-		else
-		{
-			static std::string s = FileSystem::getCacheDirectory(false);
-			path.m_strPath.SetString(s.c_str());
-		}
-
-		return path;
-	}
-
-	std::string ContentProvider::findHashFile(ContentId contentId)
-	{
-		ATL::CPath cachePath = getLocalCachePath(true);
-
-		ATL::CPath filePath = cachePath;
-		filePath.Append(contentId.c_str());
-
-		if (!filePath.FileExists())
-			return "";
-
-		return std::string(filePath);
-	}
-
-	void ContentProvider::setAssetFolder(const char* sPath)
-	{
-		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
-
-		ATL::CPath path(sPath);
-
-		if (path.IsRelative())
-			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
-
-		if (!path.IsDirectory())
-			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
-
-		path.AddBackslash();
-		assetFolderPath = path;
-	}
-
-	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
-	{
-		ContentId id;
-
-		{
-			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
-			hasher->addData(content);
-			id = ContentId(hasher->toString(), mimeType);
-		}
-
-		ATL::CPath filePath = getLocalCachePath(true);
-		filePath.Append(id.c_str());
-
-		if (!filePath.FileExists())
-		{
-			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
-			content.clear();
-			content.seekg(0, std::ios::beg);
-
-			do
-			{
-				char buffer[1024];
-				content.read(buffer, sizeof(buffer));
-				outStream.write(buffer, content.gcount());
-			}
-			while (content.gcount() > 0);
-		}
-
-		return id;
-	}
-
-	bool ContentProvider::registerFile(CachedContent* item)
-	{
-		CachedContent temp;
-
-		{
-			boost::mutex::scoped_lock lock(contentCacheMutex);
-			temp = *item;
-		}
-
-		if (!temp.filename)
-		{
-			std::istringstream ss(*temp.data);
-			ContentId hash = registerContent(ss, Name::getNullName());
-
-			std::string filename = findHashFile(hash);
-			if (filename.empty())
-				return false;
-
-			temp.filename.reset(new std::string(filename));
-
-			boost::mutex::scoped_lock lock(contentCacheMutex);
-			*item = temp;
-		}
-
-		return true;
-	}
-
-	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
-	{
-		ContentId contentId(id);
-
-		if (hasContent(contentId))
-		{
-			stream.clear();
-			stream.seekg(dataLength, std::ios::cur);
-		}
-		else
-		{
-			ATL::CPath filePath = getLocalCachePath(true);
-			filePath.Append(contentId.c_str());
-
-			std::ofstream content;
-			content.open(filePath, std::ios::binary | std::ios::out);
-
-			char data;
-
-			for (unsigned long i = 0; i < dataLength; i++)
-			{
-				RBXASSERT(content.good());
-				stream.get(data);
-				content << data;
-			}
-		}
-
-		return contentId;
-	}
-
-	ContentProvider::FailedUrl::FailedUrl(const char* url)
-		: url(url),
-		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
-	{
-	}
-
-	class MD5HasherImpl : public MD5Hasher
-	{
-	private:
-		HCRYPTPROV hProv;
-		HCRYPTHASH hHash;
-		std::string result;
-
-	public:
-		MD5HasherImpl()
-			: hProv(NULL),
-			  hHash(NULL),
-			  result()
-		{
-			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
-			}
-
-			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
-			}
-		}
-		~MD5HasherImpl()
-		{
-		}
-
-	public:
-		virtual void addData(const char* data, size_t nBytes)
-		{
-			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
-			}
-		}
-		virtual void addData(const std::string& data)
-		{
-			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
-			}
-		}
-		virtual void addData(std::istream& data)
-		{
-			data.clear();
-			data.seekg(0, std::ios_base::beg);
-
-			char buffer[1024];
-			do
-			{
-				data.read(buffer, sizeof(buffer));
-				addData(buffer, data.gcount());
-			}
-			while (data.gcount() > 0);
-		}
-		virtual std::string toString()
-		{
-			c_str();
-			return result;
-		}
-		virtual const char* c_str()
-		{
-			if (result.empty())
-			{
-				DWORD hashSize;
-				DWORD hashSizeLen = sizeof(DWORD);
-				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
-				}
-
-				char* hashValue = new char[hashSize];
-				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
-				}
-
-				for (int i = 0; i < (int)hashSize; ++i)
-				{
-					ATL::CString temp;
-					temp.Format("%x", hashValue[i]);
-					result += temp.GetString();
-				}
-
-				delete[] hashValue;
-			}
-
-			return result.c_str();
-		}
-	};
-
-	MD5Hasher* MD5Hasher::create()
-	{
-		return new MD5HasherImpl();
-	}
+    p.mode &= ~BOOST_IOS::out;
+    open_impl(p);
 }
+
+void mapped_file_source::open( const std::string& path,
+                               mapped_file_source::size_type length,
+                               boost::intmax_t offset )
+{
+    mapped_file_params p(path);
+    p.mode = BOOST_IOS::in;
+    p.length = length;
+    p.offset = offset;
+    open_impl(p);
+}
+
+mapped_file_source::size_type mapped_file_source::size() const
+{ return pimpl_->size_; }
+
+void mapped_file_source::close() { pimpl_->close(); }
+
+mapped_file_source::operator mapped_file_source::safe_bool() const
+{
+    return !!pimpl_ && pimpl_->error_ == false ?
+        &safe_bool_helper::x : 0;
+}
+
+bool mapped_file_source::operator!() const
+{ return !!pimpl_ || pimpl_->error_; }
+
+BOOST_IOS::openmode mapped_file_source::mode() const { return pimpl_->mode_; }
+
+const char* mapped_file_source::data() const { return pimpl_->data_; }
+
+const char* mapped_file_source::begin() const { return data(); }
+
+const char* mapped_file_source::end() const { return data() + size(); }
+
+#ifdef BOOST_IOSTREAMS_WINDOWS //---------------------------------------------//
+
+namespace detail {
+
+void cleanup_and_throw(detail::mapped_file_impl& impl, std::string msg)
+{
+    #ifndef NDEBUG
+        msg += std::string(" (\"") + impl.path_ + "\")";
+    #endif
+    if (impl.mapped_handle_ != INVALID_HANDLE_VALUE)
+        ::CloseHandle(impl.mapped_handle_);
+    if (impl.handle_ != NULL)
+        ::CloseHandle(impl.handle_);
+    impl.clear(true);
+    throw_system_failure(msg);
+}
+
+} // End namespace detail.
+
+void mapped_file_source::open_impl(mapped_file_params p)
+{
+    using namespace std;
+
+    if (is_open())
+        throw BOOST_IOSTREAMS_FAILURE("file already open");
+    if (!pimpl_)
+        pimpl_.reset(new impl_type);
+    else
+        pimpl_->clear(false);
+    bool readonly = (p.mode & BOOST_IOS::out) == 0;
+    pimpl_->mode_ = readonly ? BOOST_IOS::in : (BOOST_IOS::in | BOOST_IOS::out);
+    #ifndef NDEBUG
+        pimpl_->path_ = detail::absolute_path(p.path);
+    #endif
+
+    //--------------Open underlying file--------------------------------------//
+
+    pimpl_->handle_ =
+        ::CreateFileA( p.path.c_str(),
+                       readonly ? GENERIC_READ : GENERIC_ALL,
+                       FILE_SHARE_READ,
+                       NULL,
+                       (p.new_file_size != 0 && !readonly) ? 
+                           CREATE_ALWAYS : 
+                           OPEN_EXISTING,
+                       readonly ?
+                           FILE_ATTRIBUTE_READONLY :
+                           FILE_ATTRIBUTE_TEMPORARY,
+                       NULL );
+
+    if (pimpl_->handle_ == INVALID_HANDLE_VALUE) {
+        detail::cleanup_and_throw(*pimpl_, "failed opening file");
+    }
+
+    //--------------Set file size---------------------------------------------//
+
+    if (p.new_file_size != 0 && !readonly) {
+        LONG sizehigh = (p.new_file_size >> (sizeof(LONG) * 8));
+        LONG sizelow = (p.new_file_size & 0xffffffff);
+        DWORD result =
+            ::SetFilePointer(pimpl_->handle_, sizelow, &sizehigh, FILE_BEGIN);
+        if ( result == INVALID_SET_FILE_POINTER && 
+                 ::GetLastError() != NO_ERROR || 
+             !::SetEndOfFile(pimpl_->handle_) )
+        {
+            detail::cleanup_and_throw(*pimpl_, "failed setting file size");
+        }
+    }
+
+    //--------------Create mapping--------------------------------------------//
+
+    try_again: // Target of goto in following section.
+
+    pimpl_->mapped_handle_ =
+        ::CreateFileMappingA( pimpl_->handle_, NULL,
+                              readonly ? PAGE_READONLY : PAGE_READWRITE,
+                              0, 0, NULL );
+    if (pimpl_->mapped_handle_ == NULL) {
+        detail::cleanup_and_throw(*pimpl_, "couldn't create mapping");
+    }
+
+    //--------------Access data-----------------------------------------------//
+
+    void* data =
+        ::MapViewOfFileEx( pimpl_->mapped_handle_,
+                           readonly ? FILE_MAP_READ : FILE_MAP_WRITE,
+                           (DWORD) (p.offset >> 32),
+                           (DWORD) (p.offset & 0xffffffff),
+                           p.length != max_length ? p.length : 0, (LPVOID) p.hint );
+    if (!data) {
+        if (p.hint != 0) {
+            p.hint = 0;
+            goto try_again;
+        }
+        detail::cleanup_and_throw(*pimpl_, "failed mapping view");
+    }
+
+    //--------------Determing file size---------------------------------------//
+
+    // Dynamically locate GetFileSizeEx (thanks to Pavel Vozenilik).
+    typedef BOOL (WINAPI *func)(HANDLE, PLARGE_INTEGER);
+    HMODULE hmod = ::GetModuleHandleA("kernel32.dll");
+    func get_size =
+        reinterpret_cast<func>(::GetProcAddress(hmod, "GetFileSizeEx"));
+
+    if (get_size) {
+        LARGE_INTEGER info;
+        if (get_size(pimpl_->handle_, &info)) {
+            boost::intmax_t size =
+                ( (static_cast<boost::intmax_t>(info.HighPart) << 32) |
+                  info.LowPart );
+            pimpl_->size_ =
+                static_cast<std::size_t>(
+                    p.length != max_length ?
+                        std::min<boost::intmax_t>(p.length, size) :
+                        size
+                );
+        } else {
+            detail::cleanup_and_throw(*pimpl_, "failed getting file size");
+            return;
+        }
+    } else {
+        DWORD hi;
+        DWORD low;
+        if ( (low = ::GetFileSize(pimpl_->handle_, &hi))
+                 !=
+             INVALID_FILE_SIZE )
+        {
+            boost::intmax_t size =
+                (static_cast<boost::intmax_t>(hi) << 32) | low;
+            pimpl_->size_ =
+                static_cast<std::size_t>(
+                    p.length != max_length ?
+                        std::min<boost::intmax_t>(p.length, size) :
+                        size
+                );
+        } else {
+            detail::cleanup_and_throw(*pimpl_, "failed getting file size");
+            return;
+        }
+    }
+
+    pimpl_->data_ = reinterpret_cast<char*>(data);
+}
+
+bool mapped_file_source::is_open() const
+{ return !!pimpl_ && pimpl_->handle_ != INVALID_HANDLE_VALUE; }
+
+int mapped_file_source::alignment()
+{
+    SYSTEM_INFO info;
+    ::GetSystemInfo(&info);
+    return static_cast<int>(info.dwAllocationGranularity);
+}
+
+#else // #ifdef BOOST_IOSTREAMS_WINDOWS //------------------------------------//
+
+namespace detail {
+
+    void cleanup_and_throw(detail::mapped_file_impl& impl, std::string msg)
+{
+    #ifndef NDEBUG
+        msg += std::string(" (\"") + impl.path_ + "\")";
+    #endif
+    if (impl.handle_ != 0)
+        ::close(impl.handle_);
+    impl.clear(true);
+    throw_system_failure(msg);
+}
+
+} // End namespace detail.
+
+
+void mapped_file_source::open_impl(mapped_file_params p)
+{
+    using namespace std;
+
+    if (is_open())
+        throw BOOST_IOSTREAMS_FAILURE("file already open");
+    if (!pimpl_)
+        pimpl_.reset(new impl_type);
+    else
+        pimpl_->clear(false);
+    bool readonly = (p.mode & BOOST_IOS::out) == 0;
+    pimpl_->mode_ = readonly ? BOOST_IOS::in : (BOOST_IOS::in | BOOST_IOS::out);
+    #ifndef NDEBUG
+        pimpl_->path_ = detail::absolute_path(p.path);
+    #endif
+
+    //--------------Open underlying file--------------------------------------//
+
+    int flags = (readonly ? O_RDONLY : O_RDWR);
+    if (p.new_file_size != 0 && !readonly)
+        flags |= (O_CREAT | O_TRUNC);
+    errno = 0;
+    pimpl_->handle_ = ::open(p.path.c_str(), flags, S_IRWXU);
+    if (errno != 0)
+        detail::cleanup_and_throw(*pimpl_, "failed opening file");
+
+    //--------------Set file size---------------------------------------------//
+
+    if (p.new_file_size != 0 && !readonly)
+        if (ftruncate(pimpl_->handle_, p.new_file_size) == -1)
+            detail::cleanup_and_throw(*pimpl_, "failed setting file size");
+
+    //--------------Determine file size---------------------------------------//
+
+    bool success = true;
+    struct stat info;
+    if (p.length != max_length)
+        pimpl_->size_ = p.length;
+    else {
+        success = ::fstat(pimpl_->handle_, &info) != -1;
+        pimpl_->size_ = info.st_size;
+    }
+    if (!success)
+        detail::cleanup_and_throw(*pimpl_, "failed getting file size");
+
+    //--------------Create mapping--------------------------------------------//
+
+    try_again: // Target of goto in following section.
+
+    char* hint = const_cast<char*>(p.hint);
+    void* data = ::mmap( hint, pimpl_->size_,
+                         readonly ? PROT_READ : (PROT_READ | PROT_WRITE),
+                         readonly ? MAP_PRIVATE : MAP_SHARED,
+                         pimpl_->handle_, p.offset );
+    if (data == MAP_FAILED) {
+        if (hint != 0) {
+            hint = 0;
+            goto try_again;
+        }
+        detail::cleanup_and_throw(*pimpl_, "failed mapping file");
+    }
+    pimpl_->data_ = reinterpret_cast<char*>(data);
+
+    return;
+}
+
+bool mapped_file_source::is_open() const
+{ return !!pimpl_ && pimpl_->handle_ != 0; }
+
+int mapped_file_source::alignment()
+{ return static_cast<int>(sysconf(_SC_PAGESIZE)); }
+
+#endif // #ifdef BOOST_IOSTREAMS_WINDOWS //-----------------------------------//
+
+//------------------Implementation of mapped_file-----------------------------//
+
+mapped_file::mapped_file(mapped_file_params p) { delegate_.open_impl(p); }
+
+mapped_file::mapped_file( const std::string& path, BOOST_IOS::openmode mode,
+                          size_type length, stream_offset offset )
+{ open(path, mode, length, offset); }
+
+void mapped_file::open(mapped_file_params p)
+{ delegate_.open_impl(p); }
+
+void mapped_file::open( const std::string& path, BOOST_IOS::openmode mode,
+                        size_type length, stream_offset offset )
+{
+    mapped_file_params p(path);
+    p.mode = mode;
+    p.length = length;
+    p.offset = offset;
+    open(p);
+}
+
+//------------------Implementation of mapped_file_sink------------------------//
+
+mapped_file_sink::mapped_file_sink(mapped_file_params p) { open(p); }
+
+mapped_file_sink::mapped_file_sink( const std::string& path,
+                                    size_type length, stream_offset offset )
+{ open(path, length, offset); }
+
+void mapped_file_sink::open(mapped_file_params p)
+{
+    p.mode |= BOOST_IOS::out;
+    p.mode &= ~BOOST_IOS::in;
+    mapped_file::open(p);
+}
+
+void mapped_file_sink::open( const std::string& path, size_type length,
+                             stream_offset offset )
+{
+    mapped_file_params p(path);
+    p.mode = BOOST_IOS::out;
+    p.length = length;
+    p.offset = offset;
+    open(p);
+}
+
+//----------------------------------------------------------------------------//
+
+} } // End namespaces iostreams, boost.
+
+#include <boost/iostreams/detail/config/enable_warnings.hpp>

@@ -1,124 +1,33 @@
-// from server: 98% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/SimJobStage.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_physics_726ea0334450c91e.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/SimJobStage.h"
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-#include "decomp.h"
-#include "v8kernel/Kernel.h"
-#include "v8world/Assembly2.h"
-#include "v8world/Primitive.h"
-
-#include <algorithm>
-#include <cstddef>
-#include <functional>
-
-namespace RBX {
-
-// FUNCTION: WEBSERVICE 0x1011c900
-void SimJobStage::onEdgeRemoving(Edge* e)
-{
-	e->removeFromKernel();
-
-	e->removeFromStage(this);
-}
-
-// FUNCTION: WEBSERVICE 0x1011c990
-SimJobStage::SimJobStage(IStage* upstream, World* world) : IWorldStage(upstream, new Kernel(this), world)
-{
-}
-
-// FUNCTION: WEBSERVICE 0x1011ca60
-void SimJobStage::notifyMovingPrimitives()
-{
-	std::for_each(mechanisms.begin(), mechanisms.end(), std::mem_fun(&Mechanism::notifyMovingPrimitives));
-}
-
-// FUNCTION: WEBSERVICE 0x1011cb40
-void SimJobStage::destroyMechanism(Mechanism* m)
-{
-	Mechanism* next = mechanisms.size() > 1 ? nextMechanism(mechanisms, m) : NULL;
-
-	MechanismTracker::transferTrackers(m, next);
-
-	mechanisms.erase(m->myIt);
-
-	delete m;
-}
-
-void SimJobStage::insertMechanism(Mechanism* mechanism)
-{
-	mechanisms.push_back(mechanism);
-
-	mechanism->myIt = --mechanisms.end();
-}
-
-// FUNCTION: WEBSERVICE 0x1011cba0
-void SimJobStage::onAssemblyAdded(Assembly* a)
-{
-	a->putInPipeline(this);
-
-	Mechanism* mechanism = new Mechanism();
-	mechanism->insertAssembly(a);
-
-	insertMechanism(mechanism);
-
-	a->putInKernel(getKernel());
-}
-
-// FUNCTION: WEBSERVICE 0x1011cc80
-void SimJobStage::onAssemblyRemoving(Assembly* a)
-{
-	a->removeFromKernel();
-
-	Mechanism* mechanism = a->getMechanism();
-
-	mechanism->removeAssembly(a);
-
-	if (mechanism->getAssemblies().size() == 0) {
-		destroyMechanism(mechanism);
-	}
-
-	a->removeFromStage(this);
-}
-
-// FUNCTION: WEBSERVICE 0x1011ccc0
-void SimJobStage::combineMechanisms(Edge* e)
-{
-	Assembly* a0 = e->getPrimitive(0)->getAssembly();
-	Assembly* a1 = e->getPrimitive(1)->getAssembly();
-
-	Mechanism* m0 = a0->getMechanism();
-	Mechanism* m1 = a1->getMechanism();
-
-	if (m0 != m1) {
-		Mechanism* bigger = m0->getAssemblies().size() > m1->getAssemblies().size() ? m0 : m1;
-		Mechanism* smaller = bigger == m0 ? m1 : m0;
-
-		bigger->absorb(smaller);
-
-		destroyMechanism(smaller);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1011cd20
-void SimJobStage::onEdgeAdded(Edge* e)
-{
-	e->putInPipeline(this);
-
-	if (e->getEdgeType() == Edge::JOINT) {
-		Assembly* a0 = e->getPrimitive(0)->getAssembly();
-		Assembly* a1 = e->getPrimitive(1)->getAssembly();
-
-		if (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this)) {
-			combineMechanisms(e);
-		}
-	}
-
-	e->putInKernel(getKernel());
-}
-
-} // namespace RBX
+#include "v8world/SimJobStage.cpp"

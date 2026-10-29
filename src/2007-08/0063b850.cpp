@@ -1,10 +1,11 @@
+// from server: 96% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPControls.cpp
+// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPControl.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPControls.cpp : implementation of the CXTPControls class.
+// XTPControl.cpp : implementation of the CXTPControl class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
 // (c)1998-2007 Codejock Software, All Rights Reserved.
@@ -26,24 +27,23 @@
 
 #include "stdafx.h"
 #include "Resource.h"
+#include "Common/Resource.h"
 
-#include "Common/XTPImageManager.h"
 #include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
 
-#include "XTPControls.h"
-#include "XTPCommandBar.h"
-#include "XTPPopupBar.h"
 #include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlPopup.h"
-#include "XTPControlComboBox.h"
-#include "XTPControlEdit.h"
-#include "XTPControlCustom.h"
-#include "XTPControlGallery.h"
-#include "XTPControlExt.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
+#include "XTPControls.h"
+#include "XTPMouseManager.h"
+#include "XTPCommandBar.h"
 #include "XTPPaintManager.h"
+#include "XTPToolbar.h"
+#include "XTPCommandBars.h"
+#include "XTPPopupBar.h"
+#include "XTPCustomizeTools.h"
+#include "XTPSoundManager.h"
+
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,1689 +51,1529 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CCommandBarControls
+IMPLEMENT_DYNAMIC(CXTPControlAction, CCmdTarget)
 
-IMPLEMENT_DYNCREATE(CXTPControls, CCmdTarget)
-IMPLEMENT_DYNCREATE(CXTPOriginalControls, CXTPControls)
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlAction
 
-CXTPControls::CXTPControls()
+CXTPControlAction::CXTPControlAction(CXTPControlActions* pActions)
+{
+
+	m_nId = 0;
+	m_nIconId = 0;
+	m_nHelpId = 0;
+	m_nTag = 0;
+	m_bVisible = TRUE;
+	m_bChecked = FALSE;
+	m_bEnabled = TRUE;
+
+	m_pTarget = NULL;
+
+	m_pActions = pActions;
+}
+
+CXTPControlAction::~CXTPControlAction()
+{
+	ASSERT(m_arrControls.GetSize() == 0);
+
+	if (m_pTarget)
+	{
+		CMDTARGET_RELEASE(m_pTarget);
+	}
+}
+
+void CXTPControlAction::AddControl(CXTPControl* pControl)
+{
+	for (int i = 0; i < m_arrControls.GetSize(); i++)
+	{
+		if (m_arrControls[i] == pControl)
+			return;
+	}
+
+	m_arrControls.Add(pControl);
+
+	pControl->m_bEnabled = -1;
+	pControl->m_bChecked = -1;
+	pControl->m_nId = m_nId;
+
+	pControl->m_strCaption.Empty();
+	pControl->m_strTooltipText.Empty();
+	pControl->m_strDescriptionText.Empty();
+	pControl->m_strCategory.Empty();
+	pControl->m_strShortcutText.Empty();
+	pControl->m_strKeyboardTip.Empty();
+}
+
+
+void CXTPControlAction::RemoveControl(CXTPControl* pControl)
+{
+	for (int i = 0; i < m_arrControls.GetSize(); i++)
+	{
+		if (m_arrControls[i] == pControl)
+		{
+			m_arrControls.RemoveAt(i);
+
+			pControl->m_bEnabled = TRUE;
+			pControl->m_bChecked = FALSE;
+			return;
+		}
+	}
+}
+
+void CXTPControlAction::OnChanged(int nProperty)
+{
+	for (int i = 0; i < m_arrControls.GetSize(); i++)
+	{
+		m_arrControls[i]->OnActionChanged(nProperty);
+	}
+}
+
+void CXTPControlAction::OnChanging(int nProperty)
+{
+	for (int i = 0; i < m_arrControls.GetSize(); i++)
+	{
+		m_arrControls[i]->OnActionChanging(nProperty);
+	}
+}
+
+void CXTPControlAction::RedrawControls()
+{
+	for (int i = 0; i < m_arrControls.GetSize(); i++)
+	{
+		m_arrControls[i]->RedrawParent();
+	}
+}
+
+void CXTPControlAction::RepositionControls()
+{
+	for (int i = 0; i < m_arrControls.GetSize(); i++)
+	{
+		m_arrControls[i]->DelayLayoutParent();
+	}
+}
+
+void CXTPControlAction::OnRemoved()
+{
+	while (m_arrControls.GetSize() > 0)
+	{
+		m_arrControls[0]->SetAction(NULL);
+	}
+}
+
+void CXTPControlAction::SetCaption(UINT nIDCaption)
+{
+	CString strCaption;
+	if (strCaption.LoadString(nIDCaption))
+	{
+		SetCaption(strCaption);
+	}
+}
+
+void CXTPControlAction::SetCaption(LPCTSTR lpszCaption)
+{
+	CString strCaption(lpszCaption);
+	int nShortCutPos = strCaption.Find ('\t');
+	if (nShortCutPos != -1)
+	{
+		strCaption.ReleaseBuffer(nShortCutPos);
+	}
+
+	if (m_strCaption != strCaption)
+	{
+		OnChanging(3);
+		m_strCaption = strCaption;
+		OnChanged(3);
+
+		RepositionControls();
+	}
+}
+
+void CXTPControlAction::SetEditHint(LPCTSTR lpszEditHint)
+{
+	if (m_strEditHint != lpszEditHint)
+	{
+		OnChanging(4);
+		m_strEditHint = lpszEditHint;
+		OnChanged(4);
+	}
+}
+
+void CXTPControlAction::SetPrompt(LPCTSTR lpszPrompt)
+{
+	if (lpszPrompt == NULL || lpszPrompt[0] == _T('\0'))
+		return;
+
+	if (_tcschr(lpszPrompt, _T('\n')) != NULL)
+	{
+		AfxExtractSubString(m_strTooltipText, lpszPrompt, 1);
+		AfxExtractSubString(m_strDescriptionText, lpszPrompt, 0);
+	}
+	else
+	{
+		m_strDescriptionText = m_strTooltipText = lpszPrompt;
+	}
+
+	if (m_strKeyboardTip.IsEmpty())
+	{
+		AfxExtractSubString(m_strKeyboardTip, lpszPrompt, 3);
+	}
+}
+
+BOOL CXTPControlAction::GetEnabled() const
+{
+	if (GetCommandBars()->IsCustomizeMode())
+		return TRUE;
+
+	return m_bEnabled;
+}
+
+CXTPCommandBars* CXTPControlAction::GetCommandBars() const
+{
+	return m_pActions->m_pCommandBars;
+}
+
+CXTPControl* CXTPControlAction::GetControl(int nIndex) const
+{
+	return m_arrControls[nIndex];
+}
+
+int CXTPControlAction::GetCount() const
+{
+	return (int)m_arrControls.GetSize();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlActions
+
+CXTPControlActions::CXTPControlActions(CXTPCommandBars* pCommandBars)
+{
+	m_pCommandBars = pCommandBars;
+
+}
+
+CXTPControlActions::~CXTPControlActions()
+{
+	RemoveAll();
+}
+
+CXTPControlAction* CXTPControlActions::GetAt(int nIndex) const
+{
+	return m_arrActions.GetAt(nIndex);
+}
+
+int CXTPControlActions::GetCount() const
+{
+	return (int)m_arrActions.GetSize();
+}
+
+CXTPControlAction* CXTPControlActions::FindAction(int nId) const
+{
+	if (nId <= 0 || nId >= 0xFFFFFFF)
+		return NULL;
+
+	int num = GetCount();
+	if (num == 0)
+		return NULL;
+
+	CXTPControlAction* const* lo = m_arrActions.GetData();
+	CXTPControlAction* const* hi = lo + (num - 1);
+	CXTPControlAction* const* mid;
+
+	while (lo <= hi)
+	{
+		int half = num / 2;
+		if (half)
+		{
+			mid = lo + (num & 1 ? half : (half - 1));
+
+			if ((*mid)->GetID() == nId)
+				return (*mid);
+
+			if ((*mid)->GetID() > nId)
+			{
+				hi = mid - 1;
+				num = num & 1 ? half : half - 1;
+			}
+			else
+			{
+				lo = mid + 1;
+				num = half;
+			}
+		}
+		else if (num)
+			return (*lo)->GetID() == nId ? (*lo) : NULL;
+		else
+			break;
+	}
+
+	return NULL;
+}
+
+void CXTPControlActions::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPControlAction* pAction = GetAt(i);
+
+		pAction->OnRemoved();
+		pAction->InternalRelease();
+	}
+	m_arrActions.RemoveAll();
+}
+
+void CXTPControlActions::Insert(CXTPControlAction* pAction)
+{
+	int nIndex = 0;
+	for (; nIndex < GetCount(); nIndex++)
+	{
+		if (GetAt(nIndex)->GetID() > pAction->GetID())
+			break;
+	}
+
+	m_arrActions.InsertAt(nIndex, pAction);
+}
+
+CXTPControlAction* CXTPControlActions::Add(int nId, CXTPControlAction* pAction)
+{
+	ASSERT(FindAction(nId) == NULL);
+
+	pAction->m_nId = nId;
+
+	CString strPrompt;
+	if (XTPResourceManager()->LoadString(&strPrompt, nId))
+	{
+		pAction->SetPrompt(strPrompt);
+	}
+
+	Insert(pAction);
+
+	return pAction;
+}
+
+CXTPControlAction* CXTPControlActions::Add(int nId)
+{
+	CXTPControlAction* pAction = FindAction(nId);
+	if (pAction)
+		return pAction;
+
+	pAction = new CXTPControlAction(this);
+	return Add(nId, pAction);
+}
+
+void CXTPControlActions::CreateFromMenu(CMenu* pMenu)
+{
+	int nCount = ::GetMenuItemCount(pMenu->m_hMenu);
+
+	for (int nIndex = 0; nIndex < nCount; nIndex++)
+	{
+		// Check to see if the item is a separator, we don't want
+		// to use GetMenuItemID(i) because it may not equal zero.
+
+		MENUITEMINFO info = { sizeof(MENUITEMINFO), MIIM_TYPE | MIIM_STATE};
+		::GetMenuItemInfo(pMenu->m_hMenu, nIndex, TRUE, &info);
+
+		int nID = (int)pMenu->GetMenuItemID(nIndex);
+		BOOL bSeparator = ((info.fType & MFT_SEPARATOR) == MFT_SEPARATOR) || (nID == 0);
+
+		if (!bSeparator)
+		{
+			CMenu* pPopupMenu = pMenu->GetSubMenu(nIndex);
+
+			CString strCaption;
+			XTPResourceManager()->GetMenuLocaleString(pMenu, nIndex, strCaption, MF_BYPOSITION);
+
+			if (pPopupMenu)
+			{
+				nID = 0;
+			}
+
+			int iPos = strCaption.Find(_T('\t'));
+			if (pPopupMenu &&  iPos > 0)
+			{
+				nID = _ttoi(strCaption.Mid(iPos + 1));
+				strCaption.ReleaseBuffer(iPos);
+			}
+
+			if (nID > 0)
+			{
+				CXTPControlAction* pAction = Add(nID);
+
+				pAction->SetCaption(strCaption);
+
+				CString strPrompt;
+				if (XTPResourceManager()->LoadString(&strPrompt, nID))
+				{
+					pAction->SetPrompt(strPrompt);
+				}
+			}
+
+			if (pPopupMenu)
+			{
+				CreateFromMenu(pPopupMenu);
+			}
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControl
+
+CXTPControl::CXTPControl()
 {
 	EnableAutomation();
 
 
+	m_nId = 0;
+	m_nIconId = 0;
+	m_nHelpId = 0;
+	m_nCustomIconId = 0;
+	m_nTag = 0;
+	m_nIndex = 0;
+	m_dwFlags = 0;
+	m_rcControl.SetRectEmpty();
+	m_rcRow.SetRectEmpty();
+
 	m_pParent = 0;
-	m_pCommandBars = 0;
+	m_pControls = 0;
+	m_bExpanded = FALSE;
 
-	m_pOriginalControls = 0;
-	m_bOriginalControls = FALSE;
+	m_bChecked = FALSE;
+	m_bEnabled = TRUE;
+	m_bBeginGroup = FALSE;
+	m_bEnabled = TRUE;
+	m_bTemporary = FALSE;
+	m_bSelected = FALSE;
+	m_bPressed = FALSE;
+
+	m_bWrap = FALSE;
+
+	m_dwHideFlags = xtpNoHide;
+	m_controlType = xtpControlError;
+
+	m_bDefaultItem = FALSE;
+	m_buttonStyle = xtpButtonAutomatic;
+	m_buttonCustomStyle = xtpButtonUndefined;
+	m_buttonRibbonStyle = xtpButtonAutomatic;
+
+	m_bCloseSubMenuOnClick = TRUE;
+
+	m_pRibbonGroup = NULL;
+
+	m_pAction = 0;
+
+	m_nWidth = 0;
+	m_nHeight = 0;
+	m_szIcon = CSize(0, 0);
+
+	m_nExecuteOnPressInterval = 0;
 }
 
-CXTPControls::~CXTPControls()
+CXTPControl::~CXTPControl()
 {
-	RemoveAll();
-
-	CMDTARGET_RELEASE(m_pOriginalControls);
-}
-
-CXTPOriginalControls::CXTPOriginalControls()
-{
-	m_bOriginalControls = TRUE;
-}
-
-CXTPCommandBars* CXTPControls::GetCommandBars() const
-{
-	return m_pParent ? m_pParent->GetCommandBars() : m_pCommandBars;
-}
-void CXTPControls::SetCommandBars(CXTPCommandBars* pCommandBars)
-{
-	m_pCommandBars = pCommandBars;
-}
-
-void CXTPControls::RefreshIndexes()
-{
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
+	if (m_pAction)
 	{
-		CXTPControl* pControl = GetAt(nIndex);
-		pControl->m_nIndex = nIndex;
-		pControl->m_pControls = this;
-		pControl->SetParent(m_pParent);
-	}
-	if (m_pParent)
-	{
-		m_pParent->OnControlsChanged();
-	}
-}
-
-void CXTPControls::SetParent(CXTPCommandBar* pParent)
-{
-	m_pParent = pParent;
-	if (GetCount() > 0) RefreshIndexes();
-}
-
-
-CXTPControl* CXTPControls::AddMenuItem(CMenu* pMenu, int nIndex)
-{
-	CMenu* pPopupMenu = pMenu->GetSubMenu(nIndex);
-
-	CXTPControl* pControl = NULL;
-	UINT nID = pMenu->GetMenuItemID(nIndex);
-
-	BOOL bDefaultItem = (int)::GetMenuDefaultItem(pMenu->m_hMenu, TRUE, GMDI_USEDISABLED) == nIndex;
-
-	if (nID == AFX_IDM_FIRST_MDICHILD)
-		return NULL;
-
-	CString strCaption;
-	XTPResourceManager()->GetMenuLocaleString(pMenu, nIndex, strCaption, MF_BYPOSITION);
-
-	if (pPopupMenu)
-	{
-		int iPos = strCaption.Find(_T('\t'));
-		if (pPopupMenu &&  iPos > 0)
-		{
-			nID = _ttoi(strCaption.Mid(iPos + 1));
-			if (nID > 0) strCaption.ReleaseBuffer(iPos);
-		}
-	}
-
-
-	CWnd* pSite = m_pCommandBars ? m_pCommandBars->GetSite() :
-		m_pParent ? m_pParent->GetOwnerSite() : NULL;
-
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-
-	XTPControlType controlType = pPopupMenu ? xtpControlPopup : xtpControlButton;
-
-	XTPButtonStyle buttonStyle = xtpButtonAutomatic;
-
-	XTP_COMMANDBARS_CREATECONTROL cs;
-
-	if (pSite)
-	{
-		cs.nID = nID;
-		cs.pControl = NULL;
-		cs.bToolBar = FALSE;
-		cs.pCommandBar = m_pParent;
-		cs.pMenu = pMenu;
-		cs.nIndex = nIndex;
-		cs.strCaption = strCaption;
-		cs.controlType = controlType;
-		cs.buttonStyle = buttonStyle;
-
-		if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
-		{
-			pControl = cs.pControl;
-			controlType = cs.controlType;
-			strCaption = cs.strCaption;
-			nID = cs.nID;
-			buttonStyle = cs.buttonStyle;
-		}
-	}
-
-	if (pControl == NULL)
-	{
-		switch (controlType)
-		{
-			case xtpControlButton:
-				if (nID == XTP_ID_WINDOWLIST) pControl = (CXTPControl*)CXTPControlWindowList::CreateObject();
-				else if (nID == XTP_ID_WORKSPACE_ACTIONS) pControl = (CXTPControl*)CXTPControlWorkspaceActions::CreateObject();
-				else if (nID == ID_VIEW_TOOLBAR) pControl = (CXTPControl*)CXTPControlToolbars::CreateObject();
-				else if (nID == ID_OLE_VERB_FIRST && strCaption == _T("<<OLE VERBS GO HERE>>")) pControl = (CXTPControl*)CXTPControlOleItems::CreateObject();
-				else if (nID == ID_FILE_MRU_FILE1) pControl = (CXTPControl*)CXTPControlRecentFileList::CreateObject();
-				else pControl = (CXTPControl*)CXTPControlButton::CreateObject();
-				break;
-
-			case xtpControlComboBox:
-				pControl = (CXTPControl*)CXTPControlComboBox::CreateObject();
-				break;
-
-			case xtpControlEdit:
-				pControl = (CXTPControl*)CXTPControlEdit::CreateObject();
-				break;
-			case xtpControlLabel:
-				pControl = (CXTPControl*)CXTPControlLabel::CreateObject();
-				break;
-
-			case xtpControlCheckBox:
-				pControl = (CXTPControl*)CXTPControlCheckBox::CreateObject();
-				break;
-
-			case xtpControlRadioButton:
-				pControl = (CXTPControl*)CXTPControlRadioButton::CreateObject();
-				break;
-
-			case xtpControlGallery:
-				pControl = (CXTPControl*)CXTPControlGallery::CreateObject();
-				break;
-
-			case xtpControlPopup:
-			case xtpControlSplitButtonPopup:
-			case xtpControlButtonPopup:
-				pControl = CXTPControlPopup::CreateControlPopup(controlType);
-				CXTPPopupBar* pPopupBar = 0;
-				CString strCaptionPopup(strCaption);
-				CXTPPaintManager::StripMnemonics(strCaptionPopup);
-
-				if (pSite)
-				{
-					XTP_COMMANDBARS_CREATEBAR cb;
-					ZeroMemory(&cb, sizeof(cb));
-					cb.bPopup = TRUE;
-					cb.lpcstrCaption = strCaptionPopup;
-					cb.nID = nID;
-
-					if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cb) != 0)
-					{
-						pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cb.pCommandBar);
-						strCaptionPopup = cb.lpcstrCaption;
-					}
-				}
-
-				if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
-				pPopupBar->SetTitle(strCaptionPopup);
-
-
-
-				CMenu menu;
-				if (!pPopupMenu && nID > 0 && menu.LoadMenu(nID))
-				{
-					pPopupMenu = menu.GetSubMenu(0);
-				}
-				if (pPopupMenu) pPopupBar->LoadMenu(pPopupMenu, FALSE);
-
-				((CXTPControlPopup*)pControl)->m_pCommandBar = pPopupBar;
-
-				break;
-		}
-
-		ASSERT(pControl);
-		if (!pControl)
-			return NULL;
-		pControl->m_controlType = controlType;
-		pControl->SetStyle(buttonStyle);
-	}
-
-	CXTPControlAction* pAction = pCommandBars->FindAction(nID);
-
-	if (pControl->GetAction() != NULL)
-	{
-
-	}
-	else if (pAction || (pCommandBars->IsActionsEnabled() && nID > 0 && nID < 0xFFFFFFF))
-	{
-		if (pAction == NULL) pAction = pCommandBars->CreateAction(nID);
-		pControl->SetAction(pAction);
-
-		if (pAction->m_strCaption.IsEmpty())
-			pAction->SetCaption(strCaption);
-	}
-	else
-	{
-		pControl->SetID(nID);
-		pControl->SetCaption(strCaption);
-	}
-
-	if (bDefaultItem) pControl->SetItemDefault(bDefaultItem);
-
-	m_arrControls.InsertAt(GetCount(), pControl);
-	OnControlAdded(pControl);
-
-	if (pSite)
-	{
-		cs.pControl = pControl;
-		pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
-	}
-
-
-	return pControl;
-}
-
-void CXTPControls::OnControlAdded(CXTPControl* /*pControl*/)
-{
-	RefreshIndexes();
-}
-
-void CXTPControls::OnControlRemoved(CXTPControl* pControl)
-{
-	pControl->m_pControls = NULL;
-	pControl->OnRemoved();
-
-	pControl->m_pParent = NULL;
-
-	RefreshIndexes();
-}
-
-
-CXTPControl* CXTPControls::Add(XTPControlType controlType, int nId, LPCTSTR strParameter, int nBefore, BOOL bTemporary)
-{
-	CXTPControl* pControl = NULL;
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-
-	switch (controlType)
-	{
-		case xtpControlCustom:
-			return Add(new CXTPControlCustom(), nId, strParameter, nBefore, bTemporary);
-
-		case xtpControlButton:
-			if (nId == XTP_ID_WINDOWLIST) pControl = (CXTPControl*)CXTPControlWindowList::CreateObject();
-			else if (nId == XTP_ID_WORKSPACE_ACTIONS) pControl = (CXTPControl*)CXTPControlWorkspaceActions::CreateObject();
-			else if (nId == ID_VIEW_TOOLBAR) pControl = (CXTPControl*)CXTPControlToolbars::CreateObject();
-			else if (nId == XTP_ID_FILE_MRU) pControl = (CXTPControl*)CXTPControlRecentFileList::CreateObject();
-			else
-			pControl = (CXTPControl*)CXTPControlButton::CreateObject();
-			break;
-
-		case xtpControlComboBox:
-			pControl = (CXTPControl*)CXTPControlComboBox::CreateObject();
-			break;
-
-		case xtpControlLabel:
-			pControl = (CXTPControl*)CXTPControlLabel::CreateObject();
-			break;
-
-		case xtpControlCheckBox:
-			pControl = (CXTPControl*)CXTPControlCheckBox::CreateObject();
-			break;
-
-		case xtpControlRadioButton:
-			pControl = (CXTPControl*)CXTPControlRadioButton::CreateObject();
-			break;
-
-		case xtpControlGallery:
-			pControl = (CXTPControl*)CXTPControlGallery::CreateObject();
-			break;
-
-		case xtpControlEdit:
-			pControl = (CXTPControl*)CXTPControlEdit::CreateObject();
-			break;
-
-		case xtpControlPopup:
-		case xtpControlSplitButtonPopup:
-		case xtpControlButtonPopup:
-			CXTPControlPopup* pControlPopup = (CXTPControlPopup*)CXTPControlPopup::CreateObject();
-			CXTPPopupBar* pPopupBar = 0;
-
-			CMenu menu;
-			if (nId > 0)
-			{
-				CString strCaption;
-				CMenu* pPopupMenu = NULL;
-
-				if (menu.LoadMenu(nId))
-				{
-					pPopupMenu = menu.GetSubMenu(0);
-					XTPResourceManager()->GetMenuLocaleString(&menu, 0, strCaption, MF_BYPOSITION);
-				}
-
-				CWnd* pSite = m_pCommandBars ? m_pCommandBars->GetSite() :
-					m_pParent ? m_pParent->GetOwnerSite() : NULL;
-
-				if (pSite)
-				{
-					XTP_COMMANDBARS_CREATEBAR cs;
-					ZeroMemory(&cs, sizeof(cs));
-					cs.bPopup = TRUE;
-					cs.lpcstrCaption = strCaption;
-					cs.nID = nId;
-
-					if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cs) != 0)
-					{
-						pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cs.pCommandBar);
-					}
-				}
-				if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
-				pControlPopup->m_strCaption = strCaption;
-				if (pPopupMenu)
-				{
-					pPopupBar->LoadMenu(pPopupMenu);
-				}
-
-			}
-
-			if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
-			pControlPopup->m_pCommandBar = pPopupBar;
-
-			pControl = pControlPopup;
-			break;
-	}
-
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-	pControl->m_controlType = controlType;
-
-	return Add(pControl, nId, strParameter, nBefore, bTemporary);
-}
-
-CXTPControl* CXTPControls::Add(CXTPControl* pControl, int nId, LPCTSTR strParameter, int nBefore, BOOL bTemporary)
-{
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	pControl->m_strParameter = strParameter;
-	pControl->m_bTemporary = bTemporary;
-
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-
-	CXTPControlAction* pAction = pCommandBars->FindAction(nId);
-
-	if (pControl->GetAction() != NULL)
-	{
-
-	}
-	else if (pAction != NULL)
-	{
-		pControl->SetAction(pAction);
-	}
-	else if (pCommandBars->IsActionsEnabled() && nId > 0 && nId < 0xFFFFFFF)
-	{
-		if ((nId >= XTP_COMMANDBARS_RESOURCE_FIRST && nId <= XTP_COMMANDBARS_RESOURCE_LAST)
-			|| (nId >= 35000 && nId <= 35003))
-		{
-			if (!pAction)
-			{
-				pControl->SetID(nId);
-			}
-		}
-		else
-		{
-			pAction = pCommandBars->CreateAction(nId);
-			pControl->SetAction(pAction);
-		}
-	}
-	else
-	{
-		pControl->SetID(nId);
-	}
-
-	return InsertAt(pControl, nBefore);
-}
-
-CXTPControl* CXTPControls::InsertAt(CXTPControl* pControl, int nBefore)
-{
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = GetCount();
-
-	ASSERT(pControl);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	OnControlAdded(pControl);
-
-	return pControl;
-}
-
-CXTPControl* CXTPControls::Add(CXTPControl* pControl)
-{
-	return InsertAt(pControl, -1);
-}
-
-CXTPControl* CXTPControls::AddClone(CXTPControl* pControl, int nBefore, BOOL bRecursive)
-{
-	CXTPControl* pClone = (CXTPControl*)pControl->GetRuntimeClass()->CreateObject();
-	ASSERT(pClone);
-	if (!pClone)
-		return NULL;
-
-	InsertAt(pClone, nBefore);
-	pClone->Copy(pControl, bRecursive);
-
-	return pClone;
-}
-
-
-
-void CXTPControls::RemoveAll()
-{
-	for (int nIndex = GetCount() - 1; nIndex >= 0; nIndex--)
-	{
-		CXTPControl* pControl = GetAt(nIndex);
-
-		if (OnControlRemoving(pControl))
-			continue;
-
-		m_arrControls.RemoveAt(nIndex);
-
-		OnControlRemoved(pControl);
-
-		pControl->InternalRelease();
+		m_pAction->RemoveControl(this);
+		m_pAction = NULL;
 	}
 }
 
-CXTPControl* CXTPControls::GetFirst() const
+void CXTPControl::SetAction(CXTPControlAction* pAction)
 {
-	return GetCount() > 0 ? GetAt(0) : NULL;
-}
-
-void CXTPControls::GetNext(CXTPControl*& pControl) const
-{
-	pControl = (!pControl || pControl->m_nIndex >= GetCount() - 1) ? 0 : GetAt(pControl->m_nIndex + 1);
-}
-
-CXTPControl* CXTPControls::FindControl(int nId) const
-{
-	return FindControl(xtpControlError, nId, FALSE, FALSE);
-}
-
-CXTPControl* CXTPControls::FindControl(XTPControlType type, int nId, BOOL bVisible, BOOL bRecursive) const
-{
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
+	if (m_pAction)
 	{
-		CXTPControl* pControl = GetAt(nIndex);
-		if ((type == xtpControlError || pControl->GetType() == type) &&
-			(!bVisible || pControl->IsVisible()) &&
-			(nId == -1 || nId == pControl->GetID()))
-			return pControl;
-
-		if (bRecursive)
-		{
-			CXTPCommandBar* pBar = pControl->GetCommandBar();
-			if (pBar)
-			{
-				pControl = pBar->GetControls()->FindControl(type, nId, bVisible, bRecursive);
-				if (pControl != NULL) return pControl;
-			}
-		}
+		m_pAction->RemoveControl(this);
+		m_pAction = NULL;
 	}
-	return NULL;
-}
 
-BOOL CXTPControls::OnControlRemoving(CXTPControl* /*pControl*/)
-{
-	return FALSE;
-}
-
-void CXTPControls::Remove(CXTPControl* pControl)
-{
-	if (pControl && pControl->m_pControls == this)
+	if (pAction)
 	{
-		if (pControl->GetSelected())
-			m_pParent->SetSelected(-1);
-
-		ASSERT(pControl->m_pControls == this);
-
-		//Ensure the index falls within the correct range.
-		if ((pControl->m_nIndex >= 0) && (pControl->m_nIndex < GetCount()))
-		{
-			ASSERT(m_arrControls[pControl->m_nIndex] == pControl);
-
-			if (OnControlRemoving(pControl))
-				return;
-
-			m_arrControls.RemoveAt(pControl->m_nIndex);
-
-			OnControlRemoved(pControl);
-
-			pControl->SetParent(NULL);
-			pControl->InternalRelease();
-		}
+		m_pAction = pAction;
+		m_pAction->AddControl(this);
 	}
 }
 
-void CXTPControls::Remove(int nIndex)
+void CXTPControl::OnRemoved()
 {
-	CXTPControl* pControl = GetAt(nIndex);
-	Remove(pControl);
+	SetAction(NULL);
 }
 
-CXTPControl* CXTPControls::SetControlType(int nIndex, XTPControlType type)
+XTPButtonStyle CXTPControl::GetStyle() const
 {
-	return SetControlType(GetAt(nIndex), type);
+	return m_buttonCustomStyle != xtpButtonUndefined ? m_buttonCustomStyle :
+		m_buttonStyle != xtpButtonAutomatic ? m_buttonStyle :
+	m_buttonRibbonStyle != xtpButtonAutomatic || !m_pParent ? m_buttonRibbonStyle : m_pParent->GetDefaultButtonStyle();
 }
 
-
-CXTPControl* CXTPControls::SetControlType(CXTPControl* pControl, XTPControlType type)
+CSize CXTPControl::GetSize(CDC* pDC)
 {
-	ASSERT(pControl->m_pControls == this);
-	ASSERT(pControl);
-
-	if (IsPopupControlType(pControl->GetType()) && IsPopupControlType(type))
-	{
-		pControl->m_controlType = type;
-		return pControl;
-	}
-
-	CXTPControl* pNew = Add(type, 0, _T(""), pControl->GetIndex() + 1, FALSE);
-	pNew->CXTPControl::Copy(pControl, FALSE);
-	pNew->m_controlType = type;
-
-	Remove(pControl);
-
-	return pNew;
-
+	return GetPaintManager()->DrawControl(pDC, this, FALSE);
 }
 
-
-long CXTPControls::GetNext(long nIndex, int nDirection, BOOL bKeyboard, BOOL bSkipTemporary, BOOL bSkipCollapsed) const
+void CXTPControl::Draw(CDC* pDC)
 {
-	ASSERT(nDirection == +1 || nDirection == -1);
-	if (GetCount() == 0) return -1;
-
-	long nNext = nIndex + nDirection;
-
-	if (nDirection == -1 && nIndex == -1)
-	{
-		nNext = GetCount() - 1;
-	}
-
-	DWORD nSkipVisible = xtpHideScroll | (!bSkipCollapsed ? xtpHideExpand : 0);
-
-	BOOL bCircle = FALSE;
-
-	while (nNext != nIndex)
-	{
-		if (nNext >= GetCount())
-		{
-			if ((nIndex == -1 && nDirection == +1) || bCircle) return -1;
-			nNext = 0;
-			bCircle = TRUE;
-		}
-		if (nNext < 0)
-		{
-			if ((nIndex == -1 && nDirection == -1) || bCircle) return -1;
-			nNext = GetCount() - 1;
-			bCircle = TRUE;
-		}
-
-		if ((GetAt(nNext)->IsVisible(nSkipVisible)) && (!bKeyboard || !(GetAt(nNext)->m_dwFlags & xtpFlagSkipFocus)))
-		{
-			if (!bSkipTemporary || !GetAt(nNext)->m_bTemporary)
-				return nNext;
-		}
-		nNext += nDirection;
-	}
-	return nNext;
+	GetPaintManager()->DrawControl(pDC, this);
 }
 
-CXTPControl* CXTPControls::HitTest(CPoint point) const
+void CXTPControl::DelayRedrawParent()
 {
-	for (int i = 0; i < GetCount(); i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-
-		if (pControl->IsVisible())
-		{
-			if (pControl->m_rcControl.PtInRect(point))
-				return pControl;
-		}
-
-	}
-	return NULL;
+	if (m_pParent && IsWindow(m_pParent->GetSafeHwnd()))
+		((CXTPCommandBar*)m_pParent)->DelayRedraw();
 }
 
-
-struct CXTPControls::XTPBUTTONINFO  // struct for CalcDynamicSize ;
+void CXTPControl::DelayLayoutParent()
 {
-	CRect rcControl;
-	CRect rcRow;
-	CSize szControl;
-	BOOL bVisible;
-	BOOL bWrap;
-	BOOL bHide;
-	BOOL bBeginGroup;
-	XTPButtonStyle buttonStyle;
-	CXTPControl* pControl;
-
-	void EnsureButtonSize(CDC* pDC)
-	{
-		if (buttonStyle != pControl->GetStyle())
-		{
-			buttonStyle = pControl->GetStyle();
-			szControl = pControl->GetSize(pDC);
-		}
-	}
-	void Attach(CDC* pDC, CXTPControl* p)
-	{
-		pControl = p;
-		bHide = bWrap = FALSE;
-		rcRow.SetRectEmpty();
-
-		szControl = pControl->GetSize(pDC);
-		rcControl = pControl->GetRect();
-		bBeginGroup = pControl->GetBeginGroup();
-		bVisible = pControl->IsVisible(xtpHideWrap);
-		buttonStyle = pControl->GetStyle();
-	}
-
-	void Detach()
-	{
-		pControl->SetHideWrap(bHide);
-		pControl->SetRowRect(rcRow);
-		if (!bHide)
-		pControl->SetRect(rcControl);
-		pControl->SetWrap(bWrap);
-	}
-
-};
-
-CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, const CSize& szSeparators, BOOL bVert)
-{
-
-	CPoint cur(0, 0);
-	CSize sizeResult(0, 0);
-	int nRow = 0;
-	BOOL bFirst = TRUE;
-	for (int i = 0; i < GetCount(); i++)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-
-		if (!pControl->bVisible || pControl->bHide)
-			continue;
-
-		CSize szControl = pControl->szControl;
-
-		if (bVert)
-		{
-			if (pControl->bBeginGroup && !pControl->bWrap && !bFirst)
-				cur.y += szSeparators.cx;
-
-
-			if (pControl->bWrap)
-			{
-				cur.x -= nRow + (pControl->bBeginGroup ? szSeparators.cy : 0);
-				nRow = cur.y = 0;
-			}
-			nRow = max(nRow, szControl.cx);
-
-			pControl->rcControl.SetRect(cur.x - szControl.cx, cur.y, cur.x , cur.y + szControl.cy);
-
-			sizeResult.cx = max(szControl.cx - cur.x, sizeResult.cx);
-			sizeResult.cy = max(cur.y + szControl.cy, sizeResult.cy);
-
-			cur.y += szControl.cy;
-
-		}
-		else
-		{
-
-			if (pControl->bBeginGroup && !pControl->bWrap && !bFirst)
-				cur.x += szSeparators.cx;
-
-			if (pControl->bWrap)
-			{
-				cur.y += nRow + (pControl->bBeginGroup ? szSeparators.cy : 0);
-				nRow = cur.x = 0;
-			}
-			nRow = max(nRow, szControl.cy);
-
-			pControl->rcControl.SetRect(cur.x, cur.y, cur.x + szControl.cx, cur.y + szControl.cy);
-
-			sizeResult.cx = max(cur.x + szControl.cx, sizeResult.cx);
-			sizeResult.cy = max(cur.y + szControl.cy, sizeResult.cy);
-
-			cur.x += szControl.cx;
-		}
-		bFirst = FALSE;
-	}
-	return sizeResult;
+	if (m_pParent) m_pParent->DelayLayout();
 }
 
-int CXTPControls::_WrapToolBar(XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode, const CSize& szSeparators)
+void CXTPControl::RedrawParent(BOOL bAnimate)
 {
-	int nResult = 0, x = 0;
-	BOOL bVert = dwMode & LM_VERTDOCK;
-	BOOL bFirst = TRUE;
-	int nSeparator = bVert ? szSeparators.cy : szSeparators.cx;
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-		pControl->bHide = FALSE;
-		pControl->bWrap = FALSE;
-
-		if (!pControl->bVisible)
-			continue;
-
-		int dx = bVert ? pControl->szControl.cy : pControl->szControl.cx;
-
-		if (pControl->bBeginGroup && !bFirst)
-			dx += nSeparator;
-
-		BOOL bWrap = (x + dx > nWidth) || ((dwMode & LM_POPUP) && pControl->bBeginGroup && !bFirst);
-
-		BOOL bRowWrap = FALSE;
-		if (pControl->pControl->GetFlags() & xtpFlagWrapRow)
-			bRowWrap = TRUE;
-
-		if (bRowWrap)
-		{
-			x = bVert ? pData[i].szControl.cy : pData[i].szControl.cx;
-			pControl->bWrap = TRUE;
-			nResult++;
-		}
-		else if (bWrap)
-		{
-			if (dwMode & LM_HIDEWRAP && !bFirst)
-			{
-				BOOL bWrapRowFound = FALSE;
-				for (int j = i; j < GetCount(); j++)
-				{
-					if (pData[j].pControl->GetFlags() & xtpFlagWrapRow)
-					{
-						bWrapRowFound = TRUE;
-						i = j - 1;
-						break;
-					}
-					pData[j].bHide = TRUE;
-				}
-				dwMode |= LM_STRETCH;
-
-				if (bWrapRowFound)
-					continue;
-
-				return nResult;
-			}
-
-			for (int j = i; j >= 0 && pData[j].bWrap == FALSE; j--)
-			{
-				// Find last separator
-				if (pData[j].bBeginGroup && pData[j].bVisible)
-				{
-					i = j;
-					break;
-				}
-			}
-			x = bVert ? pData[i].szControl.cy : pData[i].szControl.cx;
-
-			pData[i].bWrap = TRUE;
-			if (!(dwMode & LM_HIDEWRAP)) dwMode |= LM_STRETCH;
-			nResult++;
-		}
-		else
-			x += dx;
-
-		bFirst = FALSE;
-
-	}
-	return nResult + 1;
-}
-
-void  CXTPControls::_SizePopupToolBar(XTPBUTTONINFO* pData, DWORD dwMode, const CSize& szSeparators)
-{
-	CSize sizeMax, sizeMin, sizeMid;
-
-	// Wrap ToolBar vertically
-	_WrapToolBar(pData, 0, dwMode, szSeparators);
-	sizeMin = _CalcSize(pData, szSeparators);
-
-	// Wrap ToolBar horizontally
-	_WrapToolBar(pData, 32767, dwMode, szSeparators);
-	sizeMax = _CalcSize(pData, szSeparators);
-
-	while (sizeMin.cx < sizeMax.cx)
-	{
-		sizeMid.cx = (sizeMin.cx + sizeMax.cx) / 2;
-
-		_WrapToolBar(pData, sizeMid.cx, dwMode, szSeparators);
-		sizeMid = _CalcSize(pData, szSeparators);
-
-		if (sizeMid.cy > sizeMid.cx)
-		{
-			if (sizeMin == sizeMid)
-				return;
-
-			sizeMin = sizeMid;
-		}
-		else if (sizeMid.cy < sizeMid.cx)
-			sizeMax = sizeMid;
-		else
-			return;
-	}
-}
-
-void  CXTPControls::_SizeFloatableBar(XTPBUTTONINFO* pData, int nLength, DWORD dwMode, const CSize& szSeparators)
-{
-	if (! (dwMode & LM_LENGTHY))
-	{
-		int nMin, nMax, nTarget, nCurrent, nMid;
-
-		// Wrap ToolBar as specified
-		nMax = nLength;
-		nTarget = _WrapToolBar(pData, nMax, dwMode, szSeparators);
-
-		// Wrap ToolBar vertically
-		nMin = 0;
-		nCurrent = _WrapToolBar(pData, nMin, dwMode, szSeparators);
-
-		if (nCurrent != nTarget)
-		{
-			while (nMin < nMax)
-			{
-				nMid = (nMin + nMax) / 2;
-				nCurrent = _WrapToolBar(pData, nMid, dwMode, szSeparators);
-
-				if (nCurrent == nTarget)
-					nMax = nMid;
-				else
-				{
-					if (nMin == nMid)
-					{
-						_WrapToolBar(pData, nMax, dwMode, szSeparators);
-						break;
-					}
-					nMin = nMid;
-				}
-			}
-		}
-		CSize size = _CalcSize(pData, szSeparators);
-		_WrapToolBar(pData, size.cx, dwMode, szSeparators);
-	}
-	else
-	{
-		CSize sizeMax, sizeMin, sizeMid;
-
-		// Wrap ToolBar vertically
-		_WrapToolBar(pData, 0, dwMode, szSeparators);
-		sizeMin = _CalcSize(pData, szSeparators);
-
-		// Wrap ToolBar horizontally
-		_WrapToolBar(pData, 32767, dwMode, szSeparators);
-		sizeMax = _CalcSize(pData, szSeparators);
-
-		while (sizeMin.cx < sizeMax.cx)
-		{
-			sizeMid.cx = (sizeMin.cx + sizeMax.cx) / 2;
-			_WrapToolBar(pData, sizeMid.cx, dwMode, szSeparators);
-			sizeMid = _CalcSize(pData, szSeparators);
-
-			if (nLength < sizeMid.cy)
-			{
-				if (sizeMin == sizeMid)
-				{
-					_WrapToolBar(pData, sizeMax.cx, dwMode, szSeparators);
-					return;
-				}
-				sizeMin = sizeMid;
-			}
-			else if (nLength > sizeMid.cy)
-				sizeMax = sizeMid;
-			else
-				return;
-		}
-	}
-}
-void CXTPControls::_CenterControlsInRow(XTPBUTTONINFO* pData, int nFirst, int nLast, int nHeight, BOOL bVert, CSize sizeResult, CRect rcBorder)
-{
-	for (int i = nFirst; i < nLast; i++)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-		CRect rc = pControl->rcControl;
-
-		if (bVert)
-		{
-			pControl->rcRow.SetRect(rc.right - nHeight, rcBorder.top, rc.right, sizeResult.cy + rcBorder.top);
-			if (!(m_pParent->GetFlags() & xtpFlagSmartLayout)) pControl->rcControl.OffsetRect(-(nHeight - rc.Width())/2, 0);
-		}
-		else
-		{
-			pControl->rcRow.SetRect(rcBorder.left, rc.top, sizeResult.cx + rcBorder.left, rc.top + nHeight);
-
-			if (!(m_pParent->GetFlags() & xtpFlagSmartLayout)) pControl->rcControl.OffsetRect(0, (nHeight - rc.Height())/2);
-		}
-	}
-
-}
-
-void CXTPControls::_AdjustBorders(XTPBUTTONINFO* pData, CSize& sizeResult, DWORD dwMode, CRect rcBorder)
-{
-	if (dwMode & LM_COMMIT)
-	{
-		BOOL bVert = dwMode & LM_VERTDOCK;
-		int nFirstInRow = 0;
-		int nHeight = 0;
-		int nBarHeight = 0;
-
-		for (int i = 0; i < GetCount(); i++)
-		{
-			XTPBUTTONINFO* pControl = &pData[i];
-
-			if (!pControl->bVisible || pControl->bHide)
-				continue;
-
-			pControl->rcControl.OffsetRect(rcBorder.left, rcBorder.top);
-			if (bVert) pControl->rcControl.OffsetRect(sizeResult.cx, 0);
-
-			if (pControl->bWrap)
-			{
-				_CenterControlsInRow(pData, nFirstInRow, i, nHeight, bVert, sizeResult, rcBorder);
-				nFirstInRow = i;
-				nHeight = 0;
-			}
-
-			nBarHeight = bVert ? sizeResult.cx : sizeResult.cy;
-			nHeight = max(nHeight, bVert ? pControl->rcControl.Width() : pControl->rcControl.Height());
-		}
-		_CenterControlsInRow(pData, nFirstInRow, GetCount(), nFirstInRow == 0 ? nBarHeight : nHeight, bVert, sizeResult, rcBorder);
-	}
-
-	sizeResult += CSize(rcBorder.left + rcBorder.right, rcBorder.top + rcBorder.bottom);
-}
-
-void CXTPControls::_MoveRightAlligned(XTPBUTTONINFO* pData, CSize sizeResult, CRect rcBorder, DWORD dwMode)
-{
-	BOOL bVert = dwMode & LM_VERTDOCK;
-	int nRight = bVert ? sizeResult.cy - rcBorder.bottom : sizeResult.cx - rcBorder.right;
-
-	int i;
-	for (i = GetCount() - 1; i >= 0; i--)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-
-		if (!pControl->bVisible || pControl->bHide)
-			continue;
-
-		if (!(GetAt(i)->m_dwFlags & xtpFlagRightAlign))
-			break;
-
-		CRect rc = pControl->rcControl;
-		if (!bVert)
-		{
-			if (nRight - rc.Width() < rcBorder.right)
-				break;
-
-			pControl->rcControl.SetRect(nRight - rc.Width(), rc.top, nRight, rc.bottom);
-			nRight -= rc.Width();
-		}
-		else
-		{
-			if (nRight - rc.Height() < rcBorder.top)
-				break;
-
-			pControl->rcControl.SetRect(rc.left, nRight - rc.Height(), rc.right, nRight);
-			nRight -= rc.Height();
-		}
-		if (pControl->bWrap)
-			break;
-	}
-
-	int nStretchAvail = -1;
-	int nStretchedCount = 0;
-	BOOL bSkipRightAligned = FALSE;
-
-	nRight = bVert ? sizeResult.cy - rcBorder.bottom : sizeResult.cx - rcBorder.right;
-	int nLastInRow = GetCount() - 1;
-
-	for (i = GetCount() - 1; i >= 0; i--)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-
-		if (pControl->bVisible && !pControl->bHide)
-		{
-			if (!bSkipRightAligned && (GetAt(i)->m_dwFlags & xtpFlagRightAlign))
-			{
-				nRight = pControl->rcControl.left;
-				nLastInRow = i - 1;
-			}
-			else if (GetAt(i)->m_dwFlags & xtpFlagControlStretched)
-			{
-				nStretchedCount++;
-				bSkipRightAligned = TRUE;
-			}
-
-			if ((nStretchAvail == -1) && (nLastInRow >= i))
-			{
-				nStretchAvail = nRight - (!bVert ? pControl->rcControl.right : pControl->rcControl.bottom);
-			}
-		}
-
-		if ((pControl->bVisible && !pControl->bHide && pControl->bWrap) || (i == 0))
-		{
-			if (nStretchedCount > 0 && nStretchAvail > 0)
-			{
-				int nOffset = 0;
-				for (int j = i; j <= nLastInRow; j++)
-				{
-					pControl = &pData[j];
-
-					if (!pControl->bVisible || pControl->bHide)
-						continue;
-
-					CRect rc = pControl->rcControl;
-					if (!bVert)
-						pControl->rcControl.SetRect(nOffset + rc.left, rc.top, nOffset + rc.right, rc.bottom);
-					else
-						pControl->rcControl.SetRect(rc.left, nOffset + rc.top, rc.right, nOffset + rc.bottom);
-
-					if ((GetAt(j)->m_dwFlags & xtpFlagControlStretched) && (nStretchedCount > 0))
-					{
-						int nStretchedOffset = nStretchAvail / nStretchedCount;
-						if (!bVert)
-							pControl->rcControl.right += nStretchedOffset;
-						else
-							pControl->rcControl.bottom += nStretchedOffset;
-
-						nStretchAvail -= nStretchedOffset;
-						nStretchedCount--;
-						nOffset += nStretchedOffset;
-					}
-				}
-
-			}
-
-			nRight = bVert ? sizeResult.cy - rcBorder.bottom : sizeResult.cx - rcBorder.right;
-			bSkipRightAligned = TRUE;
-			nLastInRow = i - 1;
-			nStretchAvail = -1;
-			nStretchedCount = 0;
-		}
-	}
-}
-
-int CXTPControls::GetVisibleCount(BOOL bIgnoreWraps) const
-{
-	DWORD nFlags = bIgnoreWraps ? 0 : xtpHideWrap;
-	int nCount = 0;
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (GetAt(i)->IsVisible(nFlags)) nCount++;
-	}
-	return nCount;
-}
-
-CXTPControl* CXTPControls::GetVisibleAt(int nIndex, BOOL bIgnoreWraps) const
-{
-	DWORD nFlags = bIgnoreWraps ? 0 : xtpHideWrap;
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (GetAt(i)->IsVisible(nFlags))
-		{
-			if (nIndex == 0)
-				return GetAt(i);
-			nIndex--;
-		}
-	}
-	return NULL;
-}
-
-CSize CXTPControls::_ReduceSmartLayoutToolBar(CDC* pDC, XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
-{
-	CSize sizeResult(0, 0);
-	BOOL bReduced = FALSE;
-	BOOL bVert = dwMode & LM_VERTDOCK;
-
-	do
-	{
-		bReduced = FALSE;
-
-		if (!bReduced)
-		{
-			for (int i = GetCount() - 1; i >= 2; i--)
-			{
-				XTPBUTTONINFO* pControl = &pData[i];
-				if (!pControl->bVisible || pControl->bBeginGroup)
-					continue;
-
-				int nItems = 0;
-				int nButtons[3] = {0, 0, 0};
-
-				for (int j = i; j  >= 0; j--)
-				{
-					pControl = &pData[j];
-					if (!pControl->bVisible)
-						continue;
-
-					if ((nItems == 2 || !pControl->bBeginGroup) && GetAt(j)->m_buttonStyle == xtpButtonIconAndCaptionBelow)
-					{
-						nButtons[nItems] = j;
-						nItems += 1;
-					}
-					else
-					{
-						break;
-					}
-					if (nItems == 3)
-						break;
-				}
-
-				if (nItems == 3)
-				{
-					GetAt(nButtons[0])->m_buttonStyle = xtpButtonIconAndCaption;
-					GetAt(nButtons[1])->m_buttonStyle = xtpButtonIconAndCaption;
-					GetAt(nButtons[2])->m_buttonStyle = xtpButtonIconAndCaption;
-					bReduced = TRUE;
-					break;
-				}
-			}
-		}
-
-		if (!bReduced)
-		{
-			for (int i = GetCount() - 1; i >= 2; i--)
-			{
-				XTPBUTTONINFO* pControl = &pData[i];
-				if (!pControl->bVisible || pControl->bBeginGroup)
-					continue;
-
-				int nItems = 0;
-				int nButtons[3] = {0, 0, 0};
-				BOOL bFound = FALSE;
-				int j;
-
-				for (j = i; j  >= 0; j--)
-				{
-					pControl = &pData[j];
-					if (!pControl->bVisible)
-						continue;
-
-					if ((nItems == 2 || !pControl->bBeginGroup))
-					{
-						nButtons[nItems] = j;
-						nItems += 1;
-						bFound = bFound || GetAt(j)->m_buttonStyle == xtpButtonIconAndCaptionBelow;
-					}
-					else
-					{
-						break;
-					}
-					if (nItems == 3)
-						break;
-				}
-				i = j;
-				if (nItems == 3 && bFound)
-				{
-					GetAt(nButtons[0])->m_buttonStyle = xtpButtonIconAndCaption;
-					GetAt(nButtons[1])->m_buttonStyle = xtpButtonIconAndCaption;
-					GetAt(nButtons[2])->m_buttonStyle = xtpButtonIconAndCaption;
-					bReduced = TRUE;
-					break;
-				}
-			}
-		}
-
-		if (!bReduced)
-		{
-			for (int i = GetCount() - 1; i >= 2; i--)
-			{
-				XTPBUTTONINFO* pControl = &pData[i];
-				if (!pControl->bVisible || pControl->bBeginGroup)
-					continue;
-
-				int nItems = 0;
-				int nButtons[3] = {0, 0, 0};
-				int nLeft = 0;
-
-				for (int j = i; j  >= 0; j--)
-				{
-					pControl = &pData[j];
-					if (!pControl->bVisible)
-						continue;
-
-					int nOffset = (bVert ? pControl->rcControl.top : pControl->rcControl.left);
-					if (nItems != 0 && (nOffset != nLeft))
-						break;
-
-					if ((nItems == 2 || !pControl->bBeginGroup) && GetAt(j)->m_buttonStyle == xtpButtonIconAndCaption)
-					{
-						nButtons[nItems] = j;
-						nItems += 1;
-						nLeft = nOffset;
-					}
-					else
-					{
-						break;
-					}
-					if (nItems == 3)
-						break;
-				}
-
-				if (nItems == 3)
-				{
-					GetAt(nButtons[0])->m_buttonStyle = xtpButtonIcon;
-					GetAt(nButtons[1])->m_buttonStyle = xtpButtonIcon;
-					GetAt(nButtons[2])->m_buttonStyle = xtpButtonIcon;
-					bReduced = TRUE;
-					break;
-				}
-			}
-		}
-
-		sizeResult = _CalcSmartLayoutToolBar(pDC, pData, dwMode);
-		if ((bVert ? sizeResult.cy : sizeResult.cx) < nWidth)
-			return sizeResult;
-	}
-	while (bReduced);
-
-	if (dwMode & LM_HIDEWRAP)
-	{
-		BOOL bFirst = TRUE;
-
-		for (int i = 0; i < GetCount(); i++)
-		{
-			XTPBUTTONINFO* pControl = &pData[i];
-			if (!pControl->bVisible)
-				continue;
-
-			if (!bFirst && ((bVert ? pControl->rcControl.bottom : pControl->rcControl.right) > nWidth))
-			{
-				GetAt(i)->m_buttonStyle = xtpButtonIcon;
-				pControl->bHide = TRUE;
-			}
-			bFirst = FALSE;
-		}
-		return _CalcSmartLayoutToolBar(pDC, pData, dwMode);
-	}
-
-	return sizeResult;
-
-}
-
-CSize CXTPControls::_CalcSmartLayoutToolBar(CDC* pDC, XTPBUTTONINFO* pData, DWORD& dwMode)
-{
-	BOOL bFirst = TRUE;
-	BOOL bVert = dwMode & LM_VERTDOCK;
-
-	CSize szLargeIcon = m_pParent->GetLargeIconSize(TRUE);
-	int nResultHeight = szLargeIcon.cy + 7 + m_pParent->GetPaintManager()->GetSplitDropDownHeight();
-	CSize sizeResult(0, nResultHeight);
-
-
-	int dyPrev = 0, dxPrev = 0, x = 0;
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-		if (!pControl->bVisible || pControl->bHide)
-			continue;
-
-		BOOL bFullRow = GetAt(i)->m_buttonStyle == xtpButtonIconAndCaptionBelow;
-		pControl->EnsureButtonSize(pDC);
-		CSize szControl = pControl->szControl;
-
-		int dx = bVert ? szControl.cy : szControl.cx;
-		int dy = !bVert ? szControl.cy : szControl.cx;
-
-		BOOL bBeginGroup = pControl->bBeginGroup && !bFirst;
-		if (bBeginGroup)
-			x += 6;
-
-		if (!bFirst && !bBeginGroup && !bFullRow && dyPrev + dy <= nResultHeight)
-		{
-			if (bVert)
-				pControl->rcControl.SetRect(-dyPrev - dy, x, -dyPrev,  x + dx);
-			else
-				pControl->rcControl.SetRect(x, dyPrev, x + dx, dyPrev + dy);
-
-			dxPrev = max(dxPrev, dx);
-		}
-		else
-		{
-			x += dxPrev;
-			if (bVert)
-				pControl->rcControl.SetRect(-dy, x, 0, x + dx);
-			else
-				pControl->rcControl.SetRect(x, 0, x + dx, dy);
-
-			sizeResult.cy = max(dy, sizeResult.cy);
-			dxPrev = dx;
-		}
-		sizeResult.cx = max(x + dx, sizeResult.cx);
-
-		bFirst = FALSE;
-		dyPrev = bVert ? -pControl->rcControl.left : pControl->rcControl.bottom;
-	}
-
-	return bVert ? CSize(sizeResult.cy, sizeResult.cx) : sizeResult;
-
-}
-
-CSize CXTPControls::_WrapSmartLayoutToolBar(CDC* pDC, XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
-{
-	BOOL bVert = dwMode & LM_VERTDOCK;
-	CSize szLargeIcon = m_pParent->GetLargeIconSize(FALSE);
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		XTPBUTTONINFO* pControl = &pData[i];
-		if (!pControl->bVisible)
-			continue;
-
-		BOOL bDrawImage = GetAt(i)->GetIconId() > 0 ?
-			GetAt(i)->GetImageManager()->IsPrimaryImageExists(GetAt(i)->GetIconId(), szLargeIcon.cx) != NULL: FALSE;
-
-		pControl->bHide = FALSE;
-		pControl->bWrap = FALSE;
-		GetAt(i)->m_buttonStyle = bDrawImage? xtpButtonIconAndCaptionBelow : xtpButtonIconAndCaption;
-	}
-	CSize sizeResult = _CalcSmartLayoutToolBar(pDC, pData, dwMode);
-
-	if ((bVert ? sizeResult.cy : sizeResult.cx) > nWidth)
-	{
-		sizeResult = _ReduceSmartLayoutToolBar(pDC, pData, nWidth, dwMode);
-		dwMode |= LM_STRETCH;
-	}
-
-	return sizeResult;
-}
-
-CSize CXTPControls::CalcDynamicSize(CDC* pDC, int nLength, DWORD dwMode, const CRect& rcBorder, int nWidth)
-{
-	CSize sizeResult(0, 0);
-	CSize szSeparators(m_pParent->GetPaintManager()->DrawCommandBarSeparator(pDC, m_pParent, NULL, FALSE));
-	int i;
-
-	for (i = GetCount() - 1; i >= 0; i--)
-	{
-		GetAt(i)->OnCalcDynamicSize(dwMode);
-	}
-
-	if (GetVisibleCount() > 0)
-	{
-
-		XTPBUTTONINFO* pData = new XTPBUTTONINFO[GetCount()];
-		for (int j = 0; j < GetCount(); j++)
-			pData[j].Attach(pDC, GetAt(j));
-
-		if (dwMode & LM_MRUWIDTH)
-		{
-			nLength = m_pParent->m_nMRUWidth;
-		}
-
-		if ((m_pParent->GetFlags() & xtpFlagSmartLayout))
-		{
-			if (dwMode & LM_VERTDOCK)
-			{
-				sizeResult = _WrapSmartLayoutToolBar(pDC, pData, nLength - rcBorder.top - rcBorder.bottom, dwMode);
-			}
-			else
-			{
-				sizeResult = _WrapSmartLayoutToolBar(pDC, pData, nLength - rcBorder.right - rcBorder.left, dwMode);
-			}
-
-		}
-		else
-		{
-
-			if (dwMode & LM_POPUP)
-			{
-				_WrapToolBar(pData, m_pParent->m_nMRUWidth, dwMode, szSeparators);
-				CSize sz = _CalcSize(pData, szSeparators);
-
-				if ((sz.cy > sz.cx * 3) && (m_pParent->m_nMRUWidth <= 0))
-				{
-					_SizePopupToolBar(pData, dwMode, szSeparators);
-				}
-				else
-				{
-					_WrapToolBar(pData, sz.cx , dwMode, szSeparators);
-				}
-
-			}
-			else if (dwMode & LM_HORZDOCK)
-			{
-				_WrapToolBar(pData, nLength - rcBorder.right - rcBorder.left, dwMode, szSeparators);
-			}
-			else if (dwMode & LM_VERTDOCK)
-			{
-				_WrapToolBar(pData, nLength - rcBorder.top - rcBorder.bottom, dwMode, szSeparators);
-			}
-			else
-			{
-				_SizeFloatableBar(pData, nLength - ((dwMode & LM_LENGTHY) ? rcBorder.top + rcBorder.bottom : rcBorder.right + rcBorder.left), dwMode, szSeparators);
-			}
-
-
-			sizeResult = _CalcSize(pData, szSeparators, dwMode & LM_VERTDOCK);
-		}
-
-		if (nWidth > 0)
-		{
-			if (dwMode & LM_HORZDOCK)
-				sizeResult.cy = max(nWidth - rcBorder.top - rcBorder.bottom, sizeResult.cy);
-			else
-				sizeResult.cx = max(nWidth - rcBorder.right - rcBorder.left, sizeResult.cx);
-		}
-
-		if (dwMode & LM_STRETCH)
-		{
-			if (dwMode & LM_VERTDOCK)
-				sizeResult.cy = max(nLength - rcBorder.top - rcBorder.bottom, sizeResult.cy);
-			else
-				sizeResult.cx = max(nLength - rcBorder.right - rcBorder.left, sizeResult.cx);
-
-		}
-		_AdjustBorders(pData, sizeResult, dwMode, rcBorder);
-
-		if (dwMode & LM_COMMIT)
-		{
-			if (!(m_pParent->GetFlags() & xtpFlagSmartLayout))
-				_MoveRightAlligned(pData, sizeResult, rcBorder, dwMode);
-			for (i = 0; i < GetCount(); i++) pData[i].Detach();
-		}
-		delete[] pData;
-	}
-	else
-	{
-		sizeResult = CSize (23, 22) + CSize(rcBorder.left + rcBorder.right, rcBorder.top + rcBorder.bottom);
-		if (dwMode & LM_HORZDOCK) sizeResult.cy = max(nWidth, sizeResult.cy);
-		else sizeResult.cx = max(nWidth, sizeResult.cx);
-	}
-
-	return sizeResult;
-
-
-}
-
-void CXTPControls::_MakeSameWidth(int nStart, int nLast, int nWidth)
-{
-	for (int i = nStart; i < nLast; i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		if (!pControl || pControl->GetParent() != m_pParent || !pControl->IsVisible())
-			continue;
-
-		CRect rc = pControl->GetRect();
-		pControl->SetRect(CRect(rc.left, rc.top, rc.left + nWidth, rc.bottom));
-	}
-}
-
-CSize CXTPControls::CalcPopupSize(CDC* pDC, int nLength, const CRect& rcBorder)
-{
-	RECT rcWork;
-	SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcWork, 0);
-
-	int i;
-
-	CSize szSeparators(m_pParent->GetPaintManager()->DrawCommandBarSeparator(NULL, m_pParent, NULL, FALSE));
-
-
-	CRect rcControl;
-	int yPos = rcBorder.top, nWidthColumn = 0, xPos = rcBorder.left, nFirstInColumn = 0, nHeight = 0;
-
-	m_pParent->m_bMultiLine = FALSE;
-	int nCount = GetCount();
-
-	BOOL bFirst = TRUE;
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		if (!pControl || pControl->GetParent() != m_pParent)
-			continue;
-
-		pControl->SetHideFlag(xtpHideScroll, FALSE);
-		if (!pControl->IsVisible())
-			continue;
-
-		CXTPFontDC fontControl(pDC, m_pParent->GetPaintManager()->GetCommandBarFont(m_pParent, pControl->IsItemDefault()));
-		CSize szControl = pControl->GetSize(pDC);
-
-		pControl->SetWrap(FALSE);
-
-		if ((pControl->GetFlags() & xtpFlagWrapRow && !bFirst) || (nLength > 0 && szControl.cy + yPos > nLength - rcBorder.bottom))
-		{
-			_MakeSameWidth(nFirstInColumn, i, nWidthColumn);
-
-			nHeight = max(yPos - rcBorder.top, nHeight);
-			yPos = rcBorder.top;
-			xPos += nWidthColumn + (pControl->GetBeginGroup() ? szSeparators.cx : 0);
-			pControl->SetWrap(TRUE);
-			nFirstInColumn = i;
-			nWidthColumn = 0;
-			m_pParent->m_bMultiLine = TRUE;
-		}
-		else if (pControl->GetBeginGroup() && !bFirst)
-		{
-			yPos += szSeparators.cy;
-		}
-
-		bFirst = FALSE;
-
-
-		if (!GetParent()->IsResizable() && CXTPPopupBar::m_dMaxWidthDivisor > 0 && szControl.cx > (CXTPPopupBar::m_dMaxWidthDivisor * rcWork.right))
-			szControl.cx = int(CXTPPopupBar::m_dMaxWidthDivisor * rcWork.right);
-
-		pControl->SetRect(CRect(xPos, yPos, xPos + szControl.cx, yPos + szControl.cy));
-		yPos += szControl.cy;
-
-		if (nWidthColumn < szControl.cx) nWidthColumn = szControl.cx;
-	}
-	_MakeSameWidth(nFirstInColumn, GetCount(), nWidthColumn);
-
-
-	int nWidth = xPos - rcBorder.left + nWidthColumn;
-	nHeight = max(yPos - rcBorder.top, nHeight);
-
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		pControl->SetRowRect(CRect(pControl->GetRect().left, rcBorder.top, pControl->GetRect().right, rcBorder.top + nHeight));
-	}
-
-	nWidth = max(24, nWidth);
-	nHeight = (nHeight == 0 ? 22 : nHeight);
-
-	return CSize(nWidth + rcBorder.left + rcBorder.right, nHeight + rcBorder.bottom + rcBorder.top);
-}
-
-void CXTPControls::Copy(CXTPControls* pControls, BOOL bRecursive)
-{
-	RemoveAll();
-
-	for (int i = 0; i < pControls->GetCount(); i++)
-	{
-		if (!pControls->GetAt(i)->m_bTemporary)
-			AddClone(pControls->GetAt(i), -1, bRecursive);
-	}
-
-	if (pControls->m_pOriginalControls)
-	{
-		SetOriginalControls((CXTPOriginalControls*)pControls->m_pOriginalControls->Duplicate(bRecursive));
-	}
-	else
-	{
-		SetOriginalControls(NULL);
-	}
-
-}
-
-CXTPControls* CXTPControls::Duplicate(BOOL bRecursive)
-{
-	CXTPControls* pControls = (CXTPControls*)GetRuntimeClass()->CreateObject();
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (!GetAt(i)->m_bTemporary)
-			pControls->AddClone(GetAt(i), -1, bRecursive);
-	}
-
-	if (m_pOriginalControls)
-	{
-		pControls->SetOriginalControls((CXTPOriginalControls*)m_pOriginalControls->Duplicate(bRecursive));
-	}
-
-	return pControls;
-}
-
-
-void CXTPControls::ClearOriginalControls()
-{
-	CMDTARGET_RELEASE(m_pOriginalControls);
-}
-
-
-void CXTPControls::CreateOriginalControls()
-{
-	ClearOriginalControls();
-
-	CXTPOriginalControls* pControls = new CXTPOriginalControls();
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (!GetAt(i)->m_bTemporary)
-			pControls->AddClone(GetAt(i), -1, TRUE);
-	}
-
-	SetOriginalControls(pControls);
-}
-
-void CXTPControls::SetOriginalControls(CXTPOriginalControls* pControls)
-{
-	ClearOriginalControls();
-	m_pOriginalControls = pControls;
-}
-
-void CXTPControls::MoveBefore(CXTPControl* pControl, int nBefore)
-{
-	ASSERT(pControl);
-	if (!pControl)
+	if (!IsVisible())
 		return;
-	ASSERT(pControl->GetControls() == this);
 
-	if (pControl->GetIndex() < nBefore) nBefore--;
-
-	m_arrControls.RemoveAt(pControl->GetIndex());
-	m_arrControls.InsertAt(nBefore, pControl);
-	RefreshIndexes();
+	if (m_pParent) m_pParent->Redraw(GetRect(), bAnimate);
 }
 
-BOOL CXTPControls::Compare(const CXTPControls* pOther)
+void CXTPControl::ScreenToClient(CPoint* point)
 {
-	int j = 0, i = 0;
-	while (i < GetCount() || j < pOther->GetCount())
-	{
-		while (i < GetCount() && GetAt(i)->m_bTemporary)
-		{
-			i++;
-		}
-		while (j < pOther->GetCount() && pOther->GetAt(j)->m_bTemporary)
-		{
-			j++;
-		}
+	ASSERT(m_pParent);
+	if (m_pParent)
+		((CWnd*)m_pParent)->ScreenToClient(point);
+}
 
-		if (i < GetCount() && j < pOther->GetCount())
-		{
-			if (!GetAt(i)->Compare(pOther->GetAt(j)))
-				return FALSE;
-		}
-		else
-		{
-			if (i < GetCount() || j < pOther->GetCount())
-				return FALSE;
-		}
 
-		i++;
-		j++;
-	}
+BOOL CXTPControl::OnSetSelected(int bSelected)
+{
+	if (bSelected == m_bSelected)
+		return FALSE;
+
+	if (IsKeyboardSelected(bSelected) && m_pParent->m_nPopuped != GetIndex())
+		m_pParent->SetPopuped(-1);
+
+	m_bSelected = bSelected;
+
+	m_pParent->OnControlSelected(bSelected, this);
+
+	if (GetEnabled() || IsKeyboardSelected(bSelected) || !bSelected)
+		RedrawParent(!bSelected);
 
 	return TRUE;
 }
 
-BOOL CXTPControls::IsChanged() const
+void CXTPControl::OnMouseHover()
 {
-	if (!m_pOriginalControls)
+	if (m_pParent->SetPopuped(-1))
+	{
+		if (m_pParent->IsTrackingMode() == TRUE_POPUP && m_pParent->GetPosition() != xtpBarPopup)
+			m_pParent->SetTrackingMode(FALSE);
+	}
+}
+
+void CXTPControl::SetPrompt(LPCTSTR lpszPrompt)
+{
+	if (lpszPrompt == NULL || lpszPrompt[0] == _T('\0'))
+		return;
+
+	if (_tcschr(lpszPrompt, _T('\n')) != NULL)
+	{
+		AfxExtractSubString(m_strTooltipText, lpszPrompt, 1);
+		AfxExtractSubString(m_strDescriptionText, lpszPrompt, 0);
+	}
+	else
+	{
+		m_strDescriptionText = m_strTooltipText = lpszPrompt;
+	}
+
+	if (m_strCaption.IsEmpty())
+	{
+		if (!AfxExtractSubString(m_strCaption, lpszPrompt, 2))
+			m_strCaption = m_strTooltipText;
+	}
+
+	if (m_strKeyboardTip.IsEmpty())
+	{
+		AfxExtractSubString(m_strKeyboardTip, lpszPrompt, 3);
+	}
+}
+
+void CXTPControl::SetID(int nId)
+{
+	if (m_nId == nId)
+		return;
+
+	CString strPrompt;
+
+	if (XTPResourceManager()->LoadString(&strPrompt, nId))
+	{
+		SetPrompt(strPrompt);
+	}
+
+	m_nId = nId;
+}
+
+void CXTPControl::SetCaption(UINT nIDCaption)
+{
+	CString strCaption;
+	if (strCaption.LoadString(nIDCaption))
+	{
+		SetCaption(strCaption);
+	}
+}
+
+void CXTPControl::SetCaption(LPCTSTR lpszCaption)
+{
+	CString strCaption(lpszCaption);
+	BOOL bDelayLayout = FALSE;
+
+	int nShortCutPos = strCaption.Find ('\t');
+	if (nShortCutPos != -1)
+	{
+		CString strShortcutTextAuto = strCaption.Mid(nShortCutPos + 1);
+
+		if (m_strShortcutTextAuto != strShortcutTextAuto)
+		{
+			m_strShortcutTextAuto = strShortcutTextAuto;
+			bDelayLayout = TRUE;
+		}
+		strCaption.ReleaseBuffer(nShortCutPos);
+	}
+
+	if (m_strCaption != strCaption)
+	{
+		m_strCaption = strCaption;
+		bDelayLayout = TRUE;
+	}
+
+	if (bDelayLayout)
+	{
+		DelayLayoutParent();
+	}
+}
+
+AFX_INLINE void NotifyExecute(CXTPControl* pControl, CWnd* pOwner)
+{
+	NMXTPCONTROL tagNMCONTROL;
+	if (pControl->NotifySite(pOwner, CBN_XTP_EXECUTE, &tagNMCONTROL) == 0)
+	{
+		pOwner->SendMessage(WM_COMMAND, pControl->GetID());
+	}
+}
+
+//Click Helper
+void CXTPControl::ClickToolBarButton(CRect rcActiveRect)
+{
+	#define XTP_TID_CLICKTICK 0x10AD
+
+	if (rcActiveRect.IsRectEmpty())
+		rcActiveRect = m_rcControl;
+
+	m_pParent->SetSelected(m_nIndex);
+	m_bPressed = TRUE;
+	RedrawParent();
+
+	InternalAddRef();
+
+	BOOL bExecuteOnTimer = m_nExecuteOnPressInterval > 0;
+	CWnd* pOwner = m_pParent->GetOwnerSite();
+
+	m_pParent->SetCapture();
+	HWND hWndCapture = m_pParent->GetSafeHwnd();
+	CPoint pt(0, 0);
+	BOOL bClick = FALSE;
+
+	if (bExecuteOnTimer)
+	{
+		m_pParent->SetTimer(XTP_TID_CLICKTICK, m_nExecuteOnPressInterval, NULL);
+		NotifyExecute(this, pOwner);
+	}
+
+	while (::GetCapture() == hWndCapture)
+	{
+		MSG msg;
+		VERIFY(::GetMessage(&msg, NULL, 0, 0));
+
+		if (msg.message == WM_LBUTTONUP)
+		{
+			bClick = m_bSelected && ((!pt.x && !pt.y) || rcActiveRect.PtInRect(pt));
+			break;
+		}
+
+		if (m_pParent == NULL)
+			break;
+
+		if (msg.message == WM_TIMER && msg.wParam == XTP_TID_CLICKTICK)
+		{
+			if (m_bSelected)
+			{
+				NotifyExecute(this, pOwner);
+			}
+		}
+
+		if (msg.message == WM_MOUSEMOVE)
+		{
+			pt = CPoint(LOWORD(msg.lParam), HIWORD(msg.lParam));
+			if (OnSetSelected(rcActiveRect.PtInRect(pt)))
+			{
+				RedrawParent();
+			}
+			continue;
+		}
+
+		DispatchMessage (&msg);
+	}
+
+	if (bExecuteOnTimer && m_pParent->GetSafeHwnd())
+	{
+		m_pParent->KillTimer(XTP_TID_CLICKTICK);
+	}
+
+	m_bPressed = bClick && !bExecuteOnTimer && NeedPressOnExecute() ? TRUE_KEYBOARD : FALSE;
+
+	ReleaseCapture();
+
+	if (m_bSelected && m_pParent)
+	{
+		m_pParent->SetSelected(-1);
+		m_bSelected = FALSE;
+		m_pParent->m_nClickedControl = GetIndex();
+	}
+
+	if (bClick && !bExecuteOnTimer)
+	{
+		OnExecute();
+
+		if (m_bPressed)
+		{
+			m_bPressed = FALSE;
+			RedrawParent();
+		}
+	}
+	else
+	{
+		RedrawParent();
+	}
+
+	InternalRelease();
+}
+
+LRESULT CXTPControl::NotifySite(UINT code)
+{
+	if (!m_pParent)
+		return 0;
+
+	NMXTPCONTROL tagNMCONTROL;
+	return NotifySite(m_pParent->GetOwnerSite(), code, &tagNMCONTROL);
+}
+
+LRESULT CXTPControl::NotifySite(UINT code, NMXTPCONTROL* pNM)
+{
+	if (!m_pParent)
+		return 0;
+
+	return NotifySite(m_pParent->GetOwnerSite(), code, pNM);
+}
+
+LRESULT CXTPControl::NotifySite(CWnd* pSite, UINT code, NMXTPCONTROL* pNM)
+{
+	if (pSite == 0)
+	{
+		if (!m_pParent)
+			return 0;
+
+		pSite = m_pParent->GetOwnerSite();
+	}
+
+	pNM->hdr.code = code ;
+	pNM->hdr.idFrom = GetID();
+	pNM->hdr.hwndFrom = 0;
+	pNM->pControl = this;
+
+	LRESULT lResult = pSite->SendMessage(WM_XTP_COMMAND, GetID(), (LPARAM)pNM);
+
+	if (lResult || !m_pParent)
+		return lResult;
+
+	AFX_NOTIFY notify;
+	notify.pResult = &lResult;
+	notify.pNMHDR = (NMHDR*)pNM;
+
+	if (pSite->OnCmdMsg(GetID(), MAKELONG(code, WM_NOTIFY), &notify, NULL))
+	{
+		return lResult;
+	}
+
+	return 0;
+}
+
+
+BOOL CXTPControl::NeedPressOnExecute() const
+{
+	if (m_pParent && m_pParent->GetPosition() == xtpBarPopup)
+		return FALSE;
+
+	return TRUE;
+}
+
+void CXTPControl::OnExecute()
+{
+	XTPSoundManager()->PlaySystemSound(xtpSoundMenuCommand);
+
+	m_bPressed = NeedPressOnExecute() ? TRUE_KEYBOARD : FALSE;
+
+	CXTPCommandBar* pCommandBar = m_pParent->GetRootParent();
+	BOOL bRecursePopup = pCommandBar->m_bRecursePopup;
+
+	CWnd* pOwner = m_pParent->GetOwnerSite();
+	CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+
+	if (pCommandBar->m_pReturnCmd)
+	{
+		if (bRecursePopup)
+			pCommandBar->OnTrackLost();
+		else pCommandBars->ClosePopups();
+
+		*pCommandBar->m_pReturnCmd = m_nId;
+		return;
+	}
+
+
+	if (pCommandBars)
+	{
+		if (m_nId) pCommandBars->SetCommandUsed(m_nId);
+
+		CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pParent);
+		if (pPopupBar && pPopupBar->GetControlPopup() && ((CXTPControl*)pPopupBar->GetControlPopup())->GetID())
+		{
+			pCommandBars->SetCommandUsed(((CXTPControl*)pPopupBar->GetControlPopup())->GetID());
+		}
+	}
+	InternalAddRef();
+
+	if (m_bCloseSubMenuOnClick)
+	{
+		if (bRecursePopup)
+			pCommandBar->OnTrackLost();
+		else if (pCommandBars)
+			pCommandBars->ClosePopups();
+		else
+			XTPMouseManager()->SendTrackLost();
+	}
+
+	if (m_nId == 0)
+	{
+		InternalRelease();
+		return;
+	}
+
+	NotifyExecute(this, pOwner);
+
+	if ((!m_bCloseSubMenuOnClick || m_bPressed) && m_pParent)
+	{
+		m_bPressed = FALSE;
+
+		m_pParent->OnIdleUpdateCmdUI(0, 0);
+		RedrawParent();
+	}
+
+	InternalRelease();
+}
+
+BOOL CXTPControl::IsCursorOver() const
+{
+	CPoint pt;
+	GetCursorPos(&pt);
+	m_pParent->ScreenToClient(&pt);
+	return m_rcControl.PtInRect(pt);
+}
+
+void CXTPControl::Copy(CXTPControl* pControl, BOOL /*bRecursive*/)
+{
+	m_nId = pControl->m_nId;
+	SetAction(pControl->GetAction());
+
+	m_nTag = pControl->m_nTag;
+	m_dwFlags = pControl->m_dwFlags;
+	m_controlType = pControl->m_controlType;
+	m_strCaption = pControl->m_strCaption;
+	m_strShortcutText = pControl->m_strShortcutText;
+	m_strShortcutTextAuto = pControl->m_strShortcutTextAuto;
+	m_strTooltipText = pControl->m_strTooltipText;
+	m_strDescriptionText = pControl->m_strDescriptionText;
+	m_strParameter = pControl->m_strParameter;
+	m_strKeyboardTip = pControl->m_strKeyboardTip;
+	m_nCustomIconId = pControl->m_nCustomIconId;
+	m_nIconId = pControl->m_nIconId;
+	m_nHelpId = pControl->m_nHelpId;
+	m_bTemporary = pControl->m_bTemporary;
+	m_strCustomCaption = pControl->m_strCustomCaption;
+	m_strCategory = pControl->m_strCategory;
+	m_dwHideFlags = pControl->m_dwHideFlags;
+	m_bDefaultItem = pControl->m_bDefaultItem;
+	m_bEnabled = pControl->m_bEnabled;
+	m_bChecked = pControl->m_bChecked;
+	m_buttonCustomStyle = pControl->m_buttonCustomStyle;
+	m_buttonStyle = pControl->m_buttonStyle;
+
+	m_nWidth = max(GetCustomizeMinWidth(), pControl->m_nWidth);
+	m_nHeight = pControl->m_nHeight;
+
+	m_szIcon = pControl->m_szIcon;
+
+	m_bBeginGroup = pControl->m_bBeginGroup;
+
+	m_bCloseSubMenuOnClick = pControl->m_bCloseSubMenuOnClick;
+	m_nExecuteOnPressInterval = pControl->m_nExecuteOnPressInterval;
+
+	m_mapDocTemplatesAssigned.Copy(pControl->m_mapDocTemplatesAssigned);
+	m_mapDocTemplatesExcluded.Copy(pControl->m_mapDocTemplatesExcluded);
+}
+
+BOOL CXTPControl::Compare(CXTPControl* pOther)
+{
+	if (GetStyle() != pOther->GetStyle())
+		return FALSE;
+
+	if (GetType() != pOther->GetType())
+		return FALSE;
+
+	if (GetID() != pOther->GetID())
+		return FALSE;
+
+	if (GetFlags() != pOther->GetFlags())
+		return FALSE;
+
+	if (GetBeginGroup() != pOther->GetBeginGroup())
+		return FALSE;
+
+	if (GetIconId() != pOther->GetIconId())
+		return FALSE;
+
+	if (m_strCaption != pOther->m_strCaption)
+		return FALSE;
+
+	if (m_strTooltipText != pOther->m_strTooltipText)
+		return FALSE;
+
+	if (m_strDescriptionText != pOther->m_strDescriptionText)
+		return FALSE;
+
+	if (m_strCustomCaption != pOther->m_strCustomCaption)
+		return FALSE;
+
+	if (m_buttonCustomStyle != pOther->m_buttonCustomStyle)
+		return FALSE;
+
+	if (m_strParameter != pOther->m_strParameter)
+		return FALSE;
+
+	if ((m_dwHideFlags & xtpHideCustomize) != (pOther->m_dwHideFlags & xtpHideCustomize))
+		return FALSE;
+
+	if (m_nWidth != pOther->m_nWidth)
+		return FALSE;
+
+	return TRUE;
+}
+
+IMPLEMENT_XTP_CONTROL(CXTPControl, CCmdTarget)
+
+
+BOOL CXTPControl::IsCustomizeMode() const
+{
+	return m_pParent ? m_pParent->IsCustomizeMode() : FALSE;
+}
+
+void CXTPControl::OnInvertTracker(CDC* pDC, CRect rect)
+{
+	ASSERT(!rect.IsRectEmpty());
+
+	pDC->InvertRect(CRect(rect.left, rect.top, rect.right, rect.top + 2));
+	pDC->InvertRect(CRect(rect.left, rect.bottom - 2, rect.right, rect.bottom));
+	pDC->InvertRect(CRect(rect.left, rect.top + 2, rect.left + 2, rect.bottom - 2));
+	pDC->InvertRect(CRect(rect.right - 2, rect.top + 2, rect.right, rect.bottom - 2));
+
+}
+
+void CXTPControl::OnCustomizeMouseMove(CPoint point)
+{
+	if (IsCustomizeResizeAllow() && m_rcControl.PtInRect(point) && ((point.x - m_rcControl.left <= 2) || (m_rcControl.right - point.x <= 2)))
+	{
+		::SetCursor(XTPResourceManager()->LoadCursor(XTP_IDC_VRESIZE));
+	}
+}
+
+BOOL CXTPControl::CustomizeStartResize(CPoint point)
+{
+	if (m_rcControl.PtInRect(point) && ((point.x - m_rcControl.left <= 2) || (m_rcControl.right - point.x <= 2)))
+	{
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		ASSERT(pCommandBars);
+		ASSERT(pCommandBars->m_pDragSelected == this);
+		pCommandBars->m_pDragSelected = NULL;
+		m_pParent->Redraw();
+		m_pParent->UpdateWindow();
+
+		CRect rectTracker = m_rcControl;
+		m_pParent->ClientToScreen(rectTracker);
+
+		m_pParent->SetCapture();
+		::SetCursor(XTPResourceManager()->LoadCursor(XTP_IDC_VRESIZE));
+
+		CDC* pDC = 0;
+
+		CWnd* pWnd = CWnd::GetDesktopWindow();
+		if (pWnd->LockWindowUpdate())
+			pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE | DCX_LOCKWINDOWUPDATE);
+		else
+			pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE);
+
+		OnInvertTracker(pDC, rectTracker);
+		int nMinWidth = GetCustomizeMinWidth();
+		BOOL bLeftAnchor = (point.x - m_rcControl.left <= 2);
+
+		LONG& lTrackerAnchor = bLeftAnchor ? rectTracker.left : rectTracker.right;
+		int nOffset = bLeftAnchor ? m_rcControl.left - point.x : m_rcControl.right - point.x;
+
+		BOOL bAccept = FALSE;
+		while (CWnd::GetCapture() == m_pParent)
+		{
+			MSG msg;
+			if (!GetMessage(&msg, NULL, 0, 0))
+				break;
+
+			if (msg.message == WM_MOUSEMOVE)
+			{
+				point = CPoint(msg.lParam);
+				m_pParent->ClientToScreen(&point);
+				point.x += nOffset;
+
+				point.x = bLeftAnchor ? min(point.x, rectTracker.right - nMinWidth) :
+					max(point.x, rectTracker.left + nMinWidth);
+
+				if (lTrackerAnchor != point.x)
+				{
+					OnInvertTracker(pDC, rectTracker);
+					lTrackerAnchor = point.x;
+					OnInvertTracker(pDC, rectTracker);
+				}
+			}
+			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+			else if (msg.message == WM_LBUTTONUP)
+			{
+				bAccept = TRUE;
+				break;
+			}
+			else  ::DispatchMessage(&msg);
+		}
+
+		OnInvertTracker(pDC, rectTracker);
+
+		if (CWnd::GetCapture() == m_pParent) ReleaseCapture();
+
+		pWnd->UnlockWindowUpdate();
+		if (pDC != NULL)
+		{
+			pWnd->ReleaseDC(pDC);
+			pDC = NULL;
+		}
+
+		pCommandBars->m_pDragSelected = this;
+
+		int nWidth = rectTracker.Width();
+
+		if (bAccept && rectTracker.Width() != m_rcControl.Width())
+		{
+			if (GetParent()->GetType() == xtpBarTypePopup)
+				nWidth -= GetPaintManager()->GetPopupBarGripperWidth(GetParent());
+
+			SetWidth(nWidth);
+			m_pParent->OnRecalcLayout();
+		}
+		m_pParent->Redraw();
+
 		return TRUE;
 
-	return !m_pOriginalControls->Compare(this);
-}
-
-int CXTPControls::CommandToIndex(int nIDFind) const
-{
-	for (int iIndex = 0; iIndex < m_arrControls.GetSize(); ++iIndex)
-	{
-		CXTPControl* pControl = m_arrControls.GetAt(iIndex);
-
-		if (pControl && pControl->GetID() == nIDFind)
-			return iIndex;
 	}
-	return -1;
+
+	return FALSE;
 }
 
+void CXTPControl::CustomizeStartDrag(CPoint pt)
+{
+	ASSERT(m_pParent);
+	if (!m_pParent)
+		return;
+
+	CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+	ASSERT(pCommandBars);
+	if (!pCommandBars)
+		return;
+
+	if ((pCommandBars->m_pDragSelected == this) && IsCustomizeResizeAllow() &&
+		CustomizeStartResize(pt))
+	{
+		return;
+	}
+
+	pCommandBars->SetDragControl(this);
+
+	CXTPCustomizeDropSource* pDropSource = pCommandBars->GetDropSource();
+	DROPEFFECT dropEffect = pDropSource->DoDragDrop(this);
+
+	if (dropEffect == DROPEFFECT_NONE || dropEffect == DROPEFFECT_MOVE)
+	{
+		CXTPCommandBar* pParent = m_pParent;
+		pParent->SetPopuped(-1);
+		pParent->SetSelected(-1);
+
+		if (pCommandBars->GetDragControl() == this)
+			pCommandBars->SetDragControl(NULL);
+
+
+		if (GetBeginGroup() && m_nIndex < m_pControls->GetCount() - 1)
+			m_pControls->GetAt(m_nIndex + 1)->SetBeginGroup(TRUE);
+
+		if (m_nIndex == 0 && m_pControls->GetCount() > 1)
+			m_pControls->GetAt(1)->SetBeginGroup(FALSE);
+
+		m_pControls->Remove(this);
+
+		pParent->OnRecalcLayout();
+	}
+	pCommandBars->SetDragControl(pCommandBars->GetDragControl());
+}
+
+void CXTPControl::OnCustomizeDragOver(CXTPControl* /*pDataObject*/, CPoint /*point*/, DROPEFFECT& /*dropEffect*/)
+{
+	m_pParent->SetPopuped(-1);
+	m_pParent->SetSelected(-1);
+}
+BOOL CXTPControl::IsCustomizeDragOverAvail(CXTPCommandBar* /*pCommandBar*/, CPoint /*point*/, DROPEFFECT& /*dropEffect*/)
+{
+	return TRUE;
+}
+
+BOOL CXTPControl::IsCustomizeResizeAllow() const
+{
+	return FALSE;
+}
+
+CXTPImageManager* CXTPControl::GetImageManager() const
+{
+	if (m_pParent)
+		return m_pParent->GetImageManager();
+
+	if (m_pControls)
+	{
+		CXTPCommandBars* pCommandBars = m_pControls->GetCommandBars();
+		if (pCommandBars)
+			return pCommandBars->GetImageManager();
+	}
+	return XTPImageManager();
+}
+CXTPPaintManager* CXTPControl::GetPaintManager() const
+{
+	if (m_pParent)
+		return m_pParent->GetPaintManager();
+
+	if (m_pControls)
+	{
+		CXTPCommandBars* pCommandBars = m_pControls->GetCommandBars();
+		if (pCommandBars)
+			return pCommandBars->GetPaintManager();
+	}
+	return XTPPaintManager();
+
+}
+CXTPImageManagerIcon* CXTPControl::GetImage(int nWidth) const
+{
+	if (GetIconId() != 0)
+		return GetImageManager()->GetImage(GetIconId(), nWidth);
+	return NULL;
+
+}
+
+void CXTPControl::SetExpanded(BOOL bExpanded)
+{
+	m_bExpanded = bExpanded;
+	if (!bExpanded) SetHideFlags(GetHideFlags() & ~xtpHideExpand);
+}
+
+BOOL CXTPControl::IsItemDefault() const
+{
+	return m_bDefaultItem;
+}
+
+void CXTPControl::SetItemDefault(BOOL bDefault)
+{
+	if (bDefault != m_bDefaultItem)
+	{
+		m_bDefaultItem = bDefault;
+		DelayLayoutParent();
+	}
+}
+
+void CXTPControl::SetFlags(DWORD dwFlags)
+{
+	m_dwFlags = dwFlags;
+}
+
+DWORD CXTPControl::GetFlags() const
+{
+	return m_dwFlags;
+}
+
+BOOL CXTPControl::IsCustomizeMovable() const
+{
+	if (m_pParent && m_pParent->IsCustomizable() && ((GetFlags() & xtpFlagNoMovable) == 0))
+		return TRUE;
+
+	if (!m_pParent)
+		return FALSE;
+	CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+
+	if (pCommandBars && pCommandBars->m_bDesignerMode)
+		return TRUE;
+
+	return FALSE;
+}
+
+void CXTPControl::CDocTemplateMap::Copy(CDocTemplateMap& map)
+{
+	RemoveAll();
+
+	UINT nIDResource;
+	BOOL bValue;
+	POSITION pos = map.GetStartPosition();
+	while (pos)
+	{
+		map.GetNextAssoc(pos, nIDResource, bValue);
+		SetAt(nIDResource, bValue);
+	}
+}
+
+CXTPControl* CXTPControl::FromUI(CCmdUI* pCmdUI)
+{
+	CXTPCommandBar* pCommandBar = DYNAMIC_DOWNCAST(CXTPCommandBar, pCmdUI->m_pOther);
+	if (!pCommandBar)
+		return NULL;
+
+	CXTPControls* pControls = pCommandBar->GetControls();
+	if ((int)pCmdUI->m_nIndex < pControls->GetCount())
+		return pControls->GetAt(pCmdUI->m_nIndex);
+
+	return NULL;
+
+}
+
+BOOL CXTPControl::OnLButtonDblClk(CPoint point)
+{
+	OnClick(FALSE, point);
+	return TRUE;
+}
+
+void CXTPControl::Reset()
+{
+	if (m_nCustomIconId != 0 || !m_strCustomCaption.IsEmpty() || m_buttonCustomStyle != xtpButtonUndefined)
+	{
+		m_nCustomIconId = 0;
+		m_strCustomCaption = _T("");
+		m_buttonCustomStyle = xtpButtonUndefined;
+		GetParent()->OnRecalcLayout();
+	}
+}
+
+void CXTPControl::SetCustomIcon(HICON hIcon)
+{
+	CXTPImageManager* pImageManager = GetImageManager();
+	if (pImageManager)
+	{
+		m_nCustomIconId = pImageManager->AddCustomIcon(hIcon);
+	}
+}
+
+CSize CXTPControl::GetButtonSize() const
+{
+	return m_pParent->GetButtonSize();
+}
+
+CSize CXTPControl::GetIconSize() const
+{
+	if (m_szIcon != CSize(0, 0))
+		return m_szIcon;
+
+	return m_pParent->GetIconSize();
+}
+
+
+#ifndef _XTP_INCLUDE_RIBBON
+BOOL CXTPControl::HasDwmCompositedRect() const
+{
+	return FALSE;
+}
+#endif
+
+void CXTPControl::OnUnderlineActivate()
+{
+	OnExecute();
+}
+
+BOOL CXTPControl::IsCaptionVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return TRUE;
+
+	if (GetCaption().IsEmpty())
+		return FALSE;
+
+	XTPButtonStyle buttonStyle = GetStyle();
+
+	if ((buttonStyle == xtpButtonCaption) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow))
+		return TRUE;
+
+	if (buttonStyle == xtpButtonIcon)
+		return FALSE;
+
+	switch (GetType())
+	{
+		case xtpControlPopup:
+		case xtpControlLabel:
+		case xtpControlCheckBox:
+		case xtpControlRadioButton:
+			return TRUE;
+
+		case xtpControlButton:
+		case xtpControlButtonPopup:
+		case xtpControlSplitButtonPopup:
+			CXTPImageManagerIcon* pImage = GetImage(0);
+			return pImage == NULL;
+	}
+	return FALSE;
+}
+
+
+CCmdTarget* CXTPControl::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPControl::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispParent = NULL;
+
+	if (m_pParent)
+	{
+		*ppdispParent = m_pParent->GetIDispatch(TRUE);
+		return S_OK;
+	}
+	return E_FAIL;
+}
+
+HRESULT CXTPControl::GetAccessibleChildCount(long FAR* pChildCount)
+{
+	if (pChildCount == 0)
+		return E_INVALIDARG;
+
+	*pChildCount = GetCommandBar() ? 1 : 0;
+
+	return S_OK;
+}
+HRESULT CXTPControl::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispChild = NULL;
+
+	if (GetChildIndex(&varChild) == 1)
+	{
+		CXTPCommandBar* pCommandBar = GetCommandBar();
+		if (pCommandBar)
+		{
+			*ppdispChild = pCommandBar->GetIDispatch(TRUE);
+		}
+	}
+
+	return S_OK;
+}
+
+HRESULT CXTPControl::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	CString strCaption = GetCaption();
+	CXTPPaintManager::StripMnemonics(strCaption);
+
+	if (!GetShortcutText().IsEmpty())
+		strCaption = strCaption + _T('\t') + GetShortcutText();
+
+	if (strCaption.IsEmpty())
+	{
+		strCaption = GetTooltip();
+	}
+
+	*pszName = strCaption.AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPControl::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDescription = GetDescription().AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPControl::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	pvarRole->vt = VT_EMPTY;
+
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = m_pParent->GetType() == xtpBarTypeNormal || m_pParent->GetType() == xtpBarTypeRibbon ?
+			GetCommandBar() ? ROLE_SYSTEM_BUTTONMENU: ROLE_SYSTEM_PUSHBUTTON : ROLE_SYSTEM_MENUITEM;
+		return S_OK;
+	}
+
+	return E_INVALIDARG;
+}
+
+HRESULT CXTPControl::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	if (m_pParent && m_pParent->GetSafeHwnd())
+	{
+		m_pParent->SetTrackingMode(TRUE, FALSE);
+		m_pParent->SetSelected(m_nIndex, TRUE);
+	}
+
+	return S_OK;
+}
+
+#ifndef STATE_SYSTEM_HASPOPUP
+#define STATE_SYSTEM_HASPOPUP   (0x40000000)
+#endif //STATE_SYSTEM_HASPOPUP
+
+
+HRESULT CXTPControl::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_FOCUSABLE |
+		(m_bSelected ? STATE_SYSTEM_FOCUSED | STATE_SYSTEM_SELECTED | STATE_SYSTEM_HOTTRACKED : 0);
+
+	if (!m_pParent->IsVisible() || !IsVisible())
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	if (!GetEnabled())
+		pvarState->lVal |= STATE_SYSTEM_UNAVAILABLE;
+
+	if (GetChecked())
+		pvarState->lVal |= STATE_SYSTEM_CHECKED;
+
+	if (GetPressed())
+		pvarState->lVal |= STATE_SYSTEM_PRESSED;
+
+	if (GetCommandBar())
+		pvarState->lVal |= STATE_SYSTEM_HASPOPUP;
+
+	return S_OK;
+}
+
+HRESULT CXTPControl::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDefaultAction = SysAllocString(L"Click");
+
+	return S_OK;
+}
+
+HRESULT CXTPControl::AccessibleDoDefaultAction(VARIANT varChild)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	OnClick(TRUE);
+
+	return S_OK;
+}
+
+
+HRESULT CXTPControl::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	if (!m_pParent->GetSafeHwnd())
+		return S_OK;
+
+	if (!IsVisible())
+		return S_OK;
+
+	CRect rcControl = GetRect();
+	m_pParent->ClientToScreen(&rcControl);
+
+	*pxLeft = rcControl.left;
+	*pyTop = rcControl.top;
+	*pcxWidth = rcControl.Width();
+	*pcyHeight = rcControl.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPControl::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!m_pParent->GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(m_pParent).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = 0;
+
+	CPoint pt(xLeft, yTop);
+	m_pParent->ScreenToClient(&pt);
+
+	if (!GetRect().PtInRect(pt))
+		return S_FALSE;
+
+	return S_OK;
+}
+
+void CXTPControl::SetVisible(BOOL bVisible)
+{
+	DWORD dwHideFlags = m_dwHideFlags;
+	if (!bVisible) SetHideFlags(m_dwHideFlags | xtpHideGeneric); else SetHideFlags(m_dwHideFlags & ~xtpHideGeneric);
+	if (dwHideFlags != m_dwHideFlags) DelayLayoutParent();
+}
+
+
+
+BEGIN_INTERFACE_MAP(CXTPControl, CCmdTarget)
+	INTERFACE_PART(CXTPControl, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()

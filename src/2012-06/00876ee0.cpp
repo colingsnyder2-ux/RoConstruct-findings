@@ -1,4 +1,4 @@
-// from server: 94% by atomic.potato
+// from server: 100% by tajop
 struct S
 {
     void f();
@@ -6,10 +6,12 @@ struct S
 
 void S::f()
 {
-    *(int*)this = 0xbd792c;
-    *((int*)this + 1) = 0xbd7920;
-    *((int*)this + 6) = 0xbd7914;
-    *((int*)this + 7) = 0xbd7908;
-    *((int*)this + 32) = 0xbd78f8;
-    *((int*)this + 33) = 0xbd78cc;
+    *(int *)this = 0xba77ac;
+    *(int *)((char *)this + 4) = 0xba77a4;
+    *(int *)((char *)this + 0x18) = 0xba7798;
+    *(int *)((char *)this + 0x1c) = 0xba778c;
+    *(int *)((char *)this + 0x80) = 0xba777c;
+    *(int *)((char *)this + 0x84) = 0xba7750;
+    extern void g();
+    g();
 }

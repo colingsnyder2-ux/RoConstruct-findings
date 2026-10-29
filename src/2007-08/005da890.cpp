@@ -1,65 +1,27 @@
-// from server: 41% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_reflection_92dc0c9416ec6529.cpp
 
-extern "C" void __stdcall func_007285a0();
-extern "C" void __stdcall func_005d9e60();
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-struct Sub {
-    void (__stdcall *vtbl)(void);
-    long refcount;
-};
-
-struct Obj {
-    void* vtbl0;
-    void* vtbl4;
-    char pad8[8];
-    void* vtbl10;
-    void* vtbl14;
-    char pad18[0x14];
-    void* vtbl2c;
-    char pad30[0x14];
-    void* vtbl44;
-    char pad48[0x14];
-    void* vtbl5c;
-    char pad60[0x14];
-    void* vtbl74;
-    char pad78[0x14];
-    void* vtbl8c;
-    char pad90[0x58];
-    void* vtble8;
-    char padec[0x14];
-    Sub* ptr100;
-    char pad104[0x100];
-    void* field204;
-
-    void destroy();
-};
-
-void Obj::destroy()
-{
-    this->vtbl0 = (void*)0x7bc29c;
-    this->vtbl4 = (void*)0x7bc290;
-    this->vtbl10 = (void*)0x7bc288;
-    this->vtbl14 = (void*)0x7bc278;
-    this->vtbl2c = (void*)0x7bc268;
-    this->vtbl44 = (void*)0x7bc258;
-    this->vtbl5c = (void*)0x7bc248;
-    this->vtbl74 = (void*)0x7bc238;
-    this->vtbl8c = (void*)0x7bc228;
-    this->vtble8 = (void*)0x7bc210;
-
-    func_007285a0();
-
-    Sub* p = this->ptr100;
-    if (p != 0) {
-        if (_InterlockedExchangeAdd(&p->refcount, -1) == 1) {
-            p->vtbl();
-            if (_InterlockedExchangeAdd(&p->refcount, -1) == 1) {
-                p->vtbl();
-            }
-        }
-    }
-
-    func_005d9e60();
-}
+#include "v8datamodel/Feature.cpp"

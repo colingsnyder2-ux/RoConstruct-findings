@@ -1,65 +1,28 @@
-// from server: 42% by colin
-struct VPlayerSignalDesc
-{
-    char pad0[0xc];
-    int field_c;
-    int field_10;
-    int field_14;
-    int field_18;
-    char field_1c;
-    char pad1[3];
-    int field_20;
-    int field_24;
-    int field_28;
-    int field_2c;
-    char field_30;
-    char pad2[3];
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_8cd54c815be08ee2.cpp
 
-    void construct(int a, int b, int c, int d, int e, int f, int g, int h);
-};
-
-extern "C" void __stdcall sub_489940(void* dst, void* src);
-extern "C" void __stdcall sub_489730(void* p);
-extern "C" void __stdcall sub_4893c0(void* a, void* b, void* c, void* d, void* e);
-extern "C" void __stdcall sub_62fc62(void* p);
-extern "C" void __stdcall sub_490680(void* p);
-
-void VPlayerSignalDesc::construct(int a, int b, int c, int d, int e, int f, int g, int h)
-{
-    char local[0x10];
-    int v1;
-    int v2;
-    int v3;
-    int v4;
-
-    sub_489940(local, &a);
-    *(int*)(local + 0xc) = h;
-
-    sub_490680(this);
-
-    v1 = *(int*)(local + 0);
-    v2 = *(int*)(local + 4);
-    v3 = *(int*)(local + 8);
-    v4 = *(int*)(local + 0xc);
-
-    field_c = v1;
-    field_10 = v2;
-    field_14 = v1;
-    field_18 = v2;
-    field_1c = 0;
-    field_20 = v1;
-    field_24 = v2;
-    field_28 = v3;
-    field_2c = v4;
-    field_30 = 0;
-
-    sub_489730(this);
-
-    {
-        int tmp = a;
-        int* p = (int*)tmp;
-        int val = *p;
-        sub_4893c0(&tmp, &val, p, &tmp, &val);
-        sub_62fc62((void*)tmp);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include "Player.cpp"

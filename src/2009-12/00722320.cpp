@@ -1,5 +1,5 @@
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: templates-boost-1_40_0 client-rtti-bf08f30a8aa6090dc7b7.cpp
 

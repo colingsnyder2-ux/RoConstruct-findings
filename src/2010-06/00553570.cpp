@@ -1,8 +1,7 @@
-// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/GImage.cpp
+// roc-lib: g3d-6.09 roc_unit_45931f30d1eceea5.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
@@ -426,8 +425,7 @@ GImage::Format GImage::resolveFormat(
     }
 
     if (dataLen > 10) {
-        if ((dataLen > 11) && (data[0] == 0xFF) &&
-            (memcmp(&data[6], "JFIF", 4) == 0)) {
+        if ((dataLen > 11) && (data[0] == 0xFF) && (data[1] == 0xD8) && (data[2] == 0xFF)) {
             return JPEG;
         }
     }

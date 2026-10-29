@@ -1,58 +1,33 @@
-// from server: 82% by colin
-// roc 2007-08 0060b480  unit: CXTCaptionButtonTheme  size: 50 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0060b480
-//
-// 0060b480  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0060b484  8b4108               mov eax, dword ptr [ecx + 8]
-// 0060b487  56                   push esi
-// 0060b488  8b710c               mov esi, dword ptr [ecx + 0xc]
-// 0060b48b  8b4864               mov ecx, dword ptr [eax + 0x64]
-// 0060b48e  8b5664               mov edx, dword ptr [esi + 0x64]
-// 0060b491  394a08               cmp dword ptr [edx + 8], ecx
-// 0060b494  7407                 je 0x60b49d
-// 0060b496  395108               cmp dword ptr [ecx + 8], edx
-// 0060b499  7513                 jne 0x60b4ae
-// 0060b49b  8bc6                 mov eax, esi
-// 0060b49d  85c0                 test eax, eax
-// 0060b49f  740d                 je 0x60b4ae
-// 0060b4a1  3b442408             cmp eax, dword ptr [esp + 8]
-// 0060b4a5  7507                 jne 0x60b4ae
-// 0060b4a7  b801000000           mov eax, 1
-// 0060b4ac  5e                   pop esi
-// 0060b4ad  c3                   ret 
-// 0060b4ae  33c0                 xor eax, eax
-// 0060b4b0  5e                   pop esi
-// 0060b4b1  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_world_afe1a75c5df3a832.cpp
 
-struct CXTCaptionButtonTheme
-{
-    char pad[8];
-    void* field_8;
-    void* field_c;
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-int __cdecl func_0060b480(CXTCaptionButtonTheme* self, void* arg)
-{
-    void* a = self->field_8;
-    void* b = self->field_c;
-    void* ca = *(void**)((char*)a + 0x64);
-    void* cb = *(void**)((char*)b + 0x64);
-    void* result;
-    if (*(void**)((char*)cb + 8) == ca)
-    {
-        result = a;
-    }
-    else if (*(void**)((char*)ca + 8) == cb)
-    {
-        result = b;
-    }
-    else
-    {
-        return 0;
-    }
-    if (result == 0)
-        return 0;
-    if (result != arg)
-        return 0;
-    return 1;
-}
+#include "v8world/Clump.cpp"

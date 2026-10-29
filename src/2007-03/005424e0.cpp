@@ -1,10 +1,11 @@
-// from server: 99% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// roc-lib: rbxgs-dll roc_unit_bc9fa98e8350b2a4.cpp
 
 // Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
 #include "v8tree/Instance.h"
 #include "reflection/function.h"
 #include "reflection/property.h"
@@ -39,8 +40,7 @@ namespace RBX
 		  parent(NULL),
 		  children(),
 		  name(name),
-		  archivable(true),
-		  guid()
+		  archivable(true)
 	{
 	}
 
@@ -49,8 +49,7 @@ namespace RBX
 		  parent(NULL),
 		  children(),
 		  name("Instance"),
-		  archivable(true),
-		  guid()
+		  archivable(true)
 	{
 	}
 

@@ -1,1421 +1,1789 @@
+// from server: 92% by Viper
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarEventPropertiesDlg.cpp
+// roc-lib: mfc-9.0 atlmfc/src/mfc/afxribboncategory.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarEventPropertiesDlg.cpp: implementation of the CXTPCalendarEventPropertiesDlg.
+// This MFC Library source code supports the Microsoft Office Fluent User Interface 
+// (the "Fluent UI") and is provided only as referential material to supplement the 
+// Microsoft Foundation Classes Reference and related electronic documentation 
+// included with the MFC C++ library software.  
+// License terms to copy, use or distribute the Fluent UI are available separately.  
+// To learn more about our Fluent UI licensing program, please visit 
+// http://msdn.microsoft.com/officeui.
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// Copyright (C) Microsoft Corporation
+// All rights reserved.
 
 #include "stdafx.h"
-#include <math.h>
-
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPNotifyConnection.h"
-#include "Common/XTPSmartPtrInternalT.h"
-
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-#include "XTPCalendarPtrCollectionT.h"
-#include "XTPCalendarViewPart.h"
-#include "XTPCalendarEvent.h"
-#include "XTPCalendarRecurrencePattern.h"
-
-#include "XTPCalendarResource.h"
-#include "XTPCalendarData.h"
-#include "XTPCalendarControl.h"
-#include "XTPCalendarView.h"
-#include "XTPCalendarViewDay.h"
-#include "XTPCalendarEventLabel.h"
-#include "XTPCalendarTheme.h"
-#include "XTPCalendarThemeOffice2007.h"
-
-#include "XTPCalendarOccurSeriesChooseDlg.h"
-#include "XTPCalendarEventPropertiesDlg.h"
-#include "XTPCalendarEventRecurrenceDlg.h"
-
+#include "afxribbonpanel.h"
+#include "afxribboncategory.h"
+#include "afxribbonbar.h"
+#include "afxvisualmanager.h"
+#include "afxribbonpanelmenu.h"
+#include "multimon.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CXTPCalendarEventPropertiesDlg, CDialog)
+static const int nPanelMarginLeft = 2;
+static const int nPanelMarginRight = 2;
+static const int nPanelMarginTop = 3;
+static const int nPanelMarginBottom = 4;
+
 /////////////////////////////////////////////////////////////////////////////
-// CXTPCalendarEventPropertiesDlg dialog
+// CMFCRibbonTab
 
-BOOL XTPCalendarIsThemeOffice2007(CXTPCalendarControl* pCalendar)
+CMFCRibbonTab::CMFCRibbonTab()
 {
-	ASSERT(pCalendar);
-
-	if (!pCalendar || !pCalendar->GetTheme())
-		return FALSE;
-
-	CXTPCalendarThemeOffice2007* ptheme2007 = DYNAMIC_DOWNCAST(CXTPCalendarThemeOffice2007, pCalendar->GetTheme());
-
-	return ptheme2007 != NULL;
+	m_bIsTruncated = FALSE;
+	m_Color = AFX_CategoryColor_None;
+	m_nFullWidth = 0;
 }
 
-CXTPCalendarEventCategoryComboBox::CXTPCalendarEventCategoryComboBox()
+CString CMFCRibbonTab::GetToolTipText() const
 {
-	m_nLastKey = 0;
-	m_pCategories = NULL;
-}
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParent);
 
-CXTPCalendarEventCategoryComboBox::~CXTPCalendarEventCategoryComboBox()
-{
-	CMDTARGET_RELEASE(m_pCategories);
-}
-
-BEGIN_MESSAGE_MAP(CXTPCalendarEventCategoryComboBox, CComboBox)
-	//{{AFX_MSG_MAP(CXTPSyntaxEditColorComboBox)
-	ON_CONTROL_REFLECT(CBN_SELENDOK, OnSelChange)
-	ON_CONTROL_REFLECT(CBN_DROPDOWN, OnDropDown)
-	ON_WM_KEYDOWN()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CXTPCalendarEventCategoryComboBox::Init(CXTPCalendarEventCategories* pCategories, CXTPCalendarEventCategoryIDs* pChecked)
-{
-	ResetContent();
-
-	if (!pCategories || !pChecked)
+	if (!m_bIsTruncated)
 	{
-		ASSERT(FALSE);
+		return _T("");
+	}
+
+	CString strToolTipText = m_pParent->m_strName;
+	strToolTipText.Remove(_T('&'));
+
+	return strToolTipText;
+}
+
+void CMFCRibbonTab::CopyFrom(const CMFCRibbonBaseElement& s)
+{
+	CMFCRibbonBaseElement::CopyFrom(s);
+
+	CMFCRibbonTab& src = (CMFCRibbonTab&) s;
+	m_Color = src.m_Color;
+	m_nFullWidth = src.m_nFullWidth;
+}
+
+void CMFCRibbonTab::OnDraw(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	ASSERT_VALID(m_pParent);
+	ASSERT_VALID(m_pParent->GetParentRibbonBar());
+
+	if (m_rect.IsRectEmpty())
+	{
+		return;
+	}
+
+	COLORREF clrText = CMFCVisualManager::GetInstance()->OnDrawRibbonCategoryTab(pDC, this, m_pParent->IsActive() || GetDroppedDown() != NULL);
+	COLORREF clrTextOld = pDC->SetTextColor(clrText);
+
+	CRect rectTab = m_rect;
+	CRect rectTabText = m_rect;
+
+	pDC->DrawText(m_pParent->m_strName, rectTabText, DT_CALCRECT | DT_SINGLELINE | DT_VCENTER);
+
+	const int cxTabText = rectTabText.Width();
+	const int cxTabTextMargin = max(4, (rectTab.Width() - cxTabText) / 2);
+
+	rectTab.DeflateRect(cxTabTextMargin, 0);
+	rectTab.top += nPanelMarginTop;
+
+	pDC->DrawText(m_pParent->m_strName, rectTab, DT_SINGLELINE | DT_VCENTER);
+	pDC->SetTextColor(clrTextOld);
+}
+
+CRect CMFCRibbonTab::GetKeyTipRect(CDC* pDC, BOOL /*bIsMenu*/)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	ASSERT_VALID(m_pParent);
+	ASSERT_VALID(m_pParent->m_pParentRibbonBar);
+
+	CSize sizeKeyTip = GetKeyTipSize(pDC);
+
+	if (sizeKeyTip == CSize(0, 0) || m_rect.IsRectEmpty())
+	{
+		return CRect(0, 0, 0, 0);
+	}
+
+	CRect rectKeyTip(0, 0, 0, 0);
+
+	CRect rectTab = m_rect;
+	CRect rectTabText = m_rect;
+
+	pDC->DrawText(m_pParent->m_strName, rectTabText, DT_CALCRECT | DT_SINGLELINE | DT_VCENTER);
+
+	const int cxTabText = rectTabText.Width();
+	const int cxTabTextMargin = max(4, (rectTab.Width() - cxTabText) / 2);
+
+	rectTab.DeflateRect(cxTabTextMargin, 0);
+	rectTab.top += nPanelMarginTop;
+
+	rectKeyTip.left = rectTab.CenterPoint().x - sizeKeyTip.cx / 2;
+	rectKeyTip.right = rectKeyTip.left + sizeKeyTip.cx;
+
+	rectKeyTip.top = rectTabText.bottom - 2;
+	rectKeyTip.bottom = rectKeyTip.top + sizeKeyTip.cy;
+
+	return rectKeyTip;
+}
+
+BOOL CMFCRibbonTab::OnKey(BOOL /*bIsMenuKey*/)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParent);
+
+	CMFCRibbonBar* pBar = m_pParent->GetParentRibbonBar();
+	ASSERT_VALID(pBar);
+
+	if (IsDisabled())
+	{
 		return FALSE;
 	}
 
-	m_pCategories = pCategories;
-	CMDTARGET_ADDREF(m_pCategories);
+	pBar->SetActiveCategory(m_pParent);
 
-	int nCount = m_pCategories->GetCount();
-	for (int i = 0; i < nCount; i++)
+	if ((pBar->GetHideFlags() & AFX_RIBBONBAR_HIDE_ELEMENTS) == 0)
 	{
-		CXTPCalendarEventCategory* pCat = m_pCategories->GetAt(i);
-		ASSERT(pCat);
-		if (pCat)
+		pBar->SetKeyboardNavigationLevel(m_pParent);
+	}
+
+	return FALSE;
+}
+
+BOOL CMFCRibbonTab::SetACCData(CWnd* pParent, CAccessibilityData& data)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParent);
+
+	CMFCRibbonBar* pBar = m_pParent->GetParentRibbonBar();
+	ASSERT_VALID(pBar);
+
+	const BOOL bIsRibbonMinimized = (pBar->GetHideFlags() & AFX_RIBBONBAR_HIDE_ELEMENTS) != 0;
+
+	if (!CMFCRibbonBaseElement::SetACCData(pParent, data))
+	{
+		return FALSE;
+	}
+
+	data.m_bAccState = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE;
+
+	if (bIsRibbonMinimized)
+	{
+		data.m_bAccState |= STATE_SYSTEM_HASPOPUP;
+
+		if (IsDroppedDown())
 		{
-			int nIdx = AddString(pCat->GetName());
-			SetItemDataPtr(nIdx, (void*)pCat);
+			data.m_bAccState |= STATE_SYSTEM_SELECTED | STATE_SYSTEM_PRESSED;
+			data.m_strAccDefAction = _T("Close");
+		}
+		else
+		{
+			data.m_strAccDefAction = _T("Open");
 		}
 	}
+	else
+	{
+		if (m_pParent->IsActive())
+		{
+			data.m_bAccState |= STATE_SYSTEM_SELECTED;
+		}
 
-	m_arChecked.RemoveAll();
-	m_arChecked.Copy(*pChecked);
+		data.m_strAccDefAction = _T("Switch");
+	}
+
+	data.m_strAccName = m_pParent->m_strName;
+	data.m_nAccRole = ROLE_SYSTEM_PAGETAB;
+	data.m_strAccKeys = _T("Alt, ") + m_strKeys;
+	return TRUE;
+}
+
+CSize CMFCRibbonTab::GetRegularSize(CDC* /*pDC*/)
+{
+	return CSize(0, 0);
+}
+
+void CMFCRibbonTab::OnLButtonDown(CPoint /*point*/)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParent);
+
+	m_pParent->GetParentRibbonBar()->SetActiveCategory(m_pParent);
+}
+
+void CMFCRibbonTab::OnLButtonDblClk(CPoint /*point*/)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParent);
+
+	if (m_pParent->IsActive())
+	{
+		if (m_pParent->m_ActiveTime != (clock_t)-1 && clock () - m_pParent->m_ActiveTime < (int) GetDoubleClickTime ())
+		{
+			return;
+		}
+
+		CMFCRibbonBar* pBar = m_pParent->GetParentRibbonBar();
+		ASSERT_VALID(pBar);
+
+		if ((pBar->GetHideFlags() & AFX_RIBBONBAR_HIDE_ELEMENTS) != 0)
+		{
+			// Ribbon is minimized, restore it now:
+			if (IsDroppedDown())
+			{
+				ClosePopupMenu();
+			}
+
+			m_pParent->ShowElements();
+		}
+		else
+		{
+			// Minimize ribbon:
+			m_pParent->ShowElements(FALSE);
+		}
+
+		pBar->GetParentFrame()->RecalcLayout();
+		pBar->RedrawWindow();
+	}
+}
+
+BOOL CMFCRibbonTab::IsSelected() const
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParent);
+
+	if (!m_pParent->IsActive())
+	{
+		return FALSE;
+	}
+
+	CMFCRibbonBar* pRibbonBar = m_pParent->GetParentRibbonBar();
+	ASSERT_VALID(pRibbonBar);
+
+	if (pRibbonBar != CWnd::GetFocus())
+	{
+		return FALSE;
+	}
+
+	if (pRibbonBar->GetKeyboardNavigationLevel() < 0)
+	{
+		return FALSE;
+	}
+
+	if (pRibbonBar->GetQATDroppedDown() != NULL)
+	{
+		return FALSE;
+	}
+
+	if (pRibbonBar->GetApplicationButton() != NULL && pRibbonBar->GetApplicationButton()->IsDroppedDown())
+	{
+		return FALSE;
+	}
 
 	return TRUE;
 }
 
-void CXTPCalendarEventCategoryComboBox::GetChecked(CXTPCalendarEventCategoryIDs* pChecked, BOOL* pbChanged)
-{
-	if (!pChecked)
-		return;
+/////////////////////////////////////////////////////////////////////////////
+// CRibbonCategoryScroll
 
-	if (pbChanged)
+CRibbonCategoryScroll::CRibbonCategoryScroll ()
+{
+	m_bIsLeft = FALSE;
+}
+
+void CRibbonCategoryScroll::CopyFrom (const CMFCRibbonBaseElement& s)
+{
+	CMFCRibbonButton::CopyFrom (s);
+
+	CRibbonCategoryScroll& src = (CRibbonCategoryScroll&) s;
+	m_bIsLeft = src.m_bIsLeft;
+}
+
+void CRibbonCategoryScroll::OnDraw (CDC* pDC)
+{
+	ASSERT_VALID (this);
+	ASSERT_VALID (pDC);
+
+	if (m_rect.IsRectEmpty ())
 	{
-		int nCount = m_arChecked.GetSize();
-		if (nCount == pChecked->GetSize())
+		return;
+	}
+
+	CMFCVisualManager::GetInstance ()->OnDrawRibbonCategoryScroll (
+		pDC, this);
+}
+
+BOOL CRibbonCategoryScroll::OnAutoRepeat ()
+{
+	ASSERT_VALID (this);
+	ASSERT_VALID (m_pParent);
+
+	if (m_rect.IsRectEmpty ())
+	{
+		return FALSE;
+	}
+
+	return m_pParent->OnScrollHorz (m_bIsLeft);
+}
+
+void CRibbonCategoryScroll::OnMouseMove(CPoint point) 
+{
+	ASSERT_VALID (this);
+	ASSERT_VALID (m_pParent);
+
+	if (m_rect.IsRectEmpty ())
+	{
+		m_bIsHighlighted = FALSE;
+		return;
+	}
+
+	BOOL bWasHighlighted = m_bIsHighlighted;
+	m_bIsHighlighted = m_rect.PtInRect (point);
+
+	if (bWasHighlighted != m_bIsHighlighted)
+	{
+		if (m_pParent->GetParentMenuBar () != NULL)
 		{
-			for (int i = 0; i < nCount; i++)
+			m_pParent->GetParentMenuBar ()->PopTooltip ();
+		}
+		else if (m_pParent->GetParentRibbonBar () != NULL)
+		{
+			m_pParent->GetParentRibbonBar ()->PopTooltip ();
+		}
+
+		Redraw ();
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CMFCRibbonCategory
+
+IMPLEMENT_DYNCREATE(CMFCRibbonCategory, CObject)
+
+CMFCRibbonCategory::CMFCRibbonCategory()
+{
+	CommonInit();
+}
+
+CMFCRibbonCategory::CMFCRibbonCategory(CMFCRibbonBar* pParentRibbonBar, LPCTSTR lpszName, UINT uiSmallImagesResID, UINT uiLargeImagesResID, CSize sizeSmallImage, CSize sizeLargeImage)
+{
+	ASSERT_VALID(pParentRibbonBar);
+	ENSURE(lpszName != NULL);
+
+	CommonInit(pParentRibbonBar, lpszName, uiSmallImagesResID, uiLargeImagesResID, sizeSmallImage, sizeLargeImage);
+}
+
+void CMFCRibbonCategory::CommonInit(CMFCRibbonBar* pParentRibbonBar, LPCTSTR lpszName, UINT uiSmallImagesResID, UINT uiLargeImagesResID, CSize sizeSmallImage, CSize sizeLargeImage)
+{
+	m_pParentMenuBar = NULL;
+	m_bMouseIsPressed = FALSE;
+	m_bIsActive = FALSE;
+	m_bIsVisible = TRUE;
+	m_dwData = 0;
+	m_uiContextID = 0;
+	m_nLastCategoryWidth = -1;
+	m_nLastCategoryOffsetY = 0;
+	m_nMinWidth = -1;
+
+	m_rect.SetRectEmpty();
+
+	m_pParentRibbonBar = pParentRibbonBar;
+	SetName(lpszName);
+
+	// Load images:
+	if (sizeSmallImage != CSize(0, 0))
+	{
+		m_SmallImages.SetImageSize(sizeSmallImage);
+	}
+
+	if (sizeLargeImage != CSize(0, 0))
+	{
+		m_LargeImages.SetImageSize(sizeLargeImage);
+	}
+
+	if (uiSmallImagesResID > 0)
+	{
+		if (!m_SmallImages.Load(uiSmallImagesResID))
+		{
+			ASSERT(FALSE);
+		}
+	}
+
+	if (uiLargeImagesResID > 0)
+	{
+		if (!m_LargeImages.Load(uiLargeImagesResID))
+		{
+			ASSERT(FALSE);
+		}
+	}
+
+	m_Tab.m_pParent = this;
+
+	int nIndex = m_strName.Find(_T('\n'));
+	if (nIndex >= 0)
+	{
+		m_Tab.SetKeys(m_strName.Mid(nIndex + 1));
+		m_strName = m_strName.Left(nIndex);
+	}
+
+	m_ScrollLeft.m_pParent = this;
+	m_ScrollRight.m_pParent = this;
+	m_ScrollLeft.m_bIsLeft = TRUE;
+	m_ScrollRight.m_bIsLeft = FALSE;
+
+	m_nScrollOffset = 0;
+	m_ActiveTime = (clock_t)-1;
+}
+
+CMFCRibbonCategory::~CMFCRibbonCategory()
+{
+	int i = 0;
+
+	for (i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		delete m_arPanels [i];
+	}
+
+	for (i = 0; i < m_arElements.GetSize(); i++)
+	{
+		delete m_arElements [i];
+	}
+}
+
+void CMFCRibbonCategory::OnDraw(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	if (m_rect.IsRectEmpty())
+	{
+		return;
+	}
+
+	CMFCVisualManager::GetInstance()->OnDrawRibbonCategory(pDC, this, m_rect);
+
+	BOOL bClip = FALSE;
+
+	CRgn rgnClip;
+
+	if (!m_ScrollLeft.GetRect ().IsRectEmpty () ||
+		!m_ScrollRight.GetRect ().IsRectEmpty ())
+	{
+		CRect rectClient = m_rect;
+		rectClient.DeflateRect (nPanelMarginLeft, nPanelMarginTop, 
+			nPanelMarginRight, nPanelMarginBottom);
+
+		rgnClip.CreateRectRgnIndirect (rectClient);
+		pDC->SelectClipRgn (&rgnClip);
+
+		bClip = TRUE;
+	}
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->DoPaint(pDC);
+	}
+
+	if (bClip)
+	{
+		pDC->SelectClipRgn (NULL);
+	}
+
+	m_ScrollLeft.OnDraw (pDC);
+	m_ScrollRight.OnDraw (pDC);
+}
+
+CMFCRibbonPanel* CMFCRibbonCategory::AddPanel(LPCTSTR lpszPanelName, HICON hIcon, CRuntimeClass* pRTI)
+{
+	ASSERT_VALID(this);
+	ENSURE(lpszPanelName != NULL);
+
+	CMFCRibbonPanel* pPanel = NULL;
+
+	if (pRTI != NULL)
+	{
+		pPanel = DYNAMIC_DOWNCAST(CMFCRibbonPanel, pRTI->CreateObject());
+
+		if (pPanel == NULL)
+		{
+			ASSERT(FALSE);
+			return NULL;
+		}
+
+		pPanel->CommonInit(lpszPanelName, hIcon);
+	}
+	else
+	{
+		pPanel = new CMFCRibbonPanel(lpszPanelName, hIcon);
+	}
+
+	m_arPanels.Add(pPanel);
+
+	pPanel->m_pParent = this;
+	pPanel->m_btnLaunch.m_pParent = this;
+	pPanel->m_btnDefault.m_pParent = this;
+
+	m_nLastCategoryWidth = -1;
+	m_nMinWidth = -1;
+	return pPanel;
+}
+
+int CMFCRibbonCategory::GetPanelCount() const
+{
+	ASSERT_VALID(this);
+	return(int) m_arPanels.GetSize();
+}
+
+CMFCRibbonPanel* CMFCRibbonCategory::GetPanel(int nIndex)
+{
+	ASSERT_VALID(this);
+	return m_arPanels [nIndex];
+}
+
+int CMFCRibbonCategory::GetPanelIndex(const CMFCRibbonPanel* pPanel) const
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pPanel);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		if (m_arPanels [i] == pPanel)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int CMFCRibbonCategory::GetMaxHeight(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	int nMaxHeight = 0;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		nMaxHeight = max(nMaxHeight, pPanel->GetHeight(pDC));
+	}
+
+	return nMaxHeight + pDC->GetTextExtent(m_strName).cy + nPanelMarginTop + nPanelMarginBottom;
+}
+
+void CMFCRibbonCategory::RecalcLayout(CDC* pDC)
+{
+	if (m_rect.IsRectEmpty())
+	{
+		return;
+	}
+
+	if (m_pParentMenuBar != NULL)
+	{
+		CleanUpSizes();
+	}
+
+	RecalcPanelWidths(pDC);
+
+	if (m_arPanels.GetSize() == 0)
+	{
+		return;
+	}
+
+	int i = 0;
+	BOOL bRedrawScroll = FALSE;
+
+	const DWORD dwRibbonHideFlags = GetParentRibbonBar()->m_dwHideFlags;
+	const BOOL bHideAll = (dwRibbonHideFlags & AFX_RIBBONBAR_HIDE_ALL) || (dwRibbonHideFlags & AFX_RIBBONBAR_HIDE_ELEMENTS);
+
+	if (m_nMinWidth < 0)
+	{
+		m_nMinWidth = GetMinWidth(pDC);
+	}
+
+	if (bHideAll && m_pParentMenuBar == NULL)
+	{
+		for (i = 0; i < m_arPanels.GetSize(); i++)
+		{
+			CMFCRibbonPanel* pPanel = m_arPanels [i];
+			ASSERT_VALID(pPanel);
+
+			pPanel->Reposition(pDC, CRect(0, 0, 0, 0));
+			pPanel->OnShow(FALSE);
+		}
+
+		m_nLastCategoryWidth = -1;
+		m_nMinWidth = -1;
+	}
+	else if (m_nLastCategoryWidth != m_rect.Width() || m_nLastCategoryOffsetY != m_rect.top)
+	{
+		m_nLastCategoryWidth = m_rect.Width();
+		m_nLastCategoryOffsetY = m_rect.top;
+
+		CRect rectClient = m_rect;
+		rectClient.DeflateRect(nPanelMarginLeft * 2, nPanelMarginTop, nPanelMarginRight * 2, nPanelMarginBottom);
+
+		ResetPanelsLayout();
+
+		if (rectClient.Width () <= m_nMinWidth)
+		{
+			//-------------------------
+			// Just collapse all panes:
+			//-------------------------
+			for (i = 0; i < m_arPanels.GetSize (); i++)
 			{
-				if (m_arChecked[i] != pChecked->GetAt(i))
+				CMFCRibbonPanel* pPanel = m_arPanels [i];
+				ASSERT_VALID (pPanel);
+
+				pPanel->m_bForceCollpapse = TRUE;
+				pPanel->m_nCurrWidthIndex = (int) pPanel->m_arWidths.GetSize () - 1;
+			}
+		}
+		else
+		{
+			BOOL bAutoResize = TRUE;
+
+			if (m_arCollapseOrder.GetSize() > 0)
+			{
+				bAutoResize = FALSE;
+
+				BOOL bOK = TRUE;
+
+				for (int iNextPane = 0; iNextPane <= m_arCollapseOrder.GetSize(); iNextPane++)
 				{
-					*pbChanged |= TRUE;
+					bOK = SetPanelsLayout(rectClient.Width());
+					if (bOK || iNextPane == m_arCollapseOrder.GetSize())
+					{
+						break;
+					}
+
+					// Find next pane for collapsing - from the user-defined list:
+					int nPaneIndex = m_arCollapseOrder [iNextPane];
+					if (nPaneIndex < 0 || nPaneIndex >= m_arPanels.GetSize())
+					{
+						ASSERT(FALSE);
+						bOK = FALSE;
+						break;
+					}
+
+					CMFCRibbonPanel* pPanel = m_arPanels [nPaneIndex];
+					ASSERT_VALID(pPanel);
+
+					if (iNextPane < m_arCollapseOrder.GetSize() - 1 && m_arCollapseOrder [iNextPane + 1] == -1)
+					{
+						pPanel->m_bForceCollpapse = TRUE;
+						pPanel->m_nCurrWidthIndex = (int) pPanel->m_arWidths.GetSize() - 1;
+
+						iNextPane++;
+					}
+					else
+					{
+						if (pPanel->m_nCurrWidthIndex < pPanel->m_arWidths.GetSize() - 1)
+						{
+							pPanel->m_nCurrWidthIndex++;
+						}
+					}
+				}
+
+				if (!bOK)
+				{
+					bAutoResize = TRUE;
+					ResetPanelsLayout();
+				}
+			}
+
+			if (bAutoResize)
+			{
+				while (TRUE)
+				{
+					if (SetPanelsLayout(rectClient.Width()))
+					{
+						break;
+					}
+
+					// Find next pane for collapsing - next matched:
+					int nMaxWeightIndex = -1;
+					int nMaxWeight = 1;
+
+					for (i = 0; i < m_arPanels.GetSize(); i++)
+					{
+						CMFCRibbonPanel* pPanel = m_arPanels [i];
+						ASSERT_VALID(pPanel);
+
+						int nWeight = (int) pPanel->m_arWidths.GetSize() - pPanel->m_nCurrWidthIndex - 1;
+						if (nWeight >= nMaxWeight)
+						{
+							nMaxWeightIndex = i;
+							nMaxWeight = nWeight;
+						}
+					}
+
+					if (nMaxWeightIndex < 0)
+					{
+						break;
+					}
+
+					CMFCRibbonPanel* pPanel = m_arPanels [nMaxWeightIndex];
+					ASSERT_VALID(pPanel);
+
+					pPanel->m_nCurrWidthIndex++;
+				}
+			}
+		}
+
+		ReposPanels(pDC);
+		bRedrawScroll = TRUE;
+	}
+
+	UpdateScrollButtons ();
+
+	if (bRedrawScroll && GetParentRibbonBar ()->GetSafeHwnd() != NULL)
+	{
+		if (!m_ScrollLeft.GetRect ().IsRectEmpty() ||
+			!m_ScrollRight.GetRect ().IsRectEmpty())
+		{
+			GetParentRibbonBar ()->RedrawWindow(m_rect);
+		}
+	}
+}
+
+void CMFCRibbonCategory::UpdateScrollButtons ()
+{
+	m_ScrollLeft.m_pParentMenu = m_pParentMenuBar;
+	m_ScrollRight.m_pParentMenu = m_pParentMenuBar;
+
+	const int cxScrollWidth = (int) (afxGlobalData.GetRibbonImageScale () * 13);
+
+	CRect rectScrollLeft (0, 0, 0, 0);
+	CRect rectScrollRight (0, 0, 0, 0);
+
+	if (m_nScrollOffset > 0)
+	{
+		rectScrollLeft = m_rect;
+		rectScrollLeft.right = rectScrollLeft.left + cxScrollWidth;
+	}
+
+	if (m_rect.Width () + m_nScrollOffset < m_nMinWidth)
+	{
+		rectScrollRight = m_rect;
+		rectScrollRight.left = rectScrollRight.right - cxScrollWidth;
+	}
+
+	m_ScrollLeft.SetRect (rectScrollLeft);
+	m_ScrollRight.SetRect (rectScrollRight);
+}
+
+void CMFCRibbonCategory::ReposPanels (CDC* pDC)
+{
+	ASSERT_VALID (this);
+	ASSERT_VALID (pDC);
+
+	CRect rectClient = m_rect;
+	rectClient.DeflateRect (nPanelMarginLeft * 2, nPanelMarginTop, 
+							nPanelMarginRight * 2, nPanelMarginBottom);
+
+	const BOOL bForceCollpapse = (rectClient.Width () <= m_nMinWidth);
+
+	int x = rectClient.left - m_nScrollOffset;
+
+	for (int i = 0; i < m_arPanels.GetSize (); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID (pPanel);
+
+		if (bForceCollpapse)
+		{
+			pPanel->m_bForceCollpapse = TRUE;
+			pPanel->m_nCurrWidthIndex = (int) pPanel->m_arWidths.GetSize () - 1;
+		}
+
+		const int nCurrPanelWidth = 
+			pPanel->m_arWidths [pPanel->m_nCurrWidthIndex] + 
+			2 * pPanel->m_nXMargin;
+
+		CRect rectPanel = CRect (x, rectClient.top, 
+								x + nCurrPanelWidth, rectClient.bottom);
+
+		pPanel->Reposition (pDC, rectPanel);
+
+		x = pPanel->m_rect.right + nPanelMarginRight;
+
+		if (rectPanel.right <= rectClient.left + 2 * nPanelMarginLeft ||
+			rectPanel.left >= rectClient.right - 2 * nPanelMarginRight)
+		{
+			rectPanel.SetRectEmpty ();
+
+
+
+			pPanel->Reposition (pDC, rectPanel);
+		}
+
+		if (bForceCollpapse)
+		{
+			pPanel->m_bForceCollpapse = TRUE;
+		}
+
+		pPanel->OnAfterChangeRect (pDC);
+	}
+}
+
+void CMFCRibbonCategory::RecalcPanelWidths(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	int nHeight = -1;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		if (pPanel->m_arWidths.GetSize() == 0)
+		{
+			if (nHeight == -1)
+			{
+				nHeight = GetMaxHeight(pDC);
+			}
+
+			pPanel->RecalcWidths(pDC, nHeight);
+			m_nLastCategoryWidth = -1;
+		}
+	}
+
+	m_nMinWidth = -1;
+}
+
+void CMFCRibbonCategory::CleanUpSizes()
+{
+	ASSERT_VALID(this);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->CleanUpSizes();
+		pPanel->m_arWidths.RemoveAll();
+	}
+
+	m_nLastCategoryWidth = -1;
+	m_nMinWidth = -1;
+}
+
+int CMFCRibbonCategory::GetMinWidth(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	int nMinWidth = nPanelMarginLeft;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		nMinWidth += pPanel->GetMinWidth(pDC) + nPanelMarginRight;
+	}
+
+	return nMinWidth;
+}
+
+void CMFCRibbonCategory::OnMouseMove(CPoint point)
+{
+	ASSERT_VALID(this);
+
+	m_ScrollLeft.OnMouseMove (point);
+	m_ScrollRight.OnMouseMove (point);
+
+	if (m_ScrollLeft.IsHighlighted () || m_ScrollRight.IsHighlighted ())
+	{
+		return;
+	}
+
+	HighlightPanel(GetPanelFromPoint(point), point);
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::HitTest(CPoint point, BOOL bCheckPanelCaption) const
+{
+	ASSERT_VALID(this);
+
+	CMFCRibbonBaseElement* pBtnScroll = HitTestScrollButtons (point);
+	if (pBtnScroll != NULL)
+	{
+		return pBtnScroll;
+	}
+
+	CMFCRibbonPanel* pPanel = GetPanelFromPoint(point);
+	if (pPanel != NULL)
+	{
+		ASSERT_VALID(pPanel);
+		return pPanel->HitTest(point, bCheckPanelCaption);
+	}
+
+	return NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::HitTestScrollButtons (CPoint point) const
+{
+	ASSERT_VALID (this);
+
+	if (m_ScrollLeft.GetRect ().PtInRect (point))
+	{
+		return (CMFCRibbonBaseElement*)&m_ScrollLeft;
+	}
+
+	if (m_ScrollRight.GetRect ().PtInRect (point))
+	{
+		return (CMFCRibbonBaseElement*)&m_ScrollRight;
+	}
+
+	return NULL;
+}
+
+int CMFCRibbonCategory::HitTestEx(CPoint point) const
+{
+	ASSERT_VALID(this);
+
+	CMFCRibbonPanel* pPanel = GetPanelFromPoint(point);
+	if (pPanel != NULL)
+	{
+		ASSERT_VALID(pPanel);
+		return pPanel->HitTestEx(point);
+	}
+
+	return -1;
+}
+
+CMFCRibbonPanel* CMFCRibbonCategory::GetPanelFromPoint(CPoint point) const
+{
+	ASSERT_VALID(this);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		if (pPanel->m_rect.PtInRect(point))
+		{
+			return pPanel;
+		}
+	}
+
+	return NULL;
+}
+
+CMFCRibbonPanel* CMFCRibbonCategory::HighlightPanel(CMFCRibbonPanel* pHLPanel, CPoint point)
+{
+	ASSERT_VALID(this);
+
+	CMFCRibbonPanel* pPrevHLPanel = NULL;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		if (pPanel->IsHighlighted())
+		{
+			if (pHLPanel != pPanel)
+			{
+				pPanel->Highlight(FALSE, point);
+			}
+
+			pPrevHLPanel = pPanel;
+		}
+
+		if (pHLPanel == pPanel)
+		{
+			pPanel->Highlight(TRUE, point);
+		}
+	}
+
+	if (m_pParentMenuBar != NULL)
+	{
+		ASSERT_VALID(m_pParentMenuBar);
+		m_pParentMenuBar->UpdateWindow();
+	}
+	else
+	{
+		ASSERT_VALID(m_pParentRibbonBar);
+		m_pParentRibbonBar->UpdateWindow();
+	}
+
+	return pPrevHLPanel;
+}
+
+void CMFCRibbonCategory::OnCancelMode()
+{
+	m_bMouseIsPressed = FALSE;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->CancelMode();
+	}
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::OnLButtonDown(CPoint point)
+{
+	CMFCRibbonBaseElement* pBtnScroll = HitTestScrollButtons (point);
+	if (pBtnScroll != NULL)
+	{
+		ASSERT_VALID(pBtnScroll);
+		pBtnScroll->OnAutoRepeat ();
+
+		if (HitTestScrollButtons (point) == pBtnScroll)
+		{
+			return pBtnScroll;
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+
+	CMFCRibbonPanel* pPanel = GetPanelFromPoint(point);
+	if (pPanel == NULL)
+	{
+		return NULL;
+	}
+
+	m_bMouseIsPressed = TRUE;
+
+	ASSERT_VALID(pPanel);
+	return pPanel->MouseButtonDown(point);
+}
+
+void CMFCRibbonCategory::OnLButtonUp(CPoint point)
+{
+	m_ScrollLeft.m_bIsHighlighted = FALSE;
+	m_ScrollRight.m_bIsHighlighted = FALSE;
+
+	CMFCRibbonPanel* pPanel = GetPanelFromPoint(point);
+	if (pPanel == NULL)
+	{
+		return;
+	}
+
+	m_bMouseIsPressed = FALSE;
+
+	ASSERT_VALID(pPanel);
+	pPanel->MouseButtonUp(point);
+}
+
+void CMFCRibbonCategory::OnUpdateCmdUI(CMFCRibbonCmdUI* pCmdUI, CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+{
+	ASSERT_VALID(this);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->OnUpdateCmdUI(pCmdUI, pTarget, bDisableIfNoHndler);
+	}
+}
+
+BOOL CMFCRibbonCategory::NotifyControlCommand(BOOL bAccelerator, int nNotifyCode, WPARAM wParam, LPARAM lParam)
+{
+	ASSERT_VALID(this);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		if (pPanel->NotifyControlCommand(bAccelerator, nNotifyCode, wParam, lParam))
+		{
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+void CMFCRibbonCategory::SetActive(BOOL bIsActive)
+{
+	ASSERT_VALID(this);
+
+	if (m_bIsActive == bIsActive)
+	{
+		return;
+	}
+
+	if ((m_pParentRibbonBar->m_dwHideFlags & AFX_RIBBONBAR_HIDE_ELEMENTS) != 0)
+	{
+		m_bIsActive = bIsActive;
+		return;
+	}
+
+	ShowElements();
+
+	m_bIsActive = bIsActive;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->OnShow(bIsActive);
+	}
+
+	m_ActiveTime = bIsActive ? clock () : (clock_t)-1;
+}
+
+void CMFCRibbonCategory::ShowElements(BOOL bShow)
+{
+	ASSERT_VALID(this);
+
+	GetParentRibbonBar()->m_dwHideFlags = bShow ? 0 : AFX_RIBBONBAR_HIDE_ELEMENTS;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->OnShow(bShow);
+	}
+
+	GetParentRibbonBar()->GetParentFrame()->RecalcLayout();
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::FindByID(UINT uiCmdID, BOOL bVisibleOnly) const
+{
+	ASSERT_VALID(this);
+
+	int i = 0;
+
+	if (!bVisibleOnly)
+	{
+		for (i = 0; i < m_arElements.GetSize(); i++)
+		{
+			CMFCRibbonBaseElement* pElem = m_arElements [i];
+			ASSERT_VALID(pElem);
+
+			if (pElem->GetID() == uiCmdID)
+			{
+				return pElem;
+			}
+		}
+	}
+
+	for (i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		CMFCRibbonBaseElement* pElem = pPanel->FindByID(uiCmdID);
+		if (pElem != NULL)
+		{
+			ASSERT_VALID(pElem);
+			return pElem;
+		}
+	}
+
+	return NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::FindByData(DWORD_PTR dwData, BOOL bVisibleOnly) const
+{
+	ASSERT_VALID(this);
+
+	int i = 0;
+
+	for (i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		CMFCRibbonBaseElement* pElem = pPanel->FindByData(dwData);
+		if (pElem != NULL)
+		{
+			ASSERT_VALID(pElem);
+			return pElem;
+		}
+	}
+
+	if (!bVisibleOnly)
+	{
+		for (i = 0; i < m_arElements.GetSize(); i++)
+		{
+			CMFCRibbonBaseElement* pElem = m_arElements [i];
+			ASSERT_VALID(pElem);
+
+			if (pElem->GetData() == dwData)
+			{
+				return pElem;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+void CMFCRibbonCategory::GetElementsByID(UINT uiCmdID, CArray<CMFCRibbonBaseElement*, CMFCRibbonBaseElement*>& arButtons)
+{
+	ASSERT_VALID(this);
+
+	int i = 0;
+
+	for (i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->GetElementsByID(uiCmdID, arButtons);
+	}
+
+	for (i = 0; i < m_arElements.GetSize(); i++)
+	{
+		CMFCRibbonBaseElement* pElem = m_arElements [i];
+		ASSERT_VALID(pElem);
+
+		if (pElem->GetID() == uiCmdID)
+		{
+			arButtons.Add(pElem);
+		}
+	}
+}
+
+void CMFCRibbonCategory::GetItemIDsList(CList<UINT,UINT>& lstItems, BOOL bHiddenOnly) const
+{
+	ASSERT_VALID(this);
+
+	int i = 0;
+
+	if (!bHiddenOnly)
+	{
+		for (i = 0; i < m_arPanels.GetSize(); i++)
+		{
+			CMFCRibbonPanel* pPanel = m_arPanels [i];
+			ASSERT_VALID(pPanel);
+
+			pPanel->GetItemIDsList(lstItems);
+		}
+	}
+
+	for (i = 0; i < m_arElements.GetSize(); i++)
+	{
+		CMFCRibbonBaseElement* pElem = m_arElements [i];
+		ASSERT_VALID(pElem);
+
+		pElem->GetItemIDsList(lstItems);
+	}
+}
+
+CMFCRibbonPanel* CMFCRibbonCategory::FindPanelWithElem(const CMFCRibbonBaseElement* pElement)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pElement);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		if (pPanel->HasElement(pElement))
+		{
+			return pPanel;
+		}
+	}
+
+	return NULL;
+}
+
+void CMFCRibbonCategory::AddHidden(CMFCRibbonBaseElement* pElement)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pElement);
+
+	pElement->SetParentCategory(this);
+	m_arElements.Add(pElement);
+}
+
+BOOL CMFCRibbonCategory::OnDrawImage(CDC* pDC, CRect rect, CMFCRibbonBaseElement* pElement, BOOL bIsLargeImage, BOOL nImageIndex, BOOL bCenter)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pElement);
+
+	CMFCToolBarImages& image = bIsLargeImage ? m_LargeImages : m_SmallImages;
+
+	if (nImageIndex >= image.GetCount())
+	{
+		return FALSE;
+	}
+
+	CAfxDrawState ds;
+
+	CPoint ptImage = rect.TopLeft();
+	const CSize sizeImage = GetImageSize(bIsLargeImage);
+
+	if (bCenter)
+	{
+		ptImage.Offset(max(0, (rect.Width() - sizeImage.cx) / 2), max(0, (rect.Height() - sizeImage.cy) / 2));
+	}
+
+	image.SetTransparentColor(afxGlobalData.clrBtnFace);
+
+	if (afxGlobalData.GetRibbonImageScale() != 1.)
+	{
+		image.PrepareDrawImage(ds, sizeImage);
+	}
+	else
+	{
+		image.PrepareDrawImage(ds);
+	}
+
+	image.Draw(pDC, ptImage.x, ptImage.y, nImageIndex, FALSE, pElement->IsDisabled());
+
+	image.EndDrawImage(ds);
+	return TRUE;
+}
+
+CSize CMFCRibbonCategory::GetImageSize(BOOL bIsLargeImage) const
+{
+	ASSERT_VALID(this);
+
+	const CMFCToolBarImages& image = bIsLargeImage ? m_LargeImages : m_SmallImages;
+	const CSize sizeImage = image.GetImageSize();
+
+	if (afxGlobalData.GetRibbonImageScale() == 1.)
+	{
+		return sizeImage;
+	}
+
+	return CSize(
+		(int)(.5 + afxGlobalData.GetRibbonImageScale() * sizeImage.cx),
+		(int)(.5 + afxGlobalData.GetRibbonImageScale() * sizeImage.cy));
+}
+
+void CMFCRibbonCategory::GetElements(CArray <CMFCRibbonBaseElement*, CMFCRibbonBaseElement*>& arElements)
+{
+	ASSERT_VALID(this);
+
+	arElements.RemoveAll();
+
+	int i = 0;
+
+	for (i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->GetElements(arElements);
+	}
+
+	// Add hidden elements:
+	for (i = 0; i < m_arElements.GetSize(); i++)
+	{
+		CMFCRibbonBaseElement* pElem = m_arElements [i];
+		ASSERT_VALID(pElem);
+
+		arElements.Add(pElem);
+	}
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::GetDroppedDown()
+{
+	ASSERT_VALID(this);
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		CMFCRibbonBaseElement* pElem = pPanel->GetDroppedDown();
+		if (pElem != NULL)
+		{
+			ASSERT_VALID(pElem);
+			return pElem;
+		}
+	}
+
+	return NULL;
+}
+
+void CMFCRibbonCategory::ShowFloating(CRect rectFloating)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pParentRibbonBar);
+
+	if ((m_pParentRibbonBar->m_dwHideFlags & AFX_RIBBONBAR_HIDE_ELEMENTS) == 0)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	const BOOL bIsRTL = (m_pParentRibbonBar->GetExStyle() & WS_EX_LAYOUTRTL);
+
+	CMFCRibbonPanelMenu* pMenu = new CMFCRibbonPanelMenu(this, rectFloating.Size());
+
+	m_Tab.SetDroppedDown(pMenu);
+
+	pMenu->Create(m_pParentRibbonBar, bIsRTL ? rectFloating.right : rectFloating.left, rectFloating.top, (HMENU) NULL);
+}
+
+void CMFCRibbonCategory::CopyFrom(CMFCRibbonCategory& src)
+{
+	ASSERT_VALID(this);
+
+	int i = 0;
+
+	m_strName = src.m_strName;
+	m_bIsActive = src.m_bIsActive;
+	m_bIsVisible = src.m_bIsVisible;
+
+	for (i = 0; i < src.m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanelSrc = src.m_arPanels [i];
+		ASSERT_VALID(pPanelSrc);
+
+		CMFCRibbonPanel* pPanel = (CMFCRibbonPanel*) pPanelSrc->GetRuntimeClass()->CreateObject();
+		ASSERT_VALID(pPanel);
+
+		pPanel->CopyFrom(*pPanelSrc);
+
+		pPanel->m_btnDefault.CopyFrom(pPanelSrc->m_btnDefault);
+		pPanel->m_btnDefault.SetOriginal(&pPanelSrc->m_btnDefault);
+
+		m_arPanels.Add(pPanel);
+	}
+
+	m_pParentRibbonBar = src.m_pParentRibbonBar;
+	m_rect = src.m_rect;
+	m_Tab.CopyFrom(src.m_Tab);
+
+	m_dwData = src.m_dwData;
+	m_uiContextID = src.m_uiContextID;
+	m_pParentMenuBar = src.m_pParentMenuBar;
+
+	src.m_SmallImages.CopyTo(m_SmallImages);
+	src.m_LargeImages.CopyTo(m_LargeImages);
+
+	m_arCollapseOrder.RemoveAll();
+	m_arCollapseOrder.Copy(src.m_arCollapseOrder);
+
+	m_ScrollLeft.CopyFrom (src.m_ScrollLeft);
+	m_ScrollLeft.m_pParent = this;
+	m_ScrollRight.CopyFrom (src.m_ScrollRight);
+	m_ScrollRight.m_pParent = this;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonCategory::GetParentButton() const
+{
+	ASSERT_VALID(this);
+
+	if (m_pParentMenuBar == NULL)
+	{
+		return NULL;
+	}
+
+	return((CMFCPopupMenu*)m_pParentMenuBar->GetParent())->GetParentRibbonElement();
+}
+
+void CMFCRibbonCategory::SetKeys(LPCTSTR lpszKeys)
+{
+	ASSERT_VALID(this);
+	ENSURE(lpszKeys != NULL);
+
+	m_Tab.SetKeys(lpszKeys);
+}
+
+void CMFCRibbonCategory::SetName(LPCTSTR lpszName)
+{
+	ASSERT_VALID(this);
+
+	m_strName = lpszName == NULL ? _T("") : lpszName;
+
+	// Remove '&' characters and build key string:
+	CString strKeys;
+
+	for (int i = 0; i < m_strName.GetLength(); i++)
+	{
+		if (m_strName [i] == _T('&'))
+		{
+			m_strName.Delete(i);
+
+			if (i < m_strName.GetLength())
+			{
+				strKeys += m_strName [i];
+			}
+		}
+	}
+
+	m_Tab.SetKeys(strKeys);
+}
+
+void CMFCRibbonCategory::OnRTLChanged(BOOL bIsRTL)
+{
+	ASSERT_VALID(this);
+
+	int i = 0;
+
+	for (i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->OnRTLChanged(bIsRTL);
+	}
+
+	for (i = 0; i < m_arElements.GetSize(); i++)
+	{
+		CMFCRibbonBaseElement* pElem = m_arElements [i];
+		ASSERT_VALID(pElem);
+
+		pElem->OnRTLChanged(bIsRTL);
+	}
+
+	m_nLastCategoryWidth = -1;
+}
+
+int CMFCRibbonCategory::GetTextTopLine() const
+{
+	ASSERT_VALID(this);
+
+	const CSize sizeImageLarge = GetImageSize(TRUE);
+	if (sizeImageLarge == CSize(0, 0))
+	{
+		return -1;
+	}
+
+	return sizeImageLarge.cy + 5;
+}
+
+void CMFCRibbonCategory::SetCollapseOrder(const CArray<int, int>& arCollapseOrder)
+{
+	ASSERT_VALID(this);
+
+	m_arCollapseOrder.RemoveAll();
+	m_arCollapseOrder.Copy(arCollapseOrder);
+}
+
+BOOL CMFCRibbonCategory::SetPanelsLayout(int nWidth)
+{
+	int nTotalWidth = 0;
+
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->m_bForceCollpapse = FALSE;
+
+		if (pPanel->m_nCurrWidthIndex == pPanel->m_arWidths.GetSize() - 1 && pPanel->m_arWidths.GetSize() > 1)
+		{
+			pPanel->m_bForceCollpapse = TRUE;
+		}
+
+		const int nCurrPanelWidth = pPanel->m_arWidths [pPanel->m_nCurrWidthIndex] + 2 * pPanel->m_nXMargin;
+
+		nTotalWidth += nCurrPanelWidth + nPanelMarginRight;
+
+		if (nTotalWidth > nWidth)
+		{
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+void CMFCRibbonCategory::ResetPanelsLayout()
+{
+	// all panels in max. width:
+	for (int i = 0; i < m_arPanels.GetSize(); i++)
+	{
+		CMFCRibbonPanel* pPanel = m_arPanels [i];
+		ASSERT_VALID(pPanel);
+
+		pPanel->m_nCurrWidthIndex = 0;
+		pPanel->m_bTrancateCaption = FALSE;
+	}
+
+	m_nScrollOffset = 0;
+}
+
+BOOL CMFCRibbonCategory::OnScrollHorz (BOOL bScrollLeft, int nScrollOffset/* = 0*/)
+{
+	ASSERT_VALID(this);
+
+	const int nPrevScrollOffset = m_nScrollOffset;
+
+	if (nScrollOffset == 0)
+	{
+		nScrollOffset = 50;
+	}
+
+	if (bScrollLeft)
+	{
+		m_nScrollOffset -= nScrollOffset;
+	}
+	else
+	{
+		m_nScrollOffset += nScrollOffset;
+	}
+
+	m_nScrollOffset = min (m_nMinWidth - m_rect.Width (), max (0, m_nScrollOffset));
+
+	CMFCRibbonBar* pRibbonBar = GetParentRibbonBar ();
+	ASSERT_VALID (pRibbonBar);
+
+	CClientDC dc (pRibbonBar);
+
+	CFont* pOldFont = dc.SelectObject (pRibbonBar->GetFont ());
+	ASSERT (pOldFont != NULL);
+
+	ReposPanels (&dc);
+
+	dc.SelectObject (pOldFont);
+
+	UpdateScrollButtons ();
+
+	if (m_pParentMenuBar != NULL)
+	{
+		ASSERT_VALID (m_pParentMenuBar);
+		m_pParentMenuBar->RedrawWindow ();
+	}
+	else
+	{
+		pRibbonBar->RedrawWindow (m_rect);
+	}
+
+	return nPrevScrollOffset != m_nScrollOffset;
+}
+
+void CMFCRibbonCategory::EnsureVisible (CMFCRibbonButton* pButton)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pButton);
+
+	if (m_rect.IsRectEmpty ())
+	{
+		return;
+	}
+
+	CRect rectClient = m_rect;
+	rectClient.DeflateRect (nPanelMarginLeft * 2, nPanelMarginTop, 
+		nPanelMarginRight * 2, nPanelMarginBottom);
+
+	CRect rectButton = pButton->GetRect ();
+	if (rectButton.IsRectEmpty ())
+	{
+		CMFCRibbonPanel* pParentPanel = pButton->GetParentPanel ();
+		if (pParentPanel == NULL)
+		{
+			return;
+		}
+
+		ASSERT_VALID(pParentPanel);
+		ASSERT(pParentPanel->GetRect ().IsRectEmpty ());
+
+		int nPanelIndex = -1;
+		int nFirstVisiblePanel = -1;
+		int nLastVisiblePanel = -1;
+		int i = 0;
+
+		for (i = 0; i < m_arPanels.GetSize (); i++)
+		{
+			CMFCRibbonPanel* pPanel = m_arPanels [i];
+			ASSERT_VALID (pPanel);
+
+			if (pPanel == pParentPanel)
+			{
+				nPanelIndex = i;
+			}
+
+			if (!pPanel->GetRect ().IsRectEmpty ())
+			{
+				if (nFirstVisiblePanel < 0)
+				{
+					nFirstVisiblePanel = i;
+				}
+
+				nLastVisiblePanel = i;
+			}
+		}
+
+		if (nPanelIndex == -1 || nFirstVisiblePanel == -1 || nLastVisiblePanel == -1)
+		{
+			return;
+		}
+
+		if (nPanelIndex < nFirstVisiblePanel)
+		{
+			while (OnScrollHorz (TRUE))
+			{
+				if (!pParentPanel->GetRect ().IsRectEmpty () &&
+					pParentPanel->GetRect ().left >= rectClient.left)
+				{
 					break;
 				}
 			}
 		}
-		else
+		else if (nPanelIndex > nLastVisiblePanel)
 		{
-			*pbChanged |= TRUE;
-		}
-	}
-
-	pChecked->RemoveAll();
-	pChecked->Copy(m_arChecked);
-}
-
-void CXTPCalendarEventCategoryComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
-{
-	ASSERT(lpMIS->CtlType == ODT_COMBOBOX);
-	lpMIS->itemHeight = (::GetSystemMetrics(SM_CYVTHUMB)-::GetSystemMetrics(SM_CYEDGE)) + 4;
-	lpMIS->itemWidth = 0;
-}
-
-void CXTPCalendarEventCategoryComboBox::DrawItem(LPDRAWITEMSTRUCT lpDIS)
-{
-	CDC*  pDC       = CDC::FromHandle(lpDIS->hDC);
-	UINT  itemState = lpDIS->itemState;
-	UINT  itemID    = lpDIS->itemID;
-	CRect rcItem    = lpDIS->rcItem;
-
-	if (!m_pCategories)
-		return;
-
-	BOOL bDisabled = ((itemState & ODS_DISABLED) == ODS_DISABLED);
-
-	if ((itemState & ODS_COMBOBOXEDIT) == ODS_COMBOBOXEDIT)
-	{
-		if (bDisabled)
-		{
-			pDC->SetTextColor(GetXtremeColor(COLOR_GRAYTEXT));
-			pDC->SetBkColor(GetXtremeColor(COLOR_3DFACE));
-			pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_3DFACE));
-		}
-
-		BOOL bCtrlFocused = GetFocus() == this;
-		if (bCtrlFocused)
-		{
-			pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_HIGHLIGHT));
-			pDC->DrawFocusRect(&rcItem);
-		}
-
-		int nOffset = 0;
-		int nCount = m_arChecked.GetSize();
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPCalendarEventCategory* pCat = m_pCategories->Find(m_arChecked.GetAt(i));
-			ASSERT(pCat);
-			if (pCat)
+			while (OnScrollHorz (FALSE))
 			{
-				// Draw category color
-				CRect rcColor = rcItem;
-				rcColor.left += nOffset;
-				rcColor.right = rcColor.left + rcColor.Height();
-				rcColor.DeflateRect(2, 2, 2, 2);
-
-				nOffset += rcColor.Height() + 2;
-
-				if (bCtrlFocused)
+				if (!pParentPanel->GetRect ().IsRectEmpty () &&
+					pParentPanel->GetRect ().right <= rectClient.right)
 				{
-					CRect rcColor2 = rcColor;
-					rcColor2.InflateRect(1, 1, 1, 1);
-					CXTPCalendarTheme::DrawRoundRect(pDC, rcColor2, RGB(255, 255, 255), TRUE, //NULL);
-						CBrush::FromHandle((HBRUSH)GetStockObject(LTGRAY_BRUSH)));
-				}
-
-				CXTPCalendarTheme::DrawRoundRect(pDC, rcColor, pCat->GetBorderColor(), FALSE,
-					pCat->GetBackgroundColor());
-			}
-		}
-
-		return;
-	}
-
-	if (itemID == (UINT)-1)
-		return;
-
-	CXTPCalendarEventCategory* pCat = (CXTPCalendarEventCategory*)GetItemDataPtr(itemID);
-	ASSERT(pCat);
-	if (!pCat)
-		return;
-
-	BOOL bFocus = ((itemState & ODS_FOCUS) == ODS_FOCUS);
-	int nFIdx = m_arChecked.Find(pCat->GetID());
-
-	pDC->SetBkColor(GetXtremeColor(COLOR_WINDOW));
-
-	// draw focus rectangle.
-	if (bFocus)
-	{
-		pDC->SetTextColor(GetXtremeColor(COLOR_HIGHLIGHTTEXT));
-		pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_HIGHLIGHT));
-
-		pDC->DrawFocusRect(&rcItem);
-	}
-	else if (nFIdx >= 0)
-	{
-		pDC->SetTextColor(GetXtremeColor(COLOR_BTNTEXT));
-		pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_BTNFACE));
-	}
-	else
-	{
-		pDC->SetTextColor(GetXtremeColor(COLOR_WINDOWTEXT));
-		pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_WINDOW));
-	}
-
-
-	// Draw category color
-	CRect rcColor = rcItem;
-	rcColor.right = rcColor.left + rcColor.Height();
-	rcColor.DeflateRect(3, 3, 3, 3);
-
-	if (nFIdx >= 0)
-	{
-		CRect rcColor2 = rcColor;
-		rcColor2.InflateRect(1, 1, 1, 1);
-		CXTPCalendarTheme::DrawRoundRect(pDC, rcColor2, RGB(255, 255, 255), TRUE, //NULL);
-				CBrush::FromHandle((HBRUSH)GetStockObject(LTGRAY_BRUSH)));
-	}
-
-	CXTPCalendarTheme::DrawRoundRect(pDC, rcColor, pCat->GetBorderColor(), FALSE,
-		pCat->GetBackgroundColor());
-
-	// draw text.
-	CRect rText = rcItem;
-	rText.left = rcColor.right;
-	rText.DeflateRect(4, 2, 2, 1);
-
-	pDC->SetBkMode(TRANSPARENT);
-	pDC->DrawText(pCat->GetName(), rText, DT_LEFT | DT_VCENTER| DT_SINGLELINE);
-}
-
-int CXTPCalendarEventCategoryComboBox::GetLBCurSel() const
-{
-	if (GetDroppedState() == TRUE)
-	{
-		HWND hWnd = ::FindWindow(_T("ComboLBox"), NULL);
-		if (::IsWindow(hWnd))
-		{
-			return (int)::SendMessage(hWnd, LB_GETCURSEL, 0, 0);
-		}
-	}
-	return LB_ERR;
-}
-
-void CXTPCalendarEventCategoryComboBox::RedrawLB(BOOL bUpdateNow)
-{
-	if (GetDroppedState() == TRUE)
-	{
-		HWND hWnd = ::FindWindow(_T("ComboLBox"), NULL);
-		if (::IsWindow(hWnd))
-		{
-			if (bUpdateNow)
-				::UpdateWindow(hWnd);
-			else
-				::InvalidateRect(hWnd, NULL, FALSE);
-		}
-	}
-}
-
-void CXTPCalendarEventCategoryComboBox::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == VK_SPACE && GetDroppedState())
-	{
-		_OnSelChange(GetLBCurSel());
-
-		Invalidate(FALSE);
-		RedrawLB();
-
-		m_nLastKey = nChar;
-
-		return;
-	}
-
-	if (nChar == VK_RETURN && m_nLastKey == VK_SPACE)
-	{
-		ShowDropDown(FALSE);
-		Invalidate(FALSE);
-
-		return;
-	}
-
-	m_nLastKey = nChar;
-
-	CComboBox::OnKeyDown(nChar, nRepCnt, nFlags);
-}
-void CXTPCalendarEventCategoryComboBox::OnDropDown()
-{
-	SetCurSel(CB_ERR);
-	m_nLastKey = 0;
-}
-
-void CXTPCalendarEventCategoryComboBox::OnSelChange()
-{
-	if (GetDroppedState())
-		_OnSelChange(GetCurSel());
-}
-
-void CXTPCalendarEventCategoryComboBox::_OnSelChange(int nItemIndex)
-{
-	if (!m_pCategories || nItemIndex == CB_ERR || GetDroppedState() == FALSE)
-		return;
-
-	CXTPCalendarEventCategory* pCat = (CXTPCalendarEventCategory*)GetItemDataPtr(nItemIndex);
-	ASSERT(pCat);
-	if (!pCat)
-		return;
-
-	int nFIdx = m_arChecked.Find(pCat->GetID());
-
-	if (nFIdx < 0)
-		m_arChecked.InsertAt(0, pCat->GetID());
-	else
-		m_arChecked.RemoveAt(nFIdx);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-CXTPCalendarEventLabelComboBox::CXTPCalendarEventLabelComboBox()
-{
-	m_pLabels = NULL;
-}
-
-CXTPCalendarEventLabelComboBox::~CXTPCalendarEventLabelComboBox()
-{
-	CMDTARGET_RELEASE(m_pLabels);
-}
-
-void CXTPCalendarEventLabelComboBox::Init(CXTPCalendarEventLabels*  pLabels)
-{
-	ResetContent();
-
-	ASSERT(pLabels);
-	if (!pLabels)
-		return;
-
-	m_pLabels = pLabels;
-	CMDTARGET_ADDREF(m_pLabels);
-
-	for (int i = 0; i < m_pLabels->GetCount(); i++)
-	{
-		CXTPCalendarEventLabel* pLbl = m_pLabels->GetAt(i);
-		ASSERT(pLbl);
-		if (!pLbl)
-			continue;
-		int nIdx = AddString(pLbl->m_strName);
-		SetItemData(nIdx, (DWORD_PTR)pLbl->m_nLabelID);
-	}
-}
-
-int CXTPCalendarEventLabelComboBox::GetLabelID() const
-{
-	if (GetCurSel() == CB_ERR)
-		return XTP_IDS_CALENDAR_EVENT_LABEL_NONE;
-
-	return (int)GetItemData(GetCurSel());
-}
-
-void CXTPCalendarEventLabelComboBox::SetLabelID(int nID)
-{
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (nID == (int)GetItemData(i))
-		{
-			SetCurSel(i);
-			return;
-		}
-	}
-
-	SetCurSel(CB_ERR);
-}
-
-void CXTPCalendarEventLabelComboBox::MeasureItem(LPMEASUREITEMSTRUCT lpMIS)
-{
-	ASSERT(lpMIS->CtlType == ODT_COMBOBOX);
-	lpMIS->itemHeight = (::GetSystemMetrics(SM_CYVTHUMB)-::GetSystemMetrics(SM_CYEDGE));
-	lpMIS->itemWidth = 0;
-}
-
-void CXTPCalendarEventLabelComboBox::DrawItem(LPDRAWITEMSTRUCT lpDIS)
-{
-	CDC*  pDC       = CDC::FromHandle(lpDIS->hDC);
-	UINT  itemState = lpDIS->itemState;
-	UINT  itemID    = lpDIS->itemID;
-	CRect rcItem    = lpDIS->rcItem;
-
-	if (itemID == (UINT)-1 || !m_pLabels)
-	{
-		return;
-	}
-
-	int nLabelID = (int)GetItemData(itemID);
-	CXTPCalendarEventLabel* pLbl = m_pLabels->Find(nLabelID);
-	if (!pLbl)
-		return;
-
-	BOOL bDisabled = ((itemState & ODS_DISABLED) == ODS_DISABLED);
-	BOOL bSelected = ((itemState & ODS_SELECTED) == ODS_SELECTED);
-	BOOL bFocus    = ((itemState & ODS_FOCUS)    == ODS_FOCUS);
-
-	// draw background.
-	if (bDisabled)
-	{
-		pDC->SetTextColor(GetXtremeColor(COLOR_GRAYTEXT));
-		pDC->SetBkColor(GetXtremeColor(COLOR_3DFACE));
-		pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_3DFACE));
-	}
-	else
-	{
-		if (bSelected)
-		{
-			pDC->SetTextColor(GetXtremeColor(COLOR_HIGHLIGHTTEXT));
-			pDC->SetBkColor(GetXtremeColor(COLOR_WINDOW));
-			pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_HIGHLIGHT));
-		}
-		else
-		{
-			pDC->SetTextColor(GetXtremeColor(COLOR_WINDOWTEXT));
-			pDC->SetBkColor(GetXtremeColor(COLOR_WINDOW));
-			pDC->FillSolidRect(&rcItem, GetXtremeColor(COLOR_WINDOW));
-		}
-
-		// draw focus rectangle.
-		if (bFocus)
-		{
-			pDC->DrawFocusRect(&rcItem);
-		}
-	}
-
-	// determine the size of the color rectangle.
-	CRect rColor(rcItem);
-	rColor.DeflateRect(2,2);
-	rColor.right = rColor.left + rColor.Height();
-	rColor.bottom = rColor.top + rColor.Height();
-
-	// draw color rectangle.
-	pDC->FillSolidRect(rColor,
-		bDisabled? GetXtremeColor(COLOR_3DFACE): pLbl->m_clrColor);
-
-	pDC->Draw3dRect(rColor,
-		GetXtremeColor(bDisabled? COLOR_GRAYTEXT: COLOR_WINDOWTEXT),
-		GetXtremeColor(bDisabled? COLOR_GRAYTEXT: COLOR_WINDOWTEXT));
-
-	// determine the size of the text display.
-	CRect rText(rColor);
-	rText.top -= 2;
-	rText.bottom = rText.top + (::GetSystemMetrics(SM_CYVTHUMB)-::GetSystemMetrics(SM_CYEDGE));
-	rText.left = rText.right + 4;
-	rText.right = rcItem.right;
-
-	// draw text.
-	pDC->SetBkMode(TRANSPARENT);
-	pDC->DrawText(pLbl->m_strName, rText, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-CXTPCalendarEventPropertiesDlg::CXTPCalendarEventPropertiesDlg(CXTPCalendarControl* pControl,
-		BOOL bAddEvent,
-		CWnd* pParent,
-		CXTPCalendarEvent* pEditingEvent,
-		UINT nIDTemplate,
-		COleDateTime dtInitial)
-{
-	InitModalIndirect(XTPResourceManager()->LoadDialogTemplate(nIDTemplate), pParent);
-
-	m_nAllDayEventSet = -1;
-
-	m_bAddEvent = bAddEvent;
-
-	m_bAllDayEvent = FALSE;
-	m_bPrivate = FALSE;
-	m_bMeeting = FALSE;
-	m_bReminder = FALSE;
-	m_nBusyStatus = xtpCalendarBusyStatusUnknown;
-	m_bOccurrence = TRUE;
-
-	CXTPCalendarData* pData = pControl ? pControl->GetDataProvider() : NULL;
-	if (!pControl || !pData)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-	m_ptrControl = pControl;
-	m_bCategoriesEnabled = XTPCalendarIsThemeOffice2007(m_ptrControl);
-
-	m_ptrEditingEvent.SetPtr(pEditingEvent, TRUE);
-	if (!pEditingEvent)
-	{
-		m_ptrEditingEvent = pData->CreateNewEvent();
-		if (m_ptrEditingEvent)
-		{
-			CXTPCalendarView* pView = m_ptrControl->GetActiveView();
-			ASSERT(pView);
-
-			if (pView)
-			{
-				COleDateTime dtSelBegin, dtSelEnd;
-				BOOL bAllDayEvent = FALSE;
-				int nGroupIndex = 0;
-
-				if (!pView->GetSelection(&dtSelBegin, &dtSelEnd, &bAllDayEvent, &nGroupIndex))
-				{
-					dtSelBegin = COleDateTime::GetCurrentTime();
-
-					if (fabs(dtSelBegin - dtInitial) > COleDateTimeSpan(0, 0, 0, 30))
-						dtSelBegin = dtInitial;
-
-					dtSelEnd = dtSelBegin + COleDateTimeSpan(0, 1, 0, 0);
-					nGroupIndex = 0;
-				}
-				UINT uSchID = XTP_SAFE_GET3(pView, GetViewDay_(0), GetViewGroup_(nGroupIndex), GetScheduleID(), XTP_CALENDAR_UNKNOWN_SCHEDULE_ID);
-
-				m_ptrEditingEvent->SetStartTime(min(dtSelBegin, dtSelEnd));
-				m_ptrEditingEvent->SetEndTime(max(dtSelBegin, dtSelEnd));
-				m_ptrEditingEvent->SetScheduleID(uSchID);
-
-				m_nAllDayEventSet = bAllDayEvent ? 1 : 0;
-
-				if (!bAllDayEvent)
-					m_ptrEditingEvent->SetBusyStatus(xtpCalendarBusyStatusBusy);
-			}
-		}
-	}
-
-	if (m_ptrEditingEvent)
-	{
-		m_dtStartDate = m_ptrEditingEvent->GetStartTime();
-		m_dtStartTime = m_dtStartDate;
-
-		m_dtEndDate = m_ptrEditingEvent->GetEndTime();
-		m_dtEndTime = m_dtEndDate;
-
-		if (m_ptrEditingEvent->IsAllDayEvent() && CXTPCalendarUtils::IsZeroTime(m_dtEndDate))
-		{
-			AddEndDate_ResetTime(m_dtStartDate, m_dtEndDate, -1);
-		}
-	}
-}
-
-
-#if _MSC_VER < 1200
-AFX_INLINE void DDX_DateTimeCtrl(CDataExchange* pDX, int nIDC, COleDateTime& value)
-{
-	HWND hWndCtrl = pDX->PrepareCtrl(nIDC);
-	if (pDX->m_bSaveAndValidate)
-		CXTPDateTimeHelper::GetDateTimeCtrlTime(hWndCtrl, value);
-	else
-		CXTPDateTimeHelper::SetDateTimeCtrlTime(hWndCtrl, value);
-}
-#endif
-
-void CXTPCalendarEventPropertiesDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-
-	DDX_Control(pDX, XTP_IDC_COMBO_SCHEDULEID, m_ctrlScheduleIDCB);
-
-	if (m_ptrControl != NULL && m_ptrControl->m_bMultipleSchedulesMode)
-	{
-		if (m_ctrlScheduleSet.m_hWnd)
-			DDX_Control(pDX, XTP_IDC_LABEL + 1, m_ctrlScheduleSet);
-	}
-
-	DDX_Control(pDX, XTP_IDC_SCHEDULEID_TEXT, m_ctrlScheduleLabel);
-	DDX_Control(pDX, XTP_IDC_COMBO_REMINDER, m_ctrlReminderCB);
-	DDX_Control(pDX, XTP_IDC_COMBO_BUSYSTATE, m_ctrlBusyStatusCB);
-	DDX_Text(pDX, XTP_IDC_EDIT_SUBJECT, m_strSubject);
-	DDX_Text(pDX, XTP_IDC_EDIT_LOCATION, m_strLocation);
-	DDX_Text(pDX, XTP_IDC_EDIT_BODY, m_strBody);
-	DDX_DateTimeCtrl(pDX, XTP_IDC_DTP_START_DATE, m_dtStartDate);
-	DDX_DateTimeCtrl(pDX, XTP_IDC_DTP_START_TIME, m_dtStartTime);
-	DDX_DateTimeCtrl(pDX, XTP_IDC_DTP_END_DATE, m_dtEndDate);
-	DDX_DateTimeCtrl(pDX, XTP_IDC_DTP_END_TIME, m_dtEndTime);
-
-	DDX_CBIndex(pDX, XTP_IDC_COMBO_BUSYSTATE, m_nBusyStatus);
-
-	DDX_Check(pDX, XTP_IDC_CHECK_ALLDAY_EVENT, m_bAllDayEvent);
-	DDX_Check(pDX, XTP_IDC_CHECK_PRIVATE, m_bPrivate);
-	DDX_Check(pDX, XTP_IDC_CHECK_MEETING, m_bMeeting);
-	DDX_Check(pDX, XTP_IDC_CHECK_REMINDER, m_bReminder);
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPCalendarEventPropertiesDlg, CDialog)
-	ON_WM_CREATE()
-	ON_BN_CLICKED(XTP_IDC_CHECK_REMINDER, OnCheckReminder)
-	ON_BN_CLICKED(XTP_IDC_BUTTON_RECURRECNCE, OnBnClickedButtonRecurrecnce)
-	ON_BN_CLICKED(XTP_IDC_CHECK_ALLDAY_EVENT, OnBnClickedCheckAlldayEvent)
-	ON_NOTIFY(DTN_DATETIMECHANGE, XTP_IDC_DTP_START_DATE, OnStartDateChanged)
-	ON_NOTIFY(DTN_DATETIMECHANGE, XTP_IDC_DTP_START_TIME, OnStartTimeChanged)
-	ON_NOTIFY(DTN_DATETIMECHANGE, XTP_IDC_DTP_END_DATE, OnEndDateChanged)
-	ON_NOTIFY(DTN_DATETIMECHANGE, XTP_IDC_DTP_END_TIME, OnEndTimeChanged)
-	ON_CBN_SELCHANGE(XTP_IDC_COMBO_SCHEDULEID, OnScheduleIdChanged)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCalendarEventPropertiesDlg message handlers
-
-void CXTPCalendarEventPropertiesDlg::OnStartDateChanged(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	*pResult = 0;
-
-	if (COleDateTime(pDTChange->st.wYear, pDTChange->st.wMonth, pDTChange->st.wDay, 0, 0, 0) ==
-		COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0))
-		return;
-
-	UpdateData();
-
-	if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) >
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0))
-	{
-		m_dtEndDate = m_dtStartDate;
-		m_dtStartTime.SetDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(),
-			m_dtStartTime.GetHour(), m_dtStartTime.GetMinute(), m_dtStartTime.GetSecond());
-		m_dtEndTime.SetDateTime(m_dtEndTime.GetYear(), m_dtEndTime.GetMonth(), m_dtEndTime.GetDay(),
-			m_dtEndTime.GetHour(), m_dtEndTime.GetMinute(), m_dtEndTime.GetSecond());
-
-		if (m_dtStartTime > m_dtEndTime)
-			m_dtEndTime = m_dtStartTime;
-	}
-	else if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) ==
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0)
-		&& m_dtStartTime > m_dtEndTime)
-		m_dtEndTime = m_dtStartTime;
-
-	UpdateData(FALSE);
-}
-
-void CXTPCalendarEventPropertiesDlg::OnEndDateChanged(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	*pResult = 0;
-
-	if (COleDateTime(pDTChange->st.wYear, pDTChange->st.wMonth, pDTChange->st.wDay, 0, 0, 0) ==
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0))
-		return;
-
-	UpdateData();
-
-	if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) >
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0))
-	{
-		m_dtStartDate = m_dtEndDate;
-		m_dtStartTime.SetDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(),
-			m_dtStartTime.GetHour(), m_dtStartTime.GetMinute(), m_dtStartTime.GetSecond());
-		m_dtEndTime.SetDateTime(m_dtEndTime.GetYear(), m_dtEndTime.GetMonth(), m_dtEndTime.GetDay(),
-			m_dtEndTime.GetHour(), m_dtEndTime.GetMinute(), m_dtEndTime.GetSecond());
-
-		if (m_dtStartTime > m_dtEndTime)
-			m_dtStartTime = m_dtEndTime;
-	}
-	else if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) ==
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0)
-		&& m_dtStartTime > m_dtEndTime)
-		m_dtStartTime = m_dtEndTime;
-
-	UpdateData(FALSE);
-}
-
-void CXTPCalendarEventPropertiesDlg::OnStartTimeChanged(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	*pResult = 0;
-
-	if (COleDateTime(pDTChange->st.wYear, pDTChange->st.wMonth, pDTChange->st.wDay,
-		pDTChange->st.wHour, pDTChange->st.wMinute, pDTChange->st.wSecond) ==
-		COleDateTime(m_dtStartTime.GetYear(), m_dtStartTime.GetMonth(), m_dtStartTime.GetDay(),
-		m_dtStartTime.GetHour(), m_dtStartTime.GetMinute(), m_dtStartTime.GetSecond()))
-		return;
-
-	UpdateData();
-
-	if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) >
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0))
-	{
-		m_dtEndDate = m_dtStartDate;
-		//m_dtStartTime.SetDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(),
-		//  m_dtStartTime.GetHour(), m_dtStartTime.GetMinute(), m_dtStartTime.GetSecond());
-		//m_dtEndTime.SetDateTime(m_dtEndTime.GetYear(), m_dtEndTime.GetMonth(), m_dtEndTime.GetDay(),
-		//  m_dtEndTime.GetHour(), m_dtEndTime.GetMinute(), m_dtEndTime.GetSecond());
-
-		if (m_dtStartTime > m_dtEndTime)
-			m_dtEndTime = m_dtStartTime;
-	}
-	else if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) ==
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0)
-		&& m_dtStartTime > m_dtEndTime)
-		m_dtEndTime = m_dtStartTime;
-
-	UpdateData(FALSE);
-}
-
-void CXTPCalendarEventPropertiesDlg::OnEndTimeChanged(NMHDR *pNMHDR, LRESULT *pResult)
-{
-	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
-	*pResult = 0;
-
-	if (COleDateTime(pDTChange->st.wYear, pDTChange->st.wMonth, pDTChange->st.wDay,
-		pDTChange->st.wHour, pDTChange->st.wMinute, pDTChange->st.wSecond) ==
-		COleDateTime(m_dtEndTime.GetYear(), m_dtEndTime.GetMonth(), m_dtEndTime.GetDay(),
-		m_dtEndTime.GetHour(), m_dtEndTime.GetMinute(), m_dtEndTime.GetSecond()))
-		return;
-
-	UpdateData();
-
-	if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) >
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0))
-	{
-		m_dtStartDate = m_dtEndDate;
-		//m_dtStartTime.SetDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(),
-		//  m_dtStartTime.GetHour(), m_dtStartTime.GetMinute(), m_dtStartTime.GetSecond());
-		//m_dtEndTime.SetDateTime(m_dtEndTime.GetYear(), m_dtEndTime.GetMonth(), m_dtEndTime.GetDay(),
-		//  m_dtEndTime.GetHour(), m_dtEndTime.GetMinute(), m_dtEndTime.GetSecond());
-
-		if (m_dtStartTime > m_dtEndTime)
-			m_dtStartTime = m_dtEndTime;
-	}
-	else if (COleDateTime(m_dtStartDate.GetYear(), m_dtStartDate.GetMonth(), m_dtStartDate.GetDay(), 0, 0, 0) ==
-		COleDateTime(m_dtEndDate.GetYear(), m_dtEndDate.GetMonth(), m_dtEndDate.GetDay(), 0, 0, 0)
-		&& m_dtStartTime > m_dtEndTime)
-		m_dtStartTime = m_dtEndTime;
-
-	UpdateData(FALSE);
-}
-
-void CXTPCalendarEventPropertiesDlg::OnOK()
-{
-	UpdateData();
-
-	CString strReminder;
-	m_ctrlReminderCB.GetWindowText(strReminder);
-	int nReminderMinutes = CXTPCalendarUtils::ParceTimeDuration_min(strReminder);
-
-	if (nReminderMinutes == INT_MIN)
-	{
-		m_ctrlReminderCB.SetFocus();
-		XTPResourceManager()->ShowMessageBox(XTP_IDS_CALENDAR_WRONG_VALUE);
-		return;
-	}
-
-	BOOL bChanged = FALSE;
-
-	if (m_ptrEditingEvent->GetRecurrenceState() == xtpCalendarRecurrenceOccurrence)
-	{
-		VERIFY(m_ptrEditingEvent->MakeAsRException());
-	}
-
-	if (m_strSubject.Compare(m_ptrEditingEvent->GetSubject()))
-	{
-		m_ptrEditingEvent->SetSubject(m_strSubject);
-		bChanged = TRUE;
-	}
-	if (m_strLocation.Compare(m_ptrEditingEvent->GetLocation()))
-	{
-		m_ptrEditingEvent->SetLocation(m_strLocation);
-		bChanged = TRUE;
-	}
-	if (m_strBody.Compare(m_ptrEditingEvent->GetBody()))
-	{
-		m_ptrEditingEvent->SetBody(m_strBody);
-		bChanged = TRUE;
-	}
-
-	if (m_bOccurrence)
-	{
-		COleDateTime dtStartTime(CXTPCalendarUtils::UpdateTime(m_dtStartDate, m_dtStartTime));
-		COleDateTime dtEndTime(CXTPCalendarUtils::UpdateTime(m_dtEndDate, m_dtEndTime));
-
-		if (m_bAllDayEvent && CXTPCalendarUtils::IsZeroTime(m_dtEndDate))
-		{
-			AddEndDate_ResetTime(m_dtStartDate, dtEndTime, 1);
-		}
-
-		if (dtStartTime != m_ptrEditingEvent->GetStartTime())
-		{
-			m_ptrEditingEvent->SetStartTime(dtStartTime);
-			bChanged = TRUE;
-		}
-		if (dtEndTime != m_ptrEditingEvent->GetEndTime())
-		{
-			m_ptrEditingEvent->SetEndTime(dtEndTime);
-			bChanged = TRUE;
-		}
-
-		if (m_bAllDayEvent != m_ptrEditingEvent->IsAllDayEvent())
-		{
-			m_ptrEditingEvent->SetAllDayEvent(m_bAllDayEvent);
-			bChanged = TRUE;
-		}
-	}
-	else
-	{
-		//m_ptrEditingEvent->SetAllDayEvent(FALSE);
-		m_ptrEditingEvent->SetAllDayEvent(m_bAllDayEvent);
-	}
-
-	if (m_nBusyStatus != m_ptrEditingEvent->GetBusyStatus())
-	{
-		m_ptrEditingEvent->SetBusyStatus(m_nBusyStatus);
-		bChanged = TRUE;
-	}
-
-	if (m_bCategoriesEnabled)
-	{
-		m_ctrlCategories.GetChecked(m_ptrEditingEvent->GetCategories(), &bChanged);
-	}
-	else
-	{
-		if (m_ctrlLabelCB.GetLabelID() != m_ptrEditingEvent->GetLabelID())
-		{
-			m_ptrEditingEvent->SetLabelID(m_ctrlLabelCB.GetLabelID());
-			bChanged = TRUE;
-		}
-	}
-
-	if (m_bPrivate != m_ptrEditingEvent->IsPrivate())
-	{
-		m_ptrEditingEvent->SetPrivate(m_bPrivate);
-		bChanged = TRUE;
-	}
-
-	if (m_bMeeting != m_ptrEditingEvent->IsMeeting())
-	{
-		m_ptrEditingEvent->SetMeeting(m_bMeeting);
-		bChanged = TRUE;
-	}
-
-	if (m_bReminder != m_ptrEditingEvent->IsReminder())
-	{
-		m_ptrEditingEvent->SetReminder(m_bReminder);
-		bChanged = TRUE;
-	}
-
-	if (m_bReminder)
-	{
-		if (nReminderMinutes != m_ptrEditingEvent->GetReminderMinutesBeforeStart())
-		{
-			m_ptrEditingEvent->SetReminderMinutesBeforeStart(nReminderMinutes);
-			bChanged = TRUE;
-		}
-	}
-
-	if (m_ptrControl != NULL && m_ptrControl->m_bMultipleSchedulesMode)
-	{
-		if (m_ctrlScheduleSet.m_hWnd)
-		{
-			CString sSet, sGet, sOne;
-			int nCnt = m_ctrlScheduleIDCB.GetCount();
-			for (int nT = 0; nT < nCnt; nT++)
-			{
-				if (m_ctrlScheduleSet.GetCheck(nT) > 0)
-				{
-					sOne.Format(_T("|%d|"), (int) m_ctrlScheduleIDCB.GetItemData(nT));
-					sSet += sOne;
-				}
-			}
-			sSet.Replace(_T("||"), _T("|"));
-			sGet = m_ptrEditingEvent->GetScheduleSet();
-
-			if (sGet != sSet)
-			{
-				m_ptrEditingEvent->SetScheduleSet(sSet);
-				bChanged = TRUE;
-			}
-		}
-	}
-	CXTPCalendarData* pData = m_ptrEditingEvent->GetDataProvider();
-	if (pData)
-	{
-		int nSelSch = m_ctrlScheduleIDCB.GetCurSel();
-		if (nSelSch != CB_ERR)
-		{
-			UINT uSchID = (UINT) m_ctrlScheduleIDCB.GetItemData(nSelSch);
-			if (uSchID != m_ptrEditingEvent->GetScheduleID())
-			{
-				m_ptrEditingEvent->SetScheduleID(uSchID);
-				bChanged = TRUE;
-			}
-		}
-
-		if (m_ptrEditingEvent->GetSubject().IsEmpty()
-			&& m_ptrEditingEvent->GetLocation().IsEmpty()
-			&& m_ptrEditingEvent->GetBody().IsEmpty())
-		{
-			EndDialog(0);
-		}
-		else if (!bChanged && !m_bRecurrenceUpdate)
-		{
-			EndDialog(0);
-		}
-		else
-		{
-			// Update event in data storage
-			CXTPCalendarControl::CUpdateContext updateContext(m_ptrControl, xtpCalendarUpdateLayout | xtpCalendarUpdateRedraw);
-
-			if (m_bAddEvent)
-				VERIFY(pData->AddEvent(m_ptrEditingEvent));
-			else
-				VERIFY(pData->ChangeEvent(m_ptrEditingEvent));
-
-			m_ptrControl->Populate();
-		}
-	}
-
-	CDialog::OnOK();
-
-	//AfxGetMainWnd()->EnableWindow(TRUE);
-}
-
-void CXTPCalendarEventPropertiesDlg::OnCancel()
-{
-	CDialog::OnCancel();
-}
-
-void CXTPCalendarEventPropertiesDlg::OnScheduleIdChanged()
-{
-	if (m_ptrControl != NULL
-		&& m_ptrControl->m_bMultipleSchedulesMode
-		&& !m_ptrControl->m_bMultipleSchedulesNoSelfLinks)
-	{
-		int nSelSch = m_ctrlScheduleIDCB.GetCurSel();
-		if (nSelSch != CB_ERR)
-		{
-			if (m_ctrlScheduleSet.m_hWnd
-				&& m_ctrlScheduleSet.GetCount() > nSelSch)
-				m_ctrlScheduleSet.SetCheck(nSelSch, TRUE);
-		}
-	}
-}
-
-void CXTPCalendarEventPropertiesDlg::UpdateControlsFromEvent()
-{
-	ASSERT(m_ptrEditingEvent);
-
-	m_strSubject = m_ptrEditingEvent->GetSubject();
-	m_strLocation = m_ptrEditingEvent->GetLocation();
-	m_strBody = m_ptrEditingEvent->GetBody();
-
-	if (m_bCategoriesEnabled)
-	{
-		if (m_ptrEditingEvent->GetDataProvider())
-			m_ctrlCategories.Init(m_ptrEditingEvent->GetDataProvider()->GetEventCategories(),
-			m_ptrEditingEvent->GetCategories());
-	}
-	else
-	{
-		if (m_ptrEditingEvent->GetDataProvider())
-			m_ctrlLabelCB.Init(m_ptrEditingEvent->GetDataProvider()->GetLabelList());
-
-		m_ctrlLabelCB.SetLabelID(m_ptrEditingEvent->GetLabelID());
-	}
-
-
-	if (m_nAllDayEventSet < 0)
-	{
-		m_bAllDayEvent = m_ptrEditingEvent->IsAllDayEvent();
-	}
-	else
-	{
-		m_bAllDayEvent = m_nAllDayEventSet != 0;
-
-		if (m_bAllDayEvent && CXTPCalendarUtils::IsZeroTime(m_dtEndDate))
-			AddEndDate_ResetTime(m_dtStartDate, m_dtEndDate, -1);
-	}
-
-	m_bPrivate = m_ptrEditingEvent->IsPrivate();
-	m_bMeeting = m_ptrEditingEvent->IsMeeting();
-	m_nBusyStatus = m_ptrEditingEvent->GetBusyStatus();
-
-	m_bReminder = m_ptrEditingEvent->IsReminder();
-
-	int nMinutes = m_ptrEditingEvent->GetReminderMinutesBeforeStart();
-	CString strReminder = CXTPCalendarUtils::FormatTimeDuration(nMinutes, FALSE);
-
-	m_ctrlReminderCB.SetWindowText(strReminder);
-
-	CXTPCalendarData* pData = m_ptrEditingEvent->GetDataProvider();
-
-	CXTPCalendarSchedules* pSchedules = pData->GetSchedules();
-	ASSERT(pSchedules);
-
-	BOOL bSchEnabled = pSchedules && pSchedules->GetCount();
-
-	m_ctrlScheduleIDCB.EnableWindow(bSchEnabled);
-	m_ctrlScheduleLabel.EnableWindow(bSchEnabled);
-
-	BOOL bSuccess(FALSE);
-	if (pSchedules != NULL && bSchEnabled)
-	{
-		m_ctrlScheduleIDCB.ResetContent();
-		int nIdx(-1);
-
-		if (pData->m_bOwnershipMode)
-		{
-			nIdx = m_ctrlScheduleIDCB.AddString(_T("-"));
-			m_ctrlScheduleIDCB.SetItemData(nIdx, (DWORD_PTR)XTP_CALENDAR_UNKNOWN_SCHEDULE_ID);
-		}
-		CString sName;
-		int nCount = pSchedules->GetCount();
-		int nOwnerIndex(0);
-		DWORD_PTR sChId(0);
-
-		for (int nSchNr = 0; nSchNr < nCount; nSchNr++)
-		{
-			CXTPCalendarSchedule* pSch = pSchedules->GetAt(nSchNr);
-			ASSERT(pSch);
-			if (pSch)
-			{
-				sName = pSch->GetName();
-				if (pData->m_bOwnershipMode && !m_ptrControl->m_OwnerUser.IsEmpty())
-				{
-					if (m_ptrControl->m_OwnerUser == sName)
-					{
-						sChId = (DWORD_PTR)pSch->GetID();
-						nIdx = m_ctrlScheduleIDCB.AddString(sName);
-						m_ctrlScheduleIDCB.SetItemData(nIdx, sChId);
-						nOwnerIndex = nIdx;
-					}
-					else if (sName == _T("Public"))
-					{
-						sChId = (DWORD_PTR)pSch->GetID();
-						nIdx = m_ctrlScheduleIDCB.AddString(sName);
-						m_ctrlScheduleIDCB.SetItemData(nIdx, sChId);
-					}
-#ifdef _BUSINESS_MODEL_
-					else if (pSch->GetSecType() == 0)
-					{
-						sChId = (DWORD_PTR)pSch->GetID();
-						nIdx = m_ctrlScheduleIDCB.AddString(sName);
-						m_ctrlScheduleIDCB.SetItemData(nIdx, sChId);
-					}
-#endif
-
-					m_ctrlScheduleIDCB.EnableWindow(FALSE);
-					m_ctrlScheduleLabel.EnableWindow(FALSE);
-				}
-				else
-				{
-					sChId = (DWORD_PTR) pSch->GetID();
-					BOOL bNotFound(TRUE);
-					for (int iPrev = 0; iPrev < nSchNr; iPrev++)
-					{
-						if (sChId == m_ctrlScheduleIDCB.GetItemData(iPrev))
-						{
-							bNotFound = FALSE;
-							break;
-						}
-
-					}
-					if (bNotFound) //to prevent duplicates
-					{
-						nIdx = m_ctrlScheduleIDCB.AddString(sName);
-						m_ctrlScheduleIDCB.SetItemData(nIdx, sChId);
-						bSuccess = TRUE;
-					}
+					break;
 				}
 			}
 		}
 
-		UINT uSchID = m_ptrEditingEvent->GetScheduleID();
-		nCount = m_ctrlScheduleIDCB.GetCount();
-
-		if (m_bAddEvent && nCount)
-		{
-			m_ctrlScheduleIDCB.SetCurSel(nOwnerIndex);
-			bSuccess = TRUE;
-		}
-
-		for (int nSchIDCS = 0; nSchIDCS < nCount; nSchIDCS++)
-		{
-			if (m_ctrlScheduleIDCB.GetItemData(nSchIDCS) == uSchID)
-			{
-				m_ctrlScheduleIDCB.SetCurSel(nSchIDCS);
-				bSuccess = TRUE;
-				break;
-			}
-		}
+		return;
 	}
 
-	UpdateData(FALSE);
-
-	if (pData->m_bOwnershipMode && !bSuccess)
-		EndDialog(0);
-}
-
-void CXTPCalendarEventPropertiesDlg::UpdateControlsState()
-{
-	if (GetDlgItem(XTP_IDC_DTP_START_DATE))
-		GetDlgItem(XTP_IDC_DTP_START_DATE)->ShowWindow(m_bOccurrence ? SW_SHOW : SW_HIDE);
-	if (GetDlgItem(XTP_IDC_DTP_START_TIME))
-		GetDlgItem(XTP_IDC_DTP_START_TIME)->ShowWindow(m_bOccurrence && !m_bAllDayEvent ? SW_SHOW : SW_HIDE);
-	if (GetDlgItem(XTP_IDC_DTP_END_DATE))
-		GetDlgItem(XTP_IDC_DTP_END_DATE)->ShowWindow(m_bOccurrence ? SW_SHOW : SW_HIDE);
-	if (GetDlgItem(XTP_IDC_DTP_END_TIME))
-		GetDlgItem(XTP_IDC_DTP_END_TIME)->ShowWindow(m_bOccurrence && !m_bAllDayEvent ? SW_SHOW : SW_HIDE);
-	if (GetDlgItem(XTP_IDC_START_TEXT))
-		GetDlgItem(XTP_IDC_START_TEXT)->ShowWindow(m_bOccurrence ? SW_SHOW : SW_HIDE);
-	if (GetDlgItem(XTP_IDC_END_TEXT))
-		GetDlgItem(XTP_IDC_END_TEXT)->ShowWindow(m_bOccurrence ? SW_SHOW : SW_HIDE);
-
-	m_ctrlReminderCB.EnableWindow(m_bReminder);
-}
-
-void CXTPCalendarEventPropertiesDlg::InitReminderComboBox()
-{
-	m_ctrlReminderCB.ResetContent();
-
-	m_ctrlReminderCB.AddString(LoadString(XTP_IDS_CALENDAR_MINUTES_0));
-	m_ctrlReminderCB.AddString(LoadString(XTP_IDS_CALENDAR_MINUTES_1));
-	m_ctrlReminderCB.AddString(LoadString(XTP_IDS_CALENDAR_MINUTES_5));
-	m_ctrlReminderCB.AddString(LoadString(XTP_IDS_CALENDAR_MINUTES_10));
-	m_ctrlReminderCB.AddString(LoadString(XTP_IDS_CALENDAR_MINUTES_15));
-}
-
-void CXTPCalendarEventPropertiesDlg::InitBusyStatusComboBox()
-{
-	m_ctrlBusyStatusCB.ResetContent();
-
-	m_ctrlBusyStatusCB.AddString(LoadString(XTP_IDS_CALENDAR_TIME_STATUS_FREE));
-	m_ctrlBusyStatusCB.AddString(LoadString(XTP_IDS_CALENDAR_TIME_STATUS_TENTATIVE));
-	m_ctrlBusyStatusCB.AddString(LoadString(XTP_IDS_CALENDAR_TIME_STATUS_BUSY));
-	m_ctrlBusyStatusCB.AddString(LoadString(XTP_IDS_CALENDAR_TIME_STATUS_OUTOFOFFICE));
-}
-
-
-BOOL CXTPCalendarEventPropertiesDlg::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	m_bRecurrenceUpdate = FALSE;
-
-	if (m_bCategoriesEnabled)
+	if (rectButton.left < m_rect.left - nPanelMarginRight)
 	{
-		m_ctrlCategories.SubclassDlgItem(XTP_IDC_COMBO_LABEL, this);
+		OnScrollHorz (TRUE, rectClient.left - rectButton.left);
+	}
+	else if (rectButton.right > m_rect.right + nPanelMarginRight)
+	{
+		OnScrollHorz (FALSE, rectButton.right - rectClient.right);
+	}
+}
 
-		if (GetDlgItem(XTP_IDC_LABEL))
-		{
-			CString str = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_CATEGORIES_LABEL);
-			GetDlgItem(XTP_IDC_LABEL)->SetWindowText(str + _T(":"));
-		}
+void CMFCRibbonCategory::NormalizeFloatingRect (CMFCRibbonBar* pRibbonBar, CRect& rectCategory)
+{
+	ASSERT_VALID (this);
+	ASSERT_VALID (pRibbonBar);
+
+	CRect rectRibbon;
+	pRibbonBar->GetWindowRect (rectRibbon);
+
+	CRect rectScreen;
+
+	MONITORINFO mi;
+	mi.cbSize = sizeof (MONITORINFO);
+	if (GetMonitorInfo (MonitorFromPoint (rectRibbon.TopLeft (), MONITOR_DEFAULTTONEAREST), &mi))
+	{
+		rectScreen = mi.rcWork;
 	}
 	else
 	{
-		m_ctrlLabelCB.SubclassDlgItem(XTP_IDC_COMBO_LABEL, this);
+		::SystemParametersInfo (SPI_GETWORKAREA, 0, &rectScreen, 0);
 	}
 
-	InitReminderComboBox();
-
-	InitBusyStatusComboBox();
-
-	UpdateControlsFromEvent();
-	UpdateControlsState();
-
-	if (m_ptrControl != NULL && m_ptrControl->m_bMultipleSchedulesMode)
-	{
-		CRect rcLab, rcCmb, rcRmd, rcBody;
-		GetDlgItem(XTP_IDC_SCHEDULEID_TEXT)->GetWindowRect(&rcLab);
-
-		CString s_SCHEDULEID_TEXT;
-		GetDlgItem(XTP_IDC_SCHEDULEID_TEXT)->GetWindowText(s_SCHEDULEID_TEXT);
-		s_SCHEDULEID_TEXT.Replace(_T(" ID"), _T(""));
-		GetDlgItem(XTP_IDC_SCHEDULEID_TEXT)->SetWindowText(s_SCHEDULEID_TEXT);
-
-		ScreenToClient(&rcLab);
-		rcLab.right -= 40;
-		rcLab.left -= 30;
-
-		m_ctrlReminderCB.GetWindowRect(&rcRmd);
-		ScreenToClient(&rcRmd);
-
-		m_ctrlScheduleIDCB.GetWindowRect(&rcCmb);
-		ScreenToClient(&rcCmb);
-
-		GetDlgItem(XTP_IDC_EDIT_BODY)->GetWindowRect(&rcBody);
-		ScreenToClient(&rcBody);
-		rcBody.right = rcCmb.right;
-		GetDlgItem(XTP_IDC_EDIT_BODY)->MoveWindow(&rcBody);
-
-		rcCmb.top = rcBody.top;
-		rcCmb.bottom = rcBody.bottom;
-
-		GetDlgItem(XTP_IDC_CHECK_PRIVATE)->GetWindowRect(&rcBody);
-		ScreenToClient(&rcBody);
-		rcCmb.left = rcBody.left;
-
-		GetDlgItem(XTP_IDC_BUTTON_RECURRECNCE)->GetWindowRect(&rcBody);
-		ScreenToClient(&rcBody);
-
-		rcCmb.right = rcBody.right;
-
-		int nCnt = m_ctrlScheduleIDCB.GetCount();
-		if (nCnt > 1)
-		{
-			m_ctrlScheduleSet.Create(LBS_EXTENDEDSEL | LBS_OWNERDRAWFIXED |
-				LBS_STANDARD | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT |
-				WS_VSCROLL | WS_TABSTOP | WS_VISIBLE,
-				rcCmb, this, XTP_IDC_LABEL + 1);//118
-
-			m_ctrlScheduleSet.SetFont(m_ctrlScheduleIDCB.GetFont());
-
-			CString sSet = m_ptrEditingEvent->GetScheduleSet();
-			CString rString, sOne, sAll;
-			int nCnt = m_ctrlScheduleIDCB.GetCount();
-			int iSel = m_ctrlScheduleIDCB.GetCurSel();
-			for (int nT = 0; nT < nCnt; nT++)
-			{
-				m_ctrlScheduleIDCB.GetLBText(nT, rString);
-				sOne.Format(_T("|%d|"), (int) m_ctrlScheduleIDCB.GetItemData(nT));
-				if (sAll.IsEmpty() || sAll.Find(sOne) == -1) //to prevent duplicates
-				{
-					sAll += sOne;
-					m_ctrlScheduleSet.InsertString(nT, rString);
-					if (!sSet.IsEmpty() && sSet.Find(sOne) > -1)
-						m_ctrlScheduleSet.SetCheck(nT, TRUE);
-
-					if (iSel == nT && !m_ptrControl->m_bMultipleSchedulesNoSelfLinks)
-						m_ctrlScheduleSet.SetCheck(nT, TRUE);
-				}
-			}
-		}
-	}
-
-	return TRUE;
-}
-
-void CXTPCalendarEventPropertiesDlg::OnBnClickedButtonRecurrecnce()
-{
-	UpdateData();
-
-	BOOL bWasNotRecur = FALSE;
-	BOOL bUpdateFromEvent = FALSE;
-	m_bRecurrenceUpdate = TRUE;
-
-	CXTPCalendarEventPtr ptrMasterEvent = m_ptrEditingEvent;
-	int nRState = ptrMasterEvent->GetRecurrenceState();
-
-	if (nRState != xtpCalendarRecurrenceMaster)
-	{
-		ptrMasterEvent = m_ptrEditingEvent->CloneEvent();
-
-		if (nRState == xtpCalendarRecurrenceNotRecurring)
-		{
-			VERIFY(ptrMasterEvent->MakeEventAsRecurrence());
-			bWasNotRecur = TRUE;
-
-			CXTPCalendarRecurrencePatternPtr ptrPattern;
-			ptrPattern = ptrMasterEvent->GetRecurrencePattern();
-
-			COleDateTime dtStartDateTime(CXTPCalendarUtils::UpdateTime(m_dtStartDate, m_dtStartTime));
-			COleDateTime dtEndDateTime(CXTPCalendarUtils::UpdateTime(m_dtEndDate, m_dtEndTime));
-
-			COleDateTimeSpan spDuration = dtEndDateTime- dtStartDateTime;
-
-			ptrPattern->SetStartTime(CXTPCalendarUtils::ResetDate(m_dtStartTime));
-			ptrPattern->SetDurationMinutes((int) spDuration.GetTotalMinutes());
-
-			ptrPattern->SetPatternStartDate(CXTPCalendarUtils::ResetTime(m_dtStartDate));
-
-			ptrMasterEvent->UpdateRecurrence(ptrPattern);
-		}
-		else
-		{
-			bUpdateFromEvent = TRUE;
-
-			ASSERT(nRState == xtpCalendarRecurrenceOccurrence || nRState == xtpCalendarRecurrenceException);
-
-			CXTPCalendarRecurrencePatternPtr ptrPattern;
-			ptrPattern = m_ptrEditingEvent->GetRecurrencePattern();
-			ptrMasterEvent = ptrPattern->GetMasterEvent();
-		}
-	}
-
-	CXTPCalendarEventRecurrenceDlg dlg(ptrMasterEvent, this);
-	dlg.m_bDisableRemove = bWasNotRecur;
-	dlg.nWorkWeekMask = m_ptrControl->GetWorkWeekMask();
-
-	int nRes = (int)dlg.DoModal();
-	if (nRes == IDOK || nRes == XTP_CALENDAR_DLGRESULT_REMOVE_RECURRENCE)
-	{
-		m_ptrEditingEvent = ptrMasterEvent;
-
-		m_bOccurrence = m_ptrEditingEvent->GetRecurrenceState() ==
-						xtpCalendarRecurrenceNotRecurring;
-
-		if (bUpdateFromEvent)
-		{
-			UpdateData();
-			UpdateControlsFromEvent();
-		}
-
-		UpdateControlsState();
-	}
-}
-
-int CXTPCalendarEventPropertiesDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CDialog::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	int nType = m_ptrEditingEvent->GetRecurrenceState();
-
-	if (nType == xtpCalendarRecurrenceOccurrence || nType == xtpCalendarRecurrenceException)
-	{
-		//CXTPCalendarOccurSeriesChooseDlg dlg(0, XTP_IDS_CALENDAR_OCURR_SERIES_OPEN);
-		CXTPCalendarOccurSeriesChooseDlg dlg(this, XTP_IDS_CALENDAR_OCURR_SERIES_OPEN);
-		dlg.SetEvent(m_ptrEditingEvent);
-		dlg.m_bOccur = m_bOccurrence;
-//this assignment select default picklist item in dlg!
-		if (dlg.DoModal() != IDOK)
-			return -1;
-
-		m_bOccurrence = dlg.m_bOccur;
-		if (!m_bOccurrence)
-		{
-			CXTPCalendarRecurrencePatternPtr ptrPatternRO;
-			ptrPatternRO = m_ptrEditingEvent->GetRecurrencePattern();
-			CXTPCalendarEventPtr ptrMasterRO = ptrPatternRO->GetMasterEvent();
-
-			m_ptrEditingEvent = ptrMasterRO->CloneEvent();
-		}
-	}
-	else
-		m_bOccurrence = TRUE;
-
-	return 0;
-}
-
-void CXTPCalendarEventPropertiesDlg::OnBnClickedCheckAlldayEvent()
-{
-	UpdateData();
-	UpdateControlsState();
-
-	if (m_bAllDayEvent && CXTPCalendarUtils::IsZeroTime(m_dtEndTime))
-	{
-		AddEndDate_ResetTime(m_dtStartDate, m_dtEndDate, -1);
-		UpdateData(FALSE);
-	}
-	else if (!m_bAllDayEvent && CXTPCalendarUtils::IsZeroTime(m_dtEndTime))
-	{
-		AddEndDate_ResetTime(m_dtStartDate, m_dtEndDate, 1);
-		UpdateData(FALSE);
-	}
+	rectCategory.right = min (rectCategory.right, rectScreen.right);
+	rectCategory.left = max (rectCategory.left, rectScreen.left);
 }
 
 
-void CXTPCalendarEventPropertiesDlg::OnCheckReminder()
-{
-	UpdateData();
-	UpdateControlsState();
-}
-
-void CXTPCalendarEventPropertiesDlg::AddEndDate_ResetTime(COleDateTime dtStartDate, COleDateTime& rdtEndDate, int nDays)
-{
-	COleDateTimeSpan spDiff = CXTPCalendarUtils::ResetTime(rdtEndDate) -
-								CXTPCalendarUtils::ResetTime(dtStartDate);
-	if (nDays > 0 || nDays < 0 && (DWORD)(double)spDiff >= (DWORD)(-1 * nDays) )
-	{
-		rdtEndDate = CXTPCalendarUtils::ResetTime(rdtEndDate) + COleDateTimeSpan(nDays,0,0,0);
-	}
-}
-
-DWORD CXTPCalendarEventPropertiesDlg::GetLastEventID()
-{
-	return m_dNewEventID;
-}
-
-CString CXTPCalendarEventPropertiesDlg::LoadString(UINT nIDResource) const
-{
-	return CXTPCalendarUtils::LoadString(nIDResource);
-}

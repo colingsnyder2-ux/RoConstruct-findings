@@ -1,2792 +1,1705 @@
+// from server: 32% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /MD /GS- /EHsc /Ob1
-// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPPropExchange.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPPropExchange.cpp: implementation of the CXTPPropExchange class.
-//
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+/*
+Module : ScintillaDocView.CPP
+Purpose: Defines the implementation for MFC CView and CDocument derived wrapper classes for the Scintilla 
+         edit control (www.scintilla.org).
+Created: PJN / 19-03-2004
+History: PJN / 12-08-2004 1. Made all the remaining non virtual functions related to Find and Replace virtual.
+                          2. TextNotFound function is now passed the parameters used for the search. Thanks 
+                          to Dmitry Naumov for this update.
+                          3. Removed the OnTextNotFound function as all the work for it is achieved using the
+                          TextNotFound function.
+                          4. Creation of the find / replace dialog now takes place in a new virtual function
+                          "CreateFindReplaceDialog". Again thanks to Dmitry Naumov for this update. 
+         PJN / 04-03-2005 1. Fix in CScintillaView::PrintPage which now sorts out the issue of print preview
+                          not working in the MFC doc / view wrappers for scintilla. Thanks to Frank Kiesel
+                          for reporting this fix.
+         PJN / 10-07-2005 1. Addition of a virtual function namely OnAutoCSelection which handles the
+                          SCN_AUTOCSELECTION notification message which was introduced in Scintilla v1.63.
+                          Thanks to Dan Petitt for suggesting this update.
+                          2. A new boolean variable called "m_bUseROFileAttributeDuringLoading" has been added 
+                          to CScintillaView. If this value is set then the code will check the read only file
+                          attribute of the file being loaded and if it is set, then the document is marked as 
+                          read only by Scintilla. By doing this any attempts to modify the document will cause 
+                          the OnModifyAttemptRO virtual function to be called. This allows you to prompt to 
+                          make the file read write or to check out the file from a version control system. 
+                          Thanks to Dan Petitt for suggesting this update.
+                          3. Demo app now demonstrates how to use the SCN_MODIFYATTEMPTRO notification.
+                          4. Fixed a number of warnings when the code is compiled using Visual Studio .NET 2003.
+                          5. SetSavePoint and SetReadOnly calls are now made in CScintillaDoc::OnSaveDocument
+                          instead of CScintillaView::Serialize. This ensures that the control is only reset
+                          upon a successful save.
+         PJN / 03-01-2006 1. Fixed a bug where the separator line in the header was not being drawn due to 
+                          issues in the code which calculates the coordinates. 
+                          2. Added two member variables which decide whether printer headers and footers should
+                          be printed (CScintillaView::m_bPrintHeader and CScintillaView::m_bPrintFooter). You
+                          could of course achieve the same result by deriving a class from CScintillaView and 
+                          implementing empty PrintHeader and PrinterFooter methods!!!. Thanks to Jason Elliott
+                          for suggesting this update.
+                          3. Optimized the construction of member variables in CScintillaView::CScintillaView
+                          and in CScintillaFindReplaceDlg::CScintillaFindReplaceDlg
+                          4. CScintillaView::OnReplaceAll sets the selection to 0,0 before doing text replacement. 
+                          This ensures that all text in a document is replaced. Also this function now does not 
+                          bother calling TextNotFound at the end of the function if replacements took place. 
+                          Thanks to Jason Elliott for this nice update. 
+                          5. A parameter which indicates whether text is being replaced or found is now sent to
+                          CScintillaView::TextNotFound.
+         PJN / 06-01-2006 1. Removed some unnecessary code from CScintillaView::OnEndPrinting. Thanks to 
+                          Greg Smith for spotting this issue.
+         PJN / 08-01-2006 1. Find / Replace dialog and associated state is now maintained outside of CScintillaView.
+                          This means that if you have multiple CScintillaView's in your app, that they share the
+                          one find / replace dialog which is the standard type of UI you would normally expect for 
+                          this. Thanks to Greg Smith for reporting this issue.
+                          2. Find / replace dialog is now closed when the last CScintillaView is destroyed. Thanks
+                          to Greg Smith for reporting this issue.
+         PJN / 16-01-2006 1. Removed an unused "rSetup" variable in CScintillaView::PrintPage
+                          2. Optimized code in CScintillaView::PrintPage and CScintillaView::OnFilePageSetup which
+                          determines if metric or imperial measurements are being used. Now a boolean member variable
+                          of CScintillaView called m_bUsingMetric which by default picks up the control panel
+                          preference is provided. This allows client code to change this value to customize how
+                          measurements are specified. Thanks to Greg Smith for reporting this issue.
+                          3. Fixed a small typo in CScintillaView::PrintHeader and PrintFooter. Also explicitly uses
+                          the TA_TOP flag in combination with TA_LEFT when setting alignment settings for header
+                          and footer text. Again thanks to Greg Smith for reporting this.
+                          4. Scintilla find / replace state is now stored in a standard global variable instead of
+                          using the CProcessLocal template which it was using previously. This is no longer required
+                          since it was used to provide Win32s support for MFC on older versions of MFC. Since Win32s
+                          is no longer supported by MFC, there is no need to use this mechanism any more.
+         PJN / 02-02-2006 1. Minor update to CScintillaView to allow deletion of text when there is nothing selected. 
+                          Thanks to Alexander Kirillov for reporting this bug. 
+         PJN / 14-03-2006 1. Updated the internal function CScintillaView::SameAsSelected to support regular 
+                          expressions. Thanks to Greg Smith for this update.
+         PJN / 22-05-2006 1. Fixed a flicker issue when the view is resized. Thanks to Michael Gunlock for reporting 
+                          this issue.
+         PJN / 29-06-2005 1. Code now uses new C++ style casts rather than old style C casts where necessary. 
+                          2. Code now supports persisting margin settings. Thanks to Krasimir Stoychev for this update
+                          3. Updated the code to clean compile in VC 2005
+         PJN / 17-09-2006 1. Updated OnReplaceSel and OnReplaceAll implementations to use TargetFromSelection and 
+                          ReplaceTargetRE/ReplaceTarget. Thanks to Matt Spear for reporting this issue.
+         PJN / 11-06-2007 1. Addition of a SCINTILLADOCVIEW_EXT_CLASS preprocessor macro to allow the classes to be 
+                          more easily used in an extension DLL.
+         PJN / 19-03-2008 1. Fixed a copy and paste bug in CScintillaView::PrintPage where the incorrect margin value
+                          was being used in the calculation of "rfPrint.rc.left". Thanks to Steve Arnold for reporting
+                          this bug.
+
+Copyright (c) 2004 - 2008 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+
+All rights reserved.
+
+Copyright / Usage Details:
+
+You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
+when your product is released in binary form. You are allowed to modify the source code in any way you want 
+except you cannot modify the copyright details at the top of each module. If you want to distribute source 
+code with your application, then you are only allowed to distribute versions released by the author. This is 
+to maintain a single distribution point for the source code. 
+
+*/
+
+
+/////////////////////////////////  Includes  //////////////////////////////////
 
 #include "stdafx.h"
-#include "XTPMacros.h"
-#include "XTPPropExchange.h"
-#include "XTPVC80Helpers.h"
-#include "XTPVC50Helpers.h"
-#include "XTPResourceManager.h"
+#include "ScintillaDocView.h"
+#ifndef __AFXDISP_H__
+#pragma message("To avoid this message, please put afxdisp.h in your pre compiled header (normally stdafx.h)")
+#include <afxdisp.h>
+#endif
+#include "resource.h"
+
+
+
+
+//////////////////////////////// Statics / Macros /////////////////////////////
 
 #ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
-#pragma warning(disable : 4310)
+
+////////////////////////////////// Implementation /////////////////////////////
+
+class _SCINTILLA_EDIT_STATE
+{
+public:
+//Constructors / Destructors
+	_SCINTILLA_EDIT_STATE();
+
+//Member variables
+	CScintillaFindReplaceDlg* pFindReplaceDlg;    //find or replace dialog
+	BOOL                      bFindOnly;          //Is pFindReplace the find or replace?
+	CString                   strFind;            //last find string
+	CString                   strReplace;         //last replace string
+	BOOL                      bCase;              //TRUE==case sensitive, FALSE==not
+	int                       bNext;              //TRUE==search down, FALSE== search up
+	BOOL                      bWord;              //TRUE==match whole word, FALSE==not
+  BOOL                      bRegularExpression; //TRUE==regular expression search, FALSE==not
+};
+
+_SCINTILLA_EDIT_STATE::_SCINTILLA_EDIT_STATE() : bRegularExpression(FALSE),
+                                                 pFindReplaceDlg(NULL),
+               	                                 bWord(FALSE),
+                                                 bFindOnly(TRUE),
+	                                               bCase(FALSE),
+	                                               bNext(TRUE)
+{
+}
+
+_SCINTILLA_EDIT_STATE _scintillaEditState;
+
+CScintillaFindReplaceDlg* CScintillaFindReplaceDlg::GetFindReplaceDlg()
+{
+	return _scintillaEditState.pFindReplaceDlg;
+}
+
+BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog)
+  ON_BN_CLICKED(IDC_REGULAR_EXPRESSION, OnRegularExpression)
+END_MESSAGE_MAP()
+
+
+CScintillaFindReplaceDlg::CScintillaFindReplaceDlg(): m_bRegularExpression(FALSE)
+{
+}
+
+BOOL CScintillaFindReplaceDlg::Create(BOOL bFindDialogOnly,	LPCTSTR lpszFindWhat, LPCTSTR lpszReplaceWith, DWORD dwFlags, CWnd* pParentWnd)
+{
+  //Tell Windows to use our dialog instead of the standard one
+  m_fr.hInstance = AfxGetResourceHandle();
+  m_fr.Flags |= FR_ENABLETEMPLATE;
+  if (bFindDialogOnly)
+    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_FINDDLGORD);
+  else
+    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_REPLACEDLGORD);
+
+  //Let the base class do its thing
+  return CFindReplaceDialog::Create(bFindDialogOnly,	lpszFindWhat, lpszReplaceWith, dwFlags, pParentWnd);
+}
+
+BOOL CScintillaFindReplaceDlg::OnInitDialog() 
+{
+  //let the base class do its thing
+	BOOL bReturn = CFindReplaceDialog::OnInitDialog();
+
+  //Should we check the regular expression check box
+  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  AFXASSUME(pCtrl);
+  pCtrl->SetCheck(m_bRegularExpression);
+	
+	return bReturn;
+}
+
+void CScintillaFindReplaceDlg::OnRegularExpression() 
+{
+  //Save the state of the Regular expression checkbox into a member variable
+  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  AFXASSUME(pCtrl);
+	m_bRegularExpression = (pCtrl->GetCheck() == 1);
+}
+
+
+IMPLEMENT_DYNCREATE(CScintillaView, CView)
+
+const UINT _ScintillaMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
+
+BEGIN_MESSAGE_MAP(CScintillaView, CView)
+	ON_WM_PAINT()
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateNeedSel)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateNeedPaste)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateNeedText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REPEAT, OnUpdateNeedFind)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
+	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
+	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
+	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
+	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
+	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+  ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
+	ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
+	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
+	ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
+	ON_COMMAND(ID_EDIT_REPEAT, OnEditRepeat)
+	ON_WM_SETFOCUS()
+	ON_WM_SIZE()
+	ON_WM_ERASEBKGND()
+	ON_WM_CREATE()
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateNeedSel)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CLEAR, OnUpdateNeedTextAndFollowingText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_SELECT_ALL, OnUpdateNeedText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
+	ON_COMMAND(ID_FILE_PAGE_SETUP, OnFilePageSetup)
+	ON_WM_DESTROY()
+	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
+ 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
+	ON_REGISTERED_MESSAGE(_ScintillaMsgFindReplace, OnFindReplaceCmd)
+END_MESSAGE_MAP()
+
+CScintillaView::CScintillaView() : m_rMargin(0, 0, 0, 0), 
+                                   m_bFirstSearch(TRUE),
+                                   m_bUseROFileAttributeDuringLoading(TRUE),
+                                   m_bPrintHeader(TRUE), 
+                                   m_bPrintFooter(TRUE),
+                                   m_bPersistMarginSettings(TRUE),
+                                   m_bUsingMetric(UserWantsMetric())
+{
+}
+
+CScintillaCtrl& CScintillaView::GetCtrl()
+{ 
+  CScintillaCtrl& ctrl = m_Edit;
+
+  return ctrl; 
+}
+
+void CScintillaView::LoadMarginSettings(const CString& sSection)
+{
+  //Get the margin values 
+  CWinApp* pApp = AfxGetApp();
+  AFXASSUME(pApp);
+	m_rMargin.left = pApp->GetProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
+	m_rMargin.right = pApp->GetProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
+	m_rMargin.top = pApp->GetProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
+	m_rMargin.bottom = pApp->GetProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
+}
+
+void CScintillaView::SaveMarginSettings(const CString& sSection)
+{
+  //Write out the margin values 
+  CWinApp* pApp = AfxGetApp();
+  AFXASSUME(pApp);
+	pApp->WriteProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
+	pApp->WriteProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
+	pApp->WriteProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
+	pApp->WriteProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
+}
+
+void CScintillaView::OnDestroy()
+{
+  //Close Find/Replace dialog if this is the last CScintillaView
+	if (_scintillaEditState.pFindReplaceDlg)
+	{
+		CWinApp* pApp = AfxGetApp();
+
+    //Count up the number of CScintillaView's we have (excluding this one)
+    int nScintillaViews = 0;
+
+		//no doc manager - no templates
+		if (pApp->m_pDocManager)
+		{
+			//walk all templates
+			CDocTemplate* pTemplate;
+			POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+			while (pos && (nScintillaViews == 0))
+			{
+				pTemplate = pApp->m_pDocManager->GetNextDocTemplate(pos);
+				AFXASSUME(pTemplate);
+
+				//walk all documents in the template
+				POSITION pos2 = pTemplate->GetFirstDocPosition();
+				while (pos2 && (nScintillaViews == 0))
+				{
+					CDocument* pDoc = pTemplate->GetNextDoc(pos2);
+					ASSERT(pDoc);
+
+					//walk all views in the document
+					POSITION pos3 = pDoc->GetFirstViewPosition();
+					while (pos3 && (nScintillaViews == 0))
+					{
+						CView* pView = pDoc->GetNextView(pos3);
+						ASSERT(pView);
+						
+						//if we find another CScintillaView, skip code that closes find dialog
+						if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)) && (pView != this) && ::IsWindow(pView->GetSafeHwnd()))
+							++nScintillaViews;
+					}
+				}
+			}
+		}
+
+    //Close down the find/replace dialog if we are the last CScintillaView
+		if (nScintillaViews == 0)
+    {
+      if (::IsWindow(_scintillaEditState.pFindReplaceDlg->m_hWnd))
+			  _scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
+		  _scintillaEditState.pFindReplaceDlg = NULL;
+    }
+	}
+
+  //Let the base class do its thing
+  CView::OnDestroy();
+}
+
+void CScintillaView::DeleteContents()
+{
+	ASSERT_VALID(this);
+	ASSERT(m_hWnd != NULL);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+	rCtrl.ClearAll();
+  rCtrl.EmptyUndoBuffer();
+}
+
+void CScintillaView::OnDraw(CDC*)
+{
+	ASSERT(FALSE);
+}
+
+void CScintillaView::OnPaint()
+{
+	//this is done to avoid CView::OnPaint
+	Default();
+}
+
+BOOL CScintillaView::OnPreparePrinting(CPrintInfo* pInfo)
+{
+  //Determine if we should allow selection printing
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+  long nStartChar = rCtrl.GetSelectionStart();
+  long nEndChar = rCtrl.GetSelectionEnd();
+  if (nStartChar != nEndChar)
+  {
+    // Enable the Selection button
+    pInfo->m_pPD->m_pd.Flags &= ~PD_NOSELECTION;
+
+    // Check the Selection button
+    pInfo->m_pPD->m_pd.Flags |= PD_SELECTION;
+  }
+
+  //Let the base class do its thing
+  return DoPreparePrinting(pInfo);
+}
+
+void CScintillaView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	//initialize page start vector
+	ASSERT(m_aPageStart.GetSize() == 0);
+  if (pInfo->m_pPD->PrintSelection())
+    m_aPageStart.Add(rCtrl.GetSelectionStart());
+  else
+	  m_aPageStart.Add(0);
+	ASSERT(m_aPageStart.GetSize() > 0);
+
+	ASSERT_VALID(this);
+}
+
+BOOL CScintillaView::PaginateTo(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+  CRect rectSave = pInfo->m_rectDraw;
+	UINT nPageSave = pInfo->m_nCurPage;
+	ASSERT(nPageSave > 1);
+	ASSERT(nPageSave >= static_cast<UINT>(m_aPageStart.GetSize()));
+	VERIFY(pDC->SaveDC() != 0);
+	pDC->IntersectClipRect(0, 0, 0, 0);
+	pInfo->m_nCurPage = m_aPageStart.GetSize();
+	while (pInfo->m_nCurPage < nPageSave)
+	{
+		ASSERT(pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()));
+		OnPrepareDC(pDC, pInfo);
+		ASSERT(pInfo->m_bContinuePrinting);
+		pInfo->m_rectDraw.SetRect(0, 0,	pDC->GetDeviceCaps(HORZRES), pDC->GetDeviceCaps(VERTRES));
+		OnPrint(pDC, pInfo);
+		if (pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()))
+			break;
+		++pInfo->m_nCurPage;
+	}
+	BOOL bResult = pInfo->m_nCurPage == nPageSave;
+	pDC->RestoreDC(-1);
+	pInfo->m_nCurPage = nPageSave;
+  pInfo->m_rectDraw = rectSave;
+	ASSERT_VALID(this);
+	return bResult;
+}
+
+void CScintillaView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	AFXASSUME(pInfo != NULL);
+
+  if (pInfo->m_nCurPage <= pInfo->GetMaxPage())
+  {
+	  if ((pInfo->m_nCurPage > static_cast<UINT>(m_aPageStart.GetSize())) &&	!PaginateTo(pDC, pInfo))
+	  {
+		  //can't paginate to that page, thus cannot print it.
+		  pInfo->m_bContinuePrinting = FALSE;
+	  }
+	  ASSERT_VALID(this);
+  }
+  else
+  {
+		//Reached the max page to print
+		pInfo->m_bContinuePrinting = FALSE;
+  }
+}
+
+void CScintillaView::PrintHeader(CDC* pDC, CPrintInfo* /*pInfo*/, RangeToFormat& frPrint)
+{
+  //By Default we print "Document Name - Printed on Date" as well as a line separator below the text
+  //Derived classes are of course free to implement their own version of PrintHeader
+  CString sHeader;
+  AfxFormatString2(sHeader, IDS_SCINTILLA_DEFAULT_PRINT_HEADER, GetDocument()->GetTitle(), COleDateTime::GetCurrentTime().Format());
+
+  //Setup the DC
+  pDC->SetTextColor(RGB(0, 0, 0));
+  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+
+  //Draw the header
+  CSize sizeText = pDC->GetTextExtent(sHeader);
+  int nHeaderDepth = 2*sizeText.cy;
+	CRect rLine(frPrint.rcPage.left, frPrint.rcPage.top, frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth);
+  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth/3, 0, &rLine, sHeader, NULL);
+
+  //Draw a line underneath the text
+  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth - 5);
+  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth - 5);
+
+  //Restore the DC
+  pDC->SetTextAlign(nAlign);
+
+  //Adjust the place where scintilla will draw the text
+  if (frPrint.rc.top < (frPrint.rcPage.top + nHeaderDepth))
+    frPrint.rc.top = frPrint.rcPage.top + nHeaderDepth;
+}
+
+void CScintillaView::PrintFooter(CDC* pDC, CPrintInfo* pInfo, RangeToFormat& frPrint)
+{
+  //By Default we print "Page X" as well as a line separator above the text
+  //Derived classes are of course free to implement their own version of PrintFooter
+  CString sPage;
+  sPage.Format(_T("%d"), pInfo->m_nCurPage);
+  CString sFooter;
+  AfxFormatString1(sFooter, IDS_SCINTILLA_DEFAULT_PRINT_FOOTER, sPage);
+
+  //Setup the DC
+  pDC->SetTextColor(RGB(0, 0, 0));
+  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+  
+  //Draw the header
+  CSize sizeText = pDC->GetTextExtent(sFooter);
+  int nFooterDepth = 2*sizeText.cy;
+  CRect rLine(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth, frPrint.rcPage.right, frPrint.rcPage.bottom);
+  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth*2/3, 0, &rLine, sFooter, NULL);
+
+  //Draw a line above the text
+  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth + 5);
+  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.bottom - nFooterDepth + 5);
+
+  //Restore the DC
+  pDC->SetTextAlign(nAlign);
+
+  //Adjust the place where scintilla will draw the text
+  if (frPrint.rc.bottom > (frPrint.rcPage.bottom - nFooterDepth))
+    frPrint.rc.bottom = frPrint.rcPage.bottom - nFooterDepth;
+}
+
+BOOL CScintillaView::UserWantsMetric()
+{
+  TCHAR localeInfo[3];
+  localeInfo[0] = _T('\0');
+  GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, localeInfo, 3);
+  return (localeInfo[0] == _T('0')) ;
+}
+
+long CScintillaView::PrintPage(CDC* pDC, CPrintInfo* pInfo, long nIndexStart, long nIndexStop)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	RangeToFormat rfPrint;
+	rfPrint.hdc = pDC->m_hDC;
+	rfPrint.hdcTarget = pDC->m_hAttribDC;
+
+	//Take into account the specified margins
+  CRect rMargins;
+	if ((m_rMargin.left) != 0 || (m_rMargin.right) != 0 || (m_rMargin.top) != 0 || (m_rMargin.bottom != 0)) 
+  {
+    //Get printer resolution
+    CPoint pDpi;
+    pDpi.x = pDC->GetDeviceCaps(LOGPIXELSX);  //DPI in X direction
+    pDpi.y = pDC->GetDeviceCaps(LOGPIXELSY);  //DPI in Y direction
+
+		//Convert the hundredths of millimeters or thousandths of inches margin values
+		//from the Page Setup dialog to device units.
+		int iScale = m_bUsingMetric ? 2540 : 1000;    //scale factor for margin scaling;
+		rMargins.left   = MulDiv(m_rMargin.left, pDpi.x, iScale);
+		rMargins.top    = MulDiv(m_rMargin.top, pDpi.y, iScale);
+		rMargins.right	= MulDiv(m_rMargin.right, pDpi.x, iScale);
+		rMargins.bottom	= MulDiv(m_rMargin.bottom, pDpi.y, iScale);
+	} 
+  else 
+		rMargins = m_rMargin;
+
+  //We take the page size from the pInfo member variable (decrement the right and
+  //bottom values by 1 to suit Scintilla)
+	rfPrint.rcPage.left = pInfo->m_rectDraw.left;
+	rfPrint.rcPage.top = pInfo->m_rectDraw.top;
+	rfPrint.rcPage.right = pInfo->m_rectDraw.right - 1;
+	rfPrint.rcPage.bottom = pInfo->m_rectDraw.bottom - 1;
+
+  //Fill in the area to print
+  rfPrint.rc.left = rfPrint.rcPage.left + rMargins.left;
+  rfPrint.rc.top = rfPrint.rcPage.top + rMargins.top;
+  rfPrint.rc.right = rfPrint.rcPage.right - rMargins.right;
+  rfPrint.rc.bottom = rfPrint.rcPage.bottom - rMargins.bottom;
+
+  //Fill in the text to print
+	rfPrint.chrg.cpMin = nIndexStart;
+	rfPrint.chrg.cpMax = nIndexStop;
+
+  //Print the header (if requested to)
+  if (m_bPrintHeader)
+    PrintHeader(pDC, pInfo, rfPrint);
+
+  //Print the footer (if requested to)
+  if (m_bPrintFooter)
+    PrintFooter(pDC, pInfo, rfPrint);
+
+  //Finally ask the control to print the text
+  return GetCtrl().FormatRange(TRUE, &rfPrint);
+}
+
+void CScintillaView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	AFXASSUME(pInfo != NULL);
+	ASSERT(pInfo->m_bContinuePrinting);
+
+	UINT nPage = pInfo->m_nCurPage;
+	ASSERT(nPage <= (UINT) m_aPageStart.GetSize());
+	int nIndex = m_aPageStart[nPage-1];
+
+  //Determine where we should end the printing
+  int nEndPrint = 0;
+  if (pInfo->m_pPD->PrintSelection())
+    nEndPrint = GetCtrl().GetSelectionEnd();
+  else
+    nEndPrint = GetCtrl().GetTextLength();
+
+	//print as much as possible in the current page.
+	nIndex = PrintPage(pDC, pInfo, nIndex, nEndPrint);
+	if (nIndex >= nEndPrint)
+	{
+		TRACE0("End of Document\n");
+		pInfo->SetMaxPage(nPage);
+	}
+
+	//update pagination information for page just printed
+	if (nPage == (UINT) m_aPageStart.GetSize())
+	{
+		if (nIndex < nEndPrint)
+			m_aPageStart.Add(nIndex);
+	}
+	else
+	{
+		ASSERT(nPage+1 <= static_cast<UINT>(m_aPageStart.GetSize()));
+		ASSERT(nIndex == m_aPageStart[nPage+1-1]);
+	}
+}
+
+void CScintillaView::OnEndPrinting(CDC*, CPrintInfo*)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	m_aPageStart.RemoveAll();
+}
+
+void CScintillaView::OnUpdateNeedPaste(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanPaste());
+}
+
+void CScintillaView::OnUpdateNeedText(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().GetTextLength() != 0);
+}
+
+void CScintillaView::OnUpdateNeedTextAndFollowingText(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nLength = rCtrl.GetTextLength();
+  long nStartChar = rCtrl.GetSelectionStart();
+
+	pCmdUI->Enable(nLength && (nStartChar != nLength));
+}
+
+void CScintillaView::OnUpdateNeedFind(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().GetLength() != 0 && !_scintillaEditState.strFind.IsEmpty());
+}
+
+void CScintillaView::OnUpdateEditUndo(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanUndo());
+}
+
+void CScintillaView::OnUpdateEditRedo(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanRedo());
+}
+
+void CScintillaView::OnUpdateNeedSel(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+  long nStartChar = rCtrl.GetSelectionStart();
+  long nEndChar = rCtrl.GetSelectionEnd();
+	pCmdUI->Enable(nStartChar != nEndChar);
+}
+
+void CScintillaView::OnEditCut()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Cut();
+}
+
+void CScintillaView::OnEditCopy()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Copy();
+}
+
+void CScintillaView::OnEditPaste()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Paste();
+}
+
+void CScintillaView::OnEditClear()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Clear();
+}
+
+void CScintillaView::OnEditUndo()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Undo();
+}
+
+void CScintillaView::OnEditRedo()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Redo();
+}
+
+void CScintillaView::OnEditSelectAll()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().SelectAll();
+}
+
+void CScintillaView::OnEditFind()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	OnEditFindReplace(TRUE);
+}
+
+void CScintillaView::OnEditReplace()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	OnEditFindReplace(FALSE);
+}
+
+void CScintillaView::OnEditRepeat()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	if (!FindText(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression, FALSE);
+}
+
+void CScintillaView::AdjustFindDialogPosition()
+{
+  //Validate our parameters
+	AFXASSUME(_scintillaEditState.pFindReplaceDlg);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nStart = rCtrl.GetSelectionStart();
+	CPoint point;
+  point.x = rCtrl.PointXFromPosition(nStart);
+  point.y = rCtrl.PointYFromPosition(nStart);
+	ClientToScreen(&point);
+	CRect rectDlg;
+	_scintillaEditState.pFindReplaceDlg->GetWindowRect(&rectDlg);
+	if (rectDlg.PtInRect(point))
+	{
+		if (point.y > rectDlg.Height())
+			rectDlg.OffsetRect(0, point.y - rectDlg.bottom - 20);
+		else
+		{
+			int nVertExt = GetSystemMetrics(SM_CYSCREEN);
+			if (point.y + rectDlg.Height() < nVertExt)
+				rectDlg.OffsetRect(0, 40 + point.y - rectDlg.top);
+		}
+		_scintillaEditState.pFindReplaceDlg->MoveWindow(&rectDlg);
+	}
+}
+
+CScintillaFindReplaceDlg* CScintillaView::CreateFindReplaceDialog()
+{
+  return new CScintillaFindReplaceDlg;
+}
+
+void CScintillaView::OnEditFindReplace(BOOL bFindOnly)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+	m_bFirstSearch = TRUE;
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+	{
+		if (_scintillaEditState.bFindOnly == bFindOnly)
+		{
+			_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
+			_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
+			return;
+		}
+		else
+		{
+			ASSERT(_scintillaEditState.bFindOnly != bFindOnly);
+			_scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
+			ASSERT(_scintillaEditState.pFindReplaceDlg == NULL);
+			ASSERT_VALID(this);
+		}
+	}
+  CScintillaCtrl& rCtrl = GetCtrl();
+	CString strFind(rCtrl.GetSelText());
+	//if selection is empty or spans multiple lines use old find text
+	if (strFind.IsEmpty() || (strFind.FindOneOf(_T("\n\r")) != -1))
+		strFind = _scintillaEditState.strFind;
+
+	CString strReplace(_scintillaEditState.strReplace);
+	_scintillaEditState.pFindReplaceDlg = CreateFindReplaceDialog();
+	AFXASSUME(_scintillaEditState.pFindReplaceDlg != NULL);
+	DWORD dwFlags = NULL;
+	if (_scintillaEditState.bNext)
+		dwFlags |= FR_DOWN;
+	if (_scintillaEditState.bCase)
+		dwFlags |= FR_MATCHCASE;
+	if (_scintillaEditState.bWord)
+		dwFlags |= FR_WHOLEWORD;
+  if (_scintillaEditState.bRegularExpression)
+    _scintillaEditState.pFindReplaceDlg->SetRegularExpression(TRUE);
+
+	if (!_scintillaEditState.pFindReplaceDlg->Create(bFindOnly, strFind, strReplace, dwFlags, this))
+	{
+		_scintillaEditState.pFindReplaceDlg = NULL;
+		ASSERT_VALID(this);
+		return;
+	}
+	ASSERT(_scintillaEditState.pFindReplaceDlg != NULL);
+	_scintillaEditState.bFindOnly = bFindOnly;
+	_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
+	_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnFindNext(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = bNext;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, FALSE);
+	else
+		AdjustFindDialogPosition();
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnReplaceSel(LPCTSTR lpszFind, BOOL bNext, BOOL bCase,	BOOL bWord, BOOL bRegularExpression, LPCTSTR lpszReplace)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.strReplace = lpszReplace;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = bNext;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	if (!SameAsSelected(_scintillaEditState.strFind, bCase, bWord, bRegularExpression))
+	{
+		if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+			TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
+		else
+			AdjustFindDialogPosition();
+		return;
+	}
+
+  if (bRegularExpression)
+  {
+    rCtrl.TargetFromSelection();
+    rCtrl.ReplaceTargetRE(_scintillaEditState.strReplace.GetLength(), _scintillaEditState.strReplace);    
+  }
+  else
+  	GetCtrl().ReplaceSel(_scintillaEditState.strReplace);
+	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
+	else
+		AdjustFindDialogPosition();
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnReplaceAll(LPCTSTR lpszFind, LPCTSTR lpszReplace, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.strReplace = lpszReplace;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = TRUE;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+	CWaitCursor wait;
+
+  //Set the selection to the begining of the document to ensure all text is replaced in the document
+  long start_pos, end_pos;
+  GetReplaceAllTarget(start_pos,end_pos);
+
+  CScintillaCtrl& c = GetCtrl();
+  bool has_selection = c.GetSelectionStart() != c.GetSelectionEnd();
+
+  int flags = 0;
+
+  if (bCase)
+	  flags |= SCFIND_MATCHCASE;
+
+  if (bRegularExpression)
+	  flags |= SCFIND_REGEXP;
+
+  if (bWord)
+	  flags |= SCFIND_WHOLEWORD;
+
+  c.SetSearchFlags(flags);
+  c.BeginUndoAction();
+
+  c.SetTargetStart(start_pos);
+  c.SetTargetEnd(end_pos);
+
+  long find_pos;
+  bool bFoundSomething = false;
+
+  while ((find_pos = c.SearchInTarget(_scintillaEditState.strFind.GetLength(),_scintillaEditState.strFind)) != -1)
+  {
+	  c.ReplaceTarget(_scintillaEditState.strReplace.GetLength(),_scintillaEditState.strReplace);
+	  c.SetTargetStart(c.GetTargetEnd() + 1);
+	  c.SetTargetEnd(end_pos); // Still end position
+
+	  if (!bFoundSomething)
+		  bFoundSomething = true;
+  }
+
+  c.EndUndoAction();
+
+  if (has_selection) // Was the text previously selected?
+	  c.SetSel(start_pos,c.GetTargetEnd());
+
+  //Inform the user if we could not find anything
+  if (!bFoundSomething)
+    TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, bCase, bWord, bRegularExpression, TRUE);
+
+	ASSERT_VALID(this);
+}
+
+LRESULT CScintillaView::OnFindReplaceCmd(WPARAM /*wParam*/, LPARAM lParam)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+	CScintillaFindReplaceDlg* pDialog = static_cast<CScintillaFindReplaceDlg*>(CFindReplaceDialog::GetNotifier(lParam));
+	AFXASSUME(pDialog != NULL);
+	ASSERT(pDialog == _scintillaEditState.pFindReplaceDlg);
+
+	if (pDialog->IsTerminating())
+		_scintillaEditState.pFindReplaceDlg = NULL;
+	else if (pDialog->FindNext())
+		OnFindNext(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
+	else if (pDialog->ReplaceCurrent())
+	{
+		ASSERT(!_scintillaEditState.bFindOnly);
+		OnReplaceSel(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression(), pDialog->GetReplaceString());
+	}
+	else if (pDialog->ReplaceAll())
+	{
+		ASSERT(!_scintillaEditState.bFindOnly);
+		OnReplaceAll(pDialog->GetFindString(), pDialog->GetReplaceString(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
+	}
+	ASSERT_VALID(this);
+
+	return 0;
+}
+
+BOOL CScintillaView::SameAsSelected(LPCTSTR lpszCompare, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+  //check length first
+	int nStartChar = rCtrl.GetSelectionStart();                           //get the selection size    
+  int nEndChar = rCtrl.GetSelectionEnd();
+  size_t nLen = lstrlen(lpszCompare);                                   //get the #chars to search for
+  if (!bRegularExpression && (nLen != (size_t)(nEndChar - nStartChar))) //if not a regular expression...
+    return FALSE;                                                       //...sizes must match,
+
+  //Now use the advanced search functionality of scintilla to determine the result
+  int iFlags = bCase ? SCFIND_MATCHCASE : 0;
+  iFlags |= bWord ? SCFIND_WHOLEWORD : 0;
+  iFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
+  rCtrl.SetSearchFlags(iFlags);
+  rCtrl.TargetFromSelection();                     //set target
+  if (rCtrl.SearchInTarget(static_cast<int>(nLen), lpszCompare) < 0) //see what we got
+    return FALSE;                                  //no match
+
+  //If we got a match, the target is set to the found text
+  return (rCtrl.GetTargetStart() == nStartChar) && (rCtrl.GetTargetEnd() == nEndChar);
+}
+
+BOOL CScintillaView::FindText(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	CWaitCursor wait;
+	return FindTextSimple(lpszFind, bNext, bCase, bWord, bRegularExpression);
+}
+
+BOOL CScintillaView::FindTextSimple(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
+{
+  //Validate our parameters
+	ASSERT(lpszFind != NULL);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	TextToFind ft;
+  ft.chrg.cpMin = rCtrl.GetSelectionStart();
+  ft.chrg.cpMax = rCtrl.GetSelectionEnd();
+	if (m_bFirstSearch)
+		m_bFirstSearch = FALSE;
 
 #ifdef _UNICODE
-#define CT2BSTR(x) (BSTR)(LPCWSTR)x
+	CScintillaCtrl::W2UTF8(lpszFind, -1, ft.lpstrText);
 #else
-#define CT2BSTR(x) (BSTR)XTP_CT2CW(x)
+	ft.lpstrText = T2A(const_cast<LPTSTR>(lpszFind));
+#endif
+	if (ft.chrg.cpMin != ft.chrg.cpMax) // i.e. there is a selection
+	{
+#ifndef _UNICODE
+		// If byte at beginning of selection is a DBCS lead byte,
+		// increment by one extra byte.
+		TEXTRANGE textRange;
+		TCHAR ch[2];
+		textRange.chrg.cpMin = ft.chrg.cpMin;
+		textRange.chrg.cpMax = ft.chrg.cpMin + 1;
+		textRange.lpstrText = ch;
+		rCtrl.SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&textRange);
+		if (_istlead(ch[0]))
+		{
+			ASSERT(ft.chrg.cpMax - ft.chrg.cpMin >= 2);
+
+      if (bNext)
+  			ft.chrg.cpMin++;
+      else
+        ft.chrg.cpMax = ft.chrg.cpMin - 1;
+		}
 #endif
 
-enum VARTYPE_EX
-{
-	VT_EX_RECT = 100,
-	VT_EX_SIZE = 101
-};
-
-LCID CXTPPropExchange::m_lcidDateTime = XTP_LOCALE_ISO8601;
-
-/////////////////////////////////////////////////////////////////////////////
-BOOL ParseDateTimeISO8601(COleDateTime& rDT, LPCTSTR pcszDateTime)
-{
-	SYSTEMTIME st;
-	ZeroMemory(&st, sizeof(SYSTEMTIME));
-
-	int nResult = SCANF_S(pcszDateTime, _T("%hu-%hu-%huT%hu:%hu:%hu"),
-		&st.wYear, &st.wDay, &st.wMonth, &st.wHour, &st.wMinute, &st.wSecond);
-
-	if (nResult == 3 || nResult == 5 || nResult == 6)
-	{
-		COleDateTime dtTemp(st);
-		if (dtTemp.GetStatus() != COleDateTime::valid)
-			return FALSE;
-
-		rDT = dtTemp;
-		return TRUE;
+    if (bNext)  
+		  ft.chrg.cpMin++;
+    else
+      ft.chrg.cpMax = ft.chrg.cpMin - 1;
 	}
 
-	ZeroMemory(&st, sizeof(SYSTEMTIME));
-
-	nResult = SCANF_S(pcszDateTime, _T("%hu:%hu:%hu"),
-		&st.wHour, &st.wMinute, &st.wSecond);
-
-	if (nResult == 2 || nResult == 3)
-	{
-		double dblTime = (((long)st.wHour * 3600L) +  // hrs in seconds
-			((long)st.wMinute * 60L) +  // mins in seconds
-			((long)st.wSecond)) / 86400.;
-
-		rDT = dblTime;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-CString FormatDateTimeISO8601(const COleDateTime& dt)
-{
-	ASSERT(dt.m_status == COleDateTime::valid);
-
-	CString strValue;
-
-	if ((DWORD)dt == 0)
-	{
-		strValue = dt.Format(_T("%H:%M:%S"));
-	}
-	else if ((double)(DWORD)(dt) == (double)dt)
-	{
-		strValue = dt.Format(_T("%Y-%d-%m"));
-	}
+  int nLength = rCtrl.GetLength();
+  if (bNext)
+    ft.chrg.cpMax = nLength;
 	else
-	{
-		strValue = dt.Format(_T("%Y-%d-%mT%H:%M:%S"));
-	}
+ 	  ft.chrg.cpMin = 0;
 
-	return strValue;
-}
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeEnumerator
+	DWORD dwFlags = bCase ? SCFIND_MATCHCASE : 0;
+	dwFlags |= bWord ? SCFIND_WHOLEWORD : 0;
+  dwFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
 
-CXTPPropExchangeEnumerator::CXTPPropExchangeEnumerator(CXTPPropExchange* pContainer, LPCTSTR lpszSection)
-{
-	m_pContainer = pContainer;
-	m_strSectionName = lpszSection;
-	m_nCount = 0;
-}
+  if (!bNext)
+  {
+    //Swap the start and end positions which Scintilla uses to flag backward searches
+    int ncpMinTemp = ft.chrg.cpMin;
+    ft.chrg.cpMin = ft.chrg.cpMax;
+    ft.chrg.cpMax = ncpMinTemp;
+  }
 
-CXTPPropExchangeEnumerator::~CXTPPropExchangeEnumerator()
-{
+	//if we find the text return TRUE
+	BOOL bFound = (FindAndSelect(dwFlags, ft) != -1);
 
-}
+#ifdef _UNICODE
+  //Tidy up the heap memory before we return
+  delete [] ft.lpstrText;
+#endif
 
-POSITION CXTPPropExchangeEnumerator::GetPosition(DWORD dwCount /*= 0*/, BOOL bCompactMode /*= TRUE*/)
-{
-	m_nCount = dwCount;
-
-	if (!m_pContainer)
-		return NULL;
-
-	if (!bCompactMode)
-	{
-		PX_DWord(m_pContainer, _T("Count"), m_nCount, 0);
-	}
-	else
-	{
-		if (m_pContainer->IsStoring())
-			m_pContainer->WriteCount(m_nCount);
-		else
-			m_nCount = m_pContainer->ReadCount();
-	}
-
-	return m_nCount == 0 ? NULL : (POSITION)1;
+  return bFound;
 }
 
-CXTPPropExchange* CXTPPropExchangeEnumerator::GetNext(POSITION& pos)
+long CScintillaView::FindAndSelect(DWORD dwFlags, TextToFind& ft)
 {
-	CString strSection;
-	strSection.Format(_T("%s%i"), (LPCTSTR)m_strSectionName, (DWORD)(DWORD_PTR)pos - 1);
-
-	CXTPPropExchange* pSection = m_pContainer->GetSection(strSection);
-
-	pos++;
-	if ((DWORD)(DWORD_PTR)pos > m_nCount) pos = NULL;
-
-	return pSection;
+  CScintillaCtrl& rCtrl = GetCtrl();
+	long index = rCtrl.FindText(dwFlags, &ft);
+	if (index != -1) // i.e. we found something
+    rCtrl.SetSel(ft.chrgText.cpMin, ft.chrgText.cpMax);
+	return index;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-IMPLEMENT_DYNAMIC(CXTPPropExchange, CCmdTarget)
-
-CXTPPropExchange::CXTPPropExchange()
+void CScintillaView::TextNotFound(LPCTSTR /*lpszFind*/, BOOL /*bNext*/, BOOL /*bCase*/, BOOL /*bWord*/, BOOL /*bRegularExpression*/, BOOL /*bReplaced*/)
 {
-	m_bLoading = FALSE;
-	m_dwData = 0;
-	m_pOwner = NULL;
-	m_nSchema = _XTP_SCHEMA_CURRENT;
-	m_bChildSection = FALSE;
-	m_bInitialized = FALSE;
-	m_bEmptySection = FALSE;
-	m_bUseDefaultOnLoad = TRUE;
-	m_bUseDefaultOnSave = TRUE;
-
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	m_bFirstSearch = TRUE;
+  MessageBeep(MB_ICONHAND);
 }
 
-CXTPPropExchange::~CXTPPropExchange()
+void CScintillaView::OnSetFocus(CWnd* /*pOldWnd*/) 
 {
-
+  //Give the focus to the child control
+	m_Edit.SetFocus();
 }
 
-void CXTPPropExchange::InitSection(CXTPPropExchange* pRootSection)
+void CScintillaView::OnSize(UINT nType, int cx, int cy) 
 {
-	ASSERT(m_bLoading == pRootSection->m_bLoading);
+  //Let the base class do its thing
+	CView::OnSize(nType, cx, cy);
 
-	m_bChildSection = TRUE;
-	m_nSchema = pRootSection->m_nSchema;
-	m_dwData = pRootSection->m_dwData;
-	m_bEmptySection = pRootSection->m_bEmptySection;
-	m_bUseDefaultOnLoad = pRootSection->m_bUseDefaultOnLoad;
-	m_bUseDefaultOnSave = pRootSection->m_bUseDefaultOnSave;
+  //Resize the edit control to be the size of the client area
+  CRect r;
+  GetClientRect(&r);
+  m_Edit.MoveWindow(&r);	
 }
 
-
-
-void CXTPPropExchange::EmptySection()
+BOOL CScintillaView::OnEraseBkgnd(CDC* /*pDC*/) 
 {
-	m_bEmptySection = TRUE;
+  //We do nothing here, because the scintilla control takes up the entire 
+  //client area of our view;
+	return TRUE;
 }
 
-
-DWORD CXTPPropExchange::GetSizeOfVarType(VARTYPE vt)
+void CScintillaView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
 {
-	switch (vt)
-	{
-	case VT_BOOL: return sizeof(BOOL);
-	case VT_UI1: return sizeof(BYTE);
-	case VT_I2: return 2;
-	case VT_I4: return 4;
-	case VT_R4:
-		ASSERT(sizeof(float) == 4);
-		return 4;
-	case VT_R8:
-		ASSERT(sizeof(double) == 8);
-		return 8;
-	case VT_EX_RECT: return sizeof(RECT);
-	case VT_EX_SIZE: return sizeof(SIZE);
-	case VT_CY: return sizeof(CURRENCY);
-	case VT_BSTR:return sizeof(BSTR);
-	case VT_VARIANT: return sizeof(VARIANT);
-	case VT_DATE: return sizeof(COleDateTime);
-	}
+	//need to set owner of Find/Replace dialog
+	if (_scintillaEditState.pFindReplaceDlg && pActivateView == this)
+		_scintillaEditState.pFindReplaceDlg->m_fr.hwndOwner = m_hWnd;
 
+  //let the base class do its thing
+	CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
+}
+
+int CScintillaView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+{
+  //let the base class do its thing
+	if (CView::OnCreate(lpCreateStruct) == -1)
+		return -1;
+	
+  //Create the scintilla edit control  
+  CRect r;
+  if (!m_Edit.Create(WS_CHILD|WS_VISIBLE|WS_TABSTOP, r, this, 0))
+    return -1;
+	
 	return 0;
 }
 
-void CXTPPropExchange::Write (LPCTSTR pszPropName, const void* lpBuf, UINT nCount)
-{
-	ASSERT(IsStoring());
-	ASSERT(lpBuf != NULL);
-	ExchangeBlobProp(pszPropName, (BYTE*&)lpBuf, (DWORD&)nCount);
-}
-
-UINT CXTPPropExchange::Read (LPCTSTR pszPropName, void* lpBuf, UINT nCount)
-{
-	ASSERT(IsLoading());
-	ASSERT(lpBuf != NULL);
-	if (!ExchangeBlobProp(pszPropName, (BYTE*&)lpBuf, (DWORD&)nCount))
-		return 0;
-
-	return nCount;
-}
-
-AFX_INLINE int REPLACEW_S(BSTR& strReplace, LPCWSTR lpszOld, LPCWSTR lpszNew)
-{
-	int nOldLength = (strReplace == NULL) ? 0 : (int)wcslen(strReplace);
-	int nSourceLen = (lpszOld == NULL) ? 0 : (int)wcslen(lpszOld);
-
-	if (nSourceLen == 0 || nOldLength == 0)
-		return 0;
-
-	int nReplacementLen = (lpszNew == NULL) ? 0 : (int)wcslen(lpszNew);
-
-	// loop once to figure out the size of the result string
-	int nCount = 0;
-	LPWSTR lpszStart = strReplace;
-	LPWSTR lpszTarget;
-
-	while ((lpszTarget = wcsstr(lpszStart, lpszOld)) != NULL)
-	{
-		nCount++;
-		lpszStart = lpszTarget + nSourceLen;
-	}
-
-
-	// if any changes were made, make them
-	if (nCount > 0)
-	{
-		int nNewLength = nOldLength + (nReplacementLen-nSourceLen)*nCount;
-		ASSERT(nNewLength <= nOldLength); // not implemented
-
-		lpszStart = strReplace;
-
-		// loop again to actually do the work
-		while ((lpszTarget = wcsstr(lpszStart, lpszOld)) != NULL)
-		{
-			int nBalance = nOldLength - int(lpszTarget - strReplace + nSourceLen);
-			MEMMOVE_S(lpszTarget + nReplacementLen, lpszTarget + nSourceLen,
-				nBalance * sizeof(WORD));
-			MEMCPY_S(lpszTarget, lpszNew, nReplacementLen*sizeof(WORD));
-			lpszStart = lpszTarget + nReplacementLen;
-			lpszStart[nBalance] = '\0';
-			nOldLength += (nReplacementLen - nSourceLen);
-		}
-
-		ASSERT(strReplace[nNewLength] == '\0');
-	}
-
-	return nCount;
-}
-
-void CXTPPropExchange::PreformatString(BSTR bstrValue)
-{
-	ASSERT(bstrValue && m_bLoading);
-
-	REPLACEW_S(bstrValue, L"\\\\", L"\001\001");
-	REPLACEW_S(bstrValue, L"\\n", L"\n");
-	REPLACEW_S(bstrValue, L"\\r", L"\r");
-	REPLACEW_S(bstrValue, L"\\t", L"\t");
-	REPLACEW_S(bstrValue, L"\001\001", L"\\");
-}
-
-void CXTPPropExchange::PreformatString(CString& strValue, BOOL bLoading)
-{
-	if (bLoading)
-	{
-		if (strValue.Find(_T('\\')) == -1)
-			return;
-
-		REPLACE_S(strValue, _T("\\\\"), _T("\001\001"));
-		REPLACE_S(strValue, _T("\\n"), _T("\n"));
-		REPLACE_S(strValue, _T("\\r"), _T("\r"));
-		REPLACE_S(strValue, _T("\\t"), _T("\t"));
-		REPLACE_S(strValue, _T("\001\001"), _T("\\"));
-	}
-	else
-	{
-		REPLACE_S(strValue, _T("\\"), _T("\\\\"));
-		REPLACE_S(strValue, _T("\n"), _T("\\n"));
-		REPLACE_S(strValue, _T("\r"), _T("\\r"));
-		REPLACE_S(strValue, _T("\t"), _T("\\t"));
-	}
-}
-
-void CXTPPropExchange::PreformatString(CString& strValue)
-{
-	PreformatString(strValue, m_bLoading);
-}
-
-BOOL CXTPPropExchange::ExchangePropDateHelper(CString& strValue, COleDateTime& dt)
-{
-	if (m_lcidDateTime == XTP_LOCALE_ISO8601)
-	{
-		if (m_bLoading)
-		{
-			return ParseDateTimeISO8601(dt, strValue);
-		}
-		else
-		{
-			strValue = FormatDateTimeISO8601(dt);
-		}
-
-		return TRUE;
-
-	}
-
-	if (m_bLoading)
-	{
-		if (!dt.ParseDateTime(strValue, 0, m_lcidDateTime))
-			return FALSE;
-
-	}
-	else
-	{
-		TRY
-		{
-			strValue = dt.Format(0, m_lcidDateTime);
-		}
-		CATCH_ALL(e)
-		{
-			VERIFY(strValue.LoadString(AFX_IDS_INVALID_DATETIME));
-		}
-		END_CATCH_ALL
-
-	}
-
-	return TRUE;
-}
-
-
-BOOL CXTPPropExchange::ExchangePropStringHelper(CString& strValue, VARTYPE vtProp,
-	void* pvProp, const void* pvDefault)
-{
-	if (m_bLoading)
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-				int dwValue = _ttoi(strValue);
-				return CopyPropValue(vtProp, pvProp, &dwValue);
-			}
-		case VT_R4:
-			{
-				TCHAR* pChar = NULL;
-				float fValue = (float)_tcstod(strValue, &pChar);
-				return CopyPropValue(vtProp, pvProp, &fValue);
-			}
-		case VT_R8:
-			{
-				TCHAR* pChar = NULL;
-				double fValue = _tcstod(strValue, &pChar);
-				return CopyPropValue(vtProp, pvProp, &fValue);
-			}
-		case VT_DATE:
-			{
-				COleDateTime dt;
-
-				if (!ExchangePropDateHelper(strValue, dt))
-					return FALSE;
-
-				*(COleDateTime*)pvProp = dt;
-				return TRUE;
-			}
-
-		case VT_BSTR:
-			ASSERT(FALSE);
-			return FALSE;
-
-		case VT_LPSTR:
-		case VT_EX_SIZE:
-		case VT_EX_RECT:
-			{
-				if (vtProp == VT_EX_SIZE)
-				{
-					SIZE sz = {0, 0};
-					if (SCANF_S(strValue, _T("%i, %i"), &sz.cx, &sz.cy) != 2)
-						return CopyPropValue(vtProp, pvProp, pvDefault);
-
-					*((LPSIZE)pvProp) = sz;
-				}
-				else if (vtProp == VT_EX_RECT)
-				{
-					RECT rc = {0, 0, 0, 0};
-					if (SCANF_S(strValue, _T("%i, %i, %i, %i"), &rc.left, &rc.top, &rc.right, &rc.bottom) != 4)
-						return CopyPropValue(vtProp, pvProp, pvDefault);
-
-					*((LPRECT)pvProp) = rc;
-				}
-				else
-				{
-					PreformatString(strValue);
-					*(CString*)pvProp = strValue;
-				}
-				return TRUE;
-			}
-		case VT_VARIANT:
-			{
-				COleVariant varValue(strValue);
-				if (m_lcidDateTime == XTP_LOCALE_ISO8601)
-				{
-					COleDateTime dt;
-					if (ParseDateTimeISO8601(dt, strValue))
-					{
-						varValue = dt;
-					}
-				}
-				return CopyPropValue(vtProp, pvProp, &varValue);
-			}
-		}
-
-	}
-	else
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-				int nValue = 0;
-				memcpy(&nValue, pvProp, GetSizeOfVarType(vtProp));
-
-				strValue.Format(_T("%i"), nValue);
-
-			}
-			return TRUE;
-
-		case VT_BSTR:
-			ASSERT(FALSE);
-			return FALSE;
-
-		case VT_LPSTR:
-			{
-				strValue = *(CString*)pvProp;
-				PreformatString(strValue);
-			}
-			return TRUE;
-
-		case VT_DATE:
-			{
-				COleDateTime& dt = *(COleDateTime*)pvProp;
-				ExchangePropDateHelper(strValue, dt);
-			}
-			return TRUE;
-
-		case VT_R4:
-			{
-				double d = (double) *(float*)pvProp;
-				strValue.Format(_T("%g"), d);
-				return TRUE;
-			}
-
-		case VT_R8:
-
-			strValue.Format(_T("%g"), *(double*)pvProp);
-			return TRUE;
-
-		case VT_EX_SIZE:
-			{
-				strValue.Format(_T("%i, %i"), ((LPSIZE)pvProp)->cx, ((LPSIZE)pvProp)->cy);
-			}
-			return TRUE;
-
-		case VT_EX_RECT:
-			{
-				strValue.Format(_T("%i, %i, %i, %i"), ((LPRECT)pvProp)->left, ((LPRECT)pvProp)->top, ((LPRECT)pvProp)->right, ((LPRECT)pvProp)->bottom);
-			}
-			return TRUE;
-
-		case VT_VARIANT:
-
-			LCID lcidID = m_lcidDateTime;
-			COleVariant& varProp = *((COleVariant*)pvProp);
-
-			if (lcidID == XTP_LOCALE_ISO8601 && varProp.vt == VT_DATE)
-			{
-				strValue = FormatDateTimeISO8601(varProp.date);
-				return TRUE;
-			}
-			if (lcidID == XTP_LOCALE_ISO8601)
-			{
-				lcidID = LOCALE_NEUTRAL;
-			}
-			COleVariant var;
-			HRESULT hr = VariantChangeTypeEx(&var, &varProp, lcidID, 0, VT_BSTR);
-
-			if (FAILED(hr) || var.vt != VT_BSTR)
-				return FALSE;
-
-			strValue = var.bstrVal;
-
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-
-
-BOOL CXTPPropExchange::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
-{
-	if (IsStoring())
-	{
-		CString str;
-		if (nBytes > 0)
-		{
-			LPTSTR lpsz = new TCHAR[nBytes * 2 + 1];
-			for (UINT i = 0; i < nBytes; i++)
-			{
-				lpsz[i * 2] = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
-				lpsz[i * 2 + 1] = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
-			}
-			lpsz[nBytes * 2] = 0;
-
-			str = lpsz;
-			delete[] lpsz;
-		}
-		PX_String(this, pszPropName, str, _T(""));
-	}
-	else
-	{
-		CString str;
-		if (!PX_String(this, pszPropName, str))
-			return FALSE;
-
-		if (str.GetLength() > 0)
-		{
-			int nLen = str.GetLength();
-			if ((nLen == 0) || (nLen % 2 != 0))
-				return FALSE;
-
-			DWORD nCount = nLen/2;
-			if (pData == NULL)
-			{
-				pData = (BYTE*)malloc(nCount);
-				nBytes = nCount;
-			}
-			if (pData == NULL)
-				return FALSE;
-
-			if (nBytes < nCount)
-				return FALSE;
-
-			for (int i = 0; i < nLen; i += 2)
-			{
-				(pData)[i/2] = (BYTE)
-					(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
-			}
-		}
-	}
-	return TRUE;
-
-}
-
-
-BOOL CXTPPropExchange::IsSamePropValue(VARTYPE vtProp, const void* pv1, const void* pv2)
-{
-	if (pv1 == pv2)
-		return TRUE;
-
-	if ((pv1 == NULL) || (pv2 == NULL))
-		return FALSE;
-
-	BOOL bSame = FALSE;
-
-	switch (vtProp)
-	{
-	case VT_BSTR:
-		bSame = wcscmp(*(BSTR*)pv1, (BSTR)pv2) == 0;
-		break;
-
-	case VT_LPSTR:
-		bSame = ((CString*)pv1)->Compare((LPCTSTR)pv2) == 0;
-		break;
-
-	case VT_BOOL:
-	case VT_UI1:
-	case VT_I2:
-	case VT_I4:
-	case VT_CY:
-	case VT_R4:
-	case VT_R8:
-	case VT_EX_RECT:
-	case VT_EX_SIZE:
-		bSame = memcmp(pv1, pv2, GetSizeOfVarType(vtProp)) == 0;
-		break;
-
-	case VT_VARIANT:
-		bSame = *((COleVariant*)pv1) == *((COleVariant*)pv2);
-		break;
-
-	case VT_DATE:
-		bSame = *((COleDateTime*)pv1) == *((COleDateTime*)pv2);
-		break;
-	}
-
-	return bSame;
-}
-
-BOOL CXTPPropExchange::CopyPropValue(VARTYPE vtProp, void* pvDest, const void* pvSrc)
-{
-	ASSERT(AfxIsValidAddress(pvDest, 1));
-
-	if (pvSrc != NULL)
-	{
-		ASSERT(AfxIsValidAddress(pvSrc, 1, FALSE));
-
-		switch (vtProp)
-		{
-		case VT_UI1:
-			*(BYTE*)pvDest = *(BYTE*)pvSrc;
-			break;
-
-		case VT_I2:
-			*(short*)pvDest = *(short*)pvSrc;
-			break;
-
-		case VT_I4:
-			*(long*)pvDest = *(long*)pvSrc;
-			break;
-
-		case VT_BOOL:
-			*(BOOL*)pvDest = *(BOOL*)pvSrc;
-			break;
-
-		case VT_BSTR:
-			*(BSTR*)pvDest = SysAllocString((BSTR)pvSrc);
-			break;
-
-		case VT_LPSTR:
-			*(CString*)pvDest = (LPCTSTR)pvSrc;
-			break;
-
-		case VT_CY:
-			*(CY*)pvDest = *(CY*)pvSrc;
-			break;
-
-		case VT_R4:
-			*(float*)pvDest = *(float*)pvSrc;
-			break;
-
-		case VT_R8:
-			*(double*)pvDest = *(double*)pvSrc;
-			break;
-
-		case VT_EX_RECT:
-			*(RECT*)pvDest = *(RECT*)pvSrc;
-			break;
-
-		case VT_EX_SIZE:
-			*(SIZE*)pvDest = *(SIZE*)pvSrc;
-			break;
-
-		case VT_DATE:
-			*(COleDateTime*)pvDest = *(COleDateTime*)pvSrc;
-			break;
-
-		case VT_VARIANT:
-			TRY
-			{
-				*(COleVariant*)pvDest = *(COleVariant*)pvSrc;
-			}
-			CATCH_ALL(e)
-			{
-				return FALSE;
-			}
-			END_CATCH_ALL
-
-			return TRUE;
-
-		default:
-			return FALSE;
-		}
-	}
-	return pvSrc != NULL;
-}
-
-CRuntimeClass* CXTPPropExchange::FindRuntimeClass(LPCSTR szClassName)
-{
-
-	CRuntimeClass* pClass;
-	// search app specific classes
-	AFX_MODULE_STATE* pModuleState = AfxGetModuleState();
-
-	for (pClass = pModuleState->m_classList; pClass != NULL;
-	pClass = pClass->m_pNextClass)
-	{
-		if (lstrcmpA(szClassName, pClass->m_lpszClassName) == 0)
-		{
-			return pClass;
-		}
-	}
-
-#ifdef _AFXDLL
-	// search classes in shared DLLs
-	for (CDynLinkLibrary* pDLL = pModuleState->m_libraryList; pDLL != NULL;
-	pDLL = pDLL->m_pNextDLL)
-	{
-		for (pClass = pDLL->m_classList; pClass != NULL;
-		pClass = pClass->m_pNextClass)
-		{
-			if (lstrcmpA(szClassName, pClass->m_lpszClassName) == 0)
-			{
-				return pClass;
-			}
-		}
-	}
-#endif
-	ASSERT(FALSE);
-	return 0;
-}
-
-BOOL CXTPPropExchange::ExchangeRuntimeClass(LPCTSTR pszPropName, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
-{
-	CString strClassName;
-
-	if (!IsLoading())
-	{
-		strClassName = CString(pClass->m_lpszClassName);
-		PX_String(this, pszPropName, strClassName, CString(pDefaultClass->m_lpszClassName));
-	}
-	else
-	{
-		if (!PX_String(this, pszPropName, strClassName))
-		{
-			pClass = pDefaultClass;
-			return TRUE;
-		}
-
-		pClass = FindRuntimeClass(XTP_CT2CA(strClassName));
-		if (!pClass)
-			return FALSE;
-	}
-	return TRUE;
-}
-
-BOOL CXTPPropExchange::ExchangeObjectInstance(CObject*& pObject, CRuntimeClass* pObjectRuntime)
-{
-	if (!IsLoading())
-	{
-		CRuntimeClass* pClass = pObject->GetRuntimeClass();
-		PX_RuntimeClass(this, _T("Class"), pClass, pObjectRuntime);
-	}
-	else
-	{
-		CRuntimeClass* pClass = NULL;
-		PX_RuntimeClass(this, _T("Class"), pClass, pObjectRuntime);
-		if (!pClass)
-			return FALSE;
-
-		pObject = (CObject*)AfxDynamicDownCast(pObjectRuntime, pClass->CreateObject());
-		if (!pObject)
-			return FALSE;
-	}
-	return TRUE;
-}
-void CXTPPropExchange::WriteCount (DWORD dwCount)
-{
-	PX_DWord(this, _T("Count"), dwCount, 0);
-}
-
-DWORD CXTPPropExchange::ReadCount()
-{
-	DWORD nCount = 0;
-	PX_DWord(this, _T("Count"), nCount, 0);
-	return nCount;
-}
-
-CArchive* CXTPPropExchange::GetArchive(LPCTSTR pszPropName)
-{
-	if (IsStoring())
-	{
-
-		CMemFile* pMemFile = new CMemFile();
-		CArchive* pArchive = new CArchive(pMemFile, CArchive::store);
-
-		return pArchive;
-	}
-
-	DWORD nBytes = 0;
-	BYTE* pData = NULL;
-	PX_Blob(this, pszPropName, pData, nBytes);
-
-	if (nBytes == 0)
-		return NULL;
-
-	CMemFile* pMemFile = new CMemFile(pData, nBytes);
-	CArchive* pArchive = new CArchive(pMemFile, CArchive::load);
-
-	return pArchive;
-}
-
-void CXTPPropExchange::ReleaseArchive(LPCTSTR pszPropName, CArchive* pArchive)
-{
-	ASSERT(pArchive);
-	if (!pArchive)
-		return;
-
-	CMemFile* pFile = DYNAMIC_DOWNCAST(CMemFile, pArchive->GetFile());
-	ASSERT(pFile);
-	if (!pFile)
-		return;
-
-	BYTE* pData = NULL;
-	if (IsStoring())
-	{
-		pArchive->Flush();
-
-		DWORD nBytes = (DWORD)pFile->GetPosition();
-		pData = pFile->Detach();
-		PX_Blob(this, pszPropName, pData, nBytes);
-
-	}
-	else
-	{
-		pData = pFile->Detach();
-	}
-
-	pArchive->Abort();
-	pFile->Close();
-	free(pData);
-
-	delete pFile;
-	delete pArchive;
-}
-
-void CXTPPropExchange::ExchangeSchema()
-{
-	PX_Long(this, _T("Schema"), (long&)m_nSchema, _XTP_SCHEMA_CURRENT);
-}
-
-void CXTPPropExchange::ExchangeSchemaSafe()
-{
-	ExchangeSchema();
-}
-
-void CXTPPropExchange::ExchangeLocale()
-{
-	PX_DWord(this, _T("Locale"), (DWORD&)CXTPPropExchange::m_lcidDateTime, XTP_LOCALE_ISO8601);
-}
-
-
-
-CXTPPropExchangeEnumerator* CXTPPropExchange::GetEnumerator(LPCTSTR lpszSection)
-{
-	return new CXTPPropExchangeEnumerator(this, lpszSection);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeArchive
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeArchive, CXTPPropExchange)
-
-CXTPPropExchangeArchive::CXTPPropExchangeArchive(CArchive& ar) :
-	m_ar((CSelfArchive&)ar)
-{
-	ASSERT_POINTER(&ar, CArchive);
-	m_bLoading = m_ar.IsLoading();
-
-}
-
-CXTPPropExchange* CXTPPropExchangeArchive::GetSection(LPCTSTR /*pszSection*/)
-{
-	CXTPPropExchangeArchive* pSection = new CXTPPropExchangeArchive(m_ar);
-	pSection->InitSection(this);
-	return pSection;
-}
-
-
-BOOL CXTPPropExchangeArchive::ExchangeRuntimeClass(LPCTSTR /*pszPropName*/, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	if (!IsLoading())
-	{
-		m_ar.WriteClass(pClass);
-	}
-	else
-	{
-		pClass = m_ar.ReadClass(pDefaultClass, &m_nSchema);
-
-		if (!pClass)
-			return FALSE;
-	}
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeArchive::ExchangeObjectInstance(CObject*& pObject, CRuntimeClass* pObjectRuntime)
-{
-	if (!CXTPPropExchange::ExchangeObjectInstance(pObject, pObjectRuntime))
-		return FALSE;
-
-	if (IsLoading())
-	{
-		m_ar.CheckCount();
-		m_ar.m_pLoadArray->InsertAt(m_ar.m_nMapCount++, pObject);
-	}
-	else
-	{
-		m_ar.MapObject(NULL);
-		m_ar.CheckCount();
-		m_ar.m_pStoreMap->SetAt(pObject, (LPVOID)(DWORD_PTR)m_ar.m_nMapCount++);
-
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeArchive::ExchangeProp(LPCTSTR /*pszPropName*/, VARTYPE vtProp,
-		void* pvProp, const void* pvDefault)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	UNUSED(pvDefault);       // unused in release builds
-
-	ASSERT(AfxIsValidAddress(pvProp, 1, FALSE));
-	ASSERT((pvDefault == NULL) || AfxIsValidAddress(pvDefault, 1, FALSE));
-
-	if (m_bLoading)
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-			m_ar >> *(BYTE*)pvProp;
-			break;
-		case VT_I2:
-			m_ar >> *(WORD*)pvProp;
-			break;
-		case VT_I4:
-			m_ar >> *(long*)pvProp;
-			break;
-		case VT_BOOL:
-			m_ar >> *(BOOL*)pvProp;
-			break;
-		case VT_BSTR:
-			ASSERT(FALSE);
-			break;
-		case VT_LPSTR:
-			m_ar >> *(CString*)pvProp;
-			break;
-		case VT_CY:
-			m_ar >> ((CY*)pvProp)->Lo;
-			m_ar >> ((CY*)pvProp)->Hi;
-			break;
-		case VT_R4:
-			m_ar >> *(float*)pvProp;
-			break;
-		case VT_R8:
-			m_ar >> *(double*)pvProp;
-			break;
-		case VT_EX_RECT:
-			m_ar >> *(RECT*)pvProp;
-			break;
-		case VT_EX_SIZE:
-			m_ar >> *(SIZE*)pvProp;
-			break;
-		case VT_VARIANT:
-			m_ar >> *(COleVariant*)pvProp;
-			break;
-		case VT_DATE:
-			m_ar >> *(COleDateTime*)pvProp;
-			break;
-		}
-	}
-	else
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-			m_ar << *(BYTE*)pvProp;
-			break;
-		case VT_I2:
-			m_ar << *(WORD*)pvProp;
-			break;
-		case VT_I4:
-			m_ar << *(long*)pvProp;
-			break;
-		case VT_BOOL:
-			m_ar << *(BOOL*)pvProp;
-			break;
-		case VT_BSTR:
-			ASSERT(FALSE);
-			break;
-		case VT_LPSTR:
-			m_ar << *(CString*)pvProp;
-			break;
-		case VT_CY:
-			m_ar << ((CY*)pvProp)->Lo;
-			m_ar << ((CY*)pvProp)->Hi;
-			break;
-		case VT_R4:
-			m_ar << *(float*)pvProp;
-			break;
-		case VT_R8:
-			m_ar << *(double*)pvProp;
-			break;
-		case VT_EX_RECT:
-			m_ar << *(RECT*)pvProp;
-			break;
-		case VT_EX_SIZE:
-			m_ar << *(SIZE*)pvProp;
-			break;
-		case VT_VARIANT:
-			m_ar << *(COleVariant*)pvProp;
-			break;
-		case VT_DATE:
-			m_ar << *(COleDateTime*)pvProp;
-			break;
-		}
-	}
-
-	return TRUE;
-}
-
-void CXTPPropExchangeArchive::WriteCount (DWORD dwCount)
-{
-	m_ar.WriteCount(dwCount);
-}
-DWORD CXTPPropExchangeArchive::ReadCount()
-{
-	return (DWORD)m_ar.ReadCount();
-}
-void CXTPPropExchangeArchive::Write (LPCTSTR /*pszPropName*/, const void* lpBuf, UINT nCount)
-{
-	ASSERT(lpBuf);
-	m_ar.Write(lpBuf, nCount);
-}
-
-UINT CXTPPropExchangeArchive::Read (LPCTSTR /*pszPropName*/, void* lpBuf, UINT nCount)
-{
-	ASSERT(lpBuf);
-	return m_ar.Read(lpBuf, nCount);
-}
-
-BOOL CXTPPropExchangeArchive::ExchangeBlobProp(LPCTSTR /*pszPropName*/, BYTE*& pData, DWORD& nBytes)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	if (IsStoring())
-	{
-		WriteCount(nBytes);
-		m_ar.Write(pData, nBytes);
-	}
-	else
-	{
-		DWORD nCount = ReadCount();
-
-		if (pData == NULL)
-		{
-			pData = (BYTE*)malloc(nCount);
-			nBytes = nCount;
-		}
-
-		if (nBytes < nCount)
-			return FALSE;
-
-		return m_ar.Read(pData, nCount) == nCount;
-	}
-
-	return TRUE;
-}
-
-CArchive* CXTPPropExchangeArchive::GetArchive(LPCTSTR /*pszPropName*/)
-{
-	return &m_ar;
-}
-
-void CXTPPropExchangeArchive::ReleaseArchive(LPCTSTR /*pszPropName*/, CArchive* /*pArchive*/)
-{
-
-}
-
-void CXTPPropExchangeArchive::ExchangeSchemaSafe()
-{
-	DWORD dwSafe = 0xFF0ADBF;
-
-	if (IsStoring())
-	{
-		m_ar << dwSafe;
-		m_ar << m_nSchema;
-	}
-	else
-	{
-		m_ar.FillBuffer(sizeof(DWORD));
-		DWORD dw = *(DWORD*)m_ar.m_lpBufCur;
-
-		if (dw == dwSafe)
-		{
-			m_ar >> dwSafe;
-			m_ar >> m_nSchema;
-		}
-		else
-		{
-			m_nSchema = _XTP_SCHEMA_100;
-		}
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeRegistry
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeRegistry, CXTPPropExchange)
-
-CXTPPropExchangeRegistry::CXTPPropExchangeRegistry(BOOL bLoading, HKEY hParentKey, LPCTSTR lpszSection)
-{
-	ASSERT(lpszSection != NULL);
-	if (hParentKey == 0)
-	{
-		m_hParentKey = AfxGetApp()->GetAppRegistryKey();
-		m_bCloseParentKey = TRUE;
-	}
-	else
-	{
-		m_hParentKey = hParentKey;
-		m_bCloseParentKey = FALSE;
-	}
-
-	m_bLoading = bLoading;
-	m_strSectionName = lpszSection;
-	m_hSectionKey = NULL;
-
-}
-
-CXTPPropExchangeRegistry::~CXTPPropExchangeRegistry()
-{
-	if (m_hSectionKey)
-	{
-		RegCloseKey(m_hSectionKey);
-	}
-	if (m_bCloseParentKey && m_hParentKey)
-	{
-		RegCloseKey(m_hParentKey);
-	}
-}
-
-CXTPPropExchange* CXTPPropExchangeRegistry::GetSection(LPCTSTR lpszSection)
-{
-	OnBeforeExchange();
-
-	CXTPPropExchangeRegistry* pSection = new CXTPPropExchangeRegistry(IsLoading(), m_hSectionKey, lpszSection);
-	pSection->InitSection(this);
-	return pSection;
-}
-
-BOOL CXTPPropExchangeRegistry::IsPropertyExists(LPCTSTR pszPropName)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	return RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, NULL, NULL, NULL) == ERROR_SUCCESS;
-}
-
-BOOL CXTPPropExchangeRegistry::IsSectionExists(LPCTSTR lpszSection)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	HKEY hSectionKey = 0;
-
-	if (RegOpenKeyEx(m_hSectionKey, lpszSection, 0, m_bLoading ? KEY_READ : KEY_WRITE, &hSectionKey) == ERROR_SUCCESS)
-	{
-		RegCloseKey(hSectionKey);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-BOOL CXTPPropExchangeRegistry::OnBeforeExchange()
-{
-	if (m_hParentKey == NULL)
-		return FALSE;
-
-	if (!m_bInitialized)
-	{
-		ASSERT(m_hSectionKey == 0);
-
-		VERIFY(RegCreateKeyEx(m_hParentKey, m_strSectionName, 0, REG_NONE, REG_OPTION_NON_VOLATILE, m_bLoading ? KEY_READ : KEY_WRITE, NULL, &m_hSectionKey, NULL) == ERROR_SUCCESS);
-
-		m_bInitialized = TRUE;
-	}
-	return m_hSectionKey != NULL;
-}
-
-void CXTPPropExchangeRegistry::EmptySection()
-{
-	CXTPPropExchange::EmptySection();
-
-	if (m_hSectionKey)
-	{
-		RegCloseKey(m_hSectionKey);
-		m_hSectionKey = 0;
-	}
-
-	AfxDelRegTreeHelper(m_hParentKey, m_strSectionName);
-	m_bInitialized = FALSE;
-}
-
-
-BOOL CXTPPropExchangeRegistry::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-				void* pvProp, const void* pvDefault /*= NULL*/)
-{
-	if (m_bLoading)
-	{
-		if (!m_bUseDefaultOnLoad)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		ASSERT(m_hSectionKey);
-
-		switch (vtProp)
-		{
-		case VT_R4:
-		case VT_R8:
-		case VT_DATE:
-		case VT_BSTR:
-			ASSERT(FALSE); // Not Implemented
-			return FALSE;
-
-		case VT_VARIANT:
-			return FALSE; // Not Implemented
-
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-
-				DWORD dwValue;
-				DWORD dwType;
-				DWORD dwCount = sizeof(DWORD);
-				LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-					(LPBYTE)&dwValue, &dwCount);
-
-				if (lResult == ERROR_SUCCESS)
-				{
-					ASSERT(dwType == REG_DWORD);
-					ASSERT(dwCount == sizeof(DWORD));
-
-					return CopyPropValue(vtProp, pvProp, &dwValue);
-
-				}
-				else
-				{
-					return CopyPropValue(vtProp, pvProp, pvDefault);
-				}
-			}
-		case VT_LPSTR:
-		case VT_EX_SIZE:
-		case VT_EX_RECT:
-			{
-				CString strValue;
-				DWORD dwType, dwCount;
-				LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-					NULL, &dwCount);
-				if (lResult == ERROR_SUCCESS)
-				{
-					ASSERT(dwType == REG_SZ);
-					lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-						(LPBYTE)strValue.GetBuffer(dwCount/sizeof(TCHAR)), &dwCount);
-					strValue.ReleaseBuffer();
-				}
-				if (lResult == ERROR_SUCCESS)
-				{
-					ASSERT(dwType == REG_SZ);
-
-					if (vtProp == VT_EX_SIZE)
-					{
-						SIZE sz = {0, 0};
-						if (SCANF_S(strValue, _T("%i, %i"), &sz.cx, &sz.cy) != 2)
-							return CopyPropValue(vtProp, pvProp, pvDefault);
-
-						*((LPSIZE)pvProp) = sz;
-					}
-					else if (vtProp == VT_EX_RECT)
-					{
-						RECT rc = {0, 0, 0, 0};
-						if (SCANF_S(strValue, _T("%i, %i, %i, %i"), &rc.left, &rc.top, &rc.right, &rc.bottom) != 4)
-							return CopyPropValue(vtProp, pvProp, pvDefault);
-
-						*((LPRECT)pvProp) = rc;
-					}
-					else
-					{
-						*(CString*)pvProp = strValue;
-					}
-
-				}
-				else
-				{
-					return CopyPropValue(vtProp, pvProp, pvDefault);
-				}
-				return TRUE;
-			}
-		}
-	}
-	else
-	{
-		if (!m_bUseDefaultOnSave)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return FALSE;
-
-		if (IsSamePropValue(vtProp, pvProp, pvDefault))
-		{
-			if (m_hSectionKey && !m_bEmptySection)
-				RegDeleteValue(m_hSectionKey, pszPropName);
-			return TRUE;
-		}
-
-		LONG lResult = -1;
-
-		switch (vtProp)
-		{
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-				DWORD dwValue = 0;
-				CopyPropValue(vtProp, &dwValue, pvProp);
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_DWORD, (LPBYTE)&dwValue, sizeof(DWORD));
-			}
-			break;
-
-		case VT_LPSTR:
-			{
-				CString& strValue = *(CString*)pvProp;
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
-					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
-			}
-			break;
-
-		case VT_R4:
-		case VT_R8:
-			lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_BINARY, (LPBYTE)pvProp, GetSizeOfVarType(vtProp));
-			break;
-
-		case VT_DATE:
-		case VT_VARIANT:
-		case VT_BSTR:
-			ASSERT(FALSE); // Not Implemented
-			break;
-
-		case VT_EX_SIZE:
-			{
-				CString strValue;
-				strValue.Format(_T("%i, %i"), ((LPSIZE)pvProp)->cx, ((LPSIZE)pvProp)->cy);
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
-					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
-			}
-			break;
-
-		case VT_EX_RECT:
-				CString strValue;
-				strValue.Format(_T("%i, %i, %i, %i"), ((LPRECT)pvProp)->left, ((LPRECT)pvProp)->top, ((LPRECT)pvProp)->right, ((LPRECT)pvProp)->bottom);
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
-					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
-			break;
-
-		}
-
-		return lResult == ERROR_SUCCESS;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPPropExchangeRegistry::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	ASSERT(m_hSectionKey != 0);
-
-	if (IsStoring())
-	{
-		LONG lResult = ::RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_BINARY,
-			pData, nBytes);
-		return lResult == ERROR_SUCCESS;
-
-	}
-	else
-	{
-		DWORD dwType, dwCount;
-		LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-			NULL, &dwCount);
-
-		if (lResult != ERROR_SUCCESS)
-			return FALSE;
-
-		ASSERT(dwType == REG_BINARY);
-
-
-		if (pData == NULL)
-		{
-			pData = (BYTE*)malloc(dwCount);
-			nBytes = dwCount;
-		}
-
-		if (nBytes < dwCount)
-			return FALSE;
-
-		lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-				(LPBYTE)pData, &dwCount);
-
-		if (lResult != ERROR_SUCCESS)
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeXMLNode
-
-#ifndef _XTP_EXCLUDE_XML
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeXMLNode, CXTPPropExchange)
-
-CXTPPropExchangeXMLNode::CXTPPropExchangeXMLNode(BOOL bLoading, CXTPDOMNodePtr xmlParentNode, LPCTSTR lpszSection)
-{
-	m_bLoading = bLoading;
-	m_strSectionName = lpszSection;
-	m_xmlParentNode = xmlParentNode;
-	m_xmlSectionNode = NULL;
-	m_bCompactMode = TRUE;
-
-	if (xmlParentNode)
-	{
-		xmlParentNode->get_ownerDocument(&m_xmlDocPtr);
-
-		if (m_xmlDocPtr == 0)
-		{
-			m_xmlDocPtr = xmlParentNode;
-		}
-	}
-
-	m_strEncoding = _T("UTF-8");
-
-}
-
-BOOL CXTPPropExchangeXMLNode::IsXMLSupported()
-{
-	CXTPDOMDocumentPtr xmlDocPtr;
-
-	if (!SUCCEEDED(xmlDocPtr.CreateInstance(CLSID_XTPDOMDocument)))
-	{
-		return FALSE;
-	}
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeXMLNode::CreateDocumentInstance()
-{
-	if (m_xmlDocPtr == NULL)
-	{
-		if (!SUCCEEDED(m_xmlDocPtr.CreateInstance(CLSID_XTPDOMDocument)))
-		{
-			TRACE(_T("Warning: CreateDocumentInstance failed in CXTPPropExchangeXMLNode --\n"));
-			TRACE(_T("\tperhaps AfxOleInit() has not been called, or msxml3.dll not found."));
-
-			return FALSE;
-		}
-
-		m_xmlDocPtr->put_preserveWhiteSpace(VARIANT_TRUE);
-
-	}
-	return TRUE;
-}
-
-void CXTPPropExchangeXMLNode::TraceParseError()
-{
 #ifdef _DEBUG
-	XTPXML::IXMLDOMParseErrorPtr parseError = 0;
-	if (FAILED(m_xmlDocPtr->get_parseError(&parseError)))
-		return;
+void CScintillaView::AssertValid() const
+{
+  //Let the base class do its thing
+	CView::AssertValid();
 
-	BSTR bstrReason = 0;
-	if (FAILED(parseError->get_reason(&bstrReason)))
-		return;
+  //Validate our parameters
+	ASSERT_VALID(&m_aPageStart);
 
-	CString strReason(bstrReason);
-	TRACE(_T("Warning: CXTPPropExchangeXMLNode::LoadFromString failed. ParseError.Reason = %s"), (LPCTSTR)strReason);
-
-	SysFreeString(bstrReason);
-#endif
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+		ASSERT_VALID(_scintillaEditState.pFindReplaceDlg);
 }
 
-BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
+void CScintillaView::Dump(CDumpContext& dc) const
 {
-	if (!lpszState)
-		return FALSE;
+  //Let the base class do its thing
+	CView::Dump(dc);
 
-	if (!CreateDocumentInstance())
-		return FALSE;
+	dc << _T("\nm_aPageStart ") << &m_aPageStart;
+  dc << _T("\nbUseROFileAttributeDuringLoading = ") << m_bUseROFileAttributeDuringLoading;
 
-	ASSERT(m_xmlDocPtr != 0);
-
-	VARIANT_BOOL bResult;
-
-	VARIANT va;
-	va.vt = VT_ARRAY | VT_UI1;
-
-	ULONG nLen = (ULONG)strlen(lpszState);
-	va.parray = SafeArrayCreateVector(VT_UI1, 0, nLen);
-	MEMCPY_S(va.parray->pvData, lpszState, nLen);
-
-	HRESULT hr = m_xmlDocPtr->load(va, &bResult);
-	VariantClear(&va);
-
-	if (FAILED(hr) || bResult == VARIANT_FALSE)
+	dc << _T("\n Static Member Data:");
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
 	{
-		TraceParseError();
-		return FALSE;
+		dc << _T("\npFindReplaceDlg = ") <<	static_cast<void*>(_scintillaEditState.pFindReplaceDlg);
+		dc << _T("\nbFindOnly = ") << _scintillaEditState.bFindOnly;
 	}
+	dc << _T("\nstrFind = ") << _scintillaEditState.strFind;
+	dc << _T("\nstrReplace = ") << _scintillaEditState.strReplace;
+	dc << _T("\nbCase = ") << _scintillaEditState.bCase;
+	dc << _T("\nbWord = ") << _scintillaEditState.bWord;
+	dc << _T("\nbNext = ") << _scintillaEditState.bNext;
+  dc << _T("\nbRegularExpression = ") << _scintillaEditState.bRegularExpression;
+}
+#endif //_DEBUG
 
-	m_xmlParentNode = m_xmlDocPtr;
-	m_xmlSectionNode = NULL;
-	m_bInitialized = FALSE;
+void CScintillaView::Serialize(CArchive& ar)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
 
-	return TRUE;
+  if (ar.IsLoading())
+  {
+    //Tell the control not to maintain any undo info while we stream the data 
+    rCtrl.Cancel();
+    rCtrl.SetUndoCollection(FALSE);
+
+    //Read the data in from the file in blocks
+    CFile* pFile = ar.GetFile();
+    char Buffer[4096];
+    int nBytesRead = 0;
+    do
+    {
+      nBytesRead = pFile->Read(Buffer, 4096);
+      if (nBytesRead)
+        rCtrl.AddText(nBytesRead, Buffer);
+    }
+    while (nBytesRead);
+
+    //Set the read only state if required
+    if (m_bUseROFileAttributeDuringLoading && ((GetFileAttributes(pFile->GetFilePath()) & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
+      rCtrl.SetReadOnly(TRUE);
+    else
+      rCtrl.SetReadOnly(FALSE);
+
+    //Reinitialize the control settings
+    rCtrl.SetUndoCollection(TRUE);
+    rCtrl.EmptyUndoBuffer();
+    rCtrl.SetSavePoint();
+    rCtrl.GotoPos(0);
+  }
+  else
+  {
+    //Get the length of the document
+    int nDocLength = rCtrl.GetLength();
+
+    //Write the data in blocks to disk
+    CFile* pFile = ar.GetFile();
+    for (int i=0; i<nDocLength; i += 4095) //4095 because data will be returned NULL terminated
+    {
+      int nGrabSize = nDocLength - i;
+      if (nGrabSize > 4095)
+        nGrabSize = 4095;
+
+      //Get the data from the control
+	    TextRange tr;
+	    tr.chrg.cpMin = i;
+	    tr.chrg.cpMax = i + nGrabSize;
+      char Buffer[4096];
+	    tr.lpstrText = Buffer;
+	    rCtrl.GetTextRange(&tr);
+
+      //Write it to disk
+      pFile->Write(Buffer, nGrabSize);
+    }
+  }
 }
 
-BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCWSTR lpszState)
+void CScintillaView::OnFilePageSetup() 
 {
-	return LoadFromString((BSTR)lpszState);
-}
+  //Display a standard page setup dialog
+	CPageSetupDialog dlg;
 
-BOOL CXTPPropExchangeXMLNode::LoadFromString(BSTR lpszState)
-{
-	if (!CreateDocumentInstance())
-		return FALSE;
+  //Allow the margin settings to be tweaked
+  dlg.m_psd.Flags |= PSD_MARGINS;
 
-	ASSERT(m_xmlDocPtr != 0);
+  //Are we using the metric or imperial system	
+  if (m_bUsingMetric)
+    dlg.m_psd.Flags |= PSD_INHUNDREDTHSOFMILLIMETERS;
+  else
+    dlg.m_psd.Flags |= PSD_INTHOUSANDTHSOFINCHES;
 
-	VARIANT_BOOL bResult;
-	HRESULT hr = m_xmlDocPtr->loadXML(lpszState, &bResult);
-	if (FAILED(hr) || bResult == VARIANT_FALSE)
+  if (m_bPersistMarginSettings)
+    LoadMarginSettings();
+
+  //Set the current margin settings to the current value from m_rectMargin 
+  dlg.m_psd.rtMargin = m_rMargin;
+
+	//get the current device from the app
+	PRINTDLG pd;
+	pd.hDevNames = NULL;
+	pd.hDevMode = NULL;
+  CWinApp* pApp = AfxGetApp();
+	pApp->GetPrinterDeviceDefaults(&pd);
+	dlg.m_psd.hDevNames = pd.hDevNames;
+	dlg.m_psd.hDevMode = pd.hDevMode;
+
+	if (dlg.DoModal() == IDOK)
 	{
-		TraceParseError();
-		return FALSE;
-	}
+    //Save the new margin value in to the member variable
+    m_rMargin = dlg.m_psd.rtMargin;
 
-	m_xmlParentNode = m_xmlDocPtr;
-	m_xmlSectionNode = NULL;
-	m_bInitialized = FALSE;
+    if (m_bPersistMarginSettings)
+      SaveMarginSettings();
 
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromResource(HINSTANCE hInstance, LPCTSTR lpszResourceName, LPCTSTR lpszResourceType)
-{
-	HRSRC hRsrc = ::FindResource(hInstance, lpszResourceName, lpszResourceType);
-	if (hRsrc == NULL)
-		return FALSE;
-
-	HGLOBAL hGlobal = LoadResource(hInstance, hRsrc);
-	if (hGlobal == NULL)
-		return FALSE;
-
-	LPCSTR pData = (LPCSTR)LockResource(hGlobal);
-	if (pData == NULL)
-		return FALSE;
-
-	DWORD dwSize = (DWORD)SizeofResource(hInstance, hRsrc);
-	if (dwSize == 0)
-		return FALSE;
-
-	LPSTR lpstr = (LPSTR)malloc(dwSize + 1);
-	if (!lpstr)
-		return FALSE;
-
-	MEMCPY_S(lpstr, pData, dwSize);
-	lpstr[dwSize] = 0;
-
-	BOOL bResult = LoadFromString(lpstr);
-
-	UnlockResource(hGlobal);
-	FreeResource(hGlobal);
-
-	free(lpstr);
-
-	return bResult;
-}
-
-
-BOOL CXTPPropExchangeXMLNode::LoadFromFile(LPCTSTR strFileName)
-{
-	if (!FILEEXISTS_S(strFileName))
-		return FALSE;
-
-	if (!CreateDocumentInstance())
-		return FALSE;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	VARIANT_BOOL bResult;
-	HRESULT hr = m_xmlDocPtr->load(COleVariant(strFileName), &bResult);
-	if (FAILED(hr) || bResult == VARIANT_FALSE)
-	{
-		TraceParseError();
-		return FALSE;
-	}
-
-	m_xmlParentNode = m_xmlDocPtr;
-	m_xmlSectionNode = NULL;
-	m_bInitialized = FALSE;
-
-	return TRUE;
-}
-
-CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
-{
-	const LPCTSTR lpszCrLf = _T("\r\n");
-
-#define ADDINDENT(str, i, strOffset)\
-	INSERT_S(str, i, lpszCrLf);\
-	INSERT_S(str, i + 2, strOffset);\
-	i += strOffset.GetLength() + 2;
-
-	CString str;
-	if (!OnBeforeExchange())
-		return str;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	BSTR bstrXML = 0;
-
-	if (IsRootSection())
-	{
-		if (FAILED(m_xmlDocPtr->get_xml(&bstrXML)))
-			return str;
-	}
-	else
-	{
-		if (FAILED(m_xmlSectionNode->get_xml(&bstrXML)))
-			return str;
-	}
-
-	str = bstrXML;
-	SysFreeString(bstrXML);
-
-	if (bFormatted)
-	{
-		CString strOffset(_T('\t'));
-
-		for (int i = 1; i < str.GetLength(); i++)
-		{
-			if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
-			{
-				DELETE_S(strOffset, strOffset.GetLength() - 1);
-				if (str[i] == _T('<') && str[i - 1] == _T('>'))
-				{
-					ADDINDENT(str, i, strOffset);
-				}
-			}
-			else if (str[i] == _T('<'))
-			{
-				ADDINDENT(str, i, strOffset);
-				strOffset += _T('\t');
-
-			}
-		}
-	}
-
-	return str;
-
-}
-
-
-
-void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
-{
-	const LPCSTR lpszCrLf = "\r\n";
-	const LPCSTR lpszOffset = "\t";
-
-	#define WRITEINDENT\
-		file.Write(lpszBegin, int(lpszCurrent - lpszBegin) - nWhiteSpace);\
-		file.Write(lpszCrLf, 2);\
-		for (int j = 0; j < nOffset; j++) file.Write(lpszOffset, 1);\
-		lpszBegin = lpszCurrent
-
-
-	CFile file;
-	if (!file.Open(lpszFileName, CFile::modeRead))
-		return;
-
-	DWORD dwLength = (DWORD)file.GetLength();
-
-	if (dwLength < 3)
-		return;
-
-	BYTE* lpszBuffer = new BYTE[dwLength + 1];
-
-	file.Read(lpszBuffer, dwLength);
-	lpszBuffer[dwLength] = 0;
-	file.Close();
-
-	if (!file.Open(lpszFileName, CFile::modeWrite | CFile::modeCreate))
-	{
-		delete[] lpszBuffer;
-		return;
-	}
-
-	int nOffset = 1, nWhiteSpace = 0;
-	if (dwLength > 2 && lpszBuffer[dwLength - 2] == '\r')
-		lpszBuffer[dwLength - 2] = 0;
-
-	BYTE *lpszCurrent = lpszBuffer + 1, *lpszBegin = lpszBuffer;
-
-	while (*lpszCurrent++)
-	{
-		BYTE& chCurrent = *lpszCurrent;
-
-		if (((chCurrent == _T('>')) && (*(lpszCurrent - 1) == '/' || *(lpszCurrent - 1) == '?'))
-			|| ((chCurrent == _T('<')) && (*(lpszCurrent + 1) == '/')))
-		{
-			nOffset--;
-			if (chCurrent == '<' && *(lpszCurrent - 1 - nWhiteSpace) == '>')
-			{
-				WRITEINDENT;
-			}
-		}
-		else if (chCurrent == '<')
-		{
-			WRITEINDENT;
-			nOffset++;
-		}
-
-		nWhiteSpace = (chCurrent == '\r' || chCurrent == '\n' || chCurrent == '\t') ? nWhiteSpace + 1 : 0;
-	}
-
-	file.Write(lpszBegin, int(lpszCurrent - lpszBegin) - 1);
-	file.Write(lpszCrLf, 2);
-
-	file.Close();
-	delete[] lpszBuffer;
-}
-
-HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
-{
-	CString str;
-	if (!OnBeforeExchange())
-		return E_FAIL;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	CString strInstruction = _T("version=\"1.0\" encoding=\"") + m_strEncoding + _T("\"");
-
-	BOOL bInstructionExists = FALSE;
-
-	CXTPDOMNodePtr ptrBaseInstruction = 0;
-	if (SUCCEEDED(m_xmlDocPtr->selectSingleNode(L"/node()", &ptrBaseInstruction)) && ptrBaseInstruction != 0)
-	{
-		BSTR bstrNodeName = 0;
-		ptrBaseInstruction->get_nodeName(&bstrNodeName);
-
-		if (wcscmp(bstrNodeName, L"xml") == 0)
-		{
-			bInstructionExists = TRUE;
-		}
-
-		SysFreeString(bstrNodeName);
-	}
-
-	XTPXML::IXMLDOMProcessingInstructionPtr ptrInstruction = 0;
-	if (!bInstructionExists && SUCCEEDED(m_xmlDocPtr->createProcessingInstruction(L"xml", CT2BSTR(strInstruction), &ptrInstruction)))
-	{
-		CXTPDOMNodePtr xmlNodePtr;
-		if (SUCCEEDED(m_xmlDocPtr->selectSingleNode(L"/node()", &xmlNodePtr)))
-		{
-			m_xmlDocPtr->insertBefore(ptrInstruction, _variant_t(xmlNodePtr.GetInterfacePtr()), 0);
-		}
-	}
-
-	HRESULT hr = m_xmlDocPtr->save(COleVariant(strFileName));
-	if (FAILED(hr))
-		return hr;
-
-	if (bFormatted)
-	{
-		FormatFile(strFileName);
-	}
-
-	return S_OK;
-}
-
-CXTPPropExchange* CXTPPropExchangeXMLNode::GetSection(LPCTSTR lpszSection)
-{
-	OnBeforeExchange();
-
-	CXTPPropExchangeXMLNode* pSection = new CXTPPropExchangeXMLNode(IsLoading(), m_xmlSectionNode, lpszSection);
-	pSection->m_bCompactMode = m_bCompactMode;
-	pSection->InitSection(this);
-	return pSection;
-}
-
-BOOL CXTPPropExchangeXMLNode::OnBeforeExchange()
-{
-	if (!m_bInitialized)
-	{
-		m_bInitialized = TRUE;
-
-		if (m_xmlDocPtr == NULL && IsRootSection())
-		{
-			ASSERT(m_xmlParentNode == 0);
-
-			if (!CreateDocumentInstance())
-				return FALSE;
-
-			if (m_xmlDocPtr == 0)
-				return FALSE;
-
-			m_xmlParentNode = m_xmlDocPtr;
-			ASSERT(m_xmlParentNode != 0);
-		}
-
-		if ((m_xmlDocPtr == NULL) || (m_xmlParentNode == NULL))
-			return FALSE;
-
-		ASSERT(m_xmlSectionNode == 0);
-
-		m_xmlSectionNode = GetProfileNode(m_strSectionName);
-
-		if (m_xmlSectionNode != NULL && IsRootSection())
-		{
-			PX_Bool(this, _T("CompactMode"), m_bCompactMode, FALSE);
-		}
-	}
-
-	if ((m_xmlDocPtr == NULL) || (m_xmlParentNode == NULL))
-		return FALSE;
-
-	return m_xmlSectionNode != NULL;
-}
-
-void CXTPPropExchangeXMLNode::EmptySection()
-{
-	CXTPPropExchange::EmptySection();
-
-	OnBeforeExchange();
-
-	if (m_xmlSectionNode != 0 && m_xmlParentNode != 0)
-	{
-		m_xmlParentNode->removeChild(m_xmlSectionNode, NULL);
-		m_xmlSectionNode = 0;
-		m_bInitialized = FALSE;
+    //Update the printer settings
+		pApp->SelectPrinter(dlg.m_psd.hDevNames, dlg.m_psd.hDevMode);
 	}
 }
 
-void CXTPPropExchangeXMLNode::SetCompactMode(BOOL bCompactMode)
+void CScintillaView::OnStyleNeeded(SCNotification* /*pSCNotification*/)
 {
-	m_bCompactMode = bCompactMode;
+  //By default do nothing, derived classes may want to do something
 }
 
-
-CXTPDOMNodePtr CXTPPropExchangeXMLNode::GetProfileNode(LPCTSTR strSection)
+void CScintillaView::OnCharAdded(SCNotification* /*pSCNotification*/)
 {
-	ASSERT(m_xmlParentNode != 0);
-	CXTPDOMNodePtr xmlNodePtr;
-	CXTPDOMElementPtr xmlElementPtr;
+  //By default do nothing, derived classes may want to do something
+}
 
-	HRESULT hr = m_xmlParentNode->selectSingleNode(CT2BSTR(strSection), &xmlNodePtr);
+void CScintillaView::OnSavePointReached(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
 
-	if (FAILED(hr) || xmlNodePtr == NULL)
+void CScintillaView::OnSavePointLeft(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnModifyAttemptRO(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDoubleClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnUpdateUI(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnModified(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnMacroRecord(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnMarginClick(SCNotification* pSCNotification)
+{
+  //By default get the line where the click occured and toggle its fold state
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nLine = rCtrl.LineFromPosition(pSCNotification->position);
+  rCtrl.ToggleFold(nLine);
+}
+
+void CScintillaView::OnNeedShown(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnPainted(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnUserListSelection(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDwellStart(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDwellEnd(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnZoom(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnHotSpotClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnHotSpotDoubleClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnCallTipClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnAutoCSelection(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnChange()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnSetFocus()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnKillFocus()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+BOOL CScintillaView::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+  HWND hWndControl = reinterpret_cast<HWND>(lParam);
+  
+  if (hWndControl == GetCtrl().GetSafeHwnd())
+  {
+    WORD wNotification = HIWORD(wParam);
+    switch (wNotification)
+    {
+      case SCEN_CHANGE:
+      {
+        OnChange();
+        break;
+      }
+      case SCEN_SETFOCUS:
+      {
+        OnSetFocus();
+        break;
+      }
+      case SCEN_KILLFOCUS:
+      {
+        OnKillFocus();
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+
+    return TRUE;
+  }
+
+  //let the base class do its thing
+  return CView::OnCommand(wParam, lParam);
+}
+
+BOOL CScintillaView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+  NMHDR* pNMHdr = reinterpret_cast<NMHDR*>(lParam);
+  AFXASSUME(pNMHdr);
+
+  //Is it a notification from the embedded control
+  CScintillaCtrl& rCtrl = GetCtrl();
+  if (pNMHdr->hwndFrom == rCtrl.GetSafeHwnd())
+  {
+    SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(lParam);
+    switch (pNMHdr->code)
+    {
+      case SCN_STYLENEEDED:
+      {
+        OnStyleNeeded(pSCNotification);
+        break;
+      }
+      case SCN_CHARADDED:
+      {
+        OnCharAdded(pSCNotification);
+        break;
+      }
+      case SCN_SAVEPOINTREACHED:
+      {
+        OnSavePointReached(pSCNotification);
+        break;
+      }
+      case SCN_SAVEPOINTLEFT:
+      {
+        OnSavePointLeft(pSCNotification);
+        break;
+      }
+      case SCN_MODIFYATTEMPTRO:
+      {
+        OnModifyAttemptRO(pSCNotification);
+        break;
+      }
+      case SCN_DOUBLECLICK:
+      {
+        OnDoubleClick(pSCNotification);
+        break;
+      }
+      case SCN_UPDATEUI:
+      {
+        OnUpdateUI(pSCNotification);
+        break;
+      }
+      case SCN_MODIFIED:
+      {
+        OnModified(pSCNotification);
+        break;
+      }
+      case SCN_MACRORECORD:
+      {
+        OnMacroRecord(pSCNotification);
+        break;
+      }
+      case SCN_MARGINCLICK:
+      {
+        OnMarginClick(pSCNotification);
+        break;
+      }
+      case SCN_NEEDSHOWN:
+      {
+        OnNeedShown(pSCNotification);
+        break;
+      }
+      case SCN_PAINTED:
+      {
+        OnPainted(pSCNotification);
+        break;
+      }
+      case SCN_USERLISTSELECTION:
+      {
+        OnUserListSelection(pSCNotification);
+        break;
+      }
+      case SCN_DWELLSTART:
+      {
+        OnDwellStart(pSCNotification);
+        break;
+      }
+      case SCN_DWELLEND:
+      {
+        OnDwellEnd(pSCNotification);
+        break;
+      }
+      case SCN_ZOOM:
+      {
+        OnZoom(pSCNotification);
+        break;
+      }
+      case SCN_HOTSPOTCLICK:
+      {
+        OnHotSpotClick(pSCNotification);
+        break;
+      }
+      case SCN_HOTSPOTDOUBLECLICK:
+      {
+        OnHotSpotDoubleClick(pSCNotification);
+        break;
+      }
+      case SCN_CALLTIPCLICK:
+      {
+        OnCallTipClick(pSCNotification);
+        break;
+      }
+      case SCN_AUTOCSELECTION:
+      {
+        OnAutoCSelection(pSCNotification);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+    return TRUE; // we processed the message
+  }
+  else
+  {
+    //let the base class do its thing
+    return CView::OnNotify(wParam, lParam, pResult);
+  }
+}
+
+void CScintillaView::GetReplaceAllTarget( long& s, long& e )
+{
+	s = 0; e = GetCtrl().GetLength();
+}
+
+IMPLEMENT_DYNAMIC(CScintillaDoc, CDocument)
+
+CScintillaDoc::CScintillaDoc()
+{
+	ASSERT_VALID(this);
+}
+
+CScintillaView* CScintillaDoc::GetView() const
+{
+	//find the first view - if there are no views
+	//we must return NULL
+	POSITION pos = GetFirstViewPosition();
+	if (pos == NULL)
+		return NULL;
+
+	//find the first view that is a CScintillaView
+	CView* pView;
+	while (pos != NULL)
 	{
-		m_xmlDocPtr->createElement(CT2BSTR(strSection), &xmlElementPtr);
-		ASSERT(xmlElementPtr != 0);
-		if (xmlElementPtr)
-		{
-			m_xmlParentNode->appendChild(xmlElementPtr, &xmlNodePtr);
-		}
+		pView = GetNextView(pos);
+		if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)))
+			return static_cast<CScintillaView*>(pView);
 	}
 
-	return xmlNodePtr;
+	//can't find one--return NULL
+	return NULL;
 }
 
-CXTPDOMNodePtr CXTPPropExchangeXMLNode::GetEntryNode(LPCTSTR lpszEntry, BOOL bCreate)
+void CScintillaDoc::SetModifiedFlag(BOOL bModified)
 {
-	ASSERT(m_xmlSectionNode != 0);
+  CScintillaView* pView = GetView();
+  AFXASSUME(pView);
 
-	CXTPDOMNodePtr xmlNodeEntryPtr;
+  if (bModified == FALSE)
+    pView->GetCtrl().SetSavePoint();
 
-	if (lpszEntry == 0 || _tcslen(lpszEntry) == 0)
-		return m_xmlSectionNode;
-
-	if (m_bCompactMode)
-	{
-		XTPXML::IXMLDOMNamedNodeMapPtr map;
-		m_xmlSectionNode->get_attributes(&map);
-		HRESULT hr = map->getNamedItem(CT2BSTR(lpszEntry), &xmlNodeEntryPtr);
-
-		if (FAILED(hr) || xmlNodeEntryPtr == NULL)
-		{
-			if (bCreate)
-			{
-				XTPXML::IXMLDOMAttributePtr xmlElementPtr;
-				m_xmlDocPtr->createAttribute(CT2BSTR(lpszEntry), &xmlElementPtr);
-				if (xmlElementPtr)
-				{
-					map->setNamedItem(xmlElementPtr, &xmlNodeEntryPtr);
-				}
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	}
-	else
-	{
-		CXTPDOMNodePtr xmlNodeSectionPtr = m_xmlSectionNode;
-
-		HRESULT hr = xmlNodeSectionPtr->selectSingleNode(CT2BSTR(lpszEntry), &xmlNodeEntryPtr);
-		if (FAILED(hr) || xmlNodeEntryPtr == NULL)
-		{
-			if (bCreate)
-			{
-
-				CXTPDOMElementPtr xmlElementPtr;
-				m_xmlDocPtr->createElement(CT2BSTR(lpszEntry), &xmlElementPtr);
-				ASSERT(xmlElementPtr != 0);
-				if (xmlElementPtr)
-				{
-					xmlNodeSectionPtr->appendChild(xmlElementPtr, &xmlNodeEntryPtr);
-				}
-			}
-			else
-			{
-				return 0;
-			}
-		}
-
-	}
-	ASSERT(xmlNodeEntryPtr != 0);
-	return xmlNodeEntryPtr;
+  m_bModified = bModified;
 }
 
-CString CXTPPropExchangeXMLNode::BstrToString(BSTR bstrVal)
+BOOL CScintillaDoc::IsModified()
 {
-	return CString(XTP_CW2CT(bstrVal));
+  CScintillaView* pView = GetView();
+  AFXASSUME(pView);
+
+	return m_bModified || pView->GetCtrl().GetModify();
 }
 
-BOOL CXTPPropExchangeXMLNode::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-	void* pvProp, const void* pvDefault)
+void CScintillaDoc::DeleteContents()
 {
-	if (m_bLoading)
-	{
-		if (!m_bUseDefaultOnLoad)
-			pvDefault = NULL;
+  //let the base class do its thing
+	CDocument::DeleteContents();
 
-		if (!OnBeforeExchange())
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		CXTPDOMNodePtr xmlEntryPtr = GetEntryNode(pszPropName, FALSE);
-		if (xmlEntryPtr == 0)
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		BSTR bstrValue = NULL;
-		xmlEntryPtr->get_text(&bstrValue);
-
-		if (vtProp == VT_BSTR)
-		{
-			PreformatString(bstrValue);
-			*(BSTR*)pvProp = bstrValue;
-			return TRUE;
-		}
-
-		CString strValue(BstrToString(bstrValue));
-		if (bstrValue) SysFreeString(bstrValue);
-
-		return ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault);
-	}
-	else
-	{
-		if (!m_bUseDefaultOnSave)
-			pvDefault = NULL;
-
-		if (IsSamePropValue(vtProp, pvProp, pvDefault))
-			return TRUE;
-
-		if (!OnBeforeExchange())
-			return FALSE;
-
-		CXTPDOMNodePtr xmlEntryPtr = GetEntryNode(pszPropName, TRUE);
-		ASSERT(xmlEntryPtr != 0);
-
-		if (vtProp == VT_BSTR)
-		{
-			xmlEntryPtr->put_text(*(BSTR*)pvProp);
-			return TRUE;
-		}
-
-		CString strValue;
-		if (!ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault))
-			return FALSE;
-
-		xmlEntryPtr->put_text(CT2BSTR(strValue));
-	}
-	return TRUE;
-
-}
-CString CXTPPropExchangeXMLNode::GetSectionName()
-{
-	if (!OnBeforeExchange())
-		return _T("");
-
-	BSTR bstrValue = NULL;
-	m_xmlSectionNode->get_nodeName(&bstrValue);
-
-	CString strValue(bstrValue);
-	if (bstrValue) SysFreeString(bstrValue);
-
-	return strValue;
+  //Ask our accompanying view to delete its contents
+	CWaitCursor wait;
+	CScintillaView* pView = GetView();
+  if (pView)
+    pView->DeleteContents();
 }
 
-BOOL CXTPPropExchangeXMLNode::IsSectionExists(LPCTSTR lpszSection)
+void CScintillaDoc::Serialize(CArchive& ar)
 {
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	CXTPDOMNodePtr xmlNodePtr;
-
-	HRESULT hr = m_xmlSectionNode->selectSingleNode(CT2BSTR(lpszSection), &xmlNodePtr);
-
-	if (FAILED(hr) || xmlNodePtr == NULL)
-		return FALSE;
-
-	return TRUE;
+	CScintillaView* pView = GetView();
+	AFXASSUME(pView);
+	
+	pView->Serialize(ar);
 }
 
-BOOL CXTPPropExchangeXMLNode::PutSection(CXTPPropExchangeXMLNode* pNode)
+BOOL CScintillaDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
-	if (!pNode)
-		return FALSE;
+  //Let the base class do its thing
+	BOOL bSuccess = CDocument::OnSaveDocument(lpszPathName);
+  if (bSuccess)
+  {
+		CScintillaView* pView = GetView();
+		AFXASSUME(pView);
+		
+		CScintillaCtrl& rCtrl = pView->GetCtrl();
 
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	if (!pNode || !pNode->OnBeforeExchange())
-		return FALSE;
-
-	ASSERT(m_xmlSectionNode != 0);
-
-	if (FAILED(m_xmlSectionNode->appendChild(pNode->m_xmlSectionNode, NULL)))
-		return FALSE;
-
-	return TRUE;
-}
-
-void CXTPPropExchangeXMLNode::SetLoading(BOOL bLoading)
-{
-	m_bLoading = bLoading;
-}
-
-BOOL CXTPPropExchangeXMLNode::IsPropertyExists(LPCTSTR pszPropName)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	if (GetEntryNode(pszPropName, FALSE) != NULL)
-		return TRUE;
-
-	return FALSE;
-}
-
-
-class CXTPPropExchangeXMLNode::CXMLEnumerator : public CXTPPropExchangeEnumerator
-{
-public:
-	CXMLEnumerator::CXMLEnumerator(CXTPPropExchangeXMLNode* pContainer, LPCTSTR lpszSection)
-		: CXTPPropExchangeEnumerator(pContainer, lpszSection)
-	{
+		//Tell the control that the document has now been saved
+		rCtrl.SetSavePoint();
+		rCtrl.SetReadOnly(FALSE);
 	}
 
-public:
-	CXTPDOMNodePtr GetProfileNode(POSITION pos)
-	{
-		CXTPDOMNodePtr xmlNodePtr;
+	return bSuccess;
+} 
 
-		CString strNode;
-		strNode.Format(_T("%s[%i]"), m_strSectionName.IsEmpty() ? _T("*") : (LPCTSTR)m_strSectionName, (int)(INT_PTR)pos);
-
-		if (SUCCEEDED(((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->selectSingleNode(CT2BSTR(strNode), &xmlNodePtr)))
-			return xmlNodePtr;
-
-		return 0;
-
-	}
-
-	POSITION GetPosition(DWORD dwCount = 0, BOOL /*bCompactMode*/ = TRUE)
-	{
-		m_nCount = dwCount;
-
-		if (!m_pContainer)
-			return NULL;
-
-		if (m_pContainer->IsLoading())
-		{
-			if (!m_pContainer->OnBeforeExchange())
-				return NULL;
-
-			m_xmNextNode = GetProfileNode(0);
-			if (m_xmNextNode == 0)
-				return NULL;
-		}
-
-		return (POSITION)1;
-	}
-
-	CXTPPropExchange* GetNext(POSITION& pos)
-	{
-		CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)m_pContainer->GetSection(m_strSectionName);
-
-		CXTPDOMNodePtr xmlNodePtr;
-		CXTPDOMElementPtr xmlElementPtr;
-
-
-		if (m_pContainer->IsStoring())
-		{
-			ASSERT((DWORD)(DWORD_PTR)pos <= m_nCount);
-
-			pSection->m_xmlDocPtr->createElement(CT2BSTR(m_strSectionName), &xmlElementPtr);
-			ASSERT(xmlElementPtr != 0);
-			if (xmlElementPtr)
-			{
-				((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->appendChild(xmlElementPtr, &xmlNodePtr);
-			}
-
-			pos++;
-			if ((DWORD)(DWORD_PTR)pos > m_nCount) pos = NULL;
-		}
-		else
-		{
-			ASSERT(m_xmNextNode != NULL);
-
-			xmlNodePtr = m_xmNextNode;
-
-			m_xmNextNode = GetProfileNode(pos);
-			if (m_xmNextNode == NULL)
-				pos = NULL;
-			else
-				pos++;
-
-		}
-
-		pSection->m_bInitialized = TRUE;
-		pSection->m_xmlSectionNode = xmlNodePtr;
-
-		return pSection;
-	}
-protected:
-	CXTPDOMNodePtr m_xmNextNode;
-};
-
-
-
-CXTPPropExchangeEnumerator* CXTPPropExchangeXMLNode::GetEnumerator(LPCTSTR lpszSection)
+#ifdef _DEBUG
+void CScintillaDoc::AssertValid() const
 {
-	if (IsStoring() || !IsPropertyExists(_T("Count")))
-		return new CXMLEnumerator(this, lpszSection);
-
-	return new CXTPPropExchangeEnumerator(this, lpszSection);
+  //Let the base class do its thing
+	CDocument::AssertValid();
 }
 
-void CXTPPropExchangeXMLNode::SetEncoding(LPCTSTR lpszEncoding)
+void CScintillaDoc::Dump(CDumpContext& dc) const
 {
-	m_strEncoding = lpszEncoding;
+  //let the base class do its thing
+	CDocument::Dump(dc);
 }
-
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeIniFile
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeIniFile, CXTPPropExchange)
-
-CXTPPropExchangeIniFile::CXTPPropExchangeIniFile(BOOL bLoading, LPCTSTR lpszParentSection, LPCTSTR lpszSection)
-{
-	ASSERT(lpszSection != NULL);
-
-	m_bLoading = bLoading;
-	m_bTempFile = TRUE;
-	m_bEmptySection = TRUE;
-
-	if (lpszParentSection == NULL)
-	{
-		m_strSectionName = lpszSection;
-	}
-	else
-	{
-		m_strSectionName = CString(lpszParentSection) + _T("\\") + CString(lpszSection);
-	}
-
-}
-
-CXTPPropExchangeIniFile::~CXTPPropExchangeIniFile()
-{
-	if (IsRootSection() && !m_strFileName.IsEmpty() && m_bTempFile)
-	{
-		::DeleteFile((LPTSTR)(LPCTSTR)m_strFileName);
-	}
-
-}
-
-
-void CXTPPropExchangeIniFile::EmptySection()
-{
-	if (m_bEmptySection || m_strSectionName.IsEmpty())
-		return;
-
-	CXTPPropExchange::EmptySection();
-
-	size_t nLength = (size_t)m_strSectionName.GetLength();
-	LPTSTR lpszBuffer = 0;
-	int nSize = 8000;
-
-	do
-	{
-		lpszBuffer = new TCHAR[nSize];
-		int nResult = GetPrivateProfileSectionNames(lpszBuffer, nSize, m_strFileName);
-
-		if (nResult == 0)
-		{
-			delete[] lpszBuffer;
-			return;
-		}
-
-		if (nResult == nSize - 2)
-		{
-			nSize = nSize * 2;
-			delete[] lpszBuffer;
-			lpszBuffer = 0;
-		}
-	}
-	while (lpszBuffer == 0);
-
-	LPTSTR lpszSection = lpszBuffer;
-	size_t nSectionLen = _tcslen(lpszSection);
-
-	while (nSectionLen > 0)
-	{
-		if (nLength <= nSectionLen &&
-			(memcmp((LPCTSTR)m_strSectionName, lpszSection, nLength * sizeof(TCHAR)) == 0) &&
-			(nLength == nSectionLen || lpszSection[nLength] == _T('\\')))
-		{
-			WritePrivateProfileString(lpszSection, NULL, NULL, m_strFileName);
-		}
-
-		lpszSection = lpszSection + nSectionLen + 1;
-		nSectionLen = _tcslen(lpszSection);
-	}
-
-
-	delete[] lpszBuffer;
-}
-
-CXTPPropExchange* CXTPPropExchangeIniFile::GetSection(LPCTSTR lpszSection)
-{
-	OnBeforeExchange();
-
-	CXTPPropExchangeIniFile* pSection = new CXTPPropExchangeIniFile(IsLoading(), m_strSectionName, lpszSection);
-	pSection->InitSection(this);
-	pSection->m_strFileName = m_strFileName;
-	pSection->m_bTempFile = m_bTempFile;
-	return pSection;
-}
-
-BOOL CXTPPropExchangeIniFile::OnBeforeExchange()
-{
-	if (!m_bInitialized)
-	{
-		if (m_strFileName.IsEmpty())
-		{
-			TCHAR lpszTempPath[MAX_PATH];
-			TCHAR lpszTempFileName[MAX_PATH];
-
-			if (GetTempPath(MAX_PATH, lpszTempPath) == 0)
-				return FALSE;
-
-			if (GetTempFileName(lpszTempPath, _T("xtp"), 0, lpszTempFileName) == 0)
-				return FALSE;
-
-			m_strFileName = lpszTempFileName;
-			m_bTempFile = TRUE;
-		}
-
-		m_bInitialized = TRUE;
-	}
-	return !m_strFileName.IsEmpty();
-}
-
-
-BOOL CXTPPropExchangeIniFile::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-				void* pvProp, const void* pvDefault /*= NULL*/)
-{
-	if (m_bLoading)
-	{
-		if (!m_bUseDefaultOnLoad)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		CString strValue;
-
-		DWORD dwSize = GetPrivateProfileString(m_strSectionName, pszPropName, NULL, strValue.GetBuffer(256), 256, m_strFileName);
-
-		if (dwSize == 0)
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		if (dwSize == 256 - 1)
-		{
-			dwSize = GetPrivateProfileString(m_strSectionName, pszPropName, NULL, strValue.GetBuffer(16000), 16000, m_strFileName);
-			ASSERT(dwSize < 16000 - 1);
-		}
-
-		strValue.ReleaseBuffer(dwSize);
-
-		return ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault);
-	}
-	else
-	{
-		if (!m_bUseDefaultOnSave)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return FALSE;
-
-		if (IsSamePropValue(vtProp, pvProp, pvDefault))
-		{
-			if (!m_bEmptySection)
-				WritePrivateProfileString (m_strSectionName, pszPropName, NULL, m_strFileName);
-
-			return TRUE;
-		}
-
-		CString strValue;
-		if (!ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault))
-			return FALSE;
-
-		if (!WritePrivateProfileString (m_strSectionName, pszPropName, strValue, m_strFileName))
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-
-void CXTPPropExchangeIniFile::SaveToFile(LPCTSTR strFileName)
-{
-	ASSERT(IsRootSection() && IsStoring());
-
-	if (m_strFileName.Compare(strFileName) != 0 && !m_strFileName.IsEmpty())
-	{
-		::DeleteFile(strFileName);
-		::CopyFile(m_strFileName, strFileName, FALSE);
-	}
-}
-
-BOOL CXTPPropExchangeIniFile::LoadFromFile(LPCTSTR strFileName)
-{
-	ASSERT(IsRootSection() && IsLoading());
-
-	if (!FILEEXISTS_S(strFileName))
-		return FALSE;
-
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	return ::CopyFile(strFileName, m_strFileName, FALSE);
-}
-
-void CXTPPropExchangeIniFile::AssignFile(LPCTSTR strFileName)
-{
-	m_strFileName = strFileName;
-	m_bTempFile = FALSE;
-	m_bEmptySection = FALSE;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// PX_ functions
-
-BOOL AFX_CDECL PX_Byte(CXTPPropExchange* pPX, LPCTSTR pszPropName, BYTE& nValue, BYTE nDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&nValue, short);
-	if (!pPX)
-		return FALSE;
-
-	return  pPX->ExchangeProp(pszPropName, VT_UI1, &nValue, &nDefault);
-}
-
-BOOL AFX_CDECL PX_Short(CXTPPropExchange* pPX, LPCTSTR pszPropName, short& sValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&sValue, short);
-	if (!pPX)
-		return FALSE;
-
-	return  pPX->ExchangeProp(pszPropName, VT_I2, &sValue);
-}
-
-BOOL AFX_CDECL PX_Short(CXTPPropExchange* pPX, LPCTSTR pszPropName, short& sValue,
-	short sDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&sValue, short);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I2, &sValue, &sDefault);
-}
-
-BOOL AFX_CDECL PX_UShort(CXTPPropExchange* pPX, LPCTSTR pszPropName, USHORT& usValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&usValue, USHORT);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I2, &usValue);
-}
-
-BOOL AFX_CDECL PX_UShort(CXTPPropExchange* pPX, LPCTSTR pszPropName, USHORT& usValue,
-	USHORT usDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&usValue, USHORT);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I2, &usValue, &usDefault);
-}
-
-BOOL AFX_CDECL PX_Long(CXTPPropExchange* pPX, LPCTSTR pszPropName, long& lValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&lValue, long);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &lValue);
-}
-
-BOOL AFX_CDECL PX_Long(CXTPPropExchange* pPX, LPCTSTR pszPropName, long& lValue,
-	long lDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&lValue, long);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &lValue, &lDefault);
-}
-
-BOOL AFX_CDECL PX_DWord(CXTPPropExchange* pPX, LPCTSTR pszPropName, DWORD& dwValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&dwValue, DWORD);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &dwValue);
-}
-
-BOOL AFX_CDECL PX_DWord(CXTPPropExchange* pPX, LPCTSTR pszPropName, DWORD& dwValue,
-	DWORD dwDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&dwValue, DWORD);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &dwValue, &dwDefault);
-}
-
-BOOL AFX_CDECL PX_UI8(CXTPPropExchange* pPX, LPCTSTR pszPropName,
-	ULONGLONG& ullValue, ULONGLONG ullDefault)
-{
-	POINT ptData64 = {(LONG)(DWORD)(ullValue >> 32), (LONG)(DWORD)ullValue};
-	POINT ptDefault = {(LONG)(DWORD)(ullDefault >> 32), (LONG)(DWORD)ullDefault};
-
-	BOOL bResult = PX_Point(pPX, pszPropName, ptData64, ptDefault);
-
-	if (bResult && pPX->IsLoading())
-	{
-		ullValue = (DWORD)ptData64.x;
-		ullValue = ullValue << 32;
-		ullValue += (DWORD)ptData64.y;
-	}
-
-	return bResult;
-}
-
-BOOL AFX_CDECL PX_Int(CXTPPropExchange* pPX, LPCTSTR pszPropName, int& nValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&nValue, int);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &nValue);
-}
-
-BOOL AFX_CDECL PX_Int(CXTPPropExchange* pPX, LPCTSTR pszPropName, int& nValue,
-	int nDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&nValue, int);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &nValue, &nDefault);
-}
-
-BOOL AFX_CDECL PX_ULong(CXTPPropExchange* pPX, LPCTSTR pszPropName, ULONG& ulValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&ulValue, ULONG);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &ulValue);
-}
-
-BOOL AFX_CDECL PX_ULong(CXTPPropExchange* pPX, LPCTSTR pszPropName, ULONG& ulValue,
-	ULONG ulDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&ulValue, ULONG);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &ulValue, &ulDefault);
-}
-
-BOOL AFX_CDECL PX_Bool(CXTPPropExchange* pPX, LPCTSTR pszPropName, BOOL& bValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&bValue, BOOL);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_BOOL, &bValue);
-}
-
-BOOL AFX_CDECL PX_Bool(CXTPPropExchange* pPX, LPCTSTR pszPropName, BOOL& bValue,
-	BOOL bDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&bValue, BOOL);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_BOOL, &bValue, &bDefault);
-}
-
-BOOL AFX_CDECL PX_String(CXTPPropExchange* pPX, LPCTSTR pszPropName, CString& strValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&strValue, CString);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_LPSTR, &strValue);
-}
-
-BOOL AFX_CDECL PX_String(CXTPPropExchange* pPX, LPCTSTR pszPropName, CString& strValue,
-	LPCTSTR lpszDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&strValue, CString);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_LPSTR, &strValue, lpszDefault);
-}
-
-BOOL AFX_CDECL PX_Bstr(CXTPPropExchange* pPX, LPCTSTR pszPropName, BSTR& lpszValue,
-	BSTR lpszDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&lpszValue, BSTR);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_BSTR, &lpszValue, lpszDefault);
-}
-
-BOOL AFX_CDECL PX_Float(CXTPPropExchange* pPX, LPCTSTR pszPropName, float& floatValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&floatValue, float);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R4, &floatValue);
-}
-
-BOOL AFX_CDECL PX_Float(CXTPPropExchange* pPX, LPCTSTR pszPropName, float& floatValue,
-	float floatDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&floatValue, float);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R4, &floatValue, &floatDefault);
-}
-
-BOOL AFX_CDECL PX_Double(CXTPPropExchange* pPX, LPCTSTR pszPropName, double& doubleValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&doubleValue, double);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R8, &doubleValue);
-}
-
-BOOL AFX_CDECL PX_DateTime(CXTPPropExchange* pPX, LPCTSTR pszPropName, COleDateTime& dtValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&dtValue, COleDateTime);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_DATE, &dtValue);
-}
-
-BOOL AFX_CDECL PX_Double(CXTPPropExchange* pPX, LPCTSTR pszPropName, double& doubleValue,
-	double doubleDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&doubleValue, double);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R8, &doubleValue, &doubleDefault);
-}
-
-BOOL AFX_CDECL PX_Size(CXTPPropExchange* pPX, LPCTSTR pszPropName, SIZE& szValue, SIZE szDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_EX_SIZE, &szValue, &szDefault);
-}
-
-BOOL AFX_CDECL PX_Point(CXTPPropExchange* pPX, LPCTSTR pszPropName, POINT& ptValue, POINT ptDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT(sizeof(POINT) == sizeof(SIZE));
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_EX_SIZE, &ptValue, &ptDefault);
-}
-
-BOOL AFX_CDECL PX_Rect(CXTPPropExchange* pPX, LPCTSTR pszPropName, RECT& rcValue, RECT rcDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_EX_RECT, &rcValue, &rcDefault);
-}
-
-BOOL AFX_CDECL PX_Variant(CXTPPropExchange* pPX, LPCTSTR pszPropName, COleVariant& variant, COleVariant variantDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_VARIANT, &variant, &variantDefault);
-}
-
-
-BOOL AFX_CDECL PX_RuntimeClass(CXTPPropExchange* pPX, LPCTSTR pszPropName, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
-{
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeRuntimeClass(pszPropName, pClass, pDefaultClass);
-}
-
-BOOL AFX_CDECL PX_Blob(CXTPPropExchange* pPX, LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
-{
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeBlobProp(pszPropName, pData, nBytes);
-}
-
-
-BOOL AFX_CDECL PX_Serialize(CXTPPropExchange* pPX, LPCTSTR pszPropName, CObject* pObject)
-{
-	if (!pPX)
-		return FALSE;
-
-	CArchive* pArchive = pPX->GetArchive(pszPropName);
-
-	if (!pArchive)
-		return FALSE;
-
-	BOOL bResult = FALSE;
-	try
-	{
-		pObject->Serialize(*pArchive);
-		bResult = TRUE;
-	}
-	catch (COleException* pEx)
-	{
-		pEx->Delete ();
-
-	}
-	catch (CArchiveException* pEx)
-	{
-		pEx->Delete ();
-	}
-
-	pPX->ReleaseArchive(pszPropName, pArchive);
-
-	return bResult;
-}
-
+#endif //_DEBUG
 

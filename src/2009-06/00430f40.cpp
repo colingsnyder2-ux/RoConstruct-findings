@@ -1,504 +1,635 @@
-// from server: 57% by sophus
-// roc-lang: cpp
 // roc-cl: 21022
+// roc-lang: cpp
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+// roc-lib: raknet-4.081 RPC4Plugin.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file Vector3.cpp
- 
- 3D vector class
- 
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
- 
- @created 2001-06-02
- @edited  2006-01-30
+/*
+ *  Copyright (c) 2014, Oculus VR, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
  */
 
-#include <limits>
-#include <stdlib.h>
-#include "G3D/Vector3.h"
-#include "G3D/g3dmath.h"
-#include "G3D/stringutils.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/TextInput.h"
-#include "G3D/TextOutput.h"
-#include "G3D/Vector3int16.h"
-#include "G3D/Matrix3.h"
-#include "G3D/Vector2.h"
- 
-namespace G3D {
+#include "NativeFeatureIncludes.h"
+#if _RAKNET_SUPPORT_RPC4Plugin==1
 
-Vector3 Vector3::dummy;
+#include "RPC4Plugin.h"
+#include "MessageIdentifiers.h"
+#include "RakPeerInterface.h"
+#include "PacketizedTCP.h"
+#include "RakSleep.h"
+#include "RakNetDefines.h"
+#include "DS_Queue.h"
+//#include "GetTime.h"
 
-// Deprecated.
-const Vector3 Vector3::ZERO(0, 0, 0);
-const Vector3 Vector3::ZERO3(0, 0, 0);
-const Vector3 Vector3::UNIT_X(1, 0, 0);
-const Vector3 Vector3::UNIT_Y(0, 1, 0);
-const Vector3 Vector3::UNIT_Z(0, 0, 1);
-const Vector3 Vector3::INF3((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
-const Vector3 Vector3::NAN3((float)G3D::nan(), (float)G3D::nan(), (float)G3D::nan());
+using namespace RakNet;
 
-Vector3::Vector3(const class Vector2& v, float _z) : x(v.x), y(v.y), z(_z) {
+STATIC_FACTORY_DEFINITIONS(RPC4,RPC4);
+
+struct GlobalRegistration
+{
+	void ( *registerFunctionPointer ) ( RakNet::BitStream *userData, Packet *packet );
+	void ( *registerBlockingFunctionPointer ) ( RakNet::BitStream *userData, RakNet::BitStream *returnData, Packet *packet );
+	char functionName[RPC4_GLOBAL_REGISTRATION_MAX_FUNCTION_NAME_LENGTH];
+	MessageID messageId;
+	int callPriority;
+};
+static GlobalRegistration globalRegistrationBuffer[RPC4_GLOBAL_REGISTRATION_MAX_FUNCTIONS];
+static unsigned int globalRegistrationIndex=0;
+
+RPC4GlobalRegistration::RPC4GlobalRegistration(const char* uniqueID, void ( *functionPointer ) ( RakNet::BitStream *userData, Packet *packet ))
+{
+	RakAssert(globalRegistrationIndex!=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTIONS);
+	unsigned int i;
+	for (i=0; uniqueID[i]; i++)
+	{
+		RakAssert(i<=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTION_NAME_LENGTH-1);
+		globalRegistrationBuffer[globalRegistrationIndex].functionName[i]=uniqueID[i];
+	}
+	globalRegistrationBuffer[globalRegistrationIndex].registerFunctionPointer=functionPointer;
+	globalRegistrationBuffer[globalRegistrationIndex].registerBlockingFunctionPointer=0;
+	globalRegistrationBuffer[globalRegistrationIndex].callPriority=0xFFFFFFFF;
+	globalRegistrationIndex++;
+}
+RPC4GlobalRegistration::RPC4GlobalRegistration(const char* uniqueID, void ( *functionPointer ) ( RakNet::BitStream *userData, Packet *packet ), int callPriority)
+{
+	RakAssert(globalRegistrationIndex!=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTIONS);
+	unsigned int i;
+	for (i=0; uniqueID[i]; i++)
+	{
+		RakAssert(i<=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTION_NAME_LENGTH-1);
+		globalRegistrationBuffer[globalRegistrationIndex].functionName[i]=uniqueID[i];
+	}
+	globalRegistrationBuffer[globalRegistrationIndex].registerFunctionPointer=functionPointer;
+	globalRegistrationBuffer[globalRegistrationIndex].registerBlockingFunctionPointer=0;
+	RakAssert(callPriority!=(int) 0xFFFFFFFF);
+	globalRegistrationBuffer[globalRegistrationIndex].callPriority=callPriority;
+	globalRegistrationIndex++;
+}
+RPC4GlobalRegistration::RPC4GlobalRegistration(const char* uniqueID, void ( *functionPointer ) ( RakNet::BitStream *userData, RakNet::BitStream *returnData, Packet *packet ))
+{
+	RakAssert(globalRegistrationIndex!=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTIONS);
+	unsigned int i;
+	for (i=0; uniqueID[i]; i++)
+	{
+		RakAssert(i<=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTION_NAME_LENGTH-1);
+		globalRegistrationBuffer[globalRegistrationIndex].functionName[i]=uniqueID[i];
+	}
+	globalRegistrationBuffer[globalRegistrationIndex].registerFunctionPointer=0;
+	globalRegistrationBuffer[globalRegistrationIndex].registerBlockingFunctionPointer=functionPointer;
+	globalRegistrationIndex++;
+}
+RPC4GlobalRegistration::RPC4GlobalRegistration(const char* uniqueID, MessageID messageId)
+{
+	RakAssert(globalRegistrationIndex!=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTIONS);
+	unsigned int i;
+	for (i=0; uniqueID[i]; i++)
+	{
+		RakAssert(i<=RPC4_GLOBAL_REGISTRATION_MAX_FUNCTION_NAME_LENGTH-1);
+		globalRegistrationBuffer[globalRegistrationIndex].functionName[i]=uniqueID[i];
+	}
+	globalRegistrationBuffer[globalRegistrationIndex].registerFunctionPointer=0;
+	globalRegistrationBuffer[globalRegistrationIndex].registerBlockingFunctionPointer=0;
+	globalRegistrationBuffer[globalRegistrationIndex].messageId=messageId;
+	globalRegistrationIndex++;
 }
 
-Vector3::Axis Vector3::primaryAxis() const {
-    
-    Axis a = X_AXIS;
+enum RPC4Identifiers
+{
+	ID_RPC4_CALL,
+	ID_RPC4_RETURN,
+	ID_RPC4_SIGNAL,
+};
+int RPC4::LocalSlotObjectComp( const LocalSlotObject &key, const LocalSlotObject &data )
+{
+	if (key.callPriority>data.callPriority)
+		return -1;
+	if (key.callPriority==data.callPriority)
+	{
+		if (key.registrationCount<data.registrationCount)
+			return -1;
+		if (key.registrationCount==data.registrationCount)
+			return 0;
+		return 1;
+	}
 
-    double nx = abs(x);
-    double ny = abs(y);
-    double nz = abs(z);
-
-    if (nx > ny) {
-        if (nx > nz) {
-            a = X_AXIS;
-        } else {
-            a = Z_AXIS;
-        }
-    } else {
-        if (ny > nz) {
-            a = Y_AXIS;
-        } else {
-            a = Z_AXIS;
-        }
-    }
-
-    return a;
+	return 1;
+}
+int RPC4::LocalCallbackComp(const MessageID &key, RPC4::LocalCallback* const &data )
+{
+	if (key < data->messageId)
+		return -1;
+	if (key > data->messageId)
+		return 1;
+	return 0;
 }
 
+RPC4::RPC4()
+{
+	gotBlockingReturnValue=false;
+	nextSlotRegistrationCount=0;
+	interruptSignal=false;
+}
+RPC4::~RPC4()
+{
+	unsigned int i;
+	for (i=0; i < localCallbacks.Size(); i++)
+	{
+		RakNet::OP_DELETE(localCallbacks[i],_FILE_AND_LINE_);
+	}
 
-unsigned int Vector3::hashCode() const {
-    unsigned int xhash = (*(int*)(void*)(&x));
-    unsigned int yhash = (*(int*)(void*)(&y));
-    unsigned int zhash = (*(int*)(void*)(&z));
+	DataStructures::List<RakNet::RakString> keyList;
+	DataStructures::List<LocalSlot*> outputList;
+	localSlots.GetAsList(outputList,keyList,_FILE_AND_LINE_);
+	unsigned int j;
+	for (j=0; j < outputList.Size(); j++)
+	{
+		RakNet::OP_DELETE(outputList[j],_FILE_AND_LINE_);
+	}
+	localSlots.Clear(_FILE_AND_LINE_);
+}
+bool RPC4::RegisterFunction(const char* uniqueID, void ( *functionPointer ) ( RakNet::BitStream *userData, Packet *packet ))
+{
+	DataStructures::HashIndex skhi = registeredNonblockingFunctions.GetIndexOf(uniqueID);
+	if (skhi.IsInvalid()==false)
+		return false;
 
-    return xhash + (yhash * 37) + (zhash * 101);
+	registeredNonblockingFunctions.Push(uniqueID,functionPointer,_FILE_AND_LINE_);
+	return true;
+}
+void RPC4::RegisterSlot(const char *sharedIdentifier, void ( *functionPointer ) ( RakNet::BitStream *userData, Packet *packet ), int callPriority)
+{
+	LocalSlotObject lso(nextSlotRegistrationCount++, callPriority, functionPointer);
+	DataStructures::HashIndex idx = GetLocalSlotIndex(sharedIdentifier);
+	LocalSlot *localSlot;
+	if (idx.IsInvalid())
+	{
+		localSlot = RakNet::OP_NEW<LocalSlot>(_FILE_AND_LINE_);
+		localSlots.Push(sharedIdentifier, localSlot,_FILE_AND_LINE_);
+	}
+	else
+	{
+		localSlot=localSlots.ItemAtIndex(idx);
+	}
+	localSlot->slotObjects.Insert(lso,lso,true,_FILE_AND_LINE_);
+}
+bool RPC4::RegisterBlockingFunction(const char* uniqueID, void ( *functionPointer ) ( RakNet::BitStream *userData, RakNet::BitStream *returnData, Packet *packet ))
+{
+	DataStructures::HashIndex skhi = registeredBlockingFunctions.GetIndexOf(uniqueID);
+	if (skhi.IsInvalid()==false)
+		return false;
+
+	registeredBlockingFunctions.Push(uniqueID,functionPointer,_FILE_AND_LINE_);
+	return true;
+}
+void RPC4::RegisterLocalCallback(const char* uniqueID, MessageID messageId)
+{
+	bool objectExists;
+	unsigned int index;
+	LocalCallback *lc;
+	RakNet::RakString str;
+	str=uniqueID;
+	index = localCallbacks.GetIndexFromKey(messageId,&objectExists);
+	if (objectExists)
+	{
+		lc = localCallbacks[index];
+		index = lc->functions.GetIndexFromKey(str,&objectExists);
+		if (objectExists==false)
+			lc->functions.InsertAtIndex(str,index,_FILE_AND_LINE_);
+	}
+	else
+	{
+		lc = RakNet::OP_NEW<LocalCallback>(_FILE_AND_LINE_);
+		lc->messageId=messageId;
+		lc->functions.Insert(str,str,false,_FILE_AND_LINE_);
+		localCallbacks.InsertAtIndex(lc,index,_FILE_AND_LINE_);
+	}
+}
+bool RPC4::UnregisterFunction(const char* uniqueID)
+{
+	void ( *f ) ( RakNet::BitStream *, Packet * );
+	return registeredNonblockingFunctions.Pop(f,uniqueID,_FILE_AND_LINE_);
+}
+bool RPC4::UnregisterBlockingFunction(const char* uniqueID)
+{
+	void ( *f ) ( RakNet::BitStream *, RakNet::BitStream *,Packet * );
+	return registeredBlockingFunctions.Pop(f,uniqueID,_FILE_AND_LINE_);
+}
+bool RPC4::UnregisterLocalCallback(const char* uniqueID, MessageID messageId)
+{
+	bool objectExists;
+	unsigned int index, index2;
+	LocalCallback *lc;
+	RakNet::RakString str;
+	str=uniqueID;
+	index = localCallbacks.GetIndexFromKey(messageId,&objectExists);
+	if (objectExists)
+	{
+		lc = localCallbacks[index];
+		index2 = lc->functions.GetIndexFromKey(str,&objectExists);
+		if (objectExists)
+		{
+			lc->functions.RemoveAtIndex(index2);
+			if (lc->functions.Size()==0)
+			{
+				RakNet::OP_DELETE(lc,_FILE_AND_LINE_);
+				localCallbacks.RemoveAtIndex(index);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+bool RPC4::UnregisterSlot(const char* sharedIdentifier)
+{
+	DataStructures::HashIndex hi = localSlots.GetIndexOf(sharedIdentifier);
+	if (hi.IsInvalid()==false)
+	{
+		LocalSlot *ls = localSlots.ItemAtIndex(hi);
+		RakNet::OP_DELETE(ls, _FILE_AND_LINE_);
+		localSlots.RemoveAtIndex(hi, _FILE_AND_LINE_);
+		return true;
+	}
+	
+	return false;
+}
+void RPC4::CallLoopback( const char* uniqueID, RakNet::BitStream * bitStream )
+{
+	Packet *p=0;
+
+	DataStructures::HashIndex skhi = registeredNonblockingFunctions.GetIndexOf(uniqueID);
+
+	if (skhi.IsInvalid()==true)
+	{
+		if (rakPeerInterface) 
+			p=AllocatePacketUnified(sizeof(MessageID)+sizeof(unsigned char)+(unsigned int) strlen(uniqueID)+1);
+#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
+		else
+			p=tcpInterface->AllocatePacket(sizeof(MessageID)+sizeof(unsigned char)+(unsigned int) strlen(uniqueID)+1);
+#endif
+
+		if (rakPeerInterface)
+			p->guid=rakPeerInterface->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS);
+#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
+		else
+			p->guid=UNASSIGNED_RAKNET_GUID;
+#endif
+
+		p->systemAddress=UNASSIGNED_SYSTEM_ADDRESS;
+		p->systemAddress.systemIndex=(SystemIndex)-1;
+		p->data[0]=ID_RPC_REMOTE_ERROR;
+		p->data[1]=RPC_ERROR_FUNCTION_NOT_REGISTERED;
+		strcpy((char*) p->data+2, uniqueID);
+		
+		PushBackPacketUnified(p,false);
+
+		return;
+	}
+
+	RakNet::BitStream out;
+	out.Write((MessageID) ID_RPC_PLUGIN);
+	out.Write((MessageID) ID_RPC4_CALL);
+	out.WriteCompressed(uniqueID);
+	out.Write(false); // nonblocking
+	if (bitStream)
+	{
+		bitStream->ResetReadPointer();
+		out.AlignWriteToByteBoundary();
+		out.Write(bitStream);
+	}
+	if (rakPeerInterface) 
+		p=AllocatePacketUnified(out.GetNumberOfBytesUsed());
+#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
+	else
+		p=tcpInterface->AllocatePacket(out.GetNumberOfBytesUsed());
+#endif
+
+	if (rakPeerInterface)
+		p->guid=rakPeerInterface->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS);
+#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
+	else
+		p->guid=UNASSIGNED_RAKNET_GUID;
+#endif
+	p->systemAddress=UNASSIGNED_SYSTEM_ADDRESS;
+	p->systemAddress.systemIndex=(SystemIndex)-1;
+	memcpy(p->data,out.GetData(),out.GetNumberOfBytesUsed());
+	PushBackPacketUnified(p,false);
+	return;
+}
+void RPC4::Call( const char* uniqueID, RakNet::BitStream * bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, const AddressOrGUID systemIdentifier, bool broadcast )
+{
+	RakNet::BitStream out;
+	out.Write((MessageID) ID_RPC_PLUGIN);
+	out.Write((MessageID) ID_RPC4_CALL);
+	out.WriteCompressed(uniqueID);
+	out.Write(false); // Nonblocking
+	if (bitStream)
+	{
+		bitStream->ResetReadPointer();
+		out.AlignWriteToByteBoundary();
+		out.Write(bitStream);
+	}
+	SendUnified(&out,priority,reliability,orderingChannel,systemIdentifier,broadcast);
+}
+bool RPC4::CallBlocking( const char* uniqueID, RakNet::BitStream * bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, const AddressOrGUID systemIdentifier, RakNet::BitStream *returnData )
+{
+	RakNet::BitStream out;
+	out.Write((MessageID) ID_RPC_PLUGIN);
+	out.Write((MessageID) ID_RPC4_CALL);
+	out.WriteCompressed(uniqueID);
+	out.Write(true); // Blocking
+	if (bitStream)
+	{
+		bitStream->ResetReadPointer();
+		out.AlignWriteToByteBoundary();
+		out.Write(bitStream);
+	}
+	RakAssert(returnData);
+	RakAssert(rakPeerInterface);
+	ConnectionState cs;
+	cs = rakPeerInterface->GetConnectionState(systemIdentifier);
+	if (cs!=IS_CONNECTED)
+		return false;
+
+	SendUnified(&out,priority,reliability,orderingChannel,systemIdentifier,false);
+
+	returnData->Reset();
+	blockingReturnValue.Reset();
+	gotBlockingReturnValue=false;
+	Packet *packet;
+	DataStructures::Queue<Packet*> packetQueue;
+	while (gotBlockingReturnValue==false)
+	{
+		// TODO - block, filter until gotBlockingReturnValue==true or ID_CONNECTION_LOST or ID_DISCONNECTION_NOTIFICXATION or ID_RPC_REMOTE_ERROR/RPC_ERROR_FUNCTION_NOT_REGISTERED
+		RakSleep(30);
+
+		packet=rakPeerInterface->Receive();
+
+		if (packet)
+		{
+			if (
+				(packet->data[0]==ID_CONNECTION_LOST || packet->data[0]==ID_DISCONNECTION_NOTIFICATION) &&
+				((systemIdentifier.rakNetGuid!=UNASSIGNED_RAKNET_GUID && packet->guid==systemIdentifier.rakNetGuid) ||
+				(systemIdentifier.systemAddress!=UNASSIGNED_SYSTEM_ADDRESS && packet->systemAddress==systemIdentifier.systemAddress))
+				)
+			{
+				// Push back to head in reverse order
+				rakPeerInterface->PushBackPacket(packet,true);
+				while (packetQueue.Size())
+					rakPeerInterface->PushBackPacket(packetQueue.Pop(),true);
+				return false;
+			}
+			else if (packet->data[0]==ID_RPC_REMOTE_ERROR && packet->data[1]==RPC_ERROR_FUNCTION_NOT_REGISTERED)
+			{
+				RakNet::RakString functionName;
+				RakNet::BitStream bsIn(packet->data,packet->length,false);
+				bsIn.IgnoreBytes(2);
+				bsIn.Read(functionName);
+				if (functionName==uniqueID)
+				{
+					// Push back to head in reverse order
+					rakPeerInterface->PushBackPacket(packet,true);
+					while (packetQueue.Size())
+						rakPeerInterface->PushBackPacket(packetQueue.Pop(),true);
+					return false;
+				}
+				else
+				{
+					packetQueue.PushAtHead(packet,0,_FILE_AND_LINE_);
+				}
+			}
+			else
+			{
+				packetQueue.PushAtHead(packet,0,_FILE_AND_LINE_);
+			}
+		}
+	}
+
+	returnData->Write(blockingReturnValue);
+	returnData->ResetReadPointer();
+	return true;
+}
+void RPC4::Signal(const char *sharedIdentifier, RakNet::BitStream *bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, const AddressOrGUID systemIdentifier, bool broadcast, bool invokeLocal)
+{
+	RakNet::BitStream out;
+	out.Write((MessageID) ID_RPC_PLUGIN);
+	out.Write((MessageID) ID_RPC4_SIGNAL);
+	out.WriteCompressed(sharedIdentifier);
+	if (bitStream)
+	{
+		bitStream->ResetReadPointer();
+		out.AlignWriteToByteBoundary();
+		out.Write(bitStream);
+	}
+	SendUnified(&out,priority,reliability,orderingChannel,systemIdentifier,broadcast);
+
+	if (invokeLocal)
+	{
+		//TimeUS t1 = GetTimeUS();
+
+		DataStructures::HashIndex functionIndex;
+		functionIndex = localSlots.GetIndexOf(sharedIdentifier);
+		//TimeUS t2 = GetTimeUS();
+		if (functionIndex.IsInvalid())
+			return;
+		
+		Packet p;
+		p.guid=rakPeerInterface->GetMyGUID();
+		p.systemAddress=rakPeerInterface->GetInternalID(UNASSIGNED_SYSTEM_ADDRESS);
+		p.wasGeneratedLocally=true;
+		RakNet::BitStream *bsptr, bstemp;
+		if (bitStream)
+		{
+			bitStream->ResetReadPointer();
+			p.length=bitStream->GetNumberOfBytesUsed();
+			p.bitSize=bitStream->GetNumberOfBitsUsed();
+			bsptr=bitStream;
+		}
+		else
+		{
+			p.length=0;
+			p.bitSize=0;
+			bsptr=&bstemp;
+		}
+
+		//TimeUS t3 = GetTimeUS();
+		InvokeSignal(functionIndex, bsptr, &p);
+		//TimeUS t4 = GetTimeUS();
+		//printf("b1: %I64d\n", t2-t1);
+		//printf("b2: %I64d\n", t3-t2);
+		//printf("b3: %I64d\n", t4-t3);
+	}
+}
+void RPC4::InvokeSignal(DataStructures::HashIndex functionIndex, RakNet::BitStream *serializedParameters, Packet *packet)
+{
+	if (functionIndex.IsInvalid())
+		return;
+
+	//TimeUS t1 = GetTimeUS();
+	//TimeUS t2=0;
+	//TimeUS t3=0;
+
+	interruptSignal=false;
+	LocalSlot *localSlot = localSlots.ItemAtIndex(functionIndex);
+	unsigned int i;
+	i=0;
+	while (i < localSlot->slotObjects.Size())
+	{
+		//t2 = GetTimeUS();
+
+		localSlot->slotObjects[i].functionPointer(serializedParameters, packet);
+
+		//t3 = GetTimeUS();
+
+		// Not threadsafe
+		if (interruptSignal==true)
+			break;
+
+		serializedParameters->ResetReadPointer();
+
+		i++;
+	}
+
+	//TimeUS t4 = GetTimeUS();
+
+	//printf("b1: %I64d\n", t2-t1);
+	//printf("b2: %I64d\n", t3-t2);
+	//printf("b3: %I64d\n", t4-t3);
+}
+void RPC4::InterruptSignal(void)
+{
+	interruptSignal=true;
+}
+void RPC4::OnAttach(void)
+{
+	unsigned int i;
+	for (i=0; i < globalRegistrationIndex; i++)
+	{
+		if (globalRegistrationBuffer[i].registerFunctionPointer)
+		{
+			if (globalRegistrationBuffer[i].callPriority==(int)0xFFFFFFFF)
+				RegisterFunction(globalRegistrationBuffer[i].functionName, globalRegistrationBuffer[i].registerFunctionPointer);
+			else
+				RegisterSlot(globalRegistrationBuffer[i].functionName, globalRegistrationBuffer[i].registerFunctionPointer, globalRegistrationBuffer[i].callPriority);
+		}
+		else if (globalRegistrationBuffer[i].registerBlockingFunctionPointer)
+			RegisterBlockingFunction(globalRegistrationBuffer[i].functionName, globalRegistrationBuffer[i].registerBlockingFunctionPointer);
+		else
+			RegisterLocalCallback(globalRegistrationBuffer[i].functionName, globalRegistrationBuffer[i].messageId);
+	}
+}
+PluginReceiveResult RPC4::OnReceive(Packet *packet)
+{
+	if (packet->data[0]==ID_RPC_PLUGIN)
+	{
+		RakNet::BitStream bsIn(packet->data,packet->length,false);
+		bsIn.IgnoreBytes(2);
+
+		if (packet->data[1]==ID_RPC4_CALL)
+		{
+			RakNet::RakString functionName;
+			bsIn.ReadCompressed(functionName);
+			bool isBlocking=false;
+			bsIn.Read(isBlocking);
+			if (isBlocking==false)
+			{
+				DataStructures::HashIndex skhi = registeredNonblockingFunctions.GetIndexOf(functionName.C_String());
+				if (skhi.IsInvalid())
+				{
+					RakNet::BitStream bsOut;
+					bsOut.Write((unsigned char) ID_RPC_REMOTE_ERROR);
+					bsOut.Write((unsigned char) RPC_ERROR_FUNCTION_NOT_REGISTERED);
+					bsOut.Write(functionName.C_String(),(unsigned int) functionName.GetLength()+1);
+					SendUnified(&bsOut,HIGH_PRIORITY,RELIABLE_ORDERED,0,packet->systemAddress,false);
+					return RR_STOP_PROCESSING_AND_DEALLOCATE;
+				}
+
+				void ( *fp ) ( RakNet::BitStream *, Packet * );
+				fp = registeredNonblockingFunctions.ItemAtIndex(skhi);
+				bsIn.AlignReadToByteBoundary();
+				fp(&bsIn,packet);
+			}
+			else
+			{
+				DataStructures::HashIndex skhi = registeredBlockingFunctions.GetIndexOf(functionName.C_String());
+				if (skhi.IsInvalid())
+				{
+					RakNet::BitStream bsOut;
+					bsOut.Write((unsigned char) ID_RPC_REMOTE_ERROR);
+					bsOut.Write((unsigned char) RPC_ERROR_FUNCTION_NOT_REGISTERED);
+					bsOut.Write(functionName.C_String(),(unsigned int) functionName.GetLength()+1);
+					SendUnified(&bsOut,HIGH_PRIORITY,RELIABLE_ORDERED,0,packet->systemAddress,false);
+					return RR_STOP_PROCESSING_AND_DEALLOCATE;
+				}
+
+				void ( *fp ) ( RakNet::BitStream *, RakNet::BitStream *, Packet * );
+				fp = registeredBlockingFunctions.ItemAtIndex(skhi);
+				RakNet::BitStream returnData;
+				bsIn.AlignReadToByteBoundary();
+				fp(&bsIn, &returnData, packet);
+
+				RakNet::BitStream out;
+				out.Write((MessageID) ID_RPC_PLUGIN);
+				out.Write((MessageID) ID_RPC4_RETURN);
+				returnData.ResetReadPointer();
+				out.AlignWriteToByteBoundary();
+				out.Write(returnData);
+				SendUnified(&out,IMMEDIATE_PRIORITY,RELIABLE_ORDERED,0,packet->systemAddress,false);
+			}
+		}
+		else if (packet->data[1]==ID_RPC4_SIGNAL)
+		{
+			RakNet::RakString sharedIdentifier;
+			bsIn.ReadCompressed(sharedIdentifier);
+			DataStructures::HashIndex functionIndex;
+			functionIndex = localSlots.GetIndexOf(sharedIdentifier);
+			RakNet::BitStream serializedParameters;
+            bsIn.AlignReadToByteBoundary();
+			bsIn.Read(&serializedParameters);
+			InvokeSignal(functionIndex, &serializedParameters, packet);
+		}
+		else
+		{
+			RakAssert(packet->data[1]==ID_RPC4_RETURN);
+			blockingReturnValue.Reset();
+			blockingReturnValue.Write(bsIn);
+			gotBlockingReturnValue=true;
+		}
+		
+		return RR_STOP_PROCESSING_AND_DEALLOCATE;
+	}
+
+	bool objectExists;
+	unsigned int index, index2;
+	index = localCallbacks.GetIndexFromKey(packet->data[0],&objectExists);
+	if (objectExists)
+	{
+		LocalCallback *lc;
+		lc = localCallbacks[index];
+		for (index2=0; index2 < lc->functions.Size(); index2++)
+		{
+			RakNet::BitStream bsIn(packet->data, packet->length, false);
+
+			DataStructures::HashIndex skhi = registeredNonblockingFunctions.GetIndexOf(lc->functions[index2].C_String());
+			if (skhi.IsInvalid()==false)
+			{
+				void ( *fp ) ( RakNet::BitStream *, Packet * );
+				fp = registeredNonblockingFunctions.ItemAtIndex(skhi);
+				bsIn.AlignReadToByteBoundary();
+				fp(&bsIn,packet);
+			}		
+		}
+	}
+
+	return RR_CONTINUE_PROCESSING;
+}
+DataStructures::HashIndex RPC4::GetLocalSlotIndex(const char *sharedIdentifier)
+{
+	return localSlots.GetIndexOf(sharedIdentifier);
 }
 
-std::ostream& operator<<(std::ostream& os, const Vector3& v) {
-    return os << v.toString();
-}
-
-
-//----------------------------------------------------------------------------
-
-double frand() {
-    return rand() / (double) RAND_MAX;
-}
-
-Vector3::Vector3(TextInput& t) {
-	deserialize(t);
-}
-
-Vector3::Vector3(BinaryInput& b) {
-    deserialize(b);
-}
-
-
-Vector3::Vector3(const class Vector3int16& v) {
-    x = v.x;
-    y = v.y;
-    z = v.z;
-}
-
-
-void Vector3::deserialize(BinaryInput& b) {
-    x = b.readFloat32();
-    y = b.readFloat32();
-    z = b.readFloat32();
-}
-
-
-void Vector3::deserialize(TextInput& t) {
-    t.readSymbol("(");
-    x = (float)t.readNumber();
-    t.readSymbol(",");
-    y = (float)t.readNumber();
-    t.readSymbol(",");
-    z = (float)t.readNumber();
-    t.readSymbol(")");
-}
-
-
-void Vector3::serialize(TextOutput& t) const {
-   t.writeSymbol("(");
-   t.writeNumber(x);
-   t.writeSymbol(",");
-   t.writeNumber(y);
-   t.writeSymbol(",");
-   t.writeNumber(z);
-   t.writeSymbol(")");
-}
-
-
-void Vector3::serialize(BinaryOutput& b) const {
-    b.writeFloat32(x);
-    b.writeFloat32(y);
-    b.writeFloat32(z);
-}
-
-
-Vector3 Vector3::random() {
-    Vector3 result;
-
-    do {
-        result = Vector3(uniformRandom(-1.0, 1.0), 
-                         uniformRandom(-1.0, 1.0),
-                         uniformRandom(-1.0, 1.0));
-    } while (result.squaredMagnitude() >= 1.0f);
-
-    result.unitize();
-
-    return result;
-}
-
-//----------------------------------------------------------------------------
-Vector3 Vector3::operator/ (float fScalar) const {
-    Vector3 kQuot;
-
-    if ( fScalar != 0.0 ) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.x = fInvScalar * x;
-        kQuot.y = fInvScalar * y;
-        kQuot.z = fInvScalar * z;
-        return kQuot;
-    } else {
-        return Vector3::inf();
-    }
-}
-
-//----------------------------------------------------------------------------
-Vector3& Vector3::operator/= (float fScalar) {
-    if (fScalar != 0.0) {
-		float fInvScalar = 1.0f / fScalar;
-        x *= fInvScalar;
-        y *= fInvScalar;
-        z *= fInvScalar;
-    } else {
-        x = (float)G3D::inf();
-        y = (float)G3D::inf();
-        z = (float)G3D::inf();
-    }
-
-    return *this;
-}
-
-//----------------------------------------------------------------------------
-float Vector3::unitize (float fTolerance) {
-	float fMagnitude = magnitude();
-
-    if (fMagnitude > fTolerance) {
-		float fInvMagnitude = 1.0f / fMagnitude;
-        x *= fInvMagnitude;
-        y *= fInvMagnitude;
-        z *= fInvMagnitude;
-    } else {
-        fMagnitude = 0.0f;
-    }
-
-    return fMagnitude;
-}
-
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::reflectAbout(const Vector3& normal) const {
-
-    Vector3 out;
-
-    Vector3 N = normal.direction();
-
-    // 2 * normal.dot(this) * normal - this
-    return N * 2 * this->dot(N) - *this;
-}
-
-//----------------------------------------------------------------------------
-Vector3 Vector3::cosRandom(const Vector3& normal) {
-    double e1 = G3D::random(0, 1);
-    double e2 = G3D::random(0, 1);
-
-    // Angle from normal
-    double theta = acos(sqrt(e1));
-
-    // Angle about normal
-    double phi   = 2 * G3D_PI * e2;
-
-    // Make a coordinate system
-    Vector3 U = normal.direction();
-    Vector3 V = Vector3::unitX();
-
-    if (abs(U.dot(V)) > .9) {
-        V = Vector3::unitY();
-    }
-
-    Vector3 W = U.cross(V).direction();
-    V = W.cross(U);
-
-    // Convert to rectangular form
-    return cos(theta) * U + sin(theta) * (cos(phi) * V + sin(phi) * W);
-}
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::hemiRandom(const Vector3& normal) {
-    Vector3 V = Vector3::random();
-
-    if (V.dot(normal) < 0) {
-        return -V;
-    } else {
-        return V;
-    }
-}
-
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::reflectionDirection(const Vector3& normal) const {
-    return -reflectAbout(normal).direction();
-}
-
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::refractionDirection(
-    const Vector3&  normal,
-    float           iInside,
-    float           iOutside) const {
-
-    // From pg. 24 of Henrik Wann Jensen. Realistic Image Synthesis
-    // Using Photon Mapping.  AK Peters. ISBN: 1568811470. July 2001.
-
-    // Invert the directions from Wann Jensen's formulation
-    // and normalize the vectors.
-    const Vector3 W = -direction();
-    Vector3 N = normal.direction();
-
-    float h1 = iOutside;
-    float h2 = iInside;
-
-    if (normal.dot(*this) > 0.0f) {
-        h1 = iInside;
-        h2 = iOutside;
-        N  = -N;
-    }
-
-    const float hRatio = h1 / h2;
-    const float WdotN = W.dot(N);
-
-    float det = 1.0f - (float)square(hRatio) * (1.0f - (float)square(WdotN));
-
-    if (det < 0) {
-        // Total internal reflection
-        return Vector3::zero();
-    } else {
-        return -hRatio * (W - WdotN * N) - N * sqrt(det);
-    }
-}
-
-//----------------------------------------------------------------------------
-void Vector3::orthonormalize (Vector3 akVector[3]) {
-    // If the input vectors are v0, v1, and v2, then the Gram-Schmidt
-    // orthonormalization produces vectors u0, u1, and u2 as follows,
-    //
-    //   u0 = v0/|v0|
-    //   u1 = (v1-(u0*v1)u0)/|v1-(u0*v1)u0|
-    //   u2 = (v2-(u0*v2)u0-(u1*v2)u1)/|v2-(u0*v2)u0-(u1*v2)u1|
-    //
-    // where |A| indicates length of vector A and A*B indicates dot
-    // product of vectors A and B.
-
-    // compute u0
-    akVector[0].unitize();
-
-    // compute u1
-	float fDot0 = akVector[0].dot(akVector[1]);
-    akVector[1] -= akVector[0] * fDot0;
-    akVector[1].unitize();
-
-    // compute u2
-	float fDot1 = akVector[1].dot(akVector[2]);
-    fDot0 = akVector[0].dot(akVector[2]);
-    akVector[2] -= akVector[0] * fDot0 + akVector[1] * fDot1;
-    akVector[2].unitize();
-}
-
-//----------------------------------------------------------------------------
-void Vector3::generateOrthonormalBasis (Vector3& rkU, Vector3& rkV,
-                                        Vector3& rkW, bool bUnitLengthW) {
-    if ( !bUnitLengthW )
-        rkW.unitize();
-
-    if ( G3D::abs(rkW.x) >= G3D::abs(rkW.y)
-            && G3D::abs(rkW.x) >= G3D::abs(rkW.z) ) {
-        rkU.x = -rkW.y;
-        rkU.y = + rkW.x;
-        rkU.z = 0.0;
-    } else {
-        rkU.x = 0.0;
-        rkU.y = + rkW.z;
-        rkU.z = -rkW.y;
-    }
-
-    rkU.unitize();
-    rkV = rkW.cross(rkU);
-}
-
-//----------------------------------------------------------------------------
-
-std::string Vector3::toString() const {
-    return G3D::format("(%g, %g, %g)", x, y, z);
-}
-
-
-//----------------------------------------------------------------------------
-
-Matrix3 Vector3::cross() const {
-    return Matrix3( 0, -z,  y,
-                    z,  0, -x,
-                   -y,  x,  0);
-}
-
-
-void serialize(const Vector3::Axis& a, class BinaryOutput& bo) {
-    bo.writeUInt8((uint8)a);
-}
-
-void deserialize(Vector3::Axis& a, class BinaryInput& bi) {
-    a = (Vector3::Axis)bi.readUInt8();
-}
-
-//----------------------------------------------------------------------------
-// 2-char swizzles
-
-Vector2 Vector3::xx() const  { return Vector2       (x, x); }
-Vector2 Vector3::yx() const  { return Vector2       (y, x); }
-Vector2 Vector3::zx() const  { return Vector2       (z, x); }
-Vector2 Vector3::xy() const  { return Vector2       (x, y); }
-Vector2 Vector3::yy() const  { return Vector2       (y, y); }
-Vector2 Vector3::zy() const  { return Vector2       (z, y); }
-Vector2 Vector3::xz() const  { return Vector2       (x, z); }
-Vector2 Vector3::yz() const  { return Vector2       (y, z); }
-Vector2 Vector3::zz() const  { return Vector2       (z, z); }
-
-// 3-char swizzles
-
-Vector3 Vector3::xxx() const  { return Vector3       (x, x, x); }
-Vector3 Vector3::yxx() const  { return Vector3       (y, x, x); }
-Vector3 Vector3::zxx() const  { return Vector3       (z, x, x); }
-Vector3 Vector3::xyx() const  { return Vector3       (x, y, x); }
-Vector3 Vector3::yyx() const  { return Vector3       (y, y, x); }
-Vector3 Vector3::zyx() const  { return Vector3       (z, y, x); }
-Vector3 Vector3::xzx() const  { return Vector3       (x, z, x); }
-Vector3 Vector3::yzx() const  { return Vector3       (y, z, x); }
-Vector3 Vector3::zzx() const  { return Vector3       (z, z, x); }
-Vector3 Vector3::xxy() const  { return Vector3       (x, x, y); }
-Vector3 Vector3::yxy() const  { return Vector3       (y, x, y); }
-Vector3 Vector3::zxy() const  { return Vector3       (z, x, y); }
-Vector3 Vector3::xyy() const  { return Vector3       (x, y, y); }
-Vector3 Vector3::yyy() const  { return Vector3       (y, y, y); }
-Vector3 Vector3::zyy() const  { return Vector3       (z, y, y); }
-Vector3 Vector3::xzy() const  { return Vector3       (x, z, y); }
-Vector3 Vector3::yzy() const  { return Vector3       (y, z, y); }
-Vector3 Vector3::zzy() const  { return Vector3       (z, z, y); }
-Vector3 Vector3::xxz() const  { return Vector3       (x, x, z); }
-Vector3 Vector3::yxz() const  { return Vector3       (y, x, z); }
-Vector3 Vector3::zxz() const  { return Vector3       (z, x, z); }
-Vector3 Vector3::xyz() const  { return Vector3       (x, y, z); }
-Vector3 Vector3::yyz() const  { return Vector3       (y, y, z); }
-Vector3 Vector3::zyz() const  { return Vector3       (z, y, z); }
-Vector3 Vector3::xzz() const  { return Vector3       (x, z, z); }
-Vector3 Vector3::yzz() const  { return Vector3       (y, z, z); }
-Vector3 Vector3::zzz() const  { return Vector3       (z, z, z); }
-
-// 4-char swizzles
-
-Vector4 Vector3::xxxx() const  { return Vector4       (x, x, x, x); }
-Vector4 Vector3::yxxx() const  { return Vector4       (y, x, x, x); }
-Vector4 Vector3::zxxx() const  { return Vector4       (z, x, x, x); }
-Vector4 Vector3::xyxx() const  { return Vector4       (x, y, x, x); }
-Vector4 Vector3::yyxx() const  { return Vector4       (y, y, x, x); }
-Vector4 Vector3::zyxx() const  { return Vector4       (z, y, x, x); }
-Vector4 Vector3::xzxx() const  { return Vector4       (x, z, x, x); }
-Vector4 Vector3::yzxx() const  { return Vector4       (y, z, x, x); }
-Vector4 Vector3::zzxx() const  { return Vector4       (z, z, x, x); }
-Vector4 Vector3::xxyx() const  { return Vector4       (x, x, y, x); }
-Vector4 Vector3::yxyx() const  { return Vector4       (y, x, y, x); }
-Vector4 Vector3::zxyx() const  { return Vector4       (z, x, y, x); }
-Vector4 Vector3::xyyx() const  { return Vector4       (x, y, y, x); }
-Vector4 Vector3::yyyx() const  { return Vector4       (y, y, y, x); }
-Vector4 Vector3::zyyx() const  { return Vector4       (z, y, y, x); }
-Vector4 Vector3::xzyx() const  { return Vector4       (x, z, y, x); }
-Vector4 Vector3::yzyx() const  { return Vector4       (y, z, y, x); }
-Vector4 Vector3::zzyx() const  { return Vector4       (z, z, y, x); }
-Vector4 Vector3::xxzx() const  { return Vector4       (x, x, z, x); }
-Vector4 Vector3::yxzx() const  { return Vector4       (y, x, z, x); }
-Vector4 Vector3::zxzx() const  { return Vector4       (z, x, z, x); }
-Vector4 Vector3::xyzx() const  { return Vector4       (x, y, z, x); }
-Vector4 Vector3::yyzx() const  { return Vector4       (y, y, z, x); }
-Vector4 Vector3::zyzx() const  { return Vector4       (z, y, z, x); }
-Vector4 Vector3::xzzx() const  { return Vector4       (x, z, z, x); }
-Vector4 Vector3::yzzx() const  { return Vector4       (y, z, z, x); }
-Vector4 Vector3::zzzx() const  { return Vector4       (z, z, z, x); }
-Vector4 Vector3::xxxy() const  { return Vector4       (x, x, x, y); }
-Vector4 Vector3::yxxy() const  { return Vector4       (y, x, x, y); }
-Vector4 Vector3::zxxy() const  { return Vector4       (z, x, x, y); }
-Vector4 Vector3::xyxy() const  { return Vector4       (x, y, x, y); }
-Vector4 Vector3::yyxy() const  { return Vector4       (y, y, x, y); }
-Vector4 Vector3::zyxy() const  { return Vector4       (z, y, x, y); }
-Vector4 Vector3::xzxy() const  { return Vector4       (x, z, x, y); }
-Vector4 Vector3::yzxy() const  { return Vector4       (y, z, x, y); }
-Vector4 Vector3::zzxy() const  { return Vector4       (z, z, x, y); }
-Vector4 Vector3::xxyy() const  { return Vector4       (x, x, y, y); }
-Vector4 Vector3::yxyy() const  { return Vector4       (y, x, y, y); }
-Vector4 Vector3::zxyy() const  { return Vector4       (z, x, y, y); }
-Vector4 Vector3::xyyy() const  { return Vector4       (x, y, y, y); }
-Vector4 Vector3::yyyy() const  { return Vector4       (y, y, y, y); }
-Vector4 Vector3::zyyy() const  { return Vector4       (z, y, y, y); }
-Vector4 Vector3::xzyy() const  { return Vector4       (x, z, y, y); }
-Vector4 Vector3::yzyy() const  { return Vector4       (y, z, y, y); }
-Vector4 Vector3::zzyy() const  { return Vector4       (z, z, y, y); }
-Vector4 Vector3::xxzy() const  { return Vector4       (x, x, z, y); }
-Vector4 Vector3::yxzy() const  { return Vector4       (y, x, z, y); }
-Vector4 Vector3::zxzy() const  { return Vector4       (z, x, z, y); }
-Vector4 Vector3::xyzy() const  { return Vector4       (x, y, z, y); }
-Vector4 Vector3::yyzy() const  { return Vector4       (y, y, z, y); }
-Vector4 Vector3::zyzy() const  { return Vector4       (z, y, z, y); }
-Vector4 Vector3::xzzy() const  { return Vector4       (x, z, z, y); }
-Vector4 Vector3::yzzy() const  { return Vector4       (y, z, z, y); }
-Vector4 Vector3::zzzy() const  { return Vector4       (z, z, z, y); }
-Vector4 Vector3::xxxz() const  { return Vector4       (x, x, x, z); }
-Vector4 Vector3::yxxz() const  { return Vector4       (y, x, x, z); }
-Vector4 Vector3::zxxz() const  { return Vector4       (z, x, x, z); }
-Vector4 Vector3::xyxz() const  { return Vector4       (x, y, x, z); }
-Vector4 Vector3::yyxz() const  { return Vector4       (y, y, x, z); }
-Vector4 Vector3::zyxz() const  { return Vector4       (z, y, x, z); }
-Vector4 Vector3::xzxz() const  { return Vector4       (x, z, x, z); }
-Vector4 Vector3::yzxz() const  { return Vector4       (y, z, x, z); }
-Vector4 Vector3::zzxz() const  { return Vector4       (z, z, x, z); }
-Vector4 Vector3::xxyz() const  { return Vector4       (x, x, y, z); }
-Vector4 Vector3::yxyz() const  { return Vector4       (y, x, y, z); }
-Vector4 Vector3::zxyz() const  { return Vector4       (z, x, y, z); }
-Vector4 Vector3::xyyz() const  { return Vector4       (x, y, y, z); }
-Vector4 Vector3::yyyz() const  { return Vector4       (y, y, y, z); }
-Vector4 Vector3::zyyz() const  { return Vector4       (z, y, y, z); }
-Vector4 Vector3::xzyz() const  { return Vector4       (x, z, y, z); }
-Vector4 Vector3::yzyz() const  { return Vector4       (y, z, y, z); }
-Vector4 Vector3::zzyz() const  { return Vector4       (z, z, y, z); }
-Vector4 Vector3::xxzz() const  { return Vector4       (x, x, z, z); }
-Vector4 Vector3::yxzz() const  { return Vector4       (y, x, z, z); }
-Vector4 Vector3::zxzz() const  { return Vector4       (z, x, z, z); }
-Vector4 Vector3::xyzz() const  { return Vector4       (x, y, z, z); }
-Vector4 Vector3::yyzz() const  { return Vector4       (y, y, z, z); }
-Vector4 Vector3::zyzz() const  { return Vector4       (z, y, z, z); }
-Vector4 Vector3::xzzz() const  { return Vector4       (x, z, z, z); }
-Vector4 Vector3::yzzz() const  { return Vector4       (y, z, z, z); }
-Vector4 Vector3::zzzz() const  { return Vector4       (z, z, z, z); }
-
-
-
-
-
-
-} // namespace
+#endif // _RAKNET_SUPPORT_*

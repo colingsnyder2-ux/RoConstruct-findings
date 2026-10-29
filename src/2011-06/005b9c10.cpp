@@ -1,67 +1,41 @@
-// roc 2011-06 005b9c10  unit: RBX::VBrickColor::?$TypedPropertyDescriptor  size: 57 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 005b9c10
-//
-// 005b9c10  56                   push esi
-// 005b9c11  8b742408             mov esi, dword ptr [esp + 8]
-// 005b9c15  85f6                 test esi, esi
-// 005b9c17  742c                 je 0x5b9c45
-// 005b9c19  8b0e                 mov ecx, dword ptr [esi]
-// 005b9c1b  85c9                 test ecx, ecx
-// 005b9c1d  7409                 je 0x5b9c28
-// 005b9c1f  8b01                 mov eax, dword ptr [ecx]
-// 005b9c21  8b5004               mov edx, dword ptr [eax + 4]
-// 005b9c24  ffd2                 call edx
-// 005b9c26  eb05                 jmp 0x5b9c2d
-// 005b9c28  b8447ac000           mov eax, 0xc07a44
-// 005b9c2d  6898b0c200           push 0xc2b098
-// 005b9c32  8bc8                 mov ecx, eax
-// 005b9c34  ff15500aa400         call dword ptr [0xa40a50]
-// 005b9c3a  84c0                 test al, al
-// 005b9c3c  7407                 je 0x5b9c45
-// 005b9c3e  8b06                 mov eax, dword ptr [esi]
-// 005b9c40  83c004               add eax, 4
-// 005b9c43  5e                   pop esi
-// 005b9c44  c3                   ret 
-// 005b9c45  33c0                 xor eax, eax
-// 005b9c47  5e                   pop esi
-// 005b9c48  c3                   ret 
-// copied from an identical function in another client (function ??$any_cast@VVector2int16@G3D@@@boost@@YAPAVVector2int16@G3D@@PAVany@0@@Z)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_unit_cae07938f2228138.cpp
 
-#include <typeinfo>
-
-namespace G3D { class Vector2int16 { public: int value; }; }
-
-namespace boost {
-class any {
-public:
-    class placeholder {
-    public:
-        virtual ~placeholder() {}
-        virtual const std::type_info& type() const = 0;
-    };
-
-    template<typename ValueType>
-    class holder : public placeholder {
-    public:
-        virtual const std::type_info& type() const { return typeid(ValueType); }
-        ValueType held;
-    };
-
-    const std::type_info& type() const
-    {
-        return content ? content->type() : typeid(void);
+// Candidate translation unit (score above; library headers required).
+#include "G3D/Vector2int16.h"
+#include "util/ContentProvider.h"
+#include "reflection/type.h"
+#include "util/Utilities.h"
+#include "G3D/format.h"
+#include "G3D/Vector3.h"
+#include "G3D/Color3.h"
+#include "G3D/CoordinateFrame.h"
+#include "v8datamodel/BrickColor.h"
+#include <stdexcept>
+namespace RBX { namespace Reflection {
+template<class T> T& Value::genericConvert() {
+    T* id = boost::any_cast<T>(&value);
+    if (id) return *id;
+    if (isType<std::string>()) {
+        T v;
+        if (StringConverter<T>::convertToValue(*boost::any_cast<std::string>(&value),v)) {
+            value = v;
+            _type = &Type::singleton<T>();
+            return *boost::any_cast<T>(&value);
+        }
     }
-
-    placeholder* content;
-};
-
-template<typename ValueType>
-ValueType* any_cast(any* operand)
-{
-    return operand && operand->type() == typeid(ValueType)
-        ? &static_cast<any::holder<ValueType>*>(operand->content)->held
-        : 0;
+    throw std::runtime_error(G3D::format("Unable to cast %s to %s", _type->tag.c_str(), Type::singleton<T>().tag.c_str()));
 }
-}
-
-template G3D::Vector2int16* boost::any_cast<G3D::Vector2int16>(boost::any*);
+template int& Value::genericConvert<int>();
+template bool& Value::genericConvert<bool>();
+template float& Value::genericConvert<float>();
+template double& Value::genericConvert<double>();
+template G3D::Vector3& Value::genericConvert<G3D::Vector3>();
+template G3D::Color3& Value::genericConvert<G3D::Color3>();
+template G3D::CoordinateFrame& Value::genericConvert<G3D::CoordinateFrame>();
+template RBX::BrickColor& Value::genericConvert<RBX::BrickColor>();
+template G3D::Vector2int16& Value::genericConvert<G3D::Vector2int16>();
+template RBX::ContentId& Value::genericConvert<RBX::ContentId>();
+}}

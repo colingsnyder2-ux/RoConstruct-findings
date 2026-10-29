@@ -1,389 +1,619 @@
+// from server: 80% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// roc-lib: ogre-1.4.5-dll OgreAnimationState.cpp
+// roc-cl: 50727
+// roc-flags: /Od /Ob1 /GS- /MT
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+// Magic Software, Inc.
+// http://www.magic-software.com
+// http://www.wild-magic.com
+// Copyright (c) 2003.  All Rights Reserved
+//
+// The Wild Magic Library (WML) source code is supplied under the terms of
+// the license agreement http://www.magic-software.com/License/WildMagic.pdf
+// and may not be copied or disclosed except in accordance with the terms of
+// that agreement.
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+#include "WmlConvexClipper.h"
+#include "WmlConvexPolyhedron3.h"
+using namespace Wml;
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+#include <algorithm>
+#include <fstream>
+#include <map>
+using namespace std;
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-
-#include "OgreAnimationState.h"
-#include "OgreException.h"
-
-namespace Ogre 
+//----------------------------------------------------------------------------
+template <class Real>
+ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
+    Real fEpsilon)
 {
+    m_fEpsilon = fEpsilon;
 
-	//---------------------------------------------------------------------
-	AnimationState::AnimationState(AnimationStateSet* parent, const AnimationState &rhs)
-        : mAnimationName(rhs.mAnimationName)
-        , mParent(parent)
-        , mTimePos(rhs.mTimePos)
-        , mLength(rhs.mLength)
-        , mWeight(rhs.mWeight)
-        , mEnabled(rhs.mEnabled)
-        , mLoop(rhs.mLoop)
-	{
-		mParent->_notifyDirty();
-	}
-	//---------------------------------------------------------------------
-	AnimationState::~AnimationState()
-	{
-	}
-    //---------------------------------------------------------------------
-    AnimationState::AnimationState(const String& animName, 
-		AnimationStateSet *parent, Real timePos, Real length, Real weight, 
-		bool enabled)
-        : mAnimationName(animName)
-        , mParent(parent)
-        , mTimePos(timePos)
-        , mLength(length)
-        , mWeight(weight)
-        , mEnabled(enabled)
-        , mLoop(true)
-    {
-		mParent->_notifyDirty();
-    }
-    //---------------------------------------------------------------------
-    const String& AnimationState::getAnimationName() const
-    {
-        return mAnimationName;
-    }
-    //---------------------------------------------------------------------
-    Real AnimationState::getTimePosition(void) const
-    {
-        return mTimePos;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setTimePosition(Real timePos)
-    {
-		if (timePos != mTimePos)
-		{
-			mTimePos = timePos;
-			if (mLoop)
-			{
-				// Wrap
-				mTimePos = fmod(mTimePos, mLength);
-				if(mTimePos < 0)
-					mTimePos += mLength;     
-			}
-			else
-			{
-				// Clamp
-				if(mTimePos < 0)
-					mTimePos = 0;
-				else if (mTimePos > mLength)
-					mTimePos = mLength;
-			}
+    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
+    int iVQuantity = rkPoly.GetVQuantity();
+    m_akVertex.resize(iVQuantity);
+    for (int iV = 0; iV < iVQuantity; iV++)
+        m_akVertex[iV].m_kPoint = rakPoint[iV];
 
-            if (mEnabled)
-                mParent->_notifyDirty();
-        }
-
-    }
-    //---------------------------------------------------------------------
-    Real AnimationState::getLength() const
+    int iEQuantity = rkPoly.GetEQuantity();
+    m_akEdge.resize(iEQuantity);
+    for (int iE = 0; iE < iEQuantity; iE++)
     {
-        return mLength;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setLength(Real len)
-    {
-        mLength = len;
-    }
-    //---------------------------------------------------------------------
-    Real AnimationState::getWeight(void) const
-    {
-        return mWeight;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setWeight(Real weight)
-    {
-        mWeight = weight;
-
-        if (mEnabled)
-            mParent->_notifyDirty();
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::addTime(Real offset)
-    {
-        setTimePosition(mTimePos + offset);
-    }
-    //---------------------------------------------------------------------
-	bool AnimationState::hasEnded(void) const
-	{
-		return (mTimePos == mLength && !mLoop);
-	}
-    //---------------------------------------------------------------------
-    bool AnimationState::getEnabled(void) const
-    {
-        return mEnabled;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setEnabled(bool enabled)
-    {
-        mEnabled = enabled;
-        mParent->_notifyAnimationStateEnabled(this, enabled);
-    }
-    //---------------------------------------------------------------------
-    bool AnimationState::operator==(const AnimationState& rhs) const
-    {
-        if (mAnimationName == rhs.mAnimationName &&
-            mEnabled == rhs.mEnabled &&
-            mTimePos == rhs.mTimePos &&
-            mWeight == rhs.mWeight &&
-            mLength == rhs.mLength && 
-            mLoop == rhs.mLoop)
+        const MTEdge& rkE = rkPoly.GetEdge(iE);
+        for (int i = 0; i < 2; i++)
         {
-            return true;
-        }
-        else
-        {
-            return false;
+            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
+            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
         }
     }
-    //---------------------------------------------------------------------
-    bool AnimationState::operator!=(const AnimationState& rhs) const
+
+    int iTQuantity = rkPoly.GetTQuantity();
+    m_akFace.resize(iTQuantity);
+    for (int iT = 0; iT < iTQuantity; iT++)
     {
-        return !(*this == rhs);
+        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
+
+        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
+        for (int i = 0; i < 3; i++)
+            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
     }
-    //---------------------------------------------------------------------
-    void AnimationState::copyStateFrom(const AnimationState& animState)
-    {
-        mTimePos = animState.mTimePos;
-        mLength = animState.mLength;
-        mWeight = animState.mWeight;
-        mEnabled = animState.mEnabled;
-        mLoop = animState.mLoop;
-		mParent->_notifyDirty();
-
-    }
-	//---------------------------------------------------------------------
-	//---------------------------------------------------------------------
-	AnimationStateSet::AnimationStateSet()
-		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
-	{
-	}
-	//---------------------------------------------------------------------
-	AnimationStateSet::AnimationStateSet(const AnimationStateSet& rhs)
-		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
-	{
-		// lock rhs
-		OGRE_LOCK_MUTEX(rhs.OGRE_AUTO_MUTEX_NAME)
-
-		for (AnimationStateMap::const_iterator i = rhs.mAnimationStates.begin();
-			i != rhs.mAnimationStates.end(); ++i)
-		{
-			AnimationState* src = i->second;
-			mAnimationStates[src->getAnimationName()] = 
-				new AnimationState(this, *src);
-		}
-
-        // Clone enabled animation state list
-        for (EnabledAnimationStateList::const_iterator it = rhs.mEnabledAnimationStates.begin();
-            it != rhs.mEnabledAnimationStates.end(); ++it)
-        {
-            const AnimationState* src = *it;
-            mEnabledAnimationStates.push_back(getAnimationState(src->getAnimationName()));
-        }
-	}
-	//---------------------------------------------------------------------
-	AnimationStateSet::~AnimationStateSet()
-	{
-		// Destroy
-		removeAllAnimationStates();
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateSet::removeAnimationState(const String& name)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::iterator i = mAnimationStates.find(name);
-		if (i != mAnimationStates.end())
-		{
-            mEnabledAnimationStates.remove(i->second);
-
-			delete i->second;
-			mAnimationStates.erase(i);
-		}
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateSet::removeAllAnimationStates(void)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		for (AnimationStateMap::iterator i = mAnimationStates.begin();
-			i != mAnimationStates.end(); ++i)
-		{
-			delete i->second;
-		}
-		mAnimationStates.clear();
-        mEnabledAnimationStates.clear();
-
-	}
-	//---------------------------------------------------------------------
-	AnimationState* AnimationStateSet::createAnimationState(const String& name,  
-		Real timePos, Real length, Real weight, bool enabled)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::iterator i = mAnimationStates.find(name);
-		if (i != mAnimationStates.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-				"State for animation named '" + name + "' already exists.", 
-				"AnimationStateSet::createAnimationState");
-		}
-
-		AnimationState* newState = new AnimationState(name, this, timePos, 
-			length, weight, enabled);
-		mAnimationStates[name] = newState;
-
-		return newState;
-
-	}
-	//---------------------------------------------------------------------
-	AnimationState* AnimationStateSet::getAnimationState(const String& name) const
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::const_iterator i = mAnimationStates.find(name);
-		if (i == mAnimationStates.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"No state found for animation named '" + name + "'", 
-				"AnimationStateSet::getAnimationState");
-		}
-		return i->second;
-	}
-	//---------------------------------------------------------------------
-	bool AnimationStateSet::hasAnimationState(const String& name) const
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		return mAnimationStates.find(name) != mAnimationStates.end();
-	}
-	//---------------------------------------------------------------------
-	AnimationStateIterator AnimationStateSet::getAnimationStateIterator(void)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-		// returned iterator not threadsafe, noted in header
-		return AnimationStateIterator(
-			mAnimationStates.begin(), mAnimationStates.end());
-	}
-	//---------------------------------------------------------------------
-	ConstAnimationStateIterator AnimationStateSet::getAnimationStateIterator(void) const
-	{
-		OGRE_LOCK_AUTO_MUTEX
-		// returned iterator not threadsafe, noted in header
-		return ConstAnimationStateIterator(
-			mAnimationStates.begin(), mAnimationStates.end());
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateSet::copyMatchingState(AnimationStateSet* target) const
-	{
-		// lock target
-		OGRE_LOCK_MUTEX(target->OGRE_AUTO_MUTEX_NAME)
-		// lock source
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::iterator i, iend;
-        iend = target->mAnimationStates.end();
-        for (i = target->mAnimationStates.begin(); i != iend; ++i) {
-            AnimationStateMap::const_iterator iother = mAnimationStates.find(i->first);
-            if (iother == mAnimationStates.end()) {
-                OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "No animation entry found named " + i->first, 
-                    "AnimationStateSet::copyMatchingState");
-            } else {
-                i->second->copyStateFrom(*(iother->second));
-            }
-        }
-
-        // Copy matching enabled animation state list
-        target->mEnabledAnimationStates.clear();
-
-        EnabledAnimationStateList::const_iterator it, itend;
-        itend = mEnabledAnimationStates.end();
-        for (it = mEnabledAnimationStates.begin(); it != itend; ++it)
-        {
-            const AnimationState* src = *it;
-            AnimationStateMap::const_iterator itarget = target->mAnimationStates.find(src->getAnimationName());
-            if (itarget != target->mAnimationStates.end())
-            {
-                target->mEnabledAnimationStates.push_back(itarget->second);
-            }
-        }
-
-        target->mDirtyFrameNumber = mDirtyFrameNumber;
-    }
-    //---------------------------------------------------------------------
-    void AnimationStateSet::_notifyDirty(void)
-    {
-		OGRE_LOCK_AUTO_MUTEX
-        ++mDirtyFrameNumber;
-    }
-    //---------------------------------------------------------------------
-    void AnimationStateSet::_notifyAnimationStateEnabled(AnimationState* target, bool enabled)
-    {
-		OGRE_LOCK_AUTO_MUTEX
-		// Remove from enabled animation state list first
-        mEnabledAnimationStates.remove(target);
-
-        // Add to enabled animation state list if need
-        if (enabled)
-        {
-            mEnabledAnimationStates.push_back(target);
-        }
-
-        // Set the dirty frame number
-        _notifyDirty();
-    }
-    //---------------------------------------------------------------------
-    ConstEnabledAnimationStateIterator AnimationStateSet::getEnabledAnimationStateIterator(void) const
-    {
-		OGRE_LOCK_AUTO_MUTEX
-		// returned iterator not threadsafe, noted in header
-        return ConstEnabledAnimationStateIterator(
-            mEnabledAnimationStates.begin(), mEnabledAnimationStates.end());
-    }
-	//---------------------------------------------------------------------
-	//---------------------------------------------------------------------
-	Real AnimationStateControllerValue::getValue(void) const
-	{
-		return mTargetAnimationState->getTimePosition() / mTargetAnimationState->getLength();
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateControllerValue::setValue(Real value)
-	{
-		mTargetAnimationState->setTimePosition(value * mTargetAnimationState->getLength());
-	}
-
-
 }
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
+{
+    // compute signed distances from vertices to plane
+    int iPositive = 0, iNegative = 0;
+    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
+    {
+        Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
+        {
+            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
+            if ( rkV.m_fDistance >= m_fEpsilon )
+            {
+                iPositive++;
+            }
+            else if ( rkV.m_fDistance <= -m_fEpsilon )
+            {
+                iNegative++;
+                rkV.m_bVisible = false;
+            }
+            else
+            {
+                // The point is on the plane (within floating point
+                // tolerance).
+                rkV.m_fDistance = (Real)0.0;
+            }
+        }
+    }
 
+    if ( iPositive == 0 )
+    {
+        // mesh is in negative half-space, fully clipped
+        return Plane3<Real>::NEGATIVE_SIDE;
+    }
+
+    if ( iNegative == 0 )
+    {
+        // mesh is in positive half-space, fully visible
+        return Plane3<Real>::POSITIVE_SIDE;
+    }
+
+    // clip the visible edges
+    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
+    {
+        Edge& rkE = m_akEdge[iE];
+        if ( rkE.m_bVisible )
+        {
+            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
+            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
+            Face& rkF0 = m_akFace[iF0];
+            Face& rkF1 = m_akFace[iF1];
+            Real fD0 = m_akVertex[iV0].m_fDistance;
+            Real fD1 = m_akVertex[iV1].m_fDistance;
+
+            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
+            {
+                // The edge is culled.  If the edge is exactly on the clip
+                // plane, it is possible that a visible triangle shares it.
+                // The edge will be re-added during the face loop.
+                rkF0.m_akEdge.erase(iE);
+                if ( rkF0.m_akEdge.empty() )
+                    rkF0.m_bVisible = false;
+
+                rkF1.m_akEdge.erase(iE);
+                if ( rkF1.m_akEdge.empty() )
+                    rkF1.m_bVisible = false;
+
+                rkE.m_bVisible = false;
+                continue;
+            }
+
+            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
+            {
+                // face retains the edge
+                continue;
+            }
+
+            // The edge is split by the plane.  Compute the point of
+            // intersection.  If the old edge is <V0,V1> and I is the
+            // intersection point, the new edge is <V0,I> when d0 > 0 or
+            // <I,V1> when d1 > 0.
+            int iNV = (int)m_akVertex.size();
+            m_akVertex.push_back(Vertex());
+            Vertex& rkNV = m_akVertex[iNV];
+
+            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
+            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
+            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
+
+            if ( fD0 > (Real)0.0 )
+                rkE.m_aiVertex[1] = iNV;
+            else
+                rkE.m_aiVertex[0] = iNV;
+        }
+    }
+
+    // The mesh straddles the plane.  A new convex polygonal face will be
+    // generated.  Add it now and insert edges when they are visited.
+    int iNF = (int)m_akFace.size();
+    m_akFace.push_back(Face());
+    Face& rkNF = m_akFace[iNF];
+    rkNF.m_kPlane = rkPlane;
+
+    // process the faces
+    for (int iF = 0; iF < iNF; iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            // Determine if the face is on the negative side, the positive
+            // side, or split by the clipping plane.  The m_iOccurs members
+            // are set to zero to help find the end points of the polyline
+            // that results from clipping a face.
+            assert( rkF.m_akEdge.size() >= 2 );
+            set<int>::iterator pkIter = rkF.m_akEdge.begin();
+            while ( pkIter != rkF.m_akEdge.end() )
+            {
+                int iE = *pkIter++;
+                Edge& rkE = m_akEdge[iE];
+                assert( rkE.m_bVisible );
+                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
+                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
+            }
+
+            int iVStart, iVFinal;
+            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
+            {
+                // polyline is open, close it up
+                int iNE = (int)m_akEdge.size();
+                m_akEdge.push_back(Edge());
+                Edge& rkNE = m_akEdge[iNE];
+
+                rkNE.m_aiVertex[0] = iVStart;
+                rkNE.m_aiVertex[1] = iVFinal;
+                rkNE.m_aiFace[0] = iF;
+                rkNE.m_aiFace[1] = iNF;
+
+                // add new edge to polygons
+                rkF.m_akEdge.insert(iNE);
+                rkNF.m_akEdge.insert(iNE);
+            }
+        }
+    }
+
+    // Process face rkNF to make sure it is a simple polygon (theoretically
+    // convex, but numerically may be slightly not convex).  Floating point
+    // round-off errors can cause the new face from the last loop to be
+    // needle-like with a collapse of two edges into a single edge.  This
+    // block guarantees the invariant "face always a simple polygon".
+    PostProcess(iNF,rkNF);
+    int iESize = (int)rkNF.m_akEdge.size();
+    if ( iESize < 3 )
+    {
+        // face is completely degenerate, remove it from mesh
+        m_akFace.pop_back();
+    }
+
+    return Plane3<Real>::NO_SIDE;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
+{
+    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
+    vector<EdgePlus> kEdges(iEQuantity);
+    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
+    while ( pkIter != rkNF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
+    }
+    assert( i == iEQuantity );
+
+    sort(kEdges.begin(),kEdges.end());
+
+    // process duplicate edges
+    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
+    {
+        if ( kEdges[i0] == kEdges[i1] )
+        {
+            // found two equivalent edges (same vertex end points)
+#ifdef _DEBUG
+            int i2 = i1+1;
+            if ( i2 < iEQuantity )
+            {
+                // Make sure an edge occurs at most twice.  If not, then
+                // algorithm needs to be modified to handle it.
+                assert( kEdges[i1] != kEdges[i2] );
+            }
+#endif
+            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
+            // vertices V0, V1 and faces F1, NF.
+            int iE0 = kEdges[i0].m_iE;
+            int iE1 = kEdges[i1].m_iE;
+            Edge& rkE0 = m_akEdge[iE0];
+            Edge& rkE1 = m_akEdge[iE1];
+
+            // remove E0 and E1 from NF
+            rkNF.m_akEdge.erase(iE0);
+            rkNF.m_akEdge.erase(iE1);
+
+            // remove NF from E0
+            if ( rkE0.m_aiFace[0] == iNF )
+            {
+                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE0.m_aiFace[1] == iNF );
+            }
+            rkE0.m_aiFace[1] = -1;
+
+            // remove NF from E1
+            if ( rkE1.m_aiFace[0] == iNF )
+            {
+                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE1.m_aiFace[1] == iNF );
+            }
+            rkE1.m_aiFace[1] = -1;
+
+            // E2 is being booted from the system.  Update the face F1 that
+            // shares it.  Update E1 to share F1.
+            int iF1 = rkE1.m_aiFace[0];
+            Face& rkF1 = m_akFace[iF1];
+            rkF1.m_akEdge.erase(iE1);
+            rkF1.m_akEdge.insert(iE0);
+            rkE0.m_aiFace[1] = iF1;
+            rkE1.m_bVisible = false;
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
+    int& riVFinal)
+{
+    // count the number of occurrences of each vertex in the polyline
+    bool bOkay = true;
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        m_akVertex[iV0].m_iOccurs++;
+        if ( m_akVertex[iV0].m_iOccurs > 2 )
+            bOkay = false;
+
+        int iV1 = rkE.m_aiVertex[1];
+        m_akVertex[iV1].m_iOccurs++;
+        if ( m_akVertex[iV1].m_iOccurs > 2 )
+            bOkay = false;
+    }
+
+    if ( !bOkay )
+    {
+#ifdef _DEBUG
+        // If you reach this block, there is a good chance that floating
+        // point round-off error had caused this face to be needle-like and
+        // what was theoretically a narrow V-shaped portion (a vertex shared
+        // by two edges forming a small angle) has collapsed into a single
+        // line segment.
+        //
+        // NOTE.  Once I added PostProcess, I have not gotten to this block.
+        ofstream kOStr("error.txt");
+        pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            int iE = *pkIter++;
+            Edge& rkE = m_akEdge[iE];
+            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
+                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
+                  << rkE.m_aiFace[1] << "> ";
+            if ( rkE.m_bVisible )
+                kOStr << "T" << endl;
+            else
+                kOStr << "F" << endl;
+        }
+        kOStr.close();
+
+        assert( false );
+#else
+        return false;
+#endif
+    }
+
+    // determine if the polyline is open
+    pkIter = rkF.m_akEdge.begin();
+    riVStart = -1;
+    riVFinal = -1;
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        if ( m_akVertex[iV0].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV0;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV0;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
+        }
+
+        int iV1 = rkE.m_aiVertex[1];
+        if ( m_akVertex[iV1].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV1;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV1;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
+        }
+    }
+
+    assert( (riVStart == -1 && riVFinal == -1)
+        ||  (riVStart != -1 && riVFinal != -1) );
+
+    return riVStart != -1;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
+{
+    // copy edge indices into contiguous memory
+    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
+    vector<int> aiEOrdered(iQuantity);
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+        aiEOrdered[i++] = *pkIter++;
+
+    // bubble sort (yes, it is...)
+    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
+    {
+        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
+        int j, iCurr = rkECurr.m_aiVertex[iChoice];
+        for (j = i1; j < iQuantity; j++)
+        {
+            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
+            int iSave;
+            if ( rkETemp.m_aiVertex[0] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 1;
+                break;
+            }
+            if ( rkETemp.m_aiVertex[1] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 0;
+                break;
+            }
+        }
+        assert( j < iQuantity );
+    }
+
+    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
+    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
+    for (i = 1; i < iQuantity; i++)
+    {
+        Edge& rkE = m_akEdge[aiEOrdered[i]];
+        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
+            aiVOrdered[i+1] = rkE.m_aiVertex[1];
+        else
+            aiVOrdered[i+1] = rkE.m_aiVertex[0];
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
+    vector<Plane3<Real> >& rakPlane)
+{
+    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            int iQuantity = (int)rkF.m_akEdge.size();
+            assert( iQuantity >= 3 );
+            vector<int> aiOrdered(iQuantity+1);
+            OrderVertices(rkF,aiOrdered);
+
+            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
+            int iV1 = aiOrdered[(iQuantity-1) >> 1];
+            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
+            if ( fTSP > (Real)0.0 )
+            {
+                // clockwise, need to swap
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    raiConnect.push_back(aiOrdered[i]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+            else
+            {
+                // counterclockwise
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i]);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
+{
+    // get visible vertices
+    int iVQuantity = (int)m_akVertex.size();
+    vector<Vector3<Real> > akPoint;
+    int* aiVMap = new int[iVQuantity];
+    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
+        {
+            aiVMap[iV] = (int)akPoint.size();
+            akPoint.push_back(rkV.m_kPoint);
+        }
+    }
+
+    vector<int> aiConnect;
+    vector<Plane3<Real> > akPlane;
+    GetTriangles(aiConnect,akPlane);
+
+    // re-order
+    int iNewVQuantity = (int)akPoint.size();
+    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
+    {
+        int iOldC = aiConnect[iC];
+        assert( 0 <= iOldC && iOldC < iVQuantity );
+        int iNewC = aiVMap[iOldC];
+        assert( 0 <= iNewC && iNewC < iNewVQuantity );
+        aiConnect[iC] = iNewC;
+    }
+
+    delete[] aiVMap;
+
+    rkPoly.Create(akPoint,aiConnect,akPlane);
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::Print (const char* acFilename) const
+{
+    ofstream kOStr(acFilename);
+    if ( !kOStr )
+        return false;
+
+    int iVQuantity = (int)m_akVertex.size();
+    int iEQuantity = (int)m_akEdge.size();
+    int iFQuantity = (int)m_akFace.size();
+    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
+    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
+    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
+    char acMsg[1024];
+
+    kOStr << iVQuantity << " vertices" << endl;
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
+            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
+            rkV.m_kPoint.X(),
+            rkV.m_kPoint.Y(),
+            rkV.m_kPoint.Z());
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iEQuantity << " edges" << endl;
+    for (int iE = 0; iE < iEQuantity; iE++)
+    {
+        const Edge& rkE = m_akEdge[iE];
+        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
+            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
+            iVDigits,rkE.m_aiVertex[0],
+            iVDigits,rkE.m_aiVertex[1],
+            iFDigits,rkE.m_aiFace[0],
+            iFDigits,rkE.m_aiFace[1]);
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iFQuantity << " faces" << endl;
+    for (int iF = 0; iF < iFQuantity; iF++)
+    {
+        const Face& rkF = m_akFace[iF];
+        sprintf(acMsg,"t<%*d> %d: e = ",
+            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
+        kOStr << acMsg;
+
+        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            kOStr << *pkIter << ' ';
+            pkIter++;
+        }
+        kOStr << endl;
+    }
+
+    return true;
+}
+//----------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------
+// explicit instantiation
+//----------------------------------------------------------------------------
+namespace Wml
+{
+template class WML_ITEM ConvexClipper<float>;
+template class WML_ITEM ConvexClipper<double>;
+}
+//----------------------------------------------------------------------------

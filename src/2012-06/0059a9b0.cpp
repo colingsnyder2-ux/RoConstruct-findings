@@ -1,1513 +1,2600 @@
-// from server: 47% by colin
+// from server: 75% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Texture.cpp
+// roc-lib: raknet-4.081 ReplicaManager3.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file Texture.cpp
-
- @author Morgan McGuire, morgan3d@graphics3d.com
-
- Notes:
- <UL>
- <LI>http://developer.apple.com/opengl/extensions/ext_texture_rectangle.html
- </UL>
-
- @created 2001-02-28
- @edited  2005-04-05
-*/
-
-#include "G3D/Log.h"
-#include "G3D/Matrix3.h"
-#include "G3D/Rect2D.h"
-#include "G3D/GImage.h"
-#include "G3D/fileutils.h"
-#include "GLG3D/glcalls.h"
-#include "GLG3D/TextureFormat.h"
-#include "GLG3D/Texture.h"
-#include "GLG3D/getOpenGLState.h"
-#include "GLG3D/GLCaps.h"
-
-G3D::uint32 hashCode(const G3D::Texture::Settings& p) {
-    return p.hashCode();
-}
-
-namespace G3D {
-
-static const char* cubeMapString[] = {"ft", "bk", "up", "dn", "rt", "lf"};
-
-size_t Texture::_sizeOfAllTexturesInMemory = 0;
-
-/**
- Returns true if the system supports automatic MIP-map generation.
- */
-static bool hasAutoMipMap() {
-    static bool initialized = false;
-    static bool ham = false;
-
-    if (! initialized) {
-        initialized = true;
-        std::string ext = (char*)glGetString(GL_EXTENSIONS);
-        ham = (ext.find("GL_SGIS_generate_mipmap") != std::string::npos) &&
-            ! GLCaps::hasBug_mipmapGeneration() &&
-            ! GLCaps::hasBug_redBlueMipmapSwap();
-    }
-
-    return ham;
-}
-
-
-Texture::Settings::Settings() : 
-    interpolateMode(TRILINEAR_MIPMAP),
-    wrapMode(TILE),
-    depthReadMode(DEPTH_NORMAL),
-    maxAnisotropy(2.0),
-    autoMipMap(true),
-    minMipMap(-1000),
-    maxMipMap(1000) {
-}
-
-
-const Texture::Settings& Texture::Settings::defaults() {
-    static Settings param;
-    return param;
-}
-
-
-const Texture::Settings& Texture::Settings::video() {
-
-    static bool initialized = false;
-    static Settings param;
-
-    if (! initialized) {
-        initialized = true;
-        param.interpolateMode = BILINEAR_NO_MIPMAP;
-        param.wrapMode = CLAMP;
-        param.depthReadMode = DEPTH_NORMAL;
-        param.maxAnisotropy = 1.0;
-        param.autoMipMap = false;
-    }
-
-    return param;
-}
-
-
-const Texture::Settings& Texture::Settings::shadow() {
-
-    static bool initialized = false;
-    static Settings param;
-
-    if (! initialized) {
-        initialized = true;
-        param.interpolateMode = BILINEAR_NO_MIPMAP;
-        param.wrapMode = CLAMP;
-        param.depthReadMode = DEPTH_LEQUAL;
-        param.maxAnisotropy = 1.0;
-        param.autoMipMap = false;
-    }
-
-    return param;
-}
-
 /*
-void Texture::Settings::serialize(class BinaryOutput& b) {
-    // TODO: use chunk format
-
-}
-
-void Texture::Settings::deserialize(class BinaryInput& b) {
-
-}
-
-void Texture::Settings::serialize(class TextOutput& t) {
-    // TODO: ini-like format
-}
-
-void Texture::Settings::deserialize(class TextInput& t) {
-}
-*/
-
-uint32 Texture::Settings::hashCode() const {
-    return 
-        (uint32)interpolateMode + 
-        16 * (uint32)wrapMode + 
-        256 * (uint32)depthReadMode + 
-        (autoMipMap ? 512 : 0) +
-        (uint32)(1024 * maxAnisotropy) +
-        (minMipMap ^ (maxMipMap << 16));
-}
-
-
-
-/**
- Pushes all OpenGL texture state.
+ *  Copyright (c) 2014, Oculus VR, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
  */
-// TODO: this is slow; push only absolutely necessary state
-// or back up state that will be corrupted.
-static void glStatePush() {
-    glPushAttrib(GL_ALL_ATTRIB_BITS);
-    glPushClientAttrib(GL_ALL_CLIENT_ATTRIB_BITS);
 
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB);
-    }
+#include "NativeFeatureIncludes.h"
+#if _RAKNET_SUPPORT_ReplicaManager3==1
+
+#include "ReplicaManager3.h"
+#include "GetTime.h"
+#include "MessageIdentifiers.h"
+#include "RakPeerInterface.h"
+#include "NetworkIDManager.h"
+
+using namespace RakNet;
+
+// DEFINE_MULTILIST_PTR_TO_MEMBER_COMPARISONS(LastSerializationResult,Replica3*,replica);
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool PRO::operator==( const PRO& right ) const
+{
+	return priority == right.priority && reliability == right.reliability && orderingChannel == right.orderingChannel && sendReceipt == right.sendReceipt;
 }
 
-/**
- Pops all OpenGL texture state.
- */
-static void glStatePop() {
-    glPopClientAttrib();
-    glPopAttrib();
+bool PRO::operator!=( const PRO& right ) const
+{
+	return priority != right.priority || reliability != right.reliability || orderingChannel != right.orderingChannel || sendReceipt != right.sendReceipt;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+int Connection_RM3::Replica3LSRComp( Replica3 * const &replica3, LastSerializationResult * const &data )
+{
+	/*
+	if (replica3->GetNetworkID() < data->replica->GetNetworkID())
+		return -1;
+	if (replica3->GetNetworkID() > data->replica->GetNetworkID())
+		return 1;
+		*/
+
+	// 7/28/2013 - If GetNetworkID chagned during runtime, the list would be out of order and lookup would always fail or go out of bounds
+	// I remember before that I could not directly compare 
+	if (replica3->referenceIndex < data->replica->referenceIndex)
+		return -1;
+	if (replica3->referenceIndex > data->replica->referenceIndex)
+		return 1;
+	return 0;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+LastSerializationResult::LastSerializationResult()
+{
+	replica=0;
+	lastSerializationResultBS=0;
+	whenLastSerialized = RakNet::GetTime();
+}
+LastSerializationResult::~LastSerializationResult()
+{
+	if (lastSerializationResultBS)
+		RakNet::OP_DELETE(lastSerializationResultBS,_FILE_AND_LINE_);
+}
+void LastSerializationResult::AllocBS(void)
+{
+	if (lastSerializationResultBS==0)
+	{
+		lastSerializationResultBS=RakNet::OP_NEW<LastSerializationResultBS>(_FILE_AND_LINE_);
+	}
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ReplicaManager3::ReplicaManager3()
+{
+	defaultSendParameters.orderingChannel=0;
+	defaultSendParameters.priority=HIGH_PRIORITY;
+	defaultSendParameters.reliability=RELIABLE_ORDERED;
+	defaultSendParameters.sendReceipt=0;
+	autoSerializeInterval=30;
+	lastAutoSerializeOccurance=0;
+	autoCreateConnections=true;
+	autoDestroyConnections=true;
+	currentlyDeallocatingReplica=0;
+
+	for (unsigned int i=0; i < 255; i++)
+		worldsArray[i]=0;
+
+	AddWorld(0);
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ReplicaManager3::~ReplicaManager3()
+{
+	if (autoDestroyConnections)
+	{
+		for (unsigned int i=0; i < worldsList.Size(); i++)
+		{
+			RakAssert(worldsList[i]->connectionList.Size()==0);
+		}
+	}
+	Clear(true);
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::SetAutoManageConnections(bool autoCreate, bool autoDestroy)
+{
+	autoCreateConnections=autoCreate;
+	autoDestroyConnections=autoDestroy;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool ReplicaManager3::GetAutoCreateConnections(void) const
+{
+	return autoCreateConnections;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool ReplicaManager3::GetAutoDestroyConnections(void) const
+{
+	return autoDestroyConnections;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::AutoCreateConnectionList(
+	DataStructures::List<RakNetGUID> &participantListIn,
+	DataStructures::List<Connection_RM3*> &participantListOut,
+	WorldId worldId)
+{
+	for (unsigned int index=0; index < participantListIn.Size(); index++)
+	{
+		if (GetConnectionByGUID(participantListIn[index], worldId)==false)
+		{
+			Connection_RM3 *connection = AllocConnection(rakPeerInterface->GetSystemAddressFromGuid(participantListIn[index]), participantListIn[index]);
+			if (connection)
+			{
+				PushConnection(connection);
+				participantListOut.Push(connection, _FILE_AND_LINE_);
+			}
+		}
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool ReplicaManager3::PushConnection(RakNet::Connection_RM3 *newConnection, WorldId worldId)
+{
+	if (newConnection==0)
+		return false;
+	if (GetConnectionByGUID(newConnection->GetRakNetGUID(), worldId))
+		return false;
+	// Was this intended?
+	RakAssert(newConnection->GetRakNetGUID()!=rakPeerInterface->GetMyGUID());
+	
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int index = world->connectionList.GetIndexOf(newConnection);
+	if (index==(unsigned int)-1)
+	{
+		world->connectionList.Push(newConnection,_FILE_AND_LINE_);
+
+		// Send message to validate the connection
+		newConnection->SendValidation(rakPeerInterface, worldId);
+
+		Connection_RM3::ConstructionMode constructionMode = newConnection->QueryConstructionMode();
+		if (constructionMode==Connection_RM3::QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==Connection_RM3::QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+		{
+			unsigned int pushIdx;
+			for (pushIdx=0; pushIdx < world->userReplicaList.Size(); pushIdx++)
+				newConnection->OnLocalReference(world->userReplicaList[pushIdx], this);
+		}
+	}
+	return true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::DeallocReplicaNoBroadcastDestruction(RakNet::Connection_RM3 *connection, RakNet::Replica3 *replica3)
+{
+	currentlyDeallocatingReplica=replica3;
+	replica3->DeallocReplica(connection);
+	currentlyDeallocatingReplica=0;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RakNet::Connection_RM3 * ReplicaManager3::PopConnection(unsigned int index, WorldId worldId)
+{
+	DataStructures::List<Replica3*> replicaList;
+	DataStructures::List<NetworkID> destructionList;
+	DataStructures::List<Replica3*> broadcastList;
+	RakNet::Connection_RM3 *connection;
+	unsigned int index2;
+	RM3ActionOnPopConnection action;
+
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	connection=world->connectionList[index];
+
+	// Clear out downloadGroup
+	connection->ClearDownloadGroup(rakPeerInterface);
+
+	RakNetGUID guid = connection->GetRakNetGUID();
+	// This might be wrong, I am relying on the variable creatingSystemGuid which is transmitted
+	// automatically from the first system to reference the object. However, if an object changes
+	// owners then it is not going to be returned here, and therefore QueryActionOnPopConnection()
+	// will not be called for the new owner.
+	GetReplicasCreatedByGuid(guid, replicaList);
+
+	for (index2=0; index2 < replicaList.Size(); index2++)
+	{
+		action = replicaList[index2]->QueryActionOnPopConnection(connection);
+		replicaList[index2]->OnPoppedConnection(connection);
+		if (action==RM3AOPC_DELETE_REPLICA)
+		{
+			if (replicaList[index2]->GetNetworkIDManager())
+				destructionList.Push( replicaList[index2]->GetNetworkID(), _FILE_AND_LINE_  );
+		}
+		else if (action==RM3AOPC_DELETE_REPLICA_AND_BROADCAST_DESTRUCTION)
+		{
+			if (replicaList[index2]->GetNetworkIDManager())
+				destructionList.Push( replicaList[index2]->GetNetworkID(), _FILE_AND_LINE_  );
+
+			broadcastList.Push( replicaList[index2], _FILE_AND_LINE_  );
+		}
+		else if (action==RM3AOPC_DO_NOTHING)
+		{
+			for (unsigned int index3 = 0; index3 < connection->queryToSerializeReplicaList.Size(); index3++)
+			{
+				LastSerializationResult *lsr = connection->queryToSerializeReplicaList[index3];
+				lsr->whenLastSerialized=0;
+				if (lsr->lastSerializationResultBS)
+				{
+					for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+						lsr->lastSerializationResultBS->bitStream[z].Reset();
+				}
+			}
+		}
+	}
+
+	BroadcastDestructionList(broadcastList, connection->GetSystemAddress());
+	for (index2=0; index2 < destructionList.Size(); index2++)
+	{
+		// Do lookup in case DeallocReplica destroyed one of of the later Replica3 instances in the list
+		Replica3* replicaToDestroy = world->networkIDManager->GET_OBJECT_FROM_ID<Replica3*>(destructionList[index2]);
+		if (replicaToDestroy)
+		{
+			replicaToDestroy->PreDestruction(connection);
+			replicaToDestroy->DeallocReplica(connection);
+		}
+	}
+
+	world->connectionList.RemoveAtIndex(index);
+	return connection;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RakNet::Connection_RM3 * ReplicaManager3::PopConnection(RakNetGUID guid, WorldId worldId)
+{
+	unsigned int index;
+
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	for (index=0; index < world->connectionList.Size(); index++)
+	{
+		if (world->connectionList[index]->GetRakNetGUID()==guid)
+		{
+			return PopConnection(index, worldId);
+		}
+	}
+	return 0;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::Reference(RakNet::Replica3 *replica3, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int index = ReferenceInternal(replica3, worldId);
+
+	if (index!=(unsigned int)-1)
+	{
+		unsigned int pushIdx;
+		for (pushIdx=0; pushIdx < world->connectionList.Size(); pushIdx++)
+		{
+			Connection_RM3::ConstructionMode constructionMode = world->connectionList[pushIdx]->QueryConstructionMode();
+			if (constructionMode==Connection_RM3::QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==Connection_RM3::QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+			{
+				world->connectionList[pushIdx]->OnLocalReference(replica3, this);
+			}
+		}
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+unsigned int ReplicaManager3::ReferenceInternal(RakNet::Replica3 *replica3, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int index;
+	index = world->userReplicaList.GetIndexOf(replica3);
+	if (index==(unsigned int)-1)
+	{
+		RakAssert(world->networkIDManager);
+		replica3->SetNetworkIDManager(world->networkIDManager);
+		// If it crashes on rakPeerInterface==0 then you didn't call RakPeerInterface::AttachPlugin()
+		if (replica3->creatingSystemGUID==UNASSIGNED_RAKNET_GUID)
+			replica3->creatingSystemGUID=rakPeerInterface->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS);
+		replica3->replicaManager=this;
+		if (replica3->referenceIndex==(uint32_t)-1)
+		{
+			replica3->referenceIndex=nextReferenceIndex++;
+		}
+		world->userReplicaList.Push(replica3,_FILE_AND_LINE_);
+		return world->userReplicaList.Size()-1;
+	}
+	return (unsigned int) -1;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::Dereference(RakNet::Replica3 *replica3, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int index, index2;
+	for (index=0; index < world->userReplicaList.Size(); index++)
+	{
+		if (world->userReplicaList[index]==replica3)
+		{
+			world->userReplicaList.RemoveAtIndex(index);
+			break;
+		}
+	}
+
+	// Remove from all connections
+	for (index2=0; index2 < world->connectionList.Size(); index2++)
+	{
+		world->connectionList[index2]->OnDereference(replica3, this);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::DereferenceList(DataStructures::List<Replica3*> &replicaListIn, WorldId worldId)
+{
+	unsigned int index;
+	for (index=0; index < replicaListIn.Size(); index++)
+		Dereference(replicaListIn[index], worldId);
 }
 
 
-static GLenum dimensionToTarget(Texture::Dimension d) {
-    switch (d) {
-    case Texture::DIM_CUBE_MAP_NPOT:
-    case Texture::DIM_CUBE_MAP:
-        return GL_TEXTURE_CUBE_MAP_ARB;
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    case Texture::DIM_2D_NPOT:
-    case Texture::DIM_2D:
-        return GL_TEXTURE_2D;
+void ReplicaManager3::GetReplicasCreatedByMe(DataStructures::List<Replica3*> &replicaListOut, WorldId worldId)
+{
+	//RakNetGUID myGuid = rakPeerInterface->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS);
+	GetReplicasCreatedByGuid(rakPeerInterface->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS), replicaListOut, worldId);
+}
 
-    case Texture::DIM_2D_RECT:
-        return GL_TEXTURE_RECTANGLE_EXT;
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    default:
-        debugAssert(false);
-        return GL_TEXTURE_2D;
-    }
+void ReplicaManager3::GetReferencedReplicaList(DataStructures::List<Replica3*> &replicaListOut, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	replicaListOut=world->userReplicaList;
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::GetReplicasCreatedByGuid(RakNetGUID guid, DataStructures::List<Replica3*> &replicaListOut, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	replicaListOut.Clear(false,_FILE_AND_LINE_);
+	unsigned int index;
+	for (index=0; index < world->userReplicaList.Size(); index++)
+	{
+		if (world->userReplicaList[index]->creatingSystemGUID==guid)
+			replicaListOut.Push(world->userReplicaList[index],_FILE_AND_LINE_);
+	}
 }
 
 
-static void createTexture(
-    GLenum          target,
-    const uint8*    rawBytes,
-    GLenum          bytesFormat,
-    GLenum          bytesActualFormat,
-    int             width,
-    int             height,
-    GLenum          textureFormat,
-    int             bytesPerPixel,
-    int             mipLevel = 0,
-    bool            compressed = false,
-    bool            useNPOT = false,
-    float           rescaleFactor = 1.0f) {
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    uint8* bytes = const_cast<uint8*>(rawBytes);
+unsigned ReplicaManager3::GetReplicaCount(WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
 
-    // If true, we're supposed to free the byte array at the end of
-    // the function.
-    bool   freeBytes = false; 
-
-    switch (target) {
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB:
-    case GL_TEXTURE_2D:
-        if ((! isPow2(width) || ! isPow2(height)) &&
-            (! useNPOT || ! GLCaps::supports_GL_ARB_texture_non_power_of_two())) {
-            // NPOT texture with useNPOT disabled: resize to a power of two
-
-            debugAssertM(! compressed,
-                "This device does not support NPOT compressed textures.");
-
-            int oldWidth = width;
-            int oldHeight = height;
-            width  = ceilPow2(static_cast<unsigned int>(width * rescaleFactor));
-            height = ceilPow2(static_cast<unsigned int>(height * rescaleFactor));
-
-            bytes = new uint8[width * height * bytesPerPixel];
-            freeBytes = true;
-
-            // Rescale the image to a power of 2
-            gluScaleImage(
-                bytesFormat,
-                oldWidth,
-                oldHeight,
-                GL_UNSIGNED_BYTE,
-                rawBytes,
-                width,
-                height,
-                GL_UNSIGNED_BYTE,
-                bytes);
-
-        }
-
-        // Intentionally fall through for power of 2 case
-
-    case GL_TEXTURE_RECTANGLE_EXT:
-
-        // Note code falling through from above
-
-        if (compressed) {
-            
-            debugAssertM((target != GL_TEXTURE_RECTANGLE_EXT),
-                "Compressed textures must be DIM_2D.");
-
-            glCompressedTexImage2DARB(target, mipLevel, bytesActualFormat, width, 
-                height, 0, (bytesPerPixel * ((width + 3) / 4) * ((height + 3) / 4)), rawBytes);
-
-        } else {
-
-            // 2D texture, level of detail 0 (normal), internal format, x size from image, y size from image, 
-            // border 0 (normal), rgb color data, unsigned byte data, and finally the data itself.
-            glTexImage2D(target, mipLevel, textureFormat, width, height, 0, bytesFormat, GL_UNSIGNED_BYTE, bytes);
-        }
-        break;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-    }
-
-    if (freeBytes) {
-        // Texture was resized; free the temporary.
-        delete[] bytes;
-    }
+	return world->userReplicaList.Size();
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static void createMipMapTexture(    
-    GLenum          target,
-    const uint8*    _bytes,
-    int             bytesFormat,
-    int             width,
-    int             height,
-    GLenum          textureFormat,
-    size_t          bytesFormatBytesPerPixel,
-    float           rescaleFactor) {
+Replica3 *ReplicaManager3::GetReplicaAtIndex(unsigned index, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
 
-    switch (target) {
-    case GL_TEXTURE_2D:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB:
-        {
-            bool freeBytes = false;
-            const uint8* bytes = _bytes;
-
-            if (rescaleFactor != 1.0f) {
-                int oldWidth = width;
-                int oldHeight = height;
-                width  = ceilPow2(static_cast<unsigned int>(width * rescaleFactor));
-                height = ceilPow2(static_cast<unsigned int>(height * rescaleFactor));
-
-                bytes = new uint8[width * height * bytesFormatBytesPerPixel];
-                freeBytes = true;
-
-                // Rescale the image to a power of 2
-                gluScaleImage(
-                    bytesFormat,
-                    oldWidth,
-                    oldHeight,
-                    GL_UNSIGNED_BYTE,
-                    _bytes,
-                    width,
-                    height,
-                    GL_UNSIGNED_BYTE,
-                    (void*)bytes);
-            }
-
-            int r = gluBuild2DMipmaps(target, textureFormat, width, height, bytesFormat, GL_UNSIGNED_BYTE, bytes);
-            debugAssertM(r == 0, (const char*)gluErrorString(r)); (void)r;
-
-            if (freeBytes) {
-                delete[] const_cast<uint8*>(bytes);
-            }
-            break;
-        }
-
-    default:
-        debugAssertM(false, "Mipmaps not supported for this texture target");
-    }
+	return world->userReplicaList[index];
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+unsigned int ReplicaManager3::GetConnectionCount(WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
 
-/**
- Overrides the current wrap and interpolation parameters for the
- current texture.
- */
-static void setTexParameters(
-    GLenum                          target,
-    const Texture::Settings&        settings) {
-
-    debugAssert(
-        target == GL_TEXTURE_2D ||
-        target == GL_TEXTURE_RECTANGLE_EXT ||
-        target == GL_TEXTURE_CUBE_MAP_ARB);
-
-    debugAssertGLOk();
-
-    // Set the wrap and interpolate state
-
-    bool supports3D = GLCaps::supports_GL_EXT_texture_3D();
-    GLenum mode = GL_NONE;
-    
-    switch (settings.wrapMode) {
-    case Texture::TILE:
-      mode = GL_REPEAT;
-      break;
-
-    case Texture::CLAMP:  
-      if (GLCaps::supports_GL_EXT_texture_edge_clamp())
-        mode = GL_CLAMP_TO_EDGE;
-      else
-        mode = GL_CLAMP;
-      break;
-
-    case Texture::TRANSPARENT_BORDER:
-      if (GLCaps::supports_GL_ARB_texture_border_clamp())
-        mode = GL_CLAMP_TO_BORDER_ARB;
-      else
-        mode = GL_CLAMP;
-      {
-        Color4 black(0,0,0,0);
-        glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, black);
-        debugAssertGLOk();
-      }
-      break;
-
-    default:
-        debugAssert(false);
-    }
-    glTexParameteri(target, GL_TEXTURE_WRAP_S, mode);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T, mode);
-    if (supports3D) {
-        glTexParameteri(target, GL_TEXTURE_WRAP_R, mode);
-    }
-
-    debugAssertGLOk();
-
-    if (GLCaps::supports("GL_EXT_texture_lod")) {
-        glTexParameteri(target, GL_TEXTURE_MAX_LOD_SGIS, settings.maxMipMap);
-        glTexParameteri(target, GL_TEXTURE_MIN_LOD_SGIS, settings.minMipMap);
-    }
-
-
-    switch (settings.interpolateMode) {
-    case Texture::TRILINEAR_MIPMAP:
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-        if (hasAutoMipMap()) {  
-            glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-        }
-        break;
-
-    case Texture::BILINEAR_MIPMAP:
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-
-        if (hasAutoMipMap() && settings.autoMipMap) {  
-            glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-        }
-        break;
-
-    case Texture::NEAREST_MIPMAP:
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-
-        if (hasAutoMipMap() && settings.autoMipMap) {  
-            glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-        }
-        break;
-
-    case Texture::BILINEAR_NO_MIPMAP:
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR); 
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-        break;
-
-    case Texture::NO_INTERPOLATION:
-    case Texture::NEAREST_NO_MIPMAP:
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        break;
-
-    default:
-        debugAssert(false);
-    }
-    debugAssertGLOk();
-
-
-    static const bool anisotropic = GLCaps::supports("GL_EXT_texture_filter_anisotropic");
-
-    if (anisotropic) {
-        glTexParameterf(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, settings.maxAnisotropy);
-    }
-
-    if (GLCaps::supports_GL_ARB_shadow()) {
-        if (settings.depthReadMode == Texture::DEPTH_NORMAL) {
-            glTexParameteri(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_NONE);
-        } else {
-            glTexParameteri(target, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
-
-            glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC_ARB, 
-                (settings.depthReadMode == Texture::DEPTH_LEQUAL) ? GL_LEQUAL : GL_GEQUAL);
-        }
-
-    }
-    debugAssertGLOk();
+	return world->connectionList.Size();
 }
 
-/////////////////////////////////////////////////////////////////////////////
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-const Texture::Settings& Texture::parameters() const {
-    return _settings;
+Connection_RM3* ReplicaManager3::GetConnectionAtIndex(unsigned index, WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	return world->connectionList[index];
 }
 
-const Texture::Settings& Texture::settings() const {
-    return _settings;
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Connection_RM3* ReplicaManager3::GetConnectionBySystemAddress(const SystemAddress &sa, WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int index;
+	for (index=0; index < world->connectionList.Size(); index++)
+	{
+		if (world->connectionList[index]->GetSystemAddress()==sa)
+		{
+			return world->connectionList[index];
+		}
+	}
+	return 0;
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Texture::getImage(GImage& dst, const TextureFormat* outFormat) const {
-    alwaysAssertM(outFormat == TextureFormat::AUTO ||
-                  outFormat == TextureFormat::RGB8 ||
-                  outFormat == TextureFormat::RGBA8 ||
-                  outFormat == TextureFormat::L8 ||
-                  outFormat == TextureFormat::A8, "Illegal texture format.");
+Connection_RM3* ReplicaManager3::GetConnectionByGUID(RakNetGUID guid, WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
 
-    if (outFormat == TextureFormat::AUTO) {
-        switch(format->OpenGLBaseFormat) { 
-        case GL_ALPHA:
-            outFormat = TextureFormat::A8;
-            break;
-
-        case GL_LUMINANCE:
-            outFormat = TextureFormat::L8;
-            break;
-
-        case GL_RGB:
-            outFormat = TextureFormat::RGB8;
-            break;
-
-        case GL_RGBA:
-            // Fall through intentionally
-        default:
-            outFormat = TextureFormat::RGBA8;
-            break;
-        }
-    }
-
-    int channels = 0;
-
-
-    switch(outFormat->OpenGLBaseFormat) {
-    case GL_LUMINANCE:
-    case GL_ALPHA:
-        channels = 1;
-        break;
-
-    case GL_RGB:
-        channels = 3;
-        break;
-
-    case GL_RGBA:
-        channels = 4;
-        break;
-
-    default:
-        alwaysAssertM(false, "This texture format is not appropriate for reading to an image.");
-    }
-
-    dst.resize(width, height, channels);
-
-    GLenum target = dimensionToTarget(dimension);
-
-    glPushAttrib(GL_TEXTURE_BIT);
-    glBindTexture(target, textureID);
-
-    glGetTexImage(
-       target,
-       0,
-       outFormat->OpenGLBaseFormat,
-       GL_UNSIGNED_BYTE,
-       dst.byte());
-
-    glPopAttrib();
+	unsigned int index;
+	for (index=0; index < world->connectionList.Size(); index++)
+	{
+		if (world->connectionList[index]->GetRakNetGUID()==guid)
+		{
+			return world->connectionList[index];
+		}
+	}
+	return 0;
 }
 
-Texture::Texture(
-    const std::string&      _name,
-    GLuint                  _textureID,
-    Dimension               _dimension,
-    const TextureFormat*    _format,
-    InterpolateMode         _interpolate,
-    WrapMode                _wrap,
-    bool                    __opaque,
-    DepthReadMode           __dr,
-    float                   _aniso) :
-    
-    textureID(_textureID),
-    dimension(_dimension),
-    format(_format),
-    _opaque(__opaque),
-    _depthRead(__dr),
-    _maxAnisotropy(_aniso) {
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    debugAssert(_format);
-    debugAssertGLOk();
+void ReplicaManager3::SetDefaultOrderingChannel(char def)
+{
+	defaultSendParameters.orderingChannel=def;
+}
 
-    _settings.interpolateMode = _interpolate;
-    _settings.wrapMode = _wrap;
-    _settings.maxAnisotropy = _aniso;
-    _settings.depthReadMode = __dr;
-    _settings.autoMipMap = true;
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    glStatePush();
+void ReplicaManager3::SetDefaultPacketPriority(PacketPriority def)
+{
+	defaultSendParameters.priority=def;
+}
 
-        GLenum target = dimensionToTarget(_dimension);
-        glBindTexture(target, _textureID);
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        name = _name;
+void ReplicaManager3::SetDefaultPacketReliability(PacketReliability def)
+{
+	defaultSendParameters.reliability=def;
+}
 
-		// For cube map, we can't read "cube map" but must choose a face
-		GLenum readbackTarget = target;
-		if ((_dimension == DIM_CUBE_MAP) || (_dimension == DIM_CUBE_MAP_NPOT)) {
-			readbackTarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB;
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::SetAutoSerializeInterval(RakNet::Time intervalMS)
+{
+	autoSerializeInterval=intervalMS;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::GetConnectionsThatHaveReplicaConstructed(Replica3 *replica, DataStructures::List<Connection_RM3*> &connectionsThatHaveConstructedThisReplica, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	connectionsThatHaveConstructedThisReplica.Clear(false,_FILE_AND_LINE_);
+	unsigned int index;
+	for (index=0; index < world->connectionList.Size(); index++)
+	{
+		if (world->connectionList[index]->HasReplicaConstructed(replica))
+			connectionsThatHaveConstructedThisReplica.Push(world->connectionList[index],_FILE_AND_LINE_);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool ReplicaManager3::GetAllConnectionDownloadsCompleted(WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int index;
+	for (index=0; index < world->connectionList.Size(); index++)
+	{
+		if (world->connectionList[index]->GetDownloadWasCompleted()==false)
+			return false;
+	}
+	return true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::Clear(bool deleteWorlds)
+{
+	for (unsigned int i=0; i < worldsList.Size(); i++)
+	{
+		worldsList[i]->Clear(this);
+		if (deleteWorlds)
+		{
+			worldsArray[worldsList[i]->worldId]=0;
+			delete worldsList[i];
+		}
+	} 
+	if (deleteWorlds)
+		worldsList.Clear(false, _FILE_AND_LINE_);
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ReplicaManager3::RM3World::RM3World()
+{
+	networkIDManager=0;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::RM3World::Clear(ReplicaManager3 *replicaManager3)
+{
+	if (replicaManager3->GetAutoDestroyConnections())
+	{
+		for (unsigned int i=0; i < connectionList.Size(); i++)
+			replicaManager3->DeallocConnection(connectionList[i]);
+	}
+	else
+	{
+		// Clear out downloadGroup even if not auto destroying the connection, since the packets need to go back to RakPeer
+		for (unsigned int i=0; i < connectionList.Size(); i++)
+			connectionList[i]->ClearDownloadGroup(replicaManager3->GetRakPeerInterface());
+	}
+	
+	for (unsigned int i=0; i < userReplicaList.Size(); i++)
+	{
+		userReplicaList[i]->replicaManager=0;
+		userReplicaList[i]->SetNetworkIDManager(0);
+	}
+	connectionList.Clear(true,_FILE_AND_LINE_);
+	userReplicaList.Clear(true,_FILE_AND_LINE_);
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PRO ReplicaManager3::GetDefaultSendParameters(void) const
+{
+	return defaultSendParameters;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::AddWorld(WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]==0 && "World already in use");
+
+	RM3World *newWorld = RakNet::OP_NEW<RM3World>(_FILE_AND_LINE_);
+	newWorld->worldId=worldId;
+	worldsArray[worldId]=newWorld;
+	worldsList.Push(newWorld,_FILE_AND_LINE_);
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::RemoveWorld(WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	for (unsigned int i=0; i < worldsList.Size(); i++)
+	{
+		if (worldsList[i]==worldsArray[worldId])
+		{
+			RakNet::OP_DELETE(worldsList[i],_FILE_AND_LINE_);
+			worldsList.RemoveAtIndexFast(i);
+			break;
+		}
+	}
+	worldsArray[worldId]=0;
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+NetworkIDManager *ReplicaManager3::GetNetworkIDManager(WorldId worldId) const
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	return world->networkIDManager;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::SetNetworkIDManager(NetworkIDManager *_networkIDManager, WorldId worldId)
+{
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	world->networkIDManager=_networkIDManager;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PluginReceiveResult ReplicaManager3::OnReceive(Packet *packet)
+{
+	if (packet->length<2)
+		return RR_CONTINUE_PROCESSING;
+
+	WorldId incomingWorldId;
+
+	RakNet::Time timestamp=0;
+	unsigned char packetIdentifier, packetDataOffset;
+	if ( ( unsigned char ) packet->data[ 0 ] == ID_TIMESTAMP )
+	{
+		if ( packet->length > sizeof( unsigned char ) + sizeof( RakNet::Time ) )
+		{
+			packetIdentifier = ( unsigned char ) packet->data[ sizeof( unsigned char ) + sizeof( RakNet::Time ) ];
+			// Required for proper endian swapping
+			RakNet::BitStream tsBs(packet->data+sizeof(MessageID),packet->length-1,false);
+			tsBs.Read(timestamp);
+			// Next line assumes worldId is only 1 byte
+			RakAssert(sizeof(WorldId)==1);
+			incomingWorldId=packet->data[sizeof( unsigned char )*2 + sizeof( RakNet::Time )];
+			packetDataOffset=sizeof( unsigned char )*3 + sizeof( RakNet::Time );
+		}
+		else
+			return RR_STOP_PROCESSING_AND_DEALLOCATE;
+	}
+	else
+	{
+		packetIdentifier = ( unsigned char ) packet->data[ 0 ];
+		// Next line assumes worldId is only 1 byte
+		RakAssert(sizeof(WorldId)==1);
+		incomingWorldId=packet->data[sizeof( unsigned char )];
+		packetDataOffset=sizeof( unsigned char )*2;
+	}
+
+	if (worldsArray[incomingWorldId]==0)
+		return RR_CONTINUE_PROCESSING;
+
+	switch (packetIdentifier)
+	{
+	case ID_REPLICA_MANAGER_CONSTRUCTION:
+		return OnConstruction(packet, packet->data, packet->length, packet->guid, packetDataOffset, incomingWorldId);
+	case ID_REPLICA_MANAGER_SERIALIZE:
+		return OnSerialize(packet, packet->data, packet->length, packet->guid, timestamp, packetDataOffset, incomingWorldId);
+	case ID_REPLICA_MANAGER_DOWNLOAD_STARTED:
+		if (packet->wasGeneratedLocally==false)
+		{
+			return OnDownloadStarted(packet, packet->data, packet->length, packet->guid, packetDataOffset, incomingWorldId);
+		}
+		else
+			break;
+	case ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE:
+		if (packet->wasGeneratedLocally==false)
+		{
+			return OnDownloadComplete(packet, packet->data, packet->length, packet->guid, packetDataOffset, incomingWorldId);
+		}
+		else
+			break;
+	case ID_REPLICA_MANAGER_SCOPE_CHANGE:
+		{
+			Connection_RM3 *connection = GetConnectionByGUID(packet->guid, incomingWorldId);
+			if (connection && connection->isValidated==false)
+			{
+				// This connection is now confirmed bidirectional
+				connection->isValidated=true;
+				// Reply back on validation
+				connection->SendValidation(rakPeerInterface,incomingWorldId);
+			}
+		}
+	}
+
+	return RR_CONTINUE_PROCESSING;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void Connection_RM3::AutoConstructByQuery(ReplicaManager3 *replicaManager3, WorldId worldId)
+{
+	ValidateLists(replicaManager3);
+
+	ConstructionMode constructionMode = QueryConstructionMode();
+
+	unsigned int index;
+	RM3ConstructionState constructionState;
+	LastSerializationResult *lsr;
+	index=0;
+
+	constructedReplicasCulled.Clear(false,_FILE_AND_LINE_);
+	destroyedReplicasCulled.Clear(false,_FILE_AND_LINE_);
+
+	if (constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+	{
+		while (index < queryToConstructReplicaList.Size())
+		{
+			lsr=queryToConstructReplicaList[index];
+			constructionState=lsr->replica->QueryConstruction(this, replicaManager3);
+			if (constructionState==RM3CS_ALREADY_EXISTS_REMOTELY || constructionState==RM3CS_ALREADY_EXISTS_REMOTELY_DO_NOT_CONSTRUCT)
+			{
+				OnReplicaAlreadyExists(index, replicaManager3);
+				if (constructionState==RM3CS_ALREADY_EXISTS_REMOTELY)
+					constructedReplicasCulled.Push(lsr->replica,_FILE_AND_LINE_);
+
+				/*
+				if (constructionState==RM3CS_ALREADY_EXISTS_REMOTELY)
+				{
+					// Serialize construction data to this connection
+					RakNet::BitStream bsOut;
+					bsOut.Write((MessageID)ID_REPLICA_MANAGER_3_SERIALIZE_CONSTRUCTION_EXISTING);
+					bsOut.Write(replicaManager3->GetWorldID());
+					NetworkID networkId;
+					networkId=lsr->replica->GetNetworkID();
+					bsOut.Write(networkId);
+					BitSize_t bitsWritten = bsOut.GetNumberOfBitsUsed();
+					lsr->replica->SerializeConstructionExisting(&bsOut, this);
+					if (bsOut.GetNumberOfBitsUsed()!=bitsWritten)
+						replicaManager3->SendUnified(&bsOut,HIGH_PRIORITY,RELIABLE_ORDERED,0,GetSystemAddress(), false);
+				}
+
+				// Serialize first serialization to this connection.
+				// This is done here, as it isn't done in PushConstruction
+				SerializeParameters sp;
+				RakNet::BitStream emptyBs;
+				for (index=0; index < (unsigned int) RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; index++)
+				{
+					sp.lastSentBitstream[index]=&emptyBs;
+					sp.pro[index]=replicaManager3->GetDefaultSendParameters();
+				}
+				sp.bitsWrittenSoFar=0;
+				sp.destinationConnection=this;
+				sp.messageTimestamp=0;
+				sp.whenLastSerialized=0;
+
+				RakNet::Replica3 *replica = lsr->replica;
+
+				RM3SerializationResult res = replica->Serialize(&sp);
+				if (res!=RM3SR_NEVER_SERIALIZE_FOR_THIS_CONNECTION &&
+					res!=RM3SR_DO_NOT_SERIALIZE &&
+					res!=RM3SR_SERIALIZED_UNIQUELY)
+				{
+					bool allIndices[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS];
+					for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+					{
+						sp.bitsWrittenSoFar+=sp.outputBitstream[z].GetNumberOfBitsUsed();
+						allIndices[z]=true;
+					}
+					if (SendSerialize(replica, allIndices, sp.outputBitstream, sp.messageTimestamp, sp.pro, replicaManager3->GetRakPeerInterface(), replicaManager3->GetWorldID())==SSICR_SENT_DATA)
+						lsr->replica->whenLastSerialized=RakNet::GetTimeMS();
+				}
+				*/
+			}
+			else if (constructionState==RM3CS_SEND_CONSTRUCTION)
+			{
+				OnConstructToThisConnection(index, replicaManager3);
+				RakAssert(lsr->replica);
+				constructedReplicasCulled.Push(lsr->replica,_FILE_AND_LINE_);
+			}
+			else if (constructionState==RM3CS_NEVER_CONSTRUCT)
+			{
+				OnNeverConstruct(index, replicaManager3);
+			}
+			else//  if (constructionState==RM3CS_NO_ACTION)
+			{
+				// Do nothing
+				index++;
+			}
 		}
 
-        glGetTexLevelParameteriv(readbackTarget, 0, GL_TEXTURE_WIDTH, &width);
-        glGetTexLevelParameteriv(readbackTarget, 0, GL_TEXTURE_HEIGHT, &height);
+		if (constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+		{
+			RM3DestructionState destructionState;
+			index=0;
+			while (index < queryToDestructReplicaList.Size())
+			{
+				lsr=queryToDestructReplicaList[index];
+				destructionState=lsr->replica->QueryDestruction(this, replicaManager3);
+				if (destructionState==RM3DS_SEND_DESTRUCTION)
+				{
+					OnSendDestructionFromQuery(index, replicaManager3);
+					destroyedReplicasCulled.Push(lsr->replica,_FILE_AND_LINE_);
+				}
+				else if (destructionState==RM3DS_DO_NOT_QUERY_DESTRUCTION)
+				{
+					OnDoNotQueryDestruction(index, replicaManager3);
+				}
+				else//  if (destructionState==RM3CS_NO_ACTION)
+				{
+					// Do nothing
+					index++;
+				}
+			}
+		}
+	}
+	else if (constructionMode==QUERY_CONNECTION_FOR_REPLICA_LIST)
+	{
+		QueryReplicaList(constructedReplicasCulled,destroyedReplicasCulled);
 
-        depth = 1;
-        invertY = false;
-        
-        interpolate         = _interpolate;
-        wrap                = _wrap;
-        debugAssertGLOk();
-        setTexParameters(target, _settings);
-        debugAssertGLOk();
-    glStatePop();
-    debugAssertGLOk();
+		unsigned int idx1, idx2;
 
-    _sizeOfAllTexturesInMemory += sizeInMemory();
+		// Create new
+		for (idx2=0; idx2 < constructedReplicasCulled.Size(); idx2++)
+			OnConstructToThisConnection(constructedReplicasCulled[idx2], replicaManager3);
+
+		bool exists;
+		for (idx2=0; idx2 < destroyedReplicasCulled.Size(); idx2++)
+		{
+			exists=false;
+			bool objectExists;
+			idx1=constructedReplicaList.GetIndexFromKey(destroyedReplicasCulled[idx2], &objectExists);
+			if (objectExists)
+			{
+				constructedReplicaList.RemoveAtIndex(idx1);
+
+				unsigned int j;
+				for (j=0; j < queryToSerializeReplicaList.Size(); j++)
+				{
+					if (queryToSerializeReplicaList[j]->replica==destroyedReplicasCulled[idx2] )
+					{
+						queryToSerializeReplicaList.RemoveAtIndex(j);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	SendConstruction(constructedReplicasCulled,destroyedReplicasCulled,replicaManager3->defaultSendParameters,replicaManager3->rakPeerInterface,worldId,replicaManager3);
+}
+void ReplicaManager3::Update(void)
+{
+	unsigned int index,index2,index3;
+
+	WorldId worldId;
+	RM3World *world;
+	RakNet::Time time = RakNet::GetTime();
+
+	for (index3=0; index3 < worldsList.Size(); index3++)
+	{
+		world = worldsList[index3];
+		worldId = world->worldId;
+
+		for (index=0; index < world->connectionList.Size(); index++)
+		{
+			if (world->connectionList[index]->isValidated==false)
+				continue;
+			world->connectionList[index]->AutoConstructByQuery(this, worldId);
+		}
+	}
+
+	if (time - lastAutoSerializeOccurance >= autoSerializeInterval)
+	{
+		for (index3=0; index3 < worldsList.Size(); index3++)
+		{
+			world = worldsList[index3];
+			worldId = world->worldId;
+
+			for (index=0; index < world->userReplicaList.Size(); index++)
+			{
+				world->userReplicaList[index]->forceSendUntilNextUpdate=false;
+				world->userReplicaList[index]->OnUserReplicaPreSerializeTick();
+			}
+
+			unsigned int index;
+			SerializeParameters sp;
+			sp.curTime=time;
+			Connection_RM3 *connection;
+			SendSerializeIfChangedResult ssicr;
+			LastSerializationResult *lsr;
+
+			sp.messageTimestamp=0;
+			for (int i=0; i < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; i++)
+				sp.pro[i]=defaultSendParameters;
+			index2=0;
+			for (index=0; index < world->connectionList.Size(); index++)
+			{
+				connection = world->connectionList[index];
+				sp.bitsWrittenSoFar=0;
+				index2=0;
+				sp.destinationConnection=connection;
+
+				DataStructures::List<Replica3*> replicasToSerialize;
+				replicasToSerialize.Clear(true, _FILE_AND_LINE_);
+				if (connection->QuerySerializationList(replicasToSerialize))
+				{
+					// Update replica->lsr so we can lookup in the next block
+					// lsr is per connection / per replica
+					while (index2 < connection->queryToSerializeReplicaList.Size())
+					{
+						connection->queryToSerializeReplicaList[index2]->replica->lsr=connection->queryToSerializeReplicaList[index2];
+						index2++;
+					}
+
+
+					// User is manually specifying list of replicas to serialize
+					index2=0;
+					while (index2 < replicasToSerialize.Size())
+					{
+						lsr=replicasToSerialize[index2]->lsr;
+						RakAssert(lsr->replica==replicasToSerialize[index2]);
+
+						sp.whenLastSerialized=lsr->whenLastSerialized;
+						ssicr=connection->SendSerializeIfChanged(lsr, &sp, GetRakPeerInterface(), worldId, this, time);
+						if (ssicr==SSICR_SENT_DATA)
+							lsr->whenLastSerialized=time;
+						index2++;
+					}
+				}
+				else
+				{
+					while (index2 < connection->queryToSerializeReplicaList.Size())
+					{
+						lsr=connection->queryToSerializeReplicaList[index2];
+
+						sp.destinationConnection=connection;
+						sp.whenLastSerialized=lsr->whenLastSerialized;
+						ssicr=connection->SendSerializeIfChanged(lsr, &sp, GetRakPeerInterface(), worldId, this, time);
+						if (ssicr==SSICR_SENT_DATA)
+						{
+							lsr->whenLastSerialized=time;
+							index2++;
+						}
+						else if (ssicr==SSICR_NEVER_SERIALIZE)
+						{
+							// Removed from the middle of the list
+						}
+						else
+							index2++;
+					}
+				}
+			}
+		}
+
+		lastAutoSerializeOccurance=time;
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason )
+{
+	(void) lostConnectionReason;
+	(void) systemAddress;
+	if (autoDestroyConnections)
+	{
+		Connection_RM3 *connection = PopConnection(rakNetGUID);
+		if (connection)
+			DeallocConnection(connection);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::OnNewConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, bool isIncoming)
+{
+	(void) isIncoming;
+	if (autoCreateConnections)
+	{
+		Connection_RM3 *connection = AllocConnection(systemAddress, rakNetGUID);
+		if (connection)
+			PushConnection(connection);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::OnRakPeerShutdown(void)
+{
+	if (autoDestroyConnections)
+	{
+		RM3World *world;
+		unsigned int index3;
+		for (index3=0; index3 < worldsList.Size(); index3++)
+		{
+			world = worldsList[index3];
+
+			while (world->connectionList.Size())
+			{
+				Connection_RM3 *connection = PopConnection(world->connectionList.Size()-1, world->worldId);
+				if (connection)
+					DeallocConnection(connection);
+			}
+		}
+	}
+
+
+	Clear(false);
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ReplicaManager3::OnDetach(void)
+{
+	OnRakPeerShutdown();
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PluginReceiveResult ReplicaManager3::OnConstruction(Packet *packet, unsigned char *packetData, int packetDataLength, RakNetGUID senderGuid, unsigned char packetDataOffset, WorldId worldId)
+{
+	RM3World *world = worldsArray[worldId];
+
+	Connection_RM3 *connection = GetConnectionByGUID(senderGuid, worldId);
+	if (connection==0)
+	{
+		// Almost certainly a bug
+		RakAssert("Got OnConstruction but no connection yet" && 0);
+		return RR_CONTINUE_PROCESSING;
+	}
+	if (connection->groupConstructionAndSerialize)
+	{
+		connection->downloadGroup.Push(packet, __FILE__, __LINE__);
+		return RR_STOP_PROCESSING;
+	}
+
+	RakNet::BitStream bsIn(packetData,packetDataLength,false);
+	bsIn.IgnoreBytes(packetDataOffset);
+	uint16_t constructionObjectListSize, destructionObjectListSize, index, index2;
+	BitSize_t streamEnd, writeAllocationIDEnd;
+	Replica3 *replica;
+	NetworkID networkId;
+	RakNetGUID creatingSystemGuid;
+	bool actuallyCreateObject=false;
+
+	DataStructures::List<bool> actuallyCreateObjectList;
+	DataStructures::List<Replica3*> constructionTickStack;
+
+	RakAssert(world->networkIDManager);
+
+	bsIn.Read(constructionObjectListSize);
+	for (index=0; index < constructionObjectListSize; index++)
+	{
+		bsIn.Read(streamEnd);
+		bsIn.Read(networkId);
+		Replica3* existingReplica = world->networkIDManager->GET_OBJECT_FROM_ID<Replica3*>(networkId);
+		bsIn.Read(actuallyCreateObject);
+		actuallyCreateObjectList.Push(actuallyCreateObject, _FILE_AND_LINE_);
+		bsIn.AlignReadToByteBoundary();
+
+		if (actuallyCreateObject)
+		{
+			bsIn.Read(creatingSystemGuid);
+			bsIn.Read(writeAllocationIDEnd);
+
+			//printf("OnConstruction: %i\n",networkId.guid.g); // Removeme
+			if (existingReplica)
+			{
+				existingReplica->replicaManager=this;
+
+				// Network ID already in use
+				connection->OnDownloadExisting(existingReplica, this);
+
+				constructionTickStack.Push(0, _FILE_AND_LINE_);
+				bsIn.SetReadOffset(streamEnd);
+				continue;
+			}
+
+			bsIn.AlignReadToByteBoundary();
+			replica = connection->AllocReplica(&bsIn, this);
+			if (replica==0)
+			{
+				constructionTickStack.Push(0, _FILE_AND_LINE_);
+				bsIn.SetReadOffset(streamEnd);
+				continue;
+			}
+
+			// Go past the bitStream written to with WriteAllocationID(). Necessary in case the user didn't read out the bitStream the same way it was written
+			// bitOffset2 is already aligned
+			bsIn.SetReadOffset(writeAllocationIDEnd);
+
+			replica->SetNetworkIDManager(world->networkIDManager);
+			replica->SetNetworkID(networkId);
+
+			replica->replicaManager=this;
+			replica->creatingSystemGUID=creatingSystemGuid;
+
+			if (!replica->QueryRemoteConstruction(connection) ||
+				!replica->DeserializeConstruction(&bsIn, connection))
+			{
+				DeallocReplicaNoBroadcastDestruction(connection, replica);
+				bsIn.SetReadOffset(streamEnd);
+				constructionTickStack.Push(0, _FILE_AND_LINE_);
+				continue;
+			}
+
+			constructionTickStack.Push(replica, _FILE_AND_LINE_);
+
+			// Register the replica
+			ReferenceInternal(replica, worldId);
+		}
+		else
+		{
+			if (existingReplica)
+			{
+				existingReplica->DeserializeConstructionExisting(&bsIn, connection);
+				constructionTickStack.Push(existingReplica, _FILE_AND_LINE_);
+			}
+			else
+			{
+				constructionTickStack.Push(0, _FILE_AND_LINE_);
+			}
+		}
+
+
+		bsIn.SetReadOffset(streamEnd);
+		bsIn.AlignReadToByteBoundary();
+	}
+
+    RakAssert(constructionTickStack.Size()==constructionObjectListSize);
+	RakAssert(actuallyCreateObjectList.Size()==constructionObjectListSize);
+
+	RakNet::BitStream empty;
+	for (index=0; index < constructionObjectListSize; index++)
+	{
+		bool pdcWritten=false;
+		bsIn.Read(pdcWritten);
+		if (pdcWritten)
+		{
+			bsIn.AlignReadToByteBoundary();
+			bsIn.Read(streamEnd);
+			bsIn.Read(networkId);
+			if (constructionTickStack[index]!=0)
+			{
+				bsIn.AlignReadToByteBoundary();
+				if (actuallyCreateObjectList[index])
+					constructionTickStack[index]->PostDeserializeConstruction(&bsIn, connection);
+				else
+					constructionTickStack[index]->PostDeserializeConstructionExisting(&bsIn, connection);
+			}
+			bsIn.SetReadOffset(streamEnd);
+		}
+		else
+		{
+			if (constructionTickStack[index]!=0)
+			{
+				if (actuallyCreateObjectList[index])
+					constructionTickStack[index]->PostDeserializeConstruction(&empty, connection);
+				else
+					constructionTickStack[index]->PostDeserializeConstructionExisting(&empty, connection);
+			}
+		}
+	}
+
+	for (index=0; index < constructionObjectListSize; index++)
+	{
+		if (constructionTickStack[index]!=0)
+		{
+			if (actuallyCreateObjectList[index])
+			{
+				// Tell the connection(s) that this object exists since they just sent it to us
+				connection->OnDownloadFromThisSystem(constructionTickStack[index], this);
+
+				for (index2=0; index2 < world->connectionList.Size(); index2++)
+				{
+					if (world->connectionList[index2]!=connection)
+						world->connectionList[index2]->OnDownloadFromOtherSystem(constructionTickStack[index], this);
+				}
+			}
+		}
+	}
+
+	// Destructions
+	bool b = bsIn.Read(destructionObjectListSize);
+	(void) b;
+	RakAssert(b);
+	for (index=0; index < destructionObjectListSize; index++)
+	{
+		bsIn.Read(networkId);
+		bsIn.Read(streamEnd);
+		replica = world->networkIDManager->GET_OBJECT_FROM_ID<Replica3*>(networkId);
+		if (replica==0)
+		{
+			// Unknown object
+			bsIn.SetReadOffset(streamEnd);
+			continue;
+		}
+		bsIn.Read(replica->deletingSystemGUID);
+		if (replica->DeserializeDestruction(&bsIn,connection))
+		{
+			// Make sure it wasn't deleted in DeserializeDestruction
+			if (world->networkIDManager->GET_OBJECT_FROM_ID<Replica3*>(networkId))
+			{
+				replica->PreDestruction(connection);
+
+				// Forward deletion by remote system
+				if (replica->QueryRelayDestruction(connection))
+					BroadcastDestruction(replica,connection->GetSystemAddress());
+				Dereference(replica);
+				DeallocReplicaNoBroadcastDestruction(connection, replica);
+			}
+		}
+		else
+		{
+			replica->PreDestruction(connection);
+			connection->OnDereference(replica, this);
+		}
+
+		bsIn.AlignReadToByteBoundary();
+	}
+	return RR_CONTINUE_PROCESSING;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PluginReceiveResult ReplicaManager3::OnSerialize(Packet *packet, unsigned char *packetData, int packetDataLength, RakNetGUID senderGuid, RakNet::Time timestamp, unsigned char packetDataOffset, WorldId worldId)
+{
+	Connection_RM3 *connection = GetConnectionByGUID(senderGuid, worldId);
+	if (connection==0)
+		return RR_CONTINUE_PROCESSING;
+	if (connection->groupConstructionAndSerialize)
+	{
+		connection->downloadGroup.Push(packet, __FILE__, __LINE__);
+		return RR_STOP_PROCESSING;
+	}
+
+	RM3World *world = worldsArray[worldId];
+	RakAssert(world->networkIDManager);
+	RakNet::BitStream bsIn(packetData,packetDataLength,false);
+	bsIn.IgnoreBytes(packetDataOffset);
+
+	struct DeserializeParameters ds;
+	ds.timeStamp=timestamp;
+	ds.sourceConnection=connection;
+
+	Replica3 *replica;
+	NetworkID networkId;
+	BitSize_t bitsUsed;
+	bsIn.Read(networkId);
+	//printf("OnSerialize: %i\n",networkId.guid.g); // Removeme
+	replica = world->networkIDManager->GET_OBJECT_FROM_ID<Replica3*>(networkId);
+	if (replica)
+	{
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			bsIn.Read(ds.bitstreamWrittenTo[z]);
+			if (ds.bitstreamWrittenTo[z])
+			{
+				bsIn.ReadCompressed(bitsUsed);
+				bsIn.AlignReadToByteBoundary();
+				bsIn.Read(ds.serializationBitstream[z], bitsUsed);
+			}
+		}
+		replica->Deserialize(&ds);
+	}
+	return RR_CONTINUE_PROCESSING;
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PluginReceiveResult ReplicaManager3::OnDownloadStarted(Packet *packet, unsigned char *packetData, int packetDataLength, RakNetGUID senderGuid, unsigned char packetDataOffset, WorldId worldId)
+{
+	Connection_RM3 *connection = GetConnectionByGUID(senderGuid, worldId);
+	if (connection==0)
+		return RR_CONTINUE_PROCESSING;
+	if (connection->QueryGroupDownloadMessages() &&
+		// ID_DOWNLOAD_STARTED will be processed twice, being processed the second time once ID_DOWNLOAD_COMPLETE arrives.
+		// However, the second time groupConstructionAndSerialize will be set to true so it won't be processed a third time
+		connection->groupConstructionAndSerialize==false
+		)
+	{
+		// These messages will be held by the plugin and returned when the download is complete
+		connection->groupConstructionAndSerialize=true;
+		RakAssert(connection->downloadGroup.Size()==0);
+		connection->downloadGroup.Push(packet, __FILE__, __LINE__);
+		return RR_STOP_PROCESSING;
+	}
+
+	connection->groupConstructionAndSerialize=false;
+	RakNet::BitStream bsIn(packetData,packetDataLength,false);
+	bsIn.IgnoreBytes(packetDataOffset);
+	connection->DeserializeOnDownloadStarted(&bsIn);
+	return RR_CONTINUE_PROCESSING;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PluginReceiveResult ReplicaManager3::OnDownloadComplete(Packet *packet, unsigned char *packetData, int packetDataLength, RakNetGUID senderGuid, unsigned char packetDataOffset, WorldId worldId)
+{
+	Connection_RM3 *connection = GetConnectionByGUID(senderGuid, worldId);
+	if (connection==0)
+		return RR_CONTINUE_PROCESSING;
+
+	if (connection->groupConstructionAndSerialize==true && connection->downloadGroup.Size()>0)
+	{
+		// Push back buffered packets in front of this one
+		unsigned int i;
+		for (i=0; i < connection->downloadGroup.Size(); i++)
+			rakPeerInterface->PushBackPacket(connection->downloadGroup[i],false);
+
+		// Push this one to be last too. It will be processed again, but the second time 
+		// groupConstructionAndSerialize will be false and downloadGroup will be empty, so it will go past this block
+		connection->downloadGroup.Clear(__FILE__,__LINE__);
+		rakPeerInterface->PushBackPacket(packet,false);
+
+		return RR_STOP_PROCESSING;
+	}
+
+	RakNet::BitStream bsIn(packetData,packetDataLength,false);
+	bsIn.IgnoreBytes(packetDataOffset);
+	connection->gotDownloadComplete=true;
+	connection->DeserializeOnDownloadComplete(&bsIn);
+	return RR_CONTINUE_PROCESSING;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Replica3* ReplicaManager3::GetReplicaByNetworkID(NetworkID networkId, WorldId worldId)
+{
+	RM3World *world = worldsArray[worldId];
+
+	unsigned int i;
+	for (i=0; i < world->userReplicaList.Size(); i++)
+	{
+		if (world->userReplicaList[i]->GetNetworkID()==networkId)
+			return world->userReplicaList[i];
+	}
+	return 0;
 }
 
 
-TextureRef Texture::fromMemory(
-    const std::string&              name,
-    const uint8*                    bytes,
-    const class TextureFormat*      bytesFormat,
-    int                             width,
-    int                             height,
-    const class TextureFormat*      desiredFormat,
-    Dimension                       dimension,
-    const Settings&               param) {
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	const uint8* b[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
-	b[0] = bytes;
 
-	return Texture::fromMemory(name, b, bytesFormat, width, height, 1, 
-		desiredFormat, param.wrapMode, param.interpolateMode, dimension, param.depthReadMode, param.maxAnisotropy);
+void ReplicaManager3::BroadcastDestructionList(DataStructures::List<Replica3*> &replicaListSource, const SystemAddress &exclusionAddress, WorldId worldId)
+{
+	RakNet::BitStream bsOut;
+	unsigned int i,j;
+
+	RakAssert(worldsArray[worldId]!=0 && "World not in use");
+	RM3World *world = worldsArray[worldId];
+
+	DataStructures::List<Replica3*> replicaList;
+
+	for (i=0; i < replicaListSource.Size(); i++)
+	{
+		if (replicaListSource[i]==currentlyDeallocatingReplica)
+			continue;
+		replicaList.Push(replicaListSource[i], __FILE__, __LINE__);
+	}
+
+	if (replicaList.Size()==0)
+		return;
+
+	for (i=0; i < replicaList.Size(); i++)
+	{
+		if (replicaList[i]->deletingSystemGUID==UNASSIGNED_RAKNET_GUID)
+			replicaList[i]->deletingSystemGUID=GetRakPeerInterface()->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS);
+	}
+
+	for (j=0; j < world->connectionList.Size(); j++)
+	{
+		if (world->connectionList[j]->GetSystemAddress()==exclusionAddress)
+			continue;
+
+		bsOut.Reset();
+		bsOut.Write((MessageID)ID_REPLICA_MANAGER_CONSTRUCTION);
+		bsOut.Write(worldId);
+		uint16_t cnt=0;
+		bsOut.Write(cnt); // No construction
+		cnt=(uint16_t) replicaList.Size();
+		BitSize_t cntOffset=bsOut.GetWriteOffset();;
+		bsOut.Write(cnt); // Overwritten at send call
+		cnt=0;
+
+		for (i=0; i < replicaList.Size(); i++)
+		{
+			if (world->connectionList[j]->HasReplicaConstructed(replicaList[i])==false)
+				continue;
+			cnt++;
+
+			NetworkID networkId;
+			networkId=replicaList[i]->GetNetworkID();
+			bsOut.Write(networkId);
+			BitSize_t offsetStart, offsetEnd;
+			offsetStart=bsOut.GetWriteOffset();
+			bsOut.Write(offsetStart);
+			bsOut.Write(replicaList[i]->deletingSystemGUID);
+			replicaList[i]->SerializeDestruction(&bsOut, world->connectionList[j]);
+			bsOut.AlignWriteToByteBoundary();
+			offsetEnd=bsOut.GetWriteOffset();
+			bsOut.SetWriteOffset(offsetStart);
+			bsOut.Write(offsetEnd);
+			bsOut.SetWriteOffset(offsetEnd);
+		}
+
+		if (cnt>0)
+		{
+			BitSize_t curOffset=bsOut.GetWriteOffset();
+			bsOut.SetWriteOffset(cntOffset);
+			bsOut.Write(cnt);
+			bsOut.SetWriteOffset(curOffset);
+			rakPeerInterface->Send(&bsOut,defaultSendParameters.priority,defaultSendParameters.reliability,defaultSendParameters.orderingChannel,world->connectionList[j]->GetSystemAddress(),false, defaultSendParameters.sendReceipt);
+		}
+	}
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::fromMemory(
-    const std::string&              name,
-    const uint8*                    bytes,
-    const class TextureFormat*      bytesFormat,
-    int                             width,
-    int                             height,
-    const class TextureFormat*      desiredFormat,
-    WrapMode                        wrap,
-    InterpolateMode                 interpolate,
-    Dimension                       dimension,
-    DepthReadMode                   depthRead,
-    float                           maxAnisotropy,
-    float                           scale) {
 
-	const uint8* b[6] = {NULL, NULL, NULL, NULL, NULL, NULL};
-	b[0] = bytes;
-
-	return Texture::fromMemory(name, b, bytesFormat, width, height, 1, 
-		desiredFormat, wrap, interpolate, dimension, depthRead, maxAnisotropy,
-        scale);
+void ReplicaManager3::BroadcastDestruction(Replica3 *replica, const SystemAddress &exclusionAddress)
+{
+	DataStructures::List<Replica3*> replicaList;
+	replicaList.Push(replica, _FILE_AND_LINE_ );
+	BroadcastDestructionList(replicaList,exclusionAddress);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Texture::setAutoMipMap(bool b) {
-    _settings.autoMipMap = b;
 
-    // Update the OpenGL state
-    GLenum target = dimensionToTarget(dimension);
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    glPushAttrib(GL_TEXTURE_BIT);
-    glBindTexture(target, textureID);
-
-    if (hasAutoMipMap()) {
-        glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, b ? GL_TRUE : GL_FALSE);
-    }
-
-    // Restore the old texture
-    glPopAttrib();
+Connection_RM3::Connection_RM3(const SystemAddress &_systemAddress, RakNetGUID _guid)
+: systemAddress(_systemAddress), guid(_guid)
+{
+	isValidated=false;
+	isFirstConstruction=true;
+	groupConstructionAndSerialize=false;
+	gotDownloadComplete=false;
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::fromGLTexture(
-    const std::string&      name,
-    GLuint                  textureID,
-    const TextureFormat*    textureFormat,
-    WrapMode                wrap,
-    InterpolateMode         interpolate,
-    Dimension               dimension,
-    DepthReadMode           depthRead,
-    float                   aniso) {
-
-    debugAssert(textureFormat);
-
-    return new Texture(name, textureID, dimension, textureFormat, interpolate, wrap, 
-        textureFormat->opaque, depthRead, aniso);
+Connection_RM3::~Connection_RM3()
+{
+	unsigned int i;
+	for (i=0; i < constructedReplicaList.Size(); i++)
+		RakNet::OP_DELETE(constructedReplicaList[i], _FILE_AND_LINE_);
+	for (i=0; i < queryToConstructReplicaList.Size(); i++)
+		RakNet::OP_DELETE(queryToConstructReplicaList[i], _FILE_AND_LINE_);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/**
- Scales the intensity up or down of an entire image.
- @param skipAlpha 0 if there is no alpha channel, 1 if there is 
- */
-static void brightenImage(uint8* byte, int n, double brighten, int skipAlpha) {
-
-    // Make a lookup table
-    uint8 bright[256];
-    for (int i = 0; i < 256; ++i) {
-        bright[i] = iClamp(iRound(i * brighten), 0, 255);
-    }
-
-    for (int i = 0; i < n; i += skipAlpha) {
-        for (int c = 0; c < 3; ++c, ++i) {
-            byte[i] = bright[byte[i]];
-        }
-    }
+void Connection_RM3::GetConstructedReplicas(DataStructures::List<Replica3*> &objectsTheyDoHave)
+{
+	objectsTheyDoHave.Clear(true,_FILE_AND_LINE_);
+	for (unsigned int idx=0; idx < constructedReplicaList.Size(); idx++)
+	{
+		objectsTheyDoHave.Push(constructedReplicaList[idx]->replica, _FILE_AND_LINE_ );
+	}
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Rect2D Texture::rect2DBounds() const {
-    return Rect2D::xywh(0, 0, (float)width, (float)height);
+bool Connection_RM3::HasReplicaConstructed(RakNet::Replica3 *replica)
+{
+	bool objectExists;
+	constructedReplicaList.GetIndexFromKey(replica, &objectExists);
+	return objectExists;
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Connection_RM3::SendSerializeHeader(RakNet::Replica3 *replica, RakNet::Time timestamp, RakNet::BitStream *bs, WorldId worldId)
+{
+	bs->Reset();
 
-TextureRef Texture::fromFile(
-    const std::string               filename[6],
-    const class TextureFormat*      desiredFormat,
-    WrapMode                        wrap,
-    InterpolateMode                 interpolate,
-    Dimension                       dimension,
-    double                          brighten,
-    DepthReadMode                   depthRead,
-    float                           maxAnisotropy,
-    float                           sizeFactor) {
+	if (timestamp!=0)
+	{
+		bs->Write((MessageID)ID_TIMESTAMP);
+		bs->Write(timestamp);
+	}
+	bs->Write((MessageID)ID_REPLICA_MANAGER_SERIALIZE);
+	bs->Write(worldId);
+	bs->Write(replica->GetNetworkID());
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Connection_RM3::ClearDownloadGroup(RakPeerInterface *rakPeerInterface)
+{
+	unsigned int i;
+	for (i=0; i < downloadGroup.Size(); i++)
+		rakPeerInterface->DeallocatePacket(downloadGroup[i]);
+	downloadGroup.Clear(__FILE__,__LINE__);
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SendSerializeIfChangedResult Connection_RM3::SendSerialize(RakNet::Replica3 *replica, bool indicesToSend[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS], RakNet::BitStream serializationData[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS], RakNet::Time timestamp, PRO sendParameters[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS], RakPeerInterface *rakPeer, unsigned char worldId, RakNet::Time curTime)
+{
+	bool channelHasData;
+	BitSize_t sum=0;
+	for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+	{
+		if (indicesToSend[z])
+			sum+=serializationData[z].GetNumberOfBitsUsed();
+	}
 
-    std::string realFilename[6];
+	RakNet::BitStream out;
+	BitSize_t bitsPerChannel[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS];
 
-    const TextureFormat* format = TextureFormat::RGB8;
-    bool opaque = true;
+	if (sum==0)
+	{
+		memset(bitsPerChannel, 0, sizeof(bitsPerChannel));
+		replica->OnSerializeTransmission(&out, this, bitsPerChannel, curTime);
+		return SSICR_DID_NOT_SEND_DATA;
+	}
 
-    // The six cube map faces, or the one texture and 5 dummys.
-    GImage image[6];
-    const uint8* array[6];
-    for (int i = 0; i < 6; ++i) {
-        array[i] = NULL;
-    }
+	RakAssert(replica->GetNetworkID()!=UNASSIGNED_NETWORK_ID);
 
-    const int numFaces = (dimension == DIM_CUBE_MAP) ?
-        6 : (dimension == DIM_CUBE_MAP_NPOT) ? 
-        6 : 1;
+	BitSize_t bitsUsed;
 
-    // Check for DDS file and load separately.
-    std::string ddsExt;
+	int channelIndex;
+	PRO lastPro=sendParameters[0];
 
-    // Find the period
-    size_t period = filename[0].rfind('.');
+	for (channelIndex=0; channelIndex < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; channelIndex++)
+	{
+		if (channelIndex==0)
+		{
+			SendSerializeHeader(replica, timestamp, &out, worldId);
+		}
+		else if (lastPro!=sendParameters[channelIndex])
+		{
+			// Write out remainder
+			for (int channelIndex2=channelIndex; channelIndex2 < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; channelIndex2++)
+			{
+				bitsPerChannel[channelIndex2]=0;
+				out.Write(false);
+			}
 
-    // Make sure it is before a slash!
-    size_t j = iMax(filename[0].rfind('/'), filename[0].rfind('\\'));
-    if ((period != std::string::npos) && (period > j)) {
-        ddsExt = filename[0].substr(period + 1, filename[0].size() - period - 1);
-    }
+			// Send remainder
+			replica->OnSerializeTransmission(&out, this, bitsPerChannel, curTime);
+			rakPeer->Send(&out,lastPro.priority,lastPro.reliability,lastPro.orderingChannel,systemAddress,false,lastPro.sendReceipt);
 
-    if (G3D::toUpper(ddsExt) == "DDS") {
+			// If no data left to send, quit out
+			bool anyData=false;
+			for (int channelIndex2=channelIndex; channelIndex2 < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; channelIndex2++)
+			{
+				if (serializationData[channelIndex2].GetNumberOfBitsUsed()>0)
+				{
+					anyData=true;
+					break;
+				}
+			}
+			if (anyData==false)
+				return SSICR_SENT_DATA;
 
-        debugAssertM(GLCaps::supports_GL_EXT_texture_compression_s3tc(),
-            "This device does not support s3tc compression formats.");
+			// Restart stream
+			SendSerializeHeader(replica, timestamp, &out, worldId);
 
-        DDSTexture ddsTexture(filename[0]);
-        Array< Array< const void* > > byteMipMapFaces;
+			for (int channelIndex2=0; channelIndex2 < channelIndex; channelIndex2++)
+			{
+				bitsPerChannel[channelIndex2]=0;
+				out.Write(false);
+			}
+			lastPro=sendParameters[channelIndex];
+		}
 
-        uint8* byteStart = ddsTexture.getBytes();
-        debugAssert( byteStart != NULL );
-
-        const TextureFormat* bytesFormat = ddsTexture.getBytesFormat();
-        debugAssert( bytesFormat );
-
-        // Assert that we are loading a cubemap DDS
-        debugAssert( numFaces == ddsTexture.getNumFaces() );
-
-        int numMipMaps = ddsTexture.getNumMipMaps();
-        int mapWidth = ddsTexture.getWidth();
-        int mapHeight = ddsTexture.getHeight();
-
-        byteMipMapFaces.resize(numMipMaps);
-
-        for (int i = 0; i < numMipMaps; ++i) {
-            
-            byteMipMapFaces[i].resize(numFaces);
-
-            for (int face = 0; face < numFaces; ++face) {
-                byteMipMapFaces[i][face] = byteStart;
-                byteStart += ((bytesFormat->packedBitsPerTexel / 8) * ((mapWidth + 3) / 4) * ((mapHeight + 3) / 4));
-            }
-            mapWidth = iMax(1, iFloor(mapWidth/2));
-            mapHeight = iMax(1,iFloor(mapHeight/2));
-        }
-
-        return Texture::fromMemory(filename[0], byteMipMapFaces, bytesFormat, ddsTexture.getWidth(), ddsTexture.getHeight(), 1, desiredFormat, wrap, interpolate, dimension, depthRead, maxAnisotropy, sizeFactor);
-    }
-
-    // Test for both DIM_CUBE_MAP and DIM_CUBE_MAP_NPOT
-    if (numFaces == 6) {
-        if (filename[1] == "") {
-            // Wildcard format
-            // Parse the filename into a base name and extension
-            std::string filenameBase, filenameExt;
-            splitFilenameAtWildCard(filename[0], filenameBase, filenameExt);
-            for (int f = 0; f < 6; ++f) {
-                realFilename[f] = filenameBase + cubeMapString[f] + filenameExt;
-            }
-        } else {
-            // Separate filenames have been provided
-            realFilename[0] = filename[0];
-            for (int f = 1; f < 6; ++f) {
-                debugAssert(filename[f] != "");
-                realFilename[f] = filename[f];
-            }
-        }
-    } else {
-        debugAssertM(filename[1] == "",
-            "Can't specify more than one filename unless loading a cube map");
-        realFilename[0] = filename[0];
-    }
-
-    for (int f = 0; f < numFaces; ++f) {
-
-        image[f].load(realFilename[f]);
-
-        if (image[f].channels == 4) {
-            format = TextureFormat::RGBA8;
-            opaque = false;
-        }
-
-        if (desiredFormat == NULL) {
-            desiredFormat = format;
-        }
-
-        array[f] = image[f].byte();
-    }
-
-
-    if (brighten != 1.0) {
-        for (int f = 0; f < numFaces; ++f) {
-            brightenImage(
-                image[f].byte(),
-                image[f].width * image[f].height * image[f].channels,
-                brighten,
-                image[f].channels - 3);
-        }
-    }
-
-    TextureRef t =
-        Texture::fromMemory(filename[0], array, format,
-            image[0].width, image[0].height, 1,
-            desiredFormat, wrap, interpolate, dimension,
-            depthRead, maxAnisotropy, sizeFactor);
-
-    return t;
+		bitsUsed=serializationData[channelIndex].GetNumberOfBitsUsed();
+		channelHasData = indicesToSend[channelIndex]==true && bitsUsed>0;
+		out.Write(channelHasData);
+		if (channelHasData)
+		{
+			bitsPerChannel[channelIndex] = bitsUsed;
+			out.WriteCompressed(bitsUsed);
+			out.AlignWriteToByteBoundary();
+			out.Write(serializationData[channelIndex]);
+			// Crap, forgot this line, was a huge bug in that I'd only send to the first 3 systems
+			serializationData[channelIndex].ResetReadPointer();
+		}
+		else
+		{
+			bitsPerChannel[channelIndex] = 0;
+		}
+	}
+	replica->OnSerializeTransmission(&out, this, bitsPerChannel, curTime);
+	rakPeer->Send(&out,lastPro.priority,lastPro.reliability,lastPro.orderingChannel,systemAddress,false,lastPro.sendReceipt);
+	return SSICR_SENT_DATA;
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::fromFile(
-    const std::string&      filename,
-    const TextureFormat*    desiredFormat,
-    WrapMode                wrap,
-    InterpolateMode         interpolate,
-    Dimension               dimension,
-    double                  brighten,
-    DepthReadMode           depthRead,
-    float                   maxAnisotropy,
-    float                   scale) {
+SendSerializeIfChangedResult Connection_RM3::SendSerializeIfChanged(LastSerializationResult *lsr, SerializeParameters *sp, RakNet::RakPeerInterface *rakPeer, unsigned char worldId, ReplicaManager3 *replicaManager, RakNet::Time curTime)
+{
+	RakNet::Replica3 *replica = lsr->replica;
 
-    std::string f[6];
-    f[0] = filename;
-    f[1] = "";
-    f[2] = "";
-    f[3] = "";
-    f[4] = "";
-    f[5] = "";
+	if (replica->GetNetworkID()==UNASSIGNED_NETWORK_ID)
+		return SSICR_DID_NOT_SEND_DATA;
 
-    return fromFile(f, desiredFormat, wrap, interpolate, dimension, brighten, depthRead, maxAnisotropy, scale);
+	RM3QuerySerializationResult rm3qsr = replica->QuerySerialization(this);
+	if (rm3qsr==RM3QSR_NEVER_CALL_SERIALIZE)
+	{
+		// Never again for this connection and replica pair
+		OnNeverSerialize(lsr, replicaManager);
+		return SSICR_NEVER_SERIALIZE;
+	}
+
+	if (rm3qsr==RM3QSR_DO_NOT_CALL_SERIALIZE)
+		return SSICR_DID_NOT_SEND_DATA;
+
+	if (replica->forceSendUntilNextUpdate)
+	{
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			if (replica->lastSentSerialization.indicesToSend[z])
+				sp->bitsWrittenSoFar+=replica->lastSentSerialization.bitStream[z].GetNumberOfBitsUsed();
+		}
+		return SendSerialize(replica, replica->lastSentSerialization.indicesToSend, replica->lastSentSerialization.bitStream, sp->messageTimestamp, sp->pro, rakPeer, worldId, curTime);
+	}
+
+	for (int i=0; i < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; i++)
+	{
+		sp->outputBitstream[i].Reset();
+		if (lsr->lastSerializationResultBS)
+			sp->lastSentBitstream[i]=&lsr->lastSerializationResultBS->bitStream[i];
+		else
+			sp->lastSentBitstream[i]=&replica->lastSentSerialization.bitStream[i];
+	}
+
+	RM3SerializationResult serializationResult = replica->Serialize(sp);
+
+	if (serializationResult==RM3SR_NEVER_SERIALIZE_FOR_THIS_CONNECTION)
+	{
+		// Never again for this connection and replica pair
+		OnNeverSerialize(lsr, replicaManager);
+		return SSICR_NEVER_SERIALIZE;
+	}
+
+	if (serializationResult==RM3SR_DO_NOT_SERIALIZE)
+	{
+		// Don't serialize this tick only
+		return SSICR_DID_NOT_SEND_DATA;
+	}
+
+	// This is necessary in case the user in the Serialize() function for some reason read the bitstream they also wrote
+	// WIthout this code, the Write calls to another bitstream would not write the entire bitstream
+	BitSize_t sum=0;
+	for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+	{
+		sp->outputBitstream[z].ResetReadPointer();
+		sum+=sp->outputBitstream[z].GetNumberOfBitsUsed();
+	}
+
+	if (sum==0)
+	{
+		// Don't serialize this tick only
+		return SSICR_DID_NOT_SEND_DATA;
+	}
+
+	if (serializationResult==RM3SR_SERIALIZED_ALWAYS)
+	{
+		bool allIndices[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS];
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			sp->bitsWrittenSoFar+=sp->outputBitstream[z].GetNumberOfBitsUsed();
+			allIndices[z]=true;
+
+			lsr->AllocBS();
+			lsr->lastSerializationResultBS->bitStream[z].Reset();
+			lsr->lastSerializationResultBS->bitStream[z].Write(&sp->outputBitstream[z]);
+			sp->outputBitstream[z].ResetReadPointer();
+		}
+		return SendSerialize(replica, allIndices, sp->outputBitstream, sp->messageTimestamp, sp->pro, rakPeer, worldId, curTime);
+	}
+
+	if (serializationResult==RM3SR_SERIALIZED_ALWAYS_IDENTICALLY)
+	{
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			replica->lastSentSerialization.indicesToSend[z]=sp->outputBitstream[z].GetNumberOfBitsUsed()>0;
+			sp->bitsWrittenSoFar+=sp->outputBitstream[z].GetNumberOfBitsUsed();
+			replica->lastSentSerialization.bitStream[z].Reset();
+			replica->lastSentSerialization.bitStream[z].Write(&sp->outputBitstream[z]);
+			sp->outputBitstream[z].ResetReadPointer();
+			replica->forceSendUntilNextUpdate=true;
+		}
+		return SendSerialize(replica, replica->lastSentSerialization.indicesToSend, sp->outputBitstream, sp->messageTimestamp, sp->pro, rakPeer, worldId, curTime);
+	}
+
+	bool indicesToSend[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS];
+	if (serializationResult==RM3SR_BROADCAST_IDENTICALLY || serializationResult==RM3SR_BROADCAST_IDENTICALLY_FORCE_SERIALIZATION)
+	{
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			if (sp->outputBitstream[z].GetNumberOfBitsUsed() > 0 &&
+				(serializationResult==RM3SR_BROADCAST_IDENTICALLY_FORCE_SERIALIZATION ||
+				((sp->outputBitstream[z].GetNumberOfBitsUsed()!=replica->lastSentSerialization.bitStream[z].GetNumberOfBitsUsed() ||
+				memcmp(sp->outputBitstream[z].GetData(), replica->lastSentSerialization.bitStream[z].GetData(), sp->outputBitstream[z].GetNumberOfBytesUsed())!=0))))
+			{
+				indicesToSend[z]=true;
+				replica->lastSentSerialization.indicesToSend[z]=true;
+				sp->bitsWrittenSoFar+=sp->outputBitstream[z].GetNumberOfBitsUsed();
+				replica->lastSentSerialization.bitStream[z].Reset();
+				replica->lastSentSerialization.bitStream[z].Write(&sp->outputBitstream[z]);
+				sp->outputBitstream[z].ResetReadPointer();
+				replica->forceSendUntilNextUpdate=true;
+			}
+			else
+			{
+				indicesToSend[z]=false;
+				replica->lastSentSerialization.indicesToSend[z]=false;
+			}
+		}
+	}
+	else
+	{
+		lsr->AllocBS();
+
+		// RM3SR_SERIALIZED_UNIQUELY
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			if (sp->outputBitstream[z].GetNumberOfBitsUsed() > 0 &&
+				(sp->outputBitstream[z].GetNumberOfBitsUsed()!=lsr->lastSerializationResultBS->bitStream[z].GetNumberOfBitsUsed() ||
+				memcmp(sp->outputBitstream[z].GetData(), lsr->lastSerializationResultBS->bitStream[z].GetData(), sp->outputBitstream[z].GetNumberOfBytesUsed())!=0)
+				)
+			{
+				indicesToSend[z]=true;
+				sp->bitsWrittenSoFar+=sp->outputBitstream[z].GetNumberOfBitsUsed();
+				lsr->lastSerializationResultBS->bitStream[z].Reset();
+				lsr->lastSerializationResultBS->bitStream[z].Write(&sp->outputBitstream[z]);
+				sp->outputBitstream[z].ResetReadPointer();
+			}
+			else
+			{
+				indicesToSend[z]=false;
+			}
+		}
+	}
+
+
+	if (serializationResult==RM3SR_BROADCAST_IDENTICALLY || serializationResult==RM3SR_BROADCAST_IDENTICALLY_FORCE_SERIALIZATION)
+		replica->forceSendUntilNextUpdate=true;
+
+	// Send out the data
+	return SendSerialize(replica, indicesToSend, sp->outputBitstream, sp->messageTimestamp, sp->pro, rakPeer, worldId, curTime);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void Connection_RM3::OnLocalReference(Replica3* replica3, ReplicaManager3 *replicaManager)
+{
+	ConstructionMode constructionMode = QueryConstructionMode();
+	RakAssert(constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION);
+	RakAssert(replica3);
+	(void) replicaManager;
+	(void) constructionMode;
 
-TextureRef Texture::fromTwoFiles(
-    const std::string&      filename,
-    const std::string&      alphaFilename,
-    const TextureFormat*    desiredFormat,
-    WrapMode                wrap,
-    InterpolateMode         interpolate,
-    Dimension               dimension,
-    DepthReadMode           depthRead,
-    float                   maxAnisotropy) {
+#ifdef _DEBUG
+	for (unsigned int i=0; i < queryToConstructReplicaList.Size(); i++)
+	{
+		if (queryToConstructReplicaList[i]->replica==replica3)
+		{
+			RakAssert("replica added twice to queryToConstructReplicaList" && 0);
+		}
+	}
 
-    debugAssert(desiredFormat);
+	if (constructedReplicaList.HasData(replica3)==true)
+	{
+		RakAssert("replica added to queryToConstructReplicaList when already in constructedReplicaList" && 0);
+	}
+#endif
 
-    // The six cube map faces, or the one texture and 5 dummys.
-    const uint8* array[6];
-    for (int i = 0; i < 6; ++i) {
-        array[i] = NULL;
-    }
-
-    const int numFaces = (dimension == DIM_CUBE_MAP) ?
-        6 : (dimension == DIM_CUBE_MAP_NPOT) ? 
-        6 : 1;
-
-    // Parse the filename into a base name and extension
-    std::string filenameBase = filename;
-    std::string filenameExt;
-    std::string alphaFilenameBase = alphaFilename;
-    std::string alphaFilenameExt;
-
-    // Test for both DIM_CUBE_MAP and DIM_CUBE_MAP_NPOT
-    if (numFaces == 6) {
-        splitFilenameAtWildCard(filename, filenameBase, filenameExt);
-    }
-    
-    GImage color[6];
-    GImage alpha[6];
-    TextureRef t;
-
-    try {
-    for (int f = 0; f < numFaces; ++f) {
-
-        std::string fn = filename;
-        std::string an = alphaFilename;
-
-        // Test for both DIM_CUBE_MAP and DIM_CUBE_MAP_NPOT
-        if (numFaces == 6) {
-            fn = filenameBase + cubeMapString[f] + filenameExt;
-            an = alphaFilenameBase + cubeMapString[f] + alphaFilenameExt;
-        }
-
-        // Compose the two images to a single RGBA
-        color[f].load(fn);
-        alpha[f].load(an);
-        uint8* data = NULL;
-
-        if (color[f].channels == 4) {
-            data = color[f].byte();
-            // Write the data inline
-            for (int i = 0; i < color[f].width * color[f].height; ++i) {
-                data[i * 4 + 3] = alpha[f].byte()[i * alpha[f].channels];
-            }
-        } else {
-            debugAssert(color[f].channels == 3);
-            data = new uint8[color[f].width * color[f].height * 4];
-            // Write the data inline
-            for (int i = 0; i < color[f].width * color[f].height; ++i) {
-                data[i * 4 + 0] = color[f].byte()[i * 3 + 0];
-                data[i * 4 + 1] = color[f].byte()[i * 3 + 1];
-                data[i * 4 + 2] = color[f].byte()[i * 3 + 2];
-                data[i * 4 + 3] = alpha[f].byte()[i * alpha[f].channels];
-            }
-        }
-
-        array[f] = data;
-    }
-
-    t = Texture::fromMemory(filename, array, TextureFormat::RGBA8,
-            color[0].width, color[0].height, 1, 
-            desiredFormat, wrap, interpolate, dimension, depthRead, maxAnisotropy);
-
-    if (color[0].channels == 3) {
-        // Delete the data if it was dynamically allocated
-        for (int f = 0; f < numFaces; ++f) {
-            delete[] const_cast<unsigned char*>(array[f]);
-        }
-    }
-
-    } catch (const GImage::Error& e) {
-        Log::common()->printf("\n**************************\n\n"
-            "Loading \"%s\" failed. %s\n", e.filename.c_str(),
-            e.reason.c_str());
-    }
-
-    return t;
+	LastSerializationResult* lsr=RakNet::OP_NEW<LastSerializationResult>(_FILE_AND_LINE_);
+	lsr->replica=replica3;
+	queryToConstructReplicaList.Push(lsr,_FILE_AND_LINE_);
 }
 
-static const GLenum cubeFaceTarget[] =
-    {GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
-     GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
-     GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
-     GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
-     GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
-     GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB};
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+void Connection_RM3::OnDereference(Replica3* replica3, ReplicaManager3 *replicaManager)
+{
+	ValidateLists(replicaManager);
 
-static bool isMipMapformat(Texture::InterpolateMode i) {
-    switch (i) {
-    case Texture::TRILINEAR_MIPMAP:
-    case Texture::BILINEAR_MIPMAP:
-    case Texture::NEAREST_MIPMAP:
-        return true;
+	if (replica3->GetNetworkIDManager() == 0)
+		return;
 
-    case Texture::BILINEAR_NO_MIPMAP:
-    case Texture::NEAREST_NO_MIPMAP:
-    case Texture::NO_INTERPOLATION:
-        return false;
-    }
+	LastSerializationResult* lsr=0;
+	unsigned int idx;
 
-    alwaysAssertM(false, "Illegal interpolate mode");
-    return false;
+	bool objectExists;
+	idx=constructedReplicaList.GetIndexFromKey(replica3, &objectExists);
+	if (objectExists)
+	{
+		lsr=constructedReplicaList[idx];
+		constructedReplicaList.RemoveAtIndex(idx);
+	}
+
+	for (idx=0; idx < queryToConstructReplicaList.Size(); idx++)
+	{
+		if (queryToConstructReplicaList[idx]->replica==replica3)
+		{
+			lsr=queryToConstructReplicaList[idx];
+			queryToConstructReplicaList.RemoveAtIndex(idx);
+			break;
+		}
+	}
+
+	for (idx=0; idx < queryToSerializeReplicaList.Size(); idx++)
+	{
+		if (queryToSerializeReplicaList[idx]->replica==replica3)
+		{
+			lsr=queryToSerializeReplicaList[idx];
+			queryToSerializeReplicaList.RemoveAtIndex(idx);
+			break;
+		}
+	}
+
+	for (idx=0; idx < queryToDestructReplicaList.Size(); idx++)
+	{
+		if (queryToDestructReplicaList[idx]->replica==replica3)
+		{
+			lsr=queryToDestructReplicaList[idx];
+			queryToDestructReplicaList.RemoveAtIndex(idx);
+			break;
+		}
+	}
+
+	ValidateLists(replicaManager);
+
+	if (lsr)
+		RakNet::OP_DELETE(lsr,_FILE_AND_LINE_);
+
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::fromMemory(
-    const std::string&                  name,
-    const Array< Array<const void*> >&  bytes,
-    const TextureFormat*                bytesFormat,
-    int                                 width,
-    int                                 height,
-    int                                 depth,
-    const TextureFormat*                desiredFormat,
-    WrapMode                            wrap,
-    InterpolateMode                     interpolate,
-    Dimension                           dimension,
-    DepthReadMode                       depthRead,
-    float                               maxAnisotropy,
-    float                               rescaleFactor) {
-        
-    debugAssert(bytesFormat);
-    (void)depth;
-    
-    // Check for at least one miplevel on the incoming data
-    int numMipMaps = bytes.length();
-    debugAssert( numMipMaps > 0 );
+void Connection_RM3::OnDownloadFromThisSystem(Replica3* replica3, ReplicaManager3 *replicaManager)
+{
+	RakAssert(replica3);
 
-    // Create the texture
-    GLuint textureID = newGLTextureID();
-    GLenum target = dimensionToTarget(dimension);
+	ValidateLists(replicaManager);
+	LastSerializationResult* lsr=RakNet::OP_NEW<LastSerializationResult>(_FILE_AND_LINE_);
+	lsr->replica=replica3;
 
-    if ((desiredFormat == TextureFormat::AUTO) || (bytesFormat->compressed)) {
-        desiredFormat = bytesFormat;
-    }
+	ConstructionMode constructionMode = QueryConstructionMode();
+	if (constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+	{
+		unsigned int j;
+		for (j=0; j < queryToConstructReplicaList.Size(); j++)
+		{
+			if (queryToConstructReplicaList[j]->replica==replica3 )
+			{
+				queryToConstructReplicaList.RemoveAtIndex(j);
+				break;
+			}
+		}
 
-    if (GLCaps::hasBug_redBlueMipmapSwap() && (desiredFormat == TextureFormat::RGB8)) {
-        desiredFormat = TextureFormat::RGBA8;
-    }
+		queryToDestructReplicaList.Push(lsr,_FILE_AND_LINE_);
+	}
 
-    debugAssertM(GLCaps::supports(desiredFormat), "Unsupported texture format.");
+	if (constructedReplicaList.Insert(lsr->replica, lsr, true, _FILE_AND_LINE_) != (unsigned) -1)
+	{
+		//assert(queryToSerializeReplicaList.GetIndexOf(replica3)==(unsigned int)-1);
+		queryToSerializeReplicaList.Push(lsr,_FILE_AND_LINE_);
+	}
 
-    glStatePush();
-
-		// Set unpacking alignment
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        glEnable(target);
-        glBindTexture(target, textureID);
-        debugAssertGLOk();
-        if (isMipMapformat(interpolate) && hasAutoMipMap() && (numMipMaps == 1)) {
-            // Enable hardware MIP-map generation.
-            // Must enable before setting the level 0 image (we'll set it again
-            // in setTexParameters, but that is intended primarily for 
-            // the case where that function is called for a pre-existing GL texture ID).
-            glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-        }
-
-        int mipWidth = width;
-        int mipHeight = height;
-        for (int mipLevel = 0; mipLevel < numMipMaps; ++mipLevel) {
-
-            const int numFaces = bytes[mipLevel].length();
-            
-            debugAssert(
-                ((dimension == DIM_CUBE_MAP) ? 
-                6 : (dimension == DIM_CUBE_MAP_NPOT) ? 
-                6 : 1) == numFaces);
-        
-            for (int f = 0; f < numFaces; ++f) {
-        
-                // Test for both DIM_CUBE_MAP and DIM_CUBE_MAP_NPOT
-                if (numFaces == 6) {
-                    // Choose the appropriate face target
-                    target = cubeFaceTarget[f];
-                }
-
-                if (isMipMapformat(interpolate) && ! hasAutoMipMap() && (numMipMaps == 1)) {
-
-                    debugAssertM((bytesFormat->compressed == false), "Cannot manually generate Mip-Maps for compressed textures.");
-
-                    createMipMapTexture(target, reinterpret_cast<const uint8*>(bytes[mipLevel][f]),
-                                  bytesFormat->OpenGLBaseFormat,
-                                  mipWidth, mipHeight, desiredFormat->OpenGLFormat,
-                                  desiredFormat->packedBitsPerTexel / 8, rescaleFactor);
-                } else {
-                    const bool useNPOT = (dimension == DIM_2D_NPOT) ?
-                        true : (dimension == DIM_CUBE_MAP_NPOT) ?
-                        true : false;
-
-                    createTexture(target, reinterpret_cast<const uint8*>(bytes[mipLevel][f]), bytesFormat->OpenGLBaseFormat,
-                                  bytesFormat->OpenGLFormat, mipWidth, mipHeight, desiredFormat->OpenGLFormat, 
-                                  bytesFormat->packedBitsPerTexel / 8, mipLevel, bytesFormat->compressed, useNPOT, 
-                                  rescaleFactor);
-                }
-
-                debugAssertGLOk();
-            }
-
-            mipWidth = iMax(1, mipWidth / 2);
-            mipHeight = iMax(1, mipHeight / 2);
-        }
-    glStatePop();
-
-    if ((dimension != DIM_2D_RECT) &&
-        ((dimension != DIM_2D_NPOT && dimension != DIM_CUBE_MAP_NPOT))) {
-        width  = ceilPow2(width);
-        height = ceilPow2(height);
-    }
-
-    debugAssertGLOk();
-    TextureRef t = fromGLTexture(name, textureID, desiredFormat, wrap, interpolate, dimension, depthRead, maxAnisotropy);
-    debugAssertGLOk();
-
-    t->width = width;
-    t->height = height;
-    return t;
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::fromMemory(
-    const std::string&      name,
-    const uint8**           bytes,
-    const TextureFormat*    bytesFormat,
-    int                     width,
-    int                     height,
-    int                     depth,
-    const TextureFormat*    desiredFormat,
-    WrapMode                wrap,
-    InterpolateMode         interpolate,
-    Dimension               dimension,
-    DepthReadMode           depthRead,
-    float                   maxAnisotropy,
-    float                   rescaleFactor) {
+void Connection_RM3::OnDownloadFromOtherSystem(Replica3* replica3, ReplicaManager3 *replicaManager)
+{
+	ConstructionMode constructionMode = QueryConstructionMode();
+	if (constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+	{
+		unsigned int j;
+		for (j=0; j < queryToConstructReplicaList.Size(); j++)
+		{
+			if (queryToConstructReplicaList[j]->replica==replica3 )
+			{
+				return;
+			}
+		}
 
-    Array< Array<const void* > > arrayMipMapFaces(1);
-
-    const int numFaces = (dimension == DIM_CUBE_MAP) ?
-        6 : (dimension == DIM_CUBE_MAP_NPOT) ? 
-        6 : 1;        
-
-    for (int f = 0; f < numFaces; ++f) {
-        arrayMipMapFaces[0].append(bytes[f]);
-    }
-
-    return Texture::fromMemory(name, arrayMipMapFaces, bytesFormat, width, height, 
-        depth, desiredFormat, wrap, interpolate, dimension, depthRead, maxAnisotropy,
-        rescaleFactor);
+		OnLocalReference(replica3, replicaManager);
+	}
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::fromGImage(
-    const std::string&              name,
-    const GImage&                   image,
-    const class TextureFormat*      desiredFormat,
-    WrapMode                        wrap,
-    InterpolateMode                 interpolate,
-    Dimension                       dimension,
-    DepthReadMode                   depthRead,
-    float                           maxAnisotropy) {
+void Connection_RM3::OnNeverConstruct(unsigned int queryToConstructIdx, ReplicaManager3 *replicaManager)
+{
+	ConstructionMode constructionMode = QueryConstructionMode();
+	RakAssert(constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION);
+	(void) constructionMode;
 
-    const TextureFormat* format = TextureFormat::RGB8;
-    bool opaque = true;
-
-    // The six cube map faces, or the one texture and 5 dummys.
-    const uint8* array[1];
-
-    switch (image.channels) {
-    case 4:
-        format = TextureFormat::RGBA8;
-        opaque = false;
-        break;
-
-    case 3:
-        format = TextureFormat::RGB8;
-        opaque = true;
-        break;
-
-    case 1:
-        format = TextureFormat::L8;
-        opaque = true;
-        break;
-
-    default:
-        alwaysAssertM(
-            false,
-            G3D::format("GImage has an unexpected number of channels (%d)", image.channels));
-    }
-
-    if (desiredFormat == NULL) {
-        desiredFormat = format;
-    }
-
-    array[0] = image.byte();
-
-    TextureRef t =
-        Texture::fromMemory(name, array, format,
-            image.width, image.height, 1,
-            desiredFormat, wrap, interpolate, 
-            dimension, depthRead, maxAnisotropy);
-
-    return t;
+	ValidateLists(replicaManager);
+	LastSerializationResult* lsr = queryToConstructReplicaList[queryToConstructIdx];
+	queryToConstructReplicaList.RemoveAtIndex(queryToConstructIdx);
+	RakNet::OP_DELETE(lsr,_FILE_AND_LINE_);
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::createEmpty(
-    int                              w,
-    int                              h,
-    const std::string&               name,
-    const TextureFormat*             desiredFormat,
-    Texture::WrapMode                wrap,
-    Texture::InterpolateMode         interpolate,
-    Texture::Dimension               dimension,
-    Texture::DepthReadMode           depthRead,
-    float                            maxAnisotropy) {
+void Connection_RM3::OnConstructToThisConnection(unsigned int queryToConstructIdx, ReplicaManager3 *replicaManager)
+{
+	ConstructionMode constructionMode = QueryConstructionMode();
+	RakAssert(constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION);
+	(void) constructionMode;
 
-    debugAssertGLOk();
-    debugAssertM(desiredFormat, "desiredFormat may not be TextureFormat::AUTO");
-
-    // We must pretend the input is in the desired format otherwise 
-    // OpenGL might refuse to negotiate formats for us.
-    Array<uint8> data(w * h * desiredFormat->packedBitsPerTexel / 8);
-    const uint8* bytes[6];
-    for (int i = 0; i < 6; ++i) {
-        bytes[i] = data.getCArray();
-    }
-
-    TextureRef t = Texture::fromMemory(name, bytes, desiredFormat, w, h, 1, desiredFormat, 
-        wrap, interpolate, dimension, depthRead, maxAnisotropy);
-
-    debugAssertGLOk();
-    return t;
+	ValidateLists(replicaManager);
+	LastSerializationResult* lsr = queryToConstructReplicaList[queryToConstructIdx];
+	queryToConstructReplicaList.RemoveAtIndex(queryToConstructIdx);
+	//assert(constructedReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	constructedReplicaList.Insert(lsr->replica,lsr,true,_FILE_AND_LINE_);
+	//assert(queryToDestructReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	queryToDestructReplicaList.Push(lsr,_FILE_AND_LINE_);
+	//assert(queryToSerializeReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	queryToSerializeReplicaList.Push(lsr,_FILE_AND_LINE_);
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Texture::splitFilenameAtWildCard(
-    const std::string&  filename,
-    std::string&        filenameBase,
-    std::string&        filenameExt) {
+void Connection_RM3::OnConstructToThisConnection(Replica3 *replica, ReplicaManager3 *replicaManager)
+{
+	RakAssert(replica);
+	RakAssert(QueryConstructionMode()==QUERY_CONNECTION_FOR_REPLICA_LIST);
+	(void) replicaManager;
 
-    const std::string splitter = "*";
-
-    int i = filename.rfind(splitter);
-    if (i != -1) {
-        filenameBase = filename.substr(0, i);
-        filenameExt  = filename.substr(i + 1, filename.size() - i - splitter.length()); 
-    } else {
-        throw GImage::Error("Cube map filenames must contain \"*\" as a "
-                            "placeholder for up/lf/rt/bk/ft/dn", filename);
-    }
+	LastSerializationResult* lsr=RakNet::OP_NEW<LastSerializationResult>(_FILE_AND_LINE_);
+	lsr->replica=replica;
+	constructedReplicaList.Insert(replica,lsr,true,_FILE_AND_LINE_);
+	queryToSerializeReplicaList.Push(lsr,_FILE_AND_LINE_);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Texture::~Texture() {
-    _sizeOfAllTexturesInMemory -= sizeInMemory();
-	glDeleteTextures(1, &textureID);
-	textureID = 0;
+void Connection_RM3::OnNeverSerialize(LastSerializationResult *lsr, ReplicaManager3 *replicaManager)
+{
+	ValidateLists(replicaManager);
+
+	unsigned int j;
+	for (j=0; j < queryToSerializeReplicaList.Size(); j++)
+	{
+		if (queryToSerializeReplicaList[j]==lsr )
+		{
+			queryToSerializeReplicaList.RemoveAtIndex(j);
+			break;
+		}
+	}
+
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-unsigned int Texture::newGLTextureID() {
-    unsigned int t;
+void Connection_RM3::OnReplicaAlreadyExists(unsigned int queryToConstructIdx, ReplicaManager3 *replicaManager)
+{
+	ConstructionMode constructionMode = QueryConstructionMode();
+	RakAssert(constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION);
+	(void) constructionMode;
 
-    // Clear the OpenGL error flag
-    glGetError();
-
-    glGenTextures(1, &t);
-
-    alwaysAssertM(glGetError() != GL_INVALID_OPERATION, 
-         "GL_INVALID_OPERATION: Probably caused by invoking "
-         "glGenTextures between glBegin and glEnd.");
-
-    return t;
+	ValidateLists(replicaManager);
+	LastSerializationResult* lsr = queryToConstructReplicaList[queryToConstructIdx];
+	queryToConstructReplicaList.RemoveAtIndex(queryToConstructIdx);
+	//assert(constructedReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	constructedReplicaList.Insert(lsr->replica,lsr,true,_FILE_AND_LINE_);
+	//assert(queryToDestructReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	queryToDestructReplicaList.Push(lsr,_FILE_AND_LINE_);
+	//assert(queryToSerializeReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	queryToSerializeReplicaList.Push(lsr,_FILE_AND_LINE_);
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-/** Returns the buffer constant that matches the current draw buffer (left vs. right) */
-static GLenum getCurrentBuffer(bool useBack) {
-    GLenum draw = glGetInteger(GL_DRAW_BUFFER);
+void Connection_RM3::OnDownloadExisting(Replica3* replica3, ReplicaManager3 *replicaManager)
+{
+	ValidateLists(replicaManager);
 
-    if (useBack) {
-        switch (draw) {
-        case GL_FRONT_LEFT:
-        case GL_BACK_LEFT:
-            return GL_BACK_LEFT;
+	ConstructionMode constructionMode = QueryConstructionMode();
+	if (constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION)
+	{
+		unsigned int idx;
+		for (idx=0; idx < queryToConstructReplicaList.Size(); idx++)
+		{
+			if (queryToConstructReplicaList[idx]->replica==replica3)
+			{
+				OnConstructToThisConnection(idx, replicaManager);
+				return;
+			}
+		}
+	}
+	else
+	{
+		OnConstructToThisConnection(replica3, replicaManager);
+	}
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        case GL_FRONT_RIGHT:
-        case GL_BACK_RIGHT:
-            return GL_BACK_RIGHT;
+void Connection_RM3::OnSendDestructionFromQuery(unsigned int queryToDestructIdx, ReplicaManager3 *replicaManager)
+{
+	ConstructionMode constructionMode = QueryConstructionMode();
+	RakAssert(constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION || constructionMode==QUERY_REPLICA_FOR_CONSTRUCTION_AND_DESTRUCTION);
+	(void) constructionMode;
 
-        default:
-			// FBO goes here
-            return draw;
-        }
-    } else {
-        switch (draw) {
-        case GL_FRONT_LEFT:
-        case GL_BACK_LEFT:
-            return GL_FRONT_LEFT;
-
-        case GL_FRONT_RIGHT:
-        case GL_BACK_RIGHT:
-            return GL_FRONT_RIGHT;
-
-        default:
-			// FBO goes here
-            return draw;
-        }
-    }
+	ValidateLists(replicaManager);
+	LastSerializationResult* lsr = queryToDestructReplicaList[queryToDestructIdx];
+	queryToDestructReplicaList.RemoveAtIndex(queryToDestructIdx);
+	unsigned int j;
+	for (j=0; j < queryToSerializeReplicaList.Size(); j++)
+	{
+		if (queryToSerializeReplicaList[j]->replica==lsr->replica )
+		{
+			queryToSerializeReplicaList.RemoveAtIndex(j);
+			break;
+		}
+	}
+	for (j=0; j < constructedReplicaList.Size(); j++)
+	{
+		if (constructedReplicaList[j]->replica==lsr->replica )
+		{
+			constructedReplicaList.RemoveAtIndex(j);
+			break;
+		}
+	}
+	//assert(queryToConstructReplicaList.GetIndexOf(lsr->replica)==(unsigned int)-1);
+	queryToConstructReplicaList.Push(lsr,_FILE_AND_LINE_);
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Texture::copyFromScreen(
-    const Rect2D& rect,
-    bool useBackBuffer) {
-
-    glStatePush();
-
-    glReadBuffer(getCurrentBuffer(useBackBuffer));
-
-    _sizeOfAllTexturesInMemory -= sizeInMemory();
-
-    // Set up new state
-    this->width   = (int)rect.width();
-    this->height  = (int)rect.height();
-    this->depth   = 1;
-    debugAssert(this->dimension == DIM_2D || this->dimension == DIM_2D_RECT || this->dimension == DIM_2D_NPOT);
-
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB);
-    }
-    glDisableAllTextures();
-    GLenum target = dimensionToTarget(dimension);
-    glEnable(target);
-
-    glBindTexture(target, textureID);
-    int e = glGetError();
-    alwaysAssertM(e == GL_NONE, 
-        std::string("Error encountered during glBindTexture: ") + GLenumToString(e));
-
-    double viewport[4];
-    glGetDoublev(GL_VIEWPORT, viewport);
-    double viewportHeight = viewport[3];
-    debugAssertGLOk();
-    
-    glCopyTexImage2D(target, 0, format->OpenGLFormat,
-                     iRound(rect.x0()), 
-                     iRound(viewportHeight - rect.y1()), 
-                     iRound(rect.width()), iRound(rect.height()), 
-                     0);
-
-    debugAssertGLOk();
-    // Reset the original properties
-    setTexParameters(target, _settings);
-
-    debugAssertGLOk();
-    glDisable(target);
-
-    // Once copied from the screen, the direction will be reversed.
-    invertY = true;
-
-    glStatePop();
-
-    _sizeOfAllTexturesInMemory += sizeInMemory();
+void Connection_RM3::OnDoNotQueryDestruction(unsigned int queryToDestructIdx, ReplicaManager3 *replicaManager)
+{
+	ValidateLists(replicaManager);
+	queryToDestructReplicaList.RemoveAtIndex(queryToDestructIdx);
+	ValidateLists(replicaManager);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Texture::copyFromScreen(
-    const Rect2D&       rect,
-    CubeFace            face,
-    bool                useBackBuffer) {
+void Connection_RM3::ValidateLists(ReplicaManager3 *replicaManager) const
+{
+	(void) replicaManager;
+	/*
+#ifdef _DEBUG
+	// Each object should exist only once in either constructedReplicaList or queryToConstructReplicaList
+	// replicaPointer from LastSerializationResult should be same among all lists
+	unsigned int idx, idx2;
+	for (idx=0; idx < constructedReplicaList.Size(); idx++)
+	{
+		idx2=queryToConstructReplicaList.GetIndexOf(constructedReplicaList[idx]->replica);
+		if (idx2!=(unsigned int)-1)
+		{
+			int a=5;
+			assert(a==0);
+			int *b=0;
+			*b=5;
+		}
+	}
 
-    glStatePush();
+	for (idx=0; idx < queryToConstructReplicaList.Size(); idx++)
+	{
+		idx2=constructedReplicaList.GetIndexOf(queryToConstructReplicaList[idx]->replica);
+		if (idx2!=(unsigned int)-1)
+		{
+			int a=5;
+			assert(a==0);
+			int *b=0;
+			*b=5;
+		}
+	}
 
-    glReadBuffer(getCurrentBuffer(useBackBuffer));
+	LastSerializationResult *lsr, *lsr2;
+	for (idx=0; idx < constructedReplicaList.Size(); idx++)
+	{
+		lsr=constructedReplicaList[idx];
 
-    // Set up new state
-    debugAssertM(width == rect.width(), "Cube maps require all six faces to have the same dimensions");
-    debugAssertM(height == rect.height(), "Cube maps require all six faces to have the same dimensions");
-    debugAssert(this->dimension == DIM_CUBE_MAP || this->dimension == DIM_CUBE_MAP_NPOT);
-    debugAssert(face >= 0);
-    debugAssert(face < 6);
+		idx2=queryToSerializeReplicaList.GetIndexOf(lsr->replica);
+		if (idx2!=(unsigned int)-1)
+		{
+			lsr2=queryToSerializeReplicaList[idx2];
+			if (lsr2!=lsr)
+			{
+				int a=5;
+				assert(a==0);
+				int *b=0;
+				*b=5;
+			}
+		}
 
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB);
-    }
-    glDisableAllTextures();
+		idx2=queryToDestructReplicaList.GetIndexOf(lsr->replica);
+		if (idx2!=(unsigned int)-1)
+		{
+			lsr2=queryToDestructReplicaList[idx2];
+			if (lsr2!=lsr)
+			{
+				int a=5;
+				assert(a==0);
+				int *b=0;
+				*b=5;
+			}
+		}
+	}
+	for (idx=0; idx < queryToConstructReplicaList.Size(); idx++)
+	{
+		lsr=queryToConstructReplicaList[idx];
 
-    glEnable(GL_TEXTURE_CUBE_MAP_ARB);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, textureID);
+		idx2=queryToSerializeReplicaList.GetIndexOf(lsr->replica);
+		if (idx2!=(unsigned int)-1)
+		{
+			lsr2=queryToSerializeReplicaList[idx2];
+			if (lsr2!=lsr)
+			{
+				int a=5;
+				assert(a==0);
+				int *b=0;
+				*b=5;
+			}
+		}
 
-    GLenum target = cubeFaceTarget[(int)face];
+		idx2=queryToDestructReplicaList.GetIndexOf(lsr->replica);
+		if (idx2!=(unsigned int)-1)
+		{
+			lsr2=queryToDestructReplicaList[idx2];
+			if (lsr2!=lsr)
+			{
+				int a=5;
+				assert(a==0);
+				int *b=0;
+				*b=5;
+			}
+		}
+	}
 
-    int e = glGetError();
-    alwaysAssertM(e == GL_NONE, 
-        std::string("Error encountered during glBindTexture: ") + GLenumToString(e));
+	// Verify pointer integrity
+	for (idx=0; idx < constructedReplicaList.Size(); idx++)
+	{
+		if (constructedReplicaList[idx]->replica->replicaManager!=replicaManager)
+		{
+			int a=5;
+			assert(a==0);
+			int *b=0;
+			*b=5;
+		}
+	}
 
-    double viewport[4];
-    glGetDoublev(GL_VIEWPORT, viewport);
-    double viewportHeight = viewport[3];
-    debugAssertGLOk();
+	// Verify pointer integrity
+	for (idx=0; idx < queryToConstructReplicaList.Size(); idx++)
+	{
+		if (queryToConstructReplicaList[idx]->replica->replicaManager!=replicaManager)
+		{
+			int a=5;
+			assert(a==0);
+			int *b=0;
+			*b=5;
+		}
+	}
+#endif
+	*/
+}
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    glCopyTexImage2D(target, 0, format->OpenGLFormat,
-                     iRound(rect.x0()), 
-                     iRound(viewportHeight - rect.y1()), 
-                     iRound(rect.width()), 
-                     iRound(rect.height()), 0);
+void Connection_RM3::SendConstruction(DataStructures::List<Replica3*> &newObjects, DataStructures::List<Replica3*> &deletedObjects, PRO sendParameters, RakNet::RakPeerInterface *rakPeer, unsigned char worldId, ReplicaManager3 *replicaManager3)
+{
+	if (newObjects.Size()==0 && deletedObjects.Size()==0)
+		return;
 
-    debugAssertGLOk();
-    glDisable(GL_TEXTURE_CUBE_MAP_ARB);
-    glStatePop();
+	// All construction and destruction takes place in the same network message
+	// Otherwise, if objects rely on each other being created the same tick to be valid, this won't always be true
+	//	DataStructures::List<LastSerializationResult* > serializedObjects;
+	BitSize_t offsetStart, offsetStart2, offsetEnd;
+	unsigned int newListIndex, oldListIndex;
+	RakNet::BitStream bsOut;
+	NetworkID networkId;
+	if (isFirstConstruction)
+	{
+		bsOut.Write((MessageID)ID_REPLICA_MANAGER_DOWNLOAD_STARTED);
+		bsOut.Write(worldId);
+		SerializeOnDownloadStarted(&bsOut);
+		rakPeer->Send(&bsOut,sendParameters.priority,RELIABLE_ORDERED,sendParameters.orderingChannel,systemAddress,false,sendParameters.sendReceipt);
+	}
+
+	//	LastSerializationResult* lsr;
+	bsOut.Reset();
+	bsOut.Write((MessageID)ID_REPLICA_MANAGER_CONSTRUCTION);
+	bsOut.Write(worldId);
+	uint16_t objectSize = (uint16_t) newObjects.Size();
+	bsOut.Write(objectSize);
+
+	// Construction
+	for (newListIndex=0; newListIndex < newObjects.Size(); newListIndex++)
+	{
+		offsetStart=bsOut.GetWriteOffset();
+		bsOut.Write(offsetStart); // overwritten to point to the end of the stream
+		networkId=newObjects[newListIndex]->GetNetworkID();
+		bsOut.Write(networkId);
+
+		RM3ConstructionState cs = newObjects[newListIndex]->QueryConstruction(this, replicaManager3);
+		bool actuallyCreateObject = cs==RM3CS_SEND_CONSTRUCTION;
+		bsOut.Write(actuallyCreateObject);
+		bsOut.AlignWriteToByteBoundary();
+
+		if (actuallyCreateObject)
+		{
+			// Actually create the object
+			bsOut.Write(newObjects[newListIndex]->creatingSystemGUID);
+			offsetStart2=bsOut.GetWriteOffset();
+			bsOut.Write(offsetStart2); // overwritten to point to after the call to WriteAllocationID
+			bsOut.AlignWriteToByteBoundary(); // Give the user an aligned bitStream in case they use memcpy
+			newObjects[newListIndex]->WriteAllocationID(this, &bsOut);
+			bsOut.AlignWriteToByteBoundary();  // Give the user an aligned bitStream in case they use memcpy
+			offsetEnd=bsOut.GetWriteOffset();
+			bsOut.SetWriteOffset(offsetStart2);
+			bsOut.Write(offsetEnd);
+			bsOut.SetWriteOffset(offsetEnd);
+			newObjects[newListIndex]->SerializeConstruction(&bsOut, this);
+		}
+		else
+		{
+			newObjects[newListIndex]->SerializeConstructionExisting(&bsOut, this);
+		}
+
+		bsOut.AlignWriteToByteBoundary();
+		offsetEnd=bsOut.GetWriteOffset();
+		bsOut.SetWriteOffset(offsetStart);
+		bsOut.Write(offsetEnd);
+		bsOut.SetWriteOffset(offsetEnd);
+	}
+
+	RakNet::BitStream bsOut2;
+	for (newListIndex=0; newListIndex < newObjects.Size(); newListIndex++)
+	{
+		bsOut2.Reset();
+		RM3ConstructionState cs = newObjects[newListIndex]->QueryConstruction(this, replicaManager3);
+		if (cs==RM3CS_SEND_CONSTRUCTION)
+		{
+			newObjects[newListIndex]->PostSerializeConstruction(&bsOut2, this);
+		}
+		else
+		{
+			RakAssert(cs==RM3CS_ALREADY_EXISTS_REMOTELY);
+			newObjects[newListIndex]->PostSerializeConstructionExisting(&bsOut2, this);
+		}
+		if (bsOut2.GetNumberOfBitsUsed()>0)
+		{
+			bsOut.Write(true);
+			bsOut.AlignWriteToByteBoundary();
+			offsetStart=bsOut.GetWriteOffset();
+			bsOut.Write(offsetStart); // overwritten to point to the end of the stream
+			networkId=newObjects[newListIndex]->GetNetworkID();
+			bsOut.Write(networkId);
+			bsOut.AlignWriteToByteBoundary(); // Give the user an aligned bitStream in case they use memcpy
+			bsOut.Write(&bsOut2);
+			bsOut.AlignWriteToByteBoundary(); // Give the user an aligned bitStream in case they use memcpy
+			offsetEnd=bsOut.GetWriteOffset();
+			bsOut.SetWriteOffset(offsetStart);
+			bsOut.Write(offsetEnd);
+			bsOut.SetWriteOffset(offsetEnd);
+		}
+		else
+			bsOut.Write(false);
+	}
+	bsOut.AlignWriteToByteBoundary();
+
+	// Destruction
+	objectSize = (uint16_t) deletedObjects.Size();
+	bsOut.Write(objectSize);
+	for (oldListIndex=0; oldListIndex < deletedObjects.Size(); oldListIndex++)
+	{
+		networkId=deletedObjects[oldListIndex]->GetNetworkID();
+		bsOut.Write(networkId);
+		offsetStart=bsOut.GetWriteOffset();
+		bsOut.Write(offsetStart);
+		deletedObjects[oldListIndex]->deletingSystemGUID=rakPeer->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS);
+		bsOut.Write(deletedObjects[oldListIndex]->deletingSystemGUID);
+		deletedObjects[oldListIndex]->SerializeDestruction(&bsOut, this);
+		bsOut.AlignWriteToByteBoundary();
+		offsetEnd=bsOut.GetWriteOffset();
+		bsOut.SetWriteOffset(offsetStart);
+		bsOut.Write(offsetEnd);
+		bsOut.SetWriteOffset(offsetEnd);
+	}
+	rakPeer->Send(&bsOut,sendParameters.priority,RELIABLE_ORDERED,sendParameters.orderingChannel,systemAddress,false,sendParameters.sendReceipt);
+
+	// TODO - shouldn't this be part of construction?
+
+	// Initial Download serialize to a new system
+	// Immediately send serialize after construction if the replica object already has saved data
+	// If the object was serialized identically, and does not change later on, then the new connection never gets the data
+	SerializeParameters sp;
+	sp.whenLastSerialized=0;
+	RakNet::BitStream emptyBs;
+	for (int index=0; index < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; index++)
+	{
+		sp.lastSentBitstream[index]=&emptyBs;
+		sp.pro[index]=sendParameters;
+		sp.pro[index].reliability=RELIABLE_ORDERED;
+	}
+
+	sp.bitsWrittenSoFar=0;
+//	RakNet::Time t = RakNet::GetTimeMS();
+	for (newListIndex=0; newListIndex < newObjects.Size(); newListIndex++)
+	{
+		sp.destinationConnection=this;
+		sp.messageTimestamp=0;
+		RakNet::Replica3 *replica = newObjects[newListIndex];
+		// 8/22/09 Forgot ResetWritePointer
+		for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+		{
+			sp.outputBitstream[z].ResetWritePointer();
+		}
+
+		RM3SerializationResult res = replica->Serialize(&sp);
+		if (res!=RM3SR_NEVER_SERIALIZE_FOR_THIS_CONNECTION &&
+			res!=RM3SR_DO_NOT_SERIALIZE &&
+			res!=RM3SR_SERIALIZED_UNIQUELY)
+		{
+			bool allIndices[RM3_NUM_OUTPUT_BITSTREAM_CHANNELS];
+			for (int z=0; z < RM3_NUM_OUTPUT_BITSTREAM_CHANNELS; z++)
+			{
+				sp.bitsWrittenSoFar+=sp.outputBitstream[z].GetNumberOfBitsUsed();
+				allIndices[z]=true;
+			}
+			SendSerialize(replica, allIndices, sp.outputBitstream, sp.messageTimestamp, sp.pro, rakPeer, worldId, GetTime());
+///			newObjects[newListIndex]->whenLastSerialized=t;
+
+		}
+		// else wait for construction request accepted before serializing
+	}
+
+	if (isFirstConstruction)
+	{
+		bsOut.Reset();
+		bsOut.Write((MessageID)ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE);
+		bsOut.Write(worldId);
+		SerializeOnDownloadComplete(&bsOut);
+		rakPeer->Send(&bsOut,sendParameters.priority,RELIABLE_ORDERED,sendParameters.orderingChannel,systemAddress,false,sendParameters.sendReceipt);
+	}
+
+	isFirstConstruction=false;
+
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void Texture::getCameraRotation(CubeFace face, Matrix3& outMatrix) {
-    switch (face) {
-    case CUBE_POS_X:
-        outMatrix = Matrix3::fromEulerAnglesYXZ((float)G3D_HALF_PI, (float)G3D_PI, 0);
-        break;
-
-    case CUBE_NEG_X:
-        outMatrix = Matrix3::fromEulerAnglesYXZ(-(float)G3D_HALF_PI, (float)G3D_PI, 0);
-        break;
-
-    case CUBE_POS_Y:
-        outMatrix = Matrix3::fromEulerAnglesXYZ((float)G3D_HALF_PI, 0, 0);
-        break;
-
-    case CUBE_NEG_Y:
-        outMatrix = Matrix3::fromEulerAnglesXYZ(-(float)G3D_HALF_PI, 0, 0);
-        break;
-
-    case CUBE_POS_Z:
-        outMatrix = Matrix3::fromEulerAnglesYZX((float)G3D_PI, (float)G3D_PI, 0);
-        break;
-
-    case CUBE_NEG_Z:
-        outMatrix = Matrix3::fromAxisAngle(Vector3::unitZ(), (float)G3D_PI);
-        break;
-    }
+void Connection_RM3::SendValidation(RakNet::RakPeerInterface *rakPeer, WorldId worldId)
+{
+	// Hijack to mean sendValidation
+	RakNet::BitStream bsOut;
+	bsOut.Write((MessageID)ID_REPLICA_MANAGER_SCOPE_CHANGE);
+	bsOut.Write(worldId);
+	rakPeer->Send(&bsOut,HIGH_PRIORITY,RELIABLE_ORDERED,0,systemAddress,false);
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-size_t Texture::sizeInMemory() const {
-
-	if (!TextureFormat::valid)
-		return 0;
-
-    int base = (width * height * depth * format->hardwareBitsPerTexel) / 8;
-
-    int total = 0;
-
-    if (interpolate == TRILINEAR_MIPMAP) {
-        int w = width;
-        int h = height;
-
-        while ((w > 2) && (h > 2)) {
-            total += base;
-            base /= 4;
-            w /= 2;
-            h /= 2;
-        }
-
-    } else {
-        total = base;
-    }
-
-    if (dimension == DIM_CUBE_MAP) {
-        total *= 6;
-    }
-
-    return total;
+Replica3::Replica3()
+{
+	creatingSystemGUID=UNASSIGNED_RAKNET_GUID;
+	deletingSystemGUID=UNASSIGNED_RAKNET_GUID;
+	replicaManager=0;
+	forceSendUntilNextUpdate=false;
+	lsr=0;
+	referenceIndex = (uint32_t)-1;
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-unsigned int Texture::getOpenGLTextureTarget() const {
-    switch (dimension) {
-    case DIM_CUBE_MAP_NPOT:
-    case DIM_CUBE_MAP:
-        return GL_TEXTURE_CUBE_MAP_ARB;
-
-    case DIM_2D_NPOT:
-    case DIM_2D:
-        return GL_TEXTURE_2D;
-
-    case Texture::DIM_2D_RECT:
-        return GL_TEXTURE_RECTANGLE_EXT;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-    }
-    return 0;
+Replica3::~Replica3()
+{
+	if (replicaManager)
+	{
+		replicaManager->Dereference(this);
+	}
 }
 
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-TextureRef Texture::alphaOnlyVersion() const {
-    if (opaque()) {
-        return NULL;
-    }
-
-    debugAssert(_depthRead == DEPTH_NORMAL);
-    debugAssertM(
-        dimension == DIM_2D ||
-        dimension == DIM_2D_RECT ||
-        dimension == DIM_2D_NPOT,
-        "alphaOnlyVersion only supported for 2D textures");
-
-    int numFaces = 1;
-
-    uint8** bytes = (uint8**)System::malloc(numFaces * sizeof(uint8*));
-    const TextureFormat* bytesFormat = TextureFormat::A8;
-
-    glStatePush();
-    // Setup to later implement cube faces
-    for (int f = 0; f < numFaces; ++f) {
-        GLenum target = dimensionToTarget(dimension);
-        glBindTexture(target, textureID);
-        bytes[f] = (uint8*)System::malloc(width * height);
-        glGetTexImage(target, 0, GL_ALPHA, GL_UNSIGNED_BYTE, bytes[f]);
-    }
-
-    glStatePop();
-
-    TextureRef ret = 
-        fromMemory(name + " Alpha", (const uint8**)bytes, bytesFormat,
-            width, height, 1, TextureFormat::A8, wrap, interpolate,
-            dimension); 
-
-    for (int f = 0; f < numFaces; ++f) {
-        System::free(bytes[f]);
-    }
-    System::free(bytes);
-
-    return ret;
+void Replica3::BroadcastDestruction(void)
+{
+	replicaManager->BroadcastDestruction(this,UNASSIGNED_SYSTEM_ADDRESS);
 }
 
-} // G3D
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RakNetGUID Replica3::GetCreatingSystemGUID(void) const
+{
+	return creatingSystemGUID;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3ConstructionState Replica3::QueryConstruction_ClientConstruction(RakNet::Connection_RM3 *destinationConnection, bool isThisTheServer)
+{
+	(void) destinationConnection;
+	if (creatingSystemGUID==replicaManager->GetRakPeerInterface()->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS))
+		return RM3CS_SEND_CONSTRUCTION;
+	// Send back to the owner client too, because they couldn't assign the network ID
+	if (isThisTheServer)
+		return RM3CS_SEND_CONSTRUCTION;
+	return RM3CS_NEVER_CONSTRUCT;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool Replica3::QueryRemoteConstruction_ClientConstruction(RakNet::Connection_RM3 *sourceConnection, bool isThisTheServer)
+{
+	(void) sourceConnection;
+	(void) isThisTheServer;
+
+	// OK to create
+	return true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3ConstructionState Replica3::QueryConstruction_ServerConstruction(RakNet::Connection_RM3 *destinationConnection, bool isThisTheServer)
+{
+	(void) destinationConnection;
+
+	if (isThisTheServer)
+		return RM3CS_SEND_CONSTRUCTION;
+	return RM3CS_NEVER_CONSTRUCT;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool Replica3::QueryRemoteConstruction_ServerConstruction(RakNet::Connection_RM3 *sourceConnection, bool isThisTheServer)
+{
+	(void) sourceConnection;
+	if (isThisTheServer)
+		return false;
+	return true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3ConstructionState Replica3::QueryConstruction_PeerToPeer(RakNet::Connection_RM3 *destinationConnection, Replica3P2PMode p2pMode)
+{
+	(void) destinationConnection;
+
+	if (p2pMode==R3P2PM_SINGLE_OWNER)
+	{
+		// We send to all, others do nothing
+		if (creatingSystemGUID==replicaManager->GetRakPeerInterface()->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS))
+			return RM3CS_SEND_CONSTRUCTION;
+
+		// RM3CS_NEVER_CONSTRUCT will not send the object, and will not Serialize() it
+		return RM3CS_NEVER_CONSTRUCT;
+	}
+	else if (p2pMode==R3P2PM_MULTI_OWNER_CURRENTLY_AUTHORITATIVE)
+	{
+		return RM3CS_SEND_CONSTRUCTION;
+	}
+	else if (p2pMode==R3P2PM_STATIC_OBJECT_CURRENTLY_AUTHORITATIVE)
+	{
+		return RM3CS_ALREADY_EXISTS_REMOTELY;
+	}
+	else if (p2pMode==R3P2PM_STATIC_OBJECT_NOT_CURRENTLY_AUTHORITATIVE)
+	{
+		return RM3CS_ALREADY_EXISTS_REMOTELY_DO_NOT_CONSTRUCT;
+	}
+	else
+	{
+		RakAssert(p2pMode==R3P2PM_MULTI_OWNER_NOT_CURRENTLY_AUTHORITATIVE);
+
+		// RM3CS_ALREADY_EXISTS_REMOTELY will not send the object, but WILL call QuerySerialization() and Serialize() on it.
+		return RM3CS_ALREADY_EXISTS_REMOTELY;
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+bool Replica3::QueryRemoteConstruction_PeerToPeer(RakNet::Connection_RM3 *sourceConnection)
+{
+	(void) sourceConnection;
+
+	return true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3QuerySerializationResult Replica3::QuerySerialization_ClientSerializable(RakNet::Connection_RM3 *destinationConnection, bool isThisTheServer)
+{
+	// Owner client sends to all
+	if (creatingSystemGUID==replicaManager->GetRakPeerInterface()->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS))
+		return RM3QSR_CALL_SERIALIZE;
+	// Server sends to all but owner client
+	if (isThisTheServer && destinationConnection->GetRakNetGUID()!=creatingSystemGUID)
+		return RM3QSR_CALL_SERIALIZE;
+	// Remote clients do not send
+	return RM3QSR_NEVER_CALL_SERIALIZE;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3QuerySerializationResult Replica3::QuerySerialization_ServerSerializable(RakNet::Connection_RM3 *destinationConnection, bool isThisTheServer)
+{
+	(void) destinationConnection;
+	// Server sends to all
+	if (isThisTheServer)
+		return RM3QSR_CALL_SERIALIZE;
+
+	// Clients do not send
+	return RM3QSR_NEVER_CALL_SERIALIZE;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3QuerySerializationResult Replica3::QuerySerialization_PeerToPeer(RakNet::Connection_RM3 *destinationConnection, Replica3P2PMode p2pMode)
+{
+	(void) destinationConnection;
+
+	if (p2pMode==R3P2PM_SINGLE_OWNER)
+	{
+		// Owner peer sends to all
+		if (creatingSystemGUID==replicaManager->GetRakPeerInterface()->GetGuidFromSystemAddress(UNASSIGNED_SYSTEM_ADDRESS))
+			return RM3QSR_CALL_SERIALIZE;
+
+		// Remote peers do not send
+		return RM3QSR_NEVER_CALL_SERIALIZE;
+	}
+	else if (p2pMode==R3P2PM_MULTI_OWNER_CURRENTLY_AUTHORITATIVE)
+	{
+		return RM3QSR_CALL_SERIALIZE;
+	}
+	else if (p2pMode==R3P2PM_STATIC_OBJECT_CURRENTLY_AUTHORITATIVE)
+	{
+		return RM3QSR_CALL_SERIALIZE;
+	}
+	else if (p2pMode==R3P2PM_STATIC_OBJECT_NOT_CURRENTLY_AUTHORITATIVE)
+	{
+		return RM3QSR_DO_NOT_CALL_SERIALIZE;
+	}
+	else
+	{
+		RakAssert(p2pMode==R3P2PM_MULTI_OWNER_NOT_CURRENTLY_AUTHORITATIVE);
+		return RM3QSR_DO_NOT_CALL_SERIALIZE;
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3ActionOnPopConnection Replica3::QueryActionOnPopConnection_Client(RakNet::Connection_RM3 *droppedConnection) const
+{
+	(void) droppedConnection;
+	return RM3AOPC_DELETE_REPLICA;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3ActionOnPopConnection Replica3::QueryActionOnPopConnection_Server(RakNet::Connection_RM3 *droppedConnection) const
+{
+	(void) droppedConnection;
+	return RM3AOPC_DELETE_REPLICA_AND_BROADCAST_DESTRUCTION;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+RM3ActionOnPopConnection Replica3::QueryActionOnPopConnection_PeerToPeer(RakNet::Connection_RM3 *droppedConnection) const
+{
+	(void) droppedConnection;
+	return RM3AOPC_DELETE_REPLICA;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#endif // _RAKNET_SUPPORT_*

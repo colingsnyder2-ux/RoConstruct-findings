@@ -1,931 +1,1232 @@
+// from server: 35% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /MD /GS /EHsc /Ob1
-// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportRows.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbaseribbonelement.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPReportRows.cpp : implementation of the CXTPReportRows class.
+// This MFC Library source code supports the Microsoft Office Fluent User Interface 
+// (the "Fluent UI") and is provided only as referential material to supplement the 
+// Microsoft Foundation Classes Reference and related electronic documentation 
+// included with the MFC C++ library software.  
+// License terms to copy, use or distribute the Fluent UI are available separately.  
+// To learn more about our Fluent UI licensing program, please visit 
+// http://msdn.microsoft.com/officeui.
 //
-// This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// Copyright (C) Microsoft Corporation
+// All rights reserved.
 
 #include "stdafx.h"
+#include "afxbaseribbonelement.h"
 
-#include "Common/XTPVc50Helpers.h"
-
-#include "XTPReportRow.h"
-#include "XTPReportGroupRow.h"
-#include "XTPReportRecord.h"
-#include "XTPReportRecords.h"
-#include "XTPReportRecordItem.h"
-#include "XTPReportRecordItemText.h"
-#include "XTPReportControl.h"
-#include "XTPReportColumns.h"
-#include "XTPReportColumn.h"
-#include "XTPReportInplaceControls.h"
-#include "XTPReportRows.h"
+#include "afxribboncategory.h"
+#include "afxribbonbar.h"
+#include "afxpopupmenu.h"
+#include "afxribbonpanelmenu.h"
+#include "afxkeyboardmanager.h"
+#include "afxvisualmanager.h"
+#include "afxribboncommandslistbox.h"
+#include "afxribbonquickaccesstoolbar.h"
+#include "afxribbonkeytip.h"
+#include "afxribbonres.h"
+#include "afxmenuimages.h"
+#include "afxmdiframewndex.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportRows
-
-CXTPReportRows::CXTPReportRows()
+static inline BOOL __stdcall IsSystemCommand(UINT uiCmd)
 {
-	m_pVirtualRow = 0;
-	m_nVirtualRowsCount = 0;
+	return (uiCmd >= 0xF000 && uiCmd < 0xF1F0);
 }
 
-CXTPReportRows::~CXTPReportRows()
+//////////////////////////////////////////////////////////////////////
+// CMFCRibbonSeparator
+
+IMPLEMENT_DYNCREATE(CMFCRibbonSeparator, CMFCRibbonBaseElement)
+
+CMFCRibbonSeparator::CMFCRibbonSeparator(BOOL bIsHoriz)
 {
-	Clear();
+	m_bIsHoriz = bIsHoriz;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportRows member functions
-
-void CXTPReportRows::Clear(BOOL bResetRow)
+CSize CMFCRibbonSeparator::GetRegularSize(CDC* /*pDC*/)
 {
-	// array cleanup
-	for (int nRow = (int)m_arrRows.GetSize() - 1; nRow >= 0; nRow--)
+	ASSERT_VALID(this);
+	return CSize(4, 4);
+}
+
+void CMFCRibbonSeparator::CopyFrom(const CMFCRibbonBaseElement& s)
+{
+	ASSERT_VALID(this);
+	CMFCRibbonBaseElement::CopyFrom(s);
+
+	const CMFCRibbonSeparator& src =(const CMFCRibbonSeparator&) s;
+	m_bIsHoriz = src.m_bIsHoriz;
+}
+
+void CMFCRibbonSeparator::OnDraw(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	if (m_rect.IsRectEmpty())
 	{
-		CXTPReportRow* pRow = m_arrRows.GetAt(nRow);
-		if (bResetRow)
+		return;
+	}
+
+	CRect rect = m_rect;
+
+	if (m_bQuickAccessMode)
+	{
+		rect.left = rect.CenterPoint().x - 1;
+		rect.right = rect.left + 2;
+
+		rect.DeflateRect(0, 3);
+
+		CMFCVisualManager::GetInstance()->OnDrawRibbonQuickAccessToolBarSeparator(pDC, this, rect);
+		return;
+	}
+
+	if (m_bIsHoriz)
+	{
+		rect.top = rect.CenterPoint().y;
+		rect.bottom = rect.top + 1;
+	}
+	else
+	{
+		rect.left = rect.CenterPoint().x;
+		rect.right = rect.left + 1;
+
+		rect.DeflateRect(0, 5);
+	}
+
+	CBasePane* pParentBar = NULL;
+
+	if (m_pParentMenu != NULL)
+	{
+		pParentBar = m_pParentMenu;
+	}
+	else
+	{
+		pParentBar = GetTopLevelRibbonBar();
+	}
+
+	if (pParentBar != NULL)
+	{
+		BOOL bDisableSideBarInXPMode = FALSE;
+
+		if (m_bIsDefaultMenuLook && m_pParentMenu != NULL)
 		{
-			pRow->m_bVisible = FALSE;
-			pRow->m_nIndex = -1;
+			bDisableSideBarInXPMode = m_pParentMenu->m_bDisableSideBarInXPMode;
+			rect.left += 2 * CMFCVisualManager::GetInstance()->GetMenuImageMargin() + 2;
+			m_pParentMenu->m_bDisableSideBarInXPMode = FALSE;
 		}
-		pRow->InternalRelease();
-	}
 
-	m_arrRows.RemoveAll();
+		CMFCVisualManager::GetInstance()->OnDrawSeparator(pDC, pParentBar, rect, !m_bIsHoriz);
 
-	if (m_pVirtualRow)
-	{
-		m_pVirtualRow->InternalRelease();
-		m_pVirtualRow = 0;
-	}
-
-}
-
-CXTPReportRow* CXTPReportRows::GetNext(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
-{
-	if (pRow)
-	{
-		int index = pRow->GetIndex();
-
-		while (index < GetCount() - 1)
+		if (m_pParentMenu != NULL)
 		{
-			index++;
-			pRow = GetAt(index);
-
-			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
-				return pRow;
+			m_pParentMenu->m_bDisableSideBarInXPMode = bDisableSideBarInXPMode;
 		}
 	}
-	else if (GetCount() > 0)
-	{
-		return GetAt(0);
-	}
-	return pRow;
 }
 
-CXTPReportRow* CXTPReportRows::GetPrev(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
+int CMFCRibbonSeparator::AddToListBox(CMFCRibbonCommandsListBox* pWndListBox, BOOL /*bDeep*/)
 {
-	if (pRow)
-	{
-		int index = pRow->GetIndex();
+	ASSERT_VALID(this);
+	ASSERT_VALID(pWndListBox);
+	ENSURE(pWndListBox->GetSafeHwnd() != NULL);
 
-		while (index > 0)
-		{
-			index--;
-			pRow = GetAt(index);
+	CString strText;
+	ENSURE(strText.LoadString(IDS_AFXBARRES_QAT_SEPARATOR));
 
-			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
-				return pRow;
-
-		}
-	}
-	else if (GetCount() > 0)
-	{
-		return GetAt(0);
-	}
-	return pRow;
-}
-
-void CXTPReportRows::InsertAt(int nIndex, CXTPReportRow* pRow)
-{
-	m_arrRows.InsertAt(nIndex, pRow);
-}
-
-int CXTPReportRows::Add(CXTPReportRow* pRow)
-{
-	int nIndex = (int)m_arrRows.Add(pRow);
-
-	pRow->m_nChildIndex = nIndex;
-	pRow->m_pParentRows = this;
+	int nIndex = pWndListBox->AddString(_T(" ") + strText);	// Should be always first!
+	pWndListBox->SetItemData(nIndex, (DWORD_PTR) this);
 
 	return nIndex;
 }
 
-void CXTPReportRows::RemoveAt(int nIndex)
+void CMFCRibbonSeparator::OnDrawOnList(CDC* pDC, CString strText, int nTextOffset, CRect rect, BOOL /*bIsSelected*/, BOOL /*bHighlighted*/)
 {
-	m_arrRows.GetAt(nIndex)->InternalRelease();
-	m_arrRows.RemoveAt(nIndex);
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	BOOL bIsDisabled = m_bIsDisabled;
+	m_bIsDisabled = FALSE;
+
+	const int nXMargin = 3;
+
+	rect.DeflateRect(nXMargin, 0);
+	rect.left += nTextOffset;
+
+	pDC->DrawText(strText, rect, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+
+	m_bIsDisabled = bIsDisabled;
 }
 
-int CXTPReportRows::RemoveRow(CXTPReportRow* pRow)
+//////////////////////////////////////////////////////////////////////
+// CMFCRibbonBaseElement
+
+IMPLEMENT_DYNAMIC(CMFCRibbonBaseElement, CObject)
+
+CMFCRibbonBaseElement::CMFCRibbonBaseElement()
 {
-	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
+	m_Location = RibbonElementNotInGroup;
+	m_nID = 0;
+	m_dwData = 0;
+	m_rect.SetRectEmpty();
+	m_pParent = NULL;
+	m_pParentGroup = NULL;
+	m_pParentMenu = NULL;
+	m_bCompactMode = FALSE;
+	m_bIntermediateMode = FALSE;
+	m_bFloatyMode = FALSE;
+	m_bQuickAccessMode = FALSE;
+	m_bIsHighlighted = FALSE;
+	m_bIsFocused = FALSE;
+	m_bIsPressed = FALSE;
+	m_bIsDisabled = FALSE;
+	m_bIsChecked = FALSE;
+	m_bIsRadio = FALSE;
+	m_bIsDroppedDown = FALSE;
+	m_pOriginal = NULL;
+	m_pRibbonBar = NULL;
+	m_nRow = -1;
+	m_bDontNotify = FALSE;
+	m_bTextAlwaysOnRight = FALSE;
+	m_pPopupMenu = NULL;
+	m_nImageOffset = 0;
+	m_bShowGroupBorder = FALSE;
+	m_bIsVisible = TRUE;
+	m_bIsDefaultMenuLook = FALSE;
+	m_bIsAlwaysLarge = FALSE;
+	m_bDrawDefaultIcon = TRUE;
+	m_bIsOnPaletteTop = FALSE;
+	m_bOnBeforeShowItemMenuIsSent = FALSE;
+}
+
+CMFCRibbonBaseElement::~CMFCRibbonBaseElement()
+{
+	if (m_pPopupMenu != NULL)
 	{
-		if (m_arrRows.GetAt(i) == pRow)
+		ASSERT_VALID(m_pPopupMenu);
+		ENSURE(m_pPopupMenu->m_pParentRibbonElement == this);
+
+		m_pPopupMenu->m_pParentRibbonElement = NULL;
+		ClosePopupMenu();
+	}
+}
+
+void CMFCRibbonBaseElement::SetID(UINT nID)
+{
+	ASSERT_VALID(this);
+	m_nID = nID;
+}
+
+void CMFCRibbonBaseElement::SetText(LPCTSTR lpszText)
+{
+	ASSERT_VALID(this);
+	m_strText = lpszText == NULL ? _T("") : lpszText;
+
+	int nIndex = m_strText.Find(_T('\n'));
+	if (nIndex >= 0)
+	{
+		m_strKeys = m_strText.Mid(nIndex + 1);
+		m_strText = m_strText.Left(nIndex);
+	}
+
+	m_strText.TrimLeft();
+	m_strText.TrimRight();
+}
+
+void CMFCRibbonBaseElement::SetKeys(LPCTSTR lpszKeys, LPCTSTR lpszMenuKeys)
+{
+	ASSERT_VALID(this);
+
+	m_strKeys = lpszKeys == NULL ? _T("") : lpszKeys;
+	m_strMenuKeys = lpszMenuKeys == NULL ? _T("") : lpszMenuKeys;
+}
+
+void CMFCRibbonBaseElement::SetTextAlwaysOnRight(BOOL bSet)
+{
+	ASSERT_VALID(this);
+	m_bTextAlwaysOnRight = bSet;
+}
+
+void CMFCRibbonBaseElement::OnLButtonDown(CPoint /*point*/)
+{
+	CMFCRibbonPanel* pPanel = GetParentPanel();
+	if (pPanel != NULL)
+	{
+		ASSERT_VALID(pPanel);
+
+		CMFCRibbonBaseElement* pDroppedDown = pPanel->GetDroppedDown();
+		if (pDroppedDown != NULL)
 		{
-			RemoveAt(i);
-			return i;
-		}
-	}
-	return -1;
-}
-
-void CXTPReportRows::SetVirtualMode(CXTPReportRow* pRow, int nCount)
-{
-	ASSERT(m_pVirtualRow == NULL);
-
-	m_pVirtualRow = pRow;
-	m_nVirtualRowsCount = nCount;
-}
-
-
-int _cdecl CXTPReportRows::CompareRows(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
-{
-	CXTPReportColumns* pColumns = (**ppRow1).GetControl()->GetColumns();
-
-	CXTPReportRecord* pRecord1 = (**ppRow1).GetRecord();
-	CXTPReportRecord* pRecord2 = (**ppRow2).GetRecord();
-
-	ASSERT(pColumns);
-	ASSERT(pRecord1 && pRecord2 || !pRecord1 && !pRecord2);
-
-	if (pRecord1 == pRecord2 && pRecord1)
-		return 0;
-
-	if (!pRecord1 && !pRecord2)
-	{
-		// compare groupRows by its first not group child rows
-		if ((*ppRow1)->HasChildren() && (*ppRow2)->HasChildren())
-		{
-			CXTPReportRow* pRow1a = (CXTPReportRow*)(*ppRow1);
-			CXTPReportRow* pRow2a = (CXTPReportRow*)(*ppRow2);
-
-			if (pRow1a->GetChilds() && pRow1a->GetChilds()->GetCount() &&
-				pRow2a->GetChilds() && pRow2a->GetChilds()->GetCount())
-			{
-				pRow1a = pRow1a->GetChilds()->GetAt(0);
-				pRow2a = pRow2a->GetChilds()->GetAt(0);
-
-				return CompareRows((const CXTPReportRow**)&pRow1a, (const CXTPReportRow**)&pRow2a);
-			}
-		}
-	}
-
-	if (!pRecord1 || !pRecord2)
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-
-	for (int nGroupOrder = 0; nGroupOrder < pColumns->GetGroupsOrder()->GetCount(); nGroupOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(nGroupOrder);
-		if (!pColumn->m_bAutoSortWhenGrouped)
-			continue;
-
-		BOOL bIncreasing = pColumn->m_bSortIncreasing;
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->CompareGroupCaption(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-			return nCompareResult * (bIncreasing ? 1 : -1);
-	}
-
-
-	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetSortOrder()->GetAt(nSortOrder);
-		BOOL bIncreasing = pColumn->IsSortedIncreasing();
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->Compare(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-			return nCompareResult * (bIncreasing ? 1 : -1);
-	}
-
-	return pRecord1->GetIndex() > pRecord2->GetIndex() ? 1 : -1;
-}
-
-int _cdecl CXTPReportRows::CompareRows2(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
-{
-	CXTPReportColumns* pColumns = (**ppRow1).GetControl()->GetColumns();
-
-	CXTPReportRecord* pRecord1 = (**ppRow1).GetRecord();
-	CXTPReportRecord* pRecord2 = (**ppRow2).GetRecord();
-
-	ASSERT(pColumns);
-	ASSERT(pRecord1 && pRecord2 || !pRecord1 && !pRecord2);
-
-	if (pRecord1 == pRecord2 && pRecord1)
-		return 0;
-
-	if (!pRecord1 && !pRecord2)
-	{
-		// compare groupRows by its first not group child rows
-		if ((*ppRow1)->HasChildren() && (*ppRow2)->HasChildren())
-		{
-			CXTPReportRow* pRow1a = (CXTPReportRow*)(*ppRow1);
-			CXTPReportRow* pRow2a = (CXTPReportRow*)(*ppRow2);
-
-			if (pRow1a->GetChilds() && pRow1a->GetChilds()->GetCount() &&
-				pRow2a->GetChilds() && pRow2a->GetChilds()->GetCount())
-			{
-				pRow1a = pRow1a->GetChilds()->GetAt(0);
-				pRow2a = pRow2a->GetChilds()->GetAt(0);
-
-				return CompareRows((const CXTPReportRow**)&pRow1a, (const CXTPReportRow**)&pRow2a);
-			}
+			ASSERT_VALID(pDroppedDown);
+			pDroppedDown->ClosePopupMenu();
 		}
 	}
 
-	if (!pRecord1 || !pRecord2)
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-
-	for (int nGroupOrder = 0; nGroupOrder < pColumns->GetGroupsOrder()->GetCount(); nGroupOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(nGroupOrder);
-		if (!pColumn->m_bAutoSortWhenGrouped)
-			continue;
-
-		BOOL bIncreasing = pColumn->m_bSortIncreasing;
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->CompareGroupCaption(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-		{
-			if(nGroupOrder > 0)
-				nCompareResult = bIncreasing ? -1 : 1;
-			return nCompareResult * (bIncreasing ? 1 : -1);
-		}
-	}
-
-
-	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetSortOrder()->GetAt(nSortOrder);
-		BOOL bIncreasing = pColumn->IsSortedIncreasing();
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->Compare(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-			return nCompareResult * (bIncreasing ? 1 : -1);
-	}
-
-	return 0;
-}
-
-void CXTPReportRows::SortEx(T_CompareFunc pCompareFunc)
-{
-	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
-
-	qsort(m_arrRows.GetData(), (size_t)m_arrRows.GetSize(), sizeof(CXTPReportRow*), (GENERICCOMPAREFUNC)pCompareFunc);
-}
-
-void CXTPReportRows::Sort()
-{
-	SortEx(CompareRows);
-}
-
-int CXTPReportRows::GetCount() const
-{
-	if (m_pVirtualRow)
-		return m_nVirtualRowsCount;
-
-	return (int)m_arrRows.GetSize();
-}
-
-CXTPReportRow* CXTPReportRows::GetAt(int nIndex) const
-{
-	if (m_pVirtualRow)
-	{
-		m_pVirtualRow->m_nIndex = nIndex;
-		return m_pVirtualRow;
-	}
-
-	return (nIndex >= 0) && (nIndex < GetCount()) ? m_arrRows.GetAt(nIndex) : NULL;
-}
-
-CXTPReportRow* CXTPReportRows::Find(CXTPReportRecord* pRecord)
-{
-	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
-			return m_arrRows.GetAt(i);
-	}
-	return 0;
-}
-
-CXTPReportRow* CXTPReportRows::FindInTree(CXTPReportRecord* pRecord)
-{
-	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
-			return m_arrRows.GetAt(i);
-
-		if (m_arrRows.GetAt(i)->HasChildren())
-		{
-			CXTPReportRow* pRow = m_arrRows.GetAt(i)->GetChilds()->FindInTree(pRecord);
-			if (pRow)
-				return pRow;
-		}
-	}
-	return 0;
-}
-
-CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInsertAfter)
-{
-	CXTPReportRow* pInsertionRowPos = NULL;
-	bInsertAfter = FALSE;
-
-	for(int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		CXTPReportRow* pCurRow = m_arrRows.GetAt(i);
-		if(pCurRow->IsGroupRow())
-		{
-			// compare group caption
-			CXTPReportRecord* pRecord = pRow->GetRecord();
-			CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
-			if(!(pRecord && pColumns))
-				continue;
-			CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(pCurRow->GetGroupLevel());
-			CXTPReportRecordItem* pItem = pRecord->GetItem(pColumn);
-			COleVariant varGroup(pItem ? (LPCTSTR)pItem->GetGroupCaption(pColumn) : _T(""));
-			COleVariant varGroupRowCaption((LPCTSTR)((CXTPReportGroupRow*)pCurRow)->GetCaption());
-			ULONG dwFlags = pRecord->GetRecords()->IsCaseSensitive() ? 0 : NORM_IGNORECASE;
-			LCID lcidnSortLocale = CXTPReportRecordItemVariant::m_nSortLocale;
-			if (lcidnSortLocale == LOCALE_USER_DEFAULT)
-			{
-				lcidnSortLocale = CXTPReportControlLocale::GetActiveLCID();
-			}
-			int nCompareResult = VARCMP_S(varGroup, varGroupRowCaption, lcidnSortLocale, dwFlags) - VARCMP_EQ;
-			if(pColumn->m_bSortIncreasing && nCompareResult > 0 || !pColumn->m_bSortIncreasing && nCompareResult < 0)
-				continue;
-			// find in children
-			if(!pCurRow->GetChilds())
-				continue;
-			if(nCompareResult == 0)
-				pInsertionRowPos = pCurRow->GetChilds()->FindInsertionPos(pRow, bInsertAfter);
-			if(!pInsertionRowPos)
-			{
-				if(nCompareResult != 0)
-					pInsertionRowPos = pCurRow;
-				else
-				{
-					pInsertionRowPos = pCurRow->GetChilds()->GetAt(pCurRow->GetChilds()->GetCount() - 1);
-					bInsertAfter = TRUE;
-				}
-			}
-			break;
-		}
-		if(CompareRows2((const CXTPReportRow**)&pRow, (const CXTPReportRow**)&pCurRow) <= 0)
-		{
-			pInsertionRowPos = pCurRow;
-			break;
-		}
-	}
-
-	return pInsertionRowPos;
-}
-
-void CXTPReportRows::RefreshChildIndices(BOOL bRunInChildren)
-{
-	for(int nIndex = 0; nIndex < GetCount(); nIndex++)
-	{
-		CXTPReportRow* pRow = GetAt(nIndex);
-		pRow->m_nChildIndex = nIndex;
-		ASSERT(pRow->m_pParentRows == this);
-		if(bRunInChildren && pRow->HasChildren() && pRow->GetChilds())
-			pRow->GetChilds()->RefreshChildIndices(bRunInChildren);
-	}
-}
-
-void CXTPReportRows::SetSize(INT_PTR nNewSize, INT_PTR nGrowBy)
-{
-	int nSize = GetCount();
-	if (nNewSize < nSize)
-	{
-		for (int i = (int)nNewSize; i < nSize; i++)
-		{
-			CXTPReportRow* pRow = GetAt(i);
-			if (pRow)
-				pRow->InternalRelease();
-		}
-	}
-
-	m_arrRows.SetSize(nNewSize, nGrowBy);
-}
-
-void CXTPReportRows::ReserveSize(INT_PTR nNewSize, INT_PTR nGrowBy)
-{
-	m_arrRows.ReserveSize(nNewSize, nGrowBy);
-}
-
-
-void CXTPReportRows::SetAt(INT_PTR nIndex, CXTPReportRow* pRow)
-{
-	ASSERT(pRow);
-	ASSERT(nIndex >= 0 && nIndex < GetCount());
-
-	if (!pRow || nIndex < 0 || nIndex >= GetCount())
-		return;
-
-	CXTPReportRow* pRow_prev = GetAt((int)nIndex);
-	if (pRow_prev)
-		pRow_prev->InternalRelease();
-
-	pRow->m_nChildIndex = (int)nIndex;
-	pRow->m_pParentRows = this;
-
-	m_arrRows.SetAt(nIndex, pRow);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportSelectedRows
-
-CXTPReportSelectedRows::CXTPReportSelectedRows(CXTPReportControl* pControl)
-	: m_pControl(pControl)
-{
-
-
-	m_nRowBlockBegin = -1;
-	m_nPosSelected = 0;
-	m_bChanged = FALSE;
-	m_nRowType = xtpRowTypeBody;
-}
-
-void CXTPReportSelectedRows::Clear()
-{
-	if (m_arrSelectedBlocks.GetSize() > 0)
-	{
-		m_bChanged = TRUE;
-
-		_NotifySelChanging(xtpReportSelectionClear);
-	}
-
-	m_arrSelectedBlocks.RemoveAll();
-	m_nRowBlockBegin = -1;
-	m_nRowType = xtpRowTypeBody;
-	m_pControl->RedrawControl();
-}
-
-void CXTPReportSelectedRows::_InsertBlock(int nIndexInsert, int nIndexBegin, int nIndexEnd)
-{
-	SELECTED_BLOCK block;
-	block.nIndexBegin = nIndexBegin;
-	block.nIndexEnd = nIndexEnd;
-	m_arrSelectedBlocks.InsertAt(nIndexInsert, block);
-}
-
-
-void CXTPReportSelectedRows::_OnCollapsed(int nIndex, int nCount)
-{
-	ASSERT(nCount > 0);
-
-	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
-	{
-		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if (nIndexBegin <= nIndex && nIndexEnd > nIndex + 1)
-		{
-			nIndexEnd = max(nIndexBegin + 1, nIndexEnd - nCount);
-
-		}
-		else if (nIndexBegin > nIndex + nCount)
-		{
-			nIndexBegin -= nCount;
-			nIndexEnd -= nCount;
-		}
-		else if (nIndexEnd < nIndex)
-			break;
-		else if (nIndexBegin > nIndex)
-		{
-			nIndexBegin = nIndex;
-			nIndexEnd = max(nIndexBegin + 1, nIndexEnd - nCount);
-		}
-	}
-}
-
-void CXTPReportSelectedRows::_OnExpanded(int nIndex, int nCount)
-{
-	ASSERT(nCount > 0);
-
-	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
-	{
-		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if (nIndexBegin <= nIndex && nIndexEnd > nIndex + 1)
-		{
-			_InsertBlock(i + 1, nIndex + 1 + nCount, nIndexEnd + nCount);
-			m_arrSelectedBlocks[i].nIndexEnd = nIndex + 1;
-
-		}
-		else if (nIndexBegin > nIndex)
-		{
-			nIndexBegin += nCount;
-			nIndexEnd += nCount;
-		}
-		else if (nIndexEnd < nIndex)
-			break;
-
-	}
-}
-
-void CXTPReportSelectedRows::AddBlock(int ib, int ie)
-{
-	int i = 0;
-	int nCount = (int)m_arrSelectedBlocks.GetSize();
-
-	if (nCount > 0)
-	{
-		int& nIndexEnd = m_arrSelectedBlocks[nCount - 1].nIndexEnd;
-
-		if (nIndexEnd == ib)
-		{
-			nIndexEnd = ie + 1;
-			m_pControl->RedrawControl();
-			return;
-		}
-
-		if (nIndexEnd < ib)
-		{
-			i = nCount;
-		}
-	}
-
-	for (; i < nCount; i++)
-	{
-		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if ((nIndexBegin <= ib) && (nIndexEnd > ie))
-		{
-			return;
-		}
-
-		if (nIndexEnd == ib)
-		{
-			nIndexEnd = ie + 1;
-			if (i + 1 < nCount && m_arrSelectedBlocks[i + 1].nIndexBegin == nIndexEnd)
-			{
-				nIndexEnd = m_arrSelectedBlocks[i + 1].nIndexEnd;
-				m_arrSelectedBlocks.RemoveAt(i + 1);
-			}
-
-			m_pControl->RedrawControl();
-			return;
-		}
-		if (nIndexBegin == ie + 1)
-		{
-			nIndexBegin = ib;
-			m_pControl->RedrawControl();
-			return;
-		}
-
-		if (nIndexBegin > ie)
-			break;
-	}
-
-	_InsertBlock(i, ib, ie + 1);
-	m_pControl->RedrawControl();
-}
-
-void CXTPReportSelectedRows::Add(CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return;
-
-	_NotifySelChanging(xtpReportSelectionAdd, pRow);
-
-	int nIndex = pRow->GetIndex();
-
-	if (nIndex != -1)
-	{
-		AddBlock(nIndex, nIndex);
-	}
-}
-
-void CXTPReportSelectedRows::Remove(CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return;
-
-	_NotifySelChanging(xtpReportSelectionRemove, pRow);
-
-	int nIndex = pRow->GetIndex();
-
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
-	{
-		int nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if ((nIndexBegin <= nIndex) && (nIndexEnd > nIndex))
-		{
-			if (nIndexBegin != nIndex)
-			{
-				_InsertBlock(i, nIndexBegin, nIndex);
-				i++;
-			}
-
-			if (nIndexEnd - 1 != nIndex)
-			{
-				_InsertBlock(i + 1, nIndex + 1, nIndexEnd);
-			}
-
-			m_arrSelectedBlocks.RemoveAt(i);
-			m_pControl->RedrawControl();
-			return;
-		}
-	}
-
-}
-
-void CXTPReportSelectedRows::Select(CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return;
-
-	// If new selected row belongs to the other type - clear previous selection.
-	if (m_nRowType != pRow->GetType())
-		Clear();
-
-	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin ==
-		m_arrSelectedBlocks[0].nIndexEnd - 1 && m_arrSelectedBlocks[0].nIndexBegin == pRow->GetIndex())
-	{
-
-	}
-	else
-	{
-		Clear();
-		Add(pRow);
-		m_bChanged = TRUE;
-		m_nRowType = pRow->GetType();
-	}
-}
-
-void CXTPReportSelectedRows::SelectBlock(int nBlockBegin, int nEnd)
-{
-	CXTPReportRows* pRows;
-	switch(m_nRowType)
-	{
-		case xtpRowTypeHeader : pRows = m_pControl->GetHeaderRows(); break;
-		case xtpRowTypeFooter : pRows = m_pControl->GetFooterRows(); break;
-		default : pRows = m_pControl->GetRows(); break;
-	}
-	ASSERT(nBlockBegin >= 0 && nBlockBegin < pRows->GetCount() && nEnd < pRows->GetCount() );
-
-	nBlockBegin = m_nRowBlockBegin != -1 ? m_nRowBlockBegin : nBlockBegin;
-
-	int nBegin = nBlockBegin;
-
-	if (nBegin == -1 || nEnd == -1)
-		return;
-
-	if (nBegin > nEnd)
-	{
-		nBegin = nEnd;
-		nEnd = nBlockBegin;
-	}
-
-	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin == nBegin &&
-		m_arrSelectedBlocks[0].nIndexEnd == nEnd + 1)
+	if (m_pParentMenu != NULL)
 	{
 		return;
 	}
 
-	XTPReportRowType nRowType = m_nRowType;
-	Clear();
-	m_nRowType = nRowType;
-	if (m_nRowBlockBegin == -1) m_nRowBlockBegin = nBlockBegin;
-
-
-	BOOL bSkipGroupFocus = m_pControl->IsSkipGroupsFocusEnabled();
-	BOOL bHasGroups = m_pControl->GetColumns()->GetGroupsOrder()->GetCount() != 0;
-
-	if (!bHasGroups || !bSkipGroupFocus)
+	if (m_pRibbonBar != NULL)
 	{
-		_InsertBlock(0, nBegin, nEnd + 1);
-	}
-	else
-	{
-		for (int i = nBegin; i <= nEnd; i++)
+		ASSERT_VALID(m_pRibbonBar);
+
+		CMFCRibbonBaseElement* pDroppedDown = m_pRibbonBar->GetDroppedDown();
+		if (pDroppedDown != NULL)
 		{
-			CXTPReportRow* pRow = pRows->GetAt(i);
-			if (!pRow)
-				continue;
+			ASSERT_VALID(pDroppedDown);
+			pDroppedDown->ClosePopupMenu();
+		}
+	}
 
-			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded() || (i == nBegin) || (i == nEnd))
-			{
-				Add(pRow);
-			}
+	if (m_pParent != NULL)
+	{
+		ASSERT_VALID(m_pParent);
+
+		CMFCRibbonBaseElement* pDroppedDown = m_pParent->GetDroppedDown();
+		if (pDroppedDown != NULL)
+		{
+			ASSERT_VALID(pDroppedDown);
+			pDroppedDown->ClosePopupMenu();
 		}
 	}
 }
 
-BOOL CXTPReportSelectedRows::Contains(const CXTPReportRow* pRow)
+void CMFCRibbonBaseElement::OnUpdateCmdUI(CMFCRibbonCmdUI* pCmdUI, CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
 {
-	if (!pRow)
-		return FALSE;
+	ASSERT_VALID(this);
+	ENSURE(pCmdUI != NULL);
 
-	if (m_nRowType != pRow->GetType())
-		return FALSE;
-
-	int nIndex = pRow->GetIndex();
-
-	int nCount = (int)m_arrSelectedBlocks.GetSize();
-	if (nCount == 0)
-		return FALSE;
-
-	if (m_arrSelectedBlocks[0].nIndexBegin > nIndex)
-		return FALSE;
-
-	if (m_arrSelectedBlocks[nCount - 1].nIndexEnd <= nIndex)
-		return FALSE;
-
-	for (int i = 0; i < nCount; i++)
+	if (m_nID == 0 || IsSystemCommand(m_nID) ||
+		m_nID >= AFX_IDM_FIRST_MDICHILD)
 	{
-		if ((m_arrSelectedBlocks[i].nIndexBegin <= nIndex) &&
-			(m_arrSelectedBlocks[i].nIndexEnd > nIndex))
-		{
-			return TRUE;
-		}
+		return;
 	}
+
+	pCmdUI->m_pUpdated = this;
+
+	pCmdUI->m_nID = m_nID;
+	pCmdUI->DoUpdate(pTarget, bDisableIfNoHndler);
+
+	pCmdUI->m_pUpdated = NULL;
+}
+
+BOOL CMFCRibbonBaseElement::NotifyControlCommand(BOOL bAccelerator, int nNotifyCode, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(bAccelerator);
+	UNREFERENCED_PARAMETER(nNotifyCode);
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(lParam);
+
 	return FALSE;
 }
 
-void CXTPReportSelectedRows::Invert(CXTPReportRow* pRow)
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::HitTest(CPoint /*point*/)
 {
-	if(pRow->GetType() != m_nRowType)
-		return;
-
-	if (Contains(pRow))
-		Remove (pRow);
-	else Add(pRow);
-
-	m_nRowBlockBegin = -1;
-	m_bChanged = TRUE;
+	ASSERT_VALID(this);
+	return this;
 }
 
-
-int CXTPReportSelectedRows::GetCount()
+CMFCRibbonBar* CMFCRibbonBaseElement::GetTopLevelRibbonBar() const
 {
-	int nCount = 0;
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	ASSERT_VALID(this);
+
+	if (m_pRibbonBar != NULL)
 	{
-		nCount += m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
-	}
-	return nCount;
-}
-
-
-POSITION CXTPReportSelectedRows::GetFirstSelectedRowPosition()
-{
-	if (m_arrSelectedBlocks.GetSize() == 0)
-		return 0;
-
-	m_nPosSelected = 0;
-
-	POSITION pos = 0;
-	pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[0].nIndexBegin + 1);
-	return pos;
-}
-
-CXTPReportRow* CXTPReportSelectedRows::GetNextSelectedRow(POSITION& pos)
-{
-	ASSERT(m_nPosSelected < m_arrSelectedBlocks.GetSize());
-
-	int nIndex = (int)(DWORD_PTR)pos - 1;
-	CXTPReportRow* pRow;
-	switch(m_nRowType)
-	{
-		case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(nIndex); break;
-		case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(nIndex); break;
-		default : pRow = m_pControl->GetRows()->GetAt(nIndex); break;
+		ASSERT_VALID(m_pRibbonBar);
+		return m_pRibbonBar;
 	}
 
-	if (nIndex < m_arrSelectedBlocks[m_nPosSelected].nIndexEnd - 1)
+	if (m_pParent != NULL)
 	{
-		(int)(DWORD_PTR)pos++;
+		ASSERT_VALID(m_pParent);
+
+		if (m_pParent->GetParentRibbonBar() != NULL)
+		{
+			ASSERT_VALID(m_pParent->GetParentRibbonBar());
+			return m_pParent->GetParentRibbonBar();
+		}
+	}
+
+	if (m_pParentMenu != NULL)
+	{
+		ASSERT_VALID(m_pParentMenu);
+		return m_pParentMenu->GetTopLevelRibbonBar();
+	}
+
+	return NULL;
+}
+
+void CMFCRibbonBaseElement::SetDroppedDown(CMFCPopupMenu* pPopupMenu)
+{
+	ASSERT_VALID(this);
+
+	m_pPopupMenu = pPopupMenu;
+
+	if (pPopupMenu != NULL)
+	{
+		ASSERT_VALID(pPopupMenu);
+		pPopupMenu->SetParentRibbonElement(this);
 	}
 	else
 	{
-		if (m_nPosSelected >= m_arrSelectedBlocks.GetSize() - 1)
+		NotifyHighlightListItem(-1);
+	}
+
+	BOOL bWasDroppedDown = m_bIsDroppedDown;
+	m_bIsDroppedDown = pPopupMenu != NULL;
+
+	if (!m_bIsDroppedDown)
+	{
+		m_bIsHighlighted = m_bIsPressed = FALSE;
+	}
+
+	if (bWasDroppedDown != m_bIsDroppedDown)
+	{
+		Redraw();
+	}
+
+	if (m_pParentMenu->GetSafeHwnd() != NULL && pPopupMenu == NULL)
+	{
+		ASSERT_VALID(m_pParentMenu);
+		ASSERT_VALID(m_pParentMenu->GetParent());
+
+		CMFCPopupMenu::m_pActivePopupMenu = (CMFCPopupMenu*) m_pParentMenu->GetParent();
+	}
+
+	m_bOnBeforeShowItemMenuIsSent = FALSE;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::Find(const CMFCRibbonBaseElement* pElement)
+{
+	ASSERT_VALID(this);
+	return (pElement == this) ? this : NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::FindByID(UINT uiCmdID)
+{
+	ASSERT_VALID(this);
+	return (m_nID == uiCmdID) ? this : NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::FindByData(DWORD_PTR dwData)
+{
+	ASSERT_VALID(this);
+	return (m_dwData == dwData) ? this : NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::FindByOriginal(CMFCRibbonBaseElement* pOriginal)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pOriginal);
+	return (m_pOriginal == pOriginal) ? this : NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::GetPressed()
+{
+	ASSERT_VALID(this);
+	return IsPressed() ? this : NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::GetDroppedDown()
+{
+	ASSERT_VALID(this);
+	return IsDroppedDown() ? this : NULL;
+}
+
+CMFCRibbonBaseElement* CMFCRibbonBaseElement::GetHighlighted()
+{
+	ASSERT_VALID(this);
+	return IsHighlighted() ? this : NULL;
+}
+
+BOOL CMFCRibbonBaseElement::ReplaceByID(UINT uiCmdID, CMFCRibbonBaseElement* pElem)
+{
+	ASSERT_VALID(this);
+	UNREFERENCED_PARAMETER(uiCmdID);
+	UNREFERENCED_PARAMETER(pElem);
+
+	return FALSE;
+}
+
+void CMFCRibbonBaseElement::SetParentCategory(CMFCRibbonCategory* pParent)
+{
+	ASSERT_VALID(this);
+	m_pParent = pParent;
+}
+
+void CMFCRibbonBaseElement::CopyFrom(const CMFCRibbonBaseElement& src)
+{
+	ASSERT_VALID(this);
+
+	m_nID = src.m_nID;
+	m_dwData = src.m_dwData;
+	m_bTextAlwaysOnRight = src.m_bTextAlwaysOnRight;
+	m_strText = src.m_strText;
+	m_strKeys = src.m_strKeys;
+	m_strMenuKeys = src.m_strMenuKeys;
+	m_pParent = src.m_pParent;
+	m_pParentGroup = src.m_pParentGroup;
+	m_strToolTip = src.m_strToolTip;
+	m_strDescription = src.m_strDescription;
+	m_bQuickAccessMode = src.m_bQuickAccessMode;
+	m_bIsVisible = src.m_bIsVisible;
+	m_bIsDefaultMenuLook = src.m_bIsDefaultMenuLook;
+	m_bIsRadio = src.m_bIsRadio;
+	m_bIsAlwaysLarge = src.m_bIsAlwaysLarge;
+	m_bIsOnPaletteTop = src.m_bIsOnPaletteTop;
+}
+
+void CMFCRibbonBaseElement::SetParentMenu(CMFCRibbonPanelMenuBar* pMenuBar)
+{
+	ASSERT_VALID(this);
+
+	m_pParentMenu = pMenuBar;
+}
+
+void CMFCRibbonBaseElement::SetOriginal(CMFCRibbonBaseElement* pOriginal)
+{
+	ASSERT_VALID(this);
+
+	if (pOriginal != NULL)
+	{
+		ASSERT_VALID(pOriginal);
+
+		while (pOriginal->m_pOriginal != NULL)
 		{
-			pos = NULL;
-		}
-		else
-		{
-			m_nPosSelected++;
-			pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[m_nPosSelected].nIndexBegin + 1);
+			pOriginal = pOriginal->m_pOriginal;
 		}
 	}
 
-	return pRow;
+	m_pOriginal = pOriginal;
 }
 
-
-
-CXTPReportRow* CXTPReportSelectedRows::GetAt (int nIndex)
+CWnd* CMFCRibbonBaseElement::GetParentWnd() const
 {
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
+	ASSERT_VALID(this);
+
+	if (m_pRibbonBar != NULL)
 	{
-		int nCount = m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
-		if (nCount <= nIndex)
+		ASSERT_VALID(m_pRibbonBar);
+		return m_pRibbonBar;
+	}
+	else if (m_pParentMenu != NULL)
+	{
+		ASSERT_VALID(m_pParentMenu);
+		return m_pParentMenu;
+	}
+	else if (m_pParent != NULL)
+	{
+		ASSERT_VALID(m_pParent);
+		ASSERT_VALID(m_pParent->GetParentRibbonBar());
+
+		return m_pParent->GetParentRibbonBar();
+	}
+
+	return NULL;
+}
+
+CMFCRibbonPanel* CMFCRibbonBaseElement::GetParentPanel() const
+{
+	ASSERT_VALID(this);
+
+	if (m_pParentMenu != NULL)
+	{
+		ASSERT_VALID(m_pParentMenu);
+
+		if (m_pParentMenu->m_pCategory != NULL)
 		{
-			nIndex -= nCount;
+			ASSERT_VALID(m_pParentMenu->m_pCategory);
+			return m_pParentMenu->m_pCategory->FindPanelWithElem(this);
+		}
+
+		return m_pParentMenu->m_pPanel;
+	}
+	else if (m_pParent != NULL)
+	{
+		ASSERT_VALID(m_pParent);
+		return m_pParent->FindPanelWithElem(this);
+	}
+
+	return NULL;
+}
+
+BOOL CMFCRibbonBaseElement::IsMenuMode() const
+{
+	ASSERT_VALID(this);
+
+	if (m_pParentMenu != NULL)
+	{
+		ASSERT_VALID(m_pParentMenu);
+
+		if (m_pParentMenu->m_pPanel == NULL)
+		{
+			return FALSE;
+		}
+
+		ASSERT_VALID(m_pParentMenu->m_pPanel);
+
+		return m_pParentMenu->m_pPanel->IsMenuMode();
+	}
+
+	return FALSE;
+}
+
+void CMFCRibbonBaseElement::Redraw()
+{
+	ASSERT_VALID(this);
+
+	if (m_rect.IsRectEmpty())
+	{
+		return;
+	}
+
+	if (m_pParentMenu->GetSafeHwnd() != NULL)
+	{
+		m_pParentMenu->RedrawWindow(m_rect);
+		return;
+	}
+
+	CWnd* pWndParent = GetParentWnd();
+
+	if (pWndParent->GetSafeHwnd() != NULL)
+	{
+		pWndParent->RedrawWindow(m_rect);
+	}
+}
+
+CString CMFCRibbonBaseElement::GetToolTipText() const
+{
+	ASSERT_VALID(this);
+
+	if (IsDroppedDown())
+	{
+		return _T("");
+	}
+
+	CString strTipText = m_strToolTip;
+
+	if (m_bQuickAccessMode && strTipText.IsEmpty())
+	{
+		strTipText = m_strText;
+
+		const CString strDummyAmpSeq = _T("\001\001");
+
+		strTipText.Replace(_T("&&"), strDummyAmpSeq);
+		strTipText.Remove(_T('&'));
+		strTipText.Replace(strDummyAmpSeq, _T("&"));
+	}
+
+	//--------------------
+	// Add shortcut label:
+	//--------------------
+	CWnd* pWndParent = NULL;
+
+	if (m_pRibbonBar != NULL)
+	{
+		pWndParent = m_pRibbonBar;
+	}
+	else if (m_pParentMenu != NULL)
+	{
+		pWndParent = m_pParentMenu;
+	}
+	else if (m_pParent != NULL)
+	{
+		ASSERT_VALID(m_pParent);
+		pWndParent = m_pParent->GetParentRibbonBar();
+	}
+
+	CString strLabel;
+	CFrameWnd* pParentFrame = AFXGetParentFrame(pWndParent) == NULL ? NULL : AFXGetTopLevelFrame(AFXGetParentFrame(pWndParent));
+
+	if (pParentFrame != NULL && (CKeyboardManager::FindDefaultAccelerator(m_nID, strLabel, pParentFrame, TRUE) ||
+		CKeyboardManager::FindDefaultAccelerator(m_nID, strLabel, pParentFrame->GetActiveFrame(), FALSE)))
+	{
+		strTipText += _T(" (");
+		strTipText += strLabel;
+		strTipText += _T(')');
+	}
+
+	return strTipText;
+}
+
+CString CMFCRibbonBaseElement::GetDescription() const
+{
+	ASSERT_VALID(this);
+	return m_strDescription;
+}
+
+void CMFCRibbonBaseElement::SetToolTipText(LPCTSTR lpszText)
+{
+	ASSERT_VALID(this);
+	m_strToolTip = lpszText == NULL ? _T("") : lpszText;
+}
+
+void CMFCRibbonBaseElement::SetDescription(LPCTSTR lpszText)
+{
+	ASSERT_VALID(this);
+	m_strDescription = lpszText == NULL ? _T("") : lpszText;
+}
+
+void CMFCRibbonBaseElement::UpdateTooltipInfo()
+{
+	ASSERT_VALID(this);
+
+	if (m_nID == 0 || m_nID == (UINT)-1)
+	{
+		return;
+	}
+
+	CString strText;
+	if (!strText.LoadString(m_nID))
+	{
+		return;
+	}
+
+	m_strToolTip.Empty();
+	m_strDescription.Empty();
+
+	if (strText.IsEmpty())
+	{
+		return;
+	}
+
+	AfxExtractSubString(m_strDescription, strText, 0);
+	AfxExtractSubString(m_strToolTip, strText, 1, '\n');
+
+	const CString strDummyAmpSeq = _T("\001\001");
+
+	m_strToolTip.Replace(_T("&&"), strDummyAmpSeq);
+	m_strToolTip.Remove(_T('&'));
+	m_strToolTip.Replace(strDummyAmpSeq, _T("&"));
+}
+
+void CMFCRibbonBaseElement::OnAfterChangeRect(CDC* /*pDC*/)
+{
+	ASSERT_VALID(this);
+
+	if (m_strToolTip.IsEmpty())
+	{
+		UpdateTooltipInfo();
+	}
+}
+
+BOOL CMFCRibbonBaseElement::NotifyCommand(BOOL bWithDelay)
+{
+	ASSERT_VALID(this);
+
+	if (m_pOriginal != NULL)
+	{
+		if (m_bQuickAccessMode && (m_bIsHighlighted || m_bIsPressed || m_bIsFocused))
+		{
+			m_bIsHighlighted = m_bIsPressed = m_bIsFocused = FALSE;
+			Redraw();
+		}
+
+		ASSERT_VALID(m_pOriginal);
+		return m_pOriginal->NotifyCommand(bWithDelay);
+	}
+
+	UINT uiID = GetNotifyID();
+
+	if (uiID == 0 || uiID == (UINT)-1)
+	{
+		return FALSE;
+	}
+
+	CMFCRibbonBar* pRibbonBar = GetTopLevelRibbonBar();
+	if (pRibbonBar == NULL)
+	{
+		return FALSE;
+	}
+
+	ASSERT_VALID(pRibbonBar);
+
+	CWnd* pWndParent = pRibbonBar->GetParent();
+	if (pWndParent == NULL)
+	{
+		return FALSE;
+	}
+
+	m_bIsHighlighted = m_bIsPressed = m_bIsFocused = FALSE;
+
+	Redraw();
+
+	ASSERT_VALID(pWndParent);
+
+	if (uiID == AFX_IDM_FIRST_MDICHILD)
+	{
+		HWND hwndMDIChild = (HWND) m_dwData;
+
+		if (::IsWindow(hwndMDIChild))
+		{
+			CMFCRibbonBar* pTopLevelRibbon = GetTopLevelRibbonBar();
+			if (pTopLevelRibbon != NULL)
+			{
+				CMDIFrameWndEx* pMDIFrameWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, pTopLevelRibbon->GetTopLevelFrame());
+
+				if (pMDIFrameWnd != NULL)
+				{
+					WINDOWPLACEMENT	wndpl;
+					wndpl.length = sizeof(WINDOWPLACEMENT);
+					::GetWindowPlacement(hwndMDIChild,&wndpl);
+
+					if (wndpl.showCmd == SW_SHOWMINIMIZED)
+					{
+						::ShowWindow(hwndMDIChild, SW_RESTORE);
+					}
+
+					if (bWithDelay)
+					{
+						::PostMessage(pMDIFrameWnd->m_hWndMDIClient, WM_MDIACTIVATE, (WPARAM) hwndMDIChild, 0);
+					}
+					else
+					{
+						::SendMessage(pMDIFrameWnd->m_hWndMDIClient, WM_MDIACTIVATE, (WPARAM) hwndMDIChild, 0);
+					}
+
+					return TRUE;
+				}
+			}
+		}
+	}
+
+	if (bWithDelay)
+	{
+		pWndParent->PostMessage(WM_COMMAND, uiID);
+	}
+	else
+	{
+		pWndParent->SendMessage(WM_COMMAND, uiID);
+	}
+
+	return TRUE;
+}
+
+void CMFCRibbonBaseElement::PostMenuCommand(UINT /*uiCmdId*/)
+{
+	ASSERT_VALID(this);
+
+	m_bIsDroppedDown = FALSE;
+	Redraw();
+
+	if (m_pParentMenu != NULL)
+	{
+		ASSERT_VALID(m_pParentMenu);
+		m_pParentMenu->GetParent()->SendMessage(WM_CLOSE);
+	}
+}
+
+void CMFCRibbonBaseElement::GetElementsByID(UINT uiCmdID, CArray <CMFCRibbonBaseElement*, CMFCRibbonBaseElement*>& arElements)
+{
+	ASSERT_VALID(this);
+
+	if (uiCmdID == m_nID)
+	{
+		arElements.Add(this);
+	}
+}
+
+void CMFCRibbonBaseElement::GetItemIDsList(CList<UINT,UINT>& lstItems) const
+{
+	ASSERT_VALID(this);
+
+	if (m_nID != 0 && m_nID != (UINT)-1 && lstItems.Find(m_nID) == NULL)
+	{
+		lstItems.AddTail(m_nID);
+	}
+}
+
+int CMFCRibbonBaseElement::AddToListBox(CMFCRibbonCommandsListBox* pWndListBox, BOOL /*bDeep*/)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pWndListBox);
+	ENSURE(pWndListBox->GetSafeHwnd() != NULL);
+
+	if (m_nID == 0 || m_nID == (UINT)-1)
+	{
+		return -1;
+	}
+
+	if (m_nID >= ID_FILE_MRU_FILE1 && m_nID <= ID_FILE_MRU_FILE16)
+	{
+		return -1;
+	}
+
+	for (int i = 0; i < pWndListBox->GetCount (); i++)
+	{
+		CMFCRibbonBaseElement* pItem = (CMFCRibbonBaseElement*) pWndListBox->GetItemData (i);
+		if (pItem == NULL)
+		{
 			continue;
 		}
 
-		CXTPReportRow* pRow;
-		switch(m_nRowType)
+		ASSERT_VALID (pItem);
+
+		if (pItem->m_nID == m_nID && !pItem->HasMenu ())
 		{
-			case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
-			case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
-			default : pRow = m_pControl->GetRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
+			// Already exist, don't add it
+			return -1;
 		}
-		return pRow;
 	}
 
-	return 0;
+
+	UpdateTooltipInfo();
+
+	CString strText = m_strToolTip;
+	if (strText.IsEmpty())
+	{
+		strText = GetText();
+	}
+
+	const CString strDummyAmpSeq = _T("\001\001");
+
+	strText.Replace(_T("&&"), strDummyAmpSeq);
+	strText.Remove(_T('&'));
+	strText.Replace(strDummyAmpSeq, _T("&"));
+
+	int nIndex = pWndListBox->AddString(strText);
+	pWndListBox->SetItemData(nIndex, (DWORD_PTR) this);
+
+	return nIndex;
 }
 
-void CXTPReportSelectedRows::_NotifySelChanging(XTPReportSelectionChangeType nType, CXTPReportRow* pRow)
+void CMFCRibbonBaseElement::OnDrawOnList(CDC* pDC, CString strText, int nTextOffset, CRect rect, BOOL /*bIsSelected*/, BOOL /*bHighlighted*/)
 {
-	ASSERT(m_pControl);
-	if (!m_pControl)
-		return;
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
 
-	XTP_NM_SELECTION_CHANGING nm;
-	::ZeroMemory(&nm, sizeof(nm));
+	BOOL bIsDisabled = m_bIsDisabled;
+	m_bIsDisabled = FALSE;
 
-	nm.pRow = pRow;
-	nm.nType = nType;
+	if (m_bDrawDefaultIcon)
+	{
+		CRect rectImage = rect;
+		rectImage.right = rect.left + nTextOffset;
 
-	m_pControl->SendNotifyMessage(XTP_NM_REPORT_SELCHANGING,(NMHDR*)&nm);
+		CMFCVisualManager::GetInstance()->OnDrawDefaultRibbonImage(pDC, rectImage);
+	}
+
+	CRect rectText = rect;
+
+	rectText.left += nTextOffset;
+
+	const int nXMargin = 3;
+	rectText.DeflateRect(nXMargin, 0);
+
+	pDC->DrawText(strText, rectText, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
+	m_bIsDisabled = bIsDisabled;
 }
+
+void CMFCRibbonBaseElement::ClosePopupMenu()
+{
+	ASSERT_VALID(this);
+
+	if (m_pPopupMenu != NULL && ::IsWindow(m_pPopupMenu->m_hWnd))
+	{
+		if (m_pPopupMenu->InCommand())
+		{
+			return;
+		}
+
+		m_pPopupMenu->m_bAutoDestroyParent = FALSE;
+		m_pPopupMenu->CloseMenu();
+	}
+
+	m_pPopupMenu = NULL;
+	m_bOnBeforeShowItemMenuIsSent = FALSE;
+}
+
+BOOL CMFCRibbonBaseElement::CanBeAddedToQuickAccessToolBar() const
+{
+	ASSERT_VALID(this);
+
+	return m_nID != 0 && m_nID != (UINT)-1 && !IsStandardCommand(m_nID);
+}
+
+BOOL CMFCRibbonBaseElement::OnAddToQAToolbar(CMFCRibbonQuickAccessToolBar& qat)
+{
+	qat.Add(this);
+	return TRUE;
+}
+
+BOOL CMFCRibbonBaseElement::StretchToWholeRow(CDC* /*pDC*/, int nHeight)
+{
+	ASSERT_VALID(this);
+
+	if (!CanBeStretched() || m_bCompactMode || m_bIntermediateMode)
+	{
+		return FALSE;
+	}
+
+	m_rect.bottom = m_rect.top + nHeight;
+	return TRUE;
+}
+
+BOOL CMFCRibbonBaseElement::SetACCData(CWnd* pParent, CAccessibilityData& data)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pParent);
+
+	data.Clear();
+
+	data.m_strAccName = m_strText.IsEmpty() ? m_strToolTip : m_strText;
+	data.m_strAccName.Remove(_T('&'));
+	data.m_strAccName.Trim();
+
+	data.m_nAccRole = IsMenuMode() ? ROLE_SYSTEM_MENUITEM : ROLE_SYSTEM_PUSHBUTTON;
+
+	data.m_strDescription = m_strDescription;
+	data.m_nAccHit = 1;
+	data.m_strAccDefAction = IsMenuMode () ? _T("Execute") : _T("Press");
+
+	data.m_bAccState = STATE_SYSTEM_FOCUSABLE;
+	if (IsChecked())
+	{
+		data.m_bAccState |= STATE_SYSTEM_CHECKED;
+	}
+
+	if (IsDisabled())
+	{
+		data.m_bAccState |= STATE_SYSTEM_UNAVAILABLE;
+	}
+
+	if (IsPressed() || IsMenuMode() && IsHighlighted())
+	{
+		data.m_bAccState |= STATE_SYSTEM_FOCUSED;
+	}
+
+	data.m_rectAccLocation = m_rect;
+	pParent->ClientToScreen(&data.m_rectAccLocation);
+
+	CString strKeys = m_strKeys;
+
+	if (!m_bQuickAccessMode && m_pParentMenu != NULL && strKeys.GetLength() < 2)
+	{
+		// Try to find key from label:
+		int nIndexAmp = m_strText.Find(_T('&'));
+
+		if (nIndexAmp >= 0 && nIndexAmp < m_strText.GetLength() - 1 && m_strText[nIndexAmp + 1] != _T('&'))
+		{
+			strKeys = m_strText.Mid(nIndexAmp + 1, 1);
+		}
+	}
+
+	if (!strKeys.IsEmpty())
+	{
+		data.m_strAccKeys = _T("Alt, ");
+
+		if (m_pParent != NULL)
+		{
+			ASSERT_VALID(m_pParent);
+			data.m_strAccKeys += m_pParent->m_Tab.m_strKeys + _T(", ");
+		}
+
+		data.m_strAccKeys += strKeys;
+	}
+
+	return TRUE;
+}
+
+void CMFCRibbonBaseElement::OnDrawKeyTip(CDC* pDC, const CRect& rect, BOOL bIsMenu)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	if (m_strKeys.IsEmpty())
+	{
+		return;
+	}
+
+	CMFCVisualManager::GetInstance()->OnDrawRibbonKeyTip(pDC, this, rect, bIsMenu ? m_strMenuKeys : m_strKeys);
+}
+
+CSize CMFCRibbonBaseElement::GetKeyTipSize(CDC* pDC)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	if (!m_bQuickAccessMode && m_pParentMenu != NULL && m_strKeys.GetLength() < 2)
+	{
+		// Try to find key from label:
+		int nIndexAmp = m_strText.Find(_T('&'));
+
+		if (nIndexAmp >= 0 && nIndexAmp < m_strText.GetLength() - 1 && m_strText [nIndexAmp + 1] != _T('&'))
+		{
+			m_strKeys = m_strText.Mid(nIndexAmp + 1, 1);
+		}
+	}
+
+	if (m_strKeys.IsEmpty())
+	{
+		return CSize(0, 0);
+	}
+
+	const CString strMin = _T("O");
+
+	CSize sizeMin = pDC->GetTextExtent(strMin);
+	CSize sizeText = pDC->GetTextExtent(m_strKeys);
+
+	sizeText.cx = max(sizeText.cx, sizeMin.cx);
+	sizeText.cy = max(sizeText.cy, sizeMin.cy);
+
+	return CSize(sizeText.cx + 10, sizeText.cy + 2);
+}
+
+BOOL CMFCRibbonBaseElement::OnKey(BOOL bIsMenuKey)
+{
+	ASSERT_VALID(this);
+
+	if (m_bIsDisabled)
+	{
+		return FALSE;
+	}
+
+	if (m_rect.IsRectEmpty())
+	{
+		CMFCRibbonPanel* pParentPanel = GetParentPanel();
+		if (pParentPanel != NULL)
+		{
+			ASSERT_VALID(pParentPanel);
+
+			if (pParentPanel->IsCollapsed())
+			{
+				if (!HasMenu())
+				{
+					if (!NotifyCommand(TRUE))
+					{
+						return FALSE;
+					}
+
+					if (m_pParentMenu != NULL)
+					{
+						CMFCRibbonBar* pTopLevelRibbon = GetTopLevelRibbonBar();
+
+						// Close menu:
+						ASSERT_VALID(m_pParentMenu);
+
+						CFrameWnd* pParentFrame = AFXGetParentFrame(m_pParentMenu);
+						ASSERT_VALID(pParentFrame);
+
+						pParentFrame->DestroyWindow();
+
+						if (pTopLevelRibbon != NULL && pTopLevelRibbon->GetTopLevelFrame() != NULL)
+						{
+							pTopLevelRibbon->GetTopLevelFrame()->SetFocus();
+						}
+					}
+
+					return TRUE;
+				}
+				else
+				{
+					CMFCRibbonBar* pTopLevelRibbon = GetTopLevelRibbonBar();
+					if (pTopLevelRibbon != NULL)
+					{
+						pTopLevelRibbon->HideKeyTips();
+					}
+
+					CMFCRibbonPanelMenu* pPopup = pParentPanel->ShowPopup();
+					if (pPopup != NULL)
+					{
+						ASSERT_VALID(pPopup);
+
+						CMFCRibbonBaseElement* pPopupElem = pPopup->FindByOrigin(this);
+						if (pPopupElem != NULL)
+						{
+							ASSERT_VALID(pPopupElem);
+							return pPopupElem->OnKey(bIsMenuKey);
+						}
+					}
+				}
+			}
+		}
+
+		return FALSE;
+	}
+
+	return NotifyCommand(TRUE);
+}
+
+void CMFCRibbonBaseElement::AddToKeyList(CArray<CMFCRibbonKeyTip*,CMFCRibbonKeyTip*>& arElems)
+{
+	ASSERT_VALID(this);
+
+	arElems.Add(new CMFCRibbonKeyTip(this));
+
+	if (!m_strMenuKeys.IsEmpty() && HasMenu())
+	{
+		arElems.Add(new CMFCRibbonKeyTip(this, TRUE));
+	}
+}
+
+int CMFCRibbonBaseElement::GetDropDownImageWidth() const
+{
+	ASSERT_VALID(this);
+
+	int cxImage = CMenuImages::Size().cx;
+
+	if (afxGlobalData.GetRibbonImageScale() > 1.)
+	{
+		cxImage = (int)(.5 + afxGlobalData.GetRibbonImageScale() * cxImage);
+	}
+
+	return cxImage;
+}
+
+void CMFCRibbonBaseElement::NotifyHighlightListItem(int nIndex)
+{
+	ASSERT_VALID(this);
+
+	CMFCRibbonBar* pRibbonBar = GetTopLevelRibbonBar();
+	if (pRibbonBar == NULL)
+	{
+		return;
+	}
+
+	ASSERT_VALID(pRibbonBar);
+
+	CWnd* pWndParent = pRibbonBar->GetParent();
+	if (pWndParent == NULL)
+	{
+		return;
+	}
+
+	pWndParent->SendMessage(AFX_WM_ON_HIGHLIGHT_RIBBON_LIST_ITEM, (WPARAM)nIndex, (LPARAM)this);
+}
+
+void CMFCRibbonBaseElement::OnShowPopupMenu()
+{
+	ASSERT_VALID(this);
+
+	CMFCRibbonBar* pRibbonBar = GetTopLevelRibbonBar();
+	if (pRibbonBar == NULL)
+	{
+		return;
+	}
+
+	ASSERT_VALID(pRibbonBar);
+
+	CWnd* pWndParent = pRibbonBar->GetParent();
+	if (pWndParent == NULL)
+	{
+		return;
+	}
+
+	if (!m_bOnBeforeShowItemMenuIsSent)
+	{
+		m_bOnBeforeShowItemMenuIsSent = TRUE;
+		pWndParent->SendMessage(AFX_WM_ON_BEFORE_SHOW_RIBBON_ITEM_MENU, (WPARAM)0, (LPARAM)this);
+	}
+}
+
+
 

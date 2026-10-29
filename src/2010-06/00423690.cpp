@@ -1,60 +1,39 @@
+// from server: 61% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll v8datamodel/Visit.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Visit.h"
-#include "util/Http.h"
-#include "util/standardout.h"
-#include <G3D/format.h>
-#include <boost/thread.hpp>
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
 
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string), 1> UploadUrlFunction(&RBX::Visit::setUploadUrl, "SetUploadUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, std::string(void), 0> getUploadUrl(&RBX::Visit::getUploadUrl, "GetUploadUrl", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string, int), 2> desc_setPing(&RBX::Visit::setPing, "SetPing", "pingUrl", "interval", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        instances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex narrow character template instances.
+  */
 
-namespace RBX
-{
-	Visit::Visit()
-		: uploadUrl("NoVisit")
-	{
-	}
+#define BOOST_REGEX_SOURCE
 
-	Visit::~Visit() {}
+#include <boost/regex/config.hpp>
 
-	void Visit::setPing(std::string url, int interval)
-	{
-		if (url != "")
-		{
-			pingThread.reset(new worker_thread(boost::bind(&Visit::ping, url, interval), "rbx_visit"));
-		}
-		else
-		{
-			pingThread.reset();
-		}
-	}
+#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_NARROW_INSTANTIATE
 
-	worker_thread::work_result Visit::ping(std::string url, int interval)
-	{
-		try
-		{
-			std::string message;
-			Http(url).get(message);
-		}
-		catch (std::exception& exp)
-		{
-			std::string failMessage = G3D::format("ping %s failed: %s", url.c_str(), exp.what());
-			StandardOut::singleton()->print(MESSAGE_WARNING, failMessage.c_str());
-		}
+#ifdef __BORLANDC__
+#pragma hrdstop
+#endif
 
-		boost::xtime xt;
-		boost::xtime_get(&xt, boost::TIME_UTC);
+#include <boost/regex.hpp>
 
-		xt.sec += interval;
-
-		boost::thread::sleep(xt);
-
-		return worker_thread::more;
-	}
-}
+#endif

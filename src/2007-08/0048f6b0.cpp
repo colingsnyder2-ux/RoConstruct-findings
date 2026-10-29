@@ -1,74 +1,28 @@
-// from server: 54% by colin
-// roc 2007-08 0048f6b0  unit: RBX::Network::Player  size: 413 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0048f6b0
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_8cd54c815be08ee2.cpp
 
-extern "C" {
-    int __stdcall MSVCP80_0x77e698();
-    int __stdcall MSVCP80_0x77e6a4();
-    int __stdcall MSVCP80_0x77e6ac();
-}
-
-struct std_string {
-    void ctor();
-    void ctor(const char*);
-    void dtor();
-};
-
-struct Player {
-    char pad[0x8b5188];
-    void ctor();
-};
-
-void __fastcall sub_48e860(Player* self);
-void __fastcall sub_48f0c0(Player* self);
-void __fastcall sub_4868c0(void* self);
-void __fastcall sub_541bf0(Player* self, std_string* s);
-
-void Player::ctor()
-{
-    sub_48e860(this);
-
-    *(int*)((char*)this + 0xe8) = 0x79af30;
-    *(int*)((char*)this + 0xf0) = 0;
-    *(int*)((char*)this + 0xf4) = 0;
-    *(int*)((char*)this + 0xf8) = 0;
-    *(int*)((char*)this + 0xfc) = 0;
-    *(int*)((char*)this + 0x100) = 0x79af40;
-    *(int*)((char*)this + 0x108) = 0;
-    *(int*)((char*)this + 0x10c) = 0;
-    *(int*)((char*)this + 0x110) = 0;
-    *(int*)((char*)this + 0x114) = 0;
-    *(int*)((char*)this + 0x00) = 0x79b474;
-    *(int*)((char*)this + 0x04) = 0x79b46c;
-    *(int*)((char*)this + 0x10) = 0x79b464;
-    *(int*)((char*)this + 0x14) = 0x79b454;
-    *(int*)((char*)this + 0x2c) = 0x79b444;
-    *(int*)((char*)this + 0x44) = 0x79b434;
-    *(int*)((char*)this + 0x5c) = 0x79b424;
-    *(int*)((char*)this + 0x74) = 0x79b414;
-    *(int*)((char*)this + 0x8c) = 0x79b404;
-    *(int*)((char*)this + 0xe8) = 0x79b3f4;
-    *(int*)((char*)this + 0x100) = 0x79b3e4;
-    *(int*)((char*)this + 0x118) = 0;
-    *(int*)((char*)this + 0x11c) = 0;
-    *(int*)((char*)this + 0x120) = 1;
-    *(char*)((char*)this + 0x124) = 1;
-    *(int*)((char*)this + 0x12c) = 0;
-    *(int*)((char*)this + 0x130) = 0;
-    *(char*)((char*)this + 0x134) = 0;
-    *(char*)((char*)this + 0x138) = 0;
-    MSVCP80_0x77e6a4();
-    *(double*)((char*)this + 0x160) = 0.0;
-    *(char*)((char*)this + 0x158) = 0;
-    *(char*)((char*)this + 0x159) = 0;
-    *(int*)((char*)this + 0x15c) = 0;
-    sub_48f0c0(this);
-    sub_4868c0(this);
-    MSVCP80_0x77e698();
-    sub_48f0c0(this);
-    sub_4868c0(this);
-    std_string s;
-    s.ctor();
-    sub_541bf0(this, &s);
-    s.dtor();
-}
+// Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include "Player.cpp"

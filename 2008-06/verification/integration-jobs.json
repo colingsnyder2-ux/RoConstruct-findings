@@ -6819,11 +6819,30 @@
         ]
       ]
     },
-    "phase": "baseline: building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "b4f31bf7444ed7ea4a07f0c6b2d4353263f3aa22ab9a5a166050255740aebcd9",
+      "credits": 1,
+      "distinct_after": 9759,
+      "distinct_before": 9758,
+      "gains": [
+        "006308f0"
+      ],
+      "input_hash": "c86eeca744d2afeb0f50815cb9edbe07b60aa1b0bd4f117e061527faae534bd4",
+      "losses": [],
+      "new_distinct": [
+        "006308f0"
+      ],
+      "overlay_hash": "bed44e6721adcffb758650c0f50bdfd6119272c7947eaa36fb5e3312b047dbcf",
+      "owned_after": 3284,
+      "owned_before": 3283,
+      "rebased": false,
+      "submitted_revision": "b4f31bf7444ed7ea4a07f0c6b2d4353263f3aa22ab9a5a166050255740aebcd9"
+    },
+    "state": "accepted",
     "unit": "RBX::BodyMover",
-    "updated": 1793312662.42337,
+    "updated": 1793313531.148822,
     "user": "coldek"
   }
 ]

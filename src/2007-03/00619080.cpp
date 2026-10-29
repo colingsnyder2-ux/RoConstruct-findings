@@ -1,828 +1,454 @@
+// from server: 45% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreBillboardChain.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs v8tree/Instance.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-(Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+namespace RBX
+{
+	const char* sInstance = "Instance";
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-
-// Thanks to Vincent Cantin (karmaGfa) for the original implementation of this
-// class, although it has now been mostly rewritten
-
-#include "OgreStableHeaders.h"
-#include "OgreBillboardChain.h"
-
-#include "OgreSimpleRenderable.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreNode.h"
-#include "OgreCamera.h"
-#include "OgreRoot.h"
-#include "OgreMaterialManager.h"
-#include "OgreLogManager.h"
-#include "OgreStringConverter.h"
-
-namespace Ogre {
-	const size_t BillboardChain::SEGMENT_EMPTY = 0xffffffff;
-	//-----------------------------------------------------------------------
-	BillboardChain::Element::Element()
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true),
+		  guid()
 	{
 	}
-	//-----------------------------------------------------------------------
-	BillboardChain::Element::Element(Vector3 _position,
-		Real _width,
-		Real _texCoord,
-		ColourValue _colour) :
-	position(_position),
-		width(_width),
-		texCoord(_texCoord),
-		colour(_colour)
+
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true),
+		  guid()
 	{
 	}
-	//-----------------------------------------------------------------------
-	BillboardChain::BillboardChain(const String& name, size_t maxElements,
-		size_t numberOfChains, bool useTextureCoords, bool useColours, bool dynamic)
-		:MovableObject(name),
-		mMaxElementsPerChain(maxElements),
-		mChainCount(numberOfChains),
-		mUseTexCoords(useTextureCoords),
-		mUseVertexColour(useColours),
-		mDynamic(dynamic),
-		mVertexDeclDirty(true),
-		mBuffersNeedRecreating(true),
-		mBoundsDirty(true),
-		mIndexContentDirty(true),
-		mRadius(0.0f),
-		mTexCoordDir(TCD_U)
+
+	Instance::~Instance()
 	{
-		mVertexData = OGRE_NEW VertexData();
-		mIndexData = OGRE_NEW IndexData();
-
-		mOtherTexCoordRange[0] = 0.0f;
-		mOtherTexCoordRange[1] = 1.0f;
-
-		setupChainContainers();
-
-		mVertexData->vertexStart = 0;
-		// index data set up later
-		// set basic white material
-		this->setMaterialName("BaseWhiteNoLighting");
-
+		RBXASSERT(!parent);
 	}
-	//-----------------------------------------------------------------------
-	BillboardChain::~BillboardChain()
-	{
-		OGRE_DELETE mVertexData;
-		OGRE_DELETE mIndexData;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setupChainContainers(void)
-	{
-		// Allocate enough space for everything
-		mChainElementList.resize(mChainCount * mMaxElementsPerChain);
-		mVertexData->vertexCount = mChainElementList.size() * 2;
 
-		// Configure chains
-		mChainSegmentList.resize(mChainCount);
-		for (size_t i = 0; i < mChainCount; ++i)
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
+
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			ChainSegment& seg = mChainSegmentList[i];
-			seg.start = i * mMaxElementsPerChain;
-			seg.tail = seg.head = SEGMENT_EMPTY;
-
-		}
-
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setupVertexDeclaration(void)
-	{
-		if (mVertexDeclDirty)
-		{
-			VertexDeclaration* decl = mVertexData->vertexDeclaration;
-			decl->removeAllElements();
-
-			size_t offset = 0;
-			// Add a description for the buffer of the positions of the vertices
-			decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-			offset += VertexElement::getTypeSize(VET_FLOAT3);
-
-			if (mUseVertexColour)
-			{
-				decl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-				offset += VertexElement::getTypeSize(VET_COLOUR);
-			}
-
-			if (mUseTexCoords)
-			{
-				decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
-				offset += VertexElement::getTypeSize(VET_FLOAT2);
-			}
-
-			if (!mUseTexCoords && !mUseVertexColour)
-			{
-				LogManager::getSingleton().logMessage(
-					"Error - BillboardChain '" + mName + "' is using neither "
-					"texture coordinates or vertex colours; it will not be "
-					"visible on some rendering APIs so you should change this "
-					"so you use one or the other.");
-			}
-			mVertexDeclDirty = false;
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setupBuffers(void)
+
+	void Instance::onDescendentAdded(Instance* instance)
 	{
-		setupVertexDeclaration();
-		if (mBuffersNeedRecreating)
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			// Create the vertex buffer (always dynamic due to the camera adjust)
-			HardwareVertexBufferSharedPtr pBuffer =
-				HardwareBufferManager::getSingleton().createVertexBuffer(
-				mVertexData->vertexDeclaration->getVertexSize(0),
-				mVertexData->vertexCount,
-				HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-
-			// (re)Bind the buffer
-			// Any existing buffer will lose its reference count and be destroyed
-			mVertexData->vertexBufferBinding->setBinding(0, pBuffer);
-
-			mIndexData->indexBuffer =
-				HardwareBufferManager::getSingleton().createIndexBuffer(
-					HardwareIndexBuffer::IT_16BIT,
-					mChainCount * mMaxElementsPerChain * 6, // max we can use
-					mDynamic? HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY : HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-			// NB we don't set the indexCount on IndexData here since we will
-			// probably use less than the maximum number of indices
-
-			mBuffersNeedRecreating = false;
 		}
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setMaxChainElements(size_t maxElements)
-	{
-		mMaxElementsPerChain = maxElements;
-		setupChainContainers();
-        mBuffersNeedRecreating = mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setNumberOfChains(size_t numChains)
-	{
-		mChainCount = numChains;
-		setupChainContainers();
-        mBuffersNeedRecreating = mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setUseTextureCoords(bool use)
-	{
-		mUseTexCoords = use;
-		mVertexDeclDirty = mBuffersNeedRecreating = true;
-        mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setTextureCoordDirection(BillboardChain::TexCoordDirection dir)
-	{
-		mTexCoordDir = dir;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setOtherTextureCoordRange(Real start, Real end)
-	{
-		mOtherTexCoordRange[0] = start;
-		mOtherTexCoordRange[1] = end;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setUseVertexColours(bool use)
-	{
-		mUseVertexColour = use;
-		mVertexDeclDirty = mBuffersNeedRecreating = true;
-        mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setDynamic(bool dyn)
-	{
-		mDynamic = dyn;
-		mBuffersNeedRecreating = mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::addChainElement(size_t chainIndex,
-		const BillboardChain::Element& dtls)
-	{
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
 
-		if (chainIndex >= mChainCount)
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
 		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::addChainElement");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-		if (seg.head == SEGMENT_EMPTY)
-		{
-			// Tail starts at end, head grows backwards
-			seg.tail = mMaxElementsPerChain - 1;
-			seg.head = seg.tail;
-			mIndexContentDirty = true;
-		}
-		else
-		{
-			if (seg.head == 0)
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				// Wrap backwards
-				seg.head = mMaxElementsPerChain - 1;
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
-			else
+		}
+	}
+
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
 			{
-				// Just step backward
-				--seg.head;
-			}
-			// Run out of elements?
-			if (seg.head == seg.tail)
-			{
-				// Move tail backwards too, losing the end of the segment and re-using
-				// it in the head
-				if (seg.tail == 0)
-					seg.tail = mMaxElementsPerChain - 1;
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
 				else
-					--seg.tail;
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
 			}
 		}
-
-		// Set the details
-		mChainElementList[seg.start + seg.head] = dtls;
-
-		mIndexContentDirty = true;
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
 	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::removeChainElement(size_t chainIndex)
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
 	{
-		if (chainIndex >= mChainCount)
+		if (element)
 		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::removeChainElement");
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
 		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-		if (seg.head == SEGMENT_EMPTY)
-			return; // do nothing, nothing to remove
+	}
 
-
-		if (seg.tail == seg.head)
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
 		{
-			// last item
-			seg.head = seg.tail = SEGMENT_EMPTY;
+			binder.announceID(nameRef, this);
 		}
-		else if (seg.tail == 0)
+
+		if (element->getTag() == tag_Item)
 		{
-			seg.tail = mMaxElementsPerChain - 1;
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
 		}
 		else
-		{
-			--seg.tail;
-		}
-
-		// we removed an entry so indexes need updating
-		mIndexContentDirty = true;
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
+			readProperty(element, binder);
 	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::clearChain(size_t chainIndex)
+
+	void Instance::predelete(Instance* instance)
 	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::clearChain");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-
-		// Just reset head & tail
-		seg.tail = seg.head = SEGMENT_EMPTY;
-
-		// we removed an entry so indexes need updating
-		mIndexContentDirty = true;
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
+		instance->predelete();
 	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::clearAllChains(void)
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
 	{
-		for (size_t i = 0; i < mChainCount; ++i)
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
 		{
-			clearChain(i);
-		}
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
 
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateChainElement(size_t chainIndex, size_t elementIndex,
-		const BillboardChain::Element& dtls)
-	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::updateChainElement");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-		if (seg.head == SEGMENT_EMPTY)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"Chain segment is empty",
-				"BillboardChain::updateChainElement");
-		}
-
-		size_t idx = seg.head + elementIndex;
-		// adjust for the edge and start
-		idx = (idx % mMaxElementsPerChain) + seg.start;
-
-		mChainElementList[idx] = dtls;
-
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
-
-	}
-	//-----------------------------------------------------------------------
-	const BillboardChain::Element&
-	BillboardChain::getChainElement(size_t chainIndex, size_t elementIndex) const
-	{
-
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::getChainElement");
-		}
-		const ChainSegment& seg = mChainSegmentList[chainIndex];
-
-		size_t idx = seg.head + elementIndex;
-		// adjust for the edge and start
-		idx = (idx % mMaxElementsPerChain) + seg.start;
-
-		return mChainElementList[idx];
-	}
-	//-----------------------------------------------------------------------
-	size_t BillboardChain::getNumChainElements(size_t chainIndex) const
-	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::getNumChainElements");
-		}
-		const ChainSegment& seg = mChainSegmentList[chainIndex];
-
-		return seg.tail - seg.head + 1;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateBoundingBox(void) const
-	{
-		if (mBoundsDirty)
-		{
-			mAABB.setNull();
-			Vector3 widthVector;
-			for (ChainSegmentList::const_iterator segi = mChainSegmentList.begin();
-				segi != mChainSegmentList.end(); ++segi)
+			for (Iterator it = r->begin(); it != r->end(); it++)
 			{
-				const ChainSegment& seg = *segi;
+				(*it)->onAncestorChanged(event);
+			}
+		}
 
-				if (seg.head != SEGMENT_EMPTY)
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
 				{
-
-					for(size_t e = seg.head; ; ++e) // until break
-					{
-						// Wrap forwards
-						if (e == mMaxElementsPerChain)
-							e = 0;
-
-						const Element& elem = mChainElementList[seg.start + e];
-
-						widthVector.x = widthVector.y = widthVector.z = elem.width;
-						mAABB.merge(elem.position - widthVector);
-						mAABB.merge(elem.position + widthVector);
-
-						if (e == seg.tail)
-							break;
-
-					}
+					(*iter).read(propertyElement, binder);
 				}
-
-			}
-
-			// Set the current radius
-			if (mAABB.isNull())
-			{
-				mRadius = 0.0f;
-			}
-			else
-			{
-				mRadius = Math::Sqrt(
-					std::max(mAABB.getMinimum().squaredLength(),
-					mAABB.getMaximum().squaredLength()));
-			}
-
-			mBoundsDirty = false;
-		}
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateVertexBuffer(Camera* cam)
-	{
-		setupBuffers();
-		HardwareVertexBufferSharedPtr pBuffer =
-			mVertexData->vertexBufferBinding->getBuffer(0);
-		void* pBufferStart = pBuffer->lock(HardwareBuffer::HBL_DISCARD);
-
-		const Vector3& camPos = cam->getDerivedPosition();
-		Vector3 eyePos = mParentNode->_getDerivedOrientation().Inverse() *
-			(camPos - mParentNode->_getDerivedPosition()) / mParentNode->_getDerivedScale();
-
-		Vector3 chainTangent;
-		for (ChainSegmentList::iterator segi = mChainSegmentList.begin();
-			segi != mChainSegmentList.end(); ++segi)
-		{
-			ChainSegment& seg = *segi;
-
-			// Skip 0 or 1 element segment counts
-			if (seg.head != SEGMENT_EMPTY && seg.head != seg.tail)
-			{
-				size_t laste = seg.head;
-				for (size_t e = seg.head; ; ++e) // until break
-				{
-					// Wrap forwards
-					if (e == mMaxElementsPerChain)
-						e = 0;
-
-					Element& elem = mChainElementList[e + seg.start];
-					assert (((e + seg.start) * 2) < 65536 && "Too many elements!");
-					uint16 baseIdx = static_cast<uint16>((e + seg.start) * 2);
-
-					// Determine base pointer to vertex #1
-					void* pBase = static_cast<void*>(
-						static_cast<char*>(pBufferStart) +
-							pBuffer->getVertexSize() * baseIdx);
-
-					// Get index of next item
-					size_t nexte = e + 1;
-					if (nexte == mMaxElementsPerChain)
-						nexte = 0;
-
-					if (e == seg.head)
-					{
-						// No laste, use next item
-						chainTangent = mChainElementList[nexte + seg.start].position - elem.position;
-					}
-					else if (e == seg.tail)
-					{
-						// No nexte, use only last item
-						chainTangent = elem.position - mChainElementList[laste + seg.start].position;
-					}
-					else
-					{
-						// A mid position, use tangent across both prev and next
-						chainTangent = mChainElementList[nexte + seg.start].position - mChainElementList[laste + seg.start].position;
-
-					}
-
-					Vector3 vP1ToEye = eyePos - elem.position;
-					Vector3 vPerpendicular = chainTangent.crossProduct(vP1ToEye);
-					vPerpendicular.normalise();
-					vPerpendicular *= (elem.width * 0.5);
-
-					Vector3 pos0 = elem.position - vPerpendicular;
-					Vector3 pos1 = elem.position + vPerpendicular;
-
-					float* pFloat = static_cast<float*>(pBase);
-					// pos1
-					*pFloat++ = pos0.x;
-					*pFloat++ = pos0.y;
-					*pFloat++ = pos0.z;
-
-					pBase = static_cast<void*>(pFloat);
-
-					if (mUseVertexColour)
-					{
-						RGBA* pCol = static_cast<RGBA*>(pBase);
-						Root::getSingleton().convertColourValue(elem.colour, pCol);
-						pCol++;
-						pBase = static_cast<void*>(pCol);
-					}
-
-					if (mUseTexCoords)
-					{
-						pFloat = static_cast<float*>(pBase);
-						if (mTexCoordDir == TCD_U)
-						{
-							*pFloat++ = elem.texCoord;
-							*pFloat++ = mOtherTexCoordRange[0];
-						}
-						else
-						{
-							*pFloat++ = mOtherTexCoordRange[0];
-							*pFloat++ = elem.texCoord;
-						}
-						pBase = static_cast<void*>(pFloat);
-					}
-
-					// pos2
-					pFloat = static_cast<float*>(pBase);
-					*pFloat++ = pos1.x;
-					*pFloat++ = pos1.y;
-					*pFloat++ = pos1.z;
-					pBase = static_cast<void*>(pFloat);
-
-					if (mUseVertexColour)
-					{
-						RGBA* pCol = static_cast<RGBA*>(pBase);
-						Root::getSingleton().convertColourValue(elem.colour, pCol);
-						pCol++;
-						pBase = static_cast<void*>(pCol);
-					}
-
-					if (mUseTexCoords)
-					{
-						pFloat = static_cast<float*>(pBase);
-						if (mTexCoordDir == TCD_U)
-						{
-							*pFloat++ = elem.texCoord;
-							*pFloat++ = mOtherTexCoordRange[1];
-						}
-						else
-						{
-							*pFloat++ = mOtherTexCoordRange[1];
-							*pFloat++ = elem.texCoord;
-						}
-						pBase = static_cast<void*>(pFloat);
-					}
-
-					if (e == seg.tail)
-						break; // last one
-
-					laste = e;
-
-				} // element
-			} // segment valid?
-
-		} // each segment
-
-
-
-		pBuffer->unlock();
-
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateIndexBuffer(void)
-	{
-
-		setupBuffers();
-		if (mIndexContentDirty)
-		{
-
-			uint16* pShort = static_cast<uint16*>(
-				mIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
-			mIndexData->indexCount = 0;
-			// indexes
-			for (ChainSegmentList::iterator segi = mChainSegmentList.begin();
-				segi != mChainSegmentList.end(); ++segi)
-			{
-				ChainSegment& seg = *segi;
-
-				// Skip 0 or 1 element segment counts
-				if (seg.head != SEGMENT_EMPTY && seg.head != seg.tail)
-				{
-					// Start from head + 1 since it's only useful in pairs
-					size_t laste = seg.head;
-					while(1) // until break
-					{
-						size_t e = laste + 1;
-						// Wrap forwards
-						if (e == mMaxElementsPerChain)
-							e = 0;
-						// indexes of this element are (e * 2) and (e * 2) + 1
-						// indexes of the last element are the same, -2
-						assert (((e + seg.start) * 2) < 65536 && "Too many elements!");
-						uint16 baseIdx = static_cast<uint16>((e + seg.start) * 2);
-						uint16 lastBaseIdx = static_cast<uint16>((laste + seg.start) * 2);
-						*pShort++ = lastBaseIdx;
-						*pShort++ = lastBaseIdx + 1;
-						*pShort++ = baseIdx;
-						*pShort++ = lastBaseIdx + 1;
-						*pShort++ = baseIdx + 1;
-						*pShort++ = baseIdx;
-
-						mIndexData->indexCount += 6;
-
-
-						if (e == seg.tail)
-							break; // last one
-
-						laste = e;
-
-					}
-				}
-
-			}
-			mIndexData->indexBuffer->unlock();
-
-			mIndexContentDirty = false;
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::_notifyCurrentCamera(Camera* cam)
-	{
-		updateVertexBuffer(cam);
-	}
-	//-----------------------------------------------------------------------
-	Real BillboardChain::getSquaredViewDepth(const Camera* cam) const
-	{
-		Vector3 min, max, mid, dist;
-		min = mAABB.getMinimum();
-		max = mAABB.getMaximum();
-		mid = ((max - min) * 0.5) + min;
-		dist = cam->getDerivedPosition() - mid;
-
-		return dist.squaredLength();
-	}
-	//-----------------------------------------------------------------------
-	Real BillboardChain::getBoundingRadius(void) const
-	{
-		return mRadius;
-	}
-	//-----------------------------------------------------------------------
-	const AxisAlignedBox& BillboardChain::getBoundingBox(void) const
-	{
-		updateBoundingBox();
-		return mAABB;
-	}
-	//-----------------------------------------------------------------------
-	const MaterialPtr& BillboardChain::getMaterial(void) const
-	{
-		return mMaterial;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setMaterialName(const String& name)
-	{
-		mMaterialName = name;
-		mMaterial = MaterialManager::getSingleton().getByName(mMaterialName);
-
-		if (mMaterial.isNull())
-		{
-			LogManager::getSingleton().logMessage("Can't assign material " + name +
-				" to BillboardChain " + mName + " because this "
-				"Material does not exist. Have you forgotten to define it in a "
-				".material script?");
-			mMaterial = MaterialManager::getSingleton().getByName("BaseWhiteNoLighting");
-			if (mMaterial.isNull())
-			{
-				OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Can't assign default material "
-					"to BillboardChain of " + mName + ". Did "
-					"you forget to call MaterialManager::initialise()?",
-					"BillboardChain.setMaterialName");
 			}
 		}
-		// Ensure new material loaded (will not load again if already loaded)
-		mMaterial->load();
 	}
-	//-----------------------------------------------------------------------
-	const String& BillboardChain::getMovableType(void) const
-	{
-		return BillboardChainFactory::FACTORY_TYPE_NAME;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::_updateRenderQueue(RenderQueue* queue)
-	{
-		updateIndexBuffer();
 
-		if (mIndexData->indexCount > 0)
+	XmlElement* Instance::write()
+	{
+		if (archivable)
 		{
-            if (mRenderQueueIDSet)
-                queue->addRenderable(this, mRenderQueueID);
-            else
-                queue->addRenderable(this);
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
 		}
 
+		return new XmlElement(tag_External, InstanceHandle(this));
 	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::getRenderOperation(RenderOperation& op)
+  
+	void Instance::setParent(Instance* newParent)
 	{
-		op.indexData = mIndexData;
-		op.operationType = RenderOperation::OT_TRIANGLE_LIST;
-		op.srcRenderable = this;
-		op.useIndexes = true;
-		op.vertexData = mVertexData;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::getWorldTransforms(Matrix4* xform) const
-	{
-		*xform = _getParentNodeFullTransform();
-	}
-	//-----------------------------------------------------------------------
-	const LightList& BillboardChain::getLights(void) const
-	{
-		return queryLights();
-	}
-	//---------------------------------------------------------------------
-	void BillboardChain::visitRenderables(Renderable::Visitor* visitor, 
-		bool debugRenderables)
-	{
-		// only one renderable
-		visitor->visit(this, 0, false);
-	}
-	//-----------------------------------------------------------------------
-	//-----------------------------------------------------------------------
-	String BillboardChainFactory::FACTORY_TYPE_NAME = "BillboardChain";
-	//-----------------------------------------------------------------------
-	const String& BillboardChainFactory::getType(void) const
-	{
-		return FACTORY_TYPE_NAME;
-	}
-	//-----------------------------------------------------------------------
-	MovableObject* BillboardChainFactory::createInstanceImpl( const String& name,
-		const NameValuePairList* params)
-	{
-		size_t maxElements = 20;
-		size_t numberOfChains = 1;
-		bool useTex = true;
-		bool useCol = true;
-		bool dynamic = true;
-		// optional params
-		if (params != 0)
-		{
-			NameValuePairList::const_iterator ni = params->find("maxElements");
-			if (ni != params->end())
-			{
-				maxElements = StringConverter::parseUnsignedLong(ni->second);
-			}
-			ni = params->find("numberOfChains");
-			if (ni != params->end())
-			{
-				numberOfChains = StringConverter::parseUnsignedLong(ni->second);
-			}
-			ni = params->find("useTextureCoords");
-			if (ni != params->end())
-			{
-				useTex = StringConverter::parseBool(ni->second);
-			}
-			ni = params->find("useVertexColours");
-			if (ni != params->end())
-			{
-				useCol = StringConverter::parseBool(ni->second);
-			}
-			ni = params->find("dynamic");
-			if (ni != params->end())
-			{
-				dynamic = StringConverter::parseBool(ni->second);
-			}
+		if (newParent == parent)
+			return;
 
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
 		}
 
-		return OGRE_NEW BillboardChain(name, maxElements, numberOfChains, useTex, useCol, dynamic);
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
 
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChainFactory::destroyInstance( MovableObject* obj)
-	{
-		OGRE_DELETE  obj;
-	}
+		parent = newParent;
 
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }
-

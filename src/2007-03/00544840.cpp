@@ -1,433 +1,214 @@
+// from server: 55% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
+// roc-lib: rbxgs v8datamodel/Lighting.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/ContentProvider.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/FileSystem.h"
-#include "v8xml/SerializerV2.h"
-#include <atlutil.h>
-#include <G3D/format.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/iostreams/copy.hpp>
+#include "v8datamodel/Lighting.h"
+#include "util/RunStateOwner.h"
 
 namespace RBX
 {
-	// TODO: check match
-	bool operator<(const ContentId& a, const ContentId& b)
+	const char* sLighting = "Lighting";
+
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_AmbientTop("TopAmbientV9", "Appearance", &Lighting::getAmbientTop, &Lighting::setAmbientTop, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_AmbientBottom("BottomAmbientV9", "Appearance", &Lighting::getAmbientBottom, &Lighting::setAmbientBottom, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_LightColor("SpotLightV9", "Appearance", &Lighting::getLightColor, &Lighting::setLightColor, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_ClearColor("ClearColor", "Appearance", &Lighting::getClearColor3, &Lighting::setClearColor3, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, std::string> prop_Time("TimeOfDay", "Data", &Lighting::getTimeStr, &Lighting::setTimeStr, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, float> prop_GeographicLatitude("GeographicLatitude", "Data", &Lighting::getGeographicLatitude, &Lighting::setGeographicLatitude, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::BoundFuncDesc<Lighting, float(void), 0> prop_GetMoonPhase(&Lighting::getMoonPhase, "GetMoonPhase", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, G3D::Vector3(void), 0> prop_GetMoonPosition(&Lighting::getMoonPosition, "GetMoonDirection", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, G3D::Vector3(void), 0> prop_GetSunPosition(&Lighting::getSunPosition, "GetSunDirection", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, double(void), 0> prop_GetMinutesAfterMidnight(&Lighting::getMinutesAfterMidnight, "GetMinutesAfterMidnight", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, void(double), 1> prop_SetMinutesAfterMidnight(&Lighting::setMinutesAfterMidnight, "SetMinutesAfterMidnight", "minutes", Reflection::FunctionDescriptor::AnyCaller);
+
+	Lighting::Lighting()
+		: Base(),
+		  ambientTop(209/255.0f, 208/255.0f, 217/255.0f),
+		  ambientBottom(122/255.0f, 134/255.0f, 120/255.0f),
+		  hasSky(true),
+		  clearColor(G3D::Color3::white()),
+		  timeOfDay(boost::posix_time::duration_from_string("14:00:00"))
 	{
-		return a.toString() < b.toString();
+		skyParameters.lightColor = G3D::Color3(152/255.0f, 137/255.0f, 102/255.0f);
+		skyParameters.setTime(timeOfDay.total_seconds());
+		setName("Lighting");
 	}
 
-	bool operator!=(const ContentId& a, const ContentId& b)
+	G3D::Vector3 Lighting::getMoonPosition()
 	{
-		return a.toString() != b.toString();
+		return (skyParameters.physicallyCorrect) ? skyParameters.trueMoonPosition : skyParameters.moonPosition;
 	}
 
-	ContentId ContentId::fromAssets(const std::string& filePath)
+	G3D::Vector3 Lighting::getSunPosition()
 	{
-		std::string header = "rbxasset://";
-		return ContentId(header + filePath);
+		return (skyParameters.physicallyCorrect) ? skyParameters.trueSunPosition : skyParameters.sunPosition;
 	}
 
-	ContentProvider::ContentProvider()
+	void Lighting::replaceSky(Sky* newSky)
 	{
-		char path[MAX_PATH];
-		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
+		while (Sky* currentSky = findFirstChildOfType<Sky>())
 		{
-			this->singleton().setAssetFolder(path);
-		}
-		else
-		{
-			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
-		}
-
-		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
-	}
-
-	ContentProvider::~ContentProvider()
-	{
-		requestProcessor->join();
-	}
-
-	bool ContentProvider::isHttpUrl(const std::string& s)
-	{
-		if (s.find("http://") == 0)
-			return true;
-
-		if (s.find("https://") == 0)
-			return true;
-
-		return false;
-	}
-
-	std::string ContentProvider::assetFolder() const
-	{
-		return assetFolderPath;
-	}
-
-	bool ContentProvider::isRequestQueueEmpty()
-	{
-		boost::mutex::scoped_lock lock(requestSync);
-		return requestQueue.empty();
-	}
-
-	bool ContentProvider::isUrlBad(const char* url)
-	{
-		boost::mutex::scoped_lock lock(requestSync);
-
-		std::list<FailedUrl>::iterator iter = failedUrls.begin();
-		std::list<FailedUrl>::iterator end = failedUrls.end();
-
-		for (; iter != end; iter++)
-		{
-			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
-			{
-				failedUrls.erase(iter, end);
-				return false;
-			}
-			else if (iter->url == url)
-			{
-				return true;
-			}
+			currentSky->setParent(NULL);
 		}
 
-		return false;
+		newSky->setParent(this);
 	}
 
-	void ContentProvider::clearContentCache()
+	std::string Lighting::getTimeStr() const
 	{
-		boost::mutex::scoped_lock lock(contentCacheMutex);
-		contentCache.clear();
+		return boost::posix_time::to_simple_string(timeOfDay);
 	}
 
-	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
+	void Lighting::setTimeStr(const std::string& value)
 	{
-		boost::scoped_ptr<std::istream> stream(getContent(id));
-		
-		TextXmlParser machine(stream->rdbuf());
-		boost::scoped_ptr<XmlElement> root(machine.parse());
-
-		SerializerV2().loadInstances(root.get(), instances);
+		setTime(boost::posix_time::duration_from_string(value));
 	}
 
-	bool ContentProvider::hasContent(ContentId id)
+	void Lighting::setClearColor(G3D::Color4 value)
 	{
-		return loadContent(id, NoHttpRequest) != NULL;
+		if (value != clearColor)
+		{
+			clearColor = value;
+
+			raisePropertyChanged(desc_ClearColor);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	std::string ContentProvider::getAssetFile(const std::string& filePath)
+	void Lighting::setLightColor(G3D::Color3 value)
 	{
-		return getFile(ContentId::fromAssets(filePath));
+		if (value != skyParameters.lightColor)
+		{
+			skyParameters.lightColor = value;
+
+			raisePropertyChanged(desc_LightColor);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	std::string ContentProvider::getFile(ContentId ticket)
+	void Lighting::setAmbientBottom(G3D::Color3 value)
 	{
-		CachedContent* content = loadContent(ticket, SyncHttpRequest);
-		if (content && registerFile(content))
+		if (value != ambientBottom)
 		{
-			return *content->filename;
-		}
+			ambientBottom = value;
 
-		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+			raisePropertyChanged(desc_AmbientBottom);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	void Lighting::setAmbientTop(G3D::Color3 value)
 	{
-		CachedContent* content = loadContent(id, AsyncHttpRequest);
-		if (!content)
-			return false;
+		if (value != ambientTop)
+		{
+			ambientTop = value;
 
-		if (!registerFile(content))
-			return false;
-
-		filename = *content->filename;
-		return true;
+			raisePropertyChanged(desc_AmbientTop);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	void Lighting::setGeographicLatitude(float value)
 	{
-		CachedContent* content = loadContent(id, AsyncHttpRequest);
-		if (!content)
-			return boost::shared_ptr<const std::string>();
-
-		boost::mutex::scoped_lock lock(contentCacheMutex);
-
-		if (!content->data)
+		if (value != skyParameters.geoLatitude)
 		{
-			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
-			std::ostringstream data;
+			skyParameters.geoLatitude = value;
 
-			boost::iostreams::copy(stream, data);
-
-			content->data.reset(new std::string(data.str()));
+			raisePropertyChanged(prop_GeographicLatitude);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
 		}
-
-		return content->data;
 	}
 
-	std::string ContentProvider::findAsset(ContentId contentId)
+	void Lighting::setTime(const boost::posix_time::time_duration& value)
 	{
-		RBXASSERT(contentId.isAsset());
+		int totalSeconds = value.total_seconds();
+		totalSeconds -= (totalSeconds / 86400) * 86400;
 
-		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
-		if (!filePath.FileExists())
-			return "";
+		if (timeOfDay.total_seconds() != totalSeconds)
+		{
+			timeOfDay = boost::posix_time::seconds(totalSeconds);
+			skyParameters.setTime(timeOfDay.total_seconds());
 
-		return std::string(filePath);
+			raisePropertyChanged(prop_Time);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	std::string ContentProvider::findFile(ContentId contentId)
+	double Lighting::getMinutesAfterMidnight()
 	{
-		RBXASSERT(contentId.isFile());
-
-		const char* file = contentId.c_str();
-		file += 7;
-
-		ATL::CPath filePath(file);
-		if (!filePath.FileExists())
-			return "";
-
-		return std::string(filePath);
+		return timeOfDay.total_milliseconds() / 60000.0;
 	}
 
-	static ATL::CPath getLocalCachePath(bool createPath)
+	void Lighting::setMinutesAfterMidnight(double value)
 	{
-		ATL::CPath path;
-
-		if (createPath)
-		{
-			static std::string s = FileSystem::getCacheDirectory(true);
-			path.m_strPath.SetString(s.c_str());
-		}
-		else
-		{
-			static std::string s = FileSystem::getCacheDirectory(false);
-			path.m_strPath.SetString(s.c_str());
-		}
-
-		return path;
+		setTime(boost::posix_time::seconds(value * 60.0));
 	}
 
-	std::string ContentProvider::findHashFile(ContentId contentId)
+	void Lighting::onChildAdded(Instance* child)
 	{
-		ATL::CPath cachePath = getLocalCachePath(true);
+		Sky* newSky = dynamic_cast<Sky*>(child);
 
-		ATL::CPath filePath = cachePath;
-		filePath.Append(contentId.c_str());
+		if (newSky)
+		{
+			sky = shared_from(newSky);
 
-		if (!filePath.FileExists())
-			return "";
-
-		return std::string(filePath);
+			fireLightingChanged(true);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	void ContentProvider::setAssetFolder(const char* sPath)
+	void Lighting::onChildRemoving(Instance* child)
 	{
-		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
+		if (sky.get() == child)
+		{
+			sky.reset();
 
-		ATL::CPath path(sPath);
-
-		if (path.IsRelative())
-			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
-
-		if (!path.IsDirectory())
-			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
-
-		path.AddBackslash();
-		assetFolderPath = path;
+			fireLightingChanged(true);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
 	}
 
-	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	void Lighting::onChildChanged(Instance* instance, const PropertyChanged& event)
 	{
-		ContentId id;
-
+		Instance::onChildChanged(instance, event);
+		if (sky.get() == instance)
 		{
-			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
-			hasher->addData(content);
-			id = ContentId(hasher->toString(), mimeType);
+			fireLightingChanged(true);
+
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
 		}
-
-		ATL::CPath filePath = getLocalCachePath(true);
-		filePath.Append(id.c_str());
-
-		if (!filePath.FileExists())
-		{
-			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
-			content.clear();
-			content.seekg(0, std::ios::beg);
-
-			do
-			{
-				char buffer[1024];
-				content.read(buffer, sizeof(buffer));
-				outStream.write(buffer, content.gcount());
-			}
-			while (content.gcount() > 0);
-		}
-
-		return id;
 	}
 
-	bool ContentProvider::registerFile(CachedContent* item)
+	bool Lighting::askAddChild(const Instance* instance) const
 	{
-		CachedContent temp;
-
-		{
-			boost::mutex::scoped_lock lock(contentCacheMutex);
-			temp = *item;
-		}
-
-		if (!temp.filename)
-		{
-			std::istringstream ss(*temp.data);
-			ContentId hash = registerContent(ss, Name::getNullName());
-
-			std::string filename = findHashFile(hash);
-			if (filename.empty())
-				return false;
-
-			temp.filename.reset(new std::string(filename));
-
-			boost::mutex::scoped_lock lock(contentCacheMutex);
-			*item = temp;
-		}
-
-		return true;
-	}
-
-	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
-	{
-		ContentId contentId(id);
-
-		if (hasContent(contentId))
-		{
-			stream.clear();
-			stream.seekg(dataLength, std::ios::cur);
-		}
-		else
-		{
-			ATL::CPath filePath = getLocalCachePath(true);
-			filePath.Append(contentId.c_str());
-
-			std::ofstream content;
-			content.open(filePath, std::ios::binary | std::ios::out);
-
-			char data;
-
-			for (unsigned long i = 0; i < dataLength; i++)
-			{
-				RBXASSERT(content.good());
-				stream.get(data);
-				content << data;
-			}
-		}
-
-		return contentId;
-	}
-
-	ContentProvider::FailedUrl::FailedUrl(const char* url)
-		: url(url),
-		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
-	{
-	}
-
-	class MD5HasherImpl : public MD5Hasher
-	{
-	private:
-		HCRYPTPROV hProv;
-		HCRYPTHASH hHash;
-		std::string result;
-
-	public:
-		MD5HasherImpl()
-			: hProv(NULL),
-			  hHash(NULL),
-			  result()
-		{
-			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
-			}
-
-			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
-			}
-		}
-		~MD5HasherImpl()
-		{
-		}
-
-	public:
-		virtual void addData(const char* data, size_t nBytes)
-		{
-			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
-			}
-		}
-		virtual void addData(const std::string& data)
-		{
-			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
-			}
-		}
-		virtual void addData(std::istream& data)
-		{
-			data.clear();
-			data.seekg(0, std::ios_base::beg);
-
-			char buffer[1024];
-			do
-			{
-				data.read(buffer, sizeof(buffer));
-				addData(buffer, data.gcount());
-			}
-			while (data.gcount() > 0);
-		}
-		virtual std::string toString()
-		{
-			c_str();
-			return result;
-		}
-		virtual const char* c_str()
-		{
-			if (result.empty())
-			{
-				DWORD hashSize;
-				DWORD hashSizeLen = sizeof(DWORD);
-				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
-				}
-
-				char* hashValue = new char[hashSize];
-				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
-				}
-
-				for (int i = 0; i < (int)hashSize; ++i)
-				{
-					ATL::CString temp;
-					temp.Format("%x", hashValue[i]);
-					result += temp.GetString();
-				}
-
-				delete[] hashValue;
-			}
-
-			return result.c_str();
-		}
-	};
-
-	MD5Hasher* MD5Hasher::create()
-	{
-		return new MD5HasherImpl();
+		return dynamic_cast<const Sky*>(instance) != NULL;
 	}
 }

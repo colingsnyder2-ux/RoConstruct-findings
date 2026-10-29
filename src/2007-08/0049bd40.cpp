@@ -1,64 +1,28 @@
-// from server: 32% by colin
-struct Descriptor {
-    void* vtable;
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_8c50aae6e9c92624.cpp
 
-struct FunctionDescriptor {
-    char pad_0[0x28];
-    void* field_28;
-    void* field_2c;
-    void* field_30;
-    void* field_34;
-};
-
-struct BoundFuncDesc : FunctionDescriptor {
-    void construct();
-};
-
-extern "C" void* __stdcall sub_630d36(void*, int, void*, void*, int);
-extern "C" void __stdcall sub_630b9e(void*, void*);
-extern "C" void __stdcall sub_56efb0(void*);
-extern "C" void __stdcall sub_77e710(void*);
-
-void BoundFuncDesc::construct()
-{
-    void* local_0c;
-    void* local_10;
-    void* local_20;
-    void* local_28;
-
-    local_0c = this->field_30;
-    if (this->field_34) {
-        local_10 = (*(void*(**)(void*))((*(void***)this->field_34)[2]))(this->field_34);
-    } else {
-        local_10 = 0;
-    }
-
-    void* arg = *(void**)((char*)&local_0c + 0x28);
-    void* vtbl = *(void**)arg;
-    void (*fn)(void*, int, void*) = *(void(**)(void*, int, void*))((char*)vtbl + 4);
-    local_28 = 0;
-    fn(arg, 1, &local_0c);
-
-    void* p = local_20;
-    void* result = (void*)sub_630d36(p, 0, (void*)0x88209c, (void*)0x88f968, 0);
-    if (result == 0) {
-        sub_77e710((void*)0x786e04);
-        sub_630b9e(&local_0c, (void*)0x841e0c);
-    }
-
-    sub_56efb0(&local_0c);
-    void* edx = *(void**)result;
-    void* ecx = this->field_2c;
-    void* eax = this->field_28;
-    ecx = (char*)ecx + (int)result;
-    ((void(*)(void*, void*))eax)(ecx, edx);
-
-    void* c = local_10;
-    local_28 = (void*)-1;
-    if (c) {
-        void* v = *(void**)c;
-        void (*dtor)(void*, int) = *(void(**)(void*, int))v;
-        dtor(c, 1);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include "Client.cpp"

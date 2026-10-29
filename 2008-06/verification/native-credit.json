@@ -2345,6 +2345,13 @@
     "user": "colin"
   },
   {
+    "addr": "006308f0",
+    "client": "2008-06",
+    "job": "72e0cc406874442e92ccf2226772409b",
+    "model": "gpt-6.1-sol",
+    "user": "coldek"
+  },
+  {
     "addr": "00632370",
     "client": "2008-06",
     "job": "0e9e29d062944c2195b02e71d3218e3f",

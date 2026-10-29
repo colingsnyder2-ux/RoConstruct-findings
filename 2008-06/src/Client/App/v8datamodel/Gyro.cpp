@@ -3,6 +3,9 @@
 #include "v8datamodel/PartInstance.h"
 #include <Network/Players.h>
 
+// Preserve the existing vendor helper used by other translation units (004ca2b0).
+template boost::shared_ptr<RBX::PartInstance> boost::shared_dynamic_cast<RBX::PartInstance, RBX::Instance>(const boost::shared_ptr<RBX::Instance>&);
+
 namespace RBX
 {
 	const char* sBodyPosition = "BodyPosition";
@@ -72,8 +75,16 @@ namespace RBX
 		Instance::onAncestorChanged(event);
 
 		if (event.child == this)
-			part = boost::shared_dynamic_cast<PartInstance>(shared_from(event.newParent));
-		updateWorld();
+			part = shared_from(dynamic_cast<PartInstance*>(event.newParent));
+		World* nextWorld = part.lock().get() ? Workspace::getWorldIfInWorkspace(this) : NULL;
+		if (world != nextWorld)
+		{
+			if (world)
+				world->getKernel().removeConnector2ndPass(this);
+			world = nextWorld;
+			if (world)
+				world->getKernel().insertConnector2ndPass(this);
+		}
 	}
 
 	bool BodyMover::askSetParent(const Instance* instance) const

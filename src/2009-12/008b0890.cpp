@@ -1,13 +1,14 @@
+// from server: 35% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPaneBase.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneBase.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneBase.cpp : implementation of the CXTPDockingPaneBase class.
 //
 // This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -25,12 +26,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPSystemHelpers.h"
 
-#include "TabManager/XTPTabManager.h"
-
-#include "XTPDockingPaneDefines.h"
 #include "XTPDockingPaneBase.h"
 #include "XTPDockingPaneManager.h"
 #include "XTPDockingPaneLayout.h"
@@ -148,7 +144,7 @@ CRect CXTPDockingPaneBase::GetPaneWindowRect() const
 {
 	ASSERT(m_pDockingSite);
 
-	if (!m_pDockingSite || !m_pDockingSite->GetSafeHwnd())
+	if (!m_pDockingSite)
 		return m_rcWindow;
 
 	CRect rc(m_rcWindow);
@@ -190,16 +186,11 @@ BOOL CXTPDockingPaneBase::IsEmpty() const
 	return GetType() == xtpPaneTypeClient && GetDockingPaneManager()->m_bHideClient;
 }
 
-void CXTPDockingPaneBase::Copy(CXTPDockingPaneBase* pClone, CXTPPaneToPaneMap* /*pMap*/, DWORD /*dwIgnoredOptions*/)
+CXTPDockingPaneBase* CXTPDockingPaneBase::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
 {
-	m_szDocking = pClone->m_szDocking;
-}
+	ASSERT(pMap);
 
-CXTPDockingPaneBase* CXTPDockingPaneBase::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD dwIgnoredOptions)
-{
-	CXTPDockingPaneBase* pPane = GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
-
-	pPane->Copy(this, pMap, dwIgnoredOptions);
+	CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
 
 	SAFE_CALLPTR(pMap, SetAt(this, pPane));
 

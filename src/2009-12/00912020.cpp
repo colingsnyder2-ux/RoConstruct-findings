@@ -1,100 +1,605 @@
-// roc 2009-12 00912020  unit: RBX::RenderNew::RenderScene  size: 239 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00912020
-//
-// 00912020  55                   push ebp
-// 00912021  8bec                 mov ebp, esp
-// 00912023  83e4f8               and esp, 0xfffffff8
-// 00912026  83ec1c               sub esp, 0x1c
-// 00912029  837d1800             cmp dword ptr [ebp + 0x18], 0
-// 0091202d  dd4510               fld qword ptr [ebp + 0x10]
-// 00912030  dc0d089d9b00         fmul qword ptr [0x9b9d08]
-// 00912036  53                   push ebx
-// 00912037  56                   push esi
-// 00912038  57                   push edi
-// 00912039  dd542420             fst qword ptr [esp + 0x20]
-// 0091203d  8bf9                 mov edi, ecx
-// 0091203f  db870c020000         fild dword ptr [edi + 0x20c]
-// 00912045  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
-// 00912048  8b5914               mov ebx, dword ptr [ecx + 0x14]
-// 0091204b  d9c0                 fld st(0)
-// 0091204d  d8ca                 fmul st(2)
-// 0091204f  dab710020000         fidiv dword ptr [edi + 0x210]
-// 00912055  def1                 fdivrp st(1)
-// 00912057  dd542418             fst qword ptr [esp + 0x18]
-// 0091205b  d9ee                 fldz 
-// 0091205d  dd542410             fst qword ptr [esp + 0x10]
-// 00912061  756d                 jne 0x9120d0
-// 00912063  33f6                 xor esi, esi
-// 00912065  85db                 test ebx, ebx
-// 00912067  0f8e8f000000         jle 0x9120fc
-// 0091206d  ddda                 fstp st(2)
-// 0091206f  eb02                 jmp 0x912073
-// 00912071  d9c9                 fxch st(1)
-// 00912073  3b7114               cmp esi, dword ptr [ecx + 0x14]
-// 00912076  7617                 jbe 0x91208f
-// 00912078  ddd9                 fstp st(1)
-// 0091207a  ddd8                 fstp st(0)
-// 0091207c  ff1560b79800         call dword ptr [0x98b760]
-// 00912082  dd442418             fld qword ptr [esp + 0x18]
-// 00912086  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
-// 00912089  dd442410             fld qword ptr [esp + 0x10]
-// 0091208d  d9c9                 fxch st(1)
-// 0091208f  83791810             cmp dword ptr [ecx + 0x18], 0x10
-// 00912093  7205                 jb 0x91209a
-// 00912095  8b4104               mov eax, dword ptr [ecx + 4]
-// 00912098  eb03                 jmp 0x91209d
-// 0091209a  8d4104               lea eax, [ecx + 4]
-// 0091209d  0fbe0430             movsx eax, byte ptr [eax + esi]
-// 009120a1  83e07f               and eax, 0x7f
-// 009120a4  46                   inc esi
-// 009120a5  3bf3                 cmp esi, ebx
-// 009120a7  db44870c             fild dword ptr [edi + eax*4 + 0xc]
-// 009120ab  d8c9                 fmul st(1)
-// 009120ad  dec2                 faddp st(2)
-// 009120af  d9c9                 fxch st(1)
-// 009120b1  dd542410             fst qword ptr [esp + 0x10]
-// 009120b5  7cba                 jl 0x912071
-// 009120b7  8b4508               mov eax, dword ptr [ebp + 8]
-// 009120ba  ddd9                 fstp st(1)
-// 009120bc  dd442420             fld qword ptr [esp + 0x20]
-// 009120c0  d9c9                 fxch st(1)
-// 009120c2  d918                 fstp dword ptr [eax]
-// 009120c4  d95804               fstp dword ptr [eax + 4]
-// 009120c7  5f                   pop edi
-// 009120c8  5e                   pop esi
-// 009120c9  5b                   pop ebx
-// 009120ca  8be5                 mov esp, ebp
-// 009120cc  5d                   pop ebp
-// 009120cd  c21400               ret 0x14
-// 009120d0  8b8f40010000         mov ecx, dword ptr [edi + 0x140]
-// 009120d6  ddd8                 fstp st(0)
-// 009120d8  8b4508               mov eax, dword ptr [ebp + 8]
-// 009120db  0fafcb               imul ecx, ebx
-// 009120de  894c2410             mov dword ptr [esp + 0x10], ecx
-// 009120e2  db442410             fild dword ptr [esp + 0x10]
-// 009120e6  dec9                 fmulp st(1)
-// 009120e8  dc0dd89f9b00         fmul qword ptr [0x9b9fd8]
-// 009120ee  d918                 fstp dword ptr [eax]
-// 009120f0  d95804               fstp dword ptr [eax + 4]
-// 009120f3  5f                   pop edi
-// 009120f4  5e                   pop esi
-// 009120f5  5b                   pop ebx
-// 009120f6  8be5                 mov esp, ebp
-// 009120f8  5d                   pop ebp
-// 009120f9  c21400               ret 0x14
-// 009120fc  8b4508               mov eax, dword ptr [ebp + 8]
-// 009120ff  ddd9                 fstp st(1)
-// 00912101  5f                   pop edi
-// 00912102  d918                 fstp dword ptr [eax]
-// 00912104  5e                   pop esi
-// 00912105  d95804               fstp dword ptr [eax + 4]
-// 00912108  5b                   pop ebx
-// 00912109  8be5                 mov esp, ebp
-// 0091210b  5d                   pop ebp
-// 0091210c  c21400               ret 0x14
-// copied from an identical function in another client (function ?get2DStringBounds@GFont@G3D@@QBE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NW4Spacing@12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: g3d-6.09-rbx2008 GLG3Dcpp/G
+// roc-lib: g3d-6.09-rbx2008 GLG3Dcpp/GFont.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file GFont.cpp
+ 
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+
+ @created 2002-11-02
+ @edited  2006-02-10
+ */
+
+#include "GLG3D/GFont.h"
+#include "GLG3D/RenderDevice.h"
+#include "GLG3D/TextureFormat.h"
+#include "G3D/Vector2.h"
+#include "G3D/System.h"
+#include "G3D/fileutils.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+
+namespace G3D {
+
+GFontRef GFont::fromFile(const std::string& filename) {
+    if (! fileExists(filename)) {
+        debugAssertM(false, format("Could not load font: %s", filename.c_str()));
+        return NULL;
+    }
+
+    BinaryInput b(filename, G3D_LITTLE_ENDIAN, true);
+    return new GFont(NULL, filename, b);
+}
+
+GFontRef GFont::fromFile(RenderDevice* _rd, const std::string& filename) {
+    if (! fileExists(filename)) {
+        debugAssertM(false, format("Could not load font: %s", filename.c_str()));
+        return NULL;
+    }
+
+    BinaryInput b(filename, G3D_LITTLE_ENDIAN, true);
+    return new GFont(_rd, filename, b);
+}
+
+GFontRef GFont::fromMemory(const std::string& name, const uint8* bytes, const int size) {
+    BinaryInput b(bytes, size, G3D_LITTLE_ENDIAN, true, false); 
+    return new GFont(NULL, name, b);
+} 
+
+GFont::GFont(RenderDevice* _rd, const std::string& filename, BinaryInput& b) : renderDevice(_rd) {
+
+    debugAssertM(GLCaps::supports(TextureFormat::A8),
+        "This graphics card does not support the GL_ALPHA8 texture format used by GFont.");
+    debugAssertGLOk();
+
+    int ver = b.readInt32();
+    debugAssertM(ver == 1, "Can't read font files other than version 1");
+    (void)ver;
+
+    // Read the widths
+    for (int c = 0; c < 128; ++c) {
+        subWidth[c] = b.readUInt16();
+    }
+
+    baseline = b.readUInt16();
+    int texWidth = b.readUInt16();
+    charWidth  = texWidth / 16;
+    charHeight = texWidth / 16;
+
+    // The input may not be a power of 2
+    int width  = ceilPow2(charWidth * 16);
+    int height = ceilPow2(charHeight * 8);
+  
+    // Create a texture
+    const uint8* ptr = ((uint8*)b.getCArray()) + b.getPosition();
+
+    texture = 
+        Texture::fromMemory(filename, &ptr,
+            TextureFormat::A8, width, height, 1, TextureFormat::A8, 
+            Texture::CLAMP, Texture::TRILINEAR_MIPMAP, Texture::DIM_2D,
+            Texture::DEPTH_NORMAL, 1.0);
+}
+
+
+Vector2 GFont::texelSize() const {
+    return Vector2(charWidth, charHeight);
+}
+
+
+Vector2 GFont::drawString(
+    RenderDevice*       renderDevice,
+    const std::string&  s,
+    double              x,
+    double              y,
+    double              w,
+    double              h,
+    Spacing             spacing) const {
+
+    debugAssert(renderDevice != NULL);
+    const double propW = w / charWidth;
+    const int n = s.length();
+
+    // Shrink the vertical texture coordinates by 1 texel to avoid
+    // bilinear interpolation interactions with mipmapping.
+    float sy = h / charHeight;
+
+    float x0 = 0;
+    for (int i = 0; i < n; ++i) {
+        char c = s[i] & 127; // s[i] % 128; avoid using illegal chars
+
+        if (c != ' ') {
+            int row   = c / 16;
+            int col   = c & 15; // c % 16
+
+            // Fixed width
+            float sx = 0;
+            
+            if (spacing == PROPORTIONAL_SPACING) {
+                sx = (charWidth - subWidth[(int)c]) * propW * 0.5f;
+            }
+
+            float xx = x - sx;
+            //renderDevice->setTexCoord(0, Vector2(col * charWidth, row * charHeight + 1));
+            //renderDevice->sendVertex(Vector2(x - sx,     y + sy));
+            glTexCoord2f(col * charWidth, row * charHeight + 1);
+            glVertex2f(xx,     y + sy);
+
+            //renderDevice->setTexCoord(0, Vector2(col * charWidth, (row + 1) * charHeight - 2));
+            //renderDevice->sendVertex(Vector2(x- sx,      y + h - sy)); 
+            glTexCoord2f(col * charWidth, (row + 1) * charHeight - 2);
+            glVertex2f(xx,     y + h - sy); 
+
+            xx += w;
+            //renderDevice->setTexCoord(0, Vector2((col + 1) * charWidth - 1, (row + 1) * charHeight - 2));
+            //renderDevice->sendVertex(Vector2(x + w - sx, y + h - sy)); 
+            glTexCoord2f((col + 1) * charWidth - 1, (row + 1) * charHeight - 2);
+            glVertex2f(xx, y + h - sy); 
+
+            //renderDevice->setTexCoord(0, Vector2((col + 1) * charWidth - 1, row * charHeight + 1));
+            //renderDevice->sendVertex(Vector2(x + w - sx, y + sy));            
+            glTexCoord2f((col + 1) * charWidth - 1, row * charHeight + 1);
+            glVertex2f(xx, y + sy);
+                        
+        }
+
+        if (spacing == PROPORTIONAL_SPACING) {
+            x += propW * subWidth[(int)c];
+        } else {
+            x += propW * subWidth[(int)'M'] * 0.85f;
+        }
+    }
+
+    renderDevice->minGLStateChange(8 * n);
+    renderDevice->minGLStateChange(8 * n);
+
+    // TODO: update the RenderDevice state count
+    return Vector2(x - x0, h);
+}
+
+
+Vector2 GFont::computePackedArray(
+    const std::string&  s,
+    double              x,
+    double              y,
+    double              w,
+    double              h,
+    Spacing             spacing,
+    Vector2*            array) const {
+
+    const double propW = w / charWidth;
+    const int n = s.length();
+
+    // Shrink the vertical texture coordinates by 1 texel to avoid
+    // bilinear interpolation interactions with mipmapping.
+    float sy = h / charHeight;
+
+    float x0 = 0;
+
+    const float mwidth = subWidth[(int)'M'] * 0.85f * propW;
+
+    int count = -1;
+    for (int i = 0; i < n; ++i) {
+        char c = s[i] & 127; // s[i] % 128; avoid using illegal chars
+
+        if (c != ' ') {
+            int row   = c >> 4; // fast version of c / 16
+            int col   = c & 15; // fast version of c % 16
+
+            // Fixed width
+            float sx = (spacing == PROPORTIONAL_SPACING) ?
+                (charWidth - subWidth[(int)c]) * propW * 0.5f : 0.0f;
+
+            float xx = x - sx;
+            // Tex, Vert
+            ++count;
+            array[count].x = col * charWidth;
+            array[count].y = row * charHeight + 1;
+
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + sy;
+
+            
+            ++count;
+            array[count].x = col * charWidth;
+            array[count].y = (row + 1) * charHeight - 2;
+            
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + h - sy;
+
+
+            xx += w;
+            ++count;
+            array[count].x = (col + 1) * charWidth - 1;
+            array[count].y = (row + 1) * charHeight - 2;
+            
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + h - sy;
+    
+
+            ++count;
+            array[count].x = (col + 1) * charWidth - 1;
+            array[count].y = row * charHeight + 1;
+
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + sy;
+        }
+
+        x += (spacing == PROPORTIONAL_SPACING) ?
+            propW * subWidth[(int)c] : mwidth;
+    }
+
+    return Vector2(x - x0, h);
+}
+
+
+Vector2 GFont::draw2D(
+    RenderDevice*               renderDevice,
+    const std::string&          s,
+    const Vector2&              pos2D,
+    double                      size,
+    const Color4&               color,
+    const Color4&               border,
+    XAlign                      xalign,
+    YAlign                      yalign,
+    Spacing                     spacing) const {
+
+	debugAssert(renderDevice != NULL);
+
+    float x = pos2D.x;
+    float y = pos2D.y;
+
+    float h = size * 1.5f;
+    float w = h * charWidth / charHeight;
+
+    switch (xalign) {
+    case XALIGN_RIGHT:
+        x -= get2DStringBounds(s, size, spacing).x;
+        break;
+
+    case XALIGN_CENTER:
+        x -= get2DStringBounds(s, size, spacing).x / 2;
+        break;
+    
+    default:
+        break;
+    }
+
+    switch (yalign) {
+    case YALIGN_CENTER:
+        y -= h / 2.0;
+        break;
+
+    case YALIGN_BASELINE:
+        y -= baseline * h / (double)charHeight;
+        break;
+
+    case YALIGN_BOTTOM:
+        y -= h;
+        break;
+
+    default:
+        break;
+    }
+
+    float m[] = 
+       {1.0f / texture->getTexelWidth(), 0, 0, 0,
+        0, 1.0f / texture->getTexelHeight(), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+
+    renderDevice->pushState();
+        renderDevice->disableLighting();
+        renderDevice->setTextureMatrix(0, m);
+        renderDevice->setTexture(0, texture);
+
+        renderDevice->setTextureCombineMode(0, RenderDevice::TEX_MODULATE);
+
+        // This is BLEND_SRC_ALPHA because the texture has no luminance, only alpha
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA,
+				   RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        renderDevice->setAlphaTest(RenderDevice::ALPHA_GEQUAL, 1/255.0);
+
+        const float b = renderDevice->getBrightScale();
+
+        if (GLCaps::supports_GL_ARB_multitexture()) {
+            glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+
+
+        int numChars = 0;
+        for (unsigned int i = 0; i < s.length(); ++i) {
+            numChars += ((s[i] % 128) != ' ') ? 1 : 0;
+        }
+        if (numChars == 0) {
+            renderDevice->popState();
+            return Vector2(0, h);
+        }
+
+        // Packed vertex array; tex coord and vertex are interlaced
+        // For each character we need 4 vertices.
+
+        // MSVC 6 cannot use static allocation with a variable size argument
+        // so we revert to the more compiler specific alloca call. Gcc does not
+        // implement array[variable] well, so we use this everywhere.
+        Vector2* array = (Vector2*)System::malloc(numChars * 4 * 2 * sizeof(Vector2));
+
+        const Vector2 bounds = computePackedArray(s, x, y, w, h, spacing, array);
+
+        int N = numChars * 4;
+
+        renderDevice->beforePrimitive();
+
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glEnableClientState(GL_VERTEX_ARRAY);
+
+        // 2 coordinates per element, float elements, stride (for interlacing), count, pointer
+        glTexCoordPointer(2, GL_FLOAT, sizeof(Vector2) * 2, &array[0]);
+        glVertexPointer(2, GL_FLOAT, sizeof(Vector2) * 2, &array[1]);
+
+        if (border.a > 0.05f) {
+            renderDevice->setColor(Color4(border.r * b, border.g * b, border.b * b, border.a));
+            glMatrixMode(GL_MODELVIEW);
+            float lastDx = 0, lastDy = 0;
+            for (int dy = -1; dy <= 1; dy += 2) {
+                for (int dx = -1; dx <= 1; dx += 2) {
+                    if ((dx != 0) || (dy != 0)) {
+                        // Shift modelview matrix by dx, dy, but also undo the 
+                        // shift from the previous outline
+                        glTranslatef(dx - lastDx, dy - lastDy, 0);
+                        glDrawArrays(GL_QUADS, 0, N);
+                        lastDx = dx; lastDy = dy;
+                    }
+                }
+            }
+            glTranslatef(-lastDx, -lastDy, 0);
+        }
+
+        // Draw foreground
+        renderDevice->setColor(Color4(color.r * b, color.g * b, color.b * b, color.a));
+        glDrawArrays(GL_QUADS, 0, N);
+
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDisableClientState(GL_VERTEX_ARRAY);
+
+        renderDevice->afterPrimitive();
+    renderDevice->popState();
+
+    System::free(array);
+    debugAssertGLOk();
+
+    return bounds;
+}
+
+
+Vector2 GFont::draw3D(
+    RenderDevice*               renderDevice,
+    const std::string&          s,
+    const CoordinateFrame&      pos3D,
+    double                      size,
+    const Color4&               color,
+    const Color4&               border,
+    XAlign                      xalign,
+    YAlign                      yalign,
+    Spacing                     spacing) const {
+    
+	debugAssert(renderDevice != NULL);
+
+    double x = 0;
+    double y = 0;
+
+    double h = size * 1.5;
+    double w = h * charWidth / charHeight;
+
+    switch (xalign) {
+    case XALIGN_RIGHT:
+        x -= get2DStringBounds(s, size, spacing).x;
+        break;
+
+    case XALIGN_CENTER:
+        x -= get2DStringBounds(s, size, spacing).x / 2;
+        break;
+    
+    default:
+        break;
+    }
+
+    switch (yalign) {
+    case YALIGN_CENTER:
+        y -= h / 2.0;
+        break;
+
+    case YALIGN_BASELINE:
+        y -= baseline * h / (double)charHeight;
+        break;
+
+    case YALIGN_BOTTOM:
+        y -= h;
+        break;
+
+    default:
+        break;
+    }
+
+
+    double m[] = 
+       {1.0 / texture->getTexelWidth(), 0, 0, 0,
+        0, 1.0 / texture->getTexelHeight(), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+
+    renderDevice->pushState();
+        // We need to get out of Y=up coordinates.
+        CoordinateFrame flipY;
+        flipY.rotation[1][1] = -1;
+        renderDevice->setObjectToWorldMatrix(pos3D * flipY);
+
+        renderDevice->setCullFace(RenderDevice::CULL_NONE);
+        renderDevice->setTextureMatrix(0, m);
+        renderDevice->setTexture(0, texture);
+
+        renderDevice->setTextureCombineMode(0, RenderDevice::TEX_MODULATE);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, 
+				   RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        renderDevice->setAlphaTest(RenderDevice::ALPHA_GEQUAL, 0.05);
+
+        renderDevice->disableLighting();
+        renderDevice->beginPrimitive(RenderDevice::QUADS);
+
+            if (border.a > 0.05f) {
+
+	        // Make the equivalent of a 3D "1 pixel" offset (the
+	        // default 2D text size is 12-pt with a 1pix border)
+
+ 	        const double borderOffset = size / 12.0;
+                renderDevice->setColor(border);
+                for (int dy = -1; dy <= 1; dy += 2) {
+                    for (int dx = -1; dx <= 1; dx += 2) {
+                        if ((dx != 0) || (dy != 0)) {
+                            drawString(renderDevice, s,
+				               x + dx * borderOffset, 
+				               y + dy * borderOffset,
+				               w, h, spacing);
+                        }
+                    }
+                }
+            }
+
+            renderDevice->setColor(
+		        Color4(color.r * renderDevice->getBrightScale(),
+			       color.g * renderDevice->getBrightScale(), 
+			       color.b * renderDevice->getBrightScale(), 
+			       color.a));
+            Vector2 bounds = drawString(renderDevice, s, x, y, w, h, spacing);
+
+        renderDevice->endPrimitive();
+
+    renderDevice->popState();
+
+    return bounds;
+}
+
+
+Vector2 GFont::get2DStringBounds(
+    const std::string&  s,
+    double              size,
+    Spacing             spacing) const {
+
+    int n = s.length();
+
+    double h = size * 1.5;
+    double w = h * charWidth / charHeight;
+    double propW = w / charWidth;
+    double x = 0;
+    double y = h;
+
+    if (spacing == PROPORTIONAL_SPACING) {
+        for (int i = 0; i < n; ++i) {
+            char c   = s[i] & 127;
+            x += propW * subWidth[(int)c];
+        }
+    } else {
+        x = subWidth[(int)'M'] * n * 0.85 * propW;
+    }
+
+    return Vector2(x, y);
+}
+
+
+void GFont::convertRAWINItoPWF(const std::string& infileBase, std::string outfile) {
+    debugAssert(fileExists(infileBase + ".raw"));
+    debugAssert(fileExists(infileBase + ".ini"));
+
+    if (outfile == "") {
+        outfile = infileBase + ".fnt";
+    }
+
+    BinaryInput  pixel(infileBase + ".raw", G3D_LITTLE_ENDIAN);
+    TextInput    ini(infileBase + ".ini");
+    BinaryOutput out(outfile, G3D_LITTLE_ENDIAN);
+
+    ini.readSymbol("[");
+    ini.readSymbol("Char");
+    ini.readSymbol("Widths");
+    ini.readSymbol("]");
+
+    // Version
+    out.writeInt32(1);
+
+    // Character widths
+    for (int i = 0; i < 128; ++i) {
+        int n = (int)ini.readNumber();
+        (void)n;
+        debugAssert(n == i);
+        ini.readSymbol("=");
+        int cw = (int)ini.readNumber();
+        out.writeInt16(cw);
+    }
+
+    int width = (int)sqrt((double)pixel.size());
+    
+    // Autodetect baseline from capital E
+    {
+        // Size of a character, in texels
+        int          w        = width / 16;
+
+        int          x0       = ('E' % 16) * w;
+        int          y0       = ('E' / 16) * w;
+        
+        const uint8* p        = pixel.getCArray();
+        bool         done     = false;
+        int          baseline = w * 2 / 3;
+    
+        // Search up from the bottom for the first pixel
+        for (int y = y0 + w - 1; (y >= y0) && ! done; --y) {
+            for (int x = x0; (x < x0 + w) && ! done; ++x) {
+                if (p[x + y * w * 16] != 0) {
+                    baseline = y - y0 + 1;
+                    done = true;
+                }
+            }
+        }
+        out.writeUInt16(baseline);
+    }
+
+    // Texture width
+    out.writeUInt16(width);
+
+    // The input may not be a power of 2, so size it up
+    int width2  = ceilPow2(width);
+    int height2 = ceilPow2(width / 2);
+
+    if ((width2 == width) && (height2 == (width/2))) {
+        // Texture
+        int num = width * (width / 2);
+        out.writeBytes(pixel.getCArray(), num);
+    } else {
+        // Pad
+        const uint8* ptr = pixel.getCArray();
+    
+//        int num = width * (width / 2);
+        for (int y = 0; y < height2; ++y) {
+            // Write the row
+            out.writeBytes(ptr, width);
+            ptr += width;
+
+            // Write the horizontal padding
+            out.skip(width2 - width);
+        }
+
+        // Write the vertical padding
+        out.skip((height2 - (width / 2)) * width2);
+    }
+ 
+    out.compress();
+    out.commit(false);
+}
+
+}

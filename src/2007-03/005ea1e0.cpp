@@ -1,278 +1,218 @@
+// from server: 61% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll v8world/RotateJoint.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs gui/GUI.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/RotateJoint.h"
-#include "v8world/Primitive.h"
-#include "v8world/SurfaceData.h"
-#include "v8world/Tolerance.h"
-#include "v8world/World.h"
-#include "v8kernel/Constants.h"
-#include "v8kernel/Body.h"
-#include "util/Face.h"
+#include "gui/Gui.h"
 
 namespace RBX
 {
-	// TODO: check which of these need to go into the header
-
-	RotateJoint::RotateJoint(
-		Primitive* axlePrim,
-		Primitive* holePrim,
-		const G3D::CoordinateFrame& c0,
-		const G3D::CoordinateFrame& c1)
-		: MultiJoint(axlePrim, holePrim, c0, c1, 2),
-		  rotateConnector(NULL)
+	const G3D::Color4& GuiItem::disabledFill()
 	{
+		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
+		return c;
 	}
 
-	RotateJoint::~RotateJoint()
+	const G3D::Color4& GuiItem::translucentBackdrop()
 	{
-		RBXASSERT(!rotateConnector);
+		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
+		return c;
 	}
 
-	void RotateJoint::removeFromKernel()
+	G3D::Vector2 GuiRoot::canvasSize;
+	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
+	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
+
+	GuiItem::GuiItem() 
 	{
-		RBXASSERT(getKernel());
-		rotateConnector = NULL;
-		MultiJoint::removeFromKernel();
+		setName("Unnamed GuiItem");
 	}
 
-	float RotateJoint::getChannelValue(int uiStepId)
+	const GuiItem* GuiItem::getGuiItem(int index) const
 	{
-		RBXASSERT(getAxlePrim());
-		const SurfaceData& axleSurface = getAxlePrim()->getSurfaceData(getAxleId());
+		return dynamic_cast<const GuiItem*>(getChild(index));
+	}
 
-		Controller* controller = getAxlePrim()->getController();
-		RBXASSERT(controller);
+	GuiItem* GuiItem::getGuiItem(int index)
+	{
+		return dynamic_cast<GuiItem*>(getChild(index));
+	}
 
-		float value = controller->getValue(axleSurface.inputType);
-		float paramA = axleSurface.paramA;
-		float paramB = axleSurface.paramB;
-
-		float dt = Constants::uiDt() * uiStepId;
-
-		switch (axleSurface.inputType)
+	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
+	{
+		for (size_t i = 0; i < numChildren(); i++)
 		{
-		case Controller::NO_INPUT:
-			return 0.0;
-		case Controller::CONSTANT_INPUT:
-			return paramB;
-		case Controller::SIN_INPUT:
-			return sin(dt * paramB) * paramA;
-		case Controller::LEFT_TRACK_INPUT:
-			if (value < -0.1)
-				return value * fabs(paramA);
-			else if (value > 0.1)
-				return value * fabs(paramB);
-			return 0.0;
-		case Controller::RIGHT_TRACK_INPUT:
-			if (value < -0.1)
-				return -(value * fabs(paramA));
-			else if (value > 0.1)
-				return -(value * fabs(paramB));
-			return 0.0;
-		default:
-			if (value < -0.1)
-				return -(value * paramA);
-			else if (value > 0.1)
-				return value * paramB;
-			return 0.0;
-		}
-	}
+			GuiItem* current = getGuiItem((int)i);
 
-	RotateJoint* RotateJoint::surfaceTypeToJoint(
-		SurfaceType surfaceType,
-		Primitive* axlePrim,
-		Primitive* holePrim,
-		const G3D::CoordinateFrame& c0,
-		const G3D::CoordinateFrame& c1)
-	{
-		switch (surfaceType)
-		{
-		case ROTATE:
-			return new RotateJoint(axlePrim, holePrim, c0, c1);
-		case ROTATE_P:
-			return new RotatePJoint(axlePrim, holePrim, c0, c1);
-		case ROTATE_V:
-			return new RotateVJoint(axlePrim, holePrim, c0, c1);
-		default:
-			RBXASSERT(0);
-			return NULL;
-		}
-	}
-
-	RotateJoint* RotateJoint::canBuildJoint(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
-	{
-		SurfaceType s0 = p0->getSurfaceType(nId0);
-		SurfaceType s1 = p1->getSurfaceType(nId1);
-		if (!(s0 >= ROTATE || s1 >= ROTATE))
-			return NULL;
-
-		const G3D::CoordinateFrame& c0 = p0->getCoordinateFrame();
-		const G3D::CoordinateFrame& c1 = p1->getCoordinateFrame();
-
-		G3D::Vector3 n0 = Math::getWorldNormal(nId0, c0);
-		G3D::Vector3 n1 = Math::getWorldNormal(nId1, c1);
-
-		G3D::Vector3 holePtWorld = -n1;
-		if (Math::angle(n0, holePtWorld) > 0.025f)
-			return NULL;
-
-		Face f0 = p0->getFaceInWorld(nId0);
-		Face f1 = p1->getFaceInWorld(nId1);
-
-		if (Face::hasOverlap(f0, f1, 0.35f) && Face::overlapWithinPlanes(f0, f1, 0.05f))
-		{
-			G3D::Vector3 center0 = f0.center();
-			G3D::Vector3 center1 = f1.center();
-
-			bool inExtrusion0 = f0.fuzzyContainsInExtrusion(center0, 0.05f);
-			bool inExtrusion1 = f1.fuzzyContainsInExtrusion(center1, 0.05f);
-			bool cond0 = s0 >= ROTATE && inExtrusion0;
-			bool cond1 = s1 >= ROTATE && inExtrusion1;
-
-			if (!cond0 && !cond1)
-				return NULL;
-
-			if (!cond0 || (cond1 && p0->getGridSize().sum() > p1->getGridSize().sum()))
+			if (current && current != focus.get())
 			{
-				std::swap(nId0, nId1);
-				std::swap(s0, s1);
-				std::swap(center0, center1);
-				std::swap(n0, n1);
-				std::swap(p0, p1);
-			}
-
-			G3D::CoordinateFrame axleInP0 = p0->getFaceCoordInObject(nId0);
-			G3D::Vector3 axlePtWorld = p0->getCoordinateFrame().pointToWorldSpace(axleInP0.translation);
-			G3D::Vector3 axlePtInP1 = p1->getCoordinateFrame().pointToObjectSpace(axlePtWorld);
-			
-			NormalId oppNId1 = normalIdOpposite(nId1);
-			G3D::Vector3 byAtLeast = Math::toGrid(axlePtInP1, 0.1f);
-
-			G3D::CoordinateFrame holeInP1(normalIdToMatrix3(oppNId1), byAtLeast);
-			G3D::Vector3 holePtWorld = p1->getCoordinateFrame().pointToWorldSpace(holeInP1.translation);
-			if (!Tolerance::pointsUnaligned(axlePtWorld, holePtWorld))
-			{
-				for (int i = 0; i < 2; i++)
+				GuiResponse itemResponse = current->process(event);
+				if (itemResponse.wasUsed())
 				{
-					float multiplier = i == 0 ? 1.0f : -1.0f;
+					this->loseFocus();
 
-					G3D::Vector3 ref0 = axlePtWorld - n0 * multiplier;
-					G3D::Vector3 ref1 = holePtWorld + n1 * multiplier;
-					if (Tolerance::pointsUnaligned(ref0, ref1))
-						return NULL;
+					focus = shared_from(current);
+					focus->loseFocus();
+
+					return itemResponse;
 				}
-
-				return surfaceTypeToJoint(s0, p0, p1, axleInP0, holeInP1);
 			}
 		}
 
-		return NULL;
+		return GuiResponse::notUsed();
 	}
 
-	float RotateJoint::getTorqueArmLength()
+	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
 	{
-		Primitive* axlePrim = getAxlePrim();
-		Primitive* holePrim = getHolePrim();
+		if (instance == focus)
+			loseFocus();
 
-		G3D::Vector3 ownerSize = axlePrim->getGridSize();
-		G3D::Vector3 otherSize = holePrim->getGridSize();
-
-		NormalId ownerId = getAxleId();
-		NormalId otherId = normalIdOpposite(getHoleId());
-
-		float ownerMax = G3D::max(ownerSize[(2 + (int)ownerId) % 3], ownerSize[(1 + (int)ownerId) % 3]);
-		float otherMax = G3D::max(otherSize[(2 + (int)otherId) % 3], otherSize[(1 + (int)otherId) % 3]);
-		float min = G3D::min(ownerMax, otherMax);
-
-		return min * 0.1f;
+		Instance::onDescendentRemoving(instance);
 	}
 
-	void RotateJoint::putInKernel(Kernel* _kernel)
+	Rect GuiItem::getMyRect() const
 	{
-		MultiJoint::putInKernel(_kernel);
+		G3D::Vector2 pos = getPosition();
+		return Rect(pos, pos + getSize());
+	}
 
-		Body* b0 = getAxlePrim()->getBody();
-		Body* b1 = getHolePrim()->getBody();
+	const GuiItem* GuiItem::getGuiParent() const
+	{
+		return dynamic_cast<const GuiItem*>(getParent());
+	}
+	
+	GuiResponse GuiItem::process(const GuiEvent& event)
+	{
+		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
+			return GuiResponse::notUsed();
 
-		G3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;
-		G3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;
-
-		G3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);
-		G3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);
-
-		for (int i = 0; i < 2; i++)
+		if (focus)
 		{
-			float multiplier = i == 0 ? -1.0f : 1.0f;
+			if (focus->canLoseFocus())
+			{
+				GuiResponse response = processNonFocus(event);
+				if (response.wasUsed())
+					return response;
+			}
 
-			G3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;
-			G3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;
+			GuiResponse focusResponse = focus->process(event);
+			if (focusResponse.wasUsed())
+				return focusResponse;
 
-			Point* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);
-			Point* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);
-
-			PointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());
-			addToMultiJoint(pAxleWorld, pHoleWorld, connector);
+			loseFocus();
 		}
 
-		if (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)
+		RBXASSERT(!focus);
+		return processNonFocus(event);
+	}
+
+	void TopMenuBar::init()
+	{
+		layoutStyle = Layout::HORIZONTAL;
+		backdropColor = G3D::Color4::clear();
+		visible = true;
+	}
+
+	G3D::Vector2 TopMenuBar::getSize() const
+	{
+		G3D::Vector2 size(0.0f, 0.0f);
+
+		for (size_t i = 0; i < numChildren(); i++)
 		{
-			G3D::Vector3 center0 = cAxleWorld.translation;
-			G3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);
-			G3D::Vector3 marker0 = perp * 10.0f + center0;
+			const GuiItem* current = getGuiItem((int)i);
 
-			Point* pMarker0 = getKernel()->newPoint(b0, marker0);
-			Point* pMarker1 = getKernel()->newPoint(b1, marker0);
+			if (current)
+			{
+				G3D::Vector2 childSize = current->getSize();
+				switch (layoutStyle)
+				{
+				case Layout::VERTICAL:
+					size.x = G3D::max(size.x, childSize.x);
+					size.y += childSize.y;
+					break;
+				case Layout::HORIZONTAL:
+					size.x += childSize.x;
+					size.y = G3D::max(size.y, childSize.y);
+					break;
+				}
+			}
+		}
 
-			RBXASSERT(!rotateConnector);
-			RotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());
-			rotateConnector = connector;
-			addToMultiJoint(pMarker0, pMarker1, connector);
+		return size;
+	}
+
+	void TopMenuBar::render2d(Adorn* adorn)
+	{
+		if (isVisible())
+		{
+			if (backdropColor != G3D::Color4::clear())
+			{
+				adorn->rect2d(getMyRect2D(), backdropColor);
+			}
+
+			for (size_t i = 0; i < numChildren(); i++)
+			{
+				GuiItem* current = getGuiItem((int)i);
+				if (current)
+					current->render2d(adorn);
+			}
 		}
 	}
 
-	void RotateVJoint::stepUi(int uiStepId)
+	GuiResponse TopMenuBar::process(const GuiEvent& event)
 	{
-		float value = getChannelValue(uiStepId);
-
-		RotateConnector* connector = rotateConnector;
-		if (connector)
+		if (isVisible())
 		{
-			float newValue = value / (float)Constants::kernelStepsPerUiStep();
-			connector->getKernelInput()->setDelta(newValue);
+			GuiResponse response = GuiItem::process(event);
+			if (response.wasUsed())
+			{
+				return response;
+			}
+
+			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
+			{
+				return GuiResponse::used();
+			}
 		}
 
-		if (value != 0.0f)
-		{
-			World* world = getWorld();
-			world->ticklePrimitive(getAxlePrim());
-			world->ticklePrimitive(getHolePrim());
-		}
+		return GuiResponse::notUsed();
 	}
 
-	inline float calculateIncrementRotatePJoint(float value, float currentGoal, int steps)
+	void RelativePanel::init(const Layout& layout)
 	{
-		return (value - currentGoal) / steps;
+		setName("RelativePanel");
+		layoutStyle = layout.layoutStyle;
+		backdropColor = layout.backdropColor;
+		xLocation = layout.xLocation;
+		yLocation = layout.yLocation;
+		offset = layout.offset;
 	}
 
-	void RotatePJoint::stepUi(int uiStepId)
+	GuiRoot::GuiRoot() 
 	{
-		float value = getChannelValue(uiStepId);
+		setName("GuiRoot");
+	}
 
-		RotateConnector* connector = rotateConnector;
-		if (connector)
-		{
-			connector->getKernelInput()->setGoalCalc(value, calculateIncrementRotatePJoint);
-		}
+	int GuiRoot::normalizedFontSize(int fontSize)
+	{
+		static G3D::Vector2 percentSize(100.0f, 75.0f);
+		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
+	}
 
-		if (value != 0.0f)
+	void GuiRoot::render2d(Adorn* adorn)
+	{
+		short height = static_cast<short>(adorn->getHeight());
+		short width = static_cast<short>(adorn->getWidth());
+
+		canvasSize = G3D::Vector2(width, height);
+
+		for (size_t i = 0; i < numChildren(); i++)
 		{
-			World* world = getWorld();
-			world->ticklePrimitive(getAxlePrim());
-			world->ticklePrimitive(getHolePrim());
+			GuiItem* current = getGuiItem((int)i);
+			if (current)
+				current->render2d(adorn);
 		}
 	}
 }

@@ -1,12 +1,11 @@
-// from server: 58% by Viper
-// roc-lang: c
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 ldo.c
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: lua-5.1.2-dll roc_unit_6878e048cc528e62.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*
-** $Id: ldo.c,v 2.38.1.3 2008/01/18 22:31:22 roberto Exp $
+** $Id: ldo.c,v 2.38 2006/06/05 19:36:14 roberto Exp $
 ** Stack and Call structure of Lua
 ** See Copyright Notice in lua.h
 */
@@ -90,13 +89,61 @@ static void resetstack (lua_State *L, int status) {
   L->base = L->ci->base;
   luaF_close(L, L->base);  /* close eventual pending closures */
   luaD_seterrorobj(L, status, L->base);
-  L->nCcalls = L->baseCcalls;
+  L->nCcalls = 0;
   L->allowhook = 1;
   restore_stack_limit(L);
   L->errfunc = 0;
   L->errorJmp = NULL;
 }
 
+
+
+#include <stdexcept>
+class lua_exception : public std::exception
+{
+	friend void luaD_throw (lua_State*, int);
+	friend int luaD_rawrunprotected (lua_State*, Pfunc, void*);
+	struct lua_State* const L;
+	struct lua_longjmp *const errorJmp;
+	mutable bool committed;
+	lua_exception(lua_State *L, lua_longjmp *errorJmp)
+		:L(L)
+		,errorJmp(errorJmp)
+		,committed(false)
+	{
+	}	
+	void commit() const { committed = true; }
+public:
+	lua_exception(const lua_exception& that)
+		:L(that.L)
+		,errorJmp(that.errorJmp)
+		,committed(that.committed)
+	{
+		that.commit();
+	}
+	virtual const char *what() const throw()
+	{
+		return lua_tostring(L, -1);
+	}
+	~lua_exception() throw()
+	{
+		if (!committed)
+		{
+			// The exception was caught before Lua got it.
+			// Revert the error state
+			errorJmp->status = 0;
+			// Pop th error message
+			lua_pop(L, 1);
+		} 
+	}
+};
+
+
+
+#undef LUAI_THROW
+#define LUAI_THROW(L,c) throw(lua_exception(L,c))
+#undef LUAI_TRY
+#define LUAI_TRY(L,c,a) try { a; } catch(lua_exception& e) { e.commit(); if((c)->status==0) (c)->status=-1; } catch(const std::exception& e) { try { luaG_runerror(L,e.what()); } catch(lua_exception& e) { e.commit(); if((c)->status==0) (c)->status=-1; } }
 
 void luaD_throw (lua_State *L, int errcode) {
   if (L->errorJmp) {
@@ -339,7 +386,7 @@ static StkId callrethooks (lua_State *L, StkId firstResult) {
   ptrdiff_t fr = savestack(L, firstResult);  /* next call may change stack */
   luaD_callhook(L, LUA_HOOKRET, -1);
   if (f_isLua(L->ci)) {  /* Lua function? */
-    while ((L->hookmask & LUA_MASKRET) && L->ci->tailcalls--) /* tail calls */
+    while (L->ci->tailcalls--)  /* call hook for eventual tail calls */
       luaD_callhook(L, LUA_HOOKTAILRET, -1);
   }
   return restorestack(L, fr);
@@ -424,24 +471,22 @@ static int resume_error (lua_State *L, const char *msg) {
 LUA_API int lua_resume (lua_State *L, int nargs) {
   int status;
   lua_lock(L);
-  if (L->status != LUA_YIELD && (L->status != 0 || L->ci != L->base_ci))
+  if (L->status != LUA_YIELD) {
+    if (L->status != 0)
+      return resume_error(L, "cannot resume dead coroutine");
+    else if (L->ci != L->base_ci)
       return resume_error(L, "cannot resume non-suspended coroutine");
-  if (L->nCcalls >= LUAI_MAXCCALLS)
-    return resume_error(L, "C stack overflow");
+  }
   luai_userstateresume(L, nargs);
-  lua_assert(L->errfunc == 0);
-  L->baseCcalls = ++L->nCcalls;
+  lua_assert(L->errfunc == 0 && L->nCcalls == 0);
   status = luaD_rawrunprotected(L, resume, L->top - nargs);
   if (status != 0) {  /* error? */
     L->status = cast_byte(status);  /* mark thread as `dead' */
     luaD_seterrorobj(L, status, L->top);
     L->ci->top = L->top;
   }
-  else {
-    lua_assert(L->nCcalls == L->baseCcalls);
+  else
     status = L->status;
-  }
-  --L->nCcalls;
   lua_unlock(L);
   return status;
 }
@@ -450,7 +495,7 @@ LUA_API int lua_resume (lua_State *L, int nargs) {
 LUA_API int lua_yield (lua_State *L, int nresults) {
   luai_userstateyield(L, nresults);
   lua_lock(L);
-  if (L->nCcalls > L->baseCcalls)
+  if (L->nCcalls > 0)
     luaG_runerror(L, "attempt to yield across metamethod/C-call boundary");
   L->base = L->top - nresults;  /* protect stack slots below */
   L->status = LUA_YIELD;

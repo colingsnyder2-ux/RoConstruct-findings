@@ -1,7 +1,8 @@
-// roc-cl: 21022
+// from server: 21% by colin
 // roc-lang: cpp
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPScrollBar.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPScrollBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPScrollBar.cpp : implementation of the CXTPScrollBar class.

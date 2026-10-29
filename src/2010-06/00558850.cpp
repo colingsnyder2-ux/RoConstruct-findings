@@ -1,10 +1,10 @@
-// from server: 68% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: g3d-6.09 G3Dcpp/BinaryInput.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 roc_unit_b4cf93372a277193.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\g3dcpp\\BinaryInput.cpp"
 /**
  @file BinaryInput.cpp
  
@@ -39,11 +39,12 @@
  */
 
 #include "G3D/platform.h"
+#include <exception>
 #include "G3D/BinaryInput.h"
 #include "G3D/Array.h"
 #include "G3D/fileutils.h"
 #ifdef G3D_WIN32
-  #include "../zlib/zlib.h"
+  #include "zlib/zlib.h"
 #else
   #include <zlib.h>
 #endif
@@ -148,7 +149,7 @@ void BinaryInput::loadIntoMemory(int startPosition, int minLength) {
 		debugAssert(freeBuffer);
         buffer = (uint8*)System::realloc(buffer, bufferLength);
         if (buffer == NULL) {
-            throw "Tried to read a larger memory chunk than could fit in memory. (2)";
+            throw std::exception("Tried to read a larger memory chunk than could fit in memory. (2)");
         }
     }
 
@@ -259,7 +260,7 @@ BinaryInput::BinaryInput(
     bitPos = 0;
 
     // Update global file tracker
-    _internal::currentFilesUsed.append(filename);
+    
     
     swapBytes = needSwapBytes(fileEndian);
 
@@ -288,7 +289,7 @@ BinaryInput::BinaryInput(
     buffer = (uint8*)System::malloc(bufferLength);
     if (buffer == NULL) {
         if (compressed) {
-            throw "Not enough memory to load compressed file. (1)";
+            throw std::exception("Not enough memory to load compressed file. (1)");
         }
 
         // Try to allocate a small array; not much memory is available.
@@ -308,7 +309,7 @@ BinaryInput::BinaryInput(
 
     if (compressed) {
         if (bufferLength != length) {
-            throw "Not enough memory to load compressed file. (2)";
+            throw std::exception("Not enough memory to load compressed file. (2)");
         }
 
         // Decompress

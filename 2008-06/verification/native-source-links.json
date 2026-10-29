@@ -204,7 +204,7 @@
   "path": "2008-06/src/Client/App/include/v8xml/SerializerV2.h"
  },
  "004448f0": {
-  "line": 15,
+  "line": 18,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00444a70": {
@@ -6248,19 +6248,19 @@
   "path": "2008-06/src/Client/App/include/v8kernel/Body.h"
  },
  "0062e1c0": {
-  "line": 136,
+  "line": 147,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062e290": {
-  "line": 145,
+  "line": 156,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062e320": {
-  "line": 25,
+  "line": 28,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062e460": {
-  "line": 32,
+  "line": 35,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "0062f4e0": {
@@ -6268,15 +6268,15 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "006308f0": {
-  "line": 70,
+  "line": 73,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632070": {
-  "line": 246,
+  "line": 257,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632190": {
-  "line": 339,
+  "line": 350,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632370": {
@@ -6284,23 +6284,23 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Gyro.h"
  },
  "006324f0": {
-  "line": 403,
+  "line": 414,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "006325e0": {
-  "line": 421,
+  "line": 432,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632b50": {
-  "line": 101,
+  "line": 112,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632db0": {
-  "line": 54,
+  "line": 57,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "00632fd0": {
-  "line": 150,
+  "line": 161,
   "path": "2008-06/src/Client/App/v8datamodel/Gyro.cpp"
  },
  "006334b0": {

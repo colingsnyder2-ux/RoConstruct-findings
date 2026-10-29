@@ -1,920 +1,928 @@
+// from server: 57% by colin
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPShortcutManager.cpp
+// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbasetabbedpane.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPShortcutManager.cpp : implementation of the CXTPShortcutManager class.
+// This is a part of the Microsoft Foundation Classes C++ library.
+// Copyright (C) Microsoft Corporation
+// All rights reserved.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+// This source code is only intended as a supplement to the
+// Microsoft Foundation Classes Reference and related
+// electronic documentation provided with the library.
+// See these sources for detailed information regarding the
+// Microsoft Foundation Classes product.
 
 #include "stdafx.h"
-#include "Common/XTPPropExchange.h"
-
-#include "XTPShortcutManager.h"
-#include "XTPCommandBars.h"
+#include "afxcontrolbarutil.h"
+#include "afxbasetabctrl.h"
+#include "afxbasetabbedpane.h"
+#include "afxpaneframewnd.h"
+#include "afxmultipaneframewnd.h"
+#include "afxdockablepaneadapter.h"
+#include "afxautohidebar.h"
+#include "afxdocksite.h"
+#include "afxglobalutils.h"
+#include "afxmdiframewndex.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPShortcutManagerKeyNameText::CXTPShortcutManagerKeyNameText
+IMPLEMENT_DYNAMIC(CBaseTabbedPane, CDockablePane)
 
-CXTPShortcutManager::CKeyNameText::CKeyNameText()
+/////////////////////////////////////////////////////////////////////////////
+// CBaseTabbedPane
+
+CBaseTabbedPane::CBaseTabbedPane(BOOL bAutoDestroy)
 {
-	static const struct
-	{
-		WORD    wKey;       // Virtual Key Code.
-		LPCTSTR szKeyName;  // Display Name (i.e "CTRL").
-	}
-	virtKeys[] =
-	{
-		{ _T('0'), _T("0") },
-		{ _T('1'), _T("1") },
-		{ _T('2'), _T("2") },
-		{ _T('3'), _T("3") },
-		{ _T('4'), _T("4") },
-		{ _T('5'), _T("5") },
-		{ _T('6'), _T("6") },
-		{ _T('7'), _T("7") },
-		{ _T('8'), _T("8") },
-		{ _T('9'), _T("9") },
-		{ _T('A'), _T("A") },
-		{ _T('B'), _T("B") },
-		{ _T('C'), _T("C") },
-		{ _T('D'), _T("D") },
-		{ _T('E'), _T("E") },
-		{ _T('F'), _T("F") },
-		{ _T('G'), _T("G") },
-		{ _T('H'), _T("H") },
-		{ _T('I'), _T("I") },
-		{ _T('J'), _T("J") },
-		{ _T('K'), _T("K") },
-		{ _T('L'), _T("L") },
-		{ _T('M'), _T("M") },
-		{ _T('N'), _T("N") },
-		{ _T('O'), _T("O") },
-		{ _T('P'), _T("P") },
-		{ _T('Q'), _T("Q") },
-		{ _T('R'), _T("R") },
-		{ _T('S'), _T("S") },
-		{ _T('T'), _T("T") },
-		{ _T('U'), _T("U") },
-		{ _T('V'), _T("V") },
-		{ _T('W'), _T("W") },
-		{ _T('X'), _T("X") },
-		{ _T('Y'), _T("Y") },
-		{ _T('Z'), _T("Z") },
-		{ VK_LBUTTON, _T("Left Button") },
-		{ VK_RBUTTON, _T("Right Button") },
-		{ VK_CANCEL, _T("Ctrl+Break") },
-		{ VK_MBUTTON, _T("Middle Button") },
-		{ VK_BACK, _T("Backspace") },
-		{ VK_TAB, _T("Tab") },
-		{ VK_CLEAR, _T("Clear") },
-		{ VK_RETURN, _T("Enter") },
-		{ VK_SHIFT, _T("Shift") },
-		{ VK_CONTROL, _T("Ctrl") },
-		{ VK_MENU, _T("Alt") },
-		{ VK_PAUSE, _T("Pause") },
-		{ VK_CAPITAL, _T("Caps Lock") },
-		{ VK_ESCAPE, _T("Esc") },
-		{ VK_SPACE, _T("Space") },
-		{ VK_PRIOR, _T("Page Up") },
-		{ VK_NEXT, _T("Page Down") },
-		{ VK_END, _T("End") },
-		{ VK_HOME, _T("Home") },
-		{ VK_LEFT, _T("Left Arrow") },
-		{ VK_UP, _T("Up Arrow") },
-		{ VK_RIGHT, _T("Right Arrow") },
-		{ VK_DOWN, _T("Down Arrow") },
-		{ VK_SELECT, _T("Select") },
-		{ VK_PRINT, _T("Print") },
-		{ VK_EXECUTE, _T("Execute") },
-		{ VK_SNAPSHOT, _T("Snapshot") },
-		{ VK_INSERT, _T("Ins") },
-		{ VK_DELETE, _T("Del") },
-		{ VK_HELP, _T("Help") },
-		{ VK_LWIN , _T("Left Windows") },
-		{ VK_RWIN, _T("Right Windows") },
-		{ VK_APPS, _T("Application") },
-		{ VK_MULTIPLY, _T("Num *") },
-		{ VK_ADD, _T("Num +") },
-		{ VK_SEPARATOR, _T("Separator") },
-		{ VK_SUBTRACT, _T("Num -") },
-		{ VK_DECIMAL, _T("Num .") },
-		{ VK_DIVIDE, _T("Num /") },
-		{ VK_F1, _T("F1") },
-		{ VK_F2, _T("F2") },
-		{ VK_F3, _T("F3") },
-		{ VK_F4, _T("F4") },
-		{ VK_F5, _T("F5") },
-		{ VK_F6, _T("F6") },
-		{ VK_F7, _T("F7") },
-		{ VK_F8, _T("F8") },
-		{ VK_F9, _T("F9") },
-		{ VK_F10, _T("F10") },
-		{ VK_F11, _T("F11") },
-		{ VK_F12, _T("F12") },
-		{ VK_NUMPAD0, _T("Num 0") },
-		{ VK_NUMPAD1, _T("Num 1") },
-		{ VK_NUMPAD2, _T("Num 2") },
-		{ VK_NUMPAD3, _T("Num 3") },
-		{ VK_NUMPAD4, _T("Num 4") },
-		{ VK_NUMPAD5, _T("Num 5") },
-		{ VK_NUMPAD6, _T("Num 6") },
-		{ VK_NUMPAD7, _T("Num 7") },
-		{ VK_NUMPAD8, _T("Num 8") },
-		{ VK_NUMPAD9, _T("Num 9") },
-		{ VK_NUMLOCK, _T("Num Lock") },
-		{ VK_SCROLL, _T("Scrl Lock") },
-		{ VK_ATTN, _T("Attn") },
-		{ VK_CRSEL, _T("Crsel") },
-		{ VK_EXSEL, _T("Exsel") },
-		{ VK_EREOF, _T("Ereof") },
-		{ VK_PLAY, _T("Play") },
-		{ VK_ZOOM, _T("Zoom") },
-		{ VK_NONAME, _T("No Name") },
-		{ VK_PA1, _T("Pa1") },
-		{ VK_OEM_CLEAR, _T("Oem Clear") },
-	};
+	m_bAutoDestroy = bAutoDestroy;
+	m_pTabWnd = NULL;
+	m_bEnableIDChecking = FALSE;
+	m_bSetCaptionTextToTabName = TRUE;
 
-	for (int i = 0; i < _countof(virtKeys); i++)
+	EnableDocking(CBRS_ALIGN_ANY);
+}
+
+CBaseTabbedPane::~CBaseTabbedPane()
+{
+}
+
+//{{AFX_MSG_MAP(CBaseTabbedPane)
+BEGIN_MESSAGE_MAP(CBaseTabbedPane, CDockablePane)
+	ON_WM_SIZE()
+	ON_WM_NCDESTROY()
+	ON_WM_ERASEBKGND()
+	ON_WM_SETFOCUS()
+	ON_REGISTERED_MESSAGE(AFX_WM_CHANGE_ACTIVE_TAB, &CBaseTabbedPane::OnChangeActiveTab)
+END_MESSAGE_MAP()
+//}}AFX_MSG_MAP
+
+/////////////////////////////////////////////////////////////////////////////
+// CBaseTabbedPane message handlers
+
+void CBaseTabbedPane::OnSize(UINT nType, int cx, int cy)
+{
+	CDockablePane::OnSize(nType, cx, cy);
+
+	CWnd* pUnderlinedWnd = GetUnderlyingWindow();
+
+	if (pUnderlinedWnd != NULL && IsWindow(pUnderlinedWnd->GetSafeHwnd()))
 	{
-		SetAt(virtKeys[i].wKey, virtKeys[i].szKeyName);
+		CRect rectClient;
+		GetClientRect(rectClient);
+
+		pUnderlinedWnd->SetWindowPos(NULL, 0, 0, rectClient.Width(), rectClient.Height(), SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOREDRAW);
 	}
 }
 
-CString CXTPShortcutManager::CKeyNameText::Translate(UINT nKey)
+void CBaseTabbedPane::OnNcDestroy()
 {
-	CString strKeyNameText;
-
-	if (m_mapVirtualKeys.Lookup(nKey, strKeyNameText))
+	if (m_pTabWnd != NULL)
 	{
-		return strKeyNameText;
+		delete m_pTabWnd;
+		m_pTabWnd = NULL;
 	}
 
-	return _T("");
-}
+	CDockablePane::OnNcDestroy();
 
-void CXTPShortcutManager::CKeyNameText::SetAt(UINT uiVirtKey, LPCTSTR strKeyNameText)
-{
-	m_mapVirtualKeys.SetAt(uiVirtKey, strKeyNameText);
-}
-
-
-#define SAFE_DESTROY_ACCELTABLE(hAccelTable) if (hAccelTable) {::DestroyAcceleratorTable (hAccelTable); hAccelTable = NULL;}
-
-CXTPShortcutManager::CXTPShortcutManager(CXTPCommandBars* pCommandBars)
-	: m_pCommandBars(pCommandBars)
-{
-	m_hAccelTable = NULL;
-	m_hOriginalAccelTable = NULL;
-
-	m_bAllowEscapeShortcut = FALSE;
-	m_bUseSystemKeyNameText = FALSE;
-
-	m_pKeyNameText = new CKeyNameText();
-
-	m_nDisableShortcuts = 0;
-
-}
-
-CXTPShortcutManager::~CXTPShortcutManager()
-{
-	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
-	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
-
-	delete m_pKeyNameText;
-
-}
-
-void CXTPShortcutManager::SetAccelerators(UINT nIDResource)
-{
-	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
-	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
-
-	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
-	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_ACCELERATOR);
-
-	if (hInst)
+	if (m_bAutoDestroy)
 	{
-		HACCEL hAccel = ::LoadAccelerators(hInst, lpszResourceName);
-
-		m_hOriginalAccelTable = CopyAccelTable(hAccel);
-		m_hAccelTable = CopyAccelTable(hAccel);
+		delete this;
 	}
 }
 
-void CXTPShortcutManager::SetDefaultAccelerator(HACCEL hAccelTable)
+BOOL CBaseTabbedPane::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
-	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
-
-	m_hAccelTable = hAccelTable;
-	m_hOriginalAccelTable = CopyAccelTable(hAccelTable);
+	return TRUE;
 }
 
-void CXTPShortcutManager::CreateOriginalAccelTable()
+BOOL CBaseTabbedPane::AddTab(CWnd* pNewBar, BOOL bVisible, BOOL bSetActive, BOOL bDetachable)
 {
-	SAFE_DESTROY_ACCELTABLE(m_hOriginalAccelTable);
-	m_hOriginalAccelTable = CopyAccelTable(m_hAccelTable);
-}
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+	ASSERT_VALID(pNewBar);
 
-void CXTPShortcutManager::Reset()
-{
-	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
-	m_hAccelTable = CopyAccelTable(m_hOriginalAccelTable);
-}
-
-CString CXTPShortcutManager::Format(LPACCEL lpAccel, int* pPriority)
-{
-	CString str;
-	CKeyHelper helper (lpAccel, this);
-	helper.Format (str);
-
-	if (pPriority)
+	if (pNewBar->IsKindOf(RUNTIME_CLASS(CBaseTabbedPane)))
 	{
-		*pPriority = helper.Priority();
-	}
+		CBaseTabbedPane* pTabbedControlBar = DYNAMIC_DOWNCAST(CBaseTabbedPane, pNewBar);
 
-	return str;
-}
+		// it's false when the tabbed bar is added from miniframe to docksite
+		BOOL bSetInfoForSlider = (GetParentMiniFrame() != NULL);
 
-BOOL CXTPShortcutManager::OnPreviewEditKey(ACCEL hAccel)
-{
-	if ((hAccel.fVirt & FCONTROL) == 0
-		&& (hAccel.fVirt & FSHIFT) == 0
-		&& (hAccel.fVirt & FALT) == 0
-		&& (hAccel.fVirt & FVIRTKEY)
-		&& (hAccel.key == VK_ESCAPE) && !m_bAllowEscapeShortcut)
+		ASSERT_VALID(pTabbedControlBar);
+
+		CMFCBaseTabCtrl* pWndTab = pTabbedControlBar->GetUnderlyingWindow();
+
+		ASSERT_VALID(pWndTab);
+
+		int nTabsNum = pWndTab->GetTabsNum();
+		ASSERT(nTabsNum > 0);
+
+		for (int i = 0; i < nTabsNum; i++)
+		{
+			CBasePane* pWnd = DYNAMIC_DOWNCAST(CBasePane, pWndTab->GetTabWnd(i));
+			ASSERT_VALID(pWnd);
+
+			bVisible = pWndTab->IsTabVisible(i);
+			bDetachable = pWndTab->IsTabDetachable(i);
+
+			pWnd->EnableGripper(FALSE);
+
+			if (!AddTab(pWnd, bVisible, bVisible, bDetachable))
+			{
+				ASSERT(FALSE);
+			}
+
+			CDockablePane* pDockingBar = DYNAMIC_DOWNCAST(CDockablePane, pWnd);
+			if (pDockingBar != NULL)
+			{
+				pDockingBar->m_recentDockInfo.SetInfo(bSetInfoForSlider, pTabbedControlBar->m_recentDockInfo);
+			}
+		}
+
+		pWndTab->RemoveAllTabs();
+		pNewBar->DestroyWindow();
+
+		// stop processing - this function will be called
+		// from AttachToTabWnd
 		return FALSE;
+	}
+	else
+	{
+		if (pNewBar->IsKindOf(RUNTIME_CLASS(CPane)))
+		{
+			CPane* pNewControlBar = DYNAMIC_DOWNCAST(CPane, pNewBar);
+			ASSERT_VALID(pNewControlBar);
+
+			CWnd* pOldParent = pNewControlBar->GetParent();
+			pNewControlBar->OnBeforeChangeParent(m_pTabWnd, TRUE);
+			pNewControlBar->SetParent(m_pTabWnd);
+			pNewControlBar->OnAfterChangeParent(pOldParent);
+
+			if (pNewControlBar->IsKindOf(RUNTIME_CLASS(CDockablePane)))
+			{
+				((CDockablePane*) pNewControlBar)->EnableGripper(FALSE);
+			}
+		}
+
+		CString strText;
+		pNewBar->GetWindowText(strText);
+
+		m_pTabWnd->AddTab(pNewBar, strText, bSetActive, bDetachable);
+
+		int iTab = m_pTabWnd->GetTabsNum() - 1;
+		m_pTabWnd->SetTabHicon(iTab, pNewBar->GetIcon(FALSE));
+		m_pTabWnd->EnableTabDetach(iTab, bDetachable);
+
+		if (bVisible)
+		{
+			if (bSetActive)
+			{
+				m_pTabWnd->SetActiveTab(iTab);
+			}
+		}
+		else
+		{
+			ASSERT(!bSetActive);
+			m_pTabWnd->ShowTab(iTab, FALSE);
+		}
+	}
+	return TRUE;
+}
+
+
+CWnd* CBaseTabbedPane::FindPaneByID(UINT uBarID)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+
+	for (int i = 0; i < m_pTabWnd->GetTabsNum(); i++)
+	{
+		CWnd* pBar = m_pTabWnd->GetTabWnd(i);
+		ASSERT_VALID(pBar);
+
+		if ((UINT) pBar->GetDlgCtrlID() == uBarID)
+		{
+			return pBar;
+		}
+	}
+
+	return NULL;
+}
+
+CWnd* CBaseTabbedPane::FindBarByTabNumber(int nTabNum, BOOL bGetWrappedBar)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+
+	if (nTabNum < 0 || nTabNum >= m_pTabWnd->GetTabsNum())
+	{
+		return NULL;
+	}
+
+	CWnd* pWnd = m_pTabWnd->GetTabWnd(nTabNum);
+	ASSERT_VALID(pWnd);
+
+	if (bGetWrappedBar && pWnd->IsKindOf(RUNTIME_CLASS(CDockablePaneAdapter)))
+	{
+		CDockablePaneAdapter* pWrapper = DYNAMIC_DOWNCAST(CDockablePaneAdapter, pWnd);
+		pWnd = pWrapper->GetWrappedWnd();
+		ASSERT_VALID(pWnd);
+	}
+
+	return pWnd;
+}
+
+BOOL CBaseTabbedPane::DetachPane(CWnd* pBar, BOOL bHide)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pBar);
+	ASSERT_VALID(m_pTabWnd);
+
+	int nTabNumber = m_pTabWnd->GetTabFromHwnd(pBar->GetSafeHwnd());
+
+	if (nTabNumber < 0)
+	{
+		return FALSE;
+	}
+
+	m_pTabWnd->DetachTab(DM_UNKNOWN, nTabNumber, bHide);
+	return TRUE;
+}
+
+BOOL CBaseTabbedPane::RemovePane(CWnd* pBar)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(pBar);
+	ASSERT_VALID(m_pTabWnd);
+
+	int nTabNumber = m_pTabWnd->GetTabFromHwnd(pBar->GetSafeHwnd());
+
+	if (nTabNumber < 0 || nTabNumber >= m_pTabWnd->GetTabsNum())
+	{
+		return FALSE;
+	}
+
+	m_pTabWnd->RemoveTab(nTabNumber);
+
+	if (m_pTabWnd->GetTabsNum() == 0)
+	{
+		if (AllowDestroyEmptyTabbedPane())
+		{
+			if (IsDocked())
+			{
+				UndockPane();
+			}
+			else
+			{
+				CPaneFrameWnd* pMiniFrame = GetParentMiniFrame();
+				pMiniFrame->RemovePane(this);
+			}
+
+			DestroyWindow();
+			return FALSE;
+		}
+		else
+		{
+			m_pTabWnd->ShowWindow(SW_HIDE);
+		}
+	}
 
 	return TRUE;
 }
 
-void CXTPShortcutManager::DisableShortcuts(BOOL bDisable)
+BOOL CBaseTabbedPane::ShowTab(CWnd* pBar, BOOL bShow, BOOL bDelay, BOOL bActivate)
 {
-	m_nDisableShortcuts += bDisable ? +1 : -1;
-}
+	ASSERT_VALID(this);
+	ASSERT_VALID(pBar);
+	ASSERT_VALID(m_pTabWnd);
 
-BOOL CXTPShortcutManager::TranslateAccelerator(HWND hWnd, LPMSG lpMsg)
-{
-	if (m_nDisableShortcuts > 0)
-		return FALSE;
+	int nTabNum = m_pTabWnd->GetTabFromHwnd(pBar->GetSafeHwnd());
 
-	HACCEL hAccel = GetDefaultAccelerator();
+	BOOL bResult = m_pTabWnd->ShowTab(nTabNum, bShow, !bDelay, bActivate);
+	BOOL bNowVisible = m_pTabWnd->GetVisibleTabsNum() > 0;
 
-	if (hAccel != NULL && ::TranslateAccelerator(hWnd, hAccel, lpMsg))
-		return TRUE;
-
-	return FALSE;
-}
-
-
-BOOL CXTPShortcutManager::FindDefaultAccelerator (UINT nCmd, CString& strShortcut)
-{
-	HACCEL hAccelTable = m_hAccelTable;
-
-	if (m_hAccelTable == NULL && m_hOriginalAccelTable == NULL)
+	if (bNowVisible && !(m_pTabWnd->GetStyle() & WS_VISIBLE))
 	{
-		CFrameWnd* pFrame = DYNAMIC_DOWNCAST(CFrameWnd, m_pCommandBars->GetSite());
-		hAccelTable = pFrame ? pFrame->m_hAccelTable : NULL;
+		m_pTabWnd->ShowWindow(SW_SHOW);
 	}
 
-	if (!hAccelTable)
-		return FALSE;
-
-	ASSERT(hAccelTable);
-
-	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
-
-	LPACCEL lpAccel = new ACCEL[nAccelSize];
-	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
-
-	BOOL bFound = FALSE;
-	BOOL bEqual = FALSE;
-	CString strFirst = _T("");
-	int nFirstPriorety = 0;
-
-
-	for (int i = 0; i < nAccelSize; i++)
-	{
-		if (lpAccel[i].cmd == nCmd)
-		{
-			int nPriority = 0;
-			CString str = Format(&lpAccel[i], &nPriority);
-
-			if (str == strShortcut)
-				bEqual = TRUE;
-
-			if (strFirst.IsEmpty() || (nFirstPriorety < nPriority))
-			{
-				strFirst = str;
-				nFirstPriorety = nPriority;
-			}
-
-			bFound = TRUE;
-		}
-	}
-	delete[] lpAccel;
-
-	if (!bFound)
-		strShortcut = "";
-	else if (!bEqual)
-		strShortcut = strFirst;
-
-
-	return bFound;
-}
-
-CXTPShortcutManager::CKeyHelper::CKeyHelper(LPACCEL lpAccel, CXTPShortcutManager* pManager/*= NULL*/) :
-	m_pManager(pManager), m_lpAccel (lpAccel)
-{
-}
-
-CXTPShortcutManager::CKeyHelper::~CKeyHelper()
-{
-}
-
-int CXTPShortcutManager::CKeyHelper::Priority()
-{
-	if (m_lpAccel == NULL)
-		return 0;
-	if (m_lpAccel->fVirt & FCONTROL)
-		return 3;
-	if (m_lpAccel->fVirt & FALT)
-		return 2;
-	if (m_lpAccel->fVirt & FSHIFT)
-		return 1;
-	return 4;
-}
-
-void CXTPShortcutManager::CKeyHelper::Format (CString& str) const
-{
-	str.Empty ();
-
-	if (m_lpAccel == NULL)
-	{
-		ASSERT (FALSE);
-		return;
-	}
-
-	if (m_lpAccel->key != VK_CANCEL)
-	{
-		if (m_lpAccel->fVirt & FCONTROL)
-		{
-			AddVirtKeyStr (str, VK_CONTROL);
-		}
-
-		if (m_lpAccel->fVirt & FSHIFT)
-		{
-			AddVirtKeyStr (str, VK_SHIFT);
-		}
-
-		if (m_lpAccel->fVirt & FALT)
-		{
-			AddVirtKeyStr (str, VK_MENU);
-		}
-	}
-
-	if (m_lpAccel->key)
-	{
-		if (m_lpAccel->fVirt & FVIRTKEY)
-		{
-			AddVirtKeyStr (str, m_lpAccel->key, TRUE);
-		}
-		else if ((m_lpAccel->key >= 1 && m_lpAccel->key <= 26) && (m_lpAccel->fVirt == FNOINVERT))
-		{
-			AddVirtKeyStr(str, VK_CONTROL);
-			str += (char) ('A' + m_lpAccel->key - 1);
-		}
-		else if (m_lpAccel->key != VK_ESCAPE && m_lpAccel->key != VK_TAB)
-		{
-			str += (char) m_lpAccel->key;
-		}
-	}
-	else if (str.GetLength() > 0)
-	{
-		str = str.Left(str.GetLength() - 1);
-	}
-}
-
-void CXTPShortcutManager::CKeyHelper::AddVirtKeyStr (CString& str, UINT uiVirtKey, BOOL bLast) const
-{
-	ASSERT(m_pManager);
-	if (!m_pManager)
-		return;
-
-	CString strKey = m_pManager->GetKeyNameText(uiVirtKey);
-
-	if (!strKey.IsEmpty())
-	{
-		str += strKey;
-
-		if (!bLast)
-		{
-			str += '+';
-		}
-	}
-}
-
-CString CXTPShortcutManager::CKeyHelper::GetLocalKeyNameText(UINT uiVirtKey)
-{
-	#define BUFFER_LEN 50
-	TCHAR szBuffer[BUFFER_LEN + 1];
-	ZeroMemory(szBuffer, BUFFER_LEN);
-
-	if (uiVirtKey == VK_CANCEL)
-		return _T("");
-
-	UINT nScanCode = ::MapVirtualKeyEx (uiVirtKey, 0,
-		::GetKeyboardLayout (0)) << 16 | 0x1;
-
-	if (uiVirtKey >= VK_PRIOR && uiVirtKey <= VK_HELP)
-	{
-		nScanCode |= 0x01000000;
-	}
-
-	::GetKeyNameText (nScanCode, szBuffer, BUFFER_LEN);
-
-	CString strKey = szBuffer;
-
-	if (!strKey.IsEmpty())
-	{
-		strKey.MakeLower();
-
-		for (int i = 0; i < strKey.GetLength(); i++)
-		{
-			TCHAR c = strKey[i];
-			if (IsCharLower(c))
-			{
-				strKey.SetAt (i, CXTPShortcutManager::ToUpper(c));
-				break;
-			}
-		}
-	}
-
-	return strKey;
-}
-
-BOOL CXTPShortcutManager::CompareAccelKey(TCHAR chAccel, UINT wParam)
-{
-	if (wParam >= VK_NUMPAD0 && wParam <= VK_NUMPAD9)
-		return (UINT)chAccel == (wParam + '0' - VK_NUMPAD0);
-
-	TCHAR tchVirtualKey = (TCHAR)MapVirtualKey(wParam, 2);
-	if (tchVirtualKey == NULL)
-		return FALSE;
-
-	TCHAR chAccelUpper = ToUpper(chAccel);
-
-	if ((chAccel == (TCHAR)wParam) || (chAccelUpper == (TCHAR)wParam))
-		return TRUE;
-
-	UINT nLayoutCount = GetKeyboardLayoutList(0, 0);
-	if (nLayoutCount > 1)
-	{
-		CArray<HKL, HKL&> arrLayoutList;
-		arrLayoutList.SetSize(nLayoutCount);
-
-		GetKeyboardLayoutList(nLayoutCount, arrLayoutList.GetData());
-
-		BYTE keyState[256];
-		if (!GetKeyboardState (keyState))
-			return FALSE;
-
-		for (UINT i = 0; i < nLayoutCount; i++)
-		{
-			WORD chKey = 0;
-
-#ifdef _UNICODE
-			if (ToUnicodeEx((UINT)wParam, 0, keyState, (LPWSTR)&chKey, 1, 0, arrLayoutList[i]) == 1)
-#else
-			if (ToAsciiEx((UINT)wParam, 0, keyState, &chKey, 0, arrLayoutList[i]) == 1)
-#endif
-			{
-				if ((chAccel == (TCHAR)chKey) || (chAccelUpper == ToUpper((TCHAR)chKey)))
-					return TRUE;
-			}
-
-			BYTE ksShift = keyState[VK_SHIFT];
-			keyState[VK_SHIFT]= 0x81;
-
-#ifdef _UNICODE
-			if (ToUnicodeEx((UINT)wParam, 0, keyState, (LPWSTR)&chKey, 1, 0, arrLayoutList[i]) == 1)
-#else
-			if (ToAsciiEx((UINT)wParam, 0, keyState, &chKey, 0, arrLayoutList[i]) == 1)
-#endif
-			{
-				if ((chAccel == (TCHAR)chKey) || (chAccelUpper == ToUpper((TCHAR)chKey)))
-					return TRUE;
-			}
-
-			keyState[VK_SHIFT] = ksShift;
-		}
-	}
-
-	return FALSE;
-}
-
-void CXTPShortcutManager::SetKeyNameText(UINT uiVirtKey, LPCTSTR strKeyNameText)
-{
-	m_pKeyNameText->SetAt(uiVirtKey, strKeyNameText);
-}
-
-CString CXTPShortcutManager::GetKeyNameText(UINT uiVirtKey)
-{
-	CString strKey;
-
-	if (m_bUseSystemKeyNameText)
-	{
-		strKey = CKeyHelper::GetLocalKeyNameText(uiVirtKey);
-	}
-
-	if (strKey.IsEmpty())
-	{
-		strKey = m_pKeyNameText->Translate(uiVirtKey);
-	}
-
-	if (strKey.IsEmpty() && !m_bUseSystemKeyNameText)
-	{
-		strKey = CKeyHelper::GetLocalKeyNameText(uiVirtKey);
-	}
-
-	return strKey;
-}
-
-TCHAR CXTPShortcutManager::ToUpper(TCHAR vkTCHAR)
-{
-	TCHAR szChar[2] = {vkTCHAR, _T('\0') };
-
-	CharUpper(szChar);
-	return szChar[0];
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CKeyAssign
-
-CXTPShortcutManager::CKeyAssign::CKeyAssign(CXTPShortcutManager* pManager/*= NULL*/)
-	: m_keyHelper (&m_hAccel, pManager)
-{
-	m_bKeyDefined = FALSE;
-	m_bExtendedOnly = FALSE;
-	ResetKey ();
-}
-
-CXTPShortcutManager::CKeyAssign::~CKeyAssign()
-{
-}
-
-BOOL CXTPShortcutManager::CKeyAssign::PreTranslateMessage(MSG* pMsg)
-{
-	if (pMsg->message == WM_LBUTTONDOWN ||
-		pMsg->message == WM_MBUTTONDOWN ||
-		pMsg->message == WM_RBUTTONDOWN)
-	{
-		SetFocus ();
-		return TRUE;
-	}
-
-	BOOL bPressed = pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN;
-
-	if (bPressed || pMsg->message == WM_KEYUP || pMsg->message == WM_SYSKEYUP)
-	{
-		BOOL bControlPressed = ::GetKeyState(VK_CONTROL) & 0x8000;
-		BOOL bAltPressed = ::GetKeyState(VK_MENU) & 0x8000;
-
-		if (!bControlPressed && !bAltPressed && (pMsg->wParam == VK_TAB))
-		{
-			if (!m_bKeyDefined)
-				ResetKey();
-
-			return FALSE;
-		}
-
-		if (bPressed && !((1 << 30) & pMsg->lParam))
-		{
-			ResetKey();
-		}
-
-		if (m_bExtendedOnly)
-		{
-			if (bPressed)
-			{
-				SetAccelFlag (FSHIFT, GetKeyState(VK_SHIFT) < 0);
-				SetAccelFlag (FCONTROL, GetKeyState(VK_CONTROL) < 0);
-				SetAccelFlag (FALT, GetKeyState(VK_MENU) < 0);
-			}
-		}
-		else if (!m_bKeyDefined)
-		{
-			// read in the actual state because we were not tracking releases if there was a
-			// definition
-			SetAccelFlag (FSHIFT, ::GetKeyState(VK_SHIFT) & 0x8000);
-			SetAccelFlag (FCONTROL, bControlPressed);
-			SetAccelFlag (FALT, bAltPressed);
-
-			if (pMsg->wParam == VK_SHIFT
-					|| pMsg->wParam == VK_CONTROL
-					|| pMsg->wParam == VK_MENU
-					)
-			{
-				// all work is already done
-			}
-			else if (bPressed)
-			{
-				m_hAccel.key = (WORD)pMsg->wParam;
-				m_bKeyDefined = TRUE;
-				SetAccelFlag (FVIRTKEY, TRUE);
-			}
-		}
-
-		if (m_keyHelper.GetShortcutManager() && !m_keyHelper.GetShortcutManager()->OnPreviewEditKey(m_hAccel))
-		{
-			ResetKey();
-			return TRUE;
-		}
-
-		CString str;
-		m_keyHelper.Format (str);
-
-		SetWindowText (str);
-		return TRUE;
-	}
-
-	return CEdit::PreTranslateMessage(pMsg);
-}
-
-void CXTPShortcutManager::CKeyAssign::ResetKey ()
-{
-	memset (&m_hAccel, 0, sizeof(ACCEL));
-	m_bKeyDefined = FALSE;
-
-	if (m_hWnd != NULL)
-	{
-		SetWindowText (_T(""));
-	}
-}
-
-void CXTPShortcutManager::CKeyAssign::SetAccelFlag (BYTE bFlag, BOOL bSet)
-{
-	if (bSet) m_hAccel.fVirt |= bFlag;
-	else m_hAccel.fVirt &= ~bFlag;
-}
-
-BOOL CXTPShortcutManager::CKeyAssign::IsKeyDefined () const
-{
-	return m_bKeyDefined;
-}
-
-ACCEL* CXTPShortcutManager::CKeyAssign::GetAccel ()
-{
-	return &m_hAccel;
-}
-
-void CXTPShortcutManager::CKeyAssign::SetAccel(ACCEL& hAccel)
-{
-	m_hAccel = hAccel;
-
-	if (m_hWnd != NULL)
-	{
-		CString str;
-		m_keyHelper.Format (str);
-
-		SetWindowText (str);
-	}
-}
-
-#define REG_ENTRY_DATA  _T("Accelerators")
-
-void CXTPShortcutManager::UpdateAcellTable(LPACCEL lpAccel, int nSize)
-{
-	HACCEL hAccelNew = ::CreateAcceleratorTable(lpAccel, nSize);
-
-	SAFE_DESTROY_ACCELTABLE(m_hAccelTable);
-
-	m_hAccelTable = hAccelNew;
-}
-
-
-BOOL CXTPShortcutManager::GetShortcut(int ID, ACCEL* pAccel)
-{
-	HACCEL hAccelTable = GetDefaultAccelerator();
-
-	if (!hAccelTable)
-		return FALSE;
-
-	BOOL bResult = FALSE;
-
-	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
-
-	LPACCEL lpAccel = new ACCEL[nAccelSize];
-	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
-
-	for (int i = 0; i < nAccelSize; i++)
-	{
-		if (lpAccel[i].cmd == ID)
-		{
-			*pAccel = lpAccel[i];
-			bResult = TRUE;
-		}
-	}
-	delete[] lpAccel;
-
-	if ((pAccel->fVirt % 2) == 1)
-		pAccel->fVirt -= 1;
-
+	CDockablePane::ShowPane(bNowVisible, bDelay, bActivate);
 	return bResult;
 }
 
-void CXTPShortcutManager::AddShortcut(long fVirt, long key, long cmd)
+BOOL CBaseTabbedPane::FloatTab(CWnd* pBar, int nTabID, AFX_DOCK_METHOD dockMethod, BOOL bHide)
 {
-	HACCEL hAccelTable = m_hAccelTable;
+	ASSERT_VALID(this);
+	ASSERT_VALID(pBar);
+	ASSERT_VALID(m_pTabWnd);
 
-	ACCEL accel;
-	accel.fVirt = (BYTE)(fVirt | FVIRTKEY);
-	accel.key = (WORD)key;
-	accel.cmd = (WORD)cmd;
+	CString strWndText;
+	pBar->GetWindowText(strWndText);
 
-	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
-
-	LPACCEL lpAccel = new ACCEL[nAccelSize + 1];
-	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
-
-	int nIndex = nAccelSize;
-
-	for (int i = 0; i < nAccelSize; i++)
+	if (strWndText.IsEmpty())
 	{
-		if (CKeyHelper::EqualAccels(&lpAccel[i], &accel))
+		if (m_pTabWnd->GetTabLabel(nTabID, strWndText))
 		{
-			nIndex = i;
-			break;
+			pBar->SetWindowText(strWndText);
 		}
 	}
 
-	lpAccel[nIndex] = accel;
+	m_pTabWnd->RemoveTab(nTabID);
 
-	UpdateAcellTable(lpAccel, nAccelSize + (nIndex == nAccelSize ? 1 : 0));
-
-	delete[] lpAccel;
-}
-
-HACCEL CXTPShortcutManager::CopyAccelTable(HACCEL hAccelTable)
-{
-	if (hAccelTable == NULL)
-		return NULL;
-
-	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
-	if (nAccelSize == 0)
-		return NULL;
-
-	LPACCEL lpAccel = new ACCEL[nAccelSize];
-	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
-
-	HACCEL hAccelNew = ::CreateAcceleratorTable(lpAccel, nAccelSize);
-	delete[] lpAccel;
-
-	return hAccelNew;
-}
-
-
-void CXTPShortcutManager::SerializeShortcuts(CArchive& ar)
-{
-	CXTPPropExchangeArchive px(ar);
-	DoPropExchange(&px);
-}
-
-void CXTPShortcutManager::SaveShortcuts(LPCTSTR lpszProfileName)
-{
-	if (!m_hOriginalAccelTable)
-		return;
-
-	HACCEL hAccelTable = m_hAccelTable;
-
-	int nAccelSize = ::CopyAcceleratorTable (hAccelTable, NULL, 0);
-
-	LPACCEL lpAccel = new ACCEL[nAccelSize];
-	ASSERT (lpAccel != NULL);
-
-	::CopyAcceleratorTable (hAccelTable, lpAccel, nAccelSize);
-
-	AfxGetApp()->WriteProfileBinary(lpszProfileName, REG_ENTRY_DATA, (LPBYTE) lpAccel, nAccelSize * sizeof(ACCEL));
-
-	delete[] lpAccel;
-
-}
-
-void CXTPShortcutManager::LoadShortcuts(LPCTSTR lpszProfileName)
-{
-	if (!m_hOriginalAccelTable)
-		return;
-
-	UINT uiSize;
-	LPACCEL lpAccel = 0;
-	if (AfxGetApp()->GetProfileBinary(lpszProfileName, REG_ENTRY_DATA, (LPBYTE*) &lpAccel, &uiSize))
+	if (dockMethod == DM_MOUSE)
 	{
-		int nAccelSize = uiSize / sizeof(ACCEL);
-		ASSERT (lpAccel != NULL);
+		m_pTabWnd->SendMessage(WM_LBUTTONUP, 0, 0);
+	}
 
-		UpdateAcellTable(lpAccel, nAccelSize);
+	CDockablePane* pDockingBar = DYNAMIC_DOWNCAST(CDockablePane, pBar);
 
-		delete[] lpAccel;
+	if (pDockingBar != NULL)
+	{
+		pDockingBar->StoreRecentTabRelatedInfo();
+	}
+
+	if (dockMethod == DM_DBL_CLICK && pDockingBar != NULL)
+	{
+		CMultiPaneFrameWnd* pParentMiniFrame = DYNAMIC_DOWNCAST(CMultiPaneFrameWnd, GetParentMiniFrame());
+
+		if (pParentMiniFrame != NULL)
+		{
+			pParentMiniFrame->DockRecentPaneToMainFrame(pDockingBar);
+			return TRUE;
+		}
+		else if (m_hDefaultSlider != NULL && IsWindow(m_hDefaultSlider))
+		{
+			CMultiPaneFrameWnd* pRecentMiniFrame = DYNAMIC_DOWNCAST(CMultiPaneFrameWnd, CWnd::FromHandlePermanent(pDockingBar->m_recentDockInfo.m_hRecentMiniFrame));
+			if (pRecentMiniFrame != NULL && pRecentMiniFrame->AddRecentPane(pDockingBar))
+			{
+				return TRUE;
+			}
+		}
+	}
+
+	if (pBar->IsKindOf(RUNTIME_CLASS(CPane)))
+	{
+		CPane* pControlBar = DYNAMIC_DOWNCAST(CPane, pBar);
+		ASSERT_VALID(pControlBar);
+		pControlBar->FloatPane(pControlBar->m_recentDockInfo.m_rectRecentFloatingRect, dockMethod, !bHide);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CBaseTabbedPane::StoreRecentDockSiteInfo()
+{
+	int nTabsNum = m_pTabWnd->GetTabsNum();
+	for (int i = 0; i < nTabsNum; i++)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, m_pTabWnd->GetTabWnd(i));
+		if (pBar != NULL)
+		{
+			pBar->StoreRecentTabRelatedInfo();
+		}
+	}
+
+	CDockablePane::StoreRecentDockSiteInfo();
+}
+
+BOOL CBaseTabbedPane::FloatPane(CRect rectFloat, AFX_DOCK_METHOD dockMethod, bool bShow)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+
+	if (!CDockablePane::FloatPane(rectFloat, dockMethod, bShow))
+	{
+		return FALSE;
+	}
+
+	CPaneFrameWnd* pParentFrame = GetParentMiniFrame();
+	if (pParentFrame != NULL)
+	{
+		pParentFrame->SetIcon(m_pTabWnd->GetTabHicon(m_pTabWnd->GetActiveTab()), FALSE);
+	}
+
+	return TRUE;
+}
+
+void CBaseTabbedPane::Serialize(CArchive& ar)
+{
+	CDockablePane::Serialize(ar);
+}
+
+void CBaseTabbedPane::SerializeTabWindow(CArchive& ar)
+{
+	if (m_pTabWnd != NULL)
+	{
+		m_pTabWnd->Serialize(ar);
 	}
 }
 
-void CXTPShortcutManager::DoPropExchange(CXTPPropExchange* pPX)
+void __stdcall CBaseTabbedPane::LoadSiblingPaneIDs(CArchive& ar, CList<UINT, UINT>& lstBarIDs)
 {
-	if (pPX->IsStoring())
+	ASSERT(ar.IsLoading());
+	if (ar.IsLoading())
 	{
-		int nAccelSize = ::CopyAcceleratorTable (m_hAccelTable, NULL, 0);
-
-		LPACCEL lpAccel = new ACCEL[nAccelSize];
-		::CopyAcceleratorTable (m_hAccelTable, lpAccel, nAccelSize);
-
-		if (pPX->IsAllowBlobValues())
+		int nTabsNum = 0;
+		ar >> nTabsNum;
+		for (int i = 0; i < nTabsNum; i++)
 		{
-			pPX->WriteCount(nAccelSize);
-			pPX->Write(_T("Data"), lpAccel, nAccelSize* sizeof(ACCEL));
+			int nBarID = -1;
+			ar >> nBarID;
+			ASSERT(nBarID != -1);
+			lstBarIDs.AddTail(nBarID);
+		}
+	}
+}
+
+void CBaseTabbedPane::SaveSiblingBarIDs(CArchive& ar)
+{
+	ASSERT_VALID(this);
+	ASSERT(ar.IsStoring());
+	ASSERT_VALID(m_pTabWnd);
+
+	if (ar.IsStoring() && m_pTabWnd != NULL)
+	{
+		int nTabsNum = m_pTabWnd->GetTabsNum();
+		// DO NOT SAVE empty tabbed bars
+		if (nTabsNum > 0)
+		{
+			ar << nTabsNum;
+			for (int i = 0; i < nTabsNum; i++)
+			{
+				CBasePane* pWnd = DYNAMIC_DOWNCAST(CBasePane, m_pTabWnd->GetTabWnd(i));
+				ASSERT_VALID(pWnd);
+
+				ar << pWnd->GetDlgCtrlID();
+			}
+		}
+	}
+}
+
+BOOL CBaseTabbedPane::LoadState(LPCTSTR lpszProfileName, int nIndex, UINT uiID)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+
+	FillDefaultTabsOrderArray();
+
+	// if initially tabbed bars were detached by user and exist only as regular
+	// docking control bars we need to give them a chance to load their state
+	// from the registry
+
+	CDockablePane::LoadState(lpszProfileName, nIndex, uiID);
+
+	int nTabsNum = m_pTabWnd->GetTabsNum();
+	for (int i = 0; i < nTabsNum; i++)
+	{
+		CBasePane* pWnd = DYNAMIC_DOWNCAST(CBasePane, m_pTabWnd->GetTabWnd(i));
+
+		if (pWnd != NULL)
+		{
+			ASSERT_VALID(pWnd);
+			pWnd->LoadState(lpszProfileName, nIndex, uiID);
+		}
+	}
+
+	return TRUE;
+}
+
+BOOL CBaseTabbedPane::SaveState(LPCTSTR lpszProfileName, int nIndex, UINT uiID)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+
+	CDockablePane::SaveState(lpszProfileName, nIndex, uiID);
+
+	int nTabsNum = m_pTabWnd->GetTabsNum();
+	for (int i = 0; i < nTabsNum; i++)
+	{
+		CBasePane* pWnd = DYNAMIC_DOWNCAST(CBasePane, m_pTabWnd->GetTabWnd(i));
+
+		if (pWnd != NULL)
+		{
+			ASSERT_VALID(pWnd);
+			if (!pWnd->SaveState(lpszProfileName, nIndex, uiID))
+			{
+				return FALSE;
+			}
+		}
+	}
+
+	return TRUE;
+}
+
+
+void CBaseTabbedPane::ApplyRestoredTabInfo(BOOL bUseTabIndexes)
+{
+	ASSERT_VALID(this);
+
+	if (m_pTabWnd != NULL)
+	{
+		m_pTabWnd->ApplyRestoredTabInfo(bUseTabIndexes);
+	}
+}
+
+void CBaseTabbedPane::RecalcLayout()
+{
+	ASSERT_VALID(this);
+
+	CDockablePane::RecalcLayout();
+
+	if (m_pTabWnd != NULL)
+	{
+		m_pTabWnd->RecalcLayout();
+	}
+}
+
+BOOL CBaseTabbedPane::CanFloat() const
+{
+	ASSERT_VALID(this);
+
+	return CDockablePane::CanFloat();
+}
+
+void CBaseTabbedPane::OnSetFocus(CWnd* pOldWnd)
+{
+	CDockablePane::OnSetFocus(pOldWnd);
+
+	// Pass the focus to the tab window
+	CWnd* pWndChild = GetUnderlyingWindow();
+	if (pWndChild != NULL)
+		pWndChild->SetFocus();
+}
+
+CMFCAutoHideBar* CBaseTabbedPane::SetAutoHideMode(BOOL bMode, DWORD dwAlignment, CMFCAutoHideBar* pCurrAutoHideBar, BOOL bUseTimer)
+{
+	BOOL bHandleMinSize = CPane::m_bHandleMinSize;
+	if (bHandleMinSize)
+	{
+		CPane::m_bHandleMinSize = FALSE;
+	}
+
+	CMFCAutoHideBar* pAutoHideBar = pCurrAutoHideBar;
+	CDockablePane* pActiveBar = NULL;
+
+	int nActiveTab = m_pTabWnd->GetActiveTab();
+	int nTabsNum = m_pTabWnd->GetTabsNum();
+
+	CObList lstTmp;
+
+	ShowPane(FALSE, TRUE, FALSE);
+
+	int nNonDetachedCount = 0;
+	for (int nNextTab = nTabsNum - 1; nNextTab >= 0; nNextTab--)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, m_pTabWnd->GetTabWnd(nNextTab));
+		ASSERT_VALID(pBar);
+
+		BOOL bIsVisible = m_pTabWnd->IsTabVisible(nNextTab);
+		BOOL bDetachable = m_pTabWnd->IsTabDetachable(nNextTab);
+
+		if (pBar != NULL && bIsVisible && bDetachable)
+		{
+			m_pTabWnd->RemoveTab(nNextTab, FALSE);
+			pBar->EnableGripper(TRUE);
+
+			pBar->StoreRecentTabRelatedInfo();
+
+			CWnd* pOldParent = pBar->GetParent();
+			pBar->OnBeforeChangeParent(m_pDockSite);
+			pBar->SetParent(m_pDockSite);
+			pBar->SetOwner(m_pDockSite);
+			pBar->OnAfterChangeParent(pOldParent);
+
+			lstTmp.AddHead(pBar);
+
+			if (nNextTab == nActiveTab)
+			{
+				pActiveBar = pBar;
+			}
 		}
 		else
 		{
-			CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Accel")));
-			POSITION posEnum = pEnumerator->GetPosition(nAccelSize);
+			nNonDetachedCount++;
+		}
+	}
 
-			for (int i = 0; i < nAccelSize; i++)
+	BOOL bActiveSet = FALSE;
+	CPane* pNewAHBar = NULL;
+
+	for (POSITION pos = lstTmp.GetHeadPosition(); pos != NULL;)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, lstTmp.GetNext(pos));
+		ENSURE(pBar != NULL);
+		ASSERT_VALID(pBar);
+
+		BOOL bUseTimerForActiveBar = (pBar == pActiveBar) && bUseTimer;
+		pNewAHBar = pBar->SetAutoHideMode(TRUE, dwAlignment, NULL, bUseTimerForActiveBar);
+
+		if (pNewAHBar != NULL)
+		{
+			pNewAHBar->m_bFirstInGroup = (lstTmp.GetHead() == pBar);
+			pNewAHBar->m_bLastInGroup = (lstTmp.GetTail() == pBar);
+			pNewAHBar->m_bActiveInGroup = (pBar == pActiveBar);
+
+			if (!bActiveSet && pNewAHBar->m_bActiveInGroup)
 			{
-				CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
-				PX_UShort(&secItem, _T("Id"), (USHORT&)(lpAccel[i].cmd), 0);
-				PX_Byte(&secItem, _T("virt"), (lpAccel[i].fVirt), 0);
-				PX_UShort(&secItem, _T("key"), (USHORT&)(lpAccel[i].key), 0);
+				bActiveSet = TRUE;
 			}
 		}
+	}
 
-		delete[] lpAccel;
+	if (pNewAHBar != NULL)
+	{
+		if (!bActiveSet)
+		{
+			pNewAHBar->m_bActiveInGroup = TRUE;
+		}
+		CRect rect(0, 0, 0, 0);
+		pNewAHBar->GetParentDockSite()->RepositionPanes(rect);
+	}
+
+	if (nNonDetachedCount > 0)
+	{
+		if (m_pTabWnd->GetVisibleTabsNum() == 0)
+		{
+			ShowPane(FALSE, TRUE, FALSE);
+		}
+		else
+		{
+			if (m_pTabWnd->GetActiveTab() == -1)
+			{
+				int nVisibleTab = -1;
+				GetFirstVisibleTab(nVisibleTab);
+				m_pTabWnd->SetActiveTab(nVisibleTab);
+			}
+			m_pTabWnd->RecalcLayout();
+			ShowPane(TRUE, TRUE, FALSE);
+			pAutoHideBar = CDockablePane::SetAutoHideMode(bMode, dwAlignment, pCurrAutoHideBar, bUseTimer);
+		}
+	}
+
+	if (pAutoHideBar != NULL)
+	{
+		pAutoHideBar->UpdateVisibleState();
+	}
+
+	CPane::m_bHandleMinSize = bHandleMinSize;
+
+	return pAutoHideBar;
+}
+
+CWnd* CBaseTabbedPane::GetFirstVisibleTab(int& iTabNum)
+{
+	iTabNum = -1;
+	if (m_pTabWnd == NULL)
+	{
+		return NULL;
+	}
+
+	return m_pTabWnd->GetFirstVisibleTab(iTabNum);
+}
+
+HICON CBaseTabbedPane::GetPaneIcon(BOOL bBigIcon)
+{
+	HICON hIcon = GetIcon(bBigIcon);
+
+	if (hIcon == NULL && m_pTabWnd != NULL)
+	{
+		CWnd* pWnd = m_pTabWnd->GetActiveWnd();
+		if (pWnd != NULL)
+		{
+			hIcon = pWnd->GetIcon(bBigIcon);
+		}
+	}
+
+	return hIcon;
+}
+
+LRESULT CBaseTabbedPane::OnChangeActiveTab(WPARAM wp, LPARAM)
+{
+	int iTabNum = (int) wp;
+
+	CString strLabel;
+	if (m_pTabWnd != NULL && m_pTabWnd->GetTabLabel(iTabNum, strLabel) && m_bSetCaptionTextToTabName)
+	{
+		SetWindowText(strLabel);
+	}
+
+	OnActivateTab(iTabNum);
+	if (CPane::m_bHandleMinSize)
+	{
+		CPaneFrameWnd* pWnd = GetParentMiniFrame();
+		if (pWnd != NULL)
+		{
+			pWnd->OnPaneRecalcLayout();
+		}
+		else
+		{
+			afxGlobalUtils.ForceAdjustLayout(afxGlobalUtils.GetDockingManager(GetDockSiteFrameWnd()));
+		}
+	}
+	return 0;
+}
+
+BOOL CBaseTabbedPane::Dock(CBasePane* pTargetBar, LPCRECT lpRect, AFX_DOCK_METHOD dockMethod)
+{
+	BOOL bFloating = (GetParentMiniFrame() != NULL);
+	int nTabsNum = m_pTabWnd->GetTabsNum();
+	BOOL bTabsHaveRecentInfo = TRUE;
+
+	if (bFloating)
+	{
+		for (int i = 0; i < nTabsNum; i++)
+		{
+			if (m_pTabWnd->IsTabDetachable(i))
+			{
+				CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane,
+					m_pTabWnd->GetTabWnd(i));
+				if (pBar != NULL)
+				{
+					ASSERT_VALID(pBar);
+					if (pBar->m_recentDockInfo.GetRecentPaneContainer(TRUE) == NULL && pBar->m_recentDockInfo.GetRecentTabContainer(TRUE) == NULL)
+					{
+						bTabsHaveRecentInfo = FALSE;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (dockMethod != DM_DBL_CLICK || !bTabsHaveRecentInfo)
+	{
+		return CDockablePane::Dock(pTargetBar, lpRect, dockMethod);
+	}
+
+	if (bFloating && m_recentDockInfo.GetRecentPaneContainer(TRUE) != NULL || !bFloating && m_recentDockInfo.GetRecentPaneContainer(FALSE) != NULL)
+	{
+		return CDockablePane::Dock(pTargetBar, lpRect, dockMethod);
+	}
+
+	ShowPane(FALSE, TRUE, FALSE);
+
+	int nNonDetachedCount = 0;
+	for (int nNextTab = nTabsNum - 1; nNextTab >= 0; nNextTab--)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, m_pTabWnd->GetTabWnd(nNextTab));
+		ASSERT_VALID(pBar);
+
+		BOOL bIsVisible = m_pTabWnd->IsTabVisible(nNextTab);
+		BOOL bDetachable = m_pTabWnd->IsTabDetachable(nNextTab);
+
+		if (pBar != NULL && bIsVisible && bDetachable)
+		{
+			m_pTabWnd->RemoveTab(nNextTab, FALSE);
+			pBar->EnableGripper(TRUE);
+
+			pBar->StoreRecentTabRelatedInfo();
+
+			pBar->DockPane(pBar, lpRect, dockMethod);
+		}
+		else
+		{
+			nNonDetachedCount++;
+		}
+	}
+
+	if (nNonDetachedCount > 0)
+	{
+		if (m_pTabWnd->GetVisibleTabsNum() == 0)
+		{
+			ShowPane(FALSE, TRUE, FALSE);
+		}
+		else
+		{
+			if (m_pTabWnd->GetActiveTab() == -1)
+			{
+				int nVisibleTab = -1;
+				GetFirstVisibleTab(nVisibleTab);
+				m_pTabWnd->SetActiveTab(nVisibleTab);
+			}
+			m_pTabWnd->RecalcLayout();
+			ShowPane(TRUE, TRUE, FALSE);
+			return CDockablePane::Dock(pTargetBar, lpRect, dockMethod);
+
+		}
 	}
 	else
 	{
-		if (pPX->IsAllowBlobValues())
-		{
-			int nAccelSize = (int)pPX->ReadCount();
-			LPACCEL lpAccel = new ACCEL[nAccelSize];
-			pPX->Read(_T("Data"), lpAccel, nAccelSize* sizeof(ACCEL));
+		DestroyWindow();
+		return FALSE;
+	}
 
-			UpdateAcellTable(lpAccel, nAccelSize);
-			delete[] lpAccel;
-		}
-		else
-		{
-			CArray<ACCEL, ACCEL&> accels;
-			CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Accel")));
-			POSITION posEnum = pEnumerator->GetPosition(0);
-			while (posEnum)
-			{
-				ACCEL accel;
-				CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
-				PX_UShort(&secItem, _T("Id"), (USHORT&)(accel.cmd), 0);
-				PX_Byte(&secItem, _T("virt"), (accel.fVirt), 0);
-				PX_UShort(&secItem, _T("key"), (USHORT&)(accel.key), 0);
-				accels.Add(accel);
-			}
-			UpdateAcellTable(accels.GetData(), (int)accels.GetSize());
-		}
+	return TRUE;
+}
 
+void CBaseTabbedPane::FillDefaultTabsOrderArray()
+{
+	ASSERT_VALID(m_pTabWnd);
+	m_arDefaultTabsOrder.RemoveAll();
+
+	const int nTabsNum = m_pTabWnd->GetTabsNum();
+
+	for (int i = 0; i < nTabsNum; i++)
+	{
+		int nID = m_pTabWnd->GetTabID(i);
+		m_arDefaultTabsOrder.Add(nID);
 	}
 }
 
-BOOL CXTPShortcutManager::OnBeforeAdd(LPACCEL pAccel)
+void CBaseTabbedPane::GetMinSize(CSize& size) const
 {
+	if (CPane::m_bHandleMinSize)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, m_pTabWnd->GetActiveWnd());
+		if (pBar != NULL)
+		{
+			pBar->GetMinSize(size);
+			return;
 
-	UNREFERENCED_PARAMETER(pAccel);
-	return FALSE;
+		}
+	}
+	CDockablePane::GetMinSize(size);
 }
 
-BOOL CXTPShortcutManager::OnBeforeRemove(LPACCEL pAccel)
+void CBaseTabbedPane::GetPaneList(CObList& lst, CRuntimeClass* pRTCFilter)
 {
-
-	UNREFERENCED_PARAMETER(pAccel);
-	return FALSE;
+	CMFCBaseTabCtrl* pTabWnd = GetUnderlyingWindow();
+	for (int i = 0; i < pTabWnd->GetTabsNum(); i++)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, pTabWnd->GetTabWnd(i));
+		if (pBar != NULL)
+		{
+			ASSERT_VALID(pBar);
+			if (pRTCFilter == NULL || pBar->GetRuntimeClass() == pRTCFilter)
+			{
+				lst.AddTail(pBar);
+			}
+		}
+	}
 }
+
+void CBaseTabbedPane::ConvertToTabbedDocument(BOOL bActiveTabOnly)
+{
+	ASSERT_VALID(this);
+	ASSERT_VALID(m_pTabWnd);
+
+	CMDIFrameWndEx* pMDIFrame = DYNAMIC_DOWNCAST(CMDIFrameWndEx, GetDockSiteFrameWnd());
+	if (pMDIFrame == NULL)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	ASSERT_VALID(pMDIFrame);
+
+	HWND hwnd = GetSafeHwnd();
+
+	if (bActiveTabOnly)
+	{
+		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, m_pTabWnd->GetActiveWnd());
+		if (pBar == NULL)
+		{
+			return;
+		}
+
+		pBar->StoreRecentTabRelatedInfo();
+		pMDIFrame->ControlBarToTabbedDocument(pBar);
+		RemovePane(pBar);
+	}
+	else
+	{
+		CObList lst;
+		CMFCBaseTabCtrl* pTabWnd = GetUnderlyingWindow();
+
+		for (int i = 0; i < pTabWnd->GetTabsNum(); i++)
+		{
+			if (pTabWnd->IsTabVisible(i))
+			{
+				CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, pTabWnd->GetTabWnd(i));
+				if (pBar != NULL)
+				{
+					pBar->StoreRecentTabRelatedInfo();
+					lst.AddTail(pBar);
+				}
+			}
+		}
+
+		for (POSITION pos = lst.GetHeadPosition(); pos != NULL;)
+		{
+			CDockablePane* pBar = (CDockablePane*) lst.GetNext(pos);
+			pMDIFrame->ControlBarToTabbedDocument(pBar);
+			RemovePane(pBar);
+		}
+	}
+
+	if (IsWindow(hwnd) && GetVisibleTabsNum() == 0 && GetTabsNum() > 0)
+	{
+		ShowPane(FALSE, FALSE, FALSE);
+	}
+}
+
+
 

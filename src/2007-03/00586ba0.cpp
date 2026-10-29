@@ -1,767 +1,401 @@
+// from server: 88% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll script/ScriptContext.cpp
+// roc-lib: rbxgs v8datamodel/DataModel.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/ScriptContext.h"
-#include "script/Script.h"
-#include "script/ScriptEvent.h"
-#include "script/LuaMemory.h"
-#include "script/LuaAtomicClasses.h"
-#include "script/LuaInstanceBridge.h"
-#include "script/LuaSignalBridge.h"
-#include "script/LuaArguments.h"
-#include "lua/lua.hpp"
-#include "lua/LuaBridge.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/TimeState.h"
 #include "v8datamodel/Workspace.h"
-#include "v8datamodel/DebugSettings.h"
-#include "v8datamodel/Stats.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Teams.h"
+#include "v8datamodel/JointsService.h"
+#include "v8datamodel/LocalBackpack.h"
+#include "script/ScriptContext.h"
+#include "gui/GUI.h"
+#include "util/Log.h"
+#include "util/IMetric.h"
 #include "util/standardout.h"
-#include "util/Debug.h"
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "lua.h"
-#include "lualib.h"
-#include "lstate.h"
+#include "util/Http.h"
+#include "util/Sound.h"
 
-static int contextCount = 0;
-bool vvvvv;
-
-using namespace RBX;
-using namespace boost::posix_time;
-
-// unidentified inlines
-
-static inline void _openLibInline(lua_State* L, lua_CFunction f, const char* name)
+namespace RBX
 {
-    lua_pushcfunction(L, f);
-    lua_pushstring(L, name);
-    lua_call(L, 1, 0);
-}
-
-// end unidentified inlines
-
-Reflection::BoundProp<bool, true> ScriptContext::propScriptsDisabled("ScriptsDisabled", "State", &ScriptContext::scriptsDisabled, &ScriptContext::onChangedScriptEnabled, Reflection::PropertyDescriptor::LEGACY); 
-
-static int panic(lua_State* L)
-{
-    std::string message = lua_tostring(L, -1);
-    StandardOut::singleton()->print(MESSAGE_ERROR, "Unprotected error in call to Lua API (%s)\n", message.c_str());
-    RBXCRASH();
-    return 0;
-}
-
-const char* RBX::sScriptContext = "ScriptContext";
-
-void ScriptContext::openState()
-{
-    if (!globalState)
-    {
-        // ???
-        if (vvvvv)
-        {
-            lua_getstack(NULL, NULL, NULL);
-            lua_getinfo(NULL, NULL, NULL);
-            lua_getlocal(NULL, NULL, NULL);
-            lua_setlocal(NULL, NULL, NULL);
-            lua_getupvalue(NULL, NULL, NULL);
-            lua_setupvalue(NULL, NULL, NULL);
-            lua_sethook(NULL, NULL, NULL, NULL);
-            lua_gethook(NULL);
-            lua_gethookmask(NULL);
-            lua_gethookcount(NULL);
-        }
-
-        allocator.reset(new LuaAllocator());
-        lua_State* L = lua_newstate(LuaAllocator::alloc, allocator.get());
-        globalState = L;
-
-        if (!globalState)
-            throw std::runtime_error("Failed to create Lua state");
-
-        contextCount++;
-
-        lua_atpanic(L, panic);
-
-        lua_pushlightuserdata(globalState, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
-        lua_pushlightuserdata(globalState, this);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pop(globalState, luaopen_base(globalState));
-
-        _openLibInline(globalState, luaopen_string, LUA_STRLIBNAME);
-        _openLibInline(globalState, luaopen_math, LUA_MATHLIBNAME);
-        _openLibInline(globalState, luaopen_table, LUA_TABLIBNAME);
-
-        Lua::ObjectBridge::registerClass(globalState);
-        Lua::SignalBridge::registerClass(globalState);
-        Lua::SignalConnectionBridge::registerClass(globalState);
-        Lua::CoordinateFrameBridge::registerClass(globalState);
-        Lua::Vector3Bridge::registerClass(globalState);
-        Lua::Color3Bridge::registerClass(globalState);
-        Lua::BrickColorBridge::registerClass(globalState);
-        Lua::ThreadRef::NodeBridge::registerClass(globalState);
-
-        Lua::CoordinateFrameBridge::registerClassLibrary(globalState);
-        Lua::Vector3Bridge::registerClassLibrary(globalState);
-        Lua::Color3Bridge::registerClassLibrary(globalState);
-        Lua::BrickColorBridge::registerClassLibrary(globalState);
-        Lua::ObjectBridge::registerClassLibrary(globalState);
-        Lua::ObjectBridge::registerInstanceClassLibrary(globalState);
-        Lua::SignalBridge::registerClassLibrary(globalState);
-
-        Lua::ThreadRef::Node::create(globalState);
-
-        lua_pushstring(globalState, "game");
-        Lua::ObjectBridge::push(globalState, getRootAncestor()->shared_from_this());
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "workspace");
-        Lua::ObjectBridge::push(globalState, ServiceProvider::find<Workspace>(this)->shared_from_this());
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "shared");
-        lua_newtable(globalState);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "print");
-        lua_pushcfunction(globalState, ScriptContext::print);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "tick");
-        lua_pushcfunction(globalState, ScriptContext::tick);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "wait");
-        lua_pushcfunction(globalState, ScriptContext::wait);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "delay");
-        lua_pushcfunction(globalState, ScriptContext::delay);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "trustedThread");
-        lua_pushcfunction(globalState, ScriptContext::trustedThread);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "dofile");
-        lua_pushcfunction(globalState, ScriptContext::dofile);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "loadfile");
-        lua_pushcfunction(globalState, ScriptContext::loadfile);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        lua_pushstring(globalState, "stats");
-        lua_pushcfunction(globalState, ScriptContext::stats);
-        lua_settable(globalState, LUA_GLOBALSINDEX);
-
-        yieldEvent.reset(new Lua::YieldingThreads(this));
-    }
-}
-
-// TODO: 99.79% (functional match)
-// stack offsets not the same
-void ScriptContext::closeState()
-{
-    if (globalState)
-    {
-        commandLineSandbox.reset();
-
-        try
-        {
-            Lua::ThreadRef::Node::get(globalState)->eraseAllRefs();
-
-            std::set<Script*> copy = scripts;
-            std::for_each(copy.begin(), copy.end(), boost::bind(&ScriptContext::disassociateState, this, _1));
-
-            yieldEvent.reset(NULL);
-        }
-        catch (std::exception& e)
-        {
-            StandardOut::singleton()->print(MESSAGE_ERROR, "Exception thrown while cleaning up Lua: %s", e.what()); 
-        }
-
-        lua_close(globalState);
-        contextCount--;
-
-        size_t heapSize, heapCount, maxHeapSize, maxHeapCount;
-        allocator->getHeapStats(heapSize, heapCount, maxHeapSize, maxHeapCount);
-        StandardOut::singleton()->print(MESSAGE_INFO, "Script Heap Stats: Max Size = %d bytes, Max Count = %d blocks", maxHeapSize, maxHeapCount);
-
-        allocator->clearHeapMax();
-
-        if (contextCount == 0 && (heapSize > 0 || heapCount > 0))
-            StandardOut::singleton()->print(MESSAGE_ERROR, "Script memory leaks: %d bytes, %d blocks", heapSize, heapCount);
-
-        globalState = NULL;
-    }
-}
-
-ScriptContext::ScriptContext()
-    : globalState(NULL),
-      nextPendingScripts(second_clock::local_time()),
-      scriptsDisabled(false)
-{
-    setName("Script Context");
-}
-
-ScriptContext::~ScriptContext()
-{
-    RBXASSERT(globalState == NULL);
-}
-
-void ScriptContext::sandboxThread(lua_State* thread)
-{
-    lua_newtable(thread);
-    lua_newtable(thread);
-    lua_pushliteral(thread, "__index");
-    lua_pushvalue(thread, LUA_GLOBALSINDEX);
-    lua_settable(thread, -3);
-    lua_setmetatable(thread, -2);
-    lua_replace(thread, LUA_GLOBALSINDEX);
-}
-
-void ScriptContext::setThreadIdentity(lua_State* thread, Security::Identities identity)
-{
-    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_IDENTITY);
-    lua_pushinteger(thread, identity);
-    lua_settable(thread, LUA_GLOBALSINDEX);
-
-    if (DebugSettings::singleton().getioEnabled())
-        _openLibInline(thread, luaopen_io, LUA_IOLIBNAME);
-
-    lua_pushstring(thread, "settings");
-    lua_pushcfunction(thread, ScriptContext::settings);
-    lua_settable(thread, LUA_GLOBALSINDEX);
-}
-
-size_t ScriptContext::getThreadCount() const
-{
-    if (globalState)
-        return RobloxExtraSpace::get(globalState)->getThreadCount();
-    else
-        return 0;
-}
-
-ScriptContext& ScriptContext::getContext(lua_State* thread)
-{
-    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
-    lua_gettable(thread, LUA_GLOBALSINDEX);
-
-    RBXASSERT(lua_type(thread, -1) == LUA_TLIGHTUSERDATA);
-    ScriptContext* sc = static_cast<ScriptContext*>(lua_touserdata(thread, -1));
-    lua_pop(thread, 1);
-
-    return *sc;
-}
-
-static size_t pushArguments(const Reflection::ValueCollection& arguments, lua_State* thread)
-{
-    size_t result = 0;
-
-    Reflection::ValueCollection::const_iterator it = arguments.begin();
-    Reflection::ValueCollection::const_iterator end = arguments.end();
-
-    for (; it != end; it++)
-        result += Lua::LuaArguments::push(*it, thread);
-
-    return result;
-}
-
-static void readResults(std::auto_ptr<Reflection::ValueCollection>& result, lua_State *thread, size_t returnCount)
-{
-    result.reset(new Reflection::ValueCollection(returnCount));
-
-    if (returnCount)
-    {
-        for (size_t i = 0; i < returnCount; i++)
-            Lua::LuaArguments::get(thread, static_cast<int>(i+1), result.get()->at(i));
-    }
-}
-
-std::auto_ptr<Reflection::ValueCollection> ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, const Reflection::ValueCollection& arguments)
-{
-    std::auto_ptr<Reflection::ValueCollection> result;
-    executeInNewThread(
-        identity,
-        script,
-        name,
-        boost::bind(&pushArguments, boost::cref(arguments), _1),
-        boost::bind(&readResults, boost::ref(result), _1, _2)
-    );
-    return result;
-}
-
-void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
-{
-    openState();
-
-    lua_State* L;
-    lua_State* newThread;
-
-    if (identity == Security::CmdLine)
-    {
-        if (commandLineSandbox.empty())
-        {
-            {
-                Lua::ThreadRef threadRef(lua_newthread(globalState));
-                commandLineSandbox = threadRef;
-            }
-
-            if (commandLineSandbox.empty())
-                throw std::runtime_error("Unable to create trusted sandbox thread");
-
-            sandboxThread(commandLineSandbox.thread());
-            setThreadIdentity(commandLineSandbox.thread(), Security::CmdLine);
-            lua_pop(globalState, 1);
-        }
-
-        L = commandLineSandbox.thread();
-        newThread = lua_newthread(L);
-    }
-    else
-    {
-        L = globalState;
-        newThread = lua_newthread(L);
-        sandboxThread(newThread);
-        setThreadIdentity(newThread, identity);
-    }
-
-    if (!newThread)
-    {
-        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
-        throw std::runtime_error("Unable to create a new thread");
-    }
-
-    Lua::ScopedPopper popper(L, 1);
-
-    std::string sName("=");
-
-    if (name)
-        sName += name;
-    else
-        sName += "Script";
-
-    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
-    {
-        std::string err = lua_tostring(newThread, -1);
-        lua_pop(newThread, 1);
-
-        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
-        throw std::runtime_error(err);
-    }
-
-    resume(newThread, pushArguments, readResults);
-}
-
-void ScriptContext::resume(lua_State* thread, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
-{
-    int nStack = lua_gettop(thread);
-    size_t nArgs = pushArguments(thread);
-
-    if (resume(thread, static_cast<int>(nArgs)) != Error)
-    {
-        int returnCount = lua_gettop(thread) - nStack + 1;
-
-        try
-        {
-            readResults(thread, returnCount);
-        }
-        catch (std::exception)
-        {
-            lua_pop(thread, returnCount);
-            throw;
-        }
-
-        lua_pop(thread, returnCount);
-    }
-    else
-    {
-        std::string err = lua_tostring(thread, -1);
-        lua_settop(thread, 0);
-        throw std::runtime_error(err);
-    }
-}
-
-int ScriptContext::delay(lua_State* thread)
-{
-    // yes that's spelled correctly
-    float timout = static_cast<float>(lua_tonumber(thread, 1));
-
-    lua_State* newThread = lua_newthread(thread);
-    Lua::ThreadRef functor(newThread);
-
-    lua_pushvalue(thread, 2);
-    lua_xmove(thread, functor.thread(), 1);
-
-    getContext(thread).yieldEvent->queueWaiter(functor.thread(), timout);
-
-    lua_pop(thread, 1);
-    return 0;
-}
-
-int ScriptContext::wait(lua_State* thread)
-{
-    // this too
-    float timout = static_cast<float>(lua_tonumber(thread, 1));
-    getContext(thread).yieldEvent->queueWaiter(thread, timout);
-    return lua_yield(thread, 0);
-}
-
-int ScriptContext::settings(lua_State* thread)
-{
-    Security::Context::current().requirePermission(Security::Administrator, NULL);
-    Lua::ObjectBridge::push(thread, GlobalSettings::singleton());
-    return 1;
-}
-
-int ScriptContext::trustedThread(lua_State* thread)
-{
-    bool trusted = Security::Context::current().hasPermission(Security::Administrator);
-    lua_pushboolean(thread, trusted != false);
-    return 1;
-}
-
-int ScriptContext::loadfile(lua_State* L)
-{
-    Security::Context::current().requirePermission(Security::Administrator, "loadfile");
-
-    RBX::ContentId contentId = lua_tostring(L, -1);
-    const std::string& file = ContentProvider::singleton().getFile(contentId);
-
-    int n;
-
-    if (luaL_loadfile(L, file.c_str()) == 0)
-    {
-        n = 1;
-    }
-    else
-    {
-        lua_pushnil(L);
-        lua_insert(L, -2);
-        n = 2;
-    }
-
-    return n;
-}
-
-int ScriptContext::stats(lua_State* L)
-{
-    Security::Context::current().requirePermission(Security::Administrator, "Stats");
-    Lua::ObjectBridge::push(L, shared_from(ServiceProvider::create<Stats::StatsService>(&getContext(L))));
-    return 1;
-}
-
-int ScriptContext::dofile(lua_State* L)
-{
-    Security::Context::current().requirePermission(Security::Administrator, "dofile");
-
-    const char* path = luaL_optstring(L, 1, 0);
-    int n = lua_gettop(L);
-
-    RBX::ContentId contentId = path;
-    const std::string& file = ContentProvider::singleton().getFile(contentId);
-
-    if (luaL_loadfile(L, file.c_str()) != 0)
-        lua_error(L);
-
-    lua_call(L, 0, -1);
-    return lua_gettop(L) - n;
-}
-
-int ScriptContext::tick(lua_State* L)
-{
-    lua_pushnumber(L, G3D::System::getTick());
-    return 1;
-}
-
-int ScriptContext::print(lua_State* L)
-{
-    std::string msg;
-    int top = lua_gettop(L);
-
-    lua_getglobal(L, "tostring");
-
-    for (int i = 1; i <= top; i++)
-    {
-        if (i > 1)
-            msg += ' ';
-
-        lua_pushvalue(L, -1);
-        lua_pushvalue(L, i);
-        lua_call(L, 1, 1);
-
-        const char* str = lua_tostring(L, -1);
-
-        if (!str)
-            throw std::runtime_error("'tostring' must return a string to 'print'");
-
-        msg += str;
-
-        if (i > 1)
-            fputs("\t", stdout);
-
-        lua_pop(L, 1);
-    }
-
-    StandardOut::singleton()->print(MESSAGE_OUTPUT, msg.c_str());
-
-    return 0;
-}
-
-void ScriptContext::onEvent(const RunService* source, Heartbeat event)
-{
-    ptime t(second_clock::local_time());
-
-    if (t >= nextPendingScripts)
-    {
-        startPendingScripts();
-        nextPendingScripts = second_clock::local_time() + seconds(1);
-    }
-
-    if (yieldEvent)
-        yieldEvent->resume(event);
-
-    if (globalState)
-        lua_gc(globalState, LUA_GCSTEP, 1);
-}
-
-void ScriptContext::startPendingScripts()
-{
-    if (!scriptsDisabled)
-    {
-        std::vector<boost::shared_ptr<Script>> copy(pendingScripts);
-        pendingScripts.erase(pendingScripts.begin(), pendingScripts.end());
-        std::for_each(copy.begin(), copy.end(), boost::bind(&ScriptContext::startScript, this, _1));
-    }
-}
-
-void ScriptContext::onEvent(const RunService* source, RunTransition event)
-{
-    gc();
-}
-
-void ScriptContext::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-{
-	Notifier<RunService, RunTransition>::disconnect(runService, this);
-    Notifier<RunService, Heartbeat>::disconnect(runService, this);
-
-    if (oldProvider && !newProvider)
-        closeState();
-
-    if (statsItem)
-    {
-        statsItem->setParent(NULL);
-        statsItem.reset();
-    }
-
-    Instance::onServiceProvider(oldProvider, newProvider);
-
-    RunService* newRunService;
-
-    if (newProvider)
-    {
-        Stats::StatsService* statsService = newProvider->create<Stats::StatsService>();
-        if (statsService)
-        {
-            statsItem = Creatable<Instance>::create<Stats::Item>("Lua");
-            statsItem->setParent(statsService);
-            statsItem->createBoundChildItem("disabled", scriptsDisabled);
-            statsItem->createChildItem<int>("threads", boost::bind(&ScriptContext::getThreadCount, this));
-        }
-
-        newRunService = newProvider->create<RunService>();
-    }
-    else
-    {
-        newRunService = NULL;
-    }
-
-    runService = shared_from(newRunService);
-    Notifier<RunService, RunTransition>::connect(runService, this);
-    Notifier<RunService, Heartbeat>::connect(runService, this);
-}
-
-void ScriptContext::onChangedScriptEnabled(const Reflection::PropertyDescriptor&)
-{
-    if (scriptsDisabled)
-        startPendingScripts();
-}
-
-void ScriptContext::addScript(Script* script)
-{
-    if (scripts.insert(script).second == true)
-    {
-        if (!script->isDisabled())
-            startScript(shared_from(script));
-    }
-}
-
-void ScriptContext::disassociateState(Script* script)
-{
-    Association<Instance>& assoc = script->association();
-
-    if (assoc.contains<Lua::ThreadRef::NodePtr>())
-    {
-        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();
-        assoc.remove<Lua::ThreadRef::NodePtr>();
-    }
-}
-
-void ScriptContext::removeScript(Script* script)
-{
-    if (scripts.erase(script))
-    {
-        disassociateState(script);
-
-        std::vector<boost::shared_ptr<Script>>::iterator it = std::find(pendingScripts.begin(), pendingScripts.end(), shared_from(script));
-        if (it != pendingScripts.end())
-            pendingScripts.erase(it);
-    }
-}
-
-void ScriptContext::reportError(lua_State* thread)
-{
-    lua_Debug ar;
-    int level = 0;
-
-    if (lua_getstack(thread, level++, &ar))
-    {
-        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
-
-        if (!DebugSettings::singleton().getStackTracingEnabled())
-            return;
-
-        bool hasStack = false;
-        while (lua_getstack(thread, level++, &ar))
-        {
-            hasStack = true;
-            lua_getinfo(thread, "nSlu", &ar);
-
-            StandardOut::singleton()->print(
-                MESSAGE_INFO,
-                "   stack %s, line %d: %s %s",
-                ar.source,
-                ar.currentline,
-                ar.namewhat,
-                ar.name);
-        }
-
-        if (hasStack)
-            StandardOut::singleton()->print(MESSAGE_INFO, "   stack end");
-    }
-    else
-    {
-        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
-    }
-}
-
-ScriptContext::ScriptImpersonator::ScriptImpersonator(lua_State* thread)
-    : Security::Impersonator(getThreadIdentity(thread))
-{
-}
-
-ScriptContext::Result ScriptContext::resume(lua_State* thread, int narg)
-{
-    int n;
-    {
-        ScriptImpersonator impersonate(thread);
-        n = lua_resume(thread, narg);
-    }
-    
-    switch (n)
-    {
-        case 0:
-            return Success;
-
-        case 1:
-            if (!RobloxExtraSpace::get(thread)->yieldCaptured)
-                yieldEvent->queueWaiter(thread);
-
-            return Yield;
-
-        default:
-            reportError(thread);
-            return Error;
-    }
-}
-
-static std::string getFullName(Instance* instance)
-{
-    Instance* parent = instance->getParent();
-
-    if (parent)
-    {
-        if (parent->getParent())
-            return getFullName(parent) + "." + instance->getName();
-        else
-            return instance->getName();
-    }
-    else 
-    {
-        return NULL; 
-    }
-}
-
-// TODO: 99.78% (functional match)
-// use of registers swapped in codegen
-void ScriptContext::startScript(boost::shared_ptr<Script> script)
-{
-    if (scriptsDisabled)
-    {
-        pendingScripts.push_back(script);
-        return;
-    }
-
-    boost::shared_ptr<const std::string> code = script->requestCode();
-
-    if (!code)
-    {
-        pendingScripts.push_back(script);
-        return;
-    }
-
-    openState();
-    lua_State* thread = lua_newthread(globalState);
-
-    if (!thread)
-    {
-        StandardOut::singleton()->print(MESSAGE_ERROR, "Unable to create a new thread for %s. It did not execute", script->getName().c_str());
-        return;
-    }
-
-    Lua::ScopedPopper popper(globalState, 1);
-
-    // interestingly this is just ScriptContext::sandboxThread
-    lua_newtable(thread);
-    lua_newtable(thread);
-    lua_pushliteral(thread, "__index");
-    lua_pushvalue(thread, LUA_GLOBALSINDEX);
-    lua_settable(thread, -3);
-    lua_setmetatable(thread, -2);
-    lua_replace(thread, LUA_GLOBALSINDEX);
-
-    setThreadIdentity(thread, Security::GameScript);
-
-    RBXASSERT(!script->association().contains<Lua::ThreadRef::NodePtr>());
-    script->association().get<Lua::ThreadRef::NodePtr>() = Lua::ThreadRef::Node::create(thread);
-
-    RBXASSERT(lua_gettop(thread) == 0);
-    Lua::ObjectBridge::push(thread, script);
-    lua_setfield(thread, LUA_GLOBALSINDEX, "script");
-
-    std::string name = std::string("=") + getFullName(script.get());
-
-    if (luaL_loadbuffer(thread, code->c_str(), code->length(), name.c_str()))
-    {
-        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
-        lua_pop(thread, 1);
-    }
-    else
-    {
-        resume(thread, 0);
-    }
-
-    lua_settop(thread, 0);
+	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	
+	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+
+	DataModel::DataModel()
+		: VerbContainer(NULL),
+		  workspace(Creatable::create<Workspace>(this)),
+		  guiRoot(Creatable::create<GuiRoot>()),
+		  guiHooks(Creatable::create<GuiRoot>()),
+		  timeState(new TimeState),
+		  mutex(new boost::recursive_mutex),
+		  guiTarget(NULL),
+		  forceArrowCursor(true),
+		  dirty(false),
+		  drawId(0)
+	{
+		setName("Level");
+	}
+
+#pragma warning (pop)
+
+	DataModel::~DataModel()
+	{
+		Notifier<RunService, RunTransition>::disconnect(runService, this);
+		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
+	}
+
+	bool DataModel::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const Service*>(instance) != NULL;
+	}
+
+	boost::shared_ptr<DataModel> DataModel::createDataModel()
+	{
+		ContentProvider::singleton().clearContentCache();
+		
+		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
+
+		{
+			Lock lock(dataModel);
+			dataModel->initializeContents();
+		}
+
+		return dataModel;
+	}
+	
+	void DataModel::onChildAdded(Instance* child)
+	{
+		ServiceProvider::onChildAdded(child);
+
+		if (child->getClassName() == "NetworkClient")
+		{
+			Verb* lockPlayMode = getVerb("LockPlayMode");
+			if (lockPlayMode)
+				lockPlayMode->doIt(NULL);
+
+			workspace->setNullMouseCommand();
+		}
+	}
+
+	void DataModel::onEvent(const RunService* source, RunTransition event)
+	{
+		switch (event.newState)
+		{
+		case RS_NORMAL:
+			if (event.oldState == RS_RUNNING)
+				workspace->reset();
+
+			timeState->clear();
+			break;
+		case RS_RUNNING:
+			workspace->start();
+			break;
+		case RS_PAUSED:
+			workspace->stop();
+			break;
+		}
+	}
+
+	std::string DataModel::doHttpGet(std::string url)
+	{
+		std::string result;
+		Http(url.c_str()).get(result);
+
+		return result;
+	}
+
+	std::string DataModel::doHttpPost(std::string url, std::string data)
+	{
+		std::string result;
+		Http(url).post(std::istringstream(data), true, result);
+
+		return result;
+	}
+
+	void DataModel::close()
+	{
+		Verb* exitVerb = getVerb("Exit");
+		if (!exitVerb)
+			throw std::runtime_error("Couldn\'t find Exit Verb");
+
+		exitVerb->doIt(NULL);
+	}
+
+	std::string DataModel::httpGet(std::string url, bool synchronous)
+	{
+		if (synchronous)
+		{
+			return doHttpGet(url);
+		}
+		else
+		{
+			if (url.size() > 0)
+			{
+				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
+				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+				boost::thread(background_function(g, "rbx_httpGet"));
+			}
+
+			return "";
+		}
+	}
+
+	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
+	{
+		if (synchronous)
+		{
+			return doHttpPost(url, data);
+		}
+		else
+		{
+			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
+			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+			boost::thread(background_function(g, "rbx_httpPost"));
+
+			return "";
+		}
+	}
+
+	void DataModel::clearContents()
+	{
+		workspace->setMouseCommand(NULL);
+		workspace->removeAllChildren();
+		workspace->setCamera(NULL);
+		
+		starterPackService->removeAllChildren();
+
+		Teams* teams = ServiceProvider::find<Teams>(this);
+		if (teams)
+			teams->removeAllChildren();
+
+		Lighting* lighting = ServiceProvider::find<Lighting>(this);
+		if (lighting)
+			lighting->removeAllChildren();
+
+		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
+		if (script)
+		{
+			script->closeState();
+			ScriptContext::propScriptsDisabled.setValue(script, false);
+		}
+	}
+
+	void DataModel::loadContent(ContentId contentId)
+	{
+		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
+		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
+
+		SerializerV2 serializer;
+		serializer.load(*stream, this);
+
+		workspace->joinAllHack();
+	}
+
+	void DataModel::save(ContentId contentId)
+	{
+		std::stringstream stream;
+
+		{
+			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
+			writeChildren(root.get());
+
+			TextXmlWriterWithEmbeddedContent machine(stream);
+			machine.serialize(root.get());
+
+			stream.flush();
+		}
+		
+		std::string response;
+		Http(contentId.toString()).post(stream, true, response);
+	}
+
+	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
+	{
+		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
+
+		TextXmlParser machine(stream->rdbuf());
+		std::auto_ptr<XmlElement> root = machine.parse();
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
+
+		SerializerV2 serializer;
+		serializer.loadInstances(root.get(), *result);
+
+		return result;
+	}
+
+	static std::string report(const G3D::Stopwatch& timer)
+	{
+		if (timer.smoothElapsedTime() > 0.0f)
+		{
+			std::string t = Log::formatTime(timer.smoothElapsedTime());
+			char buffer[256];
+			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
+
+			return std::string(buffer);
+		}
+		else
+		{
+			return Log::formatTime(timer.smoothElapsedTime());
+		}
+	}
+
+	std::string DataModel::evaluate(const std::string& valueName) const
+	{
+		World* world = workspace->getWorld();
+
+		if (valueName == "timer")
+		{
+			float time = timeState->totalVirtualTime;
+			return StringConverter<float>::convertToString(time);
+		}
+		else if (valueName == "FPS")
+		{
+			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
+		}
+		else if (valueName == "simDC")
+		{
+			return report(timeState->simulationStopwatch);
+		}
+		else if (valueName == "drawId")
+		{
+			return StringConverter<int>::convertToString(drawId);
+		}
+		else if (valueName == "graphicsMode")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "culling")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "cullingPercent")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "antiAliasing")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "bevels")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "videoMemory")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "GfxTime")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "numPrimitives")
+		{
+			return StringConverter<int>::convertToString(world->getPrimitives().size());
+		}
+		else if (valueName == "numJoints")
+		{
+			return StringConverter<int>::convertToString(world->getNumJoints());
+		}
+		else if (valueName == "numContacts")
+		{
+			return StringConverter<int>::convertToString(world->getNumContacts());
+		}
+		else if (valueName == "numContactsInCollisionStage")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
+		}
+		else if (valueName == "numSteppingContacts")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
+		}
+		else if (valueName == "numTouchingContacts")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
+		}
+		else if (valueName == "maxTreeDepth")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
+		}
+		else if (valueName == "contactPairHitRatio")
+		{
+			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
+		}
+		else if (valueName == "numLinkCalls")
+		{
+			return StringConverter<int>::convertToString(world->getNumLinkCalls());
+		}
+		else if (valueName == "numHashNodes")
+		{
+			return StringConverter<int>::convertToString(world->getNumHashNodes());
+		}
+		else if (valueName == "maxBucketSize")
+		{
+			return StringConverter<int>::convertToString(world->getMaxBucketSize());
+		}
+		else if (valueName == "numBodies")
+		{
+			return StringConverter<int>::convertToString(world->getNumBodies());
+		}
+		else if (valueName == "numConstraints")
+		{
+			return StringConverter<int>::convertToString(world->getNumConstraints());
+		}
+		else if (valueName == "numPoints")
+		{
+			return StringConverter<int>::convertToString(world->getNumPoints());
+		}
+		else if (valueName == "energyBody")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
+		}
+		else if (valueName == "energyConnector")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
+		}
+		else if (valueName == "energyTotal")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
+		}
+		else
+		{
+			return "?";
+		}
+	}
+
+	void DataModel::Lock::doLock(const DataModel* dataModel)
+	{
+		if (dataModel)
+		{
+			mutex = dataModel->mutex;
+			lock = new boost::recursive_mutex::scoped_lock(*mutex);
+		}
+	}
+
+	DataModel::Lock::~Lock()
+	{
+		delete lock;
+	}
 }

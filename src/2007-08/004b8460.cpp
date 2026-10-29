@@ -1,93 +1,27 @@
-// from server: 30% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_00f8fc6246e9d0fc.cpp
 
-extern "C" double __fastcall func_004fff30(void*);
-extern "C" void* __fastcall func_00573f80(void*);
-extern "C" bool __cdecl func_004b7fe0(void*, void*);
-extern "C" void* __fastcall func_004b8190(void*, void*);
-extern "C" void __fastcall func_00432530(void*, void*);
-extern "C" void __fastcall func_00423240(void*, void*);
-extern "C" void __fastcall func_00597ee0(void*, void*);
-
-struct ClientPhysics {
-    char pad0[8];
-    double field_8;
-    char pad10[8];
-    void* field_18;
-    char field_1c[0x24];
-    float field_40;
-    float field_44;
-    float field_48;
-    void method_4b8310();
-    void method_4b8460(void*);
-};
-
-void ClientPhysics::method_4b8460(void* a1)
-{
-    double d = func_004fff30(this);
-    field_8 = d;
-
-    void* ebx = func_00573f80(field_18);
-    char* ebp = (char*)this + 0x1c;
-
-    if (func_004b7fe0(ebp, ebx)) {
-        method_4b8310();
-        return;
-    }
-
-    int* src = (int*)ebx;
-    int* dst = (int*)ebp;
-    for (int i = 0; i < 9; ++i) {
-        dst[i] = src[i];
-    }
-    *(float*)((char*)ebp + 0x24) = *(float*)((char*)ebx + 0x24);
-    *(float*)((char*)ebp + 0x28) = *(float*)((char*)ebx + 0x28);
-    *(float*)((char*)ebp + 0x2c) = *(float*)((char*)ebx + 0x2c);
-
-    void* esi = (char*)this + 0x10;
-
-    void* p1;
-    func_004b8190(esi, &p1);
-    void* v1 = *(void**)p1;
-    bool bl = (v1 != *(void**)a1);
-
-    if (p1) {
-        void* obj = p1;
-        if (_InterlockedExchangeAdd((volatile long*)((char*)obj + 4), -1) == 1) {
-            void** vt = *(void***)obj;
-            ((void(__thiscall*)(void*))vt[1])(obj);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)obj + 8), -1) == 1) {
-                void** vt2 = *(void***)obj;
-                ((void(__thiscall*)(void*))vt2[2])(obj);
-            }
-        }
-    }
-
-    if (!bl) {
-        return;
-    }
-
-    void* p2;
-    func_004b8190(esi, &p2);
-    void* v2 = *(void**)p2;
-    if (v2) {
-        func_00432530((char*)v2 + 0xe8, this);
-    }
-
-    void* p3;
-    func_004b8190(esi, &p3);
-    void* v3 = *(void**)p3;
-    if (v3) {
-        func_00423240((char*)v3 + 0xe8, this);
-    }
-
-    func_00597ee0(esi, a1);
-
-    void* p4;
-    func_004b8190(esi, &p4);
-    void* v4 = *(void**)p4;
-    if (v4) {
-        func_00423240((char*)v4 + 0xe8, this);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include "ClientPhysics.cpp"

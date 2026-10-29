@@ -1,6 +1,8 @@
-// roc 2009-06 00848130  unit: RBX::MaterialBase::Level  size: 53 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00848130
-//
-// 00848130  6aff                 push -1
-// 00848132  68f8c28600           push 0x86c2f8
-// 00848
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_throwwithrefcleanup8ebf9c1479d72038.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "GLG3D/Renderbuffer.h"
+void unreachable(G3D::RenderbufferRef unused) { throw "shouldn't be here"; }

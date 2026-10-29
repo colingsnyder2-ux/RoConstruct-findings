@@ -1,39 +1,38 @@
-// roc 2011-06 00955760  unit: Ogre::UTVertexTangent3DTexColorIndexSurfaceTex::?$SpecializedMeshGen  size: 54 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00955760
-//
-// 00955760  51                   push ecx
-// 00955761  8b542410             mov edx, dword ptr [esp + 0x10]
-// 00955765  56                   push esi
-// 00955766  8b742410             mov esi, dword ptr [esp + 0x10]
-// 0095576a  57                   push edi
-// 0095576b  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 0095576f  c644240800           mov byte ptr [esp + 8], 0
-// 00955774  8b442408             mov eax, dword ptr [esp + 8]
-// 00955778  50                   push eax
-// 00955779  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0095577d  52                   push edx
-// 0095577e  51                   push ecx
-// 0095577f  50                   push eax
-// 00955780  56                   push esi
-// 00955781  57                   push edi
-// 00955782  e839feffff           call 0x9555c0
-// 00955787  8d0cf6               lea ecx, [esi + esi*8]
-// 0095578a  83c418               add esp, 0x18
-// 0095578d  8d04cf               lea eax, [edi + ecx*8]
-// 00955790  5f                   pop edi
-// 00955791  5e                   pop esi
-// 00955792  59                   pop ecx
-// 00955793  c20c00               ret 0xc
-// copied from an identical function in another client (function ?_Ufill@?$vector@UElem72@@V?$allocator@UElem72@@@std@@@std@@IAEPAUElem72@@PAU3@IABU3@@Z)
-
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob1 /GS- /MT
-#include <vector>
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.44.0 libs/regex/src/instances.cpp
 
-// element size 72 from target lea [esi+esi*8] / [edi+ecx*8]
-struct Elem72 {
-    float v[18];
-};
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
 
-template class std::vector<Elem72>;
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        instances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex narrow character template instances.
+  */
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/regex/config.hpp>
+
+#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_NARROW_INSTANTIATE
+
+#ifdef __BORLANDC__
+#pragma hrdstop
+#endif
+
+#include <boost/regex.hpp>
+
+#endif
