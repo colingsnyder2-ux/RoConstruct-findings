@@ -1,0 +1,1474 @@
+[
+ {
+  "obj": "png.obj",
+  "symbol": "_png_set_sig_bytes",
+  "address": "0051dbc0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_sig_cmp",
+  "address": "0051dbf0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_check_sig",
+  "address": "0051dce0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_zalloc",
+  "address": "0051dd00",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_reset_crc",
+  "address": "0051dd60",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_calculate_crc",
+  "address": "0051dd80",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_free_data",
+  "address": "0051ddd0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_info_destroy",
+  "address": "0051e170",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_handle_as_unknown",
+  "address": "0051e1d0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_init_mmx_flags",
+  "address": "0051e220",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_mmx_support",
+  "address": "006a6f10",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "png.obj",
+  "symbol": "_png_create_info_struct",
+  "address": "0051e240",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_format_buffer",
+  "address": "005296d0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_default_error",
+  "address": "00529760",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_default_warning",
+  "address": "00529870",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_set_error_fn",
+  "address": "00529990",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_error",
+  "address": "005299b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_warning",
+  "address": "00529a50",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_chunk_error",
+  "address": "00529aa0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngerror.obj",
+  "symbol": "_png_chunk_warning",
+  "address": "00529ad0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngget.obj",
+  "symbol": "_png_get_valid",
+  "address": "005248d0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngget.obj",
+  "symbol": "_png_get_rowbytes",
+  "address": "005248f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngget.obj",
+  "symbol": "_png_get_channels",
+  "address": "00524910",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngget.obj",
+  "symbol": "_png_get_bKGD",
+  "address": "00524930",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngget.obj",
+  "symbol": "_png_get_gAMA",
+  "address": "00524960",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngget.obj",
+  "symbol": "_png_get_IHDR",
+  "address": "00524990",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngmem.obj",
+  "symbol": "_png_set_mem_fn",
+  "address": "0052a450",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngmem.obj",
+  "symbol": "_png_destroy_struct",
+  "address": "0052a480",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngmem.obj",
+  "symbol": "_png_free",
+  "address": "0052a500",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngmem.obj",
+  "symbol": "_png_malloc_warn",
+  "address": "0052a530",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_create_read_struct_2",
+  "address": "0051eb90",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_read_info",
+  "address": "0051edb0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_read_update_info",
+  "address": "0051f0f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_read_row",
+  "address": "0051f140",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_read_rows",
+  "address": "0051f5b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_read_image",
+  "address": "0051f650",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_read_end",
+  "address": "0051f6b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngread.obj",
+  "symbol": "_png_destroy_read_struct",
+  "address": "0051fbb0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrio.obj",
+  "symbol": "_png_read_data",
+  "address": "00524ab0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrio.obj",
+  "symbol": "_png_set_read_fn",
+  "address": "00524b10",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_background",
+  "address": "00520110",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_strip_16",
+  "address": "005201b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_gamma",
+  "address": "005201c0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_expand",
+  "address": "00520210",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_palette_to_rgb",
+  "address": "00520210",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_gray_1_2_4_to_8",
+  "address": "00520210",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_tRNS_to_alpha",
+  "address": "00520210",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_set_gray_to_rgb",
+  "address": "00520220",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_read_transform_info",
+  "address": "00520230",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_unpack",
+  "address": "005203d0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_unshift",
+  "address": "00520510",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_chop",
+  "address": "005206f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_read_swap_alpha",
+  "address": "00520740",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_read_invert_alpha",
+  "address": "00520870",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_read_filler",
+  "address": "00520930",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_gray_to_rgb",
+  "address": "00520bd0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_rgb_to_gray",
+  "address": "00520d50",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_background",
+  "address": "005214a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_gamma",
+  "address": "00522540",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_expand_palette",
+  "address": "00522940",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_expand",
+  "address": "00522b60",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_dither",
+  "address": "00522f20",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrtran.obj",
+  "symbol": "_png_do_read_intrapixel",
+  "address": "00523780",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_get_uint_32",
+  "address": "0052be70",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_get_int_32",
+  "address": "0052be70",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_crc_read",
+  "address": "0052bea0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_crc_error",
+  "address": "0052bed0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_check_chunk_name",
+  "address": "0052c2a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_combine_row",
+  "address": "0052c300",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_do_read_interlace",
+  "address": "0052c5f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_read_filter_row",
+  "address": "0052ca10",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_read_start_row",
+  "address": "0052cbe0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_get_uint_31",
+  "address": "0052ce90",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_crc_finish",
+  "address": "0052cee0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_IHDR",
+  "address": "0052cfb0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_PLTE",
+  "address": "0052d170",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_IEND",
+  "address": "0052d310",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_sBIT",
+  "address": "0052d4e0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_iCCP",
+  "address": "0052dd80",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_sPLT",
+  "address": "0052df30",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_tRNS",
+  "address": "0052e180",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_bKGD",
+  "address": "0052e3f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_hIST",
+  "address": "0052e610",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_pHYs",
+  "address": "0052e790",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_oFFs",
+  "address": "0052e8b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_pCAL",
+  "address": "0052e9d0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_sCAL",
+  "address": "0052ec90",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_tIME",
+  "address": "0052ee50",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_tEXt",
+  "address": "0052ef60",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_zTXt",
+  "address": "0052f080",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngrutil.obj",
+  "symbol": "_png_handle_unknown",
+  "address": "0052f1e0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_bKGD",
+  "address": "0051c770",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_cHRM",
+  "address": "0051c7a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_gAMA",
+  "address": "0051ccd0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_hIST",
+  "address": "0051cdd0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_IHDR",
+  "address": "0051ce80",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_oFFs",
+  "address": "0051d0b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_pCAL",
+  "address": "0051d0e0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_sCAL",
+  "address": "0051d280",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_pHYs",
+  "address": "0051d2c0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_PLTE",
+  "address": "0051d2f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_sBIT",
+  "address": "0051d380",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_sRGB_gAMA_and_cHRM",
+  "address": "0051d3b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_iCCP",
+  "address": "0051d490",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_text_2",
+  "address": "0051d590",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_tIME",
+  "address": "0051d780",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_tRNS",
+  "address": "0051d7b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngset.obj",
+  "symbol": "_png_set_sPLT",
+  "address": "0051d840",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_set_swap",
+  "address": "0051fc70",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_set_packing",
+  "address": "0051fc90",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_set_interlace_handling",
+  "address": "0051fcb0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_do_invert",
+  "address": "0051fcd0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_do_swap",
+  "address": "0051fd60",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_do_packswap",
+  "address": "0051fda0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_do_strip_filler",
+  "address": "0051fdf0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngtrans.obj",
+  "symbol": "_png_do_bgr",
+  "address": "00520030",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwio.obj",
+  "symbol": "_png_write_data",
+  "address": "0051dab0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwio.obj",
+  "symbol": "_png_flush",
+  "address": "0051db10",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwio.obj",
+  "symbol": "_png_default_flush",
+  "address": "0051db30",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwio.obj",
+  "symbol": "_png_set_write_fn",
+  "address": "0051db50",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_write_info_before_PLTE",
+  "address": "0051b720",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_write_info",
+  "address": "0051b8f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_write_end",
+  "address": "0051bbc0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_write_row",
+  "address": "0051bd20",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_write_flush",
+  "address": "0051bf70",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_set_filter_heuristics",
+  "address": "0051c170",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_write_image",
+  "address": "0051c640",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwrite.obj",
+  "symbol": "_png_destroy_write_struct",
+  "address": "0051c6a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwtran.obj",
+  "symbol": "_png_do_pack",
+  "address": "00529b00",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwtran.obj",
+  "symbol": "_png_do_shift",
+  "address": "00529c30",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwtran.obj",
+  "symbol": "_png_do_write_swap_alpha",
+  "address": "00529ed0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwtran.obj",
+  "symbol": "_png_do_write_invert_alpha",
+  "address": "00529ff0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwtran.obj",
+  "symbol": "_png_do_write_intrapixel",
+  "address": "0052a100",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwtran.obj",
+  "symbol": "_png_do_write_transformations",
+  "address": "0052a1e0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_save_uint_32",
+  "address": "005263f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_chunk_start",
+  "address": "00526420",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_chunk_data",
+  "address": "00526480",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_chunk_end",
+  "address": "005264b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_sig",
+  "address": "005264f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_text_compress",
+  "address": "00526560",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_compressed_data_out",
+  "address": "005267e0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_PLTE",
+  "address": "005268d0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_hIST",
+  "address": "005269c0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_tEXt",
+  "address": "00526c60",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_zTXt",
+  "address": "00526d20",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_pCAL",
+  "address": "00526e30",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_start_row",
+  "address": "005271e0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_do_write_interlace",
+  "address": "00527380",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_chunk",
+  "address": "005275b0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_IHDR",
+  "address": "00527630",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_IDAT",
+  "address": "00527a20",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_IEND",
+  "address": "00527b30",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_gAMA",
+  "address": "00527b80",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_sRGB",
+  "address": "00527c40",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_iCCP",
+  "address": "00527cc0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_sPLT",
+  "address": "00527db0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_sBIT",
+  "address": "00527f90",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_tRNS",
+  "address": "00528440",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_bKGD",
+  "address": "00528580",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_oFFs",
+  "address": "005286c0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_pHYs",
+  "address": "00528790",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_tIME",
+  "address": "00528860",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "pngwutil.obj",
+  "symbol": "_png_write_find_filter",
+  "address": "00528ba0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0078.obj",
+  "symbol": "_png_read_destroy",
+  "address": "0051f8f0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0079.obj",
+  "symbol": "_png_build_gamma_table",
+  "address": "00523090",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0079.obj",
+  "symbol": "_png_init_read_transformations",
+  "address": "00523860",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0080.obj",
+  "symbol": "_png_read_finish_row",
+  "address": "0052f340",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0081.obj",
+  "symbol": "_png_set_gAMA_fixed",
+  "address": "0051cd50",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0082.obj",
+  "symbol": "_png_write_destroy",
+  "address": "0051c050",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0083.obj",
+  "symbol": "_png_write_finish_row",
+  "address": "00528900",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0083.obj",
+  "symbol": "_png_write_filtered_row",
+  "address": "00528ad0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0085.obj",
+  "symbol": "_png_create_struct_2",
+  "address": "0052a340",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0085.obj",
+  "symbol": "_png_destroy_struct_2",
+  "address": "0052a3c0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0085.obj",
+  "symbol": "_png_malloc",
+  "address": "0052a4a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0086.obj",
+  "symbol": "_png_do_read_transformations",
+  "address": "00524460",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0087.obj",
+  "symbol": "_png_decompress_chunk",
+  "address": "0052bf50",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0087.obj",
+  "symbol": "_png_handle_sRGB",
+  "address": "0052db80",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0088.obj",
+  "symbol": "_png_handle_gAMA",
+  "address": "0052d360",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0088.obj",
+  "symbol": "_png_handle_cHRM",
+  "address": "0052d660",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0089.obj",
+  "symbol": "_png_set_unknown_chunks",
+  "address": "0051d970",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0090.obj",
+  "symbol": "_png_create_write_struct_2",
+  "address": "0051c4a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0091.obj",
+  "symbol": "_png_check_keyword",
+  "address": "00526a80",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0091.obj",
+  "symbol": "_png_write_sCAL",
+  "address": "005270a0",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ },
+ {
+  "obj": "verified_0091.obj",
+  "symbol": "_png_write_cHRM",
+  "address": "00528050",
+  "preserved": true,
+  "old_data_exact": true,
+  "new_data_exact": true
+ }
+]

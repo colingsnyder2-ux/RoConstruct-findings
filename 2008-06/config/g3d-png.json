@@ -1,17 +1,28 @@
 {
  "name": "G3D-PNG",
- "description": "G3D 6.09 bundled libpng, separated from core math and GL ownership.",
+ "description": "G3D6.09 bundled libpng1.2.7, separated from core/GL ownership. Unchanged pngset/pngrtran/pngrutil C files use proven /fp:fast; other files keep their original flags.",
  "depends": [
   "zlib-winapi"
  ],
  "layers": [
+  {
+   "name": "native-float",
+   "mode": "recipe",
+   "recipe": "g3d-6.09-png-dll",
+   "files": "pngset.c pngrtran.c pngrutil.c",
+   "direct": true,
+   "flags": "/O2 /GS- /MD /fp:fast"
+  },
   {
    "name": "upstream",
    "mode": "recipe",
    "recipe": "g3d-6.09-png-dll",
    "files": "png*.c",
    "exclude": [
-    "pngtest.c"
+    "pngtest.c",
+    "pngset.c",
+    "pngrtran.c",
+    "pngrutil.c"
    ],
    "direct": true,
    "flags": "/O2 /GS- /MD"
@@ -26,5 +37,6 @@
  "verified": true,
  "force_verified": true,
  "prune_unselected_sections": true,
- "prefer_module_helpers": true
+ "prefer_module_helpers": true,
+ "deduplicate_layer_files": true
 }

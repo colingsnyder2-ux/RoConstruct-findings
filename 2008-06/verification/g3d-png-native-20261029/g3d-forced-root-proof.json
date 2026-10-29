@@ -1,0 +1,541 @@
+[
+ {
+  "symbol": "?fromPointAndDirection@Line@G3D@@SA?AV12@ABVVector3@2@0@Z",
+  "address": "00594650",
+  "map_line": "0001:00005f00       ?fromPointAndDirection@Line@G3D@@SA?AV12@ABVVector3@2@0@Z 00406f00 f i linked:verified_0002.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?collisionLocationForMovingPointFixedAABox@CollisionDetection@G3D@@SA_NABVVector3@2@0ABVAABox@2@AAV32@AA_N2@Z",
+  "address": "007bb770",
+  "map_line": "0001:00004b80       ?collisionLocationForMovingPointFixedAABox@CollisionDetection@G3D@@SA_NABVVector3@2@0ABVAABox@2@AAV32@AA_N2@Z 00405b80 f   linked:verified_0003.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?collisionTimeForMovingPointFixedCapsule@CollisionDetection@G3D@@SAMABVVector3@2@0ABVCapsule@2@AAV32@2@Z",
+  "address": "007bba50",
+  "map_line": "0001:00004e60       ?collisionTimeForMovingPointFixedCapsule@CollisionDetection@G3D@@SAMABVVector3@2@0ABVCapsule@2@AAV32@2@Z 00405e60 f   linked:verified_0003.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?white@Color3@G3D@@SAABV12@XZ",
+  "address": "00514a60",
+  "map_line": "0001:00007540       ?white@Color3@G3D@@SAABV12@XZ 00408540 f   linked:verified_0004.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Color3@G3D@@QAE@ABVColor3uint8@1@@Z",
+  "address": "00514c00",
+  "map_line": "0001:00001f30       ??0Color3@G3D@@QAE@ABVColor3uint8@1@@Z 00402f30 f   linked:verified_0005.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??KColor3@G3D@@QBE?AV01@M@Z",
+  "address": "00514c40",
+  "map_line": "0001:00001f70       ??KColor3@G3D@@QBE?AV01@M@Z 00402f70 f   linked:verified_0005.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??_0Color3@G3D@@QAEAAV01@M@Z",
+  "address": "005183c0",
+  "map_line": "0001:00002010       ??_0Color3@G3D@@QAEAAV01@M@Z 00403010 f   linked:verified_0005.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Color3uint8@G3D@@QAE@ABVColor3@1@@Z",
+  "address": "005106a0",
+  "map_line": "0001:000020c0       ??0Color3uint8@G3D@@QAE@ABVColor3@1@@Z 004030c0 f   linked:verified_0006.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0_Iterator_base_secure@std@@QAE@XZ",
+  "address": "0049ed30",
+  "map_line": "0001:00003270       ??0_Iterator_base_secure@std@@QAE@XZ 00404270 f i linked:verified_0007.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?pubsetbuf@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEPAV12@PADH@Z",
+  "address": "0056be00",
+  "map_line": "0001:00003280       ?pubsetbuf@?$basic_streambuf@DU?$char_traits@D@std@@@std@@QAEPAV12@PADH@Z 00404280 f i linked:verified_0007.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?resize@?$Array@VVector2@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "0054d160",
+  "map_line": "0001:00006cb0       ?resize@?$Array@VVector2@G3D@@@G3D@@QAEXH_N@Z 00407cb0 f i linked:verified_0008.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?realloc@?$Array@VVector2@G3D@@@G3D@@AAEXH@Z",
+  "address": "0054ebc0",
+  "map_line": "0001:00006ee0       ?realloc@?$Array@VVector2@G3D@@@G3D@@AAEXH@Z 00407ee0 f i linked:verified_0008.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?lookVector@CoordinateFrame@G3D@@QBE?AVVector3@2@XZ",
+  "address": "005187f0",
+  "map_line": "0001:000067d0       ?lookVector@CoordinateFrame@G3D@@QBE?AVVector3@2@XZ 004077d0 f i linked:verified_0009.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?toWorldSpace@CoordinateFrame@G3D@@QBE?AVRay@2@ABV32@@Z",
+  "address": "00518890",
+  "map_line": "0001:00006810       ?toWorldSpace@CoordinateFrame@G3D@@QBE?AVRay@2@ABV32@@Z 00407810 f   linked:verified_0009.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?lerp@CoordinateFrame@G3D@@QBE?AV12@ABV12@M@Z",
+  "address": "00518a50",
+  "map_line": "0001:000068f0       ?lerp@CoordinateFrame@G3D@@QBE?AV12@ABV12@M@Z 004078f0 f   linked:verified_0009.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?lookAt@CoordinateFrame@G3D@@QAEXABVVector3@2@V32@@Z",
+  "address": "00518b90",
+  "map_line": "0001:00006a20       ?lookAt@CoordinateFrame@G3D@@QAEXABVVector3@2@V32@@Z 00407a20 f   linked:verified_0009.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?setFieldOfView@GCamera@G3D@@QAEXM@Z",
+  "address": "00510810",
+  "map_line": "0001:00002140       ?setFieldOfView@GCamera@G3D@@QAEXM@Z 00403140 f   linked:verified_0010.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0GCamera@G3D@@QAE@XZ",
+  "address": "00510ac0",
+  "map_line": "0001:00002160       ??0GCamera@G3D@@QAE@XZ     00403160 f   linked:verified_0010.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?worldRay@GCamera@G3D@@QBE?AVRay@2@MMABVRect2D@2@@Z",
+  "address": "00510b80",
+  "map_line": "0001:000021d0       ?worldRay@GCamera@G3D@@QBE?AVRay@2@MMABVRect2D@2@@Z 004031d0 f   linked:verified_0010.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?project@GCamera@G3D@@QBE?AVVector3@2@ABV32@ABVRect2D@2@@Z",
+  "address": "00510d00",
+  "map_line": "0001:00002350       ?project@GCamera@G3D@@QBE?AVVector3@2@ABV32@ABVRect2D@2@@Z 00403350 f   linked:verified_0010.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?resize@?$Array@VFace@Frustum@GCamera@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "00511240",
+  "map_line": "0001:00002450       ?resize@?$Array@VFace@Frustum@GCamera@G3D@@@G3D@@QAEXH_N@Z 00403450 f i linked:verified_0010.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?resize@?$Array@VColor4uint8@G3D@@@G3D@@QAEXH_N@Z",
+  "address": "0050e7a0",
+  "map_line": "0001:00007010       ?resize@?$Array@VColor4uint8@G3D@@@G3D@@QAEXH_N@Z 00408010 f i linked:verified_0011.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??9GLight@G3D@@QBE_NABV01@@Z",
+  "address": "005132d0",
+  "map_line": "0001:00003f80       ??9GLight@G3D@@QBE_NABV01@@Z 00404f80 f   linked:verified_0013.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??8GLight@G3D@@QBE_NABV01@@Z",
+  "address": "00514400",
+  "map_line": "0001:000032e0       ??8GLight@G3D@@QBE_NABV01@@Z 004042e0 f   linked:verified_0014.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?directional@GLight@G3D@@SA?AV12@ABVVector3@2@ABVColor3@2@_N2@Z",
+  "address": "00514510",
+  "map_line": "0001:000033d0       ?directional@GLight@G3D@@SA?AV12@ABVVector3@2@ABVColor3@2@_N2@Z 004043d0 f   linked:verified_0014.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0GMutex@G3D@@QAE@XZ",
+  "address": "004d3f80",
+  "map_line": "0001:000025d0       ??0GMutex@G3D@@QAE@XZ      004035d0 f   linked:verified_0015.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?intersection@Line@G3D@@QBE?AVVector3@2@ABVPlane@2@@Z",
+  "address": "007bbce0",
+  "map_line": "0001:000066f0       ?intersection@Line@G3D@@QBE?AVVector3@2@ABVPlane@2@@Z 004076f0 f   linked:verified_0016.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?closestPoint@LineSegment@G3D@@QBE?AVVector3@2@ABV32@@Z",
+  "address": "00530590",
+  "map_line": "0001:000044d0       ?closestPoint@LineSegment@G3D@@QBE?AVVector3@2@ABV32@@Z 004054d0 f   linked:verified_0017.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?endPoint@LineSegment@G3D@@QBE?AVVector3@2@H@Z",
+  "address": "005306e0",
+  "map_line": "0001:00004620       ?endPoint@LineSegment@G3D@@QBE?AVVector3@2@H@Z 00405620 f   linked:verified_0017.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?unitize@Quat@G3D@@QBE?AV12@XZ",
+  "address": "00513160",
+  "map_line": "0001:00003450       ?unitize@Quat@G3D@@QBE?AV12@XZ 00404450 f i linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??8Matrix3@G3D@@QBE_NABV01@@Z",
+  "address": "00513280",
+  "map_line": "0001:00003510       ??8Matrix3@G3D@@QBE_NABV01@@Z 00404510 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??DMatrix3@G3D@@QBE?AV01@ABV01@@Z",
+  "address": "00513350",
+  "map_line": "0001:00003560       ??DMatrix3@G3D@@QBE?AV01@ABV01@@Z 00404560 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??XMatrix3@G3D@@QAEAAV01@ABV01@@Z",
+  "address": "005133c0",
+  "map_line": "0001:000035d0       ??XMatrix3@G3D@@QAEAAV01@ABV01@@Z 004045d0 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?orthonormalize@Matrix3@G3D@@QAEXXZ",
+  "address": "00513550",
+  "map_line": "0001:00003660       ?orthonormalize@Matrix3@G3D@@QAEXXZ 00404660 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?fromAxisAngle@Matrix3@G3D@@SA?AV12@ABVVector3@2@M@Z",
+  "address": "00513680",
+  "map_line": "0001:00003790       ?fromAxisAngle@Matrix3@G3D@@SA?AV12@ABVVector3@2@M@Z 00404790 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?toEulerAnglesXYZ@Matrix3@G3D@@QBE_NAAM00@Z",
+  "address": "00513720",
+  "map_line": "0001:00003830       ?toEulerAnglesXYZ@Matrix3@G3D@@QBE_NAAM00@Z 00404830 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?_mul@Matrix3@G3D@@CAXABV12@0AAV12@@Z",
+  "address": "005137f0",
+  "map_line": "0001:00003900       ?_mul@Matrix3@G3D@@CAXABV12@0AAV12@@Z 00404900 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?isOrthonormal@Matrix3@G3D@@QBE_NXZ",
+  "address": "005138e0",
+  "map_line": "0001:000039f0       ?isOrthonormal@Matrix3@G3D@@QBE_NXZ 004049f0 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?fromEulerAnglesXYZ@Matrix3@G3D@@SA?AV12@MMM@Z",
+  "address": "00513bc0",
+  "map_line": "0001:00003bb0       ?fromEulerAnglesXYZ@Matrix3@G3D@@SA?AV12@MMM@Z 00404bb0 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?fromEulerAnglesZXY@Matrix3@G3D@@SA?AV12@MMM@Z",
+  "address": "00513cc0",
+  "map_line": "0001:00003cb0       ?fromEulerAnglesZXY@Matrix3@G3D@@SA?AV12@MMM@Z 00404cb0 f   linked:verified_0018.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??8Matrix4@G3D@@QBE_NABV01@@Z",
+  "address": "00514670",
+  "map_line": "0001:00003db0       ??8Matrix4@G3D@@QBE_NABV01@@Z 00404db0 f   linked:verified_0019.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?orthogonalProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z",
+  "address": "005146c0",
+  "map_line": "0001:00003e00       ?orthogonalProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z 00404e00 f   linked:verified_0019.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?perspectiveProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z",
+  "address": "00514750",
+  "map_line": "0001:00003e90       ?perspectiveProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z 00404e90 f   linked:verified_0019.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??1?$Set@PAV?$Array@H@G3D@@@G3D@@UAE@XZ",
+  "address": "00472860",
+  "map_line": "0001:00003290       ??1?$Set@PAV?$Array@H@G3D@@@G3D@@UAE@XZ 00404290 f i linked:verified_0024.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??_G?$Set@PAV?$Array@H@G3D@@@G3D@@UAEPAXI@Z",
+  "address": "00472880",
+  "map_line": "0001:000032b0       ??_G?$Set@PAV?$Array@H@G3D@@@G3D@@UAEPAXI@Z 004042b0 f i linked:verified_0024.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?toGridCoords@Welder@_internal@G3D@@QBEXVVector3@3@AAH11@Z",
+  "address": "007ba480",
+  "map_line": "0001:00002aa0       ?toGridCoords@Welder@_internal@G3D@@QBEXVVector3@3@AAH11@Z 00403aa0 f   linked:verified_0025.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Welder@_internal@G3D@@QAE@ABV?$Array@VVector3@G3D@@@2@AAV32@AAV?$Array@H@2@2N@Z",
+  "address": "007ba5e0",
+  "map_line": "0001:00002b90       ??0Welder@_internal@G3D@@QAE@ABV?$Array@VVector3@G3D@@@2@AAV32@AAV?$Array@H@2@2N@Z 00403b90 f   linked:verified_0025.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?getIndex@Welder@_internal@G3D@@QAEHABVVector3@3@@Z",
+  "address": "007ba900",
+  "map_line": "0001:00002eb0       ?getIndex@Welder@_internal@G3D@@QAEHABVVector3@3@@Z 00403eb0 f   linked:verified_0025.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?append@?$Array@VVector3@G3D@@@G3D@@QAEXABVVector3@2@00@Z",
+  "address": "0054b070",
+  "map_line": "0001:00004280       ?append@?$Array@VVector3@G3D@@@G3D@@QAEXABVVector3@2@00@Z 00405280 f i linked:verified_0026.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Plane@G3D@@QAE@ABVVector3@1@00@Z",
+  "address": "00525940",
+  "map_line": "0001:000026b0       ??0Plane@G3D@@QAE@ABVVector3@1@00@Z 004036b0 f   linked:verified_0027.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Plane@G3D@@QAE@ABVVector3@1@0@Z",
+  "address": "005259e0",
+  "map_line": "0001:00002750       ??0Plane@G3D@@QAE@ABVVector3@1@0@Z 00403750 f   linked:verified_0027.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?fromEquation@Plane@G3D@@SA?AV12@MMMM@Z",
+  "address": "00525a50",
+  "map_line": "0001:000027c0       ?fromEquation@Plane@G3D@@SA?AV12@MMMM@Z 004037c0 f   linked:verified_0027.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Quat@G3D@@QAE@ABVMatrix3@1@@Z",
+  "address": "00526050",
+  "map_line": "0001:00002840       ??0Quat@G3D@@QAE@ABVMatrix3@1@@Z 00403840 f   linked:verified_0028.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?nlerp@Quat@G3D@@QBE?AV12@ABV12@M@Z",
+  "address": "00526160",
+  "map_line": "0001:00002950       ?nlerp@Quat@G3D@@QBE?AV12@ABV12@M@Z 00403950 f   linked:verified_0028.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?tock@Stopwatch@G3D@@QAEXXZ",
+  "address": "00511df0",
+  "map_line": "0001:000072d0       ?tock@Stopwatch@G3D@@QAEXXZ 004082d0 f   linked:verified_0029.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?cpuVendor@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "address": "00508810",
+  "map_line": "0001:00005e20       ?cpuVendor@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ 00406e20 f   linked:verified_0030.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?operatingSystem@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "address": "00508890",
+  "map_line": "0001:00005e90       ?operatingSystem@System@G3D@@SAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ 00406e90 f   linked:verified_0030.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?construct@?$allocator@VToken@G3D@@@std@@QAEXPAVToken@G3D@@ABV34@@Z",
+  "address": "0043ca60",
+  "map_line": "0001:00005e00       ?construct@?$allocator@VToken@G3D@@@std@@QAEXPAVToken@G3D@@ABV34@@Z 00406e00 f i linked:verified_0031.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?append@?$Array@D@G3D@@QAEXABD@Z",
+  "address": "00512790",
+  "map_line": "0001:00004210       ?append@?$Array@D@G3D@@QAEXABD@Z 00405210 f i linked:verified_0032.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?inf@Vector2@G3D@@SAABV12@XZ",
+  "address": "00509bd0",
+  "map_line": "0001:00003fa0       ?inf@Vector2@G3D@@SAABV12@XZ 00404fa0 f   linked:verified_0033.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??KVector2@G3D@@QBE?AV01@M@Z",
+  "address": "00509c30",
+  "map_line": "0001:00004000       ??KVector2@G3D@@QBE?AV01@M@Z 00405000 f   linked:verified_0033.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Vector2int16@G3D@@QAE@ABVVector2@1@@Z",
+  "address": "005122d0",
+  "map_line": "0001:000029e0       ??0Vector2int16@G3D@@QAE@ABVVector2@1@@Z 004039e0 f   linked:verified_0034.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?unitize@Vector3@G3D@@QAEMM@Z",
+  "address": "00518470",
+  "map_line": "0001:00004050       ?unitize@Vector3@G3D@@QAEMM@Z 00405050 f   linked:verified_0036.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?generateOrthonormalBasis@Vector3@G3D@@SAXAAV12@00_N@Z",
+  "address": "005184c0",
+  "map_line": "0001:000040a0       ?generateOrthonormalBasis@Vector3@G3D@@SAXAAV12@00_N@Z 004050a0 f   linked:verified_0036.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??KVector3@G3D@@QBE?AV01@M@Z",
+  "address": "00518740",
+  "map_line": "0001:000041b0       ??KVector3@G3D@@QBE?AV01@M@Z 004051b0 f   linked:verified_0036.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Vector3int16@G3D@@QAE@ABVVector3@1@@Z",
+  "address": "007bbdc0",
+  "map_line": "0001:00002a30       ??0Vector3int16@G3D@@QAE@ABVVector3@1@@Z 00403a30 f   linked:verified_0037.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?assertionHook@G3D@@YAP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@ZXZ",
+  "address": "00427b60",
+  "map_line": "0001:000044c0       ?assertionHook@G3D@@YAP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@ZXZ 004054c0 f   linked:verified_0038.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?setAssertionHook@G3D@@YAXP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@Z@Z",
+  "address": "0050aa10",
+  "map_line": "0001:000044b0       ?setAssertionHook@G3D@@YAXP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@Z@Z 004054b0 f   linked:verified_0038.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?iRandom@G3D@@YAHHH@Z",
+  "address": "00515780",
+  "map_line": "0001:000066a0       ?iRandom@G3D@@YAHHH@Z      004076a0 f   linked:verified_0039.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$_Transform@PADV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6AHH@Z@std@@YA?AV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PAD0V10@P6AHH@ZUrandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+  "address": "0046cfa0",
+  "map_line": "0001:00001ec0       ??$_Transform@PADV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@P6AHH@Z@std@@YA?AV?$_String_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PAD0V10@P6AHH@ZUrandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z 00402ec0 f i linked:verified_0040.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?computeAdjacency@MeshAlg@G3D@@SAXABV?$Array@VVector3@G3D@@@2@ABV?$Array@H@2@AAV?$Array@VFace@MeshAlg@G3D@@@2@AAV?$Array@VEdge@MeshAlg@G3D@@@2@AAV?$Array@VVertex@MeshAlg@G3D@@@2@@Z",
+  "address": "007b9940",
+  "map_line": "0001:000052c0       ?computeAdjacency@MeshAlg@G3D@@SAXABV?$Array@VVector3@G3D@@@2@ABV?$Array@H@2@AAV?$Array@VFace@MeshAlg@G3D@@@2@AAV?$Array@VEdge@MeshAlg@G3D@@@2@AAV?$Array@VVertex@MeshAlg@G3D@@@2@@Z 004062c0 f   linked:verified_0074.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "_jpeg_fdct_float",
+  "address": "0053e0e0",
+  "map_line": "0001:00007570       _jpeg_fdct_float           00408570 f   linked:verified_0076.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "_jpeg_idct_float",
+  "address": "0053cba0",
+  "map_line": "0001:00008560       _jpeg_idct_float           00409560 f   linked:verified_0077.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?collisionTimeForMovingPointFixedSphere@CollisionDetection@G3D@@SAMABVVector3@2@0ABVSphere@2@AAV32@2@Z",
+  "address": "007bb5a0",
+  "map_line": "0001:000050f0       ?collisionTimeForMovingPointFixedSphere@CollisionDetection@G3D@@SAMABVVector3@2@0ABVSphere@2@AAV32@2@Z 004060f0 f   linked:verified_0092.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?getFrustum@GCamera@G3D@@QBEXABVRect2D@2@AAVFrustum@12@@Z",
+  "address": "00511510",
+  "map_line": "0001:00005f30       ?getFrustum@GCamera@G3D@@QBEXABVRect2D@2@AAVFrustum@12@@Z 00406f30 f   linked:verified_0093.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??0Matrix3@G3D@@QAE@ABVQuat@1@@Z",
+  "address": "00513aa0",
+  "map_line": "0001:000025e0       ??0Matrix3@G3D@@QAE@ABVQuat@1@@Z 004035e0 f   linked:verified_0094.obj",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "?slerp@Quat@G3D@@QBE?AV12@ABV12@MM@Z",
+  "address": "00526230",
+  "map_line": "0001:00007110       ?slerp@Quat@G3D@@QBE?AV12@ABV12@MM@Z 00408110 f   linked:verified_0095.obj",
+  "code_exact": true,
+  "data_exact": true
+ }
+]

@@ -1,0 +1,7 @@
+{
+ "address": "0051cae0",
+ "symbol": "_png_set_cHRM_fixed",
+ "map_line": "0001:000090c0       _png_set_cHRM_fixed        0040a0c0 f   linked:pngset.obj",
+ "code_exact": true,
+ "data_exact": true
+}

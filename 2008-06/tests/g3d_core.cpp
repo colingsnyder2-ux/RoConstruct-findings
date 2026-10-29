@@ -71,6 +71,20 @@ int main()
     GImage copiedImage(decoded);
     if (copiedImage.width!=64 || copiedImage.height!=48 || memcmp(copiedImage.byte(),decoded.byte(),64*48*3)) ++failures;
     printf("GImage JPEG memory roundtrip and copy worst=%d\n",worst);
+    BinaryOutput png("<memory>",G3D_LITTLE_ENDIAN);
+    image.encode(GImage::PNG,png);
+    GImage pngDecoded(png.getCArray(),(int)png.size(),GImage::PNG);
+    if (pngDecoded.width!=64 || pngDecoded.height!=48 || pngDecoded.channels!=3 ||
+        memcmp(image.byte(),pngDecoded.byte(),64*48*3)) ++failures;
+    printf("GImage PNG memory roundtrip bytes=%d\n",(int)png.size());
+    GImage alphaImage(16,12,4);
+    for (int i=0;i<16*12*4;++i) alphaImage.byte()[i]=(uint8)(i*37);
+    BinaryOutput alphaPng("<memory>",G3D_LITTLE_ENDIAN);
+    alphaImage.encode(GImage::PNG,alphaPng);
+    GImage alphaDecoded(alphaPng.getCArray(),(int)alphaPng.size(),GImage::PNG);
+    if (alphaDecoded.width!=16 || alphaDecoded.height!=12 || alphaDecoded.channels!=4 ||
+        memcmp(alphaImage.byte(),alphaDecoded.byte(),16*12*4)) ++failures;
+    printf("GImage RGBA PNG memory roundtrip bytes=%d\n",(int)alphaPng.size());
     FILE* file=fopen("g3d_float.jpg","wb");
     if (!file) return 2;
     jpeg_compress_struct encoder;

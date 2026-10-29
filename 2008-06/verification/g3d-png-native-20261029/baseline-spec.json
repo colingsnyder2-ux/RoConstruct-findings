@@ -1,0 +1,30 @@
+{
+ "name": "G3D-PNG",
+ "description": "G3D 6.09 bundled libpng, separated from core math and GL ownership.",
+ "depends": [
+  "zlib-winapi"
+ ],
+ "layers": [
+  {
+   "name": "upstream",
+   "mode": "recipe",
+   "recipe": "g3d-6.09-png-dll",
+   "files": "png*.c",
+   "exclude": [
+    "pngtest.c"
+   ],
+   "direct": true,
+   "flags": "/O2 /GS- /MD"
+  }
+ ],
+ "test": "g3d_png",
+ "test_includes": [
+  "tools/libs/g3d-6.09/source/png",
+  "tools/libs/g3d-6.09/source/zlib",
+  "rebuild/2008-06/out/G3D-PNG/force"
+ ],
+ "verified": true,
+ "force_verified": true,
+ "prune_unselected_sections": true,
+ "prefer_module_helpers": true
+}

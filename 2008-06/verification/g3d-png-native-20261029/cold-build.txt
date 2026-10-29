@@ -1,0 +1,4 @@
+layer native-float: 0 compile errors
+layer upstream: 0 compile errors
+verified layer: 21 exact symbols swapped in
+G3D-PNG: linked=True test_exit=0; 337 object functions, 181 byte-identical to unique 2008 functions (177 of >=16 bytes)

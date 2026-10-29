@@ -1,0 +1,39 @@
+{
+ "same_filename_alternatives": [
+  "pngrtran.obj",
+  "pngrutil.obj",
+  "pngset.obj"
+ ],
+ "selected_choices": {
+  "verified_0078.obj": "layer-verified",
+  "verified_0079.obj": "layer-verified",
+  "verified_0080.obj": "layer-verified",
+  "verified_0081.obj": "layer-verified",
+  "verified_0082.obj": "layer-verified",
+  "verified_0083.obj": "layer-verified",
+  "verified_0085.obj": "layer-verified",
+  "verified_0086.obj": "layer-verified",
+  "verified_0087.obj": "layer-verified",
+  "verified_0088.obj": "layer-verified",
+  "verified_0089.obj": "layer-verified",
+  "verified_0090.obj": "layer-verified",
+  "verified_0091.obj": "layer-verified",
+  "pngrtran.obj": "layer-native-float",
+  "pngrutil.obj": "layer-native-float",
+  "pngset.obj": "layer-native-float",
+  "png.obj": "layer-upstream",
+  "pngerror.obj": "layer-upstream",
+  "pnggccrd.obj": "layer-upstream",
+  "pngget.obj": "layer-upstream",
+  "pngmem.obj": "layer-upstream",
+  "pngpread.obj": "layer-upstream",
+  "pngread.obj": "layer-upstream",
+  "pngrio.obj": "layer-upstream",
+  "pngtrans.obj": "layer-upstream",
+  "pngvcrd.obj": "layer-upstream",
+  "pngwio.obj": "layer-upstream",
+  "pngwrite.obj": "layer-upstream",
+  "pngwtran.obj": "layer-upstream",
+  "pngwutil.obj": "layer-upstream"
+ }
+}
