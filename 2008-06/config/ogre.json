@@ -66,7 +66,7 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_subentity_contracts_3c134af6ce3f7619.cpp",
+   "file": "roc_native_subentity_accessors_bdcd7bf36dc8a930.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
    "addrs": [
@@ -74,15 +74,28 @@
     "00685910",
     "00685700",
     "00685170",
-    "006851a0"
+    "006851a0",
+    "006850b0",
+    "006850f0",
+    "00685820",
+    "00685830",
+    "00685110"
    ],
    "symbols": {
     "00685660": "??0RbxSubEntity@Ogre@@QAE@PAVEntity@1@@Z",
     "00685910": "??1RbxSubEntity@Ogre@@UAE@XZ",
     "00685700": "?getCastShadows@RbxSubEntity@Ogre@@UBE_NXZ",
     "00685170": "?getEdgeList@RbxSubEntity@Ogre@@UAEPAVEdgeData@2@XZ",
-    "006851a0": "?hasEdgeList@RbxSubEntity@Ogre@@UAE_NXZ"
-   }
+    "006851a0": "?hasEdgeList@RbxSubEntity@Ogre@@UAE_NXZ",
+    "006850b0": "?setLodMesh@RbxSubEntity@Ogre@@QAEXIPAVSubMesh@2@@Z",
+    "006850f0": "?setLodIndex@RbxSubEntity@Ogre@@QAEXI@Z",
+    "00685820": "?setShadowExtrusionDistance@RbxSubEntity@Ogre@@QAEXM@Z",
+    "00685830": "?getShadowExtrusionDistance@RbxSubEntity@Ogre@@QBEMXZ",
+    "00685110": "?getPointExtrusionDistance@RbxSubEntity@Ogre@@UBEMPBVLight@2@@Z"
+   },
+   "helper_symbols": [
+    "_native_subentity_accessors_smoke"
+   ]
   },
   {
    "recipe": "ogre-1.4.5-dll",

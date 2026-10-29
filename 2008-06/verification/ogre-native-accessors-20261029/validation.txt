@@ -1,0 +1,3 @@
+77 focused tests passed. Full module linked=True, runtime_exit=0, output=native Ogre subentity fields result=0.
+All5 recovered methods referenced by volatile member pointers and executed, including point-light extrusion95.
+311 forced root code/data/map proofs; all305 distinct old target addresses preserved. Fresh placement410, stale CodegenAnalogs/RbxUtil deferred.

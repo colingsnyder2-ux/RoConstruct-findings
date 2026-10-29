@@ -1,0 +1,20 @@
+{
+ "map_line": "0001:0000b0d0       _native_subentity_accessors_smoke 0040c0d0 f   linked:verified_0003.obj",
+ "all_five_native_member_functions_referenced": true,
+ "addresses": [
+  "006850b0",
+  "006850f0",
+  "00685110",
+  "00685820",
+  "00685830"
+ ],
+ "calls_via_volatile_member_pointers": true,
+ "runtime_exit": 0,
+ "point_light_range": 100,
+ "object_translation": [
+  3,
+  4,
+  0
+ ],
+ "expected_extrusion_distance": 95
+}

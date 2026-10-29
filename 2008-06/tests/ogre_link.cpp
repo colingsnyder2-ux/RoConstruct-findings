@@ -1,4 +1,5 @@
-// Links every exact Ogre function the module swaps in (force_verified.h, written by roc/rebuild.py build_module).
 #include "force_verified.h"
+#include <cstdio>
 #pragma comment(lib, "msvcprt.lib")
-int main(){return 0;}
+extern "C" int native_subentity_accessors_smoke();
+int main() { int result=native_subentity_accessors_smoke(); std::printf("native Ogre subentity fields result=%d\n",result); return result; }
