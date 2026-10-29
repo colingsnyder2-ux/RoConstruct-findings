@@ -98,7 +98,7 @@ namespace RBX
 			}
 		}
 
-		void raise(Event event) const
+		void raise(Event event) const throw()
 		{
 			RaiseRange range = {0, listeners.size(), raiseRange};
 

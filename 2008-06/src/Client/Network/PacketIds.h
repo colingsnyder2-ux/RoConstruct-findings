@@ -11,8 +11,8 @@ namespace RBX
 			ID_DATA,
 			ID_REQUEST_MARKER,
 			ID_PHYSICS,
-			ID_CHAT_ALL,
-			ID_REPORT_ABUSE
+			ID_CHAT_ALL = 0x51,
+			ID_REPORT_ABUSE = 0x52
 		};
 	}
 }

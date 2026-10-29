@@ -74,8 +74,143 @@ namespace RBX
 		}
 	}
 
-	template<bool isPost>
-	static void httpGetPost(const std::string& url, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)
+	// Provisional: 0x946274 is a global int read by both dispatchers (0 selects
+	// the 005f9c30 implementation, 1 the 005f8b60 implementation).
+	static int mode = 0;
+
+	void Http::httpRequest(bool isPost, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)
+	{
+		if (url.size() == 0)
+			throw std::runtime_error("empty url");
+
+		if (!Http::trustCheck(url.c_str()))
+			throw std::runtime_error(G3D::format("trust check failed for %s", url.c_str()));
+
+		ATL::CUrl crack;
+		crack.CrackUrl(url.c_str());
+
+		if (crack.GetHostNameLength() == 0)
+			throw std::runtime_error(G3D::format("'%s' is missing a hostName", url.c_str()));
+
+		HINTERNET session = InternetOpenA("Roblox", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+
+		HINTERNET connection = InternetConnectA(session,
+			crack.GetHostName(),
+			crack.GetPortNumber(),
+			crack.GetUserNameA(),
+			crack.GetPassword(),
+			INTERNET_SERVICE_HTTP,
+			0,
+			TRUE);
+
+		{
+			ATL::CString s = crack.GetUrlPath();
+			s += crack.GetExtraInfo();
+
+			HINTERNET request = HttpOpenRequestA(
+				connection,
+				isPost ? "POST" : "GET",
+				s.GetString(),
+				NULL,
+				NULL,
+				NULL,
+				INTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NEED_FILE,
+				TRUE);
+
+			if (!request)
+				throw std::runtime_error(G3D::format("HttpOpenRequest failed for %s", url.c_str()));
+
+			if (additionalHeaders)
+			{
+				if (!HttpAddRequestHeadersA(request, additionalHeaders, (int)strlen(additionalHeaders), HTTP_ADDREQ_FLAG_ADD))
+					ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+			}
+
+			if (!HttpAddRequestHeadersA(request, "Accept-Encoding: gzip\r\n", (int)strlen("Accept-Encoding: gzip\r\n"), HTTP_ADDREQ_FLAG_ADD))
+				ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+
+			{
+				boost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);
+
+				if (isPost)
+				{
+					std::string uploadData;
+
+					{
+						boost::iostreams::filtering_stream<boost::iostreams::output> out;
+
+						if (compressData)
+						{
+							std::string contentEncodingHeader = "Content-Encoding: gzip\r\n";
+							if (!HttpAddRequestHeadersA(request, contentEncodingHeader.c_str(), (int)contentEncodingHeader.size(), HTTP_ADDREQ_FLAG_ADD))
+								ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+
+							out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
+						}
+
+						out.push(String_sink(uploadData));
+						boost::iostreams::copy(data, out);
+					}
+
+					int headerLength = (int)uploadData.size();
+
+					INTERNET_BUFFERSA buffers = {0};
+					buffers.dwStructSize = sizeof(INTERNET_BUFFERSA);
+					if (!HttpSendRequestExA(request, &buffers, NULL, 0, TRUE))
+						throw std::runtime_error("HttpSendRequestEx failed");
+
+					DWORD bytesWritten;
+					if (!InternetWriteFile(request, uploadData.c_str(), headerLength, &bytesWritten))
+						ThrowIfFailure(false, "InternetWriteFile failed");
+
+					if (bytesWritten != headerLength)
+						throw std::runtime_error("Failed to upload content");
+
+					if (!HttpEndRequestA(request, NULL, 0, TRUE))
+						ThrowIfFailure(false, "HttpEndRequest failed");
+				}
+				else
+				{
+					if (!HttpSendRequestA(request, NULL, 0, NULL, 0))
+						ThrowIfFailure(false, "HttpSendRequest failed");
+				}
+
+				int statusCode;
+				{
+					char buffer[80];
+					DWORD length = sizeof(buffer);
+					if (!HttpQueryInfoA(request, HTTP_QUERY_STATUS_CODE, buffer, &length, NULL))
+						ThrowIfFailure(false, "HttpQueryInfo failed");
+					statusCode = atol(buffer);
+				}
+
+				{
+					boost::iostreams::filtering_stream<boost::iostreams::input> in;
+
+					char buffer[256];
+					DWORD length = sizeof(buffer);
+					if (HttpQueryInfoA(request, HTTP_QUERY_CONTENT_ENCODING, buffer, &length, NULL))
+					{
+						if (std::string(buffer) == "gzip")
+							in.push(boost::iostreams::basic_gzip_decompressor<>());
+					}
+
+					in.push(HttpRequest_source(request));
+					boost::iostreams::copy(in, String_sink(response));
+				}
+
+				if (statusCode != 200)
+					throw std::runtime_error(G3D::format("statusCode = %d", statusCode));
+			}
+
+			InternetCloseHandle(request);
+		}
+
+		InternetCloseHandle(connection);
+		InternetCloseHandle(session);
+	}
+
+	void Http::httpRequestAlternate(bool isPost, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)
 	{
 		if (url.size() == 0)
 			throw std::runtime_error("empty url");
@@ -291,14 +426,40 @@ namespace RBX
 			h = additionalHeaders.c_str();
 
 		std::istringstream dummy;
-		httpGetPost<false>(url, dummy, false, h, response);
+
+		try
+		{
+			if (mode == 0)
+				httpRequest(false, dummy, false, h, response);
+			else if (mode == 1)
+				httpRequestAlternate(false, dummy, false, h, response);
+		}
+		catch (...)
+		{
+			if (mode == 0)
+				httpRequest(false, dummy, false, h, response);
+			else if (mode == 1)
+				httpRequestAlternate(false, dummy, false, h, response);
+		}
 	}
 
 	void Http::post(std::istream& input, bool compress, std::string& response)
 	{
 		if (additionalHeaders.empty())
-			httpGetPost<true>(url, input, compress, NULL, response);
+		{
+			if (mode == 0)
+				httpRequest(true, input, compress, NULL, response);
+			else if (mode == 1)
+				httpRequestAlternate(true, input, compress, NULL, response);
+		}
 		else
-			httpGetPost<true>(url, input, compress, additionalHeaders.c_str(), response);
+		{
+			const char* h = additionalHeaders.c_str();
+
+			if (mode == 0)
+				httpRequest(true, input, compress, h, response);
+			else if (mode == 1)
+				httpRequestAlternate(true, input, compress, h, response);
+		}
 	}
 }

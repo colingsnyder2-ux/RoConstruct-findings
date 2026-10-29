@@ -19,8 +19,8 @@ namespace RBX
 
 		enum Permissions
 		{
-			None,
-			Administrator
+			None = 0,
+			Administrator = 3
 		};
 
 		class Context

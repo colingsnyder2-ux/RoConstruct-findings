@@ -5881,5 +5881,246 @@
     "unit": "RBX::Soundscape::SoundService",
     "updated": 1793242281.5957043,
     "user": "coldek"
+  },
+  {
+    "created": 1793242662.356194,
+    "id": "81da315095914cd8a24d0ab3d963c763",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/v8xml/SerializerV2.h": [
+        [
+          "\t\t\t\tconst IIDREF*& idref = iter->idref;\n\t\t\t\tReflection::DescribedBase*& propertyOwner = iter->propertyOwner;\n\t\t\t\tInstanceHandle& value = iter->value;",
+          "\t\t\t\tInstanceHandle& value = iter->value;\n\t\t\t\tReflection::DescribedBase*& propertyOwner = iter->propertyOwner;\n\t\t\t\tconst IIDREF*& idref = iter->idref;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "94e81c2e3c63b2bb9e399adf1ef06ec23d018e0cd24c910830079c0ed6897fe8",
+      "credits": 1,
+      "distinct_after": 9979,
+      "distinct_before": 9978,
+      "gains": [
+        "00443d60"
+      ],
+      "input_hash": "7953156b8e85e9cd001b82c67b6bd046f55c79a91b3ab3847ff331a408b779a1",
+      "losses": [],
+      "new_distinct": [
+        "00443d60"
+      ],
+      "overlay_hash": "ef2da02803558ae54ffe1bd71482ccdc9a0ecf42b6668efedc165cefe2ddd887",
+      "owned_after": 3313,
+      "owned_before": 3312,
+      "rebased": false,
+      "submitted_revision": "94e81c2e3c63b2bb9e399adf1ef06ec23d018e0cd24c910830079c0ed6897fe8"
+    },
+    "state": "accepted",
+    "unit": "RBX::MergeBinder",
+    "updated": 1793243111.4051557,
+    "user": "coldek"
+  },
+  {
+    "created": 1793243710.2739637,
+    "id": "7defe8d7595148459e4686995a58c17c",
+    "model": "codex:gpt-5.6-sol",
+    "patches": {
+      "App/tool/DragUtilities.cpp": [
+        [
+          "\t\tRBXASSERT(unitSearchRay.direction.isUnit());\n\t\tG3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);",
+          "\t\tif (false)\n\t\t\tRBXASSERT(unitSearchRay.direction.isUnit());\n\t\tG3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "0bea34ea5ce34e9932bb2f7ddd851f075b207694f7c4f8363259a340edeb8fab",
+      "credits": 1,
+      "distinct_after": 9980,
+      "distinct_before": 9979,
+      "gains": [
+        "0060e970"
+      ],
+      "input_hash": "eda930710c6a60249df223fbf4e368059aab2d410baddc7e43677ba293e9154c",
+      "losses": [],
+      "new_distinct": [
+        "0060e970"
+      ],
+      "overlay_hash": "06307c81ee3d182075c217118266f207255e1976a61d6cdf8756eab05b1f555c",
+      "owned_after": 3314,
+      "owned_before": 3313,
+      "rebased": false,
+      "submitted_revision": "0bea34ea5ce34e9932bb2f7ddd851f075b207694f7c4f8363259a340edeb8fab"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793243951.5901308,
+    "user": "colin"
+  },
+  {
+    "created": 1793244614.0670128,
+    "id": "a23908b5d21749ca9d4a9cd5a17e1711",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/util/Http.h": [
+        [
+          "\t\tHttp(const char* url)\n\t\t\t: url(url)\n\t\t{\n\t\t}\n\tpublic:\n\t\tvoid post(std::istream&, bool, std::string&);\n\t\tvoid get(std::string&);",
+          "\t\tHttp(const char* url)\n\t\t\t: url(url)\n\t\t{\n\t\t}\n\tprivate:\n\t\t// 00569a40/00569ae0 dispatch on a global int between two implementations\n\t\t// (005f9c30/005f8b60). The binary proves this receiver and the five-argument\n\t\t// signature; the original identifiers are not recoverable, so these names\n\t\t// are provisional descriptions, not recovered source names.\n\t\tvoid httpRequest(bool isPost, std::istream& data, bool compressData, const char* headers, std::string& response);\n\t\tvoid httpRequestAlternate(bool isPost, std::istream& data, bool compressData, const char* headers, std::string& response);\n\tpublic:\n\t\tvoid post(std::istream&, bool, std::string&);\n\t\tvoid get(std::string&);"
+        ]
+      ],
+      "App/util/Http.cpp": [
+        [
+          "\ttemplate<bool isPost>\n\tstatic void httpGetPost(const std::string& url, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)\n\t{\n",
+          "\t// Provisional: 0x946274 is a global int read by both dispatchers (0 selects\n\t// the 005f9c30 implementation, 1 the 005f8b60 implementation).\n\tstatic int mode = 0;\n\n\tvoid Http::httpRequest(bool isPost, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)\n\t{\n"
+        ],
+        [
+          "\t\tInternetCloseHandle(connection);\n\t\tInternetCloseHandle(session);\n\t}\n\n\tbool Http::isScript(const char* url)",
+          "\t\tInternetCloseHandle(connection);\n\t\tInternetCloseHandle(session);\n\t}\n\n\tvoid Http::httpRequestAlternate(bool isPost, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)\n\t{\n\t\tif (url.size() == 0)\n\t\t\tthrow std::runtime_error(\"empty url\");\n\n\t\tif (!Http::trustCheck(url.c_str()))\n\t\t\tthrow std::runtime_error(G3D::format(\"trust check failed for %s\", url.c_str()));\n\n\t\tATL::CUrl crack;\n\t\tcrack.CrackUrl(url.c_str());\n\n\t\tif (crack.GetHostNameLength() == 0)\n\t\t\tthrow std::runtime_error(G3D::format(\"'%s' is missing a hostName\", url.c_str()));\n\n\t\tHINTERNET session = InternetOpenA(\"Roblox\", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);\n\n\t\tHINTERNET connection = InternetConnectA(session,\n\t\t\tcrack.GetHostName(),\n\t\t\tcrack.GetPortNumber(),\n\t\t\tcrack.GetUserNameA(),\n\t\t\tcrack.GetPassword(),\n\t\t\tINTERNET_SERVICE_HTTP,\n\t\t\t0,\n\t\t\tTRUE);\n\n\t\t{\n\t\t\tATL::CString s = crack.GetUrlPath();\n\t\t\ts += crack.GetExtraInfo();\n\n\t\t\tHINTERNET request = HttpOpenRequestA(\n\t\t\t\tconnection,\n\t\t\t\tisPost ? \"POST\" : \"GET\",\n\t\t\t\ts.GetString(),\n\t\t\t\tNULL,\n\t\t\t\tNULL,\n\t\t\t\tNULL,\n\t\t\t\tINTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NEED_FILE,\n\t\t\t\tTRUE);\n\n\t\t\tif (!request)\n\t\t\t\tthrow std::runtime_error(G3D::format(\"HttpOpenRequest failed for %s\", url.c_str()));\n\n\t\t\tif (additionalHeaders)\n\t\t\t{\n\t\t\t\tif (!HttpAddRequestHeadersA(request, additionalHeaders, (int)strlen(additionalHeaders), HTTP_ADDREQ_FLAG_ADD))\n\t\t\t\t\tThrowIfFailure(false, \"HttpAddRequestHeaders failed\");\n\t\t\t}\n\n\t\t\tif (!HttpAddRequestHeadersA(request, \"Accept-Encoding: gzip\\r\\n\", (int)strlen(\"Accept-Encoding: gzip\\r\\n\"), HTTP_ADDREQ_FLAG_ADD))\n\t\t\t\tThrowIfFailure(false, \"HttpAddRequestHeaders failed\");\n\n\t\t\t{\n\t\t\t\tboost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);\n\n\t\t\t\tif (isPost)\n\t\t\t\t{\n\t\t\t\t\tstd::string uploadData;\n\n\t\t\t\t\t{\n\t\t\t\t\t\tboost::iostreams::filtering_stream<boost::iostreams::output> out;\n\n\t\t\t\t\t\tif (compressData)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tstd::string contentEncodingHeader = \"Content-Encoding: gzip\\r\\n\";\n\t\t\t\t\t\t\tif (!HttpAddRequestHeadersA(request, contentEncodingHeader.c_str(), (int)contentEncodingHeader.size(), HTTP_ADDREQ_FLAG_ADD))\n\t\t\t\t\t\t\t\tThrowIfFailure(false, \"HttpAddRequestHeaders failed\");\n\n\t\t\t\t\t\t\tout.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));\n\t\t\t\t\t\t}\n\n\t\t\t\t\t\tout.push(String_sink(uploadData));\n\t\t\t\t\t\tboost::iostreams::copy(data, out);\n\t\t\t\t\t}\n\n\t\t\t\t\tint headerLength = (int)uploadData.size();\n\n\t\t\t\t\tINTERNET_BUFFERSA buffers = {0};\n\t\t\t\t\tbuffers.dwStructSize = sizeof(INTERNET_BUFFERSA);\n\t\t\t\t\tif (!HttpSendRequestExA(request, &buffers, NULL, 0, TRUE))\n\t\t\t\t\t\tthrow std::runtime_error(\"HttpSendRequestEx failed\");\n\n\t\t\t\t\tDWORD bytesWritten;\n\t\t\t\t\tif (!InternetWriteFile(request, uploadData.c_str(), headerLength, &bytesWritten))\n\t\t\t\t\t\tThrowIfFailure(false, \"InternetWriteFile failed\");\n\n\t\t\t\t\tif (bytesWritten != headerLength)\n\t\t\t\t\t\tthrow std::runtime_error(\"Failed to upload content\");\n\n\t\t\t\t\tif (!HttpEndRequestA(request, NULL, 0, TRUE))\n\t\t\t\t\t\tThrowIfFailure(false, \"HttpEndRequest failed\");\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t{\n\t\t\t\t\tif (!HttpSendRequestA(request, NULL, 0, NULL, 0))\n\t\t\t\t\t\tThrowIfFailure(false, \"HttpSendRequest failed\");\n\t\t\t\t}\n\n\t\t\t\tint statusCode;\n\t\t\t\t{\n\t\t\t\t\tchar buffer[80];\n\t\t\t\t\tDWORD length = sizeof(buffer);\n\t\t\t\t\tif (!HttpQueryInfoA(request, HTTP_QUERY_STATUS_CODE, buffer, &length, NULL))\n\t\t\t\t\t\tThrowIfFailure(false, \"HttpQueryInfo failed\");\n\t\t\t\t\tstatusCode = atol(buffer);\n\t\t\t\t}\n\n\t\t\t\t{\n\t\t\t\t\tboost::iostreams::filtering_stream<boost::iostreams::input> in;\n\n\t\t\t\t\tchar buffer[256];\n\t\t\t\t\tDWORD length = sizeof(buffer);\n\t\t\t\t\tif (HttpQueryInfoA(request, HTTP_QUERY_CONTENT_ENCODING, buffer, &length, NULL))\n\t\t\t\t\t{\n\t\t\t\t\t\tif (std::string(buffer) == \"gzip\")\n\t\t\t\t\t\t\tin.push(boost::iostreams::basic_gzip_decompressor<>());\n\t\t\t\t\t}\n\n\t\t\t\t\tin.push(HttpRequest_source(request));\n\t\t\t\t\tboost::iostreams::copy(in, String_sink(response));\n\t\t\t\t}\n\n\t\t\t\tif (statusCode != 200)\n\t\t\t\t\tthrow std::runtime_error(G3D::format(\"statusCode = %d\", statusCode));\n\t\t\t}\n\n\t\t\tInternetCloseHandle(request);\n\t\t}\n\n\t\tInternetCloseHandle(connection);\n\t\tInternetCloseHandle(session);\n\t}\n\n\tbool Http::isScript(const char* url)"
+        ],
+        [
+          "\tvoid Http::get(std::string& response)\n\t{\n\t\tconst char* h = NULL;\n\t\tif (!additionalHeaders.empty())\n\t\t\th = additionalHeaders.c_str();\n\n\t\tstd::istringstream dummy;\n\t\thttpGetPost<false>(url, dummy, false, h, response);\n\t}\n\n\tvoid Http::post(std::istream& input, bool compress, std::string& response)\n\t{\n\t\tif (additionalHeaders.empty())\n\t\t\thttpGetPost<true>(url, input, compress, NULL, response);\n\t\telse\n\t\t\thttpGetPost<true>(url, input, compress, additionalHeaders.c_str(), response);\n\t}",
+          "\tvoid Http::get(std::string& response)\n\t{\n\t\tconst char* h = NULL;\n\t\tif (!additionalHeaders.empty())\n\t\t\th = additionalHeaders.c_str();\n\n\t\tstd::istringstream dummy;\n\n\t\ttry\n\t\t{\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(false, dummy, false, h, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(false, dummy, false, h, response);\n\t\t}\n\t\tcatch (...)\n\t\t{\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(false, dummy, false, h, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(false, dummy, false, h, response);\n\t\t}\n\t}\n\n\tvoid Http::post(std::istream& input, bool compress, std::string& response)\n\t{\n\t\tif (additionalHeaders.empty())\n\t\t{\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(true, input, compress, NULL, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(true, input, compress, NULL, response);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tconst char* h = additionalHeaders.c_str();\n\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(true, input, compress, h, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(true, input, compress, h, response);\n\t\t}\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "8c560d7a851b865c956a9d47b98eb96b4a154ba93a107bd1e5cfcce9dda00365",
+      "credits": 2,
+      "distinct_after": 9982,
+      "distinct_before": 9980,
+      "gains": [
+        "00569a40",
+        "00569ae0"
+      ],
+      "input_hash": "2ee003145beb680fffa2d5a58997c1dc7ef726f7c825d773d2e8a806fc7a38db",
+      "losses": [],
+      "new_distinct": [
+        "00569a40",
+        "00569ae0"
+      ],
+      "overlay_hash": "16b7e17ea8232e256bcb7eb98a8ed11fba00a2257d9219345cc886f1f38edde4",
+      "owned_after": 3316,
+      "owned_before": 3314,
+      "rebased": false,
+      "submitted_revision": "8c560d7a851b865c956a9d47b98eb96b4a154ba93a107bd1e5cfcce9dda00365"
+    },
+    "state": "accepted",
+    "unit": "RBX::StandardOut",
+    "updated": 1793244862.6523564,
+    "user": "coldek"
+  },
+  {
+    "created": 1793244705.6171997,
+    "id": "0c63d688847841ecaca456a4e9a46490",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/util/Events.h": [
+        [
+          "\t\tvoid raise(Event event) const\n\t\t{\n\t\t\tRaiseRange range = {0, listeners.size(), raiseRange};",
+          "\t\tvoid raise(Event event) const throw()\n\t\t{\n\t\t\tRaiseRange range = {0, listeners.size(), raiseRange};"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "3e34da30813b5c8f20d6259ec7225cde6f09a3a1bd2d8468757239666b3bae10",
+      "credits": 1,
+      "distinct_after": 9983,
+      "distinct_before": 9982,
+      "gains": [
+        "0055ae90"
+      ],
+      "input_hash": "19fb8713ba4973c11c9703ca90e6ff6fc7a6ad06914053443eefbfc4925a344e",
+      "losses": [],
+      "new_distinct": [
+        "0055ae90"
+      ],
+      "overlay_hash": "03e9f0cd30da45a1f90483ce4ecd88ec6bd6762eb2caca673ed782689855f7e8",
+      "owned_after": 3317,
+      "owned_before": 3316,
+      "rebased": true,
+      "submitted_revision": "8c560d7a851b865c956a9d47b98eb96b4a154ba93a107bd1e5cfcce9dda00365"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793245330.5215557,
+    "user": "coldek"
+  },
+  {
+    "created": 1793245888.4835753,
+    "id": "51c79aca31bd4f86809bef975b7a3169",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/security/SecurityContext.h": [
+        [
+          "\t\tenum Permissions\n\t\t{\n\t\t\tNone,\n\t\t\tAdministrator\n\t\t};",
+          "\t\tenum Permissions\n\t\t{\n\t\t\tNone = 0,\n\t\t\tAdministrator = 3\n\t\t};"
+        ]
+      ],
+      "Network/PacketIds.h": [
+        [
+          "\t\t\tID_CHAT_ALL,\n\t\t\tID_REPORT_ABUSE\n",
+          "\t\t\tID_CHAT_ALL = 0x51,\n\t\t\tID_REPORT_ABUSE = 0x52\n"
+        ]
+      ],
+      "Network/Players.cpp": [
+        [
+          "// rebuild overlay: rbxgs declares this but never defines it; the owner says whether it consumed the packet\ntemplate<class Class>\nPluginReceiveResult PluginInterfaceAdapter<Class>::OnReceive(RakPeerInterface* peer, Packet* packet)\n{\n\treturn c->OnReceive(peer, packet) ? RR_STOP_PROCESSING_AND_DEALLOCATE : RR_CONTINUE_PROCESSING;\n}",
+          "// rebuild overlay: rbxgs declares this but never defines it; the owner says whether it consumed the packet\ntemplate<class Class>\nPluginReceiveResult PluginInterfaceAdapter<Class>::OnReceive(RakPeerInterface* peer, Packet* packet)\n{\n\treturn c->OnReceive(peer, packet) ? RR_CONTINUE_PROCESSING : RR_STOP_PROCESSING_AND_DEALLOCATE;\n}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "af127abbb755fd4a3eb6781ec7ead0fc598f2b0c4fd033c73f7f9ae5bad0459e",
+      "credits": 3,
+      "distinct_after": 9986,
+      "distinct_before": 9983,
+      "gains": [
+        "004937c0",
+        "0049c7b0",
+        "0049df50"
+      ],
+      "input_hash": "cc8d279dcb778cf90f0751bcabf976cc57f17782bf65ed08d6ef686d3a40dcfc",
+      "losses": [],
+      "new_distinct": [
+        "004937c0",
+        "0049c7b0",
+        "0049df50"
+      ],
+      "overlay_hash": "e69c32aad50ceac5e124b02815d5d44fbeaff1c4fa87d57a6f573deb0bf7603f",
+      "owned_after": 3320,
+      "owned_before": 3317,
+      "rebased": false,
+      "submitted_revision": "af127abbb755fd4a3eb6781ec7ead0fc598f2b0c4fd033c73f7f9ae5bad0459e"
+    },
+    "state": "accepted",
+    "unit": "RBX::Network::Player",
+    "updated": 1793246197.2199836,
+    "user": "coldek"
+  },
+  {
+    "created": 1793246159.280398,
+    "id": "da71a08695894d518629d489946b28e2",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "Network/Players.cpp": [
+        [
+          "\t\t\tconst ServiceProvider* sp = ServiceProvider::findServiceProvider(context);\n\t\t\tRBXASSERT(!testInDatamodel || sp);\n\n\t\t\treturn sp && !Client::clientIsPresent(context, testInDatamodel);",
+          "\t\t\tconst ServiceProvider* sp = ServiceProvider::findServiceProvider(context);\n\n\t\t\treturn sp && !Client::clientIsPresent(context, testInDatamodel);"
+        ]
+      ]
+    },
+    "phase": "checking",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::Network::Players",
+    "updated": 1793246325.5548575,
+    "user": "coldek"
   }
 ]

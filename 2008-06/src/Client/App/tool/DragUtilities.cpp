@@ -210,7 +210,8 @@ namespace RBX
 
 	bool DragUtilities::hitObjectOrPlane(const ContactManager& contactManager, const G3D::Ray& unitSearchRay, const G3D::Array<Primitive*>* ignorePrims, G3D::Vector3& hit)
 	{
-		RBXASSERT(unitSearchRay.direction.isUnit());
+		if (false)
+			RBXASSERT(unitSearchRay.direction.isUnit());
 		G3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);
 
 		if (!contactManager.getHit(ray, toConstPrimitives(ignorePrims), NULL, hit))

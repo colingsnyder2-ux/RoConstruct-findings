@@ -43,9 +43,9 @@ namespace RBX
 		{
 			for (std::vector<IDREFItem>::iterator iter = deferredIDREFItems.begin(); iter != deferredIDREFItems.end(); iter++)
 			{
-				const IIDREF*& idref = iter->idref;
-				Reflection::DescribedBase*& propertyOwner = iter->propertyOwner;
 				InstanceHandle& value = iter->value;
+				Reflection::DescribedBase*& propertyOwner = iter->propertyOwner;
+				const IIDREF*& idref = iter->idref;
 
 				idref->assignIDREF(propertyOwner, value);
 			}

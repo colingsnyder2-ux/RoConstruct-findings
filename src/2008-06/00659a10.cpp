@@ -1,7 +1,9 @@
+// from server: 100% by EspClaude
+// from server: 98% by king_originala
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <vector>
-struct Vector {int x,y,z;Vector(int a,int b,int c):x(a),y(b),z(c){}};
+struct Vector {int x,y,z;Vector(){} Vector(int a,int b,int c):x(a),y(b),z(c){} int& operator[](int i){return ((int*)this)[i];} const int& operator[](int i) const {return ((const int*)this)[i];}};
 struct Primitive;
 struct SpatialNode {Primitive* primitive;SpatialNode* next;char opaque[12];Vector grid;};
 struct TreeNode {unsigned short children[8];unsigned short level;unsigned char mask;char opaque[9];Vector grid;TreeNode* next;};
@@ -17,11 +19,9 @@ void SpatialHash::collide(TreeNode* node,Primitive* primitive){
  Vector origin(node->grid.x*2,node->grid.y*2,node->grid.z*2);
  for(int child=0;child<8;++child){
   if(node->mask & (unsigned char)(1<<child)){
-   unsigned short index=node->children[child];
-   int x=origin.x+(child&1);
-   int y=origin.y+((child>>1)&1);
-   int z=origin.z+((child>>2)&1);
-   Vector grid(x,y,z);
+   Vector grid;
+   for(int i=0;i<3;++i)grid[i]=origin[i]+((child>>i)&1);
+   unsigned index=node->children[child];
    SpatialNode* other=levels[node->level-1][index].head;
    while(other){
     Primitive* candidate=other->primitive;

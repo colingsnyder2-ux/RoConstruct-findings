@@ -1,7 +1,9 @@
+// from server: 100% by EspClaude
+// from server: 99% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_c729f9c6f9b6e0fa.cpp
+// roc-lib: rbxgs-dll roc_espclaude_d27c86ddb5aece61.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <vector>
@@ -56,11 +58,12 @@ SpatialHash::~SpatialHash()
 	for (int level = 0; level < numSpatialLevels; level++) {
 		if (levels[level].size() != 0) {
 			for (unsigned int i = 0; i < (unsigned int) (0x10000 >> level); i++) {
+				unsigned int j = i;
 				if (levels[level][i].first != NULL) {
 					while (levels[level][i].first != NULL) {
 						ContactNode* temp = levels[level][i].first;
 
-						levels[level][i].first = levels[level][i].first->next;
+						levels[level][i].first = levels[level][j].first->next;
 
 						delete temp;
 
@@ -68,14 +71,17 @@ SpatialHash::~SpatialHash()
 					}
 				}
 
+				unsigned int k = i;
 				if (levels[level][i].second != NULL) {
-					while (levels[level][i].second != NULL) {
+{ bool more = true;
+					while (more && levels[level][i].second != NULL) {
 						SpatialNode* temp = levels[level][i].second;
 
-						levels[level][i].second = levels[level][i].second->next;
+						levels[level][i].second = levels[level][k].second->next;
 
 						delete temp;
 					}
+}
 				}
 			}
 		}
@@ -107,3 +113,4 @@ SpatialHash::~SpatialHash()
 }
 
 }
+

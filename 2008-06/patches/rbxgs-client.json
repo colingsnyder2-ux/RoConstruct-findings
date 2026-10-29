@@ -129,6 +129,10 @@
   [
    "Players::onEvent(const Player* source, CharacterAdded event)\n\t\t{\n\t\t\tRBXASSERT(backendProcessing(this, true));\n\t\t\tconst_cast<Player*>(source)->rebuildBackpack();\n\t\t}",
    "Players::onEvent(const Player* source, CharacterAdded event)\n\t\t{\n\t\t\t                                        ;\n\t\t\tconst_cast<Player*>(source)->rebuildBackpack();\n\t\t}"
+  ],
+  [
+   "// rebuild overlay: rbxgs declares this but never defines it; the owner says whether it consumed the packet\ntemplate<class Class>\nPluginReceiveResult PluginInterfaceAdapter<Class>::OnReceive(RakPeerInterface* peer, Packet* packet)\n{\n\treturn c->OnReceive(peer, packet) ? RR_STOP_PROCESSING_AND_DEALLOCATE : RR_CONTINUE_PROCESSING;\n}",
+   "// rebuild overlay: rbxgs declares this but never defines it; the owner says whether it consumed the packet\ntemplate<class Class>\nPluginReceiveResult PluginInterfaceAdapter<Class>::OnReceive(RakPeerInterface* peer, Packet* packet)\n{\n\treturn c->OnReceive(peer, packet) ? RR_CONTINUE_PROCESSING : RR_STOP_PROCESSING_AND_DEALLOCATE;\n}"
   ]
  ],
  "App/include/v8world/SimJobStage.h": [
@@ -1671,6 +1675,10 @@
   [
    "return !listeners.empty();",
    "return listeners.size() > 0;"
+  ],
+  [
+   "\t\tvoid raise(Event event) const\n\t\t{\n\t\t\tRaiseRange range = {0, listeners.size(), raiseRange};",
+   "\t\tvoid raise(Event event) const throw()\n\t\t{\n\t\t\tRaiseRange range = {0, listeners.size(), raiseRange};"
   ]
  ],
  "App/include/util/boost.hpp": [
@@ -1711,6 +1719,10 @@
   [
    "\t\t\t\tRBXASSERT(world);",
    ""
+  ],
+  [
+   "\t\tRBXASSERT(unitSearchRay.direction.isUnit());\n\t\tG3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);",
+   "\t\tif (false)\n\t\t\tRBXASSERT(unitSearchRay.direction.isUnit());\n\t\tG3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);"
   ]
  ],
  "App/util/Math.cpp": [
@@ -1987,6 +1999,44 @@
   [
    "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
    "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+  ]
+ ],
+ "App/include/v8xml/SerializerV2.h": [
+  [
+   "\t\t\t\tconst IIDREF*& idref = iter->idref;\n\t\t\t\tReflection::DescribedBase*& propertyOwner = iter->propertyOwner;\n\t\t\t\tInstanceHandle& value = iter->value;",
+   "\t\t\t\tInstanceHandle& value = iter->value;\n\t\t\t\tReflection::DescribedBase*& propertyOwner = iter->propertyOwner;\n\t\t\t\tconst IIDREF*& idref = iter->idref;"
+  ]
+ ],
+ "App/util/Http.cpp": [
+  [
+   "\ttemplate<bool isPost>\n\tstatic void httpGetPost(const std::string& url, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)\n\t{\n",
+   "\t// Provisional: 0x946274 is a global int read by both dispatchers (0 selects\n\t// the 005f9c30 implementation, 1 the 005f8b60 implementation).\n\tstatic int mode = 0;\n\n\tvoid Http::httpRequest(bool isPost, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)\n\t{\n"
+  ],
+  [
+   "\t\tInternetCloseHandle(connection);\n\t\tInternetCloseHandle(session);\n\t}\n\n\tbool Http::isScript(const char* url)",
+   "\t\tInternetCloseHandle(connection);\n\t\tInternetCloseHandle(session);\n\t}\n\n\tvoid Http::httpRequestAlternate(bool isPost, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)\n\t{\n\t\tif (url.size() == 0)\n\t\t\tthrow std::runtime_error(\"empty url\");\n\n\t\tif (!Http::trustCheck(url.c_str()))\n\t\t\tthrow std::runtime_error(G3D::format(\"trust check failed for %s\", url.c_str()));\n\n\t\tATL::CUrl crack;\n\t\tcrack.CrackUrl(url.c_str());\n\n\t\tif (crack.GetHostNameLength() == 0)\n\t\t\tthrow std::runtime_error(G3D::format(\"'%s' is missing a hostName\", url.c_str()));\n\n\t\tHINTERNET session = InternetOpenA(\"Roblox\", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);\n\n\t\tHINTERNET connection = InternetConnectA(session,\n\t\t\tcrack.GetHostName(),\n\t\t\tcrack.GetPortNumber(),\n\t\t\tcrack.GetUserNameA(),\n\t\t\tcrack.GetPassword(),\n\t\t\tINTERNET_SERVICE_HTTP,\n\t\t\t0,\n\t\t\tTRUE);\n\n\t\t{\n\t\t\tATL::CString s = crack.GetUrlPath();\n\t\t\ts += crack.GetExtraInfo();\n\n\t\t\tHINTERNET request = HttpOpenRequestA(\n\t\t\t\tconnection,\n\t\t\t\tisPost ? \"POST\" : \"GET\",\n\t\t\t\ts.GetString(),\n\t\t\t\tNULL,\n\t\t\t\tNULL,\n\t\t\t\tNULL,\n\t\t\t\tINTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NEED_FILE,\n\t\t\t\tTRUE);\n\n\t\t\tif (!request)\n\t\t\t\tthrow std::runtime_error(G3D::format(\"HttpOpenRequest failed for %s\", url.c_str()));\n\n\t\t\tif (additionalHeaders)\n\t\t\t{\n\t\t\t\tif (!HttpAddRequestHeadersA(request, additionalHeaders, (int)strlen(additionalHeaders), HTTP_ADDREQ_FLAG_ADD))\n\t\t\t\t\tThrowIfFailure(false, \"HttpAddRequestHeaders failed\");\n\t\t\t}\n\n\t\t\tif (!HttpAddRequestHeadersA(request, \"Accept-Encoding: gzip\\r\\n\", (int)strlen(\"Accept-Encoding: gzip\\r\\n\"), HTTP_ADDREQ_FLAG_ADD))\n\t\t\t\tThrowIfFailure(false, \"HttpAddRequestHeaders failed\");\n\n\t\t\t{\n\t\t\t\tboost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);\n\n\t\t\t\tif (isPost)\n\t\t\t\t{\n\t\t\t\t\tstd::string uploadData;\n\n\t\t\t\t\t{\n\t\t\t\t\t\tboost::iostreams::filtering_stream<boost::iostreams::output> out;\n\n\t\t\t\t\t\tif (compressData)\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tstd::string contentEncodingHeader = \"Content-Encoding: gzip\\r\\n\";\n\t\t\t\t\t\t\tif (!HttpAddRequestHeadersA(request, contentEncodingHeader.c_str(), (int)contentEncodingHeader.size(), HTTP_ADDREQ_FLAG_ADD))\n\t\t\t\t\t\t\t\tThrowIfFailure(false, \"HttpAddRequestHeaders failed\");\n\n\t\t\t\t\t\t\tout.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));\n\t\t\t\t\t\t}\n\n\t\t\t\t\t\tout.push(String_sink(uploadData));\n\t\t\t\t\t\tboost::iostreams::copy(data, out);\n\t\t\t\t\t}\n\n\t\t\t\t\tint headerLength = (int)uploadData.size();\n\n\t\t\t\t\tINTERNET_BUFFERSA buffers = {0};\n\t\t\t\t\tbuffers.dwStructSize = sizeof(INTERNET_BUFFERSA);\n\t\t\t\t\tif (!HttpSendRequestExA(request, &buffers, NULL, 0, TRUE))\n\t\t\t\t\t\tthrow std::runtime_error(\"HttpSendRequestEx failed\");\n\n\t\t\t\t\tDWORD bytesWritten;\n\t\t\t\t\tif (!InternetWriteFile(request, uploadData.c_str(), headerLength, &bytesWritten))\n\t\t\t\t\t\tThrowIfFailure(false, \"InternetWriteFile failed\");\n\n\t\t\t\t\tif (bytesWritten != headerLength)\n\t\t\t\t\t\tthrow std::runtime_error(\"Failed to upload content\");\n\n\t\t\t\t\tif (!HttpEndRequestA(request, NULL, 0, TRUE))\n\t\t\t\t\t\tThrowIfFailure(false, \"HttpEndRequest failed\");\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t{\n\t\t\t\t\tif (!HttpSendRequestA(request, NULL, 0, NULL, 0))\n\t\t\t\t\t\tThrowIfFailure(false, \"HttpSendRequest failed\");\n\t\t\t\t}\n\n\t\t\t\tint statusCode;\n\t\t\t\t{\n\t\t\t\t\tchar buffer[80];\n\t\t\t\t\tDWORD length = sizeof(buffer);\n\t\t\t\t\tif (!HttpQueryInfoA(request, HTTP_QUERY_STATUS_CODE, buffer, &length, NULL))\n\t\t\t\t\t\tThrowIfFailure(false, \"HttpQueryInfo failed\");\n\t\t\t\t\tstatusCode = atol(buffer);\n\t\t\t\t}\n\n\t\t\t\t{\n\t\t\t\t\tboost::iostreams::filtering_stream<boost::iostreams::input> in;\n\n\t\t\t\t\tchar buffer[256];\n\t\t\t\t\tDWORD length = sizeof(buffer);\n\t\t\t\t\tif (HttpQueryInfoA(request, HTTP_QUERY_CONTENT_ENCODING, buffer, &length, NULL))\n\t\t\t\t\t{\n\t\t\t\t\t\tif (std::string(buffer) == \"gzip\")\n\t\t\t\t\t\t\tin.push(boost::iostreams::basic_gzip_decompressor<>());\n\t\t\t\t\t}\n\n\t\t\t\t\tin.push(HttpRequest_source(request));\n\t\t\t\t\tboost::iostreams::copy(in, String_sink(response));\n\t\t\t\t}\n\n\t\t\t\tif (statusCode != 200)\n\t\t\t\t\tthrow std::runtime_error(G3D::format(\"statusCode = %d\", statusCode));\n\t\t\t}\n\n\t\t\tInternetCloseHandle(request);\n\t\t}\n\n\t\tInternetCloseHandle(connection);\n\t\tInternetCloseHandle(session);\n\t}\n\n\tbool Http::isScript(const char* url)"
+  ],
+  [
+   "\tvoid Http::get(std::string& response)\n\t{\n\t\tconst char* h = NULL;\n\t\tif (!additionalHeaders.empty())\n\t\t\th = additionalHeaders.c_str();\n\n\t\tstd::istringstream dummy;\n\t\thttpGetPost<false>(url, dummy, false, h, response);\n\t}\n\n\tvoid Http::post(std::istream& input, bool compress, std::string& response)\n\t{\n\t\tif (additionalHeaders.empty())\n\t\t\thttpGetPost<true>(url, input, compress, NULL, response);\n\t\telse\n\t\t\thttpGetPost<true>(url, input, compress, additionalHeaders.c_str(), response);\n\t}",
+   "\tvoid Http::get(std::string& response)\n\t{\n\t\tconst char* h = NULL;\n\t\tif (!additionalHeaders.empty())\n\t\t\th = additionalHeaders.c_str();\n\n\t\tstd::istringstream dummy;\n\n\t\ttry\n\t\t{\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(false, dummy, false, h, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(false, dummy, false, h, response);\n\t\t}\n\t\tcatch (...)\n\t\t{\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(false, dummy, false, h, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(false, dummy, false, h, response);\n\t\t}\n\t}\n\n\tvoid Http::post(std::istream& input, bool compress, std::string& response)\n\t{\n\t\tif (additionalHeaders.empty())\n\t\t{\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(true, input, compress, NULL, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(true, input, compress, NULL, response);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tconst char* h = additionalHeaders.c_str();\n\n\t\t\tif (mode == 0)\n\t\t\t\thttpRequest(true, input, compress, h, response);\n\t\t\telse if (mode == 1)\n\t\t\t\thttpRequestAlternate(true, input, compress, h, response);\n\t\t}\n\t}"
+  ]
+ ],
+ "App/include/util/Http.h": [
+  [
+   "\t\tHttp(const char* url)\n\t\t\t: url(url)\n\t\t{\n\t\t}\n\tpublic:\n\t\tvoid post(std::istream&, bool, std::string&);\n\t\tvoid get(std::string&);",
+   "\t\tHttp(const char* url)\n\t\t\t: url(url)\n\t\t{\n\t\t}\n\tprivate:\n\t\t// 00569a40/00569ae0 dispatch on a global int between two implementations\n\t\t// (005f9c30/005f8b60). The binary proves this receiver and the five-argument\n\t\t// signature; the original identifiers are not recoverable, so these names\n\t\t// are provisional descriptions, not recovered source names.\n\t\tvoid httpRequest(bool isPost, std::istream& data, bool compressData, const char* headers, std::string& response);\n\t\tvoid httpRequestAlternate(bool isPost, std::istream& data, bool compressData, const char* headers, std::string& response);\n\tpublic:\n\t\tvoid post(std::istream&, bool, std::string&);\n\t\tvoid get(std::string&);"
+  ]
+ ],
+ "Network/PacketIds.h": [
+  [
+   "\t\t\tID_CHAT_ALL,\n\t\t\tID_REPORT_ABUSE\n",
+   "\t\t\tID_CHAT_ALL = 0x51,\n\t\t\tID_REPORT_ABUSE = 0x52\n"
+  ]
+ ],
+ "App/include/security/SecurityContext.h": [
+  [
+   "\t\tenum Permissions\n\t\t{\n\t\t\tNone,\n\t\t\tAdministrator\n\t\t};",
+   "\t\tenum Permissions\n\t\t{\n\t\t\tNone = 0,\n\t\t\tAdministrator = 3\n\t\t};"
   ]
  ]
 }

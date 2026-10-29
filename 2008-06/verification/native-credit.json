@@ -28,6 +28,13 @@
     "user": "colin"
   },
   {
+    "addr": "00443d60",
+    "client": "2008-06",
+    "job": "81da315095914cd8a24d0ab3d963c763",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "00445b10",
     "client": "2008-06",
     "job": "739d5c3680d14c189fe8dca739b1d4c5",
@@ -54,6 +61,13 @@
     "job": "a9078a23889b4655b29f4346227f18ef",
     "model": "deepseek-v4.1-flash-free",
     "user": "colin"
+  },
+  {
+    "addr": "004937c0",
+    "client": "2008-06",
+    "job": "51c79aca31bd4f86809bef975b7a3169",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
   },
   {
     "addr": "004960a0",
@@ -110,6 +124,20 @@
     "job": "a9078a23889b4655b29f4346227f18ef",
     "model": "deepseek-v4.1-flash-free",
     "user": "colin"
+  },
+  {
+    "addr": "0049c7b0",
+    "client": "2008-06",
+    "job": "51c79aca31bd4f86809bef975b7a3169",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
+    "addr": "0049df50",
+    "client": "2008-06",
+    "job": "51c79aca31bd4f86809bef975b7a3169",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
   },
   {
     "addr": "004a6de0",
@@ -203,6 +231,13 @@
     "user": "colin"
   },
   {
+    "addr": "0055ae90",
+    "client": "2008-06",
+    "job": "0c63d688847841ecaca456a4e9a46490",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "0055b5a0",
     "client": "2008-06",
     "job": "70a1a98050e84962ac3e81e4bdef5d98",
@@ -257,6 +292,20 @@
     "job": "121908dd57144d04b7f75064dd77cd02",
     "model": "gpt-6",
     "user": "colin"
+  },
+  {
+    "addr": "00569a40",
+    "client": "2008-06",
+    "job": "a23908b5d21749ca9d4a9cd5a17e1711",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
+    "addr": "00569ae0",
+    "client": "2008-06",
+    "job": "a23908b5d21749ca9d4a9cd5a17e1711",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
   },
   {
     "addr": "0056be00",
@@ -1978,6 +2027,13 @@
     "client": "2008-06",
     "job": "6a7eb2d7653645a7aed3a1a0ed748c35",
     "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060e970",
+    "client": "2008-06",
+    "job": "7defe8d7595148459e4686995a58c17c",
+    "model": "codex:gpt-5.6-sol",
     "user": "colin"
   },
   {
