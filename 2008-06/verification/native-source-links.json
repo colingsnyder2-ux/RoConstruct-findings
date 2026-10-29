@@ -3468,55 +3468,55 @@
   "path": "2008-06/src/Client/App/util/Quaternion.cpp"
  },
  "005dd7b0": {
-  "line": 32,
+  "line": 38,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005dd7d0": {
-  "line": 37,
+  "line": 43,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005dd860": {
-  "line": 45,
+  "line": 51,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005dd940": {
-  "line": 52,
+  "line": 58,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005dda70": {
-  "line": 342,
+  "line": 357,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005ddb30": {
-  "line": 112,
+  "line": 118,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005ddb70": {
-  "line": 117,
+  "line": 123,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005ddbb0": {
-  "line": 122,
+  "line": 128,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005ddbd0": {
-  "line": 127,
+  "line": 133,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005ddc90": {
-  "line": 386,
+  "line": 401,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005dde50": {
-  "line": 482,
+  "line": 497,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005de090": {
-  "line": 287,
+  "line": 302,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005de740": {
-  "line": 164,
+  "line": 170,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005de800": {
@@ -3528,11 +3528,11 @@
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005defa0": {
-  "line": 422,
+  "line": 437,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005df0a0": {
-  "line": 244,
+  "line": 250,
   "path": "2008-06/src/Client/App/util/Math.cpp"
  },
  "005df4d0": {
@@ -3756,7 +3756,7 @@
   "path": "2008-06/src/Client/App/v8world/MotorJoint.cpp"
  },
  "005e5d00": {
-  "line": 92,
+  "line": 90,
   "path": "2008-06/src/Client/App/v8world/MotorJoint.cpp"
  },
  "005e5e00": {

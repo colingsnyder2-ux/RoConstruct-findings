@@ -1,16 +1,6 @@
-// from server: 37% by colin
+// from server: 40% by Yeetserama
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-
-struct RefCounted {
-    void** vptr;
-    long refCount;
-};
-
-struct FuncDescBase {
-    void** vptr;
-    void* function;
-};
 
 struct BoundFuncDesc {
     void** vptr;
@@ -21,14 +11,13 @@ struct BoundFuncDesc {
     void construct(void* function, const char* name, int security, int attributes);
 };
 
-extern "C" int __cdecl sub_4879D0(void*);
+extern "C" bool __cdecl func_004879d0();
 extern "C" void* __cdecl sub_62FEF6(unsigned int);
 
 void BoundFuncDesc::construct(void* function, const char* name, int security, int attributes)
 {
     int local = 0;
-    if (sub_4879D0(&local)) {
-        // already constructed
+    if (func_004879d0()) {
     } else {
         this->vptr2 = (void**)0x5a7750;
         this->vptr = (void**)0x5a6f30;

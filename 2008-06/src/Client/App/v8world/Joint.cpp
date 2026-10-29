@@ -36,7 +36,7 @@ namespace RBX
 	{
 		if (p != getPrimitive(i))
 		{
-			World* world = getWorld();
+			World* world = getWorld2008();
 			if (world && getPrimitive(i))
 				world->onJointPrimitiveNulling(this, getPrimitive(i));
 			Edge::setPrimitive(i, p);

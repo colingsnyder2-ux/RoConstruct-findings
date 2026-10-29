@@ -29,6 +29,12 @@ namespace RBX
 		return tiltZ;
 	}
 
+	const G3D::Matrix3& Math::matrixTiltNegativeZ()
+	{
+		static G3D::Matrix3 tiltNegativeZ(0, -1, 0, 1, 0, 0, 0, 0, 1);
+		return tiltNegativeZ;
+	}
+
 	bool Math::isDenormal(float f)
 	{
 		return (LODWORD(f) & 0x7F800000) == 0 && (LODWORD(f) & 0x7FFFFF) != 0;
@@ -271,6 +277,15 @@ namespace RBX
 		if (f <= -1)
 			return pi();
 		return acos(f);
+	}
+
+	float Math::elevationAngle(const G3D::Vector3& v)
+	{
+		if (v.y >= 1.0f)
+			return piHalf();
+		if (v.y <= -1.0f)
+			return -piHalf();
+		return asin(v.y);
 	}
 
 	float Math::angleToE0(const G3D::Vector2& v)

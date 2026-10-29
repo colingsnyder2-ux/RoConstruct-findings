@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 56% by Yeetserama
 struct Vec3 { float x, y, z; };
 
 struct Mat3 {
@@ -27,7 +27,7 @@ struct Prim {
 
 extern "C" void __stdcall sub_530100(void* p);
 extern "C" void __stdcall sub_473200(Mat3* out, const Vec3* in);
-extern "C" void __stdcall sub_5ab3f0(Mat3* out, const Mat3* a, float f1, float f2);
+extern "C" void __cdecl sub_5ab3f0(Mat3* out, const Mat3* a, float f1, float f2);
 
 extern float dword_7A4498;
 

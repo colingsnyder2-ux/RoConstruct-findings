@@ -2068,5 +2068,35 @@
     "\t\tvoid setCamera(Camera* value);\n\tprivate:\n\t\tvoid checkCamera();\n\tpublic:"
    ]
   ]
+ },
+ {
+  "App/v8world/Joint.cpp": [
+   [
+    "\t\t\tWorld* world = getWorld();\n\t\t\tif (world && getPrimitive(i))",
+    "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world && getPrimitive(i))"
+   ]
+  ],
+  "App/v8world/MotorJoint.cpp": [
+   [
+    "\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);",
+    "\t\t\tcurrentAngle = value;\n\t\t\tif (getWorld2008())\n\t\t\t\tlink->setJointAngle(value);"
+   ]
+  ]
+ },
+ {
+  "App/util/Math.cpp": [
+   [
+    "\tfloat Math::angleToE0(const G3D::Vector2& v)",
+    "\tfloat Math::elevationAngle(const G3D::Vector3& v)\n\t{\n\t\tif (v.y >= 1.0f)\n\t\t\treturn piHalf();\n\t\tif (v.y <= -1.0f)\n\t\t\treturn -piHalf();\n\t\treturn asin(v.y);\n\t}\n\n\tfloat Math::angleToE0(const G3D::Vector2& v)"
+   ]
+  ]
+ },
+ {
+  "App/util/Math.cpp": [
+   [
+    "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}",
+    "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}\n\n\tconst G3D::Matrix3& Math::matrixTiltNegativeZ()\n\t{\n\t\tstatic G3D::Matrix3 tiltNegativeZ(0, -1, 0, 1, 0, 0, 0, 0, 1);\n\t\treturn tiltNegativeZ;\n\t}"
+   ]
+  ]
  }
 ]

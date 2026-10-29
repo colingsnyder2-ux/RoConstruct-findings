@@ -1581,6 +1581,10 @@
   [
    "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tif (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))\n\t\t{\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tif (fabs(maxVelocity) > 0.0f)\n\t\t\t\tsetCurrentAngle(currentAngle + fabs(maxVelocity));\n\t\t\telse\n\t\t\t\tsetCurrentAngle(currentAngle - fabs(maxVelocity));\n\t\t}\n\t}",
    "\tvoid MotorJoint::stepUi(int uiStepId)\n\t{\n\t\tdouble speed = fabs(maxVelocity);\n\t\tdouble delta = static_cast<double>(desiredAngle) - currentAngle;\n\t\tif (fabs(delta) < speed)\n\t\t\tsetCurrentAngle(desiredAngle);\n\t\telse if (delta > 0.0)\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle + speed));\n\t\telse\n\t\t\tsetCurrentAngle(static_cast<float>(currentAngle - speed));\n\t}"
+  ],
+  [
+   "\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);",
+   "\t\t\tcurrentAngle = value;\n\t\t\tif (getWorld2008())\n\t\t\t\tlink->setJointAngle(value);"
   ]
  ],
  "App/include/v8datamodel/SpawnLocation.h": [
@@ -1821,6 +1825,14 @@
   [
    "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tif (m0Column.cross(*vector).magnitude() < radTolerance)\n\t\t\t\t\tbreak;",
    "\t\t\twhile (count < 3)\n\t\t\t{\n\t\t\t\tG3D::Vector3 cross = m0Column.cross(*vector);\n\t\t\t\tif (sqrtf(cross.z * cross.z + cross.y * cross.y + cross.x * cross.x) < radTolerance)\n\t\t\t\t\tbreak;"
+  ],
+  [
+   "\tfloat Math::angleToE0(const G3D::Vector2& v)",
+   "\tfloat Math::elevationAngle(const G3D::Vector3& v)\n\t{\n\t\tif (v.y >= 1.0f)\n\t\t\treturn piHalf();\n\t\tif (v.y <= -1.0f)\n\t\t\treturn -piHalf();\n\t\treturn asin(v.y);\n\t}\n\n\tfloat Math::angleToE0(const G3D::Vector2& v)"
+  ],
+  [
+   "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}",
+   "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}\n\n\tconst G3D::Matrix3& Math::matrixTiltNegativeZ()\n\t{\n\t\tstatic G3D::Matrix3 tiltNegativeZ(0, -1, 0, 1, 0, 0, 0, 0, 1);\n\t\treturn tiltNegativeZ;\n\t}"
   ]
  ],
  "App/v8datamodel/Teams.cpp": [
@@ -2051,6 +2063,10 @@
   [
    "\tJoint::Joint()\n\t\t: Edge(NULL, NULL),\n\t\t  jointOwner(NULL),\n\t\t  active(false),\n\t\t  jointCoord0(),\n\t\t  jointCoord1()\n\t{\n\t\tRBXASSERT(jointCoord0 == G3D::CoordinateFrame());\n\t\tRBXASSERT(jointCoord1 == G3D::CoordinateFrame());\n\t}",
    "\tJoint::Joint()\n\t\t: Edge(NULL, NULL),\n\t\t  jointOwner(NULL),\n\t\t  active(false),\n\t\t  jointCoord0(),\n\t\t  jointCoord1()\n\t{\n\t}"
+  ],
+  [
+   "\t\t\tWorld* world = getWorld();\n\t\t\tif (world && getPrimitive(i))",
+   "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world && getPrimitive(i))"
   ]
  ],
  "App/v8world/JointStage.cpp": [

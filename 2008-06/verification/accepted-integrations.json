@@ -2369,6 +2369,48 @@
         ]
       },
       "timestamp": 1793264460.5912704
+    },
+    {
+      "job": "c56c7dbe1b29497fab60da63ed13ef16",
+      "patches": {
+        "App/v8world/Joint.cpp": [
+          [
+            "\t\t\tWorld* world = getWorld();\n\t\t\tif (world && getPrimitive(i))",
+            "\t\t\tWorld* world = getWorld2008();\n\t\t\tif (world && getPrimitive(i))"
+          ]
+        ],
+        "App/v8world/MotorJoint.cpp": [
+          [
+            "\t\t\tcurrentAngle = value;\n\t\t\tWorld* world = getWorld();\n\t\t\tif (world)\n\t\t\t\tworld->onMotorAngleChanged(this);\n\t\t\tsetJointAngle(value);",
+            "\t\t\tcurrentAngle = value;\n\t\t\tif (getWorld2008())\n\t\t\t\tlink->setJointAngle(value);"
+          ]
+        ]
+      },
+      "timestamp": 1793267667.1557388
+    },
+    {
+      "job": "90f39970ace4420c8682e0e1a27e1b10",
+      "patches": {
+        "App/util/Math.cpp": [
+          [
+            "\tfloat Math::angleToE0(const G3D::Vector2& v)",
+            "\tfloat Math::elevationAngle(const G3D::Vector3& v)\n\t{\n\t\tif (v.y >= 1.0f)\n\t\t\treturn piHalf();\n\t\tif (v.y <= -1.0f)\n\t\t\treturn -piHalf();\n\t\treturn asin(v.y);\n\t}\n\n\tfloat Math::angleToE0(const G3D::Vector2& v)"
+          ]
+        ]
+      },
+      "timestamp": 1793267857.359772
+    },
+    {
+      "job": "3b1c84505df04ad0ab701d726bc59ff6",
+      "patches": {
+        "App/util/Math.cpp": [
+          [
+            "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}",
+            "\t\tstatic G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);\n\t\treturn tiltZ;\n\t}\n\n\tconst G3D::Matrix3& Math::matrixTiltNegativeZ()\n\t{\n\t\tstatic G3D::Matrix3 tiltNegativeZ(0, -1, 0, 1, 0, 0, 0, 0, 1);\n\t\treturn tiltNegativeZ;\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793268316.9183772
     }
   ],
   "initial_patches": {}

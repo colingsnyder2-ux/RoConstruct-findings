@@ -55,10 +55,8 @@ namespace RBX
 		if (currentAngle != value)
 		{
 			currentAngle = value;
-			World* world = getWorld();
-			if (world)
-				world->onMotorAngleChanged(this);
-			setJointAngle(value);
+			if (getWorld2008())
+				link->setJointAngle(value);
 		}
 	}
 

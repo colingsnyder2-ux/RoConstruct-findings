@@ -6674,11 +6674,32 @@
         ]
       ]
     },
-    "phase": "baseline: building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "a145d03aa717e146a9d69e33bb01e606abb362f915c4c18d2853ff1cd29dde62",
+      "credits": 2,
+      "distinct_after": 10008,
+      "distinct_before": 10006,
+      "gains": [
+        "005e5da0",
+        "006456e0"
+      ],
+      "input_hash": "d63df44fbcec59c99bf63cebf2ba516ef21697908aa98063b1bbb6ff6de5672e",
+      "losses": [],
+      "new_distinct": [
+        "005e5da0",
+        "006456e0"
+      ],
+      "overlay_hash": "a706d47ae7b79e570cafabf6b56077c6ae1907f7ed62c1366d652a4bfd444c54",
+      "owned_after": 3356,
+      "owned_before": 3354,
+      "rebased": false,
+      "submitted_revision": "a145d03aa717e146a9d69e33bb01e606abb362f915c4c18d2853ff1cd29dde62"
+    },
+    "state": "accepted",
     "unit": "RBX::RigidJoint, RBX::MotorJoint",
-    "updated": 1793265957.8669496,
+    "updated": 1793267667.3150792,
     "user": "nuck16"
   },
   {
@@ -6693,11 +6714,30 @@
         ]
       ]
     },
-    "phase": "queued",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "1e3ece5333b58b63e1e90e6ba63696c0d4e7b6bd92fe0a966cb2ac6e50c3ece8",
+      "credits": 1,
+      "distinct_after": 10009,
+      "distinct_before": 10008,
+      "gains": [
+        "005de190"
+      ],
+      "input_hash": "e784db7ad03e7e30d539ab77bf1ba48cb059237a8a58318a1b964640b104ab03",
+      "losses": [],
+      "new_distinct": [
+        "005de190"
+      ],
+      "overlay_hash": "afb8c319588133094556e2a28ab4c545e5b79134ead2b60ffa9956e9f9ae18e9",
+      "owned_after": 3357,
+      "owned_before": 3356,
+      "rebased": true,
+      "submitted_revision": "a145d03aa717e146a9d69e33bb01e606abb362f915c4c18d2853ff1cd29dde62"
+    },
+    "state": "accepted",
     "unit": "RBX::Message",
-    "updated": 1793266096.561354,
+    "updated": 1793267857.5179994,
     "user": "nuck16"
   },
   {
@@ -6712,11 +6752,30 @@
         ]
       ]
     },
-    "phase": "queued",
-    "receipt": {},
-    "state": "queued",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "3d7b158b0e42a2a43a2ec76f442166bf312dd003efc7572d8f9a34ef318b6d26",
+      "credits": 1,
+      "distinct_after": 10010,
+      "distinct_before": 10009,
+      "gains": [
+        "005de910"
+      ],
+      "input_hash": "844ac107f8d89d1a6815598663ea4c04b8befaa4a61fc24344f28c88a4a3f293",
+      "losses": [],
+      "new_distinct": [
+        "005de910"
+      ],
+      "overlay_hash": "a2f9b33fb7ee69bf2183fc1a377c808245370c4ecf8ad091a459e06dd024baec",
+      "owned_after": 3358,
+      "owned_before": 3357,
+      "rebased": true,
+      "submitted_revision": "a145d03aa717e146a9d69e33bb01e606abb362f915c4c18d2853ff1cd29dde62"
+    },
+    "state": "accepted",
     "unit": "RBX::Soundscape::SoundService",
-    "updated": 1793266451.8868377,
+    "updated": 1793268317.1373298,
     "user": "nuck16"
   }
 ]

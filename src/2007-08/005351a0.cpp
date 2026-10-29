@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 68% by Yeetserama
 struct connection;
 
 struct sp_counted_impl_p_connection {
@@ -23,7 +23,7 @@ extern bool __cdecl sub_509680(sp_counted_impl_p_connection* p);
 extern void __cdecl sub_5BDD60(void* a, int b);
 
 struct S {
-    bool f(void* a);
+    bool __cdecl f(void* a);
 };
 
 bool S::f(void* a)

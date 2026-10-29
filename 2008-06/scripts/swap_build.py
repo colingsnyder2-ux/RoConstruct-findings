@@ -46,9 +46,13 @@ def adopted(module):
     return out
 
 
-def compatible(module, unit):
+def compatible(module, unit, recipe=None):
     if not unit.rsplit("/", 1)[-1].startswith("roc_"):
         return True
+    if module == "Ogre":  # no adopted headers: a unit written against the real Ogre headers (no private copies) fits
+        from roc import libs
+        src = libs.LIBS / libs.RECIPES[recipe]["src"] / unit
+        return src.exists() and not ALIAS.search(src.read_text(errors="replace"))
     src = TREES.get(module, Path("-")) / unit
     if not src.exists():
         return False
@@ -136,7 +140,7 @@ def main(module, limit=None):
     for g in plan["groups"]:
         if not of_module(module, g["recipe"]):
             continue
-        if compatible(module, g["file"]):
+        if compatible(module, g["file"], g["recipe"]):
             groups.append(g)
         elif overlay_candidate(module, g["file"]):
             groups.append(dict(g, overlay=True))

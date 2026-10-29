@@ -1512,6 +1512,20 @@
     "user": "colin"
   },
   {
+    "addr": "005de190",
+    "client": "2008-06",
+    "job": "90f39970ace4420c8682e0e1a27e1b10",
+    "model": "claude-opus-5-5",
+    "user": "nuck16"
+  },
+  {
+    "addr": "005de910",
+    "client": "2008-06",
+    "job": "3b1c84505df04ad0ab701d726bc59ff6",
+    "model": "claude-opus-5-5",
+    "user": "nuck16"
+  },
+  {
     "addr": "005defa0",
     "client": "2008-06",
     "job": "2c2b7a578d4e4b01be3aaaec1626d88e",
@@ -1622,6 +1636,13 @@
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex",
     "user": "colin"
+  },
+  {
+    "addr": "005e5da0",
+    "client": "2008-06",
+    "job": "c56c7dbe1b29497fab60da63ed13ef16",
+    "model": "claude-opus-5-5",
+    "user": "nuck16"
   },
   {
     "addr": "005e5e70",
@@ -2413,6 +2434,13 @@
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
     "user": "colin"
+  },
+  {
+    "addr": "006456e0",
+    "client": "2008-06",
+    "job": "c56c7dbe1b29497fab60da63ed13ef16",
+    "model": "claude-opus-5-5",
+    "user": "nuck16"
   },
   {
     "addr": "00645750",
