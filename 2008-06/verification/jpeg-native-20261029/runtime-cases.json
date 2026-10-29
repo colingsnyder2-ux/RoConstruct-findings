@@ -1,0 +1,338 @@
+[
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 1,
+  "worst": 5
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 2,
+  "worst": 3
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 4,
+  "worst": 2
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 8,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 1,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 2,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 4,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 0,
+  "scale": 8,
+  "worst": 0
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 1,
+  "worst": 5
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 2,
+  "worst": 3
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 4,
+  "worst": 2
+ },
+ {
+  "channels": 3,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 8,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 1,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 2,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 4,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 0,
+  "progressive": 1,
+  "scale": 8,
+  "worst": 0
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 1,
+  "worst": 7
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 2,
+  "worst": 4
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 4,
+  "worst": 3
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 8,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 1,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 2,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 4,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 0,
+  "scale": 8,
+  "worst": 0
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 1,
+  "worst": 7
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 2,
+  "worst": 4
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 4,
+  "worst": 3
+ },
+ {
+  "channels": 3,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 8,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 1,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 2,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 4,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 1,
+  "progressive": 1,
+  "scale": 8,
+  "worst": 0
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 1,
+  "worst": 4
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 2,
+  "worst": 3
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 4,
+  "worst": 2
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 8,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 1,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 2,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 4,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 0,
+  "scale": 8,
+  "worst": 0
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 1,
+  "worst": 4
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 2,
+  "worst": 3
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 4,
+  "worst": 2
+ },
+ {
+  "channels": 3,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 8,
+  "worst": 2
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 1,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 2,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 4,
+  "worst": 0
+ },
+ {
+  "channels": 1,
+  "dct": 2,
+  "progressive": 1,
+  "scale": 8,
+  "worst": 0
+ }
+]

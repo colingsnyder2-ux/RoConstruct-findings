@@ -1,0 +1,34 @@
+[
+ {
+  "symbol": "_jpeg_fdct_float",
+  "address": "0053e0e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00000670       _jpeg_fdct_float           00401670 f   linked:jfdctflt.obj",
+  "data_spans": 4
+ },
+ {
+  "symbol": "_jpeg_idct_float",
+  "address": "0053cba0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00001660       _jpeg_idct_float           00402660 f   linked:jidctflt.obj",
+  "data_spans": 7
+ },
+ {
+  "symbol": "_jinit_forward_dct",
+  "address": "0053a010",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:000026a0       _jinit_forward_dct         004036a0 f   linked:jcdctmgr.obj",
+  "data_spans": 0
+ },
+ {
+  "symbol": "_jinit_inverse_dct",
+  "address": "005339e0",
+  "code_exact": true,
+  "data_exact": true,
+  "actual_owner": "0001:00002a60       _jinit_inverse_dct         00403a60 f   linked:jddctmgr.obj",
+  "data_spans": 0
+ }
+]

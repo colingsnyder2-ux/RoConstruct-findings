@@ -1,0 +1,116 @@
+[
+ {
+  "file": "jfdctflt.c",
+  "profile": "precise",
+  "flags": "/O2 /GS- /MD",
+  "matches": []
+ },
+ {
+  "file": "jfdctflt.c",
+  "profile": "fast",
+  "flags": "/O2 /GS- /MD /fp:fast",
+  "matches": [
+   {
+    "symbol": "_jpeg_fdct_float",
+    "address": "0053e0e0",
+    "size": 4074
+   }
+  ]
+ },
+ {
+  "file": "jidctflt.c",
+  "profile": "precise",
+  "flags": "/O2 /GS- /MD",
+  "matches": []
+ },
+ {
+  "file": "jidctflt.c",
+  "profile": "fast",
+  "flags": "/O2 /GS- /MD /fp:fast",
+  "matches": [
+   {
+    "symbol": "_jpeg_idct_float",
+    "address": "0053cba0",
+    "size": 901
+   }
+  ]
+ },
+ {
+  "file": "jcdctmgr.c",
+  "profile": "precise",
+  "flags": "/O2 /GS- /MD",
+  "matches": [
+   {
+    "symbol": "_forward_DCT",
+    "address": "00539640",
+    "size": 883
+   },
+   {
+    "symbol": "_jinit_forward_dct",
+    "address": "0053a010",
+    "size": 146
+   }
+  ]
+ },
+ {
+  "file": "jcdctmgr.c",
+  "profile": "fast",
+  "flags": "/O2 /GS- /MD /fp:fast",
+  "matches": [
+   {
+    "symbol": "_start_pass_fdctmgr",
+    "address": "00539360",
+    "size": 722
+   },
+   {
+    "symbol": "_forward_DCT",
+    "address": "00539640",
+    "size": 883
+   },
+   {
+    "symbol": "_forward_DCT_float",
+    "address": "005399c0",
+    "size": 1613
+   },
+   {
+    "symbol": "_jinit_forward_dct",
+    "address": "0053a010",
+    "size": 146
+   }
+  ]
+ },
+ {
+  "file": "jddctmgr.c",
+  "profile": "precise",
+  "flags": "/O2 /GS- /MD",
+  "matches": [
+   {
+    "symbol": "_start_pass",
+    "address": "005336c0",
+    "size": 792
+   },
+   {
+    "symbol": "_jinit_inverse_dct",
+    "address": "005339e0",
+    "size": 111
+   }
+  ]
+ },
+ {
+  "file": "jddctmgr.c",
+  "profile": "fast",
+  "flags": "/O2 /GS- /MD /fp:fast",
+  "matches": [
+   {
+    "symbol": "_start_pass",
+    "address": "005336c0",
+    "size": 792
+   },
+   {
+    "symbol": "_jinit_inverse_dct",
+    "address": "005339e0",
+    "size": 111
+   }
+  ]
+ }
+]
