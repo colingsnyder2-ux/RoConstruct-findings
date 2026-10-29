@@ -1,11 +1,8 @@
-// from server: 97% by colin
-extern "C" void __cdecl func_005bf410(int, int);
-extern "C" void __cdecl func_005bdb70(int, double);
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-int __cdecl func_005c93a0(int a)
-{
-    func_005bf410(a, 1);
-    double d = (double)(float)0.0;
-    func_005bdb70(a, d);
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

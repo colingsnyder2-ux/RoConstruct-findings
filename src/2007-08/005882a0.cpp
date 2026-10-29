@@ -1,4 +1,4 @@
-// from server: 0% by colin
+// from server: 50% by Yeetserama
 struct GetSetImpl {
     void* vtable;
     void* get;

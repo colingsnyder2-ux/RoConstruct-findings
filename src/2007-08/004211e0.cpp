@@ -1,4 +1,4 @@
-// from server: 42% by colin
+// from server: 73% by Yeetserama
 extern "C" {
     int __stdcall ClientToScreen(void*, void*);
     int __stdcall SendMessageA(void*, unsigned int, unsigned int, int);
@@ -12,10 +12,11 @@ struct CSelectionTreeCtrl {
     char pad3[0x54];
 
     int func_004211e0(int a, int b, int c);
+    int sub_6304b4();
 };
 
 extern "C" int __stdcall sub_62ff02(int);
-extern "C" int __stdcall sub_6304b4();
+
 extern "C" int __stdcall sub_6669d0(int, int, int);
 extern "C" int __stdcall sub_41f450(int);
 extern "C" int __stdcall sub_41f580(int);

@@ -1,6 +1,6 @@
-// from server: 56% by colin
+// from server: 57% by Yeetserama
 struct VCXTPReportRows {
-    int CompareRows(void* p1, void* p2);
+    int __cdecl CompareRows(void* p1, void* p2);
 };
 
 struct CXTPReportRow {

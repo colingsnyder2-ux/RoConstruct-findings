@@ -1,31 +1,32 @@
-// from server: 87% by TrollStein
-struct VCContent
-{
-    int __cdecl QueryInterface(int, void*);
+// from server: 100% by Yeetserama
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+
+extern "C" int __cdecl func_0062fef6(int);
+extern "C" int __cdecl func_0062fc62(int);
+
+struct type_info {
+    bool __thiscall operator==(const type_info&) const;
 };
 
-extern "C" int __stdcall type_info_equal(const void*, const void*);
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
+extern type_info type_info_00883088;
+extern bool (__thiscall* ptr_0077e708)(const type_info*, const type_info*);
 
-int VCContent::QueryInterface(int riid, void* ppv)
+int __cdecl func_00415d00(int a, int b)
 {
-    if (riid == 2)
-    {
-        void* p = ppv;
-        int r = type_info_equal((const void*)0x883088, p);
-        return r ? (int)p : 0;
+    if (b == 2) {
+        int v = a;
+        bool r = ptr_0077e708(&type_info_00883088, (const type_info*)v);
+        return r ? v : 0;
     }
-    if (riid == 0)
-    {
-        void* p = operator_new(4);
-        if (p)
-        {
-            *(int*)p = *(int*)ppv;
-            return (int)p;
+    if (b == 0) {
+        int p = func_0062fef6(4);
+        if (p != 0) {
+            *(int*)p = *(int*)a;
         }
-        return 0;
+        return p;
     }
-    operator_delete(ppv);
+    func_0062fc62(a);
     return 0;
 }
