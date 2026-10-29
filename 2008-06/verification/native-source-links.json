@@ -476,7 +476,7 @@
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "00495e80": {
-  "line": 208,
+  "line": 207,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "00495eb0": {
@@ -500,7 +500,7 @@
   "path": "2008-06/src/Client/Network/include/Network/Players.h"
  },
  "00496cf0": {
-  "line": 246,
+  "line": 245,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "004974c0": {
@@ -512,15 +512,15 @@
   "path": "2008-06/src/Client/boost_1_34_1/src/boost/bind.hpp"
  },
  "00497ec0": {
-  "line": 308,
+  "line": 307,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "00497f40": {
-  "line": 232,
+  "line": 231,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "00498030": {
-  "line": 216,
+  "line": 215,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "00498250": {
@@ -544,7 +544,7 @@
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "0049c710": {
-  "line": 347,
+  "line": 346,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "0049d450": {
@@ -556,11 +556,11 @@
   "path": "2008-06/src/glue/rbxgs/glue_gameplay.cpp"
  },
  "0049daa0": {
-  "line": 293,
+  "line": 292,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "0049dc70": {
-  "line": 265,
+  "line": 264,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "0049df50": {
@@ -568,7 +568,7 @@
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "0049e040": {
-  "line": 341,
+  "line": 340,
   "path": "2008-06/src/Client/Network/Players.cpp"
  },
  "0049e1d0": {
@@ -616,7 +616,7 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "0049fe20": {
-  "line": 93,
+  "line": 86,
   "path": "2008-06/src/Client/Network/Client.cpp"
  },
  "0049fe50": {
@@ -624,7 +624,7 @@
   "path": "2008-06/src/Client/Network/Client.cpp"
  },
  "004a1070": {
-  "line": 101,
+  "line": 94,
   "path": "2008-06/src/Client/Network/Client.cpp"
  },
  "004a1560": {
@@ -3112,7 +3112,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/CharacterAppearance.cpp"
  },
  "005d3aa0": {
-  "line": 69,
+  "line": 75,
   "path": "2008-06/src/Client/App/v8datamodel/CharacterAppearance.cpp"
  },
  "005d41a0": {
@@ -3140,7 +3140,7 @@
   "path": "2008-06/src/Client/App/include/util/Object.h"
  },
  "005d4b60": {
-  "line": 109,
+  "line": 115,
   "path": "2008-06/src/Client/App/v8datamodel/CharacterAppearance.cpp"
  },
  "005d4c40": {
@@ -3152,11 +3152,11 @@
   "path": "2008-06/src/Client/App/v8datamodel/CharacterAppearance.cpp"
  },
  "005d58c0": {
-  "line": 63,
+  "line": 69,
   "path": "2008-06/src/Client/App/v8datamodel/CharacterAppearance.cpp"
  },
  "005d59c0": {
-  "line": 98,
+  "line": 104,
   "path": "2008-06/src/Client/App/v8datamodel/CharacterAppearance.cpp"
  },
  "005d5b80": {

@@ -41,6 +41,7 @@ namespace RBX
 
 		public:
 			Profiler(const char* name);
+			virtual ~Profiler() {}
 		public:
 			Bucket getData(double window) const;
 		};

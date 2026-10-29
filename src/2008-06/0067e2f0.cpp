@@ -1,9 +1,9 @@
-// from server: 93% by EspClaude
+// from server: 99% by EspClaude
 // from server: 81% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5-dll roc_espclaude_059f13fc1ccd6458.cpp
+// roc-lib: ogre-1.4.5-dll roc_espclaude_a50e7c9e90d7e966.cpp
 
 // Candidate translation unit (score above; library headers required).
 #undef OGRE_NONCLIENT_BUILD
@@ -122,8 +122,9 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
         AxisAlignedBox aabb;
         const Vector3* corners=camera->getWorldSpaceCorners();
         Vector3 min,max;
+        
         const Vector3& dir=light->getDerivedDirection();
-        max.x=0;
+        
         Vector3 extrude=dir*-10000.0f;
         min=max=corners[0];
         min.makeFloor(corners[0]+extrude);
@@ -192,9 +193,10 @@ void RbxEntity::collect(Camera* camera,Light* light,std::vector<ShadowCaster*>& 
                 if(!(order[i].priority>=1.0f)) break;
                 ++guaranteed;
             }
-            int keep=std::max(desired,guaranteed);
-            keep=std::min(keep,2*(int)previous8);
-            if(keep+previous8<1000.0f) keep=(int)(1000.0f-previous8);
+            desired=std::max(desired,guaranteed);
+            desired=std::min(desired,2*(int)previous8);
+            if(desired+previous8<1000.0f) desired=(int)(1000.0f-previous8);
+            int keep=desired;
             output.resize(keep,0);
             for(int i=0;i<keep;++i) output[i]=order[i].sub;
         }

@@ -65,10 +65,6 @@ namespace RBX
 
 			if (oldProvider)
 			{
-				RunService* runService = oldProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = false;
-
 				disconnect(3000);
 
 				Players* p = oldProvider->find<Players>();
@@ -79,12 +75,9 @@ namespace RBX
 
 			if (newProvider)
 			{
-				Players* p = newProvider->create<Players>();
+				Players* (ServiceProvider::*createPlayers)() const = &ServiceProvider::create<Players>;
+				Players* p = (newProvider->*createPlayers)();
 				p->setConnection(rakPeer.get());
-
-				RunService* runService = newProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = true;
 			}
 
 			Notifier<ServiceProvider, Closing>::connect(newProvider, this);

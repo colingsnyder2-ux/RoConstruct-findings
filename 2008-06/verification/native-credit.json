@@ -133,9 +133,23 @@
     "user": "coldek"
   },
   {
+    "addr": "0049dc70",
+    "client": "2008-06",
+    "job": "da71a08695894d518629d489946b28e2",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "0049df50",
     "client": "2008-06",
     "job": "51c79aca31bd4f86809bef975b7a3169",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
+    "addr": "0049fe50",
+    "client": "2008-06",
+    "job": "0897bf6465ef47c1ba1083ec61297cc7",
     "model": "deepseek-v4.1-flash",
     "user": "coldek"
   },
@@ -157,6 +171,13 @@
     "addr": "004a8b90",
     "client": "2008-06",
     "job": "9ab6b2bc8b6a447981ac7962117d2e09",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
+    "addr": "004ac830",
+    "client": "2008-06",
+    "job": "7f6f4dec77444adfb6f91cea48c37326",
     "model": "deepseek-v4.1-flash",
     "user": "coldek"
   },
@@ -1050,6 +1071,13 @@
     "user": "colin"
   },
   {
+    "addr": "005a28c0",
+    "client": "2008-06",
+    "job": "7f6f4dec77444adfb6f91cea48c37326",
+    "model": "deepseek-v4.1-flash",
+    "user": "coldek"
+  },
+  {
     "addr": "005a3390",
     "client": "2008-06",
     "job": "a9078a23889b4655b29f4346227f18ef",
@@ -1271,6 +1299,13 @@
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
+    "user": "colin"
+  },
+  {
+    "addr": "005d3a30",
+    "client": "2008-06",
+    "job": "cf23b29245014497a847c9a372c004fb",
+    "model": "codex:gpt-5.6-sol",
     "user": "colin"
   },
   {

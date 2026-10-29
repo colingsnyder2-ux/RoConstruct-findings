@@ -6116,11 +6116,150 @@
         ]
       ]
     },
-    "phase": "checking",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "2bc539a8a09ac2565c00e98eff57e585e1772f247f5992102106c0439cdfc655",
+      "credits": 1,
+      "distinct_after": 9987,
+      "distinct_before": 9986,
+      "gains": [
+        "0049dc70"
+      ],
+      "input_hash": "7bc26ae93655f2b478d7f0e685bf70a45ca26c24cc0a57c7e2d95ad209ae37fa",
+      "losses": [],
+      "new_distinct": [
+        "0049dc70"
+      ],
+      "overlay_hash": "37e45083f9e7cd1f281e82d140012eb069506872f5454a973709f8126cb7cdb9",
+      "owned_after": 3321,
+      "owned_before": 3320,
+      "rebased": true,
+      "submitted_revision": "af127abbb755fd4a3eb6781ec7ead0fc598f2b0c4fd033c73f7f9ae5bad0459e"
+    },
+    "state": "accepted",
     "unit": "RBX::Network::Players",
-    "updated": 1793246325.5548575,
+    "updated": 1793246519.68768,
+    "user": "coldek"
+  },
+  {
+    "created": 1793247591.4037066,
+    "id": "cf23b29245014497a847c9a372c004fb",
+    "model": "codex:gpt-5.6-sol",
+    "patches": {
+      "App/v8datamodel/CharacterAppearance.cpp": [
+        [
+          "Shirt::apply(Humanoid* humanoid)\n\t{\n\t\tShirtGraphic::apply(humanoid);\n\n\t\tPartInstance* torso = humanoid->getTorso();\n\t\tif (torso)\n\t\t\ttorso->setColor(torsoColor);\n\n\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\tif (leftArm)\n\t\t\tleftArm->setColor(leftSleeveColor);\n\n\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\tif (rightArm)\n\t\t\trightArm->setColor(rightSleeveColor);\n\t}",
+          "Shirt::apply(Humanoid* humanoid)\n\t{\n\tPartInstance* part = humanoid->getLeftLeg();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getRightLeg();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getTorso();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getLeftArm();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getRightArm();\n\tif (part)\n\t\tpart->remove();\n}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "e5d1df3e99e5d5db003cd14188d393a7afa0e90445d2ee4dd6b3b8b240da11c8",
+      "credits": 1,
+      "distinct_after": 9988,
+      "distinct_before": 9987,
+      "gains": [
+        "005d3a30"
+      ],
+      "input_hash": "3b1c5ff844d5ab5bd75ade3b52f658b4bd097b43151634a87dea767ed8ee103f",
+      "losses": [],
+      "new_distinct": [
+        "005d3a30"
+      ],
+      "overlay_hash": "1097a069cd9ca114a53cce650235bd7da73822e9b83536c00d5cc07834565d5e",
+      "owned_after": 3322,
+      "owned_before": 3321,
+      "rebased": false,
+      "submitted_revision": "e5d1df3e99e5d5db003cd14188d393a7afa0e90445d2ee4dd6b3b8b240da11c8"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793247822.6060777,
+    "user": "colin"
+  },
+  {
+    "created": 1793247814.1509063,
+    "id": "7f6f4dec77444adfb6f91cea48c37326",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "App/include/util/Profiling.h": [
+        [
+          "\t\t\tProfiler(const char* name);\n\t\tpublic:\n\t\t\tBucket getData(double window) const;",
+          "\t\t\tProfiler(const char* name);\n\t\t\tvirtual ~Profiler() {}\n\t\tpublic:\n\t\t\tBucket getData(double window) const;"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "a093adebb9cbcf83aeec1beb93bcb5d83bfb750252925e8a1720dcc0397e4de2",
+      "credits": 2,
+      "distinct_after": 9990,
+      "distinct_before": 9988,
+      "gains": [
+        "004ac830",
+        "005a28c0"
+      ],
+      "input_hash": "d72b667318308ad0c420c27462c84ce0b7dc8f5be3297d1f044556d88f22aed8",
+      "losses": [],
+      "new_distinct": [
+        "004ac830",
+        "005a28c0"
+      ],
+      "overlay_hash": "0a5b1f22a01e013d3f7a1de9c8b49ef435c61abd3977b9ca978bee4ace808fb7",
+      "owned_after": 3324,
+      "owned_before": 3322,
+      "rebased": true,
+      "submitted_revision": "e5d1df3e99e5d5db003cd14188d393a7afa0e90445d2ee4dd6b3b8b240da11c8"
+    },
+    "state": "accepted",
+    "unit": "RBX::Clump",
+    "updated": 1793248263.247952,
+    "user": "coldek"
+  },
+  {
+    "created": 1793248835.479515,
+    "id": "0897bf6465ef47c1ba1083ec61297cc7",
+    "model": "deepseek-v4.1-flash",
+    "patches": {
+      "Network/Client.cpp": [
+        [
+          "\t\t\tif (oldProvider)\n\t\t\t{\n\t\t\t\tRunService* runService = oldProvider->find<RunService>();\n\t\t\t\tif (runService)\n\t\t\t\t\trunService->runDisabled = false;\n\n\t\t\t\tdisconnect(3000);",
+          "\t\t\tif (oldProvider)\n\t\t\t{\n\t\t\t\tdisconnect(3000);"
+        ],
+        [
+          "\t\t\tif (newProvider)\n\t\t\t{\n\t\t\t\tPlayers* p = newProvider->create<Players>();\n\t\t\t\tp->setConnection(rakPeer.get());\n\n\t\t\t\tRunService* runService = newProvider->find<RunService>();\n\t\t\t\tif (runService)\n\t\t\t\t\trunService->runDisabled = true;\n\t\t\t}",
+          "\t\t\tif (newProvider)\n\t\t\t{\n\t\t\t\tPlayers* (ServiceProvider::*createPlayers)() const = &ServiceProvider::create<Players>;\n\t\t\t\tPlayers* p = (newProvider->*createPlayers)();\n\t\t\t\tp->setConnection(rakPeer.get());\n\t\t\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "12a3596cbb43682d5cbd7c7c04f3bcedb82aa7e4c6e017f9a9ef811e499f10a2",
+      "credits": 1,
+      "distinct_after": 9991,
+      "distinct_before": 9990,
+      "gains": [
+        "0049fe50"
+      ],
+      "input_hash": "2209ad8b348df434c78a54cd9e59d0b74423a28cd8fb7f63af109327210ce318",
+      "losses": [],
+      "new_distinct": [
+        "0049fe50"
+      ],
+      "overlay_hash": "d334e94aec5a13941f382355724431372cc6de769f3b850bd791e0cbf1566945",
+      "owned_after": 3325,
+      "owned_before": 3324,
+      "rebased": false,
+      "submitted_revision": "12a3596cbb43682d5cbd7c7c04f3bcedb82aa7e4c6e017f9a9ef811e499f10a2"
+    },
+    "state": "accepted",
+    "unit": "RBX::Soundscape::SoundService",
+    "updated": 1793249124.656776,
     "user": "coldek"
   }
 ]

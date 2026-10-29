@@ -45,20 +45,26 @@ namespace RBX
 
 	void Shirt::apply(Humanoid* humanoid)
 	{
-		ShirtGraphic::apply(humanoid);
+	PartInstance* part = humanoid->getLeftLeg();
+	if (part)
+		part->remove();
 
-		PartInstance* torso = humanoid->getTorso();
-		if (torso)
-			torso->setColor(torsoColor);
+	part = humanoid->getRightLeg();
+	if (part)
+		part->remove();
 
-		PartInstance* leftArm = humanoid->getLeftArm();
-		if (leftArm)
-			leftArm->setColor(leftSleeveColor);
+	part = humanoid->getTorso();
+	if (part)
+		part->remove();
 
-		PartInstance* rightArm = humanoid->getRightArm();
-		if (rightArm)
-			rightArm->setColor(rightSleeveColor);
-	}
+	part = humanoid->getLeftArm();
+	if (part)
+		part->remove();
+
+	part = humanoid->getRightArm();
+	if (part)
+		part->remove();
+}
 
 	Skin::Skin()
 		: skinColor(BrickColor::lego_226)

@@ -1848,5 +1848,41 @@
     "\t\tenum Permissions\n\t\t{\n\t\t\tNone = 0,\n\t\t\tAdministrator = 3\n\t\t};"
    ]
   ]
+ },
+ {
+  "Network/Players.cpp": [
+   [
+    "\t\t\tconst ServiceProvider* sp = ServiceProvider::findServiceProvider(context);\n\t\t\tRBXASSERT(!testInDatamodel || sp);\n\n\t\t\treturn sp && !Client::clientIsPresent(context, testInDatamodel);",
+    "\t\t\tconst ServiceProvider* sp = ServiceProvider::findServiceProvider(context);\n\n\t\t\treturn sp && !Client::clientIsPresent(context, testInDatamodel);"
+   ]
+  ]
+ },
+ {
+  "App/v8datamodel/CharacterAppearance.cpp": [
+   [
+    "Shirt::apply(Humanoid* humanoid)\n\t{\n\t\tShirtGraphic::apply(humanoid);\n\n\t\tPartInstance* torso = humanoid->getTorso();\n\t\tif (torso)\n\t\t\ttorso->setColor(torsoColor);\n\n\t\tPartInstance* leftArm = humanoid->getLeftArm();\n\t\tif (leftArm)\n\t\t\tleftArm->setColor(leftSleeveColor);\n\n\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\tif (rightArm)\n\t\t\trightArm->setColor(rightSleeveColor);\n\t}",
+    "Shirt::apply(Humanoid* humanoid)\n\t{\n\tPartInstance* part = humanoid->getLeftLeg();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getRightLeg();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getTorso();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getLeftArm();\n\tif (part)\n\t\tpart->remove();\n\n\tpart = humanoid->getRightArm();\n\tif (part)\n\t\tpart->remove();\n}"
+   ]
+  ]
+ },
+ {
+  "App/include/util/Profiling.h": [
+   [
+    "\t\t\tProfiler(const char* name);\n\t\tpublic:\n\t\t\tBucket getData(double window) const;",
+    "\t\t\tProfiler(const char* name);\n\t\t\tvirtual ~Profiler() {}\n\t\tpublic:\n\t\t\tBucket getData(double window) const;"
+   ]
+  ]
+ },
+ {
+  "Network/Client.cpp": [
+   [
+    "\t\t\tif (oldProvider)\n\t\t\t{\n\t\t\t\tRunService* runService = oldProvider->find<RunService>();\n\t\t\t\tif (runService)\n\t\t\t\t\trunService->runDisabled = false;\n\n\t\t\t\tdisconnect(3000);",
+    "\t\t\tif (oldProvider)\n\t\t\t{\n\t\t\t\tdisconnect(3000);"
+   ],
+   [
+    "\t\t\tif (newProvider)\n\t\t\t{\n\t\t\t\tPlayers* p = newProvider->create<Players>();\n\t\t\t\tp->setConnection(rakPeer.get());\n\n\t\t\t\tRunService* runService = newProvider->find<RunService>();\n\t\t\t\tif (runService)\n\t\t\t\t\trunService->runDisabled = true;\n\t\t\t}",
+    "\t\t\tif (newProvider)\n\t\t\t{\n\t\t\t\tPlayers* (ServiceProvider::*createPlayers)() const = &ServiceProvider::create<Players>;\n\t\t\t\tPlayers* p = (newProvider->*createPlayers)();\n\t\t\t\tp->setConnection(rakPeer.get());\n\t\t\t}"
+   ]
+  ]
  }
 ]

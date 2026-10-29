@@ -1,8 +1,8 @@
-// from server: 95% by coldek
+// from server: 96% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob1 /GS- /EHsc /MD /Oy
-// roc-lib: rbxgs-dll roc_sol28d_fa2a91c2afe4d09b.cpp
+// roc-lib: rbxgs-dll roc_espclaude_86dc7d2a8f009c72.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -156,7 +156,7 @@ extern HRESULT __cdecl reportError(REFIID,const char*,HRESULT); //429330, caller
 extern HRESULT __cdecl reportException(REFIID,const std::exception&); //429360, caller cleans8
 extern HRESULT __cdecl createWorkspace(IUnknown**,void*); //406da0, caller cleans8
 static __forceinline CView* firstView(CDocument* d){POSITION pos=d->GetFirstViewPosition(); if(!pos) return 0; return d->GetNextView(pos);}
-static __forceinline bool makeWorkspace(IUnknown*& w,HRESULT& error){IUnknown* c; HRESULT r=createWorkspace(&c,0); if(r){error=reportError(IID_App,"Couldn't create workspace",r);return false;} w=c;return true;}
+static __forceinline HRESULT makeWorkspace(IUnknown*& w){IUnknown* c; HRESULT r=createWorkspace(&c,0); if(!r) w=c; return r;}
 class AppFacet {public:HRESULT __stdcall create(int,IUnknown**);};
 HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
  AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -168,14 +168,18 @@ HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
   IUnknown* workspace;
   switch(windowType) {
   case 0: {
-   HRESULT error;
-   if(!makeWorkspace(workspace,error))return error;
+   IUnknown* c=0;
+   HRESULT result=createWorkspace(&c,0);
+   HRESULT err=0;
+   if(result) err=reportError(IID_App,"Couldn't create workspace",result); else workspace=c;
+   if(result) return err;
    break;
   }
   case 2: {
-   document=app->createDocument();
-   workspace=*reinterpret_cast<IUnknown**>(reinterpret_cast<char*>(document)+0x94);
-   CView* view=firstView(document);
+   CDocument* doc=app->createDocument();
+   document=doc;
+   workspace=*reinterpret_cast<IUnknown**>(reinterpret_cast<char*>(doc)+0x94);
+   CView* view=firstView(doc);
    if(view) {
     {
      CRobloxView* robloxView=dynamic_cast<CRobloxView*>(view);
@@ -197,4 +201,3 @@ HRESULT __stdcall AppFacet::create(int windowType,IUnknown** out) {
   return reportException(IID_App,error);
  }
 }
-

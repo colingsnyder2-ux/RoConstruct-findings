@@ -200,7 +200,6 @@ namespace RBX
 		bool Players::backendProcessing(const Instance* context, bool testInDatamodel)
 		{
 			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
 
 			return sp && !Client::clientIsPresent(context, testInDatamodel);
 		}
