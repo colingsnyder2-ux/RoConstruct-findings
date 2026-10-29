@@ -12,5 +12,25 @@
  "force_verified": true,
  "prune_unselected_sections": true,
  "test_defines": "WIN32 NDEBUG _MBCS _AFXDLL _DLL",
- "resolve_passes": 32
+ "resolve_passes": 32,
+ "native_units": [
+  {
+   "recipe": "mfc-9.0-shared-client-runtime",
+   "file": "atlmfc/src/mfc/dlgdhtml.cpp",
+   "cl": "30729",
+   "flags": "/O2 /GS- /MD /Gy",
+   "addrs": [
+    "004010a0",
+    "00401290"
+   ],
+   "symbols": {
+    "004010a0": "??1CMultiPageDHtmlDialog@@UAE@XZ",
+    "00401290": "??_GCMultiPageDHtmlDialog@@UAEPAXI@Z"
+   },
+   "provenance": "Unchanged DHTML TU with official shared-client RUNTIME_CLASS/GetThisClass accessor restored; selected code and referenced data remain exact."
+  }
+ ],
+ "test_library_symbols": [
+  "??1CComBSTR@ATL@@QAE@XZ"
+ ]
 }

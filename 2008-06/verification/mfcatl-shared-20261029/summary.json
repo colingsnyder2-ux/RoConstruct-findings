@@ -1,0 +1,40 @@
+{
+ "date": "2026-10-29",
+ "module": "MfcAtl",
+ "old_forced_roots": 147,
+ "new_forced_roots": 152,
+ "lost_forced_roots": [],
+ "new_forced_symbols": [
+  "??1CMultiPageDHtmlDialog@@UAE@XZ",
+  "??_GCMultiPageDHtmlDialog@@UAEPAXI@Z",
+  "?AtlInternalQueryInterface@ATL@@YGJPAXPBU_ATL_INTMAP_ENTRY@1@ABU_GUID@@PAPAX@Z",
+  "?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z",
+  "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ"
+ ],
+ "all_forced_roots_code_data_exact_and_actual_library_owned": true,
+ "old_raw_inventory": 175,
+ "new_raw_inventory": 182,
+ "raw_inventory_losses": [],
+ "new_actual_library_code_data_addresses": [
+  "00401140",
+  "00401960",
+  "006e8890",
+  "00709ec0",
+  "00709ee0",
+  "0070c3e0"
+ ],
+ "harness_only_gain_excluded": [
+  "0042ad40"
+ ],
+ "excluded_external_roots": 39,
+ "cold_empty_cache_build_passed": true,
+ "runtime_exit": 0,
+ "repository_tests_passed": 1093,
+ "repository_tests_skipped": 3,
+ "repository_subtests_passed": 3,
+ "placement": 409,
+ "new_server_credits": 0,
+ "lifecycle_scope": "Main directly calls native nondeleting destructor on stack; heap lifecycle uses genuine DLL constructor and virtual dispatch. Scalar deleting exact destructor is force/map checked, not claimed directly executed.",
+ "native_replay_scope": "Only shared-client RTTI DHTML unit installed; core implementation and Ribbon trials were not installed.",
+ "public_code_replay_passed": true
+}

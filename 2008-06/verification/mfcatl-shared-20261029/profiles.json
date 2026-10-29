@@ -1,0 +1,231 @@
+[
+ {
+  "recipe": "mfc-9.0",
+  "file": "atlmfc/src/mfc/afxoutlookbartabctrl.cpp",
+  "cl": "30729",
+  "flags": "/O2 /GS- /MD",
+  "addrs": [
+   "00416e90",
+   "0044f190",
+   "00459560",
+   "006b52e0",
+   "006ba7b0",
+   "0072e380"
+  ],
+  "results": [
+   {
+    "address": "00416e90",
+    "score": 100,
+    "symbol": "?OnMoveDown@COutlookOptionsDlg@@IAEXXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "0044f190",
+    "score": 100,
+    "symbol": "?OnMoveDown@COutlookOptionsDlg@@IAEXXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00459560",
+    "score": 100,
+    "symbol": "?OnMoveDown@COutlookOptionsDlg@@IAEXXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "006b52e0",
+    "score": 100,
+    "symbol": "?PatBlt@CDC@@QAEHHHHHK@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "006ba7b0",
+    "score": 100,
+    "symbol": "?PatBlt@CDC@@QAEHHHHHK@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "0072e380",
+    "score": 100,
+    "symbol": "?OnMoveDown@COutlookOptionsDlg@@IAEXXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   }
+  ]
+ },
+ {
+  "recipe": "mfc-9.0",
+  "file": "atlmfc/src/mfc/afxribbonedit.cpp",
+  "cl": "30729",
+  "flags": "/O2 /GS- /MD",
+  "addrs": [
+   "0060cb10",
+   "006ce030",
+   "00732a60"
+  ],
+  "results": [
+   {
+    "address": "0060cb10",
+    "score": 100,
+    "symbol": "?OnAfterChangeRect@CMFCRibbonEdit@@UAEXPAVCDC@@@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "006ce030",
+    "score": 100,
+    "symbol": "?OnAfterChangeRect@CMFCRibbonEdit@@UAEXPAVCDC@@@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00732a60",
+    "score": 100,
+    "symbol": "?OnAfterChangeRect@CMFCRibbonEdit@@UAEXPAVCDC@@@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   }
+  ]
+ },
+ {
+  "recipe": "mfc-9.0",
+  "file": "atlmfc/src/mfc/dlgdhtml.cpp",
+  "cl": "30729",
+  "flags": "/O2 /GS- /MD",
+  "addrs": [
+   "004010a0",
+   "00401290",
+   "0045fe20",
+   "0045fef0"
+  ],
+  "results": [
+   {
+    "address": "004010a0",
+    "score": 100,
+    "symbol": "??1CMultiPageDHtmlDialog@@UAE@XZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00401290",
+    "score": 100,
+    "symbol": "??_GCMultiPageDHtmlDialog@@UAEPAXI@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "0045fe20",
+    "score": 100,
+    "symbol": "??1CMultiPageDHtmlDialog@@UAE@XZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "0045fef0",
+    "score": 100,
+    "symbol": "??_GCMultiPageDHtmlDialog@@UAEPAXI@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   }
+  ]
+ },
+ {
+  "recipe": "mfc-9.0",
+  "file": "atlmfc/src/mfc/wincore.cpp",
+  "cl": "30729",
+  "flags": "/O2 /GS- /MD",
+  "addrs": [
+   "00401960",
+   "00402280",
+   "00402a00",
+   "00402a20",
+   "00402a80",
+   "00402aa0",
+   "00402ae0",
+   "00402b00"
+  ],
+  "results": [
+   {
+    "address": "00401960",
+    "score": 100,
+    "symbol": "?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402280",
+    "score": 100,
+    "symbol": "?AtlInternalQueryInterface@ATL@@YGJPAXPBU_ATL_INTMAP_ENTRY@1@ABU_GUID@@PAPAX@Z",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402a00",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402a20",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402a80",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402aa0",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402ae0",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   },
+   {
+    "address": "00402b00",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": "exact",
+    "cause": "exact",
+    "dll_twin": null
+   }
+  ]
+ }
+]

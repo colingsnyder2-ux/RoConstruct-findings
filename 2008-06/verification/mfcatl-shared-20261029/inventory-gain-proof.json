@@ -1,0 +1,83 @@
+[
+ {
+  "address": "0042ad40",
+  "symbol": "_IsEqualGUID",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00003400       _IsEqualGUID               00404400 f i linked:verified_live-0001.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": false
+ },
+ {
+  "address": "006e8890",
+  "symbol": "?GetIDsOfNames@CDHtmlEventSink@@UAGJABU_GUID@@PAPA_WIKPAJ@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00004040       ?GetIDsOfNames@CDHtmlEventSink@@UAGJABU_GUID@@PAPA_WIKPAJ@Z 00405040 f   linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "0070c3e0",
+  "symbol": "?EnableModeless@CDHtmlDialog@@UAGJH@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00004430       ?EnableModeless@CDHtmlDialog@@UAGJH@Z 00405430 f   linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "0070c3e0",
+  "symbol": "?OnDocWindowActivate@CDHtmlDialog@@UAGJH@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00004430       ?OnDocWindowActivate@CDHtmlDialog@@UAGJH@Z 00405430 f   linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "0070c3e0",
+  "symbol": "?OnFrameWindowActivate@CDHtmlDialog@@UAGJH@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00004430       ?OnFrameWindowActivate@CDHtmlDialog@@UAGJH@Z 00405430 f   linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "00709ee0",
+  "symbol": "?ResizeBorder@CDHtmlDialog@@UAGJPBUtagRECT@@PAUIOleInPlaceUIWindow@@H@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00004440       ?ResizeBorder@CDHtmlDialog@@UAGJPBUtagRECT@@PAUIOleInPlaceUIWindow@@H@Z 00405440 f   linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "00709ec0",
+  "symbol": "?TranslateAcceleratorA@CDHtmlDialog@@UAGJPAUtagMSG@@PBU_GUID@@K@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:00004450       ?TranslateAcceleratorA@CDHtmlDialog@@UAGJPAUtagMSG@@PBU_GUID@@K@Z 00405450 f   linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "00401140",
+  "symbol": "?Create@CDialog@@UAEHIPAVCWnd@@@Z",
+  "obj": "verified_0000.obj",
+  "map_line": "0001:000046e0       ?Create@CDialog@@UAEHIPAVCWnd@@@Z 004056e0 f i linked:verified_0000.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ },
+ {
+  "address": "00401960",
+  "symbol": "?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z",
+  "obj": "verified_live-0090.obj",
+  "map_line": "0001:00006040       ?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z 00407040 f   linked:verified_live-0090.obj",
+  "data_exact": true,
+  "bad": [],
+  "actual_library_owned": true
+ }
+]

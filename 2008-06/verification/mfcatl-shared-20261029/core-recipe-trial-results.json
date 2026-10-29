@@ -1,0 +1,67 @@
+[
+ {
+  "recipe": "mfc-9.0-shared-coreimpl",
+  "file": "atlmfc/src/mfc/afxoutlookbartabctrl.cpp",
+  "cl": "30729",
+  "flags": "/O2 /GS- /MD /Gy",
+  "results": [],
+  "error": "source(87422) : warning C4530: C++ exception handler used, but unwind semantics are not enabled. Specify /EHsc\nsource(167409) : warning C4273: 'm_bEnableAnimation' : inconsistent dll linkage\n        source(164843) : see previous definition of 'protected: static int CMFCOutlookBarTabCtrl::m_bEnableAnimation'\nsource(167409) : error C2491: 'CMFCOutlookBarTabCtrl::m_bEnableAnimation' : definition of dllimport static data member not allowed"
+ },
+ {
+  "recipe": "mfc-9.0-shared-coreimpl",
+  "file": "atlmfc/src/mfc/wincore.cpp",
+  "cl": "30729",
+  "flags": "/O2 /GS- /MD /Gy",
+  "results": [
+   {
+    "address": "00401960",
+    "score": 100,
+    "symbol": "?GetTypeInfoCount@XAccessible@CWnd@@UAGJPAI@Z",
+    "reason": ""
+   },
+   {
+    "address": "00402280",
+    "score": 100,
+    "symbol": "?AtlInternalQueryInterface@ATL@@YGJPAXPBU_ATL_INTMAP_ENTRY@1@ABU_GUID@@PAPAX@Z",
+    "reason": ""
+   },
+   {
+    "address": "00402a00",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": ""
+   },
+   {
+    "address": "00402a20",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": ""
+   },
+   {
+    "address": "00402a80",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": ""
+   },
+   {
+    "address": "00402aa0",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": ""
+   },
+   {
+    "address": "00402ae0",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": ""
+   },
+   {
+    "address": "00402b00",
+    "score": 100,
+    "symbol": "?Release@?$CMFCComObject@VCAccessibleProxy@ATL@@@@WBA@AGKXZ",
+    "reason": ""
+   }
+  ],
+  "obj": "wincore-core-recipe-gy.obj"
+ }
+]
