@@ -14,7 +14,7 @@
   {
    "name": "internals",
    "mode": "recipe",
-   "recipe": "xtp-11.2.2-shared-mfc-internals-rtm",
+   "recipe": "xtp-11.2.2-internals-vendor-xp-rtm",
    "files": "Source/Controls/XTComboBoxEx.cpp Source/Controls/XTDateTimeCtrl.cpp Source/Controls/XTExcelTabCtrl.cpp Source/CommandBars/XTPCommandBar.cpp Source/CommandBars/XTPCustomizeSheet.cpp Source/Common/XTPDrawHelpers.cpp Source/PropertyGrid/XTPPropertyGridInplaceEdit.cpp Source/PropertyGrid/XTPPropertyGridItemExt.cpp Source/Controls/XTPPropertyPage.cpp Source/SkinFramework/XTPSkinObjectTab.cpp Source/CommandBars/XTPStatusBar.cpp Source/Controls/XTSplitterWnd.cpp",
    "direct": true,
    "flags": "/O2 /MD /GS /EHsc /Ob1"
@@ -31,5 +31,6 @@
  "force_verified": true,
  "depends": [
   "libpng"
- ]
+ ],
+ "deduplicate_layer_files": true
 }

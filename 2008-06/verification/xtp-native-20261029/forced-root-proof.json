@@ -1,0 +1,4412 @@
+[
+ {
+  "symbol": "??$_QueryInterface@V?$_com_ptr_t@V?$_com_IIID@UIXMLDOMDocument@XTPXML@@$1?_GUID_2933bf81_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@AAEJV?$_com_ptr_t@V?$_com_IIID@UIXMLDOMDocument@XTPXML@@$1?_GUID_2933bf81_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@Z",
+  "address": "006ff6d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000021b0       ??$_QueryInterface@V?$_com_ptr_t@V?$_com_IIID@UIXMLDOMDocument@XTPXML@@$1?_GUID_2933bf81_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@AAEJV?$_com_ptr_t@V?$_com_IIID@UIXMLDOMDocument@XTPXML@@$1?_GUID_2933bf81_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@Z 004031b0 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??$_QueryInterface@V?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@?$_com_ptr_t@V?$_com_IIID@UIXMLDOMDocument@XTPXML@@$1?_GUID_2933bf81_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@AAEJV?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@Z",
+  "address": "006fe690",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00001730       ??$_QueryInterface@V?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@?$_com_ptr_t@V?$_com_IIID@UIXMLDOMDocument@XTPXML@@$1?_GUID_2933bf81_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@AAEJV?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@@Z 00402730 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0?$CXTPCalendarPtrCollectionT@VCXTPCalendarDayViewDay@@@@QAE@XZ",
+  "address": "006c7de0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00002ee8       ??0?$CXTPCalendarPtrCollectionT@VCXTPCalendarDayViewDay@@@@QAE@XZ 00403ee8 f i linked:verified_0001.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTColorDialog@@QAE@KKKPAVCWnd@@@Z",
+  "address": "007065f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:000033e0       ??0CXTColorDialog@@QAE@KKKPAVCWnd@@@Z 004043e0 f   linked:verified_0050.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTColorPageCustom@@QAE@PAVCXTColorDialog@@@Z",
+  "address": "0078b180",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 19,
+  "linked_owner": "0001:00003780       ??0CXTColorPageCustom@@QAE@PAVCXTColorDialog@@@Z 00404780 f   linked:verified_0051.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTColorPageStandard@@QAE@PAVCXTColorDialog@@@Z",
+  "address": "00787bd0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00003ba0       ??0CXTColorPageStandard@@QAE@PAVCXTColorDialog@@@Z 00404ba0 f   linked:verified_0052.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPControlActions@@IAE@PAVCXTPCommandBars@@@Z",
+  "address": "006acf60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00004194       ??0CXTPControlActions@@IAE@PAVCXTPCommandBars@@@Z 00405194 f   linked:verified_0003.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPControlFontComboBoxList@@QAE@XZ",
+  "address": "0072f840",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00004940       ??0CXTPControlFontComboBoxList@@QAE@XZ 00405940 f i linked:verified_0007.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPControlWindowList@@QAE@XZ",
+  "address": "006ea220",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00004af0       ??0CXTPControlWindowList@@QAE@XZ 00405af0 f i linked:verified_0176.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPCustomizeCommandsPage@@QAE@PAVCXTPCustomizeSheet@@@Z",
+  "address": "006ed520",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00005650       ??0CXTPCustomizeCommandsPage@@QAE@PAVCXTPCustomizeSheet@@@Z 00406650 f   linked:verified_0037.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPCustomizeOptionsPage@@QAE@PAVCXTPCustomizeSheet@@@Z",
+  "address": "006ecc50",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00005a70       ??0CXTPCustomizeOptionsPage@@QAE@PAVCXTPCustomizeSheet@@@Z 00406a70 f   linked:verified_0038.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPCustomizeSheet@@QAE@PAVCXTPCommandBars@@I@Z",
+  "address": "006ebed0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:000066c0       ??0CXTPCustomizeSheet@@QAE@PAVCXTPCommandBars@@I@Z 004076c0 f   linked:verified_0168.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPCustomizeToolbarsPage@@QAE@PAVCXTPCustomizeSheet@@@Z",
+  "address": "00771c40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 5,
+  "linked_owner": "0001:00006960       ??0CXTPCustomizeToolbarsPage@@QAE@PAVCXTPCustomizeSheet@@@Z 00407960 f   linked:verified_0040.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPEdit@@QAE@XZ",
+  "address": "006a7510",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00006ae0       ??0CXTPEdit@@QAE@XZ        00407ae0 f   linked:verified_0006.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPImageEditorPicker@@QAE@XZ",
+  "address": "0045ffe0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00007020       ??0CXTPImageEditorPicker@@QAE@XZ 00408020 f   linked:verified_0011.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPPropertyGridNativeXPTheme@XTPPropertyGridPaintThemes@@QAE@PAVCXTPPropertyGrid@@@Z",
+  "address": "00777fd0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00007490       ??0CXTPPropertyGridNativeXPTheme@XTPPropertyGridPaintThemes@@QAE@PAVCXTPPropertyGrid@@@Z 00408490 f   linked:verified_0029.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPPropertyGridOfficeXPTheme@XTPPropertyGridPaintThemes@@QAE@PAVCXTPPropertyGrid@@@Z",
+  "address": "00778540",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000074b0       ??0CXTPPropertyGridOfficeXPTheme@XTPPropertyGridPaintThemes@@QAE@PAVCXTPPropertyGrid@@@Z 004084b0 f   linked:verified_0029.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPRibbonBarControlQuickAccessPopup@@QAE@XZ",
+  "address": "00721f40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00007820       ??0CXTPRibbonBarControlQuickAccessPopup@@QAE@XZ 00408820 f i linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPRichRender@@QAE@XZ",
+  "address": "0078ca40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 5,
+  "linked_owner": "0001:00009080       ??0CXTPRichRender@@QAE@XZ  0040a080 f   linked:verified_0088.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPToolTipContext@@QAE@XZ",
+  "address": "0070b8e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00009360       ??0CXTPToolTipContext@@QAE@XZ 0040a360 f   linked:verified_0047.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??0CXTPWindowRect@@QAE@PBVCWnd@@@Z",
+  "address": "006f7ad0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00009bf0       ??0CXTPWindowRect@@QAE@PBVCWnd@@@Z 0040abf0 f   linked:verified_0165.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1?$CXTPNotifySinkImpl@VCXTPCalendarControl@@VC_m_Sink_DP_Informator@1@@@UAE@XZ",
+  "address": "006ada60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000a0d0       ??1?$CXTPNotifySinkImpl@VCXTPCalendarControl@@VC_m_Sink_DP_Informator@1@@@UAE@XZ 0040b0d0 f i linked:verified_0128.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CAutoHidePanelTabManagersArray@CXTPDockingPaneAutoHidePanel@@UAE@XZ",
+  "address": "0074f1b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000a850       ??1CAutoHidePanelTabManagersArray@CXTPDockingPaneAutoHidePanel@@UAE@XZ 0040b850 f i linked:verified_0203.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CDestructor@CXTPSkinManager@@QAE@XZ",
+  "address": "007fadf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000a8d0       ??1CDestructor@CXTPSkinManager@@QAE@XZ 0040b8d0 f i linked:verified_0034.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CHookSink@CXTPHookManager@@UAE@XZ",
+  "address": "0071c5b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000aaf0       ??1CHookSink@CXTPHookManager@@UAE@XZ 0040baf0 f   linked:verified_0042.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPControlButton@@UAE@XZ",
+  "address": "006e9210",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0000ae40       ??1CXTPControlButton@@UAE@XZ 0040be40 f   linked:verified_0005.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPControlScrollBarCtrl@@UAE@XZ",
+  "address": "006dbac0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0000aeb0       ??1CXTPControlScrollBarCtrl@@UAE@XZ 0040beb0 f   linked:verified_0010.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPHookManager@@QAE@XZ",
+  "address": "0071c670",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000af60       ??1CXTPHookManager@@QAE@XZ 0040bf60 f   linked:verified_0139.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPMAPIBinary@@UAE@XZ",
+  "address": "005039d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000afe0       ??1CXTPMAPIBinary@@UAE@XZ  0040bfe0 f   linked:verified_0002.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPPenDC@@UAE@XZ",
+  "address": "006f7ff0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00009e10       ??1CXTPPenDC@@UAE@XZ       0040ae10 f   linked:verified_0165.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPReportInplaceButton@@UAE@XZ",
+  "address": "00451890",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000b0b0       ??1CXTPReportInplaceButton@@UAE@XZ 0040c0b0 f i linked:verified_0218.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??1CXTPShadowsManager@@QAE@XZ",
+  "address": "004d87e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000b44f       ??1CXTPShadowsManager@@QAE@XZ 0040c44f f   linked:verified_0014.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??3?$CXTPBatchAllocObjT@VCXTPReportRow@@UCXTPReportRow_BatchData@@VCXTPReportRowAllocator@@@@SGXPAX@Z",
+  "address": "006d0110",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000c520       ??3?$CXTPBatchAllocObjT@VCXTPReportRow@@UCXTPReportRow_BatchData@@VCXTPReportRowAllocator@@@@SGXPAX@Z 0040d520 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??5CArchive@@QAEAAV0@AAE@Z",
+  "address": "006fd750",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00000800       ??5CArchive@@QAEAAV0@AAE@Z 00401800 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??5CArchive@@QAEAAV0@AAG@Z",
+  "address": "006fd7a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00000850       ??5CArchive@@QAEAAV0@AAG@Z 00401850 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??5CArchive@@QAEAAV0@AAN@Z",
+  "address": "006fd7f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00000940       ??5CArchive@@QAEAAV0@AAN@Z 00401940 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??6CArchive@@QAEAAV0@G@Z",
+  "address": "006fd6b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00000710       ??6CArchive@@QAEAAV0@G@Z   00401710 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??6CArchive@@QAEAAV0@N@Z",
+  "address": "006fd700",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000007b0       ??6CArchive@@QAEAAV0@N@Z   004017b0 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_G?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@UAEPAXI@Z",
+  "address": "006d06a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000c780       ??_G?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@UAEPAXI@Z 0040d780 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_G?$CXTPHeapAllocatorT@UCXTPReportDataAllocatorData@@@@UAEPAXI@Z",
+  "address": "006cf090",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000c430       ??_G?$CXTPHeapAllocatorT@UCXTPReportDataAllocatorData@@@@UAEPAXI@Z 0040d430 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_G?$CXTPHeapObjectT@VCXTPReportRows@@VCXTPReportAllocatorDefault@@@@UAEPAXI@Z",
+  "address": "00420f60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000c820       ??_G?$CXTPHeapObjectT@VCXTPReportRows@@VCXTPReportAllocatorDefault@@@@UAEPAXI@Z 0040d820 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_GCXTPMAPIBinary@@UAEPAXI@Z",
+  "address": "00503a30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000aff0       ??_GCXTPMAPIBinary@@UAEPAXI@Z 0040bff0 f i linked:verified_0002.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_GCXTPReportInplaceButton@@UAEPAXI@Z",
+  "address": "004518e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000b120       ??_GCXTPReportInplaceButton@@UAEPAXI@Z 0040c120 f i linked:verified_0218.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "??_GCXTPSyntaxEditCommand@@UAEPAXI@Z",
+  "address": "0046f1d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000cff0       ??_GCXTPSyntaxEditCommand@@UAEPAXI@Z 0040dff0 f i linked:verified_live-0166.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Activate@CXTPPropertyGridToolTip@@QAEXHPAVCXTPPropertyGridItem@@H@Z",
+  "address": "00714520",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000d210       ?Activate@CXTPPropertyGridToolTip@@QAEXHPAVCXTPPropertyGridItem@@H@Z 0040e210 f   linked:verified_0108.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Activate@CXTPReportTip@@QAEXH@Z",
+  "address": "00752c10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000d690       ?Activate@CXTPReportTip@@QAEXH@Z 0040e690 f   linked:verified_0118.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Add@CXTPControlActions@@QAEPAVCXTPControlAction@@HPAV2@@Z",
+  "address": "006ad030",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000e090       ?Add@CXTPControlActions@@QAEPAVCXTPControlAction@@HPAV2@@Z 0040f090 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Add@CXTPControls@@QAEPAVCXTPControl@@W4XTPControlType@@HPBDHH@Z",
+  "address": "006f4a40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0000e400       ?Add@CXTPControls@@QAEPAVCXTPControl@@W4XTPControlType@@HPBDHH@Z 0040f400 f   linked:verified_0073.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddCaptionButton@CXTPRibbonBar@@IAEXHHHAAVCRect@@@Z",
+  "address": "00723690",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00007a10       ?AddCaptionButton@CXTPRibbonBar@@IAEXHHHAAVCRect@@@Z 00408a10 f   linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddCategories@CXTPCustomizeCommandsPage@@QAEHIH@Z",
+  "address": "006eddf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0000e9a0       ?AddCategories@CXTPCustomizeCommandsPage@@QAEHIH@Z 0040f9a0 f   linked:verified_0179.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddComboString@CXTPCustomizeOptionsPage@@IAEXI@Z",
+  "address": "006ecde0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000eb30       ?AddComboString@CXTPCustomizeOptionsPage@@IAEXI@Z 0040fb30 f   linked:verified_0180.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddItem@CWorkspace@CXTPTabClientWnd@@IAEPAVCXTPTabManagerItem@@PBVCWnd@@@Z",
+  "address": "007020d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000f390       ?AddItem@CWorkspace@CXTPTabClientWnd@@IAEPAVCXTPTabManagerItem@@PBVCWnd@@@Z 00410390 f   linked:verified_0193.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddMenuItem@CXTPControls@@QAEPAVCXTPControl@@PAVCMenu@@H@Z",
+  "address": "006f3560",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0000fb10       ?AddMenuItem@CXTPControls@@QAEPAVCXTPControl@@PAVCMenu@@H@Z 00410b10 f   linked:verified_0178.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddRecordEx@CXTPReportControl@@UAEXPAVCXTPReportRecord@@0H@Z",
+  "address": "006c9650",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000b560       ?AddRecordEx@CXTPReportControl@@UAEXPAVCXTPReportRecord@@0H@Z 0040c560 f   linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddRef@XAccessible@CXTPAccessible@@UAGKXZ",
+  "address": "006e8320",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000101c0       ?AddRef@XAccessible@CXTPAccessible@@UAGKXZ 004111c0 f   linked:verified_0017.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddRef@XDocHostUIHandler@CHTMLToolTip@CXTPToolTipContext@@UAGKXZ",
+  "address": "0070b1a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000102b0       ?AddRef@XDocHostUIHandler@CHTMLToolTip@CXTPToolTipContext@@UAGKXZ 004112b0 f   linked:verified_0148.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddRef@XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@UAGKXZ",
+  "address": "0070b080",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010250       ?AddRef@XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@UAGKXZ 00411250 f   linked:verified_0148.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddToolBar@CXTPReBar@@QAEHPAVCXTPToolBar@@K@Z",
+  "address": "0071d890",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010310       ?AddToolBar@CXTPReBar@@QAEHPAVCXTPToolBar@@K@Z 00411310 f   linked:verified_0045.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AddVirtKeyStr@CKeyHelper@CXTPShortcutManager@@IBEXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@IH@Z",
+  "address": "0071db30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010440       ?AddVirtKeyStr@CKeyHelper@CXTPShortcutManager@@IBEXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@IH@Z 00411440 f   linked:verified_0192.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?AllocData@?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@SAPAXI@Z",
+  "address": "006d02f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000c610       ?AllocData@?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@SAPAXI@Z 0040d610 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Append@?$CXTPArrayT@IIJ@@UAEHABV1@@Z",
+  "address": "0074f100",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000108a0       ?Append@?$CXTPArrayT@IIJ@@UAEHABV1@@Z 004118a0 f i linked:verified_0130.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Apply@CXTPPropertyGridInplaceList@@MAEXXZ",
+  "address": "0077ab30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000108f0       ?Apply@CXTPPropertyGridInplaceList@@MAEXXZ 004118f0 f   linked:verified_0209.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ApplyFilter@CXTPReportControl@@MAEHPAVCXTPReportRecord@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@H@Z",
+  "address": "006cbfc0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00010a50       ?ApplyFilter@CXTPReportControl@@MAEHPAVCXTPReportRecord@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@H@Z 00411a50 f   linked:verified_0066.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?BeginEdit@CXTPReportNavigator@@QAEXXZ",
+  "address": "007535f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010cd0       ?BeginEdit@CXTPReportNavigator@@QAEXXZ 00411cd0 f   linked:verified_0113.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?BestFit@CXTPStatusBarPane@@QAEXXZ",
+  "address": "0070e4e0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010ec0       ?BestFit@CXTPStatusBarPane@@QAEXXZ 00411ec0 f   linked:verified_0083.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?BuildCustomizePopup@CXTPToolBar@@AAEXPAVCXTPCommandBar@@@Z",
+  "address": "006c4050",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000115d0       ?BuildCustomizePopup@CXTPToolBar@@AAEXPAVCXTPCommandBar@@@Z 004125d0 f   linked:verified_0084.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Calc3ColSizes@CXTPPrintPageHeaderFooter@@MAEHPAVCDC@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@11AAVCSize@@22@Z",
+  "address": "006f9070",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00011d20       ?Calc3ColSizes@CXTPPrintPageHeaderFooter@@MAEHPAVCDC@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@11AAVCSize@@22@Z 00412d20 f   linked:verified_0085.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CalcColumnHeight@CXTPReportPaintManager@@MAEHPAVCDC@@PAVCXTPReportColumn@@H@Z",
+  "address": "00749510",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000133b0       ?CalcColumnHeight@CXTPReportPaintManager@@MAEHPAVCDC@@PAVCXTPReportColumn@@H@Z 004143b0 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CalcSize@CXTPDialogBar@@IAE?AVCSize@@HKV2@@Z",
+  "address": "0079f270",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00014ee0       ?CalcSize@CXTPDialogBar@@IAE?AVCSize@@HKV2@@Z 00415ee0 f   linked:verified_0183.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CalculateImagePosition@CXTButtonTheme@@MAE?AVCPoint@@PAVCDC@@IAAVCRect@@_NPAVCXTButton@@@Z",
+  "address": "007a2410",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015450       ?CalculateImagePosition@CXTButtonTheme@@MAE?AVCPoint@@PAVCDC@@IAAVCRect@@_NPAVCXTButton@@@Z 00416450 f   linked:verified_0091.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CalculateRowHeight@CXTPReportPaintManager@@MAEHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@HH@Z",
+  "address": "0074b740",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00013c60       ?CalculateRowHeight@CXTPReportPaintManager@@MAEHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@HH@Z 00414c60 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Clone@CXTPControlComboBoxPopupBar@@UAEPAVCXTPCommandBar@@H@Z",
+  "address": "006a8570",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000156c0       ?Clone@CXTPControlComboBoxPopupBar@@UAEPAVCXTPCommandBar@@H@Z 004166c0 f   linked:verified_0133.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Clone@CXTPControlPopupColor@@UAEPAVCXTPControl@@H@Z",
+  "address": "0042fdd0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015710       ?Clone@CXTPControlPopupColor@@UAEPAVCXTPControl@@H@Z 00416710 f   linked:verified_0135.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Clone@CXTPRibbonControlSystemPopupBarListCaption@@UAEPAVCXTPControl@@H@Z",
+  "address": "006a9610",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015800       ?Clone@CXTPRibbonControlSystemPopupBarListCaption@@UAEPAVCXTPControl@@H@Z 00416800 f   linked:verified_0161.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Compare@CXTPControlComboBox@@UAEHPAVCXTPControl@@@Z",
+  "address": "006a6e40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015830       ?Compare@CXTPControlComboBox@@UAEHPAVCXTPControl@@@Z 00416830 f   linked:verified_0132.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Compare@CXTPReportRecords@@UBEHABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@0@Z",
+  "address": "006d7810",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015870       ?Compare@CXTPReportRecords@@UBEHABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@0@Z 00416870 f   linked:verified_0221.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CompareFunc@CXTPPropertyGridItemConstraints@@CAHPAPBVCXTPPropertyGridItemConstraint@@0@Z",
+  "address": "007115d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015a50       ?CompareFunc@CXTPPropertyGridItemConstraints@@CAHPAPBVCXTPPropertyGridItemConstraint@@0@Z 00416a50 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CompareFunc@CXTPPropertyGridItems@@CAHPAPBVCXTPPropertyGridItem@@0@Z",
+  "address": "007114d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000159b0       ?CompareFunc@CXTPPropertyGridItems@@CAHPAPBVCXTPPropertyGridItem@@0@Z 004169b0 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CompareGroupCaption@CXTPReportRecordItem@@UAEHPAVCXTPReportColumn@@PAV1@@Z",
+  "address": "006c6f20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015f70       ?CompareGroupCaption@CXTPReportRecordItem@@UAEHPAVCXTPReportColumn@@PAV1@@Z 00416f70 f   linked:verified_0061.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Copy@CXTPControlComboBox@@MAEXPAVCXTPControl@@H@Z",
+  "address": "006a9f80",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000173d0       ?Copy@CXTPControlComboBox@@MAEXPAVCXTPControl@@H@Z 004183d0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Copy@CXTPControlComboBoxList@@MAEXPAVCXTPCommandBar@@H@Z",
+  "address": "006a8e10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00016700       ?Copy@CXTPControlComboBoxList@@MAEXPAVCXTPCommandBar@@H@Z 00417700 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Copy@CXTPControlEdit@@MAEXPAVCXTPControl@@H@Z",
+  "address": "00743920",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00018190       ?Copy@CXTPControlEdit@@MAEXPAVCXTPControl@@H@Z 00419190 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CShadowWnd@CXTPShadowsManager@@QAEHHVCRect@@@Z",
+  "address": "0076d3c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00018280       ?Create@CShadowWnd@CXTPShadowsManager@@QAEHHVCRect@@@Z 00419280 f   linked:verified_0191.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTCaption@@UAEHPAVCWnd@@PBDKKABVCRect@@I@Z",
+  "address": "007190b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00018440       ?Create@CXTCaption@@UAEHPAVCWnd@@PBDKKABVCRect@@I@Z 00419440 f   linked:verified_0048.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTCaptionPopupWnd@@UAEHABVCRect@@PAVCWnd@@1@Z",
+  "address": "00793520",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:00018690       ?Create@CXTCaptionPopupWnd@@UAEHABVCRect@@PAVCWnd@@1@Z 00419690 f   linked:verified_0049.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTColorSelectorCtrl@@QAEHVCRect@@PAVCWnd@@KKK@Z",
+  "address": "0078f470",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00019130       ?Create@CXTColorSelectorCtrl@@QAEHVCRect@@PAVCWnd@@KKK@Z 0041a130 f   linked:verified_0053.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPDockBar@@IAEHPAVCWnd@@KI@Z",
+  "address": "0071a8b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 5,
+  "linked_owner": "0001:00019860       ?Create@CXTPDockBar@@IAEHPAVCWnd@@KI@Z 0041a860 f   linked:verified_0184.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPDockingPaneMiniWnd@@MAEHVCRect@@@Z",
+  "address": "0075b5b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00019a40       ?Create@CXTPDockingPaneMiniWnd@@MAEHVCRect@@@Z 0041aa40 f   linked:verified_0205.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPPopupBar@@IAEHXZ",
+  "address": "006ee7f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00019fa0       ?Create@CXTPPopupBar@@IAEHXZ 0041afa0 f   linked:verified_0190.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPPropertyGridInplaceEdit@@UAEXPAVCXTPPropertyGridItem@@VCRect@@@Z",
+  "address": "007752d0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001ad70       ?Create@CXTPPropertyGridInplaceEdit@@UAEXPAVCXTPPropertyGridItem@@VCRect@@@Z 0041bd70 f   linked:verified_0171.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPPropertyGridInplaceList@@UAEXPAVCXTPPropertyGridItem@@VCRect@@@Z",
+  "address": "0077a510",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0001b7b0       ?Create@CXTPPropertyGridInplaceList@@UAEXPAVCXTPPropertyGridItem@@VCRect@@@Z 0041c7b0 f   linked:verified_0057.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPReportInplaceEdit@@QAEXPAUXTP_REPORTRECORDITEM_ARGS@@@Z",
+  "address": "0074e6c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0001c090       ?Create@CXTPReportInplaceEdit@@QAEXPAUXTP_REPORTRECORDITEM_ARGS@@@Z 0041d090 f   linked:verified_0217.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPReportInplaceList@@QAEXPAUXTP_REPORTRECORDITEM_ARGS@@PAVCXTPReportRecordItemConstraints@@@Z",
+  "address": "0074dfc0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0001c4c0       ?Create@CXTPReportInplaceList@@QAEXPAUXTP_REPORTRECORDITEM_ARGS@@PAVCXTPReportRecordItemConstraints@@@Z 0041d4c0 f   linked:verified_0112.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTPToolBar@@MAEHPAVCWnd@@H@Z",
+  "address": "006c2d20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0001c920       ?Create@CXTPToolBar@@MAEHPAVCWnd@@H@Z 0041d920 f   linked:verified_0194.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Create@CXTShadowWnd@@IAEHHVCRect@@@Z",
+  "address": "00790930",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001cea0       ?Create@CXTShadowWnd@@IAEHHVCRect@@@Z 0041dea0 f   linked:verified_0055.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateContextMenu@CXTPCustomizeSheet@@AAEXXZ",
+  "address": "006eab20",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0001d070       ?CreateContextMenu@CXTPCustomizeSheet@@AAEXXZ 0041e070 f   linked:verified_0039.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateContextMenu@CXTPRibbonBar@@MAEPAVCXTPPopupBar@@PAVCXTPControl@@@Z",
+  "address": "007249a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00007e80       ?CreateContextMenu@CXTPRibbonBar@@MAEPAVCXTPPopupBar@@PAVCXTPControl@@@Z 00408e80 f   linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateControlKeyboardTips@CXTPRibbonScrollableBar@@IAEXPAVCXTPControl@@PBDH@Z",
+  "address": "00725dd0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00008400       ?CreateControlKeyboardTips@CXTPRibbonScrollableBar@@IAEXPAVCXTPControl@@PBDH@Z 00409400 f   linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateEdit@CXTPEdit@@UAEHKPAVCWnd@@@Z",
+  "address": "006a78a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000169e0       ?CreateEdit@CXTPEdit@@UAEHKPAVCWnd@@@Z 004179e0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateKeyboardTips@CXTPCommandBar@@UAEXXZ",
+  "address": "006a41e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001d5d0       ?CreateKeyboardTips@CXTPCommandBar@@UAEXXZ 0041e5d0 f   linked:verified_0172.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateKeyboardTips@CXTPRibbonBar@@MAEXXZ",
+  "address": "007262e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00008840       ?CreateKeyboardTips@CXTPRibbonBar@@MAEXXZ 00409840 f   linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPControlColorSelector@@SGPAVCObject@@XZ",
+  "address": "006b6c90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001db20       ?CreateObject@CXTPControlColorSelector@@SGPAVCObject@@XZ 0041eb20 f   linked:verified_0136.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPControlComboBoxList@@SGPAVCObject@@XZ",
+  "address": "006a8690",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001db90       ?CreateObject@CXTPControlComboBoxList@@SGPAVCObject@@XZ 0041eb90 f   linked:verified_0134.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPControls@@SGPAVCObject@@XZ",
+  "address": "006f47f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001dc00       ?CreateObject@CXTPControls@@SGPAVCObject@@XZ 0041ec00 f   linked:verified_0137.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPPopupBar@@SGPAVCObject@@XZ",
+  "address": "006a8500",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001dc70       ?CreateObject@CXTPPopupBar@@SGPAVCObject@@XZ 0041ec70 f   linked:verified_0142.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPReportRecordItemText@@SGPAVCObject@@XZ",
+  "address": "006d9980",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0001dd80       ?CreateObject@CXTPReportRecordItemText@@SGPAVCObject@@XZ 0041ed80 f   linked:verified_0159.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPRibbonBarControlQuickAccessPopup@@SGPAVCObject@@XZ",
+  "address": "006e7aa0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001dee0       ?CreateObject@CXTPRibbonBarControlQuickAccessPopup@@SGPAVCObject@@XZ 0041eee0 f   linked:verified_0160.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPRibbonControlSystemPopupBarButton@@SGPAVCObject@@XZ",
+  "address": "006f5200",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0001df50       ?CreateObject@CXTPRibbonControlSystemPopupBarButton@@SGPAVCObject@@XZ 0041ef50 f   linked:verified_0162.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPRibbonControlSystemPopupBarListCaption@@SGPAVCObject@@XZ",
+  "address": "006adcb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001dfc0       ?CreateObject@CXTPRibbonControlSystemPopupBarListCaption@@SGPAVCObject@@XZ 0041efc0 f   linked:verified_0162.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPRibbonTab@@SGPAVCObject@@XZ",
+  "address": "006dbd20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001e090       ?CreateObject@CXTPRibbonTab@@SGPAVCObject@@XZ 0041f090 f   linked:verified_0163.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateObject@CXTPToolBar@@SGPAVCObject@@XZ",
+  "address": "006c2150",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001e120       ?CreateObject@CXTPToolBar@@SGPAVCObject@@XZ 0041f120 f   linked:verified_0144.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreatePopupBar@CXTPPopupBar@@SAPAV1@PAVCXTPCommandBars@@@Z",
+  "address": "006ee1d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001e190       ?CreatePopupBar@CXTPPopupBar@@SAPAV1@PAVCXTPCommandBars@@@Z 0041f190 f   linked:verified_0012.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?CreateToolbarMenu@CXTPControlToolbars@@SAXPAVCXTPCommandBar@@HHHH@Z",
+  "address": "006f5670",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00004e70       ?CreateToolbarMenu@CXTPControlToolbars@@SAXPAVCXTPCommandBar@@HHHH@Z 00405e70 f   linked:verified_0176.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DoPaint@CXTTreeBase@@MAEXAAVCDC@@H@Z",
+  "address": "006de8f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0001e880       ?DoPaint@CXTTreeBase@@MAEXAAVCDC@@H@Z 0041f880 f   linked:verified_0099.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DoPropExchange@CXTPControlComboBoxList@@MAEXPAVCXTPPropExchange@@@Z",
+  "address": "006a8f00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 6,
+  "linked_owner": "0001:000167f0       ?DoPropExchange@CXTPControlComboBoxList@@MAEXPAVCXTPPropExchange@@@Z 004177f0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DoPropExchange@CXTPReportColumnOrder@@UAEXPAVCXTPPropExchange@@@Z",
+  "address": "00750170",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 6,
+  "linked_owner": "0001:0001eef0       ?DoPropExchange@CXTPReportColumnOrder@@UAEXPAVCXTPPropExchange@@@Z 0041fef0 f   linked:verified_0214.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DoPropExchange@CXTPReportColumns@@UAEXPAVCXTPPropExchange@@@Z",
+  "address": "0074fd00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 8,
+  "linked_owner": "0001:0001f160       ?DoPropExchange@CXTPReportColumns@@UAEXPAVCXTPPropExchange@@@Z 00420160 f   linked:verified_0058.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DoPropExchange@CXTPReportRecordItemDateTime@@UAEXPAVCXTPPropExchange@@@Z",
+  "address": "006d8880",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0001f4b0       ?DoPropExchange@CXTPReportRecordItemDateTime@@UAEXPAVCXTPPropExchange@@@Z 004204b0 f   linked:verified_0032.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DoPropExchange@CXTPReportRecordItemPreview@@UAEXPAVCXTPPropExchange@@@Z",
+  "address": "006d89a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0001f4e0       ?DoPropExchange@CXTPReportRecordItemPreview@@UAEXPAVCXTPPropExchange@@@Z 004204e0 f   linked:verified_0032.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Draw@CControlCaptionPopup@CXTPDialogBar@@UAEXPAVCDC@@@Z",
+  "address": "0079ef60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001f510       ?Draw@CControlCaptionPopup@CXTPDialogBar@@UAEXPAVCDC@@@Z 00420510 f   linked:verified_0077.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Draw@CControlMDIButton@CXTPMenuBar@@UAEXPAVCDC@@@Z",
+  "address": "00720590",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0001f970       ?Draw@CControlMDIButton@CXTPMenuBar@@UAEXPAVCDC@@@Z 00420970 f   linked:verified_0078.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Draw@CXTPPrintPageHeaderFooter@@UAEXPAVCDC@@AAVCRect@@H@Z",
+  "address": "006f9460",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00012110       ?Draw@CXTPPrintPageHeaderFooter@@UAEXPAVCDC@@AAVCRect@@H@Z 00413110 f   linked:verified_0085.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Draw@CXTPReportRecordItem@@UAEHPAUXTP_REPORTRECORDITEM_DRAWARGS@@@Z",
+  "address": "006c75d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0001ffe0       ?Draw@CXTPReportRecordItem@@UAEHPAUXTP_REPORTRECORDITEM_DRAWARGS@@@Z 00420fe0 f   linked:verified_0115.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Draw@CXTPRibbonControlSystemPopupBarListCaption@@MAEXPAVCDC@@@Z",
+  "address": "0079b270",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:000204e0       ?Draw@CXTPRibbonControlSystemPopupBarListCaption@@MAEXPAVCDC@@@Z 004214e0 f   linked:verified_0121.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Draw@CXTPRibbonControlSystemPopupBarListItem@@UAEXPAVCDC@@@Z",
+  "address": "0079b0f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00020400       ?Draw@CXTPRibbonControlSystemPopupBarListItem@@UAEXPAVCDC@@@Z 00421400 f   linked:verified_0121.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawButtonText@CXTButtonTheme@@MAEXPAVCDC@@IAAVCRect@@PAVCXTButton@@@Z",
+  "address": "007a2260",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000152a0       ?DrawButtonText@CXTButtonTheme@@MAEXPAVCDC@@IAAVCRect@@PAVCXTButton@@@Z 004162a0 f   linked:verified_0091.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawButtonText@CXTCaptionButtonTheme@@MAEXPAVCDC@@IAAVCRect@@PAVCXTButton@@@Z",
+  "address": "00791be0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00020790       ?DrawButtonText@CXTCaptionButtonTheme@@MAEXPAVCDC@@IAAVCRect@@PAVCXTButton@@@Z 00421790 f   linked:verified_0093.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawCaption@CXTPDockingPaneVisioTheme@XTPDockingPanePaintThemes@@UAEXAAVCDC@@PAVCXTPDockingPaneTabbedContainer@@VCRect@@@Z",
+  "address": "007680d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00020df0       ?DrawCaption@CXTPDockingPaneVisioTheme@XTPDockingPanePaintThemes@@UAEXAAVCDC@@PAVCXTPDockingPaneTabbedContainer@@VCRect@@@Z 00421df0 f   linked:verified_0206.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawCaptionPart@CXTPDockingPaneGripperedTheme@XTPDockingPanePaintThemes@@MAEXAAVCDC@@PAVCXTPDockingPaneBase@@VCRect@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@HH@Z",
+  "address": "00767c60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00020c10       ?DrawCaptionPart@CXTPDockingPaneGripperedTheme@XTPDockingPanePaintThemes@@MAEXAAVCDC@@PAVCXTPDockingPaneBase@@VCRect@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@HH@Z 00421c10 f   linked:verified_0206.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawCaptionText@CXTCaptionTheme@@UAEXPAVCDC@@PAVCXTCaption@@@Z",
+  "address": "00791630",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000206b0       ?DrawCaptionText@CXTCaptionTheme@@UAEXPAVCDC@@PAVCXTCaption@@@Z 004216b0 f   linked:verified_0093.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawCaptionText@CXTPDockingPanePaintManager@@QAEHAAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@HH@Z",
+  "address": "00765770",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000213c0       ?DrawCaptionText@CXTPDockingPanePaintManager@@QAEHAAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@HH@Z 004223c0 f   linked:verified_0102.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawCaptionText@CXTPOffice2007Theme@@MAEXPAVCDC@@VCRect@@PAVCWnd@@H@Z",
+  "address": "00736e00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00022ad0       ?DrawCaptionText@CXTPOffice2007Theme@@MAEXPAVCDC@@VCRect@@PAVCWnd@@H@Z 00423ad0 f   linked:verified_0079.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawColorSelector@CXTColorSelectorCtrl@@IAEXPAVCDC@@@Z",
+  "address": "0078e7c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00022de0       ?DrawColorSelector@CXTColorSelectorCtrl@@IAEXPAVCDC@@@Z 00423de0 f   linked:verified_0095.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawColumn@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportColumn@@PAVCXTPReportHeader@@VCRect@@H@Z",
+  "address": "00748e30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00012cd0       ?DrawColumn@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportColumn@@PAVCXTPReportHeader@@VCRect@@H@Z 00413cd0 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawColumnFooter@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportColumn@@PAVCXTPReportHeader@@VCRect@@@Z",
+  "address": "00748b90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00012a30       ?DrawColumnFooter@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportColumn@@PAVCXTPReportHeader@@VCRect@@@Z 00413a30 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawCommandBarGripper@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPCommandBar@@H@Z",
+  "address": "006b4310",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000230c0       ?DrawCommandBarGripper@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPCommandBar@@H@Z 004240c0 f   linked:verified_0189.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlComboBox@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControlComboBox@@H@Z",
+  "address": "006b0cf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:000246a0       ?DrawControlComboBox@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControlComboBox@@H@Z 004256a0 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlEdit@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControlEdit@@H@Z",
+  "address": "006b0870",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00024220       ?DrawControlEdit@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControlEdit@@H@Z 00425220 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlEntry@CXTPRibbonTheme@@MAEXPAVCDC@@PAVCXTPControl@@@Z",
+  "address": "00729ef0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:000263b0       ?DrawControlEntry@CXTPRibbonTheme@@MAEXPAVCDC@@PAVCXTPControl@@@Z 004273b0 f   linked:verified_0227.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlGroupPopup@CXTPRibbonTheme@@UAE?AVCSize@@PAVCDC@@PAVCXTPControlPopup@@H@Z",
+  "address": "00729910",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:00025d40       ?DrawControlGroupPopup@CXTPRibbonTheme@@UAE?AVCSize@@PAVCDC@@PAVCXTPControlPopup@@H@Z 00426d40 f   linked:verified_0227.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlPopupParent@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@H@Z",
+  "address": "006b1f70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00024c40       ?DrawControlPopupParent@CXTPPaintManager@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@H@Z 00425c40 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlText2@CXTPPaintManager@@IAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHH@Z",
+  "address": "006afae0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:000238a0       ?DrawControlText2@CXTPPaintManager@@IAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHH@Z 004248a0 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlText3@CXTPPaintManager@@IAEXPAVCDC@@PAVCXTPControl@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@2VCRect@@HH@Z",
+  "address": "006af810",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00023660       ?DrawControlText3@CXTPPaintManager@@IAEXPAVCDC@@PAVCXTPControl@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@2VCRect@@HH@Z 00424660 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawControlText@CXTPPaintManager@@QAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHHH@Z",
+  "address": "006b00d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00023e90       ?DrawControlText@CXTPPaintManager@@QAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHHH@Z 00424e90 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawDwmCaptionText@CXTPRibbonTheme@@IAEXPAVCDC@@VCRect@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCWnd@@H@Z",
+  "address": "0072b4f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00027430       ?DrawDwmCaptionText@CXTPRibbonTheme@@IAEXPAVCDC@@VCRect@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCWnd@@H@Z 00428430 f   linked:verified_0122.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawEditText@CXTPControlComboBox@@UAEXPAVCDC@@VCRect@@@Z",
+  "address": "006a90f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00028160       ?DrawEditText@CXTPControlComboBox@@UAEXPAVCDC@@VCRect@@@Z 00429160 f   linked:verified_0071.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawEntry@CXTPToolTipContextToolTip@@MAEXPAVCDC@@PAUTOOLITEM@1@VCRect@@@Z",
+  "address": "0070a890",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00028840       ?DrawEntry@CXTPToolTipContextToolTip@@MAEXPAVCDC@@PAUTOOLITEM@1@VCRect@@@Z 00429840 f   linked:verified_0089.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawFloatingFrame@CXTPDockingPaneVisioTheme@XTPDockingPanePaintThemes@@UAEXAAVCDC@@PAVCXTPDockingPaneMiniWnd@@VCRect@@@Z",
+  "address": "00764ff0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000210c0       ?DrawFloatingFrame@CXTPDockingPaneVisioTheme@XTPDockingPanePaintThemes@@UAEXAAVCDC@@PAVCXTPDockingPaneMiniWnd@@VCRect@@@Z 004220c0 f   linked:verified_0102.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawGroup@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonGroup@@@Z",
+  "address": "00729290",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:000271a0       ?DrawGroup@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonGroup@@@Z 004281a0 f   linked:verified_0122.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawGroupRow@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportGroupRow@@VCRect@@PAUXTP_REPORTRECORDITEM_METRICS@@@Z",
+  "address": "0074c800",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00014080       ?DrawGroupRow@CXTPReportPaintManager@@UAEXPAVCDC@@PAVCXTPReportGroupRow@@VCRect@@PAUXTP_REPORTRECORDITEM_METRICS@@@Z 00415080 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawInplaceListItem@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridItemConstraint@@VCRect@@H@Z",
+  "address": "007772a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000295a0       ?DrawInplaceListItem@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridItemConstraint@@VCRect@@H@Z 0042a5a0 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItem@CXTPControlComboBox@@MAEXPAUtagDRAWITEMSTRUCT@@@Z",
+  "address": "006aa400",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000285f0       ?DrawItem@CXTPControlComboBox@@MAEXPAUtagDRAWITEMSTRUCT@@@Z 004295f0 f   linked:verified_0071.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItem@CXTPCustomizeToolbarsPageCheckListBox@@MAEXPAUtagDRAWITEMSTRUCT@@@Z",
+  "address": "007718a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002b930       ?DrawItem@CXTPCustomizeToolbarsPageCheckListBox@@MAEXPAUtagDRAWITEMSTRUCT@@@Z 0042c930 f   linked:verified_0075.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItem@CXTPPropertyGridCoolTheme@XTPPropertyGridPaintThemes@@UAEXPAUtagDRAWITEMSTRUCT@@@Z",
+  "address": "00779310",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002ad30       ?DrawItem@CXTPPropertyGridCoolTheme@XTPPropertyGridPaintThemes@@UAEXPAUtagDRAWITEMSTRUCT@@@Z 0042bd30 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItem@CXTPPropertyGridPaintManager@@UAEXPAUtagDRAWITEMSTRUCT@@@Z",
+  "address": "00778ca0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002a6c0       ?DrawItem@CXTPPropertyGridPaintManager@@UAEXPAUtagDRAWITEMSTRUCT@@@Z 0042b6c0 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItemCaption@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridItem@@VCRect@@@Z",
+  "address": "007775d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000298d0       ?DrawItemCaption@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridItem@@VCRect@@@Z 0042a8d0 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItemCaption@CXTPReportPaintManager@@UAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@PAUXTP_REPORTRECORDITEM_METRICS@@@Z",
+  "address": "0074abc0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002bb10       ?DrawItemCaption@CXTPReportPaintManager@@UAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@PAUXTP_REPORTRECORDITEM_METRICS@@@Z 0042cb10 f   linked:verified_0219.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawItemValue@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridItem@@VCRect@@@Z",
+  "address": "007773f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000296f0       ?DrawItemValue@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridItem@@VCRect@@@Z 0042a6f0 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawKeyboardTip@CXTPPaintManager@@UAEXPAVCDC@@PAVCXTPCommandBarKeyboardTip@@H@Z",
+  "address": "006b4620",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00025360       ?DrawKeyboardTip@CXTPPaintManager@@UAEXPAVCDC@@PAVCXTPCommandBarKeyboardTip@@H@Z 00426360 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawKeyboardTip@CXTPRibbonTheme@@MAEXPAVCDC@@PAVCXTPCommandBarKeyboardTip@@H@Z",
+  "address": "0072d890",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 6,
+  "linked_owner": "0001:00027f80       ?DrawKeyboardTip@CXTPRibbonTheme@@MAEXPAVCDC@@PAVCXTPCommandBarKeyboardTip@@H@Z 00428f80 f   linked:verified_0122.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawLabel@CXTPControlGalleryOffice2007Theme@@UAEXPAVCDC@@PAVCXTPControlGalleryItem@@VCRect@@@Z",
+  "address": "007388e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00022910       ?DrawLabel@CXTPControlGalleryOffice2007Theme@@UAEXPAVCDC@@PAVCXTPControlGalleryItem@@VCRect@@@Z 00423910 f   linked:verified_0079.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawLabel@CXTPControlGalleryPaintManager@@UAEXPAVCDC@@PAVCXTPControlGalleryItem@@VCRect@@@Z",
+  "address": "0072f880",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002bcb0       ?DrawLabel@CXTPControlGalleryPaintManager@@UAEXPAVCDC@@PAVCXTPControlGalleryItem@@VCRect@@@Z 0042ccb0 f   linked:verified_0072.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawLink2@CXTPReportPaintManager@@MAEHPAHPAUXTP_REPORTRECORDITEM_DRAWARGS@@PAVCXTPReportHyperlink@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@HH@Z",
+  "address": "0074b960",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00013e80       ?DrawLink2@CXTPReportPaintManager@@MAEHPAHPAUXTP_REPORTRECORDITEM_DRAWARGS@@PAVCXTPReportHyperlink@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@HH@Z 00414e80 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawListBoxControl@CXTPDefaultTheme@XTPPaintThemes@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHPAVCXTPCommandBars@@@Z",
+  "address": "00734cb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002c250       ?DrawListBoxControl@CXTPDefaultTheme@XTPPaintThemes@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHPAVCXTPCommandBars@@@Z 0042d250 f   linked:verified_0076.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawListBoxControl@CXTPOfficeTheme@XTPPaintThemes@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHPAVCXTPCommandBars@@@Z",
+  "address": "00740960",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002c8f0       ?DrawListBoxControl@CXTPOfficeTheme@XTPPaintThemes@@UAE?AVCSize@@PAVCDC@@PAVCXTPControl@@VCRect@@HHPAVCXTPCommandBars@@@Z 0042d8f0 f   linked:verified_0080.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawMultiLineText@CXTPReportPaintManager@@MAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@H@Z",
+  "address": "0074ad30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:000149a0       ?DrawMultiLineText@CXTPReportPaintManager@@MAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@H@Z 004159a0 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawNoGroupByText@CXTPReportPaintManager@@UAEXPAVCDC@@VCRect@@@Z",
+  "address": "007473e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00012930       ?DrawNoGroupByText@CXTPReportPaintManager@@UAEXPAVCDC@@VCRect@@@Z 00413930 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawNoItems@CXTPReportControl@@MAEXPAVCDC@@ABVCRect@@@Z",
+  "address": "006cc3c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002cf30       ?DrawNoItems@CXTPReportControl@@MAEXPAVCDC@@ABVCRect@@@Z 0042df30 f   linked:verified_0110.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawPopupBarText@CXTPPaintManager@@MAEXPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAVCRect@@IHHH@Z",
+  "address": "006b1eb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00024b80       ?DrawPopupBarText@CXTPPaintManager@@MAEXPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAVCRect@@IHHH@Z 00425b80 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawRibbonFrameCaption@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonBar@@H@Z",
+  "address": "0072b9a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 5,
+  "linked_owner": "0001:00027720       ?DrawRibbonFrameCaption@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonBar@@H@Z 00428720 f   linked:verified_0122.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawRibbonFrameCaptionButton@CXTPOffice2007Theme@@UAEXPAVCDC@@VCRect@@HHHH@Z",
+  "address": "00737f60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 6,
+  "linked_owner": "0001:0002d040       ?DrawRibbonFrameCaptionButton@CXTPOffice2007Theme@@UAEXPAVCDC@@VCRect@@HHHH@Z 0042e040 f   linked:verified_0188.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawRibbonFrameContextHeaders@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonBar@@PAVCXTPRibbonTabContextHeaders@@@Z",
+  "address": "0072d610",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00027d00       ?DrawRibbonFrameContextHeaders@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonBar@@PAVCXTPRibbonTabContextHeaders@@@Z 00428d00 f   linked:verified_0122.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawRibbonQuickAccessButton@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPControlPopup@@@Z",
+  "address": "0072bf80",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002d2c0       ?DrawRibbonQuickAccessButton@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPControlPopup@@@Z 0042e2c0 f   linked:verified_0164.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawRibbonQuickAccessMoreButton@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPControlPopup@@@Z",
+  "address": "0072c060",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002d3a0       ?DrawRibbonQuickAccessMoreButton@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPControlPopup@@@Z 0042e3a0 f   linked:verified_0164.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawRibbonTab@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonTab@@@Z",
+  "address": "007288b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 6,
+  "linked_owner": "0001:000255b0       ?DrawRibbonTab@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonTab@@@Z 004265b0 f   linked:verified_0227.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawSingleButtonIconAndText@CXTPTabPaintManager@@UAEHPAVCDC@@PAVCXTPTabManagerItem@@VCRect@@H@Z",
+  "address": "0077eba0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002dd70       ?DrawSingleButtonIconAndText@CXTPTabPaintManager@@UAEHPAVCDC@@PAVCXTPTabManagerItem@@VCRect@@H@Z 0042ed70 f   linked:verified_0124.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawSplitButtonFrame@CXTPRibbonTheme@@MAEXPAVCDC@@PAVCXTPControl@@VCRect@@@Z",
+  "address": "0072a5c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 8,
+  "linked_owner": "0001:00026660       ?DrawSplitButtonFrame@CXTPRibbonTheme@@MAEXPAVCDC@@PAVCXTPControl@@VCRect@@@Z 00427660 f   linked:verified_0227.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawString@CXTPReportPaintManager@@MAEHPAHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@I@Z",
+  "address": "0074a520",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:000146d0       ?DrawString@CXTPReportPaintManager@@MAEHPAHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@I@Z 004156d0 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawTextApi@@YAXPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAUtagRECT@@IH@Z",
+  "address": "006af5b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00023400       ?DrawTextApi@@YAXPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAUtagRECT@@IH@Z 00424400 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawTextLine@CXTPReportPaintManager@@MAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@HAAH3@Z",
+  "address": "0074a7f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00013760       ?DrawTextLine@CXTPReportPaintManager@@MAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@HAAH3@Z 00414760 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?DrawTextPathEllipsis@CXTPTabPaintManager@@IAEXPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@I@Z",
+  "address": "0077de20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0002d9d0       ?DrawTextPathEllipsis@CXTPTabPaintManager@@IAEXPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@VCRect@@I@Z 0042e9d0 f   linked:verified_0124.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ExchangeBlobProp@CXTPPropExchange@@UAEHPBDAAPAEAAK@Z",
+  "address": "006fdb20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002e860       ?ExchangeBlobProp@CXTPPropExchange@@UAEHPBDAAPAEAAK@Z 0042f860 f   linked:verified_0087.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ExchangeProp@CXTPPropExchangeXMLNode@@UAEHPBDGPAXPBX@Z",
+  "address": "007003f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00001cc0       ?ExchangeProp@CXTPPropExchangeXMLNode@@UAEHPBDGPAXPBX@Z 00402cc0 f   linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ExchangePropDateHelper@CXTPPropExchange@@IAEHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAVCOleDateTime@3@@Z",
+  "address": "006ff880",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002ea20       ?ExchangePropDateHelper@CXTPPropExchange@@IAEHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAVCOleDateTime@3@@Z 0042fa20 f   linked:verified_0087.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ExchangePropStringHelper@CXTPPropExchange@@IAEHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@GPAXPBX@Z",
+  "address": "006ff9d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 7,
+  "linked_owner": "0001:0002eb70       ?ExchangePropStringHelper@CXTPPropExchange@@IAEHAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@GPAXPBX@Z 0042fb70 f   linked:verified_0087.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ExchangeRuntimeClass@CXTPPropExchange@@UAEHPBDAAPAUCRuntimeClass@@PAU2@@Z",
+  "address": "006fe790",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000014b0       ?ExchangeRuntimeClass@CXTPPropExchange@@UAEHPBDAAPAUCRuntimeClass@@PAU2@@Z 004024b0 f   linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ExchangeSchemaSafe@CXTPPropExchangeArchive@@MAEXXZ",
+  "address": "006fe8c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000015e0       ?ExchangeSchemaSafe@CXTPPropExchangeArchive@@MAEXXZ 004025e0 f   linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FillGroupPopupToolBar@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonGroup@@PAVCXTPCommandBar@@@Z",
+  "address": "00729120",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00025a90       ?FillGroupPopupToolBar@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonGroup@@PAVCXTPCommandBar@@@Z 00426a90 f   linked:verified_0227.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FillGroupRect@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonTab@@VCRect@@@Z",
+  "address": "007296e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00025c00       ?FillGroupRect@CXTPRibbonTheme@@UAEXPAVCDC@@PAVCXTPRibbonTab@@VCRect@@@Z 00426c00 f   linked:verified_0227.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FillInToolInfo@CXTPToolTipContext@@SAXPAUtagTOOLINFOA@@PAUHWND__@@VCRect@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@33PAVCXTPImageManager@@@Z",
+  "address": "00709fa0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00028c10       ?FillInToolInfo@CXTPToolTipContext@@SAXPAUtagTOOLINFOA@@PAUHWND__@@VCRect@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@33PAVCXTPImageManager@@@Z 00429c10 f   linked:verified_0089.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FillInToolInfo@CXTPToolTipContext@@SAXPAUtagTOOLINFOA@@PAUHWND__@@VCRect@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "00709f20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00028b90       ?FillInToolInfo@CXTPToolTipContext@@SAXPAUtagTOOLINFOA@@PAUHWND__@@VCRect@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00429b90 f   linked:verified_0089.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FillInplaceButton@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridInplaceButton@@@Z",
+  "address": "00777a10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00029a70       ?FillInplaceButton@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@PAVCXTPPropertyGridInplaceButton@@@Z 0042aa70 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FillPropertyGrid@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@@Z",
+  "address": "00778860",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002b4f0       ?FillPropertyGrid@CXTPPropertyGridPaintManager@@UAEXPAVCDC@@@Z 0042c4f0 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Find@CXTPReportColumns@@QBEPAVCXTPReportColumn@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "0074f9e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001ee90       ?Find@CXTPReportColumns@@QBEPAVCXTPReportColumn@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 0041fe90 f   linked:verified_0214.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindAccel@CXTPCommandBars@@IBEPAVCXTPControl@@PAVCXTPCommandBar@@IAAH@Z",
+  "address": "006a4700",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0002f250       ?FindAccel@CXTPCommandBars@@IBEPAVCXTPControl@@PAVCXTPCommandBar@@IAAH@Z 00430250 f   linked:verified_0069.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindAccelEx@CXTPCommandBar@@QBEHIAAH@Z",
+  "address": "006b5fa0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002fc70       ?FindAccelEx@CXTPCommandBar@@QBEHIAAH@Z 00430c70 f   linked:verified_0068.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindConstraint@CXTPPropertyGridItemConstraints@@QBEHPBD@Z",
+  "address": "007125e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00030020       ?FindConstraint@CXTPPropertyGridItemConstraints@@QBEHPBD@Z 00431020 f   linked:verified_0127.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindDefaultAccelerator@CXTPShortcutManager@@UAEHIAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "0071de90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00010530       ?FindDefaultAccelerator@CXTPShortcutManager@@UAEHIAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00411530 f   linked:verified_0192.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindInsertionPos@CXTPReportRows@@UAEPAVCXTPReportRow@@PAV2@AAH@Z",
+  "address": "006daaa0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00030370       ?FindInsertionPos@CXTPReportRows@@UAEPAVCXTPReportRow@@PAV2@AAH@Z 00431370 f   linked:verified_0062.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindItem@CXTPControlGallery@@QBEHHPBDH@Z",
+  "address": "0072f070",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000306a0       ?FindItem@CXTPControlGallery@@QBEHHPBDH@Z 004316a0 f   linked:verified_0125.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindItem@CXTTreeBase@@UAEPAU_TREEITEM@@PBDHHHPAU2@@Z",
+  "address": "006dc620",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001e4c0       ?FindItem@CXTTreeBase@@UAEPAU_TREEITEM@@PBDHHHPAU2@@Z 0041f4c0 f   linked:verified_0099.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindItemInBranch@CXTTreeBase@@UAEPAU_TREEITEM@@PBDHHPAU2@@Z",
+  "address": "006dc360",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001e200       ?FindItemInBranch@CXTTreeBase@@UAEPAU_TREEITEM@@PBDHHPAU2@@Z 0041f200 f   linked:verified_0099.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FindResourceIniFile@CXTPOffice2007Images@@AAEPAUHRSRC__@@PAUHINSTANCE__@@@Z",
+  "address": "0078cd80",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00030850       ?FindResourceIniFile@CXTPOffice2007Images@@AAEPAUHRSRC__@@PAUHINSTANCE__@@@Z 00431850 f   linked:verified_0197.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Format@CKeyHelper@CXTPShortcutManager@@QBEXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "0071e070",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00030d50       ?Format@CKeyHelper@CXTPShortcutManager@@QBEXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00431d50 f   linked:verified_0082.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FormatTexts@CXTPPrintPageHeaderFooter@@UAEXPAUCPrintInfo@@PBD@Z",
+  "address": "006f8bf0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 18,
+  "linked_owner": "0001:000311a0       ?FormatTexts@CXTPPrintPageHeaderFooter@@UAEXPAUCPrintInfo@@PBD@Z 004321a0 f   linked:verified_0170.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FreeData@?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@SAXPAX@Z",
+  "address": "006cf1c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000c110       ?FreeData@?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@SAXPAX@Z 0040d110 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?FreeExtraData@?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@SAXXZ",
+  "address": "006cf2c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000c210       ?FreeExtraData@?$CXTPBatchAllocManagerT@VCXTPReportRowAllocator@@UCXTPReportRow_BatchData@@@@SAXXZ 0040d210 f i linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleDefaultAction@CXTPControl@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "006ab670",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000314c0       ?GetAccessibleDefaultAction@CXTPControl@@MAEJUtagVARIANT@@PAPA_W@Z 004324c0 f   linked:verified_0004.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleDefaultAction@CXTPControlGallery@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "0072e300",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000314f0       ?GetAccessibleDefaultAction@CXTPControlGallery@@MAEJUtagVARIANT@@PAPA_W@Z 004324f0 f   linked:verified_0009.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleDefaultAction@CXTPDockingPane@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "007077e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00031550       ?GetAccessibleDefaultAction@CXTPDockingPane@@MAEJUtagVARIANT@@PAPA_W@Z 00432550 f   linked:verified_0024.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleDefaultAction@CXTPRibbonControlTab@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "007994f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00031580       ?GetAccessibleDefaultAction@CXTPRibbonControlTab@@MAEJUtagVARIANT@@PAPA_W@Z 00432580 f   linked:verified_0033.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleDescription@CXTPPropertyGridItem@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "00711300",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031640       ?GetAccessibleDescription@CXTPPropertyGridItem@@MAEJUtagVARIANT@@PAPA_W@Z 00432640 f   linked:verified_0155.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleName@CXTPCommandBar@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "006b6820",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031760       ?GetAccessibleName@CXTPCommandBar@@MAEJUtagVARIANT@@PAPA_W@Z 00432760 f   linked:verified_0167.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleName@CXTPControl@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "006ac4e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000ddf0       ?GetAccessibleName@CXTPControl@@MAEJUtagVARIANT@@PAPA_W@Z 0040edf0 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleName@CXTPControlGallery@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "0072f5e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000318f0       ?GetAccessibleName@CXTPControlGallery@@MAEJUtagVARIANT@@PAPA_W@Z 004328f0 f   linked:verified_0177.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleName@CXTPDockingPaneManager@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "006e5100",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00031ab0       ?GetAccessibleName@CXTPDockingPaneManager@@MAEJUtagVARIANT@@PAPA_W@Z 00432ab0 f   linked:verified_0025.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleName@CXTPDockingPaneTabbedContainer@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "0075dd70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00031b00       ?GetAccessibleName@CXTPDockingPaneTabbedContainer@@MAEJUtagVARIANT@@PAPA_W@Z 00432b00 f   linked:verified_0028.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetAccessibleName@CXTPPropertyGridView@@MAEJUtagVARIANT@@PAPA_W@Z",
+  "address": "007141d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00031b40       ?GetAccessibleName@CXTPPropertyGridView@@MAEJUtagVARIANT@@PAPA_W@Z 00432b40 f   linked:verified_0030.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetCaption@CXTPReportRecordItemDateTime@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z",
+  "address": "006d8820",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031c40       ?GetCaption@CXTPReportRecordItemDateTime@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z 00432c40 f   linked:verified_0220.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetCaption@CXTPReportRecordItemNumber@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z",
+  "address": "006d86a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031b80       ?GetCaption@CXTPReportRecordItemNumber@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z 00432b80 f   linked:verified_0220.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetCaption@CXTPReportRecordItemText@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z",
+  "address": "006d8a90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00031d80       ?GetCaption@CXTPReportRecordItemText@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z 00432d80 f   linked:verified_0220.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetCaption@CXTPReportRecordItemVariant@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z",
+  "address": "006d95c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:00032030       ?GetCaption@CXTPReportRecordItemVariant@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z 00433030 f   linked:verified_0220.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetCaptionWidth@CXTPReportColumn@@QBEHPAVCDC@@@Z",
+  "address": "006d49b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000322a0       ?GetCaptionWidth@CXTPReportColumn@@QBEHPAVCDC@@@Z 004332a0 f   linked:verified_0109.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetDefaultCharFormat@CXTPControlComboBox@@UAE?AUCHARFORMAT2A@@XZ",
+  "address": "006a8380",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00016f40       ?GetDefaultCharFormat@CXTPControlComboBox@@UAE?AUCHARFORMAT2A@@XZ 00417f40 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetEditHint@CXTPControlComboBox@@QBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ",
+  "address": "006a6be0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00016630       ?GetEditHint@CXTPControlComboBox@@QBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ 00417630 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetEditHint@CXTPControlEdit@@QBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ",
+  "address": "00741c90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00017810       ?GetEditHint@CXTPControlEdit@@QBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ 00418810 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetEditText@CXTPControlComboBox@@QBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ",
+  "address": "006a9640",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00016a80       ?GetEditText@CXTPControlComboBox@@QBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ 00417a80 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetFooterHeight@CXTPReportPaintManager@@UAEHPAVCXTPReportControl@@PAVCDC@@H@Z",
+  "address": "00749b30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00014520       ?GetFooterHeight@CXTPReportPaintManager@@UAEHPAVCXTPReportControl@@PAVCDC@@H@Z 00415520 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetFrameLargeIcon@CXTPOffice2007Theme@@IAEPAUHICON__@@PAVCWnd@@@Z",
+  "address": "007371c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000323b0       ?GetFrameLargeIcon@CXTPOffice2007Theme@@IAEPAUHICON__@@PAVCWnd@@@Z 004333b0 f   linked:verified_0043.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetFrameSmallIcon@CXTPOffice2007Theme@@IAEPAUHICON__@@PAVCWnd@@@Z",
+  "address": "00737110",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032300       ?GetFrameSmallIcon@CXTPOffice2007Theme@@IAEPAUHICON__@@PAVCWnd@@@Z 00433300 f   linked:verified_0043.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetGroupCaption@CXTPReportRecordItem@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z",
+  "address": "006c7a90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00016100       ?GetGroupCaption@CXTPReportRecordItem@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPReportColumn@@@Z 00417100 f   linked:verified_0061.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetImageColor@CXTPOffice2007Images@@QAEKV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@0@Z",
+  "address": "0078df70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00030a30       ?GetImageColor@CXTPOffice2007Images@@QAEKV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@0@Z 00431a30 f   linked:verified_0197.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetImageValue@CXTPOffice2007Images@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@V23@0@Z",
+  "address": "0078d9f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:000323f0       ?GetImageValue@CXTPOffice2007Images@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@V23@0@Z 004333f0 f   linked:verified_0086.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetItemText@CXTPTabClientWnd@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBVCWnd@@@Z",
+  "address": "00702a30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000efa0       ?GetItemText@CXTPTabClientWnd@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBVCWnd@@@Z 0040ffa0 f   linked:verified_0193.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetItemTooltip@CXTPRibbonControlTab@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBVCXTPTabManagerItem@@@Z",
+  "address": "00799340",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032670       ?GetItemTooltip@CXTPRibbonControlTab@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBVCXTPTabManagerItem@@@Z 00433670 f   linked:verified_0224.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetItemTooltip@CXTPTabClientWnd@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBVCXTPTabManagerItem@@@Z",
+  "address": "007028f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000ee60       ?GetItemTooltip@CXTPTabClientWnd@@MBE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBVCXTPTabManagerItem@@@Z 0040fe60 f   linked:verified_0193.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetKeyNameTextA@CXTPShortcutManager@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@I@Z",
+  "address": "0071ec90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010790       ?GetKeyNameTextA@CXTPShortcutManager@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@I@Z 00411790 f   linked:verified_0192.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetLocalKeyNameText@CKeyHelper@CXTPShortcutManager@@SA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@I@Z",
+  "address": "0071e1f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00030ed0       ?GetLocalKeyNameText@CKeyHelper@CXTPShortcutManager@@SA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@I@Z 00431ed0 f   linked:verified_0082.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetMinimumWidth@CXTPRibbonGroup@@MAEHPAVCDC@@@Z",
+  "address": "007981f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032720       ?GetMinimumWidth@CXTPRibbonGroup@@MAEHPAVCDC@@@Z 00433720 f   linked:verified_0120.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetNext@CXMLEnumerator@CXTPPropExchangeXMLNode@@UAEPAVCXTPPropExchange@@AAPAU__POSITION@@@Z",
+  "address": "00700720",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00002230       ?GetNext@CXMLEnumerator@CXTPPropExchangeXMLNode@@UAEPAVCXTPPropExchange@@AAPAU__POSITION@@@Z 00403230 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetNext@CXTPPropExchangeEnumerator@@UAEPAVCXTPPropExchange@@AAPAU__POSITION@@@Z",
+  "address": "006fc890",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00000e70       ?GetNext@CXTPPropExchangeEnumerator@@UAEPAVCXTPPropExchange@@AAPAU__POSITION@@@Z 00401e70 f   linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetParentFrameTitle@CXTPPrintPageHeaderFooter@@SA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCWnd@@@Z",
+  "address": "006f74e0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000313d0       ?GetParentFrameTitle@CXTPPrintPageHeaderFooter@@SA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCWnd@@@Z 004323d0 f   linked:verified_0170.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetPrefixTextExtent@CXTPTabPaintManager@@IAEHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@I@Z",
+  "address": "0077dd50",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002d680       ?GetPrefixTextExtent@CXTPTabPaintManager@@IAEHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@I@Z 0042e680 f   linked:verified_0124.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetPreviewHeight@CXTPReportRecordItemPreview@@UAEHPAVCDC@@PAVCXTPReportRow@@H@Z",
+  "address": "006d8ce0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00031e60       ?GetPreviewHeight@CXTPReportRecordItemPreview@@UAEHPAVCDC@@PAVCXTPReportRow@@H@Z 00432e60 f   linked:verified_0220.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetPreviewLinesCount@CXTPReportPaintManager@@QAEHPAVCDC@@AAVCRect@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "00749840",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00013640       ?GetPreviewLinesCount@CXTPReportPaintManager@@QAEHPAVCDC@@AAVCRect@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00414640 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetProfileBinary@CXTRegistryManager@@QAEHPBD0PAPAEPAI@Z",
+  "address": "00754860",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032af0       ?GetProfileBinary@CXTRegistryManager@@QAEHPBD0PAPAEPAI@Z 00433af0 f   linked:verified_0098.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetProfileNode@CXMLEnumerator@CXTPPropExchangeXMLNode@@QAE?AV?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@PAU__POSITION@@@Z",
+  "address": "006ff380",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00001f80       ?GetProfileNode@CXMLEnumerator@CXTPPropExchangeXMLNode@@QAE?AV?$_com_ptr_t@V?$_com_IIID@UIXMLDOMNode@XTPXML@@$1?_GUID_2933bf80_7b36_11d2_b20e_00c04f983e60@@3U__s_GUID@@B@@@@PAU__POSITION@@@Z 00402f80 f i linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetProfileStringA@CXTRegistryManager@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBD00@Z",
+  "address": "007545b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032900       ?GetProfileStringA@CXTRegistryManager@@QAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PBD00@Z 00433900 f   linked:verified_0098.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetScreenArea@CXTPMultiMonitor@@QAE?AVCRect@@ABUtagPOINT@@@Z",
+  "address": "006e8ac0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010130       ?GetScreenArea@CXTPMultiMonitor@@QAE?AVCRect@@ABUtagPOINT@@@Z 00411130 f   linked:verified_0017.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetScreenArea@CXTPMultiMonitor@@QAE?AVCRect@@PAUHWND__@@@Z",
+  "address": "006e8a50",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000100f0       ?GetScreenArea@CXTPMultiMonitor@@QAE?AVCRect@@PAUHWND__@@@Z 004110f0 f   linked:verified_0017.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetScreenArea@CXTPMultiMonitor@@QAE?AVCRect@@PBUtagRECT@@@Z",
+  "address": "006e8b10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010180       ?GetScreenArea@CXTPMultiMonitor@@QAE?AVCRect@@PBUtagRECT@@@Z 00411180 f   linked:verified_0017.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetTextExtentX@@YAHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "007469f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00012750       ?GetTextExtentX@@YAHPAVCDC@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00413750 f i linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetTextExtentX@@YAHPAVCDC@@PADH@Z",
+  "address": "00746ae0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00012840       ?GetTextExtentX@@YAHPAVCDC@@PADH@Z 00413840 f i linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetTextRect@CXTCaption@@UBE?AVCRect@@XZ",
+  "address": "00719790",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032cc0       ?GetTextRect@CXTCaption@@UBE?AVCRect@@XZ 00433cc0 f   linked:verified_0092.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetToolBar@CXTPReBar@@QAEPAVCXTPToolBar@@H@Z",
+  "address": "0071d970",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000103f0       ?GetToolBar@CXTPReBar@@QAEPAVCXTPToolBar@@H@Z 004113f0 f   linked:verified_0045.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetToolSize@CHTMLToolTip@CXTPToolTipContext@@MAE?AVCSize@@PAUTOOLITEM@CXTPToolTipContextToolTip@@@Z",
+  "address": "0070b2c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00029010       ?GetToolSize@CHTMLToolTip@CXTPToolTipContext@@MAE?AVCSize@@PAUTOOLITEM@CXTPToolTipContextToolTip@@@Z 0042a010 f   linked:verified_0089.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetToolSize@CRichEditToolTip@CXTPToolTipContext@@MAE?AVCSize@@PAUTOOLITEM@CXTPToolTipContextToolTip@@@Z",
+  "address": "0070adb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032e30       ?GetToolSize@CRichEditToolTip@CXTPToolTipContext@@MAE?AVCSize@@PAUTOOLITEM@CXTPToolTipContextToolTip@@@Z 00433e30 f   linked:verified_0200.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetToolSize@CXTPToolTipContextToolTip@@MAE?AVCSize@@PAUTOOLITEM@1@@Z",
+  "address": "0070a310",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00028d20       ?GetToolSize@CXTPToolTipContextToolTip@@MAE?AVCSize@@PAUTOOLITEM@1@@Z 00429d20 f   linked:verified_0089.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetVerticalFontName@CXTPDrawHelpers@@SA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@H@Z",
+  "address": "006f7120",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:00031030       ?GetVerticalFontName@CXTPDrawHelpers@@SA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@H@Z 00432030 f   linked:verified_0170.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetViewValue@CXTPPropertyGridItem@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ",
+  "address": "00711120",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00033090       ?GetViewValue@CXTPPropertyGridItem@@UAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ 00434090 f   linked:verified_0105.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?GetViewValue@CXTPPropertyGridItemBool@@MAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ",
+  "address": "007177a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00033360       ?GetViewValue@CXTPPropertyGridItemBool@@MAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ 00434360 f   linked:verified_0211.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?HitTestVerbs@CXTPPropertyGridPaintManager@@QAEHPAVCDC@@VCRect@@VCPoint@@@Z",
+  "address": "00776b70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0002a030       ?HitTestVerbs@CXTPPropertyGridPaintManager@@QAEHPAVCDC@@VCRect@@VCPoint@@@Z 0042b030 f   linked:verified_0107.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?InsertAllCommandsCategory@CXTPCustomizeCommandsPage@@QAEXIH@Z",
+  "address": "006eda80",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00005700       ?InsertAllCommandsCategory@CXTPCustomizeCommandsPage@@QAEXIH@Z 00406700 f   linked:verified_0037.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?InsertBuiltInMenus@CXTPCustomizeCommandsPage@@QAEHIIH@Z",
+  "address": "006ed750",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0000e730       ?InsertBuiltInMenus@CXTPCustomizeCommandsPage@@QAEHIIH@Z 0040f730 f   linked:verified_0179.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?InsertNewMenuCategory@CXTPCustomizeCommandsPage@@QAEXIH@Z",
+  "address": "006ed8c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000e8a0       ?InsertNewMenuCategory@CXTPCustomizeCommandsPage@@QAEXIH@Z 0040f8a0 f   linked:verified_0179.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?InstallDockingPanes@CXTPDockingPaneManager@@QAE_NPAVCWnd@@_N@Z",
+  "address": "006e57f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00033510       ?InstallDockingPanes@CXTPDockingPaneManager@@QAE_NPAVCWnd@@_N@Z 00434510 f   linked:verified_0204.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?InvalidatePane@CXTPDockingPaneMiniWnd@@MAEXH@Z",
+  "address": "0075bfc0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00019c20       ?InvalidatePane@CXTPDockingPaneMiniWnd@@MAEXH@Z 0041ac20 f   linked:verified_0205.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsAlphaBitmapResource@CXTPImageManagerIcon@@SAHPAUHINSTANCE__@@PBD@Z",
+  "address": "006b9970",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00033a60       ?IsAlphaBitmapResource@CXTPImageManagerIcon@@SAHPAUHINSTANCE__@@PBD@Z 00434a60 f   linked:verified_0145.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsCaptionVisible@CXTPControl@@UBEHXZ",
+  "address": "006ab480",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000dc30       ?IsCaptionVisible@CXTPControl@@UBEHXZ 0040ec30 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsCaptionVisible@CXTPControlComboBox@@UBEHXZ",
+  "address": "006a6b70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000165c0       ?IsCaptionVisible@CXTPControlComboBox@@UBEHXZ 004175c0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsCaptionVisible@CXTPControlEdit@@UBEHXZ",
+  "address": "00741e00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000178e0       ?IsCaptionVisible@CXTPControlEdit@@UBEHXZ 004188e0 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsEmpty@CXTPPrintPageHeaderFooter@@UAEHXZ",
+  "address": "006f74a0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031160       ?IsEmpty@CXTPPrintPageHeaderFooter@@UAEHXZ 00432160 f   linked:verified_0170.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsPngBitmapResource@CXTPImageManagerIcon@@SAHPAUHINSTANCE__@@PBD@Z",
+  "address": "006b98c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000339b0       ?IsPngBitmapResource@CXTPImageManagerIcon@@SAHPAUHINSTANCE__@@PBD@Z 004349b0 f   linked:verified_0145.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?IsValueChanged@CXTPPropertyGridItem@@UBEHXZ",
+  "address": "00711d00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015a70       ?IsValueChanged@CXTPPropertyGridItem@@UBEHXZ 00416a70 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Line@CXTPPaintManager@@QAEXPAVCDC@@HHHHH@Z",
+  "address": "006af510",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000342d0       ?Line@CXTPPaintManager@@QAEXPAVCDC@@HHHHH@Z 004352d0 f   linked:verified_0141.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Load@CXTPImageEditorPicture@@QAEXXZ",
+  "address": "00770fa0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 11,
+  "linked_owner": "0001:000344c0       ?Load@CXTPImageEditorPicture@@QAEXXZ 004354c0 f   linked:verified_0186.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?LoadAlphaBitmap@CXTPImageManagerIcon@@SAPAUHBITMAP__@@PAUHINSTANCE__@@PBD@Z",
+  "address": "006badf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00034a80       ?LoadAlphaBitmap@CXTPImageManagerIcon@@SAPAUHBITMAP__@@PAUHINSTANCE__@@PBD@Z 00435a80 f   linked:verified_0064.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?LoadDesignerBars@CXTPCommandBars@@QAEXAAVCArchive@@@Z",
+  "address": "006c0ab0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00034d00       ?LoadDesignerBars@CXTPCommandBars@@QAEXAAVCArchive@@@Z 00435d00 f   linked:verified_0131.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?LoadImageA@CXTPOffice2007Images@@IAEPAVCXTPOffice2007Image@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "0078e490",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00030c50       ?LoadImageA@CXTPOffice2007Images@@IAEPAVCXTPOffice2007Image@@V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00431c50 f   linked:verified_0197.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?LoadSysFonts@CXTAuxData@@QAEHPBD0@Z",
+  "address": "00710660",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:00034d70       ?LoadSysFonts@CXTAuxData@@QAEHPBD0@Z 00435d70 f   linked:verified_0065.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?LoadToolbar@CXTPImageManager@@ABEHIAAPAIAAHAAVCSize@@@Z",
+  "address": "006bbb80",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00034c10       ?LoadToolbar@CXTPImageManager@@ABEHIAAPAIAAHAAVCSize@@@Z 00435c10 f   linked:verified_0064.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?LoadWindowPos@CXTWindowPos@@QAEHPBD0@Z",
+  "address": "006e4bf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00035360       ?LoadWindowPos@CXTWindowPos@@QAEHPBD0@Z 00436360 f   linked:verified_0202.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?NotifySpinChanged@CXTPControlEdit@@MAEXHH@Z",
+  "address": "00743540",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00018090       ?NotifySpinChanged@CXTPControlEdit@@MAEXHH@Z 00419090 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnActionChanged@CXTPControlComboBox@@UAEXH@Z",
+  "address": "006a9e00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00017250       ?OnActionChanged@CXTPControlComboBox@@UAEXH@Z 00418250 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnActionChanged@CXTPControlEdit@@UAEXH@Z",
+  "address": "00742600",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00017a30       ?OnActionChanged@CXTPControlEdit@@UAEXH@Z 00418a30 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnActionChanging@CXTPControlComboBox@@UAEXH@Z",
+  "address": "006a80a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00016e00       ?OnActionChanging@CXTPControlComboBox@@UAEXH@Z 00417e00 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnBeforeExchange@CXTPPropExchangeXMLNode@@UAEHXZ",
+  "address": "00700b40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00002670       ?OnBeforeExchange@CXTPPropExchangeXMLNode@@UAEHXZ 00403670 f   linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnBeforeInsert@CXTPPropertyGridItem@@MAEXXZ",
+  "address": "00711ed0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015aa0       ?OnBeforeInsert@CXTPPropertyGridItem@@MAEXXZ 00416aa0 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnCalcDynamicSize@CXTPControlOleItems@@MAEXK@Z",
+  "address": "006f5a10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:00005040       ?OnCalcDynamicSize@CXTPControlOleItems@@MAEXK@Z 00406040 f   linked:verified_0176.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnCalcDynamicSize@CXTPControlRecentFileList@@MAEXK@Z",
+  "address": "006f5d30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000052b0       ?OnCalcDynamicSize@CXTPControlRecentFileList@@MAEXK@Z 004062b0 f   linked:verified_0176.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnCalcDynamicSize@CXTPControlWindowList@@MAEXK@Z",
+  "address": "006f52a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00004b40       ?OnCalcDynamicSize@CXTPControlWindowList@@MAEXK@Z 00405b40 f   linked:verified_0176.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnCalcDynamicSize@CXTPRibbonControlSystemRecentFileList@@MAEXK@Z",
+  "address": "0079b4e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000354c0       ?OnCalcDynamicSize@CXTPRibbonControlSystemRecentFileList@@MAEXK@Z 004364c0 f   linked:verified_0226.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnChar@CXTPPropertyGridInplaceEdit@@IAEXIII@Z",
+  "address": "00775880",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00035950       ?OnChar@CXTPPropertyGridInplaceEdit@@IAEXIII@Z 00436950 f   linked:verified_0126.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnChar@CXTPReportInplaceEdit@@IAEXIII@Z",
+  "address": "0074d870",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00035b60       ?OnChar@CXTPReportInplaceEdit@@IAEXIII@Z 00436b60 f   linked:verified_0067.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnChar@CXTPReportInplaceList@@IAEXIII@Z",
+  "address": "0074e590",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001bed0       ?OnChar@CXTPReportInplaceList@@IAEXIII@Z 0041ced0 f   linked:verified_0217.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnConstraintChanged@CXTPReportRecordItem@@UAEXPAUXTP_REPORTRECORDITEM_ARGS@@PAVCXTPReportRecordItemConstraint@@@Z",
+  "address": "006c7040",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00016000       ?OnConstraintChanged@CXTPReportRecordItem@@UAEXPAUXTP_REPORTRECORDITEM_ARGS@@PAVCXTPReportRecordItemConstraint@@@Z 00417000 f   linked:verified_0061.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnConstraintChanged@CXTPReportRecordItemVariant@@UAEXPAUXTP_REPORTRECORDITEM_ARGS@@PAVCXTPReportRecordItemConstraint@@@Z",
+  "address": "006d92d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031ca0       ?OnConstraintChanged@CXTPReportRecordItemVariant@@UAEXPAUXTP_REPORTRECORDITEM_ARGS@@PAVCXTPReportRecordItemConstraint@@@Z 00432ca0 f   linked:verified_0220.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnConstraintsChanged@CXTPPropertyGridItemEnum@@MAEXXZ",
+  "address": "00717a60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00033470       ?OnConstraintsChanged@CXTPPropertyGridItemEnum@@MAEXXZ 00434470 f   linked:verified_0211.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnCreate@CXTColorDialog@@IAEHPAUtagCREATESTRUCTA@@@Z",
+  "address": "00706f60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000032d0       ?OnCreate@CXTColorDialog@@IAEHPAUtagCREATESTRUCTA@@@Z 004042d0 f   linked:verified_0050.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnCreate@CXTColorSelectorCtrl@@IAEHPAUtagCREATESTRUCTA@@@Z",
+  "address": "0078f6d0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00018ab0       ?OnCreate@CXTColorSelectorCtrl@@IAEHPAUtagCREATESTRUCTA@@@Z 00419ab0 f   linked:verified_0053.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnDelTool@CXTPToolTipContextToolTip@@IAEJIJ@Z",
+  "address": "0070cb40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00035db0       ?OnDelTool@CXTPToolTipContextToolTip@@IAEJIJ@Z 00436db0 f   linked:verified_0018.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnDeleteToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ",
+  "address": "00772440",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000361c0       ?OnDeleteToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ 004371c0 f   linked:verified_0181.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnDrawCaption@CXTPReportRecordItemPreview@@UAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@PAUXTP_REPORTRECORDITEM_METRICS@@@Z",
+  "address": "006d8ef0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000364a0       ?OnDrawCaption@CXTPReportRecordItemPreview@@UAEXPAUXTP_REPORTRECORDITEM_DRAWARGS@@PAUXTP_REPORTRECORDITEM_METRICS@@@Z 004374a0 f   linked:verified_0116.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnDrawItemValue@CXTPPropertyGridItemColor@@MAEHAAVCDC@@VCRect@@@Z",
+  "address": "00713c20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000365d0       ?OnDrawItemValue@CXTPPropertyGridItemColor@@MAEHAAVCDC@@VCRect@@@Z 004375d0 f   linked:verified_0106.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnEditChanged@CXTPControlComboBox@@UAEXXZ",
+  "address": "006a9880",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00028450       ?OnEditChanged@CXTPControlComboBox@@UAEXXZ 00429450 f   linked:verified_0071.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnEnChange@CXTPPropertyGridInplaceEdit@@IAEXXZ",
+  "address": "00773b80",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00035710       ?OnEnChange@CXTPPropertyGridInplaceEdit@@IAEXXZ 00436710 f   linked:verified_0126.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnEnChange@CXTPReportInplaceEdit@@IAEXXZ",
+  "address": "0074d710",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001c360       ?OnEnChange@CXTPReportInplaceEdit@@IAEXXZ 0041d360 f   linked:verified_0217.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnEnable@CXTPSyntaxEditColorSampleText@@QAEXH@Z",
+  "address": "00456e60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000367f2       ?OnEnable@CXTPSyntaxEditColorSampleText@@QAEXH@Z 004377f2 f   linked:verified_0035.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnGetText@CXTPStatusBar@@IAEJIJ@Z",
+  "address": "0070ee40",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00010fb0       ?OnGetText@CXTPStatusBar@@IAEJIJ@Z 00411fb0 f   linked:verified_0083.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnGetTextLength@CXTPStatusBar@@IAEJIJ@Z",
+  "address": "0070eeb0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00011020       ?OnGetTextLength@CXTPStatusBar@@IAEJIJ@Z 00412020 f   linked:verified_0083.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnGroupAdded@CXTPRibbonGroup@@MAEXXZ",
+  "address": "00798680",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036810       ?OnGroupAdded@CXTPRibbonGroup@@MAEXXZ 00437810 f   linked:verified_0225.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnIdleUpdateCmdUI@CXTPDockingPaneManager@@IAEJIJ@Z",
+  "address": "0045aeb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00031af0       ?OnIdleUpdateCmdUI@CXTPDockingPaneManager@@IAEJIJ@Z 00432af0 f   linked:verified_0025.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnInitDialog@CXTPCustomizeCommandsPage@@MAEHXZ",
+  "address": "006edf90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00005870       ?OnInitDialog@CXTPCustomizeCommandsPage@@MAEHXZ 00406870 f   linked:verified_0037.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnInitDialog@CXTPCustomizeSheet@@MAEHXZ",
+  "address": "006ea280",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00006170       ?OnInitDialog@CXTPCustomizeSheet@@MAEHXZ 00407170 f   linked:verified_0168.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnInitDialog@CXTPNewToolbarDlg@@MAEHXZ",
+  "address": "0071a5a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036d70       ?OnInitDialog@CXTPNewToolbarDlg@@MAEHXZ 00437d70 f   linked:verified_0182.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnInplaceButtonDown@CXTPPropertyGridItemColor@@MAEXPAVCXTPPropertyGridInplaceButton@@@Z",
+  "address": "00713d60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00037040       ?OnInplaceButtonDown@CXTPPropertyGridItemColor@@MAEXPAVCXTPPropertyGridInplaceButton@@@Z 00438040 f   linked:verified_0212.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnKeyDown@CXTPPropertyGridInplaceEdit@@IAEXIII@Z",
+  "address": "00776110",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001b650       ?OnKeyDown@CXTPPropertyGridInplaceEdit@@IAEXIII@Z 0041c650 f   linked:verified_0171.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnKeyDown@CXTPReportInplaceEdit@@IAEXIII@Z",
+  "address": "0074dac0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001bc70       ?OnKeyDown@CXTPReportInplaceEdit@@IAEXIII@Z 0041cc70 f   linked:verified_0217.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnKeyboardTipChar@CXTPCommandBar@@QAEXI@Z",
+  "address": "006b7510",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0002fe40       ?OnKeyboardTipChar@CXTPCommandBar@@QAEXI@Z 00430e40 f   linked:verified_0068.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnKillFocus@CXTPControlComboBox@@MAEXXZ",
+  "address": "006aab60",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000176d0       ?OnKillFocus@CXTPControlComboBox@@MAEXXZ 004186d0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnKillFocus@CXTPControlEdit@@MAEXXZ",
+  "address": "00742ab0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00017f70       ?OnKillFocus@CXTPControlEdit@@MAEXXZ 00418f70 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnLButtonDown@CXTShellTreeBaseCTreeCtrl@@IAEXIVCPoint@@@Z",
+  "address": "004229f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00037390       ?OnLButtonDown@CXTShellTreeBaseCTreeCtrl@@IAEXIVCPoint@@@Z 00438390 f i linked:verified_0023.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnLButtonDown@CXTShellTreeBaseCTreeView@@IAEXIVCPoint@@@Z",
+  "address": "006db7e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00037370       ?OnLButtonDown@CXTShellTreeBaseCTreeView@@IAEXIVCPoint@@@Z 00438370 f i linked:verified_0023.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnMergeItemConstraint@CXTPPropertyGridItem@@UAE?AVCSize@@PAVCDC@@PAVCXTPPropertyGridItemConstraint@@@Z",
+  "address": "00712110",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00033130       ?OnMergeItemConstraint@CXTPPropertyGridItem@@UAE?AVCSize@@PAVCDC@@PAVCXTPPropertyGridItemConstraint@@@Z 00434130 f   linked:verified_0105.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnMouseLeave@CXTPScrollBar@@IAEXXZ",
+  "address": "006cfd10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00037410       ?OnMouseLeave@CXTPScrollBar@@IAEXXZ 00438410 f   linked:verified_0013.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnNewToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ",
+  "address": "00772360",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000360e0       ?OnNewToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ 004370e0 f   linked:verified_0181.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnOK@CXTPNewToolbarDlg@@MAEXXZ",
+  "address": "00719ee0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036b90       ?OnOK@CXTPNewToolbarDlg@@MAEXXZ 00437b90 f   linked:verified_0182.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnPaint@CXTColorDialog@@IAEXXZ",
+  "address": "00706a80",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00037420       ?OnPaint@CXTColorDialog@@IAEXXZ 00438420 f   linked:verified_0094.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnPaint@CXTPDockingPaneWindowSelect@@QAEXXZ",
+  "address": "0075a0e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00037790       ?OnPaint@CXTPDockingPaneWindowSelect@@QAEXXZ 00438790 f   linked:verified_0100.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnPaint@CXTPGroupLine@@IAEXXZ",
+  "address": "006ec960",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00037e90       ?OnPaint@CXTPGroupLine@@IAEXXZ 00438e90 f   linked:verified_0074.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnPaint@CXTPPropertyGridToolTip@@IAEXXZ",
+  "address": "00714720",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000d080       ?OnPaint@CXTPPropertyGridToolTip@@IAEXXZ 0040e080 f   linked:verified_0108.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnPaint@CXTPReportTip@@IAEXXZ",
+  "address": "00752de0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000d860       ?OnPaint@CXTPReportTip@@IAEXXZ 0040e860 f   linked:verified_0118.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnRenameToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ",
+  "address": "00771ee0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00035dc0       ?OnRenameToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ 00436dc0 f   linked:verified_0181.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnResetData@CXTPCustomizeOptionsPage@@IAEXXZ",
+  "address": "006ec7f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000ebc0       ?OnResetData@CXTPCustomizeOptionsPage@@IAEXXZ 0040fbc0 f   linked:verified_0180.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnResetToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ",
+  "address": "007725c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036340       ?OnResetToolbar@CXTPCustomizeToolbarsPage@@IAEXXZ 00437340 f   linked:verified_0181.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnSelect@CXTPPropertyGridItem@@MAEXXZ",
+  "address": "007131e0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015ae0       ?OnSelect@CXTPPropertyGridItem@@MAEXXZ 00416ae0 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnSelectionChanged@CXTPReportInplaceList@@MAEXH@Z",
+  "address": "0074d3f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001bf90       ?OnSelectionChanged@CXTPReportInplaceList@@MAEXH@Z 0041cf90 f   linked:verified_0217.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnSetFocus@CXTPControlComboBox@@MAEXPAVCWnd@@@Z",
+  "address": "006aa970",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000174e0       ?OnSetFocus@CXTPControlComboBox@@MAEXPAVCWnd@@@Z 004184e0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnSetFocus@CXTPControlEdit@@MAEXPAVCWnd@@@Z",
+  "address": "00743b20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00017da0       ?OnSetFocus@CXTPControlEdit@@MAEXPAVCWnd@@@Z 00418da0 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnTabsChanged@CXTPDockingPaneTabbedContainer@@MAEXXZ",
+  "address": "0075e300",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00038180       ?OnTabsChanged@CXTPDockingPaneTabbedContainer@@MAEXXZ 00439180 f   linked:verified_0207.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPCommandBar@@UBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "006c2980",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00011300       ?OnToolHitTest@CXTPCommandBar@@UBEHVCPoint@@PAUtagTOOLINFOA@@@Z 00412300 f   linked:verified_0084.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPControlTabWorkspace@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "00702780",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000ed20       ?OnToolHitTest@CXTPControlTabWorkspace@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z 0040fd20 f   linked:verified_0193.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPDockingPaneMiniWnd@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "0075bdb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000382f0       ?OnToolHitTest@CXTPDockingPaneMiniWnd@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z 004392f0 f   linked:verified_0101.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPDockingPaneTabbedContainer@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "0075e930",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000384a0       ?OnToolHitTest@CXTPDockingPaneTabbedContainer@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z 004394a0 f   linked:verified_0103.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPPropertyGridView@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "00715730",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000d410       ?OnToolHitTest@CXTPPropertyGridView@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z 0040e410 f   linked:verified_0108.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPReportGroupRow@@MAEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "00750610",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000385c0       ?OnToolHitTest@CXTPReportGroupRow@@MAEHVCPoint@@PAUtagTOOLINFOA@@@Z 004395c0 f   linked:verified_0216.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPReportHeader@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "006d6670",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000386b0       ?OnToolHitTest@CXTPReportHeader@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z 004396b0 f   linked:verified_0111.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPReportRow@@UAEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "00751730",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000388d0       ?OnToolHitTest@CXTPReportRow@@UAEHVCPoint@@PAUtagTOOLINFOA@@@Z 004398d0 f   linked:verified_0222.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolHitTest@CXTPStatusBar@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "0070fb30",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00038e80       ?OnToolHitTest@CXTPStatusBar@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z 00439e80 f   linked:verified_0169.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolTipText@CXTPImageEditorDlg@@IAEHIPAUtagNMHDR@@PAJ@Z",
+  "address": "0076f720",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00034370       ?OnToolTipText@CXTPImageEditorDlg@@IAEHIPAUtagNMHDR@@PAJ@Z 00435370 f   linked:verified_0186.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnToolTipText@CXTPPropertyGrid@@IAEHIPAUtagNMHDR@@PAJ@Z",
+  "address": "006fb9f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00038f80       ?OnToolTipText@CXTPPropertyGrid@@IAEHIPAUtagNMHDR@@PAJ@Z 00439f80 f   linked:verified_0208.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnUpdateCustomizeReset@CXTPCustomizeSheet@@IAEXPAVCCmdUI@@@Z",
+  "address": "006ea9b0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00006370       ?OnUpdateCustomizeReset@CXTPCustomizeSheet@@IAEXPAVCCmdUI@@@Z 00407370 f   linked:verified_0168.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnValidateEdit@CXTPReportRecordItem@@UAEXPAUXTP_REPORTRECORDITEM_ARGS@@@Z",
+  "address": "006c8930",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000162a0       ?OnValidateEdit@CXTPReportRecordItem@@UAEXPAUXTP_REPORTRECORDITEM_ARGS@@@Z 004172a0 f   linked:verified_0061.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?OnWndMsg@CXTColorSelectorCtrl@@MAEHIIJPAJ@Z",
+  "address": "00708c00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000390a0       ?OnWndMsg@CXTColorSelectorCtrl@@MAEHIIJPAJ@Z 0043a0a0 f   linked:verified_0150.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PX_UintMap@@YAXPAVCXTPPropExchange@@PBDAAV?$CMap@IIHH@@@Z",
+  "address": "006a6220",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0001d960       ?PX_UintMap@@YAXPAVCXTPPropExchange@@PBDAAV?$CMap@IIHH@@@Z 0041e960 f   linked:verified_0172.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PaginateTo@CXTPReportView@@MAEHPAVCDC@@PAUCPrintInfo@@@Z",
+  "address": "006c62c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:000392d0       ?PaginateTo@CXTPReportView@@MAEHPAVCDC@@PAUCPrintInfo@@@Z 0043a2d0 f   linked:verified_0063.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PerformClick@CNavigateButtonActiveFiles@CXTPTabClientWnd@@UAEXPAUHWND__@@VCPoint@@@Z",
+  "address": "00704fc0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0000f4e0       ?PerformClick@CNavigateButtonActiveFiles@CXTPTabClientWnd@@UAEXPAUHWND__@@VCPoint@@@Z 004104e0 f i linked:verified_0193.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PerformToolHitTest@CXTPTabManager@@UBEHPAUHWND__@@VCPoint@@PAUtagTOOLINFOA@@@Z",
+  "address": "0077c9b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00039800       ?PerformToolHitTest@CXTPTabManager@@UBEHPAUHWND__@@VCPoint@@PAUtagTOOLINFOA@@@Z 0043a800 f   linked:verified_0228.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PerformTrackInit@CXTPScrollBase@@QAEXPAUHWND__@@VCPoint@@PAUSCROLLBARPOSINFO@1@H@Z",
+  "address": "0079e7b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00039a30       ?PerformTrackInit@CXTPScrollBase@@QAEXPAUHWND__@@VCPoint@@PAUSCROLLBARPOSINFO@1@H@Z 0043aa30 f   linked:verified_0046.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Populate@CXTPReportControl@@UAEXXZ",
+  "address": "006d1ce0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0000c870       ?Populate@CXTPReportControl@@UAEXXZ 0040d870 f   linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PreCreateWindow@CXTHexEdit@@MAEHAAUtagCREATESTRUCTA@@@Z",
+  "address": "00463910",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00039e30       ?PreCreateWindow@CXTHexEdit@@MAEHAAUtagCREATESTRUCTA@@@Z 0043ae30 f   linked:verified_0020.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PreTranslateFrameMessage@CXTPCommandBars@@QAEHPAUtagMSG@@@Z",
+  "address": "006a4ae0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00039e50       ?PreTranslateFrameMessage@CXTPCommandBars@@QAEHPAUtagMSG@@@Z 0043ae50 f   linked:verified_0036.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PreviewAccel@CXTPRibbonBar@@UAEHI@Z",
+  "address": "00725aa0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003a480       ?PreviewAccel@CXTPRibbonBar@@UAEHI@Z 0043b480 f   linked:verified_0119.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?PrintPage@CXTPReportView@@MAEJPAVCDC@@PAUCPrintInfo@@VCRect@@J@Z",
+  "address": "006c5df0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000390f0       ?PrintPage@CXTPReportView@@MAEJPAVCDC@@PAUCPrintInfo@@VCRect@@J@Z 0043a0f0 f   linked:verified_0063.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RefreshManagersArray@CXTPDockingPaneAutoHidePanel@@IAEXPAVCDC@@VCRect@@@Z",
+  "address": "00758380",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000a5f0       ?RefreshManagersArray@CXTPDockingPaneAutoHidePanel@@IAEXPAVCDC@@VCRect@@@Z 0040b5f0 f   linked:verified_0203.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RefreshMetrics@CXTColorSelectorCtrlThemeOfficeXP@@UAEXXZ",
+  "address": "007a0bf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003a740       ?RefreshMetrics@CXTColorSelectorCtrlThemeOfficeXP@@UAEXXZ 0043b740 f   linked:verified_0019.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RefreshMetrics@CXTPDockingPanePaintManager@@UAEXXZ",
+  "address": "00763010",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 7,
+  "linked_owner": "0001:0003a7f0       ?RefreshMetrics@CXTPDockingPanePaintManager@@UAEXXZ 0043b7f0 f   linked:verified_0056.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RefreshMetrics@CXTPOffice2007Theme@@MAEXXZ",
+  "address": "00735a70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 128,
+  "linked_owner": "0001:00021580       ?RefreshMetrics@CXTPOffice2007Theme@@MAEXXZ 00422580 f   linked:verified_0079.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RefreshSysButtons@CXTPRibbonBar@@MAEXXZ",
+  "address": "00724580",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00007de0       ?RefreshSysButtons@CXTPRibbonBar@@MAEXXZ 00408de0 f   linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RefreshToolbarsList@CXTPCustomizeToolbarsPage@@AAEXXZ",
+  "address": "00772120",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00035f40       ?RefreshToolbarsList@CXTPCustomizeToolbarsPage@@AAEXXZ 00436f40 f   linked:verified_0181.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RelayEvent@CXTPToolTipContextToolTip@@QAEXPAUtagMSG@@@Z",
+  "address": "0070c200",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00009670       ?RelayEvent@CXTPToolTipContextToolTip@@QAEXPAUtagMSG@@@Z 0040a670 f   linked:verified_0047.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RelayToolTipMessage@CXTPToolTipContext@@QAEXPAVCWnd@@PAUtagMSG@@@Z",
+  "address": "0070bba0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000094f0       ?RelayToolTipMessage@CXTPToolTipContext@@QAEXPAVCWnd@@PAUtagMSG@@@Z 0040a4f0 f   linked:verified_0047.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ReplaceInHyperLinks@CXTPReportPaintManager@@UAEXPAVCXTPReportRecordItem@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@D@Z",
+  "address": "00746820",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00013b30       ?ReplaceInHyperLinks@CXTPReportPaintManager@@UAEXPAVCXTPReportRecordItem@@AAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@D@Z 00414b30 f   linked:verified_0114.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RepositionCaptionButtons@CXTPRibbonBar@@IAEXXZ",
+  "address": "00723880",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003a0a0       ?RepositionCaptionButtons@CXTPRibbonBar@@IAEXXZ 0043b0a0 f   linked:verified_0119.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?RepositionContextHeaders@CXTPRibbonBar@@IAEXXZ",
+  "address": "00726740",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00008c90       ?RepositionContextHeaders@CXTPRibbonBar@@IAEXXZ 00409c90 f   linked:verified_0223.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Reset@CXTPControl@@QAEXXZ",
+  "address": "006ab3f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000dbd0       ?Reset@CXTPControl@@QAEXXZ 0040ebd0 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Reset@CXTPMenuBar@@MAEXH@Z",
+  "address": "00720a20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0003aa40       ?Reset@CXTPMenuBar@@MAEXH@Z 0043ba40 f   linked:verified_0187.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Reset@CXTPToolBar@@UAEXH@Z",
+  "address": "006c3e10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001ca60       ?Reset@CXTPToolBar@@UAEXH@Z 0041da60 f   linked:verified_0194.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SaveToFile@CXTPPropExchangeXMLNode@@QAEJPBDH@Z",
+  "address": "006fe990",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 6,
+  "linked_owner": "0001:00001900       ?SaveToFile@CXTPPropExchangeXMLNode@@QAEJPBDH@Z 00402900 f   linked:verified_0198.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SaveWindowPos@CXTWindowPos@@QAEHPAVCWnd@@PBD1@Z",
+  "address": "006e4ab0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:00035220       ?SaveWindowPos@CXTWindowPos@@QAEHPAVCWnd@@PBD1@Z 00436220 f   linked:verified_0202.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SelectConstraint@CXTPPropertyGridInplaceEdit@@UAEHHH@Z",
+  "address": "00773e10",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001a3e0       ?SelectConstraint@CXTPPropertyGridInplaceEdit@@UAEHHH@Z 0041b3e0 f   linked:verified_0171.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SelectNextConstraint@CXTPPropertyGridItem@@IAEHXZ",
+  "address": "00712a30",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015c40       ?SelectNextConstraint@CXTPPropertyGridItem@@IAEHXZ 00416c40 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Serialize@?$CMap@PAUHWND__@@PAU1@PAUHICON__@@AAPAU2@@@UAEXAAVCArchive@@@Z",
+  "address": "00438db0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003ac70       ?Serialize@?$CMap@PAUHWND__@@PAU1@PAUHICON__@@AAPAU2@@@UAEXAAVCArchive@@@Z 0043bc70 f i linked:verified_0021.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Serialize@CXTPImageManagerIcon@@UAEXAAVCArchive@@@Z",
+  "address": "006bf800",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003aff0       ?Serialize@CXTPImageManagerIcon@@UAEXAAVCArchive@@@Z 0043bff0 f   linked:verified_0196.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Serialize@CXTPPaintManagerColor@@UAEXAAVCArchive@@@Z",
+  "address": "006dfc00",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b0e0       ?Serialize@CXTPPaintManagerColor@@UAEXAAVCArchive@@@Z 0043c0e0 f   linked:verified_0195.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Serialize@CXTPPaintManagerColorGradient@@UAEXAAVCArchive@@@Z",
+  "address": "006dfcb0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b170       ?Serialize@CXTPPaintManagerColorGradient@@UAEXAAVCArchive@@@Z 0043c170 f   linked:verified_0195.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetCaption@CXTPControl@@QAEXI@Z",
+  "address": "006ad390",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000e130       ?SetCaption@CXTPControl@@QAEXI@Z 0040f130 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetCaption@CXTPControl@@QAEXPBD@Z",
+  "address": "006ab940",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000dce0       ?SetCaption@CXTPControl@@QAEXPBD@Z 0040ece0 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetCaption@CXTPControlAction@@QAEXPBD@Z",
+  "address": "006acea0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000dfd0       ?SetCaption@CXTPControlAction@@QAEXPBD@Z 0040efd0 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetCaptionFontIndirect@CXTPDockingPanePaintManager@@QAEXPAUtagLOGFONTA@@H@Z",
+  "address": "00762e50",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 4,
+  "linked_owner": "0001:00020960       ?SetCaptionFontIndirect@CXTPDockingPanePaintManager@@QAEXPAUtagLOGFONTA@@H@Z 00421960 f   linked:verified_0206.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetEditHint@CXTPControlComboBox@@QAEXPBD@Z",
+  "address": "006a7c20",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00016c10       ?SetEditHint@CXTPControlComboBox@@QAEXPBD@Z 00417c10 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetEditHint@CXTPControlEdit@@QAEXPBD@Z",
+  "address": "007428c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00017bb0       ?SetEditHint@CXTPControlEdit@@QAEXPBD@Z 00418bb0 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetEditText@CXTPControlComboBox@@QAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "006a96f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000170c0       ?SetEditText@CXTPControlComboBox@@QAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 004180c0 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetEditText@CXTPPropertyGridItem@@MAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "007119a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00015960       ?SetEditText@CXTPPropertyGridItem@@MAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00416960 f   linked:verified_0210.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetFontIndirect@CXTPTabPaintManager@@QAEXPAUtagLOGFONTA@@H@Z",
+  "address": "0077da90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b200       ?SetFontIndirect@CXTPTabPaintManager@@QAEXPAUtagLOGFONTA@@H@Z 0043c200 f   linked:verified_0229.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetHandle@CXTPOffice2007Images@@QAEHPAUHINSTANCE__@@PBDH@Z",
+  "address": "0078d8a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:000308c0       ?SetHandle@CXTPOffice2007Images@@QAEHPAUHINSTANCE__@@PBDH@Z 004318c0 f   linked:verified_0197.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetHideFlags@CXTPControlComboBox@@UAEXK@Z",
+  "address": "006a8070",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00006b00       ?SetHideFlags@CXTPControlComboBox@@UAEXK@Z 00407b00 f   linked:verified_0006.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetID@CXTPControl@@QAEXH@Z",
+  "address": "006ab0f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000db40       ?SetID@CXTPControl@@QAEXH@Z 0040eb40 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetIcon@CXTPImageManagerIconSet@@AAEXVCXTPImageManagerIconHandle@@I@Z",
+  "address": "006bf9b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b340       ?SetIcon@CXTPImageManagerIconSet@@AAEXVCXTPImageManagerIconHandle@@I@Z 0043c340 f   linked:verified_0146.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetMDISysMenu@CControlMDISysMenuPopup@CXTPMenuBar@@QAEXPAUHWND__@@PAUHMENU__@@@Z",
+  "address": "007202f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001f6d0       ?SetMDISysMenu@CControlMDISysMenuPopup@CXTPMenuBar@@QAEXPAUHWND__@@PAUHMENU__@@@Z 004206d0 f i linked:verified_0078.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetNewColor@CXTColorDialog@@QAEXKH@Z",
+  "address": "00706df0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00003550       ?SetNewColor@CXTColorDialog@@QAEXKH@Z 00404550 f   linked:verified_0050.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetPaneText@CXTPStatusBar@@QAEHHABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@H@Z",
+  "address": "0070ecd0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00038db0       ?SetPaneText@CXTPStatusBar@@QAEHHABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@H@Z 00439db0 f   linked:verified_0169.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetPrompt@CXTPControl@@QAEXPBD@Z",
+  "address": "006ab030",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000da80       ?SetPrompt@CXTPControl@@QAEXPBD@Z 0040ea80 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetPrompt@CXTPControlAction@@QAEXPBD@Z",
+  "address": "006aaef0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000da00       ?SetPrompt@CXTPControlAction@@QAEXPBD@Z 0040ea00 f   linked:verified_0173.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetPromptChar@?$CXTMaskEditT@VCEdit@@@@QAEXDH@Z",
+  "address": "00774e00",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001aaa0       ?SetPromptChar@?$CXTMaskEditT@VCEdit@@@@QAEXDH@Z 0041baa0 f i linked:verified_0171.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetStatusText@CXTPCommandBar@@QAEHABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "006b7df0",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000316d0       ?SetStatusText@CXTPCommandBar@@QAEHABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 004326d0 f   linked:verified_0167.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetSuggestedName@CXTPNewToolbarDlg@@AAEXXZ",
+  "address": "00719d70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036a20       ?SetSuggestedName@CXTPNewToolbarDlg@@AAEXXZ 00437a20 f   linked:verified_0182.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetValue@CXTPPropertyGridItemBool@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "00717690",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000332e0       ?SetValue@CXTPPropertyGridItemBool@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 004342e0 f   linked:verified_0211.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetValue@CXTPPropertyGridItemColor@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "00713990",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036fa0       ?SetValue@CXTPPropertyGridItemColor@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00437fa0 f   linked:verified_0212.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SetValue@CXTPPropertyGridItemEnum@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "00717910",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000333f0       ?SetValue@CXTPPropertyGridItemEnum@@MAEXV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 004343f0 f   linked:verified_0211.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ShowKeyboardTips@CXTPCommandBars@@QAEXPAVCXTPCommandBar@@H@Z",
+  "address": "006a5950",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 2,
+  "linked_owner": "0001:0002f4a0       ?ShowKeyboardTips@CXTPCommandBars@@QAEXPAVCXTPCommandBar@@H@Z 004304a0 f   linked:verified_0069.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ShowMessageBox@CXTPResourceManager@@QAEHII@Z",
+  "address": "0071f4b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b3c0       ?ShowMessageBox@CXTPResourceManager@@QAEHII@Z 0043c3c0 f   linked:verified_0199.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ShowToolTip@CXTPPropertyGridView@@MAEXVCPoint@@@Z",
+  "address": "00715db0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b5f0       ?ShowToolTip@CXTPPropertyGridView@@MAEXVCPoint@@@Z 0043c5f0 f   linked:verified_0213.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?ShowToolTip@CXTPReportRow@@UAEXVCPoint@@PAVCXTPReportTip@@@Z",
+  "address": "00751d90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:000389f0       ?ShowToolTip@CXTPReportRow@@UAEXVCPoint@@PAVCXTPReportTip@@@Z 004399f0 f   linked:verified_0222.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SplitString@CXTPPaintManager@@IAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAV23@1@Z",
+  "address": "006ae310",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00023280       ?SplitString@CXTPPaintManager@@IAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@AAV23@1@Z 00424280 f   linked:verified_0081.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?StringToRGB@CXTPPropertyGridItemColor@@SAKPBD@Z",
+  "address": "007137a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00036e40       ?StringToRGB@CXTPPropertyGridItemColor@@SAKPBD@Z 00437e40 f   linked:verified_0212.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?StripMnemonics@CXTPDrawHelpers@@SAXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "006f6b90",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00011a70       ?StripMnemonics@CXTPDrawHelpers@@SAXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00412a70 f   linked:verified_0085.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?SwitchTearOffTracking@CXTPPopupBar@@AAEXHVCPoint@@@Z",
+  "address": "006efe70",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001a080       ?SwitchTearOffTracking@CXTPPopupBar@@AAEXHVCPoint@@@Z 0041b080 f   linked:verified_0190.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?UpdateCaptionText@CXTCaption@@MAEXPAVCDC@@@Z",
+  "address": "00719710",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:000185d0       ?UpdateCaptionText@CXTCaption@@MAEXPAVCDC@@@Z 004195d0 f   linked:verified_0048.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?UpdateContents@CXTPTabClientWnd@@UAEXXZ",
+  "address": "007057a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000f7b0       ?UpdateContents@CXTPTabClientWnd@@UAEXXZ 004107b0 f   linked:verified_0193.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?UpdateFonts@CXTPPaintManager@@UAEXXZ",
+  "address": "006b0670",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003ba40       ?UpdateFonts@CXTPPaintManager@@UAEXXZ 0043ca40 f   linked:verified_0044.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?UpdateFonts@CXTPRibbonTheme@@MAEXXZ",
+  "address": "00728d90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00026e70       ?UpdateFonts@CXTPRibbonTheme@@MAEXXZ 00427e70 f   linked:verified_0122.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?UpdateList@CXTPReportSubListControl@@QAEHXZ",
+  "address": "0074f5c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0003bc40       ?UpdateList@CXTPReportSubListControl@@QAEHXZ 0043cc40 f   linked:verified_0117.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?UpdatePopupSelection@CXTPControlComboBox@@QAEXXZ",
+  "address": "006a9780",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00017150       ?UpdatePopupSelection@CXTPControlComboBox@@QAEXXZ 00418150 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?WorkspaceToScreen@CXTPTabClientWnd@@QBEXPAUtagPOINT@@@Z",
+  "address": "00703b90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003bf70       ?WorkspaceToScreen@CXTPTabClientWnd@@QBEXPAUtagPOINT@@@Z 0043cf70 f   linked:verified_0143.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?Write@CXTPPropExchangeArchive@@UAEXPBDPBXI@Z",
+  "address": "006fcef0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003bfc0       ?Write@CXTPPropExchangeArchive@@UAEXPBDPBXI@Z 0043cfc0 f   linked:verified_0016.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?WriteProfileBinary@CXTRegistryManager@@QAEHPBD0PAEI@Z",
+  "address": "00754780",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003bfe0       ?WriteProfileBinary@CXTRegistryManager@@QAEHPBD0PAEI@Z 0043cfe0 f   linked:verified_0054.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?WriteProfileStringA@CXTRegistryManager@@QAEHPBD00@Z",
+  "address": "007544c0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00032810       ?WriteProfileStringA@CXTRegistryManager@@QAEHPBD00@Z 00433810 f   linked:verified_0098.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_Calc3ColSizesIfSingleCol@CXTPPrintPageHeaderFooter@@MAEHPAVCDC@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@11AAVCSize@@22@Z",
+  "address": "006f8e20",
+  "new": true,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00011ad0       ?_Calc3ColSizesIfSingleCol@CXTPPrintPageHeaderFooter@@MAEHPAVCDC@@HABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@11AAVCSize@@22@Z 00412ad0 f   linked:verified_0085.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_CreateRecodFromText@CXTPReportControl@@MAEPAVCXTPReportRecord@@PBD@Z",
+  "address": "006d17b0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 3,
+  "linked_owner": "0001:0003c1c0       ?_CreateRecodFromText@CXTPReportControl@@MAEPAVCXTPReportRecord@@PBD@Z 0043d1c0 f   linked:verified_0060.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_DetachAll@CXTPDockingPaneManager@@AAEXXZ",
+  "address": "006e5aa0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003c420       ?_DetachAll@CXTPDockingPaneManager@@AAEXXZ 0043d420 f   linked:verified_0026.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_GetAddOrRemovePopup@CXTPCommandBars@@IAEXPAVCXTPToolBar@@PAVCXTPCommandBar@@@Z",
+  "address": "006a2d90",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0001d3a0       ?_GetAddOrRemovePopup@CXTPCommandBars@@IAEXPAVCXTPToolBar@@PAVCXTPCommandBar@@@Z 0041e3a0 f   linked:verified_0172.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_GetTextExtent@CXTPPropertyGridView@@AAE?AVCSize@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPPropertyGridItem@@H@Z",
+  "address": "00715ce0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0000d5c0       ?_GetTextExtent@CXTPPropertyGridView@@AAE?AVCSize@@ABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAVCXTPPropertyGridItem@@H@Z 0040e5c0 f   linked:verified_0108.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_ImageNameToResourceName@CXTPOffice2007Images@@IAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@V23@@Z",
+  "address": "0078e3a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00030b60       ?_ImageNameToResourceName@CXTPOffice2007Images@@IAE?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@V23@@Z 00431b60 f   linked:verified_0197.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_Init@CXTPPropertyGridItemBool@@AAEXH@Z",
+  "address": "00717540",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00033190       ?_Init@CXTPPropertyGridItemBool@@AAEXH@Z 00434190 f   linked:verified_0211.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_ProcessOtherSpecs@CXTPReportControlLocale@@CAXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@ABVCOleDateTime@3@@Z",
+  "address": "006cbbf0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0000b4c0       ?_ProcessOtherSpecs@CXTPReportControlLocale@@CAXAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@ABVCOleDateTime@3@@Z 0040c4c0 f   linked:verified_0215.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_ReadRecodsFromText@CXTPReportControl@@MAEHPBDAAVCXTPReportRecords@@@Z",
+  "address": "006ce5f0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:0003c0c0       ?_ReadRecodsFromText@CXTPReportControl@@MAEHPBDAAVCXTPReportRecords@@@Z 0043d0c0 f   linked:verified_0060.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_SetEditText@CXTPControlComboBox@@IAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "006a7b40",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00016b30       ?_SetEditText@CXTPControlComboBox@@IAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00417b30 f   linked:verified_0174.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_SetEditText@CXTPControlEdit@@IAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z",
+  "address": "007420a0",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:00017950       ?_SetEditText@CXTPControlEdit@@IAEXABV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z 00418950 f   linked:verified_0175.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_ShowToolTip@CXTPPropertyGridView@@AAEXVCRect@@0PAVCXTPPropertyGridItem@@H@Z",
+  "address": "00715c10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 0,
+  "linked_owner": "0001:0003b520       ?_ShowToolTip@CXTPPropertyGridView@@AAEXVCRect@@0PAVCXTPPropertyGridItem@@H@Z 0043c520 f   linked:verified_0213.obj",
+  "verified_owner": true
+ },
+ {
+  "symbol": "?_TrackPopupContextMenu@CXTPDockingPaneManager@@AAEXPAVCXTPDockingPane@@@Z",
+  "address": "006e5d10",
+  "new": false,
+  "code_exact": true,
+  "data_exact": true,
+  "data_spans": 1,
+  "linked_owner": "0001:00033640       ?_TrackPopupContextMenu@CXTPDockingPaneManager@@AAEXPAVCXTPDockingPane@@@Z 00434640 f   linked:verified_0204.obj",
+  "verified_owner": true
+ }
+]
