@@ -1,0 +1,44 @@
+[
+ {
+  "profile": "precise",
+  "flags": "/O2 /GS- /EHsc /MD",
+  "matches": [
+   {
+    "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+    "address": "004a5050",
+    "size": 61
+   }
+  ]
+ },
+ {
+  "profile": "fast",
+  "flags": "/O2 /GS- /EHsc /MD /fp:fast",
+  "matches": [
+   {
+    "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+    "address": "004a5050",
+    "size": 61
+   },
+   {
+    "symbol": "??$WriteNormQuat@M@BitStream@RakNet@@QAEXMMMM@Z",
+    "address": "004a5dd0",
+    "size": 323
+   },
+   {
+    "symbol": "??$WriteCompressed@M@BitStream@RakNet@@QAEXM@Z",
+    "address": "004c9c80",
+    "size": 110
+   },
+   {
+    "symbol": "??$WriteVector@M@BitStream@RakNet@@QAEXMMM@Z",
+    "address": "004ca210",
+    "size": 146
+   },
+   {
+    "symbol": "??$ReadVector@M@BitStream@RakNet@@QAE_NAAM00@Z",
+    "address": "004ca0f0",
+    "size": 283
+   }
+  ]
+ }
+]

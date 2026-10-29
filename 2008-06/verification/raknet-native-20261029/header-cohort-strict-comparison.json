@@ -1,0 +1,14 @@
+[
+ {
+  "object": "GetTime.obj",
+  "old": 2,
+  "new": 1,
+  "gains": [],
+  "losses": [
+   [
+    "?GetTimeNS@RakNet@@YA_JXZ",
+    "004c9790"
+   ]
+  ]
+ }
+]

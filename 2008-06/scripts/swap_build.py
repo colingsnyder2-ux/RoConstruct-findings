@@ -18,7 +18,7 @@ from roc import libs, match, rebuild  # noqa: E402
 
 CLIENT = "2008-06"
 RECIPES = {"RbxgsApp": {"rbxgs", "rbxgs-dll"}, "RbxApp": {"openrbx-client", "openrbx-client-dll"}}
-RECIPE_PREFIXES = {"XTP": ("xtp-11.2.2",), "G3D": ("g3d-6.09",), "Boost": ("boost-1.34.1",), "libpng": ("libpng-1.2",),
+RECIPE_PREFIXES = {"RakNet": ("openrbx-raknet",), "XTP": ("xtp-11.2.2",), "G3D": ("g3d-6.09",), "Boost": ("boost-1.34.1",), "libpng": ("libpng-1.2",),
                    "Lua": ("lua-5.1",), "Ogre": ("ogre-",),
                    "MfcAtl": ("mfc-9.0", "atl-"), "BoostExtra": ("boost-1.35", "boost-1.36", "boost-1.40"),
                    "CodegenAnalogs": ("wildmagic-2-core", "templates-")}
@@ -56,9 +56,9 @@ def compatible(module, unit, recipe=None):
         return True  # isolated analog module makes no claim of native header compatibility
     if not unit.rsplit("/", 1)[-1].startswith("roc_"):
         return True
-    if module in ("Ogre", "MfcAtl", "BoostExtra"):  # no adopted headers: a unit written against the real library headers (no private copies) fits
+    if module in ("Ogre", "MfcAtl", "BoostExtra", "RakNet"):  # no adopted headers: a unit written against the real library headers (no private copies) fits
         from roc import libs
-        src = libs.LIBS / libs.RECIPES[recipe]["src"] / unit
+        src = libs.fetch(recipe) / unit  # materialize portable units before the header gate
         return src.exists() and not ALIAS.search(src.read_text(errors="replace"))
     src = TREES.get(module, Path("-")) / unit
     if not src.exists():

@@ -1,0 +1,59 @@
+{
+ "groups": [
+  {
+   "recipe": "openrbx-raknet",
+   "file": "roc_native_bitstream_geometry_5e4a747d48d02719.cpp",
+   "cl": "21022",
+   "flags": "/O2 /GS- /EHsc /MD /fp:fast",
+   "addrs": [
+    "004a5dd0",
+    "004c9c80",
+    "004ca210",
+    "004ca0f0"
+   ],
+   "symbols": {
+    "004a5dd0": "??$WriteNormQuat@M@BitStream@RakNet@@QAEXMMMM@Z",
+    "004c9c80": "??$WriteCompressed@M@BitStream@RakNet@@QAEXM@Z",
+    "004ca210": "??$WriteVector@M@BitStream@RakNet@@QAEXMMM@Z",
+    "004ca0f0": "??$ReadVector@M@BitStream@RakNet@@QAE_NAAM00@Z"
+   },
+   "native": true,
+   "results": [
+    {
+     "address": "004a5dd0",
+     "score": 100,
+     "symbol": "??$WriteNormQuat@M@BitStream@RakNet@@QAEXMMMM@Z",
+     "reason": "exact",
+     "cause": "exact",
+     "dll_twin": null
+    },
+    {
+     "address": "004c9c80",
+     "score": 100,
+     "symbol": "??$WriteCompressed@M@BitStream@RakNet@@QAEXM@Z",
+     "reason": "exact",
+     "cause": "exact",
+     "dll_twin": null
+    },
+    {
+     "address": "004ca210",
+     "score": 100,
+     "symbol": "??$WriteVector@M@BitStream@RakNet@@QAEXMMM@Z",
+     "reason": "exact",
+     "cause": "exact",
+     "dll_twin": null
+    },
+    {
+     "address": "004ca0f0",
+     "score": 100,
+     "symbol": "??$ReadVector@M@BitStream@RakNet@@QAE_NAAM00@Z",
+     "reason": "exact",
+     "cause": "exact",
+     "dll_twin": null
+    }
+   ]
+  }
+ ],
+ "rejected": [],
+ "failed": []
+}

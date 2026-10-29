@@ -1,0 +1,92 @@
+[
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "BitStream.obj",
+  "layer": "layer-openrbx",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "FileList.obj",
+  "layer": "layer-upstream",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "FileListTransfer.obj",
+  "layer": "layer-upstream",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "LightweightDatabaseServer.obj",
+  "layer": "layer-upstream",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "RakPeer.obj",
+  "layer": "layer-openrbx",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "ReliabilityLayer.obj",
+  "layer": "layer-openrbx",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "ReplicaManager.obj",
+  "layer": "layer-upstream",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "Router.obj",
+  "layer": "layer-upstream",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "StringTable.obj",
+  "layer": "layer-openrbx",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z",
+  "address": "004a5050",
+  "object": "TableSerializer.obj",
+  "layer": "layer-upstream",
+  "size": 61,
+  "code_exact": true,
+  "data_exact": true
+ }
+]
