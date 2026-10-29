@@ -1,4 +1,4 @@
-// from server: 97% by EspClaude
+// from server: 98% by EspClaude
 // from server: 78% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
@@ -186,7 +186,7 @@ template<class T> inline T& nativeField(void* p, unsigned offset) {
     return *reinterpret_cast<T*>(static_cast<char*>(p) + offset);
 }
 namespace Ogre {
-class VisualEngine;
+class VisualEngine { public: SceneManager* sceneManager() { return *reinterpret_cast<SceneManager**>(reinterpret_cast<char*>(this) + 4); } };
 class RbxSubEntity : public SubEntity, public ShadowCaster {
 public:
     virtual ~RbxSubEntity();
@@ -195,6 +195,8 @@ public:
     void setLodMesh(unsigned int, SubMesh*); 
     SubMesh* getLodMesh(unsigned int);       
     void setLod(unsigned int);              
+    void setMatrix(const Ogre::Matrix4& m) { *reinterpret_cast<Ogre::Matrix4*>(reinterpret_cast<char*>(this) + 0xf0) = m; }
+    void set140(int v) { *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x140) = v; }
 };
 class RbxSceneNode : public SceneNode {
     typedef std::map<unsigned long, Matrix4*> TransformMap;
@@ -265,6 +267,7 @@ class Mesh : public G3D::ReferenceCountedObject {
 public:
     class Level : public G3D::ReferenceCountedObject {
     public:
+        unsigned* indices; int indexCount; int field14; int primitive; bool special; int subIndex; Ogre::SubMesh* subMesh;
         void updateSpecialGeometry(Ogre::VisualEngine*, Ogre::AxisAlignedBox*);
         void updateGeometry(Ogre::VisualEngine*, Ogre::AxisAlignedBox*);
     };
@@ -285,6 +288,10 @@ public:
     virtual const G3D::CoordinateFrame& cframe();
     virtual void setFloat14(float); 
     virtual float getFloat14() const; 
+    Ogre::RbxEntity* entity;
+    Ogre::RbxSubEntity* subEntity;
+    int field14;
+    float depthBias;
 };
 }
 namespace RenderNew {
@@ -316,8 +323,8 @@ typedef RBX::RenderBase::Mesh NativeMesh;
 typedef RBX::RenderBase::MaterialBase NativeMaterial;
 typedef RBX::RenderNew::Material::Level NativeLevel;
 static __forceinline SubMesh* nativeSubMesh(NativeMesh::Level* level) {
-    if (!nativeField<bool>(level, 0x1c) && nativeField<int>(level, 0x20) >= 0)
-        return nativeBaseMesh->getSubMesh((unsigned short)nativeField<int>(level, 0x20));
+    if (!level->special && level->subIndex >= 0)
+        return nativeBaseMesh->getSubMesh((unsigned short)level->subIndex);
     return 0;
 }
 static __forceinline ColourValue nativeColour(const Color3& a, const Color3& b, const Color3& c) { return ColourValue(a.r, b.g, c.b); }
@@ -362,7 +369,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
     Timer timer;
     timer.reset();
     if (!NF(RbxSceneNode*, this, 0x268)) {
-        NF(RbxSceneNode*, this, 0x268) = new RbxSceneNode(nativeField<SceneManager*>(ctx, 4), "rbxroot");
+        NF(RbxSceneNode*, this, 0x268) = new RbxSceneNode(ctx->sceneManager(), "rbxroot");
         nativeField<SceneManager*>(ctx, 4)->getRootSceneNode()->addChild(NF(RbxSceneNode*, this, 0x268));
     }
     { Flag f; f.v = nativeField<bool>(this, 0x2f6); updateLights(ctx, f); }
@@ -401,27 +408,27 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         G3D::ReferenceCountedPointer<NativeMesh::Level> geometry = mesh->detailLevel((float)lod);
         bool boundsChanged = false;
         if (nativeField<int>(mesh.pointer(), 0x84) == 4 && !nativeField<bool>(ctx, 0x806)
-            && nativeField<bool>(geometry.pointer(), 0x1c)) {
+            && geometry->special) {
             G3D::ReferenceCountedPointer<NativeMesh::Level> base = mesh->detailLevel(0.0f);
-            if (nativeField<int>(base.pointer(), 0x18) == 5 && nativeField<int>(base.pointer(), 0x10) == 4) {
-                unsigned* indices = nativeField<unsigned*>(base.pointer(), 0xc);
+            if (base->primitive == 5 && base->indexCount == 4) {
+                unsigned* indices = base->indices;
                 const G3D::Vector3& normal = mesh->normal(indices[0]);
                 for (int j = 0; j < 4; ++j) {
-                    unsigned* idx = &nativeField<unsigned*>(base.pointer(), 0xc)[j];
+                    unsigned* idx = &base->indices[j];
                     G3D::Vector3& p = mesh->position(*idx);
                     p += normal * 0.06f;
                 }
             }
         }
         if (!special) {
-            if (nativeField<bool>(geometry.pointer(), 0x1c)) {
+            if (geometry->special) {
                 AxisAlignedBox box;
                 geometry->updateGeometry(ctx, &box);
                 float radius = box.getHalfSize().length();
-                NF(RbxSceneNode*, this, 0x268)->setSphere((unsigned long)nativeField<SubMesh*>(geometry.pointer(), 0x24), Ogre::Sphere(box.getCenter(), radius));
+                NF(RbxSceneNode*, this, 0x268)->setSphere((unsigned long)geometry->subMesh, Ogre::Sphere(box.getCenter(), radius));
                 boundsChanged = true;
             }
-        } else if (nativeField<bool>(geometry.pointer(), 0x1c)) {
+        } else if (geometry->special) {
             AxisAlignedBox box;
             geometry->updateSpecialGeometry(ctx, &box);
             float radius = box.getHalfSize().length();
@@ -452,7 +459,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                 pass->setSpecular(0.75f, 0.75f, 0.75f, 1.0f);
                 pass->setShininess(10.0f);
             }
-            pass->setDepthBias(nativeField<float>(chunk, 0x18) * -16.0f, 0.0f);
+            pass->setDepthBias(chunk->depthBias * -16.0f, 0.0f);
             if (level->transparent() > 0.0f || nativeField<int>(mesh.pointer(), 0x84) == 4) {
                 pass->setSceneBlending((SceneBlendFactor)7, (SceneBlendFactor)9);
                 pass->setDepthWriteEnabled(false);
@@ -470,7 +477,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                     unit->setTextureName(texture->getName(), (TextureType)2);
                 }
                 bool loaded = !texture.isNull() && texture->hasAlpha();
-                if (level->transparent() <= 0.0f && loaded && nativeField<int>(geometry.pointer(), 0x18) == 2) {
+                if (level->transparent() <= 0.0f && loaded && geometry->primitive == 2) {
                     pass->setSceneBlending((SceneBlendType)4);
                     pass->setDepthWriteEnabled(true);
                     pass->setAlphaRejectSettings((CompareFunction)6, 1);
@@ -482,7 +489,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
     materialCreated=true;
 
  }}
-        if (!nativeField<RbxSubEntity*>(chunk, 0x10)) {
+        if (!chunk->subEntity) {
             SubMesh* selected;
             RbxSubEntity* sub;
             if (special) {
@@ -492,7 +499,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                 sub = nativeField<RbxEntity*>(this, 0x26c)->addSubEntity(selected, lod);
                 nativeField<bool>(sub, 0x13c) = false;
             } else {
-                SubMesh* sm = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+                SubMesh* sm = geometry->subMesh;
                 if (!sm) {
                 fail:
                     throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
@@ -501,17 +508,17 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                 sub = nativeField<RbxEntity*>(this, 0x26c)->addSubEntity(selected, lod);
             }
             sub->setFloat138(chunk->getFloat14());
-            nativeField<int>(sub, 0x140) = nativeField<int>(mesh.pointer(), 0x80);
+            sub->set140(nativeField<int>(mesh.pointer(), 0x80));
             if (nativeField<int>(mesh.pointer(), 0x80) == 0 && nativeField<int>(mesh.pointer(), 0x84) == 1)
                 nativeField<bool>(sub, 0x13c) = false;
             if (nativeField<int>(mesh.pointer(), 0x84) == 4) nativeField<bool>(sub, 0x13c) = false;
-            nativeField<RbxSubEntity*>(chunk, 0x10) = sub;
-            nativeField<RbxEntity*>(chunk, 0xc) = nativeField<RbxEntity*>(this, 0x26c);
+            chunk->subEntity = sub;
+            chunk->entity = nativeField<RbxEntity*>(this, 0x26c);
             {
             const G3D::Vector3& pos = chunk->cframe().translation;
             AxisAlignedBox bounds = nativeField<AxisAlignedBox>(nativeField<RbxEntity*>(this, 0x26c), 0x27c);
             if (std::fabs(pos.x) < 10000.0f && std::fabs(pos.y) < 10000.0f && std::fabs(pos.z) < 10000.0f) {
-                if (selected != nativeField<SubMesh*>(geometry.pointer(), 0x24)) {
+                if (selected != geometry->subMesh) {
                     const Ogre::Sphere& sphere = NF(RbxSceneNode*, this, 0x268)->getSphere((unsigned long)selected);
                     float radius = sphere.getRadius();
                     const G3D::Vector3& position = chunk->cframe().translation;
@@ -523,7 +530,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                     merged.merge(box);
                     nativeField<RbxEntity*>(this, 0x26c)->mergeBounds(merged);
                 } else {
-                    SubMesh* sub = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+                    SubMesh* sub = geometry->subMesh;
                     AxisAlignedBox box(
                         Ogre::Vector3(pos.x + nativeField<float>(sub, 0xcc), pos.y + nativeField<float>(sub, 0xd0),
                             pos.z + nativeField<float>(sub, 0xd4)),
@@ -534,24 +541,17 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
                 }
             }
             }
-        } else if (boundsChanged || !nativeField<RbxSubEntity*>(chunk, 0x10)->getLodMesh(lod)) {
-            SubMesh* lodMesh;
-            if (special) {
-                if (nativeSubMesh(geometry.pointer())) {
-                    lodMesh = nativeSubMesh(geometry.pointer());
-                    goto setLodMesh;
-                }
-            } else {
-                lodMesh = nativeField<SubMesh*>(geometry.pointer(), 0x24);
-                if (lodMesh) {
-                setLodMesh:
-                    nativeField<RbxSubEntity*>(chunk, 0x10)->setLodMesh(lod, lodMesh);
-                }
-            }
+        } else if (boundsChanged || !chunk->subEntity->getLodMesh(lod)) {
+            if (!special) {
+                SubMesh* lodMesh = geometry->subMesh;
+                if (lodMesh)
+                    chunk->subEntity->setLodMesh(lod, lodMesh);
+            } else if (nativeSubMesh(geometry.pointer()))
+                chunk->subEntity->setLodMesh(lod, nativeSubMesh(geometry.pointer()));
         }
-        nativeField<RbxSubEntity*>(chunk, 0x10)->setLod(lod);
-        nativeField<RbxSubEntity*>(chunk, 0x10)->setFloat138(chunk->getFloat14());
-        RbxSubEntity* sub = nativeField<RbxSubEntity*>(chunk, 0x10);
+        chunk->subEntity->setLod(lod);
+        chunk->subEntity->setFloat138(chunk->getFloat14());
+        RbxSubEntity* sub = chunk->subEntity;
         if (material && (materialCreated || sub->getMaterial().getPointer() == nativeField<MaterialPtr>(this, 0x270).getPointer())) {
             Ogre::Material* mat = nativeField<MaterialPtr>(material, 0x2c).getPointer();
             if (mat) sub->setMaterialName(mat->getName());
@@ -562,7 +562,7 @@ void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose)
         const G3D::Vector3& p = chunk->cframe().translation;
         Ogre::Matrix4 transform;
         transform.makeTransform(Ogre::Vector3(p.x, p.y, p.z), Ogre::Vector3(1, 1, 1), q);
-        nativeField<Ogre::Matrix4>(nativeField<RbxSubEntity*>(chunk, 0x10), 0xf0) = transform;
+        chunk->subEntity->setMatrix(transform);
     }
     if (special && nativeDebugRender) {
         nativeFlushGeometry(ctx);

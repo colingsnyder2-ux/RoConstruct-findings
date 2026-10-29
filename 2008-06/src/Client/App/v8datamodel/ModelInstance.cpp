@@ -77,6 +77,13 @@ namespace RBX
 			modifiers.push_back(modifier);
 	}
 
+	void ModelInstance::onChildRemoving(Instance* child)
+	{
+		IModelModifier* modifier = dynamic_cast<IModelModifier*>(child);
+		if (modifier)
+			modifiers.erase(std::find(modifiers.begin(), modifiers.end(), modifier));
+	}
+
 	void ModelInstance::onDescendentAdded(Instance* instance)
 	{
 	PVInstance::onDescendentAdded(instance);

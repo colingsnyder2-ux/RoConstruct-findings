@@ -41,6 +41,7 @@ namespace RBX
 		virtual void render3dSelect(Adorn* adorn, SelectState selectState);
 	protected:
 		virtual void onChildAdded(Instance* child);
+		virtual void onChildRemoving(Instance* child);
 		virtual void onDescendentAdded(Instance* instance);
 		virtual void onDescendentRemoving(const boost::shared_ptr<Instance>& instance);
 		virtual bool askSetParent(const Instance* instance) const;

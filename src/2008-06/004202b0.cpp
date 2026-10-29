@@ -1,11 +1,11 @@
-// from server: 83% by king_originala
+// from server: 100% by coldek
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_1ad6517c49fda77e.cpp
+// roc-lib: rbxgs-dll roc_codex004202b0_nothrow_8ef2c6f5e311f093.cpp
 
 // Candidate translation unit (score above; library headers required).
-#pragma include_alias(<boost/shared_ptr.hpp>, <roc_espeon_boostsharedinlineheader96f7848c627384e8.cpp>)
+#pragma include_alias(<boost/shared_ptr.hpp>, <roc_codex004202b0_nothrow_header_524615a53570f978.cpp>)
 #pragma include_alias(<afxcmn.h>, <roc_espeon_mfclistheadera572ba20257320a9.cpp>)
 #pragma include_alias(<afxcmn.inl>, <roc_espeon_mfclistheader78af23134be47e59.cpp>)
 #pragma include_alias(<afxcmn2.inl>, <roc_espeon_mfclistheaderaeb445a0f760ef96.cpp>)
@@ -168,25 +168,24 @@ void InsertDialogRecovery::populate(const RBX::Reflection::ClassDescriptor* desc
  if(descriptor->name!=excludedName()) {
   MetadataView* metadata=metadataManager()->find(descriptor,false);
   MetadataView* current=currentMetadata();
-  boost::shared_ptr<RBX::Instance> instance;
   if(metadata && (!metadata->field<bool>(0x131)||current->field<bool>(0x130)) && (!metadata->field<bool>(0x132)||current->field<bool>(0x131)) && metadata->field<bool>(0x130)) {
+   boost::shared_ptr<RBX::Instance> instance;
    try {instance=createInstance(descriptor->name);}catch(std::exception&){}
    RBX::Instance* object=instance.get();
    if(object) {
     bool allowed;
     if(parent) allowed=reinterpret_cast<ParentCheckView*>(object)->acceptsParent(parent.get());
-    else allowed=dynamic_cast<RBX::Service*>(object)!=NULL;
+    else allowed=dynamic_cast<RBX::Service*>(object)!=0;
     if(allowed) {
     instances.push_back(instance);
     int icon=metadata->icon();
-    const char* label=descriptor->name.name.c_str();
-    int index=list.InsertItem(LVIF_TEXT|LVIF_IMAGE,0,label,0,0,icon,0);
-    list.SetItem(index,0,LVIF_PARAM,NULL,0,0,0,reinterpret_cast<LPARAM>(object));
-    if(descriptor->name.name.compare(static_cast<LPCTSTR>(selectedName))==0)list.SetItemState(index,LVIS_SELECTED,LVIS_SELECTED);
+    const char* label=descriptor->name.c_str();
+    int index=list.InsertItem(0x00000001|0x00000002,0,label,0,0,icon,0);
+    list.SetItem(index,0,0x00000004,0,0,0,0,reinterpret_cast<LPARAM>(object));
+    if(descriptor->name.name.compare(static_cast<LPCTSTR>(selectedName))==0)list.SetItemState(index,0x0002,0x0002);
     }
    }
   }
  }
  std::for_each(descriptor->derivedClasses_begin(),descriptor->derivedClasses_end(),boost::bind(&InsertDialogRecovery::populate,this,_1));
 }
-
