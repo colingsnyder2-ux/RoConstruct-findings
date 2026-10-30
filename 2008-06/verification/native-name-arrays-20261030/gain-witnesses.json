@@ -1,0 +1,1922 @@
+{
+ "0042ef90": {
+  "address": "0042ef90",
+  "object": "Accoutrement.obj",
+  "symbol": "??$doDeclare@$1?sAccoutrement@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Accoutrement\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0042f000": {
+  "address": "0042f000",
+  "object": "Accoutrement.obj",
+  "symbol": "??$doDeclare@$1?sHat@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Hat\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005b1950": {
+  "address": "005b1950",
+  "object": "Accoutrement.obj",
+  "symbol": "?classDescriptor@?$Described@VAccoutrement@RBX@@$1?sAccoutrement@2@3PADAV?$FactoryProduct@VAccoutrement@RBX@@VInstance@2@$1?sAccoutrement@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Accoutrement\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005b19c0": {
+  "address": "005b19c0",
+  "object": "Accoutrement.obj",
+  "symbol": "?classDescriptor@?$Described@VHat@RBX@@$1?sHat@2@3PADAV?$FactoryProduct@VHat@RBX@@VAccoutrement@2@$1?sHat@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Hat\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489df0": {
+  "address": "00489df0",
+  "object": "Backpack.obj",
+  "symbol": "??$doDeclare@$1?sBackpack@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Backpack\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0160": {
+  "address": "005c0160",
+  "object": "Backpack.obj",
+  "symbol": "?classDescriptor@?$Described@VBackpack@RBX@@$1?sBackpack@2@3PADAV?$FactoryProduct@VBackpack@RBX@@VHopper@2@$1?sBackpack@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Backpack\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0045b240": {
+  "address": "0045b240",
+  "object": "Camera.obj",
+  "symbol": "??$doDeclare@$1?sCamera@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Camera\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005cd590": {
+  "address": "005cd590",
+  "object": "Camera.obj",
+  "symbol": "?classDescriptor@?$Described@VCamera@RBX@@$1?sCamera@2@3PADAV?$FactoryProduct@VCamera@RBX@@VInstance@2@$1?sCamera@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Camera\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0048a100": {
+  "address": "0048a100",
+  "object": "CharacterAppearance.obj",
+  "symbol": "??$doDeclare@$1?sBodyColors@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BodyColors\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489f40": {
+  "address": "00489f40",
+  "object": "CharacterAppearance.obj",
+  "symbol": "??$doDeclare@$1?sShirtGraphic@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "ShirtGraphic\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0048a090": {
+  "address": "0048a090",
+  "object": "CharacterAppearance.obj",
+  "symbol": "??$doDeclare@$1?sShirt@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Shirt\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0048a170": {
+  "address": "0048a170",
+  "object": "CharacterAppearance.obj",
+  "symbol": "??$doDeclare@$1?sSkin@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Skin\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0240": {
+  "address": "005c0240",
+  "object": "CharacterAppearance.obj",
+  "symbol": "?classDescriptor@?$Described@VBodyColors@RBX@@$1?sBodyColors@2@3PADAV?$FactoryProduct@VBodyColors@RBX@@VCharacterAppearance@2@$1?sBodyColors@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BodyColors\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c01d0": {
+  "address": "005c01d0",
+  "object": "CharacterAppearance.obj",
+  "symbol": "?classDescriptor@?$Described@VShirtGraphic@RBX@@$1?sShirtGraphic@2@3PADAV?$FactoryProduct@VShirtGraphic@RBX@@VCharacterAppearance@2@$1?sShirtGraphic@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "ShirtGraphic\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00491fb0": {
+  "address": "00491fb0",
+  "object": "CharacterAppearance.obj",
+  "symbol": "?classDescriptor@?$Described@VShirt@RBX@@$1?sShirt@2@3PADAV?$FactoryProduct@VShirt@RBX@@VShirtGraphic@2@$1?sShirt@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Shirt\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005d4cb0": {
+  "address": "005d4cb0",
+  "object": "CharacterAppearance.obj",
+  "symbol": "?classDescriptor@?$Described@VSkin@RBX@@$1?sSkin@2@3PADAV?$FactoryProduct@VSkin@RBX@@VCharacterAppearance@2@$1?sSkin@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Skin\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004961d0": {
+  "address": "004961d0",
+  "object": "Client.obj",
+  "symbol": "??$doDeclare@$1?sClient@Network@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "NetworkClient\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049eb30": {
+  "address": "0049eb30",
+  "object": "Client.obj",
+  "symbol": "?classDescriptor@?$Described@VClient@Network@RBX@@$1?sClient@23@3PADAV?$FactoryProduct@VClient@Network@RBX@@VPeer@23@$1?sClient@23@3PADA@3@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "NetworkClient\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0041df70": {
+  "address": "0041df70",
+  "object": "custommesh.obj",
+  "symbol": "??$doDeclare@$1?sSpecialShape@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "SpecialMesh\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0059f7e0": {
+  "address": "0059f7e0",
+  "object": "custommesh.obj",
+  "symbol": "?classDescriptor@?$Described@VSpecialShape@RBX@@$1?sSpecialShape@2@3PADAV?$FactoryProduct@VSpecialShape@RBX@@VInstance@2@$1?sSpecialShape@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "SpecialMesh\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005788c0": {
+  "address": "005788c0",
+  "object": "DataModel.obj",
+  "symbol": "?classDescriptor@?$Described@VDataModel@RBX@@$1?sDataModel@2@3PADAV?$NonFactoryProduct@VServiceProvider@RBX@@$1?sDataModel@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "DataModel\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0041fa30": {
+  "address": "0041fa30",
+  "object": "DataModel.obj",
+  "symbol": "??$doDeclare@$1?sDataModel@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "DataModel\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfe20": {
+  "address": "005bfe20",
+  "object": "DebrisService.obj",
+  "symbol": "??$doDeclare@$1?sDebrisService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Debris\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c06a0": {
+  "address": "005c06a0",
+  "object": "DebrisService.obj",
+  "symbol": "?classDescriptor@?$Described@VDebrisService@RBX@@$1?sDebrisService@2@3PADAV?$FactoryProduct@VDebrisService@RBX@@VInstance@2@$1?sDebrisService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Debris\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00406700": {
+  "address": "00406700",
+  "object": "DebugSettings.obj",
+  "symbol": "??$doDeclare@$1?sDebugSettings@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "DebugSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00564ee0": {
+  "address": "00564ee0",
+  "object": "DebugSettings.obj",
+  "symbol": "?classDescriptor@?$Described@VDebugSettings@RBX@@$1?sDebugSettings@2@3PADAV?$FactoryProduct@VDebugSettings@RBX@@VItem@GlobalSettings@2@$1?sDebugSettings@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "DebugSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0041de20": {
+  "address": "0041de20",
+  "object": "Decal.obj",
+  "symbol": "??$doDeclare@$1?sDecal@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Decal\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0041de90": {
+  "address": "0041de90",
+  "object": "Decal.obj",
+  "symbol": "??$doDeclare@$1?sTexture@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Texture\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00598020": {
+  "address": "00598020",
+  "object": "Decal.obj",
+  "symbol": "?classDescriptor@?$Described@VDecal@RBX@@$1?sDecal@2@3PADAV?$FactoryProduct@VDecal@RBX@@VFaceInstance@2@$1?sDecal@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Decal\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00598090": {
+  "address": "00598090",
+  "object": "Decal.obj",
+  "symbol": "?classDescriptor@?$Described@VTexture@RBX@@$1?sTexture@2@3PADAV?$FactoryProduct@VTexture@RBX@@VDecal@2@$1?sTexture@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Texture\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bf870": {
+  "address": "005bf870",
+  "object": "Explosion.obj",
+  "symbol": "??$doDeclare@$1?sExplosion@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Explosion\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0320": {
+  "address": "005c0320",
+  "object": "Explosion.obj",
+  "symbol": "?classDescriptor@?$Described@VExplosion@RBX@@$1?sExplosion@2@3PADAV?$FactoryProduct@VExplosion@RBX@@VInstance@2@$1?sExplosion@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Explosion\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00597fb0": {
+  "address": "00597fb0",
+  "object": "FaceInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VFaceInstance@RBX@@$1?sFaceInstance@2@3PADAVInstance@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "FaceInstance\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00666cc0": {
+  "address": "00666cc0",
+  "object": "FallingDown.obj",
+  "symbol": "??$doDeclare@$1?sFallingDown@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "FallingDown\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00609c60": {
+  "address": "00609c60",
+  "object": "Feature.obj",
+  "symbol": "??$doDeclare@$1?sFeature@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Feature\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0057d6e0": {
+  "address": "0057d6e0",
+  "object": "Feature.obj",
+  "symbol": "??$doDeclare@$1?sHole@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Hole\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0057d670": {
+  "address": "0057d670",
+  "object": "Feature.obj",
+  "symbol": "??$doDeclare@$1?sMotorFeature@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "MotorFeature\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0057d750": {
+  "address": "0057d750",
+  "object": "Feature.obj",
+  "symbol": "??$doDeclare@$1?sVelocityMotor@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "VelocityMotor\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0940": {
+  "address": "005c0940",
+  "object": "Feature.obj",
+  "symbol": "?classDescriptor@?$Described@VFeature@RBX@@$1?sFeature@2@3PADAV?$NonFactoryProduct@VInstance@RBX@@$1?sFeature@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Feature\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0060b700": {
+  "address": "0060b700",
+  "object": "Feature.obj",
+  "symbol": "?classDescriptor@?$Described@VVelocityMotor@RBX@@$1?sVelocityMotor@2@3PADAV?$FactoryProduct@VVelocityMotor@RBX@@VJointInstance@2@$1?sVelocityMotor@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "VelocityMotor\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c37a0": {
+  "address": "005c37a0",
+  "object": "Feature.obj",
+  "symbol": "?classDescriptor@?$Described@VHole@RBX@@$1?sHole@2@3PADAV?$FactoryProduct@VHole@RBX@@VFeature@2@$1?sHole@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Hole\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3730": {
+  "address": "005c3730",
+  "object": "Feature.obj",
+  "symbol": "?classDescriptor@?$Described@VMotorFeature@RBX@@$1?sMotorFeature@2@3PADAV?$FactoryProduct@VMotorFeature@RBX@@VFeature@2@$1?sMotorFeature@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "MotorFeature\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005a0320": {
+  "address": "005a0320",
+  "object": "Flag.obj",
+  "symbol": "??$doDeclare@$1?sFlag@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Flag\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3880": {
+  "address": "005c3880",
+  "object": "Flag.obj",
+  "symbol": "?classDescriptor@?$Described@VFlag@RBX@@$1?sFlag@2@3PADAV?$FactoryProduct@VFlag@RBX@@VTool@2@$1?sFlag@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Flag\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bf8e0": {
+  "address": "005bf8e0",
+  "object": "FlagStand.obj",
+  "symbol": "??$doDeclare@$1?sFlagStand@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "FlagStand\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bf950": {
+  "address": "005bf950",
+  "object": "FlagStand.obj",
+  "symbol": "??$doDeclare@$1?sFlagStandService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "FlagStandService\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0390": {
+  "address": "005c0390",
+  "object": "FlagStand.obj",
+  "symbol": "?classDescriptor@?$Described@VFlagStandService@RBX@@$1?sFlagStandService@2@3PADAV?$FactoryProduct@VFlagStandService@RBX@@VInstance@2@$1?sFlagStandService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "FlagStandService\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c38f0": {
+  "address": "005c38f0",
+  "object": "FlagStand.obj",
+  "symbol": "?classDescriptor@?$Described@VFlagStand@RBX@@$1?sFlagStand@2@3PADAV?$FactoryProduct@VFlagStand@RBX@@VPartInstance@2@$1?sFlagStand@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "FlagStand\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00667430": {
+  "address": "00667430",
+  "object": "Flying.obj",
+  "symbol": "??$doDeclare@$1?sFlying@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Flying\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00667560": {
+  "address": "00667560",
+  "object": "Freefall.obj",
+  "symbol": "??$doDeclare@$1?sFreefall@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Freefall\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0044a0e0": {
+  "address": "0044a0e0",
+  "object": "GameSettings.obj",
+  "symbol": "??$doDeclare@$1?sGameSettings@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "GameSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bf280": {
+  "address": "005bf280",
+  "object": "GameSettings.obj",
+  "symbol": "?classDescriptor@?$Described@VGameSettings@RBX@@$1?sGameSettings@2@3PADAV?$FactoryProduct@VGameSettings@RBX@@VItem@GlobalSettings@2@$1?sGameSettings@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "GameSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00667d80": {
+  "address": "00667d80",
+  "object": "GettingUp.obj",
+  "symbol": "??$doDeclare@$1?sGettingUp@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "GettingUp\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049ec10": {
+  "address": "0049ec10",
+  "object": "GlobalSettings.obj",
+  "symbol": "?classDescriptor@?$Described@VGlobalSettings@RBX@@$1?sGlobalSettings@2@3PADAV?$NonFactoryProduct@VServiceProvider@RBX@@$1?sGlobalSettings@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "GlobalSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00568df0": {
+  "address": "00568df0",
+  "object": "GlobalSettings.obj",
+  "symbol": "??$doDeclare@$1?sGlobalSettings@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "GlobalSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0066a5b0": {
+  "address": "0066a5b0",
+  "object": "GroupDragTool.obj",
+  "symbol": "??$doDeclare@$1?sGroupDragTool@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "GroupDragTool\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfaa0": {
+  "address": "005bfaa0",
+  "object": "Gyro.obj",
+  "symbol": "??$doDeclare@$1?sBodyGyro@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BodyGyro\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfbf0": {
+  "address": "005bfbf0",
+  "object": "Gyro.obj",
+  "symbol": "??$doDeclare@$1?sBodyPosition@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BodyPosition\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfc60": {
+  "address": "005bfc60",
+  "object": "Gyro.obj",
+  "symbol": "??$doDeclare@$1?sBodyVelocity@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BodyVelocity\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfb10": {
+  "address": "005bfb10",
+  "object": "Gyro.obj",
+  "symbol": "??$doDeclare@$1?sBodyForce@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BodyForce\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfb80": {
+  "address": "005bfb80",
+  "object": "Gyro.obj",
+  "symbol": "??$doDeclare@$1?sBodyThrust@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BodyThrust\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c5c20": {
+  "address": "005c5c20",
+  "object": "Gyro.obj",
+  "symbol": "??$doDeclare@$1?sRocket@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Rocket\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00630ea0": {
+  "address": "00630ea0",
+  "object": "Gyro.obj",
+  "symbol": "?classDescriptor@?$Described@VBodyGyro@RBX@@$1?sBodyGyro@2@3PADAV?$FactoryProduct@VBodyGyro@RBX@@VBodyMover@2@$1?sBodyGyro@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BodyGyro\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00630a80": {
+  "address": "00630a80",
+  "object": "Gyro.obj",
+  "symbol": "?classDescriptor@?$Described@VBodyPosition@RBX@@$1?sBodyPosition@2@3PADAV?$FactoryProduct@VBodyPosition@RBX@@VBodyMover@2@$1?sBodyPosition@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BodyPosition\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00630af0": {
+  "address": "00630af0",
+  "object": "Gyro.obj",
+  "symbol": "?classDescriptor@?$Described@VBodyVelocity@RBX@@$1?sBodyVelocity@2@3PADAV?$FactoryProduct@VBodyVelocity@RBX@@VBodyMover@2@$1?sBodyVelocity@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BodyVelocity\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00630f10": {
+  "address": "00630f10",
+  "object": "Gyro.obj",
+  "symbol": "?classDescriptor@?$Described@VBodyForce@RBX@@$1?sBodyForce@2@3PADAV?$FactoryProduct@VBodyForce@RBX@@VBodyMover@2@$1?sBodyForce@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BodyForce\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00630f80": {
+  "address": "00630f80",
+  "object": "Gyro.obj",
+  "symbol": "?classDescriptor@?$Described@VBodyThrust@RBX@@$1?sBodyThrust@2@3PADAV?$FactoryProduct@VBodyThrust@RBX@@VBodyMover@2@$1?sBodyThrust@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BodyThrust\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489d10": {
+  "address": "00489d10",
+  "object": "Hopper.obj",
+  "symbol": "??$doDeclare@$1?sStarterPackService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "StarterPack\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489d80": {
+  "address": "00489d80",
+  "object": "Hopper.obj",
+  "symbol": "??$doDeclare@$1?sLegacyHopperService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Hopper\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489ca0": {
+  "address": "00489ca0",
+  "object": "Hopper.obj",
+  "symbol": "??$doDeclare@$1?sHopperBin@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "HopperBin\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005cf540": {
+  "address": "005cf540",
+  "object": "Hopper.obj",
+  "symbol": "??$doDeclare@$1?sBackpackItem@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BackpackItem\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0080": {
+  "address": "005c0080",
+  "object": "Hopper.obj",
+  "symbol": "?classDescriptor@?$Described@VStarterPackService@RBX@@$1?sStarterPackService@2@3PADAV?$FactoryProduct@VStarterPackService@RBX@@VHopper@2@$1?sStarterPackService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "StarterPack\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c00f0": {
+  "address": "005c00f0",
+  "object": "Hopper.obj",
+  "symbol": "?classDescriptor@?$Described@VLegacyHopperService@RBX@@$1?sLegacyHopperService@2@3PADAV?$FactoryProduct@VLegacyHopperService@RBX@@VHopper@2@$1?sLegacyHopperService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Hopper\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c09b0": {
+  "address": "005c09b0",
+  "object": "Hopper.obj",
+  "symbol": "?classDescriptor@?$Described@VBackpackItem@RBX@@$1?sBackpackItem@2@3PADAV?$NonFactoryProduct@VWidget@RBX@@$1?sBackpackItem@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "BackpackItem\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005d0420": {
+  "address": "005d0420",
+  "object": "Hopper.obj",
+  "symbol": "?classDescriptor@?$Described@VHopperBin@RBX@@$1?sHopperBin@2@3PADAV?$FactoryProduct@VHopperBin@RBX@@VBackpackItem@2@$1?sHopperBin@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "HopperBin\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0048a2c0": {
+  "address": "0048a2c0",
+  "object": "Humanoid.obj",
+  "symbol": "??$doDeclare@$1?sHumanoid@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Humanoid\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0860": {
+  "address": "005c0860",
+  "object": "Humanoid.obj",
+  "symbol": "?classDescriptor@?$Described@VHumanoid@RBX@@$1?sHumanoid@2@3PADAV?$FactoryProduct@VHumanoid@RBX@@VInstance@2@$1?sHumanoid@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Humanoid\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0040ad80": {
+  "address": "0040ad80",
+  "object": "Instance.obj",
+  "symbol": "?classDescriptor@?$Described@VInstance@RBX@@$1?sInstance@2@3PADAVDescribedBase@Reflection@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Instance\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005e2840": {
+  "address": "005e2840",
+  "object": "JointInstance.obj",
+  "symbol": "??$doDeclare@$1?sJointInstance@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "JointInstance\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004ab160": {
+  "address": "004ab160",
+  "object": "JointInstance.obj",
+  "symbol": "??$doDeclare@$1?sSnap@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Snap\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004ab2b0": {
+  "address": "004ab2b0",
+  "object": "JointInstance.obj",
+  "symbol": "??$doDeclare@$1?sRotate@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Rotate\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004ab320": {
+  "address": "004ab320",
+  "object": "JointInstance.obj",
+  "symbol": "??$doDeclare@$1?sRotateP@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "RotateP\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004ab390": {
+  "address": "004ab390",
+  "object": "JointInstance.obj",
+  "symbol": "??$doDeclare@$1?sRotateV@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "RotateV\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004ab400": {
+  "address": "004ab400",
+  "object": "JointInstance.obj",
+  "symbol": "??$doDeclare@$1?sMotor@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Motor\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c08d0": {
+  "address": "005c08d0",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VJointInstance@RBX@@$1?sJointInstance@2@3PADAV?$NonFactoryProduct@VInstance@RBX@@$1?sJointInstance@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "JointInstance\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c36c0": {
+  "address": "005c36c0",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VMotor@RBX@@$1?sMotor@2@3PADAV?$FactoryProduct@VMotor@RBX@@VJointInstance@2@$1?sMotor@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Motor\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3420": {
+  "address": "005c3420",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VSnap@RBX@@$1?sSnap@2@3PADAV?$FactoryProduct@VSnap@RBX@@VJointInstance@2@$1?sSnap@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Snap\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3490": {
+  "address": "005c3490",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VWeld@RBX@@$1?sWeld@2@3PADAV?$FactoryProduct@VWeld@RBX@@VJointInstance@2@$1?sWeld@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Weld\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3500": {
+  "address": "005c3500",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VGlue@RBX@@$1?sGlue@2@3PADAV?$FactoryProduct@VGlue@RBX@@VJointInstance@2@$1?sGlue@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Glue\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3570": {
+  "address": "005c3570",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VRotate@RBX@@$1?sRotate@2@3PADAV?$FactoryProduct@VRotate@RBX@@VJointInstance@2@$1?sRotate@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Rotate\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c35e0": {
+  "address": "005c35e0",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VRotateP@RBX@@$1?sRotateP@2@3PADAV?$FactoryProduct@VRotateP@RBX@@VJointInstance@2@$1?sRotateP@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "RotateP\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3650": {
+  "address": "005c3650",
+  "object": "JointInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VRotateV@RBX@@$1?sRotateV@2@3PADAV?$FactoryProduct@VRotateV@RBX@@VJointInstance@2@$1?sRotateV@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "RotateV\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00667ba0": {
+  "address": "00667ba0",
+  "object": "Jumping.obj",
+  "symbol": "??$doDeclare@$1?sJumping@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Jumping\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004ab0f0": {
+  "address": "004ab0f0",
+  "object": "Lighting.obj",
+  "symbol": "??$doDeclare@$1?sLighting@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Lighting\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005e1100": {
+  "address": "005e1100",
+  "object": "Lighting.obj",
+  "symbol": "?classDescriptor@?$Described@VLighting@RBX@@$1?sLighting@2@3PADAV?$FactoryProduct@VLighting@RBX@@VInstance@2@$1?sLighting@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Lighting\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005754e0": {
+  "address": "005754e0",
+  "object": "LocakBackpack.obj",
+  "symbol": "??$doDeclare@$1?sLocalBackpackItem@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "LocalBackpackItem\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00575550": {
+  "address": "00575550",
+  "object": "LocakBackpack.obj",
+  "symbol": "??$doDeclare@$1?sLocalBackpack@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "LocalBackpack\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c04e0": {
+  "address": "005c04e0",
+  "object": "LocakBackpack.obj",
+  "symbol": "?classDescriptor@?$Described@VLocalBackpackItem@RBX@@$1?sLocalBackpackItem@2@3PADAV?$FactoryProduct@VLocalBackpackItem@RBX@@VWidget@2@$1?sLocalBackpackItem@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "LocalBackpackItem\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0550": {
+  "address": "005c0550",
+  "object": "LocakBackpack.obj",
+  "symbol": "?classDescriptor@?$Described@VLocalBackpack@RBX@@$1?sLocalBackpack@2@3PADAV?$FactoryProduct@VLocalBackpack@RBX@@VRelativePanel@2@$1?sLocalBackpack@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "LocalBackpack\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004a1680": {
+  "address": "004a1680",
+  "object": "Message.obj",
+  "symbol": "??$doDeclare@$1?sMessage@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Message\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004a16f0": {
+  "address": "004a16f0",
+  "object": "Message.obj",
+  "symbol": "??$doDeclare@$1?sHint@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Hint\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004a3cd0": {
+  "address": "004a3cd0",
+  "object": "Message.obj",
+  "symbol": "?classDescriptor@?$Described@VMessage@RBX@@$1?sMessage@2@3PADAV?$FactoryProduct@VMessage@RBX@@VInstance@2@$1?sMessage@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Message\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004a3dd0": {
+  "address": "004a3dd0",
+  "object": "Message.obj",
+  "symbol": "?classDescriptor@?$Described@VHint@RBX@@$1?sHint@2@3PADAV?$FactoryProduct@VHint@RBX@@VMessage@2@$1?sHint@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Hint\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00413650": {
+  "address": "00413650",
+  "object": "ModelInstance.obj",
+  "symbol": "??$doDeclare@$1?sModel@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Model\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00585100": {
+  "address": "00585100",
+  "object": "ModelInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VModelInstance@RBX@@$1?sModel@2@3PADAV?$FactoryProduct@VModelInstance@RBX@@VPVInstance@2@$1?sModel@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Model\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "007f3d50": {
+  "address": "007f3d50",
+  "object": "ModelInstance.obj",
+  "symbol": "??__EpartName@RBX@@YAXXZ",
+  "data_refs": [
+   {
+    "offset": 6,
+    "text": "Model\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049e510": {
+  "address": "0049e510",
+  "object": "NetworkSettings.obj",
+  "symbol": "??$doDeclare@$1?sNetworkSettings@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "NetworkSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049ec80": {
+  "address": "0049ec80",
+  "object": "NetworkSettings.obj",
+  "symbol": "?classDescriptor@?$Described@VNetworkSettings@RBX@@$1?sNetworkSettings@2@3PADAV?$FactoryProduct@VNetworkSettings@RBX@@VItem@GlobalSettings@2@$1?sNetworkSettings@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "NetworkSettings\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "006180a0": {
+  "address": "006180a0",
+  "object": "NullTool.obj",
+  "symbol": "??$doDeclare@$1?sNewNullTool@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "NewNullTool\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c5ec0": {
+  "address": "005c5ec0",
+  "object": "NullTool.obj",
+  "symbol": "??$doDeclare@$1?sNullTool@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "NullTool\u0000\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00665a30": {
+  "address": "00665a30",
+  "object": "PartDragTool.obj",
+  "symbol": "??$doDeclare@$1?sPartDragTool@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "PartDragTool\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0041df00": {
+  "address": "0041df00",
+  "object": "PartInstance.obj",
+  "symbol": "??$doDeclare@$1?sPart@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Part\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0059c7f0": {
+  "address": "0059c7f0",
+  "object": "PartInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VPartInstance@RBX@@$1?sPart@2@3PADAV?$FactoryProduct@VPartInstance@RBX@@VPVInstance@2@$1?sPart@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Part\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00406850": {
+  "address": "00406850",
+  "object": "Player.obj",
+  "symbol": "??$doDeclare@$1?sPlayer@Network@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Player\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00491360": {
+  "address": "00491360",
+  "object": "Player.obj",
+  "symbol": "?classDescriptor@?$Described@VPlayer@Network@RBX@@$1?sPlayer@23@3PADAV?$FactoryProduct@VPlayer@Network@RBX@@VInstance@3@$1?sPlayer@23@3PADA@3@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Player\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00411420": {
+  "address": "00411420",
+  "object": "Players.obj",
+  "symbol": "??$doDeclare@$1?sPlayers@Network@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Players\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049a8a0": {
+  "address": "0049a8a0",
+  "object": "Players.obj",
+  "symbol": "?classDescriptor@?$Described@VPlayers@Network@RBX@@$1?sPlayers@23@3PADAV?$NonFactoryProduct@VInstance@RBX@@$1?sPlayers@Network@2@3PADA@3@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Players\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00585090": {
+  "address": "00585090",
+  "object": "PVInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VPVInstance@RBX@@$1?sPVInstance@2@3PADAVInstance@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "PVInstance\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004b3800": {
+  "address": "004b3800",
+  "object": "Replicator.obj",
+  "symbol": "?classDescriptor@?$Described@VReplicator@Network@RBX@@$1?sReplicator@23@3PADAV?$NonFactoryProduct@VIdSerializer@Network@RBX@@$1?sReplicator@23@3PADA@3@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "NetworkReplicator\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004b95d0": {
+  "address": "004b95d0",
+  "object": "Replicator.obj",
+  "symbol": "??$doDeclare@$1?sReplicator@Network@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "NetworkReplicator\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00591510": {
+  "address": "00591510",
+  "object": "RootInstance.obj",
+  "symbol": "?classDescriptor@?$Described@VRootInstance@RBX@@$1?sRootInstance@2@3PADAVModelInstance@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "RootInstance\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00666a50": {
+  "address": "00666a50",
+  "object": "Running.obj",
+  "symbol": "??$doDeclare@$1?sRunning@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Running\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00401a00": {
+  "address": "00401a00",
+  "object": "RunStateOwner.obj",
+  "symbol": "??$doDeclare@$1?sRunService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "RunService\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00556430": {
+  "address": "00556430",
+  "object": "RunStateOwner.obj",
+  "symbol": "?classDescriptor@?$Described@VRunService@RBX@@$1?sRunService@2@3PADAV?$FactoryProduct@VRunService@RBX@@VInstance@2@$1?sRunService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "RunService\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004136c0": {
+  "address": "004136c0",
+  "object": "Script.obj",
+  "symbol": "??$doDeclare@$1?sScript@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Script\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00413730": {
+  "address": "00413730",
+  "object": "Script.obj",
+  "symbol": "??$doDeclare@$1?sLocalScript@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "LocalScript\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00586540": {
+  "address": "00586540",
+  "object": "Script.obj",
+  "symbol": "?classDescriptor@?$Described@VScript@RBX@@$1?sScript@2@3PADAV?$FactoryProduct@VScript@RBX@@VInstance@2@$1?sScript@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Script\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005867e0": {
+  "address": "005867e0",
+  "object": "Script.obj",
+  "symbol": "?classDescriptor@?$Described@VLocalScript@RBX@@$1?sLocalScript@2@3PADAV?$FactoryProduct@VLocalScript@RBX@@VScript@2@$1?sLocalScript@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "LocalScript\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0042ced0": {
+  "address": "0042ced0",
+  "object": "ScriptContext.obj",
+  "symbol": "??$doDeclare@$1?sScriptContext@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "ScriptContext\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005ad200": {
+  "address": "005ad200",
+  "object": "ScriptContext.obj",
+  "symbol": "?classDescriptor@?$Described@VScriptContext@RBX@@$1?sScriptContext@2@3PADAV?$FactoryProduct@VScriptContext@RBX@@VInstance@2@$1?sScriptContext@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "ScriptContext\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005bfe90": {
+  "address": "005bfe90",
+  "object": "Seat.obj",
+  "symbol": "??$doDeclare@$1?sSeat@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Seat\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3a40": {
+  "address": "005c3a40",
+  "object": "Seat.obj",
+  "symbol": "?classDescriptor@?$Described@VSeat@RBX@@$1?sSeat@2@3PADAV?$FactoryProduct@VSeat@RBX@@VPartInstance@2@$1?sSeat@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Seat\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00666f70": {
+  "address": "00666f70",
+  "object": "Seated.obj",
+  "symbol": "??$doDeclare@$1?sSeated@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Seated\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004068c0": {
+  "address": "004068c0",
+  "object": "Selection.obj",
+  "symbol": "??$doDeclare@$1?sSelection@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Selection\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005671a0": {
+  "address": "005671a0",
+  "object": "Selection.obj",
+  "symbol": "?classDescriptor@?$Described@VSelection@RBX@@$1?sSelection@2@3PADAV?$FactoryProduct@VSelection@RBX@@VInstance@2@$1?sSelection@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Selection\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00496240": {
+  "address": "00496240",
+  "object": "Server.obj",
+  "symbol": "??$doDeclare@$1?sServer@Network@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "NetworkServer\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049eba0": {
+  "address": "0049eba0",
+  "object": "Server.obj",
+  "symbol": "?classDescriptor@?$Described@VServer@Network@RBX@@$1?sServer@23@3PADAV?$FactoryProduct@VServer@Network@RBX@@VPeer@23@$1?sServer@23@3PADA@3@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "NetworkServer\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0049e9a0": {
+  "address": "0049e9a0",
+  "object": "Service.obj",
+  "symbol": "?classDescriptor@?$Described@VServiceProvider@RBX@@$1?sServiceProvider@2@3PADAV?$NonFactoryProduct@VInstance@RBX@@$1?sServiceProvider@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "ServiceProvider\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004d72b0": {
+  "address": "004d72b0",
+  "object": "Sky.obj",
+  "symbol": "??$doDeclare@$1?sSky@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Sky\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005eb290": {
+  "address": "005eb290",
+  "object": "Sky.obj",
+  "symbol": "?classDescriptor@?$Described@VSky@RBX@@$1?sSky@2@3PADAV?$FactoryProduct@VSky@RBX@@VInstance@2@$1?sSky@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Sky\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489e60": {
+  "address": "00489e60",
+  "object": "SpawnLocation.obj",
+  "symbol": "??$doDeclare@$1?sSpawnLocation@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "SpawnLocation\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489ed0": {
+  "address": "00489ed0",
+  "object": "SpawnLocation.obj",
+  "symbol": "??$doDeclare@$1?sSpawnerService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "SpawnerService\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c07f0": {
+  "address": "005c07f0",
+  "object": "SpawnLocation.obj",
+  "symbol": "?classDescriptor@?$Described@VSpawnerService@RBX@@$1?sSpawnerService@2@3PADAV?$FactoryProduct@VSpawnerService@RBX@@VInstance@2@$1?sSpawnerService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "SpawnerService\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005d2760": {
+  "address": "005d2760",
+  "object": "SpawnLocation.obj",
+  "symbol": "?classDescriptor@?$Described@VSpawnLocation@RBX@@$1?sSpawnLocation@2@3PADAV?$FactoryProduct@VSpawnLocation@RBX@@VPartInstance@2@$1?sSpawnLocation@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "SpawnLocation\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "004067e0": {
+  "address": "004067e0",
+  "object": "Team.obj",
+  "symbol": "??$doDeclare@$1?sTeam@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Team\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005661b0": {
+  "address": "005661b0",
+  "object": "Team.obj",
+  "symbol": "?classDescriptor@?$Described@VTeam@RBX@@$1?sTeam@2@3PADAV?$FactoryProduct@VTeam@RBX@@VInstance@2@$1?sTeam@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Team\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0048a1e0": {
+  "address": "0048a1e0",
+  "object": "Teams.obj",
+  "symbol": "??$doDeclare@$1?sTeams@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Teams\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005d6000": {
+  "address": "005d6000",
+  "object": "Teams.obj",
+  "symbol": "?classDescriptor@?$Described@VTeams@RBX@@$1?sTeams@2@3PADAV?$FactoryProduct@VTeams@RBX@@VInstance@2@$1?sTeams@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Teams\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0048a250": {
+  "address": "0048a250",
+  "object": "TimerService.obj",
+  "symbol": "??$doDeclare@$1?sTimerService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Timer\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0710": {
+  "address": "005c0710",
+  "object": "TimerService.obj",
+  "symbol": "?classDescriptor@?$Described@VTimerService@RBX@@$1?sTimerService@2@3PADAV?$FactoryProduct@VTimerService@RBX@@VInstance@2@$1?sTimerService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Timer\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005755c0": {
+  "address": "005755c0",
+  "object": "Tool.obj",
+  "symbol": "??$doDeclare@$1?sTool@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Tool\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c3810": {
+  "address": "005c3810",
+  "object": "Tool.obj",
+  "symbol": "?classDescriptor@?$Described@VTool@RBX@@$1?sTool@2@3PADAV?$FactoryProduct@VTool@RBX@@VBackpackItem@2@$1?sTool@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Tool\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005fd620": {
+  "address": "005fd620",
+  "object": "ToolMouseCommand.obj",
+  "symbol": "??$doDeclare@$1?sToolMouseCommand@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "ToolMouseCommand\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "006161d0": {
+  "address": "006161d0",
+  "object": "ToolsArrow.obj",
+  "symbol": "??$doDeclare@$1?sBoxSelectCommand@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "BoxSelect\u0000\u0000\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0045b160": {
+  "address": "0045b160",
+  "object": "UserController.obj",
+  "symbol": "??$doDeclare@$1?sControllerService@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "ControllerService\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c0630": {
+  "address": "005c0630",
+  "object": "UserController.obj",
+  "symbol": "?classDescriptor@?$Described@VControllerService@RBX@@$1?sControllerService@2@3PADAV?$FactoryProduct@VControllerService@RBX@@VInstance@2@$1?sControllerService@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "ControllerService\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "0044f2f0": {
+  "address": "0044f2f0",
+  "object": "Visit.obj",
+  "symbol": "??$doDeclare@$1?sVisit@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Visit\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005c05c0": {
+  "address": "005c05c0",
+  "object": "Visit.obj",
+  "symbol": "?classDescriptor@?$Described@VVisit@RBX@@$1?sVisit@2@3PADAV?$FactoryProduct@VVisit@RBX@@VInstance@2@$1?sVisit@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Visit\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "00489c30": {
+  "address": "00489c30",
+  "object": "Workspace.obj",
+  "symbol": "??$doDeclare@$1?sWorkspace@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "data_refs": [
+   {
+    "offset": 43,
+    "text": "Workspace\u0000",
+    "masked": []
+   }
+  ]
+ },
+ "005a3b70": {
+  "address": "005a3b70",
+  "object": "Workspace.obj",
+  "symbol": "?classDescriptor@?$Described@VWorkspace@RBX@@$1?sWorkspace@2@3PADAV?$NonFactoryProduct@VRootInstance@RBX@@$1?sWorkspace@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "data_refs": [
+   {
+    "offset": 41,
+    "text": "Workspace\u0000",
+    "masked": []
+   }
+  ]
+ }
+}

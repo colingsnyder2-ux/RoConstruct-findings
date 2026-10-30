@@ -1,0 +1,14 @@
+{
+ "address": "007f3d50",
+ "symbol": "??__EpartName@RBX@@YAXXZ",
+ "linked_va": "00532f60",
+ "map_line": "0001:00131f60       ??__EpartName@RBX@@YAXXZ   00532f60 f   linked:ModelInstance.obj",
+ "crt_begin": "00539654",
+ "crt_end": "0053a9fc",
+ "crt_entries": [
+  "0053a88c"
+ ],
+ "code_exact": true,
+ "runtime_exit": 0,
+ "activation": "Selected ModelInstance.obj contributes this initializer to the executable C++ CRT initialization range."
+}
