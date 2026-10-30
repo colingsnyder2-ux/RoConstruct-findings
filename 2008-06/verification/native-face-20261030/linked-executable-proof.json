@@ -1,0 +1,28 @@
+[
+ {
+  "target": "00649830",
+  "linked_proofs": [
+   {
+    "symbol": "?fuzzyContainsInExtrusion@Face@RBX@@QBE_NABVVector3@G3D@@M@Z",
+    "owner": "linked:Face.obj",
+    "linked_address": "00498ab0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00649c90",
+  "linked_proofs": [
+   {
+    "symbol": "?getAxis@Face@RBX@@ABE?AVVector3@G3D@@H@Z",
+    "owner": "linked:Face.obj",
+    "linked_address": "00498ec0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ }
+]
