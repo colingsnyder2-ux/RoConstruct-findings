@@ -66,7 +66,63 @@ batch process takes precedence over later single-method examples.
    local, queued, rejected and independently accepted counts separately; only
    accepted receipts grant native credit. Keep working on the next shared cause.
 
+## Prioritize the current integration backlog
+
+Start with the latest reports; old counts are snapshots, not today's progress.
+For failed swaps, group `swaps.json` failures and per-address comparisons by
+compile error, incompatible header, non-exact `_DLL` twin, or shared inline.
+For shared definitions, compare all providers and their compiler flags, code,
+relocations and class layouts. Test a symbol's compatible providers together;
+do not blanket-swap duplicates. For header rejects, fix one evidenced 2008 class
+layout in the adopted overlay and rebuild all affected units. Never guess a
+field name or type from a size difference. If the declaration is unavailable,
+record the binary sites and blocker and move to another batch.
+
+Before each build, save the prior module report and global accepted baseline.
+Check the actual compiler command and resolved headers, including symlinked
+vendor paths. Build in the existing private contributor checkout, wait for any
+other build there to finish, then check forced links, linked bytes/data, runtime
+fixtures, layer errors and lost addresses. Run `placed` after relevant builds
+finish; address twins remain ambiguous unless referenced data proves placement.
+Record exact commands, hashes, results and unresolved dependencies with each
+batch. A matching object whose dependency is unresolved is not an integration.
+
+Submit each completed, supported batch under the configured contributor (use
+`colin` when requested) and actual model. `native-finish` may submit a type
+proposal, which requires owner review; its local proof does not grant credit.
+Keep packet/job IDs and verify the server receipt. For distinct new local owned
+exacts, `native-finish` with `notify: true` uses the configured mining webhook,
+deduplicates against the specified `public_root`, and records delivery or pending
+state. Set `public_root` to the existing host checkout when it holds the global
+inventory; do not claim a notification was sent without its receipt. Server
+acceptance and its integration notification are separate events.
+
+Keep changes to RoConstruct commands, module recipes and this guide reviewable
+in source control. When the operator requests publishing, commit only the intended
+files, incorporate current `main` without overwriting other work, run relevant
+tests, and push to the requested repository's `main`. Publish evidence separately
+when supported; do not put private credentials, vendor copies or generated build
+outputs in the source commit.
+
 ## Command compatibility
+
+The `ogre-native-headers` module builds genuine Ogre 1.4.5 client-import
+header templates separately from the client subclass analogs. In a private
+worker, fetch the pinned source with `python -c "from roc import libs; libs.fetch('ogre-1.4.5')"`,
+then run `roc rebuild 2008-06 module ogre-native-headers`. The TexturePtr tests use
+the client's `rgmain.dll` through its real imports. To recheck the 62 current
+target bodies in a forced executable, run
+`python rebuild/2008-06/tests/verify_ogre_native_vectors.py` with the repository
+on `PYTHONPATH`. These are
+local matches, not independently accepted server credits. Multiple genuine
+template specializations can share identical target bytes; this does not prove
+which specialization the original client used.
+
+`roc.library_verify` provides an allowlisted validation gate for a future
+server-owned Ogre build: passing baseline and candidate, complete layer checks,
+no lost ownership, and forced linked code/data proofs for every gain. It does
+not expose a submission route or grant credit. The server must build and collect
+its own evidence in an isolated snapshot before calling it.
 
 This guide's manual loop uses `roc native-try targets / evidence / check / submit`.
 The optional continuous session uses `roc integrator` only when explicitly requested;
@@ -80,6 +136,26 @@ Before setup, inspect the installed CLI once:
 roc native-try --help
 roc integrate --help
 ```
+
+## Resume before setup
+
+A new chat, pasted copy of this guide, or reopened agent prompt is **not** an
+installation request. First reuse the recorded/current checkout and inspect it:
+
+```text
+roc native-try --help
+roc doctor
+roc rebuild 2008-06 doctor
+```
+
+Run only the command that repairs an actual missing or stale prerequisite named
+by those checks. Do not automatically run `roc install`, `client-fetch`,
+`analyze`, `vtables`, `pull`, `lib-fetch`, package download, or compiler setup
+when their verified outputs already exist. Keep the checkout path and checkpoint
+between chats; another AI must resume that path rather than bootstrap a fresh
+copy. A Worker manifest check can establish currency, but does not authorize a
+download/extract unless its hash/version differs or a required native command is
+missing.
 
 On Windows use `roc.cmd`; on Linux use `./roc.sh`. For explicit class claims,
 use `roc integrate next --count 4`. If the installed CLI lists `context`, retrieve
@@ -97,6 +173,47 @@ does not block this guide's native-try evidence loop. Use the actual command hel
 and server capabilities rather than assuming a package version supplies an action.
 Compiler smoke success establishes compiler readiness only; report native credit
 only after independent server acceptance.
+
+## Finish an authored module batch automatically
+
+Use `roc native-finish work/batch/finish.json` for each authored module batch
+in the existing private RbxgsApp checkout. It
+rebuilds all active layers, rejects compile errors or ownership losses, force-links
+the authored runtime fixture, checks gained instruction bytes in the executable
+and fresh object code/data, then optionally submits, notifies and publishes proofs.
+It reuses this checkout and takes a process lock; do not run another editor/build
+in its mutable output tree. Agent reasoning still supplies source fixes and tests.
+
+Paths below are relative to the configuration file; preserve the before report
+and accepted server baseline before editing. Use the actual writer model.
+
+```json
+{
+  "module": "rbxgs-app",
+  "before": "report-before.json",
+  "baseline": "server-base.json",
+  "test_source": "runtime.cpp",
+  "prior_packet": "previous-packet.json",
+  "user": "colin",
+  "model": "YOUR_ACTUAL_MODEL",
+  "evidence": "Native declarations, target instructions and source provenance for this batch.",
+  "submit": true,
+  "notify": true
+}
+```
+
+Omit `prior_packet` for a first proposal. Optional `server` overrides configuration;
+`public_root` points at the existing host checkout for global notification dedup.
+To publish review artifacts, add `publish_repo` for the existing Findings checkout
+and `publish_prefix` such as `2008-06/verification/native-batch-20261030`.
+Publication preserves its checkout and accepted defaults. Reruns recheck proofs,
+reuse content-addressed server proposals, deduplicate acknowledged webhooks and
+skip unchanged publications. Failure receipts and passing artifacts remain under
+`finished/` (or the configured `output`) for repair. Independent accepted recipe
+additions rebase automatically, with a saved backup and complete recheck. Conflicting
+anchors or generator changes stop for agent repair; `auto_rebase: false` disables it.
+Source proposals still require independent owner review and server acceptance;
+this command never approves a packet or grants native credit.
 
 ## Manual agent execution (default)
 
@@ -452,32 +569,14 @@ Make byte-exact mined 2008 functions come out of the real rbxgs C++ (native inte
 that is already 100% mined and whose method already exists in the rebuild but compiles differently. Credit comes
 only from the server's independent linked rebuild.
 
-## Resume before setup
-
-A new chat, pasted copy of this guide, or reopened agent prompt is **not** an
-installation request. Reuse the recorded checkout, then run:
-
-```text
-roc native-try --help
-roc doctor
-roc rebuild 2008-06 doctor
-```
-
-If these checks pass, do not run `roc install`, `client-fetch`, `analyze`,
-`vtables`, `pull`, `lib-fetch`, package download, or compiler setup. This
-includes VS2008, the Windows SDK, and Python: retain their verified existing
-installations. Run only the command that repairs a prerequisite reported missing
-or stale by these checks. A Worker manifest check may establish currency, but
-does not authorize a download/extract unless its hash/version differs or a
-required native command is missing. Keep this checkout path and checkpoint
-between chats; another AI must resume it instead of bootstrapping a fresh copy.
+A source/library tag does not certify authentic headers or original variable names.
+Generated mining proofs can contain reconstructed declarations. Native work must use
+the real classes and evidenced layouts, then pass the independent integration gates.
 
 ## Setup (repair only missing prerequisites before mining)
 
 Install missing dependencies yourself; downloads are authorized. Do not stop at a setup plan or ask the
-user to download dependencies manually. Reuse installed files. Never execute this
-whole setup merely because a prompt opened: run first unmet prerequisite, then
-recheck. Group setup commands into one terminal
+user to download dependencies manually. Reuse installed files. Group setup commands into one terminal
 invocation, run sequentially, and stop on the first failure. Retry a failed download before reporting a blocker.
 Use existing `roc` commands; do not import project modules from ad-hoc scripts.
 
@@ -504,7 +603,9 @@ holding `work/server.db`. Server DB, manifests and compiled server outputs are n
 Keep one contributor checkout per concurrent agent. Preserve unsent edits when updating or syncing.
 
 Configure the contributor name and reachable group-server URL with `roc config --user NAME --server URL`
-if not already configured. Use the supplied server URL, not the owner's `localhost`. No native invitation,
+if not already configured. Use the human-provided username consistently for every claim and submission;
+for Colin's authorized agent runs, configure `roc config --user colin`. Record that identity with each job.
+A source author or model name does not replace the submitting contributor's username. Use the supplied server URL, not the owner's `localhost`. No native invitation,
 `ROC_NATIVE_TOKEN` or owner approval is required. Ask only for missing contributor identity.
 Leave `ROC_NATIVE_EVIDENCE_ROOT` unset on
 another PC; it is an optional same-machine testing override.
@@ -528,7 +629,9 @@ replace this checkout's modified tools.
 
 On Windows, use `.\roc.cmd` (Linux: `./roc.sh`). The following is the dependency
 order for missing/stale prerequisites, not a mandatory full setup on every run.
-Run only needed steps; keep baseline sync and validation before new trials:
+Never execute this whole block merely because a new agent/chat opened. Run only
+the first unmet prerequisite and recheck before proceeding; keep baseline sync
+and validation before new trials:
 
 ```text
 roc install --yes --client 2008-06
@@ -674,6 +777,9 @@ If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder
      A partial batch archives only the submitted proposals; the remaining proposals stay saved.
 
    After submitting:
+   - Use the operator's requested contributor identity for every submission. When
+     the operator requests `colin`, run `roc config --user colin` in the private
+     worker and retain that identity across resumed sessions and batches.
    - Record the server job ID before starting the next fix. If no job was created, preserve
      the proposal and report the exact blocking gate, claim, baseline or transport error.
      A local exact without a submission is not a completed integration.
@@ -682,6 +788,12 @@ If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder
    - Record JOB and continue discovery. Use `roc integrate status --id JOB` for a single status check;
      a rejection is a per-batch repair task, not a reason to end the session;
    - `roc integrate sync` after acceptance.
+   - Accepted jobs with new gains trigger the server's integration webhook under
+     the submitting username. Keep the accepted receipt and check notification
+     delivery when server reporting is available. If delivery cannot be confirmed,
+     record it as unconfirmed; never fabricate a success post or resubmit accepted
+     code merely to trigger a webhook. Local proofs and quarantined proposals do
+     not count as accepted integrations.
    - `roc integrate submit` refreshes the server baseline first. If another worker
      integrated the same recipe, it syncs and skips the stale claim instead of
      creating a guaranteed stale-replacement job. Claim fresh work; do not retry it.
