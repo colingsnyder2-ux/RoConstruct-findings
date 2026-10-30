@@ -1,0 +1,14 @@
+{
+ "compiled": true,
+ "linked": true,
+ "ran": true,
+ "exit": 0,
+ "output": "",
+ "unresolved": [],
+ "duplicates": [],
+ "referencers": [],
+ "map": "C:\\Users\\colin\\RoConstruct\\work\\codex-native-colin-20261029\\rebuild\\2008-06\\out\\tests\\ogre_native_vectors_forced\\ogre_native_vectors_forced.map",
+ "choices": {
+  "NativeOgreVectors.obj": "linked"
+ }
+}
