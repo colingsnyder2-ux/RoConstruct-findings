@@ -1,12 +1,31 @@
+#include "jpeg_force_exact.h"
 // libjpeg: encode a 64x48 gradient to a file and decode it back; size and approximate pixels must agree.
 #include <stdio.h>
 #include <stdlib.h>
+#include <process.h>
+#include <errno.h>
 extern "C" {
 #include "jpeglib.h"
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    if (argc > 1) {
+        FILE* bad = fopen("jpeg_invalid.dat", "w+b");
+        fputs("not a jpeg", bad); rewind(bad);
+        jpeg_decompress_struct decoder;
+        jpeg_error_mgr errors;
+        decoder.err = jpeg_std_error(&errors);
+        jpeg_create_decompress(&decoder);
+        jpeg_stdio_src(&decoder, bad);
+        jpeg_read_header(&decoder, TRUE);
+        return 3;
+    }
+    intptr_t bad_exit = _spawnl(_P_WAIT, argv[0], argv[0], "--invalid", NULL);
+    remove("jpeg_invalid.dat");
+    if (bad_exit != EXIT_FAILURE)
+        return printf("invalid JPEG exit=%ld errno=%d\n", (long)bad_exit, errno), 4;
+
     const int W = 64, H = 48;
     static JSAMPLE image[W * H * 3];
     for (int i = 0; i < W * H; ++i)
