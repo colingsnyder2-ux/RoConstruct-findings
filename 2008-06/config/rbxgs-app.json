@@ -89,15 +89,6 @@
     "tools/rbxgs/Client/Network",
     "tools/rbxgs/Client/RbxView/include"
    ]
-  },
-  {
-   "name": "crt-data",
-   "mode": "archive",
-   "recipe": "msvc-crt",
-   "files": [
-    "libcpmt.lib/f:/dd/vctools/crt_bld/SELF_X86/crt/src/build/INTEL/mt_obj/xvalues.obj"
-   ],
-   "cl": 21022
   }
  ],
  "test": "rbxgs_app",
@@ -124,6 +115,5 @@
   "patches": "rebuild/2008-06/patches/rbxgs-client.json"
  },
  "verified": true,
- "force_verified": true,
- "prefer_module_helpers": true
+ "force_verified": true
 }

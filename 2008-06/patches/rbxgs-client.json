@@ -53,6 +53,34 @@
    "\n// rebuild overlay: Stats template bodies rbxgs declares but never defines\n#include <boost/bind.hpp>\n#include \"util/Utilities.h\"\nnamespace RBX\n{\n\tnamespace Stats\n\t{\n\t\ttemplate<typename T>\n\t\tT rebuildDeref(const T* value)\n\t\t{\n\t\t\treturn *value;\n\t\t}\n\n\t\ttemplate<typename T>\n\t\tTypedStatsItem<T>::TypedStatsItem(const T* value)\n\t\t\t: func(boost::bind(&rebuildDeref<T>, value))\n\t\t{\n\t\t}\n\n\t\ttemplate<typename T>\n\t\tTypedStatsItem<T>::TypedStatsItem(boost::function0<T> func)\n\t\t\t: func(func)\n\t\t{\n\t\t}\n\n\t\ttemplate<typename T>\n\t\tvoid TypedStatsItem<T>::update()\n\t\t{\n\t\t\tformatValue(func());\n\t\t}\n\n\t\ttemplate<typename T>\n\t\tvoid Item::formatValue(const T& value)\n\t\t{\n\t\t\tsetValue((double)value, StringConverter<T>::convertToString(value));\n\t\t}\n\n\t\ttemplate<typename T>\n\t\tItem* Item::createBoundChildItem(const char* name, const T& value)\n\t\t{\n\t\t\tItem* item = Creatable<Instance>::create<TypedStatsItem<T> >(&value).get();\n\t\t\titem->setName(name);\n\t\t\titem->setParent(this);\n\t\t\treturn item;\n\t\t}\n\n\t\ttemplate<typename T>\n\t\tItem* Item::createChildItem(const char* name, boost::function0<T> func)\n\t\t{\n\t\t\tItem* item = Creatable<Instance>::create<TypedStatsItem<T> >(func).get();\n\t\t\titem->setName(name);\n\t\t\titem->setParent(this);\n\t\t\treturn item;\n\t\t}\n\t}\n}\n"
   ]
  ],
+ "App/gui/GUI.cpp": [
+  [
+   "",
+   "\n#include \"gui/Button.h\"\n\nnamespace RBX\n{\n\t// 0064ef90: KeyButton tracks its declared keyCode/keyIsDown fields then defers to Widget.\n\tGuiResponse KeyButton::process(const GuiEvent& event)\n\t{\n\t\tif (event.eventType == UIEvent::KEY_DOWN && event.key == keyCode)\n\t\t\tkeyIsDown = true;\n\t\tif (event.eventType == UIEvent::KEY_UP && event.key == keyCode)\n\t\t\tkeyIsDown = false;\n\t\treturn Widget::process(event);\n\t}\n}\n"
+  ],
+  [
+   "#include \"gui/Gui.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+  ],
+  [
+   "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+   "\t\treturn processNonFocus(event);"
+  ]
+ ],
+ "App/v8datamodel/ToolMouseCommand.cpp": [
+  [
+   "\t\ttool->activate();\n",
+   "\t\ttool.get()->activate();\n"
+  ],
+  [
+   "\t\ttool->deactivate();\n",
+   "\t\ttool.get()->deactivate();\n"
+  ],
+  [
+   "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+  ]
+ ],
  "App/include/util/StateStack.h": [
   [
    "",
@@ -1629,16 +1657,6 @@
    "BackpackItem::setTextureId(const TextureId& value)\n\t{\n\tif (value != textureId)\n\t{\n\t\ttextureId = value;\n\n\t\tWorkspace* workspace = ServiceProvider::find<Workspace>(this);\n\t\tif (workspace)\n\t\t\tworkspace->raiseDrawChanged();\n\n\t\traisePropertyChanged(desc_TextureId);\n\t}\n}"
   ]
  ],
- "App/gui/GUI.cpp": [
-  [
-   "#include \"gui/Gui.h\"\n",
-   "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
-  ],
-  [
-   "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
-   "\t\treturn processNonFocus(event);"
-  ]
- ],
  "App/v8kernel/Kernel.cpp": [
   [
    "#include \"v8kernel/Kernel.h\"\n",
@@ -1759,12 +1777,6 @@
   [
    "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}",
    "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\t                    ;\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}"
-  ]
- ],
- "App/v8datamodel/ToolMouseCommand.cpp": [
-  [
-   "#include \"v8datamodel/ToolMouseCommand.h\"\n",
-   "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
   ]
  ],
  "App/tool/PartDragTool.cpp": [

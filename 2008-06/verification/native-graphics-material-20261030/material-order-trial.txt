@@ -1,9 +1,0 @@
-{
- "symbol": "??MAttributes@MaterialFactory@View@RBX@@QBE_NABU0123@@Z",
- "address": "004f07b0",
- "source": "RbxView/MaterialFactory.cpp",
- "compiled": true,
- "size": 81,
- "target_size": 81,
- "exact": true
-}

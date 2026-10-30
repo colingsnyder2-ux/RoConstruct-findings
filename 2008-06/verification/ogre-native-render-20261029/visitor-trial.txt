@@ -1,2 +1,0 @@
-fast exact 36 / 37
-vector-precise exact 34 / 37

@@ -12,21 +12,5 @@
    "void Instance::predelete()\n{\n\tSTUB(0x1004e0f0);\n}",
    "void Instance::predelete()\n{\n\t// rebuild overlay: release the children so none keeps a dangling parent\n\tif (children) {\n\t\tstd::vector<shared_ptr<Instance> > copy(*children);\n\t\tfor (size_t i = 0; i < copy.size(); ++i) {\n\t\t\tcopy[i]->setParent(NULL);\n\t\t}\n\t}\n}"
   ]
- ],
- "App/include/util/IRenderable.h": [
-  [
-   "\tint& indexFunc2d() { return index2d; }",
-   "public:\n\t// VC2008 rechecks these non-type template arguments in derived users.\n\tint& indexFunc2d() { return index2d; }"
-  ],
-  [
-   "\tIRenderableBucket* bucket; // 0x0c",
-   "private:\n\tIRenderableBucket* bucket; // 0x0c"
-  ]
- ],
- "App/include/util/Debug.h": [
-  [
-   "@replace",
-   "App/roc_native_debug_contract_f60e43fc9cb44f2e.cpp"
-  ]
  ]
 }

@@ -1,2 +1,0 @@
-verified layer: 143 exact symbols swapped in
-MfcAtl: linked=True test_exit=0; 501 object functions, 174 byte-identical to unique 2008 functions (159 of >=16 bytes)

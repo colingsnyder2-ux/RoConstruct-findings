@@ -7749,5 +7749,109 @@
     "unit": "RBX::Sky",
     "updated": 1793346375.1707418,
     "user": "EspClaude"
+  },
+  {
+    "created": 1793353625.697773,
+    "id": "ccbedb1510b64e5caf0a4db73608bad7",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/Stats.cpp": [
+        [
+          "",
+          "\nnamespace RBX\n{\n\tnamespace Stats\n\t{\n\t\tbool Item::askAddChild(const Instance* instance) const\n\t\t{\n\t\t\treturn dynamic_cast<const Item*>(instance) != NULL;\n\t\t}\n\t}\n}\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "f5c3394fa3da35905eca3c846628702e82de63425dade01a09ce9eaa4c9878bd",
+      "gains": [],
+      "input_hash": "61cb55ec158f0cb0fbd50014e72807819adab33fb34eaf24959988ee2be1fd45",
+      "losses": [],
+      "submitted_revision": "8220e53a595371a0de02df9bdfc748d0fdd9dababf709eb38963eecf4c5e5239"
+    },
+    "state": "rejected",
+    "unit": "RBX::Stats::StatsService",
+    "updated": 1793354340.009402,
+    "user": "colin"
+  },
+  {
+    "created": 1793354644.0349774,
+    "id": "697c755c07f14635a792863fe3ce00bc",
+    "model": "GPT-5",
+    "patches": {
+      "App/gui/GUI.cpp": {
+        "after": [
+          [
+            "",
+            "\n#include \"gui/Button.h\"\n\nnamespace RBX\n{\n\t// 0064ef90: KeyButton tracks its declared keyCode/keyIsDown fields then defers to Widget.\n\tGuiResponse KeyButton::process(const GuiEvent& event)\n\t{\n\t\tif (event.eventType == UIEvent::KEY_DOWN && event.key == keyCode)\n\t\t\tkeyIsDown = true;\n\t\tif (event.eventType == UIEvent::KEY_UP && event.key == keyCode)\n\t\t\tkeyIsDown = false;\n\t\treturn Widget::process(event);\n\t}\n}\n"
+          ],
+          [
+            "#include \"gui/Gui.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+          ],
+          [
+            "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+            "\t\treturn processNonFocus(event);"
+          ]
+        ],
+        "before": [
+          [
+            "#include \"gui/Gui.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+          ],
+          [
+            "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+            "\t\treturn processNonFocus(event);"
+          ]
+        ]
+      }
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::KeyButton",
+    "updated": 1793354644.0672069,
+    "user": "colin"
+  },
+  {
+    "created": 1793355137.2636888,
+    "id": "a307a6939a4e4a89ae9ab0789798045d",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/ToolMouseCommand.cpp": {
+        "after": [
+          [
+            "\t\ttool->activate();\n",
+            "\t\ttool.get()->activate();\n"
+          ],
+          [
+            "\t\ttool->deactivate();\n",
+            "\t\ttool.get()->deactivate();\n"
+          ],
+          [
+            "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+          ]
+        ],
+        "before": [
+          [
+            "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+          ]
+        ]
+      }
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::ToolMouseCommand",
+    "updated": 1793355137.2938848,
+    "user": "colin"
   }
 ]

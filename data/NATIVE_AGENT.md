@@ -142,10 +142,7 @@ or duplicate queued submissions. Authentication, invalid-request and verificatio
 need their actual repair; they are not server outages. If still unreachable at two hours,
 save progress, report the last error and pause network work until the user resumes it.
 A rejected batch needs repair; it does not end the session. If no fresh
-targets remain, run `roc integrate next --revisit-parked` once after reviewing
-parked blockers. It reopens parked eligible classes for a new evidence pass, but
-does not silently retry unchanged failed edits. If that is also empty, record the
-queue state and wait for source/evidence changes instead of polling forever.
+targets remain, stay alive at a modest polling interval; revisit after source/evidence changes.
 Respect stop/pause and configured limits. Report only meaningful blockers or new progress.
 
 The automatic Integrator starts another discovery cycle within 60s without fresh
@@ -550,9 +547,6 @@ If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder
      A partial batch archives only the submitted proposals; the remaining proposals stay saved.
 
    After submitting:
-   - Use the operator's requested contributor identity for every submission. When
-     the operator requests `colin`, run `roc config --user colin` in the private
-     worker and retain that identity across resumed sessions and batches.
    - Record the server job ID before starting the next fix. If no job was created, preserve
      the proposal and report the exact blocking gate, claim, baseline or transport error.
      A local exact without a submission is not a completed integration.
@@ -561,12 +555,6 @@ If doctor cannot find an installed SDK, set `ROC_WINSDK` to this PC's SDK folder
    - Record JOB and continue discovery. Use `roc integrate status --id JOB` for a single status check;
      a rejection is a per-batch repair task, not a reason to end the session;
    - `roc integrate sync` after acceptance.
-   - Accepted jobs with new gains trigger the server's integration webhook under
-     the submitting username. Keep the accepted receipt and check notification
-     delivery when server reporting is available. If delivery cannot be confirmed,
-     record it as unconfirmed; never fabricate a success post or resubmit accepted
-     code merely to trigger a webhook. Local proofs and quarantined proposals do
-     not count as accepted integrations.
 
 ## Fewer commands and smaller evidence
 

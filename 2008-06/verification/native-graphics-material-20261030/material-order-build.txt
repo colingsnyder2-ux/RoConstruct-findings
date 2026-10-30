@@ -1,8 +1,0 @@
-layer rbxgs: 0 compile errors
-layer net: 0 compile errors
-layer appdraw: 0 compile errors
-layer renderlib: 0 compile errors
-layer view: 0 compile errors
-layer lua: 0 compile errors
-layer glue: 0 compile errors
-RbxgsApp: linked=True test_exit=0; 93620 object functions, 4171 byte-identical to unique 2008 functions (3806 of >=16 bytes)

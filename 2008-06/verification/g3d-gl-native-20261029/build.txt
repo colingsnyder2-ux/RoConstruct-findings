@@ -1,5 +1,0 @@
-layer native-float: 0 compile errors
-layer upstream: 0 compile errors
-layer tonemap: 0 compile errors
-verified layer: 48 exact symbols swapped in
-G3D-GL: linked=True test_exit=0; 6081 object functions, 486 byte-identical to unique 2008 functions (415 of >=16 bytes)

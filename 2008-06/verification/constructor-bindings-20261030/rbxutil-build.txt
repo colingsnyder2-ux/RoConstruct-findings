@@ -1,4 +1,0 @@
-layer openrbx: 1 compile errors (Sound.cpp)
-layer upstream: 22 compile errors (Body.cpp, Connector.cpp, Constants.cpp, ContentProvider.cpp, Extents.cpp, Face.cpp, Guid.cpp, Handle.cpp, IRenderable.cpp, IndexBox.cpp, Kernel.cpp, Link.cpp, Log.cpp, Math.cpp, Name.cpp, PV.cpp, Pair.cpp, Profiling.cpp, Quaternion.cpp, RunStateOwner.cpp, SimBody.cpp, standardout.cpp)
-layer decomp: 0 compile errors
-RbxUtil: linked=True test_exit=0; 5140 object functions, 523 byte-identical to unique 2008 functions (454 of >=16 bytes)

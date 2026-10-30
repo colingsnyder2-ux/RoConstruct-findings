@@ -1,8 +1,0 @@
-{
- "unit": "roc_native_hardware_sharedptr_16493fe4099d30fc.cpp",
- "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
- "symbol": "??1?$SharedPtr@VHardwareVertexBuffer@Ogre@@@Ogre@@UAE@XZ",
- "address": "004d73c0",
- "emitted": true,
- "exact": true
-}

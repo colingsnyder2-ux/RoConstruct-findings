@@ -1,138 +1,127 @@
-// from server: 99% by colin
+// from server: 100% by tajop
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view Part.cpp
+// roc-lib: rbxgs-view roc_unit_9fa68c426bc2b6e0.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "Part.h"
+#include "RenderLib/Chunk.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Decal.h"
+
+namespace RBX
+{
+	class SpecialShape;
+	class Decal;
+	class Texture;
+
+	namespace View
+	{
+		class View;
+
+		class __declspec(novtable) PartChunk : public Render::Chunk
+		{
+		private:
+			G3D::CoordinateFrame coordinateFrame;
+			boost::signals::scoped_connection childAddedConnection;
+			boost::signals::scoped_connection childRemovedConnection;
+			boost::signals::scoped_connection ancestorChangedConnection;
+			boost::signals::scoped_connection propertyChangedConnection;
+			boost::signals::scoped_connection shapePropertyChangedConnection;
+		protected:
+			boost::shared_ptr<PartInstance> partInstance;
+			G3D::ReferenceCountedPointer<Render::Material> material;
+			bool materialInvalid;
+			G3D::ReferenceCountedPointer<Render::Mesh> mesh;
+			View* view;
+			SpecialShape* specialShape;
+
+		private:
+			virtual void updateMesh() = 0;
+		public:
+			virtual ~PartChunk();
+			virtual bool castsShadows() const;
+			virtual bool cullable() const;
+		protected:
+			PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view);
+			void invalidateMaterial();
+			void invalidateMesh();
+			virtual void onPropertyChanged(const Reflection::PropertyDescriptor* descriptor);
+			virtual G3D::ReferenceCountedPointer<Render::Mesh> getMesh();
+			virtual const G3D::CoordinateFrame& cframe();
+		private:
+			void onAncestorChanged(boost::shared_ptr<Instance> ancestor);
+			void onChildAdded(boost::shared_ptr<Instance> child);
+			void onChildRemoved(boost::shared_ptr<Instance> child);
+			void onSpecialShapeChanged();
+		};
+
+		class Part : public PartChunk, public Listener<PartInstance, CanAggregateChanged>
+		{
+		public:
+			Part(const boost::shared_ptr<PartInstance>& partInstance, View* view);
+			virtual ~Part();
+			virtual G3D::ReferenceCountedPointer<Render::Material> getMaterial();
+		protected:
+			virtual void onPropertyChanged(const Reflection::PropertyDescriptor*);
+			virtual void onEvent(const PartInstance* source, CanAggregateChanged event);
+		private:
+			bool usesMegaTexture() const;
+			virtual void updateMesh();
+		};
+
+		class Decal : public PartChunk
+		{
+		private:
+			boost::shared_ptr<RBX::Decal> decal;
+			boost::signals::scoped_connection decalAncestorChangedConnection;
+			boost::signals::scoped_connection decalPropertyChangedConnection;
+
+		public:
+			Decal(Decal&, PartInstance&, View*);
+			virtual ~Decal();
+			virtual G3D::ReferenceCountedPointer<Render::Material> getMaterial();
+		protected:
+			void onDecalPropertyChanged(const Reflection::PropertyDescriptor*);
+			void onDecalAncestorChanged(boost::shared_ptr<Instance>);
+		private:
+			virtual void updateMesh();
+		};
+
+		class Texture : public PartChunk
+		{
+		private:
+			boost::shared_ptr<RBX::Texture> decal;
+			boost::signals::scoped_connection textureAncestorChangedConnection;
+			boost::signals::scoped_connection texturePropertyChangedConnection;
+
+		public:
+			Texture(Texture&, PartInstance&, View*);
+			virtual ~Texture();
+			virtual G3D::ReferenceCountedPointer<Render::Material> getMaterial();
+		protected:
+			void onTexturePropertyChanged(const Reflection::PropertyDescriptor*);
+			void onTextureAncestorChanged(boost::shared_ptr<Instance>);
+		private:
+			virtual void updateMesh();
+		};
+	}
+}
+
 #include "RbxView/View.h"
-#include "v8datamodel/custommesh.h"
 #include "v8datamodel/Workspace.h"
-#include "v8datamodel/Surfaces.h"
 
 namespace RBX
 {
 	namespace View
 	{
-		PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
-			: Render::Chunk(polygonOffset),
-			  partInstance(partInstance),
-			  view(view),
-			  materialInvalid(true),
-			  specialShape(NULL)
+		void Decal::onDecalAncestorChanged(boost::shared_ptr<Instance> ancestor)
 		{
-			view->sceneManager->addModel(this);
-
-			childAddedConnection = Instance::event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1));
-			childRemovedConnection = Instance::event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1));
-			ancestorChangedConnection = Instance::event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1));
-			propertyChangedConnection = Instance::event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1));
-
-			partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
-		}
-
-		PartChunk::~PartChunk() {}
-
-		G3D::ReferenceCountedPointer<Render::Mesh> PartChunk::getMesh()
-		{
-			if (mesh.isNull())
-				updateMesh();
-
-			return mesh;
-		}
-
-		const G3D::CoordinateFrame& PartChunk::cframe()
-		{
-			coordinateFrame = partInstance->getCoordinateFrame();
-			return coordinateFrame;
-		}
-
-		void PartChunk::invalidateMaterial()
-		{
-			material = NULL;
-			materialInvalid = true;
-			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
-		}
-
-		void PartChunk::invalidateMesh()
-		{
-			mesh = NULL;
-			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
-		}
-
-		void PartChunk::onChildAdded(boost::shared_ptr<Instance> child)
-		{
-			SpecialShape* mesh = dynamic_cast<SpecialShape*>(child.get());
-			if (mesh)
-			{
-				specialShape = mesh;
-				shapePropertyChangedConnection = Instance::event_propertyChanged.connect(mesh, boost::bind(&PartChunk::onSpecialShapeChanged, this));
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onChildRemoved(boost::shared_ptr<Instance> child)
-		{
-			if (child.get() == specialShape)
-			{
-				shapePropertyChangedConnection.disconnect();
-				specialShape = NULL;
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onAncestorChanged(boost::shared_ptr<Instance> ancestor)
-		{
-			Workspace* workspace = Workspace::findWorkspace(partInstance.get());
-			if (!workspace || !partInstance->isDescendentOf(workspace))
+			Workspace* workspace = Workspace::findWorkspace(decal.get());
+			if (!workspace || !decal->isDescendentOf(workspace))
 			{
 				view->sceneManager->removeModel(this);
 			}
-		}
-
-		void PartChunk::onPropertyChanged(const Reflection::PropertyDescriptor* descriptor)
-		{
-			if (*descriptor == PartInstance::prop_Size)
-			{
-				invalidateMesh();
-				invalidateMaterial();
-			}
-			else if (*descriptor == PartInstance::prop_shapeXml)
-			{
-				invalidateMesh();
-			}
-			else if (Surfaces::isSurfaceDescriptor(*descriptor))
-			{
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onSpecialShapeChanged()
-		{
-			invalidateMesh();
-			invalidateMaterial();
-		}
-
-		Part::Part(const boost::shared_ptr<PartInstance>& partInstance, View* view)
-			: PartChunk(0.0f, partInstance, view)
-		{
-			if (partInstance->getCanAggregate())
-				view->sceneManager->setSleeping(this, true);
-
-			Notifier<PartInstance, CanAggregateChanged>::connect(partInstance, this);
-			invalidateMesh();
-			invalidateMaterial();
-		}
-
-		Part::~Part()
-		{
-			Notifier<PartInstance, CanAggregateChanged>::disconnect(partInstance, this);
-		}
-
-		void Part::onEvent(const PartInstance* source, CanAggregateChanged event)
-		{
-			view->sceneManager->setSleeping(this, event.canClump);
 		}
 	}
 }

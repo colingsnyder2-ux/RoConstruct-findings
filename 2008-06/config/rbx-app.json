@@ -4,8 +4,7 @@
  "depends": [
   "rbx-util",
   "lua",
-  "raknet",
-  "g3d-gl"
+  "raknet"
  ],
  "layers": [
   {
@@ -30,16 +29,13 @@
     "tools/rbxgs/Client/Network/include",
     "tools/rbxgs/Client/RbxGraphics/include"
    ],
-   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /FIutil/Debug.h"
+   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
   },
   {
    "name": "glue",
    "mode": "direct",
    "dir": "rebuild/2008-06/glue/openrbx",
    "files": "*.cpp",
-   "includes_from_recipe": "openrbx-client",
-   "defines_from_recipe": "openrbx-client",
-   "extra_defines": "BOOST_ALL_NO_LIB",
    "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
   }
  ],
@@ -59,60 +55,5 @@
   "patches": "rebuild/2008-06/patches/openrbx-client.json"
  },
  "verified": true,
- "force_verified": true,
- "deduplicate_layer_files": true,
- "native_units": [
-  {
-   "recipe": "openrbx-client-dll",
-   "file": "App/v8datamodel/Feature.cpp",
-   "cl": "21022",
-   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
-   "addrs": [
-    "00580230"
-   ],
-   "symbols": {
-    "00580230": "??$create@VHole@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VHole@RBX@@@boost@@XZ"
-   },
-   "provenance": "Constructor-qualified binding correction: 00580230 calls 0060c840 (RBX::Hole); old 0040de10 calls a different observed type. See verification/constructor-bindings-20261030."
-  },
-  {
-   "recipe": "openrbx-client-dll",
-   "file": "App/v8datamodel/JointInstance.cpp",
-   "cl": "21022",
-   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
-   "addrs": [
-    "004b2890"
-   ],
-   "symbols": {
-    "004b2890": "??$create@VGlue@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlue@RBX@@@boost@@XZ"
-   },
-   "provenance": "Constructor-qualified binding correction: 004b2890 calls 005e49a0 (RBX::Glue); old 0048f490 calls a different observed type. See verification/constructor-bindings-20261030."
-  },
-  {
-   "recipe": "openrbx-client-dll",
-   "file": "App/v8datamodel/Teams.cpp",
-   "cl": "21022",
-   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
-   "addrs": [
-    "00490450"
-   ],
-   "symbols": {
-    "00490450": "??$create@VTeams@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VTeams@RBX@@@boost@@XZ"
-   },
-   "provenance": "Constructor-qualified binding correction: 00490450 calls 005d6850 (RBX::Teams); old 00407820 calls a different observed type. See verification/constructor-bindings-20261030."
-  },
-  {
-   "recipe": "openrbx-client-dll",
-   "file": "App/v8datamodel/GlobalSettings.cpp",
-   "cl": "21022",
-   "flags": "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
-   "addrs": [
-    "00569070"
-   ],
-   "symbols": {
-    "00569070": "??$create@VGlobalSettings@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlobalSettings@RBX@@@boost@@XZ"
-   },
-   "provenance": "Corrected masked-code twin: original00569070 calls GlobalSettings constructor00568f80. Original00440980 calls SoundService constructor005bc160 and is not this symbol."
-  }
- ]
+ "force_verified": true
 }

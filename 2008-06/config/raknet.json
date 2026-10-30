@@ -1,55 +1,12 @@
 {
  "name": "RakNet",
- "description": "RakNet 3.0 hybrid: OpenRBX core plus complete upstream fallback objects. Fallback quoted includes retain adjacent upstream headers; broad header adoption is not yet compatible. Four explicit float BitStream methods use the genuine OpenRBX header and /fp:fast, with exact code/data and forced dependency checks.",
+ "description": "RakNet 3.0 as linked into the 2008-06 client. Layer 1: the 2008-verified OpenRBX files (partial: only the functions OpenRBX matched). Layer 2: complete upstream RakNet30 files compiled against the OpenRBX headers so both layers share one ABI.",
  "layers": [
-  {
-   "name": "openrbx",
-   "mode": "recipe",
-   "recipe": "openrbx-raknet",
-   "files": "*.cpp",
-   "flags": "/O2 /GS- /EHsc /MD"
-  },
-  {
-   "name": "upstream",
-   "mode": "direct",
-   "dir": "tools/rbxgs/Client/Network/RakNet30/Source",
-   "files": "*.cpp",
-   "includes_from_recipe": "openrbx-raknet",
-   "extra_includes": [
-    "tools/rbxgs/Client/Network/RakNet30/Source"
-   ],
-   "defines_from_recipe": "openrbx-raknet",
-   "flags": "/O2 /GS- /EHsc /MD /FImalloc.h"
-  }
+  {"name": "openrbx", "mode": "recipe", "recipe": "openrbx-raknet", "files": "*.cpp", "flags": "/O2 /GS- /EHsc /MD"},
+  {"name": "upstream", "mode": "direct", "dir": "tools/rbxgs/Client/Network/RakNet30/Source", "files": "*.cpp",
+   "includes_from_recipe": "openrbx-raknet", "extra_includes": ["tools/rbxgs/Client/Network/RakNet30/Source"],
+   "defines_from_recipe": "openrbx-raknet", "flags": "/O2 /GS- /EHsc /MD"}
  ],
  "test": "raknet_loopback",
- "test_includes": [
-  "tools/openrbx/3rdparty/RakNet30/Source",
-  "tools/rbxgs/Client/Network/RakNet30/Source",
-  "rebuild/2008-06/out/RakNet/force"
- ],
- "verified": true,
- "force_verified": true,
- "prune_unselected_sections": true,
- "prefer_module_helpers": true,
- "native_units": [
-  {
-   "recipe": "openrbx-raknet",
-   "file": "roc_native_bitstream_geometry_5e4a747d48d02719.cpp",
-   "cl": "21022",
-   "flags": "/O2 /GS- /EHsc /MD /fp:fast",
-   "addrs": [
-    "004a5dd0",
-    "004c9c80",
-    "004ca210",
-    "004ca0f0"
-   ],
-   "symbols": {
-    "004a5dd0": "??$WriteNormQuat@M@BitStream@RakNet@@QAEXMMMM@Z",
-    "004c9c80": "??$WriteCompressed@M@BitStream@RakNet@@QAEXM@Z",
-    "004ca210": "??$WriteVector@M@BitStream@RakNet@@QAEXMMM@Z",
-    "004ca0f0": "??$ReadVector@M@BitStream@RakNet@@QAE_NAAM00@Z"
-   }
-  }
- ]
+ "test_includes": ["tools/openrbx/3rdparty/RakNet30/Source", "tools/rbxgs/Client/Network/RakNet30/Source"]
 }

@@ -1,3 +1,0 @@
-layer upstream: 0 compile errors
-verified layer: 1 exact symbols swapped in
-Lua: linked=True test_exit=0; 702 object functions, 431 byte-identical to unique 2008 functions (427 of >=16 bytes)

@@ -1,2 +1,0 @@
-Ogre: 12 groups, 95/95 addresses found exact, 0 groups failed to compile
-installed new layer: 362 -> 362 addresses

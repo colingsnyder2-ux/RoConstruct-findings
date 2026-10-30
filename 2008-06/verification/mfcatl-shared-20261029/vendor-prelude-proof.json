@@ -1,6 +1,0 @@
-{
- "file": "mfc-9.0/atlmfc/src/mfc/mfcdll.mak",
- "sha256": "b182e9145db2e162c3151f609612c7f99ebe04205336528649dad47c46554f7d",
- "evidence": "TARGET=w; DLL=2; TARGDEFS=/D_AFX_CORE_IMPL",
- "preprocessing_requirement": "_AFX_CORE_IMPL belongs in recipe defines; /D in final compile flags acts after flattened recipe preprocessing and did not change declarations."
-}

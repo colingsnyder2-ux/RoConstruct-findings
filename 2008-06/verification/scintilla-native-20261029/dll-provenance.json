@@ -1,5 +1,0 @@
-{
- "file": "clients/2008-06/SciLexer.dll",
- "sha256": "19135c5e18534f584c3416582da80fe017ab2707b50eb6ad89adde3de014b869",
- "role": "Existing shipped DLL staged by import_dlls; no DLL implementation bodies credited"
-}

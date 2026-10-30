@@ -1,4 +1,0 @@
-{
- "supersedes": "d93e7eebd5ad16f7d07d612ddd5434ff5efe8bf4244172e8c49466fe044ae995",
- "reason": "Use genuine FactoryProduct/NonFactoryProduct className body: Name::declare<ClassName>(), including Boost once; avoid treating a direct className cache as the original doDeclare function."
-}

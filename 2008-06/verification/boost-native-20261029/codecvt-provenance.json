@@ -1,9 +1,0 @@
-{
- "source": "tools/rbxgs/Client/boost_1_34_1/libs/detail/utf8_codecvt_facet.cpp",
- "sha256": "c15805687efb1fbe8f89616e1738e5bff23de069e25da890840dae27293978d7",
- "wrappers": [
-  "native_boost_filesystem_codecvt_a89c5595da94bb5d.cpp",
-  "native_boost_program_options_codecvt_5807b17d477ea264.cpp"
- ],
- "note": "Missing Boost1.34.1 detail implementation supplied unchanged through module overlay. Copyright/license retained. Two source wrappers prevent colliding object basenames; no vendor edits."
-}

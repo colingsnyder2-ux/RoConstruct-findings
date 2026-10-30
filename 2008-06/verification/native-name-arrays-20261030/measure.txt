@@ -1,2 +1,0 @@
-Same-policy gains 160 lost 0
-Proved exact source witnesses 160

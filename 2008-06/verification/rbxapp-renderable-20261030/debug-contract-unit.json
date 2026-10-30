@@ -1,5 +1,0 @@
-{
- "recipe": "openrbx-client",
- "file": "App/roc_native_debug_contract_f60e43fc9cb44f2e.cpp",
- "source": "rbxgs Client/App/include/util/Debug.h macros/template, unchanged; existing OpenRBX Utilities.h owns Debugable"
-}
