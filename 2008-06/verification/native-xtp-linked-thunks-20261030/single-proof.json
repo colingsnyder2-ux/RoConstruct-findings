@@ -1,0 +1,15 @@
+{
+ "target": "00764d90",
+ "target_opcode": "e97be2ffff",
+ "target_callee": "00763010",
+ "linked_caller": "004017b0",
+ "linked_opcode": "e97b040000",
+ "linked_destination": "00401c30",
+ "linked_callee": "00401c30",
+ "caller_origin": "linked:XTPDockingPanePaintManager.obj",
+ "callee_origin": "linked:verified_0056.obj",
+ "callee_object_exact": true,
+ "callee_data_errors": [],
+ "runtime_exit": 0,
+ "note": "Five-byte thunk matches by resolved linked callee; standalone object matching is ambiguous. Distinct native ownership requires server-side accounting and independent verification."
+}
