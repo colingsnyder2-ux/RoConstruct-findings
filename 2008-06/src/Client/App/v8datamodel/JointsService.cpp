@@ -14,33 +14,29 @@ namespace RBX
 
 	void JointsService::onEvent(const World* source, AutoJoin event)
 	{
-		RBXASSERT(event.joint != NULL);
-		RBXASSERT(event.joint->getJointOwner() == NULL);
-
+		Joint* joint = event.joint;
 		boost::shared_ptr<JointInstance> ji;
 		
-		switch (event.joint->getJointType())
+		switch (joint->getJointType())
 		{
 		case Joint::SNAP_JOINT:
-			ji = Creatable::create<Snap>(event.joint);
+			ji = Creatable::create<Snap>(joint);
 			break;
 		case Joint::WELD_JOINT:
-			ji = Creatable::create<Weld>(event.joint);
+			ji = Creatable::create<Weld>(joint);
 			break;
 		case Joint::GLUE_JOINT:
-			ji = Creatable::create<Glue>(event.joint);
+			ji = Creatable::create<Glue>(joint);
 			break;
 		case Joint::ROTATE_JOINT:
-			ji = Creatable::create<Rotate>(event.joint);
+			ji = Creatable::create<Rotate>(joint);
 			break;
 		case Joint::ROTATE_P_JOINT:
-			ji = Creatable::create<RotateP>(event.joint);
+			ji = Creatable::create<RotateP>(joint);
 			break;
 		case Joint::ROTATE_V_JOINT:
-			ji = Creatable::create<RotateV>(event.joint);
+			ji = Creatable::create<RotateV>(joint);
 			break;
-		default:
-			RBXASSERT(0);
 		}
 
 		ji->setParent(this);
@@ -52,12 +48,15 @@ namespace RBX
 		Notifier<World,AutoDestroy>::disconnect(world, this);
 
 		world = NULL;
-		Instance::onServiceProvider(oldProvider, newProvider);
 		if (Workspace* workspace = ServiceProvider::find<Workspace>(newProvider))
 			world = workspace->getWorld();
 
 		Notifier<World,AutoJoin>::connect(world, this);
 		Notifier<World,AutoDestroy>::connect(world, this);
+	}
+
+	JointsService::~JointsService()
+	{
 	}
 
 	void JointsService::onDescendentAdded(Instance* instance)

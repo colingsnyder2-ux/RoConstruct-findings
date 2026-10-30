@@ -717,6 +717,10 @@
   [
    "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\n\t\t\tfloat newSize = geometry->getGridVolume();\n\t\t\tbody->setMass(newSize);\n\t\t\tbody->setMoment(geometry->getMoment(newSize));\n\t\t\tJointK.setDirty();\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}",
    "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\t\t\tsetMassInertia(geometry->getGridVolume());\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}\n\n\tvoid Primitive::setMassInertia(float mass)\n\t{\n\t\tbody->setMass(mass);\n\t\tbody->setMoment(geometry->getMoment(mass));\n\t\tJointK.setDirty();\n\t}"
+  ],
+  [
+   "Primitive::setGuid(const Guid& value) \n\t{\n\t\tRBXASSERT(!world);\n\t\tguid.copyDataFrom(value);\n\t\tguidSetExternally = true;\n\t}",
+   "Primitive::setGuid(const Guid& value) \n\t{\n\t\t                 ;\n\t\tguid.copyDataFrom(value);\n\t\tguidSetExternally = true;\n\t}"
   ]
  ],
  "App/include/v8datamodel/PartInstance.h": [
@@ -1329,12 +1333,56 @@
   [
    "\t\t\tmodifiers.push_back(modifier);\n\t}\n",
    "\t\t\tmodifiers.push_back(modifier);\n\t}\n\n\tvoid ModelInstance::onChildRemoving(Instance* child)\n\t{\n\t\tIModelModifier* modifier = dynamic_cast<IModelModifier*>(child);\n\t\tif (modifier)\n\t\t\tmodifiers.erase(std::find(modifiers.begin(), modifiers.end(), modifier));\n\t}\n"
+  ],
+  [
+   "\tvoid ModelInstance::setPrimaryPart(PartInstance* set)\n\t{",
+   "\tvoid ModelInstance::setFrontAndTop(const G3D::Vector3& front)\n\t{\n\t\tif (primaryPart)\n\t\t{\n\t\t\tG3D::CoordinateFrame cf;\n\t\t\tcf.lookAt(front);\n\t\t\tmodelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * cf.rotation, G3D::Vector3::zero());\n\t\t\tdirtyAll();\n\t\t}\n\t}\n\n\tvoid ModelInstance::setPrimaryPart(PartInstance* set)\n\t{"
   ]
  ],
  "App/v8datamodel/JointsService.cpp": [
   [
    "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\t\tRBXASSERT(event.joint != NULL);\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\t\tRBXASSERT(jointOwner);\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}",
    "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}"
+  ],
+  [
+   "\tvoid JointsService::onDescendentAdded(Instance* instance)",
+   "\tJointsService::~JointsService()\n\t{\n\t}\n\n\tvoid JointsService::onDescendentAdded(Instance* instance)"
+  ],
+  [
+   "\t\tRBXASSERT(event.joint != NULL);\n\t\tRBXASSERT(event.joint->getJointOwner() == NULL);\n\n\t\tboost::shared_ptr<JointInstance> ji;\n\t\t\n\t\tswitch (event.joint->getJointType())",
+   "\t\tJoint* joint = event.joint;\n\t\tboost::shared_ptr<JointInstance> ji;\n\t\t\n\t\tswitch (joint->getJointType())"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Snap>(event.joint);",
+   "\t\t\tji = Creatable::create<Snap>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Weld>(event.joint);",
+   "\t\t\tji = Creatable::create<Weld>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Glue>(event.joint);",
+   "\t\t\tji = Creatable::create<Glue>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Rotate>(event.joint);",
+   "\t\t\tji = Creatable::create<Rotate>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<RotateP>(event.joint);",
+   "\t\t\tji = Creatable::create<RotateP>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<RotateV>(event.joint);",
+   "\t\t\tji = Creatable::create<RotateV>(joint);"
+  ],
+  [
+   "\t\t\tbreak;\n\t\tdefault:\n\t\t\tRBXASSERT(0);\n\t\t}",
+   "\t\t\tbreak;\n\t\t}"
+  ],
+  [
+   "\t\tworld = NULL;\n\t\tInstance::onServiceProvider(oldProvider, newProvider);\n\t\tif",
+   "\t\tworld = NULL;\n\t\tif"
   ]
  ],
  "App/v8world/MutilJoint.cpp": [
@@ -2015,6 +2063,14 @@
   [
    "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(false);\n\t\t}",
    "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}"
+  ],
+  [
+   "\t\treturn currentDistance;\n\t}\n}",
+   "\t\treturn currentDistance;\n\t}\n\n\tbool Camera::canZoom(int direction) const\n\t{\n\t\tfloat distance = goalToFocusDistance();\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();\n\t}\n\n\tbool Camera::canTilt(int direction) const\n\t{\n\t\tfloat elevation = Math::elevationAngle(cameraGoal.lookVector());\n\t\tif (direction < 0)\n\t\t\treturn elevation >= -Math::piHalf();\n\t\telse\n\t\t\treturn elevation <= Math::piHalf();\n\t}\n}"
+  ],
+  [
+   "\t\tfloat distance = goalToFocusDistance();\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();",
+   "\t\tG3D::Vector3 v = cameraGoal.translation - cameraFocus.translation;\n\t\tfloat distance = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();"
   ]
  ],
  "RbxGraphics/include/RbxGraphics/Adorn.h": [
@@ -2313,6 +2369,18 @@
   [
    "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}",
    "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\t                            ;\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}"
+  ]
+ ],
+ "App/include/v8datamodel/JointsService.h": [
+  [
+   "\t\tJointsService()\n\t\t\t: world(NULL)\n\t\t{\n\t\t\tsetName(\"JointsService\");\n\t\t}\n",
+   "\t\tJointsService()\n\t\t\t: world(NULL)\n\t\t{\n\t\t\tsetName(\"JointsService\");\n\t\t}\n\t\tvirtual ~JointsService();\n"
+  ]
+ ],
+ "App/tool/NullTool.cpp": [
+  [
+   "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n}",
+   "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n\n\tconst char* sNullTool = \"NullTool\";\n\n\tNullTool::NullTool(Workspace* workspace)\n\t\t: Base(workspace)\n\t{\n\t}\n\n\tNullTool::~NullTool() {}\n\n\tconst std::string NullTool::getCursorName() const\n\t{\n\t\treturn \"ArrowFarCursor\";\n\t}\n\n\tMouseCommand* NullTool::isSticky() const\n\t{\n\t\treturn new NullTool(workspace);\n\t}\n\n\tMouseCommand* NullTool::onMouseUp(const UIEvent& uiEvent)\n\t{\n\t\treleaseCapture();\n\t\treturn this;\n\t}\n}"
   ]
  ]
 }

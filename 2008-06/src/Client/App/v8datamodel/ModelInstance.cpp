@@ -153,6 +153,17 @@ namespace RBX
 		}
 	}
 
+	void ModelInstance::setFrontAndTop(const G3D::Vector3& front)
+	{
+		if (primaryPart)
+		{
+			G3D::CoordinateFrame cf;
+			cf.lookAt(front);
+			modelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * cf.rotation, G3D::Vector3::zero());
+			dirtyAll();
+		}
+	}
+
 	void ModelInstance::setPrimaryPart(PartInstance* set)
 	{
 		if (!set || set->isDescendentOf(this))

@@ -81,7 +81,7 @@ namespace RBX
 
 	void Primitive::setGuid(const Guid& value) 
 	{
-		RBXASSERT(!world);
+		                 ;
 		guid.copyDataFrom(value);
 		guidSetExternally = true;
 	}

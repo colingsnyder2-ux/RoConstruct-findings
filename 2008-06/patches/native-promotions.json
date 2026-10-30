@@ -2238,5 +2238,85 @@
     "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\t\t\tsetMassInertia(geometry->getGridVolume());\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}\n\n\tvoid Primitive::setMassInertia(float mass)\n\t{\n\t\tbody->setMass(mass);\n\t\tbody->setMoment(geometry->getMoment(mass));\n\t\tJointK.setDirty();\n\t}"
    ]
   ]
+ },
+ {
+  "App/v8world/Primitive.cpp": [
+   [
+    "Primitive::setGuid(const Guid& value) \n\t{\n\t\tRBXASSERT(!world);\n\t\tguid.copyDataFrom(value);\n\t\tguidSetExternally = true;\n\t}",
+    "Primitive::setGuid(const Guid& value) \n\t{\n\t\t                 ;\n\t\tguid.copyDataFrom(value);\n\t\tguidSetExternally = true;\n\t}"
+   ]
+  ]
+ },
+ {
+  "App/include/v8datamodel/JointsService.h": [
+   [
+    "\t\tJointsService()\n\t\t\t: world(NULL)\n\t\t{\n\t\t\tsetName(\"JointsService\");\n\t\t}\n",
+    "\t\tJointsService()\n\t\t\t: world(NULL)\n\t\t{\n\t\t\tsetName(\"JointsService\");\n\t\t}\n\t\tvirtual ~JointsService();\n"
+   ]
+  ],
+  "App/v8datamodel/ModelInstance.cpp": [
+   [
+    "\tvoid ModelInstance::setPrimaryPart(PartInstance* set)\n\t{",
+    "\tvoid ModelInstance::setFrontAndTop(const G3D::Vector3& front)\n\t{\n\t\tif (primaryPart)\n\t\t{\n\t\t\tG3D::CoordinateFrame cf;\n\t\t\tcf.lookAt(front);\n\t\t\tmodelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * cf.rotation, G3D::Vector3::zero());\n\t\t\tdirtyAll();\n\t\t}\n\t}\n\n\tvoid ModelInstance::setPrimaryPart(PartInstance* set)\n\t{"
+   ]
+  ],
+  "App/v8datamodel/JointsService.cpp": [
+   [
+    "\tvoid JointsService::onDescendentAdded(Instance* instance)",
+    "\tJointsService::~JointsService()\n\t{\n\t}\n\n\tvoid JointsService::onDescendentAdded(Instance* instance)"
+   ],
+   [
+    "\t\tRBXASSERT(event.joint != NULL);\n\t\tRBXASSERT(event.joint->getJointOwner() == NULL);\n\n\t\tboost::shared_ptr<JointInstance> ji;\n\t\t\n\t\tswitch (event.joint->getJointType())",
+    "\t\tJoint* joint = event.joint;\n\t\tboost::shared_ptr<JointInstance> ji;\n\t\t\n\t\tswitch (joint->getJointType())"
+   ],
+   [
+    "\t\t\tji = Creatable::create<Snap>(event.joint);",
+    "\t\t\tji = Creatable::create<Snap>(joint);"
+   ],
+   [
+    "\t\t\tji = Creatable::create<Weld>(event.joint);",
+    "\t\t\tji = Creatable::create<Weld>(joint);"
+   ],
+   [
+    "\t\t\tji = Creatable::create<Glue>(event.joint);",
+    "\t\t\tji = Creatable::create<Glue>(joint);"
+   ],
+   [
+    "\t\t\tji = Creatable::create<Rotate>(event.joint);",
+    "\t\t\tji = Creatable::create<Rotate>(joint);"
+   ],
+   [
+    "\t\t\tji = Creatable::create<RotateP>(event.joint);",
+    "\t\t\tji = Creatable::create<RotateP>(joint);"
+   ],
+   [
+    "\t\t\tji = Creatable::create<RotateV>(event.joint);",
+    "\t\t\tji = Creatable::create<RotateV>(joint);"
+   ],
+   [
+    "\t\t\tbreak;\n\t\tdefault:\n\t\t\tRBXASSERT(0);\n\t\t}",
+    "\t\t\tbreak;\n\t\t}"
+   ],
+   [
+    "\t\tworld = NULL;\n\t\tInstance::onServiceProvider(oldProvider, newProvider);\n\t\tif",
+    "\t\tworld = NULL;\n\t\tif"
+   ]
+  ],
+  "App/v8datamodel/Camera.cpp": [
+   [
+    "\t\treturn currentDistance;\n\t}\n}",
+    "\t\treturn currentDistance;\n\t}\n\n\tbool Camera::canZoom(int direction) const\n\t{\n\t\tfloat distance = goalToFocusDistance();\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();\n\t}\n\n\tbool Camera::canTilt(int direction) const\n\t{\n\t\tfloat elevation = Math::elevationAngle(cameraGoal.lookVector());\n\t\tif (direction < 0)\n\t\t\treturn elevation >= -Math::piHalf();\n\t\telse\n\t\t\treturn elevation <= Math::piHalf();\n\t}\n}"
+   ],
+   [
+    "\t\tfloat distance = goalToFocusDistance();\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();",
+    "\t\tG3D::Vector3 v = cameraGoal.translation - cameraFocus.translation;\n\t\tfloat distance = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();"
+   ]
+  ],
+  "App/tool/NullTool.cpp": [
+   [
+    "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n}",
+    "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n\n\tconst char* sNullTool = \"NullTool\";\n\n\tNullTool::NullTool(Workspace* workspace)\n\t\t: Base(workspace)\n\t{\n\t}\n\n\tNullTool::~NullTool() {}\n\n\tconst std::string NullTool::getCursorName() const\n\t{\n\t\treturn \"ArrowFarCursor\";\n\t}\n\n\tMouseCommand* NullTool::isSticky() const\n\t{\n\t\treturn new NullTool(workspace);\n\t}\n\n\tMouseCommand* NullTool::onMouseUp(const UIEvent& uiEvent)\n\t{\n\t\treleaseCapture();\n\t\treturn this;\n\t}\n}"
+   ]
+  ]
  }
 ]

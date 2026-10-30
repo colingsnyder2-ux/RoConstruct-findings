@@ -581,6 +581,13 @@
     "user": "colin"
   },
   {
+    "addr": "00583ba0",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "00583da0",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -1274,6 +1281,20 @@
     "user": "colin"
   },
   {
+    "addr": "005cbf90",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "005cc040",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005cc690",
     "client": "2008-06",
     "job": "23ba88f68b6f4336a4e355013c7f394c",
@@ -1652,6 +1673,20 @@
     "user": "colin"
   },
   {
+    "addr": "005e5860",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "005e5b50",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e5da0",
     "client": "2008-06",
     "job": "c56c7dbe1b29497fab60da63ed13ef16",
@@ -1670,6 +1705,13 @@
     "client": "2008-06",
     "job": "faf71c09cb364b30abcd758bcc92a68a",
     "model": "Codex",
+    "user": "colin"
+  },
+  {
+    "addr": "005e7450",
+    "client": "2008-06",
+    "job": "2b73a7058da44834952848ffd5d4ee68",
+    "model": "gpt-6",
     "user": "colin"
   },
   {
@@ -1811,6 +1853,13 @@
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex",
     "user": "colin"
+  },
+  {
+    "addr": "005e8d30",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005e9150",
@@ -2408,6 +2457,13 @@
     "user": "colin"
   },
   {
+    "addr": "00618200",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "0062b030",
     "client": "2008-06",
     "job": "17aa606f8bf541a0a3ec6c47ae387959",
@@ -2742,6 +2798,13 @@
     "job": "c24b46fcc32d42a0aba2cbb62b5cb1ae",
     "model": "gpt-6.1-sol",
     "user": "colin"
+  },
+  {
+    "addr": "006663f0",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "006683b0",
