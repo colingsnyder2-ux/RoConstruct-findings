@@ -1,16 +1,18 @@
-// from server: 91% by colin
-extern "C" void* __cdecl sub_0062FF02();
-extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, int);
+// from server: 100% by tajop
+struct HWND__;
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(HWND__*, unsigned int, unsigned int, long);
 
-struct S_func_00456070 {
-    void f(int);
+struct CWnd { char pad[0x20]; HWND__* m_hWnd; };
+struct CWinThread { char pad[0x20]; CWnd* m_pMainWnd; };
+struct AFX_MODULE_STATE { void* pad; CWinThread* m_pCurrentWinApp; };
+extern "C" AFX_MODULE_STATE* __stdcall sub_0062FF02();
+
+struct LockPlayModeVerb {
+    void doIt(void*);
 };
 
-void S_func_00456070::f(int a)
+void LockPlayModeVerb::doIt(void*)
 {
-    char* p = (char*)sub_0062FF02();
-    p = *(char**)(p + 4);
-    p = *(char**)(p + 0x20);
-    int hwnd = *(int*)(p + 0x20);
-    PostMessageA((void*)hwnd, 0x111, 0x80ff, 0);
+    CWnd* pWnd = sub_0062FF02()->m_pCurrentWinApp->m_pMainWnd;
+    PostMessageA(pWnd->m_hWnd, 0x111, 0x80ff, 0);
 }

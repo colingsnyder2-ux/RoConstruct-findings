@@ -1,23 +1,39 @@
-// from server: 84% by colin
-struct DataModel {
-    char pad[0xc];
-    void* field_c;
-    void sub_564C50(void*);
-    DataModel(void*);
+// from server: 100% by tajop
+#include <string>
+
+namespace RBX {
+
+class VerbContainer {
 };
 
-extern "C" void* __stdcall sub_77E698(const char*);
+class Verb {
+public:
+    Verb(VerbContainer* container, std::string name);
+    virtual ~Verb();
+    virtual void doIt();
+private:
+    void* field_4;
+    void* field_8;
+};
 
-DataModel::DataModel(void* a) {
-    void* edi;
-    if (a != 0) {
-        edi = (char*)a + 0x14c;
-    } else {
-        edi = 0;
-    }
-    char buf[0x1c];
-    sub_77E698("ClearStarterpack");
-    sub_564C50(edi);
-    field_c = a;
-    *(void**)this = (void*)0x7a9130;
+class DataModelBase {
+    char pad[0x14c];
+};
+
+class DataModel : public DataModelBase, public VerbContainer {
+};
+
+class ClearStarterpackVerb : public Verb {
+public:
+    ClearStarterpackVerb(DataModel* dataModel);
+    virtual void doIt();
+private:
+    DataModel* dataModel;
+};
+
+ClearStarterpackVerb::ClearStarterpackVerb(DataModel* dataModel)
+    : Verb(dataModel, "ClearStarterpack"), dataModel(dataModel)
+{
+}
+
 }

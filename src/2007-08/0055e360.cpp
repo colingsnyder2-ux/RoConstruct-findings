@@ -1,30 +1,37 @@
-// from server: 82% by colin
-struct DataModel {
-    char pad[0x14c];
-    int field_14c;
+// from server: 100% by tajop
+#include <string>
+
+namespace RBX {
+
+class VerbContainer {
 };
 
-struct C {
-    char pad[0x4];
+class Verb {
+public:
+    Verb(VerbContainer* container, std::string name);
+    virtual ~Verb();
+    virtual void doIt();
+private:
     void* field_4;
-    void sub_564c50(void*);
-    C* construct(void*);
+    void* field_8;
 };
 
-extern "C" void* __stdcall sub_77e698(const char*);
+class DataModelBase {
+    char pad[0x14c];
+};
 
-C* C::construct(void* a)
+class DataModel : public DataModelBase, public VerbContainer {
+};
+
+class ForceAssertionVerb : public Verb {
+public:
+    ForceAssertionVerb(DataModel* dataModel);
+    virtual void doIt();
+};
+
+ForceAssertionVerb::ForceAssertionVerb(DataModel* dataModel)
+    : Verb(dataModel, "ForceAssertion")
 {
-    DataModel* dm = (DataModel*)a;
-    int* p;
-    if (dm)
-        p = &dm->field_14c;
-    else
-        p = 0;
+}
 
-    char buf[0x1c];
-    sub_77e698("ForceAssertion");
-    sub_564c50(p);
-    *(void**)this = (void*)0x7a90c0;
-    return this;
 }
