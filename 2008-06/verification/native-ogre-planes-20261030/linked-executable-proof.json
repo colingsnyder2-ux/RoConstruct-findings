@@ -1,0 +1,287 @@
+[
+ {
+  "target": "0068e150",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Copy_opt@PAURaySceneQueryResultEntry@Ogre@@PAU12@@std@@YAPAURaySceneQueryResultEntry@Ogre@@PAU12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402ab0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Copy_opt@PAUShadowTextureConfig@Ogre@@PAU12@@std@@YAPAUShadowTextureConfig@Ogre@@PAU12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402ab0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0068e250",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Copy_backward_opt@PAURaySceneQueryResultEntry@Ogre@@PAU12@@std@@YAPAURaySceneQueryResultEntry@Ogre@@PAU12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402c40",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Copy_backward_opt@PAUShadowTextureConfig@Ogre@@PAU12@@std@@YAPAUShadowTextureConfig@Ogre@@PAU12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402c40",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0068e350",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Uninit_copy@PBURaySceneQueryResultEntry@Ogre@@PAU12@V?$allocator@URaySceneQueryResultEntry@Ogre@@@std@@@std@@YAPAURaySceneQueryResultEntry@Ogre@@PBU12@0PAU12@AAV?$allocator@URaySceneQueryResultEntry@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402c00",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Uninit_copy@PAURaySceneQueryResultEntry@Ogre@@PAU12@V?$allocator@URaySceneQueryResultEntry@Ogre@@@std@@@std@@YAPAURaySceneQueryResultEntry@Ogre@@PAU12@00AAV?$allocator@URaySceneQueryResultEntry@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402c00",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Uninit_copy@PBUShadowTextureConfig@Ogre@@PAU12@V?$allocator@UShadowTextureConfig@Ogre@@@std@@@std@@YAPAUShadowTextureConfig@Ogre@@PBU12@0PAU12@AAV?$allocator@UShadowTextureConfig@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402c00",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Uninit_copy@PAUShadowTextureConfig@Ogre@@PAU12@V?$allocator@UShadowTextureConfig@Ogre@@@std@@@std@@YAPAUShadowTextureConfig@Ogre@@PAU12@00AAV?$allocator@UShadowTextureConfig@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402c00",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "006901e0",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Fill@PAURaySceneQueryResultEntry@Ogre@@U12@@std@@YAXPAURaySceneQueryResultEntry@Ogre@@0ABU12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402a30",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Fill@PAUShadowTextureConfig@Ogre@@U12@@std@@YAXPAUShadowTextureConfig@Ogre@@0ABU12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402a30",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$fill@PAURaySceneQueryResultEntry@Ogre@@U12@@std@@YAXPAURaySceneQueryResultEntry@Ogre@@0ABU12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402a30",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$fill@PAUShadowTextureConfig@Ogre@@U12@@std@@YAXPAUShadowTextureConfig@Ogre@@0ABU12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402a30",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "006902a0",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Uninit_fill_n@PAURaySceneQueryResultEntry@Ogre@@IU12@V?$allocator@URaySceneQueryResultEntry@Ogre@@@std@@@std@@YAXPAURaySceneQueryResultEntry@Ogre@@IABU12@AAV?$allocator@URaySceneQueryResultEntry@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402d60",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Uninit_fill_n@PAUShadowTextureConfig@Ogre@@IU12@V?$allocator@UShadowTextureConfig@Ogre@@@std@@@std@@YAXPAUShadowTextureConfig@Ogre@@IABU12@AAV?$allocator@UShadowTextureConfig@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402d60",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00699c60",
+  "linked_proofs": [
+   {
+    "symbol": "?_Insert_n@?$vector@URaySceneQueryResultEntry@Ogre@@V?$allocator@URaySceneQueryResultEntry@Ogre@@@std@@@std@@IAEXV?$_Vector_const_iterator@URaySceneQueryResultEntry@Ogre@@V?$allocator@URaySceneQueryResultEntry@Ogre@@@std@@@2@IABURaySceneQueryResultEntry@Ogre@@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00403070",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "?_Insert_n@?$vector@UShadowTextureConfig@Ogre@@V?$allocator@UShadowTextureConfig@Ogre@@@std@@@std@@IAEXV?$_Vector_const_iterator@UShadowTextureConfig@Ogre@@V?$allocator@UShadowTextureConfig@Ogre@@@std@@@2@IABUShadowTextureConfig@Ogre@@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00403070",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "004332f0",
+  "linked_proofs": [
+   {
+    "symbol": "?destroy@?$allocator@VTexturePtr@Ogre@@@std@@QAEXPAVTexturePtr@Ogre@@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402b00",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0048e410",
+  "linked_proofs": [
+   {
+    "symbol": "?swap@?$vector@VTexturePtr@Ogre@@V?$allocator@VTexturePtr@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "004032f0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0068e0b0",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Copy_opt@PAVTexturePtr@Ogre@@PAV12@@std@@YAPAVTexturePtr@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402a60",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00697630",
+  "linked_proofs": [
+   {
+    "symbol": "?erase@?$vector@VTexturePtr@Ogre@@V?$allocator@VTexturePtr@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VTexturePtr@Ogre@@V?$allocator@VTexturePtr@Ogre@@@std@@@2@V?$_Vector_const_iterator@VTexturePtr@Ogre@@V?$allocator@VTexturePtr@Ogre@@@std@@@2@0@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402d90",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0067c5e0",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Allocate@VPlane@Ogre@@@std@@YAPAVPlane@Ogre@@IPAV12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "004029d0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0067c720",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Copy_backward_opt@PAVPlane@Ogre@@PAV12@@std@@YAPAVPlane@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402ba0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0067c890",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Uninit_copy@PBVPlane@Ogre@@PAV12@V?$allocator@VPlane@Ogre@@@std@@@std@@YAPAVPlane@Ogre@@PBV12@0PAV12@AAV?$allocator@VPlane@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402b20",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "??$_Uninit_copy@PAVPlane@Ogre@@PAV12@V?$allocator@VPlane@Ogre@@@std@@@std@@YAPAVPlane@Ogre@@PAV12@00AAV?$allocator@VPlane@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402b20",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0067c960",
+  "linked_proofs": [
+   {
+    "symbol": "??$fill@PAVPlane@Ogre@@V12@@std@@YAXPAVPlane@Ogre@@0ABV12@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402ca0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0067c9a0",
+  "linked_proofs": [
+   {
+    "symbol": "??$_Uninit_fill_n@PAVPlane@Ogre@@IV12@V?$allocator@VPlane@Ogre@@@std@@@std@@YAXPAVPlane@Ogre@@IABV12@AAV?$allocator@VPlane@Ogre@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402ce0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0067d600",
+  "linked_proofs": [
+   {
+    "symbol": "?_Insert_n@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEXV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@IABVPlane@Ogre@@@Z",
+    "owner": "linked:NativeOgreVectors.obj",
+    "linked_address": "00402e50",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ }
+]
