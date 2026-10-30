@@ -1,5 +1,5 @@
 {
- "revision": "f1c4c2ecf7223ff5cd4d3ee1b590b2dc75945d28b7ed81f6b0fd1606dc1d7678",
+ "revision": "cbf95d59d6d5ec140421bc2b313c25c5574719d3d4f5ce4862d8deb63fa44ab6",
  "overlay": {
   "App/include/util/object.h": [
    [
@@ -2145,6 +2145,10 @@
    [
     "\t\ttimer = ServiceProvider::create<TimerService>(newProvider);",
     "\t\ttimer = ServiceProvider::find<TimerService>(newProvider);"
+   ],
+   [
+    "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", RBX::Reflection::FunctionDescriptor::AnyCaller);",
+    "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", 10.0, RBX::Reflection::FunctionDescriptor::AnyCaller);"
    ]
   ],
   "App/include/v8world/World.h": [
@@ -4845,6 +4849,14 @@
     [
      "\t\tcanCollide(true),\n\t\tcanSleep(true),\n\t\tJointK(this, &Primitive::computeJointK),",
      "\t\tcanCollide(true),\n\t\tcanSleep(false),\n\t\tJointK(this, &Primitive::computeJointK),"
+    ]
+   ]
+  },
+  {
+   "App/v8datamodel/DebrisService.cpp": [
+    [
+     "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", RBX::Reflection::FunctionDescriptor::AnyCaller);",
+     "func_AddItem(&RBX::DebrisService::addItem, \"AddItem\", \"item\", \"lifetime\", 10.0, RBX::Reflection::FunctionDescriptor::AnyCaller);"
     ]
    ]
   }

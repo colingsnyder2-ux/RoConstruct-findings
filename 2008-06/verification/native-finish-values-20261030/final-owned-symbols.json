@@ -107019,6 +107019,12 @@
    "symbol": "??1DebrisService@RBX@@UAE@XZ"
   }
  ],
+ "0063c070": [
+  {
+   "object": "DebrisService.obj",
+   "symbol": "??0?$BoundFuncDesc@VDebrisService@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@N@Z$01@Reflection@RBX@@QAE@P8DebrisService@2@AEXV?$shared_ptr@VInstance@RBX@@@boost@@N@ZPBD22NW4Security@FunctionDescriptor@12@@Z"
+  }
+ ],
  "0063c130": [
   {
    "object": "DebrisService.obj",
@@ -136553,6 +136559,12 @@
   {
    "object": "DebrisService.obj",
    "symbol": "??__Eprop_MaxItems@@YAXXZ"
+  }
+ ],
+ "007f8ba0": [
+  {
+   "object": "DebrisService.obj",
+   "symbol": "??__Efunc_AddItem@@YAXXZ"
   }
  ],
  "007f8c40": [

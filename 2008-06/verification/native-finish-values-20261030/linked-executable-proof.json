@@ -5,7 +5,7 @@
    {
     "symbol": "??0FunctionRef@Lua@RBX@@QAE@XZ",
     "owner": "linked:ThreadRef.obj",
-    "linked_address": "0048bc70",
+    "linked_address": "0048b090",
     "object_code_data_exact": true,
     "code_exact": true
    }
@@ -18,7 +18,7 @@
    {
     "symbol": "??$?0VInstance@RBX@@@?$shared_ptr@VScript@RBX@@@boost@@QAE@ABV?$shared_ptr@VInstance@RBX@@@1@Udynamic_cast_tag@detail@1@@Z",
     "owner": "linked:NativeValueConversions.obj",
-    "linked_address": "004195b0",
+    "linked_address": "00419350",
     "object_code_data_exact": true,
     "code_exact": true
    }
@@ -31,7 +31,7 @@
    {
     "symbol": "??$dynamic_pointer_cast@VScript@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VScript@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
     "owner": "linked:NativeValueConversions.obj",
-    "linked_address": "004197b0",
+    "linked_address": "00419550",
     "object_code_data_exact": true,
     "code_exact": true
    }
@@ -44,7 +44,7 @@
    {
     "symbol": "??$convert@V?$shared_ptr@VInstance@RBX@@@boost@@@Value@Reflection@RBX@@QAEAAV?$shared_ptr@VInstance@RBX@@@boost@@XZ",
     "owner": "linked:NativeValueConversions.obj",
-    "linked_address": "00419b80",
+    "linked_address": "00419860",
     "object_code_data_exact": true,
     "code_exact": true
    }
@@ -57,7 +57,33 @@
    {
     "symbol": "??$convert@VFunctionRef@Lua@RBX@@@Value@Reflection@RBX@@QAEAAVFunctionRef@Lua@2@XZ",
     "owner": "linked:NativeValueConversions.obj",
-    "linked_address": "004196b0",
+    "linked_address": "00419450",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0063c070",
+  "linked_proofs": [
+   {
+    "symbol": "??0?$BoundFuncDesc@VDebrisService@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@N@Z$01@Reflection@RBX@@QAE@P8DebrisService@2@AEXV?$shared_ptr@VInstance@RBX@@@boost@@N@ZPBD22NW4Security@FunctionDescriptor@12@@Z",
+    "owner": "linked:DebrisService.obj",
+    "linked_address": "0043e400",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "007f8ba0",
+  "linked_proofs": [
+   {
+    "symbol": "??__Efunc_AddItem@@YAXXZ",
+    "owner": "linked:DebrisService.obj",
+    "linked_address": "00572090",
     "object_code_data_exact": true,
     "code_exact": true
    }

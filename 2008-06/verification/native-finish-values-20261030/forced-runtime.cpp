@@ -295,6 +295,7 @@
 #pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VBodyPosition@RBX@@$$A6A?AVVector3@G3D@@XZ$0A@@Reflection@RBX@@QAE@P8BodyPosition@2@AE?AVVector3@G3D@@XZPBDW4Security@FunctionDescriptor@12@@Z")
 #pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VBodyVelocity@RBX@@$$A6A?AVVector3@G3D@@XZ$0A@@Reflection@RBX@@QAE@P8BodyVelocity@2@AE?AVVector3@G3D@@XZPBDW4Security@FunctionDescriptor@12@@Z")
 #pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VDataModel@RBX@@$$A6AXXZ$0A@@Reflection@RBX@@QAE@P8DataModel@2@AEXXZPBDW4Security@FunctionDescriptor@12@@Z")
+#pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VDebrisService@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@N@Z$01@Reflection@RBX@@QAE@P8DebrisService@2@AEXV?$shared_ptr@VInstance@RBX@@@boost@@N@ZPBD22NW4Security@FunctionDescriptor@12@@Z")
 #pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VInstance@RBX@@$$A6A_NV?$shared_ptr@VInstance@RBX@@@boost@@@Z$00@Reflection@RBX@@QAE@P8Instance@2@AE_NV?$shared_ptr@VInstance@RBX@@@boost@@@ZPBD2W4Security@FunctionDescriptor@12@@Z")
 #pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VLighting@RBX@@$$A6AXN@Z$00@Reflection@RBX@@QAE@P8Lighting@2@AEXN@ZPBD1W4Security@FunctionDescriptor@12@@Z")
 #pragma comment(linker, "/INCLUDE:??0?$BoundFuncDesc@VModelInstance@RBX@@$$A6AXVVector3@G3D@@@Z$00@Reflection@RBX@@QAE@P8ModelInstance@2@AEXVVector3@G3D@@@ZPBD2W4Security@FunctionDescriptor@12@@Z")
