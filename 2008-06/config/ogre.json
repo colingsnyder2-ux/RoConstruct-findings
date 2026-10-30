@@ -7,7 +7,7 @@
    "mode": "recipe",
    "recipe": "ogre-1.4.5-dll",
    "files": [
-    "roc_native_scene_state_133ef0f703573e88.cpp"
+    "roc_native_scene_factories_e798f1e65cd88908.cpp"
    ],
    "direct": true,
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
@@ -192,7 +192,7 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_scene_state_133ef0f703573e88.cpp",
+   "file": "roc_native_scene_factories_e798f1e65cd88908.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
    "addrs": [
@@ -208,7 +208,13 @@
     "0069dd00",
     "0068e7c0",
     "0069e220",
-    "00696a80"
+    "00696a80",
+    "0069ddf0",
+    "0069df80",
+    "0068ce50",
+    "00699740",
+    "0069e020",
+    "0069e110"
    ],
    "symbols": {
     "00565ff0": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAUWorldFragment@SceneQuery@3@@Z",
@@ -223,9 +229,15 @@
     "0069dd00": "?getMovableObjectCollection@RbxSceneManager@Ogre@@IAEPAUMovableObjectCollection@SceneManager@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
     "0068e7c0": "??0RbxSceneManager@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
     "0069e220": "??1RbxSceneManager@Ogre@@UAE@XZ",
-    "00696a80": "?getMovableObject@RbxSceneManager@Ogre@@UBEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+    "00696a80": "?getMovableObject@RbxSceneManager@Ogre@@UBEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+    "0069ddf0": "?createMovableObject@RbxSceneManager@Ogre@@UAEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0PBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@std@@@2@@5@@Z",
+    "0069df80": "?destroyMovableObject@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+    "0068ce50": "?destroyMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+    "00699740": "?destroyAllMovableObjects@RbxSceneManager@Ogre@@UAEXXZ",
+    "0069e020": "?destroyAllMovableObjectsByType@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+    "0069e110": "?getMovableObjectIterator@RbxSceneManager@Ogre@@UAE?AV?$MapIterator@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@@std@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
    },
-   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer."
+   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer. Real Ogre1.4.5 create/destroy bodies now share the protected collection helper and remove excluded public-helper aliases. Runtime covers factory-owned Light lifetime and duplicate creation. Vtable slots206/208/209/212 confirm pointer destroy, bulk destroy and iterator as RbxSceneManager overrides; these replace prior SceneManager/HeaderRecovery donor aliases with authentic types."
   },
   {
    "recipe": "ogre-1.4.5-dll",

@@ -1,0 +1,28 @@
+{
+ "new_forced_integrations": 2,
+ "new_forced_addresses": [
+  "0069ddf0",
+  "0069df80"
+ ],
+ "new_forced_bytes": 547,
+ "old_forced_roots": 329,
+ "new_forced_roots": 331,
+ "all_prior_addresses_preserved": true,
+ "scene_native_roots_before": 13,
+ "scene_native_roots_after": 19,
+ "prior_donor_or_recovery_owners_replaced": 4,
+ "source_representatives_before": 358,
+ "source_representatives_after": 358,
+ "raw_inventory_before": 488,
+ "raw_inventory_after": 490,
+ "native_replay_targets": 74,
+ "native_replay_exact": 74,
+ "compile_failures": 0,
+ "linked": true,
+ "unresolved": [],
+ "runtime_exit": 0,
+ "placed_distinct": 411,
+ "server_credits_claimed": 0,
+ "full_renderer_complete": false,
+ "focused_tests_passed": 90
+}

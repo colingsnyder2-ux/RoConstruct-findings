@@ -1,0 +1,173 @@
+[
+ {
+  "address": "00565ff0",
+  "symbol": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAUWorldFragment@SceneQuery@3@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 5,
+  "target_size": 5
+ },
+ {
+  "address": "0069c5f0",
+  "symbol": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAVMovableObject@3@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 520,
+  "target_size": 520
+ },
+ {
+  "address": "0068b690",
+  "symbol": "??1SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@UAE@XZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 14,
+  "target_size": 14
+ },
+ {
+  "address": "0068cef0",
+  "symbol": "?getTypeName@RbxSceneManager@Ogre@@UBEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 6,
+  "target_size": 6
+ },
+ {
+  "address": "0068cf00",
+  "symbol": "?initMetaData@RbxSceneManagerFactory@Ogre@@MBEXXZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 46,
+  "target_size": 46
+ },
+ {
+  "address": "0069e140",
+  "symbol": "?injectMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 51,
+  "target_size": 51
+ },
+ {
+  "address": "0068ce80",
+  "symbol": "?extractMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 47,
+  "target_size": 47
+ },
+ {
+  "address": "00699930",
+  "symbol": "?hasMovableObject@RbxSceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 189,
+  "target_size": 189
+ },
+ {
+  "address": "0069e180",
+  "symbol": "?extractMovableObject@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 89,
+  "target_size": 89
+ },
+ {
+  "address": "0069dd00",
+  "symbol": "?getMovableObjectCollection@RbxSceneManager@Ogre@@IAEPAUMovableObjectCollection@SceneManager@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 227,
+  "target_size": 227
+ },
+ {
+  "address": "0068e7c0",
+  "symbol": "??0RbxSceneManager@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 181,
+  "target_size": 181
+ },
+ {
+  "address": "0069e220",
+  "symbol": "??1RbxSceneManager@Ogre@@UAE@XZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 359,
+  "target_size": 359
+ },
+ {
+  "address": "00696a80",
+  "symbol": "?getMovableObject@RbxSceneManager@Ogre@@UBEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 286,
+  "target_size": 286
+ },
+ {
+  "address": "0069ddf0",
+  "symbol": "?createMovableObject@RbxSceneManager@Ogre@@UAEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0PBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@std@@@2@@5@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 389,
+  "target_size": 389
+ },
+ {
+  "address": "0069df80",
+  "symbol": "?destroyMovableObject@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 158,
+  "target_size": 158
+ },
+ {
+  "address": "0068ce50",
+  "symbol": "?destroyMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 47,
+  "target_size": 47
+ },
+ {
+  "address": "00699740",
+  "symbol": "?destroyAllMovableObjects@RbxSceneManager@Ogre@@UAEXXZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 481,
+  "target_size": 481
+ },
+ {
+  "address": "0069e020",
+  "symbol": "?destroyAllMovableObjectsByType@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 227,
+  "target_size": 227
+ },
+ {
+  "address": "0069e110",
+  "symbol": "?getMovableObjectIterator@RbxSceneManager@Ogre@@UAE?AV?$MapIterator@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@@std@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 37,
+  "target_size": 37
+ }
+]
