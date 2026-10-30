@@ -1,0 +1,96 @@
+{
+ "exit": 241,
+ "fault": null,
+ "hardware_execution_breakpoints_only": true,
+ "code_bytes_modified": false,
+ "targets": {
+  "?renderObjects@RbxSceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z": "0x40d3e0",
+  "?_setPass@RbxSceneManager@Ogre@@UAEPBVPass@2@PBV32@_N1@Z": "0x40d660",
+  "?_renderScene@RbxSceneManager@Ogre@@UAEXPAVCamera@2@PAVViewport@2@_N@Z": "0x40e4a0",
+  "?renderSingleObject@RbxSceneManager@Ogre@@MAEXPBVRenderable@2@PBVPass@2@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z": "0x40f290"
+ },
+ "hits": {
+  "?renderObjects@RbxSceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z": 6,
+  "?_setPass@RbxSceneManager@Ogre@@UAEPBVPass@2@PBV32@_N1@Z": 3,
+  "?_renderScene@RbxSceneManager@Ogre@@UAEXPAVCamera@2@PAVViewport@2@_N@Z": 3,
+  "?renderSingleObject@RbxSceneManager@Ogre@@MAEXPBVRenderable@2@PBVPass@2@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z": 3
+ },
+ "return_addresses": {
+  "?renderObjects@RbxSceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z": [
+   "0x10137f67",
+   "0x10137f7d",
+   "0x10137f67",
+   "0x10137f7d",
+   "0x10137f67",
+   "0x10137f7d"
+  ],
+  "?_setPass@RbxSceneManager@Ogre@@UAEPBVPass@2@PBV32@_N1@Z": [
+   "0x41f49d",
+   "0x41f49d",
+   "0x41f49d"
+  ],
+  "?_renderScene@RbxSceneManager@Ogre@@UAEXPAVCamera@2@PAVViewport@2@_N@Z": [
+   "0x1003ac7e",
+   "0x1003ac7e",
+   "0x1003ac7e"
+  ],
+  "?renderSingleObject@RbxSceneManager@Ogre@@MAEXPBVRenderable@2@PBVPass@2@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z": [
+   "0x41f462",
+   "0x41f462",
+   "0x41f462"
+  ]
+ },
+ "single_arguments": [
+  {
+   "this": "0x1a6f48",
+   "stack": [
+    "0x41f462",
+    "0x25a17c0",
+    "0x25a10c8",
+    "0x1",
+    "0x0"
+   ],
+   "pass_fields": {
+    "max_lights": 8,
+    "start_light": 0,
+    "iterate": 0,
+    "per_iteration": 1,
+    "only_one_type": 1
+   }
+  },
+  {
+   "this": "0x1a6f48",
+   "stack": [
+    "0x41f462",
+    "0x25a17c0",
+    "0x25a10c8",
+    "0x1",
+    "0x0"
+   ],
+   "pass_fields": {
+    "max_lights": 8,
+    "start_light": 1,
+    "iterate": 0,
+    "per_iteration": 1,
+    "only_one_type": 1
+   }
+  },
+  {
+   "this": "0x1a6f48",
+   "stack": [
+    "0x41f462",
+    "0x25a17c0",
+    "0x25a10c8",
+    "0x1",
+    "0x0"
+   ],
+   "pass_fields": {
+    "max_lights": 8,
+    "start_light": 0,
+    "iterate": 1,
+    "per_iteration": 1,
+    "only_one_type": 1
+   }
+  }
+ ]
+}

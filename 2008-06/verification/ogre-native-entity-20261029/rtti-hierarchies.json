@@ -1,0 +1,56 @@
+[
+ {
+  "class": "RbxSceneNode@Ogre",
+  "hierarchies": [
+   [
+    {
+     "name": ".?AVRbxSceneNode@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVSceneNode@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVNode@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVRenderable@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    }
+   ]
+  ]
+ },
+ {
+  "class": "RbxSubEntity@Ogre",
+  "hierarchies": [
+   [
+    {
+     "name": ".?AVRbxSubEntity@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVSubEntity@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVRenderable@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVShadowCaster@Ogre@@",
+     "mdisp": 236,
+     "pdisp": "0xffffffff"
+    }
+   ]
+  ]
+ }
+]
