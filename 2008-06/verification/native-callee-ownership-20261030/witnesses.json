@@ -1,0 +1,1802 @@
+{
+ "005fd760": {
+  "address": "005fd760",
+  "symbol": "?getHandle@Accoutrement@RBX@@QAEPAVPartInstance@2@XZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "004034a0": {
+  "address": "004034a0",
+  "symbol": "?allocate@?$allocator@V_Aux_cont@std@@@std@@QAEPAV_Aux_cont@2@I@Z",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "004306a0": {
+  "address": "004306a0",
+  "symbol": "??$callDoDeclare@$1?sAccoutrement@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "004306b0": {
+  "address": "004306b0",
+  "symbol": "??$callDoDeclare@$1?sHat@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "005b16d0": {
+  "address": "005b16d0",
+  "symbol": "??_D?$FactoryProduct@VHat@RBX@@VAccoutrement@2@$1?sHat@2@3PADA@RBX@@IAEXXZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "005b16e0": {
+  "address": "005b16e0",
+  "symbol": "??$declare@$1?sAccoutrement@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "005b1700": {
+  "address": "005b1700",
+  "symbol": "??$declare@$1?sHat@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "00553ca0": {
+  "address": "00553ca0",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@PBVName@RBX@@PBVICreator@2@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@PBVICreator@2@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "00553d80": {
+  "address": "00553d80",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@PBVName@RBX@@PBVICreator@2@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@PBVICreator@2@@std@@@5@$0A@@std@@@std@@QAE@XZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "0059f470": {
+  "address": "0059f470",
+  "symbol": "??1?$map@PBVName@RBX@@PBVICreator@2@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@PBVICreator@2@@std@@@5@@std@@QAE@XZ",
+  "object": "Accoutrement.obj",
+  "external": true
+ },
+ "0064ad30": {
+  "address": "0064ad30",
+  "symbol": "?erase@?$_Tree@V?$_Tset_traits@PAVClump@RBX@@U?$less@PAVClump@RBX@@@std@@V?$allocator@PAVClump@RBX@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "Assembly.obj",
+  "external": true
+ },
+ "005a1850": {
+  "address": "005a1850",
+  "symbol": "?_Tidy@?$_Tree@V?$_Tset_traits@PAVClump@RBX@@U?$less@PAVClump@RBX@@@std@@V?$allocator@PAVClump@RBX@@@4@$0A@@std@@@std@@IAEXXZ",
+  "object": "Assembly.obj",
+  "external": true
+ },
+ "0064b230": {
+  "address": "0064b230",
+  "symbol": "??1?$_Tree@V?$_Tset_traits@PAVClump@RBX@@U?$less@PAVClump@RBX@@@std@@V?$allocator@PAVClump@RBX@@@4@$0A@@std@@@std@@QAE@XZ",
+  "object": "Assembly.obj",
+  "external": true
+ },
+ "0064b320": {
+  "address": "0064b320",
+  "symbol": "??1?$set@PAVClump@RBX@@U?$less@PAVClump@RBX@@@std@@V?$allocator@PAVClump@RBX@@@4@@std@@QAE@XZ",
+  "object": "Assembly.obj",
+  "external": true
+ },
+ "0048aab0": {
+  "address": "0048aab0",
+  "symbol": "??$callDoDeclare@$1?sBackpack@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Backpack.obj",
+  "external": true
+ },
+ "005d18c0": {
+  "address": "005d18c0",
+  "symbol": "??$declare@$1?sBackpack@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Backpack.obj",
+  "external": true
+ },
+ "005e7390": {
+  "address": "005e7390",
+  "symbol": "?getMoment@Block@RBX@@UBE?AVMatrix3@G3D@@M@Z",
+  "object": "Block.obj",
+  "external": true
+ },
+ "00648a90": {
+  "address": "00648a90",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@VVector3@G3D@@PAVBlockTemplate@RBX@@UmyLess@4@V?$allocator@U?$pair@$$CBVVector3@G3D@@PAVBlockTemplate@RBX@@@std@@@std@@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "Block.obj",
+  "external": true
+ },
+ "00648ec0": {
+  "address": "00648ec0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@VVector3@G3D@@PAVBlockTemplate@RBX@@UmyLess@4@V?$allocator@U?$pair@$$CBVVector3@G3D@@PAVBlockTemplate@RBX@@@std@@@std@@$0A@@std@@@std@@QAE@XZ",
+  "object": "Block.obj",
+  "external": true
+ },
+ "005b34a0": {
+  "address": "005b34a0",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@W4Number@BrickColor@RBX@@VColor4@G3D@@U?$less@W4Number@BrickColor@RBX@@@std@@V?$allocator@U?$pair@$$CBW4Number@BrickColor@RBX@@VColor4@G3D@@@std@@@7@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "BrickColor.obj",
+  "external": true
+ },
+ "005b3fe0": {
+  "address": "005b3fe0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@W4Number@BrickColor@RBX@@VColor4@G3D@@U?$less@W4Number@BrickColor@RBX@@@std@@V?$allocator@U?$pair@$$CBW4Number@BrickColor@RBX@@VColor4@G3D@@@std@@@7@$0A@@std@@@std@@QAE@XZ",
+  "object": "BrickColor.obj",
+  "external": true
+ },
+ "005b4050": {
+  "address": "005b4050",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@W4Number@BrickColor@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@W4Number@BrickColor@RBX@@@5@V?$allocator@U?$pair@$$CBW4Number@BrickColor@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "BrickColor.obj",
+  "external": true
+ },
+ "005b4390": {
+  "address": "005b4390",
+  "symbol": "??1?$map@W4Number@BrickColor@RBX@@VColor4@G3D@@U?$less@W4Number@BrickColor@RBX@@@std@@V?$allocator@U?$pair@$$CBW4Number@BrickColor@RBX@@VColor4@G3D@@@std@@@7@@std@@QAE@XZ",
+  "object": "BrickColor.obj",
+  "external": true
+ },
+ "005b43a0": {
+  "address": "005b43a0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@W4Number@BrickColor@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@W4Number@BrickColor@RBX@@@5@V?$allocator@U?$pair@$$CBW4Number@BrickColor@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@5@$0A@@std@@@std@@QAE@XZ",
+  "object": "BrickColor.obj",
+  "external": true
+ },
+ "005b4560": {
+  "address": "005b4560",
+  "symbol": "??1?$map@W4Number@BrickColor@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@W4Number@BrickColor@RBX@@@5@V?$allocator@U?$pair@$$CBW4Number@BrickColor@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@@5@@std@@QAE@XZ",
+  "object": "BrickColor.obj",
+  "external": true
+ },
+ "004dde30": {
+  "address": "004dde30",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@ULookup@@UVariations@@U?$less@ULookup@@@std@@V?$allocator@U?$pair@$$CBULookup@@UVariations@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "BrickMesh.obj",
+  "external": true
+ },
+ "004de2f0": {
+  "address": "004de2f0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@ULookup@@UVariations@@U?$less@ULookup@@@std@@V?$allocator@U?$pair@$$CBULookup@@UVariations@@@std@@@4@$0A@@std@@@std@@QAE@XZ",
+  "object": "BrickMesh.obj",
+  "external": true
+ },
+ "004e2c70": {
+  "address": "004e2c70",
+  "symbol": "??1?$map@ULookup@@UVariations@@U?$less@ULookup@@@std@@V?$allocator@U?$pair@$$CBULookup@@UVariations@@@std@@@4@@std@@QAE@XZ",
+  "object": "BrickMesh.obj",
+  "external": true
+ },
+ "0045b6f0": {
+  "address": "0045b6f0",
+  "symbol": "??$callDoDeclare@$1?sCamera@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Camera.obj",
+  "external": true
+ },
+ "005cd220": {
+  "address": "005cd220",
+  "symbol": "??$declare@$1?sCamera@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Camera.obj",
+  "external": true
+ },
+ "0048ab20": {
+  "address": "0048ab20",
+  "symbol": "??$callDoDeclare@$1?sBodyColors@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "0048aae0": {
+  "address": "0048aae0",
+  "symbol": "??$callDoDeclare@$1?sShirtGraphic@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "0048ab10": {
+  "address": "0048ab10",
+  "symbol": "??$callDoDeclare@$1?sShirt@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "0048ab30": {
+  "address": "0048ab30",
+  "symbol": "??$callDoDeclare@$1?sSkin@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "005d42b0": {
+  "address": "005d42b0",
+  "symbol": "??$declare@$1?sBodyColors@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "005d4290": {
+  "address": "005d4290",
+  "symbol": "??$declare@$1?sShirtGraphic@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "0048fe10": {
+  "address": "0048fe10",
+  "symbol": "??$declare@$1?sShirt@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "005d42d0": {
+  "address": "005d42d0",
+  "symbol": "??$declare@$1?sSkin@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "004933c0": {
+  "address": "004933c0",
+  "symbol": "??0?$DescribedCreatable@VShirt@RBX@@VShirtGraphic@2@$1?sShirt@2@3PADA@RBX@@IAE@XZ",
+  "object": "CharacterAppearance.obj",
+  "external": true
+ },
+ "004968f0": {
+  "address": "004968f0",
+  "symbol": "??$callDoDeclare@$1?sClient@Network@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Client.obj",
+  "external": true
+ },
+ "0049f590": {
+  "address": "0049f590",
+  "symbol": "??$declare@$1?sClient@Network@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Client.obj",
+  "external": true
+ },
+ "007fbb60": {
+  "address": "007fbb60",
+  "symbol": "??__Ff_connect@@YAXXZ",
+  "object": "Client.obj",
+  "external": false
+ },
+ "004983f0": {
+  "address": "004983f0",
+  "symbol": "?erase@?$_Tree@V?$_Tset_traits@VRigidEntry@RBX@@VRigidSortCriterion@2@V?$allocator@VRigidEntry@RBX@@@std@@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "ClumpStage.obj",
+  "external": true
+ },
+ "00499270": {
+  "address": "00499270",
+  "symbol": "??1?$_Tree@V?$_Tset_traits@VRigidEntry@RBX@@VRigidSortCriterion@2@V?$allocator@VRigidEntry@RBX@@@std@@$0A@@std@@@std@@QAE@XZ",
+  "object": "ClumpStage.obj",
+  "external": true
+ },
+ "00499420": {
+  "address": "00499420",
+  "symbol": "??1?$set@VRigidEntry@RBX@@VRigidSortCriterion@2@V?$allocator@VRigidEntry@RBX@@@std@@@std@@QAE@XZ",
+  "object": "ClumpStage.obj",
+  "external": true
+ },
+ "0055c020": {
+  "address": "0055c020",
+  "symbol": "?on_error@?$simple_exception_policy@G$00$0BP@Ubad_day_of_month@gregorian@boost@@@CV@boost@@SAXGGW4violation_enum@23@@Z",
+  "object": "ContentProvider.obj",
+  "external": true
+ },
+ "0055c040": {
+  "address": "0055c040",
+  "symbol": "?on_error@?$simple_exception_policy@G$0FHI@$0CHBA@Ubad_year@gregorian@boost@@@CV@boost@@SAXGGW4violation_enum@23@@Z",
+  "object": "ContentProvider.obj",
+  "external": true
+ },
+ "0055c060": {
+  "address": "0055c060",
+  "symbol": "?on_error@?$simple_exception_policy@G$00$0M@Ubad_month@gregorian@boost@@@CV@boost@@SAXGGW4violation_enum@23@@Z",
+  "object": "ContentProvider.obj",
+  "external": true
+ },
+ "00560960": {
+  "address": "00560960",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@VContentId@RBX@@UCachedContent@ContentProvider@2@U?$less@VContentId@RBX@@@std@@V?$allocator@U?$pair@$$CBVContentId@RBX@@UCachedContent@ContentProvider@2@@std@@@6@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "ContentProvider.obj",
+  "external": true
+ },
+ "00561180": {
+  "address": "00561180",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@VContentId@RBX@@UCachedContent@ContentProvider@2@U?$less@VContentId@RBX@@@std@@V?$allocator@U?$pair@$$CBVContentId@RBX@@UCachedContent@ContentProvider@2@@std@@@6@$0A@@std@@@std@@QAE@XZ",
+  "object": "ContentProvider.obj",
+  "external": true
+ },
+ "00561320": {
+  "address": "00561320",
+  "symbol": "??1?$map@VContentId@RBX@@UCachedContent@ContentProvider@2@U?$less@VContentId@RBX@@@std@@V?$allocator@U?$pair@$$CBVContentId@RBX@@UCachedContent@ContentProvider@2@@std@@@6@@std@@QAE@XZ",
+  "object": "ContentProvider.obj",
+  "external": true
+ },
+ "0041e0e0": {
+  "address": "0041e0e0",
+  "symbol": "??$callDoDeclare@$1?sSpecialShape@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "custommesh.obj",
+  "external": true
+ },
+ "0059f260": {
+  "address": "0059f260",
+  "symbol": "??$declare@$1?sSpecialShape@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "custommesh.obj",
+  "external": true
+ },
+ "0046af90": {
+  "address": "0046af90",
+  "symbol": "?erase@?$_Tree@V?$_Tset_traits@VContentId@RBX@@U?$less@VContentId@RBX@@@std@@V?$allocator@VContentId@RBX@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "006515a0": {
+  "address": "006515a0",
+  "symbol": "?_Tidy@?$_Tree@V?$_Tset_traits@VContentId@RBX@@U?$less@VContentId@RBX@@@std@@V?$allocator@VContentId@RBX@@@4@$0A@@std@@@std@@IAEXXZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "0046b070": {
+  "address": "0046b070",
+  "symbol": "??1?$_Tree@V?$_Tset_traits@VContentId@RBX@@U?$less@VContentId@RBX@@@std@@V?$allocator@VContentId@RBX@@@4@$0A@@std@@@std@@QAE@XZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "00414510": {
+  "address": "00414510",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "004b1160": {
+  "address": "004b1160",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@PBVName@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@6@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "0046d580": {
+  "address": "0046d580",
+  "symbol": "??1?$set@VContentId@RBX@@U?$less@VContentId@RBX@@@std@@V?$allocator@VContentId@RBX@@@4@@std@@QAE@XZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "004146d0": {
+  "address": "004146d0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE@XZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "004b16a0": {
+  "address": "004b16a0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@PBVName@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@6@$0A@@std@@@std@@QAE@XZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "004b3750": {
+  "address": "004b3750",
+  "symbol": "??1?$map@PBVName@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@6@@std@@QAE@XZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "00579920": {
+  "address": "00579920",
+  "symbol": "??0?$BoundFuncDesc@VDataModel@RBX@@$$A6AXXZ$0A@@Reflection@RBX@@QAE@P8DataModel@2@AEXXZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "0041fca0": {
+  "address": "0041fca0",
+  "symbol": "??$callDoDeclare@$1?sDataModel@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "0057a850": {
+  "address": "0057a850",
+  "symbol": "??$declare@$1?sDataModel@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "DataModel.obj",
+  "external": true
+ },
+ "005c0050": {
+  "address": "005c0050",
+  "symbol": "??$callDoDeclare@$1?sDebrisService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "DebrisService.obj",
+  "external": true
+ },
+ "0063b6b0": {
+  "address": "0063b6b0",
+  "symbol": "??$declare@$1?sDebrisService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "DebrisService.obj",
+  "external": true
+ },
+ "00406e80": {
+  "address": "00406e80",
+  "symbol": "??$callDoDeclare@$1?sDebugSettings@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "DebugSettings.obj",
+  "external": true
+ },
+ "00564150": {
+  "address": "00564150",
+  "symbol": "??$declare@$1?sDebugSettings@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "DebugSettings.obj",
+  "external": true
+ },
+ "0041e0b0": {
+  "address": "0041e0b0",
+  "symbol": "??$callDoDeclare@$1?sDecal@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Decal.obj",
+  "external": true
+ },
+ "0041e0c0": {
+  "address": "0041e0c0",
+  "symbol": "??$callDoDeclare@$1?sTexture@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Decal.obj",
+  "external": true
+ },
+ "00597d80": {
+  "address": "00597d80",
+  "symbol": "??$declare@$1?sDecal@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Decal.obj",
+  "external": true
+ },
+ "00597e20": {
+  "address": "00597e20",
+  "symbol": "??$declare@$1?sTexture@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Decal.obj",
+  "external": true
+ },
+ "005985a0": {
+  "address": "005985a0",
+  "symbol": "??0?$FactoryProduct@VTexture@RBX@@VDecal@2@$1?sTexture@2@3PADA@RBX@@IAE@XZ",
+  "object": "Decal.obj",
+  "external": true
+ },
+ "00598790": {
+  "address": "00598790",
+  "symbol": "??0?$DescribedCreatable@VTexture@RBX@@VDecal@2@$1?sTexture@2@3PADA@RBX@@IAE@XZ",
+  "object": "Decal.obj",
+  "external": true
+ },
+ "005bff80": {
+  "address": "005bff80",
+  "symbol": "??$callDoDeclare@$1?sExplosion@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Explosion.obj",
+  "external": true
+ },
+ "0062a340": {
+  "address": "0062a340",
+  "symbol": "??$declare@$1?sExplosion@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Explosion.obj",
+  "external": true
+ },
+ "0062ac80": {
+  "address": "0062ac80",
+  "symbol": "??0?$SignalDesc@VExplosion@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@M@Z@Reflection@RBX@@QAE@PBD00@Z",
+  "object": "Explosion.obj",
+  "external": true
+ },
+ "00666de0": {
+  "address": "00666de0",
+  "symbol": "??$callDoDeclare@$1?sFallingDown@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "FallingDown.obj",
+  "external": true
+ },
+ "00666e10": {
+  "address": "00666e10",
+  "symbol": "??$declare@$1?sFallingDown@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "FallingDown.obj",
+  "external": true
+ },
+ "0060a2e0": {
+  "address": "0060a2e0",
+  "symbol": "??$callDoDeclare@$1?sFeature@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0057dd80": {
+  "address": "0057dd80",
+  "symbol": "??$callDoDeclare@$1?sHole@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0057dd70": {
+  "address": "0057dd70",
+  "symbol": "??$callDoDeclare@$1?sMotorFeature@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0057dd90": {
+  "address": "0057dd90",
+  "symbol": "??$callDoDeclare@$1?sVelocityMotor@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0060ab60": {
+  "address": "0060ab60",
+  "symbol": "??$declare@$1?sFeature@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0060aba0": {
+  "address": "0060aba0",
+  "symbol": "??$declare@$1?sHole@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0060ab80": {
+  "address": "0060ab80",
+  "symbol": "??$declare@$1?sMotorFeature@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "0060abc0": {
+  "address": "0060abc0",
+  "symbol": "??$declare@$1?sVelocityMotor@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Feature.obj",
+  "external": true
+ },
+ "00618660": {
+  "address": "00618660",
+  "symbol": "??1?$Described@VFlag@RBX@@$1?sFlag@2@3PADAV?$FactoryProduct@VFlag@RBX@@VTool@2@$1?sFlag@2@3PADA@2@@Reflection@RBX@@UAE@XZ",
+  "object": "Flag.obj",
+  "external": true
+ },
+ "005a09b0": {
+  "address": "005a09b0",
+  "symbol": "??$callDoDeclare@$1?sFlag@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Flag.obj",
+  "external": true
+ },
+ "00618a20": {
+  "address": "00618a20",
+  "symbol": "??$declare@$1?sFlag@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Flag.obj",
+  "external": true
+ },
+ "004dc570": {
+  "address": "004dc570",
+  "symbol": "?allocate@?$allocator@U_Node@?$_List_nod@PAVFlagStand@RBX@@V?$allocator@PAVFlagStand@RBX@@@std@@@std@@@std@@QAEPAU_Node@?$_List_nod@PAVFlagStand@RBX@@V?$allocator@PAVFlagStand@RBX@@@std@@@2@I@Z",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "005bff90": {
+  "address": "005bff90",
+  "symbol": "??$callDoDeclare@$1?sFlagStand@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "005bffa0": {
+  "address": "005bffa0",
+  "symbol": "??$callDoDeclare@$1?sFlagStandService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "0062c080": {
+  "address": "0062c080",
+  "symbol": "??$declare@$1?sFlagStand@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "0062c0a0": {
+  "address": "0062c0a0",
+  "symbol": "??$declare@$1?sFlagStandService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "00587ca0": {
+  "address": "00587ca0",
+  "symbol": "?push_back@?$list@PAVFlagStand@RBX@@V?$allocator@PAVFlagStand@RBX@@@std@@@std@@QAEXABQAVFlagStand@RBX@@@Z",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "0062c8f0": {
+  "address": "0062c8f0",
+  "symbol": "??0?$SignalDesc@VFlagStand@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@QAE@PBD0@Z",
+  "object": "FlagStand.obj",
+  "external": true
+ },
+ "006674a0": {
+  "address": "006674a0",
+  "symbol": "??$callDoDeclare@$1?sFlying@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Flying.obj",
+  "external": true
+ },
+ "006674f0": {
+  "address": "006674f0",
+  "symbol": "??$declare@$1?sFlying@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Flying.obj",
+  "external": true
+ },
+ "006677e0": {
+  "address": "006677e0",
+  "symbol": "??$callDoDeclare@$1?sFreefall@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Freefall.obj",
+  "external": true
+ },
+ "006677f0": {
+  "address": "006677f0",
+  "symbol": "??$declare@$1?sFreefall@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Freefall.obj",
+  "external": true
+ },
+ "0044a8b0": {
+  "address": "0044a8b0",
+  "symbol": "??$callDoDeclare@$1?sGameSettings@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "GameSettings.obj",
+  "external": true
+ },
+ "005bf260": {
+  "address": "005bf260",
+  "symbol": "??$declare@$1?sGameSettings@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "GameSettings.obj",
+  "external": true
+ },
+ "00667df0": {
+  "address": "00667df0",
+  "symbol": "??$callDoDeclare@$1?sGettingUp@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "GettingUp.obj",
+  "external": true
+ },
+ "00667e00": {
+  "address": "00667e00",
+  "symbol": "??$declare@$1?sGettingUp@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "GettingUp.obj",
+  "external": true
+ },
+ "00568ea0": {
+  "address": "00568ea0",
+  "symbol": "??$callDoDeclare@$1?sGlobalSettings@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "GlobalSettings.obj",
+  "external": true
+ },
+ "00568eb0": {
+  "address": "00568eb0",
+  "symbol": "??$declare@$1?sGlobalSettings@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "GlobalSettings.obj",
+  "external": true
+ },
+ "004af080": {
+  "address": "004af080",
+  "symbol": "?push_back@?$list@V?$shared_ptr@VItem@Replicator@Network@RBX@@@boost@@V?$allocator@V?$shared_ptr@VItem@Replicator@Network@RBX@@@boost@@@std@@@std@@QAEXABV?$shared_ptr@VItem@Replicator@Network@RBX@@@boost@@@Z",
+  "object": "glue_replication.obj",
+  "external": true
+ },
+ "0041fcc0": {
+  "address": "0041fcc0",
+  "symbol": "??$shared_dynamic_cast@VInstance@RBX@@VObject@2@@boost@@YA?AV?$shared_ptr@VInstance@RBX@@@0@ABV?$shared_ptr@VObject@RBX@@@0@@Z",
+  "object": "glue_replicator.obj",
+  "external": true
+ },
+ "00592530": {
+  "address": "00592530",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@VInstanceHandle@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@VInstanceHandle@RBX@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "glue_serializer.obj",
+  "external": true
+ },
+ "005be5a0": {
+  "address": "005be5a0",
+  "symbol": "?convertToValue@?$StringConverter@H@RBX@@SA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAH@Z",
+  "object": "glue_string_converters.obj",
+  "external": true
+ },
+ "005be610": {
+  "address": "005be610",
+  "symbol": "?convertToValue@?$StringConverter@I@RBX@@SA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAI@Z",
+  "object": "glue_string_converters.obj",
+  "external": true
+ },
+ "0066a620": {
+  "address": "0066a620",
+  "symbol": "??$callDoDeclare@$1?sGroupDragTool@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "GroupDragTool.obj",
+  "external": true
+ },
+ "0066aa60": {
+  "address": "0066aa60",
+  "symbol": "??$declare@$1?sGroupDragTool@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "GroupDragTool.obj",
+  "external": true
+ },
+ "005bffd0": {
+  "address": "005bffd0",
+  "symbol": "??$callDoDeclare@$1?sBodyGyro@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005c0000": {
+  "address": "005c0000",
+  "symbol": "??$callDoDeclare@$1?sBodyPosition@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005c0010": {
+  "address": "005c0010",
+  "symbol": "??$callDoDeclare@$1?sBodyVelocity@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005bffe0": {
+  "address": "005bffe0",
+  "symbol": "??$callDoDeclare@$1?sBodyForce@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005bfff0": {
+  "address": "005bfff0",
+  "symbol": "??$callDoDeclare@$1?sBodyThrust@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005c61b0": {
+  "address": "005c61b0",
+  "symbol": "??$callDoDeclare@$1?sRocket@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005d4080": {
+  "address": "005d4080",
+  "symbol": "??$shared_dynamic_cast@VPartInstance@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VPartInstance@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "00630780": {
+  "address": "00630780",
+  "symbol": "??$declare@$1?sBodyGyro@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "006307e0": {
+  "address": "006307e0",
+  "symbol": "??$declare@$1?sBodyPosition@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "00630800": {
+  "address": "00630800",
+  "symbol": "??$declare@$1?sBodyVelocity@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "006307a0": {
+  "address": "006307a0",
+  "symbol": "??$declare@$1?sBodyForce@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "006307c0": {
+  "address": "006307c0",
+  "symbol": "??$declare@$1?sBodyThrust@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "005c7cb0": {
+  "address": "005c7cb0",
+  "symbol": "??$declare@$1?sRocket@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "00632880": {
+  "address": "00632880",
+  "symbol": "??0?$BoundFuncDesc@VBodyPosition@RBX@@$$A6A?AVVector3@G3D@@XZ$0A@@Reflection@RBX@@QAE@P8BodyPosition@2@AE?AVVector3@G3D@@XZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "00632970": {
+  "address": "00632970",
+  "symbol": "??0?$BoundFuncDesc@VBodyVelocity@RBX@@$$A6A?AVVector3@G3D@@XZ$0A@@Reflection@RBX@@QAE@P8BodyVelocity@2@AE?AVVector3@G3D@@XZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Gyro.obj",
+  "external": true
+ },
+ "007f8340": {
+  "address": "007f8340",
+  "symbol": "??__Efunc_getLastForceOld@RBX@@YAXXZ",
+  "object": "Gyro.obj",
+  "external": false
+ },
+ "007f8370": {
+  "address": "007f8370",
+  "symbol": "??__Efunc_getLastForce@RBX@@YAXXZ",
+  "object": "Gyro.obj",
+  "external": false
+ },
+ "007f8430": {
+  "address": "007f8430",
+  "symbol": "??__Efunc_getLastForceVOld@RBX@@YAXXZ",
+  "object": "Gyro.obj",
+  "external": false
+ },
+ "007f8460": {
+  "address": "007f8460",
+  "symbol": "??__Efunc_getLastForceV@RBX@@YAXXZ",
+  "object": "Gyro.obj",
+  "external": false
+ },
+ "0048aa90": {
+  "address": "0048aa90",
+  "symbol": "??$callDoDeclare@$1?sStarterPackService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "0048aaa0": {
+  "address": "0048aaa0",
+  "symbol": "??$callDoDeclare@$1?sLegacyHopperService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "0048aa80": {
+  "address": "0048aa80",
+  "symbol": "??$callDoDeclare@$1?sHopperBin@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005cf5c0": {
+  "address": "005cf5c0",
+  "symbol": "??$callDoDeclare@$1?sBackpackItem@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005cfe10": {
+  "address": "005cfe10",
+  "symbol": "??$declare@$1?sStarterPackService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005cfe30": {
+  "address": "005cfe30",
+  "symbol": "??$declare@$1?sLegacyHopperService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005cfdf0": {
+  "address": "005cfdf0",
+  "symbol": "??$declare@$1?sBackpackItem@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005cff60": {
+  "address": "005cff60",
+  "symbol": "??$declare@$1?sHopperBin@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005d0b40": {
+  "address": "005d0b40",
+  "symbol": "??0?$SignalDesc@VHopperBin@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@QAE@PBD0@Z",
+  "object": "Hopper.obj",
+  "external": true
+ },
+ "005f29e0": {
+  "address": "005f29e0",
+  "symbol": "??$read@UString_sink@@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$device_wrapper_impl@Uoutput@iostreams@boost@@@detail@iostreams@boost@@SAHAAUString_sink@@PAV?$linked_streambuf@DU?$char_traits@D@std@@@123@PADH@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f95a0": {
+  "address": "005f95a0",
+  "symbol": "??$seek@UString_sink@@@?$device_wrapper_impl@Uany_tag@iostreams@boost@@@detail@iostreams@boost@@SA?AV?$fpos@H@std@@AAUString_sink@@_JHHUany_tag@23@@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f5b70": {
+  "address": "005f5b70",
+  "symbol": "??$write@VHttpRequest_source@@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$device_wrapper_impl@Uinput@iostreams@boost@@@detail@iostreams@boost@@SAHAAVHttpRequest_source@@PAV?$linked_streambuf@DU?$char_traits@D@std@@@123@PBDH@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f4470": {
+  "address": "005f4470",
+  "symbol": "??1?$filtering_stream@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Upublic_@23@@iostreams@boost@@UAE@XZ",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f4500": {
+  "address": "005f4500",
+  "symbol": "??1?$filtering_stream@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Upublic_@23@@iostreams@boost@@UAE@XZ",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f4cf0": {
+  "address": "005f4cf0",
+  "symbol": "??_G?$filtering_stream@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Upublic_@23@@iostreams@boost@@UAEPAXI@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f4d30": {
+  "address": "005f4d30",
+  "symbol": "??_G?$filtering_stream@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Upublic_@23@@iostreams@boost@@UAEPAXI@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f7f80": {
+  "address": "005f7f80",
+  "symbol": "??1chain_impl@?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@QAE@XZ",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f7ff0": {
+  "address": "005f7ff0",
+  "symbol": "??1chain_impl@?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@QAE@XZ",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f83c0": {
+  "address": "005f83c0",
+  "symbol": "??$checked_delete@Uchain_impl@?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@@boost@@YAXPAUchain_impl@?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@0@@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f83e0": {
+  "address": "005f83e0",
+  "symbol": "??$checked_delete@Uchain_impl@?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@@boost@@YAXPAUchain_impl@?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@0@@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f84f0": {
+  "address": "005f84f0",
+  "symbol": "??$?0Uchain_impl@?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@@shared_count@detail@boost@@QAE@PAUchain_impl@?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@1iostreams@2@@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f8580": {
+  "address": "005f8580",
+  "symbol": "??$?0Uchain_impl@?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@@shared_count@detail@boost@@QAE@PAUchain_impl@?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@1iostreams@2@@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f8610": {
+  "address": "005f8610",
+  "symbol": "?dispose@?$sp_counted_impl_p@Uchain_impl@?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@@detail@boost@@UAEXXZ",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f8630": {
+  "address": "005f8630",
+  "symbol": "?dispose@?$sp_counted_impl_p@Uchain_impl@?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@@detail@boost@@UAEXXZ",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f8920": {
+  "address": "005f8920",
+  "symbol": "??_G?$filtering_stream_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@Upublic_@23@@detail@iostreams@boost@@UAEPAXI@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "005f8a20": {
+  "address": "005f8a20",
+  "symbol": "??_G?$filtering_stream_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@Upublic_@23@@detail@iostreams@boost@@UAEPAXI@Z",
+  "object": "Http.obj",
+  "external": true
+ },
+ "0048ab60": {
+  "address": "0048ab60",
+  "symbol": "??$callDoDeclare@$1?sHumanoid@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "005d8520": {
+  "address": "005d8520",
+  "symbol": "??$declare@$1?sHumanoid@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "005d42f0": {
+  "address": "005d42f0",
+  "symbol": "??$shared_from_dynamic_cast@VPartInstance@RBX@@VInstance@2@@RBX@@YA?AV?$shared_ptr@VPartInstance@RBX@@@boost@@PAV?$enable_shared_from_this@VInstance@RBX@@@2@@Z",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "005d9100": {
+  "address": "005d9100",
+  "symbol": "?getHeadPrimitive@Humanoid@RBX@@QAEPAVPrimitive@2@XZ",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "005d90a0": {
+  "address": "005d90a0",
+  "symbol": "?getTorsoPrimitive@Humanoid@RBX@@QBEPAVPrimitive@2@XZ",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "005d90c0": {
+  "address": "005d90c0",
+  "symbol": "?getLeftLegPrimitive@Humanoid@RBX@@QAEPAVPrimitive@2@XZ",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "005d90e0": {
+  "address": "005d90e0",
+  "symbol": "?getRightLegPrimitive@Humanoid@RBX@@QAEPAVPrimitive@2@XZ",
+  "object": "Humanoid.obj",
+  "external": true
+ },
+ "007ff5c0": {
+  "address": "007ff5c0",
+  "symbol": "??__Ffunc_MoveTo@RBX@@YAXXZ",
+  "object": "Humanoid.obj",
+  "external": false
+ },
+ "0055a260": {
+  "address": "0055a260",
+  "symbol": "??0?$BoundFuncDesc@VInstance@RBX@@$$A6A_NV?$shared_ptr@VInstance@RBX@@@boost@@@Z$00@Reflection@RBX@@QAE@P8Instance@2@AE_NV?$shared_ptr@VInstance@RBX@@@boost@@@ZPBD2W4Security@FunctionDescriptor@12@@Z",
+  "object": "Instance.obj",
+  "external": true
+ },
+ "005e2910": {
+  "address": "005e2910",
+  "symbol": "??$callDoDeclare@$1?sJointInstance@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "004ac320": {
+  "address": "004ac320",
+  "symbol": "??$callDoDeclare@$1?sSnap@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "004ac350": {
+  "address": "004ac350",
+  "symbol": "??$callDoDeclare@$1?sRotate@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "004ac360": {
+  "address": "004ac360",
+  "symbol": "??$callDoDeclare@$1?sRotateP@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "004ac370": {
+  "address": "004ac370",
+  "symbol": "??$callDoDeclare@$1?sRotateV@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "004ac380": {
+  "address": "004ac380",
+  "symbol": "??$callDoDeclare@$1?sMotor@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "005e2ad0": {
+  "address": "005e2ad0",
+  "symbol": "??$declare@$1?sJointInstance@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "005e3040": {
+  "address": "005e3040",
+  "symbol": "??$declare@$1?sSnap@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "005e3290": {
+  "address": "005e3290",
+  "symbol": "??$declare@$1?sRotate@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "005e3330": {
+  "address": "005e3330",
+  "symbol": "??$declare@$1?sRotateP@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "005e33f0": {
+  "address": "005e33f0",
+  "symbol": "??$declare@$1?sRotateV@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "005e3490": {
+  "address": "005e3490",
+  "symbol": "??$declare@$1?sMotor@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "JointInstance.obj",
+  "external": true
+ },
+ "00668520": {
+  "address": "00668520",
+  "symbol": "??1JointStage@RBX@@UAE@XZ",
+  "object": "JointStage.obj",
+  "external": true
+ },
+ "00667c10": {
+  "address": "00667c10",
+  "symbol": "??$callDoDeclare@$1?sJumping@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Jumping.obj",
+  "external": true
+ },
+ "00667c20": {
+  "address": "00667c20",
+  "symbol": "??$declare@$1?sJumping@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Jumping.obj",
+  "external": true
+ },
+ "004ac310": {
+  "address": "004ac310",
+  "symbol": "??$callDoDeclare@$1?sLighting@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Lighting.obj",
+  "external": true
+ },
+ "005e0690": {
+  "address": "005e0690",
+  "symbol": "??$declare@$1?sLighting@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Lighting.obj",
+  "external": true
+ },
+ "005e18c0": {
+  "address": "005e18c0",
+  "symbol": "??0?$BoundFuncDesc@VLighting@RBX@@$$A6AXN@Z$00@Reflection@RBX@@QAE@P8Lighting@2@AEXN@ZPBD1W4Security@FunctionDescriptor@12@@Z",
+  "object": "Lighting.obj",
+  "external": true
+ },
+ "00622ac0": {
+  "address": "00622ac0",
+  "symbol": "?luaO_pushfstring@@YAPBDPAUlua_State@@PBDZZ",
+  "object": "lobject.obj",
+  "external": true
+ },
+ "00576600": {
+  "address": "00576600",
+  "symbol": "??$callDoDeclare@$1?sLocalBackpackItem@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "LocakBackpack.obj",
+  "external": true
+ },
+ "00576610": {
+  "address": "00576610",
+  "symbol": "??$callDoDeclare@$1?sLocalBackpack@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "LocakBackpack.obj",
+  "external": true
+ },
+ "005fbf10": {
+  "address": "005fbf10",
+  "symbol": "??$declare@$1?sLocalBackpackItem@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "LocakBackpack.obj",
+  "external": true
+ },
+ "005fbf30": {
+  "address": "005fbf30",
+  "symbol": "??$declare@$1?sLocalBackpack@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "LocakBackpack.obj",
+  "external": true
+ },
+ "005fbbf0": {
+  "address": "005fbbf0",
+  "symbol": "??0?$FactoryProduct@VLocalBackpack@RBX@@VRelativePanel@2@$1?sLocalBackpack@2@3PADA@RBX@@IAE@XZ",
+  "object": "LocakBackpack.obj",
+  "external": true
+ },
+ "005fcbc0": {
+  "address": "005fcbc0",
+  "symbol": "??0?$DescribedCreatable@VLocalBackpack@RBX@@VRelativePanel@2@$1?sLocalBackpack@2@3PADA@RBX@@IAE@XZ",
+  "object": "LocakBackpack.obj",
+  "external": true
+ },
+ "00627330": {
+  "address": "00627330",
+  "symbol": "?str_match@@YAHPAUlua_State@@@Z",
+  "object": "lstrlib.obj",
+  "external": false
+ },
+ "005ab9e0": {
+  "address": "005ab9e0",
+  "symbol": "??$cast@V?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@@Value@Reflection@RBX@@QBE?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@XZ",
+  "object": "LuaInstanceBridge.obj",
+  "external": true
+ },
+ "004f1830": {
+  "address": "004f1830",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@UAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@U?$less@UAttributes@MaterialFactory@View@RBX@@@std@@V?$allocator@U?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "MaterialFactory.obj",
+  "external": true
+ },
+ "005dd780": {
+  "address": "005dd780",
+  "symbol": "?fromPointAndDirection@Line@G3D@@SA?AV12@ABVVector3@2@0@Z",
+  "object": "Math.obj",
+  "external": true
+ },
+ "004a1b50": {
+  "address": "004a1b50",
+  "symbol": "??$callDoDeclare@$1?sMessage@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "004a1b60": {
+  "address": "004a1b60",
+  "symbol": "??$callDoDeclare@$1?sHint@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "004a3c90": {
+  "address": "004a3c90",
+  "symbol": "??$declare@$1?sMessage@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "004a3cb0": {
+  "address": "004a3cb0",
+  "symbol": "??$declare@$1?sHint@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "004a3af0": {
+  "address": "004a3af0",
+  "symbol": "??0?$FactoryProduct@VHint@RBX@@VMessage@2@$1?sHint@2@3PADA@RBX@@IAE@XZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "004a4a60": {
+  "address": "004a4a60",
+  "symbol": "??0?$DescribedCreatable@VHint@RBX@@VMessage@2@$1?sHint@2@3PADA@RBX@@IAE@XZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "004a4c80": {
+  "address": "004a4c80",
+  "symbol": "??0Hint@RBX@@QAE@XZ",
+  "object": "Message.obj",
+  "external": true
+ },
+ "00413a20": {
+  "address": "00413a20",
+  "symbol": "??$callDoDeclare@$1?sModel@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "ModelInstance.obj",
+  "external": true
+ },
+ "00584c10": {
+  "address": "00584c10",
+  "symbol": "??$declare@$1?sModel@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "ModelInstance.obj",
+  "external": true
+ },
+ "00585890": {
+  "address": "00585890",
+  "symbol": "??0?$BoundFuncDesc@VModelInstance@RBX@@$$A6AXXZ$0A@@Reflection@RBX@@QAE@P8ModelInstance@2@AEXXZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "ModelInstance.obj",
+  "external": true
+ },
+ "00585980": {
+  "address": "00585980",
+  "symbol": "??0?$BoundFuncDesc@VModelInstance@RBX@@$$A6AXVVector3@G3D@@@Z$00@Reflection@RBX@@QAE@P8ModelInstance@2@AEXVVector3@G3D@@@ZPBD2W4Security@FunctionDescriptor@12@@Z",
+  "object": "ModelInstance.obj",
+  "external": true
+ },
+ "007f3e30": {
+  "address": "007f3e30",
+  "symbol": "??__Edesc_breakJoints@RBX@@YAXXZ",
+  "object": "ModelInstance.obj",
+  "external": false
+ },
+ "007f3e70": {
+  "address": "007f3e70",
+  "symbol": "??__Edesc_makeJoints@RBX@@YAXXZ",
+  "object": "ModelInstance.obj",
+  "external": false
+ },
+ "0049e580": {
+  "address": "0049e580",
+  "symbol": "??$callDoDeclare@$1?sNetworkSettings@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "NetworkSettings.obj",
+  "external": true
+ },
+ "004a9d90": {
+  "address": "004a9d90",
+  "symbol": "??$declare@$1?sNetworkSettings@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "NetworkSettings.obj",
+  "external": true
+ },
+ "006181f0": {
+  "address": "006181f0",
+  "symbol": "??$callDoDeclare@$1?sNewNullTool@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "NullTool.obj",
+  "external": true
+ },
+ "005c6210": {
+  "address": "005c6210",
+  "symbol": "??$callDoDeclare@$1?sNullTool@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "NullTool.obj",
+  "external": true
+ },
+ "00618260": {
+  "address": "00618260",
+  "symbol": "?isSticky@NewNullTool@RBX@@EBEPAVMouseCommand@2@XZ",
+  "object": "NullTool.obj",
+  "external": true
+ },
+ "006182e0": {
+  "address": "006182e0",
+  "symbol": "??$declare@$1?sNewNullTool@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "NullTool.obj",
+  "external": true
+ },
+ "006182c0": {
+  "address": "006182c0",
+  "symbol": "??$declare@$1?sNullTool@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "NullTool.obj",
+  "external": true
+ },
+ "00665af0": {
+  "address": "00665af0",
+  "symbol": "??$callDoDeclare@$1?sPartDragTool@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "PartDragTool.obj",
+  "external": true
+ },
+ "00665f00": {
+  "address": "00665f00",
+  "symbol": "??$declare@$1?sPartDragTool@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "PartDragTool.obj",
+  "external": true
+ },
+ "0041e0d0": {
+  "address": "0041e0d0",
+  "symbol": "??$callDoDeclare@$1?sPart@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "PartInstance.obj",
+  "external": true
+ },
+ "0059b5b0": {
+  "address": "0059b5b0",
+  "symbol": "??$declare@$1?sPart@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "PartInstance.obj",
+  "external": true
+ },
+ "00406eb0": {
+  "address": "00406eb0",
+  "symbol": "??$callDoDeclare@$1?sPlayer@Network@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Player.obj",
+  "external": true
+ },
+ "0048b150": {
+  "address": "0048b150",
+  "symbol": "??$shared_dynamic_cast@VModelInstance@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VModelInstance@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+  "object": "Player.obj",
+  "external": true
+ },
+ "0048c480": {
+  "address": "0048c480",
+  "symbol": "??$declare@$1?sPlayer@Network@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Player.obj",
+  "external": true
+ },
+ "006939b0": {
+  "address": "006939b0",
+  "symbol": "?erase@?$_Tree@V?$_Tset_traits@DU?$less@D@std@@V?$allocator@D@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "Player.obj",
+  "external": true
+ },
+ "0048d0b0": {
+  "address": "0048d0b0",
+  "symbol": "?_Tidy@?$_Tree@V?$_Tset_traits@DU?$less@D@std@@V?$allocator@D@2@$0A@@std@@@std@@IAEXXZ",
+  "object": "Player.obj",
+  "external": true
+ },
+ "0048d7a0": {
+  "address": "0048d7a0",
+  "symbol": "??1?$_Tree@V?$_Tset_traits@DU?$less@D@std@@V?$allocator@D@2@$0A@@std@@@std@@QAE@XZ",
+  "object": "Player.obj",
+  "external": true
+ },
+ "0048e4e0": {
+  "address": "0048e4e0",
+  "symbol": "??1?$set@DU?$less@D@std@@V?$allocator@D@2@@std@@QAE@XZ",
+  "object": "Player.obj",
+  "external": true
+ },
+ "00492c60": {
+  "address": "00492c60",
+  "symbol": "??0?$BoundFuncDesc@VPlayer@Network@RBX@@$$A6AXXZ$0A@@Reflection@RBX@@QAE@P8Player@Network@2@AEXXZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Player.obj",
+  "external": true
+ },
+ "00492bc0": {
+  "address": "00492bc0",
+  "symbol": "??0?$BoundFuncDesc@VPlayer@Network@RBX@@$$A6AX_N@Z$00@Reflection@RBX@@QAE@P8Player@Network@2@AEX_N@ZPBD2W4Security@FunctionDescriptor@12@@Z",
+  "object": "Player.obj",
+  "external": true
+ },
+ "00492d30": {
+  "address": "00492d30",
+  "symbol": "??0?$SignalDesc@VPlayer@Network@RBX@@$$A6AXM@Z@Reflection@RBX@@QAE@PBD0@Z",
+  "object": "Player.obj",
+  "external": true
+ },
+ "00411890": {
+  "address": "00411890",
+  "symbol": "??$callDoDeclare@$1?sPlayers@Network@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Players.obj",
+  "external": true
+ },
+ "00498250": {
+  "address": "00498250",
+  "symbol": "??$declare@$1?sPlayers@Network@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Players.obj",
+  "external": true
+ },
+ "0049b5f0": {
+  "address": "0049b5f0",
+  "symbol": "??0?$BoundFuncDesc@VPlayers@Network@RBX@@$$A6A?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@XZ$0A@@Reflection@RBX@@QAE@P8Players@Network@2@AE?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@XZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Players.obj",
+  "external": true
+ },
+ "0049b9b0": {
+  "address": "0049b9b0",
+  "symbol": "??0?$SignalDesc@VPlayers@Network@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@QAE@PBD0@Z",
+  "object": "Players.obj",
+  "external": true
+ },
+ "004af040": {
+  "address": "004af040",
+  "symbol": "?push_front@?$list@V?$shared_ptr@VItem@Replicator@Network@RBX@@@boost@@V?$allocator@V?$shared_ptr@VItem@Replicator@Network@RBX@@@boost@@@std@@@std@@QAEXABV?$shared_ptr@VItem@Replicator@Network@RBX@@@boost@@@Z",
+  "object": "Replicator.obj",
+  "external": true
+ },
+ "004b8a80": {
+  "address": "004b8a80",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@UData@Guid@RBX@@V?$vector@UWaitItem@IdSerializer@Network@RBX@@V?$allocator@UWaitItem@IdSerializer@Network@RBX@@@std@@@std@@U?$less@UData@Guid@RBX@@@5@V?$allocator@U?$pair@$$CBUData@Guid@RBX@@V?$vector@UWaitItem@IdSerializer@Network@RBX@@V?$allocator@UWaitItem@IdSerializer@Network@RBX@@@std@@@std@@@std@@@5@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "object": "Replicator.obj",
+  "external": true
+ },
+ "004b93d0": {
+  "address": "004b93d0",
+  "symbol": "??1?$_Tree@V?$_Tmap_traits@UData@Guid@RBX@@V?$vector@UWaitItem@IdSerializer@Network@RBX@@V?$allocator@UWaitItem@IdSerializer@Network@RBX@@@std@@@std@@U?$less@UData@Guid@RBX@@@5@V?$allocator@U?$pair@$$CBUData@Guid@RBX@@V?$vector@UWaitItem@IdSerializer@Network@RBX@@V?$allocator@UWaitItem@IdSerializer@Network@RBX@@@std@@@std@@@std@@@5@$0A@@std@@@std@@QAE@XZ",
+  "object": "Replicator.obj",
+  "external": true
+ },
+ "004b9670": {
+  "address": "004b9670",
+  "symbol": "??$callDoDeclare@$1?sReplicator@Network@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Replicator.obj",
+  "external": true
+ },
+ "004b9680": {
+  "address": "004b9680",
+  "symbol": "??$declare@$1?sReplicator@Network@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Replicator.obj",
+  "external": true
+ },
+ "005a01d0": {
+  "address": "005a01d0",
+  "symbol": "??_DRootInstance@RBX@@IAEXXZ",
+  "object": "RootInstance.obj",
+  "external": true
+ },
+ "00666af0": {
+  "address": "00666af0",
+  "symbol": "??$callDoDeclare@$1?sRunning@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Running.obj",
+  "external": true
+ },
+ "00666b00": {
+  "address": "00666b00",
+  "symbol": "??$declare@$1?sRunning@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Running.obj",
+  "external": true
+ },
+ "004029f0": {
+  "address": "004029f0",
+  "symbol": "??$callDoDeclare@$1?sRunService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "RunStateOwner.obj",
+  "external": true
+ },
+ "00555020": {
+  "address": "00555020",
+  "symbol": "??$declare@$1?sRunService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "RunStateOwner.obj",
+  "external": true
+ },
+ "00556a30": {
+  "address": "00556a30",
+  "symbol": "??0?$BoundFuncDesc@VRunService@RBX@@$$A6AXXZ$0A@@Reflection@RBX@@QAE@P8RunService@2@AEXXZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "RunStateOwner.obj",
+  "external": true
+ },
+ "00556960": {
+  "address": "00556960",
+  "symbol": "??0?$SignalDesc@VRunService@RBX@@$$A6AXM@Z@Reflection@RBX@@QAE@PBD0@Z",
+  "object": "RunStateOwner.obj",
+  "external": true
+ },
+ "00413a30": {
+  "address": "00413a30",
+  "symbol": "??$callDoDeclare@$1?sScript@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Script.obj",
+  "external": true
+ },
+ "00413a40": {
+  "address": "00413a40",
+  "symbol": "??$callDoDeclare@$1?sLocalScript@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Script.obj",
+  "external": true
+ },
+ "00586310": {
+  "address": "00586310",
+  "symbol": "??$declare@$1?sScript@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Script.obj",
+  "external": true
+ },
+ "005863c0": {
+  "address": "005863c0",
+  "symbol": "??$declare@$1?sLocalScript@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Script.obj",
+  "external": true
+ },
+ "00586b90": {
+  "address": "00586b90",
+  "symbol": "??0?$FactoryProduct@VLocalScript@RBX@@VScript@2@$1?sLocalScript@2@3PADA@RBX@@IAE@XZ",
+  "object": "Script.obj",
+  "external": true
+ },
+ "00586c60": {
+  "address": "00586c60",
+  "symbol": "??0?$DescribedCreatable@VLocalScript@RBX@@VScript@2@$1?sLocalScript@2@3PADA@RBX@@IAE@XZ",
+  "object": "Script.obj",
+  "external": true
+ },
+ "005a9d60": {
+  "address": "005a9d60",
+  "symbol": "?on_tostring@?$Bridge@V?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@$0A@@Lua@RBX@@KAHPAUlua_State@@@Z",
+  "object": "ScriptContext.obj",
+  "external": true
+ },
+ "0042d090": {
+  "address": "0042d090",
+  "symbol": "??$callDoDeclare@$1?sScriptContext@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "ScriptContext.obj",
+  "external": true
+ },
+ "005ac030": {
+  "address": "005ac030",
+  "symbol": "??$declare@$1?sScriptContext@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "ScriptContext.obj",
+  "external": true
+ },
+ "005c0060": {
+  "address": "005c0060",
+  "symbol": "??$callDoDeclare@$1?sSeat@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Seat.obj",
+  "external": true
+ },
+ "0063cbe0": {
+  "address": "0063cbe0",
+  "symbol": "??$declare@$1?sSeat@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Seat.obj",
+  "external": true
+ },
+ "00666fe0": {
+  "address": "00666fe0",
+  "symbol": "??$callDoDeclare@$1?sSeated@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Seated.obj",
+  "external": true
+ },
+ "00666ff0": {
+  "address": "00666ff0",
+  "symbol": "??$declare@$1?sSeated@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Seated.obj",
+  "external": true
+ },
+ "00406ec0": {
+  "address": "00406ec0",
+  "symbol": "??$callDoDeclare@$1?sSelection@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Selection.obj",
+  "external": true
+ },
+ "00566b80": {
+  "address": "00566b80",
+  "symbol": "??$declare@$1?sSelection@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Selection.obj",
+  "external": true
+ },
+ "00567f10": {
+  "address": "00567f10",
+  "symbol": "??0?$BoundFuncDesc@VSelection@RBX@@$$A6A?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@XZ$0A@@Reflection@RBX@@QAE@P8Selection@2@AE?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@XZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Selection.obj",
+  "external": true
+ },
+ "00567fe0": {
+  "address": "00567fe0",
+  "symbol": "??0?$BoundFuncDesc@VSelection@RBX@@$$A6AXV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@@Z$00@Reflection@RBX@@QAE@P8Selection@2@AEXV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@@ZPBD2W4Security@FunctionDescriptor@12@@Z",
+  "object": "Selection.obj",
+  "external": true
+ },
+ "00496900": {
+  "address": "00496900",
+  "symbol": "??$callDoDeclare@$1?sServer@Network@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Server.obj",
+  "external": true
+ },
+ "004a22a0": {
+  "address": "004a22a0",
+  "symbol": "??$declare@$1?sServer@Network@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Server.obj",
+  "external": true
+ },
+ "004a4930": {
+  "address": "004a4930",
+  "symbol": "??0?$BoundFuncDesc@VServer@Network@RBX@@$$A6AHXZ$0A@@Reflection@RBX@@QAE@P8Server@Network@2@AEHXZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Server.obj",
+  "external": true
+ },
+ "00572f00": {
+  "address": "00572f00",
+  "symbol": "??0?$BoundFuncDesc@VServiceProvider@RBX@@$$A6A?AV?$shared_ptr@VInstance@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z$00@Reflection@RBX@@QAE@P8ServiceProvider@2@AE?AV?$shared_ptr@VInstance@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZPBD2W4Security@FunctionDescriptor@12@@Z",
+  "object": "Service.obj",
+  "external": true
+ },
+ "004d76c0": {
+  "address": "004d76c0",
+  "symbol": "??$callDoDeclare@$1?sSky@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Sky.obj",
+  "external": true
+ },
+ "005eb160": {
+  "address": "005eb160",
+  "symbol": "??$declare@$1?sSky@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Sky.obj",
+  "external": true
+ },
+ "0048aac0": {
+  "address": "0048aac0",
+  "symbol": "??$callDoDeclare@$1?sSpawnLocation@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "SpawnLocation.obj",
+  "external": true
+ },
+ "0048aad0": {
+  "address": "0048aad0",
+  "symbol": "??$callDoDeclare@$1?sSpawnerService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "SpawnLocation.obj",
+  "external": true
+ },
+ "005d2370": {
+  "address": "005d2370",
+  "symbol": "??$declare@$1?sSpawnLocation@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "SpawnLocation.obj",
+  "external": true
+ },
+ "005d2390": {
+  "address": "005d2390",
+  "symbol": "??$declare@$1?sSpawnerService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "SpawnLocation.obj",
+  "external": true
+ },
+ "00406ea0": {
+  "address": "00406ea0",
+  "symbol": "??$callDoDeclare@$1?sTeam@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Team.obj",
+  "external": true
+ },
+ "00566190": {
+  "address": "00566190",
+  "symbol": "??$declare@$1?sTeam@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Team.obj",
+  "external": true
+ },
+ "0048ab40": {
+  "address": "0048ab40",
+  "symbol": "??$callDoDeclare@$1?sTeams@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Teams.obj",
+  "external": true
+ },
+ "005d5fe0": {
+  "address": "005d5fe0",
+  "symbol": "??$declare@$1?sTeams@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Teams.obj",
+  "external": true
+ },
+ "005d5f20": {
+  "address": "005d5f20",
+  "symbol": "?teamExists@Teams@RBX@@QAE_NVBrickColor@2@@Z",
+  "object": "Teams.obj",
+  "external": true
+ },
+ "00594650": {
+  "address": "00594650",
+  "symbol": "?lua_tofunction@Lua@RBX@@YA?AVFunctionRef@12@PAUlua_State@@H@Z",
+  "object": "ThreadRef.obj",
+  "external": true
+ },
+ "0048ab50": {
+  "address": "0048ab50",
+  "symbol": "??$callDoDeclare@$1?sTimerService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "TimerService.obj",
+  "external": true
+ },
+ "005d6bd0": {
+  "address": "005d6bd0",
+  "symbol": "??$declare@$1?sTimerService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "TimerService.obj",
+  "external": true
+ },
+ "00576620": {
+  "address": "00576620",
+  "symbol": "??$callDoDeclare@$1?sTool@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Tool.obj",
+  "external": true
+ },
+ "005fe420": {
+  "address": "005fe420",
+  "symbol": "??$declare@$1?sTool@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Tool.obj",
+  "external": true
+ },
+ "005ff2e0": {
+  "address": "005ff2e0",
+  "symbol": "??0?$SignalDesc@VTool@RBX@@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@QAE@PBD0@Z",
+  "object": "Tool.obj",
+  "external": true
+ },
+ "005fd800": {
+  "address": "005fd800",
+  "symbol": "??$callDoDeclare@$1?sToolMouseCommand@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "ToolMouseCommand.obj",
+  "external": true
+ },
+ "005fe240": {
+  "address": "005fe240",
+  "symbol": "??$declare@$1?sToolMouseCommand@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "ToolMouseCommand.obj",
+  "external": true
+ },
+ "006162a0": {
+  "address": "006162a0",
+  "symbol": "??$callDoDeclare@$1?sBoxSelectCommand@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "ToolsArrow.obj",
+  "external": true
+ },
+ "00616d80": {
+  "address": "00616d80",
+  "symbol": "??$declare@$1?sBoxSelectCommand@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "ToolsArrow.obj",
+  "external": true
+ },
+ "0045b6d0": {
+  "address": "0045b6d0",
+  "symbol": "??$callDoDeclare@$1?sControllerService@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "UserController.obj",
+  "external": true
+ },
+ "005cada0": {
+  "address": "005cada0",
+  "symbol": "??$declare@$1?sControllerService@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "UserController.obj",
+  "external": true
+ },
+ "005cb4b0": {
+  "address": "005cb4b0",
+  "symbol": "??1PlayerController@RBX@@UAE@XZ",
+  "object": "UserController.obj",
+  "external": true
+ },
+ "00450840": {
+  "address": "00450840",
+  "symbol": "??$callDoDeclare@$1?sVisit@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Visit.obj",
+  "external": true
+ },
+ "005c48f0": {
+  "address": "005c48f0",
+  "symbol": "??$declare@$1?sVisit@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Visit.obj",
+  "external": true
+ },
+ "005c4e00": {
+  "address": "005c4e00",
+  "symbol": "??0?$BoundFuncDesc@VVisit@RBX@@$$A6AXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z$00@Reflection@RBX@@QAE@P8Visit@2@AEXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZPBD2W4Security@FunctionDescriptor@12@@Z",
+  "object": "Visit.obj",
+  "external": true
+ },
+ "005c4f80": {
+  "address": "005c4f80",
+  "symbol": "??0?$BoundFuncDesc@VVisit@RBX@@$$A6A?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ$0A@@Reflection@RBX@@QAE@P8Visit@2@AE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Visit.obj",
+  "external": true
+ },
+ "0048aa70": {
+  "address": "0048aa70",
+  "symbol": "??$callDoDeclare@$1?sWorkspace@RBX@@3PADA@Name@RBX@@CAXXZ",
+  "object": "Workspace.obj",
+  "external": true
+ },
+ "005a17f0": {
+  "address": "005a17f0",
+  "symbol": "??$declare@$1?sWorkspace@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+  "object": "Workspace.obj",
+  "external": true
+ },
+ "005a4a00": {
+  "address": "005a4a00",
+  "symbol": "??0?$BoundFuncDesc@VWorkspace@RBX@@$$A6AXXZ$0A@@Reflection@RBX@@QAE@P8Workspace@2@AEXXZPBDW4Security@FunctionDescriptor@12@@Z",
+  "object": "Workspace.obj",
+  "external": true
+ }
+}
