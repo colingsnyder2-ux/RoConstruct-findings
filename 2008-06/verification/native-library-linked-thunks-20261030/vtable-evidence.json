@@ -1,0 +1,241 @@
+[
+  {
+    "target": "00598c60",
+    "class": "RBX::PartInstance",
+    "slots": [
+      {
+        "vtable": "00832d4c",
+        "slot": 7,
+        "pointer_address": "00832d68"
+      }
+    ],
+    "linked_proofs": [
+      {
+        "module": "RbxApp",
+        "test": "rbx_app",
+        "target": "00598c60",
+        "callee_target": "00608a60",
+        "symbol": "?onChildAdded@PartInstance@RBX@@UAEXPAVInstance@2@@Z",
+        "object": "PartInstance.obj",
+        "linked_address": "004108d0",
+        "linked_callee": "004342d0",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?onChildAdded@PVInstance@RBX@@MAEXPAVInstance@2@@Z",
+            "object": "PVInstance.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      },
+      {
+        "module": "RbxgsApp",
+        "test": "rbxgs_app",
+        "target": "00598c60",
+        "callee_target": "00608a60",
+        "symbol": "?onChildAdded@PartInstance@RBX@@UAEXPAVInstance@2@@Z",
+        "object": "PartInstance.obj",
+        "linked_address": "0044c9c0",
+        "linked_callee": "00498c60",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?onChildAdded@PVInstance@RBX@@MAEXPAVInstance@2@@Z",
+            "object": "PVInstance.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          },
+          {
+            "symbol": "?onChildRemoving@PVInstance@RBX@@MAEXPAVInstance@2@@Z",
+            "object": "PVInstance.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      }
+    ]
+  },
+  {
+    "target": "00646970",
+    "class": "RBX::MultiJoint",
+    "slots": [
+      {
+        "vtable": "0084ae14",
+        "slot": 1,
+        "pointer_address": "0084ae18"
+      }
+    ],
+    "linked_proofs": [
+      {
+        "module": "RbxApp",
+        "test": "rbx_app",
+        "target": "00646970",
+        "callee_target": "00645830",
+        "symbol": "?putInKernel@MultiJoint@RBX@@MAEXPAVKernel@2@@Z",
+        "object": "MultiJoint.obj",
+        "linked_address": "0041b2f0",
+        "linked_callee": "0041b560",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?putInPipeline@IPipelined@RBX@@QAEXPAVIStage@2@@Z",
+            "object": "IPipelined.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          },
+          {
+            "symbol": "?putInKernel@IPipelined@RBX@@UAEXPAVKernel@2@@Z",
+            "object": "IPipelined.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      }
+    ]
+  },
+  {
+    "target": "00701300",
+    "class": "CXTPTabClientWnd::CWorkspace",
+    "slots": [
+      {
+        "vtable": "0085b1fc",
+        "slot": 8,
+        "pointer_address": "0085b21c"
+      }
+    ],
+    "linked_proofs": [
+      {
+        "module": "XTP",
+        "test": "xtp_colors",
+        "target": "00701300",
+        "callee_target": "0077bb40",
+        "symbol": "?SetSelectedItem@CWorkspace@CXTPTabClientWnd@@MAEXPAVCXTPTabManagerItem@@@Z",
+        "object": "XTPTabClientWnd.obj",
+        "linked_address": "00483b40",
+        "linked_callee": "0047b150",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?SetSelectedItem@CXTPTabManager@@UAEXPAVCXTPTabManagerItem@@@Z",
+            "object": "XTPTabManager.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      }
+    ]
+  },
+  {
+    "target": "00701690",
+    "class": "CXTPControlTabWorkspace",
+    "slots": [
+      {
+        "vtable": "0085b464",
+        "slot": 11,
+        "pointer_address": "0085b490"
+      }
+    ],
+    "linked_proofs": [
+      {
+        "module": "XTP",
+        "test": "xtp_colors",
+        "target": "00701690",
+        "callee_target": "007013a0",
+        "symbol": "?GetPaintManager@CXTPControlTabWorkspace@@UBEPAVCXTPTabPaintManager@@XZ",
+        "object": "XTPTabClientWnd.obj",
+        "linked_address": "00483ed0",
+        "linked_callee": "00483c70",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?GetPaintManager@CWorkspace@CXTPTabClientWnd@@MBEPAVCXTPTabPaintManager@@XZ",
+            "object": "XTPTabClientWnd.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      }
+    ]
+  },
+  {
+    "target": "0072d5e0",
+    "class": "CXTPRibbonTheme::CRibbonColorSet",
+    "slots": [
+      {
+        "vtable": "00862124",
+        "slot": 1,
+        "pointer_address": "00862128"
+      }
+    ],
+    "linked_proofs": [
+      {
+        "module": "XTP",
+        "test": "xtp_colors",
+        "target": "0072d5e0",
+        "callee_target": "0079cb80",
+        "symbol": "?RefreshMetrics@CRibbonColorSet@CXTPRibbonTheme@@MAEXXZ",
+        "object": "XTPRibbonTheme.obj",
+        "linked_address": "004994f0",
+        "linked_callee": "004b4d70",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?RefreshMetrics@CColorSetOffice2003@CXTPTabPaintManager@@UAEXXZ",
+            "object": "XTPTabPaintManagerColors.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      }
+    ]
+  },
+  {
+    "target": "00745720",
+    "class": "CXTPControlButton",
+    "slots": [
+      {
+        "vtable": "00863aec",
+        "slot": 56,
+        "pointer_address": "00863bcc"
+      }
+    ],
+    "linked_proofs": [
+      {
+        "module": "XTP",
+        "test": "xtp_colors",
+        "target": "00745720",
+        "callee_target": "006addd0",
+        "symbol": "?Copy@CXTPControlButton@@MAEXPAVCXTPControl@@H@Z",
+        "object": "XTPControlButton.obj",
+        "linked_address": "00456610",
+        "linked_callee": "00443d30",
+        "caller_object_exact": true,
+        "callee_proofs": [
+          {
+            "symbol": "?Copy@CXTPControl@@MAEXPAV1@H@Z",
+            "object": "XTPControl.obj",
+            "object_exact": true,
+            "data_exact": true,
+            "executable_exact": true
+          }
+        ],
+        "verified": true
+      }
+    ]
+  }
+]

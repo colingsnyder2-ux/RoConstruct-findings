@@ -1,0 +1,104 @@
+[
+ {
+  "module": "Boost",
+  "mapped_functions": 1478,
+  "anchored_callees": 237,
+  "candidate_rows": 3
+ },
+ {
+  "module": "G3D",
+  "mapped_functions": 211,
+  "anchored_callees": 57,
+  "candidate_rows": 0
+ },
+ {
+  "module": "G3D-GL",
+  "mapped_functions": 177,
+  "anchored_callees": 1,
+  "candidate_rows": 0
+ },
+ {
+  "module": "jpeg",
+  "mapped_functions": 289,
+  "anchored_callees": 262,
+  "candidate_rows": 2
+ },
+ {
+  "module": "libpng",
+  "mapped_functions": 216,
+  "anchored_callees": 92,
+  "candidate_rows": 0
+ },
+ {
+  "module": "Lua",
+  "mapped_functions": 590,
+  "anchored_callees": 429,
+  "candidate_rows": 0
+ },
+ {
+  "module": "LuaCpp",
+  "mapped_functions": 594,
+  "anchored_callees": 437,
+  "candidate_rows": 0
+ },
+ {
+  "module": "MfcAtl",
+  "mapped_functions": 401,
+  "anchored_callees": 166,
+  "candidate_rows": 0
+ },
+ {
+  "module": "OgreNativeHeaders",
+  "mapped_functions": 0,
+  "anchored_callees": 0,
+  "candidate_rows": 0
+ },
+ {
+  "module": "RakNet",
+  "mapped_functions": 579,
+  "anchored_callees": 347,
+  "candidate_rows": 6
+ },
+ {
+  "module": "RbxApp",
+  "mapped_functions": 7978,
+  "anchored_callees": 763,
+  "candidate_rows": 3
+ },
+ {
+  "module": "RbxgsApp",
+  "mapped_functions": 22845,
+  "anchored_callees": 3466,
+  "candidate_rows": 38
+ },
+ {
+  "module": "RbxUtil",
+  "mapped_functions": 305,
+  "anchored_callees": 38,
+  "candidate_rows": 0
+ },
+ {
+  "module": "Scintilla",
+  "mapped_functions": 11,
+  "anchored_callees": 3,
+  "candidate_rows": 0
+ },
+ {
+  "module": "XTP",
+  "mapped_functions": 9396,
+  "anchored_callees": 4084,
+  "candidate_rows": 12
+ },
+ {
+  "module": "zlib",
+  "mapped_functions": 48,
+  "anchored_callees": 27,
+  "candidate_rows": 0
+ },
+ {
+  "module": "zlib-winapi",
+  "mapped_functions": 48,
+  "anchored_callees": 14,
+  "candidate_rows": 0
+ }
+]

@@ -1,0 +1,1500 @@
+[
+ {
+  "module": "Boost",
+  "test": "boost_core",
+  "target": "0056ab60",
+  "callee_target": "0056a790",
+  "symbol": "??1?$_Tree_val@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@std@@QAE@XZ",
+  "object": "signal_base.obj",
+  "linked_address": "0040ca30",
+  "linked_callee": "0040c660",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@QAE@XZ",
+    "object": "signal_base.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "Boost",
+  "test": "boost_core",
+  "target": "0056b1c0",
+  "callee_target": "0056b140",
+  "symbol": "??1named_slot_map@detail@signals@boost@@QAE@XZ",
+  "object": "signal_base.obj",
+  "linked_address": "0040cfc0",
+  "linked_callee": "0040cf40",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$_Tree@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@std@@QAE@XZ",
+    "object": "signal_base.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "Boost",
+  "test": "boost_core",
+  "target": "0056b1c0",
+  "callee_target": "0056b140",
+  "symbol": "??1?$map@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@@std@@QAE@XZ",
+  "object": "signal_base.obj",
+  "linked_address": "0040cfc0",
+  "linked_callee": "0040cf40",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$_Tree@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@std@@QAE@XZ",
+    "object": "signal_base.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "jpeg",
+  "test": "jpeg_roundtrip",
+  "target": "0051e380",
+  "callee_target": "0051b6b0",
+  "symbol": "_jpeg_destroy_compress",
+  "object": "jcapimin.obj",
+  "linked_address": "004111f0",
+  "linked_callee": "004118c0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "_jpeg_destroy",
+    "object": "jcomapi.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "jpeg",
+  "test": "jpeg_roundtrip",
+  "target": "0051e380",
+  "callee_target": "0051b6b0",
+  "symbol": "_jpeg_destroy_decompress",
+  "object": "jdapimin.obj",
+  "linked_address": "004111f0",
+  "linked_callee": "004118c0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "_jpeg_destroy",
+    "object": "jcomapi.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RakNet",
+  "test": "raknet_loopback",
+  "target": "004c0750",
+  "callee_target": "004bd860",
+  "symbol": "??1?$RSACrypt@$$BY07I@big@@QAE@XZ",
+  "object": "RakPeer.obj",
+  "linked_address": "00406550",
+  "linked_callee": "00403ae0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?reset@?$RSACrypt@$$BY07I@big@@QAEXXZ",
+    "object": "RakPeer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RakNet",
+  "test": "raknet_loopback",
+  "target": "004cfb00",
+  "callee_target": "004cf2e0",
+  "symbol": "??1?$MemoryPool@U?$Page@IPAUInternalPacket@@$0CA@@DataStructures@@@DataStructures@@QAE@XZ",
+  "object": "ReliabilityLayer.obj",
+  "linked_address": "0040e460",
+  "linked_callee": "0040db20",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Clear@?$MemoryPool@UInternalPacket@@@DataStructures@@QAEXXZ",
+    "object": "ReliabilityLayer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?Clear@?$MemoryPool@U?$Page@IPAUInternalPacket@@$0CA@@DataStructures@@@DataStructures@@QAEXXZ",
+    "object": "ReliabilityLayer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RakNet",
+  "test": "raknet_loopback",
+  "target": "004cfb00",
+  "callee_target": "004cf2e0",
+  "symbol": "??1?$MemoryPool@UInternalPacket@@@DataStructures@@QAE@XZ",
+  "object": "ReliabilityLayer.obj",
+  "linked_address": "0040e460",
+  "linked_callee": "0040db20",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Clear@?$MemoryPool@UInternalPacket@@@DataStructures@@QAEXXZ",
+    "object": "ReliabilityLayer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?Clear@?$MemoryPool@U?$Page@IPAUInternalPacket@@$0CA@@DataStructures@@@DataStructures@@QAEXXZ",
+    "object": "ReliabilityLayer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RakNet",
+  "test": "raknet_loopback",
+  "target": "004ce270",
+  "callee_target": "004cdf90",
+  "symbol": "??1?$CircularLinkedList@PAUInternalPacket@@@DataStructures@@QAE@XZ",
+  "object": "ReliabilityLayer.obj",
+  "linked_address": "00413020",
+  "linked_callee": "00412d40",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Clear@?$CircularLinkedList@PAUHuffmanEncodingTreeNode@@@DataStructures@@QAEXXZ",
+    "object": "DS_HuffmanEncodingTree.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?Clear@?$CircularLinkedList@PAUInternalPacket@@@DataStructures@@QAEXXZ",
+    "object": "ReliabilityLayer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RakNet",
+  "test": "raknet_loopback",
+  "target": "004ce270",
+  "callee_target": "004cdf90",
+  "symbol": "??1?$CircularLinkedList@PAUHuffmanEncodingTreeNode@@@DataStructures@@QAE@XZ",
+  "object": "DS_HuffmanEncodingTree.obj",
+  "linked_address": "00413020",
+  "linked_callee": "00412d40",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Clear@?$CircularLinkedList@PAUHuffmanEncodingTreeNode@@@DataStructures@@QAEXXZ",
+    "object": "DS_HuffmanEncodingTree.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?Clear@?$CircularLinkedList@PAUInternalPacket@@@DataStructures@@QAEXXZ",
+    "object": "ReliabilityLayer.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RakNet",
+  "test": "raknet_loopback",
+  "target": "004ce2d0",
+  "callee_target": "004cdfe0",
+  "symbol": "??1HuffmanEncodingTree@@QAE@XZ",
+  "object": "DS_HuffmanEncodingTree.obj",
+  "linked_address": "00413080",
+  "linked_callee": "00412d90",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?FreeMemory@HuffmanEncodingTree@@QAEXXZ",
+    "object": "DS_HuffmanEncodingTree.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxApp",
+  "test": "rbx_app",
+  "target": "00598c60",
+  "callee_target": "00608a60",
+  "symbol": "?onChildAdded@PartInstance@RBX@@UAEXPAVInstance@2@@Z",
+  "object": "PartInstance.obj",
+  "linked_address": "004108d0",
+  "linked_callee": "004342d0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?onChildAdded@PVInstance@RBX@@MAEXPAVInstance@2@@Z",
+    "object": "PVInstance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxApp",
+  "test": "rbx_app",
+  "target": "00646970",
+  "callee_target": "00645830",
+  "symbol": "?putInKernel@MultiJoint@RBX@@MAEXPAVKernel@2@@Z",
+  "object": "MultiJoint.obj",
+  "linked_address": "0041b2f0",
+  "linked_callee": "0041b560",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?putInPipeline@IPipelined@RBX@@QAEXPAVIStage@2@@Z",
+    "object": "IPipelined.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?putInKernel@IPipelined@RBX@@UAEXPAVKernel@2@@Z",
+    "object": "IPipelined.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxApp",
+  "test": "rbx_app",
+  "target": "00568d60",
+  "callee_target": "00568af0",
+  "symbol": "??1?$NonFactoryProduct@VServiceProvider@RBX@@$1?sGlobalSettings@2@3QBDB@RBX@@UAE@XZ",
+  "object": "GlobalSettings.obj",
+  "linked_address": "004295b0",
+  "linked_callee": "00429450",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1ServiceProvider@RBX@@UAE@XZ",
+    "object": "GlobalSettings.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00413470",
+  "callee_target": "0057c2d0",
+  "symbol": "??1XmlNameValuePair@@QAE@XZ",
+  "object": "Instance.obj",
+  "linked_address": "00404b30",
+  "linked_callee": "00410380",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?clearValue@XmlNameValuePair@@ABEXXZ",
+    "object": "XmlElement.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "004aadf0",
+  "callee_target": "0056bd40",
+  "symbol": "??1?$NonFactoryProduct@VDescribedBase@Reflection@RBX@@$1?sMarker@Network@3@3PADA@RBX@@UAE@XZ",
+  "object": "Replicator.obj",
+  "linked_address": "00404b60",
+  "linked_callee": "0040dd10",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1SignalSource@Reflection@RBX@@UAE@XZ",
+    "object": "signal.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "004aadf0",
+  "callee_target": "0056bd40",
+  "symbol": "??1?$Described@VInstance@RBX@@$1?sInstance@2@3PADAVDescribedBase@Reflection@2@@Reflection@RBX@@UAE@XZ",
+  "object": "Instance.obj",
+  "linked_address": "00404b60",
+  "linked_callee": "0040dd10",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1SignalSource@Reflection@RBX@@UAE@XZ",
+    "object": "signal.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "004aadf0",
+  "callee_target": "0056bd40",
+  "symbol": "??1DescribedBase@Reflection@RBX@@UAE@XZ",
+  "object": "Instance.obj",
+  "linked_address": "00404b60",
+  "linked_callee": "0040dd10",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1SignalSource@Reflection@RBX@@UAE@XZ",
+    "object": "signal.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00451200",
+  "callee_target": "00451190",
+  "symbol": "??1?$external_closer@V?$reference_wrapper@V?$basic_ostringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@boost@@H@detail@iostreams@boost@@QAE@XZ",
+  "object": "ContentProvider.obj",
+  "linked_address": "0042ddb0",
+  "linked_callee": "0042ce40",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$external_device_closer@V?$reference_wrapper@V?$basic_ostringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@boost@@@detail@iostreams@boost@@QAE@XZ",
+    "object": "ContentProvider.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00568d60",
+  "callee_target": "00568af0",
+  "symbol": "??1?$DescribedNonCreatable@VGlobalSettings@RBX@@VServiceProvider@2@$1?sGlobalSettings@2@3PADA@RBX@@UAE@XZ",
+  "object": "GlobalSettings.obj",
+  "linked_address": "00443130",
+  "linked_callee": "00442f80",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1ServiceProvider@RBX@@UAE@XZ",
+    "object": "GlobalSettings.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00568d60",
+  "callee_target": "00568af0",
+  "symbol": "??1?$NonFactoryProduct@VServiceProvider@RBX@@$1?sGlobalSettings@2@3PADA@RBX@@UAE@XZ",
+  "object": "GlobalSettings.obj",
+  "linked_address": "00443130",
+  "linked_callee": "00442f80",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1ServiceProvider@RBX@@UAE@XZ",
+    "object": "GlobalSettings.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00497f30",
+  "callee_target": "00497740",
+  "symbol": "??1?$list2@V?$value@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@@_bi@boost@@V?$value@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@@_bi@boost@@QAE@XZ",
+  "object": "Players.obj",
+  "linked_address": "00447970",
+  "linked_callee": "00447210",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$storage2@V?$value@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@@_bi@boost@@V?$value@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@@_bi@boost@@QAE@XZ",
+    "object": "Players.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00598c60",
+  "callee_target": "00608a60",
+  "symbol": "?onChildAdded@PartInstance@RBX@@UAEXPAVInstance@2@@Z",
+  "object": "PartInstance.obj",
+  "linked_address": "0044c9c0",
+  "linked_callee": "00498c60",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?onChildAdded@PVInstance@RBX@@MAEXPAVInstance@2@@Z",
+    "object": "PVInstance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?onChildRemoving@PVInstance@RBX@@MAEXPAVInstance@2@@Z",
+    "object": "PVInstance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005964e0",
+  "callee_target": "0049f710",
+  "symbol": "??1?$list2@V?$value@V?$shared_ptr@Udata@worker_thread@RBX@@@boost@@@_bi@boost@@V?$value@V?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@boost@@@23@@_bi@boost@@QAE@XZ",
+  "object": "boost.obj",
+  "linked_address": "0045d0e0",
+  "linked_callee": "00433af0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$storage2@V?$value@V?$shared_ptr@Udata@worker_thread@RBX@@@boost@@@_bi@boost@@V?$value@V?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@boost@@@23@@_bi@boost@@QAE@XZ",
+    "object": "boost.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@M@ZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "Explosion.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AX_N@ZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "glue_statics.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "glue_statics.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXXZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "glue_statics.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@2@@boost@@@boost@@QAE@XZ",
+    "object": "glue_statics.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@ZV?$allocator@X@2@@boost@@@boost@@QAE@XZ",
+    "object": "glue_statics.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZV?$allocator@X@2@@boost@@@boost@@QAE@XZ",
+    "object": "glue_statics.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@ZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$slot@V?$function@$$A6AXM@ZV?$allocator@X@std@@@boost@@@boost@@QAE@XZ",
+    "object": "RunStateOwner.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f3fc0",
+  "callee_target": "005f3740",
+  "symbol": "??1?$concept_adapter@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE@XZ",
+  "object": "Http.obj",
+  "linked_address": "004619a0",
+  "linked_callee": "004610b0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f3fc0",
+  "callee_target": "005f3740",
+  "symbol": "??1?$concept_adapter@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE@XZ",
+  "object": "Http.obj",
+  "linked_address": "004619a0",
+  "linked_callee": "004610b0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "??1?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f3fd0",
+  "callee_target": "005f9530",
+  "symbol": "?close@?$indirect_streambuf@UString_sink@@U?$char_traits@D@std@@V?$allocator@D@3@Uoutput@iostreams@boost@@@detail@iostreams@boost@@MAEXH@Z",
+  "object": "Http.obj",
+  "linked_address": "004619b0",
+  "linked_callee": "0045fde0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@UString_sink@@U?$char_traits@D@std@@V?$allocator@D@3@Uoutput@iostreams@boost@@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@VHttpRequest_source@@U?$char_traits@D@std@@V?$allocator@D@3@Uinput@iostreams@boost@@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f3fd0",
+  "callee_target": "005f9530",
+  "symbol": "?close@?$indirect_streambuf@VHttpRequest_source@@U?$char_traits@D@std@@V?$allocator@D@3@Uinput@iostreams@boost@@@detail@iostreams@boost@@MAEXH@Z",
+  "object": "Http.obj",
+  "linked_address": "004619b0",
+  "linked_callee": "0045fde0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@UString_sink@@U?$char_traits@D@std@@V?$allocator@D@3@Uoutput@iostreams@boost@@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@VHttpRequest_source@@U?$char_traits@D@std@@V?$allocator@D@3@Uinput@iostreams@boost@@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f4590",
+  "callee_target": "005f38e0",
+  "symbol": "??1?$external_closer@V?$reference_wrapper@V?$filtering_stream@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Upublic_@23@@iostreams@boost@@@boost@@H@detail@iostreams@boost@@QAE@XZ",
+  "object": "Http.obj",
+  "linked_address": "00462190",
+  "linked_callee": "004612b0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1?$external_device_closer@V?$reference_wrapper@V?$filtering_stream@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Upublic_@23@@iostreams@boost@@@boost@@@detail@iostreams@boost@@QAE@XZ",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f4ae0",
+  "callee_target": "005f3280",
+  "symbol": "?close@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAEXH@Z",
+  "object": "Http.obj",
+  "linked_address": "004626e0",
+  "linked_callee": "00460410",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005f4ae0",
+  "callee_target": "005f3280",
+  "symbol": "?close@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAEXH@Z",
+  "object": "Http.obj",
+  "linked_address": "004626e0",
+  "linked_callee": "00460410",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   },
+   {
+    "symbol": "?close_impl@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@AAEXH@Z",
+    "object": "Http.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00573e20",
+  "callee_target": "00411540",
+  "symbol": "??1?$NonFactoryProduct@VWidget@RBX@@$1?sBackpackItem@2@3PADA@RBX@@UAE@XZ",
+  "object": "Hopper.obj",
+  "linked_address": "00486040",
+  "linked_callee": "004851c0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1GuiItem@RBX@@UAE@XZ",
+    "object": "Hopper.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00573e20",
+  "callee_target": "00411540",
+  "symbol": "??1TopMenuBar@RBX@@UAE@XZ",
+  "object": "Hopper.obj",
+  "linked_address": "00486040",
+  "linked_callee": "004851c0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1GuiItem@RBX@@UAE@XZ",
+    "object": "Hopper.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00573e20",
+  "callee_target": "00411540",
+  "symbol": "??1?$DescribedNonCreatable@VBackpackItem@RBX@@VWidget@2@$1?sBackpackItem@2@3PADA@RBX@@UAE@XZ",
+  "object": "Hopper.obj",
+  "linked_address": "00486040",
+  "linked_callee": "004851c0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1GuiItem@RBX@@UAE@XZ",
+    "object": "Hopper.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$DescribedNonCreatable@VFeature@RBX@@VInstance@2@$1?sFeature@2@3PADA@RBX@@UAE@XZ",
+  "object": "Feature.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$DescribedNonCreatable@VMouse@RBX@@VInstance@2@$1?sMouse@2@3PADA@RBX@@UAE@XZ",
+  "object": "Tool.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$DescribedNonCreatable@VJointInstance@RBX@@VInstance@2@$1?sJointInstance@2@3PADA@RBX@@UAE@XZ",
+  "object": "JointInstance.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$Described@VFaceInstance@RBX@@$1?sFaceInstance@2@3PADAVInstance@2@@Reflection@RBX@@UAE@XZ",
+  "object": "Decal.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$DescribedNonCreatable@VContentProvider@RBX@@VInstance@2@$1?sContentProvider@2@3PADA@RBX@@UAE@XZ",
+  "object": "ContentProvider.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$NonFactoryProduct@VInstance@RBX@@$1?sJointInstance@2@3PADA@RBX@@UAE@XZ",
+  "object": "JointInstance.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$Described@VPeer@Network@RBX@@$1?sPeer@23@3PADAVInstance@3@@Reflection@RBX@@UAE@XZ",
+  "object": "Replicator.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$DescribedNonCreatable@VServiceProvider@RBX@@VInstance@2@$1?sServiceProvider@2@3PADA@RBX@@UAE@XZ",
+  "object": "GlobalSettings.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$NonFactoryProduct@VInstance@RBX@@$1?sFeature@2@3PADA@RBX@@UAE@XZ",
+  "object": "Feature.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$Described@VPVInstance@RBX@@$1?sPVInstance@2@3PADAVInstance@2@@Reflection@RBX@@UAE@XZ",
+  "object": "PVInstance.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$NonFactoryProduct@VInstance@RBX@@$1?sServiceProvider@2@3PADA@RBX@@UAE@XZ",
+  "object": "GlobalSettings.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$NonFactoryProduct@VInstance@RBX@@$1?sContentProvider@2@3PADA@RBX@@UAE@XZ",
+  "object": "ContentProvider.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$NonFactoryProduct@VInstance@RBX@@$1?sStatsItem@Stats@2@3PADA@RBX@@UAE@XZ",
+  "object": "Replicator.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$NonFactoryProduct@VInstance@RBX@@$1?sMouse@2@3PADA@RBX@@UAE@XZ",
+  "object": "Tool.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "00455d30",
+  "callee_target": "0055a540",
+  "symbol": "??1?$DescribedNonCreatable@VItem@Stats@RBX@@VInstance@3@$1?sStatsItem@23@3PADA@RBX@@UAE@XZ",
+  "object": "Replicator.obj",
+  "linked_address": "00498b50",
+  "linked_callee": "00408890",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1Instance@RBX@@MAE@XZ",
+    "object": "Instance.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "005fd3d0",
+  "callee_target": "00642fc0",
+  "symbol": "??1?$Named@VScriptMouseCommand@RBX@@$1?sToolMouseCommand@2@3PADA@RBX@@UAE@XZ",
+  "object": "ToolMouseCommand.obj",
+  "linked_address": "004e97d0",
+  "linked_callee": "004d4ef0",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1ScriptMouseCommand@RBX@@UAE@XZ",
+    "object": "ScriptMouseCommand.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "007f5c30",
+  "callee_target": "005c8aa0",
+  "symbol": "??__E?create_object@?$singleton_default@Upool_type@?$singleton_pool@VLuaAllocator@@$0CA@Udefault_user_allocator_new_delete@boost@@Vwin32_mutex@pool@details@3@$0CA@@boost@@@pool@details@boost@@0Uobject_creator@1234@A@@YAXXZ",
+  "object": "LuaMemory.obj",
+  "linked_address": "0052ec90",
+  "linked_callee": "004ceb20",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?instance@?$singleton_default@Upool_type@?$singleton_pool@VLuaAllocator@@$0CA@Udefault_user_allocator_new_delete@boost@@Vwin32_mutex@pool@details@3@$0CA@@boost@@@pool@details@boost@@SAAAUpool_type@?$singleton_pool@VLuaAllocator@@$0CA@Udefault_user_allocator_new_delete@boost@@Vwin32_mutex@pool@details@3@$0CA@@4@XZ",
+    "object": "LuaMemory.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "RbxgsApp",
+  "test": "rbxgs_app",
+  "target": "007f5c40",
+  "callee_target": "005c8b00",
+  "symbol": "??__E?create_object@?$singleton_default@Upool_type@?$singleton_pool@VLuaAllocator@@$0BA@Udefault_user_allocator_new_delete@boost@@Vwin32_mutex@pool@details@3@$0CA@@boost@@@pool@details@boost@@0Uobject_creator@1234@A@@YAXXZ",
+  "object": "LuaMemory.obj",
+  "linked_address": "0052eca0",
+  "linked_callee": "004ceb80",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?instance@?$singleton_default@Upool_type@?$singleton_pool@VLuaAllocator@@$0BA@Udefault_user_allocator_new_delete@boost@@Vwin32_mutex@pool@details@3@$0CA@@boost@@@pool@details@boost@@SAAAUpool_type@?$singleton_pool@VLuaAllocator@@$0BA@Udefault_user_allocator_new_delete@boost@@Vwin32_mutex@pool@details@3@$0CA@@4@XZ",
+    "object": "LuaMemory.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "006ae490",
+  "callee_target": "006f70a0",
+  "symbol": "?FontExists@CXTPPaintManager@@SAHPBD@Z",
+  "object": "XTPPaintManager.obj",
+  "linked_address": "00432790",
+  "linked_callee": "0046fa90",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?FontExists@CXTPDrawHelpers@@SAHPBD@Z",
+    "object": "XTPDrawHelpers.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "00745720",
+  "callee_target": "006addd0",
+  "symbol": "?Copy@CXTPControlButton@@MAEXPAVCXTPControl@@H@Z",
+  "object": "XTPControlButton.obj",
+  "linked_address": "00456610",
+  "linked_callee": "00443d30",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Copy@CXTPControl@@MAEXPAV1@H@Z",
+    "object": "XTPControl.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "0071ce90",
+  "callee_target": "006f7310",
+  "symbol": "?IsTopParentActive@CXTPMouseManager@@SAHPAUHWND__@@@Z",
+  "object": "XTPMouseManager.obj",
+  "linked_address": "0045adf0",
+  "linked_callee": "0046fd40",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?IsTopParentActive@CXTPDrawHelpers@@SAHPAUHWND__@@@Z",
+    "object": "XTPDrawHelpers.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "007220c0",
+  "callee_target": "006b4ed0",
+  "symbol": "?GetRibbonPaintManager@CXTPRibbonBar@@QBEPAVCXTPRibbonTheme@@XZ",
+  "object": "XTPRibbonBar.obj",
+  "linked_address": "004618f0",
+  "linked_callee": "00449c10",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?GetPaintManager@CXTPCommandBar@@QBEPAVCXTPPaintManager@@XZ",
+    "object": "XTPCommandBar.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "006bd7b0",
+  "callee_target": "006bcc40",
+  "symbol": "??1CXTPImageManagerIconHandle@@QAE@XZ",
+  "object": "XTPImageManager.obj",
+  "linked_address": "004803d0",
+  "linked_callee": "0047fb50",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Clear@CXTPImageManagerIconHandle@@QAEXXZ",
+    "object": "XTPImageManager.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "00701300",
+  "callee_target": "0077bb40",
+  "symbol": "?SetSelectedItem@CWorkspace@CXTPTabClientWnd@@MAEXPAVCXTPTabManagerItem@@@Z",
+  "object": "XTPTabClientWnd.obj",
+  "linked_address": "00483b40",
+  "linked_callee": "0047b150",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?SetSelectedItem@CXTPTabManager@@UAEXPAVCXTPTabManagerItem@@@Z",
+    "object": "XTPTabManager.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "00701690",
+  "callee_target": "007013a0",
+  "symbol": "?GetPaintManager@CXTPControlTabWorkspace@@UBEPAVCXTPTabPaintManager@@XZ",
+  "object": "XTPTabClientWnd.obj",
+  "linked_address": "00483ed0",
+  "linked_callee": "00483c70",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?GetPaintManager@CWorkspace@CXTPTabClientWnd@@MBEPAVCXTPTabPaintManager@@XZ",
+    "object": "XTPTabClientWnd.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "00739cc0",
+  "callee_target": "006b4730",
+  "symbol": "??1CXTPDefaultTheme@XTPPaintThemes@@UAE@XZ",
+  "object": "XTPDefaultTheme.obj",
+  "linked_address": "00491f70",
+  "linked_callee": "00435a90",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1CXTPPaintManager@@MAE@XZ",
+    "object": "XTPPaintManager.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "00739cc0",
+  "callee_target": "006b4730",
+  "symbol": "??1CXTPOfficeTheme@XTPPaintThemes@@UAE@XZ",
+  "object": "XTPOffice2003Theme.obj",
+  "linked_address": "00491f70",
+  "linked_callee": "00435a90",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "??1CXTPPaintManager@@MAE@XZ",
+    "object": "XTPPaintManager.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "0072d5e0",
+  "callee_target": "0079cb80",
+  "symbol": "?RefreshMetrics@CRibbonColorSet@CXTPRibbonTheme@@MAEXXZ",
+  "object": "XTPRibbonTheme.obj",
+  "linked_address": "004994f0",
+  "linked_callee": "004b4d70",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?RefreshMetrics@CColorSetOffice2003@CXTPTabPaintManager@@UAEXXZ",
+    "object": "XTPTabPaintManagerColors.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "007278c0",
+  "callee_target": "00727840",
+  "symbol": "??1CXTPSoundManager@@QAE@XZ",
+  "object": "XTPSoundManager.obj",
+  "linked_address": "004ab980",
+  "linked_callee": "004ab900",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?StopThread@CXTPSoundManager@@QAEXXZ",
+    "object": "XTPSoundManager.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ },
+ {
+  "module": "XTP",
+  "test": "xtp_colors",
+  "target": "00801680",
+  "callee_target": "006ae250",
+  "symbol": "??__F__xtpPaintManagerDestructor@@YAXXZ",
+  "object": "XTPPaintManager.obj",
+  "linked_address": "004da500",
+  "linked_callee": "00432130",
+  "caller_object_exact": true,
+  "callee_proofs": [
+   {
+    "symbol": "?Done@CXTPPaintManager@@SAXXZ",
+    "object": "XTPPaintManager.obj",
+    "object_exact": true,
+    "data_exact": true,
+    "executable_exact": true
+   }
+  ],
+  "verified": true
+ }
+]
