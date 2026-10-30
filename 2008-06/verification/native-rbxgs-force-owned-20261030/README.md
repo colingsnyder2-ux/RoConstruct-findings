@@ -10,16 +10,16 @@ as `result-uncorrected.json`; do not use it as an ABI proof. The corrected
 
 With corrected headers and a baseline archive excluding the later
 `AggregateChunk::cachesShadows` override, the forced fixture has 48 unresolved
-symbols and one duplicate. After the real override is added in its own source
-unit, the fixture forces 12,791 external names and has 47 unresolved symbols
-and the same duplicate. The missing override is resolved. Twenty-four remaining
-names are `LevelBuilder::buildFace` template instances. `result.json` and
-`baseline-corrected.json` list the failures. These are symbols, not necessarily
-distinct implementations or functions.
+symbols and one duplicate. The real override reduces that to 47; the later
+`PartChunk::castsShadows` and `cullable` definitions reduce it to 45. The
+latest fixture forces 12,793 external names and has the same duplicate.
+Twenty-four remaining names are `LevelBuilder::buildFace` template instances.
+`result.json`, `result-after-aggregate.json` and `baseline-corrected.json`
+list the failures. These are symbols, not necessarily distinct implementations.
 
-The full forced fixture does not link or run. An independent narrow fixture
-forces the new override, links and passes; its target bytes and object provenance
-are documented separately in the aggregate-shadow verification bundle. The
-server has not accepted this local change. Do not replace remaining dependencies
+The full forced fixture does not link or run. Independent narrow fixtures force
+the three methods, link and pass; target bytes and object provenance are in
+the aggregate-shadow and partchunk-visibility verification bundles. The server
+has not accepted these local changes. Do not replace remaining dependencies
 with no-op bodies or invent layouts. Reproduce against a consistent private
 object snapshot with the checkout root on `PYTHONPATH`.

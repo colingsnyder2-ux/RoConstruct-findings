@@ -1,11 +1,11 @@
 {
-  "root_count": 12791,
+  "root_count": 12793,
   "result": {
     "compiled": true,
     "linked": false,
     "ran": false,
     "exit": null,
-    "output": "6,enum RBX::View::LevelBuilder::Purpose)\" (??$buildFace@$02VDeformSide@@@LevelBuilder@View@RBX@@IAEXVDeformSide@@VVector2int16@G3D@@W4Purpose@012@@Z) referenced in function \"protected: virtual void __thiscall TorsoBuilder::buildLeft(enum RBX::View::LevelBuilder::Purpose)\" (?buildLeft@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)\nlinked.lib(TorsoMesh.obj) : error LNK2019: unresolved external symbol \"protected: void __thiscall RBX::View::LevelBuilder::buildFace<5,class DeformFrontBack>(class DeformFrontBack,class G3D::Vector2int16,enum RBX::View::LevelBuilder::Purpose)\" (??$buildFace@$04VDeformFrontBack@@@LevelBuilder@View@RBX@@IAEXVDeformFrontBack@@VVector2int16@G3D@@W4Purpose@012@@Z) referenced in function \"protected: virtual void __thiscall TorsoBuilder::buildFront(enum RBX::View::LevelBuilder::Purpose)\" (?buildFront@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)\nlinked.lib(TorsoMesh.obj) : error LNK2019: unresolved external symbol \"protected: void __thiscall RBX::View::LevelBuilder::buildFace<4,class TorsoBuilder>(class TorsoBuilder,unsigned int,unsigned int,enum RBX::View::LevelBuilder::Purpose)\" (??$buildFace@$03VTorsoBuilder@@@LevelBuilder@View@RBX@@IAEXVTorsoBuilder@@IIW4Purpose@012@@Z) referenced in function \"protected: virtual void __thiscall TorsoBuilder::buildBottom(enum RBX::View::LevelBuilder::Purpose)\" (?buildBottom@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)\nrbxgs_force_owned_20261030.exe : fatal error LNK1120: 47 unresolved externals",
+    "output": "6,enum RBX::View::LevelBuilder::Purpose)\" (??$buildFace@$02VDeformSide@@@LevelBuilder@View@RBX@@IAEXVDeformSide@@VVector2int16@G3D@@W4Purpose@012@@Z) referenced in function \"protected: virtual void __thiscall TorsoBuilder::buildLeft(enum RBX::View::LevelBuilder::Purpose)\" (?buildLeft@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)\nlinked.lib(TorsoMesh.obj) : error LNK2019: unresolved external symbol \"protected: void __thiscall RBX::View::LevelBuilder::buildFace<5,class DeformFrontBack>(class DeformFrontBack,class G3D::Vector2int16,enum RBX::View::LevelBuilder::Purpose)\" (??$buildFace@$04VDeformFrontBack@@@LevelBuilder@View@RBX@@IAEXVDeformFrontBack@@VVector2int16@G3D@@W4Purpose@012@@Z) referenced in function \"protected: virtual void __thiscall TorsoBuilder::buildFront(enum RBX::View::LevelBuilder::Purpose)\" (?buildFront@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)\nlinked.lib(TorsoMesh.obj) : error LNK2019: unresolved external symbol \"protected: void __thiscall RBX::View::LevelBuilder::buildFace<4,class TorsoBuilder>(class TorsoBuilder,unsigned int,unsigned int,enum RBX::View::LevelBuilder::Purpose)\" (??$buildFace@$03VTorsoBuilder@@@LevelBuilder@View@RBX@@IAEXVTorsoBuilder@@IIW4Purpose@012@@Z) referenced in function \"protected: virtual void __thiscall TorsoBuilder::buildBottom(enum RBX::View::LevelBuilder::Purpose)\" (?buildBottom@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)\nrbxgs_force_owned_20261030.exe : fatal error LNK1120: 45 unresolved externals",
     "unresolved": [
       "??$buildFace@$00P6AXAAVVector3@G3D@@0AAVVector2@2@ABV12@ABVVector2int16@2@@Z@LevelBuilder@View@RBX@@IAEXP6AXAAVVector3@G3D@@0AAVVector2@4@ABV34@ABVVector2int16@4@@ZV64@W4Purpose@012@@Z",
       "??$buildFace@$00VDeformTop3@@@LevelBuilder@View@RBX@@IAEXVDeformTop3@@VVector2int16@G3D@@W4Purpose@012@@Z",
@@ -40,10 +40,8 @@
       "?addToQueue@Bucket@AggregatingSceneManager@Render@RBX@@QAEXABV?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@Z",
       "?aggregate@Mesh@Render@RBX@@SA?AV?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@ABV?$vector@V?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@V?$allocator@V?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@std@@@std@@AAVCoordinateFrame@5@AAM@Z",
       "?allocateProxies@RenderScene@Render@RBX@@AAEXPAVRenderDevice@G3D@@ABVGCamera@5@@Z",
-      "?castsShadows@PartChunk@View@RBX@@UBE_NXZ",
       "?computeDirectionalShadowVolume@Mesh@Render@RBX@@QBEXABVCoordinateFrame@G3D@@ABVVector3@5@AAV?$Array@I@5@AAV?$Array@VVector3@G3D@@@5@_N@Z",
       "?computeShadowSurface@Mesh@Render@RBX@@IAEXABV?$ReferenceCountedPointer@VLevel@Mesh@Render@RBX@@@G3D@@@Z",
-      "?cullable@PartChunk@View@RBX@@UBE_NXZ",
       "?deconstructAggregate@AggregatingSceneManager@Render@RBX@@AAEXV?$ReferenceCountedPointer@VAggregateChunk@Render@RBX@@@G3D@@@Z",
       "?getMaterial@Part@View@RBX@@UAE?AV?$ReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@XZ",
       "?glLoaded@SpecData@Render@RBX@@2_NA",
