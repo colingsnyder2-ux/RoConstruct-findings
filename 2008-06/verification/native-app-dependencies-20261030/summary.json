@@ -1,0 +1,23 @@
+{
+  "RbxApp": {
+    "owned_2008": 1322,
+    "linked": true,
+    "test_exit": 1,
+    "unresolved": [],
+    "test_output": "part primitive/body initialization\nfailures=1"
+  },
+  "RbxUtil": {
+    "owned_2008": 615,
+    "linked": true,
+    "test_exit": 0,
+    "unresolved": [],
+    "test_output": "failures=0"
+  },
+  "LuaCpp": {
+    "owned_2008": 437,
+    "linked": true,
+    "test_exit": 0,
+    "unresolved": [],
+    "test_output": "Lua 5.1.4 C++ 100|100|1.414"
+  }
+}

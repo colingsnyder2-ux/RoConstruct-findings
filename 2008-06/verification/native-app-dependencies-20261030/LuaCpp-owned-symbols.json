@@ -1,0 +1,2624 @@
+{
+ "00610bf0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_where@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00610c60": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_error@@YAHPAUlua_State@@PBDZZ"
+  }
+ ],
+ "00610c90": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_newmetatable@@YAHPAUlua_State@@PBD@Z"
+  }
+ ],
+ "00610cf0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checkstack@@YAXPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "00610d20": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_getmetafield@@YAHPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "00610d80": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_callmeta@@YAHPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "00610de0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_findtable@@YAPBDPAUlua_State@@HPBDH@Z"
+  }
+ ],
+ "00610ed0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?adjuststack@@YAXPAUluaL_Buffer@@@Z"
+  }
+ ],
+ "00610f40": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_prepbuffer@@YAPADPAUluaL_Buffer@@@Z"
+  }
+ ],
+ "00610f80": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_addlstring@@YAXPAUluaL_Buffer@@PBDI@Z"
+  }
+ ],
+ "00610fe0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_pushresult@@YAXPAUluaL_Buffer@@@Z"
+  }
+ ],
+ "00611020": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_addvalue@@YAXPAUluaL_Buffer@@@Z"
+  }
+ ],
+ "006110a0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_buffinit@@YAXPAUlua_State@@PAUluaL_Buffer@@@Z"
+  }
+ ],
+ "006110c0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_ref@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611170": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_unref@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "006111d0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?getF@@YAPBDPAUlua_State@@PAXPAI@Z"
+  }
+ ],
+ "00611230": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?errfile@@YAHPAUlua_State@@PBDH@Z"
+  }
+ ],
+ "00611480": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?getS@@YAPBDPAUlua_State@@PAXPAI@Z"
+  }
+ ],
+ "006114a0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_loadbuffer@@YAHPAUlua_State@@PBDI1@Z"
+  }
+ ],
+ "006114d0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_argerror@@YAHPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "006115b0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checkudata@@YAPAXPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "00611640": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checktype@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "00611690": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checkany@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "006116c0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checklstring@@YAPBDPAUlua_State@@HPAI@Z"
+  }
+ ],
+ "00611720": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_optlstring@@YAPBDPAUlua_State@@HPBDPAI@Z"
+  }
+ ],
+ "00611780": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checknumber@@YANPAUlua_State@@H@Z"
+  }
+ ],
+ "00611800": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checkinteger@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611870": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_optinteger@@YAHPAUlua_State@@HH@Z"
+  }
+ ],
+ "006119c0": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_checkoption@@YAHPAUlua_State@@HPBDQBQBD@Z"
+  }
+ ],
+ "00611a70": [
+  {
+   "object": "lauxlib.obj",
+   "symbol": "?luaL_register@@YAXPAUlua_State@@PBDPBUluaL_Reg@@@Z"
+  }
+ ],
+ "00611a90": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?index2adr@@YAPAUlua_TValue@@PAUlua_State@@H@Z"
+  }
+ ],
+ "00611b10": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?luaA_pushobject@@YAXPAUlua_State@@PBUlua_TValue@@@Z"
+  }
+ ],
+ "00611ba0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_xmove@@YAXPAUlua_State@@0H@Z"
+  }
+ ],
+ "00611bf0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_atpanic@@YAP6AHPAUlua_State@@@Z0P6AH0@Z@Z"
+  }
+ ],
+ "00611c10": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_gettop@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00611c20": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_settop@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00611c70": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_remove@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00611cc0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_insert@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00611d10": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_replace@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00611dd0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushvalue@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00611e00": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_type@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611e20": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_typename@@YAPBDPAUlua_State@@H@Z"
+  }
+ ],
+ "00611e40": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_iscfunction@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611e70": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_isnumber@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611eb0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_isstring@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611ee0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_rawequal@@YAHPAUlua_State@@HH@Z"
+  }
+ ],
+ "00611f20": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_lessthan@@YAHPAUlua_State@@HH@Z"
+  }
+ ],
+ "00611f60": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_tonumber@@YANPAUlua_State@@H@Z"
+  }
+ ],
+ "00611fa0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_tointeger@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00611fe0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_toboolean@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00612010": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_tolstring@@YAPBDPAUlua_State@@HPAI@Z"
+  }
+ ],
+ "00612080": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_objlen@@YAIPAUlua_State@@H@Z"
+  }
+ ],
+ "006120f0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_tocfunction@@YAP6AHPAUlua_State@@@Z0H@Z"
+  }
+ ],
+ "00612120": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_touserdata@@YAPAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612150": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_tothread@@YAPAUlua_State@@PAU1@H@Z"
+  }
+ ],
+ "00612170": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_topointer@@YAPBXPAUlua_State@@H@Z"
+  }
+ ],
+ "006121e0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushnil@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "00612200": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushnumber@@YAXPAUlua_State@@N@Z"
+  }
+ ],
+ "00612220": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushinteger@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612240": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushlstring@@YAXPAUlua_State@@PBDI@Z"
+  }
+ ],
+ "00612280": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushstring@@YAXPAUlua_State@@PBD@Z"
+  }
+ ],
+ "006122f0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushvfstring@@YAPBDPAUlua_State@@PBDPAD@Z"
+  }
+ ],
+ "00612320": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushfstring@@YAPBDPAUlua_State@@PBDZZ"
+  }
+ ],
+ "00612350": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushcclosure@@YAXPAUlua_State@@P6AH0@ZH@Z"
+  }
+ ],
+ "006123f0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushboolean@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612410": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushlightuserdata@@YAXPAUlua_State@@PAX@Z"
+  }
+ ],
+ "00612430": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pushthread@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00612460": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_gettable@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612490": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_getfield@@YAXPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "006124f0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_rawget@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612530": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_rawgeti@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "00612570": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_createtable@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "006125b0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_getmetatable@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00612610": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_getfenv@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612680": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_settable@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "006126b0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_setfield@@YAXPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "00612710": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_rawset@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612780": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_rawseti@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "006127f0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_setmetatable@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00612920": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_call@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "00612960": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?f_call@@YAXPAUlua_State@@PAX@Z"
+  }
+ ],
+ "00612980": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_pcall@@YAHPAUlua_State@@HHH@Z"
+  }
+ ],
+ "006129f0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_load@@YAHPAUlua_State@@P6APBD0PAXPAI@Z1PBD@Z"
+  }
+ ],
+ "00612a30": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_dump@@YAHPAUlua_State@@P6AH0PBXIPAX@Z2@Z"
+  }
+ ],
+ "00612a70": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_status@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00612b70": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_error@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00612b80": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_next@@YAHPAUlua_State@@H@Z"
+  }
+ ],
+ "00612bc0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_concat@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00612c40": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_newuserdata@@YAPAXPAUlua_State@@I@Z"
+  }
+ ],
+ "00612ca0": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_getupvalue@@YAPBDPAUlua_State@@HH@Z"
+  }
+ ],
+ "00612d30": [
+  {
+   "object": "lapi.obj",
+   "symbol": "?lua_setupvalue@@YAPBDPAUlua_State@@HH@Z"
+  }
+ ],
+ "006217f0": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?luaD_seterrorobj@@YAXPAUlua_State@@HPAUlua_TValue@@@Z"
+  }
+ ],
+ "006219e0": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?correctstack@@YAXPAUlua_State@@PAUlua_TValue@@@Z"
+  }
+ ],
+ "00621a70": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?luaD_reallocstack@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00621ad0": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?luaD_reallocCI@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00621b50": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?luaD_growstack@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "00621cd0": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?tryfuncTM@@YAPAUlua_TValue@@PAUlua_State@@PAU1@@Z"
+  }
+ ],
+ "00621e40": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?resume_error@@YAHPAUlua_State@@PBD@Z"
+  }
+ ],
+ "00621f00": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?f_parser@@YAXPAUlua_State@@PAX@Z"
+  }
+ ],
+ "00622100": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?growCI@@YAPAUCallInfo@@PAUlua_State@@@Z"
+  }
+ ],
+ "00622300": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?luaD_call@@YAXPAUlua_State@@PAUlua_TValue@@H@Z"
+  }
+ ],
+ "00622380": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?resume@@YAXPAUlua_State@@PAX@Z"
+  }
+ ],
+ "00622580": [
+  {
+   "object": "ldo.obj",
+   "symbol": "?luaD_protectedparser@@YAHPAUlua_State@@PAUZio@@PBD@Z"
+  }
+ ],
+ "006225f0": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_int2fb@@YAHI@Z"
+  }
+ ],
+ "00622620": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_fb2int@@YAHH@Z"
+  }
+ ],
+ "00622640": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_log2@@YAHI@Z"
+  }
+ ],
+ "00622670": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_rawequalObj@@YAHPBUlua_TValue@@0@Z"
+  }
+ ],
+ "006226d0": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_str2d@@YAHPBDPAN@Z"
+  }
+ ],
+ "00622780": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?pushstr@@YAXPAUlua_State@@PBD@Z"
+  }
+ ],
+ "006227d0": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_pushvfstring@@YAPBDPAUlua_State@@PBDPAD@Z"
+  }
+ ],
+ "00622ac0": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_pushfstring@@YAPBDPAUlua_State@@PBDZZ"
+  }
+ ],
+ "00622ae0": [
+  {
+   "object": "lobject.obj",
+   "symbol": "?luaO_chunkid@@YAXPADPBDI@Z"
+  }
+ ],
+ "00622c30": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?currentline@@YAHPAUlua_State@@PAUCallInfo@@@Z"
+  }
+ ],
+ "00622ce0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?lua_getstack@@YAHPAUlua_State@@HPAUlua_Debug@@@Z"
+  }
+ ],
+ "00622d60": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?findlocal@@YAPBDPAUlua_State@@PAUCallInfo@@H@Z"
+  }
+ ],
+ "00622dd0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?lua_getlocal@@YAPBDPAUlua_State@@PBUlua_Debug@@H@Z"
+  }
+ ],
+ "00622e20": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?lua_setlocal@@YAPBDPAUlua_State@@PBUlua_Debug@@H@Z"
+  }
+ ],
+ "00622e70": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?funcinfo@@YAXPAUlua_Debug@@PATClosure@@@Z"
+  }
+ ],
+ "00622ef0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?collectvalidlines@@YAXPAUlua_State@@PATClosure@@@Z"
+  }
+ ],
+ "00622f80": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_checkopenop@@YAHI@Z"
+  }
+ ],
+ "00622fb0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?checkArgMode@@YAHPBUProto@@HW4OpArgMask@@@Z"
+  }
+ ],
+ "00623460": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_checkcode@@YAHPBUProto@@@Z"
+  }
+ ],
+ "00623480": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?kname@@YAPBDPAUProto@@H@Z"
+  }
+ ],
+ "006234b0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?getobjname@@YAPBDPAUlua_State@@PAUCallInfo@@HPAPBD@Z"
+  }
+ ],
+ "00623630": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?getfuncname@@YAPBDPAUlua_State@@PAUCallInfo@@PAPBD@Z"
+  }
+ ],
+ "006236d0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?addinfo@@YAXPAUlua_State@@PBD@Z"
+  }
+ ],
+ "00623740": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_errormsg@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "006237d0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_runerror@@YAXPAUlua_State@@PBDZZ"
+  }
+ ],
+ "00623800": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?auxgetinfo@@YAHPAUlua_State@@PBDPAUlua_Debug@@PATClosure@@PAUCallInfo@@@Z"
+  }
+ ],
+ "00623950": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?lua_getinfo@@YAHPAUlua_State@@PBDPAUlua_Debug@@@Z"
+  }
+ ],
+ "00623a00": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_typeerror@@YAXPAUlua_State@@PBUlua_TValue@@PBD@Z"
+  }
+ ],
+ "00623ab0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_aritherror@@YAXPAUlua_State@@PBUlua_TValue@@1@Z"
+  }
+ ],
+ "00623af0": [
+  {
+   "object": "ldebug.obj",
+   "symbol": "?luaG_ordererror@@YAHPAUlua_State@@PBUlua_TValue@@1@Z"
+  }
+ ],
+ "00623b50": [
+  {
+   "object": "lstate.obj",
+   "symbol": "?stack_init@@YAXPAUlua_State@@0@Z"
+  }
+ ],
+ "00623bd0": [
+  {
+   "object": "lstate.obj",
+   "symbol": "?f_luaopen@@YAXPAUlua_State@@PAX@Z"
+  }
+ ],
+ "00623d80": [
+  {
+   "object": "lstate.obj",
+   "symbol": "?callallgcTM@@YAXPAUlua_State@@PAX@Z"
+  }
+ ],
+ "00624080": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?fileerror@@YAXPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "006240c0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_type@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624160": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_pclose@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006241e0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_fclose@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624260": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?aux_close@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624290": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_close@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624550": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_tmpfile@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006245d0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?g_iofile@@YAHPAUlua_State@@HPBD@Z"
+  }
+ ],
+ "006246a0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_input@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006246c0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_output@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006246e0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?read_number@@YAHPAUlua_State@@PAU_iobuf@@@Z"
+  }
+ ],
+ "00624720": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?read_line@@YAHPAUlua_State@@PAU_iobuf@@@Z"
+  }
+ ],
+ "006247f0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?read_chars@@YAHPAUlua_State@@PAU_iobuf@@I@Z"
+  }
+ ],
+ "00624890": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?g_read@@YAHPAUlua_State@@PAU_iobuf@@H@Z"
+  }
+ ],
+ "00624a30": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_read@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624a80": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?f_read@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624ac0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_readline@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624b70": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?g_write@@YAHPAUlua_State@@PAU_iobuf@@H@Z"
+  }
+ ],
+ "00624c60": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_write@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624cb0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?f_write@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624cf0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?f_seek@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624da0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?f_setvbuf@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624e50": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_flush@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00624ef0": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?f_flush@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625140": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?f_lines@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625190": [
+  {
+   "object": "liolib.obj",
+   "symbol": "?io_lines@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625270": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?foreachi@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625300": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?foreach@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625390": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?maxn@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625430": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?getn@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625460": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?setn@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625490": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?tinsert@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006256b0": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?auxsort@@YAXPAUlua_State@@HH@Z"
+  }
+ ],
+ "00625ab0": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?sort@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625b10": [
+  {
+   "object": "ltablib.obj",
+   "symbol": "?luaopen_table@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625b30": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_abs@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625d50": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_ceil@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625d80": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_floor@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625e00": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_modf@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625fa0": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_rad@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00625fd0": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_frexp@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00626010": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_ldexp@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00626050": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_min@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006260d0": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_max@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00626260": [
+  {
+   "object": "lmathlib.obj",
+   "symbol": "?math_randomseed@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006262e0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_len@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006263b0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_reverse@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00626590": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_rep@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006266e0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_char@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00626780": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?writer@@YAHPAUlua_State@@PBXIPAX@Z"
+  }
+ ],
+ "006267a0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_dump@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00626810": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?classend@@YAPBDPAUMatchState@@PBD@Z"
+  }
+ ],
+ "00626880": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?match_class@@YAHHH@Z"
+  }
+ ],
+ "006269a0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?matchbracketclass@@YAHHPBD0@Z"
+  }
+ ],
+ "00626a40": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?matchbalance@@YAPBDPAUMatchState@@PBD1@Z"
+  }
+ ],
+ "00626ab0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?max_expand@@YAPBDPAUMatchState@@PBD11@Z"
+  }
+ ],
+ "00626b50": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?min_expand@@YAPBDPAUMatchState@@PBD11@Z"
+  }
+ ],
+ "00626be0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?start_capture@@YAPBDPAUMatchState@@PBD1H@Z"
+  }
+ ],
+ "00626c30": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?end_capture@@YAPBDPAUMatchState@@PBD1@Z"
+  }
+ ],
+ "00626c90": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?match_capture@@YAPBDPAUMatchState@@PBDH@Z"
+  }
+ ],
+ "00626d20": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?match@@YAPBDPAUMatchState@@PBD1@Z"
+  }
+ ],
+ "00626ff0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?lmemfind@@YAPBDPBDI0I@Z"
+  }
+ ],
+ "006270a0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?push_onecapture@@YAXPAUMatchState@@HPBD1@Z"
+  }
+ ],
+ "00627120": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?push_captures@@YAHPAUMatchState@@PBD1@Z"
+  }
+ ],
+ "00627320": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_find@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00627340": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?gmatch_aux@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006274b0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?gmatch@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006274f0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?gfind_nodef@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00627510": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?add_s@@YAXPAUMatchState@@PAUluaL_Buffer@@PBD2@Z"
+  }
+ ],
+ "00627870": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?addquoted@@YAXPAUlua_State@@PAUluaL_Buffer@@H@Z"
+  }
+ ],
+ "00627ab0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?str_format@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00627da0": [
+  {
+   "object": "lstrlib.obj",
+   "symbol": "?createmetatable@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "00627e30": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_print@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00627f00": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_tonumber@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628020": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_error@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628080": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_getmetatable@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006280d0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_setmetatable@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006282d0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_rawequal@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628300": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_rawget@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628340": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_rawset@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628380": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_gcinfo@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006283a0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_collectgarbage@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628450": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_type@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628480": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_next@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006284c0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_pairs@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628500": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?ipairsaux@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628540": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_ipairs@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628580": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_loadstring@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006285e0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_loadfile@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628620": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?generic_reader@@YAPBDPAUlua_State@@PAXPAI@Z"
+  }
+ ],
+ "006286a0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_load@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628700": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_dofile@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628750": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_assert@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628820": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_select@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006288a0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_pcall@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "006288f0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_xpcall@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628940": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_tostring@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628a40": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_newproxy@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628cb0": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_cocreate@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628d10": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_cowrap@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628d40": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaB_yield@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "00628e50": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?base_open@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "00628f50": [
+  {
+   "object": "lbaselib.obj",
+   "symbol": "?luaopen_base@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "0065b5d0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?reallymarkobject@@YAXPAUglobal_State@@PATGCObject@@@Z"
+  }
+ ],
+ "0065b6b0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_separateudata@@YAIPAUlua_State@@H@Z"
+  }
+ ],
+ "0065b750": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?traversetable@@YAHPAUglobal_State@@PAUTable@@@Z"
+  }
+ ],
+ "0065b900": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?traverseproto@@YAXPAUglobal_State@@PAUProto@@@Z"
+  }
+ ],
+ "0065b9d0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?traverseclosure@@YAXPAUglobal_State@@PATClosure@@@Z"
+  }
+ ],
+ "0065ba70": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?traversestack@@YAXPAUglobal_State@@PAUlua_State@@@Z"
+  }
+ ],
+ "0065bb60": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?propagatemark@@YAHPAUglobal_State@@@Z"
+  }
+ ],
+ "0065bc60": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?cleartable@@YAXPATGCObject@@@Z"
+  }
+ ],
+ "0065bd60": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?freeobj@@YAXPAUlua_State@@PATGCObject@@@Z"
+  }
+ ],
+ "0065be00": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?sweeplist@@YAPAPATGCObject@@PAUlua_State@@PAPAT1@I@Z"
+  }
+ ],
+ "0065be90": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?checkSizes@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065bfc0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_callGCTM@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065bfe0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_freeall@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065c020": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?markmt@@YAXPAUglobal_State@@@Z"
+  }
+ ],
+ "0065c060": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?markroot@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065c0d0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?remarkupvals@@YAXPAUglobal_State@@@Z"
+  }
+ ],
+ "0065c110": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?atomic@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065c290": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?singlestep@@YAHPAUlua_State@@@Z"
+  }
+ ],
+ "0065c390": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_step@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065c410": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_fullgc@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065c480": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_barrierf@@YAXPAUlua_State@@PATGCObject@@1@Z"
+  }
+ ],
+ "0065c4c0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_barrierback@@YAXPAUlua_State@@PAUTable@@@Z"
+  }
+ ],
+ "0065c4e0": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_link@@YAXPAUlua_State@@PATGCObject@@E@Z"
+  }
+ ],
+ "0065c510": [
+  {
+   "object": "lgc.obj",
+   "symbol": "?luaC_linkupval@@YAXPAUlua_State@@PAUUpVal@@@Z"
+  }
+ ],
+ "0065c570": [
+  {
+   "object": "ltm.obj",
+   "symbol": "?luaT_init@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "0065c5d0": [
+  {
+   "object": "ltm.obj",
+   "symbol": "?luaT_gettm@@YAPBUlua_TValue@@PAUTable@@W4TMS@@PATTString@@@Z"
+  }
+ ],
+ "0065c600": [
+  {
+   "object": "ltm.obj",
+   "symbol": "?luaT_gettmbyobj@@YAPBUlua_TValue@@PAUlua_State@@PBU1@W4TMS@@@Z"
+  }
+ ],
+ "0065c660": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?luaV_tonumber@@YAPBUlua_TValue@@PBU1@PAU1@@Z"
+  }
+ ],
+ "0065c6b0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?luaV_tostring@@YAHPAUlua_State@@PAUlua_TValue@@@Z"
+  }
+ ],
+ "0065c7b0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?callTMres@@YAXPAUlua_State@@PAUlua_TValue@@PBU2@22@Z"
+  }
+ ],
+ "0065c850": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?callTM@@YAXPAUlua_State@@PBUlua_TValue@@111@Z"
+  }
+ ],
+ "0065c8e0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?luaV_gettable@@YAXPAUlua_State@@PBUlua_TValue@@PAU2@2@Z"
+  }
+ ],
+ "0065c9d0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?luaV_settable@@YAXPAUlua_State@@PBUlua_TValue@@PAU2@2@Z"
+  }
+ ],
+ "0065caf0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?get_compTM@@YAPBUlua_TValue@@PAUlua_State@@PAUTable@@1W4TMS@@@Z"
+  }
+ ],
+ "0065cb70": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?call_orderTM@@YAHPAUlua_State@@PBUlua_TValue@@1W4TMS@@@Z"
+  }
+ ],
+ "0065cbf0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?l_strcmp@@YAHPBTTString@@0@Z"
+  }
+ ],
+ "0065cc60": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?luaV_lessthan@@YAHPAUlua_State@@PBUlua_TValue@@1@Z"
+  }
+ ],
+ "0065ccf0": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?lessequal@@YAHPAUlua_State@@PBUlua_TValue@@1@Z"
+  }
+ ],
+ "0065cd90": [
+  {
+   "object": "lvm.obj",
+   "symbol": "?luaV_equalval@@YAHPAUlua_State@@PBUlua_TValue@@1@Z"
+  }
+ ],
+ "0065e420": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?mainposition@@YAPAUNode@@PBUTable@@PBUlua_TValue@@@Z"
+  }
+ ],
+ "0065e4b0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?findindex@@YAHPAUlua_State@@PAUTable@@PAUlua_TValue@@@Z"
+  }
+ ],
+ "0065e570": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_next@@YAHPAUlua_State@@PAUTable@@PAUlua_TValue@@@Z"
+  }
+ ],
+ "0065e650": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?computesizes@@YAHQAHPAH@Z"
+  }
+ ],
+ "0065e6b0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?numusearray@@YAHPBUTable@@PAH@Z"
+  }
+ ],
+ "0065e730": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?numusehash@@YAHPBUTable@@PAH1@Z"
+  }
+ ],
+ "0065e7f0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?setarrayvector@@YAXPAUlua_State@@PAUTable@@H@Z"
+  }
+ ],
+ "0065e850": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?setnodevector@@YAXPAUlua_State@@PAUTable@@H@Z"
+  }
+ ],
+ "0065e910": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_new@@YAPAUTable@@PAUlua_State@@HH@Z"
+  }
+ ],
+ "0065e970": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_free@@YAXPAUlua_State@@PAUTable@@@Z"
+  }
+ ],
+ "0065ea60": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_getstr@@YAPBUlua_TValue@@PAUTable@@PATTString@@@Z"
+  }
+ ],
+ "0065eaa0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_get@@YAPBUlua_TValue@@PAUTable@@PBU1@@Z"
+  }
+ ],
+ "0065eb50": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_set@@YAPAUlua_TValue@@PAUlua_State@@PAUTable@@PBU1@@Z"
+  }
+ ],
+ "0065ebc0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_setnum@@YAPAUlua_TValue@@PAUlua_State@@PAUTable@@H@Z"
+  }
+ ],
+ "0065ec10": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?unbound_search@@YAHPAUTable@@I@Z"
+  }
+ ],
+ "0065ecb0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_getn@@YAHPAUTable@@@Z"
+  }
+ ],
+ "0065ed10": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?resize@@YAXPAUlua_State@@PAUTable@@HH@Z"
+  }
+ ],
+ "0065eef0": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_resizearray@@YAXPAUlua_State@@PAUTable@@H@Z"
+  }
+ ],
+ "0065ef40": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?rehash@@YAXPAUlua_State@@PAUTable@@PBUlua_TValue@@@Z"
+  }
+ ],
+ "0065f060": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?newkey@@YAPAUlua_TValue@@PAUlua_State@@PAUTable@@PBU1@@Z"
+  }
+ ],
+ "0065f150": [
+  {
+   "object": "ltable.obj",
+   "symbol": "?luaH_setstr@@YAPAUlua_TValue@@PAUlua_State@@PAUTable@@PATTString@@@Z"
+  }
+ ],
+ "0065f1a0": [
+  {
+   "object": "lstring.obj",
+   "symbol": "?luaS_resize@@YAXPAUlua_State@@H@Z"
+  }
+ ],
+ "0065f260": [
+  {
+   "object": "lstring.obj",
+   "symbol": "?newlstr@@YAPATTString@@PAUlua_State@@PBDII@Z"
+  }
+ ],
+ "0065f300": [
+  {
+   "object": "lstring.obj",
+   "symbol": "?luaS_newlstr@@YAPATTString@@PAUlua_State@@PBDI@Z"
+  }
+ ],
+ "0065f3f0": [
+  {
+   "object": "lstring.obj",
+   "symbol": "?luaS_newudata@@YAPATUdata@@PAUlua_State@@IPAUTable@@@Z"
+  }
+ ],
+ "0065f450": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_newCclosure@@YAPATClosure@@PAUlua_State@@HPAUTable@@@Z"
+  }
+ ],
+ "0065f490": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_newLclosure@@YAPATClosure@@PAUlua_State@@HPAUTable@@@Z"
+  }
+ ],
+ "0065f4f0": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_newupval@@YAPAUUpVal@@PAUlua_State@@@Z"
+  }
+ ],
+ "0065f5c0": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_freeupval@@YAXPAUlua_State@@PAUUpVal@@@Z"
+  }
+ ],
+ "0065f6a0": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_newproto@@YAPAUProto@@PAUlua_State@@@Z"
+  }
+ ],
+ "0065f700": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_freeproto@@YAXPAUlua_State@@PAUProto@@@Z"
+  }
+ ],
+ "0065f7a0": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_freeclosure@@YAXPAUlua_State@@PATClosure@@@Z"
+  }
+ ],
+ "0065f7e0": [
+  {
+   "object": "lfunc.obj",
+   "symbol": "?luaF_getlocalname@@YAPBDPBUProto@@HH@Z"
+  }
+ ],
+ "0065f830": [
+  {
+   "object": "lzio.obj",
+   "symbol": "?luaZ_fill@@YAHPAUZio@@@Z"
+  }
+ ],
+ "0065f870": [
+  {
+   "object": "lzio.obj",
+   "symbol": "?luaZ_lookahead@@YAHPAUZio@@@Z"
+  }
+ ],
+ "0065f8d0": [
+  {
+   "object": "lzio.obj",
+   "symbol": "?luaZ_init@@YAXPAUlua_State@@PAUZio@@P6APBD0PAXPAI@Z2@Z"
+  }
+ ],
+ "0065f900": [
+  {
+   "object": "lzio.obj",
+   "symbol": "?luaZ_read@@YAIPAUZio@@PAXI@Z"
+  }
+ ],
+ "0065f990": [
+  {
+   "object": "lzio.obj",
+   "symbol": "?luaZ_openspace@@YAPADPAUlua_State@@PAUMbuffer@@I@Z"
+  }
+ ],
+ "0065f9f0": [
+  {
+   "object": "ldump.obj",
+   "symbol": "?DumpString@@YAXPBTTString@@PAUDumpState@@@Z"
+  }
+ ],
+ "0065fa70": [
+  {
+   "object": "ldump.obj",
+   "symbol": "?DumpConstants@@YAXPBUProto@@PAUDumpState@@@Z"
+  }
+ ],
+ "0065fbb0": [
+  {
+   "object": "ldump.obj",
+   "symbol": "?DumpDebug@@YAXPBUProto@@PAUDumpState@@@Z"
+  }
+ ],
+ "0065fd00": [
+  {
+   "object": "ldump.obj",
+   "symbol": "?DumpFunction@@YAXPBUProto@@PBTTString@@PAUDumpState@@@Z"
+  }
+ ],
+ "0065fe70": [
+  {
+   "object": "ldump.obj",
+   "symbol": "?luaU_dump@@YAHPAUlua_State@@PBUProto@@P6AH0PBXIPAX@Z3H@Z"
+  }
+ ],
+ "006606d0": [
+  {
+   "object": "lmem.obj",
+   "symbol": "?luaM_toobig@@YAPAXPAUlua_State@@@Z"
+  }
+ ],
+ "006606f0": [
+  {
+   "object": "lmem.obj",
+   "symbol": "?luaM_realloc_@@YAPAXPAUlua_State@@PAXII@Z"
+  }
+ ],
+ "00660740": [
+  {
+   "object": "lmem.obj",
+   "symbol": "?luaM_growaux_@@YAPAXPAUlua_State@@PAXPAHIHPBD@Z"
+  }
+ ],
+ "006607d0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?errorlimit@@YAXPAUFuncState@@HPBD@Z"
+  }
+ ],
+ "00660820": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?check_match@@YAXPAULexState@@HHH@Z"
+  }
+ ],
+ "00660890": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?codestring@@YAXPAULexState@@PAUexpdesc@@PATTString@@@Z"
+  }
+ ],
+ "006608b0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?checkname@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00660910": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?registerlocalvar@@YAHPAULexState@@PATTString@@@Z"
+  }
+ ],
+ "006609b0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?adjustlocalvars@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "006609f0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?removevars@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "00660a30": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?indexupvalue@@YAHPAUFuncState@@PATTString@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00660b70": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?singlevaraux@@YAHPAUFuncState@@PATTString@@PAUexpdesc@@H@Z"
+  }
+ ],
+ "00660c50": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?singlevar@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00660cb0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?adjust_assign@@YAXPAULexState@@HHPAUexpdesc@@@Z"
+  }
+ ],
+ "00660d20": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?leaveblock@@YAXPAUFuncState@@@Z"
+  }
+ ],
+ "00660d70": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?pushclosure@@YAXPAULexState@@PAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00660e70": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?open_func@@YAXPAULexState@@PAUFuncState@@@Z"
+  }
+ ],
+ "00660f20": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?close_func@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00661100": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?yindex@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00661150": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?recfield@@YAXPAULexState@@PAUConsControl@@@Z"
+  }
+ ],
+ "00661220": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?lastlistfield@@YAXPAUFuncState@@PAUConsControl@@@Z"
+  }
+ ],
+ "00661630": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?body@@YAXPAULexState@@PAUexpdesc@@HH@Z"
+  }
+ ],
+ "00661780": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?explist1@@YAHPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "006617c0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?funcargs@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00661900": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?prefixexp@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00661970": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?primaryexp@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00661c60": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?simpleexp@@YAXPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00661e40": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?getbinopr@@YA?AW4BinOpr@@H@Z"
+  }
+ ],
+ "00661ff0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?subexpr@@YA?AW4BinOpr@@PAULexState@@PAUexpdesc@@I@Z"
+  }
+ ],
+ "00662100": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?block@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00662180": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?check_conflict@@YAXPAULexState@@PAULHS_assign@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00662310": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?breakstat@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00662370": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?whilestat@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "006624a0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?repeatstat@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "006625f0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?forbody@@YAXPAULexState@@HHHH@Z"
+  }
+ ],
+ "00662790": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?fornum@@YAXPAULexState@@PATTString@@H@Z"
+  }
+ ],
+ "006629c0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?forlist@@YAXPAULexState@@PATTString@@@Z"
+  }
+ ],
+ "00662c30": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?forstat@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "00662d50": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?test_then_block@@YAHPAULexState@@@Z"
+  }
+ ],
+ "00662dd0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?ifstat@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "00662e90": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?localfunc@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00662f90": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?localstat@@YAXPAULexState@@@Z"
+  }
+ ],
+ "006630b0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?funcname@@YAHPAULexState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "00663190": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?funcstat@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "006631e0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?exprstat@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00663240": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?retstat@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00663360": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?statement@@YAHPAULexState@@@Z"
+  }
+ ],
+ "006634b0": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?chunk@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00663560": [
+  {
+   "object": "lparser.obj",
+   "symbol": "?luaY_parser@@YAPAUProto@@PAUlua_State@@PAUZio@@PAUMbuffer@@PBD@Z"
+  }
+ ],
+ "00663620": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?LoadInt@@YAHPAULoadState@@@Z"
+  }
+ ],
+ "00663690": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?LoadString@@YAPATTString@@PAULoadState@@@Z"
+  }
+ ],
+ "00663740": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?LoadCode@@YAXPAULoadState@@PAUProto@@@Z"
+  }
+ ],
+ "00663a60": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?LoadDebug@@YAXPAULoadState@@PAUProto@@@Z"
+  }
+ ],
+ "00663ee0": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?luaU_header@@YAXPAD@Z"
+  }
+ ],
+ "00663f20": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?LoadHeader@@YAXPAULoadState@@@Z"
+  }
+ ],
+ "00663fe0": [
+  {
+   "object": "lundump.obj",
+   "symbol": "?luaU_undump@@YAPAUProto@@PAUlua_State@@PAUZio@@PAUMbuffer@@PBD@Z"
+  }
+ ],
+ "00664050": [
+  {
+   "object": "llex.obj",
+   "symbol": "?save@@YAXPAULexState@@H@Z"
+  }
+ ],
+ "006640c0": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_init@@YAXPAUlua_State@@@Z"
+  }
+ ],
+ "00664110": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_token2str@@YAPBDPAULexState@@H@Z"
+  }
+ ],
+ "00664170": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_lexerror@@YAXPAULexState@@PBDH@Z"
+  }
+ ],
+ "00664210": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_syntaxerror@@YAXPAULexState@@PBD@Z"
+  }
+ ],
+ "00664230": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_newstring@@YAPATTString@@PAULexState@@PBDI@Z"
+  }
+ ],
+ "00664280": [
+  {
+   "object": "llex.obj",
+   "symbol": "?inclinenumber@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00664310": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_setinput@@YAXPAUlua_State@@PAULexState@@PAUZio@@PATTString@@@Z"
+  }
+ ],
+ "006643a0": [
+  {
+   "object": "llex.obj",
+   "symbol": "?check_next@@YAHPAULexState@@PBD@Z"
+  }
+ ],
+ "00664400": [
+  {
+   "object": "llex.obj",
+   "symbol": "?trydecpoint@@YAXPAULexState@@PATSemInfo@@@Z"
+  }
+ ],
+ "006644e0": [
+  {
+   "object": "llex.obj",
+   "symbol": "?read_numeral@@YAXPAULexState@@PATSemInfo@@@Z"
+  }
+ ],
+ "00664720": [
+  {
+   "object": "llex.obj",
+   "symbol": "?skip_sep@@YAHPAULexState@@@Z"
+  }
+ ],
+ "00664ac0": [
+  {
+   "object": "llex.obj",
+   "symbol": "?read_string@@YAXPAULexState@@HPATSemInfo@@@Z"
+  }
+ ],
+ "00664f50": [
+  {
+   "object": "llex.obj",
+   "symbol": "?llex@@YAHPAULexState@@PATSemInfo@@@Z"
+  }
+ ],
+ "00665600": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_next@@YAXPAULexState@@@Z"
+  }
+ ],
+ "00665650": [
+  {
+   "object": "llex.obj",
+   "symbol": "?luaX_lookahead@@YAXPAULexState@@@Z"
+  }
+ ],
+ "0066aa80": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?fixjump@@YAXPAUFuncState@@HH@Z"
+  }
+ ],
+ "0066aad0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_getlabel@@YAHPAUFuncState@@@Z"
+  }
+ ],
+ "0066aae0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?need_value@@YAHPAUFuncState@@H@Z"
+  }
+ ],
+ "0066ab40": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?patchtestreg@@YAHPAUFuncState@@HH@Z"
+  }
+ ],
+ "0066abc0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?removevalues@@YAXPAUFuncState@@H@Z"
+  }
+ ],
+ "0066ac50": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?patchlistaux@@YAXPAUFuncState@@HHHH@Z"
+  }
+ ],
+ "0066ad10": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_concat@@YAXPAUFuncState@@PAHH@Z"
+  }
+ ],
+ "0066ad60": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_checkstack@@YAXPAUFuncState@@H@Z"
+  }
+ ],
+ "0066ada0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_reserveregs@@YAXPAUFuncState@@H@Z"
+  }
+ ],
+ "0066ade0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?freeexp@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066ae00": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?addk@@YAHPAUFuncState@@PAUlua_TValue@@1@Z"
+  }
+ ],
+ "0066aee0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_stringK@@YAHPAUFuncState@@PATTString@@@Z"
+  }
+ ],
+ "0066af10": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_numberK@@YAHPAUFuncState@@N@Z"
+  }
+ ],
+ "0066af40": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_setreturns@@YAXPAUFuncState@@PAUexpdesc@@H@Z"
+  }
+ ],
+ "0066afd0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_setoneret@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b030": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?invertjump@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b080": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?constfolding@@YAHW4OpCode@@PAUexpdesc@@1@Z"
+  }
+ ],
+ "0066b170": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_fixline@@YAXPAUFuncState@@H@Z"
+  }
+ ],
+ "0066b190": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_code@@YAHPAUFuncState@@IH@Z"
+  }
+ ],
+ "0066b230": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_codeABC@@YAHPAUFuncState@@W4OpCode@@HHH@Z"
+  }
+ ],
+ "0066b260": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_codeABx@@YAHPAUFuncState@@W4OpCode@@HI@Z"
+  }
+ ],
+ "0066b290": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_setlist@@YAXPAUFuncState@@HHH@Z"
+  }
+ ],
+ "0066b3b0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_jump@@YAHPAUFuncState@@@Z"
+  }
+ ],
+ "0066b3f0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_ret@@YAXPAUFuncState@@HH@Z"
+  }
+ ],
+ "0066b420": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?condjump@@YAHPAUFuncState@@W4OpCode@@HHH@Z"
+  }
+ ],
+ "0066b480": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_patchtohere@@YAXPAUFuncState@@H@Z"
+  }
+ ],
+ "0066b4a0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_dischargevars@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b5a0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?discharge2reg@@YAXPAUFuncState@@PAUexpdesc@@H@Z"
+  }
+ ],
+ "0066b6b0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?discharge2anyreg@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b710": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?exp2reg@@YAXPAUFuncState@@PAUexpdesc@@H@Z"
+  }
+ ],
+ "0066b830": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_exp2nextreg@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b8b0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_exp2anyreg@@YAHPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b900": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_exp2val@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066b920": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_exp2RK@@YAHPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066ba20": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_storevar@@YAXPAUFuncState@@PAUexpdesc@@1@Z"
+  }
+ ],
+ "0066bb10": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_self@@YAXPAUFuncState@@PAUexpdesc@@1@Z"
+  }
+ ],
+ "0066bbd0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?jumponcond@@YAHPAUFuncState@@PAUexpdesc@@H@Z"
+  }
+ ],
+ "0066bc50": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_goiftrue@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066bcf0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_goiffalse@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066bd80": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?codenot@@YAXPAUFuncState@@PAUexpdesc@@@Z"
+  }
+ ],
+ "0066be40": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_indexed@@YAXPAUFuncState@@PAUexpdesc@@1@Z"
+  }
+ ],
+ "0066bf10": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?codecomp@@YAXPAUFuncState@@W4OpCode@@HPAUexpdesc@@2@Z"
+  }
+ ],
+ "0066c0b0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_posfix@@YAXPAUFuncState@@W4BinOpr@@PAUexpdesc@@2@Z"
+  }
+ ],
+ "0066c2f0": [
+  {
+   "object": "lcode.obj",
+   "symbol": "?luaK_patchlist@@YAXPAUFuncState@@HH@Z"
+  }
+ ]
+}
