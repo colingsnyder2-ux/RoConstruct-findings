@@ -1,0 +1,1104 @@
+{
+ "unowned": [
+  "005f23e0",
+  "005f2440",
+  "005f2ea0",
+  "005f2f60",
+  "005f3020",
+  "005f3090",
+  "005f3ce0",
+  "005f45a0",
+  "005f46e0",
+  "005f4b90",
+  "005f4bb0",
+  "005f56f0",
+  "005f5fc0",
+  "005f6350",
+  "005f8650",
+  "005f86e0",
+  "005f95f0",
+  "005f9a80"
+ ],
+ "raw_covered": [
+  "005f23e0",
+  "005f2440",
+  "005f2ea0",
+  "005f2f60",
+  "005f3020",
+  "005f3090",
+  "005f3ce0",
+  "005f45a0",
+  "005f46e0",
+  "005f4b90",
+  "005f4bb0",
+  "005f56f0",
+  "005f5fc0",
+  "005f6350",
+  "005f8650",
+  "005f86e0",
+  "005f95f0",
+  "005f9a80"
+ ],
+ "not_seen": [],
+ "objects": [
+  {
+   "object": "roc_ndebug_iostreams.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$back_insert_device@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$mode_adapter@Uoutput@iostreams@boost@@V?$basic_streambuf@DU?$char_traits@D@std@@@std@@@detail@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$back_insert_device@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$mode_adapter@Uoutput@iostreams@boost@@V?$basic_streambuf@DU?$char_traits@D@std@@@std@@@detail@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@6@Uoutput@34@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$back_insert_device@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$mode_adapter@Uoutput@iostreams@boost@@V?$basic_streambuf@DU?$char_traits@D@std@@@std@@@detail@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$back_insert_device@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$mode_adapter@Uoutput@iostreams@boost@@V?$basic_streambuf@DU?$char_traits@D@std@@@std@@@detail@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@6@Uoutput@34@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_01f403e5b5979552.obj",
+   "raw": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_205f2b05043a4e2a.obj",
+   "raw": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_2e7239d549151df7.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_3631eb8a53478bb0.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_4510bb5a1c607acb.obj",
+   "raw": [
+    {
+     "symbol": "??$wrap@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@YA?AV?$basic_gzip_decompressor@V?$allocator@D@std@@@12@ABV312@PAX@Z",
+     "addresses": [
+      "005f4b90",
+      "005f4bb0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??$wrap@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@YA?AV?$basic_gzip_decompressor@V?$allocator@D@std@@@12@ABV312@PAX@Z",
+     "addresses": [
+      "005f4b90",
+      "005f4bb0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_decompressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_5f426dfd96d21d45.obj",
+   "raw": [
+    {
+     "symbol": "??1impl@?$symmetric_filter@V?$zlib_decompressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+     "addresses": [
+      "005f23e0",
+      "005f2440"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@impl@?$symmetric_filter@V?$zlib_decompressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@23@@Z",
+     "addresses": [
+      "005f3020",
+      "005f3090"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@?$symmetric_filter@V?$zlib_decompressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@12@@Z",
+     "addresses": [
+      "005f45a0",
+      "005f46e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??1impl@?$symmetric_filter@V?$zlib_decompressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+     "addresses": [
+      "005f23e0",
+      "005f2440"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@impl@?$symmetric_filter@V?$zlib_decompressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@23@@Z",
+     "addresses": [
+      "005f3020",
+      "005f3090"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@?$symmetric_filter@V?$zlib_decompressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@12@@Z",
+     "addresses": [
+      "005f45a0",
+      "005f46e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_63f75e83f22680b1.obj",
+   "raw": [
+    {
+     "symbol": "??$wrap@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@YA?AV?$basic_gzip_compressor@V?$allocator@D@std@@@12@ABV312@PAX@Z",
+     "addresses": [
+      "005f4b90",
+      "005f4bb0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??$wrap@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@YA?AV?$basic_gzip_compressor@V?$allocator@D@std@@@12@ABV312@PAX@Z",
+     "addresses": [
+      "005f4b90",
+      "005f4bb0"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_6fffb2031552b6bc.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_78b674b5db48dfaa.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_8be15fbf9b64785c.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_9de6db559e6072d1.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUoutput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUoutput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uoutput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_a8b429b397bb580b.obj",
+   "raw": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_gzip_compressor@V?$allocator@D@std@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uoutput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_ad9867ec1f020831.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_b7cc3f484797ef8c.obj",
+   "raw": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "?open_impl@?$stream_buffer@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@iostreams@boost@@AAEXABV?$basic_null_device@DUinput@iostreams@boost@@@23@HH@Z",
+     "addresses": [
+      "005f2ea0",
+      "005f2f60"
+     ]
+    },
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    },
+    {
+     "symbol": "??0?$chain_base@V?$chain@Uinput@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@@iostreams@boost@@DU?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@IAE@XZ",
+     "addresses": [
+      "005f8650",
+      "005f86e0"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_d164bec48b1d5f1a.obj",
+   "raw": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??$seek@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@iostreams@boost@@@?$concept_adapter@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@@detail@iostreams@boost@@QAE?AV?$fpos@H@std@@_JHHPAV?$linked_streambuf@DU?$char_traits@D@std@@@123@@Z",
+     "addresses": [
+      "005f5fc0",
+      "005f95f0"
+     ]
+    },
+    {
+     "symbol": "?seekoff@?$indirect_streambuf@V?$basic_null_device@DUinput@iostreams@boost@@@iostreams@boost@@U?$char_traits@D@std@@V?$allocator@D@5@Uinput@23@@detail@iostreams@boost@@MAE?AV?$fpos@H@std@@JHH@Z",
+     "addresses": [
+      "005f3ce0",
+      "005f56f0",
+      "005f6350",
+      "005f9a80"
+     ]
+    }
+   ]
+  },
+  {
+   "object": "roc_rtti_fc27c84cd7b01590.obj",
+   "raw": [
+    {
+     "symbol": "??1impl@?$symmetric_filter@V?$zlib_compressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+     "addresses": [
+      "005f23e0",
+      "005f2440"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@impl@?$symmetric_filter@V?$zlib_compressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@23@@Z",
+     "addresses": [
+      "005f3020",
+      "005f3090"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@?$symmetric_filter@V?$zlib_compressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@12@@Z",
+     "addresses": [
+      "005f45a0",
+      "005f46e0"
+     ]
+    }
+   ],
+   "refined": [
+    {
+     "symbol": "??1impl@?$symmetric_filter@V?$zlib_compressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@XZ",
+     "addresses": [
+      "005f23e0",
+      "005f2440"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@impl@?$symmetric_filter@V?$zlib_compressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@23@@Z",
+     "addresses": [
+      "005f3020",
+      "005f3090"
+     ]
+    },
+    {
+     "symbol": "??$?0Uzlib_params@iostreams@boost@@@?$symmetric_filter@V?$zlib_compressor_impl@V?$allocator@D@std@@@detail@iostreams@boost@@V?$allocator@D@std@@@iostreams@boost@@QAE@HABUzlib_params@12@@Z",
+     "addresses": [
+      "005f45a0",
+      "005f46e0"
+     ]
+    }
+   ]
+  }
+ ]
+}
