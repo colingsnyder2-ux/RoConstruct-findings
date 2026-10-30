@@ -1,0 +1,9 @@
+{
+  "constructor_source": "tools/rbxgs/Client/App/v8datamodel/PartInstance.cpp",
+  "owner_setter_source": "tools/rbxgs/Client/App/include/v8world/Primitive.h",
+  "guid_getter_source": "tools/rbxgs/Client/App/include/v8tree/Instance.h",
+  "target_ctor": "0059d4d0",
+  "new_fields": [],
+  "layout_changes": false,
+  "ctor_exact_claim": false
+}

@@ -1,0 +1,12 @@
+{
+  "forced_swaps": 83,
+  "roots_in_map": 83,
+  "primary_layer_compile_errors": 0,
+  "fallback_layer_compile_errors": 111,
+  "linked": true,
+  "test_exit": 0,
+  "output": "failures=0",
+  "owned": 1322,
+  "constructor_exact_claim": false,
+  "accepted_credits": 0
+}
