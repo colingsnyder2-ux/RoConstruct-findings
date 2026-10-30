@@ -1,0 +1,58 @@
+{
+ "before": 4167,
+ "after": 4174,
+ "gained": [
+  "004f07b0",
+  "004f08c0",
+  "004f1040",
+  "004f1500",
+  "007add10",
+  "007b8400",
+  "007b9000"
+ ],
+ "lost": [],
+ "witnesses": {
+  "004f07b0": [
+   {
+    "object": "MaterialFactory.obj",
+    "symbol": "??MAttributes@MaterialFactory@View@RBX@@QBE_NABU0123@@Z"
+   }
+  ],
+  "004f08c0": [
+   {
+    "object": "MaterialFactory.obj",
+    "symbol": "?_Lbound@?$_Tree@V?$_Tmap_traits@UAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@U?$less@UAttributes@MaterialFactory@View@RBX@@@std@@V?$allocator@U?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@IBEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@UAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@U?$less@UAttributes@MaterialFactory@View@RBX@@@std@@V?$allocator@U?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@2@ABUAttributes@MaterialFactory@View@RBX@@@Z"
+   }
+  ],
+  "004f1040": [
+   {
+    "object": "MaterialFactory.obj",
+    "symbol": "?insert@?$_Tree@V?$_Tmap_traits@UAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@U?$less@UAttributes@MaterialFactory@View@RBX@@@std@@V?$allocator@U?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@UAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@U?$less@UAttributes@MaterialFactory@View@RBX@@@std@@V?$allocator@U?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@2@@Z"
+   }
+  ],
+  "004f1500": [
+   {
+    "object": "MaterialFactory.obj",
+    "symbol": "?insert@?$_Tree@V?$_Tmap_traits@UAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@U?$less@UAttributes@MaterialFactory@View@RBX@@@std@@V?$allocator@U?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBUAttributes@MaterialFactory@View@RBX@@V?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@@2@@Z"
+   }
+  ],
+  "007add10": [
+   {
+    "object": "TextureProxy.obj",
+    "symbol": "?shadePixel@TextureProxy@Render@RBX@@SAXABVColor3uint8@G3D@@AAV45@@Z"
+   }
+  ],
+  "007b8400": [
+   {
+    "object": "MaterialFactory.obj",
+    "symbol": "?fromGImage@Texture@G3D@@SA?AV?$ReferenceCountedPointer@VTexture@G3D@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABVGImage@2@PBVTextureFormat@2@W4Dimension@12@ABVSettings@12@@Z"
+   }
+  ],
+  "007b9000": [
+   {
+    "object": "MaterialFactory.obj",
+    "symbol": "?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VTexture@G3D@@@G3D@@PAVRenderDevice@5@@Z"
+   }
+  ]
+ }
+}

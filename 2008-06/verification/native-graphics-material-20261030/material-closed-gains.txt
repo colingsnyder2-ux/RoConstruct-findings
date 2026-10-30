@@ -1,0 +1,11 @@
+unresolved with no later definition: ?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VT
+{
+ "compiled": true,
+ "linked": false,
+ "ran": false,
+ "exit": null,
+ "output": "Creating library native_graphics_closed_gains_20261030_material.lib and object native_graphics_closed_gains_20261030_material.exp\nlinked.lib(MaterialFactory.obj) : error LNK2001: unresolved external symbol \"private: virtual class G3D::ReferenceCountedPointer<class G3D::Texture> __thiscall RBX::View::MegaTextureProxy::resolve(class G3D::RenderDevice *)\" (?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VTexture@G3D@@@G3D@@PAVRenderDevice@5@@Z)\nnative_graphics_closed_gains_20261030_material.exe : fatal error LNK1120: 1 unresolved externals",
+ "unresolved": [
+  "?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VTexture@G3D@@@G3D@@PAVRenderDevice@5@@Z"
+ ]
+}

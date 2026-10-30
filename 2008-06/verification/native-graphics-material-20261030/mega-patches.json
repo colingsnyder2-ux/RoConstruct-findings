@@ -1,0 +1,32 @@
+{
+ "RbxView/MaterialFactory.cpp": [
+  [
+   "\t\tMaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)",
+   "#pragma float_control(precise, off, push)\n        bool MaterialFactory::Attributes::operator<(const Attributes& that) const\n        {\n            if (color < that.color) return true;\n            if (color > that.color) return false;\n            if (transparency < that.transparency) return true;\n            if (transparency > that.transparency) return false;\n            return reflectance < that.reflectance;\n        }\n#pragma float_control(pop)\n\n\t\tMaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)"
+  ],
+  [
+   "\t\tMaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)",
+   "// Algorithm recovered by king_originala; native SDK types replace mined layout stand-ins.\nG3D::ReferenceCountedPointer<G3D::Texture>MegaTextureProxy::resolve(G3D::RenderDevice*){\n if(!loaded){\n  unsigned count=std::min(BrickColor::paletteSize,static_cast<unsigned>(BrickColor::colorPalette().size()));\n  G3D::GImage bumpImage(filename,G3D::GImage::AUTODETECT);\n  int imageWidth=bumpImage.width*32;\n  G3D::GImage megaImage(imageWidth,bumpImage.height,3);\n  for(unsigned i=0;i<count;++i){\n   G3D::Color3uint8 base(BrickColor::colorPalette()[i].color3());\n   G3D::Color3uint8 colorTable[256];\n   for(unsigned j=0;j<256;++j){\n    colorTable[j]=G3D::Color3uint8((unsigned char)j,(unsigned char)j,(unsigned char)j);\n    shadePixel(base,colorTable[j]);\n   }\n   for(int x=0;x<bumpImage.width;++x)\n    for(int y=0;y<bumpImage.height;++y)\n     {\n      const G3D::Color3uint8&source=bumpImage.pixel3(x,y);\n      G3D::Color3uint8&destination=megaImage.pixel3(x+i*bumpImage.width,y);\n      destination=colorTable[source.r];\n     }\n  }\n  {\n  G3D::Texture::Settings settings;\n  settings.wrapMode=G3D::Texture::CLAMP;\n  std::string name(\"MegaTexture\");\n  texture=G3D::Texture::fromGImage(name,megaImage,G3D::TextureFormat::RGB8,G3D::Texture::DIM_2D,settings);\n  }\n  root=0;\n  loaded=true;\n }\n return texture;\n}\n\n\t\tMaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)"
+  ],
+  [
+   "#include \"MaterialFactory.h\"",
+   "#include \"MaterialFactory.h\"\n#include <G3D/GImage.h>\n#include <algorithm>"
+  ]
+ ],
+ "Rendering/RenderLib/TextureProxy.cpp": [
+  [
+   "#include \"RenderLib/TextureProxy.h\"",
+   "#pragma float_control(precise, off)\n#include \"RenderLib/TextureProxy.h\"\n#include <algorithm>"
+  ],
+  [
+   "\t\tG3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const",
+   "// Verified SDK shade algorithm recovered by king_originala.\n#pragma float_control(precise, off, push)\nvoid TextureProxy::shadePixel(const G3D::Color3uint8& base, G3D::Color3uint8& lighting)\n{\n\tfor (int i = 0; i < 3; i++) {\n\t\tconst int shade = lighting[i];\n\t\tfloat color = base[i];\n\n\t\tif (shade > 130) {\n\t\t\tfloat a = std::min(float((shade - 128.0f) / 128.0f), 1.0f);\n\t\t\tcolor = (1.0 - a) * color + 255.0f * a;\n\t\t}\n\t\telse if (shade < 126) {\n\t\t\tfloat a = shade / 128.0f;\n\t\t\ta = 0.5 + a * 0.5;\n\t\t\tcolor = color * a;\n\t\t}\n\n\t\tlighting[i] = std::min(255, std::max(0, G3D::iRound(255.0 * pow(color / 255.0, 1.0))));\n\t}\n}\n\n#pragma float_control(pop)\n\n\t\tG3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const"
+  ]
+ ],
+ "App/include/v8datamodel/BrickColor.h": [
+  [
+   "static const unsigned paletteSize;",
+   "static const unsigned paletteSize = 32;"
+  ]
+ ]
+}

@@ -1,0 +1,5 @@
+{
+ "score": 100,
+ "source": "// roc-lang: cpp\n// roc-cl: 21022\n// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast\n// roc-lib: openrbx-client-dll roc_resume_medium_published_shade_float_ff33c8ae26610b09.cpp\n",
+ "user": "king_originala"
+}
