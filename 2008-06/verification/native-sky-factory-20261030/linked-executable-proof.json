@@ -5,7 +5,7 @@
    {
     "symbol": "??0GImage@G3D@@QAE@XZ",
     "owner": "linked:SkyFactory.obj",
-    "linked_address": "004984b0",
+    "linked_address": "00498340",
     "object_code_data_exact": true,
     "code_exact": true
    }
@@ -18,7 +18,7 @@
    {
     "symbol": "?testImage@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV12@AAVGImage@G3D@@@Z",
     "owner": "linked:SkyFactory.obj",
-    "linked_address": "004984f0",
+    "linked_address": "00498360",
     "object_code_data_exact": true,
     "code_exact": true
    }
@@ -31,7 +31,7 @@
    {
     "symbol": "?getG3DSky@Sky@RBX@@SA?AV?$ReferenceCountedPointer@VSky@G3D@@@G3D@@PAV12@@Z",
     "owner": "linked:SkyFactory.obj",
-    "linked_address": "004987a0",
+    "linked_address": "00498610",
     "object_code_data_exact": true,
     "code_exact": true
    }

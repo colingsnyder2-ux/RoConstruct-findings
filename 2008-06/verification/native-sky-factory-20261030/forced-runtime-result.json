@@ -3,11 +3,11 @@
  "linked": true,
  "ran": true,
  "exit": 0,
- "output": "name caches: 64/64 passed\ntemplate signal/vector/value/cache/find checks passed\narray checks start\narray checks passed; Message ctor\nPart cast\nPlayer cast\nStats cast\nTextDisplay cast\nnative G3D arrays + successful/failed/null Boost casts passed\\nnative mesh vector + typed reflection signal checks passed\nnative Script casts and Value object/function conversion checks passed\nnative RunningAverage update/tolerance/convergence checks passed\nnative Face extrusion and axis checks passed\nnative BrickColor nearest palette checks passed\nnative template vector checks passed\nnative pointer template checks passed\nnative float vector checks passed\nnative G3D array family checks passed\nnative string-set tree checks passed\nnative nested ScoreHud map checks passed\nnative team-player map checks passed\nnative nested score vector and run-view map checks passed\nnative Boost any casts passed\nnative serializer malformed-input checks passed",
+ "output": "name caches: 64/64 passed\ntemplate signal/vector/value/cache/find checks passed\narray checks start\narray checks passed; Message ctor\nPart cast\nPlayer cast\nStats cast\nTextDisplay cast\nnative G3D arrays + successful/failed/null Boost casts passed\\nnative mesh vector + typed reflection signal checks passed\nnative Script casts and Value object/function conversion checks passed\nnative RunningAverage update/tolerance/convergence checks passed\nnative Face extrusion and axis checks passed\nnative BrickColor nearest palette checks passed\nnative template vector checks passed\nnative pointer template checks passed\nnative float vector checks passed\nnative G3D array family checks passed\nnative string-set tree checks passed\nnative nested ScoreHud map checks passed\nnative team-player map checks passed\nnative nested score vector and run-view map checks passed\nnative Boost any casts passed\nnative serializer malformed-input checks passed\nnative GImage exception ABI passed",
  "unresolved": [],
  "duplicates": [],
  "referencers": [],
- "map": "C:\\Users\\colin\\RoConstruct\\work\\codex-native-colin-20261029\\rebuild\\2008-06\\out\\tests\\native_finish_e8a7e963904a\\native_finish_e8a7e963904a.map",
+ "map": "C:\\Users\\colin\\RoConstruct\\work\\codex-native-colin-20261029\\rebuild\\2008-06\\out\\tests\\native_finish_ccfba0685b03\\native_finish_ccfba0685b03.map",
  "choices": {
   "Accoutrement.obj": "linked",
   "AdornG3D.obj": "linked",
