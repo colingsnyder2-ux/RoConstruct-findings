@@ -1,0 +1,2 @@
+{'compiled': True, 'linked': True, 'exit': 0, 'output': 'name caches: 64/64 passed\ntemplate signal/vector/value/cache/find checks passed\narray checks start\narray checks passed; Message ctor\nPart cast\nPlayer cast\nStats cast\nTextDisplay cast\nnative G3D arrays + successful/failed/null Boost casts passed\\nnative mesh vector + typed reflection signal checks passed', 'unresolved': []}
+Forced roots 455
