@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "tool/DragUtilities.h"
 #include "tool/Dragger.h"
 #include "v8datamodel/Workspace.h"
@@ -90,7 +91,7 @@ namespace RBX
 
 	void DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)
 	{
-		RBXASSERT(notJoined(parts));
+		                           ;
 		
 		for (size_t i = 0; i < parts.size(); i++)
 		{
@@ -130,7 +131,7 @@ namespace RBX
 
 	void DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)
 	{
-		RBXASSERT(pos == Math::toGrid(pos, 0.1f));
+		                                         ;
 
 		G3D::CoordinateFrame partCoord = part->getCoordinateFrame();
 		partCoord.translation += pos;

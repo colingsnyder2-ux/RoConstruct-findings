@@ -560,6 +560,20 @@
     "user": "colin"
   },
   {
+    "addr": "00583860",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00583920",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "00583a40",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -2044,6 +2058,13 @@
     "user": "colin"
   },
   {
+    "addr": "0060a0f0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "0060a230",
     "client": "2008-06",
     "job": "9167482492314a8b8a6e73ad3024c76e",
@@ -2135,6 +2156,13 @@
     "user": "colin"
   },
   {
+    "addr": "0060e840",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "0060e970",
     "client": "2008-06",
     "job": "7defe8d7595148459e4686995a58c17c",
@@ -2145,6 +2173,27 @@
     "addr": "0060eb30",
     "client": "2008-06",
     "job": "6a7eb2d7653645a7aed3a1a0ed748c35",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060ed40",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060f0a0",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060f3e0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
     "model": "gpt-6",
     "user": "colin"
   },
@@ -2541,6 +2590,13 @@
     "user": "colin"
   },
   {
+    "addr": "0064a3d0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "0064d060",
     "client": "2008-06",
     "job": "16375cb373ee4a6094ff390c19e17bce",
@@ -2644,6 +2700,27 @@
     "job": "a7480fdea7e547a99dac0c2f27fdf944",
     "model": "deepseek-v4.1-flash",
     "user": "coldek"
+  },
+  {
+    "addr": "00669780",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00669cf0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00669d10",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
   },
   {
     "addr": "0066a570",

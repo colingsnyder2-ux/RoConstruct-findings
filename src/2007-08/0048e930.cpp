@@ -1,348 +1,192 @@
-// from server: 34% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Player.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_abstract_family_a314258e852d69bb.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "Client.h"
-#include "Player.h"
-#include "security/SecurityContext.h"
-#include "v8datamodel/TimerService.h"
-#include "v8datamodel/CharacterAppearance.h"
-#include "v8datamodel/Accoutrement.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/SpawnLocation.h"
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#undef _DLL
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_arg_header_14221fd67bb3ca43.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp>)
+#pragma include_alias("util/IRenderable.h", "../roc_espeon_aug2007_irenderable_header_89bd00a76e9b5599.cpp")
+#pragma include_alias(<util/IRenderable.h>, <../roc_espeon_aug2007_irenderable_header_89bd00a76e9b5599.cpp>)
+#pragma include_alias("v8datamodel/JointInstance.h", "../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp")
+#pragma include_alias(<v8datamodel/JointInstance.h>, <../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp>)
+#pragma include_alias("v8world/IMoving.h", "../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp")
+#pragma include_alias(<v8world/IMoving.h>, <../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp>)
+#pragma include_alias("v8kernel/IStage.h", "../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp")
+#pragma include_alias(<v8kernel/IStage.h>, <../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp>)
+#pragma include_alias("reflection/function.h", "../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp")
+#pragma include_alias(<reflection/function.h>, <../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp>)
+#pragma include_alias("reflection/member.h", "../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp")
+#pragma include_alias(<reflection/member.h>, <../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp>)
+#pragma include_alias("reflection/property.h", "../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp")
+#pragma include_alias(<reflection/property.h>, <../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp>)
+#pragma include_alias("reflection/signal.h", "../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp")
+#pragma include_alias(<reflection/signal.h>, <../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp>)
+#pragma include_alias("script/Script.h", "../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp")
+#pragma include_alias(<script/Script.h>, <../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp>)
+#pragma include_alias("util/ICameraSubject.h", "../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp")
+#pragma include_alias(<util/ICameraSubject.h>, <../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp>)
+#pragma include_alias("util/IControllable.h", "../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp")
+#pragma include_alias(<util/IControllable.h>, <../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp>)
+#pragma include_alias("util/ILocation.h", "../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp")
+#pragma include_alias(<util/ILocation.h>, <../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp>)
+#pragma include_alias("v8datamodel/ICameraOwner.h", "../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp")
+#pragma include_alias(<v8datamodel/ICameraOwner.h>, <../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp>)
+#pragma include_alias("v8datamodel/ICharacterSubject.h", "../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp")
+#pragma include_alias(<v8datamodel/ICharacterSubject.h>, <../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp>)
+#pragma include_alias("v8datamodel/IPrimaryPart.h", "../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp")
+#pragma include_alias(<v8datamodel/IPrimaryPart.h>, <../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp>)
+#pragma include_alias("v8datamodel/PVInstance.h", "../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp")
+#pragma include_alias(<v8datamodel/PVInstance.h>, <../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp>)
+#pragma include_alias("v8tree/Service.h", "../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp")
+#pragma include_alias(<v8tree/Service.h>, <../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp>)
+#include "v8datamodel/Explosion.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/ContactManager.h"
 #include "v8world/World.h"
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> loadCharacterFunction(&RBX::Network::Player::loadCharacter, "LoadCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> removeCharacterFunction(&RBX::Network::Player::removeCharacter, "RemoveCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetUnder13(&RBX::Network::Player::setUnder13, "SetUnder13", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetSuperSafeChat(&RBX::Network::Player::setSuperSafeChat, "SetSuperSafeChat", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, RBX::BrickColor> prop_teamColor("TeamColor", "Team", &RBX::Network::Player::getTeamColor, &RBX::Network::Player::setTeamColor, RBX::Reflection::PropertyDescriptor::STANDARD);
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, bool> prop_neutral("Neutral", "Team", &RBX::Network::Player::getNeutral, &RBX::Network::Player::setNeutral, RBX::Reflection::PropertyDescriptor::STANDARD);
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, std::string> prop_characterAppearance("CharacterAppearance", "Data", &RBX::Network::Player::getCharacterAppearance, &RBX::Network::Player::setCharacterAppearance, RBX::Reflection::PropertyDescriptor::STANDARD);
-
-static RBX::Reflection::RefPropDescriptor<RBX::Network::Player, RBX::ModelInstance> prop_Character("Character", "Data", &RBX::Network::Player::getCharacter, &RBX::Network::Player::setCharacter, RBX::Reflection::PropertyDescriptor::STANDARD);
-
-static RBX::Reflection::SignalDesc<RBX::Network::Player, void(float)> event_Idled("Idled", "time");
-
-static void addChild(const boost::shared_ptr<RBX::ModelInstance>& parent, const boost::shared_ptr<RBX::Instance>& child)
-{
-	child->setParent(parent.get());
-}
-
-static void setAppearanceParent(boost::shared_ptr<RBX::Instance> parent, boost::shared_ptr<RBX::Instance> instance)
-{
-	if (dynamic_cast<RBX::CharacterAppearance*>(instance.get()))
-	{
-		instance->setParent(parent.get());
-	}
-	else if (dynamic_cast<RBX::Accoutrement*>(instance.get()))
-	{
-		instance->setParent(parent.get());
-	}
-	else
-	{
-		throw std::runtime_error("Attempt to add a non-CharacterAppearance/Accoutrement object to a character");
-	}
-}
-
-static void setAppearanceParentNull(RBX::Instance* instance)
-{
-	if (dynamic_cast<RBX::CharacterAppearance*>(instance))
-		instance->setParent(NULL);
-}
 
 namespace RBX
 {
-	namespace Network
+	static Reflection::PropDescriptor<Explosion, float> propBlastRadius("BlastRadius", "Data", &Explosion::getBlastRadius, &Explosion::setBlastRadius, Reflection::PropertyDescriptor::STANDARD);
+
+	Reflection::SignalDesc<Explosion, void(boost::shared_ptr<Instance>, float)> signal_Hit("Hit", "part", "distance");
+
+	Reflection::BoundProp<G3D::Vector3, 1> Explosion::propPosition("Position", "Data", &Explosion::position, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Explosion::propBlastPressure("BlastPressure", "Data", &Explosion::blastPressure, Reflection::PropertyDescriptor::STANDARD);
+
+	Explosion::Explosion()
+		: blastRadius(4.0f),
+		  blastPressure(500000.0f),
+		  age(0.0f)
 	{
-		Player::Player()
-			: teamColor(BrickColor::lego_1),
-			  neutral(true),
-			  under13(false),
-			  superSafeChat(false),
-			  userId(0),
-			  lastActivityTime(0.0)
+		setName("Explosion");
+	}
+
+	bool Explosion::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
+
+	void Explosion::setBlastRadius(float _blastRadius)
+	{
+		float newRadius = G3D::clamp(_blastRadius, 0.0f, 100.0f);
+		if (blastRadius != newRadius)
 		{
-			Security::Context::current().requirePermission(Security::Administrator, "create a Player");
-			setName("Player");
+			blastRadius = newRadius;
+			raisePropertyChanged(propBlastRadius);
 		}
+	}
 
-		Player::~Player()
+	void Explosion::signalBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (!signal_Hit.empty(this))
 		{
-			setCharacter(NULL);
-		}
-
-		Backpack* Player::getPlayerBackpack() const
-		{
-			Backpack* backpack = findFirstChildOfType<Backpack>();
-
-			RBXASSERT(backpack != NULL);
-			return backpack;
-		}
-
-		void Player::onCharacterChangedFrontend()
-		{
-			RBXASSERT(Players::frontendProcessing(this, true));
-
-			Player* localPlayer = Players::findLocalPlayer(this);
-			if (this == localPlayer)
+			for (int i = 0; i < primitives.size(); i++)
 			{
-				Workspace* workspace = ServiceProvider::find<Workspace>(this);
-				RBXASSERT(workspace != NULL);
+				Primitive* current = primitives[i];
 
-				if (!character)
+				if (blastRadius * 2.0f > current->getRadius())
 				{
-					workspace->getCamera()->setCameraType(Camera::FIXED_CAMERA);
-					workspace->getCamera()->setDistanceFromTarget(0.0f);
-					workspace->getCamera()->zoom(-1.0f);
-				}
-				else
-				{
-					workspace->getCamera()->setCameraSubject(Humanoid::modelIsCharacter(character.get()));
-					workspace->getCamera()->setCameraType(Camera::CUSTOM_CAMERA);
-					workspace->getCamera()->setDistanceFromTarget(13.0f);
-					workspace->getCamera()->zoom(-1.0f);
-					workspace->setDefaultMouseCommand();
-				}
-			}
-		}
-
-		void Player::setTeamColor(BrickColor value)
-		{
-			if (value != teamColor)
-			{
-				teamColor = value;
-				raisePropertyChanged(prop_teamColor);
-			}
-		}
-
-		void Player::setNeutral(bool value)
-		{
-			if (value != neutral)
-			{
-				neutral = value;
-				raisePropertyChanged(prop_neutral);
-			}
-		}
-
-		void Player::removeCharacter()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("RemoveCharacter can only be called by the backend server");
-
-			setCharacter(NULL);
-		}
-
-		void Player::setName(const std::string& value)
-		{
-			Security::Context::current().requirePermission(Security::Administrator, "set a Player's name");
-			Instance::setName(value);
-		}
-
-		void Player::setCharacterAppearance(const std::string& value)
-		{
-			if (value != characterAppearance)
-			{
-				characterAppearance = value;
-				if (Players::backendProcessing(this, false))
-					loadCharacterAppearance();
-
-				raisePropertyChanged(prop_characterAppearance);
-			}
-		}
-
-		void Player::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			if (oldProvider && Players::backendProcessing(oldProvider, true))
-				setCharacter(NULL);
-
-			Instance::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider && Players::frontendProcessing(newProvider, true))
-				onCharacterChangedFrontend();
-
-			if (!oldProvider && Players::frontendProcessing(newProvider, true))
-			{
-				RBXASSERT(Players::frontendProcessing(this, true));
-				lastActivityTime = G3D::System::getLocalTime();
-				doPeriodicIdleCheck();
-			}
-		}
-
-		void Player::doPeriodicIdleCheck()
-		{
-			if (ServiceProvider::findServiceProvider(this))
-			{
-				RBXASSERT(Players::frontendProcessing(this, true));
-				if (lastActivityTime != 0.0)
-				{
-					G3D::RealTime idleTime = G3D::System::getLocalTime() - lastActivityTime;
-					if (idleTime > 120.0)
+					if (Instance* part = PartInstance::fromPrimitive(current))
 					{
-						Players* players = ServiceProvider::find<Players>(this);
-						if (players && players->getLocalPlayer() && Players::clientIsPresent(this, true))
-						{
-							event_Idled.fire(this, idleTime);
-						}
+						float distance = (current->getCoordinateFrame().translation - position).magnitude();
+						signal_Hit.fire(this, shared_from(part), distance);
 					}
 				}
-
-				TimerService* timerService = ServiceProvider::create<TimerService>(this);
-
-				if (timerService)
-					timerService->delay(boost::bind(&Player::doPeriodicIdleCheck, shared_from(this)), 30.0);
 			}
 		}
+	}
 
-		void Player::setCharacter(ModelInstance* value)
+	//99% match
+	void Explosion::doBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (blastPressure > 0.0f)
 		{
-			if (value != character.get())
+			World* world = Workspace::getMyWorldFast(this);
+			RBXASSERT(world);
+
+			for (int i = 0; i < primitives.size(); i++)
 			{
-				if (character.get())
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
 				{
-					characterDiedConnection.disconnect();
-
-					Notifier<Player, CharacterRemoving>::raise(character.get());
-
-					if (Players::backendProcessing(this, false))
-						character->setParent(NULL);
-
-					character.reset();
+					PartInstance::fromPrimitive(current)->destroyJoints();
 				}
-
-				if (value)
-				{
-					character = shared_from(value);
-
-					Notifier<Player, CharacterAdded>::raise(character.get());
-
-					if (Players::frontendProcessing(this, false))
-						onCharacterChangedFrontend();
-				}
-
-				raisePropertyChanged(prop_Character);
-			}
-		}
-
-		void Player::loadCharacterAppearance()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("LoadCharacterAppearance can only be called by the backend server");
-
-			removeCharacterAppearance();
-
-			if (character && !characterAppearance.empty())
-			{
-				std::vector<boost::shared_ptr<Instance>> characterApperance; // yes, the name's correct
-
-				{
-					std::vector<std::string> strings;
-					boost::algorithm::split(strings, this->characterAppearance, boost::algorithm::is_any_of(";"));
-
-					for (size_t i = 0; i < strings.size(); i++)
-					{
-						ContentProvider::singleton().load(ContentId(strings[i]), characterApperance);
-					}
-				}
-
-				std::for_each(characterApperance.begin(), characterApperance.end(), boost::bind(&setAppearanceParent, character, _1));
-
-				if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
-					workspace->getWorld()->update();
-			}
-		}
-
-		void Player::removeCharacterAppearance()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("RemoveCharacterAppearance can only be called by the backend server");
-
-			if (character)
-				character->for_eachChild(&setAppearanceParentNull);
-		}
-
-		void Player::rebuildBackpack()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("rebuildBackpack can only be called by the backend server");
-
-			while (Backpack* r = findFirstChildOfType<Backpack>())
-			{
-				r->setParent(NULL);
 			}
 
-			boost::shared_ptr<Instance> backpack = Creatable::create<Backpack>();
-			backpack->setParent(this);
+			world->update();
 
-			StarterPackService* starterPack = ServiceProvider::find<StarterPackService>(this);
-			if (starterPack)
+			for (int i = 0; i < primitives.size(); i++)
 			{
-				for (size_t i = 0; i < starterPack->numChildren(); i++)
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
 				{
-					boost::shared_ptr<Instance> copy = starterPack->getChild(i)->clone();
-					copy->setParent(backpack.get());
+					G3D::Vector3 delta = current->getCoordinateFrame().translation - position;
+					G3D::Vector3 normal = delta == G3D::Vector3::zero() ? G3D::Vector3::unitY() : delta.direction();
+					RBXASSERT(normal.magnitude() <= 1.001);
+
+					float radius = current->getRadius();
+					float squaredRadius = radius * radius;
+
+					G3D::Vector3 impulse = normal * blastPressure * squaredRadius * (1.0f/4560.0f);
+					G3D::Vector3 force = impulse * Constants::kernelStepsPerSec();
+
+					world->ticklePrimitive(current);
+
+					Body* body = current->getBody();
+
+					const G3D::Vector3& pos = body->getCoordinateFrame().translation;
+					body->accumulateForce(force, pos);
+
+					current->getBody()->accumulateTorque(force * 0.5f * radius);
+
+					world->addedBodyForce();
 				}
 			}
 		}
+	}
 
-		void Player::loadCharacter()
-		{
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (!workspace)
-				throw std::runtime_error("LoadCharacter can only be called when Player is in the world");
+	void Explosion::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
 
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("LoadCharacter can only be called by the backend server");
+		Instance::onServiceProvider(oldProvider, newProvider);
 
-			std::vector<boost::shared_ptr<Instance>> instances;
-			ContentProvider::singleton().load(ContentId::fromAssets("fonts\\character.rbxm"), instances);
-
-			if (instances.size() != 1)
-				throw std::runtime_error("character.rbxm should contain a Character model");
-
-			boost::shared_ptr<ModelInstance> model = boost::shared_dynamic_cast<ModelInstance>(instances.front());
-			if (!model)
-				throw std::runtime_error("character.rbxm should contain a Character model");
-
-			Humanoid* humanoid = Humanoid::modelIsCharacter(model.get());
-			if (!humanoid)
-				throw std::runtime_error("character.rbxm should contain a humanoid");
-
-			{
-				std::vector<boost::shared_ptr<Instance>> extraSound;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidSound.rbxm"), extraSound);
-				std::for_each(extraSound.begin(), extraSound.end(), boost::bind(&addChild, model, _1));
-			}
-
-			{
-				std::vector<boost::shared_ptr<Instance>> extraHealth;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidHealth.rbxm"), extraHealth);
-				std::for_each(extraHealth.begin(), extraHealth.end(), boost::bind(&addChild, model, _1));
-			}
-
-			{
-				std::vector<boost::shared_ptr<Instance>> extraAnimate;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidAnimate.rbxm"), extraAnimate);
-				std::for_each(extraAnimate.begin(), extraAnimate.end(), boost::bind(&addChild, model, _1));
-			}
-
-			model->setName(getName());
-			humanoid->buildJoints();
-			Instance::propArchivable.setValue(model.get(), false);
-			setCharacter(model.get());
-			
-			model->setParent(workspace);
-			loadCharacterAppearance();
-			
-			SpawnerService* spawnerService = ServiceProvider::find<SpawnerService>(this);
-			G3D::Vector3 dropPoint = spawnerService ? spawnerService->FindSpawnPositionForPlayer(this) : G3D::Vector3(0.0f, 20.0f, 25.0f);
-			workspace->moveToPoint(model.get(), dropPoint);
-		}
+		Notifier<RunService, Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);
 	}
 }

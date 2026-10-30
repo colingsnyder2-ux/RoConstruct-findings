@@ -2475,6 +2475,64 @@
         ]
       },
       "timestamp": 1793320832.2602253
+    },
+    {
+      "job": "310c52c1a5334eec93e6ab971d0506ae",
+      "patches": {
+        "App/tool/DragUtilities.cpp": [
+          [
+            "#include \"tool/DragUtilities.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"tool/DragUtilities.h\"\n"
+          ],
+          [
+            "DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)\n\t{\n\t\tRBXASSERT(notJoined(parts));\n\t\t\n\t\tfor (size_t i = 0; i < parts.size(); i++)\n\t\t{\n\t\t\tboost::shared_ptr<PartInstance> part = parts[i].lock();\n\t\t\tif (PartInstance::nonNullInWorkspace(part))\n\t\t\t\tpart->join();\n\t\t}\n\t}",
+            "DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)\n\t{\n\t\t                           ;\n\t\t\n\t\tfor (size_t i = 0; i < parts.size(); i++)\n\t\t{\n\t\t\tboost::shared_ptr<PartInstance> part = parts[i].lock();\n\t\t\tif (PartInstance::nonNullInWorkspace(part))\n\t\t\t\tpart->join();\n\t\t}\n\t}"
+          ],
+          [
+            "DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)\n\t{\n\t\tRBXASSERT(pos == Math::toGrid(pos, 0.1f));\n\n\t\tG3D::CoordinateFrame partCoord = part->getCoordinateFrame();\n\t\tpartCoord.translation += pos;\n\n\t\tif (part->aligned())\n\t\t\tpartCoord = Math::snapToGrid(partCoord, 0.1f);\n\n\t\tpart->setCoordinateFrame(partCoord);\n\t}",
+            "DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)\n\t{\n\t\t                                         ;\n\n\t\tG3D::CoordinateFrame partCoord = part->getCoordinateFrame();\n\t\tpartCoord.translation += pos;\n\n\t\tif (part->aligned())\n\t\t\tpartCoord = Math::snapToGrid(partCoord, 0.1f);\n\n\t\tpart->setCoordinateFrame(partCoord);\n\t}"
+          ]
+        ],
+        "App/v8world/ClumpStage.cpp": [
+          [
+            "ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)\n\t{\n\t\tRBXASSERT(upToDate());\n\t\tprocess();\n\n\t\tAssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());\n\t\tassemblyStage->stepWorld(worldStepId, uiStepId, throttling);\n\t}",
+            "ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)\n\t{\n\t\t                     ;\n\t\tprocess();\n\n\t\tAssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());\n\t\tassemblyStage->stepWorld(worldStepId, uiStepId, throttling);\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793321882.962588
+    },
+    {
+      "job": "05a9c896175b44238c694313cf62cb19",
+      "patches": {
+        "App/util/Extents.cpp": [
+          [
+            "#include \"util/Extents.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"util/Extents.h\"\n"
+          ]
+        ],
+        "App/v8datamodel/Feature.cpp": [
+          [
+            "\tvoid VelocityMotor::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\n\t\tsetPart(0, dynamic_cast<Feature*>(this->getParent()));\n\n\t\tWorld* oldWorld = motorJoint()->getWorld();\n\t\tWorld* wsWorld = Workspace::getWorldIfInWorkspace(this);\n\n\t\tif (oldWorld != wsWorld)\n\t\t{\n\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(motorJoint());\n\t\t\t\tsetPart(0, NULL);\n\t\t\t\tsetPart(1, NULL);\n\t\t\t\tRBXASSERT(!motorJoint()->getWorld());\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(motorJoint());\n\t\t\t\tRBXASSERT(motorJoint()->getWorld());\n\t\t\t}\n\t\t}\n\t}\n",
+            "\tvoid VelocityMotor::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\n\t\tsetPart(0, dynamic_cast<Feature*>(this->getParent()));\n\n\t\tWorld* oldWorld = motorJoint()->getWorld2008();\n\t\tWorld* wsWorld = Workspace::getWorldIfInWorkspace(this);\n\n\t\tif (oldWorld != wsWorld)\n\t\t{\n\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(motorJoint());\n\t\t\t\tsetPart(0, NULL);\n\t\t\t\tsetPart(1, NULL);\n\t\t\t\t\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(motorJoint());\n\t\t\t\t\n\t\t\t}\n\t\t}\n\t}\n"
+          ]
+        ],
+        "App/v8world/IWorldStage.cpp": [
+          [
+            "IWorldStage::onEdgeAdded(Edge* e)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\te->putInPipeline(this);\n\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t}",
+            "IWorldStage::onEdgeAdded(Edge* e)\n\t{\n\t\t                            ;\n\t\te->putInPipeline(this);\n\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t}"
+          ],
+          [
+            "IWorldStage::onEdgeRemoving(Edge* e)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\te->removeFromStage(this);\n\t}",
+            "IWorldStage::onEdgeRemoving(Edge* e)\n\t{\n\t\t                            ;\n\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\te->removeFromStage(this);\n\t}"
+          ],
+          [
+            "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}",
+            "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\t                            ;\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793323110.9398494
     }
   ],
   "initial_patches": {}

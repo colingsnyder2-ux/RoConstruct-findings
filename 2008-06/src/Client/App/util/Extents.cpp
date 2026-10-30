@@ -1,3 +1,4 @@
+#pragma float_control(precise, off)
 #include "util/Extents.h"
 #include "util/Math.h"
 #include "util/Debug.h"

@@ -6978,5 +6978,133 @@
     "unit": "RBX::Block, RBX::GroupDragTool, RBX::Ball",
     "updated": 1793320832.4644697,
     "user": "colin"
+  },
+  {
+    "created": 1793321687.5670197,
+    "id": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "patches": {
+      "App/tool/DragUtilities.cpp": [
+        [
+          "#include \"tool/DragUtilities.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"tool/DragUtilities.h\"\n"
+        ],
+        [
+          "DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)\n\t{\n\t\tRBXASSERT(notJoined(parts));\n\t\t\n\t\tfor (size_t i = 0; i < parts.size(); i++)\n\t\t{\n\t\t\tboost::shared_ptr<PartInstance> part = parts[i].lock();\n\t\t\tif (PartInstance::nonNullInWorkspace(part))\n\t\t\t\tpart->join();\n\t\t}\n\t}",
+          "DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)\n\t{\n\t\t                           ;\n\t\t\n\t\tfor (size_t i = 0; i < parts.size(); i++)\n\t\t{\n\t\t\tboost::shared_ptr<PartInstance> part = parts[i].lock();\n\t\t\tif (PartInstance::nonNullInWorkspace(part))\n\t\t\t\tpart->join();\n\t\t}\n\t}"
+        ],
+        [
+          "DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)\n\t{\n\t\tRBXASSERT(pos == Math::toGrid(pos, 0.1f));\n\n\t\tG3D::CoordinateFrame partCoord = part->getCoordinateFrame();\n\t\tpartCoord.translation += pos;\n\n\t\tif (part->aligned())\n\t\t\tpartCoord = Math::snapToGrid(partCoord, 0.1f);\n\n\t\tpart->setCoordinateFrame(partCoord);\n\t}",
+          "DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)\n\t{\n\t\t                                         ;\n\n\t\tG3D::CoordinateFrame partCoord = part->getCoordinateFrame();\n\t\tpartCoord.translation += pos;\n\n\t\tif (part->aligned())\n\t\t\tpartCoord = Math::snapToGrid(partCoord, 0.1f);\n\n\t\tpart->setCoordinateFrame(partCoord);\n\t}"
+        ]
+      ],
+      "App/v8world/ClumpStage.cpp": [
+        [
+          "ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)\n\t{\n\t\tRBXASSERT(upToDate());\n\t\tprocess();\n\n\t\tAssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());\n\t\tassemblyStage->stepWorld(worldStepId, uiStepId, throttling);\n\t}",
+          "ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)\n\t{\n\t\t                     ;\n\t\tprocess();\n\n\t\tAssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());\n\t\tassemblyStage->stepWorld(worldStepId, uiStepId, throttling);\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "74e23ad874a89d672c7b649770881df544024fffa54519581333efb9bed90c75",
+      "credits": 4,
+      "distinct_after": 9770,
+      "distinct_before": 9766,
+      "gains": [
+        "0060e840",
+        "0060ed40",
+        "0060f0a0",
+        "00669780"
+      ],
+      "input_hash": "6e2f90053f9d2d4bb0e5266a28e6259c79c65d552f8c03bfb8cdc2c5db3c0f00",
+      "losses": [],
+      "new_distinct": [
+        "0060e840",
+        "0060ed40",
+        "0060f0a0",
+        "00669780"
+      ],
+      "overlay_hash": "ad5225a439e79f17c6e42320032e4455a5837274d18992bdd32ef8d0ac5ea11f",
+      "owned_after": 3295,
+      "owned_before": 3291,
+      "rebased": false,
+      "submitted_revision": "74e23ad874a89d672c7b649770881df544024fffa54519581333efb9bed90c75"
+    },
+    "state": "accepted",
+    "unit": "RBX::MotorJoint",
+    "updated": 1793321883.1051164,
+    "user": "colin"
+  },
+  {
+    "created": 1793322913.5055208,
+    "id": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "patches": {
+      "App/util/Extents.cpp": [
+        [
+          "#include \"util/Extents.h\"\n",
+          "#pragma float_control(precise, off)\n#include \"util/Extents.h\"\n"
+        ]
+      ],
+      "App/v8datamodel/Feature.cpp": [
+        [
+          "\tvoid VelocityMotor::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\n\t\tsetPart(0, dynamic_cast<Feature*>(this->getParent()));\n\n\t\tWorld* oldWorld = motorJoint()->getWorld();\n\t\tWorld* wsWorld = Workspace::getWorldIfInWorkspace(this);\n\n\t\tif (oldWorld != wsWorld)\n\t\t{\n\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(motorJoint());\n\t\t\t\tsetPart(0, NULL);\n\t\t\t\tsetPart(1, NULL);\n\t\t\t\tRBXASSERT(!motorJoint()->getWorld());\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(motorJoint());\n\t\t\t\tRBXASSERT(motorJoint()->getWorld());\n\t\t\t}\n\t\t}\n\t}\n",
+          "\tvoid VelocityMotor::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\n\t\tsetPart(0, dynamic_cast<Feature*>(this->getParent()));\n\n\t\tWorld* oldWorld = motorJoint()->getWorld2008();\n\t\tWorld* wsWorld = Workspace::getWorldIfInWorkspace(this);\n\n\t\tif (oldWorld != wsWorld)\n\t\t{\n\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(motorJoint());\n\t\t\t\tsetPart(0, NULL);\n\t\t\t\tsetPart(1, NULL);\n\t\t\t\t\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(motorJoint());\n\t\t\t\t\n\t\t\t}\n\t\t}\n\t}\n"
+        ]
+      ],
+      "App/v8world/IWorldStage.cpp": [
+        [
+          "IWorldStage::onEdgeAdded(Edge* e)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\te->putInPipeline(this);\n\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t}",
+          "IWorldStage::onEdgeAdded(Edge* e)\n\t{\n\t\t                            ;\n\t\te->putInPipeline(this);\n\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t}"
+        ],
+        [
+          "IWorldStage::onEdgeRemoving(Edge* e)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\te->removeFromStage(this);\n\t}",
+          "IWorldStage::onEdgeRemoving(Edge* e)\n\t{\n\t\t                            ;\n\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\te->removeFromStage(this);\n\t}"
+        ],
+        [
+          "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}",
+          "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\t                            ;\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "dbbd3279a1c9149e950ce688eb2d5d265bd7d3c8d199c489842eb78f6c374f73",
+      "credits": 7,
+      "distinct_after": 9777,
+      "distinct_before": 9770,
+      "gains": [
+        "00583860",
+        "00583920",
+        "0060a0f0",
+        "0060f3e0",
+        "0064a3d0",
+        "00669cf0",
+        "00669d10"
+      ],
+      "input_hash": "bf047315ec848b601f8b193c898fe03c44a28b6d416efd3543cba99425dbc432",
+      "losses": [],
+      "new_distinct": [
+        "00583860",
+        "00583920",
+        "0060a0f0",
+        "0060f3e0",
+        "0064a3d0",
+        "00669cf0",
+        "00669d10"
+      ],
+      "overlay_hash": "499825540204bcd11fbb08da14b7b3fb89e6410613c9650661ac17e46d908fe6",
+      "owned_after": 3302,
+      "owned_before": 3295,
+      "rebased": false,
+      "submitted_revision": "dbbd3279a1c9149e950ce688eb2d5d265bd7d3c8d199c489842eb78f6c374f73"
+    },
+    "state": "accepted",
+    "unit": "RBX::VelocityMotor",
+    "updated": 1793323111.1043575,
+    "user": "colin"
   }
 ]

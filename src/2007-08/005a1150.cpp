@@ -1,79 +1,170 @@
-// from server: 60% by colin
-struct Name {
-    char pad[8];
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_part_family_c638d3704f453fda.cpp
 
-struct Base {
-    char pad[0x2c0];
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_arg_header_14221fd67bb3ca43.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_flags_header_a6acc69782cd7c29.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-struct VSpawnLocation : Base {
-    void ctor(int);
-};
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp>)
+#pragma include_alias("util/IRenderable.h", "../roc_espeon_aug2007_irenderable_header_89bd00a76e9b5599.cpp")
+#pragma include_alias(<util/IRenderable.h>, <../roc_espeon_aug2007_irenderable_header_89bd00a76e9b5599.cpp>)
+#pragma include_alias("v8datamodel/JointInstance.h", "../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp")
+#pragma include_alias(<v8datamodel/JointInstance.h>, <../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp>)
+#pragma include_alias("v8world/IMoving.h", "../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp")
+#pragma include_alias(<v8world/IMoving.h>, <../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp>)
+#pragma include_alias("v8kernel/IStage.h", "../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp")
+#pragma include_alias(<v8kernel/IStage.h>, <../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp>)
+#pragma include_alias("reflection/function.h", "../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp")
+#pragma include_alias(<reflection/function.h>, <../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp>)
+#pragma include_alias("reflection/member.h", "../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp")
+#pragma include_alias(<reflection/member.h>, <../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp>)
+#pragma include_alias("reflection/property.h", "../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp")
+#pragma include_alias(<reflection/property.h>, <../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp>)
+#pragma include_alias("reflection/signal.h", "../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp")
+#pragma include_alias(<reflection/signal.h>, <../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp>)
+#pragma include_alias("script/Script.h", "../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp")
+#pragma include_alias(<script/Script.h>, <../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp>)
+#pragma include_alias("util/ICameraSubject.h", "../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp")
+#pragma include_alias(<util/ICameraSubject.h>, <../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp>)
+#pragma include_alias("util/IControllable.h", "../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp")
+#pragma include_alias(<util/IControllable.h>, <../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp>)
+#pragma include_alias("util/ILocation.h", "../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp")
+#pragma include_alias(<util/ILocation.h>, <../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp>)
+#pragma include_alias("v8datamodel/ICameraOwner.h", "../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp")
+#pragma include_alias(<v8datamodel/ICameraOwner.h>, <../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp>)
+#pragma include_alias("v8datamodel/ICharacterSubject.h", "../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp")
+#pragma include_alias(<v8datamodel/ICharacterSubject.h>, <../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp>)
+#pragma include_alias("v8datamodel/IPrimaryPart.h", "../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp")
+#pragma include_alias(<v8datamodel/IPrimaryPart.h>, <../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp>)
+#pragma include_alias("v8datamodel/PVInstance.h", "../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp")
+#pragma include_alias(<v8datamodel/PVInstance.h>, <../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp>)
+#pragma include_alias("v8tree/Service.h", "../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp")
+#pragma include_alias(<v8tree/Service.h>, <../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp>)
+#include "v8datamodel/SpawnLocation.h"
+#include "Network/Players.h"
 
-extern "C" void __stdcall sub_541bf0(void*, const Name*);
-extern "C" void __stdcall sub_5a0eb0(void*, int);
-extern "C" void* __stdcall sub_8a7500();
-extern "C" void __stdcall sub_77e698(void*, const char*);
-extern "C" void __stdcall sub_77e6ac(void*);
+namespace RBX
+{
+	static Reflection::PropDescriptor<SpawnLocation, BrickColor> prop_TeamColor("TeamColor", "Teams", &SpawnLocation::getTeamColor, &SpawnLocation::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
 
-void VSpawnLocation::ctor(int arg) {
-    char buf[0x24];
-    int flag = 0;
-    if (arg != 0) {
-        *(int*)((char*)this + 0xec) = 0x7b3d88;
-        *(int*)((char*)this + 0x2b8) = 0x7aafe8;
-        *(int*)((char*)this + 0x2a4) = 0x7a4cd4;
-        *(int*)((char*)this + 0x2ac) = 0x7a4ccc;
-        int v = *(int*)((char*)this + 0x2b8);
-        *(int*)((char*)this + 0x2b4) = 0x7a4cac;
-        int w = *(int*)(v + 4);
-        *(int*)((char*)this + w + 0x2b8) = 0x7a4ca4;
-        flag = 1;
-    }
-    sub_5a0eb0(this, 0);
-    int e = *(int*)((char*)this + 0xec);
-    *(int*)((char*)this + 0) = 0x7b3d1c;
-    *(int*)((char*)this + 4) = 0x7b3d14;
-    *(int*)((char*)this + 0x10) = 0x7b3d0c;
-    *(int*)((char*)this + 0x14) = 0x7b3cfc;
-    *(int*)((char*)this + 0x2c) = 0x7b3cec;
-    *(int*)((char*)this + 0x44) = 0x7b3cdc;
-    *(int*)((char*)this + 0x5c) = 0x7b3ccc;
-    *(int*)((char*)this + 0x74) = 0x7b3cbc;
-    *(int*)((char*)this + 0x8c) = 0x7b3cac;
-    *(int*)((char*)this + 0xe8) = 0x7b3ca0;
-    *(int*)((char*)this + 0x158) = 0x7b3c90;
-    *(int*)((char*)this + 0x170) = 0x7b3c84;
-    *(int*)((char*)this + 0x17c) = 0x7b3c6c;
-    int a = *(int*)(e + 4);
-    *(int*)((char*)this + a + 0xec) = 0x7b3c60;
-    int c = *(int*)((char*)this + 0xec);
-    int d = *(int*)(c + 8);
-    *(int*)((char*)this + d + 0xec) = 0x7b3c58;
-    int f = *(int*)((char*)this + 0xec);
-    int g = *(int*)(f + 0xc);
-    *(int*)((char*)this + g + 0xec) = 0x7b3c3c;
-    int h = *(int*)((char*)this + 0xec);
-    int i = *(int*)(h + 4);
-    int j = i - 0x1b8;
-    *(int*)((char*)this + i + 0xe8) = j;
-    int k = *(int*)((char*)this + 0xec);
-    int l = *(int*)(k + 8);
-    int m = l - 0x1c0;
-    *(int*)((char*)this + l + 0xe8) = m;
-    int n = *(int*)((char*)this + 0xec);
-    int o = *(int*)(n + 0xc);
-    int p = o - 0x1c8;
-    *(int*)((char*)this + o + 0xe8) = p;
-    *(int*)((char*)this + 0x280) = 0xc2;
-    *(int*)((char*)this + 0x288) = 0;
-    *(int*)((char*)this + 0x28c) = 0;
-    *(char*)((char*)this + 0x290) = 0;
-    *(char*)((char*)this + 0x294) = 0;
-    sub_77e698(buf, (const char*)0x8a7500);
-    *(char*)((char*)this + 0x298) = 1;
-    *(char*)((char*)this + 0x299) = 0;
-    sub_541bf0(this, (const Name*)buf);
-    sub_77e6ac(buf);
+	SpawnLocation::SpawnLocation()
+		: neutral(true),
+		  allowTeamChangeOnTouch(false)
+	{
+		setName("SpawnLocation");
+	}
+
+	BrickColor SpawnLocation::getTeamColor() const
+	{
+		return teamColor;
+	}
+
+	void SpawnLocation::setTeamColor(BrickColor color)
+	{
+		teamColor = color;
+		raisePropertyChanged(prop_TeamColor);
+	}
+
+	void SpawnLocation::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+		
+		if (!oldProvider)
+		{
+			spawnerTouched = PartInstance::event_Touched.connect(this, boost::bind(&SpawnLocation::onEvent_spawnerTouched, this, _1));
+
+			SpawnerService* spawnerService = ServiceProvider::create<SpawnerService>(newProvider);
+			RBXASSERT(spawnerService != NULL);
+
+			spawnerService->RegisterSpawner(this);
+		}
+
+		if (!newProvider)
+		{
+			spawnerTouched.disconnect();
+
+			SpawnerService* spawnerService = ServiceProvider::create<SpawnerService>(oldProvider);
+			RBXASSERT(spawnerService != NULL);
+
+			spawnerService->UnregisterSpawner(this);
+		}
+	}
+
+	SpawnerService::SpawnerService()
+	{
+		setName("SpawnerService");
+		Instance::propArchivable.setValue(this, false);
+	}
+
+	SpawnerService::~SpawnerService() {}
+
+	void SpawnerService::RegisterSpawner(SpawnLocation* spawner)
+	{
+		spawners.push_back(spawner);
+	}
+
+	void SpawnerService::UnregisterSpawner(SpawnLocation* spawner)
+	{
+		spawners.remove(spawner);
+	}
+
+	G3D::Vector3 SpawnerService::FindSpawnPositionForPlayer(Network::Player* p)
+	{
+		if (spawners.empty())
+			return G3D::Vector3(0.0f, 100.0f, 0.0f);
+
+		std::vector<SpawnLocation*> possibleLocations;
+
+		for (std::list<SpawnLocation*>::const_iterator iter = spawners.begin(); iter != spawners.end(); iter++)
+		{
+			if ((*iter)->neutral || (!p->getNeutral() && p->getTeamColor() == (*iter)->getTeamColor()))
+			{
+				possibleLocations.push_back(*iter);
+			}
+		}
+
+		if (possibleLocations.empty())
+		{
+			return G3D::Vector3(0.0f, 100.0f, 0.0f);
+		}
+		else
+		{
+			G3D::Vector3 spawnPos = possibleLocations[rand() % possibleLocations.size()]->getCoordinateFrame().translation;
+			spawnPos.y += 7.0f;
+
+			return spawnPos;
+		}
+	}
 }

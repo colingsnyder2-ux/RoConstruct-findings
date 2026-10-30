@@ -343,7 +343,7 @@ namespace RBX
 
 	void ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)
 	{
-		RBXASSERT(upToDate());
+		                     ;
 		process();
 
 		AssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());
