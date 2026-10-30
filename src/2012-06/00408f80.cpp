@@ -1,23 +1,19 @@
-// roc 2012-06 00408f80  unit: VCApp::?$CComAggObject  size: 24 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00408f80
-//
-// 00408f80  8b442404             mov eax, dword ptr [esp + 4]
-// 00408f84  8b0dc463e100         mov ecx, dword ptr [0xe163c4]
-// 00408f8a  6a00                 push 0
-// 00408f8c  50                   push eax
-// 00408f8d  6a6e                 push 0x6e
-// 00408f8f  51                   push ecx
-// 00408f90  e88bfcffff           call 0x408c20
-// 00408f95  c20400               ret 4
-// copied from an identical function in another client (function ?sub_40A530@ns_ROCX000000@@YGHH@Z)
+// from server: 100% by tajop
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: atl-8.0 roc_unit_a08aafcd04544bd2.cpp
 
-namespace ns_ROCX000000 {
-extern "C" int __stdcall sub_406F90(int, int, int, int);
+// Candidate translation unit (score above; library headers required).
+#include "stdafx.h"
 
-int g_8bae44;
-
-int __stdcall sub_40A530(int a1)
+class CRocRegistry
 {
-    return sub_406F90(g_8bae44, 0x6e, a1, 0);
-}
-}
+public:
+	static HRESULT WINAPI UpdateRegistry(BOOL bRegister) throw()
+	{
+		return ATL::_pAtlModule->UpdateRegistryFromResource(110, bRegister);
+	}
+};
+
+HRESULT (WINAPI *RocUpdateRegistry)(BOOL) = &CRocRegistry::UpdateRegistry;

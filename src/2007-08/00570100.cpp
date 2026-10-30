@@ -1,72 +1,51 @@
-// from server: 0% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs reflection/reflection_object.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/member.h"
-#include "reflection/object.h"
 
-namespace RBX
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
+};
+
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-	namespace Reflection
-	{
-		bool ClassDescriptor::lockedDown = false;
-
-		ClassDescriptor::ClassDescriptor(ClassDescriptor& base, const char* name)
-			: Descriptor(name),
-			  PropertyContainer(&base),
-			  SignalContainer(&base),
-			  FunctionContainer(&base),
-			  derivedClasses(),
-			  base(&base)
-		{
-			RBXASSERT(!lockedDown);
-
-			{
-				boost::recursive_mutex::scoped_lock lock(sync());
-				base.derivedClasses.push_back(this);
-			}
-		}
-
-		ClassDescriptor::ClassDescriptor()
-			: Descriptor("<<<ROOT>>>"),
-			  PropertyContainer(NULL),
-			  SignalContainer(NULL),
-			  FunctionContainer(NULL),
-			  derivedClasses(),
-			  base(NULL)
-		{
-		}
-
-		bool ClassDescriptor::operator==(const ClassDescriptor& other) const
-		{
-			return this == &other;
-		}
-
-		bool ClassDescriptor::operator!=(const ClassDescriptor& other) const
-		{
-			return this != &other;
-		}
-
-		bool MemberDescriptor::isMemberOf(const ClassDescriptor& classDescriptor) const
-		{
-			const ClassDescriptor* p = &classDescriptor;
-			do
-			{
-				if (p == &owner)
-					return true;
-				p = p->getBase();
-			}
-			while (p != &ClassDescriptor::rootDescriptor());
-
-			return false;
-		}
-
-		bool MemberDescriptor::isMemberOf(const DescribedBase* instance) const
-		{
-			return isMemberOf(instance->getDescriptor());
-		}
-	}
+    try {
+        count = new Count(p);
+    }
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

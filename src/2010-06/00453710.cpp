@@ -1,567 +1,135 @@
-// from server: 34% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp
-
-// Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
+// roc 2010-06 00453710  unit: CRobloxControlColorSelector  size: 208 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00453710
 //
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
+// 00453710  83ec10               sub esp, 0x10
+// 00453713  53                   push ebx
+// 00453714  8bd9                 mov ebx, ecx
+// 00453716  8b0d5c1cc000         mov ecx, dword ptr [0xc01c5c]
+// 0045371c  2b0d581cc000         sub ecx, dword ptr [0xc01c58]
+// 00453722  b8abaaaa2a           mov eax, 0x2aaaaaab
+// 00453727  f7e9                 imul ecx
+// 00453729  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0045372d  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 00453731  55                   push ebp
+// 00453732  57                   push edi
+// 00453733  d1fa                 sar edx, 1
+// 00453735  50                   push eax
+// 00453736  8bfa                 mov edi, edx
+// 00453738  51                   push ecx
+// 00453739  8dabc0000000         lea ebp, [ebx + 0xc0]
+// 0045373f  c1ef1f               shr edi, 0x1f
+// 00453742  55                   push ebp
+// 00453743  03fa                 add edi, edx
+// 00453745  ff15e0bb9e00         call dword ptr [0x9ebbe0]
+// 0045374b  85c0                 test eax, eax
+// 0045374d  750c                 jne 0x45375b
+// 0045374f  5f                   pop edi
+// 00453750  5d                   pop ebp
+// 00453751  83c8ff               or eax, 0xffffffff
+// 00453754  5b                   pop ebx
+// 00453755  83c410               add esp, 0x10
+// 00453758  c20800               ret 8
+// 0045375b  56                   push esi
+// 0045375c  33f6                 xor esi, esi
+// 0045375e  85ff                 test edi, edi
+// 00453760  7e65                 jle 0x4537c7
+// 00453762  8bd6                 mov edx, esi
+// 00453764  81e207000080         and edx, 0x80000007
+// 0045376a  7905                 jns 0x453771
+// 0045376c  4a                   dec edx
+// 0045376d  83caf8               or edx, 0xfffffff8
+// 00453770  42                   inc edx
+// 00453771  8b4500               mov eax, dword ptr [ebp]
+// 00453774  c1e205               shl edx, 5
+// 00453777  8d4c0202             lea ecx, [edx + eax + 2]
+// 0045377b  8bc6                 mov eax, esi
+// 0045377d  99                   cdq 
+// 0045377e  83e207               and edx, 7
+// 00453781  03c2                 add eax, edx
+// 00453783  8b93c4000000         mov edx, dword ptr [ebx + 0xc4]
+// 00453789  c1f803               sar eax, 3
+// 0045378c  c1e005               shl eax, 5
+// 0045378f  8d441002             lea eax, [eax + edx + 2]
+// 00453793  89442414             mov dword ptr [esp + 0x14], eax
+// 00453797  83c020               add eax, 0x20
+// 0045379a  894c2410             mov dword ptr [esp + 0x10], ecx
+// 0045379e  83c120               add ecx, 0x20
+// 004537a1  8944241c             mov dword ptr [esp + 0x1c], eax
+// 004537a5  8b442428             mov eax, dword ptr [esp + 0x28]
+// 004537a9  894c2418             mov dword ptr [esp + 0x18], ecx
+// 004537ad  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 004537b1  50                   push eax
+// 004537b2  51                   push ecx
+// 004537b3  8d542418             lea edx, [esp + 0x18]
+// 004537b7  52                   push edx
+// 004537b8  ff15e0bb9e00         call dword ptr [0x9ebbe0]
+// 004537be  85c0                 test eax, eax
+// 004537c0  7512                 jne 0x4537d4
+// 004537c2  46                   inc esi
+// 004537c3  3bf7                 cmp esi, edi
+// 004537c5  7c9b                 jl 0x453762
+// 004537c7  5e                   pop esi
+// 004537c8  5f                   pop edi
+// 004537c9  5d                   pop ebp
+// 004537ca  83c8ff               or eax, 0xffffffff
+// 004537cd  5b                   pop ebx
+// 004537ce  83c410               add esp, 0x10
+// 004537d1  c20800               ret 8
+// 004537d4  8bc6                 mov eax, esi
+// 004537d6  5e                   pop esi
+// 004537d7  5f                   pop edi
+// 004537d8  5d                   pop ebp
+// 004537d9  5b                   pop ebx
+// 004537da  83c410               add esp, 0x10
+// 004537dd  c20800               ret 8
+// copied from an identical function in another client (function ?hitTest@CRobloxControlColorSelector@@QAEHUPOINT@@@Z)
 
-#include "WmlConvexHull2.h"
-using namespace Wml;
-
-#include <algorithm>
-#include <set>
-using namespace std;
-
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull2<Real>::ConvexHull2 (int iVQuantity, const Vector2<Real>* akVertex,
-    bool bIncremental)
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct POINT
 {
-    m_iVQuantity = iVQuantity;
-    m_akVertex = akVertex;
+    int x, y;
+};
 
-    if ( bIncremental )
-        ByIncremental();
-    else
-        ByDivideAndConquer();
-
-    if ( m_iHQuantity >= 3 )
-        RemoveCollinear();
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull2<Real>::~ConvexHull2 ()
+struct RECT
 {
-    delete[] m_aiHIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull2<Real>::GetQuantity () const
+    int left, top, right, bottom;
+};
+
+extern "C" int (__stdcall *PtInRect)(const RECT*, POINT);
+
+struct Entry
 {
-    return m_iHQuantity;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-const int* ConvexHull2<Real>::GetIndices () const
+    char data[12];
+};
+
+extern Entry* entriesBegin;
+extern Entry* entriesEnd;
+
+struct CRobloxControlColorSelector
 {
-    return m_aiHIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexHull2<Real>::ContainsPoint (const Vector2<Real>& rkP) const
+    char storage[0xc0];
+    RECT bounds;
+
+    int hitTest(POINT point);
+};
+
+int CRobloxControlColorSelector::hitTest(POINT point)
 {
-    for (int i1 = 0, i0 = m_iHQuantity-1; i1 < m_iHQuantity; i0 = i1++)
+    int count = entriesEnd - entriesBegin;
+    if (!PtInRect(&bounds, point))
+        return -1;
+
+    for (int i = 0; i < count; ++i)
     {
-        const Vector2<Real>& rkV0 = m_akVertex[m_aiHIndex[i0]];
-        const Vector2<Real>& rkV1 = m_akVertex[m_aiHIndex[i1]];
-        Vector2<Real> kDir = rkV1 - rkV0;
-        Vector2<Real> kNormal = kDir.Perp();  // outer normal
-        if ( kNormal.Dot(rkP-rkV0) > (Real)0.0 )
-            return false;
+        RECT rect;
+        rect.left = bounds.left + (i % 8) * 32 + 2;
+        rect.top = bounds.top + (i / 8) * 32 + 2;
+        rect.right = rect.left + 32;
+        rect.bottom = rect.top + 32;
+        if (PtInRect(&rect, point))
+            return i;
     }
 
-    return true;
+    return -1;
 }
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull2<Real>::CollinearTest (const Vector2<Real>& rkP,
-    const Vector2<Real>& rkQ0, const Vector2<Real>& rkQ1) const
-{
-    Vector2<Real> kD = rkQ1 - rkQ0;
-    Vector2<Real> kA = rkP - rkQ0;
-    Real fDdD = kD.Dot(kD);
-    Real fAdA = kA.Dot(kA);
-    Real fDet = kD.Kross(kA);
-    Real fRelative = fDet*fDet - COLLINEAR_EPSILON*fDdD*fAdA;
-
-    if ( fRelative > (Real)0.0 )
-    {
-        if ( fDet > (Real)0.0 )
-        {
-            // points form counterclockwise triangle <P,Q0,Q1>
-            return ORDER_POSITIVE;
-        }
-        else if ( fDet < (Real)0.0 )
-        {
-            // points form clockwise triangle <P,Q1,Q0>
-            return ORDER_NEGATIVE;
-        }
-    }
-
-    // P is on line of <Q0,Q1>
-    Real fDdA = kD.Dot(kA);
-    if ( fDdA < (Real)0.0 )
-    {
-        // order is <P,Q0,Q1>
-        return ORDER_COLLINEAR_LEFT;
-    }
-
-    if ( fDdA > fDdD )
-    {
-        // order is <Q0,Q1,P>
-        return ORDER_COLLINEAR_RIGHT;
-    }
-
-    // order is <Q0,P,Q1>
-    return ORDER_COLLINEAR_CONTAIN;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::RemoveCollinear ()
-{
-    if ( m_iHQuantity <= 2 )
-        return;
-
-    vector<int> kHull;
-    kHull.reserve(m_iHQuantity);
-    for (int i0 = m_iHQuantity-1, i1 = 0, i2 = 1; i1 < m_iHQuantity; /**/)
-    {
-        int iCT = CollinearTest(m_akVertex[m_aiHIndex[i0]],
-            m_akVertex[m_aiHIndex[i1]],m_akVertex[m_aiHIndex[i2]]);
-
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_NEGATIVE )
-        {
-            // points are not collinear
-            kHull.push_back(m_aiHIndex[i1]);
-        }
-
-        i0 = i1++;
-        if ( ++i2 == m_iHQuantity )
-            i2 = 0;
-    }
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)kHull.size();
-    delete[] m_aiHIndex;
-    m_aiHIndex = new int[m_iHQuantity];
-    memcpy(m_aiHIndex,&kHull.front(),m_iHQuantity*sizeof(int));
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// divide-and-conquer hull
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::ByDivideAndConquer ()
-{
-    // Sort by x-component and store in contiguous array.  The sort is
-    // O(N log N).
-    SVArray kSVArray(m_iVQuantity);
-    int i;
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        kSVArray[i].m_kV = m_akVertex[i];
-        kSVArray[i].m_iIndex = i;
-    }
-    sort(kSVArray.begin(),kSVArray.end());
-
-    // remove duplicate points
-    typename SVArray::iterator pkEnd =
-        unique(kSVArray.begin(),kSVArray.end());
-    kSVArray.erase(pkEnd,kSVArray.end());
-
-    // compute convex hull using divide-and-conquer
-    SVArray kHull;
-    kHull.reserve(kSVArray.size());
-    m_iHullType = HULL_POINT;
-    GetHull(0,(int)kSVArray.size()-1,kSVArray,kHull);
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)kHull.size();
-    m_aiHIndex = new int[m_iHQuantity];
-    for (i = 0; i < m_iHQuantity; i++)
-        m_aiHIndex[i] = kHull[i].m_iIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::GetHull (int i0, int i1, const SVArray& rkSVArray,
-    SVArray& rkHull)
-{
-    int iQuantity = i1 - i0 + 1;
-    if ( iQuantity > 1 )
-    {
-        // middle index of input range
-        int iMid = (i0+i1)/2;
-
-        // find hull of subsets (iMid-i0+1 >= i1-iMid)
-        SVArray kLHull, kRHull;
-        kLHull.reserve(iMid-i0+1);
-        kRHull.reserve(i1-iMid);
-
-        GetHull(i0,iMid,rkSVArray,kLHull);
-        GetHull(iMid+1,i1,rkSVArray,kRHull);
-
-        // merge the convex hulls into a single convex hull
-        Merge(kLHull,kRHull,rkHull);
-    }
-    else
-    {
-        // convex hull is a single point
-        rkHull.push_back(rkSVArray[i0]);
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::Merge (SVArray& rkLHull, SVArray& rkRHull,
-    SVArray& rkHull)
-{
-    // merge small sets, handle cases when sets are collinear
-    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
-    if ( iLSize == 1 )
-    {
-        if ( iRSize == 1 )
-        {
-            rkHull.push_back(rkLHull[0]);
-            rkHull.push_back(rkRHull[0]);
-            if ( m_iHullType != HULL_PLANAR )
-                m_iHullType = HULL_LINEAR;
-            return;
-        }
-        else if ( iRSize == 2 )
-        {
-            MergeLinear(rkLHull[0],rkRHull);
-            rkHull = rkRHull;
-            return;
-        }
-    }
-    else if ( iLSize == 2 )
-    {
-        if ( iRSize == 1 )
-        {
-            MergeLinear(rkRHull[0],rkLHull);
-            rkHull = rkLHull;
-            return;
-        }
-        else if ( iRSize == 2 )
-        {
-            MergeLinear(rkRHull[1],rkLHull);
-
-            if ( rkLHull.size() == 2 )
-            {
-                MergeLinear(rkRHull[0],rkLHull);
-                rkHull = rkLHull;
-                return;
-            }
-
-            // fall-through, LHull is a triangle, RHull is a point
-            iLSize = 3;
-            iRSize = 1;
-            rkRHull.pop_back();
-        }
-    }
-
-    // find rightmost point of left hull
-    Real fMax = rkLHull[0].m_kV.X();
-    int i, iLMax = 0;
-    for (i = 1; i < iLSize; i++)
-    {
-        if ( rkLHull[i].m_kV.X() > fMax )
-        {
-            fMax = rkLHull[i].m_kV.X();
-            iLMax = i;
-        }
-    }
-
-    // find leftmost point of right hull
-    Real fMin = rkRHull[0].m_kV.X();
-    int iRMin = 0;
-    for (i = 1; i < iRSize; i++)
-    {
-        if ( rkRHull[i].m_kV.X() < fMin )
-        {
-            fMin = rkRHull[i].m_kV.X();
-            iRMin = i;
-        }
-    }
-
-    // get lower tangent to hulls (LL = lower left, LR = lower right)
-    int iLLIndex = iLMax, iLRIndex = iRMin;
-    GetTangent(rkLHull,rkRHull,iLLIndex,iLRIndex);
-
-    // get upper tangent to hulls (UL = upper left, UR = upper right)
-    int iULIndex = iLMax, iURIndex = iRMin;
-    GetTangent(rkRHull,rkLHull,iURIndex,iULIndex);
-
-    // Construct the counterclockwise-ordered merged-hull vertices.
-    // TO DO.  If the hull is stored using linked lists, this block can be
-    // improved by an O(1) detach, attach, and delete of the appropriate
-    // sublists.
-    i = iLRIndex;
-    while ( true )
-    {
-        rkHull.push_back(rkRHull[i]);
-        if ( i == iURIndex )
-            break;
-
-        if ( ++i == iRSize )
-            i = 0;
-    }
-
-    i = iULIndex;
-    while ( true )
-    {
-        rkHull.push_back(rkLHull[i]);
-        if ( i == iLLIndex )
-            break;
-
-        if ( ++i == iLSize )
-            i = 0;
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP, SVArray& rkHull)
-{
-    // hull = <Q0,Q1>
-
-    switch ( CollinearTest(rkP.m_kV,rkHull[0].m_kV,rkHull[1].m_kV) )
-    {
-    case ORDER_POSITIVE:
-        // merged hull is triangle <Q0,Q1,P>
-        m_iHullType = HULL_PLANAR;
-        rkHull.push_back(rkP);
-        break;
-    case ORDER_NEGATIVE:
-    {
-        // merged hull is triangle <Q1,Q0,P>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kSave = rkHull[0];
-        rkHull[0] = rkHull[1];
-        rkHull[1] = kSave;
-        rkHull.push_back(rkP);
-        break;
-    }
-    case ORDER_COLLINEAR_LEFT:
-        // collinear order is <P,Q0,Q1>, merged hull is <P,Q1>
-        rkHull[0] = rkP;
-        break;
-    case ORDER_COLLINEAR_RIGHT:
-        // collinear order is <Q0,Q1,P>, merged hull is <Q0,P>
-        rkHull[1] = rkP;
-        break;
-    //case ORDER_COLLINEAR_CONTAIN:
-        // collinear order is <Q0,P,Q1>, merged hull is <Q0,Q1> (no change)
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::GetTangent (const SVArray& rkLHull,
-    const SVArray& rkRHull, int& riL, int& riR)
-{
-    // In theory the loop terminates in a finite number of steps, but the
-    // upper bound for the loop variable is used to trap problems caused by
-    // floating point round-off errors that might lead to an infinite loop.
-
-    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
-    int iLSizeM1 = iLSize-1, iRSizeM1 = iRSize-1;
-    int i;
-    for (i = 0; i < iLSize+iRSize; i++)
-    {
-        // end points of potential tangent
-        const Vector2<Real>& rkL1 = rkLHull[riL].m_kV;
-        const Vector2<Real>& rkR0 = rkRHull[riR].m_kV;
-
-        // walk along left hull to find tangency
-        int iLm1 = ( riL > 0 ? riL-1 : iLSizeM1 );
-        const Vector2<Real>& rkL0 = rkLHull[iLm1].m_kV;
-        int iCT = CollinearTest(rkR0,rkL0,rkL1);
-        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_LEFT )
-        {
-            riL = iLm1;
-            continue;
-        }
-
-        // walk along right hull to find tangency
-        int iRp1 = ( riR < iRSizeM1 ? riR+1 : 0 );
-        const Vector2<Real>& rkR1 = rkRHull[iRp1].m_kV;
-        iCT = CollinearTest(rkL1,rkR0,rkR1);
-        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_RIGHT )
-        {
-            riR = iRp1;
-            continue;
-        }
-
-        // tangent segment has been found
-        break;
-    }
-
-    // detect "infinite loop" caused by floating point round-off errors
-    assert( i < iLSize+iRSize );
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// incremental hull
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::ByIncremental ()
-{
-    // Sort by x-component and store in contiguous array.  The sort is
-    // O(N log N).
-    SVArray kSVArray(m_iVQuantity);
-    int i;
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        kSVArray[i].m_kV = m_akVertex[i];
-        kSVArray[i].m_iIndex = i;
-    }
-    sort(kSVArray.begin(),kSVArray.end());
-
-    // remove duplicate points
-    typename SVArray::iterator pkEnd =
-        unique(kSVArray.begin(),kSVArray.end());
-    kSVArray.erase(pkEnd,kSVArray.end());
-
-    // Compute convex hull incrementally.  The first and second vertices in
-    // the hull are managed separately until at least one triangle is formed.
-    // At that time an array is used to store the hull in counterclockwise
-    // order.
-    m_iHullType = HULL_POINT;
-    m_kHull.push_back(kSVArray[0]);
-    for (i = 1; i < (int)kSVArray.size(); i++)
-    {
-        switch ( m_iHullType )
-        {
-        case HULL_POINT:
-            m_iHullType = HULL_LINEAR;
-            m_kHull.push_back(kSVArray[i]);
-            break;
-        case HULL_LINEAR:
-            MergeLinear(kSVArray[i]);
-            break;
-        case HULL_PLANAR:
-            MergePlanar(kSVArray[i]);
-            break;
-        }
-    }
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)m_kHull.size();
-    m_aiHIndex = new int[m_iHQuantity];
-    for (i = 0; i < m_iHQuantity; i++)
-        m_aiHIndex[i] = m_kHull[i].m_iIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP)
-{
-    switch ( CollinearTest(rkP.m_kV,m_kHull[0].m_kV,m_kHull[1].m_kV) )
-    {
-    case ORDER_POSITIVE:
-    {
-        // merged hull is <P,Q0,Q1>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kCopy = m_kHull[1];
-        m_kHull.push_back(kCopy);
-        m_kHull[1] = m_kHull[0];
-        m_kHull[0] = rkP;
-        break;
-    }
-    case ORDER_NEGATIVE:
-    {
-        // merged hull is <P,Q1,Q0>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kCopy = m_kHull[0];
-        m_kHull.push_back(kCopy);
-        m_kHull[0] = rkP;
-        break;
-    }
-    case ORDER_COLLINEAR_LEFT:
-        // linear order is <P,Q0,Q1>, merged hull is <P,Q1>
-        m_kHull[0] = rkP;
-        break;
-    case ORDER_COLLINEAR_RIGHT:
-        // linear order is <Q0,Q1,P>, merged hull is <Q0,P>
-        m_kHull[1] = rkP;
-        break;
-    // case ORDER_COLLINEAR_CONTAIN:  linear order is <Q0,P,Q1>, no change
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergePlanar (const SortedVertex& rkP)
-{
-    int iSize = (int)m_kHull.size();
-    int i, iU, iL, iCT;
-
-    // search counterclockwise for last visible vertex
-    for (iU = 0, i = 1; iU < iSize; iU = i++)
-    {
-        if ( i == iSize )
-            i = 0;
-
-        iCT = CollinearTest(rkP.m_kV,m_kHull[iU].m_kV,m_kHull[i].m_kV);
-        if ( iCT == ORDER_NEGATIVE )
-            continue;
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_LEFT )
-            break;
-
-        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_RIGHT
-        return;
-    }
-    assert( iU < iSize );
-
-    // search clockwise for last visible vertex
-    for (iL = 0, i = iSize-1; i >= 0; iL = i--)
-    {
-        iCT = CollinearTest(rkP.m_kV,m_kHull[i].m_kV,m_kHull[iL].m_kV);
-        if ( iCT == ORDER_NEGATIVE )
-            continue;
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_RIGHT )
-            break;
-
-        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_LEFT
-        return;
-    }
-    assert( i >= 0 );
-
-    if ( iU == iL )
-    {
-        // This probably occurs when CollinearTest should report collinearity,
-        // but does not.  If it does occur, and you care about this code
-        // block not occurring, try increasing the size of the collinear
-        // epsilon.  When this block does occur, the conclusion is that the
-        // input point is collinear with an edge of the hull, so just return.
-        return;
-    }
-
-    // construct the counterclockwise-ordered merged-hull vertices
-    SVArray kTmpHull;
-    kTmpHull.push_back(rkP);
-    while ( true )
-    {
-        kTmpHull.push_back(m_kHull[iU]);
-        if ( iU == iL )
-            break;
-
-        if ( ++iU == iSize )
-            iU = 0;
-    }
-    assert( kTmpHull.size() > 2 );
-
-    m_kHull = kTmpHull;
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
-{
-template class WML_ITEM ConvexHull2<float>;
-float ConvexHull2f::COLLINEAR_EPSILON = 1e-06f;
-
-template class WML_ITEM ConvexHull2<double>;
-double ConvexHull2d::COLLINEAR_EPSILON = 1e-06;
-}
-//----------------------------------------------------------------------------

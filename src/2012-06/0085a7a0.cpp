@@ -1,7 +1,15 @@
-// from server: 41% by atomic.potato
-extern "C" void __cdecl sub_85a780(int, int, int, int, int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-void sub_85a7a0(int a, int b, int c)
-{
-    sub_85a780(a, b, c, a, b, c, a);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

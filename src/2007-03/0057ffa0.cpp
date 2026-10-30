@@ -1,8 +1,7 @@
-// from server: 75% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaMemory.cpp
+// roc-lib: rbxgs-dll script/LuaMemory.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "script/LuaMemory.h"

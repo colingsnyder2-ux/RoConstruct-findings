@@ -1,24 +1,49 @@
-// from server: 71% by tester
-struct LuaArguments {
-    int field0;
-    int field4;
-    void construct(int arg);
+// from server: 100% by tajop
+#include <typeinfo>
+
+namespace RBX {
+namespace Reflection {
+
+class PropertyDescriptor {
+public:
+    virtual ~PropertyDescriptor();
+    char pad[0x14];
 };
 
-extern "C" int __cdecl sub_630D36(int, int, int, int, int);
-extern "C" void __cdecl sub_630B9E(int, int);
-extern "C" void* __stdcall sub_77E710(int);
-extern "C" void __cdecl sub_841E0C();
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    class GetSet {
+    public:
+        virtual ~GetSet();
+        virtual T get(const void* instance) const = 0;
+        virtual void set(void* instance, const T& value) const = 0;
+    };
+    GetSet* getset;
+};
 
-void LuaArguments::construct(int arg)
+}
+}
+
+namespace boost { template<class T> class shared_ptr { public: shared_ptr(); shared_ptr(const shared_ptr&); ~shared_ptr(); T* px; void* pn; }; }
+namespace RBX { namespace Reflection { class DescribedBase; } }
+
+template<class T, class B>
+inline const T& checked_cast(const B& b)
 {
-    int* p = (int*)sub_630D36(field0, 0, 0x887174, 0x8ABC90, 0);
-    if (p == 0) {
-        sub_77E710(0x786E04);
-        sub_630B9E(0x841E0C, (int)&p);
-    }
-    int* q = (int*)p[6];
-    int* vt = (int*)*q;
-    int (*fn)(void*, int, int) = (int (*)(void*, int, int))vt[2];
-    fn(q, field4, arg);
+    const T* p = dynamic_cast<const T*>(&b);
+    if (!p)
+        throw std::bad_cast("bad cast");
+    return *p;
+}
+struct LuaArguments {
+    const RBX::Reflection::PropertyDescriptor* descriptor;
+    void* instance;
+    void setProperty(const boost::shared_ptr<RBX::Reflection::DescribedBase>& value);
+};
+
+void LuaArguments::setProperty(const boost::shared_ptr<RBX::Reflection::DescribedBase>& value)
+{
+    typedef RBX::Reflection::TypedPropertyDescriptor<boost::shared_ptr<RBX::Reflection::DescribedBase> > Desc;
+    checked_cast<Desc >(*descriptor).getset->set(instance, value);
 }

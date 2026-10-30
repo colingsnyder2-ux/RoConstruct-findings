@@ -1,8 +1,7 @@
-// from server: 64% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Sky.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-g3d GLG3Dcpp/Sky.cpp
 
 // Candidate translation unit (score above; library headers required).
 /** 
@@ -123,10 +122,10 @@ SkyRef Sky::fromFile(
    
         if (_filename[1] == "") {
             // Specified one cube map
-            faceTextures[0] = Texture::fromFile(filenameBase + "*" + filenameExt, format, Texture::CLAMP, Texture::TRILINEAR_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+            faceTextures[0] = Texture::fromFile(filenameBase + "*" + filenameExt, format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
         } else {
             // Specified six filenames
-            faceTextures[0] = Texture::fromFile(_filename, format, Texture::CLAMP, Texture::TRILINEAR_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+            faceTextures[0] = Texture::fromFile(_filename, format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
         }
 
         // For the cube map case, we don't need the other five texture slots
@@ -647,4 +646,5 @@ void Sky::renderLensFlare(
 }
 
 } // namespace
+
 

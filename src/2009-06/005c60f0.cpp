@@ -1,504 +1,619 @@
-// from server: 46% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+// roc-flags: /Od /Ob0 /GS- /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file Vector3.cpp
- 
- 3D vector class
- 
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
- 
- @created 2001-06-02
- @edited  2006-01-30
- */
+// Magic Software, Inc.
+// http://www.magic-software.com
+// http://www.wild-magic.com
+// Copyright (c) 2003.  All Rights Reserved
+//
+// The Wild Magic Library (WML) source code is supplied under the terms of
+// the license agreement http://www.magic-software.com/License/WildMagic.pdf
+// and may not be copied or disclosed except in accordance with the terms of
+// that agreement.
 
-#include <limits>
-#include <stdlib.h>
-#include "G3D/Vector3.h"
-#include "G3D/g3dmath.h"
-#include "G3D/stringutils.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/TextInput.h"
-#include "G3D/TextOutput.h"
-#include "G3D/Vector3int16.h"
-#include "G3D/Matrix3.h"
-#include "G3D/Vector2.h"
- 
-namespace G3D {
+#include "WmlConvexClipper.h"
+#include "WmlConvexPolyhedron3.h"
+using namespace Wml;
 
-Vector3 Vector3::dummy;
+#include <algorithm>
+#include <fstream>
+#include <map>
+using namespace std;
 
-// Deprecated.
-const Vector3 Vector3::ZERO(0, 0, 0);
-const Vector3 Vector3::ZERO3(0, 0, 0);
-const Vector3 Vector3::UNIT_X(1, 0, 0);
-const Vector3 Vector3::UNIT_Y(0, 1, 0);
-const Vector3 Vector3::UNIT_Z(0, 0, 1);
-const Vector3 Vector3::INF3((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
-const Vector3 Vector3::NAN3((float)G3D::nan(), (float)G3D::nan(), (float)G3D::nan());
+//----------------------------------------------------------------------------
+template <class Real>
+ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
+    Real fEpsilon)
+{
+    m_fEpsilon = fEpsilon;
 
-Vector3::Vector3(const class Vector2& v, float _z) : x(v.x), y(v.y), z(_z) {
-}
+    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
+    int iVQuantity = rkPoly.GetVQuantity();
+    m_akVertex.resize(iVQuantity);
+    for (int iV = 0; iV < iVQuantity; iV++)
+        m_akVertex[iV].m_kPoint = rakPoint[iV];
 
-Vector3::Axis Vector3::primaryAxis() const {
-    
-    Axis a = X_AXIS;
-
-    double nx = abs(x);
-    double ny = abs(y);
-    double nz = abs(z);
-
-    if (nx > ny) {
-        if (nx > nz) {
-            a = X_AXIS;
-        } else {
-            a = Z_AXIS;
-        }
-    } else {
-        if (ny > nz) {
-            a = Y_AXIS;
-        } else {
-            a = Z_AXIS;
+    int iEQuantity = rkPoly.GetEQuantity();
+    m_akEdge.resize(iEQuantity);
+    for (int iE = 0; iE < iEQuantity; iE++)
+    {
+        const MTEdge& rkE = rkPoly.GetEdge(iE);
+        for (int i = 0; i < 2; i++)
+        {
+            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
+            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
         }
     }
 
-    return a;
-}
+    int iTQuantity = rkPoly.GetTQuantity();
+    m_akFace.resize(iTQuantity);
+    for (int iT = 0; iT < iTQuantity; iT++)
+    {
+        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
 
-
-unsigned int Vector3::hashCode() const {
-    unsigned int xhash = (*(int*)(void*)(&x));
-    unsigned int yhash = (*(int*)(void*)(&y));
-    unsigned int zhash = (*(int*)(void*)(&z));
-
-    return xhash + (yhash * 37) + (zhash * 101);
-}
-
-std::ostream& operator<<(std::ostream& os, const Vector3& v) {
-    return os << v.toString();
-}
-
-
-//----------------------------------------------------------------------------
-
-double frand() {
-    return rand() / (double) RAND_MAX;
-}
-
-Vector3::Vector3(TextInput& t) {
-	deserialize(t);
-}
-
-Vector3::Vector3(BinaryInput& b) {
-    deserialize(b);
-}
-
-
-Vector3::Vector3(const class Vector3int16& v) {
-    x = v.x;
-    y = v.y;
-    z = v.z;
-}
-
-
-void Vector3::deserialize(BinaryInput& b) {
-    x = b.readFloat32();
-    y = b.readFloat32();
-    z = b.readFloat32();
-}
-
-
-void Vector3::deserialize(TextInput& t) {
-    t.readSymbol("(");
-    x = (float)t.readNumber();
-    t.readSymbol(",");
-    y = (float)t.readNumber();
-    t.readSymbol(",");
-    z = (float)t.readNumber();
-    t.readSymbol(")");
-}
-
-
-void Vector3::serialize(TextOutput& t) const {
-   t.writeSymbol("(");
-   t.writeNumber(x);
-   t.writeSymbol(",");
-   t.writeNumber(y);
-   t.writeSymbol(",");
-   t.writeNumber(z);
-   t.writeSymbol(")");
-}
-
-
-void Vector3::serialize(BinaryOutput& b) const {
-    b.writeFloat32(x);
-    b.writeFloat32(y);
-    b.writeFloat32(z);
-}
-
-
-Vector3 Vector3::random() {
-    Vector3 result;
-
-    do {
-        result = Vector3(uniformRandom(-1.0, 1.0), 
-                         uniformRandom(-1.0, 1.0),
-                         uniformRandom(-1.0, 1.0));
-    } while (result.squaredMagnitude() >= 1.0f);
-
-    result.unitize();
-
-    return result;
-}
-
-//----------------------------------------------------------------------------
-Vector3 Vector3::operator/ (float fScalar) const {
-    Vector3 kQuot;
-
-    if ( fScalar != 0.0 ) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.x = fInvScalar * x;
-        kQuot.y = fInvScalar * y;
-        kQuot.z = fInvScalar * z;
-        return kQuot;
-    } else {
-        return Vector3::inf();
+        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
+        for (int i = 0; i < 3; i++)
+            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
     }
 }
-
 //----------------------------------------------------------------------------
-Vector3& Vector3::operator/= (float fScalar) {
-    if (fScalar != 0.0) {
-		float fInvScalar = 1.0f / fScalar;
-        x *= fInvScalar;
-        y *= fInvScalar;
-        z *= fInvScalar;
-    } else {
-        x = (float)G3D::inf();
-        y = (float)G3D::inf();
-        z = (float)G3D::inf();
+template <class Real>
+int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
+{
+    // compute signed distances from vertices to plane
+    int iPositive = 0, iNegative = 0;
+    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
+    {
+        Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
+        {
+            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
+            if ( rkV.m_fDistance >= m_fEpsilon )
+            {
+                iPositive++;
+            }
+            else if ( rkV.m_fDistance <= -m_fEpsilon )
+            {
+                iNegative++;
+                rkV.m_bVisible = false;
+            }
+            else
+            {
+                // The point is on the plane (within floating point
+                // tolerance).
+                rkV.m_fDistance = (Real)0.0;
+            }
+        }
     }
 
-    return *this;
-}
-
-//----------------------------------------------------------------------------
-float Vector3::unitize (float fTolerance) {
-	float fMagnitude = magnitude();
-
-    if (fMagnitude > fTolerance) {
-		float fInvMagnitude = 1.0f / fMagnitude;
-        x *= fInvMagnitude;
-        y *= fInvMagnitude;
-        z *= fInvMagnitude;
-    } else {
-        fMagnitude = 0.0f;
+    if ( iPositive == 0 )
+    {
+        // mesh is in negative half-space, fully clipped
+        return Plane3<Real>::NEGATIVE_SIDE;
     }
 
-    return fMagnitude;
-}
-
-//----------------------------------------------------------------------------
-
-Vector3 Vector3::reflectAbout(const Vector3& normal) const {
-
-    Vector3 out;
-
-    Vector3 N = normal.direction();
-
-    // 2 * normal.dot(this) * normal - this
-    return N * 2 * this->dot(N) - *this;
-}
-
-//----------------------------------------------------------------------------
-Vector3 Vector3::cosRandom(const Vector3& normal) {
-    double e1 = G3D::random(0, 1);
-    double e2 = G3D::random(0, 1);
-
-    // Angle from normal
-    double theta = acos(sqrt(e1));
-
-    // Angle about normal
-    double phi   = 2 * G3D_PI * e2;
-
-    // Make a coordinate system
-    Vector3 U = normal.direction();
-    Vector3 V = Vector3::unitX();
-
-    if (abs(U.dot(V)) > .9) {
-        V = Vector3::unitY();
+    if ( iNegative == 0 )
+    {
+        // mesh is in positive half-space, fully visible
+        return Plane3<Real>::POSITIVE_SIDE;
     }
 
-    Vector3 W = U.cross(V).direction();
-    V = W.cross(U);
+    // clip the visible edges
+    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
+    {
+        Edge& rkE = m_akEdge[iE];
+        if ( rkE.m_bVisible )
+        {
+            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
+            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
+            Face& rkF0 = m_akFace[iF0];
+            Face& rkF1 = m_akFace[iF1];
+            Real fD0 = m_akVertex[iV0].m_fDistance;
+            Real fD1 = m_akVertex[iV1].m_fDistance;
 
-    // Convert to rectangular form
-    return cos(theta) * U + sin(theta) * (cos(phi) * V + sin(phi) * W);
-}
-//----------------------------------------------------------------------------
+            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
+            {
+                // The edge is culled.  If the edge is exactly on the clip
+                // plane, it is possible that a visible triangle shares it.
+                // The edge will be re-added during the face loop.
+                rkF0.m_akEdge.erase(iE);
+                if ( rkF0.m_akEdge.empty() )
+                    rkF0.m_bVisible = false;
 
-Vector3 Vector3::hemiRandom(const Vector3& normal) {
-    Vector3 V = Vector3::random();
+                rkF1.m_akEdge.erase(iE);
+                if ( rkF1.m_akEdge.empty() )
+                    rkF1.m_bVisible = false;
 
-    if (V.dot(normal) < 0) {
-        return -V;
-    } else {
-        return V;
-    }
-}
+                rkE.m_bVisible = false;
+                continue;
+            }
 
-//----------------------------------------------------------------------------
+            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
+            {
+                // face retains the edge
+                continue;
+            }
 
-Vector3 Vector3::reflectionDirection(const Vector3& normal) const {
-    return -reflectAbout(normal).direction();
-}
+            // The edge is split by the plane.  Compute the point of
+            // intersection.  If the old edge is <V0,V1> and I is the
+            // intersection point, the new edge is <V0,I> when d0 > 0 or
+            // <I,V1> when d1 > 0.
+            int iNV = (int)m_akVertex.size();
+            m_akVertex.push_back(Vertex());
+            Vertex& rkNV = m_akVertex[iNV];
 
-//----------------------------------------------------------------------------
+            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
+            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
+            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
 
-Vector3 Vector3::refractionDirection(
-    const Vector3&  normal,
-    float           iInside,
-    float           iOutside) const {
-
-    // From pg. 24 of Henrik Wann Jensen. Realistic Image Synthesis
-    // Using Photon Mapping.  AK Peters. ISBN: 1568811470. July 2001.
-
-    // Invert the directions from Wann Jensen's formulation
-    // and normalize the vectors.
-    const Vector3 W = -direction();
-    Vector3 N = normal.direction();
-
-    float h1 = iOutside;
-    float h2 = iInside;
-
-    if (normal.dot(*this) > 0.0f) {
-        h1 = iInside;
-        h2 = iOutside;
-        N  = -N;
-    }
-
-    const float hRatio = h1 / h2;
-    const float WdotN = W.dot(N);
-
-    float det = 1.0f - (float)square(hRatio) * (1.0f - (float)square(WdotN));
-
-    if (det < 0) {
-        // Total internal reflection
-        return Vector3::zero();
-    } else {
-        return -hRatio * (W - WdotN * N) - N * sqrt(det);
-    }
-}
-
-//----------------------------------------------------------------------------
-void Vector3::orthonormalize (Vector3 akVector[3]) {
-    // If the input vectors are v0, v1, and v2, then the Gram-Schmidt
-    // orthonormalization produces vectors u0, u1, and u2 as follows,
-    //
-    //   u0 = v0/|v0|
-    //   u1 = (v1-(u0*v1)u0)/|v1-(u0*v1)u0|
-    //   u2 = (v2-(u0*v2)u0-(u1*v2)u1)/|v2-(u0*v2)u0-(u1*v2)u1|
-    //
-    // where |A| indicates length of vector A and A*B indicates dot
-    // product of vectors A and B.
-
-    // compute u0
-    akVector[0].unitize();
-
-    // compute u1
-	float fDot0 = akVector[0].dot(akVector[1]);
-    akVector[1] -= akVector[0] * fDot0;
-    akVector[1].unitize();
-
-    // compute u2
-	float fDot1 = akVector[1].dot(akVector[2]);
-    fDot0 = akVector[0].dot(akVector[2]);
-    akVector[2] -= akVector[0] * fDot0 + akVector[1] * fDot1;
-    akVector[2].unitize();
-}
-
-//----------------------------------------------------------------------------
-void Vector3::generateOrthonormalBasis (Vector3& rkU, Vector3& rkV,
-                                        Vector3& rkW, bool bUnitLengthW) {
-    if ( !bUnitLengthW )
-        rkW.unitize();
-
-    if ( G3D::abs(rkW.x) >= G3D::abs(rkW.y)
-            && G3D::abs(rkW.x) >= G3D::abs(rkW.z) ) {
-        rkU.x = -rkW.y;
-        rkU.y = + rkW.x;
-        rkU.z = 0.0;
-    } else {
-        rkU.x = 0.0;
-        rkU.y = + rkW.z;
-        rkU.z = -rkW.y;
+            if ( fD0 > (Real)0.0 )
+                rkE.m_aiVertex[1] = iNV;
+            else
+                rkE.m_aiVertex[0] = iNV;
+        }
     }
 
-    rkU.unitize();
-    rkV = rkW.cross(rkU);
-}
+    // The mesh straddles the plane.  A new convex polygonal face will be
+    // generated.  Add it now and insert edges when they are visited.
+    int iNF = (int)m_akFace.size();
+    m_akFace.push_back(Face());
+    Face& rkNF = m_akFace[iNF];
+    rkNF.m_kPlane = rkPlane;
 
+    // process the faces
+    for (int iF = 0; iF < iNF; iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            // Determine if the face is on the negative side, the positive
+            // side, or split by the clipping plane.  The m_iOccurs members
+            // are set to zero to help find the end points of the polyline
+            // that results from clipping a face.
+            assert( rkF.m_akEdge.size() >= 2 );
+            set<int>::iterator pkIter = rkF.m_akEdge.begin();
+            while ( pkIter != rkF.m_akEdge.end() )
+            {
+                int iE = *pkIter++;
+                Edge& rkE = m_akEdge[iE];
+                assert( rkE.m_bVisible );
+                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
+                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
+            }
+
+            int iVStart, iVFinal;
+            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
+            {
+                // polyline is open, close it up
+                int iNE = (int)m_akEdge.size();
+                m_akEdge.push_back(Edge());
+                Edge& rkNE = m_akEdge[iNE];
+
+                rkNE.m_aiVertex[0] = iVStart;
+                rkNE.m_aiVertex[1] = iVFinal;
+                rkNE.m_aiFace[0] = iF;
+                rkNE.m_aiFace[1] = iNF;
+
+                // add new edge to polygons
+                rkF.m_akEdge.insert(iNE);
+                rkNF.m_akEdge.insert(iNE);
+            }
+        }
+    }
+
+    // Process face rkNF to make sure it is a simple polygon (theoretically
+    // convex, but numerically may be slightly not convex).  Floating point
+    // round-off errors can cause the new face from the last loop to be
+    // needle-like with a collapse of two edges into a single edge.  This
+    // block guarantees the invariant "face always a simple polygon".
+    PostProcess(iNF,rkNF);
+    int iESize = (int)rkNF.m_akEdge.size();
+    if ( iESize < 3 )
+    {
+        // face is completely degenerate, remove it from mesh
+        m_akFace.pop_back();
+    }
+
+    return Plane3<Real>::NO_SIDE;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
+{
+    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
+    vector<EdgePlus> kEdges(iEQuantity);
+    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
+    while ( pkIter != rkNF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
+    }
+    assert( i == iEQuantity );
+
+    sort(kEdges.begin(),kEdges.end());
+
+    // process duplicate edges
+    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
+    {
+        if ( kEdges[i0] == kEdges[i1] )
+        {
+            // found two equivalent edges (same vertex end points)
+#ifdef _DEBUG
+            int i2 = i1+1;
+            if ( i2 < iEQuantity )
+            {
+                // Make sure an edge occurs at most twice.  If not, then
+                // algorithm needs to be modified to handle it.
+                assert( kEdges[i1] != kEdges[i2] );
+            }
+#endif
+            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
+            // vertices V0, V1 and faces F1, NF.
+            int iE0 = kEdges[i0].m_iE;
+            int iE1 = kEdges[i1].m_iE;
+            Edge& rkE0 = m_akEdge[iE0];
+            Edge& rkE1 = m_akEdge[iE1];
+
+            // remove E0 and E1 from NF
+            rkNF.m_akEdge.erase(iE0);
+            rkNF.m_akEdge.erase(iE1);
+
+            // remove NF from E0
+            if ( rkE0.m_aiFace[0] == iNF )
+            {
+                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE0.m_aiFace[1] == iNF );
+            }
+            rkE0.m_aiFace[1] = -1;
+
+            // remove NF from E1
+            if ( rkE1.m_aiFace[0] == iNF )
+            {
+                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE1.m_aiFace[1] == iNF );
+            }
+            rkE1.m_aiFace[1] = -1;
+
+            // E2 is being booted from the system.  Update the face F1 that
+            // shares it.  Update E1 to share F1.
+            int iF1 = rkE1.m_aiFace[0];
+            Face& rkF1 = m_akFace[iF1];
+            rkF1.m_akEdge.erase(iE1);
+            rkF1.m_akEdge.insert(iE0);
+            rkE0.m_aiFace[1] = iF1;
+            rkE1.m_bVisible = false;
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
+    int& riVFinal)
+{
+    // count the number of occurrences of each vertex in the polyline
+    bool bOkay = true;
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        m_akVertex[iV0].m_iOccurs++;
+        if ( m_akVertex[iV0].m_iOccurs > 2 )
+            bOkay = false;
+
+        int iV1 = rkE.m_aiVertex[1];
+        m_akVertex[iV1].m_iOccurs++;
+        if ( m_akVertex[iV1].m_iOccurs > 2 )
+            bOkay = false;
+    }
+
+    if ( !bOkay )
+    {
+#ifdef _DEBUG
+        // If you reach this block, there is a good chance that floating
+        // point round-off error had caused this face to be needle-like and
+        // what was theoretically a narrow V-shaped portion (a vertex shared
+        // by two edges forming a small angle) has collapsed into a single
+        // line segment.
+        //
+        // NOTE.  Once I added PostProcess, I have not gotten to this block.
+        ofstream kOStr("error.txt");
+        pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            int iE = *pkIter++;
+            Edge& rkE = m_akEdge[iE];
+            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
+                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
+                  << rkE.m_aiFace[1] << "> ";
+            if ( rkE.m_bVisible )
+                kOStr << "T" << endl;
+            else
+                kOStr << "F" << endl;
+        }
+        kOStr.close();
+
+        assert( false );
+#else
+        return false;
+#endif
+    }
+
+    // determine if the polyline is open
+    pkIter = rkF.m_akEdge.begin();
+    riVStart = -1;
+    riVFinal = -1;
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        if ( m_akVertex[iV0].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV0;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV0;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
+        }
+
+        int iV1 = rkE.m_aiVertex[1];
+        if ( m_akVertex[iV1].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV1;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV1;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
+        }
+    }
+
+    assert( (riVStart == -1 && riVFinal == -1)
+        ||  (riVStart != -1 && riVFinal != -1) );
+
+    return riVStart != -1;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
+{
+    // copy edge indices into contiguous memory
+    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
+    vector<int> aiEOrdered(iQuantity);
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+        aiEOrdered[i++] = *pkIter++;
+
+    // bubble sort (yes, it is...)
+    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
+    {
+        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
+        int j, iCurr = rkECurr.m_aiVertex[iChoice];
+        for (j = i1; j < iQuantity; j++)
+        {
+            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
+            int iSave;
+            if ( rkETemp.m_aiVertex[0] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 1;
+                break;
+            }
+            if ( rkETemp.m_aiVertex[1] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 0;
+                break;
+            }
+        }
+        assert( j < iQuantity );
+    }
+
+    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
+    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
+    for (i = 1; i < iQuantity; i++)
+    {
+        Edge& rkE = m_akEdge[aiEOrdered[i]];
+        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
+            aiVOrdered[i+1] = rkE.m_aiVertex[1];
+        else
+            aiVOrdered[i+1] = rkE.m_aiVertex[0];
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
+    vector<Plane3<Real> >& rakPlane)
+{
+    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            int iQuantity = (int)rkF.m_akEdge.size();
+            assert( iQuantity >= 3 );
+            vector<int> aiOrdered(iQuantity+1);
+            OrderVertices(rkF,aiOrdered);
+
+            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
+            int iV1 = aiOrdered[(iQuantity-1) >> 1];
+            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
+            if ( fTSP > (Real)0.0 )
+            {
+                // clockwise, need to swap
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    raiConnect.push_back(aiOrdered[i]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+            else
+            {
+                // counterclockwise
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i]);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
+{
+    // get visible vertices
+    int iVQuantity = (int)m_akVertex.size();
+    vector<Vector3<Real> > akPoint;
+    int* aiVMap = new int[iVQuantity];
+    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
+        {
+            aiVMap[iV] = (int)akPoint.size();
+            akPoint.push_back(rkV.m_kPoint);
+        }
+    }
+
+    vector<int> aiConnect;
+    vector<Plane3<Real> > akPlane;
+    GetTriangles(aiConnect,akPlane);
+
+    // re-order
+    int iNewVQuantity = (int)akPoint.size();
+    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
+    {
+        int iOldC = aiConnect[iC];
+        assert( 0 <= iOldC && iOldC < iVQuantity );
+        int iNewC = aiVMap[iOldC];
+        assert( 0 <= iNewC && iNewC < iNewVQuantity );
+        aiConnect[iC] = iNewC;
+    }
+
+    delete[] aiVMap;
+
+    rkPoly.Create(akPoint,aiConnect,akPlane);
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::Print (const char* acFilename) const
+{
+    ofstream kOStr(acFilename);
+    if ( !kOStr )
+        return false;
+
+    int iVQuantity = (int)m_akVertex.size();
+    int iEQuantity = (int)m_akEdge.size();
+    int iFQuantity = (int)m_akFace.size();
+    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
+    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
+    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
+    char acMsg[1024];
+
+    kOStr << iVQuantity << " vertices" << endl;
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
+            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
+            rkV.m_kPoint.X(),
+            rkV.m_kPoint.Y(),
+            rkV.m_kPoint.Z());
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iEQuantity << " edges" << endl;
+    for (int iE = 0; iE < iEQuantity; iE++)
+    {
+        const Edge& rkE = m_akEdge[iE];
+        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
+            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
+            iVDigits,rkE.m_aiVertex[0],
+            iVDigits,rkE.m_aiVertex[1],
+            iFDigits,rkE.m_aiFace[0],
+            iFDigits,rkE.m_aiFace[1]);
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iFQuantity << " faces" << endl;
+    for (int iF = 0; iF < iFQuantity; iF++)
+    {
+        const Face& rkF = m_akFace[iF];
+        sprintf(acMsg,"t<%*d> %d: e = ",
+            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
+        kOStr << acMsg;
+
+        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            kOStr << *pkIter << ' ';
+            pkIter++;
+        }
+        kOStr << endl;
+    }
+
+    return true;
+}
 //----------------------------------------------------------------------------
 
-std::string Vector3::toString() const {
-    return G3D::format("(%g, %g, %g)", x, y, z);
-}
-
-
 //----------------------------------------------------------------------------
-
-Matrix3 Vector3::cross() const {
-    return Matrix3( 0, -z,  y,
-                    z,  0, -x,
-                   -y,  x,  0);
-}
-
-
-void serialize(const Vector3::Axis& a, class BinaryOutput& bo) {
-    bo.writeUInt8((uint8)a);
-}
-
-void deserialize(Vector3::Axis& a, class BinaryInput& bi) {
-    a = (Vector3::Axis)bi.readUInt8();
-}
-
+// explicit instantiation
 //----------------------------------------------------------------------------
-// 2-char swizzles
-
-Vector2 Vector3::xx() const  { return Vector2       (x, x); }
-Vector2 Vector3::yx() const  { return Vector2       (y, x); }
-Vector2 Vector3::zx() const  { return Vector2       (z, x); }
-Vector2 Vector3::xy() const  { return Vector2       (x, y); }
-Vector2 Vector3::yy() const  { return Vector2       (y, y); }
-Vector2 Vector3::zy() const  { return Vector2       (z, y); }
-Vector2 Vector3::xz() const  { return Vector2       (x, z); }
-Vector2 Vector3::yz() const  { return Vector2       (y, z); }
-Vector2 Vector3::zz() const  { return Vector2       (z, z); }
-
-// 3-char swizzles
-
-Vector3 Vector3::xxx() const  { return Vector3       (x, x, x); }
-Vector3 Vector3::yxx() const  { return Vector3       (y, x, x); }
-Vector3 Vector3::zxx() const  { return Vector3       (z, x, x); }
-Vector3 Vector3::xyx() const  { return Vector3       (x, y, x); }
-Vector3 Vector3::yyx() const  { return Vector3       (y, y, x); }
-Vector3 Vector3::zyx() const  { return Vector3       (z, y, x); }
-Vector3 Vector3::xzx() const  { return Vector3       (x, z, x); }
-Vector3 Vector3::yzx() const  { return Vector3       (y, z, x); }
-Vector3 Vector3::zzx() const  { return Vector3       (z, z, x); }
-Vector3 Vector3::xxy() const  { return Vector3       (x, x, y); }
-Vector3 Vector3::yxy() const  { return Vector3       (y, x, y); }
-Vector3 Vector3::zxy() const  { return Vector3       (z, x, y); }
-Vector3 Vector3::xyy() const  { return Vector3       (x, y, y); }
-Vector3 Vector3::yyy() const  { return Vector3       (y, y, y); }
-Vector3 Vector3::zyy() const  { return Vector3       (z, y, y); }
-Vector3 Vector3::xzy() const  { return Vector3       (x, z, y); }
-Vector3 Vector3::yzy() const  { return Vector3       (y, z, y); }
-Vector3 Vector3::zzy() const  { return Vector3       (z, z, y); }
-Vector3 Vector3::xxz() const  { return Vector3       (x, x, z); }
-Vector3 Vector3::yxz() const  { return Vector3       (y, x, z); }
-Vector3 Vector3::zxz() const  { return Vector3       (z, x, z); }
-Vector3 Vector3::xyz() const  { return Vector3       (x, y, z); }
-Vector3 Vector3::yyz() const  { return Vector3       (y, y, z); }
-Vector3 Vector3::zyz() const  { return Vector3       (z, y, z); }
-Vector3 Vector3::xzz() const  { return Vector3       (x, z, z); }
-Vector3 Vector3::yzz() const  { return Vector3       (y, z, z); }
-Vector3 Vector3::zzz() const  { return Vector3       (z, z, z); }
-
-// 4-char swizzles
-
-Vector4 Vector3::xxxx() const  { return Vector4       (x, x, x, x); }
-Vector4 Vector3::yxxx() const  { return Vector4       (y, x, x, x); }
-Vector4 Vector3::zxxx() const  { return Vector4       (z, x, x, x); }
-Vector4 Vector3::xyxx() const  { return Vector4       (x, y, x, x); }
-Vector4 Vector3::yyxx() const  { return Vector4       (y, y, x, x); }
-Vector4 Vector3::zyxx() const  { return Vector4       (z, y, x, x); }
-Vector4 Vector3::xzxx() const  { return Vector4       (x, z, x, x); }
-Vector4 Vector3::yzxx() const  { return Vector4       (y, z, x, x); }
-Vector4 Vector3::zzxx() const  { return Vector4       (z, z, x, x); }
-Vector4 Vector3::xxyx() const  { return Vector4       (x, x, y, x); }
-Vector4 Vector3::yxyx() const  { return Vector4       (y, x, y, x); }
-Vector4 Vector3::zxyx() const  { return Vector4       (z, x, y, x); }
-Vector4 Vector3::xyyx() const  { return Vector4       (x, y, y, x); }
-Vector4 Vector3::yyyx() const  { return Vector4       (y, y, y, x); }
-Vector4 Vector3::zyyx() const  { return Vector4       (z, y, y, x); }
-Vector4 Vector3::xzyx() const  { return Vector4       (x, z, y, x); }
-Vector4 Vector3::yzyx() const  { return Vector4       (y, z, y, x); }
-Vector4 Vector3::zzyx() const  { return Vector4       (z, z, y, x); }
-Vector4 Vector3::xxzx() const  { return Vector4       (x, x, z, x); }
-Vector4 Vector3::yxzx() const  { return Vector4       (y, x, z, x); }
-Vector4 Vector3::zxzx() const  { return Vector4       (z, x, z, x); }
-Vector4 Vector3::xyzx() const  { return Vector4       (x, y, z, x); }
-Vector4 Vector3::yyzx() const  { return Vector4       (y, y, z, x); }
-Vector4 Vector3::zyzx() const  { return Vector4       (z, y, z, x); }
-Vector4 Vector3::xzzx() const  { return Vector4       (x, z, z, x); }
-Vector4 Vector3::yzzx() const  { return Vector4       (y, z, z, x); }
-Vector4 Vector3::zzzx() const  { return Vector4       (z, z, z, x); }
-Vector4 Vector3::xxxy() const  { return Vector4       (x, x, x, y); }
-Vector4 Vector3::yxxy() const  { return Vector4       (y, x, x, y); }
-Vector4 Vector3::zxxy() const  { return Vector4       (z, x, x, y); }
-Vector4 Vector3::xyxy() const  { return Vector4       (x, y, x, y); }
-Vector4 Vector3::yyxy() const  { return Vector4       (y, y, x, y); }
-Vector4 Vector3::zyxy() const  { return Vector4       (z, y, x, y); }
-Vector4 Vector3::xzxy() const  { return Vector4       (x, z, x, y); }
-Vector4 Vector3::yzxy() const  { return Vector4       (y, z, x, y); }
-Vector4 Vector3::zzxy() const  { return Vector4       (z, z, x, y); }
-Vector4 Vector3::xxyy() const  { return Vector4       (x, x, y, y); }
-Vector4 Vector3::yxyy() const  { return Vector4       (y, x, y, y); }
-Vector4 Vector3::zxyy() const  { return Vector4       (z, x, y, y); }
-Vector4 Vector3::xyyy() const  { return Vector4       (x, y, y, y); }
-Vector4 Vector3::yyyy() const  { return Vector4       (y, y, y, y); }
-Vector4 Vector3::zyyy() const  { return Vector4       (z, y, y, y); }
-Vector4 Vector3::xzyy() const  { return Vector4       (x, z, y, y); }
-Vector4 Vector3::yzyy() const  { return Vector4       (y, z, y, y); }
-Vector4 Vector3::zzyy() const  { return Vector4       (z, z, y, y); }
-Vector4 Vector3::xxzy() const  { return Vector4       (x, x, z, y); }
-Vector4 Vector3::yxzy() const  { return Vector4       (y, x, z, y); }
-Vector4 Vector3::zxzy() const  { return Vector4       (z, x, z, y); }
-Vector4 Vector3::xyzy() const  { return Vector4       (x, y, z, y); }
-Vector4 Vector3::yyzy() const  { return Vector4       (y, y, z, y); }
-Vector4 Vector3::zyzy() const  { return Vector4       (z, y, z, y); }
-Vector4 Vector3::xzzy() const  { return Vector4       (x, z, z, y); }
-Vector4 Vector3::yzzy() const  { return Vector4       (y, z, z, y); }
-Vector4 Vector3::zzzy() const  { return Vector4       (z, z, z, y); }
-Vector4 Vector3::xxxz() const  { return Vector4       (x, x, x, z); }
-Vector4 Vector3::yxxz() const  { return Vector4       (y, x, x, z); }
-Vector4 Vector3::zxxz() const  { return Vector4       (z, x, x, z); }
-Vector4 Vector3::xyxz() const  { return Vector4       (x, y, x, z); }
-Vector4 Vector3::yyxz() const  { return Vector4       (y, y, x, z); }
-Vector4 Vector3::zyxz() const  { return Vector4       (z, y, x, z); }
-Vector4 Vector3::xzxz() const  { return Vector4       (x, z, x, z); }
-Vector4 Vector3::yzxz() const  { return Vector4       (y, z, x, z); }
-Vector4 Vector3::zzxz() const  { return Vector4       (z, z, x, z); }
-Vector4 Vector3::xxyz() const  { return Vector4       (x, x, y, z); }
-Vector4 Vector3::yxyz() const  { return Vector4       (y, x, y, z); }
-Vector4 Vector3::zxyz() const  { return Vector4       (z, x, y, z); }
-Vector4 Vector3::xyyz() const  { return Vector4       (x, y, y, z); }
-Vector4 Vector3::yyyz() const  { return Vector4       (y, y, y, z); }
-Vector4 Vector3::zyyz() const  { return Vector4       (z, y, y, z); }
-Vector4 Vector3::xzyz() const  { return Vector4       (x, z, y, z); }
-Vector4 Vector3::yzyz() const  { return Vector4       (y, z, y, z); }
-Vector4 Vector3::zzyz() const  { return Vector4       (z, z, y, z); }
-Vector4 Vector3::xxzz() const  { return Vector4       (x, x, z, z); }
-Vector4 Vector3::yxzz() const  { return Vector4       (y, x, z, z); }
-Vector4 Vector3::zxzz() const  { return Vector4       (z, x, z, z); }
-Vector4 Vector3::xyzz() const  { return Vector4       (x, y, z, z); }
-Vector4 Vector3::yyzz() const  { return Vector4       (y, y, z, z); }
-Vector4 Vector3::zyzz() const  { return Vector4       (z, y, z, z); }
-Vector4 Vector3::xzzz() const  { return Vector4       (x, z, z, z); }
-Vector4 Vector3::yzzz() const  { return Vector4       (y, z, z, z); }
-Vector4 Vector3::zzzz() const  { return Vector4       (z, z, z, z); }
-
-
-
-
-
-
-} // namespace
+namespace Wml
+{
+template class WML_ITEM ConvexClipper<float>;
+template class WML_ITEM ConvexClipper<double>;
+}
+//----------------------------------------------------------------------------

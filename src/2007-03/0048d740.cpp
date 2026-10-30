@@ -1,14 +1,14 @@
-// from server: 58% by colin
-// roc-lang: cpp
+// from server: 61% by colin
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreCompositorInstance.cpp
+// roc-lib: ogre-1.7.0 OgreInstancedGeometry.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*
 -----------------------------------------------------------------------------
 This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
+(Object-oriented Graphics Rendering Engine)
 For the latest info, see http://www.ogre3d.org/
 
 Copyright (c) 2000-2009 Torus Knot Software Ltd
@@ -33,1081 +33,2190 @@ THE SOFTWARE.
 -----------------------------------------------------------------------------
 */
 #include "OgreStableHeaders.h"
-#include "OgreCompositorInstance.h"
-#include "OgreCompositorChain.h"
-#include "OgreCompositorManager.h"
-#include "OgreCompositionTargetPass.h"
-#include "OgreCompositionPass.h"
-#include "OgreCompositionTechnique.h"
-#include "OgreCustomCompositionPass.h"
-#include "OgreTechnique.h"
-#include "OgrePass.h"
-#include "OgreTexture.h"
-#include "OgreLogManager.h"
-#include "OgreMaterialManager.h"
-#include "OgreTextureManager.h"
-#include "OgreSceneManager.h"
-#include "OgreStringConverter.h"
+#include "OgreInstancedGeometry.h"
+#include "OgreEntity.h"
+#include "OgreSubEntity.h"
+#include "OgreSceneNode.h"
 #include "OgreException.h"
-#include "OgreHardwarePixelBuffer.h"
+#include "OgreMesh.h"
+#include "OgreSubMesh.h"
+#include "OgreLogManager.h"
+#include "OgreSceneManager.h"
 #include "OgreCamera.h"
+#include "OgreMaterialManager.h"
 #include "OgreRoot.h"
 #include "OgreRenderSystem.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreCompositorLogic.h"
+#include "OgreEdgeListBuilder.h"
+#include "OgreStringConverter.h"
 
 namespace Ogre {
-CompositorInstance::CompositorInstance(CompositionTechnique *technique,
-    CompositorChain *chain):
-    mCompositor(technique->getParent()), mTechnique(technique), mChain(chain),
-		mEnabled(false)
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
+
+	#define BatchInstance_RANGE 1024
+	#define BatchInstance_HALF_RANGE 512
+	#define BatchInstance_MAX_INDEX 511
+	#define BatchInstance_MIN_INDEX -512
+
+	//--------------------------------------------------------------------------
+	InstancedGeometry::InstancedGeometry(SceneManager* owner, const String& name):
+		mOwner(owner),
+		mName(name),
+		mBuilt(false),
+		mUpperDistance(0.0f),
+		mSquaredUpperDistance(0.0f),
+		mCastShadows(false),
+		mBatchInstanceDimensions(Vector3(1000,1000,1000)),
+		mHalfBatchInstanceDimensions(Vector3(500,500,500)),
+		mOrigin(Vector3(0,0,0)),
+		mVisible(true),
+        mProvideWorldInverses(false),
+        mRenderQueueID(RENDER_QUEUE_MAIN),
+        mRenderQueueIDSet(false),
+		mObjectCount(0),
+		mInstancedGeometryInstance(0),
+		mSkeletonInstance(0)
 	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceCreated(this);
+		mBaseSkeleton.setNull();
 	}
-}
-//-----------------------------------------------------------------------
-CompositorInstance::~CompositorInstance()
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
+	//--------------------------------------------------------------------------
+	InstancedGeometry::~InstancedGeometry()
 	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceDestroyed(this);
+		reset();
+		if(mSkeletonInstance)
+			OGRE_DELETE mSkeletonInstance;
+
+			
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance*InstancedGeometry::getInstancedGeometryInstance(void)
+	{
+		if (!mInstancedGeometryInstance)
+		{
+			uint32 index = 0;
+			// Make a name
+			StringUtil::StrStreamType str;
+			str << mName << ":" << index;
+
+			mInstancedGeometryInstance = OGRE_NEW BatchInstance(this, str.str(), mOwner, index);
+			mOwner->injectMovableObject(mInstancedGeometryInstance);
+			mInstancedGeometryInstance->setVisible(mVisible);
+			mInstancedGeometryInstance->setCastShadows(mCastShadows);
+			if (mRenderQueueIDSet)
+			{
+				mInstancedGeometryInstance->setRenderQueueGroup(mRenderQueueID);
+			}
+			mBatchInstanceMap[index] = mInstancedGeometryInstance;
+		
+	
+		}
+		return mInstancedGeometryInstance;
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance* InstancedGeometry::getBatchInstance(const AxisAlignedBox& bounds,
+		bool autoCreate)
+	{
+		if (bounds.isNull())
+			return 0;
+
+		// Get the BatchInstance which has the largest overlapping volume
+		const Vector3 min = bounds.getMinimum();
+		const Vector3 max = bounds.getMaximum();
+
+		// Get the min and max BatchInstance indexes
+		ushort minx, miny, minz;
+		ushort maxx, maxy, maxz;
+		getBatchInstanceIndexes(min, minx, miny, minz);
+		getBatchInstanceIndexes(max, maxx, maxy, maxz);
+		Real maxVolume = 0.0f;
+		ushort finalx =0 , finaly = 0, finalz = 0;
+		for (ushort x = minx; x <= maxx; ++x)
+		{
+			for (ushort y = miny; y <= maxy; ++y)
+			{
+				for (ushort z = minz; z <= maxz; ++z)
+				{
+					Real vol = getVolumeIntersection(bounds, x, y, z);
+					if (vol > maxVolume)
+					{
+						maxVolume = vol;
+						finalx = x;
+						finaly = y;
+						finalz = z;
+					}
+
+				}
+			}
+		}
+
+		assert(maxVolume > 0.0f &&
+			"Static geometry: Problem determining closest volume match!");
+
+		return getBatchInstance(finalx, finaly, finalz, autoCreate);
+
+	}
+	//--------------------------------------------------------------------------
+	Real InstancedGeometry::getVolumeIntersection(const AxisAlignedBox& box,
+		ushort x, ushort y, ushort z)
+	{
+		// Get bounds of indexed BatchInstance
+		AxisAlignedBox BatchInstanceBounds = getBatchInstanceBounds(x, y, z);
+		AxisAlignedBox intersectBox = BatchInstanceBounds.intersection(box);
+		// return a 'volume' which ignores zero dimensions
+		// since we only use this for relative comparisons of the same bounds
+		// this will still be internally consistent
+		Vector3 boxdiff = box.getMaximum() - box.getMinimum();
+		Vector3 intersectDiff = intersectBox.getMaximum() - intersectBox.getMinimum();
+
+		return (boxdiff.x == 0 ? 1 : intersectDiff.x) *
+			(boxdiff.y == 0 ? 1 : intersectDiff.y) *
+			(boxdiff.z == 0 ? 1 : intersectDiff.z);
+
+	}
+	//--------------------------------------------------------------------------
+	AxisAlignedBox InstancedGeometry::getBatchInstanceBounds(ushort x, ushort y, ushort z)
+	{
+		Vector3 min(
+			((Real)x - BatchInstance_HALF_RANGE) * mBatchInstanceDimensions.x + mOrigin.x,
+			((Real)y - BatchInstance_HALF_RANGE) * mBatchInstanceDimensions.y + mOrigin.y,
+			((Real)z - BatchInstance_HALF_RANGE) * mBatchInstanceDimensions.z + mOrigin.z
+			);
+		Vector3 max = min + mBatchInstanceDimensions;
+		return AxisAlignedBox(min, max);
+	}
+	//--------------------------------------------------------------------------
+ 	Vector3 InstancedGeometry::getBatchInstanceCentre(ushort x, ushort y, ushort z)
+	{
+		return Vector3(
+			((Real)x - BatchInstance_HALF_RANGE) * mBatchInstanceDimensions.x + mOrigin.x
+				+ mHalfBatchInstanceDimensions.x,
+			((Real)y - BatchInstance_HALF_RANGE) * mBatchInstanceDimensions.y + mOrigin.y
+				+ mHalfBatchInstanceDimensions.y,
+			((Real)z - BatchInstance_HALF_RANGE) * mBatchInstanceDimensions.z + mOrigin.z
+				+ mHalfBatchInstanceDimensions.z
+			);
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance* InstancedGeometry::getBatchInstance(
+			ushort x, ushort y, ushort z, bool autoCreate)
+	{
+		uint32 index = packIndex(x, y, z);
+		BatchInstance* ret = getBatchInstance(index);
+		if (!ret && autoCreate)
+		{
+			// Make a name
+			StringUtil::StrStreamType str;
+			str << mName << ":" << index;
+			// Calculate the BatchInstance centre
+			Vector3 centre(0,0,0);// = getBatchInstanceCentre(x, y, z);
+			ret = OGRE_NEW BatchInstance(this, str.str(), mOwner, index/*, centre*/);
+			mOwner->injectMovableObject(ret);
+			ret->setVisible(mVisible);
+			ret->setCastShadows(mCastShadows);
+			if (mRenderQueueIDSet)
+			{
+				ret->setRenderQueueGroup(mRenderQueueID);
+			}
+			mBatchInstanceMap[index] = ret;
+		}
+		return ret;
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance* InstancedGeometry::getBatchInstance(uint32 index)
+	{
+		BatchInstanceMap::iterator i = mBatchInstanceMap.find(index);
+		if (i != mBatchInstanceMap.end())
+		{
+			return i->second;
+		}
+		else
+		{
+			return 0;
+		}
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::getBatchInstanceIndexes(const Vector3& point,
+		ushort& x, ushort& y, ushort& z)
+	{
+		// Scale the point into multiples of BatchInstance and adjust for origin
+		Vector3 scaledPoint = (point - mOrigin) / mBatchInstanceDimensions;
+
+		// Round down to 'bottom left' point which represents the cell index
+		int ix = Math::IFloor(scaledPoint.x);
+		int iy = Math::IFloor(scaledPoint.y);
+		int iz = Math::IFloor(scaledPoint.z);
+
+		// Check bounds
+		if (ix < BatchInstance_MIN_INDEX || ix > BatchInstance_MAX_INDEX
+			|| iy < BatchInstance_MIN_INDEX || iy > BatchInstance_MAX_INDEX
+			|| iz < BatchInstance_MIN_INDEX || iz > BatchInstance_MAX_INDEX)
+		{
+			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+				"Point out of bounds",
+				"InstancedGeometry::getBatchInstanceIndexes");
+		}
+		// Adjust for the fact that we use unsigned values for simplicity
+		// (requires less faffing about for negatives give 10-bit packing
+		x = static_cast<ushort>(ix + BatchInstance_HALF_RANGE);
+		y = static_cast<ushort>(iy + BatchInstance_HALF_RANGE);
+		z = static_cast<ushort>(iz + BatchInstance_HALF_RANGE);
+
+
+	}
+	//--------------------------------------------------------------------------
+	uint32 InstancedGeometry::packIndex(ushort x, ushort y, ushort z)
+	{
+		return x + (y << 10) + (z << 20);
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance* InstancedGeometry::getBatchInstance(const Vector3& point,
+		bool autoCreate)
+	{
+		ushort x, y, z;
+		getBatchInstanceIndexes(point, x, y, z);
+		return getBatchInstance(x, y, z, autoCreate);
+	}
+	//--------------------------------------------------------------------------
+	AxisAlignedBox InstancedGeometry::calculateBounds(VertexData* vertexData,
+		const Vector3& position, const Quaternion& orientation,
+		const Vector3& scale)
+	{
+		const VertexElement* posElem =
+			vertexData->vertexDeclaration->findElementBySemantic(
+				VES_POSITION);
+		HardwareVertexBufferSharedPtr vbuf =
+			vertexData->vertexBufferBinding->getBuffer(posElem->getSource());
+		unsigned char* vertex =
+			static_cast<unsigned char*>(
+				vbuf->lock(HardwareBuffer::HBL_READ_ONLY));
+		float* pFloat;
+
+		Vector3 min = Vector3::ZERO, max = Vector3::UNIT_SCALE;
+		bool first = true;
+
+		for(size_t j = 0; j < vertexData->vertexCount; ++j, vertex += vbuf->getVertexSize())
+		{
+			posElem->baseVertexPointerToElement(vertex, &pFloat);
+
+			Vector3 pt;
+
+			pt.x = (*pFloat++);
+			pt.y = (*pFloat++);
+			pt.z = (*pFloat++);
+			// Transform to world (scale, rotate, translate)
+			pt = (orientation * (pt * scale)) + position;
+			if (first)
+			{
+				min = max = pt;
+				first = false;
+			}
+			else
+			{
+				min.makeFloor(pt);
+				max.makeCeil(pt);
+			}
+
+		}
+		vbuf->unlock();
+		return AxisAlignedBox(min, max);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::addEntity(Entity* ent, const Vector3& position,
+		const Quaternion& orientation, const Vector3& scale)
+	{
+
+		const MeshPtr& msh = ent->getMesh();
+		// Validate
+		if (msh->isLodManual())
+		{
+			LogManager::getSingleton().logMessage(
+				"WARNING (InstancedGeometry): Manual LOD is not supported. "
+				"Using only highest LOD level for mesh " + msh->getName());
+		}
+
+		//get the skeleton of the entity, if that's not already done
+		if(!ent->getMesh()->getSkeleton().isNull()&&mBaseSkeleton.isNull())
+		{
+			mBaseSkeleton=ent->getMesh()->getSkeleton();
+			mSkeletonInstance= OGRE_NEW SkeletonInstance(mBaseSkeleton);
+			mSkeletonInstance->load();
+			mAnimationState=ent->getAllAnimationStates();
+		}
+		AxisAlignedBox sharedWorldBounds;
+		// queue this entities submeshes and choice of material
+		// also build the lists of geometry to be used for the source of lods
+
+
+		for (uint i = 0; i < ent->getNumSubEntities(); ++i)
+		{
+			SubEntity* se = ent->getSubEntity(i);
+			QueuedSubMesh* q = OGRE_NEW QueuedSubMesh();
+
+			// Get the geometry for this SubMesh
+			q->submesh = se->getSubMesh();
+			q->geometryLodList = determineGeometry(q->submesh);
+			q->materialName = se->getMaterialName();
+			q->orientation = orientation;
+			q->position = position;
+			q->scale = scale;
+			q->ID = mObjectCount;
+			// Determine the bounds based on the highest LOD
+			q->worldBounds = calculateBounds(
+				(*q->geometryLodList)[0].vertexData,
+					position, orientation, scale);
+
+			mQueuedSubMeshes.push_back(q);
+		}
+		mObjectCount++;
+
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::SubMeshLodGeometryLinkList*
+	InstancedGeometry::determineGeometry(SubMesh* sm)
+	{
+		// First, determine if we've already seen this submesh before
+		SubMeshGeometryLookup::iterator i =
+			mSubMeshGeometryLookup.find(sm);
+		if (i != mSubMeshGeometryLookup.end())
+		{
+			return i->second;
+		}
+		// Otherwise, we have to create a new one
+		SubMeshLodGeometryLinkList* lodList = OGRE_NEW_T(SubMeshLodGeometryLinkList, MEMCATEGORY_GEOMETRY)();
+		mSubMeshGeometryLookup[sm] = lodList;
+		ushort numLods = sm->parent->isLodManual() ? 1 :
+			sm->parent->getNumLodLevels();
+		lodList->resize(numLods);
+		for (ushort lod = 0; lod < numLods; ++lod)
+		{
+			SubMeshLodGeometryLink& geomLink = (*lodList)[lod];
+			IndexData *lodIndexData;
+			if (lod == 0)
+			{
+				lodIndexData = sm->indexData;
+			}
+			else
+			{
+				lodIndexData = sm->mLodFaceList[lod - 1];
+			}
+			// Can use the original mesh geometry?
+			if (sm->useSharedVertices)
+			{
+				if (sm->parent->getNumSubMeshes() == 1)
+				{
+					// Ok, this is actually our own anyway
+					geomLink.vertexData = sm->parent->sharedVertexData;
+					geomLink.indexData = lodIndexData;
+				}
+				else
+				{
+					// We have to split it
+					splitGeometry(sm->parent->sharedVertexData,
+						lodIndexData, &geomLink);
+				}
+			}
+			else
+			{
+				if (lod == 0)
+				{
+					// Ok, we can use the existing geometry; should be in full
+					// use by just this SubMesh
+					geomLink.vertexData = sm->vertexData;
+					geomLink.indexData = sm->indexData;
+				}
+				else
+				{
+					// We have to split it
+					splitGeometry(sm->vertexData,
+						lodIndexData, &geomLink);
+				}
+			}
+			assert (geomLink.vertexData->vertexStart == 0 &&
+				"Cannot use vertexStart > 0 on indexed geometry due to "
+				"rendersystem incompatibilities - see the docs!");
+		}
+
+
+		return lodList;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::splitGeometry(VertexData* vd, IndexData* id,
+			InstancedGeometry::SubMeshLodGeometryLink* targetGeomLink)
+	{
+		// Firstly we need to scan to see how many vertices are being used
+		// and while we're at it, build the remap we can use later
+		bool use32bitIndexes =
+			id->indexBuffer->getType() == HardwareIndexBuffer::IT_32BIT;
+		uint16 *p16;
+		uint32 *p32;
+		IndexRemap indexRemap;
+		if (use32bitIndexes)
+		{
+			p32 = static_cast<uint32*>(id->indexBuffer->lock(
+				id->indexStart, 
+				id->indexCount * id->indexBuffer->getIndexSize(), 
+				HardwareBuffer::HBL_READ_ONLY));
+			buildIndexRemap(p32, id->indexCount, indexRemap);
+			id->indexBuffer->unlock();
+		}
+		else
+		{
+			p16 = static_cast<uint16*>(id->indexBuffer->lock(
+				id->indexStart, 
+				id->indexCount * id->indexBuffer->getIndexSize(), 
+				HardwareBuffer::HBL_READ_ONLY));
+			buildIndexRemap(p16, id->indexCount, indexRemap);
+			id->indexBuffer->unlock();
+		}
+		if (indexRemap.size() == vd->vertexCount)
+		{
+			// ha, complete usage after all
+			targetGeomLink->vertexData = vd;
+			targetGeomLink->indexData = id;
+			return;
+		}
+
+
+		// Create the new vertex data records
+		targetGeomLink->vertexData = vd->clone(false);
+		// Convenience
+		VertexData* newvd = targetGeomLink->vertexData;
+		//IndexData* newid = targetGeomLink->indexData;
+		// Update the vertex count
+		newvd->vertexCount = indexRemap.size();
+
+		size_t numvbufs = vd->vertexBufferBinding->getBufferCount();
+		// Copy buffers from old to new
+		for (unsigned short b = 0; b < numvbufs; ++b)
+		{
+			// Lock old buffer
+			HardwareVertexBufferSharedPtr oldBuf =
+				vd->vertexBufferBinding->getBuffer(b);
+			// Create new buffer
+			HardwareVertexBufferSharedPtr newBuf =
+				HardwareBufferManager::getSingleton().createVertexBuffer(
+					oldBuf->getVertexSize(),
+					indexRemap.size(),
+					HardwareBuffer::HBU_STATIC);
+			// rebind
+			newvd->vertexBufferBinding->setBinding(b, newBuf);
+
+			// Copy all the elements of the buffer across, by iterating over
+			// the IndexRemap which describes how to move the old vertices
+			// to the new ones. By nature of the map the remap is in order of
+			// indexes in the old buffer, but note that we're not guaranteed to
+			// address every vertex (which is kinda why we're here)
+			uchar* pSrcBase = static_cast<uchar*>(
+				oldBuf->lock(HardwareBuffer::HBL_READ_ONLY));
+			uchar* pDstBase = static_cast<uchar*>(
+				newBuf->lock(HardwareBuffer::HBL_DISCARD));
+			size_t vertexSize = oldBuf->getVertexSize();
+			// Buffers should be the same size
+			assert (vertexSize == newBuf->getVertexSize());
+
+			for (IndexRemap::iterator r = indexRemap.begin();
+				r != indexRemap.end(); ++r)
+			{
+				assert (r->first < oldBuf->getNumVertices());
+				assert (r->second < newBuf->getNumVertices());
+
+				uchar* pSrc = pSrcBase + r->first * vertexSize;
+				uchar* pDst = pDstBase + r->second * vertexSize;
+				memcpy(pDst, pSrc, vertexSize);
+			}
+			// unlock
+			oldBuf->unlock();
+			newBuf->unlock();
+
+		}
+
+		// Now create a new index buffer
+		HardwareIndexBufferSharedPtr ibuf =
+			HardwareBufferManager::getSingleton().createIndexBuffer(
+				id->indexBuffer->getType(), id->indexCount,
+				HardwareBuffer::HBU_STATIC);
+
+		if (use32bitIndexes)
+		{
+			uint32 *pSrc32, *pDst32;
+			pSrc32 = static_cast<uint32*>(id->indexBuffer->lock(
+				id->indexStart, id->indexCount * id->indexBuffer->getIndexSize(), 
+				HardwareBuffer::HBL_READ_ONLY));
+			pDst32 = static_cast<uint32*>(ibuf->lock(
+				HardwareBuffer::HBL_DISCARD));
+			remapIndexes(pSrc32, pDst32, indexRemap, id->indexCount);
+			id->indexBuffer->unlock();
+			ibuf->unlock();
+		}
+		else
+		{
+			uint16 *pSrc16, *pDst16;
+			pSrc16 = static_cast<uint16*>(id->indexBuffer->lock(
+				id->indexStart, id->indexCount * id->indexBuffer->getIndexSize(), 
+				HardwareBuffer::HBL_READ_ONLY));
+			pDst16 = static_cast<uint16*>(ibuf->lock(
+				HardwareBuffer::HBL_DISCARD));
+			remapIndexes(pSrc16, pDst16, indexRemap, id->indexCount);
+			id->indexBuffer->unlock();
+			ibuf->unlock();
+		}
+
+		targetGeomLink->indexData = OGRE_NEW IndexData();
+		targetGeomLink->indexData->indexStart = 0;
+		targetGeomLink->indexData->indexCount = id->indexCount;
+		targetGeomLink->indexData->indexBuffer = ibuf;
+
+		// Store optimised geometry for deallocation later
+		OptimisedSubMeshGeometry *optGeom = OGRE_NEW OptimisedSubMeshGeometry();
+		optGeom->indexData = targetGeomLink->indexData;
+		optGeom->vertexData = targetGeomLink->vertexData;
+		mOptimisedSubMeshGeometryList.push_back(optGeom);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::addSceneNode(const SceneNode* node)
+	{
+		SceneNode::ConstObjectIterator obji = node->getAttachedObjectIterator();
+		while (obji.hasMoreElements())
+		{
+			MovableObject* mobj = obji.getNext();
+			if (mobj->getMovableType() == "Entity")
+			{
+				addEntity(static_cast<Entity*>(mobj),
+					node->_getDerivedPosition(),
+					node->_getDerivedOrientation(),
+					node->_getDerivedScale());
+			}
+		}
+		// Iterate through all the child-nodes
+		SceneNode::ConstChildNodeIterator nodei = node->getChildIterator();
+
+		while (nodei.hasMoreElements())
+		{
+			const SceneNode* newNode = static_cast<const SceneNode*>(nodei.getNext());
+			// Add this subnode and its children...
+			addSceneNode( newNode );
+		}
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::build(void)
+	{
+		// Make sure there's nothing from previous builds
+		destroy();
+
+		// Firstly allocate meshes to BatchInstances
+		for (QueuedSubMeshList::iterator qi = mQueuedSubMeshes.begin();
+			qi != mQueuedSubMeshes.end(); ++qi)
+		{
+			QueuedSubMesh* qsm = *qi;
+			//BatchInstance* BatchInstance = getBatchInstance(qsm->worldBounds, true);
+			BatchInstance* batchInstance = getInstancedGeometryInstance();
+			batchInstance->assign(qsm);
+		}
+
+		// Now tell each BatchInstance to build itself
+		for (BatchInstanceMap::iterator ri = mBatchInstanceMap.begin();
+			ri != mBatchInstanceMap.end(); ++ri)
+		{
+			ri->second->build();
+		}
+
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::addBatchInstance(void)
+	{
+		
+
+		BatchInstanceIterator regIt = getBatchInstanceIterator();
+		BatchInstance*lastBatchInstance=0 ;
+		while(regIt.hasMoreElements())
+		{
+			lastBatchInstance= regIt.getNext();
+		}
+		uint32 index=(lastBatchInstance)?lastBatchInstance->getID()+1:0;
+		//create a new BatchInstance
+
+		BatchInstance*ret = OGRE_NEW BatchInstance(this, mName+":"+StringConverter::toString(index),
+			mOwner, index);
+
+		ret->attachToScene();
+
+		mOwner->injectMovableObject(ret);
+		ret->setVisible(mVisible);
+		ret->setCastShadows(mCastShadows);
+		mBatchInstanceMap[index] = ret;
+
+		if (mRenderQueueIDSet)
+		{
+				ret->setRenderQueueGroup(mRenderQueueID);
+		}
+	
+		const size_t numLod = lastBatchInstance->mLodValues.size();
+		ret->mLodValues.resize(numLod);
+		for (ushort lod = 0; lod < numLod; lod++)
+		{
+			ret->mLodValues[lod] =
+			lastBatchInstance->mLodValues[lod];
+		}
+
+
+	
+		// update bounds
+		AxisAlignedBox box(lastBatchInstance->mAABB.getMinimum(),lastBatchInstance->mAABB.getMaximum());
+		ret->mAABB.merge(box);
+
+		ret->mBoundingRadius = lastBatchInstance->mBoundingRadius ;
+		//now create  news instanced objects
+		BatchInstance::ObjectsMap::iterator objIt;
+		for(objIt=lastBatchInstance->getInstancesMap().begin();objIt!=lastBatchInstance->getInstancesMap().end();objIt++)
+		{
+			InstancedObject* instancedObject = ret->isInstancedObjectPresent(objIt->first);
+			if(instancedObject == NULL)
+			{
+				if(mBaseSkeleton.isNull())
+				{
+					instancedObject= OGRE_NEW InstancedObject(objIt->first);
+				}
+				else
+				{
+					instancedObject= OGRE_NEW InstancedObject(objIt->first,mSkeletonInstance,mAnimationState);
+				}
+				ret->addInstancedObject(objIt->first,instancedObject);
+			}
+
+		}
+
+
+
+		BatchInstance::LODIterator lodIterator = lastBatchInstance->getLODIterator();
+		//parse all the lod buckets of the BatchInstance
+		while (lodIterator.hasMoreElements())
+		{
+		
+			LODBucket* lod = lodIterator.getNext();
+			//create a new lod bucket for the new BatchInstance
+			LODBucket* lodBucket= OGRE_NEW LODBucket(ret, lod->getLod(), lod->getLodValue());
+
+			//add the lod bucket to the BatchInstance list
+			ret->updateContainers(lodBucket);
+			
+			LODBucket::MaterialIterator matIt = lod->getMaterialIterator();
+			//parse all the material buckets of the lod bucket
+			while (matIt.hasMoreElements())
+			{
+				
+				MaterialBucket*mat = matIt.getNext();
+				//create a new material bucket
+				String materialName=mat->getMaterialName();
+				MaterialBucket* matBucket = OGRE_NEW MaterialBucket(lodBucket,materialName);
+
+				//add the material bucket to the lod buckets list and map
+				lodBucket->updateContainers(matBucket, materialName);
+
+				MaterialBucket::GeometryIterator geomIt = mat->getGeometryIterator();
+				//parse all the geometry buckets of the material bucket
+				while(geomIt.hasMoreElements())
+				{
+					//get the source geometry bucket
+					GeometryBucket *geom = geomIt.getNext();
+					//create a new geometry bucket 
+					GeometryBucket *geomBucket = OGRE_NEW GeometryBucket(matBucket,geom->getFormatString(),geom);
+			
+					//update the material bucket map of the material bucket
+					matBucket->updateContainers(geomBucket, geomBucket->getFormatString() );
+
+					//copy bounding informations
+					geomBucket->getAABB()=geom->getAABB();
+					geomBucket->setBoundingBox(	geom->getBoundingBox());
+					//now setups the news InstancedObjects.
+					for(objIt=ret->getInstancesMap().begin();objIt!=ret->getInstancesMap().end();objIt++)
+					{
+						//get the destination IntanciedObject
+						InstancedObject*obj=objIt->second;
+						InstancedObject::GeometryBucketList::iterator findIt;
+						//check if the bucket is not already in the list
+						findIt=std::find(obj->getGeometryBucketList().begin(),obj->getGeometryBucketList().end(),geomBucket);
+						if(findIt==obj->getGeometryBucketList().end())
+								obj->addBucketToList(geomBucket);
+					}
+			
+
+				}	
+			}
+		}
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::updateContainers(LODBucket* bucket )
+	{
+		mLodBucketList.push_back(bucket);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::LODBucket::updateContainers(MaterialBucket* bucket, String& name )
+	{
+		mMaterialBucketMap[name] = bucket;
 	}
 
-    freeResources(false, true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setEnabled(bool value)
-{
-    if (mEnabled != value)
+	//--------------------------------------------------------------------------
+	String InstancedGeometry::GeometryBucket::getFormatString(void) const
+	{
+		return mFormatString;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::attachToScene()
+	{
+
+			mNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(mName/*,mCentre*/);
+			mNode->attachObject(this);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::MaterialBucket::updateContainers(InstancedGeometry::GeometryBucket* bucket, const String & format)
+	{
+		mCurrentGeometryMap[format]=bucket;
+		mGeometryBucketList.push_back(bucket);
+	}
+	void InstancedGeometry::MaterialBucket:: setMaterial(const String & name)
+	{
+		mMaterial=MaterialManager::getSingleton().getByName(name);
+	};
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::destroy(void)
+	{
+		RenderOperationVector::iterator it;
+		for(it=mRenderOps.begin();it!=mRenderOps.end();++it)
+		{
+			OGRE_DELETE (*it)->vertexData;
+			OGRE_DELETE (*it)->indexData;
+	
+		}
+		mRenderOps.clear();
+
+		// delete the BatchInstances
+		for (BatchInstanceMap::iterator i = mBatchInstanceMap.begin();
+			i != mBatchInstanceMap.end(); ++i)
+		{
+			mOwner->extractMovableObject(i->second);
+			OGRE_DELETE i->second;
+
+		}
+		mBatchInstanceMap.clear();
+		mInstancedGeometryInstance = NULL;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::reset(void)
+	{
+		destroy();
+
+		for (QueuedSubMeshList::iterator i = mQueuedSubMeshes.begin();
+			i != mQueuedSubMeshes.end(); ++i)
+		{
+			OGRE_DELETE *i;
+			
+		}
+		mQueuedSubMeshes.clear();
+		// Delete precached geoemtry lists
+		for (SubMeshGeometryLookup::iterator l = mSubMeshGeometryLookup.begin();
+			l != mSubMeshGeometryLookup.end(); ++l)
+		{
+			OGRE_DELETE_T(l->second, SubMeshLodGeometryLinkList, MEMCATEGORY_GEOMETRY);
+		
+		}
+		mSubMeshGeometryLookup.clear();
+		// Delete optimised geometry
+		for (OptimisedSubMeshGeometryList::iterator o = mOptimisedSubMeshGeometryList.begin();
+			o != mOptimisedSubMeshGeometryList.end(); ++o)
+		{
+			OGRE_DELETE *o;
+			
+		}
+		mOptimisedSubMeshGeometryList.clear();
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::setVisible(bool visible)
+	{
+			
+		mVisible = visible;
+		// tell any existing BatchInstances
+		for (BatchInstanceMap::iterator ri = mBatchInstanceMap.begin();
+			ri != mBatchInstanceMap.end(); ++ri)
+		{
+
+			
+			ri->second->setVisible(visible);
+		}
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::setCastShadows(bool castShadows)
+	{
+		mCastShadows = castShadows;
+		// tell any existing BatchInstances
+		for (BatchInstanceMap::iterator ri = mBatchInstanceMap.begin();
+			ri != mBatchInstanceMap.end(); ++ri)
+		{
+			ri->second->setCastShadows(castShadows);
+		}
+
+	}
+	//--------------------------------------------------------------------------
+    void InstancedGeometry::setRenderQueueGroup(uint8 queueID)
+	{
+		assert(queueID <= RENDER_QUEUE_MAX && "Render queue out of range!");
+		mRenderQueueIDSet = true;
+		mRenderQueueID = queueID;
+		// tell any existing BatchInstances
+		for (BatchInstanceMap::iterator ri = mBatchInstanceMap.begin();
+			ri != mBatchInstanceMap.end(); ++ri)
+		{
+			ri->second->setRenderQueueGroup(queueID);
+		}
+	}
+	//--------------------------------------------------------------------------
+	uint8 InstancedGeometry::getRenderQueueGroup(void) const
+	{
+		return mRenderQueueID;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::dump(const String& filename) const
+	{
+		std::ofstream of(filename.c_str());
+		of << "Static Geometry Report for " << mName << std::endl;
+		of << "-------------------------------------------------" << std::endl;
+		of << "Number of queued submeshes: " << mQueuedSubMeshes.size() << std::endl;
+		of << "Number of BatchInstances: " << mBatchInstanceMap.size() << std::endl;
+		of << "BatchInstance dimensions: " << mBatchInstanceDimensions << std::endl;
+		of << "Origin: " << mOrigin << std::endl;
+		of << "Max distance: " << mUpperDistance << std::endl;
+		of << "Casts shadows?: " << mCastShadows << std::endl;
+		of << std::endl;
+		for (BatchInstanceMap::const_iterator ri = mBatchInstanceMap.begin();
+			ri != mBatchInstanceMap.end(); ++ri)
+		{
+			ri->second->dump(of);
+		}
+		of << "-------------------------------------------------" << std::endl;
+	}
+	//--------------------------------------------------------------------------
+    void InstancedGeometry::setProvideWorldInverses(bool flag)
     {
-        mEnabled = value;
+        mProvideWorldInverses = flag;
+    }
+	//---------------------------------------------------------------------
+	void InstancedGeometry::visitRenderables(Renderable::Visitor* visitor, 
+		bool debugRenderables)
+	{
+		for (BatchInstanceMap::const_iterator ri = mBatchInstanceMap.begin();
+			ri != mBatchInstanceMap.end(); ++ri)
+		{
+			ri->second->visitRenderables(visitor, debugRenderables);
+		}
 
-        // Create of free resource.
-        if (value)
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::InstancedObject::InstancedObject(unsigned short index,SkeletonInstance *skeleton, AnimationStateSet*animations)
+		: mIndex(index),
+		mTransformation(Matrix4::ZERO),
+		mOrientation(Quaternion::IDENTITY),
+		mScale(Vector3::UNIT_SCALE),
+		mPosition(Vector3::ZERO),
+		mSkeletonInstance(skeleton),
+		mBoneWorldMatrices(NULL),
+        mBoneMatrices(NULL),
+        mNumBoneMatrices(0),
+		mFrameAnimationLastUpdated(std::numeric_limits<unsigned long>::max())
+
+	{
+			
+			mSkeletonInstance->load();
+		
+			mAnimationState = OGRE_NEW AnimationStateSet();
+			mNumBoneMatrices = mSkeletonInstance->getNumBones();
+			mBoneMatrices = OGRE_ALLOC_T(Matrix4, mNumBoneMatrices, MEMCATEGORY_ANIMATION);
+			AnimationStateIterator it=animations->getAnimationStateIterator();
+			while (it.hasMoreElements())
+			{
+				AnimationState*anim= it.getNext();
+				mAnimationState->createAnimationState(anim->getAnimationName(),anim->getTimePosition(),anim->getLength(),
+				anim->getWeight());
+
+			}
+			
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::InstancedObject::InstancedObject(unsigned short index)
+		:mIndex(index),
+		mTransformation(Matrix4::ZERO),
+		mOrientation(Quaternion::IDENTITY),
+		mScale(Vector3::UNIT_SCALE),
+		mPosition(Vector3::ZERO),
+		mSkeletonInstance(0),
+		mBoneWorldMatrices(0),
+        mBoneMatrices(0),
+		mAnimationState(0),
+        mNumBoneMatrices(0),
+		mFrameAnimationLastUpdated(std::numeric_limits<unsigned long>::max())
+	{
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::InstancedObject::~InstancedObject()
+	{
+		mGeometryBucketList.clear();
+		OGRE_DELETE mAnimationState;
+		OGRE_FREE(mBoneMatrices, MEMCATEGORY_ANIMATION);
+		OGRE_FREE(mBoneWorldMatrices, MEMCATEGORY_ANIMATION);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::addBucketToList(GeometryBucket*bucket)
+	{
+		mGeometryBucketList.push_back(bucket);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::setPosition( Vector3  position)
+	{
+
+		mPosition=position;
+		needUpdate();
+		BatchInstance*parentBatchInstance=(*(mGeometryBucketList.begin()))->getParent()->getParent()->getParent();
+		parentBatchInstance->updateBoundingBox();
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::translate(const Vector3 &d)
+	{
+		mPosition += d;
+		needUpdate();
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::translate(const Matrix3 & axes,const Vector3 &move)
+	{
+		Vector3 derived = axes * move;
+        translate(derived);
+	}
+	//--------------------------------------------------------------------------
+	Matrix3 InstancedGeometry::InstancedObject::getLocalAxes() const
+	{
+		Vector3 axisX = Vector3::UNIT_X;
+        Vector3 axisY = Vector3::UNIT_Y;
+        Vector3 axisZ = Vector3::UNIT_Z;
+
+        axisX = mOrientation * axisX;
+        axisY = mOrientation * axisY;
+        axisZ = mOrientation * axisZ;
+
+        return Matrix3(axisX.x, axisY.x, axisZ.x,
+                       axisX.y, axisY.y, axisZ.y,
+                       axisX.z, axisY.z, axisZ.z);
+	}
+	//--------------------------------------------------------------------------
+	const Vector3 & InstancedGeometry::InstancedObject::getPosition(void) const
+	{
+		return mPosition;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::yaw(const Radian&angle)
+	{
+		Quaternion q;
+        q.FromAngleAxis(angle,Vector3::UNIT_Y);
+        rotate(q);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::pitch(const Radian&angle)
+	{
+		Quaternion q;
+        q.FromAngleAxis(angle,Vector3::UNIT_X);
+        rotate(q);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::roll(const Radian&angle)
+	{
+		Quaternion q;
+        q.FromAngleAxis(angle,Vector3::UNIT_Z);
+        rotate(q);
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::setScale(const Vector3&scale)
+	{
+		mScale=scale;
+		needUpdate();
+	}
+
+	const Vector3& InstancedGeometry::InstancedObject::getScale() const
+	{
+		return mScale;
+	}
+
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::rotate(const Quaternion& q)
+	{
+	
+            mOrientation = mOrientation * q;
+			 needUpdate();
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::setOrientation(const Quaternion& q)
+	{	
+        mOrientation = q;
+		needUpdate();
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::setPositionAndOrientation(Vector3 p, const Quaternion& q)
+	{	
+		mPosition = p;
+        mOrientation = q;
+        needUpdate();
+		BatchInstance* parentBatchInstance=(*(mGeometryBucketList.begin()))->getParent()->getParent()->getParent();
+		parentBatchInstance->updateBoundingBox();
+	}
+
+    //--------------------------------------------------------------------------
+    Quaternion &InstancedGeometry::InstancedObject::getOrientation(void)
+    {
+        return mOrientation;
+    }
+
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::needUpdate()
+	{
+		 mTransformation.makeTransform(
+                mPosition,
+                mScale,
+                mOrientation);
+		 	
+			
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::InstancedObject::updateAnimation(void)
+	{
+
+		if(mSkeletonInstance)
+		{
+			GeometryBucketList::iterator it;
+		    mSkeletonInstance->setAnimationState(*mAnimationState);
+            mSkeletonInstance->_getBoneMatrices(mBoneMatrices);
+
+			 // Allocate bone world matrices on demand, for better memory footprint
+            // when using software animation.
+            if (!mBoneWorldMatrices)
+            {
+                mBoneWorldMatrices = OGRE_ALLOC_T(Matrix4, mNumBoneMatrices, MEMCATEGORY_ANIMATION);
+            }
+
+            for (unsigned short i = 0; i < mNumBoneMatrices; ++i)
+            {
+                mBoneWorldMatrices[i] =  mTransformation * mBoneMatrices[i];
+			
+            }
+			
+
+
+		}
+
+	}
+	//--------------------------------------------------------------------------
+	AnimationState* InstancedGeometry::InstancedObject::getAnimationState(const String& name) const
+    {
+        if (!mAnimationState)
         {
-            createResources(false);
+            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Object is not animated",
+                "InstancedGeometry::InstancedObject::getAnimationState");
+        }
+//		AnimationStateIterator it=mAnimationState->getAnimationStateIterator();
+//		while (it.hasMoreElements())
+//		{
+//			AnimationState*anim= it.getNext();
+//
+//			
+//		}
+		return mAnimationState->getAnimationState(name);
+    }
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstanceIterator InstancedGeometry::getBatchInstanceIterator(void)
+	{
+		return BatchInstanceIterator(mBatchInstanceMap.begin(), mBatchInstanceMap.end());
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance::BatchInstance(InstancedGeometry* parent, const String& name,
+		SceneManager* mgr, uint32 BatchInstanceID)
+		: MovableObject(name), mParent(parent), mSceneMgr(mgr), mNode(0),
+		mBatchInstanceID(BatchInstanceID), mBoundingRadius(0.0f),
+		mCurrentLod(0),
+        mLodStrategy(0)
+	{
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance::~BatchInstance()
+	{
+		if (mNode)
+		{
+			mNode->getParentSceneNode()->removeChild(mNode);
+			mSceneMgr->destroySceneNode(mNode->getName());
+			mNode = 0;
+		}
+		// delete
+		for (LODBucketList::iterator i = mLodBucketList.begin();
+			i != mLodBucketList.end(); ++i)
+		{
+			OGRE_DELETE *i;
+		}
+		mLodBucketList.clear();
+		ObjectsMap::iterator o;
+
+		for(o=mInstancesMap.begin();o!=mInstancesMap.end();o++)
+		{
+			OGRE_DELETE o->second;
+		}
+		mInstancesMap.clear();
+		// no need to delete queued meshes, these are managed in InstancedGeometry
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::assign(QueuedSubMesh* qmesh)
+	{
+		mQueuedSubMeshes.push_back(qmesh);
+
+        // Set/check lod strategy
+        const LodStrategy *lodStrategy = qmesh->submesh->parent->getLodStrategy();
+        if (mLodStrategy == 0)
+        {
+            mLodStrategy = lodStrategy;
+
+            // First LOD mandatory, and always from base lod value
+            mLodValues.push_back(mLodStrategy->getBaseValue());
         }
         else
         {
-            freeResources(false, true);
+            if (mLodStrategy != lodStrategy)
+                OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Lod strategies do not match",
+                    "InstancedGeometry::InstancedObject::assign");
         }
 
-		/// Notify chain state needs recompile.
-        mChain->_markDirty();
-    }
-}
-//-----------------------------------------------------------------------
-bool CompositorInstance::getEnabled()
-{
-    return mEnabled;
-}
-//-----------------------------------------------------------------------
+		// update lod values
+		ushort lodLevels = qmesh->submesh->parent->getNumLodLevels();
+		assert(qmesh->geometryLodList->size() == lodLevels);
 
-/** Clear framebuffer RenderSystem operation
- */
-class RSClearOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSClearOperation(uint32 buffers, ColourValue colour, Real depth, unsigned short stencil):
-		buffers(buffers), colour(colour), depth(depth), stencil(stencil)
-	{}
-	/// Which buffers to clear (FrameBufferType)
-	uint32 buffers;
-	/// Colour to clear in case FBT_COLOUR is set
-	ColourValue colour;
-	/// Depth to set in case FBT_DEPTH is set
-	Real depth;
-	/// Stencil value to set in case FBT_STENCIL is set
-	unsigned short stencil;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		rs->clearFrameBuffer(buffers, colour, depth, stencil);
-	}
-};
-
-/** "Set stencil state" RenderSystem operation
- */
-class RSStencilOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSStencilOperation(bool stencilCheck,CompareFunction func,uint32 refValue,uint32 mask,
-		StencilOperation stencilFailOp,StencilOperation depthFailOp,StencilOperation passOp,
-		bool twoSidedOperation):
-		stencilCheck(stencilCheck),func(func),refValue(refValue),mask(mask),
-		stencilFailOp(stencilFailOp),depthFailOp(depthFailOp),passOp(passOp),
-		twoSidedOperation(twoSidedOperation)
-	{}
-	bool stencilCheck;
-	CompareFunction func; 
-    uint32 refValue;
-	uint32 mask;
-    StencilOperation stencilFailOp;
-    StencilOperation depthFailOp;
-    StencilOperation passOp;
-    bool twoSidedOperation;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		rs->setStencilCheckEnabled(stencilCheck);
-		rs->setStencilBufferParams(func, refValue, mask, stencilFailOp, depthFailOp, passOp, twoSidedOperation);
-	}
-};
-
-/** "Render quad" RenderSystem operation
- */
-class RSQuadOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSQuadOperation(CompositorInstance *instance, uint32 pass_id, MaterialPtr mat):
-	  mat(mat),instance(instance), pass_id(pass_id),
-      mQuadCornerModified(false),
-      mQuadLeft(-1),
-      mQuadTop(1),
-      mQuadRight(1),
-      mQuadBottom(-1)
-	{
-		mat->load();
-		instance->_fireNotifyMaterialSetup(pass_id, mat);
-		technique = mat->getTechnique(0);
-		assert(technique);
-	}
-	MaterialPtr mat;
-	Technique *technique;
-	CompositorInstance *instance;
-	uint32 pass_id;
-
-    bool mQuadCornerModified, mQuadFarCorners, mQuadFarCornersViewSpace;
-    Real mQuadLeft;
-    Real mQuadTop;
-    Real mQuadRight;
-    Real mQuadBottom;
-
-    void setQuadCorners(Real left,Real top,Real right,Real bottom)
-    {
-        mQuadLeft = left;
-        mQuadTop = top;
-        mQuadRight = right;
-        mQuadBottom = bottom;
-        mQuadCornerModified=true;
-    }
-
-	void setQuadFarCorners(bool farCorners, bool farCornersViewSpace)
-	{
-		mQuadFarCorners = farCorners;
-		mQuadFarCornersViewSpace = farCornersViewSpace;
-	}
-   
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		// Fire listener
-		instance->_fireNotifyMaterialRender(pass_id, mat);
-
-        Viewport* vp = rs->_getViewport();
-		Rectangle2D *rect = static_cast<Rectangle2D*>(CompositorManager::getSingleton()._getTexturedRectangle2D());
-
-		if (mQuadCornerModified)
+		while(mLodValues.size() < lodLevels)
 		{
-			// insure positions are using peculiar render system offsets 
-			Real hOffset = rs->getHorizontalTexelOffset() / (0.5f * vp->getActualWidth());
-			Real vOffset = rs->getVerticalTexelOffset() / (0.5f * vp->getActualHeight());
-			rect->setCorners(mQuadLeft + hOffset, mQuadTop - vOffset, mQuadRight + hOffset, mQuadBottom - vOffset);
+			mLodValues.push_back(0.0f);
+		}
+		// Make sure LOD levels are max of all at the requested level
+		for (ushort lod = 1; lod < lodLevels; ++lod)
+		{
+			const MeshLodUsage& meshLod =
+				qmesh->submesh->parent->getLodLevel(lod);
+			mLodValues[lod] = std::max(mLodValues[lod],
+				meshLod.value);
 		}
 
-		if(mQuadFarCorners)
+		// update bounds
+		// Transform world bounds relative to our centre
+		AxisAlignedBox localBounds(
+			qmesh->worldBounds.getMinimum() ,
+			qmesh->worldBounds.getMaximum());
+		mAABB.merge(localBounds);
+		mBoundingRadius = Math::boundingRadiusFromAABB(mAABB);
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::build()
+	{
+		// Create a node
+		mNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(mName);
+		mNode->attachObject(this);
+		// We need to create enough LOD buckets to deal with the highest LOD
+		// we encountered in all the meshes queued
+		for (ushort lod = 0; lod < mLodValues.size(); ++lod)
 		{
-			const Ogre::Vector3 *corners = vp->getCamera()->getWorldSpaceCorners();
-			if(mQuadFarCornersViewSpace)
+			LODBucket* lodBucket =
+				OGRE_NEW LODBucket(this, lod, mLodValues[lod]);
+			mLodBucketList.push_back(lodBucket);
+			// Now iterate over the meshes and assign to LODs
+			// LOD bucket will pick the right LOD to use
+			QueuedSubMeshList::iterator qi, qiend;
+			qiend = mQueuedSubMeshes.end();
+			for (qi = mQueuedSubMeshes.begin(); qi != qiend; ++qi)
 			{
-				const Ogre::Matrix4 &viewMat = vp->getCamera()->getViewMatrix(true);
-				rect->setNormals(viewMat*corners[5], viewMat*corners[6], viewMat*corners[4], viewMat*corners[7]);
+				lodBucket->assign(*qi, lod);
+			}
+			// now build
+			lodBucket->build();
+		}
+
+
+	}
+	
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::updateBoundingBox()
+	{
+			AxisAlignedBox aabb;
+
+			//Get the first GeometryBucket to get the aabb
+			LODIterator lodIterator = getLODIterator();
+			if( lodIterator.hasMoreElements() )
+			{			
+				LODBucket* lod = lodIterator.getNext();
+				LODBucket::MaterialIterator matIt = lod->getMaterialIterator();
+				if( matIt.hasMoreElements() )
+				{					
+					MaterialBucket*mat = matIt.getNext();
+					MaterialBucket::GeometryIterator geomIt = mat->getGeometryIterator();
+					if( geomIt.hasMoreElements() )
+					{
+						GeometryBucket *geom = geomIt.getNext();
+						aabb = geom->getAABB();
+					}
+				}
+			}
+
+			ObjectsMap::iterator objIt;
+			Vector3 vMin( Vector3::ZERO );
+			Vector3 vMax( Vector3::ZERO );
+			if( !mInstancesMap.empty() )
+			{
+				objIt = mInstancesMap.begin();
+				vMin = objIt->second->getPosition() + aabb.getMinimum();
+				vMax = objIt->second->getPosition() + aabb.getMaximum();
+			}
+
+			for( objIt=mInstancesMap.begin(); objIt!=mInstancesMap.end(); objIt++ )
+			{
+				const Vector3 &position = objIt->second->getPosition();
+				const Vector3 &scale	= objIt->second->getScale();
+
+				vMin.x = std::min( vMin.x, position.x + aabb.getMinimum().x * scale.x );
+				vMin.y = std::min( vMin.y, position.y + aabb.getMinimum().y * scale.y );
+				vMin.z = std::min( vMin.z, position.z + aabb.getMinimum().z * scale.z );
+
+				vMax.x = std::max( vMax.x, position.x + aabb.getMaximum().x * scale.x );
+				vMax.y = std::max( vMax.y, position.y + aabb.getMaximum().y * scale.y );
+				vMax.z = std::max( vMax.z, position.z + aabb.getMaximum().z * scale.z );
+			}
+
+			aabb.setExtents( vMin, vMax );
+
+			//Now apply the bounding box
+			lodIterator = getLODIterator();
+			while( lodIterator.hasMoreElements() )
+			{			
+				LODBucket* lod = lodIterator.getNext();
+				LODBucket::MaterialIterator matIt = lod->getMaterialIterator();
+				while (matIt.hasMoreElements())
+				{					
+					MaterialBucket*mat = matIt.getNext();
+					MaterialBucket::GeometryIterator geomIt = mat->getGeometryIterator();
+					while( geomIt.hasMoreElements() )
+					{
+						GeometryBucket *geom = geomIt.getNext();
+						geom->setBoundingBox( aabb );
+                        this->mNode->_updateBounds();
+						mAABB = aabb;
+					}
+				}
+			}
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::addInstancedObject(unsigned short index,InstancedObject* object)
+	{
+		mInstancesMap[index]=object;
+	}
+	//--------------------------------------------------------------------------
+	 InstancedGeometry::InstancedObject* InstancedGeometry::BatchInstance::isInstancedObjectPresent(unsigned short index)
+	{
+		if (mInstancesMap.find(index)!=mInstancesMap.end())
+			return mInstancesMap[index];
+		else return NULL;
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance::InstancedObjectIterator 
+	InstancedGeometry::BatchInstance::getObjectIterator()
+	{
+		return InstancedObjectIterator(mInstancesMap.begin(), mInstancesMap.end());
+	} 
+	//--------------------------------------------------------------------------
+	const String& InstancedGeometry::BatchInstance::getMovableType(void) const
+	{
+		static String sType = "InstancedGeometry";
+		return sType;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::_notifyCurrentCamera(Camera* cam)
+	{
+        // Set camera
+        mCamera = cam;
+
+
+        // Cache squared view depth for use by GeometryBucket
+        mSquaredViewDepth = mParentNode->getSquaredViewDepth(cam->getLodCamera());
+
+        // No lod strategy set yet, skip (this indicates that there are no submeshes)
+        if (mLodStrategy == 0)
+            return;
+
+        // Sanity check
+        assert(!mLodValues.empty());
+
+        // Calculate lod value
+        Real lodValue = mLodStrategy->getValue(this, cam);
+
+        // Store lod value for this strategy
+        mLodValue = lodValue;
+
+        // Get lod index
+        mCurrentLod = mLodStrategy->getIndex(lodValue, mLodValues);
+	}
+	//--------------------------------------------------------------------------
+	const AxisAlignedBox& InstancedGeometry::BatchInstance::getBoundingBox(void) const
+	{
+		return mAABB;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::setBoundingBox(AxisAlignedBox & box)
+	{
+		mAABB=box;
+	}
+	//--------------------------------------------------------------------------
+	Real InstancedGeometry::BatchInstance::getBoundingRadius(void) const
+	{
+		return mBoundingRadius;
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::_updateRenderQueue(RenderQueue* queue)
+	{
+		ObjectsMap::iterator it;
+		//we parse the Instanced Object map to update the animations.
+
+		for (it=mInstancesMap.begin();it!=mInstancesMap.end();++it)
+		{
+			it->second->updateAnimation();
+			
+		}
+	
+		mLodBucketList[mCurrentLod]->addRenderables(queue, mRenderQueueID,
+			mLodValue);
+	}
+	//---------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::visitRenderables(
+		Renderable::Visitor* visitor, bool debugRenderables)
+	{
+		for (LODBucketList::iterator i = mLodBucketList.begin(); i != mLodBucketList.end(); ++i)
+		{
+			(*i)->visitRenderables(visitor, debugRenderables);
+		}
+
+	}
+	//--------------------------------------------------------------------------
+	bool InstancedGeometry::BatchInstance::isVisible(void) const
+	{
+		return mVisible && !mBeyondFarDistance;
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::BatchInstance::LODIterator
+	InstancedGeometry::BatchInstance::getLODIterator(void)
+	{
+		return LODIterator(mLodBucketList.begin(), mLodBucketList.end());
+	}
+	//--------------------------------------------------------------------------
+	const LightList& InstancedGeometry::BatchInstance::getLights(void) const
+	{
+		return queryLights();
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::BatchInstance::dump(std::ofstream& of) const
+	{
+		of << "BatchInstance " << mBatchInstanceID << std::endl;
+		of << "--------------------------" << std::endl;
+		of << "Local AABB: " << mAABB << std::endl;
+		of << "Bounding radius: " << mBoundingRadius << std::endl;
+		of << "Number of LODs: " << mLodBucketList.size() << std::endl;
+
+		for (LODBucketList::const_iterator i = mLodBucketList.begin();
+			i != mLodBucketList.end(); ++i)
+		{
+			(*i)->dump(of);
+		}
+		of << "--------------------------" << std::endl;
+	}
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	InstancedGeometry::LODBucket::LODBucket(BatchInstance* parent, unsigned short lod,
+		Real lodValue)
+		: mParent(parent), mLod(lod), mLodValue(lodValue)
+	{
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::LODBucket::~LODBucket()
+	{
+		// delete
+		for (MaterialBucketMap::iterator i = mMaterialBucketMap.begin();
+			i != mMaterialBucketMap.end(); ++i)
+		{
+			OGRE_DELETE i->second;
+		}
+		mMaterialBucketMap.clear();
+		for(QueuedGeometryList::iterator qi = mQueuedGeometryList.begin();
+			qi != mQueuedGeometryList.end(); ++qi)
+		{
+			OGRE_DELETE *qi;
+		}
+		mQueuedGeometryList.clear();
+		// no need to delete queued meshes, these are managed in InstancedGeometry
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::LODBucket::assign(QueuedSubMesh* qmesh, ushort atLod)
+	{
+		QueuedGeometry* q = OGRE_NEW QueuedGeometry();
+		mQueuedGeometryList.push_back(q);
+		q->position = qmesh->position;
+		q->orientation = qmesh->orientation;
+		q->scale = qmesh->scale;
+		q->ID = qmesh->ID;
+		if (qmesh->geometryLodList->size() > atLod)
+		{
+			// This submesh has enough lods, use the right one
+			q->geometry = &(*qmesh->geometryLodList)[atLod];
+		}
+		else
+		{
+			// Not enough lods, use the lowest one we have
+			q->geometry =
+				&(*qmesh->geometryLodList)[qmesh->geometryLodList->size() - 1];
+		}
+		// Locate a material bucket
+		MaterialBucket* mbucket = 0;
+		MaterialBucketMap::iterator m =
+			mMaterialBucketMap.find(qmesh->materialName);
+		if (m != mMaterialBucketMap.end())
+		{
+			mbucket = m->second;
+		}
+		else
+		{
+			mbucket = OGRE_NEW MaterialBucket(this, qmesh->materialName);
+			mMaterialBucketMap[qmesh->materialName] = mbucket;
+		}
+		mbucket->assign(q);
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::LODBucket::build()
+	{
+		// Just pass this on to child buckets
+		
+		for (MaterialBucketMap::iterator i = mMaterialBucketMap.begin();
+			i != mMaterialBucketMap.end(); ++i)
+		{
+			i->second->build();
+		}
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::LODBucket::addRenderables(RenderQueue* queue,
+		uint8 group, Real lodValue)
+	{
+		// Just pass this on to child buckets
+		MaterialBucketMap::iterator i, iend;
+		iend =  mMaterialBucketMap.end();
+		for (i = mMaterialBucketMap.begin(); i != iend; ++i)
+		{
+			i->second->addRenderables(queue, group, lodValue);
+		}
+	}
+	//---------------------------------------------------------------------
+	void InstancedGeometry::LODBucket::visitRenderables(Renderable::Visitor* visitor, 
+		bool debugRenderables)
+	{
+		MaterialBucketMap::iterator i, iend;
+		iend =  mMaterialBucketMap.end();
+		for (i = mMaterialBucketMap.begin(); i != iend; ++i)
+		{
+			i->second->visitRenderables(visitor, debugRenderables);
+		}
+
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::LODBucket::MaterialIterator
+	InstancedGeometry::LODBucket::getMaterialIterator(void)
+	{
+		return MaterialIterator(
+			mMaterialBucketMap.begin(), mMaterialBucketMap.end());
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::LODBucket::dump(std::ofstream& of) const
+	{
+		of << "LOD Bucket " << mLod << std::endl;
+		of << "------------------" << std::endl;
+		of << "Lod Value: " << mLodValue << std::endl;
+		of << "Number of Materials: " << mMaterialBucketMap.size() << std::endl;
+		for (MaterialBucketMap::const_iterator i = mMaterialBucketMap.begin();
+			i != mMaterialBucketMap.end(); ++i)
+		{
+			i->second->dump(of);
+		}
+		of << "------------------" << std::endl;
+
+	}
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	InstancedGeometry::MaterialBucket::MaterialBucket(LODBucket* parent,
+		const String& materialName)
+		: mParent(parent)
+		, mMaterialName(materialName)
+		, mTechnique(0)
+		, mLastIndex(0)
+	{
+						mMaterial = MaterialManager::getSingleton().getByName(mMaterialName);
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::MaterialBucket::~MaterialBucket()
+	{
+		// delete
+		for (GeometryBucketList::iterator i = mGeometryBucketList.begin();
+			i != mGeometryBucketList.end(); ++i)
+		{
+			OGRE_DELETE *i;
+		}
+		mGeometryBucketList.clear();
+		// no need to delete queued meshes, these are managed in InstancedGeometry
+
+	}
+	//--------------------------------------------------------------------------
+
+	void InstancedGeometry::MaterialBucket::assign(QueuedGeometry* qgeom)
+	{
+		// Look up any current geometry
+		String formatString = getGeometryFormatString(qgeom->geometry);
+		CurrentGeometryMap::iterator gi = mCurrentGeometryMap.find(formatString);
+		bool newBucket = true;
+		if (gi != mCurrentGeometryMap.end())
+		{
+			// Found existing geometry, try to assign
+			newBucket = !gi->second->assign(qgeom);
+			// Note that this bucket will be replaced as the 'current'
+			// for this format string below since it's out of space
+		}
+		// Do we need to create a new one?
+		if (newBucket)
+		{
+			GeometryBucket* gbucket = OGRE_NEW GeometryBucket(this, formatString,
+				qgeom->geometry->vertexData, qgeom->geometry->indexData);
+			// Add to main list
+			mGeometryBucketList.push_back(gbucket);
+			// Also index in 'current' list
+			mCurrentGeometryMap[formatString] = gbucket;
+			if (!gbucket->assign(qgeom))
+			{
+				OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR,
+					"Somehow we couldn't fit the requested geometry even in a "
+					"brand new GeometryBucket!! Must be a bug, please report.",
+					"InstancedGeometry::MaterialBucket::assign");
+			}
+		}
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::MaterialBucket::build()
+	{
+		mTechnique = 0;
+		mMaterial = MaterialManager::getSingleton().getByName(mMaterialName);
+		if (mMaterial.isNull())
+		{
+			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
+				"Material '" + mMaterialName + "' not found.",
+				"InstancedGeometry::MaterialBucket::build");
+		}
+		mMaterial->load();
+		// tell the geometry buckets to build
+		
+		for (GeometryBucketList::iterator i = mGeometryBucketList.begin();
+			i != mGeometryBucketList.end(); ++i)
+		{
+			(*i)->build();
+		}
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::MaterialBucket::addRenderables(RenderQueue* queue,
+		uint8 group, Real lodValue)
+	{
+        // Get batch instance
+        BatchInstance *batchInstance = mParent->getParent();
+
+        // Get material lod strategy
+        const LodStrategy *materialLodStrategy = mMaterial->getLodStrategy();
+
+        // If material strategy doesn't match, recompute lod value with correct strategy
+        if (materialLodStrategy != batchInstance->mLodStrategy)
+            lodValue = materialLodStrategy->getValue(batchInstance, batchInstance->mCamera);
+
+		// Determine the current material technique
+		mTechnique = mMaterial->getBestTechnique(
+			mMaterial->getLodIndex(lodValue));	
+		GeometryBucketList::iterator i, iend;
+		iend =  mGeometryBucketList.end();
+			
+		for (i = mGeometryBucketList.begin(); i != iend; ++i)
+		{
+			queue->addRenderable(*i, group);
+		}
+
+	}
+	//---------------------------------------------------------------------
+	void InstancedGeometry::MaterialBucket::visitRenderables(
+		Renderable::Visitor* visitor, bool debugRenderables)
+	{
+		GeometryBucketList::iterator i, iend;
+		iend =  mGeometryBucketList.end();
+		for (i = mGeometryBucketList.begin(); i != iend; ++i)
+		{
+			(*i)->visitRenderables(visitor, debugRenderables);
+		}
+
+	}
+	//--------------------------------------------------------------------------
+	String InstancedGeometry::MaterialBucket::getGeometryFormatString(
+		SubMeshLodGeometryLink* geom)
+	{
+		// Formulate an identifying string for the geometry format
+		// Must take into account the vertex declaration and the index type
+		// Format is (all lines separated by '|'):
+		// Index type
+		// Vertex element (repeating)
+		//   source
+		//   semantic
+		//   type
+		StringUtil::StrStreamType str;
+
+		str << geom->indexData->indexBuffer->getType() << "|";
+		const VertexDeclaration::VertexElementList& elemList =
+			geom->vertexData->vertexDeclaration->getElements();
+		VertexDeclaration::VertexElementList::const_iterator ei, eiend;
+		eiend = elemList.end();
+		for (ei = elemList.begin(); ei != eiend; ++ei)
+		{
+			const VertexElement& elem = *ei;
+			str << elem.getSource() << "|";
+			str << elem.getSource() << "|";
+			str << elem.getSemantic() << "|";
+			str << elem.getType() << "|";
+		}
+
+		return str.str();
+
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::MaterialBucket::GeometryIterator
+	InstancedGeometry::MaterialBucket::getGeometryIterator(void)
+	{
+		return GeometryIterator(
+			mGeometryBucketList.begin(), mGeometryBucketList.end());
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::MaterialBucket::dump(std::ofstream& of) const
+	{
+		of << "Material Bucket " << mMaterialName << std::endl;
+		of << "--------------------------------------------------" << std::endl;
+		of << "Geometry buckets: " << mGeometryBucketList.size() << std::endl;
+		for (GeometryBucketList::const_iterator i = mGeometryBucketList.begin();
+			i != mGeometryBucketList.end(); ++i)
+		{
+			(*i)->dump(of);
+		}
+		of << "--------------------------------------------------" << std::endl;
+
+	}
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	InstancedGeometry::GeometryBucket::GeometryBucket(MaterialBucket* parent,
+		const String& formatString, const VertexData* vData,
+		const IndexData* iData)
+		: SimpleRenderable(),
+		 mParent(parent), 
+		 mFormatString(formatString),
+		 mVertexData(0),
+		 mIndexData(0)
+	{
+	   	mBatch=mParent->getParent()->getParent()->getParent();
+		if(!mBatch->getBaseSkeleton().isNull())
+			setCustomParameter(0,Vector4(mBatch->getBaseSkeleton()->getNumBones(),0,0,0));
+		//mRenderOperation=OGRE_NEW RenderOperation();
+		// Clone the structure from the example
+		mVertexData = vData->clone(false);
+
+		mRenderOp.useIndexes = true;
+		mRenderOp.indexData = OGRE_NEW IndexData();
+
+		mRenderOp.indexData->indexCount = 0;
+		mRenderOp.indexData->indexStart = 0;
+		mRenderOp.vertexData = OGRE_NEW VertexData();
+		mRenderOp.vertexData->vertexCount = 0;
+
+		mRenderOp.vertexData->vertexDeclaration = vData->vertexDeclaration->clone();
+		mIndexType = iData->indexBuffer->getType();
+		// Derive the max vertices
+		if (mIndexType == HardwareIndexBuffer::IT_32BIT)
+		{
+			mMaxVertexIndex = 0xFFFFFFFF;
+		}
+		else
+		{
+			mMaxVertexIndex = 0xFFFF;
+		}
+
+
+		size_t offset=0;	
+		unsigned short texCoordOffset=0;
+		unsigned short texCoordSource=0;
+
+		const Ogre::VertexElement*elem=mRenderOp.vertexData->vertexDeclaration->findElementBySemantic(VES_TEXTURE_COORDINATES);
+	
+		if (elem != NULL)
+		{
+			texCoordSource=elem->getSource();
+		}
+		for(ushort i=0;i<mRenderOp.vertexData->vertexDeclaration->getElementCount();i++)
+		{
+			if(mRenderOp.vertexData->vertexDeclaration->getElement(i)->getSemantic() == VES_TEXTURE_COORDINATES)
+			{
+				texCoordOffset++;
+			}
+			if(texCoordSource==mRenderOp.vertexData->vertexDeclaration->getElement(i)->getSource())
+			{
+				offset+= VertexElement::getTypeSize(
+				mRenderOp.vertexData->vertexDeclaration->getElement(i)->getType());
+			}		
+		}
+
+		mRenderOp.vertexData->vertexDeclaration->addElement(texCoordSource, offset, VET_FLOAT1, VES_TEXTURE_COORDINATES, texCoordOffset);
+ 		mTexCoordIndex = texCoordOffset;
+
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::GeometryBucket::GeometryBucket(MaterialBucket* parent,
+		const String& formatString,GeometryBucket* bucket)
+		: SimpleRenderable(),
+		 mParent(parent),
+		  mFormatString(formatString),
+		  mVertexData(0),
+		  mIndexData(0)
+	{
+
+	   	mBatch=mParent->getParent()->getParent()->getParent();
+		if(!mBatch->getBaseSkeleton().isNull())
+			setCustomParameter(0,Vector4(mBatch->getBaseSkeleton()->getNumBones(),0,0,0));
+		bucket->getRenderOperation(mRenderOp);
+		mVertexData=mRenderOp.vertexData;
+		mIndexData=mRenderOp.indexData;
+		setBoundingBox(AxisAlignedBox(-10000,-10000,-10000,
+		10000,10000,10000));
+
+	}
+	//--------------------------------------------------------------------------
+	InstancedGeometry::GeometryBucket::~GeometryBucket()
+	{	
+	}
+
+	//--------------------------------------------------------------------------
+	Real InstancedGeometry::GeometryBucket::getBoundingRadius(void) const
+	{
+		return 1;
+	}
+	//--------------------------------------------------------------------------
+	const MaterialPtr& InstancedGeometry::GeometryBucket::getMaterial(void) const
+	{
+		return mParent->getMaterial();
+	}
+	//--------------------------------------------------------------------------
+	Technique* InstancedGeometry::GeometryBucket::getTechnique(void) const
+	{
+		return mParent->getCurrentTechnique();
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::GeometryBucket::getWorldTransforms(Matrix4* xform) const
+	{
+			// Should be the identity transform, but lets allow transformation of the
+		// nodes the BatchInstances are attached to for kicks
+		if(mBatch->getBaseSkeleton().isNull())
+		{
+			BatchInstance::ObjectsMap::iterator it,itbegin,itend,newit;
+			itbegin=mParent->getParent()->getParent()->getInstancesMap().begin();
+			itend=mParent->getParent()->getParent()->getInstancesMap().end();
+
+            if( mParent->getParent()->getParent()->getParent()->getProvideWorldInverses() )
+            {
+                // For shaders that use normal maps on instanced geometry objects,
+                // we can pass the world transform inverse matrices alongwith with
+                // the world matrices. This reduces our usable geometry limit by
+                // half in each instance.
+			    for (it=itbegin;
+				    it!=itend;
+				    ++it,xform+=2)
+			    {
+    				
+					    *xform = it->second->mTransformation;
+                        *(xform+1) = xform->inverse();
+			    }
+            }
+            else
+            {
+                for (it=itbegin;
+                    it!=itend;
+                    ++it,xform++)
+                {
+
+                    *xform = it->second->mTransformation;
+                }
+            }
+		}
+		else
+		{
+			BatchInstance::ObjectsMap::iterator it,itbegin,itend,newit;
+			itbegin=mParent->getParent()->getParent()->getInstancesMap().begin();
+			itend=mParent->getParent()->getParent()->getInstancesMap().end();
+
+			for (it=itbegin;
+				it!=itend;
+				++it)
+			{
+				
+                if( mParent->getParent()->getParent()->getParent()->getProvideWorldInverses() )
+                {
+				    for(int i=0;i<it->second->mNumBoneMatrices;++i,xform+=2)
+				    {
+					    *xform = it->second->mBoneWorldMatrices[i];
+                        *(xform+1) = xform->inverse();
+				    }
+                }
+                else
+                {
+                    for(int i=0;i<it->second->mNumBoneMatrices;++i,xform++)
+                    {
+                        *xform = it->second->mBoneWorldMatrices[i];
+                    }
+                }
+			}
+				
+		}
+
+	}
+	//--------------------------------------------------------------------------
+	unsigned short InstancedGeometry::GeometryBucket::getNumWorldTransforms(void) const 
+	{
+        bool bSendInverseXfrm = mParent->getParent()->getParent()->getParent()->getProvideWorldInverses();
+
+		if(mBatch->getBaseSkeleton().isNull())
+		{
+			BatchInstance* batch=mParent->getParent()->getParent();
+            return static_cast<ushort>(batch->getInstancesMap().size() * (bSendInverseXfrm ? 2 : 1));
+		}
+		else
+		{
+			BatchInstance* batch=mParent->getParent()->getParent();
+			return static_cast<ushort>(
+				mBatch->getBaseSkeleton()->getNumBones()*batch->getInstancesMap().size() * (bSendInverseXfrm ? 2 : 1));
+		}
+	}
+	//--------------------------------------------------------------------------
+	Real InstancedGeometry::GeometryBucket::getSquaredViewDepth(const Camera* cam) const
+	{
+        const BatchInstance *batchInstance = mParent->getParent()->getParent();
+        if (cam == batchInstance->mCamera)
+            return batchInstance->mSquaredViewDepth;
+        else
+            return batchInstance->getParentNode()->getSquaredViewDepth(cam->getLodCamera());
+	}
+	//--------------------------------------------------------------------------
+	const LightList& InstancedGeometry::GeometryBucket::getLights(void) const
+	{
+		return mParent->getParent()->getParent()->getLights();
+	}
+	//--------------------------------------------------------------------------
+	bool InstancedGeometry::GeometryBucket::getCastsShadows(void) const
+	{
+		return mParent->getParent()->getParent()->getCastShadows();
+	}
+	//--------------------------------------------------------------------------
+	bool InstancedGeometry::GeometryBucket::assign(QueuedGeometry* qgeom)
+	{
+		// Do we have enough space?
+		if (mRenderOp.vertexData->vertexCount + qgeom->geometry->vertexData->vertexCount
+			> mMaxVertexIndex)
+		{
+			return false;
+		}
+
+		mQueuedGeometry.push_back(qgeom);
+		mRenderOp.vertexData->vertexCount += qgeom->geometry->vertexData->vertexCount;
+		mRenderOp.indexData->indexCount += qgeom->geometry->indexData->indexCount;
+
+		return true;
+	}
+
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::GeometryBucket::build()
+	{
+
+
+	
+		// Ok, here's where we transfer the vertices and indexes to the shared
+		// buffers
+		// Shortcuts
+		VertexDeclaration* dcl = mRenderOp.vertexData->vertexDeclaration;
+		VertexBufferBinding* binds =mVertexData->vertexBufferBinding;
+
+		// create index buffer, and lock
+		mRenderOp.indexData->indexBuffer = HardwareBufferManager::getSingleton()
+			.createIndexBuffer(mIndexType, mRenderOp.indexData->indexCount,
+				HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+		uint32* p32Dest = 0;
+		uint16* p16Dest = 0;
+
+		if (mIndexType == HardwareIndexBuffer::IT_32BIT)
+		{
+			p32Dest = static_cast<uint32*>(
+				mRenderOp.indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+		}
+		else
+		{
+			p16Dest = static_cast<uint16*>(
+				mRenderOp.indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+		}
+
+		// create all vertex buffers, and lock
+		ushort b;
+		//ushort posBufferIdx = dcl->findElementBySemantic(VES_POSITION)->getSource();
+	
+		vector<uchar*>::type destBufferLocks;
+		vector<VertexDeclaration::VertexElementList>::type bufferElements;
+
+		for (b = 0; b < binds->getBufferCount(); ++b)
+		{
+
+			size_t vertexCount = mRenderOp.vertexData->vertexCount;
+
+			HardwareVertexBufferSharedPtr vbuf =
+				HardwareBufferManager::getSingleton().createVertexBuffer(
+					dcl->getVertexSize(b),
+					vertexCount,
+					HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+			binds->setBinding(b, vbuf);
+			uchar* pLock = static_cast<uchar*>(
+				vbuf->lock(HardwareBuffer::HBL_DISCARD));
+			destBufferLocks.push_back(pLock);
+			// Pre-cache vertex elements per buffer
+			bufferElements.push_back(dcl->findElementsBySource(b));
+			mRenderOp.vertexData->vertexBufferBinding->setBinding(b,vbuf);
+		}
+
+
+		// Iterate over the geometry items
+		size_t indexOffset = 0;
+
+		QueuedGeometryList::iterator gi, giend;
+		giend = mQueuedGeometry.end();
+
+		// to generate the boundingBox
+		Real Xmin,Ymin,Zmin,Xmax,Ymax,Zmax; 
+		Xmin=0;
+		Ymin=0;
+		Zmin=0;
+		Xmax=0;
+		Ymax=0;
+		Zmax=0;
+		QueuedGeometry* precGeom = *(mQueuedGeometry.begin());
+		unsigned short index=0;
+		if( mParent->getLastIndex()!=0)
+			index=mParent->getLastIndex()+1;
+
+		for (gi = mQueuedGeometry.begin(); gi != giend; ++gi)
+		{
+
+			QueuedGeometry* geom = *gi;
+			if(precGeom->ID!=geom->ID)
+					index++;
+
+			//create  a new instanced object
+			InstancedObject* instancedObject = mParent->getParent()->getParent()->isInstancedObjectPresent(index);
+			if(instancedObject == NULL)
+			{
+				if(mBatch->getBaseSkeleton().isNull())
+				{
+					instancedObject= OGRE_NEW InstancedObject(index);
+				}
+				else
+				{
+					instancedObject= OGRE_NEW InstancedObject(index,mBatch->getBaseSkeletonInstance(),
+						mBatch->getBaseAnimationState());
+				}
+				mParent->getParent()->getParent()->addInstancedObject(index,instancedObject);
+
+			}
+			instancedObject->addBucketToList(this);
+
+
+			
+			// Copy indexes across with offset
+			IndexData* srcIdxData = geom->geometry->indexData;
+			if (mIndexType == HardwareIndexBuffer::IT_32BIT)
+			{
+				// Lock source indexes
+				uint32* pSrc = static_cast<uint32*>(
+					srcIdxData->indexBuffer->lock(
+						srcIdxData->indexStart, 
+						srcIdxData->indexCount * srcIdxData->indexBuffer->getIndexSize(),
+						HardwareBuffer::HBL_READ_ONLY));
+
+				copyIndexes(pSrc, p32Dest, srcIdxData->indexCount, indexOffset);
+				p32Dest += srcIdxData->indexCount;
+				srcIdxData->indexBuffer->unlock();
 			}
 			else
 			{
-				rect->setNormals(corners[5], corners[6], corners[4], corners[7]);
+				
+				// Lock source indexes
+				uint16* pSrc = static_cast<uint16*>(
+					srcIdxData->indexBuffer->lock(
+					srcIdxData->indexStart, 
+					srcIdxData->indexCount * srcIdxData->indexBuffer->getIndexSize(),
+					HardwareBuffer::HBL_READ_ONLY));
+
+				copyIndexes(pSrc, p16Dest, srcIdxData->indexCount, indexOffset);
+				p16Dest += srcIdxData->indexCount;
+				srcIdxData->indexBuffer->unlock();
 			}
-		}
 
-		// Queue passes from mat
-		Technique::PassIterator i = technique->getPassIterator();
-		while(i.hasMoreElements())
-		{
-			sm->_injectRenderWithPass(
-				i.getNext(), 
-				rect,
-				false // don't allow replacement of shadow passes
-				);
-		}
-	}
-};
-
-/** "Set material scheme" RenderSystem operation
- */
-class RSSetSchemeOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSSetSchemeOperation(const String& schemeName) : mSchemeName(schemeName) {}
-	
-	String mPreviousScheme;
-	bool mPreviousLateResolving;
-
-	String mSchemeName;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		MaterialManager& matMgr = MaterialManager::getSingleton();
-		mPreviousScheme = matMgr.getActiveScheme();
-		matMgr.setActiveScheme(mSchemeName);
-
-		mPreviousLateResolving = sm->isLateMaterialResolving();
-		sm->setLateMaterialResolving(true);
-	}
-
-	const String& getPreviousScheme() const { return mPreviousScheme; }
-	bool getPreviousLateResolving() const { return mPreviousLateResolving; }
-};
-
-/** Restore the settings changed by the set scheme operation */
-class RSRestoreSchemeOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSRestoreSchemeOperation(const RSSetSchemeOperation* setOperation) : 
-	  mSetOperation(setOperation) {}
-	
-	const RSSetSchemeOperation* mSetOperation;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		MaterialManager::getSingleton().setActiveScheme(mSetOperation->getPreviousScheme());
-		sm->setLateMaterialResolving(mSetOperation->getPreviousLateResolving());
-	}
-};
-
-void CompositorInstance::collectPasses(TargetOperation &finalState, CompositionTargetPass *target)
-{
-	/// Here, passes are converted into render target operations
-    Pass *targetpass;
-    Technique *srctech;
-	MaterialPtr mat, srcmat;
-	
-    CompositionTargetPass::PassIterator it = target->getPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionPass *pass = it.getNext();
-        switch(pass->getType())
-        {
-        case CompositionPass::PT_CLEAR:
-			queueRenderSystemOp(finalState, OGRE_NEW RSClearOperation(
-				pass->getClearBuffers(),
-				pass->getClearColour(),
-				pass->getClearDepth(),
-				(ushort)pass->getClearStencil()
-				));
-            break;
-		case CompositionPass::PT_STENCIL:
-			queueRenderSystemOp(finalState, OGRE_NEW RSStencilOperation(
-				pass->getStencilCheck(),pass->getStencilFunc(), pass->getStencilRefValue(),
-				pass->getStencilMask(), pass->getStencilFailOp(), pass->getStencilDepthFailOp(),
-				pass->getStencilPassOp(), pass->getStencilTwoSidedOperation()
-				));
-            break;
-		case CompositionPass::PT_RENDERSCENE: 
-		{
-			if(pass->getFirstRenderQueue() < finalState.currentQueueGroupID)
+			// Now deal with vertex buffers
+			// we can rely on buffer counts / formats being the same
+			VertexData* srcVData = geom->geometry->vertexData;
+			VertexBufferBinding* srcBinds = srcVData->vertexBufferBinding;
+		
+			for (b = 0; b < binds->getBufferCount(); ++b)
 			{
-				/// Mismatch -- warn user
-				/// XXX We could support repeating the last queue, with some effort
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": Attempt to render queue "+
-					StringConverter::toString(pass->getFirstRenderQueue())+" before "+
-					StringConverter::toString(finalState.currentQueueGroupID));
-			}
 
-			RSSetSchemeOperation* setSchemeOperation = 0;
-			if (pass->getMaterialScheme() != StringUtil::BLANK)
-			{
-				//Add the triggers that will set the scheme and restore it each frame
-				finalState.currentQueueGroupID = pass->getFirstRenderQueue();
-				setSchemeOperation = OGRE_NEW RSSetSchemeOperation(pass->getMaterialScheme());
-				queueRenderSystemOp(finalState, setSchemeOperation);
-			}
+				// lock source
+				HardwareVertexBufferSharedPtr srcBuf =
+					srcBinds->getBuffer(b);
+				uchar* pSrcBase = static_cast<uchar*>(
+					srcBuf->lock(HardwareBuffer::HBL_READ_ONLY));
+				// Get buffer lock pointer, we'll update this later
+				uchar* pDstBase = destBufferLocks[b];
+				size_t bufInc = srcBuf->getVertexSize();
 			
-			/// Add render queues
-			for(int x=pass->getFirstRenderQueue(); x<=pass->getLastRenderQueue(); ++x)
-			{
-				assert(x>=0);
-				finalState.renderQueues.set(x);
-			}
-			finalState.currentQueueGroupID = pass->getLastRenderQueue()+1;
+				// Iterate over vertices
+				float *pSrcReal, *pDstReal;
+				Vector3 tmp;
 
-			if (setSchemeOperation != 0)
-			{
-				//Restoring the scheme after the queues have been rendered
-				queueRenderSystemOp(finalState, 
-					OGRE_NEW RSRestoreSchemeOperation(setSchemeOperation));
-			}
-
-			finalState.findVisibleObjects = true;
-			finalState.materialScheme = target->getMaterialScheme();
-			finalState.shadowsEnabled = target->getShadowsEnabled();
-
-            break;
-		}
-		case CompositionPass::PT_RENDERQUAD: {
-            srcmat = pass->getMaterial();
-			if(srcmat.isNull())
-            {
-                /// No material -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": No material defined for composition pass");
-                break;
-            }
-			srcmat->load();
-			if(srcmat->getNumSupportedTechniques()==0)  
-			{
-				/// No supported techniques -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": material "+srcmat->getName()+" has no supported techniques");
-                break;
-			}
-			srctech = srcmat->getBestTechnique(0);
-			/// Create local material
-			MaterialPtr mat = createLocalMaterial(srcmat->getName());
-			/// Copy and adapt passes from source material
-			Technique::PassIterator i = srctech->getPassIterator();
-			while(i.hasMoreElements())
-			{
-				Pass *srcpass = i.getNext();
-				/// Create new target pass
-				targetpass = mat->getTechnique(0)->createPass();
-				(*targetpass) = (*srcpass);
-				/// Set up inputs
-				for(size_t x=0; x<pass->getNumInputs(); ++x)
+			
+			
+				for (size_t v = 0; v < srcVData->vertexCount; ++v)
 				{
-					const CompositionPass::InputTex& inp = pass->getInput(x);
-					if(!inp.name.empty())
+					//to know if the current buffer is the one with the buffer or not
+					bool isTheBufferWithIndex=false;
+					// Iterate over vertex elements
+					VertexDeclaration::VertexElementList& elems =
+						bufferElements[b];
+					VertexDeclaration::VertexElementList::iterator ei;
+				
+					for (ei = elems.begin(); ei != elems.end(); ++ei)
 					{
-						if(x < targetpass->getNumTextureUnitStates())
+						VertexElement& elem = *ei;
+						elem.baseVertexPointerToElement(pSrcBase, &pSrcReal);
+						elem.baseVertexPointerToElement(pDstBase, &pDstReal);
+						if(elem.getSemantic()==VES_TEXTURE_COORDINATES && elem.getIndex()==mTexCoordIndex)
 						{
-							targetpass->getTextureUnitState((ushort)x)->setTextureName(getSourceForTex(inp.name, inp.mrtIndex));
-						} 
+							isTheBufferWithIndex=true;
+							*pDstReal++ = static_cast<float>(index);
+						}
 						else
 						{
-							/// Texture unit not there
-							LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-								+mCompositor->getName()+": material "+srcmat->getName()+" texture unit "
-								+StringConverter::toString(x)+" out of bounds");
+							switch (elem.getSemantic())
+							{
+								case VES_POSITION:
+									tmp.x = *pSrcReal++;
+									tmp.y = *pSrcReal++;
+									tmp.z = *pSrcReal++;
+									*pDstReal++ = tmp.x;
+									*pDstReal++ = tmp.y;
+									*pDstReal++ = tmp.z;
+									if(tmp.x<Xmin)
+										Xmin = tmp.x;
+									if(tmp.y<Ymin)
+										Ymin = tmp.y;
+									if(tmp.z<Zmin)
+										Zmin = tmp.z;
+									if(tmp.x>Xmax)
+										Xmax = tmp.x;
+									if(tmp.y>Ymax)
+										Ymax = tmp.y;
+									if(tmp.z>Zmax)
+										Zmax = tmp.z;
+								default:
+								// just raw copy
+								memcpy(pDstReal, pSrcReal,
+									VertexElement::getTypeSize(elem.getType()));
+								break;
+							};
+
 						}
-					}
-				}
-			}
-
-            RSQuadOperation * rsQuadOperation = OGRE_NEW RSQuadOperation(this,pass->getIdentifier(),mat);
-            Real left,top,right,bottom;
-            if (pass->getQuadCorners(left,top,right,bottom))
-                rsQuadOperation->setQuadCorners(left,top,right,bottom);
-			rsQuadOperation->setQuadFarCorners(pass->getQuadFarCorners(), pass->getQuadFarCornersViewSpace());
-			
-			queueRenderSystemOp(finalState,rsQuadOperation);
-			}
-            break;
-		case CompositionPass::PT_RENDERCUSTOM:
-			RenderSystemOperation* customOperation = CompositorManager::getSingleton().
-				getCustomCompositionPass(pass->getCustomType())->createOperation(this, pass);
-			queueRenderSystemOp(finalState, customOperation);
-			break;
-        }
-    }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileTargetOperations(CompiledState &compiledState)
-{
-    /// Collect targets of previous state
-	if(mPreviousInstance)
-	    mPreviousInstance->_compileTargetOperations(compiledState);
-    /// Texture targets
-    CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionTargetPass *target = it.getNext();
-        
-        TargetOperation ts(getTargetForTex(target->getOutputName()));
-        /// Set "only initial" flag, visibilityMask and lodBias according to CompositionTargetPass.
-        ts.onlyInitial = target->getOnlyInitial();
-        ts.visibilityMask = target->getVisibilityMask();
-        ts.lodBias = target->getLodBias();
-		ts.shadowsEnabled = target->getShadowsEnabled();
-        /// Check for input mode previous
-        if(target->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-        {
-            /// Collect target state for previous compositor
-            /// The TargetOperation for the final target is collected seperately as it is merged
-            /// with later operations
-            mPreviousInstance->_compileOutputOperation(ts);
-        }
-        /// Collect passes of our own target
-        collectPasses(ts, target);
-        compiledState.push_back(ts);
-    }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileOutputOperation(TargetOperation &finalState)
-{
-    /// Final target
-    CompositionTargetPass *tpass = mTechnique->getOutputTargetPass();
-    
-    /// Logical-and together the visibilityMask, and multiply the lodBias
-    finalState.visibilityMask &= tpass->getVisibilityMask();
-    finalState.lodBias *= tpass->getLodBias();
-    
-    if(tpass->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-    {
-        /// Collect target state for previous compositor
-        /// The TargetOperation for the final target is collected seperately as it is merged
-        /// with later operations
-        mPreviousInstance->_compileOutputOperation(finalState);
-    }
-    /// Collect passes
-    collectPasses(finalState, tpass);
-}
-//-----------------------------------------------------------------------
-Compositor *CompositorInstance::getCompositor()
-{
-    return mCompositor;
-}
-//-----------------------------------------------------------------------
-CompositionTechnique *CompositorInstance::getTechnique()
-{
-    return mTechnique;
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setTechnique(CompositionTechnique* tech, bool reuseTextures)
-{
-	if (mTechnique != tech)
-	{
-		if (reuseTextures)
-		{
-			// make sure we store all (shared) textures in use in our reserve pool
-			// this will ensure they don't get destroyed as unreferenced
-			// so they're ready to use again later
-			CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-			CompositorManager::UniqueTextureSet assignedTextures;
-			while(it.hasMoreElements())
-			{
-				CompositionTechnique::TextureDefinition *def = it.getNext();
-				if (def->pooled)
-				{
-					LocalTextureMap::iterator i = mLocalTextures.find(def->name);
-					if (i != mLocalTextures.end())
-					{
-						// overwriting duplicates is fine, we only want one entry per def
-						mReserveTextures[def] = i->second;
-					}
-
-				}
-			}
-		}
-		// replace technique
-		mTechnique = tech;
-
-		if (mEnabled)
-		{
-			// free up resources, but keep reserves if reusing
-			freeResources(false, !reuseTextures);
-			createResources(false);
-			/// Notify chain state needs recompile.
-			mChain->_markDirty();
-		}
-
-	}
-}
-//---------------------------------------------------------------------
-void CompositorInstance::setScheme(const String& schemeName, bool reuseTextures)
-{
-	CompositionTechnique* tech = mCompositor->getSupportedTechnique(schemeName);
-	if (tech)
-	{
-		setTechnique(tech, reuseTextures);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorChain *CompositorInstance::getChain()
-{
-	return mChain;
-}
-//-----------------------------------------------------------------------
-const String& CompositorInstance::getTextureInstanceName(const String& name, 
-														 size_t mrtIndex)
-{
-	return getSourceForTex(name, mrtIndex);
-}
-//---------------------------------------------------------------------
-TexturePtr CompositorInstance::getTextureInstance(const String& name, size_t mrtIndex)
-{
-	// try simple textures first
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-	if(i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// try MRTs - texture (rather than target)
-	i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-	if (i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// not present
-	return TexturePtr();
-
-}
-//-----------------------------------------------------------------------
-MaterialPtr CompositorInstance::createLocalMaterial(const String& srcName)
-{
-static size_t dummyCounter = 0;
-    MaterialPtr mat = 
-        MaterialManager::getSingleton().create(
-            "c" + StringConverter::toString(dummyCounter) + "/" + srcName,
-            ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME
-        );
-    ++dummyCounter;
-    /// This is safe, as we hold a private reference
-    /// XXX does not compile due to ResourcePtr conversion :
-    ///     MaterialManager::getSingleton().remove(mat);
-    MaterialManager::getSingleton().remove(mat->getName());
-    /// Remove all passes from first technique
-    mat->getTechnique(0)->removeAllPasses();
-    return mat;
-}
-//---------------------------------------------------------------------
-void CompositorInstance::notifyResized()
-{
-	freeResources(true, true);
-	createResources(true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::createResources(bool forResizeOnly)
-{
-	static size_t dummyCounter = 0;
-    /// Create temporary textures
-    /// In principle, temporary textures could be shared between multiple viewports
-    /// (CompositorChains). This will save a lot of memory in case more viewports
-    /// are composited.
-    CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-    while(it.hasMoreElements())
-    {
-        CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) {
-			//This is a reference, isn't created in this compositor
-			continue;
-		}
-		if (def->scope == CompositionTechnique::TS_GLOBAL) {
-			//This is a global texture, just link the created resources from the parent
-			Compositor* parentComp = mTechnique->getParent();
-			if (def->formatList.size() > 1) 
-			{
-				size_t atch = 0;
-				for (PixelFormatList::iterator p = def->formatList.begin(); 
-					p != def->formatList.end(); ++p, ++atch)
-				{
-					Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, atch);
-					mLocalTextures[getMRTTexLocalName(def->name, atch)] = tex;
-				}
-				MultiRenderTarget* mrt = static_cast<MultiRenderTarget*>
-					(parentComp->getRenderTarget(def->name));
-				mLocalMRTs[def->name] = mrt;
-			}
-			else
-			{
-				Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, 0);
-				mLocalTextures[def->name] = tex;
-			}
-			continue;
-		}
-        /// Determine width and height
-        size_t width = def->width;
-        size_t height = def->height;
-		uint fsaa = 0;
-		String fsaaHint;
-		bool hwGamma = false;
-
-		// Skip this one if we're only (re)creating for a resize & it's not derived
-		// from the target size
-		if (forResizeOnly && width != 0 && height != 0)
-			continue;
-
-		deriveTextureRenderTargetOptions(def->name, &hwGamma, &fsaa, &fsaaHint);
-
-        if(width == 0)
-            width = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualWidth()) * def->widthFactor);
-        if(height == 0)
-			height = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualHeight()) * def->heightFactor);
-
-		// determine options as a combination of selected options and possible options
-		if (!def->fsaa)
-		{
-			fsaa = 0;
-			fsaaHint = StringUtil::BLANK;
-		}
-		hwGamma = hwGamma || def->hwGammaWrite;
-
-        /// Make the tetxure
-		RenderTarget* rendTarget;
-		if (def->formatList.size() > 1)
-		{
-			String MRTbaseName = "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			MultiRenderTarget* mrt = 
-				Root::getSingleton().getRenderSystem()->createMultiRenderTarget(MRTbaseName);
-			mLocalMRTs[def->name] = mrt;
-
-			// create and bind individual surfaces
-			size_t atch = 0;
-			for (PixelFormatList::iterator p = def->formatList.begin(); 
-				p != def->formatList.end(); ++p, ++atch)
-			{
-
-				String texname = MRTbaseName + "/" + StringConverter::toString(atch);
-				String mrtLocalName = getMRTTexLocalName(def->name, atch);
-				TexturePtr tex;
-				if (def->pooled)
-				{
-					// get / create pooled texture
-					tex = CompositorManager::getSingleton().getPooledTexture(texname,
-						mrtLocalName, 
-						width, height, *p, fsaa, fsaaHint,  
-						hwGamma && !PixelUtil::isFloatingPoint(*p), 
-						assignedTextures, this, def->scope);
-				}
-				else
-				{
-					tex = TextureManager::getSingleton().createManual(
-						texname, 
-						ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-						(uint)width, (uint)height, 0, *p, TU_RENDERTARGET, 0, 
-						hwGamma && !PixelUtil::isFloatingPoint(*p), fsaa, fsaaHint ); 
-				}
-				
-				RenderTexture* rt = tex->getBuffer()->getRenderTarget();
-				rt->setAutoUpdated(false);
-				mrt->bindSurface(atch, rt);
-
-				// Also add to local textures so we can look up
-				mLocalTextures[mrtLocalName] = tex;
-				
-			}
-
-			rendTarget = mrt;
-		}
-		else
-		{
-			String texName =  "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			
-			// space in the name mixup the cegui in the compositor demo
-			// this is an auto generated name - so no spaces can't hart us.
-			std::replace( texName.begin(), texName.end(), ' ', '_' ); 
-
-			TexturePtr tex;
-			if (def->pooled)
-			{
-				// get / create pooled texture
-				tex = CompositorManager::getSingleton().getPooledTexture(texName, 
-					def->name, width, height, def->formatList[0], fsaa, fsaaHint,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), assignedTextures, 
-					this, def->scope);
-			}
-			else
-			{
-				tex = TextureManager::getSingleton().createManual(
-					texName, 
-					ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-					(uint)width, (uint)height, 0, def->formatList[0], TU_RENDERTARGET, 0,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), fsaa, fsaaHint); 
-			}
-
-			rendTarget = tex->getBuffer()->getRenderTarget();
-			mLocalTextures[def->name] = tex;
-		}
-        
-        
-        /// Set up viewport over entire texture
-        rendTarget->setAutoUpdated( false );
-
-		// We may be sharing / reusing this texture, so test before adding viewport
-		if (rendTarget->getNumViewports() == 0)
-		{
-			Camera* camera = mChain->getViewport()->getCamera();
-
-			// Save last viewport and current aspect ratio
-			Viewport* oldViewport = camera->getViewport();
-			Real aspectRatio = camera->getAspectRatio();
-
-			Viewport* v = rendTarget->addViewport( camera );
-			v->setClearEveryFrame( false );
-			v->setOverlaysEnabled( false );
-			v->setBackgroundColour( ColourValue( 0, 0, 0, 0 ) );
-
-			// Should restore aspect ratio, in case of auto aspect ratio
-			// enabled, it'll changed when add new viewport.
-			camera->setAspectRatio(aspectRatio);
-			// Should restore last viewport, i.e. never disturb user code
-			// which might based on that.
-			camera->_notifyViewport(oldViewport);
-		}
-    }
-
-	_fireNotifyResourcesCreated(forResizeOnly);
-}
-//---------------------------------------------------------------------
-void CompositorInstance::deriveTextureRenderTargetOptions(
-	const String& texname, bool *hwGammaWrite, uint *fsaa, String* fsaaHint)
-{
-	// search for passes on this texture def that either include a render_scene
-	// or use input previous
-	bool renderingScene = false;
-
-	CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-	while (it.hasMoreElements())
-	{
-		CompositionTargetPass* tp = it.getNext();
-		if (tp->getOutputName() == texname)
-		{
-			if (tp->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-			{
-				// this may be rendering the scene implicitly
-				// Can't check mPreviousInstance against mChain->_getOriginalSceneCompositor()
-				// at this time, so check the position
-				CompositorChain::InstanceIterator instit = mChain->getCompositors();
-				renderingScene = true;
-				while(instit.hasMoreElements())
-				{
-					CompositorInstance* inst = instit.getNext();
-					if (inst == this)
-						break;
-					else if (inst->getEnabled())
-					{
-						// nope, we have another compositor before us, this will
-						// be doing the AA
-						renderingScene = false;
-					}
-				}
-				if (renderingScene)
-					break;
-			}
-			else
-			{
-				// look for a render_scene pass
-				CompositionTargetPass::PassIterator pit = tp->getPassIterator();
-				while(pit.hasMoreElements())
-				{
-					CompositionPass* pass = pit.getNext();
-					if (pass->getType() == CompositionPass::PT_RENDERSCENE)
-					{
-						renderingScene = true;
-						break;
-					}
-				}
-			}
-
-		}
-	}
-
-	if (renderingScene)
-	{
-		// Ok, inherit settings from target
-		RenderTarget* target = mChain->getViewport()->getTarget();
-		*hwGammaWrite = target->isHardwareGammaEnabled();
-		*fsaa = target->getFSAA();
-		*fsaaHint = target->getFSAAHint();
-	}
-	else
-	{
-		*hwGammaWrite = false;
-		*fsaa = 0;
-		*fsaaHint = StringUtil::BLANK;
-	}
-
-}
-//---------------------------------------------------------------------
-String CompositorInstance::getMRTTexLocalName(const String& baseName, size_t attachment)
-{
-	return baseName + "/" + StringConverter::toString(attachment);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::freeResources(bool forResizeOnly, bool clearReserveTextures)
-{
-    // Remove temporary textures 
-	// We only remove those that are not shared, shared textures are dealt with
-	// based on their reference count.
-	// We can also only free textures which are derived from the target size, if
-	// required (saves some time & memory thrashing / fragmentation on resize)
-
-	CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-	while(it.hasMoreElements())
-	{
-		CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) 
-		{
-			//This is a reference, isn't created here
-			continue;
-		}
-		
-		// potentially only remove this one if based on size
-		if (!forResizeOnly || def->width == 0 || def->height == 0)
-		{
-			size_t subSurf = def->formatList.size();
-
-			// Potentially many surfaces
-			for (size_t s = 0; s < subSurf; ++s)
-			{
-				String texName = subSurf > 1 ? getMRTTexLocalName(def->name, s)
-					: def->name;
-
-				LocalTextureMap::iterator i = mLocalTextures.find(texName);
-				if (i != mLocalTextures.end())
-				{
-					if (!def->pooled && def->scope != CompositionTechnique::TS_GLOBAL)
-					{
-						// remove myself from central only if not pooled and not global
-						TextureManager::getSingleton().remove(i->second->getName());
-					}
-
-					// remove from local
-					// reserves are potentially cleared later
-					mLocalTextures.erase(i);
-
-				}
-
-			} // subSurf
-
-			if (subSurf > 1)
-			{
-				LocalMRTMap::iterator mrti = mLocalMRTs.find(def->name);
-				if (mrti != mLocalMRTs.end())
-				{
-					if (def->scope != CompositionTechnique::TS_GLOBAL) 
-					{
-						// remove MRT if not global
-						Root::getSingleton().getRenderSystem()->destroyRenderTarget(mrti->second->getName());
-					}
 					
-					mLocalMRTs.erase(mrti);
-				}
 
-			}
-
-		} // not for resize or width/height 0
-	}
-
-	if (clearReserveTextures)
-	{
-		if (forResizeOnly)
-		{
-			// just remove the ones which would be affected by a resize
-			for (ReserveTextureMap::iterator i = mReserveTextures.begin();
-				i != mReserveTextures.end(); )
-			{
-				if (i->first->width == 0 || i->first->height == 0)
-				{
-					mReserveTextures.erase(i++);
-				}
-				else
-					++i;
-			}
-		}
-		else
-		{
-			// clear all
-			mReserveTextures.clear();
-		}
-	}
-
-	// Now we tell the central list of textures to check if its unreferenced, 
-	// and to remove if necessary. Anything shared that was left in the reserve textures
-	// will not be released here
-	CompositorManager::getSingleton().freePooledTextures(true);
-}
-//---------------------------------------------------------------------
-RenderTarget* CompositorInstance::getRenderTarget(const String& name)
-{
-	return getTargetForTex(name);
-}
-//-----------------------------------------------------------------------
-RenderTarget *CompositorInstance::getTargetForTex(const String &name)
-{
-	// try simple texture
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-    if(i != mLocalTextures.end())
-		return i->second->getBuffer()->getRenderTarget();
-
-	// try MRTs
-	LocalMRTMap::iterator mi = mLocalMRTs.find(name);
-	if (mi != mLocalMRTs.end())
-		return mi->second;
-	else
-		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-			"CompositorInstance::getTargetForTex");
-
-}
-//-----------------------------------------------------------------------
-const String &CompositorInstance::getSourceForTex(const String &name, size_t mrtIndex)
-{
-	CompositionTechnique::TextureDefinition* texDef = mTechnique->getTextureDefinition(name);
-
-	if (!texDef->refCompName.empty()) 
-	{
-		//This is a reference - find the compositor and referenced texture definition
-		const CompositorPtr& refComp = CompositorManager::getSingleton().getByName(texDef->refCompName);
-		if (refComp.isNull())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor",
-				"CompositorInstance::getSourceForTex");
-		}
-		CompositionTechnique::TextureDefinition* refTexDef = refComp->getSupportedTechnique()->getTextureDefinition(texDef->refTexName);
-		if (refTexDef == 0)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor texture",
-				"CompositorInstance::getSourceForTex");
-		}
-
-		switch (refTexDef->scope) 
-		{
-			case CompositionTechnique::TS_CHAIN: 
-			{
-				//Find the instance and check if it is before us
-				CompositorInstance* refCompInst = 0;
-				CompositorChain::InstanceIterator it = mChain->getCompositors();
-				bool beforeMe = true;
-				while (it.hasMoreElements())
-				{
-					CompositorInstance* nextCompInst = it.getNext();
-					if (nextCompInst->getCompositor()->getName() == texDef->refCompName)
-					{
-						refCompInst = nextCompInst;
-						break;
 					}
-					if (nextCompInst == this)
-					{
-						//We encountered ourselves while searching for the compositor -
-						//we are earlier in the chain.
-						beforeMe = false;
-					}
-				}
-				
-				if (refCompInst == 0 || !refCompInst->getEnabled()) 
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing inactive compositor texture",
-						"CompositorInstance::getSourceForTex");
-				}
-				if (!beforeMe)
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing compositor that is later in the chain",
-						"CompositorInstance::getSourceForTex");
-				}
-				return refCompInst->getTextureInstanceName(texDef->refTexName, mrtIndex);
-			}
-			case CompositionTechnique::TS_GLOBAL:
-				//Chain and global case - the referenced compositor will know how to handle
-				return refComp->getTextureInstanceName(texDef->refTexName, mrtIndex);
-			case CompositionTechnique::TS_LOCAL:
-			default:
-				OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Referencing local compositor texture",
-					"CompositorInstance::getSourceForTex");
-		}
+					if (isTheBufferWithIndex)
+					pDstBase += bufInc+4;
+					else
+					pDstBase += bufInc;
+					pSrcBase += bufInc;
 
-	} // End of handling texture references
-
-	if (texDef->formatList.size() == 1) 
-	{
-		//This is a simple texture
-		LocalTextureMap::iterator i = mLocalTextures.find(name);
-		if(i != mLocalTextures.end())
-		{
-			return i->second->getName();
-		}
-	}
-	else
-	{
-		// try MRTs - texture (rather than target)
-		LocalTextureMap::iterator i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-		if (i != mLocalTextures.end())
-		{
-			return i->second->getName();
-		}
-	}
+				}
 	
-	OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-		"CompositorInstance::getSourceForTex");
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::queueRenderSystemOp(TargetOperation &finalState, RenderSystemOperation *op)
-{
-	/// Store operation for current QueueGroup ID
-	finalState.renderSystemOperations.push_back(RenderSystemOpPair(finalState.currentQueueGroupID, op));
-	/// Tell parent for deletion
-	mChain->_queuedOperation(op);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::addListener(Listener *l)
-{
-	mListeners.push_back(l);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::removeListener(Listener *l)
-{
-	mListeners.erase(std::find(mListeners.begin(), mListeners.end(), l));
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialSetup(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialRender(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyResourcesCreated(bool forResizeOnly)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyResourcesCreated(forResizeOnly);
-}
-//-----------------------------------------------------------------------
-CompositorInstance::RenderSystemOperation::~RenderSystemOperation()
-{
-}
-//-----------------------------------------------------------------------
-CompositorInstance::Listener::~Listener()
-{
-}
-void CompositorInstance::Listener::notifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyResourcesCreated(bool forResizeOnly)
-{
-}
+				// Update pointer
+				destBufferLocks[b] = pDstBase;
+				srcBuf->unlock();
+
+			
+			}
+			indexOffset += geom->geometry->vertexData->vertexCount;
+
+
+		precGeom=geom;
+
+		}
+		mParent->setLastIndex(index);
+		// Unlock everything
+		mRenderOp.indexData->indexBuffer->unlock();
+		for (b = 0; b < binds->getBufferCount(); ++b)
+		{
+			binds->getBuffer(b)->unlock();
+		}
+	
+	OGRE_DELETE mVertexData;
+	OGRE_DELETE mIndexData;
+	
+	mVertexData=mRenderOp.vertexData;
+	mIndexData=mRenderOp.indexData;
+	mBatch->getRenderOperationVector().push_back(&mRenderOp);
+	setBoundingBox(AxisAlignedBox(Xmin,Ymin,Zmin,Xmax,Ymax,Zmax));
+	mAABB=AxisAlignedBox(Xmin,Ymin,Zmin,Xmax,Ymax,Zmax);
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::GeometryBucket::dump(std::ofstream& of) const
+	{
+		of << "Geometry Bucket" << std::endl;
+		of << "---------------" << std::endl;
+		of << "Format string: " << mFormatString << std::endl;
+		of << "Geometry items: " << mQueuedGeometry.size() << std::endl;
+		of << "---------------" << std::endl;
+
+	}
+	//--------------------------------------------------------------------------
+	void InstancedGeometry::GeometryBucket::visitRenderables(
+		Renderable::Visitor* visitor, bool debugRenderables)
+	{
+		visitor->visit(this, mParent->getParent()->getLod(), false);
+	}
+	//---------------------------------------------------------------------
 
 }
+

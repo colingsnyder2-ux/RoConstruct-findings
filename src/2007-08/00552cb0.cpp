@@ -1,29 +1,12 @@
-// from server: 35% by colin
-extern "C" void __cdecl sub_552b10();
-extern "C" void __stdcall sub_77e4c8();
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_1a066d61bcfa73c0.cpp
 
-extern void* g_77e4dc;
-extern void* g_77e4e0;
-
-struct S {
-    void* f(void*);
-};
-
-void* S::f(void* a) {
-    if (a != 0) {
-        *(void**)((char*)this + 8) = (void*)0x7a7cfc;
-        *(void**)((char*)this + 0x18) = g_77e4e0;
-        *(void**)((char*)this + 0x18) = g_77e4dc;
-    }
-    *(void**)((char*)this + 4) = 0;
-    *(void**)this = (void*)0x7a78bc;
-    sub_77e4c8();
-    *(void**)this = (void*)0x7a7cf4;
-    void* p = *(void**)((char*)this + 8);
-    *(void**)((char*)p + 4) = (void*)0x7a7cec;
-    sub_552b10();
-    *(void**)((char*)this + 4) = (char*)this + 0x10;
-    void* q = *(void**)((char*)this + 0x10);
-    *(void**)((char*)q + 0xc) = this;
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <boost/iostreams/filtering_stream.hpp>
+template class boost::iostreams::filtering_stream<boost::iostreams::input>;
+template class boost::iostreams::filtering_stream<boost::iostreams::output>;
+template class boost::iostreams::chain<boost::iostreams::input>;
+template class boost::iostreams::chain<boost::iostreams::output>;

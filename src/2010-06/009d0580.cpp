@@ -1,1014 +1,853 @@
-// from server: 72% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/SkinFramework/XTPSkinManager.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_unit_9dc8eed6b8f2db5a.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPSkinManager.cpp: implementation of the CXTPSkinManager class.
-//
-// This file is a part of the XTREME SKINFRAMEWORK MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Assembly.h"
+#include "v8world/Controller.h"
+#include "v8world/World.h"
+#include "AppDraw/Draw.h"
+#include "AppDraw/DrawAdorn.h"
+#include "AppDraw/HitTest.h"
+#include "tool/Dragger.h"
+#include <G3D/CoordinateFrame.h>
+#include "reflection/type.h"
 
-#include "stdafx.h"
-
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPSystemHelpers.h"
-
-#include "XTPSkinManager.h"
-#include "XTPSkinImage.h"
-#include "XTPSkinManagerResource.h"
-#include "XTPSkinObject.h"
-#include "XTPSkinObjectFrame.h"
-#include "XTPSkinManagerSchema.h"
-#include "XTPSkinManagerApiHook.h"
-#include "XTPSkinManagerModuleList.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-#define EVENT_OBJECT_REORDER 0x8004
-
-CXTPSkinManagerMetrics::CXTPSkinManagerMetrics(CXTPSkinManagerSchema* pSchema)
+namespace RBX
 {
-	m_pSchema = pSchema;
+	const char* category_Part = "Part";
 
-	m_brushDialog = NULL;
-	m_brushTabControl = NULL;
-	m_brushWindow = NULL;
+	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_unjoin(&PartInstance::destroyJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_join(&PartInstance::join, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<PartInstance, float(void), 0> desc_getMass(&PartInstance::getMass, "GetMass", Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-	ZeroMemory(m_brTheme, sizeof(m_brTheme));
-	memset(m_clrTheme, -1, sizeof(m_clrTheme));
+	static Reflection::EnumPropDescriptor<PartInstance, Part::PartType> prop_shapeUi("Shape", category_Part, &PartInstance::getPartType, &PartInstance::setPartTypeUi, Reflection::PropertyDescriptor::UI);
 
-	m_cyCaption = m_cySmallCaption = m_cyOsCaption = m_cyOsSmallCaption = 0;
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_PositionUi("Position", "Data", &PartInstance::getTranslationUi, &PartInstance::setTranslationUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_Velocity("Velocity", "Data", &PartInstance::getLinearVelocity, &PartInstance::setLinearVelocity, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_RotVelocity("RotVelocity", "Data", &PartInstance::getRotationalVelocity, &PartInstance::setRotationalVelocity, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_SizeUi("Size", category_Part, &PartInstance::getPartSizeUi, &PartInstance::setPartSizeUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, bool> prop_Dragging("DraggingV1", "Behavior", &PartInstance::getDragging, &PartInstance::setDragging, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactorUi("formFactor", category_Part, &PartInstance::getFormFactor, &PartInstance::setFormFactorUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactor("FormFactor", category_Part, &PartInstance::getFormFactor, &PartInstance::setFormFactorXml, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<PartInstance, float> prop_Friction("Friction", category_Part, &PartInstance::getFriction, &PartInstance::setFriction, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, float> prop_Elasticity("Elasticity", category_Part, &PartInstance::getElasticity, &PartInstance::setElasticity, Reflection::PropertyDescriptor::STANDARD);
 
-	m_bRefreshMetrics = FALSE;
-}
-
-CXTPSkinManagerMetrics::~CXTPSkinManagerMetrics()
-{
-	DestroyMetrics();
-}
-
-COLORREF CXTPSkinManagerMetrics::GetColor(int nIndex) const
-{
-	return nIndex < XTP_SKINMETRICS_COLORTABLESIZE ? m_clrTheme[nIndex] : 0;
-}
-
-BOOL CXTPSkinManagerMetrics::IsMetricObject(HGDIOBJ hObject) const
-{
-	if (hObject == 0)
-		return FALSE;
-
-	if (GetObjectType(hObject) != OBJ_BRUSH)
-		return FALSE;
-
-	if (hObject == m_brushWindow || hObject == m_brushDialog || hObject == m_brushTabControl)
-		return TRUE;
-
-	for (int i = 0; i < XTP_SKINMETRICS_COLORTABLESIZE; i++)
+	namespace Reflection
 	{
-		if (hObject == m_brTheme[i])
-			return TRUE;
-	}
-	return FALSE;
-}
-
-void CXTPSkinManagerMetrics::DeleteSysBrush(HBRUSH* pBrush)
-{
-	if (pBrush && *pBrush)
-	{
-		HBRUSH hBrush = *pBrush;
-		*pBrush = NULL;
-		DeleteObject(hBrush);
-	}
-}
-
-void CXTPSkinManagerMetrics::DestroyMetrics()
-{
-	m_fntCaption.DeleteObject();
-	m_fntSmCaption.DeleteObject();
-	m_fntMenu.DeleteObject();
-
-	for (int iColorId = 0; iColorId < XTP_SKINMETRICS_COLORTABLESIZE; iColorId++)
-	{
-		DeleteSysBrush(&m_brTheme[iColorId]);
-	}
-
-	DeleteSysBrush(&m_brushDialog);
-	DeleteSysBrush(&m_brushTabControl);
-	DeleteSysBrush(&m_brushWindow);
-}
-
-void CXTPSkinManagerMetrics::RefreshMetrics()
-{
-	static const COLORREF defColors[XTP_SKINMETRICS_COLORTABLESIZE] =
-	{
-		RGB(192, 192, 192),
-		RGB( 58, 110, 165),
-		RGB(  0,   0, 128),
-		RGB(128, 128, 128),
-		RGB(192, 192, 192),
-		RGB(255, 255, 255),
-		RGB(  0,   0,   0),
-		RGB(  0,   0,   0),
-		RGB(  0,   0,   0),
-		RGB(255, 255, 255),
-		RGB(192, 192, 192),
-		RGB(192, 192, 192),
-		RGB(128, 128, 128),
-		RGB(  0,   0, 128),
-		RGB(255, 255, 255),
-		RGB(192, 192, 192),
-		RGB(128, 128, 128),
-		RGB(128, 128, 128),
-		RGB(  0,   0,   0),
-		RGB(192, 192, 192),
-		RGB(255, 255, 255),
-		RGB(  0,   0,   0),
-		RGB(223, 223, 223),
-		RGB(  0,   0,   0),
-		RGB(255, 255, 225),
-		RGB(180, 180, 180),
-		RGB(  0,   0, 255),
-		RGB( 16, 132, 208),
-		RGB(181, 181, 181),
-		RGB(  0,   0, 128),
-		RGB(192, 192, 192)
-	};
-	CXTPSkinManagerSchema* pSchema = m_pSchema;
-	if (!pSchema)
-	{
-		for (int iColorId = 0; iColorId < XTP_SKINMETRICS_COLORTABLESIZE; iColorId++)
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<G3D::CoordinateFrame>()
 		{
-			m_clrTheme[iColorId] = GetSysColor(iColorId);
-
-			DeleteSysBrush(&m_brTheme[iColorId]);
+			static Type type("CoordinateFrame", typeid(G3D::CoordinateFrame));
+			return type;
 		}
-		return;
 	}
-	m_bRefreshMetrics = TRUE;
 
-	UINT nSysMetrics = pSchema->GetClassCode(_T("SYSMETRICS"));
-
-	NONCLIENTMETRICS ncm;
-	ZeroMemory(&ncm, sizeof(NONCLIENTMETRICS));
-	ncm.cbSize = sizeof(NONCLIENTMETRICS);
-	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(NONCLIENTMETRICS), &ncm, 0));
-
-	m_fntCaption.DeleteObject();
-	m_fntCaption.CreateFontIndirect(&ncm.lfCaptionFont);
-
-	m_fntSmCaption.DeleteObject();
-	m_fntSmCaption.CreateFontIndirect(&ncm.lfSmCaptionFont);
-
-	m_fntMenu.DeleteObject();
-	m_fntMenu.CreateFontIndirect(&ncm.lfMenuFont);
-
-	m_nBorderSize = 1;
-	SystemParametersInfo(SPI_GETBORDER, 0, &m_nBorderSize, FALSE);
-
-	m_cxBorder = GetSystemMetrics(SM_CXBORDER);
-	m_cyBorder = GetSystemMetrics(SM_CYBORDER);
-	m_cxEdge = GetSystemMetrics(SM_CXEDGE);
-	m_cyEdge = GetSystemMetrics(SM_CYEDGE);
-
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxOsVScroll = m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	BOOL bApplyMetrics = pSchema->GetSkinManager()->GetApplyOptions() & xtpSkinApplyMetrics;
-
-	m_cyOsCaption = m_cyCaption = GetSystemMetrics(SM_CYCAPTION);
-	m_cyOsSmallCaption = m_cySmallCaption = GetSystemMetrics(SM_CYSMCAPTION);
-
-	if (bApplyMetrics)
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	PartInstance::PartInstance()
+		: Base("Part"),
+		  partType(Part::BLOCK_PART),
+		  formFactor(BRICK),
+		  color(BrickColor::defaultColor()),
+		  transparency(0.0f),
+		  reflectance(0.0f),
+		  locked(false),
+		  surfaces(this),
+		  renderImportance(0.0f),
+		  primitive(new Primitive(Geometry::GEOMETRY_BLOCK)),
+		  alphaModifier(1.0f),
+		  myWorld(NULL),
+		  PersistentPart(this, &PartInstance::computePersistentPart),
+		  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)
 	{
-		pSchema->GetIntProperty(nSysMetrics, 0, 0, TMT_CAPTIONBARHEIGHT, m_cyCaption);
-		m_cyCaption++;
+		primitive->setSurfaceType(NORM_Y, STUDS);
+		primitive->setSurfaceType(NORM_Y_NEG, INLET);
+		primitive->setGridSize(G3D::Vector3(4.0f, 1.2f, 2.0f));
+		primitive->setFriction(0.3f);
+		primitive->setElasticity(0.5f);
+		primitive->setAnchor(false);
+		primitive->setCanCollide(true);
+		primitive->setOwner(this);
 
-		pSchema->GetIntProperty(nSysMetrics, 0, 0, TMT_SMCAPTIONBARHEIGHT, m_cySmallCaption);
-		m_cySmallCaption++;
+		onGuidChanged();
+	}
+#pragma warning (pop)
 
-		int nScrollbarWidth = 0, nScrollbarHeight = 0;
-		if (SUCCEEDED(pSchema->GetIntProperty(nSysMetrics, 0, 0, TMT_SCROLLBARWIDTH, nScrollbarWidth)) && nScrollbarWidth > 0)
+	PartInstance::~PartInstance()
+	{
+		RBXASSERT(!primitive->getClump());
+		RBXASSERT(!myWorld);
+	}
+
+	Surfaces& PartInstance::getSurfaces()
+	{
+		return surfaces;
+	}
+
+	const Surfaces& PartInstance::getSurfaces() const
+	{
+		return surfaces;
+	}
+
+	void PartInstance::onGuidChanged()
+	{
+		RBXASSERT(!myWorld);
+		primitive->setGuid(getGuid());
+	}
+
+	bool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)
+	{
+		bool null = part.get() && part->myWorld;
+		RBXASSERT(!null || part->primitive->inPipeline());
+		return null;
+	}
+
+	void PartInstance::destroyJoints()
+	{
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world)
+			world->destroyJoints(primitive.get());
+	}
+
+	void PartInstance::join()
+	{
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world)
+			world->createJoints(primitive.get());
+	}
+
+	bool PartInstance::computeSurfacesNeedAdorn() const
+	{
+		for (int i = 0; i < 6; i++)
 		{
-			m_cxHScroll = m_cxVScroll = nScrollbarWidth;
+			Surface& current = surfaces[(NormalId)i];
+			if (current.getSurfaceType() == ROTATE || current.getSurfaceType() == ROTATE_P || current.getSurfaceType() == ROTATE_V)
+				return true;
 		}
-		if (SUCCEEDED(pSchema->GetIntProperty(nSysMetrics, 0, 0, TMT_SCROLLBARHEIGHT, nScrollbarHeight)) && nScrollbarHeight > 0)
+		return false;
+	}
+
+	void PartInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
+	{
+		RBXASSERT(legacyOffset.get());
+
+		G3D::CoordinateFrame myState = parentState * *legacyOffset;
+		primitive->setGridCorner(myState);
+	}
+
+	bool PartInstance::isControllable() const
+	{
+		for (int i = 0; i < 6; i++)
 		{
-			m_cyHScroll = m_cyVScroll = nScrollbarHeight;
+			Surface& current = surfaces[(NormalId)i];
+			if ((current.getSurfaceType() == ROTATE_P || current.getSurfaceType() == ROTATE_V) && current.isControllable())
+				return true;
 		}
+		return false;
+	}
 
-		LOGFONT lfCaption, lfSmCaption, lfMenu;
-		if (SUCCEEDED(pSchema->GetFontProperty(nSysMetrics, 0, 0, TMT_CAPTIONFONT, lfCaption)))
+	void PartInstance::onSurfaceChanged(RBX::NormalId surfId)
+	{
+		PersistentPart.setDirty();
+		IsControllable.setDirty();
+		SurfacesNeedAdorn.setDirty();
+		shouldRenderSetDirty();
+	}
+
+	void PartInstance::setPhysics(const G3D::CoordinateFrame& value)
+	{
+		if (value != getCoordinateFrame())
 		{
-			m_fntCaption.DeleteObject();
-			m_fntCaption.CreateFontIndirect(&lfCaption);
+			RBXASSERT(Math::isOrthonormal(value.rotation));
+			primitive->setCoordinateFrame(value);
+			PersistentPart.setDirty();
+			onExtentsChanged();
 		}
+	}
 
-		if (SUCCEEDED(pSchema->GetFontProperty(nSysMetrics, 0, 0, TMT_SMALLCAPTIONFONT, lfSmCaption)))
+	void PartInstance::setPhysics(const G3D::CoordinateFrame& cf, const Velocity& vel)
+	{
+		primitive->getBody()->setVelocity(vel);
+		setPhysics(cf);
+	}
+
+	const G3D::CoordinateFrame& PartInstance::getCoordinateFrame() const
+	{
+		return primitive->getCoordinateFrame();
+	}
+
+	const G3D::Vector3& PartInstance::getTranslationUi() const
+	{
+		return primitive->getBody()->getCoordinateFrame().translation;
+	}
+
+	float PartInstance::getMass()
+	{
+		return primitive->getBody()->getMass();
+	}
+
+	const Velocity& PartInstance::getVelocity() const
+	{
+		return primitive->getBody()->getVelocity();
+	}
+
+	const G3D::Vector3& PartInstance::getLinearVelocity() const
+	{
+		return getVelocity().linear;
+	}
+
+	const G3D::Vector3& PartInstance::getRotationalVelocity() const
+	{
+		return getVelocity().rotational;
+	}
+
+	const G3D::Vector3& PartInstance::getPartSizeXml() const
+	{
+		return primitive->getGeometry()->getGridSize();
+	}
+
+	G3D::Vector3 PartInstance::getPartSizeUi() const
+	{
+		return getPartSizeXml();
+	}
+
+	bool PartInstance::getDragging() const
+	{
+		return primitive->getDragging();
+	}
+
+	bool PartInstance::getCanCollide() const
+	{
+		return !primitive->getDragging() && primitive->getCanCollide() ? true : false;
+	}
+
+	bool PartInstance::getAnchored() const
+	{
+		return primitive->getAnchor();
+	}
+
+	float PartInstance::getFriction() const
+	{
+		return primitive->getFriction();
+	}
+
+	float PartInstance::getElasticity() const
+	{
+		return primitive->getElasticity();
+	}
+
+	Extents PartInstance::getExtentsWorld() const
+	{
+		return primitive->getExtentsWorld();
+	}
+
+	Extents PartInstance::getExtentsLocal() const
+	{
+		return primitive->getExtentsLocal();
+	}
+
+	G3D::CoordinateFrame PartInstance::worldSnapLocation() const
+	{
+		G3D::Vector3 halfSize = getPartSizeXml() * 0.5f;
+
+		G3D::Vector3 snapInPart;
+		snapInPart.y = -halfSize.y;
+		snapInPart.x = halfSize.x - G3D::iRound(floorf(halfSize.x));
+		snapInPart.z = halfSize.z - G3D::iRound(floorf(halfSize.z));
+
+		G3D::CoordinateFrame localSnapLocation(snapInPart);
+		return primitive->getCoordinateFrame() * localSnapLocation;
+	}
+
+	bool PartInstance::aligned() const
+	{
+		G3D::CoordinateFrame myCoord = worldSnapLocation();
+		G3D::CoordinateFrame myCoordSnapped = Math::snapToGrid(myCoord, Dragger::dragSnap());
+
+		return Math::fuzzyEq(myCoord, myCoordSnapped, 0.00001, 0.00001);
+	}
+
+
+	G3D::Vector3 PartInstance::uiToXmlSize(const G3D::Vector3& uiSize) const
+	{
+		G3D::Vector3 gridUiSize = Math::iRoundVector3(uiSize.max(G3D::Vector3(1.0f, 1.0f, 1.0f)));
+		G3D::Vector3 xmlSize = gridUiSize;
+		
+		switch (formFactor)
 		{
-			m_fntSmCaption.DeleteObject();
-			m_fntSmCaption.CreateFontIndirect(&lfSmCaption);
+		case BRICK:
+			xmlSize.y *= 1.2f;
+			break;
+		case PLATE:
+			xmlSize.y *= 0.4f;
+			break;
 		}
 
-		if (SUCCEEDED(pSchema->GetFontProperty(nSysMetrics, 0, 0, TMT_MENUFONT, lfMenu)))
+		return xmlSize;
+	}
+
+	const Part& PartInstance::getPart() const
+	{
+		const Part& part = PersistentPart.getValueRef();
+		part.coordinateFrame = primitive->getCoordinateFrame();
+		return part;
+	}
+
+	Part PartInstance::computePersistentPart() const
+	{
+		const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+		float transparency = 1.0f - alpha();
+
+		return Part(partType, getPartSizeXml(), G3D::Color4(getColor3(), transparency), surfaces.surf6(), cframe);
+	}
+
+	const RBX::PartInstance* PartInstance::fromPrimitiveConst(const Primitive* p)
+	{
+		RBXASSERT(!p || dynamic_cast<PartInstance*>(p->getOwner()));
+
+		if (p)
+			return rbx_static_cast<PartInstance*>(p->getOwner());
+		else
+			return NULL;
+	}
+
+	PartInstance* PartInstance::fromPrimitive(Primitive* p)
+	{
+		return const_cast<PartInstance*>(fromPrimitiveConst(p));
+	}
+
+	bool PartInstance::shouldRender3dAdorn() const
+	{
+		return partType == Part::CYLINDER_PART ||
+			   SurfacesNeedAdorn || 
+			   highlightSleepParts || 
+			   highlightAwakeParts || 
+			   showPartCoord || 
+			   showAnchoredParts ||
+			   showUnalignedParts ||
+			   showSpanningTree;
+	}
+
+	bool PartInstance::getLocked(Instance* instance)
+	{
+		PartInstance* thisPart = dynamic_cast<PartInstance*>(instance);
+
+		if (thisPart)
 		{
-			m_fntMenu.DeleteObject();
-			m_fntMenu.CreateFontIndirect(&lfMenu);
-		}
-	}
-
-	for (int iColorId = 0; iColorId < XTP_SKINMETRICS_COLORTABLESIZE; iColorId++)
-	{
-		COLORREF clrOld = m_clrTheme[iColorId];
-		m_clrTheme[iColorId] = (COLORREF)-1;
-
-		COLORREF clrVal;
-
-		if (FAILED(pSchema->GetColorProperty(nSysMetrics, 0, 0, iColorId + TMT_FIRSTCOLOR, clrVal)))
-		{
-			clrVal = defColors[iColorId];
-
-			pSchema->GetSkinManager()->ApplyColorFilter(clrVal);
-		}
-
-		m_clrTheme[iColorId] = clrVal;
-
-		if ((clrOld != clrVal) || (m_brTheme[iColorId] == NULL))
-		{
-			DeleteSysBrush(&m_brTheme[iColorId]);
-			m_brTheme[iColorId] = CreateSolidBrush(clrVal);
-		}
-	}
-
-	m_clrEdgeHighLight = m_clrTheme[COLOR_BTNHIGHLIGHT];
-	m_clrEdgeShadow = m_clrTheme[COLOR_BTNSHADOW];
-	m_clrEdgeLight = m_clrTheme[COLOR_3DLIGHT];
-	m_clrEdgeDkShadow = m_clrTheme[COLOR_3DDKSHADOW];
-
-
-	DeleteSysBrush(&m_brushDialog);
-	m_brushDialog = ::CreateSolidBrush(m_clrTheme[COLOR_3DFACE]);
-
-	DeleteSysBrush(&m_brushTabControl);
-
-	DeleteSysBrush(&m_brushWindow);
-
-	m_brushWindow = ::CreateSolidBrush(m_clrTheme[COLOR_WINDOW]);
-
-	m_bRefreshMetrics = FALSE;
-
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSkinManager
-
-class XTP_SKINAMANGER_THREAD_STATE : public CNoTrackObject
-{
-public:
-	XTP_SKINAMANGER_THREAD_STATE();
-	virtual ~XTP_SKINAMANGER_THREAD_STATE();
-
-public:
-	HHOOK m_hHookOldCbtFilter;
-};
-
-XTP_SKINAMANGER_THREAD_STATE::XTP_SKINAMANGER_THREAD_STATE()
-{
-	m_hHookOldCbtFilter = 0;
-}
-
-XTP_SKINAMANGER_THREAD_STATE::~XTP_SKINAMANGER_THREAD_STATE()
-{
-	if (m_hHookOldCbtFilter)
-	{
-		UnhookWindowsHookEx(m_hHookOldCbtFilter);
-	}
-}
-
-
-
-THREAD_LOCAL(XTP_SKINAMANGER_THREAD_STATE, _xtpSkinManagerThreadState)
-
-
-CXTPSkinManager::CXTPSkinManager()
-{
-	m_pSchema = NULL;
-	m_bEnabled = FALSE;
-
-	m_pResourceFile = new CXTPSkinManagerResourceFile(this);
-
-	m_pClassMap = new CXTPSkinObjectClassMap();
-	m_pClassMap->AddStandardClasses();
-
-	m_mapObjects.InitHashTable(199, FALSE);
-
-	m_bAutoApplyWindows = TRUE;
-	m_bAutoApplyThreads = TRUE;
-	m_dwApplyOptions = xtpSkinApplyFrame | xtpSkinApplyColors | xtpSkinApplyMetrics | xtpSkinApplyMenus;
-
-	m_dwComCtrl = XTPSystemVersion()->GetComCtlVersion();
-
-	m_bWin9x = XTPSystemVersion()->IsWin9x();
-
-	m_hWinEventHook = NULL;
-	m_pSetWinEventHook = NULL;
-	m_pUnhookWinEvent = NULL;
-
-	CXTPSkinManagerApiHook* pApiHook = CXTPSkinManagerApiHook::GetInstance();
-	pApiHook;
-
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (hLib)
-	{
-		m_pSetWinEventHook = (LPFNSETWINEVENTHOOK)GetProcAddress(hLib, "SetWinEventHook");
-		m_pUnhookWinEvent = (LPFNUNHOOKWINEVENT)GetProcAddress(hLib, "UnhookWinEvent");
-
-		if (m_pSetWinEventHook && m_pUnhookWinEvent)
-		{
-			m_hWinEventHook = m_pSetWinEventHook(EVENT_OBJECT_REORDER, EVENT_OBJECT_REORDER, NULL,
-				&CXTPSkinManager::WinEventProc, GetCurrentProcessId(), 0, 0);
-		}
-	}
-	EnableCurrentThread();
-
-#ifdef _AFXDLL
-	m_pModuleState = AfxGetModuleState();
-#endif
-
-}
-
-void CXTPSkinManager::EnableCurrentThread()
-{
-	DWORD dwThread = ::GetCurrentThreadId();
-
-	XTP_SKINAMANGER_THREAD_STATE* pThreadState = _xtpSkinManagerThreadState.GetData();
-	if (pThreadState)
-	{
-		if (pThreadState->m_hHookOldCbtFilter == 0)
-		{
-			pThreadState->m_hHookOldCbtFilter = ::SetWindowsHookEx(WH_CBT, CbtFilterHook, NULL, dwThread);
-		}
-	}
-}
-
-
-CXTPSkinManager::~CXTPSkinManager()
-{
-	FreeSkinData();
-	RemoveColorFilters();
-
-	CMDTARGET_RELEASE(m_pSchema);
-	CMDTARGET_RELEASE(m_pResourceFile);
-	SAFE_DELETE(m_pClassMap);
-
-	RemoveAll();
-
-	CXTPSkinManagerApiHook* pApiHook = CXTPSkinManagerApiHook::GetInstance();
-	pApiHook->FinalizeHookManagement();
-
-	HMODULE hLib = GetModuleHandle(_T("USER32"));
-	if (m_hWinEventHook && hLib && m_pUnhookWinEvent)
-	{
-		m_pUnhookWinEvent(m_hWinEventHook);
-	}
-}
-
-BOOL CXTPSkinManager::IsColorFilterExists() const
-{
-	return m_arrFilters.GetSize() > 0;
-}
-
-void CXTPSkinManager::RemoveColorFilters()
-{
-	for (int i = 0; i < (int)m_arrFilters.GetSize(); i++)
-	{
-		delete m_arrFilters[i];
-	}
-	m_arrFilters.RemoveAll();
-}
-
-void CXTPSkinManager::AddColorFilter(CXTPSkinManagerColorFilter* pFilter)
-{
-	m_arrFilters.Add(pFilter);
-}
-
-void CXTPSkinManager::RedrawAllControls()
-{
-	if (!m_bEnabled)
-		return;
-
-	if (!m_pSchema)
-		return;
-
-	POSITION pos = m_pSchema->m_mapClasses.GetStartPosition();
-	CString strClassName;
-	CXTPSkinManagerClass* pClass;
-	while (pos != NULL)
-	{
-		m_pSchema->m_mapClasses.GetNextAssoc( pos, strClassName, (void*&)pClass);
-		pClass->GetImages()->RemoveAll();
-	}
-
-	m_pSchema->GetMetrics()->RefreshMetrics();
-	XTPColorManager()->RefreshColors();
-
-	OnSkinChanged(TRUE, TRUE);
-}
-
-void CXTPSkinManager::ApplyColorFilter(COLORREF& clr)
-{
-	for (int i = 0; i < (int)m_arrFilters.GetSize(); i++)
-	{
-		m_arrFilters[i]->ApplyColorFilter(clr);
-	}
-}
-
-CXTPSkinManagerSchema* CXTPSkinManager::CreateSchema(LPCTSTR lpszResourcePath, LPCTSTR lpszIniFileName)
-{
-	if (XTPColorManager()->IsLowResolution() || !CXTPSkinManagerModuleList::IsEnumeratorExists())
-		return NULL;
-
-	CXTPSkinManagerResourceFile* pResourceFile = new CXTPSkinManagerResourceFile(this);
-	if (!pResourceFile->Open(lpszResourcePath, lpszIniFileName))
-	{
-		CMDTARGET_RELEASE(pResourceFile);
-		return NULL;
-	}
-
-	CXTPSkinManagerSchema* pSchema = pResourceFile->CreateSchema();
-	if (!pSchema)
-	{
-		CMDTARGET_RELEASE(pResourceFile);
-		return NULL;
-
-	}
-
-	CMDTARGET_RELEASE(pResourceFile);
-
-	if (FAILED(pSchema->ReadProperties()))
-	{
-		CMDTARGET_RELEASE(pSchema);
-		return NULL;
-	}
-
-	pSchema->RefreshMetrcis();
-	return pSchema;
-}
-
-BOOL CXTPSkinManager::LoadSkin(LPCTSTR lpszResourcePath, LPCTSTR lpszIniFileName)
-{
-	CMDTARGET_RELEASE(m_pSchema);
-
-	CXTPSkinManagerApiHook* pApiHook = CXTPSkinManagerApiHook::GetInstance();
-	pApiHook->FinalizeHookManagement();
-
-	XTPSoundManager()->StopThread();
-
-	BOOL bEnabled = m_bEnabled;
-
-	if (XTPColorManager()->IsLowResolution() ||
-		!CXTPSkinManagerModuleList::IsEnumeratorExists() ||
-		!ReadSkinData(lpszResourcePath, lpszIniFileName))
-	{
-		m_bEnabled = FALSE;
-
-		CMDTARGET_RELEASE(m_pSchema);
-
-		XTPColorManager()->RefreshColors();
-
-		OnSkinChanged(bEnabled, m_bEnabled);
-
-		return FALSE;
-	}
-
-	m_bEnabled = TRUE;
-
-	pApiHook->InitializeHookManagement();
-
-	m_pSchema->RefreshMetrcis();
-	XTPColorManager()->RefreshColors();
-
-	OnSkinChanged(bEnabled, m_bEnabled);
-
-	return TRUE;
-}
-
-CXTPSkinManagerMetrics* CXTPSkinManager::GetMetrics() const
-{
-	return m_pSchema ? m_pSchema->GetMetrics() : NULL;
-}
-
-CXTPSkinManagerClass* CXTPSkinManager::FromHandle(HTHEME hTheme)
-{
-	if (!m_pSchema)
-		return NULL;
-
-	CMapStringToPtr& mapClasses = m_pSchema->m_mapClasses;
-
-	POSITION pos = mapClasses.GetStartPosition();
-	CString strClassName;
-	CXTPSkinManagerClass* pClass;
-
-	while (pos != NULL)
-	{
-		mapClasses.GetNextAssoc( pos, strClassName, (void*&)pClass);
-		if (pClass == (CXTPSkinManagerClass*)hTheme)
-			return pClass;
-	}
-
-	return NULL;
-}
-
-void CXTPSkinManager::ExcludeModule(LPCTSTR lpszModule)
-{
-	CXTPSkinManagerApiHook* pApiHook = CXTPSkinManagerApiHook::GetInstance();
-	pApiHook->ExcludeModule(lpszModule, FALSE);
-}
-
-void CXTPSkinManager::SetApplyOptions(DWORD dwOptions)
-{
-	m_dwApplyOptions = dwOptions;
-
-	if (!m_bEnabled)
-		return;
-
-	CXTPSkinManagerApiHook* pApiHook = CXTPSkinManagerApiHook::GetInstance();
-
-	pApiHook->FinalizeHookManagement();
-	pApiHook->InitializeHookManagement();
-
-	m_pSchema->RefreshMetrcis();
-	XTPColorManager()->RefreshColors();
-
-	OnSkinChanged(m_bEnabled, m_bEnabled);
-}
-
-
-void CXTPSkinManager::SetResourceFile(CXTPSkinManagerResourceFile* pResourceFile)
-{
-	ASSERT(pResourceFile);
-	if (!pResourceFile)
-		return;
-
-	CMDTARGET_RELEASE(m_pResourceFile);
-
-	m_pResourceFile = pResourceFile;
-	m_pResourceFile->m_pManager = this;
-}
-
-void CXTPSkinManager::FreeSkinData()
-{
-	m_pResourceFile->Close();
-}
-
-BOOL CXTPSkinManager::ReadSkinData(LPCTSTR strResourcePath, LPCTSTR strIniFileName)
-{
-	FreeSkinData();
-
-	if (!m_pResourceFile->Open(strResourcePath, strIniFileName))
-		return FALSE;
-
-	m_pSchema = m_pResourceFile->CreateSchema();
-	if (!m_pSchema)
-		return FALSE;
-
-	if (FAILED(m_pSchema->ReadProperties()))
-		return FALSE;
-
-	return TRUE;
-}
-
-CXTPSkinManager* CXTPSkinManager::s_pInstance = NULL;
-
-static class CXTPSkinManager::CDestructor
-{
-public:
-	~CDestructor()
-	{
-		if (s_pInstance != NULL)
-			delete s_pInstance;
-	}
-
-} __xtpSkinManagerDestructor;
-
-LRESULT CALLBACK CXTPSkinManager::CbtFilterHook(int code, WPARAM wParam, LPARAM lParam)
-{
-	XTP_SKINAMANGER_THREAD_STATE* pThreadState = _xtpSkinManagerThreadState.GetData();
-
-	LRESULT lResult = CallNextHookEx(pThreadState->m_hHookOldCbtFilter, code,
-			wParam, lParam);
-
-	if (code == HCBT_CREATEWND && XTPSkinManager()->m_bAutoApplyWindows)
-	{
-		ASSERT(lParam != NULL);
-		LPCREATESTRUCT lpcs = ((LPCBT_CREATEWND)lParam)->lpcs;
-		ASSERT(lpcs != NULL);
-
-		ASSERT(wParam != NULL); // should be non-NULL HWND
-		HWND hWnd = (HWND)wParam;
-
-		TCHAR lpszClassName[50];
-		GetClassName(hWnd, lpszClassName, 50);
-
-		XTPSkinManager()->SetHook(hWnd, lpszClassName, lpcs, TRUE);
-	}
-
-	return lResult;
-}
-
-_XTP_EXT_CLASS CXTPSkinManager* AFX_CDECL XTPSkinManager()
-{
-	if (CXTPSkinManager::s_pInstance == NULL)
-		CXTPSkinManager::s_pInstance = new CXTPSkinManager();
-
-	return CXTPSkinManager::s_pInstance;
-}
-
-CXTPSkinManager* CXTPSkinManager::SetSkinManager(CXTPSkinManager* pSkinManager, BOOL bDelete /*=TRUE*/)
-{
-	ASSERT(pSkinManager != NULL);
-
-	if (pSkinManager != NULL)
-	{
-		CXTPSkinManager* pPrevInstance = NULL;
-
-		if (bDelete) {
-			SAFE_DELETE(s_pInstance);
-		}
-		else {
-			pPrevInstance = s_pInstance;
-		}
-
-		s_pInstance = pSkinManager;
-		return pPrevInstance;
-	}
-
-	return NULL;
-}
-
-CXTPSkinManagerClass* CXTPSkinManager::GetSkinClass(const CXTPSkinObject* pObject, CString strClassList)
-{
-	CXTPSkinManagerSchema* pSchema = pObject && pObject->m_pSchema ? pObject->m_pSchema : m_pSchema;
-
-	CMapStringToPtr& mapClasses = pSchema->m_mapClasses;
-
-	strClassList.MakeUpper();
-
-	CXTPSkinManagerClass* pClass;
-
-	if (mapClasses.Lookup(strClassList, (void *&)pClass))
-		return pClass;
-
-	int nClassCode = pSchema->GetClassCode(strClassList);
-	if (nClassCode == 0)
-		return NULL; // Not supported;
-
-	pClass = new CXTPSkinManagerClass(pSchema);
-	pClass->m_strClass = strClassList;
-	pClass->m_nClassCode =  nClassCode;
-
-	mapClasses.SetAt(strClassList, pClass);
-
-	return pClass;
-}
-
-void CXTPSkinManager::GetCurrentThemeName(CString& strThemeFileName, CString& strColorBuff)
-{
-	if (m_pResourceFile)
-	{
-		strThemeFileName = m_pResourceFile->GetResourcePath();
-		strColorBuff = m_pResourceFile->GetIniFileName();
-	}
-}
-
-
-int CXTPSkinManager::GetThemeSysSize(int iSizeId)
-{
-	int iVal = 0;
-	if (!SUCCEEDED(m_pSchema->GetIntProperty(m_pSchema->GetClassCode(_T("SYSMETRICS")), 0, 0, iSizeId, iVal)))
-		return 0;
-	return iVal;
-}
-
-BOOL CXTPSkinManager::GetThemeSysBool(int iBoolId)
-{
-	BOOL bVal = FALSE;
-	if (!SUCCEEDED(m_pSchema->GetBoolProperty(m_pSchema->GetClassCode(_T("SYSMETRICS")), 0, 0, iBoolId, bVal)))
-		return FALSE;
-
-	return bVal;
-}
-
-
-COLORREF CXTPSkinManager::GetThemeSysColor(int iColorId)
-{
-	if (!m_pSchema)
-		return GetSysColor(iColorId - TMT_FIRSTCOLOR);
-
-	return iColorId >= TMT_FIRSTCOLOR && iColorId <= TMT_LASTCOLOR ?
-		m_pSchema->GetMetrics()->m_clrTheme[iColorId - TMT_FIRSTCOLOR] : (COLORREF)-1;
-}
-
-HRESULT CXTPSkinManager::GetThemeSysFont(int iFontId, LOGFONT *plf)
-{
-	HRESULT hr = m_pSchema->GetFontProperty(m_pSchema->GetClassCode(_T("SYSMETRICS")), 0, 0, iFontId, *plf);
-	return hr;
-
-}
-
-HRESULT CXTPSkinManager::EnableThemeDialogTexture(HWND hWnd, DWORD dwFlags)
-{
-	CXTPSkinObjectFrame* pObject = (CXTPSkinObjectFrame*)Lookup(hWnd);
-
-	if (!pObject)
-		return E_INVALIDARG;
-
-	pObject->m_dwDialogTexture = dwFlags;
-
-	if (pObject->m_dwDialogTexture == ETDT_ENABLETAB)
-	{
-		pObject->SetWindowProc();
-	}
-
-
-	return S_OK;
-}
-
-void CXTPSkinManager::SetWindowTheme(HWND hWnd, CXTPSkinManagerSchema* pSchema)
-{
-	CXTPSkinObject* pSkinObject = Lookup(hWnd);
-	if (pSkinObject)
-	{
-		CMDTARGET_RELEASE(pSkinObject->m_pSchema);
-		pSkinObject->m_pSchema = pSchema;
-		CMDTARGET_ADDREF(pSchema);
-
-		pSkinObject->OnSkinChanged(m_bEnabled, pSchema ? TRUE : m_bEnabled);
-	}
-
-	hWnd = ::GetWindow(hWnd, GW_CHILD);
-	while (hWnd)
-	{
-		SetWindowTheme(hWnd, pSchema);
-
-		hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-CXTPSkinManagerClass::CXTPSkinManagerClass(CXTPSkinManagerSchema* pSchema)
-{
-	m_pImages = new CXTPSkinImages();
-	m_pSchema = pSchema;
-
-	m_mapCachedProperties.InitHashTable(199);
-}
-
-CXTPSkinManagerClass::~CXTPSkinManagerClass()
-{
-	delete m_pImages;
-}
-
-
-
-BOOL CXTPSkinManagerClass::DrawThemeText(CDC* pDC, int iPartId, int iStateId, const CString& strText, DWORD dwFormat, const RECT *pRect)
-{
-	pDC->SetBkMode(TRANSPARENT);
-
-
-	CRect rcCaptionMargins = GetThemeRect(iPartId, iStateId, TMT_CAPTIONMARGINS);
-	rcCaptionMargins.top = rcCaptionMargins.bottom = 0;
-
-	CRect rc(pRect);
-	rc.DeflateRect(rcCaptionMargins);
-
-	if (GetThemeEnumValue(iPartId, iStateId, TMT_CONTENTALIGNMENT) == CA_CENTER)
-	{
-		dwFormat |=  DT_CENTER;
-
-	}
-
-	pDC->SetTextColor(GetThemeColor(iPartId, iStateId, TMT_TEXTCOLOR, pDC->GetTextColor()));
-
-
-	if (GetThemeEnumValue(iPartId, iStateId, TMT_TEXTSHADOWTYPE) == TST_SINGLE)
-	{
-		CSize sz = GetThemeSize(iPartId, iStateId, TMT_TEXTSHADOWOFFSET);
-
-		if (sz != CSize(0, 0))
-		{
-
-			COLORREF clrShadow = GetThemeColor(iPartId, iStateId, TMT_TEXTSHADOWCOLOR);
-			CRect rcShadow(rc);
-			rcShadow.OffsetRect(sz);
-
-			COLORREF clr = pDC->SetTextColor(clrShadow);
-			pDC->DrawText(strText, rcShadow, dwFormat);
-			pDC->SetTextColor(clr);
-		}
-	}
-
-	pDC->DrawText(strText, rc, dwFormat);
-
-
-
-	return TRUE;
-}
-
-CXTPSkinManagerSchemaProperty* CXTPSkinManagerClass::GetProperty(XTPSkinManagerProperty propType, int iPartId, int iStateId, int iPropId)
-{
-	UINT nCachedProp = iPropId + ((iPartId + (iStateId << 6 )) << 14);
-	CXTPSkinManagerSchemaProperty* pProperty = NULL;
-
-	if (m_mapCachedProperties.Lookup(nCachedProp, pProperty))
-		return pProperty;
-
-	pProperty = m_pSchema->GetProperty(m_nClassCode, iPartId, iStateId, iPropId);
-	if (!pProperty)
-	{
-		m_mapCachedProperties.SetAt(nCachedProp, NULL);
-		return 0;
-	}
-
-	if (pProperty->propType != propType)
-		return 0;
-
-	m_mapCachedProperties.SetAt(nCachedProp , pProperty);
-
-	return pProperty;
-}
-
-CString CXTPSkinManagerClass::GetThemeString(int iPartId, int iStateId, int iPropId, LPCTSTR lpszDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_STRING, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return lpszDefault;
-
-	return pProperty->lpszVal;
-}
-
-CRect CXTPSkinManagerClass::GetThemeRect(int iPartId, int iStateId, int iPropId, CRect rcDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_RECT, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return rcDefault;
-
-	return pProperty->rcVal;
-}
-
-int CXTPSkinManagerClass::GetThemeInt(int iPartId, int iStateId, int iPropId, int nDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_INT, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return nDefault;
-
-	return pProperty->iVal;
-}
-BOOL CXTPSkinManagerClass::GetThemeBool(int iPartId, int iStateId, int iPropId, BOOL bDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_BOOL, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return bDefault;
-
-	return pProperty->bVal;
-}
-COLORREF CXTPSkinManagerClass::GetThemeColor(int iPartId, int iStateId, int iPropId, COLORREF clrDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_COLOR, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return clrDefault;
-
-	COLORREF clrVal = pProperty->clrVal;
-	m_pSchema->GetSkinManager()->ApplyColorFilter(clrVal);
-
-	return clrVal;
-}
-
-int CXTPSkinManagerClass::GetThemeEnumValue(int iPartId, int iStateId, int iPropId, int nDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_ENUM, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return nDefault;
-
-	return pProperty->iVal;
-}
-
-CSize CXTPSkinManagerClass::GetThemeSize(int iPartId, int iStateId, int iPropId, CSize szDefault)
-{
-	CXTPSkinManagerSchemaProperty* pProperty = GetProperty(XTP_SKINPROPERTY_POSITION, iPartId, iStateId, iPropId);
-
-	if (!pProperty)
-		return szDefault;
-
-	return pProperty->szVal;
-}
-
-
-BOOL CXTPSkinManagerClass::DrawThemeBackground(CDC* pDC, int iPartId, int iStateId, const RECT *pRect)
-{
-	return m_pSchema->DrawThemeBackground(pDC, this, iPartId, iStateId, pRect);
-}
-
-BOOL CXTPSkinManagerClass::GetThemePartSize(int iPartId, int iStateId, RECT *pRect, THEMESIZE eSize, SIZE* pSize)
-{
-	if (GetThemeEnumValue(iPartId, iStateId, TMT_BGTYPE) != BT_IMAGEFILE)
-		return FALSE;
-
-	int nImageFile = (GetThemeEnumValue(iPartId, iStateId, TMT_IMAGESELECTTYPE) != IST_NONE) &&
-		(GetThemeEnumValue(iPartId, iStateId, TMT_GLYPHTYPE, GT_NONE) == GT_NONE) ?
-		TMT_IMAGEFILE1: TMT_IMAGEFILE;
-
-	CString strImageFile = GetThemeString(iPartId, iStateId, nImageFile);
-	if (strImageFile.IsEmpty())
-	{
-		if (nImageFile != TMT_IMAGEFILE1)
-			return FALSE;
-
-		strImageFile = GetThemeString(iPartId, iStateId, TMT_IMAGEFILE);
-		if (strImageFile.IsEmpty())
-			return FALSE;
-
-	}
-
-
-	CXTPSkinImage* pImage = GetImages()->LoadFile(m_pSchema->GetResourceFile(), strImageFile);
-	if (!pImage)
-	{
-		return FALSE;
-	}
-
-	int nImageCount = GetThemeInt(iPartId, iStateId, TMT_IMAGECOUNT, 1);
-	if (nImageCount < 1)
-		nImageCount = 1;
-
-	BOOL bHorizontalImageLayout = GetThemeEnumValue(iPartId, iStateId, TMT_IMAGELAYOUT, IL_HORIZONTAL) == IL_HORIZONTAL;
-
-	CSize sz(pImage->GetWidth(), pImage->GetHeight());
-	if (bHorizontalImageLayout) sz.cx /= nImageCount; else sz.cy /= nImageCount;
-
-	if (eSize == TS_TRUE)
-	{
-		*pSize = sz;
-	}
-	if (eSize == TS_DRAW)
-	{
-		if (GetThemeEnumValue(iPartId, iStateId, TMT_SIZINGTYPE, ST_STRETCH) == ST_TRUESIZE)
-		{
-			*pSize = sz;
-			return TRUE;
-		}
-
-		if (!pRect)
-		{
-			pSize->cy = 0;
-			pSize->cx = 0;
+			return thisPart->locked;
 		}
 		else
 		{
-			pSize->cy = pRect->bottom - pRect->top;
-			pSize->cx = pRect->right - pRect->left;
-		}
-
-		if (GetThemeBool(iPartId, iStateId, TMT_UNIFORMSIZING, FALSE))
-		{
-			pSize->cx = MulDiv(pSize->cy, sz.cx, sz.cy);
+			for (size_t i = 0; i < instance->numChildren(); i++)
+			{
+				if (getLocked(instance->getChild(i)))
+					return true;
+			}
+			return false;
 		}
 	}
 
-	return TRUE;
+	void PartInstance::onParentControllerChanged()
+	{
+		PVInstance::onParentControllerChanged();
+		PersistentPart.setDirty();
+		primitive->setController(getTopPVController());
+	}
+
+	void PartInstance::onCanAggregateChanged(bool canAggregate)
+	{
+		RBXASSERT(canAggregate == getCanAggregate());
+		Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
+		shouldRenderSetDirty();
+	}
+
+	void PartInstance::onAncestorChanged(const AncestorChanged& event)
+	{
+		Instance::onAncestorChanged(event);
+		RBXASSERT(primitive.get());
+
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world != myWorld)
+		{
+			RBXASSERT(myWorld || !primitive->getClump());
+
+			if (myWorld)
+			{
+				setMovingManager(NULL);
+				myWorld->removePrimitive(primitive.get());
+			}
+
+			myWorld = world;
+
+			if (world)
+			{
+				world->insertPrimitive(primitive.get());
+				setMovingManager(Workspace::getMyWorkspaceFast(this));
+				primitive->setController(getTopPVController());
+			}
+		}
+	}
+
+	void PartInstance::onTouchThisStep(boost::shared_ptr<PartInstance> other)
+	{
+		event_Touched.fire(this, other);
+	}
+
+	void PartInstance::onChildAdded(Instance* child)
+	{
+		PVInstance::onChildAdded(child);
+	}
+
+	void PartInstance::onCameraNear(float distance)
+	{
+		if (distance < 3.0f)
+			setAlphaModifier(0.0f);
+		else if (distance < 6.0f)
+			setAlphaModifier(0.5f);
+		else
+			setAlphaModifier(1.0f);
+	}
+
+	void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+	{
+		Draw::selectionBox(getPart(), adorn, selectState);
+	}
+
+	void PartInstance::render3dAdorn(Adorn* adorn)
+	{
+		if (partType == Part::CYLINDER_PART || SurfacesNeedAdorn)
+			Draw::partAdorn(getPart(), adorn, Controller::controllerTypeToColor(getTopPVController()->getControllerType()));
+
+		if (highlightSleepParts && primitive->getAssembly())
+		{
+			Sim::AssemblyState sleepStatus = primitive->getAssembly()->getRootClump()->getSleepStatus();
+
+			if (sleepStatus != Sim::ANCHORED && sleepStatus != Sim::AWAKE)
+			{
+				G3D::Color3 sleepColor;
+
+				switch (sleepStatus)
+				{
+				case Sim::RECURSIVE_WAKE_PENDING:
+				case Sim::WAKE_PENDING:
+					sleepColor = G3D::Color3::purple();
+					break;
+				case Sim::SLEEPING_CHECKING:
+					sleepColor = G3D::Color3::orange();
+					break;
+				case Sim::SLEEPING_DEEPLY:
+					sleepColor = G3D::Color3::yellow();
+					break;
+				default:
+					RBXASSERT(0);
+					sleepColor = sleepColor;
+					break;
+				}
+				
+				Draw::selectionBox(getPart(), adorn, sleepColor);
+			}
+		}
+
+		if (highlightAwakeParts && primitive->getAssembly())
+		{
+			Sim::AssemblyState sleepStatus = primitive->getAssembly()->getRootClump()->getSleepStatus();
+
+			if (sleepStatus != Sim::ANCHORED && sleepStatus != Sim::SLEEPING_DEEPLY)
+			{
+				G3D::Color3 wakeColor;
+
+				switch (sleepStatus)
+				{
+				case Sim::SLEEPING_CHECKING:
+					wakeColor = G3D::Color3::red();
+					break;
+				case Sim::AWAKE:
+					wakeColor = G3D::Color3::orange();
+					break;					
+				case Sim::RECURSIVE_WAKE_PENDING:
+				case Sim::WAKE_PENDING:
+					wakeColor = G3D::Color3::purple();
+					break;
+				default:
+					RBXASSERT(0);
+					wakeColor = wakeColor;
+					break;
+				}
+				
+				Draw::selectionBox(getPart(), adorn, wakeColor);
+			}
+		}
+
+		if (showPartCoord)
+			renderCoordinateFrame(adorn);
+
+		if (showAnchoredParts && primitive->getAnchor())
+		{
+			float transparency = 1.0f - alpha();
+			G3D::Color4 color(G3D::Color3::gray(), transparency);
+			const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+
+			DrawAdorn::partSurface(getPart(), Math::getClosestObjectNormalId(G3D::Vector3(0.0f, -1.0f, 0.0f), cframe.rotation), adorn, color);
+		}
+
+		if (showUnalignedParts && !aligned())
+			Draw::selectionBox(getPart(), adorn, G3D::Color3::yellow());
+
+		if (showSpanningTree)
+		{
+			setAlphaModifier(0.3f);
+
+			Assembly* assembly = primitive->getAssembly();
+			if (assembly && primitive.get() == assembly->getMainPrimitive())
+			{
+				adorn->setObjectToWorldMatrix(G3D::CoordinateFrame(primitive->getCoordinateFrame().translation));
+
+				if (primitive->getAnchor())
+				{
+					adorn->sphere(G3D::Sphere(G3D::Vector3::zero(), 0.5f), G3D::Color3::green(), G3D::Color4::clear());
+				}
+				else
+				{
+					G3D::Vector3 boxSize = G3D::Vector3::one() * 0.25f;
+					adorn->box(G3D::AABox(-boxSize, boxSize), G3D::Color3::green(), G3D::Color4::clear());
+				}
+			}
+		}
+	}
+
+	bool PartInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
+	{
+		const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+		G3D::Ray rayInPartCoords = cframe.toObjectSpace(worldRay);
+		G3D::Vector3 hitPointInPartCoords;
+
+		if (HitTest::hitTest(getPart(), rayInPartCoords, hitPointInPartCoords, 1.0f))
+		{
+			const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame(); // roblox be like: lets do it again why not
+			worldHitPoint = cframe.pointToWorldSpace(hitPointInPartCoords);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void PartInstance::safeMove()
+	{
+		RBXASSERT(primitive.get());
+
+		if (World* world = Workspace::getWorldIfInWorkspace(this))
+		{
+			G3D::Array<Primitive*> temp;
+			temp.append(primitive.get());
+			
+			Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), world->getContactManager());
+		}
+	}
+
+	void PartInstance::primitivesToParts(const G3D::Array<Primitive*>& primitives, G3D::Array<boost::shared_ptr<PartInstance>>& parts)
+	{
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			PartInstance* part = fromPrimitive(primitives[i]);
+			parts.push_back(shared_from(part));
+		}
+	}
+
+	void PartInstance::findParts(Instance* instance, std::vector<boost::weak_ptr<RBX::PartInstance>>& parts)
+	{
+		if (PartInstance* part = dynamic_cast<PartInstance*>(instance))
+			parts.push_back(shared_from(part));
+
+		for (size_t i = 0; i < instance->numChildren(); i++)
+		{
+			findParts(instance->getChild(i), parts);
+		}
+	}
+
+	void PartInstance::setCoordinateFrame(const G3D::CoordinateFrame& value)
+	{
+		if (value != getCoordinateFrame())
+		{
+			G3D::CoordinateFrame newValue = value;
+			Math::orthonormalizeIfNecessary(newValue.rotation);
+			setPhysics(newValue);
+
+			raisePropertyChanged(prop_CFrame);
+			raisePropertyChanged(prop_PositionUi);
+		}
+	}
+
+	void PartInstance::setPartSizeXml(const G3D::Vector3& rbxSize)
+	{
+		if (rbxSize != getPartSizeXml())
+		{
+			G3D::Vector3 newRbxSize = partType == Part::BLOCK_PART ? rbxSize : rbxSize.xxx();
+			RBXASSERT(newRbxSize.max(G3D::Vector3(1.0f, 0.4f, 1.0f)) == newRbxSize);
+
+			if (legacyOffset.get())
+			{
+				G3D::CoordinateFrame oldCorner = primitive->getGridCorner();
+				primitive->setGridSize(newRbxSize);
+				primitive->setGridCorner(oldCorner);
+			}
+			else
+			{
+				primitive->setGridSize(newRbxSize);
+			}
+
+			raisePropertyChanged(prop_Size);
+			raisePropertyChanged(prop_SizeUi);
+			PersistentPart.setDirty();
+			onExtentsChanged();
+		}
+	}
+
+	//93.96% match
+	//not matching for the same reason as PartInstance::setFormFactorUi
+	void PartInstance::setPartSizeUi(const G3D::Vector3& uiSize)
+	{
+		destroyJoints();
+
+		G3D::Vector3 adjustedUiSize = uiSize;
+
+		switch (formFactor)
+		{
+		case BRICK:
+			adjustedUiSize.y = uiSize.y * 5.0f/6.0f;
+			break;
+		case PLATE:
+			adjustedUiSize.y = uiSize.y * 2.5f;
+			break;
+		}
+
+		setPartSizeXml(uiToXmlSize(adjustedUiSize));
+		safeMove();
+		join();
+	}
+
+	void PartInstance::setTranslationUi(const G3D::Vector3& set)
+	{
+		G3D::CoordinateFrame current = primitive->getCoordinateFrame();
+
+		if (current.translation != set)
+		{
+			current.translation = set;
+
+			destroyJoints();
+			
+			setCoordinateFrame(current);
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setDragging(bool value)
+	{
+		if (value != getDragging())
+		{
+			primitive->setDragging(value);
+			raisePropertyChanged(prop_Dragging);
+		}
+	}
+
+	void PartInstance::setRenderImportance(float value)
+	{
+		if (value != getRenderImportance())
+		{
+			renderImportance = value;
+			raisePropertyChanged(prop_RenderImportance);
+		}
+	}
+
+	void PartInstance::setCanCollide(bool value)
+	{
+		if (value != getCanCollide())
+		{
+			primitive->setCanCollide(value);
+			raisePropertyChanged(prop_CanCollide);
+		}
+	}
+
+	void PartInstance::setAnchored(bool value)
+	{
+		if (value != getAnchored())
+		{
+			primitive->setAnchor(value);
+			raisePropertyChanged(prop_Anchored);
+		}
+	}
+
+	void PartInstance::setPartLocked(bool value)
+	{
+		if (value != getPartLocked())
+		{
+			locked = value;
+			raisePropertyChanged(prop_Locked);
+		}
+	}
+
+	void PartInstance::setTransparency(float value)
+	{
+		if (value != getTransparencyXml())
+		{
+			transparency = value;
+			raisePropertyChanged(prop_Transparency);
+		}
+	}
+
+	void PartInstance::setAlphaModifier(float value)
+	{
+		if (value != alphaModifier)
+		{
+			alphaModifier = value;
+			raisePropertyChanged(prop_Transparency);
+		}
+	}
+
+	void PartInstance::setReflectance(float value)
+	{
+		if (value != getReflectance())
+		{
+			reflectance = value;
+			raisePropertyChanged(prop_Reflectance);
+		}
+	}
+
+	void PartInstance::setColor(BrickColor value)
+	{
+		if (value != color)
+		{
+			color = value;
+			raisePropertyChanged(prop_BrickColor);
+			raisePropertyChanged(prop_Color);
+		}
+	}
+
+	void PartInstance::setFormFactorXml(FormFactor value)
+	{
+		if (value != getFormFactor())
+		{
+			formFactor = value;
+			raisePropertyChanged(prop_formFactor);
+		}
+	}
+
+	//94.32% match
+	//there is a way to match it 100% but it is Not Clean. try to find a cleaner way.
+	void PartInstance::setFormFactorUi(FormFactor value)
+	{
+		if (partType != Part::BLOCK_PART)
+			value = SYMETRIC;
+
+		if (value != getFormFactor())
+		{
+			destroyJoints();
+
+			setFormFactorXml(value);
+
+			G3D::Vector3 uiSize = getPartSizeUi();
+			uiSize.y = G3D::max<float>(1.0, G3D::iRound(uiSize.y));
+
+			G3D::Vector3 xmlSize = uiToXmlSize(uiSize);
+			setPartSizeXml(xmlSize);
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setFriction(float friction)
+	{
+		float newFriction = G3D::clamp(friction, 0.0f, 2.0f);
+		if (newFriction != getFriction())
+		{
+			primitive->setFriction(newFriction);
+			raisePropertyChanged(prop_Friction);
+		}
+	}
+
+	void PartInstance::setElasticity(float elasticity)
+	{
+		float newElasticity = G3D::clamp(elasticity, 0.0f, 1.0f);
+		if (newElasticity != getElasticity())
+		{
+			primitive->setElasticity(newElasticity);
+			raisePropertyChanged(prop_Elasticity);
+		}
+	}
+
+	void PartInstance::setPartTypeXml(Part::PartType _type)
+	{
+		if (getPartType() != _type)
+		{
+			partType = _type;
+			primitive->setPrimitiveType(_type == Part::BLOCK_PART ? Geometry::GEOMETRY_BLOCK : Geometry::GEOMETRY_BALL);
+
+			if (partType != Part::BLOCK_PART)
+				setFormFactorXml(SYMETRIC);
+
+			raisePropertyChanged(prop_shapeXml);
+			raisePropertyChanged(prop_shapeUi);
+
+			PersistentPart.setDirty();
+			shouldRenderSetDirty();
+			onExtentsChanged();
+		}
+	}
+
+	void PartInstance::setPartTypeUi(Part::PartType _type)
+	{
+		if (partType != Part::BLOCK_PART)
+			RBXASSERT(formFactor == SYMETRIC);
+
+		if (getPartType() != _type)
+		{
+			destroyJoints();
+
+			setPartTypeXml(_type);
+
+			if (_type != Part::BLOCK_PART)
+			{
+				G3D::Vector3 xmlSize = uiToXmlSize(getPartSizeUi());
+				setPartSizeXml(xmlSize);
+				safeMove();
+			}
+
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setLinearVelocity(const G3D::Vector3& set)
+	{
+		Velocity vel = getVelocity();
+		if (vel.linear != set)
+		{
+			vel.linear = set;
+			primitive->getBody()->setVelocity(vel);
+			raisePropertyChanged(prop_RotVelocity);
+		}
+	}
+
+	void PartInstance::setRotationalVelocity(const G3D::Vector3& set)
+	{
+		Velocity vel = getVelocity();
+		if (vel.rotational != set)
+		{
+			vel.rotational = set;
+			primitive->getBody()->setVelocity(vel);
+			raisePropertyChanged(prop_RotVelocity);
+		}
+	}
+
+	bool PartInstance::reportTouches() const
+	{
+		return !event_Touched.empty(this);
+	}
 }

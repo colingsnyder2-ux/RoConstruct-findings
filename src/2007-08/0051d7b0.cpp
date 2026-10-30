@@ -1,320 +1,167 @@
-// from server: 55% by tester
-// roc-lang: cpp
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/CoordinateFrame.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: libpng-1.2.5-dll pngrio.c
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file CoordinateFrame.cpp
 
- Coordinate frame class
+/* pngrio.c - functions for data input
+ *
+ * libpng 1.2.5 - October 3, 2002
+ * For conditions of distribution and use, see copyright notice in png.h
+ * Copyright (c) 1998-2002 Glenn Randers-Pehrson
+ * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
+ * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ *
+ * This file provides a location for all input.  Users who need
+ * special handling are expected to write a function that has the same
+ * arguments as this and performs a similar function, but that possibly
+ * has a different input method.  Note that you shouldn't change this
+ * function, but rather write a replacement function and then make
+ * libpng use it at run time with png_set_read_fn(...).
+ */
 
- @maintainer Morgan McGuire, matrix@graphics3d.com
+#define PNG_INTERNAL
+#include "png.h"
 
- @created 2001-06-02
- @edited  2006-03-25
+/* Read the data from whatever input you are using.  The default routine
+   reads from a file pointer.  Note that this routine sometimes gets called
+   with very small lengths, so you should implement some kind of simple
+   buffering if you are using unbuffered reads.  This should never be asked
+   to read more then 64K on a 16 bit machine. */
+void /* PRIVATE */
+png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+   png_debug1(4,"reading %d bytes\n", (int)length);
+   if (png_ptr->read_data_fn != NULL)
+      (*(png_ptr->read_data_fn))(png_ptr, data, length);
+   else
+      png_error(png_ptr, "Call to NULL read function");
+}
+
+#if !defined(PNG_NO_STDIO)
+/* This is the function that does the actual reading of data.  If you are
+   not reading from a standard C stream, you should create a replacement
+   read_data function and use it at run time with png_set_read_fn(), rather
+   than changing the library. */
+#ifndef USE_FAR_KEYWORD
+void PNGAPI
+png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+   png_size_t check;
+
+   /* fread() returns 0 on error, so it is OK to store this in a png_size_t
+    * instead of an int, which is what fread() actually returns.
+    */
+#if defined(_WIN32_WCE)
+   if ( !ReadFile((HANDLE)(png_ptr->io_ptr), data, length, &check, NULL) )
+      check = 0;
+#else
+   check = (png_size_t)fread(data, (png_size_t)1, length,
+      (png_FILE_p)png_ptr->io_ptr);
+#endif
+
+   if (check != length)
+      png_error(png_ptr, "Read Error");
+}
+#else
+/* this is the model-independent version. Since the standard I/O library
+   can't handle far buffers in the medium and small models, we have to copy
+   the data.
 */
 
-#include "G3D/platform.h"
-#include "G3D/CoordinateFrame.h"
-#include "G3D/Quat.h"
-#include "G3D/Matrix4.h"
-#include "G3D/Box.h"
-#include "G3D/AABox.h"
-#include "G3D/Sphere.h"
-#include "G3D/Triangle.h"
-#include "G3D/Ray.h"
-#include "G3D/Capsule.h"
-#include "G3D/Cylinder.h"
+#define NEAR_BUF_SIZE 1024
+#define MIN(a,b) (a <= b ? a : b)
 
-namespace G3D {
+static void /* PRIVATE */
+png_default_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+   int check;
+   png_byte *n_data;
+   png_FILE_p io_ptr;
 
-const float CoordinateFrame::zLookDirection = -1;
-
-Ray CoordinateFrame::lookRay() const {
-    return Ray::fromOriginAndDirection(translation, lookVector());
+   /* Check if data really is near. If so, use usual code. */
+   n_data = (png_byte *)CVT_PTR_NOCHECK(data);
+   io_ptr = (png_FILE_p)CVT_PTR(png_ptr->io_ptr);
+   if ((png_bytep)n_data == data)
+   {
+#if defined(_WIN32_WCE)
+      if ( !ReadFile((HANDLE)(png_ptr->io_ptr), data, length, &check, NULL) )
+         check = 0;
+#else
+      check = fread(n_data, 1, length, io_ptr);
+#endif
+   }
+   else
+   {
+      png_byte buf[NEAR_BUF_SIZE];
+      png_size_t read, remaining, err;
+      check = 0;
+      remaining = length;
+      do
+      {
+         read = MIN(NEAR_BUF_SIZE, remaining);
+#if defined(_WIN32_WCE)
+         if ( !ReadFile((HANDLE)(io_ptr), buf, read, &err, NULL) )
+            err = 0;
+#else
+         err = fread(buf, (png_size_t)1, read, io_ptr);
+#endif
+         png_memcpy(data, buf, read); /* copy far buffer to near buffer */
+         if(err != read)
+            break;
+         else
+            check += err;
+         data += read;
+         remaining -= read;
+      }
+      while (remaining != 0);
+   }
+   if ((png_uint_32)check != (png_uint_32)length)
+      png_error(png_ptr, "read Error");
 }
+#endif
+#endif
 
+/* This function allows the application to supply a new input function
+   for libpng if standard C streams aren't being used.
 
-bool CoordinateFrame::fuzzyEq(const CoordinateFrame& other) const {
+   This function takes as its arguments:
+   png_ptr      - pointer to a png input data structure
+   io_ptr       - pointer to user supplied structure containing info about
+                  the input functions.  May be NULL.
+   read_data_fn - pointer to a new input function that takes as its
+                  arguments a pointer to a png_struct, a pointer to
+                  a location where input data can be stored, and a 32-bit
+                  unsigned int that is the number of bytes to be read.
+                  To exit and output any fatal error messages the new write
+                  function should call png_error(png_ptr, "Error msg"). */
+void PNGAPI
+png_set_read_fn(png_structp png_ptr, png_voidp io_ptr,
+   png_rw_ptr read_data_fn)
+{
+   png_ptr->io_ptr = io_ptr;
 
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (! G3D::fuzzyEq(other.rotation[r][c], rotation[r][c])) {
-                return false;
-            }
-        }
-        if (! G3D::fuzzyEq(translation[c], other.translation[c])) {
-            return false;
-        }
-    }
+#if !defined(PNG_NO_STDIO)
+   if (read_data_fn != NULL)
+      png_ptr->read_data_fn = read_data_fn;
+   else
+      png_ptr->read_data_fn = png_default_read_data;
+#else
+   png_ptr->read_data_fn = read_data_fn;
+#endif
 
-    return true;
+   /* It is an error to write to a read device */
+   if (png_ptr->write_data_fn != NULL)
+   {
+      png_ptr->write_data_fn = NULL;
+      png_warning(png_ptr,
+         "It's an error to set both read_data_fn and write_data_fn in the ");
+      png_warning(png_ptr,
+         "same structure.  Resetting write_data_fn to NULL.");
+   }
+
+#if defined(PNG_WRITE_FLUSH_SUPPORTED)
+   png_ptr->output_flush_fn = NULL;
+#endif
 }
-
-
-bool CoordinateFrame::fuzzyIsIdentity() const {
-    const Matrix3& I = Matrix3::identity();
-
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (fuzzyNe(I[r][c], rotation[r][c])) {
-                return false;
-            }
-        }
-        if (fuzzyNe(translation[c], 0)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-bool CoordinateFrame::isIdentity() const {
-    return 
-        (translation == Vector3::zero()) &&
-        (rotation == Matrix3::identity());
-}
-
-
-Matrix4 CoordinateFrame::toMatrix4() const {
-    return Matrix4(*this);
-}
-
-
-std::string CoordinateFrame::toXML() const {
-    return G3D::format(
-        "<COORDINATEFRAME>\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf\n</COORDINATEFRAME>\n",
-        rotation[0][0], rotation[0][1], rotation[0][2], translation.x,
-        rotation[1][0], rotation[1][1], rotation[1][2], translation.y,
-        rotation[2][0], rotation[2][1], rotation[2][2], translation.z,
-        0.0, 0.0, 0.0, 1.0);
-}
-
-
-Plane CoordinateFrame::toObjectSpace(const Plane& p) const {
-    Vector3 N, P;
-    double d;
-    p.getEquation(N, d);
-    P = N * (float)d;
-    P = pointToObjectSpace(P);
-    N = normalToObjectSpace(N);
-    return Plane(N, P);
-}
-
-
-Plane CoordinateFrame::toWorldSpace(const Plane& p) const {
-    Vector3 N, P;
-    double d;
-    p.getEquation(N, d);
-    P = N * (float)d;
-    P = pointToWorldSpace(P);
-    N = normalToWorldSpace(N);
-    return Plane(N, P);
-}
-
-
-Triangle CoordinateFrame::toObjectSpace(const Triangle& t) const {
-    return Triangle(pointToObjectSpace(t.vertex(0)),
-        pointToObjectSpace(t.vertex(1)),
-        pointToObjectSpace(t.vertex(2)));
-}
-
-
-Triangle CoordinateFrame::toWorldSpace(const Triangle& t) const {
-    return Triangle(pointToWorldSpace(t.vertex(0)),
-        pointToWorldSpace(t.vertex(1)),
-        pointToWorldSpace(t.vertex(2)));
-}
-
-Cylinder CoordinateFrame::toWorldSpace(const Cylinder& c) const {
-    return Cylinder(
-        pointToWorldSpace(c.getPoint1()), 
-        pointToWorldSpace(c.getPoint2()), 
-        c.radius());
-}
-
-Capsule CoordinateFrame::toWorldSpace(const Capsule& c) const {
-    return Capsule(
-        pointToWorldSpace(c.getPoint1()), 
-        pointToWorldSpace(c.getPoint2()), 
-        c.getRadius());
-}
-
-Box CoordinateFrame::toWorldSpace(const AABox& b) const {
-    return toWorldSpace(b.toBox());
-}
-
-Box CoordinateFrame::toWorldSpace(const Box& b) const {
-    Box out(b);
-
-    for (int i = 0; i < 8; i++) {
-        out._corner[i] = pointToWorldSpace(out._corner[i]);
-    }
-
-    for (int i = 0; i < 3; i++) {
-        out._axis[i] = vectorToWorldSpace(out._axis[i]);
-    }
-
-    out._center = pointToWorldSpace(out._center);
-
-    return out;
-}
-
-
-Box CoordinateFrame::toObjectSpace(const Box &b) const {
-    return inverse().toWorldSpace(b);
-}
-
-
-Box CoordinateFrame::toObjectSpace(const AABox& b) const {
-    return toObjectSpace(b.toBox());
-}
-
-
-CoordinateFrame::CoordinateFrame(class BinaryInput& b) : rotation(Matrix3::zero()) {
-    deserialize(b);
-}
-
-
-void CoordinateFrame::deserialize(class BinaryInput& b) {
-    rotation.deserialize(b);
-    translation.deserialize(b);
-}
-
-
-void CoordinateFrame::serialize(class BinaryOutput& b) const {
-    rotation.serialize(b);
-    translation.serialize(b);
-}
-
-
-Sphere CoordinateFrame::toWorldSpace(const Sphere &b) const {
-    return Sphere(pointToWorldSpace(b.center), b.radius);
-}
-
-
-Sphere CoordinateFrame::toObjectSpace(const Sphere &b) const {
-    return Sphere(pointToObjectSpace(b.center), b.radius);
-}
-
-
-Ray CoordinateFrame::toWorldSpace(const Ray& r) const {
-    return Ray::fromOriginAndDirection(pointToWorldSpace(r.origin), vectorToWorldSpace(r.direction));
-}
-
-
-Ray CoordinateFrame::toObjectSpace(const Ray& r) const {
-    return Ray::fromOriginAndDirection(pointToObjectSpace(r.origin), vectorToObjectSpace(r.direction));
-}
-
-
-void CoordinateFrame::lookAt(const Vector3 &target) {
-    lookAt(target, Vector3::unitY());
-}
-
-
-void CoordinateFrame::lookAt(
-    const Vector3&  target,
-    Vector3         up) {
-
-    up = up.direction();
-
-    Vector3 look = (target - translation).direction();
-    if (look.dot(up) > .99) {
-        up = Vector3::unitX();
-        if (look.dot(up) > .99) {
-            up = Vector3::unitY();
-        }
-    }
-
-    up -= look * look.dot(up);
-    up.unitize();
-
-    Vector3 z = -look;
-    Vector3 x = -z.cross(up);
-    x.unitize();
-
-    Vector3 y = z.cross(x);
-
-    rotation.setColumn(0, x);
-    rotation.setColumn(1, y);
-    rotation.setColumn(2, z);
-}
-
-
-CoordinateFrame CoordinateFrame::lerp(
-    const CoordinateFrame&  other,
-    float                   alpha) const {
-
-    if (alpha == 1.0f) {
-        return other;
-    } else if (alpha == 0.0f) {
-        return *this;
-    } else {
-        Quat q1 = Quat(this->rotation);
-        Quat q2 = Quat(other.rotation);
-
-        return CoordinateFrame(
-            q1.slerp(q2, alpha).toRotationMatrix(),
-            this->translation * (1 - alpha) + other.translation * alpha);
-    }
-} 
-
-
-void CoordinateFrame::pointToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = pointToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::normalToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const  {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = normalToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::vectorToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = vectorToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::pointToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = pointToObjectSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::normalToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = normalToObjectSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::vectorToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = vectorToObjectSpace(v[i]);
-    }
-}
-
-} // namespace

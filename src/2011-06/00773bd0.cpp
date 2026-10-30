@@ -1,401 +1,234 @@
-// from server: 77% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// roc-lib: rbxgs-net-dll roc_unit_e6c2aeb7d3afc09b.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/TimeState.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/JointsService.h"
-#include "v8datamodel/LocalBackpack.h"
-#include "script/ScriptContext.h"
-#include "gui/GUI.h"
-#include "util/Log.h"
-#include "util/IMetric.h"
-#include "util/standardout.h"
+#pragma include_alias("Replicator.h", "roc_unit_5e9a43ec03963384.cpp")
+#pragma include_alias("util/Profiling.h", "roc_unit_dc79b233469e3206.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#pragma include_alias("Network/Player.h", "roc_unit_1cb1f788b2f04b82.cpp")
+#undef _RELEASEASSERT
+#include <RakPeer.h>
+#include "v8datamodel/Stats.h"
+#include "Replicator.h"
+#include <RakPeer.h>
+#include "Server.h"
+#include "IdManager.h"
+#include "NetworkSettings.h"
+#include "PacketIds.h"
+#include "API.h"
 #include "util/Http.h"
-#include "util/Sound.h"
+#include "util/standardout.h"
+#include <boost/thread.hpp>
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int, int), 2> server_startFunction(&RBX::Network::Server::start, "Start", "port", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int), 1>  f_disconnect(&RBX::Network::Server::stop, "Stop", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, int(void), 0> f_GetClientCount(&RBX::Network::Server::getClientCount, "GetClientCount", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(std::string, std::string, int), 3> server_setServerManagerPingFunction(&RBX::Network::Server::setServerManagerPing, "SetServerManagerPing", "pingUrl", "publicIP", "thumbnailId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+static bool isReplicator(boost::shared_ptr<RBX::Instance> instance)
+{
+	return dynamic_cast<const RBX::Network::Replicator*>(instance.get()) != NULL;
+}
 
 namespace RBX
 {
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	
-	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
-
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
-
-	DataModel::DataModel()
-		: VerbContainer(NULL),
-		  workspace(Creatable::create<Workspace>(this)),
-		  guiRoot(Creatable::create<GuiRoot>()),
-		  guiHooks(Creatable::create<GuiRoot>()),
-		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
-		  guiTarget(NULL),
-		  forceArrowCursor(true),
-		  dirty(false),
-		  drawId(0)
+	namespace Network
 	{
-		setName("Level");
-	}
-
-#pragma warning (pop)
-
-	DataModel::~DataModel()
-	{
-		Notifier<RunService, RunTransition>::disconnect(runService, this);
-		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
-	}
-
-	bool DataModel::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
-
-	boost::shared_ptr<DataModel> DataModel::createDataModel()
-	{
-		ContentProvider::singleton().clearContentCache();
-		
-		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
-
+		Server::Server()
+			: outgoingPort(0)
 		{
-			Lock lock(dataModel);
-			dataModel->initializeContents();
+			setName("NetworkServer");
+			rakPeer->SetMaximumIncomingConnections(32);
+			rakPeer->SetIncomingPassword(API::version.c_str(), (int)API::version.size());
+			updateLogger();
 		}
 
-		return dataModel;
-	}
-	
-	void DataModel::onChildAdded(Instance* child)
-	{
-		ServiceProvider::onChildAdded(child);
+		Server::~Server() {}
 
-		if (child->getClassName() == "NetworkClient")
+		void Server::stop(int blockDuration)
 		{
-			Verb* lockPlayMode = getVerb("LockPlayMode");
-			if (lockPlayMode)
-				lockPlayMode->doIt(NULL);
+			if (rakPeer->IsActive())
+				rakPeer->Shutdown(blockDuration);
 
-			workspace->setNullMouseCommand();
+			removeAllChildren();
 		}
-	}
 
-	void DataModel::onEvent(const RunService* source, RunTransition event)
-	{
-		switch (event.newState)
+		void Server::start(int port, int threadSleepTime)
 		{
-		case RS_NORMAL:
-			if (event.oldState == RS_RUNNING)
-				workspace->reset();
+			SocketDescriptor d(port, "");
 
-			timeState->clear();
-			break;
-		case RS_RUNNING:
-			workspace->start();
-			break;
-		case RS_PAUSED:
-			workspace->stop();
-			break;
-		}
-	}
+			if (!rakPeer->Startup(32, threadSleepTime, &d, 1))
+				throw std::runtime_error("Failed to start network server");
 
-	std::string DataModel::doHttpGet(std::string url)
-	{
-		std::string result;
-		Http(url.c_str()).get(result);
+			outgoingPort = port;
+			StandardOut::singleton()->print(MESSAGE_INFO, "Starting network server on port %d", port);
 
-		return result;
-	}
+			unsigned numAddresses = rakPeer->GetNumberOfAddresses();
 
-	std::string DataModel::doHttpPost(std::string url, std::string data)
-	{
-		std::string result;
-		Http(url).post(std::istringstream(data), true, result);
+			StandardOut::singleton()->print(MESSAGE_INFO, "IP addresses:");
 
-		return result;
-	}
-
-	void DataModel::close()
-	{
-		Verb* exitVerb = getVerb("Exit");
-		if (!exitVerb)
-			throw std::runtime_error("Couldn\'t find Exit Verb");
-
-		exitVerb->doIt(NULL);
-	}
-
-	std::string DataModel::httpGet(std::string url, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpGet(url);
-		}
-		else
-		{
-			if (url.size() > 0)
+			for (unsigned i = 0; i < numAddresses; i++)
 			{
-				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
-				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-				boost::thread(background_function(g, "rbx_httpGet"));
+				StandardOut::singleton()->print(MESSAGE_INFO, "%s", rakPeer->GetLocalIP(i));
 			}
 
-			return "";
+			updateNetworkSimulator();
 		}
-	}
 
-	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
-	{
-		if (synchronous)
+		int Server::getClientCount()
 		{
-			return doHttpPost(url, data);
+			if (getChildren())
+			{
+				return std::count_if(getChildren()->begin(), getChildren()->end(), &isReplicator);
+			}
+			else
+			{
+				return 0;
+			}
 		}
-		else
+
+		void Server::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 		{
-			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
-			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+			if (oldProvider)
+			{
+				players->setConnection(NULL);
 
-			boost::thread(background_function(g, "rbx_httpPost"));
+				if (rakPeer->IsActive())
+					rakPeer->Shutdown(1000);
 
-			return "";
+				removeAllChildren();
+
+				players.reset();
+			}
+
+			Peer::onServiceProvider(oldProvider, newProvider);
+
+			if (newProvider)
+			{
+				players = shared_from(newProvider->create<Players>());
+
+				players->setConnection(peerInterface());
+			}
 		}
-	}
 
-	void DataModel::clearContents()
-	{
-		workspace->setMouseCommand(NULL);
-		workspace->removeAllChildren();
-		workspace->setCamera(NULL);
+		void Server::setServerManagerPing(std::string pingUrl, std::string publicIP, int thumbnailId)
+		{
+			pingThread.reset(new worker_thread(boost::bind(&Server::ping, boost::weak_ptr<Server>(shared_from(this)), publicIP, thumbnailId, pingUrl), "rbx_serverping"));
+		}
+
+		bool Server::serverIsPresent(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return ServiceProvider::find<Server>(sp) != NULL;
+		}
+
+		PluginReceiveResult Server::OnReceive(RakPeerInterface* peer, Packet* packet)
+		{
+			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
+			if (result != RR_CONTINUE_PROCESSING)
+				return result;
+
+			if (packet->data[0] == ID_NEW_INCOMING_CONNECTION)
+			{
+				try
+				{
+					StandardOut::singleton()->print(MESSAGE_INFO, "New connection from %s\n", packet->systemAddress.ToString());
+
+					boost::shared_ptr<ClientProxy> proxy = Creatable::create<ClientProxy>(packet->systemAddress, this);
+					proxy->setParent(this);
+					proxy->sendTop();
+
+					event_IncommingConnection.fire(this, packet->systemAddress.ToString(), proxy);
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Server::OnReceive packet %d: %s", packet->data[0], e.what());
+				}
+			}
+
+			return RR_CONTINUE_PROCESSING;
+		}
+
+		worker_thread::work_result Server::ping(boost::weak_ptr<Server> server, std::string publicIP, int thumbnailId, std::string pingUrl)
+		{
+			try
+			{
+				std::stringstream nameStream;
+
+				{
+					TextXmlWriter writer(nameStream);
+
+					XmlElement root(Name::declare("root", -1));
+
+					boost::shared_ptr<Server> s = server.lock();
+					if (!s)
+						return worker_thread::done;
+
+					root.addChild(new XmlElement(Name::declare("server", -1), publicIP));
+					root.addChild(new XmlElement(Name::declare("port", -1), s->outgoingPort));
+					root.addChild(new XmlElement(Name::declare("numPlayers", -1), s->players->numPlayers()));
+					root.addChild(new XmlElement(Name::declare("maxPlayers", -1), s->players->getMaxPlayers()));
+					root.addChild(new XmlElement(Name::declare("thumbnailId", -1), thumbnailId));
+
+					writer.serialize(&root);
+
+					nameStream.flush();
+				}
+
+				std::string response;
+				Http(pingUrl).post(nameStream, false, response);
+			}
+			catch (std::exception& exp)
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, exp);
+			}
+
+			boost::xtime xt;
+			boost::xtime_get(&xt, boost::TIME_UTC);
+
+			xt.sec += 10;
+
+			boost::thread::sleep(xt);
+
+			return worker_thread::more;
+		}
+
+		Server::ClientProxy::ClientProxy(SystemAddress systemAddress, Server* server)
+			: Replicator(systemAddress, server->peerInterface()),
+			  server(server)
+		{
+		}
 		
-		starterPackService->removeAllChildren();
+		Server::ClientProxy::~ClientProxy() {}
 
-		Teams* teams = ServiceProvider::find<Teams>(this);
-		if (teams)
-			teams->removeAllChildren();
+		void Server::ClientProxy::onSentMarker(long id)
+		{
+			sendPhysicsEnabled = true;
+		}
 
-		Lighting* lighting = ServiceProvider::find<Lighting>(this);
-		if (lighting)
-			lighting->removeAllChildren();
+		void Server::ClientProxy::sendTop()
+		{
+			RakNet::BitStream bitStream;
 
-		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
-		if (script)
-		{
-			script->closeState();
-			ScriptContext::propScriptsDisabled.setValue(script, false);
-		}
-	}
+			bitStream << (unsigned char)ID_SET_GLOBALS;
 
-	void DataModel::loadContent(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
+			std::vector<Instance*>::iterator end = replicationContainers.end();
 
-		SerializerV2 serializer;
-		serializer.load(*stream, this);
+			for (std::vector<Instance*>::iterator iter = replicationContainers.begin(); iter != end; iter++)
+			{
+				RBXASSERT(*iter != NULL);
 
-		workspace->joinAllHack();
-	}
+				serializeId(bitStream, *iter);
+				ServiceProvider::create<IdManager>(this)->addInstance(*iter);
+			}
 
-	void DataModel::save(ContentId contentId)
-	{
-		std::stringstream stream;
-
-		{
-			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
-			writeChildren(root.get());
-
-			TextXmlWriterWithEmbeddedContent machine(stream);
-			machine.serialize(root.get());
-
-			stream.flush();
+			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
 		}
-		
-		std::string response;
-		Http(contentId.toString()).post(stream, true, response);
-	}
-
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root.get(), *result);
-
-		return result;
-	}
-
-	static std::string report(const G3D::Stopwatch& timer)
-	{
-		if (timer.smoothElapsedTime() > 0.0f)
-		{
-			std::string t = Log::formatTime(timer.smoothElapsedTime());
-			char buffer[256];
-			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
-
-			return std::string(buffer);
-		}
-		else
-		{
-			return Log::formatTime(timer.smoothElapsedTime());
-		}
-	}
-
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
-
-	void DataModel::Lock::doLock(const DataModel* dataModel)
-	{
-		if (dataModel)
-		{
-			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
-		}
-	}
-
-	DataModel::Lock::~Lock()
-	{
-		delete lock;
 	}
 }

@@ -1,527 +1,432 @@
-// from server: 61% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// roc-lib: rbxgs-dll v8tree/EnumProperty.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/ICharacterSubject.h"
-#include "util/Math.h"
+#include "reflection/type.h"
+#include <g3d/color3.h>
+#include <g3d/vector3.h>
+#include <boost/shared_ptr.hpp>
+#include "v8tree/Instance.h"
+#include "v8datamodel/BrickColor.h"
 
 namespace RBX
 {
-	const char* sCamera = "Camera";
-
-	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
-	
-	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
-		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	namespace Reflection
 	{
-		addPair(Camera::FIXED_CAMERA, "Fixed");
-		addPair(Camera::WATCH_CAMERA, "Watch");
-		addPair(Camera::ATTACH_CAMERA, "Attach");
-		addPair(Camera::TRACK_CAMERA, "Track");
-		addPair(Camera::FOLLOW_CAMERA, "Follow");
-		addPair(Camera::CUSTOM_CAMERA, "Custom");
-	}
-
-	Camera::Camera()
-		: Base(),
-		  cameraFocus(G3D::Vector3(0, 0, -5)),
-		  cameraType(FIXED_CAMERA),
-		  animationType(AUTO),
-		  cameraExternallyAdjusted(false)
-	{
-		setName("Camera");
-		gCamera.setNearPlaneZ(1.25);
-		gCamera.setFarPlaneZ(5000);
-		gCamera.setFieldOfView(G3D::toRadians(60));
-
-		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
-		cameraCoord.lookAt(G3D::Vector3::zero());
-
-		setGCameraCoordinateFrame(cameraCoord);
-	}
-
-	Camera::~Camera()
-	{
-	}
-
-	void Camera::tellCameraMoved()
-	{
-		if (ICameraOwner* owner = getCameraOwner())
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
 		{
-			owner->cameraMoved();
-		}
-	}
-
-	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
-	{
-		if (Math::legalCameraCoord(coord))
-		{
-			gCamera.setCoordinateFrame(coord);
-		}
-		else
-		{
-			RBXASSERT(false);
-		}
-	}
-
-	bool Camera::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const Workspace*>(instance) != NULL;
-	}
-
-	ICameraOwner* Camera::getCameraOwner()
-	{
-		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
-		{
-			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
-			if (cameraOwner)
-				return cameraOwner;
+			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
+			return type;
 		}
 
-		return NULL;
-	}
-
-	void Camera::lookAt(const G3D::Vector3& point)
-	{
-		cameraFocus.translation = point;
-		cameraGoal.lookAt(point);
-	}
-
-	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
-	{
-		Math::getHeadingElevation(cameraGoal, heading, elevation);
-		distance = goalToFocusDistance();
-	}
-
-	bool Camera::setDistanceFromTarget(float newDistance)
-	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
-		float currentDistance = lookVector.magnitude();
-
-		const float min = distanceMin();
-		const float max = distanceMax();
-
-		if (newDistance < min && currentDistance == min)
-			return false;
-		
-		if (newDistance > max && currentDistance == max)
-			return false;
-
-		newDistance = G3D::min(max, G3D::max(min, newDistance));
-		
-		lookVector *= newDistance;
-		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
-
-		tellCameraMoved();
-
-		return true;
-	}
-
-	void Camera::alwaysMode()
-	{
-		animationType = ALWAYS;
-	}
-
-	bool Camera::nonCharacterZoom(float in)
-	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
-
-		float currentDistance = lookVector.magnitude();
-		float newZoomDistance = getNewZoomDistance(currentDistance, in);
-
-		if (newZoomDistance == currentDistance)
-			return false;
-
-		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
-
-		tellCameraMoved();
-
-		return true;
-	}
-
-	bool Camera::characterZoom(float in)
-	{
-		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
-
-		float currentDistance = focusToGoal.magnitude();
-
-		float maxDistance = distanceMaxCharacter();
-		float newDistance = getNewZoomDistance(currentDistance, in);
-		newDistance = G3D::min(newDistance, maxDistance);
-
-		if (newDistance == currentDistance)
-			return false;
-
-		focusToGoal.y = 0.0;
-		focusToGoal.unitize();
-		focusToGoal.y = newDistance * 0.03f;
-
-		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
-
-		return true;
-	}
-
-	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
-	{
-		Math::setHeadingElevation(cameraGoal, heading, elevation);
-		cameraFocus.rotation = cameraGoal.rotation;
-
-		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
-		cameraExternallyAdjusted = true;
-	}
-
-	void Camera::panRadians(float angle)
-	{
-		RBXASSERT(angle > -100);
-		RBXASSERT(angle < 100);
-
-		if (angle != 0)
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<Instance>>()
 		{
-			float heading, elevation, distance;
-
-			getHeadingElevationDistance(heading, elevation, distance);
-			heading = Math::radWrap(heading + angle);
-			setHeadingElevationDistance(heading, elevation, distance);
-
-			tellCameraMoved();
-		}
-	}
-
-	bool Camera::tiltRadians(float angle)
-	{
-		if (angle != 0)
-		{
-			float heading, elevation, distance;
-			getHeadingElevationDistance(heading, elevation, distance);
-
-			static float rad = G3D::toRadians(81);
-			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
-
-			if (elevation != newElevation)
-			{
-				setHeadingElevationDistance(heading, newElevation, distance);
-				tellCameraMoved();
-				return true;
-			}
+			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
+			return type;
 		}
 
-		return false;
-	}
-
-	void Camera::updateFocus()
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<Instances>>()
 		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			cameraFocus = subject->getLocation();
-		}
-	}
-
-	//96.11% matching.
-	void Camera::updateGoal()
-	{
-		switch (cameraType)
-		{
-			case WATCH_CAMERA:
-			{
-				updateFocus();
-				break;
-			}
-			case ATTACH_CAMERA: 
-			{
-				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-
-				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
-				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case TRACK_CAMERA:
-			{
-				G3D::Vector3 oldFocusPt = cameraFocus.translation;
-				updateFocus();
-
-				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
-				break;
-			}
-			case FOLLOW_CAMERA:
-			{
-				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-			
-				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
-				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case CUSTOM_CAMERA:
-			{
-				if (ICameraSubject* cameraSubject = getCameraSubject())
-					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
-
-				cameraExternallyAdjusted = false;
-				break;
-			}
+			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
+			return type;
 		}
 
-		cameraGoal.lookAt(cameraFocus.translation);
-	}
-
-	bool Camera::zoom(float in)
-	{
-		if (cameraType == CUSTOM_CAMERA)
+		template<>
+		const Type& Type::singleton<int>()
 		{
-			ICameraSubject* cameraSubject = getCameraSubject();
-			if (cameraSubject)
-				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
-		}
-		else if (getCameraSubjectInstance() && 
-				 (cameraType == FOLLOW_CAMERA || 
-				  cameraType == ATTACH_CAMERA || 
-				  cameraType == TRACK_CAMERA))
-		{
-			return characterZoom(in);
-		}
-		else
-		{
-			return nonCharacterZoom(in);
+			static Type type("int", typeid(int));
+			return type;
 		}
 
-		return false;
-	}
-
-	void Camera::onHeartbeat()
-	{
-		updateGoal();
-		G3D::CoordinateFrame adjustedGoal = cameraGoal;
-		ICameraSubject* cameraSubject = getCameraSubject();
-		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
-
-		if (characterSubject)
-			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
-
-		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
-		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
-
-		setGCameraCoordinateFrame(LerpFrame);
-
-		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
+		template<>
+		const Type& Type::singleton<bool>()
 		{
-			tellCameraMoved();
+			static Type type("bool", typeid(bool));
+			return type;
 		}
-	}
 
-	Instance* Camera::getCameraSubjectInstance() const
-	{
-		return cameraSubject.get();
-	}
-
-	ICameraSubject* Camera::getCameraSubject() const
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
+		template<>
+		const Type& Type::singleton<float>()
 		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			return subject;
+			static Type type("float", typeid(float));
+			return type;
 		}
-		return NULL;
-	}
 
-	void Camera::autoMode()
-	{
-		if (animationType != AUTO)
+		template<>
+		const Type& Type::singleton<double>()
 		{
-			animationType = AUTO;
-
-			tellCameraMoved();
+			static Type type("double", typeid(double));
+			return type;
 		}
-	}
 
-	void Camera::setCameraType(CameraType type)
-	{
-		if (cameraType != type)
+		template<>
+		const Type& Type::singleton<ContentId>()
 		{
-			cameraType = type;
-			raisePropertyChanged(desc_cameraType);
-
-			tellCameraMoved();
+			static Type type("ContentId", typeid(ContentId));
+			return type;
 		}
-	}
 
-	void Camera::setCameraSubject(Instance* newSubject)
-	{
-		if (newSubject != getCameraSubjectInstance())
+		template<>
+		const Type& Type::singleton<std::string>()
 		{
-			if (dynamic_cast<ICameraSubject*>(newSubject))
-			{
-				cameraSubject = shared_from((ModelInstance*) newSubject);
-				raisePropertyChanged(cameraSubjectProp);
-
-				tellCameraMoved();
-			}
+			static Type type("string", typeid(std::string));
+			return type;
 		}
-	}
 
-	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
-	{
-		if (value != cameraFocus)
+		template<>
+		const Type& Type::singleton<G3D::Vector3>()
 		{
-			cameraFocus = value;
-			raisePropertyChanged(desc_Focus);
-
-			tellCameraMoved();
+			static Type type("Vector3", typeid(G3D::Vector3));
+			return type;
 		}
-	}
 
-	void Camera::goalToCamera()
-	{
-		if (gCamera.getCoordinateFrame() != cameraGoal)
+		template<>
+		const Type& Type::singleton<G3D::Color3>()
 		{
-			cameraExternallyAdjusted = true;
-			setGCameraCoordinateFrame(cameraGoal);
-			raisePropertyChanged(desc_CoordFrame);
-
-			tellCameraMoved();
+			static Type type("Color3", typeid(G3D::Color3));
+			return type;
 		}
-	}
 
-	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
-	{
-		RBXASSERT(current >= low);
-		RBXASSERT(current <= high);
-
-		if (high - low < 0.1)
-			return;
-
-		setDistanceFromTarget(current);
-		updateGoal();
-		goalToCamera();
-
-		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
+		template<>
+		const Type& Type::singleton<std::vector<Value>>()
 		{
-			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+			static Type type("Table", typeid(std::vector<Value>));
+			return type;
 		}
-		else
+
+		template<>
+		const Type& Type::singleton<BrickColor>()
 		{
-			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+			static Type type("BrickColor", typeid(BrickColor));
+			return type;
 		}
-	}
 
-	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
-	{
-		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
-		extents.expand(0.1f);
-
-		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
+		template<>
+		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
 		{
-			if (cameraType == FIXED_CAMERA)
-			{
-				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
-
-				cameraFocus.translation += scaler;
-				cameraGoal.translation += scaler;
-			}
-
-			float low;
-
-			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
-				low = goalToFocusDistance();
-			else
-				low = distanceMin();
-
-			float current = goalToFocusDistance();
-
-			RBXASSERT(G3D::isFinite(current));
-
-			if (zoomType == ZOOM_CHAR_PART_DRAG)
-				extents.scale(1.1f);
-
-			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
-				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
-
-			cameraGoal = gCamera.getCoordinateFrame();
-			setGCameraCoordinateFrame(currentCoord);
-			tellCameraMoved();
+			return getValue(instance);
 		}
-	}
 
-	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
-	{
-		if (ICameraOwner* owner = getCameraOwner())
+		template<>
+		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
 		{
-			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return StringConverter<bool>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<float>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<int>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<ContentId>::convertToString(getValue(instance));
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			setValue(instance, text);
 			return true;
 		}
-		return false;
-	}
 
-	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
-	{
-		cameraGoal = value;
-		goalToCamera();
-	}
-
-	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
-	{
-		G3D::Vector3 look = modelCoord.lookVector();
-
-		bool noTilt = (fabs(look.y) > 0.95);
-		if (noTilt)
+		template<>
+		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
 		{
-			look = -G3D::Vector3::unitZ();
-		}
-		else
-		{
-			look.y = 0;
-			look = look.direction();
+			bool value;
+			if (StringConverter<bool>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
 		}
 
-		G3D::CoordinateFrame lookCoord;
-
-		lookCoord.lookAt(look);
-		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
-
-		look = lookCoord.lookVector();
-		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
-
-		lookCoord.lookAt(modelCoord.translation);
-
-		setCameraType(FIXED_CAMERA);
-		setCameraFocus(modelCoord.translation);
-		setCameraCoordinateFrameNoLerp(lookCoord);
-		zoomExtents(viewPort);
-		goalToCamera();
-	}
-
-	float Camera::getNewZoomDistance(float currentDistance, float in)
-	{
-		float const ZOOM_FACTOR = 0.25f;
-
-		if (in > 0.0f)
+		template<>
+		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
 		{
-			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
-		} 	
-		else if (in < 0.0f)
-		{
-			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+			float value;
+			if (StringConverter<float>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
 		}
 
-		return currentDistance;
+		template<>
+		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			int value;
+			if (StringConverter<int>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			G3D::Vector3 value;
+			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			G3D::Color3 value;
+			if (StringConverter<G3D::Color3>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			ContentId value;
+			if (StringConverter<ContentId>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				float value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			float value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				bool value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			bool value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				int value;
+				if (element->getValue(value))
+				{
+					setValue(instance, BrickColor(value));
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(getValue(instance).asInt());
+		}
+
+		template<>
+		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				int value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+		
+		template<>
+		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			int value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				ContentId value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(ContentId(getValue(instance)));
+		}
+
+		template<>
+		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				std::string value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(getValue(instance));
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
+				{
+					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
+					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
+
+					G3D::Vector3 value;
+
+					X->getValue(value.x);
+					Y->getValue(value.y);
+					Z->getValue(value.z);
+
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			const Name* xName = &tag_X;
+			XmlElement* xElement = new XmlElement(*xName);
+			element->pushBackChild(xElement);
+
+			const Name* yName = &tag_Y;
+			XmlElement* yElement = new XmlElement(*yName);
+			element->pushBackChild(yElement);
+
+			const Name* zName = &tag_Z;
+			XmlElement* zElement = new XmlElement(*zName);
+			element->pushBackChild(zElement);
+
+			G3D::Vector3 value = getValue(instance);
+
+			xElement->setValue(value.x);
+			yElement->setValue(value.y);
+			zElement->setValue(value.z);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				unsigned int colorValue;
+				if (element->getValue(colorValue))
+				{
+					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
+					setValue(instance, color);	
+				}
+				else
+				{
+					const XmlElement* R = element->findFirstChildByTag(tag_R);
+					const XmlElement* G = element->findFirstChildByTag(tag_G);
+					const XmlElement* B = element->findFirstChildByTag(tag_B);
+
+					G3D::Color3 value;
+
+					R->getValue(value.r);
+					G->getValue(value.g);
+					B->getValue(value.b);
+
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
+			element->setValue(value.asUInt32());
+		}
 	}
 }

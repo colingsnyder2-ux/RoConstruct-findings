@@ -1,143 +1,32 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/ToolsArrow.cpp
+// roc 2007-03 005cfcb0  unit: seg_005c0000  size: 33 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 005cfcb0
+//
+// 005cfcb0  8b442404             mov eax, dword ptr [esp + 4]
+// 005cfcb4  d981d0010000         fld dword ptr [ecx + 0x1d0]
+// 005cfcba  d918                 fstp dword ptr [eax]
+// 005cfcbc  d981d4010000         fld dword ptr [ecx + 0x1d4]
+// 005cfcc2  d95804               fstp dword ptr [eax + 4]
+// 005cfcc5  d981d8010000         fld dword ptr [ecx + 0x1d8]
+// 005cfccb  d95808               fstp dword ptr [eax + 8]
+// 005cfcce  c20400               ret 4
+// copied from an identical function in another client (function ?getVector@CSHA1@@QBE?AUVector3@@XZ)
 
-// Candidate translation unit (score above; library headers required).
-#include "tool/ToolsArrow.h"
-#include "tool/DragTool.h"
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/Selection.h"
-#include "v8datamodel/Workspace.h"
-#include <G3D/Rect2D.h>
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Vector3 {
+    float x, y, z;
+};
 
-namespace RBX
-{
-	const std::string ArrowToolBase::getCursorName() const
-	{
-		return overInstance ? "DragCursor" : "ArrowCursor";
-	}
+struct CSHA1 {
+    char padding[0x1d0];
+    float x, y, z;
+    Vector3 getVector() const;
+};
 
-	void ArrowToolBase::onMouseIdle(const UIEvent& uiEvent)
-	{
-		overInstance = getUnlockedPart(uiEvent) != NULL;
-	}
-
-	void ArrowToolBase::onMouseHover(const UIEvent& uiEvent)
-	{
-		onMouseIdle(uiEvent);
-	}
-
-	MouseCommand* ArrowToolBase::onMouseDown(const UIEvent& uiEvent)
-	{
-		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN);
-
-		G3D::Vector3 hitWorld;
-
-		PartInstance* part = getUnlockedPart(uiEvent, hitWorld);
-		if (part)
-		{
-			Instance* top = getTopSelectable3d(part);
-			UserInputBase* input = uiEvent.userInput;
-
-			ServiceClient<Selection> selection(workspace);
-
-			if (!input->keyDown(SDLK_RSHIFT) && !input->keyDown(SDLK_LSHIFT) &&
-				!input->keyDown(SDLK_RCTRL) && !input->keyDown(SDLK_LCTRL))
-			{
-				if (!selection->isSelected(top))
-				{
-					selection->setSelection(top);
-				}
-
-				if (uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
-				{
-					ServiceClient<FilteredSelection<Instance>> instanceSelection(workspace);
-					return DragTool::onMouseDown(part, hitWorld, instanceSelection->items(), uiEvent, workspace);
-				}
-			}
-			else
-			{
-				if (selection->isSelected(top))
-					selection->removeFromSelection(top);
-				else
-					selection->addToSelection(top);
-			}
-
-			return NULL;
-		}
-		else
-		{
-			MouseCommand* newCommand = new BoxSelectCommand(workspace);
-			return newCommand->onMouseDown(uiEvent);
-		}
-	}
-
-	BoxSelectCommand::BoxSelectCommand(Workspace* workspace)
-		: Base(workspace),
-		  selection((Instance*)workspace)
-	{
-	}
-
-	MouseCommand* BoxSelectCommand::onMouseDown(const UIEvent& uiEvent)
-	{
-		previousItemsInBox.clear();
-		capture();
-
-		UserInputBase* input = uiEvent.userInput;
-		reverseSelecting = input->keyDown(SDLK_RSHIFT) || input->keyDown(SDLK_LSHIFT);
-
-		if (!reverseSelecting)
-			selection->clearSelection();
-
-		mouseDownView = uiEvent.mousePosition;
-		mouseCurrentView = uiEvent.mousePosition;
-		return this;
-	}
-
-	void BoxSelectCommand::onMouseMove(const UIEvent& uiEvent)
-	{
-		mouseCurrentView = uiEvent.mousePosition;
-
-		std::set<Instance*> instances;
-		getMouseInstances(instances, uiEvent, G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y));
-
-		if (reverseSelecting)
-			selectReverse(instances);
-		else
-			selectAnd(instances);
-	}
-
-	void BoxSelectCommand::render2d(Adorn* adorn)
-	{
-		G3D::Rect2D temp = G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y);
-		adorn->outlineRect2d(temp, 0.5f, G3D::Color3::gray());
-	}
-
-	void BoxSelectCommand::getMouseInstances(std::set<Instance*>& instances, const UIEvent& uiEvent, G3D::Rect2D& selectBox)
-	{
-		Camera* camera = workspace->getCamera();
-		G3D::Rect2D viewport = G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y);
-
-		for (size_t i = 0; i < workspace->numChildren(); i++)
-		{
-			ILocation* location = workspace->queryTypedChild<ILocation>((int)i);
-			ISelectable3d* selectable3d = workspace->queryTypedChild<ISelectable3d>((int)i);
-
-			if (location && selectable3d)
-			{
-				Instance* instance = workspace->getChild(i);
-				if (!PartInstance::getLocked(instance))
-				{
-					G3D::Vector3 gridPos = location->getLocation().translation;
-					G3D::Vector3 projection = camera->getGCamera().project(gridPos, viewport);
-
-					if (selectBox.contains(projection.xy()))
-						instances.insert(instance);
-				}
-			}
-		}
-	}
+Vector3 CSHA1::getVector() const {
+    Vector3 result;
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
 }

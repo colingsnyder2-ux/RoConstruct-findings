@@ -1,19 +1,14 @@
-// from server: 44% by colin
-struct String_sink {
-    void* vtable;
-    void* s;
-    String_sink(void* s);
-};
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
-extern "C" void __stdcall basic_string_ctor(void* self, const char* str);
-extern "C" void __stdcall basic_string_dtor(void* self);
-
-void* __stdcall sub_412dc0(void* self, void* arg);
-
-String_sink::String_sink(void* s) {
-    char buf[28];
-    basic_string_ctor(buf, "no write access");
-    sub_412dc0(this, buf);
-    this->vtable = (void*)0x7a783c;
-    basic_string_dtor(buf);
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

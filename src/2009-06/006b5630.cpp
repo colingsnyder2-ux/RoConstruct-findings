@@ -1,152 +1,102 @@
-// from server: 41% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/MegaDragger.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sol_resume_native_guidraw_portable_54c5ec61f66fe480.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "tool/MegaDragger.h"
-#include "tool/DragUtilities.h"
-#include "tool/Dragger.h"
-#include "v8world/ContactManager.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8datamodel/RootInstance.h"
-#include "v8datamodel/MouseCommand.h"
+#pragma include_alias("gui/GuiDraw.h", "roc_sol_resume_native_guidraw_authheader_001a245a00442d6d.cpp")
+#include "gui/GuiDraw.h"
+#include "AppDraw/Textures.h"
+extern RBX::ContentProvider* context;
 
 namespace RBX
 {
-	MegaDragger::MegaDragger(PartInstance* mousePartPtr, const std::vector<PVInstance*>& pvInstances, RootInstance* rootInstance)
-		: mousePart(shared_from(mousePartPtr)),
-		  dragParts(),
-		  joined(true),
-		  rootInstance(rootInstance),
-          contactManager(rootInstance->getWorld()->getContactManager())
+	static G3D::ReferenceCountedPointer<TextureProxyBase> silentGetTextureProxyBase(Adorn* adorn, const ContentId& id)
 	{
-		DragUtilities::pvsToParts(pvInstances, dragParts);
+		if (context->hasContent(id))
+			return Textures::getTextureProxy(adorn, id);
+		else
+			return NULL;
 	}
 
-	MegaDragger::MegaDragger(PartInstance* mousePartPtr, const std::vector<boost::weak_ptr<PartInstance>>& partArray, RootInstance* rootInstance)
-		: mousePart(shared_from(mousePartPtr)),
-		  dragParts(partArray),
-		  rootInstance(rootInstance),
-		  joined(true),
-		  contactManager(rootInstance->getWorld()->getContactManager())
+	void GuiDrawImage::render2d(Adorn* adorn, bool enabled, Rect& rect, Widget::WidgetState state)
 	{
-	}
-
-
-	MegaDragger::~MegaDragger()
-	{
-		if (!joined)
+		if (!enabled)
 		{
-			RBXASSERT(0);
-			DragUtilities::joinAndStopDragging(dragParts);
+			draw(adorn, disable, rect, G3D::Color4::clear(), G3D::Color4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+		else if (state == Widget::NOTHING)
+		{
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+		}
+		else if (state != Widget::HOVER && state != Widget::DOWN_AWAY)
+		{
+			draw(adorn, down, rect, G3D::Color3::blue(), G3D::Color4::clear());
+		}
+		else
+		{
+			draw(adorn, hover, rect, G3D::Color3::yellow(), G3D::Color4::clear());
 		}
 	}
 
-	void MegaDragger::startDragging()
+	void GuiDrawImage::draw(Adorn* adorn, G3D::ReferenceCountedPointer<TextureProxyBase> texture, const Rect& rect, const G3D::Color4& behind, const G3D::Color4& inFront)
 	{
-		DragUtilities::unJoinAndSetDragging(dragParts);
+		G3D::Rect2D rect2D = rect.toRect2D();
 
-		if (PartInstance::nonNullInWorkspace(mousePart.lock()))
+		if (texture.notNull())
 		{
-			rootInstance->setCameraIgnoreParts(mousePart.lock().get());
+			adorn->setTexture(0, texture);
+			adorn->rect2d(rect2D, G3D::Color4(1.0f, 1.0f, 1.0f, 1.0f));
+			adorn->setTexture(0, NULL);
 		}
-		joined = false;
-	}
-
-	void MegaDragger::continueDragging()
-	{
-		RBXASSERT(!joined);
-		DragUtilities::unJoinAndSetDragging(dragParts);
-	}
-
-	void MegaDragger::finishDragging()
-	{
-		RBXASSERT(!joined);
-		rootInstance->clearCameraIgnoreParts();
-		DragUtilities::joinAndStopDragging(dragParts);
-		if (DragUtilities::anyPartAlive(dragParts))
+		else if (normal.notNull())
 		{
-			rootInstance->setInsertPoint(DragUtilities::computeExtents(dragParts).topCenter());
+			adorn->rect2d(rect2D, behind);
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+			adorn->rect2d(rect2D, inFront);
 		}
-		joined = true;
 	}
 
-	G3D::Vector3 MegaDragger::hitObjectOrPlane(const UIEvent& uiEvent)
+	G3D::Vector2 GuiDrawImage::getImageSize() const
 	{
-		G3D::Vector3 result;
-		G3D::Array<Primitive*> primitives;
-		DragUtilities::partsToPrimitives(dragParts, primitives);
-		DragUtilities::hitObjectOrPlane(contactManager, MouseCommand::getUnitMouseRay(uiEvent, rootInstance), &primitives, result);
-		return result;
+		if (size.isZero() && normal.notNull())
+			size = normal->getSize();
+
+		return size;
 	}
 
-	void MegaDragger::alignAndCleanParts()
+	void GuiDrawImage::setImageFromName(Adorn* adorn, const std::string& name)
 	{
-		RBXASSERT(!joined);
-		if (PartInstance::nonNullInWorkspace(mousePart.lock()))
+		ContentId id = ContentId::fromAssets("Textures\\" + name + ".png");
+		setImage(adorn, id);
+	}
+
+	bool GuiDrawImage::setImage(Adorn* adorn, const TextureId& textureId)
+	{
+		if (textureId != currentTexture)
 		{
-			PartInstance* part = mousePart.lock().get();
+			currentTexture = textureId;
 
-			if (!part->aligned())
+			normal = NULL;
+			hover = NULL;
+			down = NULL;
+			disable = NULL;
+
+			size = G3D::Vector2(0.0f, 0.0f);
+
+			normal = silentGetTextureProxyBase(adorn, currentTexture);
+
+			if (normal.notNull())
 			{
-				G3D::CoordinateFrame snap = part->worldSnapLocation();
-				G3D::CoordinateFrame snapToGrid = Math::snapToGrid(snap, Dragger::dragSnap());
-				DragUtilities::move(dragParts, snap, snapToGrid);
+				std::string id = textureId.toString();
+				std::string base = id.substr(0, id.size() - 4);
+
+				hover = silentGetTextureProxyBase(adorn, ContentId(base + "_ovr.png"));
+				down = silentGetTextureProxyBase(adorn, ContentId(base + "_dn.png"));
+				disable = silentGetTextureProxyBase(adorn, ContentId(base + "_ds.png"));
 			}
 		}
-		DragUtilities::clean(dragParts);
-	}
 
-	G3D::Vector3 MegaDragger::safeMoveYDrop(const G3D::Vector3& tryDrag)
-	{
-		RBXASSERT(!joined);
-		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
-
-		G3D::Array<Primitive*> primitives;
-		DragUtilities::partsToPrimitives(dragParts, primitives);
-
-		RBXASSERT(primitives.size() > 0);
-
-		G3D::Vector3 result = Dragger::safeMoveYDrop(primitives, tryDrag, contactManager);
-
-		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
-		return result;
-	}
-
-	G3D::Vector3 MegaDragger::safeMoveNoDrop(const G3D::Vector3& tryDrag)
-	{
-		RBXASSERT(!joined);
-		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
-
-		G3D::Array<Primitive*> primitives;
-		DragUtilities::partsToPrimitives(dragParts, primitives);
-
-		RBXASSERT(primitives.size() > 0);
-
-		G3D::Vector3 result = Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);
-
-		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
-		return result;
-	}
-
-	void MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)
-	{
-		RBXASSERT(!joined);
-
-		G3D::Array<Primitive*> primitives;
-		DragUtilities::partsToPrimitives(dragParts, primitives);
-
-		RBXASSERT(primitives.size() > 0);
-
-		Dragger::safeRotate(primitives, rotMatrix, contactManager);
-
-		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
-	}
-
-	bool MegaDragger::mousePartAlive()
-	{
-		return PartInstance::nonNullInWorkspace(mousePart.lock());
+		return normal.notNull();
 	}
 }

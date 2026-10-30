@@ -1,3 +1,5 @@
+#pragma float_control(precise, off, push)
+#pragma float_control(precise, off)
 #include "v8world/Ball.h"
 #include "util/Math.h"
 #include <G3D/Sphere.h>

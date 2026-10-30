@@ -1,214 +1,96 @@
-// from server: 65% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/ICharacterSubject.h"
-#include "util/Math.h"
+#include "util/ContentProvider.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/FileSystem.h"
+#include "v8xml/SerializerV2.h"
+#include <atlutil.h>
+#include <G3D/format.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/copy.hpp>
 
 namespace RBX
 {
-	const char* sCamera = "Camera";
-
-	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
-	
-	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
-		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	// TODO: check match
+	bool operator<(const ContentId& a, const ContentId& b)
 	{
-		addPair(Camera::FIXED_CAMERA, "Fixed");
-		addPair(Camera::WATCH_CAMERA, "Watch");
-		addPair(Camera::ATTACH_CAMERA, "Attach");
-		addPair(Camera::TRACK_CAMERA, "Track");
-		addPair(Camera::FOLLOW_CAMERA, "Follow");
-		addPair(Camera::CUSTOM_CAMERA, "Custom");
+		return a.toString() < b.toString();
 	}
 
-	Camera::Camera()
-		: Base(),
-		  cameraFocus(G3D::Vector3(0, 0, -5)),
-		  cameraType(FIXED_CAMERA),
-		  animationType(AUTO),
-		  cameraExternallyAdjusted(false)
+	bool operator!=(const ContentId& a, const ContentId& b)
 	{
-		setName("Camera");
-		gCamera.setNearPlaneZ(1.25);
-		gCamera.setFarPlaneZ(5000);
-		gCamera.setFieldOfView(G3D::toRadians(60));
-
-		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
-		cameraCoord.lookAt(G3D::Vector3::zero());
-
-		setGCameraCoordinateFrame(cameraCoord);
+		return a.toString() != b.toString();
 	}
 
-	Camera::~Camera()
+	ContentId ContentId::fromAssets(const std::string& filePath)
 	{
+		std::string header = "rbxasset://";
+		return ContentId(header + filePath);
 	}
 
-	void Camera::tellCameraMoved()
+	ContentProvider::ContentProvider()
 	{
-		if (ICameraOwner* owner = getCameraOwner())
+		char path[MAX_PATH];
+		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
 		{
-			owner->cameraMoved();
-		}
-	}
-
-	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
-	{
-		if (Math::legalCameraCoord(coord))
-		{
-			gCamera.setCoordinateFrame(coord);
+			this->singleton().setAssetFolder(path);
 		}
 		else
 		{
-			RBXASSERT(false);
-		}
-	}
-
-	bool Camera::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const Workspace*>(instance) != NULL;
-	}
-
-	ICameraOwner* Camera::getCameraOwner()
-	{
-		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
-		{
-			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
-			if (cameraOwner)
-				return cameraOwner;
+			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
 		}
 
-		return NULL;
+		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
 	}
 
-	void Camera::lookAt(const G3D::Vector3& point)
+	ContentProvider::~ContentProvider()
 	{
-		cameraFocus.translation = point;
-		cameraGoal.lookAt(point);
+		requestProcessor->join();
 	}
 
-	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	bool ContentProvider::isHttpUrl(const std::string& s)
 	{
-		Math::getHeadingElevation(cameraGoal, heading, elevation);
-		distance = goalToFocusDistance();
+		if (s.find("http://") == 0)
+			return true;
+
+		if (s.find("https://") == 0)
+			return true;
+
+		return false;
 	}
 
-	bool Camera::setDistanceFromTarget(float newDistance)
+	std::string ContentProvider::assetFolder() const
 	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
-		float currentDistance = lookVector.magnitude();
-
-		const float min = distanceMin();
-		const float max = distanceMax();
-
-		if (newDistance < min && currentDistance == min)
-			return false;
-		
-		if (newDistance > max && currentDistance == max)
-			return false;
-
-		newDistance = G3D::min(max, G3D::max(min, newDistance));
-		
-		lookVector *= newDistance;
-		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
-
-		tellCameraMoved();
-
-		return true;
+		return assetFolderPath;
 	}
 
-	void Camera::alwaysMode()
+	bool ContentProvider::isRequestQueueEmpty()
 	{
-		animationType = ALWAYS;
+		boost::mutex::scoped_lock lock(requestSync);
+		return requestQueue.empty();
 	}
 
-	bool Camera::nonCharacterZoom(float in)
+	bool ContentProvider::isUrlBad(const char* url)
 	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		boost::mutex::scoped_lock lock(requestSync);
 
-		float currentDistance = lookVector.magnitude();
-		float newZoomDistance = getNewZoomDistance(currentDistance, in);
+		std::list<FailedUrl>::iterator iter = failedUrls.begin();
+		std::list<FailedUrl>::iterator end = failedUrls.end();
 
-		if (newZoomDistance == currentDistance)
-			return false;
-
-		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
-
-		tellCameraMoved();
-
-		return true;
-	}
-
-	bool Camera::characterZoom(float in)
-	{
-		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
-
-		float currentDistance = focusToGoal.magnitude();
-
-		float maxDistance = distanceMaxCharacter();
-		float newDistance = getNewZoomDistance(currentDistance, in);
-		newDistance = G3D::min(newDistance, maxDistance);
-
-		if (newDistance == currentDistance)
-			return false;
-
-		focusToGoal.y = 0.0;
-		focusToGoal.unitize();
-		focusToGoal.y = newDistance * 0.03f;
-
-		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
-
-		return true;
-	}
-
-	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
-	{
-		Math::setHeadingElevation(cameraGoal, heading, elevation);
-		cameraFocus.rotation = cameraGoal.rotation;
-
-		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
-		cameraExternallyAdjusted = true;
-	}
-
-	void Camera::panRadians(float angle)
-	{
-		RBXASSERT(angle > -100);
-		RBXASSERT(angle < 100);
-
-		if (angle != 0)
+		for (; iter != end; iter++)
 		{
-			float heading, elevation, distance;
-
-			getHeadingElevationDistance(heading, elevation, distance);
-			heading = Math::radWrap(heading + angle);
-			setHeadingElevationDistance(heading, elevation, distance);
-
-			tellCameraMoved();
-		}
-	}
-
-	bool Camera::tiltRadians(float angle)
-	{
-		if (angle != 0)
-		{
-			float heading, elevation, distance;
-			getHeadingElevationDistance(heading, elevation, distance);
-
-			static float rad = G3D::toRadians(81);
-			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
-
-			if (elevation != newElevation)
+			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
 			{
-				setHeadingElevationDistance(heading, newElevation, distance);
-				tellCameraMoved();
+				failedUrls.erase(iter, end);
+				return false;
+			}
+			else if (iter->url == url)
+			{
 				return true;
 			}
 		}
@@ -216,312 +98,336 @@ namespace RBX
 		return false;
 	}
 
-	void Camera::updateFocus()
+	void ContentProvider::clearContentCache()
 	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			cameraFocus = subject->getLocation();
-		}
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+		contentCache.clear();
 	}
 
-	//96.11% matching.
-	void Camera::updateGoal()
+	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
 	{
-		switch (cameraType)
-		{
-			case WATCH_CAMERA:
-			{
-				updateFocus();
-				break;
-			}
-			case ATTACH_CAMERA: 
-			{
-				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
-				float distance = delta.xz().length();
+		boost::scoped_ptr<std::istream> stream(getContent(id));
+		
+		TextXmlParser machine(stream->rdbuf());
+		boost::scoped_ptr<XmlElement> root(machine.parse());
 
-				updateFocus();
-
-				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
-				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case TRACK_CAMERA:
-			{
-				G3D::Vector3 oldFocusPt = cameraFocus.translation;
-				updateFocus();
-
-				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
-				break;
-			}
-			case FOLLOW_CAMERA:
-			{
-				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-			
-				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
-				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case CUSTOM_CAMERA:
-			{
-				if (ICameraSubject* cameraSubject = getCameraSubject())
-					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
-
-				cameraExternallyAdjusted = false;
-				break;
-			}
-		}
-
-		cameraGoal.lookAt(cameraFocus.translation);
+		SerializerV2().loadInstances(root.get(), instances);
 	}
 
-	bool Camera::zoom(float in)
+	bool ContentProvider::hasContent(ContentId id)
 	{
-		if (cameraType == CUSTOM_CAMERA)
+		return loadContent(id, NoHttpRequest) != NULL;
+	}
+
+	std::string ContentProvider::getAssetFile(const std::string& filePath)
+	{
+		return getFile(ContentId::fromAssets(filePath));
+	}
+
+	std::string ContentProvider::getFile(ContentId ticket)
+	{
+		CachedContent* content = loadContent(ticket, SyncHttpRequest);
+		if (content && registerFile(content))
 		{
-			ICameraSubject* cameraSubject = getCameraSubject();
-			if (cameraSubject)
-				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
+			return *content->filename;
 		}
-		else if (getCameraSubjectInstance() && 
-				 (cameraType == FOLLOW_CAMERA || 
-				  cameraType == ATTACH_CAMERA || 
-				  cameraType == TRACK_CAMERA))
+
+		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+	}
+
+	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return false;
+
+		if (!registerFile(content))
+			return false;
+
+		filename = *content->filename;
+		return true;
+	}
+
+	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return boost::shared_ptr<const std::string>();
+
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+
+		if (!content->data)
 		{
-			return characterZoom(in);
+			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
+			std::ostringstream data;
+
+			boost::iostreams::copy(stream, data);
+
+			content->data.reset(new std::string(data.str()));
+		}
+
+		return content->data;
+	}
+
+	std::string ContentProvider::findAsset(ContentId contentId)
+	{
+		RBXASSERT(contentId.isAsset());
+
+		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	std::string ContentProvider::findFile(ContentId contentId)
+	{
+		RBXASSERT(contentId.isFile());
+
+		const char* file = contentId.c_str();
+		file += 7;
+
+		ATL::CPath filePath(file);
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	static ATL::CPath getLocalCachePath(bool createPath)
+	{
+		ATL::CPath path;
+
+		if (createPath)
+		{
+			static std::string s = FileSystem::getCacheDirectory(true);
+			path.m_strPath.SetString(s.c_str());
 		}
 		else
 		{
-			return nonCharacterZoom(in);
+			static std::string s = FileSystem::getCacheDirectory(false);
+			path.m_strPath.SetString(s.c_str());
 		}
 
-		return false;
+		return path;
 	}
 
-	void Camera::onHeartbeat()
+	std::string ContentProvider::findHashFile(ContentId contentId)
 	{
-		updateGoal();
-		G3D::CoordinateFrame adjustedGoal = cameraGoal;
-		ICameraSubject* cameraSubject = getCameraSubject();
-		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
+		ATL::CPath cachePath = getLocalCachePath(true);
 
-		if (characterSubject)
-			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
+		ATL::CPath filePath = cachePath;
+		filePath.Append(contentId.c_str());
 
-		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
-		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
+		if (!filePath.FileExists())
+			return "";
 
-		setGCameraCoordinateFrame(LerpFrame);
+		return std::string(filePath);
+	}
 
-		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
+	void ContentProvider::setAssetFolder(const char* sPath)
+	{
+		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
+
+		ATL::CPath path(sPath);
+
+		if (path.IsRelative())
+			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
+
+		if (!path.IsDirectory())
+			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
+
+		path.AddBackslash();
+		assetFolderPath = path;
+	}
+
+	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	{
+		ContentId id;
+
 		{
-			tellCameraMoved();
+			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
+			hasher->addData(content);
+			id = ContentId(hasher->toString(), mimeType);
 		}
-	}
 
-	Instance* Camera::getCameraSubjectInstance() const
-	{
-		return cameraSubject.get();
-	}
+		ATL::CPath filePath = getLocalCachePath(true);
+		filePath.Append(id.c_str());
 
-	ICameraSubject* Camera::getCameraSubject() const
-	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
+		if (!filePath.FileExists())
 		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			return subject;
-		}
-		return NULL;
-	}
+			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
+			content.clear();
+			content.seekg(0, std::ios::beg);
 
-	void Camera::autoMode()
-	{
-		if (animationType != AUTO)
-		{
-			animationType = AUTO;
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraType(CameraType type)
-	{
-		if (cameraType != type)
-		{
-			cameraType = type;
-			raisePropertyChanged(desc_cameraType);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraSubject(Instance* newSubject)
-	{
-		if (newSubject != getCameraSubjectInstance())
-		{
-			if (dynamic_cast<ICameraSubject*>(newSubject))
+			do
 			{
-				cameraSubject = shared_from((ModelInstance*) newSubject);
-				raisePropertyChanged(cameraSubjectProp);
-
-				tellCameraMoved();
+				char buffer[1024];
+				content.read(buffer, sizeof(buffer));
+				outStream.write(buffer, content.gcount());
 			}
+			while (content.gcount() > 0);
 		}
+
+		return id;
 	}
 
-	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
+	bool ContentProvider::registerFile(CachedContent* item)
 	{
-		if (value != cameraFocus)
-		{
-			cameraFocus = value;
-			raisePropertyChanged(desc_Focus);
+		CachedContent temp;
 
-			tellCameraMoved();
+		{
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			temp = *item;
 		}
+
+		if (!temp.filename)
+		{
+			std::istringstream ss(*temp.data);
+			ContentId hash = registerContent(ss, Name::getNullName());
+
+			std::string filename = findHashFile(hash);
+			if (filename.empty())
+				return false;
+
+			temp.filename.reset(new std::string(filename));
+
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			*item = temp;
+		}
+
+		return true;
 	}
 
-	void Camera::goalToCamera()
+	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
 	{
-		if (gCamera.getCoordinateFrame() != cameraGoal)
+		ContentId contentId(id);
+
+		if (hasContent(contentId))
 		{
-			cameraExternallyAdjusted = true;
-			setGCameraCoordinateFrame(cameraGoal);
-			raisePropertyChanged(desc_CoordFrame);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
-	{
-		RBXASSERT(current >= low);
-		RBXASSERT(current <= high);
-
-		if (high - low < 0.1)
-			return;
-
-		setDistanceFromTarget(current);
-		updateGoal();
-		goalToCamera();
-
-		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
-		{
-			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+			stream.clear();
+			stream.seekg(dataLength, std::ios::cur);
 		}
 		else
 		{
-			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+			ATL::CPath filePath = getLocalCachePath(true);
+			filePath.Append(contentId.c_str());
+
+			std::ofstream content;
+			content.open(filePath, std::ios::binary | std::ios::out);
+
+			char data;
+
+			for (unsigned long i = 0; i < dataLength; i++)
+			{
+				RBXASSERT(content.good());
+				stream.get(data);
+				content << data;
+			}
 		}
+
+		return contentId;
 	}
 
-	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
+	ContentProvider::FailedUrl::FailedUrl(const char* url)
+		: url(url),
+		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
 	{
-		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
-		extents.expand(0.1f);
+	}
 
-		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
+	class MD5HasherImpl : public MD5Hasher
+	{
+	private:
+		HCRYPTPROV hProv;
+		HCRYPTHASH hHash;
+		std::string result;
+
+	public:
+		MD5HasherImpl()
+			: hProv(NULL),
+			  hHash(NULL),
+			  result()
 		{
-			if (cameraType == FIXED_CAMERA)
+			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
 			{
-				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
-
-				cameraFocus.translation += scaler;
-				cameraGoal.translation += scaler;
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
 			}
 
-			float low;
-
-			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
-				low = goalToFocusDistance();
-			else
-				low = distanceMin();
-
-			float current = goalToFocusDistance();
-
-			RBXASSERT(G3D::isFinite(current));
-
-			if (zoomType == ZOOM_CHAR_PART_DRAG)
-				extents.scale(1.1f);
-
-			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
-				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
-
-			cameraGoal = gCamera.getCoordinateFrame();
-			setGCameraCoordinateFrame(currentCoord);
-			tellCameraMoved();
+			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
+			}
 		}
-	}
+		~MD5HasherImpl()
+		{
+		}
 
-	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	public:
+		virtual void addData(const char* data, size_t nBytes)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(const std::string& data)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(std::istream& data)
+		{
+			data.clear();
+			data.seekg(0, std::ios_base::beg);
+
+			char buffer[1024];
+			do
+			{
+				data.read(buffer, sizeof(buffer));
+				addData(buffer, data.gcount());
+			}
+			while (data.gcount() > 0);
+		}
+		virtual std::string toString()
+		{
+			c_str();
+			return result;
+		}
+		virtual const char* c_str()
+		{
+			if (result.empty())
+			{
+				DWORD hashSize;
+				DWORD hashSizeLen = sizeof(DWORD);
+				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				char* hashValue = new char[hashSize];
+				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				for (int i = 0; i < (int)hashSize; ++i)
+				{
+					ATL::CString temp;
+					temp.Format("%x", hashValue[i]);
+					result += temp.GetString();
+				}
+
+				delete[] hashValue;
+			}
+
+			return result.c_str();
+		}
+	};
+
+	MD5Hasher* MD5Hasher::create()
 	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
-			return true;
-		}
-		return false;
-	}
-
-	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
-	{
-		cameraGoal = value;
-		goalToCamera();
-	}
-
-	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
-	{
-		G3D::Vector3 look = modelCoord.lookVector();
-
-		bool noTilt = (fabs(look.y) > 0.95);
-		if (noTilt)
-		{
-			look = -G3D::Vector3::unitZ();
-		}
-		else
-		{
-			look.y = 0;
-			look = look.direction();
-		}
-
-		G3D::CoordinateFrame lookCoord;
-
-		lookCoord.lookAt(look);
-		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
-
-		look = lookCoord.lookVector();
-		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
-
-		lookCoord.lookAt(modelCoord.translation);
-
-		setCameraType(FIXED_CAMERA);
-		setCameraFocus(modelCoord.translation);
-		setCameraCoordinateFrameNoLerp(lookCoord);
-		zoomExtents(viewPort);
-		goalToCamera();
-	}
-
-	float Camera::getNewZoomDistance(float currentDistance, float in)
-	{
-		float const ZOOM_FACTOR = 0.25f;
-
-		if (in > 0.0f)
-		{
-			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
-		} 	
-		else if (in < 0.0f)
-		{
-			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
-		}
-
-		return currentDistance;
+		return new MD5HasherImpl();
 	}
 }

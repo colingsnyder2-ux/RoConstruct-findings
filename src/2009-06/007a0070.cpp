@@ -1,8 +1,8 @@
-// from server: 63% by colin
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPControlGallery.cpp
+// roc-lib: xtp-11.2.2-lib-strlen-rtm Source/CommandBars/XTPControlGallery.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControlGallery.cpp : implementation file.

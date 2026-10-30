@@ -99,7 +99,7 @@ namespace RBX
 
 	bool Face::cornersAligned(const Face& f0, const Face& f1, float tolerance)
 	{
-		RBXASSERT(tolerance > 0.0);
+
 
 		float toleranceSquared = tolerance*tolerance;
 

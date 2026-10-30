@@ -1,56 +1,39 @@
-// from server: 60% by colin
+// roc 2007-03 00679df0  unit: seg_00670000  size: 103 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00679df0
+//
+// 00679df0  6aff                 push -1
+// 00679df2  68f8327600           push 0x7632f8
+// 00679df7  64a100000000         mov eax, dword ptr fs:[0]
+// 00679dfd  50                   push eax
+// 00679dfe  51                   push ecx
+// 00679dff  56                   push esi
+// 00679e00  a1b4f58a00           mov eax, dword ptr [0x8af5b4]
+// 00679e05  33c4                 xor eax, esp
+// 00679e07  50                   push eax
+// 00679e08  8d44240c             lea eax, [esp + 0xc]
+// 00679e0c  64a300000000         mov dword ptr fs:[0], eax
+// 00679e12  8bf1                 mov esi, ecx
+// 00679e14  89742408             mov dword ptr [esp + 8], esi
+// 00679e18  8d8edc000000         lea ecx, [esi + 0xdc]
+// 00679e1e  c70604d27c00         mov dword ptr [esi], 0x7cd204
+// 00679e24  c701f4d17c00         mov dword ptr [ecx], 0x7cd1f4
+// 00679e2a  c744241400000000     mov dword ptr [esp + 0x14], 0
+// 00679e32  e819180000           call 0x67b650
+// 00679e37  8bce                 mov ecx, esi
+// 00679e39  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
+// 00679e41  e82a130c00           call 0x73b170
+// 00679e46  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 00679e4a  64890d00000000       mov dword ptr fs:[0], ecx
+// 00679e51  59                   pop ecx
+// 00679e52  5e                   pop esi
+// 00679e53  83c410               add esp, 0x10
+// 00679e56  c3                   ret 
+// copied from an identical function in another client (function ??1CXTSplitterWnd@@UAE@XZ)
+
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreCompositorSerializer.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreCompositorSerializer.h"
-#include "OgreCompositorScriptCompiler.h"
-
-namespace Ogre {
-//-----------------------------------------------------------------------
-	CompositorSerializer::CompositorSerializer()
-	{
-        mScriptCompiler = OGRE_NEW CompositorScriptCompiler();
-	}
-//-----------------------------------------------------------------------
-	CompositorSerializer::~CompositorSerializer()
-	{
-	    OGRE_DELETE mScriptCompiler;
-	}
-//-----------------------------------------------------------------------
-    void CompositorSerializer::parseScript(DataStreamPtr& stream, const String& groupName)
-    {
-        mScriptCompiler->parseScript(stream,  groupName);
-    }
-}
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source/Controls/XTSplitterWnd.cpp
+// MFC 9 afximpl.h: AFX_CX_BORDER = AFX_CY_BORDER = 1.
+#define CX_BORDER 1
+#define CY_BORDER 1

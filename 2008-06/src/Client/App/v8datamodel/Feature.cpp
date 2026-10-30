@@ -254,7 +254,7 @@ namespace RBX
 
 		setPart(0, dynamic_cast<Feature*>(this->getParent()));
 
-		World* oldWorld = motorJoint()->getWorld();
+		World* oldWorld = motorJoint()->getWorld2008();
 		World* wsWorld = Workspace::getWorldIfInWorkspace(this);
 
 		if (oldWorld != wsWorld)
@@ -264,13 +264,13 @@ namespace RBX
 				oldWorld->removeJoint(motorJoint());
 				setPart(0, NULL);
 				setPart(1, NULL);
-				RBXASSERT(!motorJoint()->getWorld());
+				
 			}
 
 			if (wsWorld)
 			{
 				wsWorld->insertJoint(motorJoint());
-				RBXASSERT(motorJoint()->getWorld());
+				
 			}
 		}
 	}

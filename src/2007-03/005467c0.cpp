@@ -1,130 +1,120 @@
-// from server: 55% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/Script.cpp
+// roc-lib: rbxgs-dll roc_native_content_load_08181d6e956245b9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/Script.h"
-#include "script/ScriptContext.h"
-#include "v8tree/Service.h"
-#include "boost/thread/once.hpp"
+#define _DLL
+#include "util/ContentProvider.h"
+#include "util/Http.h"
+#include "util/StandardOut.h"
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <algorithm>
+#include <vector>
+#include <list>
+#include <map>
 
-using namespace RBX;
+namespace RBX {
+// Status values are independently visible in the 2008 caller (1/2).
+// The 2016 AsyncHttpQueue names corroborate their meaning.
+enum RequestResult { Waiting, Succeeded, Failed };
+typedef boost::function<void(RequestResult, std::istream&)> RequestCallback;
+struct ContentRequest {
+    ContentId id;
+    std::vector<RequestCallback> callbacks;
+    bool operator==(const ContentId& other) const {return id.toString()==other.toString();}
+};
+void readContent(RequestCallback, RequestResult, boost::shared_ptr<const std::string>);
 
-const Reflection::PropDescriptor<Script, std::string> Script::prop_EmbeddedSourceCode("Source", "Data", &Script::getEmbeddedCode, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::LEGACY);
-const Reflection::PropDescriptor<Script, ContentId> Script::prop_SourceCodeId("LinkedSource", "Data", &Script::getScriptId, &Script::setScriptId, Reflection::PropertyDescriptor::LEGACY);
-Reflection::BoundProp<bool, true> Script::prop_Disabled("Disabled", "Behavior", &Script::disabled, Reflection::PropertyDescriptor::STANDARD);
+// Native 2007 cache/failed-URL records. Only the owning class revision differs.
+struct CachedContentRecord {
+    boost::shared_ptr<const std::string> data;
+    boost::shared_ptr<const std::string> filename;
+};
+struct FailedUrlRecord {
+    std::string url;
+    boost::posix_time::ptime expiration;
+    FailedUrlRecord(const char*);
+};
 
-static boost::shared_ptr<const std::string> helloWorld;
-static boost::once_flag flagInitScriptCpp = BOOST_ONCE_INIT;
-
-void initScriptCpp()
-{
-    helloWorld.reset(new std::string("print(\"Hello world!\")\r\n"));
-}
-
-const char* RBX::sScript = "Script";
-
-Script::Script()
-    : DescribedCreatable("Script"),
-      disabled(false),
-      owner(NULL)
-{
-    boost::call_once(&initScriptCpp, flagInitScriptCpp);
-    embeddedSource = helloWorld;
-}
-
-const char* RBX::sLocalScript = "LocalScript";
-
-LocalScript::LocalScript()
-{
-    setName("LocalScript");
-}
-
-Script::~Script()
-{
-    RBXASSERT(owner == NULL);
-}
-
-void Script::setEmbeddedCode(const std::string& value)
-{
-    if (getEmbeddedCode() != value)
-    {
-        embeddedSource.reset(new std::string(value));
-        raisePropertyChanged(prop_EmbeddedSourceCode);
+std::string nativeFindAsset(ContentId); // 00560460 cdecl string return/byvalue32B
+std::string nativeFindHashFile(ContentId); // 0055fdc0 sameABI
+class RequestProcessorView {
+    template<class T> T& at(unsigned offset) {
+        return *reinterpret_cast<T*>(reinterpret_cast<char*>(this) + offset);
     }
-}
-
-void Script::setScriptId(const ContentId& value)
-{
-    if (getScriptId() != value)
-    {
-        scriptId = value;
-        requestCode();
-        raisePropertyChanged(prop_SourceCodeId);
+    boost::mutex& requestSync() { return at<boost::mutex>(0x130); }
+    std::list<ContentRequest>& requestQueue() { return at<std::list<ContentRequest> >(0x138); }
+    std::list<FailedUrlRecord>& failedUrls() { return at<std::list<FailedUrlRecord> >(0x154); }
+    boost::mutex& contentCacheMutex() { return at<boost::mutex>(0x170); }
+    std::map<ContentId, CachedContentRecord>& contentCache() {
+        return at<std::map<ContentId, CachedContentRecord> >(0x178);
     }
-}
-
-void Script::onAncestorChanged(const AncestorChanged& event)
-{
-    Instance::onAncestorChanged(event);
-
-    IScriptOwner* newOwner = NULL;
-    Instance* parent = this->getParent();
-
-    while (parent)
+public:
+    bool isUrlBad(const char*);
+    CachedContentRecord* loadContent(ContentId, int mode, const RequestCallback* callback);
+};
+CachedContentRecord* RequestProcessorView::loadContent(ContentId id, int mode, const RequestCallback* callback) {
+    if (id.isNull()) return NULL;
     {
-        IScriptOwner* parentOwner = dynamic_cast<IScriptOwner*>(parent);
-
-        if (parentOwner)
-        {
-            newOwner = parentOwner->scriptShouldRun(this);
-
-            if (newOwner)
-                break;
-        }
-
-        parent = parent->getParent();
+        boost::mutex::scoped_lock lock(contentCacheMutex());
+        std::map<ContentId,CachedContentRecord>::iterator found = contentCache().find(id);
+        if (found != contentCache().end()) return &found->second;
     }
-
-    if (newOwner != owner)
-    {
-        if (owner)
-            owner->releaseScript(this);
-
-        owner = newOwner;
-
-        ScriptContext* sc = ServiceProvider::find<ScriptContext>(this);
-
-        if (sc)
-        {
-            sc->removeScript(this);
-
-            if (owner)
-                owner->runScript(this, sc);
+    if (id.isAsset()) {
+        boost::shared_ptr<const std::string> filename(new std::string(nativeFindAsset(id)));
+        if (filename->empty()) return NULL;
+        boost::mutex::scoped_lock lock(contentCacheMutex());
+        CachedContentRecord& content = contentCache()[id];
+        content.filename = filename;
+        return &content;
+    } else {
+        boost::shared_ptr<const std::string> filename(new std::string(nativeFindHashFile(id)));
+        if (!filename->empty()) {
+            boost::mutex::scoped_lock lock(contentCacheMutex());
+            CachedContentRecord& content = contentCache()[id];
+            content.filename = filename;
+            return &content;
         }
     }
-}
-
-void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-{
-	if (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))
-	{
-		sc->removeScript(this);
-	}
-
-	Instance::onServiceProvider(oldProvider, newProvider);
-}
-
-boost::shared_ptr<const std::string> Script::requestCode()
-{
-    if (scriptId.isNull())
-    {
-        return embeddedSource;
+    if (id.isHttp()) {
+        switch(mode) {
+        case 1: {
+            boost::mutex::scoped_lock lock(requestSync());
+            if (!isUrlBad(id.c_str())) {
+                std::list<ContentRequest>::iterator found = std::find(requestQueue().begin(),requestQueue().end(),id);
+                if (found == requestQueue().end()) {
+                    requestQueue().push_back(ContentRequest());
+                    ContentRequest& request = requestQueue().back();
+                    request.id = id;
+                    if (callback) request.callbacks.push_back(*callback);
+                } else if (callback) {
+                    found->callbacks.push_back(*callback);
+                }
+            }
+            at<worker_thread*>(0x198)->wake();
+            break;
+        }
+        case 2: {
+            boost::shared_ptr<std::string> text(new std::string);
+            try {
+                Http(id.toString()).get(*text);
+            } catch (std::exception&) {
+                boost::mutex::scoped_lock lock(requestSync());
+                {
+                    FailedUrlRecord failed(id.c_str());
+                    failedUrls().push_front(failed);
+                }
+                throw;
+            }
+            boost::mutex::scoped_lock lock(contentCacheMutex());
+            CachedContentRecord& content = contentCache()[id];
+            content.data = text;
+            return &content;
+        }
+        }
     }
-    else 
-    {
-        return ContentProvider::singleton().requestContentString(scriptId);
-    }
+    return NULL;
+}
 }

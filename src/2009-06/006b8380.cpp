@@ -1,108 +1,44 @@
-// from server: 33% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_65cb7ef5d764b5af.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+#pragma float_control(precise, off)
+#include "G3D/Vector3.h"
+#include "G3D/Matrix3.h"
+static inline G3D::Vector3 getColumn(const G3D::Matrix3& m, int c) { return G3D::Vector3(m[0][c], m[1][c], m[2][c]); }
+static inline G3D::Vector3 getWorldNormal(int id, const G3D::Matrix3& mat) { return (1 - (id / 3) * 2) * getColumn(mat, id % 3); }
+typedef G3D::Vector3 Vector3;
+struct Instance {
+    void* getCastObject();
+    const G3D::Matrix3& getMatrix();
+};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+struct Model {
+    void setDirection(const Vector3&);
+};
 
-boost::mutex& moo2()
+struct Argument {
+    Instance* instance;
+    int face;
+};
+
+extern unsigned char sourceType;
+extern unsigned char destinationType;
+
+extern "C" void* __cdecl runtimeCast(
+    void*, long, void*, void*, int);
+
+void __stdcall setFront(Argument* argument)
 {
-	static boost::mutex mutex2;
-	return mutex2;
-}
+    Instance* instance = argument->instance;
+    Model* model = static_cast<Model*>(runtimeCast(
+        instance->getCastObject(), 0,
+        &sourceType, &destinationType, 0));
 
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    if (model) {
+        int face = argument->face;
+        model->setDirection(getWorldNormal(face, instance->getMatrix()));
+    }
 }

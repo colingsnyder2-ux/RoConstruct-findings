@@ -1,1113 +1,1498 @@
-// from server: 72% by colin
+// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreCompositorInstance.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPToolBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+// XTPToolBar.cpp : implementation of the CXTPToolBar class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
+#include "stdafx.h"
+#include "Resource.h"
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPToolTipContext.h"
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPDockBar.h"
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
+#include "XTPControlPopup.h"
+#include "XTPPopupBar.h"
+#include "XTPControlButton.h"
+#include "XTPDockContext.h"
+#include "XTPShortcutManager.h"
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreCompositorInstance.h"
-#include "OgreCompositorChain.h"
-#include "OgreCompositorManager.h"
-#include "OgreCompositionTargetPass.h"
-#include "OgreCompositionPass.h"
-#include "OgreCompositionTechnique.h"
-#include "OgreCustomCompositionPass.h"
-#include "OgreTechnique.h"
-#include "OgrePass.h"
-#include "OgreTexture.h"
-#include "OgreLogManager.h"
-#include "OgreMaterialManager.h"
-#include "OgreTextureManager.h"
-#include "OgreSceneManager.h"
-#include "OgreStringConverter.h"
-#include "OgreException.h"
-#include "OgreHardwarePixelBuffer.h"
-#include "OgreCamera.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreCompositorLogic.h"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-namespace Ogre {
-CompositorInstance::CompositorInstance(CompositionTechnique *technique,
-    CompositorChain *chain):
-    mCompositor(technique->getParent()), mTechnique(technique), mChain(chain),
-		mEnabled(false)
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
-	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceCreated(this);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorInstance::~CompositorInstance()
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
-	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceDestroyed(this);
-	}
+#define _XTP_CBRS_ALL            0x0040FFFFL
 
-    freeResources(false, true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setEnabled(bool value)
-{
-    if (mEnabled != value)
-    {
-        mEnabled = value;
+IMPLEMENT_XTP_COMMANDBAR(CXTPToolBar, CXTPCommandBar)
 
-        // Create of free resource.
-        if (value)
-        {
-            createResources(false);
-        }
-        else
-        {
-            freeResources(false, true);
-        }
-
-		/// Notify chain state needs recompile.
-        mChain->_markDirty();
-    }
-}
-//-----------------------------------------------------------------------
-bool CompositorInstance::getEnabled()
-{
-    return mEnabled;
-}
-//-----------------------------------------------------------------------
-
-/** Clear framebuffer RenderSystem operation
- */
-class RSClearOperation: public CompositorInstance::RenderSystemOperation
+class CXTPToolBar::CControlButtonHide: public CXTPControlButton
 {
 public:
-	RSClearOperation(uint32 buffers, ColourValue colour, Real depth, unsigned short stencil):
-		buffers(buffers), colour(colour), depth(depth), stencil(stencil)
-	{}
-	/// Which buffers to clear (FrameBufferType)
-	uint32 buffers;
-	/// Colour to clear in case FBT_COLOUR is set
-	ColourValue colour;
-	/// Depth to set in case FBT_DEPTH is set
-	Real depth;
-	/// Stencil value to set in case FBT_STENCIL is set
-	unsigned short stencil;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	CControlButtonHide()
 	{
-		rs->clearFrameBuffer(buffers, colour, depth, stencil);
+		m_dwFlags = xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable;
+	}
+	void Draw(CDC* pDC);
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
+	{
+	}
+	void OnExecute()
+	{
+		ASSERT(m_pParent);
+		if (m_pParent) ((CXTPToolBar*)m_pParent)->SetVisible(FALSE);
+	}
+	virtual BOOL IsCustomizeMovable() const
+	{
+		return FALSE;
 	}
 };
 
-/** "Set stencil state" RenderSystem operation
- */
-class RSStencilOperation: public CompositorInstance::RenderSystemOperation
+void CXTPToolBar::CControlButtonHide::Draw(CDC* pDC)
+{
+	GetPaintManager()->DrawSpecialControl(pDC, xtpButtonHideFloating, this, m_pParent, TRUE, NULL);
+}
+
+class CXTPToolBar::CControlButtonCustomize: public CXTPControlButton
 {
 public:
-	RSStencilOperation(bool stencilCheck,CompareFunction func,uint32 refValue,uint32 mask,
-		StencilOperation stencilFailOp,StencilOperation depthFailOp,StencilOperation passOp,
-		bool twoSidedOperation):
-		stencilCheck(stencilCheck),func(func),refValue(refValue),mask(mask),
-		stencilFailOp(stencilFailOp),depthFailOp(depthFailOp),passOp(passOp),
-		twoSidedOperation(twoSidedOperation)
-	{}
-	bool stencilCheck;
-	CompareFunction func; 
-    uint32 refValue;
-	uint32 mask;
-    StencilOperation stencilFailOp;
-    StencilOperation depthFailOp;
-    StencilOperation passOp;
-    bool twoSidedOperation;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	CControlButtonCustomize()
 	{
-		rs->setStencilCheckEnabled(stencilCheck);
-		rs->setStencilBufferParams(func, refValue, mask, stencilFailOp, depthFailOp, passOp, twoSidedOperation);
+		m_pControl = NULL;
+		m_pToolBar = NULL;
 	}
+	virtual void OnExecute()
+	{
+		ASSERT(m_pParent);
+		if (!m_pParent)
+			return;
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		ASSERT(pCommandBars);
+		if (!pCommandBars)
+			return;
+		pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+
+		if (m_pControl)
+		{
+			if (m_pControl->GetHideFlags() & xtpHideCustomize)
+				m_pControl->SetHideFlag(xtpHideCustomize, FALSE);
+			else m_pControl->SetHideFlag(xtpHideCustomize, TRUE);
+
+			SetChecked((m_pControl->GetHideFlags() & xtpHideCustomize) == 0);
+			m_pControl->GetParent()->OnRecalcLayout();
+			m_pParent->InvalidateParents();
+		}
+		if (m_pToolBar)
+		{
+			pCommandBars->ClosePopups();
+			m_pToolBar->Reset(TRUE);
+		}
+	}
+
+	CXTPControl* m_pControl;
+	CXTPToolBar* m_pToolBar;
 };
 
-/** "Render quad" RenderSystem operation
- */
-class RSQuadOperation: public CompositorInstance::RenderSystemOperation
+
+class CXTPToolBar::CControlButtonExpand: public CXTPControlPopup
 {
 public:
-	RSQuadOperation(CompositorInstance *instance, uint32 pass_id, MaterialPtr mat):
-	  mat(mat),instance(instance), pass_id(pass_id),
-      mQuadCornerModified(false),
-      mQuadLeft(-1),
-      mQuadTop(1),
-      mQuadRight(1),
-      mQuadBottom(-1)
+	CControlButtonExpand()
 	{
-		mat->load();
-		instance->_fireNotifyMaterialSetup(pass_id, mat);
-		technique = mat->getTechnique(0);
-		assert(technique);
+		m_controlType = xtpControlButtonPopup;
+		m_bHiddenExists = FALSE;
+		m_dwFlags = xtpFlagLeftPopup | xtpFlagManualUpdate | xtpFlagNoMovable;
+		m_pCommandBar = CXTPPopupBar::CreatePopupBar(0);
 	}
-	MaterialPtr mat;
-	Technique *technique;
-	CompositorInstance *instance;
-	uint32 pass_id;
-
-    bool mQuadCornerModified, mQuadFarCorners, mQuadFarCornersViewSpace;
-    Real mQuadLeft;
-    Real mQuadTop;
-    Real mQuadRight;
-    Real mQuadBottom;
-
-    void setQuadCorners(Real left,Real top,Real right,Real bottom)
-    {
-        mQuadLeft = left;
-        mQuadTop = top;
-        mQuadRight = right;
-        mQuadBottom = bottom;
-        mQuadCornerModified=true;
-    }
-
-	void setQuadFarCorners(bool farCorners, bool farCornersViewSpace)
+	void Draw(CDC* pDC);
+	BOOL OnSetPopup(BOOL bPopup);
+	void SetRect(CRect rcControl)
 	{
-		mQuadFarCorners = farCorners;
-		mQuadFarCornersViewSpace = farCornersViewSpace;
-	}
-   
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+		m_rcControl = rcControl;
+		m_bHiddenExists = IsHiddenExists();
+	};
+	void SetBeginGroup(BOOL /*bBeginGroup*/)
 	{
-		// Fire listener
-		instance->_fireNotifyMaterialRender(pass_id, mat);
-
-        Viewport* vp = rs->_getViewport();
-		Rectangle2D *rect = static_cast<Rectangle2D*>(CompositorManager::getSingleton()._getTexturedRectangle2D());
-
-		if (mQuadCornerModified)
-		{
-			// insure positions are using peculiar render system offsets 
-			Real hOffset = rs->getHorizontalTexelOffset() / (0.5f * vp->getActualWidth());
-			Real vOffset = rs->getVerticalTexelOffset() / (0.5f * vp->getActualHeight());
-			rect->setCorners(mQuadLeft + hOffset, mQuadTop - vOffset, mQuadRight + hOffset, mQuadBottom - vOffset);
-		}
-
-		if(mQuadFarCorners)
-		{
-			const Ogre::Vector3 *corners = vp->getCamera()->getWorldSpaceCorners();
-			if(mQuadFarCornersViewSpace)
-			{
-				const Ogre::Matrix4 &viewMat = vp->getCamera()->getViewMatrix(true);
-				rect->setNormals(viewMat*corners[5], viewMat*corners[6], viewMat*corners[4], viewMat*corners[7]);
-			}
-			else
-			{
-				rect->setNormals(corners[5], corners[6], corners[4], corners[7]);
-			}
-		}
-
-		// Queue passes from mat
-		Technique::PassIterator i = technique->getPassIterator();
-		while(i.hasMoreElements())
-		{
-			sm->_injectRenderWithPass(
-				i.getNext(), 
-				rect,
-				false // don't allow replacement of shadow passes
-				);
-		}
 	}
+	BOOL IsHiddenExists();
+	virtual BOOL IsCaptionVisible() const
+	{
+		return FALSE;
+	}
+	virtual BOOL IsCustomizeMovable() const
+	{
+		return FALSE;
+	}
+private:
+	BOOL m_bHiddenExists;
 };
 
-/** "Set material scheme" RenderSystem operation
- */
-class RSSetSchemeOperation: public CompositorInstance::RenderSystemOperation
+BOOL CXTPToolBar::CControlButtonExpand::IsHiddenExists()
 {
-public:
-	RSSetSchemeOperation(const String& schemeName) : mSchemeName(schemeName) {}
-	
-	String mPreviousScheme;
-	bool mPreviousLateResolving;
-
-	String mSchemeName;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+	for (int i = 0; i < m_pParent->GetControlCount(); i++)
 	{
-		MaterialManager& matMgr = MaterialManager::getSingleton();
-		mPreviousScheme = matMgr.getActiveScheme();
-		matMgr.setActiveScheme(mSchemeName);
-
-		mPreviousLateResolving = sm->isLateMaterialResolving();
-		sm->setLateMaterialResolving(true);
+		if (m_pParent->GetControl(i)->GetHideFlags() == xtpHideWrap)
+			return TRUE;
 	}
+	return FALSE;
+}
 
-	const String& getPreviousScheme() const { return mPreviousScheme; }
-	bool getPreviousLateResolving() const { return mPreviousLateResolving; }
-};
-
-/** Restore the settings changed by the set scheme operation */
-class RSRestoreSchemeOperation: public CompositorInstance::RenderSystemOperation
+void CXTPToolBar::CControlButtonExpand::Draw(CDC* pDC)
 {
-public:
-	RSRestoreSchemeOperation(const RSSetSchemeOperation* setOperation) : 
-	  mSetOperation(setOperation) {}
-	
-	const RSSetSchemeOperation* mSetOperation;
+	GetPaintManager()->DrawSpecialControl(pDC, m_pParent->GetPosition() == xtpBarFloating ?
+		xtpButtonExpandFloating: xtpButtonExpandToolbar, this, m_pParent, TRUE, &m_bHiddenExists);
+}
 
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
+BOOL CXTPToolBar::CControlButtonExpand::OnSetPopup(BOOL bPopup)
+{
+	m_bPopup = bPopup;
+	if (bPopup)
 	{
-		MaterialManager::getSingleton().setActiveScheme(mSetOperation->getPreviousScheme());
-		sm->setLateMaterialResolving(mSetOperation->getPreviousLateResolving());
-	}
-};
+		if (m_pCommandBar)
+			m_pCommandBar->InternalRelease();
 
-void CompositorInstance::collectPasses(TargetOperation &finalState, CompositionTargetPass *target)
-{
-	/// Here, passes are converted into render target operations
-    Pass *targetpass;
-    Technique *srctech;
-	MaterialPtr mat, srcmat;
-	
-    CompositionTargetPass::PassIterator it = target->getPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionPass *pass = it.getNext();
-        switch(pass->getType())
-        {
-        case CompositionPass::PT_CLEAR:
-			queueRenderSystemOp(finalState, OGRE_NEW RSClearOperation(
-				pass->getClearBuffers(),
-				pass->getClearColour(),
-				pass->getClearDepth(),
-				(ushort)pass->getClearStencil()
-				));
-            break;
-		case CompositionPass::PT_STENCIL:
-			queueRenderSystemOp(finalState, OGRE_NEW RSStencilOperation(
-				pass->getStencilCheck(),pass->getStencilFunc(), pass->getStencilRefValue(),
-				pass->getStencilMask(), pass->getStencilFailOp(), pass->getStencilDepthFailOp(),
-				pass->getStencilPassOp(), pass->getStencilTwoSidedOperation()
-				));
-            break;
-		case CompositionPass::PT_RENDERSCENE: 
+		m_pCommandBar = NULL;
+		CWnd* pSite = m_pParent->GetSite();
+		if (pSite)
 		{
-			if(pass->getFirstRenderQueue() < finalState.currentQueueGroupID)
-			{
-				/// Mismatch -- warn user
-				/// XXX We could support repeating the last queue, with some effort
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": Attempt to render queue "+
-					StringConverter::toString(pass->getFirstRenderQueue())+" before "+
-					StringConverter::toString(finalState.currentQueueGroupID));
-			}
+			XTP_COMMANDBARS_CREATEBAR cs;
+			ZeroMemory(&cs, sizeof(cs));
+			cs.bExpandBar = TRUE;
 
-			RSSetSchemeOperation* setSchemeOperation = 0;
-			if (pass->getMaterialScheme() != StringUtil::BLANK)
+			if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cs) != 0)
 			{
-				//Add the triggers that will set the scheme and restore it each frame
-				finalState.currentQueueGroupID = pass->getFirstRenderQueue();
-				setSchemeOperation = OGRE_NEW RSSetSchemeOperation(pass->getMaterialScheme());
-				queueRenderSystemOp(finalState, setSchemeOperation);
-			}
-			
-			/// Add render queues
-			for(int x=pass->getFirstRenderQueue(); x<=pass->getLastRenderQueue(); ++x)
-			{
-				assert(x>=0);
-				finalState.renderQueues.set(x);
-			}
-			finalState.currentQueueGroupID = pass->getLastRenderQueue()+1;
-
-			if (setSchemeOperation != 0)
-			{
-				//Restoring the scheme after the queues have been rendered
-				queueRenderSystemOp(finalState, 
-					OGRE_NEW RSRestoreSchemeOperation(setSchemeOperation));
-			}
-
-			finalState.findVisibleObjects = true;
-			finalState.materialScheme = target->getMaterialScheme();
-			finalState.shadowsEnabled = target->getShadowsEnabled();
-
-            break;
-		}
-		case CompositionPass::PT_RENDERQUAD: {
-            srcmat = pass->getMaterial();
-			if(srcmat.isNull())
-            {
-                /// No material -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": No material defined for composition pass");
-                break;
-            }
-			srcmat->load();
-			if(srcmat->getNumSupportedTechniques()==0)  
-			{
-				/// No supported techniques -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": material "+srcmat->getName()+" has no supported techniques");
-                break;
-			}
-			srctech = srcmat->getBestTechnique(0);
-			/// Create local material
-			MaterialPtr mat = createLocalMaterial(srcmat->getName());
-			/// Copy and adapt passes from source material
-			Technique::PassIterator i = srctech->getPassIterator();
-			while(i.hasMoreElements())
-			{
-				Pass *srcpass = i.getNext();
-				/// Create new target pass
-				targetpass = mat->getTechnique(0)->createPass();
-				(*targetpass) = (*srcpass);
-				/// Set up inputs
-				for(size_t x=0; x<pass->getNumInputs(); ++x)
-				{
-					const CompositionPass::InputTex& inp = pass->getInput(x);
-					if(!inp.name.empty())
-					{
-						if(x < targetpass->getNumTextureUnitStates())
-						{
-							targetpass->getTextureUnitState((ushort)x)->setTextureName(getSourceForTex(inp.name, inp.mrtIndex));
-						} 
-						else
-						{
-							/// Texture unit not there
-							LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-								+mCompositor->getName()+": material "+srcmat->getName()+" texture unit "
-								+StringConverter::toString(x)+" out of bounds");
-						}
-					}
-				}
-			}
-
-            RSQuadOperation * rsQuadOperation = OGRE_NEW RSQuadOperation(this,pass->getIdentifier(),mat);
-            Real left,top,right,bottom;
-            if (pass->getQuadCorners(left,top,right,bottom))
-                rsQuadOperation->setQuadCorners(left,top,right,bottom);
-			rsQuadOperation->setQuadFarCorners(pass->getQuadFarCorners(), pass->getQuadFarCornersViewSpace());
-			
-			queueRenderSystemOp(finalState,rsQuadOperation);
-			}
-            break;
-		case CompositionPass::PT_RENDERCUSTOM:
-			RenderSystemOperation* customOperation = CompositorManager::getSingleton().
-				getCustomCompositionPass(pass->getCustomType())->createOperation(this, pass);
-			queueRenderSystemOp(finalState, customOperation);
-			break;
-        }
-    }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileTargetOperations(CompiledState &compiledState)
-{
-    /// Collect targets of previous state
-	if(mPreviousInstance)
-	    mPreviousInstance->_compileTargetOperations(compiledState);
-    /// Texture targets
-    CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionTargetPass *target = it.getNext();
-        
-        TargetOperation ts(getTargetForTex(target->getOutputName()));
-        /// Set "only initial" flag, visibilityMask and lodBias according to CompositionTargetPass.
-        ts.onlyInitial = target->getOnlyInitial();
-        ts.visibilityMask = target->getVisibilityMask();
-        ts.lodBias = target->getLodBias();
-		ts.shadowsEnabled = target->getShadowsEnabled();
-        /// Check for input mode previous
-        if(target->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-        {
-            /// Collect target state for previous compositor
-            /// The TargetOperation for the final target is collected seperately as it is merged
-            /// with later operations
-            mPreviousInstance->_compileOutputOperation(ts);
-        }
-        /// Collect passes of our own target
-        collectPasses(ts, target);
-        compiledState.push_back(ts);
-    }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileOutputOperation(TargetOperation &finalState)
-{
-    /// Final target
-    CompositionTargetPass *tpass = mTechnique->getOutputTargetPass();
-    
-    /// Logical-and together the visibilityMask, and multiply the lodBias
-    finalState.visibilityMask &= tpass->getVisibilityMask();
-    finalState.lodBias *= tpass->getLodBias();
-    
-    if(tpass->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-    {
-        /// Collect target state for previous compositor
-        /// The TargetOperation for the final target is collected seperately as it is merged
-        /// with later operations
-        mPreviousInstance->_compileOutputOperation(finalState);
-    }
-    /// Collect passes
-    collectPasses(finalState, tpass);
-}
-//-----------------------------------------------------------------------
-Compositor *CompositorInstance::getCompositor()
-{
-    return mCompositor;
-}
-//-----------------------------------------------------------------------
-CompositionTechnique *CompositorInstance::getTechnique()
-{
-    return mTechnique;
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setTechnique(CompositionTechnique* tech, bool reuseTextures)
-{
-	if (mTechnique != tech)
-	{
-		if (reuseTextures)
-		{
-			// make sure we store all (shared) textures in use in our reserve pool
-			// this will ensure they don't get destroyed as unreferenced
-			// so they're ready to use again later
-			CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-			CompositorManager::UniqueTextureSet assignedTextures;
-			while(it.hasMoreElements())
-			{
-				CompositionTechnique::TextureDefinition *def = it.getNext();
-				if (def->pooled)
-				{
-					LocalTextureMap::iterator i = mLocalTextures.find(def->name);
-					if (i != mLocalTextures.end())
-					{
-						// overwriting duplicates is fine, we only want one entry per def
-						mReserveTextures[def] = i->second;
-					}
-
-				}
+				m_pCommandBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cs.pCommandBar);
 			}
 		}
-		// replace technique
-		mTechnique = tech;
+		if (m_pCommandBar == NULL) m_pCommandBar = CXTPPopupToolBar::CreatePopupToolBar(m_pParent->GetCommandBars());
+		m_pCommandBar->EnableCustomization(FALSE);
 
-		if (mEnabled)
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		if (pCommandBars)
 		{
-			// free up resources, but keep reserves if reusing
-			freeResources(false, !reuseTextures);
-			createResources(false);
-			/// Notify chain state needs recompile.
-			mChain->_markDirty();
-		}
+			pCommandBars->GetHiddenControls((CXTPToolBar*)m_pParent, m_pCommandBar);
 
-	}
-}
-//---------------------------------------------------------------------
-void CompositorInstance::setScheme(const String& schemeName, bool reuseTextures)
-{
-	CompositionTechnique* tech = mCompositor->getSupportedTechnique(schemeName);
-	if (tech)
-	{
-		setTechnique(tech, reuseTextures);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorChain *CompositorInstance::getChain()
-{
-	return mChain;
-}
-//-----------------------------------------------------------------------
-const String& CompositorInstance::getTextureInstanceName(const String& name, 
-														 size_t mrtIndex)
-{
-	return getSourceForTex(name, mrtIndex);
-}
-//---------------------------------------------------------------------
-TexturePtr CompositorInstance::getTextureInstance(const String& name, size_t mrtIndex)
-{
-	// try simple textures first
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-	if(i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// try MRTs - texture (rather than target)
-	i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-	if (i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// not present
-	return TexturePtr();
-
-}
-//-----------------------------------------------------------------------
-MaterialPtr CompositorInstance::createLocalMaterial(const String& srcName)
-{
-static size_t dummyCounter = 0;
-    MaterialPtr mat = 
-        MaterialManager::getSingleton().create(
-            "c" + StringConverter::toString(dummyCounter) + "/" + srcName,
-            ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME
-        );
-    ++dummyCounter;
-    /// This is safe, as we hold a private reference
-    /// XXX does not compile due to ResourcePtr conversion :
-    ///     MaterialManager::getSingleton().remove(mat);
-    MaterialManager::getSingleton().remove(mat->getName());
-    /// Remove all passes from first technique
-    mat->getTechnique(0)->removeAllPasses();
-    return mat;
-}
-//---------------------------------------------------------------------
-void CompositorInstance::notifyResized()
-{
-	freeResources(true, true);
-	createResources(true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::createResources(bool forResizeOnly)
-{
-	static size_t dummyCounter = 0;
-    /// Create temporary textures
-    /// In principle, temporary textures could be shared between multiple viewports
-    /// (CompositorChains). This will save a lot of memory in case more viewports
-    /// are composited.
-    CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-    while(it.hasMoreElements())
-    {
-        CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) {
-			//This is a reference, isn't created in this compositor
-			continue;
-		}
-		if (def->scope == CompositionTechnique::TS_GLOBAL) {
-			//This is a global texture, just link the created resources from the parent
-			Compositor* parentComp = mTechnique->getParent();
-			if (def->formatList.size() > 1) 
+			if (pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways || pCommandBars->IsCustomizeAvail())
 			{
-				size_t atch = 0;
-				for (PixelFormatList::iterator p = def->formatList.begin(); 
-					p != def->formatList.end(); ++p, ++atch)
-				{
-					Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, atch);
-					mLocalTextures[getMRTTexLocalName(def->name, atch)] = tex;
-				}
-				MultiRenderTarget* mrt = static_cast<MultiRenderTarget*>
-					(parentComp->getRenderTarget(def->name));
-				mLocalMRTs[def->name] = mrt;
-			}
-			else
-			{
-				Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, 0);
-				mLocalTextures[def->name] = tex;
-			}
-			continue;
-		}
-        /// Determine width and height
-        size_t width = def->width;
-        size_t height = def->height;
-		uint fsaa = 0;
-		String fsaaHint;
-		bool hwGamma = false;
+				CXTPControlPopup* pControl = (CXTPControlPopup*)m_pCommandBar->GetControls()->Add(xtpControlPopup, XTP_ID_CUSTOMIZE_ADDORREMOVE);
+				pControl->SetFlags(xtpFlagManualUpdate);
 
-		// Skip this one if we're only (re)creating for a resize & it's not derived
-		// from the target size
-		if (forResizeOnly && width != 0 && height != 0)
-			continue;
-
-		deriveTextureRenderTargetOptions(def->name, &hwGamma, &fsaa, &fsaaHint);
-
-        if(width == 0)
-            width = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualWidth()) * def->widthFactor);
-        if(height == 0)
-			height = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualHeight()) * def->heightFactor);
-
-		// determine options as a combination of selected options and possible options
-		if (!def->fsaa)
-		{
-			fsaa = 0;
-			fsaaHint = StringUtil::BLANK;
-		}
-		hwGamma = hwGamma || def->hwGammaWrite;
-
-        /// Make the tetxure
-		RenderTarget* rendTarget;
-		if (def->formatList.size() > 1)
-		{
-			String MRTbaseName = "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			MultiRenderTarget* mrt = 
-				Root::getSingleton().getRenderSystem()->createMultiRenderTarget(MRTbaseName);
-			mLocalMRTs[def->name] = mrt;
-
-			// create and bind individual surfaces
-			size_t atch = 0;
-			for (PixelFormatList::iterator p = def->formatList.begin(); 
-				p != def->formatList.end(); ++p, ++atch)
-			{
-
-				String texname = MRTbaseName + "/" + StringConverter::toString(atch);
-				String mrtLocalName = getMRTTexLocalName(def->name, atch);
-				TexturePtr tex;
-				if (def->pooled)
-				{
-					// get / create pooled texture
-					tex = CompositorManager::getSingleton().getPooledTexture(texname,
-						mrtLocalName, 
-						width, height, *p, fsaa, fsaaHint,  
-						hwGamma && !PixelUtil::isFloatingPoint(*p), 
-						assignedTextures, this, def->scope);
-				}
-				else
-				{
-					tex = TextureManager::getSingleton().createManual(
-						texname, 
-						ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-						(uint)width, (uint)height, 0, *p, TU_RENDERTARGET, 0, 
-						hwGamma && !PixelUtil::isFloatingPoint(*p), fsaa, fsaaHint ); 
-				}
-				
-				RenderTexture* rt = tex->getBuffer()->getRenderTarget();
-				rt->setAutoUpdated(false);
-				mrt->bindSurface(atch, rt);
-
-				// Also add to local textures so we can look up
-				mLocalTextures[mrtLocalName] = tex;
-				
-			}
-
-			rendTarget = mrt;
-		}
-		else
-		{
-			String texName =  "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			
-			// space in the name mixup the cegui in the compositor demo
-			// this is an auto generated name - so no spaces can't hart us.
-			std::replace( texName.begin(), texName.end(), ' ', '_' ); 
-
-			TexturePtr tex;
-			if (def->pooled)
-			{
-				// get / create pooled texture
-				tex = CompositorManager::getSingleton().getPooledTexture(texName, 
-					def->name, width, height, def->formatList[0], fsaa, fsaaHint,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), assignedTextures, 
-					this, def->scope);
-			}
-			else
-			{
-				tex = TextureManager::getSingleton().createManual(
-					texName, 
-					ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-					(uint)width, (uint)height, 0, def->formatList[0], TU_RENDERTARGET, 0,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), fsaa, fsaaHint); 
-			}
-
-			rendTarget = tex->getBuffer()->getRenderTarget();
-			mLocalTextures[def->name] = tex;
-		}
-        
-        
-        /// Set up viewport over entire texture
-        rendTarget->setAutoUpdated( false );
-
-		// We may be sharing / reusing this texture, so test before adding viewport
-		if (rendTarget->getNumViewports() == 0)
-		{
-			Camera* camera = mChain->getViewport()->getCamera();
-
-			// Save last viewport and current aspect ratio
-			Viewport* oldViewport = camera->getViewport();
-			Real aspectRatio = camera->getAspectRatio();
-
-			Viewport* v = rendTarget->addViewport( camera );
-			v->setClearEveryFrame( false );
-			v->setOverlaysEnabled( false );
-			v->setBackgroundColour( ColourValue( 0, 0, 0, 0 ) );
-
-			// Should restore aspect ratio, in case of auto aspect ratio
-			// enabled, it'll changed when add new viewport.
-			camera->setAspectRatio(aspectRatio);
-			// Should restore last viewport, i.e. never disturb user code
-			// which might based on that.
-			camera->_notifyViewport(oldViewport);
-		}
-    }
-
-	_fireNotifyResourcesCreated(forResizeOnly);
-}
-//---------------------------------------------------------------------
-void CompositorInstance::deriveTextureRenderTargetOptions(
-	const String& texname, bool *hwGammaWrite, uint *fsaa, String* fsaaHint)
-{
-	// search for passes on this texture def that either include a render_scene
-	// or use input previous
-	bool renderingScene = false;
-
-	CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-	while (it.hasMoreElements())
-	{
-		CompositionTargetPass* tp = it.getNext();
-		if (tp->getOutputName() == texname)
-		{
-			if (tp->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
-			{
-				// this may be rendering the scene implicitly
-				// Can't check mPreviousInstance against mChain->_getOriginalSceneCompositor()
-				// at this time, so check the position
-				CompositorChain::InstanceIterator instit = mChain->getCompositors();
-				renderingScene = true;
-				while(instit.hasMoreElements())
-				{
-					CompositorInstance* inst = instit.getNext();
-					if (inst == this)
-						break;
-					else if (inst->getEnabled())
-					{
-						// nope, we have another compositor before us, this will
-						// be doing the AA
-						renderingScene = false;
-					}
-				}
-				if (renderingScene)
-					break;
-			}
-			else
-			{
-				// look for a render_scene pass
-				CompositionTargetPass::PassIterator pit = tp->getPassIterator();
-				while(pit.hasMoreElements())
-				{
-					CompositionPass* pass = pit.getNext();
-					if (pass->getType() == CompositionPass::PT_RENDERSCENE)
-					{
-						renderingScene = true;
-						break;
-					}
-				}
-			}
-
-		}
-	}
-
-	if (renderingScene)
-	{
-		// Ok, inherit settings from target
-		RenderTarget* target = mChain->getViewport()->getTarget();
-		*hwGammaWrite = target->isHardwareGammaEnabled();
-		*fsaa = target->getFSAA();
-		*fsaaHint = target->getFSAAHint();
-	}
-	else
-	{
-		*hwGammaWrite = false;
-		*fsaa = 0;
-		*fsaaHint = StringUtil::BLANK;
-	}
-
-}
-//---------------------------------------------------------------------
-String CompositorInstance::getMRTTexLocalName(const String& baseName, size_t attachment)
-{
-	return baseName + "/" + StringConverter::toString(attachment);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::freeResources(bool forResizeOnly, bool clearReserveTextures)
-{
-    // Remove temporary textures 
-	// We only remove those that are not shared, shared textures are dealt with
-	// based on their reference count.
-	// We can also only free textures which are derived from the target size, if
-	// required (saves some time & memory thrashing / fragmentation on resize)
-
-	CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-	while(it.hasMoreElements())
-	{
-		CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) 
-		{
-			//This is a reference, isn't created here
-			continue;
-		}
-		
-		// potentially only remove this one if based on size
-		if (!forResizeOnly || def->width == 0 || def->height == 0)
-		{
-			size_t subSurf = def->formatList.size();
-
-			// Potentially many surfaces
-			for (size_t s = 0; s < subSurf; ++s)
-			{
-				String texName = subSurf > 1 ? getMRTTexLocalName(def->name, s)
-					: def->name;
-
-				LocalTextureMap::iterator i = mLocalTextures.find(texName);
-				if (i != mLocalTextures.end())
-				{
-					if (!def->pooled && def->scope != CompositionTechnique::TS_GLOBAL)
-					{
-						// remove myself from central only if not pooled and not global
-						TextureManager::getSingleton().remove(i->second->getName());
-					}
-
-					// remove from local
-					// reserves are potentially cleared later
-					mLocalTextures.erase(i);
-
-				}
-
-			} // subSurf
-
-			if (subSurf > 1)
-			{
-				LocalMRTMap::iterator mrti = mLocalMRTs.find(def->name);
-				if (mrti != mLocalMRTs.end())
-				{
-					if (def->scope != CompositionTechnique::TS_GLOBAL) 
-					{
-						// remove MRT if not global
-						Root::getSingleton().getRenderSystem()->destroyRenderTarget(mrti->second->getName());
-					}
-					
-					mLocalMRTs.erase(mrti);
-				}
-
-			}
-
-		} // not for resize or width/height 0
-	}
-
-	if (clearReserveTextures)
-	{
-		if (forResizeOnly)
-		{
-			// just remove the ones which would be affected by a resize
-			for (ReserveTextureMap::iterator i = mReserveTextures.begin();
-				i != mReserveTextures.end(); )
-			{
-				if (i->first->width == 0 || i->first->height == 0)
-				{
-					mReserveTextures.erase(i++);
-				}
-				else
-					++i;
+				pControl->SetBeginGroup(m_pCommandBar->GetControlCount() > 1);
+				pCommandBars->GetAddOrRemovePopup((CXTPToolBar*)m_pParent, pControl->GetCommandBar());
 			}
 		}
 		else
 		{
-			// clear all
-			mReserveTextures.clear();
+			((CXTPToolBar*)m_pParent)->_GetHiddenControls(m_pCommandBar);
 		}
+
+		m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
+
 	}
-
-	// Now we tell the central list of textures to check if its unreferenced, 
-	// and to remove if necessary. Anything shared that was left in the reserve textures
-	// will not be released here
-	CompositorManager::getSingleton().freePooledTextures(true);
-}
-//---------------------------------------------------------------------
-RenderTarget* CompositorInstance::getRenderTarget(const String& name)
-{
-	return getTargetForTex(name);
-}
-//-----------------------------------------------------------------------
-RenderTarget *CompositorInstance::getTargetForTex(const String &name)
-{
-	// try simple texture
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-    if(i != mLocalTextures.end())
-		return i->second->getBuffer()->getRenderTarget();
-
-	// try MRTs
-	LocalMRTMap::iterator mi = mLocalMRTs.find(name);
-	if (mi != mLocalMRTs.end())
-		return mi->second;
 	else
-		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-			"CompositorInstance::getTargetForTex");
+	{
+		ASSERT(m_pCommandBar);
+		if (m_pCommandBar) m_pCommandBar->SetTrackingMode(FALSE);
+
+	}
+	RedrawParent();
+	return TRUE;
+}
+
+
+CXTPToolBar::CXTPToolBar()
+{
+	m_pDockBar = 0;
+	m_pDockContext = 0;
+	m_bBuiltIn = TRUE;
+	m_bTearOff = FALSE;
+
+	m_bCloseable = TRUE;
+	m_bTemporary = FALSE;
+	m_bShowExpandButton = TRUE;
+
+	m_bPreviewMode = m_bPreviewVisible = FALSE;
+
+	m_bContextMenuPresent = TRUE;
+	m_bInRecalcLayout = FALSE;
+
+	m_pDockContext = new CXTPDockContext(this);
+	m_dwFlags = xtpFlagAlignAny | xtpFlagFloating | xtpFlagHideWrap;
+
+
+	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPToolBar"), CS_DBLCLKS);
+}
+
+BOOL CXTPToolBar::CreateToolBar(DWORD dwStyle, CWnd* pParentWnd, UINT nID)
+{
+	m_dwStyle = dwStyle & _XTP_CBRS_ALL;
+	dwStyle = dwStyle & ~_XTP_CBRS_ALL;
+
+	dwStyle = dwStyle | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+	if (!CWnd::CreateEx(0, _T("XTPToolBar"), NULL, dwStyle, CRect(0, 0, 0, 0), pParentWnd, nID))
+		return FALSE;
+
+	m_barPosition = xtpBarTop;
+
+	SAFE_DELETE(m_pDockContext);
+	m_dwFlags &= ~ (xtpFlagAlignAny | xtpFlagFloating | xtpFlagHideWrap);
+
+	if ((m_dwStyle & CBRS_TOOLTIPS) && m_pCommandBars == 0)
+		EnableToolTips();
+
+	return TRUE;
 
 }
-//-----------------------------------------------------------------------
-const String &CompositorInstance::getSourceForTex(const String &name, size_t mrtIndex)
+
+void CXTPToolBar::EnableDocking(DWORD dwFlags)
 {
-	CompositionTechnique::TextureDefinition* texDef = mTechnique->getTextureDefinition(name);
+	ASSERT(m_pCommandBars);
+	m_dwFlags = dwFlags;
+}
 
-	if (!texDef->refCompName.empty()) 
+CXTPToolBar::~CXTPToolBar()
+{
+	SAFE_DELETE(m_pDockContext)
+}
+
+
+
+BOOL CXTPCommandBar::SetButtons(UINT* pButtons, int nCount)
+{
+	m_pControls->RemoveAll();
+
+	BOOL bSeparator = FALSE;
+
+	CWnd* pSite = GetSite();
+
+	for (int i = 0; i < nCount; i++)
 	{
-		//This is a reference - find the compositor and referenced texture definition
-		const CompositorPtr& refComp = CompositorManager::getSingleton().getByName(texDef->refCompName);
-		if (refComp.isNull())
+		if (pButtons[i] == 0)
+			bSeparator = TRUE;
+		else
 		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor",
-				"CompositorInstance::getSourceForTex");
-		}
-		CompositionTechnique::TextureDefinition* refTexDef = refComp->getSupportedTechnique()->getTextureDefinition(texDef->refTexName);
-		if (refTexDef == 0)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor texture",
-				"CompositorInstance::getSourceForTex");
-		}
+			XTPControlType controlType = xtpControlButton;
+			XTPButtonStyle buttonStyle = xtpButtonAutomatic;
+			CXTPControl* pControl = NULL;
+			UINT nID = pButtons[i];
 
-		switch (refTexDef->scope) 
-		{
-			case CompositionTechnique::TS_CHAIN: 
+			XTP_COMMANDBARS_CREATECONTROL cs;
+
+			if (pSite)
 			{
-				//Find the instance and check if it is before us
-				CompositorInstance* refCompInst = 0;
-				CompositorChain::InstanceIterator it = mChain->getCompositors();
-				bool beforeMe = true;
-				while (it.hasMoreElements())
+				cs.nID = nID;
+				cs.pControl = NULL;
+				cs.bToolBar = TRUE;
+				cs.pMenu = NULL;
+				cs.nIndex = i;
+				cs.strCaption = GetTitle();
+				cs.controlType = controlType;
+				cs.pCommandBar = this;
+				cs.buttonStyle = buttonStyle;
+
+				if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
 				{
-					CompositorInstance* nextCompInst = it.getNext();
-					if (nextCompInst->getCompositor()->getName() == texDef->refCompName)
-					{
-						refCompInst = nextCompInst;
-						break;
-					}
-					if (nextCompInst == this)
-					{
-						//We encountered ourselves while searching for the compositor -
-						//we are earlier in the chain.
-						beforeMe = false;
-					}
+					pControl = cs.pControl;
+					controlType = cs.controlType;
+					buttonStyle = cs.buttonStyle;
+					nID = cs.nID;
 				}
-				
-				if (refCompInst == 0 || !refCompInst->getEnabled()) 
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing inactive compositor texture",
-						"CompositorInstance::getSourceForTex");
-				}
-				if (!beforeMe)
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing compositor that is later in the chain",
-						"CompositorInstance::getSourceForTex");
-				}
-				return refCompInst->getTextureInstanceName(texDef->refTexName, mrtIndex);
 			}
-			case CompositionTechnique::TS_GLOBAL:
-				//Chain and global case - the referenced compositor will know how to handle
-				return refComp->getTextureInstanceName(texDef->refTexName, mrtIndex);
-			case CompositionTechnique::TS_LOCAL:
-			default:
-				OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Referencing local compositor texture",
-					"CompositorInstance::getSourceForTex");
+
+			if (pControl == NULL)
+			{
+				pControl = m_pControls->Add(controlType, nID);
+				if (pControl)
+				{
+					pControl->SetStyle(buttonStyle);
+					if (controlType == xtpControlPopup) pControl->SetIconId(nID);
+				}
+			}
+			else m_pControls->Add(pControl, nID);
+
+			if (bSeparator)
+			{
+				pControl->SetBeginGroup(TRUE);
+				bSeparator = FALSE;
+			}
+
+			if (pSite)
+			{
+				cs.pControl = pControl;
+				pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
+			}
+		}
+	}
+	return TRUE;
+}
+
+BOOL CXTPToolBar::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+{
+	m_nBarID = nIDResource;
+
+	if (!CXTPCommandBar::LoadToolBar(nIDResource, bLoadIcons))
+		return FALSE;
+
+	m_pControls->CreateOriginalControls();
+
+	return TRUE;
+}
+
+BOOL CXTPCommandBar::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+
+	struct CToolBarData
+	{
+		WORD wVersion;
+		WORD wWidth;
+		WORD wHeight;
+		WORD wItemCount;
+		WORD* items()
+		{ return (WORD*)(this + 1); }
+	};
+
+	m_pControls->RemoveAll();
+	ASSERT(GetControlCount() == 0);
+
+	ASSERT_VALID(this);
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return FALSE;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	if (!hInst)
+		return FALSE;
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+
+	ASSERT(pData->wVersion == 1);
+
+	int i;
+	UINT* pItems = new UINT[pData->wItemCount];
+
+	for (i = 0; i < pData->wItemCount; i++)
+		pItems[i] = pData->items()[i];
+
+	BOOL bResult = SetButtons(pItems, pData->wItemCount);
+
+	if (bLoadIcons)
+	{
+		CXTPImageManager* pImageManager = GetImageManager();
+
+		if (!pImageManager->SetIcons(nIDResource, pItems,
+			pData->wItemCount, CSize(pData->wWidth, pData->wHeight)))
+			bResult = FALSE;
+
+		if (pData->wWidth != 16)
+		{
+			SetIconSize(CSize(pData->wWidth, pData->wHeight));
+		}
+	}
+
+	delete[] pItems;
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+
+	return bResult;
+}
+
+
+BOOL CXTPToolBar::SetPosition(XTPBarPosition barPosition)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return FALSE;
+
+	if (IsDockingPosition(barPosition))
+	{
+		if (!pCommandBars->DockCommandBar(this, barPosition))
+			return FALSE;
+
+	}
+	else if (barPosition == xtpBarFloating)
+	{
+		if (!pCommandBars->FloatCommandBar(this))
+			return FALSE;
+
+	}
+	else
+		return FALSE;
+
+	ASSERT(m_barPosition == barPosition);
+
+	return TRUE;
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPToolBar, CXTPCommandBar)
+	ON_WM_SETCURSOR()
+	ON_WM_RBUTTONDOWN()
+
+	ON_WM_NCCREATE()
+	ON_WM_NCACTIVATE()
+	ON_MESSAGE(WM_FLOATSTATUS, OnFloatStatus)
+	ON_WM_MOUSEACTIVATE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCHITTEST_EX()
+	ON_WM_NCLBUTTONDOWN()
+	ON_WM_SETFOCUS()
+	ON_WM_CLOSE()
+	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
+	ON_WM_LBUTTONDBLCLK()
+END_MESSAGE_MAP()
+
+
+
+BOOL CXTPToolBar::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (GetShowGripper() && (IsDockingPosition(GetPosition())) &&
+		m_pDockContext && ((m_dwFlags & (xtpFlagAlignAny | xtpFlagFloating)) != 0))
+	{
+		CXTPClientRect rcGripper(this);
+		CRect rcBorder = GetPaintManager()->GetCommandBarBorders(this);
+		CSize szGripper = GetPaintManager()->DrawCommandBarGripper(NULL, this, FALSE);
+
+		if (IsDialogBar())
+		{
+			rcGripper.right = rcGripper.left + rcBorder.left + szGripper.cx;
+			rcGripper.left += 3;
+			rcGripper.bottom = rcGripper.top + rcBorder.top + szGripper.cy;
+		}
+		else if (IsVerticalPosition(GetPosition()))
+		{
+			rcGripper.bottom = rcGripper.top + rcBorder.top + szGripper.cy;
+		}
+		else
+		{
+			rcGripper.right = rcGripper.left + rcBorder.left + szGripper.cx;
 		}
 
-	} // End of handling texture references
+		POINT pt;
+		GetCursorPos(&pt);
+		ScreenToClient(&pt);
 
-	if (texDef->formatList.size() == 1) 
-	{
-		//This is a simple texture
-		LocalTextureMap::iterator i = mLocalTextures.find(name);
-		if(i != mLocalTextures.end())
+		if (rcGripper.PtInRect(pt))
 		{
-			return i->second->getName();
+			SetCursor(AfxGetApp()->LoadStandardCursor(IDC_SIZEALL));
+			return TRUE;
+		}
+	}
+
+	return CXTPCommandBar::OnSetCursor(pWnd, nHitTest, message);
+}
+
+INT_PTR CXTPCommandBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	if (IsTrackingMode() == TRUE_POPUP && GetPosition() != xtpBarPopup)
+		return -1;
+
+	if (m_nPopuped != -1)
+		return -1;
+
+	BOOL bToolBarAccelTips = FALSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+
+	if (pMouseManager->IsMouseLocked() || pMouseManager->IsTrackedLock(this))
+		return -1;
+
+	if (pCommandBars)
+	{
+		if (!pCommandBars->GetCommandBarsOptions()->bToolBarScreenTips)
+			return -1;
+
+		bToolBarAccelTips = pCommandBars->GetCommandBarsOptions()->bToolBarAccelTips;
+	}
+
+	CXTPControl* pControl = m_pControls->HitTest(point);
+	if (!pControl)
+		return -1;
+
+	if (m_barType == xtpBarTypePopup && (!pCommandBars || (!pCommandBars->GetCommandBarsOptions()->bShowPopupBarToolTips &&
+		((pControl->GetFlags() & xtpFlagShowPopupBarTip) == 0))))
+	{
+		return -1;
+	}
+
+
+	INT_PTR nHit = pControl->OnToolHitTest(point, pTI);
+	if (nHit != -1)
+	{
+		if (pTI->hwnd != m_hWnd)
+			return -1;
+
+		if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+		{
+			if (((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo != NULL) ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo->pObject = pControl;
+		}
+
+		return nHit;
+	}
+
+	nHit = pControl->GetIconId();
+	CRect rect = pControl->GetRect();
+
+	CString strTip = pControl->GetTooltip();
+	if (strTip.GetLength() == 0)
+		return -1;
+
+
+	CString strShortcut = pControl->m_strShortcutText;
+	if (pCommandBars && bToolBarAccelTips && (!strShortcut.IsEmpty() || pCommandBars->GetShortcutManager()->FindDefaultAccelerator((UINT)pControl->GetID(), strShortcut)))
+	{
+		if (strShortcut.GetLength() > 0)
+		{
+			strTip += _T(" (") + strShortcut +_T(")");
+		}
+	}
+
+	CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rect, nHit,
+		strTip, strTip, pControl->GetDescription(), GetImageManager());
+
+	if (pTI != NULL && pTI->cbSize == sizeof(XTP_TOOLTIP_TOOLINFO_EX))
+	{
+		if (((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo != NULL) ((XTP_TOOLTIP_TOOLINFO_EX*)pTI)->pToolInfo->pObject = pControl;
+	}
+
+	// found matching rect, return the ID of the button
+	return nHit != 0 ? nHit : -1;
+}
+
+
+
+void CXTPToolBar::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	CXTPControl* pControl = m_pControls->HitTest(point);
+	if (pControl && pControl->OnRButtonDown(point))
+		return;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars) return;
+
+	if (IsCustomizeMode())
+	{
+		CXTPCommandBar::OnRButtonDown(nFlags, point);
+		return;
+	}
+
+	SetTrackingMode(FALSE);
+	SetSelected(-1);
+	Redraw();
+
+	ClientToScreen(&point);
+
+	pCommandBars->ContextMenu(this, point);
+}
+
+
+BOOL CXTPToolBar::Create(CWnd* pParentWnd, BOOL bFloat)
+{
+	if (!IsWindow(m_hWnd))
+	{
+		DWORD dwStyle = (bFloat ? WS_POPUP : WS_CHILD) | MFS_SYNCACTIVE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+		CPoint pt = m_pDockContext ? m_pDockContext->m_ptMRUFloatPos : CPoint(100, 100);
+
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		int nLayoutRTL = pCommandBars && pCommandBars->IsLayoutRTL() ? WS_EX_LAYOUTRTL : 0;
+
+		if (!CWnd::CreateEx(nLayoutRTL, _T("XTPToolBar"), m_strTitle, dwStyle, CRect(pt, CSize(0, 0)), pParentWnd, 0))
+			return FALSE;
+
+		ShowWindow(SW_SHOWNA);
+	}
+
+	if (!bFloat)
+	{
+		ModifyStyle(WS_POPUP, WS_CHILD);
+	}
+	else
+	{
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)0);
+		ModifyStyle(WS_CHILD, WS_POPUP | MFS_SYNCACTIVE);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pParentWnd->m_hWnd);
+	}
+
+	return TRUE;
+}
+
+CRect CXTPToolBar::GetBorders()
+{
+	if (GetPosition() == xtpBarFloating)
+	{
+		return CRect(3, 3, 3, 3);
+	}
+
+	CRect rcBorder = GetPaintManager()->GetCommandBarBorders(this);
+
+	if (GetShowGripper())
+		rcBorder.TopLeft() += GetPaintManager()->DrawCommandBarGripper(NULL, this, FALSE);
+
+	return rcBorder;
+}
+
+CSize CXTPToolBar::CalcDockingLayout(int nLength, DWORD dwMode, int nWidth)
+{
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+	CXTPControlPopup* pPopupExp = NULL;
+
+	CRect rcBorder(GetBorders());
+
+	CXTPControl* pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
+	if (pHide)
+	{
+		pHide->SetHideFlags(xtpHideGeneric);
+	}
+
+	BOOL bShowExpandButtonAlways = FALSE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bShowExpandButtonAlways = pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways;
+
+	BOOL bCommit = TRUE;
+	CSize sz = 0;
+
+	if (m_bShowExpandButton)
+	{
+
+		pPopupExp = (CXTPControlPopup*)m_pControls->FindControl(XTP_ID_TOOLBAR_EXPAND);
+		if (!pPopupExp)
+		{
+			pPopupExp = (CXTPControlPopup*)m_pControls->Add(new CControlButtonExpand(), XTP_ID_TOOLBAR_EXPAND, _T(""), -1, TRUE);
+		}
+		pPopupExp->SetHideFlags(xtpHideGeneric);
+
+		if (bShowExpandButtonAlways)
+		{
+			if (dwMode & LM_HORZDOCK)
+				rcBorder.right += 11;
+			else
+				rcBorder.bottom += 11;
+		}
+		else
+		{
+			if (dwMode & LM_COMMIT)
+			{
+				sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+				if (((CControlButtonExpand*)pPopupExp)->IsHiddenExists())
+				{
+					if (dwMode & LM_HORZDOCK)
+						rcBorder.right += 11; else rcBorder.bottom += 11;
+
+				}
+				else
+				{
+					bCommit = FALSE;
+					pPopupExp = NULL;
+				}
+			}
+			else
+			{
+				sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+				CSize szMin = m_pControls->CalcDynamicSize(&dc, 1, dwMode, rcBorder, nWidth);
+
+				if (m_pControls->GetVisibleCount() > 1)
+				{
+					if (dwMode & LM_HORZDOCK)
+						sz.cx = max(sz.cx, szMin.cx + 11); else
+						sz.cy = max(sz.cy, szMin.cy + 11);
+				}
+
+
+				pPopupExp = NULL;
+				bCommit = FALSE;
+			}
+
+		}
+	}
+
+	if (bCommit)
+		sz = m_pControls->CalcDynamicSize(&dc, nLength, dwMode, rcBorder, nWidth);
+
+	if (pPopupExp)
+	{
+		pPopupExp->SetHideFlags(xtpNoHide);
+		GetPaintManager()->DrawSpecialControl(0, xtpButtonExpandToolbar, pPopupExp, this, FALSE, &sz);
+	}
+
+	if ((m_nIdleFlags & xtpIdleLayout) && (dwMode & LM_COMMIT))
+	{
+		m_nIdleFlags &= ~xtpIdleLayout;
+		Redraw();
+	}
+
+	return sz;
+}
+
+CSize CXTPToolBar::CalcDynamicLayout(int nLength, DWORD nMode)
+{
+	ASSERT(!(nMode & LM_HORZDOCK || nMode & LM_VERTDOCK));
+
+	CClientDC dc(this);
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+
+	int nTitleSize = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE).cy;
+
+	CRect rcBorder(GetBorders());
+	rcBorder.top += nTitleSize + 1;
+
+	CXTPControlPopup* pPopupExp = NULL;
+
+	CXTPControl* pHide = NULL;
+
+	if (IsCloseable())
+	{
+		pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
+		if (!pHide)
+		{
+			pHide = (CXTPControlPopup*)m_pControls->Add(new CControlButtonHide(), XTP_ID_TOOLBAR_HIDE, _T(""), -1, TRUE);
+		}
+
+		pHide->SetHideFlags(xtpHideGeneric);
+	}
+
+	if (m_bShowExpandButton && m_pCommandBars)
+	{
+		pPopupExp = (CXTPControlPopup*)m_pControls->FindControl(XTP_ID_TOOLBAR_EXPAND);
+		if (!pPopupExp)
+		{
+			pPopupExp = (CXTPControlPopup*)m_pControls->Add(new CControlButtonExpand(), XTP_ID_TOOLBAR_EXPAND, _T(""), -1, TRUE);
+		}
+		pPopupExp->SetHideFlags(xtpHideGeneric);
+	}
+
+	CSize sz;
+	if (m_barType == xtpBarTypePopup)
+	{
+		UpdateShortcuts();
+		sz = m_pControls->CalcPopupSize(&dc, 0, rcBorder);
+	}
+	else
+		sz = m_pControls->CalcDynamicSize(&dc, nLength, nMode, rcBorder);
+
+	int nLeft = sz.cx - 3;
+	if (pHide)
+	{
+		pHide->SetHideFlags(xtpNoHide);
+		pHide->SetRect(CRect(nLeft - nTitleSize, 3, nLeft, 3 + nTitleSize));
+		nLeft -= nTitleSize;
+
+		if (pPopupExp) pPopupExp->SetWrap(TRUE);
+	}
+
+	BOOL bShowExpandButtonAlways = TRUE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bShowExpandButtonAlways = pCommandBars->GetCommandBarsOptions()->bShowExpandButtonAlways;
+
+	if (pPopupExp && nLeft - nTitleSize > 0 && bShowExpandButtonAlways)
+	{
+		pPopupExp->SetWrap(TRUE);
+		pPopupExp->SetHideFlags(xtpNoHide);
+		pPopupExp->SetRect(CRect(nLeft - nTitleSize, 3, nLeft, 3 + nTitleSize));
+	}
+
+	if ((m_nIdleFlags & xtpIdleLayout) && (nMode & LM_COMMIT))
+	{
+		m_nIdleFlags &= ~xtpIdleLayout;
+		Redraw();
+	}
+
+	return sz;
+}
+
+void CXTPToolBar::OnRecalcLayout()
+{
+	if (!GetSafeHwnd())
+		return;
+
+	if (!IsVisible())
+		return;
+
+	if (m_bInRecalcLayout)
+		return;
+
+	m_bInRecalcLayout = TRUE;
+
+	if (m_barPosition != xtpBarFloating)
+	{
+		CXTPCommandBars* pCommandBars = GetCommandBars();
+		if (pCommandBars)
+		{
+			pCommandBars->RecalcFrameLayout();
+		}
+		else
+		{
+			CWnd* pSite = GetSite();
+			CXTPClientRect rc(pSite);
+			if (pSite) pSite->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
+		}
+	}
+	else if (IsVisible())
+	{
+		CSize sz = CalcDynamicLayout(-1, LM_MRUWIDTH | LM_HORZ | LM_COMMIT);
+		CRect rc;
+		GetWindowRect(&rc);
+		MoveWindow(rc.left, rc.top, sz.cx, sz.cy, TRUE);
+	}
+
+	Redraw();
+
+	m_bInRecalcLayout = FALSE;
+}
+
+BOOL CXTPToolBar::OnNcCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (!CXTPCommandBar::OnNcCreate(lpCreateStruct))
+		return FALSE;
+
+	if (GetStyle() & MFS_SYNCACTIVE)
+	{
+		// syncronize activation state with top level parent
+		CWnd* pParentWnd = GetTopLevelParent();
+		ASSERT(pParentWnd != NULL);
+		if (!pParentWnd)
+			return FALSE;
+
+		CWnd* pActiveWnd = GetForegroundWindow();
+		BOOL bActive = (pParentWnd == pActiveWnd) ||
+			(pParentWnd->GetLastActivePopup() == pActiveWnd &&
+			pActiveWnd->SendMessage(WM_FLOATSTATUS, FS_SYNCACTIVE) != 0);
+
+		// the WM_FLOATSTATUS does the actual work
+		SendMessage(WM_FLOATSTATUS, bActive ? FS_ACTIVATE : FS_DEACTIVATE);
+	}
+
+
+	return TRUE;
+}
+
+
+LRESULT CXTPToolBar::OnFloatStatus(WPARAM wParam, LPARAM)
+{
+	// FS_SYNCACTIVE is used to detect MFS_SYNCACTIVE windows
+	LRESULT lResult = ((GetStyle() & MFS_SYNCACTIVE) && (wParam & FS_SYNCACTIVE));
+
+	if (m_barPosition != xtpBarFloating || !m_bVisible)
+		return lResult;
+
+	BOOL bSyncActivate = TRUE;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars) bSyncActivate = pCommandBars->GetCommandBarsOptions()->bSyncFloatingBars;
+
+	if (bSyncActivate)
+	{
+		if ((wParam & FS_DEACTIVATE) && !IsTopParentActive())
+		{
+			SetWindowPos(NULL, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+		}
+		if ((wParam & FS_ACTIVATE) && !IsWindowVisible() && IsTopParentActive())
+		{
+			// check if parent invisible or minimized window
+			DWORD dwStyle = ::GetWindowLong(::GetForegroundWindow(), GWL_STYLE);
+			if ((dwStyle & WS_VISIBLE) && !(dwStyle & WS_MINIMIZE))
+				SetWindowPos(NULL, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
+		}
+	}
+
+	if (wParam & (FS_SHOW | FS_HIDE))
+	{
+		SetWindowPos(NULL, 0, 0, 0, 0,
+			((wParam & FS_SHOW) ? SWP_SHOWWINDOW : SWP_HIDEWINDOW) | SWP_NOZORDER |
+			SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+	}
+	if (wParam & (FS_ENABLE | FS_DISABLE))
+		EnableWindow((wParam & FS_ENABLE) != 0);
+
+	return lResult;
+}
+
+BOOL CXTPToolBar::IsFloatingFrameFocused() const
+{
+	if (!IsTopParentActive())
+		return FALSE;
+
+	CWnd* pWnd = CWnd::GetFocus();
+
+	while (pWnd && IsWindow(pWnd->GetSafeHwnd()))
+	{
+		pWnd = pWnd->GetParentFrame();
+
+		if (DYNAMIC_DOWNCAST(CMiniFrameWnd, pWnd))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+int CXTPToolBar::OnMouseActivate(CWnd* pDesktopWnd, UINT nHitTest, UINT message)
+{
+	if (m_barPosition == xtpBarFloating || IsFloatingFrameFocused() || IsCustomizeMode())
+		return MA_NOACTIVATE;
+
+	return CWnd::OnMouseActivate(pDesktopWnd, nHitTest, message);
+}
+
+BOOL CXTPToolBar::OnNcActivate(BOOL bActive)
+{
+	return bActive ? FALSE : CWnd::OnNcActivate(bActive);
+}
+
+void CXTPToolBar::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_barPosition == xtpBarFloating)
+		SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+
+	if (m_pControls->HitTest(point) == NULL)
+	{
+		m_pCommandBars->ClosePopups();
+
+		if (m_pDockContext && ((m_dwFlags & (xtpFlagAlignAny | xtpFlagFloating)) != 0))
+		{
+			ClientToScreen(&point);
+			m_pDockContext->StartDrag(point);
 		}
 	}
 	else
 	{
-		// try MRTs - texture (rather than target)
-		LocalTextureMap::iterator i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-		if (i != mLocalTextures.end())
+		CXTPCommandBar::OnLButtonDown(nFlags, point);
+	}
+}
+
+void CXTPToolBar::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
+	if (m_pControls->HitTest(point) == NULL)
+	{
+		if (m_pDockContext)
 		{
-			return i->second->getName();
+			m_pDockContext->ToggleDocking();
+			return;
 		}
 	}
-	
-	OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-		"CompositorInstance::getSourceForTex");
+
+	CXTPCommandBar::OnLButtonDblClk(nFlags, point);
 }
-//-----------------------------------------------------------------------
-void CompositorInstance::queueRenderSystemOp(TargetOperation &finalState, RenderSystemOperation *op)
+
+LRESULT CXTPToolBar::OnNcHitTest(CPoint point)
 {
-	/// Store operation for current QueueGroup ID
-	finalState.renderSystemOperations.push_back(RenderSystemOpPair(finalState.currentQueueGroupID, op));
-	/// Tell parent for deletion
-	mChain->_queuedOperation(op);
+	if (m_barPosition != xtpBarFloating)
+		return CXTPCommandBar::OnNcHitTest(point);
+
+	if (m_barType == xtpBarTypePopup)
+		return CXTPCommandBar::OnNcHitTest(point);
+
+	CRect rectWindow;
+	GetWindowRect(&rectWindow);
+	rectWindow.InflateRect(-3, -3);
+
+	if (point.y < rectWindow.top) return HTTOP;
+	if (point.y >= rectWindow.bottom) return HTBOTTOM;
+	if (point.x < rectWindow.left) return HTLEFT;
+	if (point.x >= rectWindow.right) return HTRIGHT;
+
+	return CXTPCommandBar::OnNcHitTest(point);
 }
-//-----------------------------------------------------------------------
-void CompositorInstance::addListener(Listener *l)
+
+void CXTPToolBar::OnNcLButtonDown(UINT nHitTest, CPoint point)
 {
-	mListeners.push_back(l);
+	if (!m_pDockContext)
+		return;
+
+	if (nHitTest >= HTSIZEFIRST && nHitTest <= HTSIZELAST)
+	{
+		ActivateTopParent();
+		SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+
+		m_pCommandBars->ClosePopups();
+		m_pDockContext->StartResize(nHitTest, point);
+		return;
+	}
+
+	CXTPCommandBar::OnNcLButtonDown(nHitTest, point);
 }
-//-----------------------------------------------------------------------
-void CompositorInstance::removeListener(Listener *l)
-{
-	mListeners.erase(std::find(mListeners.begin(), mListeners.end(), l));
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialSetup(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialRender(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyResourcesCreated(bool forResizeOnly)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyResourcesCreated(forResizeOnly);
-}
-//-----------------------------------------------------------------------
-CompositorInstance::RenderSystemOperation::~RenderSystemOperation()
-{
-}
-//-----------------------------------------------------------------------
-CompositorInstance::Listener::~Listener()
-{
-}
-void CompositorInstance::Listener::notifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyResourcesCreated(bool forResizeOnly)
+
+
+
+void CXTPToolBar::OnClose()
 {
 }
 
+BOOL CXTPToolBar::IsWindowVisible() const
+{
+	return GetSafeHwnd() && IsVisible() && CWnd::IsWindowVisible() && !CXTPWindowRect(this).IsRectEmpty();
 }
+
+void CXTPToolBar::SetVisible(BOOL bVisible)
+{
+	if (m_bVisible == bVisible)
+		return;
+
+	m_bVisible = bVisible;
+
+	if (!bVisible)
+	{
+		SetTrackingMode(FALSE);
+	}
+
+	ShowWindow(bVisible ? SW_SHOWNA : SW_HIDE);
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (bVisible)
+	{
+		OnRecalcLayout();
+	}
+	else if (IsDockingPosition(m_barPosition))
+	{
+		if (pCommandBars)
+		{
+			pCommandBars->RecalcFrameLayout();
+		}
+		else
+		{
+			CWnd* pSite = GetSite();
+			CXTPClientRect rc(pSite);
+			if (pSite) pSite->SendMessage(WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()));
+		}
+	}
+
+
+	if (pCommandBars)
+	{
+		BOOL bRemove = m_bTearOff && !bVisible;
+
+		pCommandBars->GetSite()->SendMessage(WM_XTP_TOOLBARVISIBLECHANGED, (WPARAM)this, (LPARAM)m_bVisible);
+
+		if (bRemove)
+			pCommandBars->Remove(this);
+
+		pCommandBars->GetCommandBarsOptions()->bDirtyState = TRUE;
+	}
+}
+
+
+
+
+LRESULT CXTPToolBar::OnSizeParent(WPARAM, LPARAM lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	if (GetStyle() & WS_VISIBLE)
+	{
+		// align the control bar
+		CRect rect;
+		rect.CopyRect(&lpLayout->rect);
+
+		CSize sizeAvail = rect.Size();  // maximum size available
+
+		// get maximum requested size
+		DWORD dwMode = LM_HORZDOCK | LM_HORZ | LM_COMMIT;
+		if (GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
+		if (GetFlags() & xtpFlagHideWrap) dwMode |= LM_HIDEWRAP;
+
+
+
+		if (lpLayout->hDWP == NULL) dwMode &= ~LM_COMMIT;
+
+		CSize size = CalcDockingLayout(sizeAvail.cx, dwMode);
+
+		size.cx = min(size.cx, sizeAvail.cx);
+		size.cy = min(size.cy, sizeAvail.cy);
+
+		lpLayout->sizeTotal.cy += size.cy;
+		lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
+		lpLayout->rect.top += size.cy;
+
+		rect.right = rect.left + size.cx;
+		rect.bottom = rect.top + size.cy;
+
+		// only resize the window if doing layout and not just rect query
+		if (lpLayout->hDWP != NULL)
+			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
+
+		Redraw();
+	}
+	return 0;
+}
+
+CSize CXTPCommandBar::GetAutoIconSize(BOOL bLarge) const
+{
+	return GetPaintManager()->GetAutoIconSize(bLarge);
+}
+
+
+CSize CXTPCommandBar::GetIconSize() const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (!pCommandBars)
+		return m_szIcons != CSize(0) ? m_szIcons : CSize(16, 16);
+
+	if (GetType() == xtpBarTypePopup)
+	{
+		return m_szIcons != CSize(0) ? m_szIcons : pCommandBars->m_pOptions->szPopupIcons != CSize(0) ? pCommandBars->m_pOptions->szPopupIcons : GetAutoIconSize(FALSE);
+	}
+
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ? pCommandBars->m_pOptions->szIcons : GetAutoIconSize(FALSE));
+
+	if (pCommandBars->m_pOptions->bLargeIcons && m_szButtons == CSize(0))
+	{
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ? pCommandBars->m_pOptions->szLargeIcons : GetAutoIconSize(TRUE);
+	}
+
+	return sz;
+}
+
+CSize CXTPCommandBar::GetLargeIconSize(BOOL bAutoSize) const
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (!pCommandBars)
+		return m_szIcons != CSize(0) ? CSize(2 * m_szIcons.cx, 2 * m_szIcons.cy) : CSize(32, 32);
+
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ?
+		pCommandBars->m_pOptions->szIcons : CSize(16, 16));
+
+	if (m_szButtons == CSize(0))
+	{
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ?
+			pCommandBars->m_pOptions->szLargeIcons : (bAutoSize ? GetAutoIconSize(TRUE) : CSize(sz.cx * 2, sz.cy * 2));
+	}
+
+	return sz;
+}
+
+
+CSize CXTPCommandBar::GetButtonSize() const
+{
+	if (m_szButtons != CSize(0)) return m_szButtons;
+
+	CSize szIcon = GetIconSize();
+	return CSize(szIcon.cx + 6, szIcon.cy + 6);
+}
+
+void CXTPCommandBar::ShowTextBelowIcons(BOOL bTextBelow)
+ {
+	m_bTextBelow = bTextBelow;
+	DelayLayout();
+}
+
+BOOL CXTPCommandBar::IsTextBelowIcons() const
+{
+	if (m_bTextBelow != XTP_BOOL_DEFAULT)
+		return m_bTextBelow;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (pCommandBars)
+	{
+		return pCommandBars->m_pOptions->bShowTextBelowIcons;
+	}
+	return FALSE;
+}
+
+
+int CXTPToolBar::_FindNearest(CXTPControls* pControls, CXTPControl* pFind, int nPos, BOOL /*bVisible*/) const
+{
+	if (pFind == NULL)
+		return -1;
+
+	int nResult = -1;
+
+	for (int i = nPos; i < pControls->GetCount(); i++)
+	{
+		CXTPControl* pControl = pControls->GetAt(i);
+
+		if (pControl->GetID() == pFind->GetID() && pControl->GetType() == pFind->GetType())
+		{
+			return i;
+		}
+	}
+	return nResult;
+}
+
+
+void CXTPToolBar::Reset(BOOL bShowWarningMessage)
+{
+	if (m_bBuiltIn && m_nBarID != 0 && IsCustomizable())
+	{
+		if (bShowWarningMessage)
+		{
+			CString strMessage, strTitle = GetTitle(), strReset;
+
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			strMessage.Format(strReset, (LPCTSTR)strTitle);
+
+			CXTPPushRoutingFrame push(GetFrameSite());
+
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+				return;
+		}
+
+		if (m_pControls->m_pOriginalControls != NULL)
+		{
+			m_pControls->RemoveAll();
+
+			CXTPControls* pControls = m_pControls->m_pOriginalControls;
+			for (int i = 0; i < pControls->GetCount(); i++)
+			{
+				CXTPControl* pControl = pControls->GetAt(i);
+				if (!pControl->m_bTemporary)
+					m_pControls->AddClone(pControl, -1, TRUE);
+			}
+
+		}
+		else
+		{
+			LoadToolBar(m_nBarID, FALSE);
+		}
+
+		CWnd* pWnd = GetSite();
+		if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_CUSTOMIZATION_RESETTOOLBAR, 0, (LPARAM)this);
+
+		OnInitialUpdate();
+		OnRecalcLayout();
+	}
+}
+
+void CXTPToolBar::BuildCustomizePopup(CXTPCommandBar* pExpandBar)
+{
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+	if (!pCommandBars)
+		return;
+
+	CXTPControls* pOriginalControls = m_pControls->m_pOriginalControls ? m_pControls->m_pOriginalControls->Duplicate(FALSE) : new CXTPControls();
+	ASSERT(pOriginalControls);
+
+	int nOriginal = 0;
+	int nToolBar = 0;
+
+	while (nToolBar < GetControlCount())
+	{
+		if ((GetControl(nToolBar)->GetHideFlags() & xtpHideCustomize) != 0)
+		{
+			int nSelected = m_nSelected;
+			int nPopuped = m_nPopuped;
+			GetControls()->Remove(nToolBar);
+			if (nPopuped != -1) m_nPopuped = nPopuped + (nToolBar < nPopuped ? - 1 : 0);
+			if (nSelected != -1) m_nSelected = nSelected + (nToolBar < nSelected ? - 1 : 0);
+		}
+		else
+			nToolBar++;
+
+	}
+
+	nToolBar = 0;
+
+	while (nOriginal < pOriginalControls->GetCount() || nToolBar < GetControlCount())
+	{
+		CXTPControl* pOriginal = nOriginal < pOriginalControls->GetCount() ? pOriginalControls->GetAt(nOriginal) : NULL;
+		CXTPControl* pControl = nToolBar < GetControlCount() ? m_pControls->GetAt(nToolBar) : NULL;
+
+
+		int nNearest = _FindNearest(m_pControls, pOriginal, nToolBar, TRUE);
+		int nNearestOriginal = _FindNearest(pOriginalControls, pControl, nOriginal);
+
+		if (nNearest == -1 && pOriginal)
+		{
+			int nSelected = m_nSelected;
+			int nPopuped = m_nPopuped;
+			pControl = m_pControls->AddClone(pOriginal, nToolBar);
+			if (nPopuped != -1) m_nPopuped = nPopuped + (nToolBar <= nPopuped ? 1 : 0);
+			if (nSelected != -1) m_nSelected = nSelected + (nToolBar <= nSelected ? 1 : 0);
+			nNearestOriginal = nToolBar;
+
+			pControl->SetHideFlag(xtpHideCustomize, TRUE);
+			nOriginal++;
+			nToolBar++;
+		}
+		else
+		{
+			if (nNearest == nToolBar) nOriginal++;
+			else if (nNearestOriginal != -1) pOriginalControls->Remove(nNearestOriginal);
+			nToolBar++;
+		}
+		ASSERT(pControl);
+
+		if (!pControl)
+		{
+			continue;
+		}
+		if (pControl->GetID() == XTP_ID_TOOLBAR_HIDE || pControl->GetID() == XTP_ID_TOOLBAR_EXPAND)
+		{
+			continue;
+		}
+		if (pControl->GetAction() && !pControl->GetAction()->IsVisible())
+			continue;
+
+		if ((pControl->GetHideFlags() & (xtpHideGeneric | xtpHideDocTemplate | xtpHideRibbonTab)) != 0)
+		{
+			continue;
+		}
+		if (!pControl->IsCustomizeMovable())
+		{
+			continue;
+		}
+
+
+		CControlButtonCustomize* pButton = (CControlButtonCustomize*)pExpandBar->GetControls()->Add(new CControlButtonCustomize(), 0);
+		pButton->SetCaption(pControl->GetCaption());
+
+		XTPControlType controlType = pControl->GetType();
+		if ((controlType == xtpControlPopup) || (controlType == xtpControlButtonPopup) || (controlType == xtpControlSplitButtonPopup) || (controlType == xtpControlButton))
+			pButton->SetIconId(pControl->GetIconId());
+
+		CString strShortcut = pControl->m_strShortcutText;
+		if (strShortcut.IsEmpty())
+			pCommandBars->GetShortcutManager()->FindDefaultAccelerator(pControl->GetID(), strShortcut);
+		pButton->SetShortcutText(strShortcut);
+		pButton->SetEnabled(nNearestOriginal != -1);
+		pButton->SetChecked((pControl->GetHideFlags() & xtpHideCustomize) == 0);
+		pButton->m_pControl = pControl;
+	}
+
+	pOriginalControls->InternalRelease();
+
+	if (m_pControls->m_pOriginalControls && !m_bTearOff && m_bBuiltIn)
+	{
+		CControlButtonCustomize* pButton = (CControlButtonCustomize*)pExpandBar->GetControls()->Add(new CControlButtonCustomize(), XTP_ID_CUSTOMIZE_RESET);
+		pButton->SetFlags(xtpFlagManualUpdate);
+
+		pButton->SetBeginGroup(TRUE);
+		pButton->m_pToolBar = this;
+	}
+}
+
+
+void CXTPToolBar::OnSetPreviewMode(BOOL bPreview)
+{
+	if (m_bPreviewMode == bPreview)
+		return;
+
+	m_bPreviewMode = bPreview;
+
+	if (bPreview)
+	{
+		m_bPreviewVisible = m_bVisible;
+		if (m_bVisible)
+		{
+			m_bVisible = FALSE;
+			ShowWindow(SW_HIDE);
+		}
+	}
+	else if (m_bPreviewVisible)
+	{
+		m_bVisible = TRUE;
+		ShowWindow(SW_SHOWNA);
+
+		if (GetType() == xtpBarTypeMenuBar)
+		{
+			CFrameWnd* pFrameWnd = GetFrameSite();
+			if (pFrameWnd && pFrameWnd->GetSafeHwnd()) pFrameWnd->OnUpdateFrameMenu(0);
+		}
+
+	}
+}
+
+void CXTPToolBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPCommandBar::Copy(pCommandBar, bRecursive);
+
+	m_bBuiltIn = ((CXTPToolBar*)pCommandBar)->m_bBuiltIn;
+	m_bTearOff = ((CXTPToolBar*)pCommandBar)->m_bTearOff;
+	m_bCloseable = ((CXTPToolBar*)pCommandBar)->m_bCloseable;
+
+}
+
+BOOL CXTPToolBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	if (m_pDockContext == NULL && nChar == VK_TAB && GetParent())
+	{
+		CWnd* pWndNext = GetParent()->GetNextDlgTabItem(this,
+			(GetKeyState(VK_SHIFT) < 0));
+
+		if (pWndNext != NULL && pWndNext != this)
+		{
+			pWndNext->SetFocus();
+			SetTrackingMode(FALSE);
+
+			return TRUE;
+		}
+	}
+	return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+}
+
+void CXTPToolBar::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_hwndFocus && pOldWnd) m_hwndFocus = pOldWnd->GetSafeHwnd();
+	CXTPCommandBar::OnSetFocus(pOldWnd);
+
+	if (m_pDockContext == NULL)
+	{
+		SetTrackingMode(TRUE, TRUE);
+	}
+
+}
+
+BOOL CXTPToolBar::ShouldSerializeBar()
+{
+	if (!IsCustomizable())
+		return FALSE;
+
+	if (GetControls()->GetOriginalControls() && !GetControls()->IsChanged())
+		return FALSE;
+
+	return TRUE;
+
+}
+

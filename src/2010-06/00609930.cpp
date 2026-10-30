@@ -1,187 +1,140 @@
-// from server: 40% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/Guid.cpp
+// roc-lib: rbxgs-atl90-dll roc_filesystem_nested_78e80a56ef829311.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Guid.h"
+#include <atlpath.h>
+#include "util/FileSystem.h"
 
-#include "decomp.h"
-#include "util/Name.h"
+namespace RBX
+{
+	VistaAPIs::~VistaAPIs()
+	{
+		if (gShell32DLLInst)
+			FreeLibrary(gShell32DLLInst);
+	}
 
-#define NOMINMAX
+	HRESULT VistaAPIs::GetIntegrity(PUCHAR pVal)
+	{
+		*pVal = 0;
 
-#include <algorithm>
-#include <boost/thread/once.hpp>
-#include <objbase.h>
-#include <stdio.h>
-#include <windows.h>
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD));
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
+		GetVersionExA(&osvi);
+		
+		if (osvi.dwMajorVersion < 6) // anything earlier than Windows Vista
+			return S_OK;
+
+		HANDLE hToken;
+		HANDLE hProcess = GetCurrentProcess();
+		if (!OpenProcessToken(hProcess, TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken))
+			return S_OK;
+
+		DWORD dwLengthNeeded;
+		if (!GetTokenInformation(hToken, TokenIntegrityLevel, NULL, 0L, &dwLengthNeeded))
+		{
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				PTOKEN_MANDATORY_LABEL pTIL;
+				pTIL = (PTOKEN_MANDATORY_LABEL)LocalAlloc(LMEM_FIXED, dwLengthNeeded);
+
+				if (pTIL)
+				{
+					if (GetTokenInformation(hToken, TokenIntegrityLevel, pTIL, dwLengthNeeded, &dwLengthNeeded))
+					{
+						DWORD dwIntegrityLevel = *GetSidSubAuthority(pTIL->Label.Sid, (DWORD)(UCHAR)(*GetSidSubAuthorityCount(pTIL->Label.Sid) - 1));
+
+						if (dwIntegrityLevel < SECURITY_MANDATORY_MEDIUM_RID)
+							*pVal = 1;
+						else if (dwIntegrityLevel < SECURITY_MANDATORY_HIGH_RID)
+							*pVal = 2;
+						else
+							*pVal = 3;
+					}
+
+					LocalFree(pTIL);
+				}
+			}
+		}
+
+		CloseHandle(hToken);
+		return S_OK;
+	}
+}
+
 
 namespace RBX {
-
-static const Name* localScope;
-static long nextIndex;
-
-// FUNCTION: WEBSERVICE 0x1003d410
-void Guid::generateGUID(std::string& result)
-{
-	GUID guid;
-
-	result = "RBX";
-
-	CoCreateGuid(&guid);
-
-	WCHAR wszGUID[64] = L"";
-	char ansiClsid[64];
-
-	StringFromGUID2(guid, wszGUID, 64);
-	WideCharToMultiByte(CP_ACP, 0, wszGUID, 64, ansiClsid, 64, NULL, NULL);
-
-	result += ansiClsid;
-
-	result.erase(0x28, 1);
-	result.erase(0x1b, 1);
-	result.erase(0x16, 1);
-	result.erase(0x11, 1);
-	result.erase(0x0c, 1);
-	result.erase(0x03, 1);
+VistaAPIs::VistaAPIs() : getKnownFolderPath(NULL) {
+ gShell32DLLInst = LoadLibraryA("Shell32.dll");
+ if(gShell32DLLInst) getKnownFolderPath = (GetKnownFolderPathPtr)GetProcAddress(gShell32DLLInst,"SHGetKnownFolderPath");
+}
+HRESULT VistaAPIs::SHGetKnownFolderPath(REFKNOWNFOLDERID folder, DWORD flags, HANDLE token, PWSTR* path) {
+ if(getKnownFolderPath==NULL) return E_NOTIMPL;
+ return getKnownFolderPath(folder,flags,token,path);
+}
+std::string FileSystem::getCacheDirectory(bool create) {
+ VistaAPIs apis;
+ UCHAR integrity;
+ apis.GetIntegrity(&integrity);
+ if(integrity == 1) {
+  GUID internetCache;
+  CLSIDFromString(L"{352481E8-33BE-4251-BA85-6007CAEDCF9D",&internetCache);
+  PWSTR knownPath = NULL;
+  if(apis.SHGetKnownFolderPath(internetCache,0x8000,NULL,&knownPath)!=E_NOTIMPL) {
+   ATL::CStringA path(knownPath);
+   CoTaskMemFree(knownPath);
+   path += "\\Roblox\\";
+   if(create && !CreateDirectoryA(path,NULL) && GetLastError()!=ERROR_ALREADY_EXISTS) return "";
+   ATL::CPath cache(path);
+   cache.AddBackslash();
+   return (LPCSTR)cache;
+  }
+ }
+ char path[MAX_PATH];
+ HRESULT result=SHGetFolderPathAndSubDirA(NULL,CSIDL_COMMON_APPDATA | (create ? CSIDL_FLAG_CREATE : 0),NULL,SHGFP_TYPE_CURRENT,"Roblox\\Cache",path);
+ if(result==S_OK) return path;
+ else return "";
+}
 }
 
-// FUNCTION: WEBSERVICE 0x1003d4e0
-void Guid::assign(Data data)
-{
-	this->data = data;
+namespace RBX {
+std::string FileSystem::getUserAppDataDirectory(bool create, const char* subDirectory) {
+ VistaAPIs apis;
+ UCHAR integrity;
+ apis.GetIntegrity(&integrity);
+ if(integrity>0) {
+  GUID folder;
+  if(integrity==1) CLSIDFromString(L"{A520A1A4-1780-4FF6-BD18-167343C5AF16}",&folder);
+  else CLSIDFromString(L"{F1B32785-6FBA-4FCF-9D55-7B8E7F157091}",&folder);
+  PWSTR knownPath=NULL;
+  if(apis.SHGetKnownFolderPath(folder,create?0x8000:0,NULL,&knownPath)!=E_NOTIMPL) {
+   ATL::CStringA path(knownPath);
+   CoTaskMemFree(knownPath);
+   path += "\\Roblox\\";
+   if(create) { if(!CreateDirectoryA(path,NULL)) { if(GetLastError()!=ERROR_ALREADY_EXISTS) return ""; } }
+   if(subDirectory) {
+    path += subDirectory;
+    if(create) { if(!CreateDirectoryA(path,NULL)) { if(GetLastError()!=ERROR_ALREADY_EXISTS) return ""; } }
+   }
+   ATL::CPath directory(path);
+   directory.AddBackslash();
+   return (LPCSTR)directory;
+  }
+ }
+ int flags=create?CSIDL_FLAG_CREATE:0;
+ std::string subPath("Roblox\\");
+ if(subDirectory) subPath += subDirectory;
+ ATL::CPath path;
+ HRESULT result=SHGetFolderPathAndSubDirA(NULL,CSIDL_APPDATA|flags,NULL,SHGFP_TYPE_CURRENT,subPath.c_str(),path.m_strPath.GetBuffer(MAX_PATH));
+ if(result!=S_OK) result=SHGetFolderPathAndSubDirA(NULL,CSIDL_COMMON_APPDATA|flags,NULL,SHGFP_TYPE_CURRENT,subPath.c_str(),path.m_strPath.GetBuffer(MAX_PATH));
+ if(result==S_OK) {
+  path.m_strPath.ReleaseBuffer();
+  path.AddBackslash();
+  return (LPCSTR)path;
+ }
+ else return "";
 }
-
-// FUNCTION: WEBSERVICE 0x1003d4f0
-bool Guid::Data::operator<(const Data& other) const
-{
-	const Name* otherScope = other.scope;
-	const Name* thisScope = scope;
-	int order = 0;
-
-	if (thisScope != otherScope) {
-		order = thisScope->name.compare(otherScope->name);
-
-		if (order != -1 && order != 0) {
-			return false;
-		}
-	}
-
-	if (order == 0) {
-		return index < other.index;
-	}
-
-	return true;
 }
-
-// FUNCTION: WEBSERVICE 0x1003d540
-int Guid::compare(const Guid* a, const Guid* b)
-{
-	const Name* scopeA = a != NULL ? a->data.scope : NULL;
-	const Name* scopeB = b != NULL ? b->data.scope : NULL;
-	int order;
-
-	if (scopeA == NULL) {
-		order = scopeB != NULL ? -1 : 0;
-	}
-	else if (scopeB == NULL) {
-		order = 1;
-	}
-	else if (scopeA == scopeB) {
-		order = 0;
-	}
-	else {
-		order = scopeA->name.compare(scopeB->name);
-	}
-
-	if (order != -1) {
-		if (order != 0 && order != 1) {
-			return 0;
-		}
-
-		if (order == 0) {
-			int indexA = a != NULL ? a->data.index : 0;
-			int indexB = b != NULL ? b->data.index : 0;
-
-			if (indexA > indexB) {
-				return 1;
-			}
-
-			return indexA >= indexB ? 0 : -1;
-		}
-
-		return 1;
-	}
-
-	return -1;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d5d0
-int Guid::compare(const Guid* a0, const Guid* a1, const Guid* b0, const Guid* b1)
-{
-	int a = compare(a0, a1);
-	int b = compare(b0, b1);
-	const Guid* worseA = a == 1 ? a0 : a1;
-	int order = compare(worseA, b == 1 ? b0 : b1);
-
-	if (order != -1) {
-		if (order != 0) {
-			return order == 1;
-		}
-
-		const Guid* betterA = a == 1 ? a1 : a0;
-
-		return compare(betterA, b == 1 ? b1 : b0);
-	}
-
-	return -1;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d660
-static void initLocalScope()
-{
-	std::string guid;
-
-	Guid::generateGUID(guid);
-	localScope = &Name::declare(guid.c_str(), -1);
-}
-
-// FUNCTION: WEBSERVICE 0x1003d6e0
-const Name& Guid::getLocalScope()
-{
-	static boost::once_flag flag = BOOST_ONCE_INIT;
-
-	boost::call_once(initLocalScope, flag);
-
-	return *localScope;
-}
-
-// FUNCTION: WEBSERVICE 0x1003d700
-Guid::Guid()
-{
-	data.scope = &getLocalScope();
-	data.index = InterlockedIncrement(&nextIndex);
-}
-
-// FUNCTION: WEBSERVICE 0x1003d730
-std::string Guid::Data::readableString(int scopeLength) const
-{
-	char buffer[64];
-
-	if (scopeLength > 0) {
-		std::string s = scope->name;
-
-		s = s.substr(std::min<size_t>(3, s.size()), std::min(scopeLength, 32));
-
-		sprintf(buffer, "%s_%d", s.c_str(), index);
-	}
-	else {
-		sprintf(buffer, "%d", index);
-	}
-
-	return std::string(buffer);
-}
-
-} // namespace RBX

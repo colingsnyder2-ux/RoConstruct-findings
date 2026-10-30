@@ -1,14 +1,13 @@
-// from server: 41% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTButtonTheme.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTButtonTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTButtonTheme.cpp: implementation of the CXTButtonTheme class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -478,15 +477,15 @@ BOOL CXTButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton
 		if (pButton->GetHilite() || bSelected)
 		{
 			pDC->Draw3dRect(rcItem,
-				bSelected ? m_crBorderShadow : m_crBorderHilite,
-				bSelected ? m_crBorderHilite : m_crBorderShadow);
+				bSelected ? m_crBorderShadow : m_crBorder3DHilite,
+				bSelected ? m_crBorder3DHilite : m_crBorderShadow);
 		}
 	}
 	else if (dwxStyle & BS_XT_SEMIFLAT)
 	{
 		pDC->Draw3dRect(rcItem,
-			bSelected ? m_crBorderShadow : m_crBorderHilite,
-			bSelected ? m_crBorderHilite : m_crBorderShadow);
+			bSelected ? m_crBorderShadow : m_crBorder3DHilite,
+			bSelected ? m_crBorder3DHilite : m_crBorderShadow);
 	}
 	else // classic button
 	{

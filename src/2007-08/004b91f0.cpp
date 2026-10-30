@@ -1,4 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+#include <string.h>
 struct RakPeer {
     char pad[0x898];
     int field_898;
@@ -20,11 +24,7 @@ extern "C" int __cdecl sub_4b7f70();
 
 void RakPeer::func_4b91f0()
 {
-    field_8b0 = field_89c;
-    field_8b4 = field_8a0;
-    field_8b8 = field_8a4;
-    field_8bc = field_8a8;
-    field_8c0 = field_8ac;
+    memcpy(&field_8b0, &field_89c, 20);
     for (int i = 0; i < 0x14; i += 4)
         *(int*)((char*)this + i + 0x89c) = sub_4ca340();
     field_898 = sub_4b7f70() + 0x2710;

@@ -1,990 +1,464 @@
-// from server: 66% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Shader.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file Shader.cpp
- 
- @maintainer Morgan McGuire, morgan@graphics3d.com
- 
- @created 2004-04-24
- @edited  2006-02-15
- */
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-#include "G3D/fileutils.h"
-#include "GLG3D/Shader.h"
-#include "GLG3D/GLCaps.h"
-#include "GLG3D/getOpenGLState.h"
-#include "GLG3D/RenderDevice.h"
+namespace RBX
+{
+	const char* sInstance = "Instance";
 
-namespace G3D {
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
 
-bool Shader::hasArgument(const std::string& argname) const {
-    const Set<std::string>& uniformNames = _vertexAndPixelShader->uniformNames;
-    return uniformNames.contains(argname);
-}
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
 
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
 
-bool Shader::ok() const {
-    return _vertexAndPixelShader->ok();
-}
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
+	{
+	}
 
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
+	{
+	}
 
-bool Shader::supportsPixelShaders() {
-    return
-        GLCaps::supports_GL_ARB_shader_objects() && 
-        GLCaps::supports_GL_ARB_shading_language_100() &&
-        GLCaps::supports_GL_ARB_fragment_shader();
-}
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
 
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
 
-bool Shader::supportsVertexShaders() {
-    return
-        GLCaps::supports_GL_ARB_shader_objects() && 
-        GLCaps::supports_GL_ARB_shading_language_100() &&
-        GLCaps::supports_GL_ARB_vertex_shader();
-}
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
 
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
+		{
+			name = value;
+			raisePropertyChanged(desc_Name);
+		}
+	}
 
-void Shader::beforePrimitive(class RenderDevice* renderDevice) {
-    if (_preserveState) {
-        renderDevice->pushState();
-    }
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
 
-    if (_useUniforms == DEFINE_G3D_UNIFORMS) {
-        const CoordinateFrame& o2w = renderDevice->getObjectToWorldMatrix();
-        const CoordinateFrame& c2w = renderDevice->getCameraToWorldMatrix();
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
 
-        const Set<std::string>& uniformNames = _vertexAndPixelShader->uniformNames;
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
 
-        // Bind matrices
-        if (uniformNames.contains("g3d_ObjectToWorldMatrix")) {
-            args.set("g3d_ObjectToWorldMatrix", o2w);
-        }
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
 
-        if (uniformNames.contains("g3d_CameraToWorldMatrix")) {
-            args.set("g3d_CameraToWorldMatrix", c2w);
-        }
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
+		{
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
 
-        if (uniformNames.contains("g3d_WorldToObjectMatrix")) {
-            args.set("g3d_WorldToObjectMatrix", o2w.inverse());
-        }
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
 
-        if (uniformNames.contains("g3d_WorldToCameraMatrix")) {
-            args.set("g3d_WorldToCameraMatrix", c2w.inverse());
-        }
-
-        if (uniformNames.contains("g3d_NumLights")) {
-            if (glGetBoolean(GL_LIGHTING)) {
-                // Search for the highest light number
-                int i = 7;
-                while (i >= 0 && ! glGetBoolean(GL_LIGHT0 + i)) {
-                    --i;
-                }
-                args.set("g3d_NumLights", i + 1);
-            } else {
-                args.set("g3d_NumLights", 0);
-            }
-        }
-
-        if (uniformNames.contains("g3d_ObjectLight0")) {
-            Vector4 cL;
-            // OpenGL lights are already in camera space, so take them
-            // from camera to world to object space.
-            glGetLightfv(GL_LIGHT0, GL_POSITION, cL);
-            args.set("g3d_ObjectLight0", o2w.toObjectSpace(c2w.toWorldSpace(cL)));
-        }
-
-        if (uniformNames.contains("g3d_NumTextures")) {
-            // Search for the highest texture number
-            int i = 7;
-            while (i >= 0 && ! glGetBoolean(GL_TEXTURE0_ARB + i)) {
-                --i;
-            }
-            args.set("g3d_NumTextures", i + 1);
-        }
-    }
-
-    renderDevice->setVertexAndPixelShader(_vertexAndPixelShader, args);
-}
-
-
-void Shader::afterPrimitive(class RenderDevice* renderDevice) {
-    if (_preserveState) {
-        renderDevice->popState();
-    }
-}
-
-
-const std::string& Shader::messages() const {
-    return _vertexAndPixelShader->messages();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void VertexAndPixelShader::GPUShader::replaceG3DSize(std::string& code, std::string& uniformString) {
-
-    // Ensure that uniforms are only declared once
-    Set<std::string> newUniforms;
-
-    std::string funcName = "g3d_sampler2DSize(";
-    std::string prefix   = "     (";
-    std::string postfix  = ".xy)";
-
-    for (int count = 0; count < 2; ++count) {
-
-        size_t last = 0;
-        while (true) {
-            int next = code.find(funcName, last);
-            if (next == std::string::npos) {
-                break;
-            }
-
-            size_t nameStart = next + funcName.length();
-            size_t nameEnd   = code.find(')', nameStart);
-
-            alwaysAssertM(nameEnd != std::string::npos,
-                "Could not find the end of " + funcName + ") expression");
-
-            std::string name = code.substr(nameStart, nameEnd - nameStart);
-
-            std::string decoratedName = "g3d_sz2D_" + name;
-
-            std::string replacement = prefix + decoratedName + postfix;
-            for (size_t i = 0; i < replacement.size(); ++i) {
-                code[i + next] = replacement[i];
-            }
-
-            newUniforms.insert(decoratedName);
-
-            last = nameEnd;
-
-        } // Iterating through all instances
-
-        // On the second iteration, replace g3d_invSize.
-        funcName = "g3d_sampler2DInvSize(";
-        prefix   = "        (";
-        postfix  = ".zw)";
-    }
-
-    // Add the unique uniforms to the header for the code.
-    Set<std::string>::Iterator current = newUniforms.begin();
-    const Set<std::string>::Iterator end = newUniforms.end();
-    while (current != end) {
-        uniformString += "uniform vec4 " + *current + "; "; 
-        ++current;
-    }
-}
-
-
-void VertexAndPixelShader::GPUShader::init(
-	const std::string&	name,
-	const std::string&	code,
-	bool				_fromFile,
-	bool				debug,	
-	GLenum				glType,
-	const std::string&	type,
-    UseG3DUniforms      uniforms) {
-
-    std::string uniformString = 
-        STR(
-        uniform mat4 g3d_WorldToObjectMatrix;
-        uniform mat4 g3d_ObjectToWorldMatrix;
-        uniform mat4 g3d_WorldToCameraMatrix;
-        uniform mat4 g3d_CameraToWorldMatrix;
-        uniform int  g3d_NumLights;
-        uniform int  g3d_NumTextures;
-        uniform vec4 g3d_ObjectLight0;);
-
-	_name			= name;
-	_shaderType		= type;
-	_glShaderType	= glType;
-	_ok				= true;
-	fromFile		= _fromFile;
-	_fixedFunction	= (name == "") && (code == "");
-
-	if (! _fixedFunction) {
-
-        switch (glType) {
-        case GL_VERTEX_SHADER_ARB:
-            if (! Shader::supportsVertexShaders()) {
-                _ok = false;
-                _messages = "This graphics card does not support vertex shaders.";
-            }
-            break;
-
-        case GL_FRAGMENT_SHADER_ARB:
-            if (! Shader::supportsPixelShaders()) {
-                _ok = false;
-                _messages = "This graphics card does not support pixel shaders.";
-            }
-            break;
-        }
-
-		if (fromFile) {
-			if (fileExists(_name)) {
-				_code = readFileAsString(_name);
-			} else {
-				_ok = false;
-				_messages = format("Could not load shader file \"%s\".", 
-					_name.c_str());
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
-        } else {
-            _code = code;
-        }
-
-        bool shifted = false;
-
-        if ((uniforms == DEFINE_G3D_UNIFORMS) && (_code.size() > 0)) {
-            // Replace g3d_size and g3d_invSize with corresponding magic names
-
-            replaceG3DSize(_code, uniformString);
-
-	        _code		= uniformString + "\n" + _code + "\n";
-            shifted = true;
-        } else {
-            // Just add a newline to the end
-            _code += "\n";
-        }
-
-		if (_ok) {
-			compile();
-		}
-
-		if (debug) {
-            // Check for compilation errors
-            if (! ok()) {
-                if (shifted) {
-                    debugPrintf("\n[Line numbers in the following shader errors are shifted by one.]\n");
-                }
-                debugPrintf("%s", messages().c_str());
-    			alwaysAssertM(ok(), messages());
-            }
 		}
 	}
 
-}
-
-
-void VertexAndPixelShader::GPUShader::compile() {
-
-    GLint compiled = GL_FALSE;
-	_glShaderObject = glCreateShaderObjectARB(glShaderType());
-
-    // Compile the shader
-	GLint length = _code.length();
-    const GLcharARB* codePtr = static_cast<const GLcharARB*>(_code.c_str());
-
-	glShaderSourceARB(_glShaderObject, 1, &codePtr, &length);
-	glCompileShaderARB(_glShaderObject);
-	glGetObjectParameterivARB(_glShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
-
-    // Read the result of compilation
-	GLint	  maxLength;
-	glGetObjectParameterivARB(_glShaderObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
-    GLcharARB* pInfoLog = (GLcharARB *)malloc(maxLength * sizeof(GLcharARB));
-	glGetInfoLogARB(_glShaderObject, maxLength, &length, pInfoLog);
-
-	int c = 0;
-    // Copy the result to the output string, prepending the filename
-	while (pInfoLog[c] != '\0') {
-		_messages += _name;
-		while (pInfoLog[c] != '\n' && pInfoLog[c] != '\r' && pInfoLog[c] != '\0') {
-			_messages += pInfoLog[c];
-			++c;
-		}
-
-		if (pInfoLog[c] == '\r' && pInfoLog[c + 1] == '\n') {
-			// Windows newline
-			#ifdef G3D_WIN32
-				_messages += "\r\n";
-			#else
-				_messages += "\n";
-			#endif
-			c += 2;
-		} else if (pInfoLog[c] == '\r' && pInfoLog[c + 1] != '\n') {
-			// Dangling \r; treat it as a newline
-			_messages += "\r\n";
-			++c;
-		} else if (pInfoLog[c] == '\n') {
-			// Newline
-			#ifdef G3D_WIN32
-				_messages += "\r\n";
-			#else
-				_messages += "\n";
-			#endif
-			++c;
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
 		}
 	}
-	free(pInfoLog);
 
-    _ok = (compiled == GL_TRUE);
-}
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
 
-
-VertexAndPixelShader::GPUShader::~GPUShader() {
-	if (! _fixedFunction) {
-		glDeleteObjectARB(_glShaderObject);
-	}
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////
-
-VertexAndPixelShader::VertexAndPixelShader(
-	const std::string&  vsCode,
-	const std::string&  vsFilename,
-	bool                vsFromFile,
-	const std::string&  psCode,
-	const std::string&  psFilename,
-	bool                psFromFile,
-    bool                debug,
-    UseG3DUniforms      uniforms) :
-        _ok(true) {
-
-    if (! GLCaps::supports_GL_ARB_shader_objects()) {
-        _messages = "This graphics card does not support GL_ARB_shader_objects.";
-        _ok = false;
-        return;
-    }
-
-	vertexShader.init(vsFilename, vsCode, vsFromFile, debug, GL_VERTEX_SHADER_ARB, "Vertex Shader", uniforms);
-	pixelShader.init(psFilename, psCode, psFromFile, debug, GL_FRAGMENT_SHADER_ARB, "Pixel Shader", uniforms);
-    
-    _vertCompileMessages += vertexShader.messages();
-    _messages += 
-		std::string("Compiling ") + vertexShader.shaderType() + " " + vsFilename + NEWLINE +
-		vertexShader.messages() + NEWLINE + NEWLINE;
-    if (! vertexShader.ok()) {
-        _ok = false;
-    }
-
-    if (! pixelShader.ok()) {
-        _ok = false;
-    }    
-    _fragCompileMessages += pixelShader.messages();
-    _messages += 
-		std::string("Compiling ") + pixelShader.shaderType() + " " + psFilename + NEWLINE +
-		pixelShader.messages() + NEWLINE + NEWLINE;
-
-    lastTextureUnit = -1;
-
-    if (_ok) {
-        // Create GL object
-        _glProgramObject = glCreateProgramObjectARB();
-
-        // Attach vertex and pixel shaders
-        if (! vertexShader.fixedFunction()) {
-            glAttachObjectARB(_glProgramObject, vertexShader.glShaderObject());
-        }
-
-        if (! pixelShader.fixedFunction()) {
-            glAttachObjectARB(_glProgramObject, pixelShader.glShaderObject());
-        }
-
-        // Link
-        GLint linked = GL_FALSE;
-        glLinkProgramARB(_glProgramObject);
-
-        // Read back messages
-	    glGetObjectParameterivARB(_glProgramObject, GL_OBJECT_LINK_STATUS_ARB, &linked);
-        GLint maxLength = 0, length = 0;
-	    glGetObjectParameterivARB(_glProgramObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
-	    GLcharARB* pInfoLog = (GLcharARB *)malloc(maxLength * sizeof(GLcharARB));
-	    glGetInfoLogARB(_glProgramObject, maxLength, &length, pInfoLog);
-
-        _messages += std::string("Linking\n") + std::string(pInfoLog) + "\n";
-        _linkMessages += std::string(pInfoLog);
-	    free(pInfoLog);
-        _ok = _ok && (linked == GL_TRUE);
-
-        if (debug) {
-            alwaysAssertM(_ok, _messages);
-        }
-    }
-
-    if (_ok) {
-        uniformNames.clear();
-        computeUniformArray();
-        // note that the extra uniforms are computed from the original code,
-        // not from the code that has the g3d uniforms prepended.
-        addUniformsFromCode(vsFromFile ? readFileAsString(vsFilename) : vsCode);
-        addUniformsFromCode(psFromFile ? readFileAsString(psFilename) : psCode);
-
-        // Add all uniforms to the name list
-        for (int i = uniformArray.size() - 1; i >= 0; --i) {
-            uniformNames.insert(uniformArray[i].name);
-        }
-    }
-}
-
-
-bool VertexAndPixelShader::isSamplerType(GLenum e) {
-    return
-       (e == GL_SAMPLER_1D_ARB) ||
-       (e == GL_SAMPLER_2D_ARB) ||
-       (e == GL_SAMPLER_2D_RECT_ARB) ||
-       (e == GL_SAMPLER_3D_ARB) ||
-       (e == GL_SAMPLER_CUBE_ARB) ||
-       (e == GL_SAMPLER_1D_SHADOW_ARB) ||
-       (e == GL_SAMPLER_2D_SHADOW_ARB) ||
-       (e == GL_SAMPLER_2D_RECT_SHADOW_ARB);
-}
-
-
-/** Converts a type name to a GL enum */
-static GLenum toGLType(const std::string& s) {
-    if (s == "float") {
-        return GL_FLOAT;
-    } else if (s == "vec2") {
-        return GL_FLOAT_VEC2_ARB;
-    } else if (s == "vec3") {
-        return GL_FLOAT_VEC3_ARB;
-    } else if (s == "vec4") {
-        return GL_FLOAT_VEC4_ARB;
-
-    } else if (s == "int") {
-        return GL_INT;
-
-    } else if (s == "bool") {
-        return GL_BOOL_ARB;
-
-    } else if (s == "mat2") {
-        return GL_FLOAT_MAT2_ARB;
-    } else if (s == "mat3") {
-        return GL_FLOAT_MAT3_ARB;
-    } else if (s == "mat4") {
-        return GL_FLOAT_MAT4_ARB;
-
-    } else if (s == "sampler1D") {
-        return GL_SAMPLER_1D_ARB;
-    } else if (s == "sampler2D") {
-        return GL_SAMPLER_2D_ARB;
-    } else if (s == "sampler3D") {
-        return GL_SAMPLER_3D_ARB;
-    } else if (s == "samplerCube") {
-        return GL_SAMPLER_CUBE_ARB;
-    } else if (s == "sampler2DRect") {
-        return GL_SAMPLER_2D_RECT_ARB;
-    } else if (s == "sampler2DShadow") {
-        return GL_SAMPLER_2D_SHADOW_ARB;
-    } else if (s == "sampler2DRectShadow") {
-        return GL_SAMPLER_2D_RECT_SHADOW_ARB;
-    } else {
-        debugAssertM(false, std::string("Unknown type in shader: ") + s);
-        return 0;
-    }
-}
-
-
-void VertexAndPixelShader::addUniformsFromCode(const std::string& code) {
-    TextInput ti(TextInput::FROM_STRING, code);
-
-    while (ti.hasMore()) {
-        if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "uniform")) {
-            // Read the definition
-            ti.readSymbol("uniform");
-
-            // Maybe read "const"
-            if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "const")) {
-                ti.readSymbol("const");
-            }
-
-            // Read the type
-            GLenum type = toGLType(ti.readSymbol());
-
-            // Read the name
-            std::string name = ti.readSymbol();
-
-            if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "[")) {
-                ti.readSymbol("[");
-                ti.readNumber();
-                ti.readSymbol("]");
-            }
-
-            // Read the semi-colon
-            ti.readSymbol(";");
-
-            // See if this variable is already declared.
-            bool found = false;
-
-            for (int i = 0; i < uniformArray.size(); ++i) {
-                if (uniformArray[i].name == name) {
-                    found = true;
-                    break;
-                }
-            } 
-
-            if (! found) {
-                // Add the definition
-                uniformArray.next();
-
-                uniformArray.last().dummy = true;
-                uniformArray.last().location = -1;
-                uniformArray.last().name = name;
-                uniformArray.last().size = 1;
-                uniformArray.last().type = type;
-
-                // Don't allocate texture units for unused variables
-                uniformArray.last().textureUnit = -1;
-            }
-
-        } else {
-            // Consume the token
-            ti.read();
-        }
-    }
-}
-
-
-void VertexAndPixelShader::computeUniformArray() {
-    uniformArray.clear();
-
-    GLint maxLength;
-    GLint uniformCount;
-
-    // On ATI cards, we are required to call glUseProgramObjectARB before glGetUniformLocationARB.
-    // First, store the old program.
-    GLenum oldProgram = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
-    glUseProgramObjectARB(glProgramObject());
-
-    // Get the number of uniforms, and the length of the longest name.
-    glGetObjectParameterivARB(glProgramObject(), GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB, &maxLength);
-    glGetObjectParameterivARB(glProgramObject(), GL_OBJECT_ACTIVE_UNIFORMS_ARB, &uniformCount);
-
-    uniformArray.resize(0);
-
-    GLcharARB* name = (GLcharARB *) malloc(maxLength * sizeof(GLcharARB));
-    
-    // Loop over glGetActiveUniformARB and store the results away.
-    for (int i = 0; i < uniformCount; ++i) {
-
-        GLint size;
-        GLenum type;
-
-	    glGetActiveUniformARB(glProgramObject(), 
-            i, maxLength, NULL, &size, &type, name);
-
-        uniformArray.next().name = name;
-
-        uniformArray.last().location = glGetUniformLocationARB(glProgramObject(), name);
-        
-        bool isGLBuiltIn = (uniformArray.last().location == -1) || 
-            ((strlen(name) > 3) && beginsWith(std::string(name), "gl_"));
-
-        uniformArray.last().dummy = isGLBuiltIn;
-
-        if (! isGLBuiltIn) {
-            uniformArray.last().size = size;
-            uniformArray.last().type = type;
-
-            if (isSamplerType(type)) {
-                ++lastTextureUnit;
-                uniformArray.last().textureUnit = lastTextureUnit;
-            } else {
-                uniformArray.last().textureUnit = -1;
-            }
-        }
-    }
-
-    free(name);
-
-    glUseProgramObjectARB(oldProgram);
-}
-
-
-VertexAndPixelShaderRef VertexAndPixelShader::fromStrings(
-	const std::string& vs,
-    const std::string& ps,
-    UseG3DUniforms u,
-    bool debugErrors) {
-
-    return new VertexAndPixelShader(vs, "", false, ps, "", false, debugErrors, u);
-}
-
-
-VertexAndPixelShaderRef VertexAndPixelShader::fromStrings(
-    const std::string& vsName,
-	const std::string& vs,
-    const std::string& psName,
-    const std::string& ps,
-    UseG3DUniforms u,
-    bool debugErrors) {
-
-    return new VertexAndPixelShader(vs, vsName, false, ps, psName, false, debugErrors, u);
-}
-
-
-VertexAndPixelShaderRef VertexAndPixelShader::fromFiles(
-	const std::string& vsFilename,
-    const std::string& psFilename,
-    UseG3DUniforms u,
-    bool debugErrors) {
-
-	std::string vs;
-	std::string ps;
-
-	if (vsFilename != "") {
-		vs = readFileAsString(vs);
+		if (p)
+			p->onChildChanged(instance, event);
 	}
 
-	if (psFilename != "") {
-		ps = readFileAsString(ps);
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
 	}
 
-    return new VertexAndPixelShader(vs, vsFilename, true, ps, psFilename, true, debugErrors, u);
-}
-
-
-VertexAndPixelShader::~VertexAndPixelShader() {
-    glDeleteObjectARB(_glProgramObject);
-}
-
-
-bool VertexAndPixelShader::fullySupported() {
-    return
-        GLCaps::supports_GL_ARB_shader_objects() && 
-        GLCaps::supports_GL_ARB_shading_language_100() &&
-        GLCaps::supports_GL_ARB_fragment_shader() &&
-        GLCaps::supports_GL_ARB_vertex_shader();
-}
-
-
-GLenum VertexAndPixelShader::canonicalType(GLenum e) {
-
-    switch (e) {
-    case GL_INT:
-    case GL_BOOL_ARB:
-        return GL_FLOAT;
-
-    case GL_INT_VEC2_ARB:
-    case GL_BOOL_VEC2_ARB:
-        return GL_FLOAT_VEC2_ARB;
-
-    case GL_INT_VEC3_ARB:
-    case GL_BOOL_VEC3_ARB:
-        return GL_FLOAT_VEC3_ARB;
-
-    case GL_INT_VEC4_ARB:
-    case GL_BOOL_VEC4_ARB:
-        return GL_FLOAT_VEC4_ARB;
-
-    case GL_SAMPLER_2D_SHADOW_ARB:
-	case GL_SAMPLER_2D_ARB:
-		return GL_TEXTURE_2D;
-
-	case GL_SAMPLER_CUBE_ARB:
-		return GL_TEXTURE_CUBE_MAP_ARB;
- 
-    case GL_SAMPLER_2D_RECT_SHADOW_ARB:
-	case GL_SAMPLER_2D_RECT_ARB:
-		return GL_TEXTURE_RECTANGLE_EXT;
-
-    default:
-        // Return the input
-        return e;    
-    }
-}
-
-
-void VertexAndPixelShader::validateArgList(const ArgList& args) const {
-    int numVariables = 0;
-
-    // Iterate through formal bindings
-    for (int u = 0; u < uniformArray.size(); ++u) {
-        const UniformDeclaration& decl = uniformArray[u];
-
-        // Only count variables that need to be set in code
-        if (! decl.dummy) {
-            ++numVariables;
-        }
-
-        bool declared = false;
-        bool performTypeCheck = true;
-
-        if (beginsWith(decl.name, "g3d_sz2D_")) {
-            // This is the autogenerated dimensions of a texture.
-            std::string textureName  = decl.name.substr(9, decl.name.length() - 9);
-            declared = args.argTable.containsKey(textureName);
-            performTypeCheck = false;
-
-            if (! declared && ! decl.dummy) {
-                throw ArgumentError(
-                    format("No value provided for VertexAndPixelShader uniform variable %s.",
-                        textureName.c_str()));
-            }
-
-        } else {
-
-            declared = args.argTable.containsKey(decl.name);
-
-            if (! declared && ! decl.dummy) {
-                throw ArgumentError(
-                    format("No value provided for VertexAndPixelShader uniform variable %s of type %s.",
-                        decl.name.c_str(), GLenumToString(decl.type)));
-            }
-        }
-
-        if (declared && performTypeCheck) {
-            const ArgList::Arg& arg = args.argTable[decl.name];
-
-            // check the type
-            if (canonicalType(arg.type) != canonicalType(decl.type)) {
-                std::string v1 = GLenumToString(decl.type);
-                std::string v2 = GLenumToString(arg.type);
-                std::string v1c = GLenumToString(canonicalType(decl.type));
-                std::string v2c = GLenumToString(canonicalType(arg.type));
-                throw ArgumentError(
-                format("Variable %s was declared as type %s (%s) and the value provided at runtime had type %s (%s).",
-                        decl.name.c_str(), v1.c_str(), v1c.c_str(), v2.c_str(), v2.c_str()));
-            }
-        }
-
-    }
-
-    if (numVariables < args.argTable.size()) {
-        // Some variables were unused.  Figure out which they were.
-        Table<std::string, ArgList::Arg>::Iterator arg = args.argTable.begin();
-        Table<std::string, ArgList::Arg>::Iterator end = args.argTable.end();
-
-        while (arg != end) {
-            // See if this arg was in the formal binding list
-
-            bool foundArgument = false;
-            
-            for (int u = 0; u < uniformArray.size(); ++u) {
-                if (uniformArray[u].name == arg->key) {
-                    foundArgument = true;
-                    break;
-                }
-            }
-
-            if (! foundArgument) {
-                throw ArgumentError(
-                std::string("Extra VertexAndPixelShader uniform variable provided at runtime: ") + arg->key + ".");
-            }
-
-            ++arg;
-        }
-    }
-
-}
-
-
-void VertexAndPixelShader::bindArgList(RenderDevice* rd, const ArgList& args) const {
-    rd->forceVertexAndPixelShaderBind();
-
-    validateArgList(args);
-
-    // Iterate through the formal parameter list
-    for (int u = 0; u < uniformArray.size(); ++u) {
-        const UniformDeclaration& decl  = uniformArray[u];
-    
-        if (decl.dummy) {
-            // Don't set this variable; it is unused.
-            continue;
-        }
-
-        int location = uniformArray[u].location;
-
-        if (beginsWith(decl.name, "g3d_sz2D_")) {
-            // This is the autogenerated dimensions of a texture.
-
-            std::string textureName  = decl.name.substr(9, decl.name.length() - 9);
-
-            const ArgList::Arg& value = args.argTable.get(textureName); 
-
-            // Compute the vector of size and inverse size
-            float w = value.texture->getTexelWidth();
-            float h = value.texture->getTexelHeight();
-            Vector4 v(w, h, 1.0f / w, 1.0f / h);
-
-            glUniform4fvARB(location, 1, v);
-
-        } else {
-
-            // Normal user defined variable
-
-            const ArgList::Arg&       value = args.argTable.get(decl.name); 
-
-            // Bind based on the declared type
-            switch (canonicalType(decl.type)) {
-            case GL_TEXTURE_1D:
-                debugAssertM(false, "1D texture binding not implemented");
-                break;
-
-            case GL_TEXTURE_2D:
-            case GL_TEXTURE_CUBE_MAP_ARB:
-            case GL_TEXTURE_RECTANGLE_EXT:
-                // Textures are bound as if they were integers.  The
-                // value of the texture is the texture unit into which
-                // the texture is placed.
-                debugAssert(decl.textureUnit >= 0);
-                glUniform1iARB(location, decl.textureUnit);
-                rd->setTexture(decl.textureUnit, value.texture);
-                break;
-
-            case GL_TEXTURE_3D:
-                debugAssertM(false, "3D texture binding not implemented");
-                break;
-
-            case GL_FLOAT:
-                glUniform1fvARB(location, 1, value.vector[0]);
-                break;
-
-            case GL_FLOAT_VEC2_ARB:
-                glUniform2fvARB(location, 1, value.vector[0]);
-                break;
-
-            case GL_FLOAT_VEC3_ARB:
-                glUniform3fvARB(location, 1, value.vector[0]);
-                break;
-
-            case GL_FLOAT_VEC4_ARB:
-                glUniform4fvARB(location, 1, value.vector[0]);
-                break;
-
-            case GL_INT:
-            case GL_BOOL_ARB:
-                // OpenGL allows us to treat bools as ints, but not ints as floats
-                glUniform1iARB(location, (int)value.vector[0][0]);
-                break;
-
-            case GL_INT_VEC2_ARB:
-            case GL_BOOL_VEC2_ARB:
-                glUniform2iARB(location, (int)value.vector[0].x, (int)value.vector[0].y);
-                break;
-
-            case GL_INT_VEC3_ARB:
-            case GL_BOOL_VEC3_ARB:
-                glUniform3iARB(location, (int)value.vector[0].x, (int)value.vector[0].y,
-                    (int)value.vector[0].z);
-                break;
-
-            case GL_INT_VEC4_ARB:
-            case GL_BOOL_VEC4_ARB:
-                glUniform4iARB(location, (int)value.vector[0].x, (int)value.vector[1].y,
-                    (int)value.vector[2].z, (int)value.vector[3].w);
-                break;
-
-            case GL_FLOAT_MAT2_ARB:
-                debugAssertM(false, "GL_FLOAT_MAT2_ARB binding not implemented");
-                break;
-
-            case GL_FLOAT_MAT3_ARB:
-                {
-                    float m[9];
-                    for (int i = 0, c = 0; c < 3; ++c) {
-                        for (int r = 0; r < 3; ++r, ++i) {
-                            m[i] = value.vector[r][c];
-                        }
-                    }
-                    glUniformMatrix3fvARB(location, 1, GL_FALSE, m);
-                }            
-                break;
-
-            case GL_FLOAT_MAT4_ARB:
-                {
-                    float m[16];
-                    for (int i = 0, c = 0; c < 4; ++c) {
-                        for (int r = 0; r < 4; ++r, ++i) {
-                            m[i] = value.vector[r][c];
-                        }
-                    }
-                    glUniformMatrix4fvARB(location, 1, GL_FALSE, m);
-                }
-                break;
-
-            default:
-                alwaysAssertM(false, format("Unsupported argument type: %s", GLenumToString(decl.type)));
-            } // switch on type
-        } // if g3d_sz2D_ variable
-    }
-}
-
-
-////////////////////////////////////////////////////////////////////////
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const TextureRef& val) {
-    Arg arg;
-    debugAssert(val.notNull());
-    arg.type    = val->getOpenGLTextureTarget();
-    arg.texture = val;
-    argTable.set(var, arg);
-
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const CoordinateFrame& val) {
-    set(var, Matrix4(val));
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const Matrix4& val) {
-    Arg arg;
-    arg.type = GL_FLOAT_MAT4_ARB;
-    for (int r = 0; r < 4; ++r) {
-        arg.vector[r] = val.getRow(r);
-    }
-
-    argTable.set(var, arg);
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector4& val) {
-    Arg arg;
-    arg.type = GL_FLOAT_VEC4_ARB;
-    arg.vector[0] = val;
-    argTable.set(var, arg);
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector3& val) {
-    Arg arg;
-    arg.type = GL_FLOAT_VEC3_ARB;
-    arg.vector[0] = Vector4(val, 0);
-    argTable.set(var, arg);
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const Color4& val) {
-    Arg arg;
-    arg.type = GL_FLOAT_VEC4_ARB;
-    arg.vector[0] = Vector4(val.r, val.g, val.b, val.a);
-    argTable.set(var, arg);
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const Color3& val) {
-    Arg arg;
-    arg.type = GL_FLOAT_VEC3_ARB;
-    arg.vector[0] = Vector4(val.r, val.g, val.b, 0);
-    argTable.set(var, arg);
-
-}
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector2& val) {
-    Arg arg;
-    arg.type = GL_FLOAT_VEC2_ARB;
-    arg.vector[0] = Vector4(val, 0, 0);
-    argTable.set(var, arg);
-}
-
-
-void VertexAndPixelShader::ArgList::set(const std::string& var, float          val) {
-    Arg arg;
-    arg.type = GL_FLOAT;
-    arg.vector[0] = Vector4(val, 0, 0, 0);
-    argTable.set(var, arg);
-}
-
-
-void VertexAndPixelShader::ArgList::clear() {
-    argTable.clear();
-}
-
-
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
+
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
+
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }

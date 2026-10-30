@@ -29,7 +29,7 @@ namespace RBX
 
 	void RotateJoint::removeFromKernel()
 	{
-		RBXASSERT(getKernel());
+		                      ;
 		rotateConnector = NULL;
 		MultiJoint::removeFromKernel();
 	}

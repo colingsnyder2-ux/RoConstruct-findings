@@ -1,67 +1,41 @@
-// from server: 79% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-cl: 21022
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_physicsnativeownerkeya66fc5ae92b36cca.cpp
 
-struct RefCounted
-{
-    void *vptr;
-    volatile long ref1;
-    volatile long ref2;
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
+#include <boost/shared_ptr.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <G3D/CoordinateFrame.h>
+#include <functional>
+#include <stddef.h>
+// Value and three index keys established by the server-exact PhysicsSender update.
+struct PhysicsRecord {
+ boost::shared_ptr<void> part;
+ double priority;
+ G3D::CoordinateFrame previous;
+ float scale;
+ int sequence;
+ float distance;
+ PhysicsRecord(const PhysicsRecord&);
+ 
 };
-
-struct Inner
-{
-    char pad0[4];
-    void *field4;
-    char pad8[0x48];
-    void *field50;
-    void *field54;
-    void *field58;
-};
-
-struct Outer
-{
-    char pad0[4];
-    Inner *field4;
-};
-
-extern "C" void __cdecl sub_518A40(void *, void *, void *, void *);
-
-struct S
-{
-    void f(void *);
-};
-
-void S::f(void *arg)
-{
-    Outer *o1 = this ? (Outer *)((char *)this - 0xc) : 0;
-    Inner *i1 = o1->field4;
-    Outer *o2 = this ? (Outer *)((char *)this - 0xc) : 0;
-    Inner *i2 = o2->field4;
-    Outer *o3 = this ? (Outer *)((char *)this - 0xc) : 0;
-    Inner *i3 = o3->field4;
-
-    void *a = (char *)i3 + 0x50;
-    void *b = arg ? (char *)arg + 0x50 : 0;
-    void *c = (char *)i1 + 0x58;
-    void *d = (char *)i2 + 0x54;
-
-    sub_518A40(b, a, d, c);
-
-    RefCounted *rc = (RefCounted *)((char *)arg + 4);
-    if (rc != 0)
-    {
-        if (_InterlockedExchangeAdd(&rc->ref1, -1) == 1)
-        {
-            void **vt = (void **)rc->vptr;
-            void (*fn)(void *) = (void (*)(void *))vt[1];
-            fn(rc);
-            if (_InterlockedExchangeAdd(&rc->ref2, -1) == 1)
-            {
-                void **vt2 = (void **)rc->vptr;
-                void (*fn2)(void *) = (void (*)(void *))vt2[2];
-                fn2(rc);
-            }
-        }
-    }
-}
+struct PartHash {size_t operator()(const boost::shared_ptr<void>&p)const{return boost::hash<void*>()(p.get());}};
+namespace bmi=boost::multi_index;
+typedef boost::multi_index_container<PhysicsRecord,bmi::indexed_by<
+ bmi::hashed_unique<bmi::member<PhysicsRecord,boost::shared_ptr<void>,&PhysicsRecord::part>,PartHash>,
+ bmi::ordered_non_unique<bmi::member<PhysicsRecord,double,&PhysicsRecord::priority>,std::greater<double> >,
+ bmi::ordered_non_unique<bmi::member<PhysicsRecord,int,&PhysicsRecord::sequence> >
+> > PhysicsRecords;
+struct Modifier {void operator()(PhysicsRecord&)const;};
+bool modifyPhysics(PhysicsRecords&t,PhysicsRecords::iterator i){return t.modify(i,Modifier());}
+bool replacePhysics(PhysicsRecords&t,PhysicsRecords::iterator i,const PhysicsRecord&v){return t.replace(i,v);}
+void rehashPhysics(PhysicsRecords&t,unsigned n){t.rehash(n);}
+void erasePhysics(PhysicsRecords&t,PhysicsRecords::iterator i){t.erase(i);}
+std::pair<PhysicsRecords::iterator,bool>insertPhysics(PhysicsRecords&t,const PhysicsRecord&v){return t.insert(v);}
+typedef char ValueSize[sizeof(PhysicsRecord)==80?1:-1];
+typedef char SequenceOffset[offsetof(PhysicsRecord,sequence)==68?1:-1];

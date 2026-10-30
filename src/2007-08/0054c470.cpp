@@ -1,5 +1,4 @@
-// from server: 76% by colin
-// roc 2007-08 0054c470  unit: seg_00540000  size: 57 bytes
+// roc 2007-08 0054c470  unit: UString_sink::?$stream_buffer  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054c470
 //
 // 0054c470  56                   push esi
@@ -27,46 +26,39 @@
 // 0054c4a5  8901                 mov dword ptr [ecx], eax
 // 0054c4a7  5e                   pop esi
 // 0054c4a8  c3                   ret 
+// copied from an identical function in another client (function ?flush@S@@QAEXXZ)
 
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+typedef void *(__thiscall *AppendFunction)(void *, const char *, unsigned int);
+extern AppendFunction append;
 
-extern "C" void* __stdcall sub_77E520(int, const char*, int);
+struct S {
+    char padding0[0x14];
+    char **first;
+    char padding1[0x0C];
+    char **last;
+    char padding2[0x0C];
+    int *available;
+    char padding3[0x08];
+    void *output;
+    char padding4[0x08];
+    char *buffer;
+    int length;
 
-struct UString_sink
-{
-    char pad[0x14];
-    int* field14;
-    char pad2[0x24 - 0x18];
-    int* field24;
-    char pad3[0x34 - 0x28];
-    int* field34;
-    char pad4[0x40 - 0x38];
-    int field40;
-    char pad5[0x4c - 0x44];
-    int field4c;
-    int field50;
-
-    void write();
+    void flush();
 };
 
-void UString_sink::write()
+void S::flush()
 {
-    int* p14 = field14;
-    int* p24 = field24;
-    int diff = *p24 - *p14;
-    if (diff > 0)
-    {
-        sub_77E520(field40, (const char*)*p14, diff);
-        int v4c = field4c;
-        int* q14 = field14;
-        int v50 = field50;
-        *q14 = v4c;
-        int* q24 = field24;
-        int t = v50 + v4c;
-        *q24 = v4c;
-        int* q34 = field34;
-        *q34 = t - v4c;
+    char *start = *first;
+    int count = *last - start;
+    if (count > 0) {
+        append(output, start, count);
+        char *begin = buffer;
+        char *end = begin + length;
+        *first = begin;
+        *last = begin;
+        *available = end - begin;
     }
 }

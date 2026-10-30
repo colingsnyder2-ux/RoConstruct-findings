@@ -1,218 +1,156 @@
-// from server: 54% by colin
-// roc-lang: cpp
+// roc 2009-06 0056ccb0  unit: G3D::Shader  size: 228 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0056ccb0
+//
+// 0056ccb0  6aff                 push -1
+// 0056ccb2  68ecff8500           push 0x85ffec
+// 0056ccb7  64a100000000         mov eax, dword ptr fs:[0]
+// 0056ccbd  50                   push eax
+// 0056ccbe  64892500000000       mov dword ptr fs:[0], esp
+// 0056ccc5  83ec0c               sub esp, 0xc
+// 0056ccc8  53                   push ebx
+// 0056ccc9  56                   push esi
+// 0056ccca  8bf1                 mov esi, ecx
+// 0056cccc  57                   push edi
+// 0056cccd  8d7e08               lea edi, [esi + 8]
+// 0056ccd0  8bcf                 mov ecx, edi
+// 0056ccd2  8974240c             mov dword ptr [esp + 0xc], esi
+// 0056ccd6  c706f0af8c00         mov dword ptr [esi], 0x8caff0
+// 0056ccdc  ff15c0e48900         call dword ptr [0x89e4c0]
+// 0056cce2  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 0056cce6  8b5c2428             mov ebx, dword ptr [esp + 0x28]
+// 0056ccea  53                   push ebx
+// 0056cceb  8bcf                 mov ecx, edi
+// 0056cced  c744242400000000     mov dword ptr [esp + 0x24], 0
+// 0056ccf5  894624               mov dword ptr [esi + 0x24], eax
+// 0056ccf8  ff1564e48900         call dword ptr [0x89e464]
+// 0056ccfe  837b1810             cmp dword ptr [ebx + 0x18], 0x10
+// 0056cd02  7205                 jb 0x56cd09
+// 0056cd04  8b5b04               mov ebx, dword ptr [ebx + 4]
+// 0056cd07  eb03                 jmp 0x56cd0c
+// 0056cd09  83c304               add ebx, 4
+// 0056cd0c  68e8af8c00           push 0x8cafe8
+// 0056cd11  53                   push ebx
+// 0056cd12  ff1514e98900         call dword ptr [0x89e914]
+// 0056cd18  83c408               add esp, 8
+// 0056cd1b  894604               mov dword ptr [esi + 4], eax
+// 0056cd1e  85c0                 test eax, eax
+// 0056cd20  744d                 je 0x56cd6f
+// 0056cd22  6a00                 push 0
+// 0056cd24  6a04                 push 4
+// 0056cd26  6a00                 push 0
+// 0056cd28  50                   push eax
+// 0056cd29  ff1560e88900         call dword ptr [0x89e860]
+// 0056cd2f  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0056cd32  8b3d18e98900         mov edi, dword ptr [0x89e918]
+// 0056cd38  68d4af8c00           push 0x8cafd4
+// 0056cd3d  51                   push ecx
+// 0056cd3e  ffd7                 call edi
+// 0056cd40  8d542428             lea edx, [esp + 0x28]
+// 0056cd44  52                   push edx
+// 0056cd45  ff1508e98900         call dword ptr [0x89e908]
+// 0056cd4b  8d44242c             lea eax, [esp + 0x2c]
+// 0056cd4f  50                   push eax
+// 0056cd50  ff1564e88900         call dword ptr [0x89e864]
+// 0056cd56  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0056cd59  50                   push eax
+// 0056cd5a  68c8af8c00           push 0x8cafc8
+// 0056cd5f  51                   push ecx
+// 0056cd60  ffd7                 call edi
+// 0056cd62  8b5604               mov edx, dword ptr [esi + 4]
+// 0056cd65  52                   push edx
+// 0056cd66  ff152ce98900         call dword ptr [0x89e92c]
+// 0056cd6c  83c430               add esp, 0x30
+// 0056cd6f  833de429a40000       cmp dword ptr [0xa429e4], 0
+// 0056cd76  8bc6                 mov eax, esi
+// 0056cd78  7506                 jne 0x56cd80
+// 0056cd7a  8935e429a400         mov dword ptr [0xa429e4], esi
+// 0056cd80  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0056cd84  5f                   pop edi
+// 0056cd85  5e                   pop esi
+// 0056cd86  5b                   pop ebx
+// 0056cd87  64890d00000000       mov dword ptr fs:[0], ecx
+// 0056cd8e  83c418               add esp, 0x18
+// 0056cd91  c20800               ret 8
+// copied from an identical function in another client (function ??0Log@@QAE@ABUString@@H@Z)
+
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Vector2.cpp
+struct String {
+    unsigned int allocator;
+    union {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
 
-// Candidate translation unit (score above; library headers required).
-/**
- @file Vector2.cpp
- 
- 2D vector class, used for texture coordinates primarily.
- 
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @cite Portions based on Dave Eberly'x Magic Software Library
-  at http://www.magic-software.com
- 
- @created 2001-06-02
- @edited  2006-01-16
- */
+    String();
+    ~String();
+    String& operator=(const String&);
+};
 
-#include "G3D/platform.h"
-#include <stdlib.h>
-#include "G3D/Vector2.h"
-#include "G3D/g3dmath.h"
-#include "G3D/format.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/TextInput.h"
-#include "G3D/TextOutput.h"
+extern void (__thiscall *stringConstruct)(String*);
+extern void (__thiscall *stringDestroy)(String*);
+extern String& (__thiscall *stringAssign)(String*, const String&);
 
-namespace G3D {
-
-const Vector2& Vector2::zero() {
-    static Vector2 v(0, 0);
-    return v;
+inline String::String()
+{
+    stringConstruct(this);
 }
 
-const Vector2& Vector2::unitX() {
-    static Vector2 v(1, 0);
-    return v;
+inline String::~String()
+{
+    stringDestroy(this);
 }
 
-const Vector2& Vector2::unitY() {
-    static Vector2 v(0, 1);
-    return v;
+inline String& String::operator=(const String& other)
+{
+    return stringAssign(this, other);
 }
 
-const Vector2& Vector2::inf() { 
-	static Vector2 v((float)G3D::inf(), (float)G3D::inf());
-	return v; 
+struct FILE;
+
+extern "C" {
+    extern FILE* (__cdecl *fopen)(const char*, const char*);
+    extern int (__cdecl *setvbuf)(FILE*, char*, int, unsigned int);
+    extern int (__cdecl *fprintf)(FILE*, const char*, ...);
+    extern __int64 (__cdecl *_time64)(__int64*);
+    extern char* (__cdecl *_ctime64)(const __int64*);
+    extern int (__cdecl *fflush)(FILE*);
 }
 
-const Vector2& Vector2::nan() { 
-	static Vector2 v((float)G3D::nan(), (float)G3D::nan()); 
-	return v; 
-}
+struct Log {
+    virtual ~Log();
+    FILE* file;
+    String name;
+    int level;
 
-const Vector2& Vector2::minFinite() {
-	static Vector2 v(-FLT_MAX, -FLT_MAX); 
-	return v; 
-}
+    Log(const String&, int);
+};
 
-const Vector2& Vector2::maxFinite() {
-	static Vector2 v(FLT_MAX, FLT_MAX); 
-	return v; 
-}
+extern Log* currentLog;
 
+Log::Log(const String& filename, int value)
+{
+    level = value;
+    name = filename;
 
+    const char* path = filename.capacity >= 16
+        ? filename.storage.pointer
+        : filename.storage.buffer;
 
-// Deprecated.
-const Vector2 Vector2::ZERO(0, 0);
-const Vector2 Vector2::UNIT_S(1, 0);
-const Vector2 Vector2::UNIT_T(0, 1);
+    file = fopen(path, "w");
+    if (file) {
+        setvbuf(file, 0, 4, 0);
+        int (__cdecl *print)(FILE*, const char*, ...) = fprintf;
+        print(file, "Application Log\n");
 
-unsigned int Vector2::hashCode() const {
-    unsigned int xhash = (*(int*)(void*)(&x));
-    unsigned int yhash = (*(int*)(void*)(&y));
-
-    return xhash + (yhash * 37);
-}
-
-Vector2::Vector2(BinaryInput& b) {
-    deserialize(b);
-}
-
-void Vector2::deserialize(BinaryInput& b) {
-    x = b.readFloat32();
-    y = b.readFloat32();
-}
-
-void Vector2::serialize(BinaryOutput& b) const {
-    b.writeFloat32(x);
-    b.writeFloat32(y);
-}
-
-
-
-void Vector2::deserialize(TextInput& t) {
-    t.readSymbol("(");
-    x = (float)t.readNumber();
-    t.readSymbol(",");
-    y = (float)t.readNumber();
-    t.readSymbol(")");
-}
-
-
-void Vector2::serialize(TextOutput& t) const {
-   t.writeSymbol("(");
-   t.writeNumber(x);
-   t.writeSymbol(",");
-   t.writeNumber(y);
-   t.writeSymbol(")");
-}
-
-//----------------------------------------------------------------------------
-
-Vector2 Vector2::random() {
-    Vector2 result;
-
-    do {
-        result = Vector2((float)symmetricRandom(), (float)symmetricRandom());
-    } while ((result.squaredLength() > 1.0f) || (result.squaredLength() == 1.0f));
-
-    result.unitize();
-
-    return result;
-}
-
-//----------------------------------------------------------------------------
-Vector2 Vector2::operator/ (float fScalar) const {
-    Vector2 kQuot;
-
-    if ( fScalar != 0.0f ) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.x = fInvScalar * x;
-        kQuot.y = fInvScalar * y;
-        return kQuot;
-    } else {
-        return Vector2::inf();
-    }
-}
-
-//----------------------------------------------------------------------------
-Vector2& Vector2::operator/= (float fScalar) {
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        x *= fInvScalar;
-        y *= fInvScalar;
-    } else {
-        x = (float)G3D::inf();
-        y = (float)G3D::inf();
+        __int64 now;
+        _time64(&now);
+        print(file, "Start: %s\n", _ctime64(&now));
+        fflush(file);
     }
 
-    return *this;
+    if (currentLog == 0)
+        currentLog = this;
 }
-
-//----------------------------------------------------------------------------
-float Vector2::unitize (float fTolerance) {
-	float fLength = length();
-
-    if (fLength > fTolerance) {
-		float fInvLength = 1.0f / fLength;
-        x *= fInvLength;
-        y *= fInvLength;
-    } else {
-        fLength = 0.0;
-    }
-
-    return fLength;
-}
-
-//----------------------------------------------------------------------------
-
-std::string Vector2::toString() const {
-    return G3D::format("(%g, %g)", x, y);
-}
-
-// 2-char swizzles
-
-Vector2 Vector2::xx() const  { return Vector2       (x, x); }
-Vector2 Vector2::yx() const  { return Vector2       (y, x); }
-Vector2 Vector2::xy() const  { return Vector2       (x, y); }
-Vector2 Vector2::yy() const  { return Vector2       (y, y); }
-
-// 3-char swizzles
-
-Vector3 Vector2::xxx() const  { return Vector3       (x, x, x); }
-Vector3 Vector2::yxx() const  { return Vector3       (y, x, x); }
-Vector3 Vector2::xyx() const  { return Vector3       (x, y, x); }
-Vector3 Vector2::yyx() const  { return Vector3       (y, y, x); }
-Vector3 Vector2::xxy() const  { return Vector3       (x, x, y); }
-Vector3 Vector2::yxy() const  { return Vector3       (y, x, y); }
-Vector3 Vector2::xyy() const  { return Vector3       (x, y, y); }
-Vector3 Vector2::yyy() const  { return Vector3       (y, y, y); }
-
-// 4-char swizzles
-
-Vector4 Vector2::xxxx() const  { return Vector4       (x, x, x, x); }
-Vector4 Vector2::yxxx() const  { return Vector4       (y, x, x, x); }
-Vector4 Vector2::xyxx() const  { return Vector4       (x, y, x, x); }
-Vector4 Vector2::yyxx() const  { return Vector4       (y, y, x, x); }
-Vector4 Vector2::xxyx() const  { return Vector4       (x, x, y, x); }
-Vector4 Vector2::yxyx() const  { return Vector4       (y, x, y, x); }
-Vector4 Vector2::xyyx() const  { return Vector4       (x, y, y, x); }
-Vector4 Vector2::yyyx() const  { return Vector4       (y, y, y, x); }
-Vector4 Vector2::xxxy() const  { return Vector4       (x, x, x, y); }
-Vector4 Vector2::yxxy() const  { return Vector4       (y, x, x, y); }
-Vector4 Vector2::xyxy() const  { return Vector4       (x, y, x, y); }
-Vector4 Vector2::yyxy() const  { return Vector4       (y, y, x, y); }
-Vector4 Vector2::xxyy() const  { return Vector4       (x, x, y, y); }
-Vector4 Vector2::yxyy() const  { return Vector4       (y, x, y, y); }
-Vector4 Vector2::xyyy() const  { return Vector4       (x, y, y, y); }
-Vector4 Vector2::yyyy() const  { return Vector4       (y, y, y, y); }
-
-
-
-} // namespace

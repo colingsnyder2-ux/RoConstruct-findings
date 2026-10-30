@@ -1,829 +1,256 @@
-// from server: 51% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreBillboardChain.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_boost133_uiabi_34e8c2b89ccd18ad.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-(Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#define _MT 1
+// Boost.Function library
+
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
+#endif
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.h"
+#include "util/RunStateOwner.h"
+#include "util/ContentProvider.h"
+#include "v8datamodel/Feature.h"
+#include "v8world/World.h"
+#include "Replicator.h"
+#include "util/boost.hpp"
+class ThreadLogManager;
+//00416b70 destroys its bound argument list at+8: eight-byte member-pointer model.
+//The actual enclosing class bases and fields are not reconstructed.
+class __multiple_inheritance DHTMLWindow;
+// 00415d00 clones a four-byte boost::_mfi::mf0<void,CLuaHtmlView>.
+// This proves the single-inheritance member-pointer representation; no object layout is modeled.
+//0042b3a0 clones16 bytes. Account for compiler alignment: multiple-inheritance mf0 plus the bound pointer yields16.
+//The virtual/general member-pointer models produce a larger object and failed the target comparison.
+class __single_inheritance CLuaHtmlView { public: class __multiple_inheritance Binder; };
+namespace G3D { class Stopwatch; }
+namespace RBX { namespace View { class View; class PartChunk; class Decal; class Texture; }
+namespace Network { class Server; } }
+
+#include "reflection/signal.h"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
+
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
+
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
+
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
+
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
+
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
+
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
+#else
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
+
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
+
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
+
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
+
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
+
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
+
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
+
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-
-// Thanks to Vincent Cantin (karmaGfa) for the original implementation of this
-// class, although it has now been mostly rewritten
-
-#include "OgreStableHeaders.h"
-#include "OgreBillboardChain.h"
-
-#include "OgreSimpleRenderable.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreNode.h"
-#include "OgreCamera.h"
-#include "OgreRoot.h"
-#include "OgreMaterialManager.h"
-#include "OgreLogManager.h"
-#include "OgreStringConverter.h"
-
-namespace Ogre {
-	const size_t BillboardChain::SEGMENT_EMPTY = 0xffffffff;
-	//-----------------------------------------------------------------------
-	BillboardChain::Element::Element()
-	{
-	}
-	//-----------------------------------------------------------------------
-	BillboardChain::Element::Element(Vector3 _position,
-		Real _width,
-		Real _texCoord,
-		ColourValue _colour) :
-	position(_position),
-		width(_width),
-		texCoord(_texCoord),
-		colour(_colour)
-	{
-	}
-	//-----------------------------------------------------------------------
-	BillboardChain::BillboardChain(const String& name, size_t maxElements,
-		size_t numberOfChains, bool useTextureCoords, bool useColours, bool dynamic)
-		:MovableObject(name),
-		mMaxElementsPerChain(maxElements),
-		mChainCount(numberOfChains),
-		mUseTexCoords(useTextureCoords),
-		mUseVertexColour(useColours),
-		mDynamic(dynamic),
-		mVertexDeclDirty(true),
-		mBuffersNeedRecreating(true),
-		mBoundsDirty(true),
-		mIndexContentDirty(true),
-		mRadius(0.0f),
-		mTexCoordDir(TCD_U)
-	{
-		mVertexData = OGRE_NEW VertexData();
-		mIndexData = OGRE_NEW IndexData();
-
-		mOtherTexCoordRange[0] = 0.0f;
-		mOtherTexCoordRange[1] = 1.0f;
-
-		setupChainContainers();
-
-		mVertexData->vertexStart = 0;
-		// index data set up later
-		// set basic white material
-		this->setMaterialName("BaseWhiteNoLighting");
-
-	}
-	//-----------------------------------------------------------------------
-	BillboardChain::~BillboardChain()
-	{
-		OGRE_DELETE mVertexData;
-		OGRE_DELETE mIndexData;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setupChainContainers(void)
-	{
-		// Allocate enough space for everything
-		mChainElementList.resize(mChainCount * mMaxElementsPerChain);
-		mVertexData->vertexCount = mChainElementList.size() * 2;
-
-		// Configure chains
-		mChainSegmentList.resize(mChainCount);
-		for (size_t i = 0; i < mChainCount; ++i)
-		{
-			ChainSegment& seg = mChainSegmentList[i];
-			seg.start = i * mMaxElementsPerChain;
-			seg.tail = seg.head = SEGMENT_EMPTY;
-
-		}
-
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setupVertexDeclaration(void)
-	{
-		if (mVertexDeclDirty)
-		{
-			VertexDeclaration* decl = mVertexData->vertexDeclaration;
-			decl->removeAllElements();
-
-			size_t offset = 0;
-			// Add a description for the buffer of the positions of the vertices
-			decl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-			offset += VertexElement::getTypeSize(VET_FLOAT3);
-
-			if (mUseVertexColour)
-			{
-				decl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-				offset += VertexElement::getTypeSize(VET_COLOUR);
-			}
-
-			if (mUseTexCoords)
-			{
-				decl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
-				offset += VertexElement::getTypeSize(VET_FLOAT2);
-			}
-
-			if (!mUseTexCoords && !mUseVertexColour)
-			{
-				LogManager::getSingleton().logMessage(
-					"Error - BillboardChain '" + mName + "' is using neither "
-					"texture coordinates or vertex colours; it will not be "
-					"visible on some rendering APIs so you should change this "
-					"so you use one or the other.");
-			}
-			mVertexDeclDirty = false;
-		}
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setupBuffers(void)
-	{
-		setupVertexDeclaration();
-		if (mBuffersNeedRecreating)
-		{
-			// Create the vertex buffer (always dynamic due to the camera adjust)
-			HardwareVertexBufferSharedPtr pBuffer =
-				HardwareBufferManager::getSingleton().createVertexBuffer(
-				mVertexData->vertexDeclaration->getVertexSize(0),
-				mVertexData->vertexCount,
-				HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-
-			// (re)Bind the buffer
-			// Any existing buffer will lose its reference count and be destroyed
-			mVertexData->vertexBufferBinding->setBinding(0, pBuffer);
-
-			mIndexData->indexBuffer =
-				HardwareBufferManager::getSingleton().createIndexBuffer(
-					HardwareIndexBuffer::IT_16BIT,
-					mChainCount * mMaxElementsPerChain * 6, // max we can use
-					mDynamic? HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY : HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-			// NB we don't set the indexCount on IndexData here since we will
-			// probably use less than the maximum number of indices
-
-			mBuffersNeedRecreating = false;
-		}
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setMaxChainElements(size_t maxElements)
-	{
-		mMaxElementsPerChain = maxElements;
-		setupChainContainers();
-        mBuffersNeedRecreating = mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setNumberOfChains(size_t numChains)
-	{
-		mChainCount = numChains;
-		setupChainContainers();
-        mBuffersNeedRecreating = mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setUseTextureCoords(bool use)
-	{
-		mUseTexCoords = use;
-		mVertexDeclDirty = mBuffersNeedRecreating = true;
-        mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setTextureCoordDirection(BillboardChain::TexCoordDirection dir)
-	{
-		mTexCoordDir = dir;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setOtherTextureCoordRange(Real start, Real end)
-	{
-		mOtherTexCoordRange[0] = start;
-		mOtherTexCoordRange[1] = end;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setUseVertexColours(bool use)
-	{
-		mUseVertexColour = use;
-		mVertexDeclDirty = mBuffersNeedRecreating = true;
-        mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setDynamic(bool dyn)
-	{
-		mDynamic = dyn;
-		mBuffersNeedRecreating = mIndexContentDirty = true;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::addChainElement(size_t chainIndex,
-		const BillboardChain::Element& dtls)
-	{
-
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::addChainElement");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-		if (seg.head == SEGMENT_EMPTY)
-		{
-			// Tail starts at end, head grows backwards
-			seg.tail = mMaxElementsPerChain - 1;
-			seg.head = seg.tail;
-			mIndexContentDirty = true;
-		}
-		else
-		{
-			if (seg.head == 0)
-			{
-				// Wrap backwards
-				seg.head = mMaxElementsPerChain - 1;
-			}
-			else
-			{
-				// Just step backward
-				--seg.head;
-			}
-			// Run out of elements?
-			if (seg.head == seg.tail)
-			{
-				// Move tail backwards too, losing the end of the segment and re-using
-				// it in the head
-				if (seg.tail == 0)
-					seg.tail = mMaxElementsPerChain - 1;
-				else
-					--seg.tail;
-			}
-		}
-
-		// Set the details
-		mChainElementList[seg.start + seg.head] = dtls;
-
-		mIndexContentDirty = true;
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::removeChainElement(size_t chainIndex)
-	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::removeChainElement");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-		if (seg.head == SEGMENT_EMPTY)
-			return; // do nothing, nothing to remove
-
-
-		if (seg.tail == seg.head)
-		{
-			// last item
-			seg.head = seg.tail = SEGMENT_EMPTY;
-		}
-		else if (seg.tail == 0)
-		{
-			seg.tail = mMaxElementsPerChain - 1;
-		}
-		else
-		{
-			--seg.tail;
-		}
-
-		// we removed an entry so indexes need updating
-		mIndexContentDirty = true;
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::clearChain(size_t chainIndex)
-	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::clearChain");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-
-		// Just reset head & tail
-		seg.tail = seg.head = SEGMENT_EMPTY;
-
-		// we removed an entry so indexes need updating
-		mIndexContentDirty = true;
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::clearAllChains(void)
-	{
-		for (size_t i = 0; i < mChainCount; ++i)
-		{
-			clearChain(i);
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateChainElement(size_t chainIndex, size_t elementIndex,
-		const BillboardChain::Element& dtls)
-	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::updateChainElement");
-		}
-		ChainSegment& seg = mChainSegmentList[chainIndex];
-		if (seg.head == SEGMENT_EMPTY)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"Chain segment is empty",
-				"BillboardChain::updateChainElement");
-		}
-
-		size_t idx = seg.head + elementIndex;
-		// adjust for the edge and start
-		idx = (idx % mMaxElementsPerChain) + seg.start;
-
-		mChainElementList[idx] = dtls;
-
-		mBoundsDirty = true;
-		// tell parent node to update bounds
-		if (mParentNode)
-			mParentNode->needUpdate();
-
-
-	}
-	//-----------------------------------------------------------------------
-	const BillboardChain::Element&
-	BillboardChain::getChainElement(size_t chainIndex, size_t elementIndex) const
-	{
-
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::getChainElement");
-		}
-		const ChainSegment& seg = mChainSegmentList[chainIndex];
-
-		size_t idx = seg.head + elementIndex;
-		// adjust for the edge and start
-		idx = (idx % mMaxElementsPerChain) + seg.start;
-
-		return mChainElementList[idx];
-	}
-	//-----------------------------------------------------------------------
-	size_t BillboardChain::getNumChainElements(size_t chainIndex) const
-	{
-		if (chainIndex >= mChainCount)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-				"chainIndex out of bounds",
-				"BillboardChain::getNumChainElements");
-		}
-		const ChainSegment& seg = mChainSegmentList[chainIndex];
-
-		return seg.tail - seg.head + 1;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateBoundingBox(void) const
-	{
-		if (mBoundsDirty)
-		{
-			mAABB.setNull();
-			Vector3 widthVector;
-			for (ChainSegmentList::const_iterator segi = mChainSegmentList.begin();
-				segi != mChainSegmentList.end(); ++segi)
-			{
-				const ChainSegment& seg = *segi;
-
-				if (seg.head != SEGMENT_EMPTY)
-				{
-
-					for(size_t e = seg.head; ; ++e) // until break
-					{
-						// Wrap forwards
-						if (e == mMaxElementsPerChain)
-							e = 0;
-
-						const Element& elem = mChainElementList[seg.start + e];
-
-						widthVector.x = widthVector.y = widthVector.z = elem.width;
-						mAABB.merge(elem.position - widthVector);
-						mAABB.merge(elem.position + widthVector);
-
-						if (e == seg.tail)
-							break;
-
-					}
-				}
-
-			}
-
-			// Set the current radius
-			if (mAABB.isNull())
-			{
-				mRadius = 0.0f;
-			}
-			else
-			{
-				mRadius = Math::Sqrt(
-					std::max(mAABB.getMinimum().squaredLength(),
-					mAABB.getMaximum().squaredLength()));
-			}
-
-			mBoundsDirty = false;
-		}
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateVertexBuffer(Camera* cam)
-	{
-		setupBuffers();
-		HardwareVertexBufferSharedPtr pBuffer =
-			mVertexData->vertexBufferBinding->getBuffer(0);
-		void* pBufferStart = pBuffer->lock(HardwareBuffer::HBL_DISCARD);
-
-		const Vector3& camPos = cam->getDerivedPosition();
-		Vector3 eyePos = mParentNode->_getDerivedOrientation().Inverse() *
-			(camPos - mParentNode->_getDerivedPosition()) / mParentNode->_getDerivedScale();
-
-		Vector3 chainTangent;
-		for (ChainSegmentList::iterator segi = mChainSegmentList.begin();
-			segi != mChainSegmentList.end(); ++segi)
-		{
-			ChainSegment& seg = *segi;
-
-			// Skip 0 or 1 element segment counts
-			if (seg.head != SEGMENT_EMPTY && seg.head != seg.tail)
-			{
-				size_t laste = seg.head;
-				for (size_t e = seg.head; ; ++e) // until break
-				{
-					// Wrap forwards
-					if (e == mMaxElementsPerChain)
-						e = 0;
-
-					Element& elem = mChainElementList[e + seg.start];
-					assert (((e + seg.start) * 2) < 65536 && "Too many elements!");
-					uint16 baseIdx = static_cast<uint16>((e + seg.start) * 2);
-
-					// Determine base pointer to vertex #1
-					void* pBase = static_cast<void*>(
-						static_cast<char*>(pBufferStart) +
-							pBuffer->getVertexSize() * baseIdx);
-
-					// Get index of next item
-					size_t nexte = e + 1;
-					if (nexte == mMaxElementsPerChain)
-						nexte = 0;
-
-					if (e == seg.head)
-					{
-						// No laste, use next item
-						chainTangent = mChainElementList[nexte + seg.start].position - elem.position;
-					}
-					else if (e == seg.tail)
-					{
-						// No nexte, use only last item
-						chainTangent = elem.position - mChainElementList[laste + seg.start].position;
-					}
-					else
-					{
-						// A mid position, use tangent across both prev and next
-						chainTangent = mChainElementList[nexte + seg.start].position - mChainElementList[laste + seg.start].position;
-
-					}
-
-					Vector3 vP1ToEye = eyePos - elem.position;
-					Vector3 vPerpendicular = chainTangent.crossProduct(vP1ToEye);
-					vPerpendicular.normalise();
-					vPerpendicular *= (elem.width * 0.5);
-
-					Vector3 pos0 = elem.position - vPerpendicular;
-					Vector3 pos1 = elem.position + vPerpendicular;
-
-					float* pFloat = static_cast<float*>(pBase);
-					// pos1
-					*pFloat++ = pos0.x;
-					*pFloat++ = pos0.y;
-					*pFloat++ = pos0.z;
-
-					pBase = static_cast<void*>(pFloat);
-
-					if (mUseVertexColour)
-					{
-						RGBA* pCol = static_cast<RGBA*>(pBase);
-						Root::getSingleton().convertColourValue(elem.colour, pCol);
-						pCol++;
-						pBase = static_cast<void*>(pCol);
-					}
-
-					if (mUseTexCoords)
-					{
-						pFloat = static_cast<float*>(pBase);
-						if (mTexCoordDir == TCD_U)
-						{
-							*pFloat++ = elem.texCoord;
-							*pFloat++ = mOtherTexCoordRange[0];
-						}
-						else
-						{
-							*pFloat++ = mOtherTexCoordRange[0];
-							*pFloat++ = elem.texCoord;
-						}
-						pBase = static_cast<void*>(pFloat);
-					}
-
-					// pos2
-					pFloat = static_cast<float*>(pBase);
-					*pFloat++ = pos1.x;
-					*pFloat++ = pos1.y;
-					*pFloat++ = pos1.z;
-					pBase = static_cast<void*>(pFloat);
-
-					if (mUseVertexColour)
-					{
-						RGBA* pCol = static_cast<RGBA*>(pBase);
-						Root::getSingleton().convertColourValue(elem.colour, pCol);
-						pCol++;
-						pBase = static_cast<void*>(pCol);
-					}
-
-					if (mUseTexCoords)
-					{
-						pFloat = static_cast<float*>(pBase);
-						if (mTexCoordDir == TCD_U)
-						{
-							*pFloat++ = elem.texCoord;
-							*pFloat++ = mOtherTexCoordRange[1];
-						}
-						else
-						{
-							*pFloat++ = mOtherTexCoordRange[1];
-							*pFloat++ = elem.texCoord;
-						}
-						pBase = static_cast<void*>(pFloat);
-					}
-
-					if (e == seg.tail)
-						break; // last one
-
-					laste = e;
-
-				} // element
-			} // segment valid?
-
-		} // each segment
-
-
-
-		pBuffer->unlock();
-
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::updateIndexBuffer(void)
-	{
-
-		setupBuffers();
-		if (mIndexContentDirty)
-		{
-
-			uint16* pShort = static_cast<uint16*>(
-				mIndexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
-			mIndexData->indexCount = 0;
-			// indexes
-			for (ChainSegmentList::iterator segi = mChainSegmentList.begin();
-				segi != mChainSegmentList.end(); ++segi)
-			{
-				ChainSegment& seg = *segi;
-
-				// Skip 0 or 1 element segment counts
-				if (seg.head != SEGMENT_EMPTY && seg.head != seg.tail)
-				{
-					// Start from head + 1 since it's only useful in pairs
-					size_t laste = seg.head;
-					while(1) // until break
-					{
-						size_t e = laste + 1;
-						// Wrap forwards
-						if (e == mMaxElementsPerChain)
-							e = 0;
-						// indexes of this element are (e * 2) and (e * 2) + 1
-						// indexes of the last element are the same, -2
-						assert (((e + seg.start) * 2) < 65536 && "Too many elements!");
-						uint16 baseIdx = static_cast<uint16>((e + seg.start) * 2);
-						uint16 lastBaseIdx = static_cast<uint16>((laste + seg.start) * 2);
-						*pShort++ = lastBaseIdx;
-						*pShort++ = lastBaseIdx + 1;
-						*pShort++ = baseIdx;
-						*pShort++ = lastBaseIdx + 1;
-						*pShort++ = baseIdx + 1;
-						*pShort++ = baseIdx;
-
-						mIndexData->indexCount += 6;
-
-
-						if (e == seg.tail)
-							break; // last one
-
-						laste = e;
-
-					}
-				}
-
-			}
-			mIndexData->indexBuffer->unlock();
-
-			mIndexContentDirty = false;
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::_notifyCurrentCamera(Camera* cam)
-	{
-		updateVertexBuffer(cam);
-	}
-	//-----------------------------------------------------------------------
-	Real BillboardChain::getSquaredViewDepth(const Camera* cam) const
-	{
-		Vector3 min, max, mid, dist;
-		min = mAABB.getMinimum();
-		max = mAABB.getMaximum();
-		mid = ((max - min) * 0.5) + min;
-		dist = cam->getDerivedPosition() - mid;
-
-		return dist.squaredLength();
-	}
-	//-----------------------------------------------------------------------
-	Real BillboardChain::getBoundingRadius(void) const
-	{
-		return mRadius;
-	}
-	//-----------------------------------------------------------------------
-	const AxisAlignedBox& BillboardChain::getBoundingBox(void) const
-	{
-		updateBoundingBox();
-		return mAABB;
-	}
-	//-----------------------------------------------------------------------
-	const MaterialPtr& BillboardChain::getMaterial(void) const
-	{
-		return mMaterial;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::setMaterialName(const String& name)
-	{
-		mMaterialName = name;
-		mMaterial = MaterialManager::getSingleton().getByName(mMaterialName);
-
-		if (mMaterial.isNull())
-		{
-			LogManager::getSingleton().logMessage("Can't assign material " + name +
-				" to BillboardChain " + mName + " because this "
-				"Material does not exist. Have you forgotten to define it in a "
-				".material script?");
-			mMaterial = MaterialManager::getSingleton().getByName("BaseWhiteNoLighting");
-			if (mMaterial.isNull())
-			{
-				OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Can't assign default material "
-					"to BillboardChain of " + mName + ". Did "
-					"you forget to call MaterialManager::initialise()?",
-					"BillboardChain.setMaterialName");
-			}
-		}
-		// Ensure new material loaded (will not load again if already loaded)
-		mMaterial->load();
-	}
-	//-----------------------------------------------------------------------
-	const String& BillboardChain::getMovableType(void) const
-	{
-		return BillboardChainFactory::FACTORY_TYPE_NAME;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::_updateRenderQueue(RenderQueue* queue)
-	{
-		updateIndexBuffer();
-
-		if (mIndexData->indexCount > 0)
-		{
-            if (mRenderQueueIDSet)
-                queue->addRenderable(this, mRenderQueueID);
-            else
-                queue->addRenderable(this);
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::getRenderOperation(RenderOperation& op)
-	{
-		op.indexData = mIndexData;
-		op.operationType = RenderOperation::OT_TRIANGLE_LIST;
-		op.srcRenderable = this;
-		op.useIndexes = true;
-		op.vertexData = mVertexData;
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChain::getWorldTransforms(Matrix4* xform) const
-	{
-		*xform = _getParentNodeFullTransform();
-	}
-	//-----------------------------------------------------------------------
-	const LightList& BillboardChain::getLights(void) const
-	{
-		return queryLights();
-	}
-	//---------------------------------------------------------------------
-	void BillboardChain::visitRenderables(Renderable::Visitor* visitor, 
-		bool debugRenderables)
-	{
-		// only one renderable
-		visitor->visit(this, 0, false);
-	}
-	//-----------------------------------------------------------------------
-	//-----------------------------------------------------------------------
-	String BillboardChainFactory::FACTORY_TYPE_NAME = "BillboardChain";
-	//-----------------------------------------------------------------------
-	const String& BillboardChainFactory::getType(void) const
-	{
-		return FACTORY_TYPE_NAME;
-	}
-	//-----------------------------------------------------------------------
-	MovableObject* BillboardChainFactory::createInstanceImpl( const String& name,
-		const NameValuePairList* params)
-	{
-		size_t maxElements = 20;
-		size_t numberOfChains = 1;
-		bool useTex = true;
-		bool useCol = true;
-		bool dynamic = true;
-		// optional params
-		if (params != 0)
-		{
-			NameValuePairList::const_iterator ni = params->find("maxElements");
-			if (ni != params->end())
-			{
-				maxElements = StringConverter::parseUnsignedLong(ni->second);
-			}
-			ni = params->find("numberOfChains");
-			if (ni != params->end())
-			{
-				numberOfChains = StringConverter::parseUnsignedLong(ni->second);
-			}
-			ni = params->find("useTextureCoords");
-			if (ni != params->end())
-			{
-				useTex = StringConverter::parseBool(ni->second);
-			}
-			ni = params->find("useVertexColours");
-			if (ni != params->end())
-			{
-				useCol = StringConverter::parseBool(ni->second);
-			}
-			ni = params->find("dynamic");
-			if (ni != params->end())
-			{
-				dynamic = StringConverter::parseBool(ni->second);
-			}
-
-		}
-
-		return OGRE_NEW BillboardChain(name, maxElements, numberOfChains, useTex, useCol, dynamic);
-
-	}
-	//-----------------------------------------------------------------------
-	void BillboardChainFactory::destroyInstance( MovableObject* obj)
-	{
-		OGRE_DELETE  obj;
-	}
 
 }
 
+// 00415d00 target RTTI
+template struct recovered_boost133::functor_manager< boost::_mfi::mf0<void,CLuaHtmlView>, std::allocator<void> >;
+// 00416ae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,RBX::Lua::FunctionRef>,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<RBX::Lua::FunctionRef> > >, std::allocator<void> >;
+// 00416b70 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00417570 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf3<void,DHTMLWindow,boost::shared_ptr<RBX::Instance>,RBX::Reflection::PropertyDescriptor const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list4<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<boost::shared_ptr<RBX::Instance> >,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00427ed0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(ThreadLogManager *), std::allocator<void> >;
+// 0042b3a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool,boost::_mfi::mf0<bool,CLuaHtmlView::Binder>,boost::_bi::list1<boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042b460 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(RBX::Reflection::PropertyDescriptor const *,RBX::Reflection::PropertyDescriptor const &,CLuaHtmlView::Binder *),boost::_bi::list3<boost::arg<1>,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042c6f0 target RTTI
+template struct recovered_boost133::functor_manager< bool (__cdecl*)(void), std::allocator<void> >;
+// 004489e0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(RBX::Security::Context *), std::allocator<void> >;
+// 00459600 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<G3D::Stopwatch const &,G3D::Stopwatch const & (__cdecl*)(G3D::Stopwatch const *),boost::_bi::list1<boost::_bi::value<G3D::Stopwatch const *> > >, std::allocator<void> >;
+// 00459660 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int const &,int const & (__cdecl*)(int const *),boost::_bi::list1<boost::_bi::value<int const *> > >, std::allocator<void> >;
+// 00493b10 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::shared_ptr<RBX::Network::AbuseReporter::data>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::Network::AbuseReporter::data> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0049dbe0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::weak_ptr<RBX::Network::Server>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list4<boost::_bi::value<boost::weak_ptr<RBX::Network::Server> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int>,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 004a9140 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::Network::Replicator,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::Network::Replicator *>,boost::arg<1> > >, std::allocator<void> >;
+// 004a91a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool const &,bool const & (__cdecl*)(bool const *),boost::_bi::list1<boost::_bi::value<bool const *> > >, std::allocator<void> >;
+// 004cdae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,bool>,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004cdb40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2350 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d23b0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2410 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::View::PartChunk>,boost::_bi::list1<boost::_bi::value<RBX::View::PartChunk *> > >, std::allocator<void> >;
+// 004d2470 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d24d0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2530 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2590 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 0052e4a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::RunService,boost::shared_ptr<RBX::DataModel> >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::RunService> >,boost::_bi::value<boost::shared_ptr<RBX::DataModel> > > >, std::allocator<void> >;
+// 00537cc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,boost::_mfi::cmf0<unsigned int,RBX::ScriptContext>,boost::_bi::list1<boost::_bi::value<RBX::ScriptContext *> > >, std::allocator<void> >;
+// 00537d40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(lua_State *),boost::_bi::list1<boost::arg<1> > >, std::allocator<void> >;
+// 00537dc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(lua_State *,unsigned int),boost::_bi::list2<boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 00537e20 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const &,lua_State *),boost::_bi::list2<boost::reference_wrapper<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const >,boost::arg<1> > >, std::allocator<void> >;
+// 00537e80 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > &,lua_State *,unsigned int),boost::_bi::list3<boost::reference_wrapper<std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > >,boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 005463c0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,boost::_mfi::mf0<RBX::worker_thread::work_result,RBX::ContentProvider>,boost::_bi::list1<boost::_bi::value<RBX::ContentProvider *> > >, std::allocator<void> >;
+// 00559840 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00559990 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list1<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00570f20 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> > *), std::allocator<void> >;
+// 00571c60 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::function0<void,std::allocator<boost::function_base> > const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::function0<void,std::allocator<boost::function_base> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0057bb90 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<double,double (__cdecl*)(RBX::Profiling::CodeProfiler *),boost::_bi::list1<boost::_bi::value<RBX::Profiling::CodeProfiler *> > >, std::allocator<void> >;
+// 0057bbf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int,boost::_mfi::cmf0<int,RBX::World>,boost::_bi::list1<boost::_bi::value<RBX::World const *> > >, std::allocator<void> >;
+// 00588e30 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int const &,unsigned int const & (__cdecl*)(unsigned int const *),boost::_bi::list1<boost::_bi::value<unsigned int const *> > >, std::allocator<void> >;
+// 00592540 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int> > >, std::allocator<void> >;
+// 005dadf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::VelocityMotor>,boost::_bi::list1<boost::_bi::value<RBX::VelocityMotor *> > >, std::allocator<void> >;
+
+// Explicit instantiation may name the native private worker_thread::data type.
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::shared_ptr<RBX::worker_thread::data>,boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > const &),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::worker_thread::data> >,boost::_bi::value<boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > > > >, std::allocator<void> >;

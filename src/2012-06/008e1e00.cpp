@@ -1,21 +1,17 @@
-// from server: 65% by atomic.potato
+// from server: 100% by tajop
 struct S
 {
-    int a;
-    int b;
-    int c[4];
-    int d[24];
-    int e;
-    int f;
-    void g();
+    void f();
 };
 
-void S::g()
+void S::f()
 {
-    a = 0xbeba64;
-    b = 0xbeba58;
-    c[0] = 0xbeba4c;
-    c[1] = 0xbeba40;
-    d[4] = 0xbeba30;
-    d[5] = 0xbeba04;
+    *(int *)this = 0xba77ac;
+    *(int *)((char *)this + 4) = 0xba77a4;
+    *(int *)((char *)this + 0x18) = 0xba7798;
+    *(int *)((char *)this + 0x1c) = 0xba778c;
+    *(int *)((char *)this + 0x80) = 0xba777c;
+    *(int *)((char *)this + 0x84) = 0xba7750;
+    extern void g();
+    g();
 }

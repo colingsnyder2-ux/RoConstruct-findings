@@ -1,51 +1,18 @@
-// from server: 27% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_meshcachetemplatenodeadb12afc2a180987.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/TextureProxy.h"
+#include <G3D/Table.h>
+#include <G3D/Vector3.h>
+#include <G3D/ReferenceCount.h>
+struct Mesh:G3D::ReferenceCountedObject {char storage[28];};
+struct Variations {G3D::ReferenceCountedPointer<Mesh> meshes[4];};
+typedef G3D::Table<G3D::Vector3,Variations> Table;
+struct SurfaceTypes {unsigned value;SurfaceTypes():value(0){}};
+template<class K,class V> struct Entry {K key;V value;};
+template<class K,class V> struct Node {unsigned hash;Entry<K,V> entry;Node* next;
+Node(K k,V v,unsigned h,Node* n){this->entry.key=k;this->entry.value=v;this->hash=h;this->next=n;}};
+template struct Node<SurfaceTypes,Table>;
 
-namespace RBX
-{
-	namespace Render
-	{
-		G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
-		{
-			return texture;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::alphaOnlyVersion()
-		{
-			return new TextureProxy(this);
-		}
-
-		G3D::Vector2 TextureProxy::getSize()
-		{
-			G3D::ReferenceCountedPointer<G3D::Texture> t = getIfResolved();
-			G3D::Vector2 out;
-			if (t.notNull())
-			{
-				out.x = t->texelWidth();
-				out.y = t->texelHeight();
-			}
-			else
-			{
-				out.y = 0.0f;
-				out.x = 0.0f;
-			}
-			return out;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::shade(const G3D::Color3& baseColor, const G3D::ReferenceCountedPointer<TextureProxy>& baseTex)
-		{
-			TextureProxy* newTex = new TextureProxy(baseTex);
-			newTex->textureManager = textureManager;
-			newTex->root = baseTex;
-			newTex->shadeColor = baseColor;
-			newTex->shadeTexture = this;
-			return newTex;
-		}
-	}
-}

@@ -1,108 +1,95 @@
-// from server: 45% by atomic.potato
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_stockvolatilecontrol_01622ab042b10c59.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
 
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
+#include <boost/shared_ptr.hpp>
+
+struct String {
+    char storage[28];
+    __declspec(dllimport) String(const String&);
+};
+
+typedef void (__thiscall *StringCopy)(String*, const String&);
+extern StringCopy copy_string;
+
+struct Control { long reserved; volatile long references; };
+
+struct Value {
+    String name;
+    volatile unsigned long data;
+    void* volatile object;
+    Control* volatile control;
+
+    Value(const Value&);
+    ~Value();
+};
+
+struct Node {
+    char links[12];
+    Value value;
+};
+
+struct Tree {
+    char padding[24];
+    Node* sentinel;
+};
+
+struct Owner {
+    Tree* tree;
+};
+
+struct Iterator {
+    Owner* owner;
+    Node* node;
+
+    Iterator& operator++();
+};
+
+typedef void (__cdecl *Callback)(const Value&);
+
+inline Value::Value(const Value& other)
+ : name(other.name) {
+    data = other.data;
+    object = other.object;
+    Control* p = other.control;
+    control = p;
+    if (p) _InterlockedIncrement(&p->references);
 }
 
-void initMoo()
+Callback __cdecl process(Iterator first, Iterator last, Callback callback)
 {
-	moo2();
-}
+    Iterator current = first;
+    Iterator finish = last;
+    Owner* owner = current.owner;
+    Node* node = current.node;
 
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
+    for (;;) {
+        if (!owner || owner != finish.owner)
+            _invalid_parameter_noinfo();
 
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
+        if (node == finish.node)
+            break;
 
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
+        if (!owner)
+            _invalid_parameter_noinfo();
+        Tree* tree = owner ? owner->tree : reinterpret_cast<Tree*>(owner);
 
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
+        if (node == tree->sentinel)
+            _invalid_parameter_noinfo();
 
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
+        {
+            Value value(node->value);
+            callback(value);
+        }
 
-		boost::mutex::scoped_lock scoped_lock(mutex());
+        ++current;
+        node = current.node;
+        owner = current.owner;
+    }
 
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    return callback;
 }

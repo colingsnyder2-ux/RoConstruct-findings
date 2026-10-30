@@ -1,433 +1,458 @@
-// from server: 37% by colin
-// roc-lang: cpp
 // roc-cl: 21022
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/EnumProperty.cpp
+// roc-lib: rbxgs-net-dll Streaming.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
-#include <g3d/color3.h>
-#include <g3d/vector3.h>
-#include <boost/shared_ptr.hpp>
-#include "v8tree/Instance.h"
-#include "v8datamodel/BrickColor.h"
+#include <BitStream.h>
+#include <StringCompressor.h>
+#include "Streaming.h"
+#include "IdManager.h"
+#include "v8tree/Service.h"
+#include <G3D/vectorMath.h>
+#include <algorithm>
 
 namespace RBX
 {
-	namespace Reflection
+	namespace Network
 	{
-		// TODO: check if type singletons are matching
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, bool value)
 		{
-			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instance>>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, int value)
 		{
-			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instances>>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, long value)
 		{
-			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<int>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned int value)
 		{
-			static Type type("int", typeid(int));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<bool>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned char value)
 		{
-			static Type type("bool", typeid(bool));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<float>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, float value)
 		{
-			static Type type("float", typeid(float));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<double>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const std::string& value)
 		{
-			static Type type("double", typeid(double));
-			return type;
+			stream.Write((unsigned)value.size());
+			stringCompressor->EncodeString(value.c_str(), (int)value.size() + 1, &stream);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<ContentId>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const G3D::Vector3& value)
 		{
-			static Type type("ContentId", typeid(ContentId));
-			return type;
+			stream << value.x;
+			stream << value.y;
+			stream << value.z;
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<std::string>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, const G3D::Color3& value)
 		{
-			static Type type("string", typeid(std::string));
-			return type;
+			stream << value.r;
+			stream << value.g;
+			stream << value.b;
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<G3D::Vector3>()
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, bool& value)
 		{
-			static Type type("Vector3", typeid(G3D::Vector3));
-			return type;
+			stream.Read(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<G3D::Color3>()
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, int& value)
 		{
-			static Type type("Color3", typeid(G3D::Color3));
-			return type;
+			stream.Read(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<std::vector<Value>>()
+		RakNet::BitStream& operator<<(RakNet::BitStream& stream, long& value)
 		{
-			static Type type("Table", typeid(std::vector<Value>));
-			return type;
+			stream.Write(value);
+			return stream;
 		}
 
-		template<>
-		const Type& Type::singleton<BrickColor>()
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned int& value)
 		{
-			static Type type("BrickColor", typeid(BrickColor));
-			return type;
+			stream.Read(value);
+			return stream;
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
+
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned char& value)
 		{
-			return getValue(instance);
+			stream.Read(value);
+			return stream;
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, float& value)
 		{
-			return StringConverter<bool>::convertToString(getValue(instance));
+			stream.Read(value);
+			return stream;
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, std::string& value)
 		{
-			return StringConverter<float>::convertToString(getValue(instance));
+			unsigned int strSize;
+			stream >> strSize;
+
+			char* strBuf = new char[strSize + 1];
+			stringCompressor->DecodeString(strBuf, strSize + 1, &stream);
+			value = strBuf;
+
+			delete[] strBuf;
+			return stream;
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Vector3& value)
 		{
-			return StringConverter<int>::convertToString(getValue(instance));
+			stream >> value.x;
+			stream >> value.y;
+			stream >> value.z;
+			return stream;
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Color3& value)
 		{
-			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
+			stream >> value.r;
+			stream >> value.g;
+			stream >> value.b;
+			return stream;
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
+		template<typename T>
+		RakNet::BitStream& operator>>(RakNet::BitStream& stream, T& value) // TODO: check match
 		{
-			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
+			return operator>>(stream, value);
 		}
 
-		template<>
-		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
+		bool brickEq(float a, float b)
 		{
-			return StringConverter<ContentId>::convertToString(getValue(instance));
+			return a == b || fabs(a - b) <= 0.0005f;
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
+		static bool isBrickLocation(const G3D::Vector3& v, short& x, unsigned short& y, short& z)
 		{
-			setValue(instance, text);
+			if (v.x >= 512.0f)
+				return false;
+
+			if (v.x <= -512.0f)
+				return false;
+
+			if (v.z >= 512.0f)
+				return false;
+
+			if (v.z <= -512.0f)
+				return false;
+			
+			if (v.y >= 204.8)
+				return false;
+
+			if (v.y < 0.0f)
+				return false;
+
+			float dx = v.x * 2.0f;
+			x = (short)dx;
+
+			if ((float)x != dx)
+				return false;
+
+			float dz = v.z * 2.0f;
+			z = (short)dz;
+
+			if ((float)z != dz)
+				return false;
+
+			float dy = v.y * 10.0f;
+			y = (unsigned short)dy;
+
+			if (!brickEq((float)y, dy))
+				return false;
+
 			return true;
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void writeBrickVector(RakNet::BitStream& stream, const G3D::Vector3& value)
 		{
-			bool value;
-			if (StringConverter<bool>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			short x;
+			unsigned short y;
+			short z;
 
-			return false;
+			if (isBrickLocation(value, x, y, z))
+			{
+				stream.Write(true);
+				stream.WriteBits((unsigned char*)&x, 11);
+				stream.WriteBits((unsigned char*)&y, 11);
+				stream.WriteBits((unsigned char*)&z, 11);
+			}
+			else
+			{
+				stream.Write(false);
+				stream.Write(value.x);
+				stream.Write(value.y);
+				stream.Write(value.z);
+			}
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void readBrickVector(RakNet::BitStream& stream, G3D::Vector3& value)
 		{
-			float value;
-			if (StringConverter<float>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			bool isBrickLocation;
+			stream.Read(isBrickLocation);
 
-			return false;
+			if (isBrickLocation)
+			{
+				short x = 0;
+				unsigned short y = 0;
+				short z = 0;
+
+				stream.ReadBits((unsigned char*)&x, 11);
+				stream.ReadBits((unsigned char*)&y, 11);
+				stream.ReadBits((unsigned char*)&z, 11);
+
+				if (x & 0x400) // sign extend x and z
+					x |= 0xfc00;
+
+				if (z & 0x400)
+					z |= 0xfc00;
+
+				value.x = (float)(x * 0.5);
+				value.y = (float)(y / 10.0);
+				value.z = (float)(z * 0.5);
+			}
+			else
+			{
+				stream.Read(value.x);
+				stream.Read(value.y);
+				stream.Read(value.z);
+			}
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void rationalize(G3D::CoordinateFrame& value)
 		{
-			int value;
-			if (StringConverter<int>::convertToValue(text, value))
+			if (!value.translation.isFinite())
 			{
-				setValue(instance, value);
-				return true;
+				value.translation = G3D::Vector3(0.0f, -1e+6f, 0.0f);
 			}
-
-			return false;
+			else
+			{
+				value.translation = G3D::clamp(G3D::Vector3(-1e+6f, -1e+6f, -1e+6f), value.translation, G3D::Vector3(1e+6f, 1e+6f, 1e+6f));
+			}
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void deserializeEnum(Reflection::Property& property, RakNet::BitStream& bitStream)
 		{
-			G3D::Vector3 value;
-			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			const Reflection::EnumPropertyDescriptor& prop = static_cast<const Reflection::EnumPropertyDescriptor&>(property.getDescriptor());
 
-			return false;
+			int value = 0;
+			bitStream.ReadBits((unsigned char*)&value, (int)prop.enumDescriptor.getEnumCountMSB() + 1);
+
+			RBXASSERT(value >= 0);
+			RBXASSERT(value < (int)prop.enumDescriptor.getEnumCount());
+
+			prop.setIndexValue(property.getInstance(), value);
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void serializeEnum(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
 		{
-			G3D::Color3 value;
-			if (StringConverter<G3D::Color3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			const Reflection::EnumPropertyDescriptor& prop = static_cast<const Reflection::EnumPropertyDescriptor&>(property.getDescriptor());
 
-			return false;
+			int value = prop.getIndexValue(property.getInstance());
+
+			RBXASSERT(value >= 0);
+			RBXASSERT(value < (int)prop.enumDescriptor.getEnumCount());
+
+			bitStream.WriteBits((unsigned char*)&value, (int)prop.enumDescriptor.getEnumCountMSB() + 1);
 		}
 
-		template<>
-		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
+		void StringReceiver::receive(RakNet::BitStream& stream, std::string& value)
 		{
-			ContentId value;
-			if (StringConverter<ContentId>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
+			unsigned char id;
+			stream >> id;
 
-			return false;
+			if (id == 0)
+			{
+				value.clear();
+			}
+			else if (id >> 7)
+			{
+				stream >> value;
+				dictionary[id & 127] = value;
+			}
+			else
+			{
+				value = dictionary[id];
+			}
 		}
 
-		template<>
-		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		void StringReceiver::receive(RakNet::BitStream& stream, const Name*& value)
 		{
-			if (!element->isXsiNil())
+			std::string s;
+			receive(stream, s);
+
+			value = &Name::declare(s.c_str(), -1);
+		}
+
+		void StringReceiver::deserializeString(Reflection::Property& property, RakNet::BitStream& bitStream)
+		{
+			std::string value;
+			receive(bitStream, value);
+			
+			Instance* instance = static_cast<Instance*>(property.getInstance());
+			const Reflection::PropertyDescriptor& desc = property.getDescriptor();
+
+			desc.setStringValue(instance, value);
+		}
+
+		void StringSender::serializeString(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
+		{
+			const Instance* instance = static_cast<const Instance*>(property.getInstance());
+			const Reflection::PropertyDescriptor& desc = property.getDescriptor();
+
+			std::string value = desc.getStringValue(instance);
+			send(bitStream, value);
+		}
+
+		void StringSender::send(RakNet::BitStream& stream, const std::string& value)
+		{
+			if (value == "")
 			{
-				float value;
-				if (element->getValue(value))
+				stream << (unsigned char)0;
+			}
+			else
+			{
+				std::pair<std::map<std::string, unsigned char>::iterator, bool> pair = dictionary.insert(std::pair<const std::string, unsigned char>(value, 0));
+
+				if (!pair.second)
 				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			float value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				bool value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			bool value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, BrickColor(value));
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance).asInt());
-		}
-
-		template<>
-		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-		
-		template<>
-		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			int value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				ContentId value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(ContentId(getValue(instance)));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				std::string value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
-				{
-					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
-					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
-
-					G3D::Vector3 value;
-
-					X->getValue(value.x);
-					Y->getValue(value.y);
-					Z->getValue(value.z);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			const Name* xName = &tag_X;
-			XmlElement* xElement = new XmlElement(*xName);
-			element->pushBackChild(xElement);
-
-			const Name* yName = &tag_Y;
-			XmlElement* yElement = new XmlElement(*yName);
-			element->pushBackChild(yElement);
-
-			const Name* zName = &tag_Z;
-			XmlElement* zElement = new XmlElement(*zName);
-			element->pushBackChild(zElement);
-
-			G3D::Vector3 value = getValue(instance);
-
-			xElement->setValue(value.x);
-			yElement->setValue(value.y);
-			zElement->setValue(value.z);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				unsigned int colorValue;
-				if (element->getValue(colorValue))
-				{
-					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
-					setValue(instance, color);	
+					stream << pair.first->second;
 				}
 				else
 				{
-					const XmlElement* R = element->findFirstChildByTag(tag_R);
-					const XmlElement* G = element->findFirstChildByTag(tag_G);
-					const XmlElement* B = element->findFirstChildByTag(tag_B);
+					lastIndex = lastIndex % 127 + 1;
+					dictionary.erase(strings[lastIndex]);
+					pair.first->second = lastIndex;
+					strings[lastIndex] = value;
 
-					G3D::Color3 value;
-
-					R->getValue(value.r);
-					G->getValue(value.g);
-					B->getValue(value.b);
-
-					setValue(instance, value);
+					stream << (unsigned char)(lastIndex | 0x80);
+					stream << value;
 				}
 			}
 		}
 
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		bool StringSender::trySend(RakNet::BitStream& stream, const std::string& value)
 		{
-			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
-			element->setValue(value.asUInt32());
+			if (value == "")
+			{
+				stream << (unsigned char)0;
+				return true;
+			}
+
+			std::map<std::string, unsigned char>::const_iterator iter = dictionary.find(value);
+
+			if (iter == dictionary.end())
+			{
+				return false;
+			}
+			else
+			{
+				stream << iter->second;
+				return true;
+			}
+		}
+
+		void IdSerializer::serializeId(RakNet::BitStream& stream, const Instance* instance)
+		{
+			if (instance)
+			{
+				Guid::Data id;
+				instance->getGuid().extract(id);
+
+				scopeNames.send(stream, id.scope->name);
+
+				RBXASSERT((id.index & 0xff000000) == 0);
+				stream.WriteBits((unsigned char*)&id.index, 24);
+			}
+			else
+			{
+				scopeNames.send(stream, Name::getNullName().name);
+			}
+		}
+
+		bool IdSerializer::trySerializeId(RakNet::BitStream& stream, const Instance* instance)
+		{
+			if (instance)
+			{
+				Guid::Data id;
+				instance->getGuid().extract(id);
+
+				if (!scopeNames.trySend(stream, id.scope->name))
+					return false;
+
+				RBXASSERT((id.index & 0xff000000) == 0);
+				stream.WriteBits((unsigned char*)&id.index, 24);
+				return true;
+			}
+			else
+			{
+				scopeNames.send(stream, Name::getNullName().name);
+				return true;
+			}
+		}
+
+		void IdSerializer::resolvePendingBindings(Instance* instance, Guid::Data id)
+		{
+			std::map<Guid::Data, std::vector<WaitItem>>::iterator iter = waitItems.find(id);
+			if (iter != waitItems.end())
+			{
+				std::for_each(iter->second.begin(), iter->second.end(), boost::bind(&IdSerializer::setRefValue, _1, instance));
+				waitItems.erase(iter);
+			}
+		}
+
+		void IdSerializer::serializeRef(const Reflection::ConstProperty& property, RakNet::BitStream& bitStream)
+		{
+			const Reflection::RefPropertyDescriptor& prop = static_cast<const Reflection::RefPropertyDescriptor&>(property.getDescriptor());
+			serializeId(bitStream, (Instance*)prop.getRefValue(property.getInstance()));
+		}
+
+		void IdSerializer::setRefValue(WaitItem& wi, Instance* instance)
+		{
+			wi.desc->setRefValue(wi.instance.get(), instance);
+		}
+
+		void IdSerializer::deserializeId(RakNet::BitStream& stream, Guid::Data& id)
+		{
+			scopeNames.receive(stream, id.scope);
+			if (*id.scope != Name::getNullName())
+			{
+				id.index = 0;
+				stream.ReadBits((unsigned char*)&id.index, 24);
+			}
+			else
+			{
+				id.index = 0;
+			}
 		}
 	}
 }

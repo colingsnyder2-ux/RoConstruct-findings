@@ -1,28 +1,16 @@
-// from server: 52% by colin
-struct Node {
-    Node* next;
-    char pad[4];
-    void* stream;
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_8be15fbf9b64785c.cpp
 
-struct StreamBuf {
-    virtual int pubsync();
-};
-
-extern "C" int __stdcall MSVCP80_pubsync(StreamBuf*);
-
-struct List {
-    Node* head;
-};
-
-void __cdecl func_0054da10(List* dst, Node* first, Node* last, unsigned int flags)
-{
-    while (first != last) {
-        StreamBuf* sb = (StreamBuf*)first->stream;
-        if (flags & 2)
-            MSVCP80_pubsync(sb);
-        (*(int(__thiscall**)(StreamBuf*, unsigned int))(*(int*)sb + 0x3c))(sb, flags);
-        first = first->next;
-    }
-    dst->head = (Node*)flags;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+template class boost::iostreams::detail::filtering_stream_base<boost::iostreams::chain<boost::iostreams::output,char,std::char_traits<char>,std::allocator<char> >,boost::iostreams::public_>;

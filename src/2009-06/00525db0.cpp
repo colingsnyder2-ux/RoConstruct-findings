@@ -1,102 +1,197 @@
-// from server: 20% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 GLG3Dcpp/GModule.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
+/**
+ @file GModule.cpp
 
-namespace RBX
-{
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
+ @maintainer Morgan McGuire, morgan3d@users.sourceforge.net
 
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+ @created 2006-04-22
+ @edited  2006-04-22
+*/
 
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+#include "GLG3D/GModule.h"
+#include "GLG3D/RenderDevice.h"
 
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-		}
+namespace G3D {
 
-		View::~View()
-		{
-			sceneManager->clear();
 
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
-
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
-
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
-
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
-
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
-
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
-
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
-
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
-		}
-	}
+GModuleManagerRef GModuleManager::create() {
+    return new GModuleManager();
 }
+
+
+GModuleManager::GModuleManager() : m_locked(false), m_size(0), m_removeAll(false) {
+}
+
+
+int GModuleManager::size() const {
+    return m_size;
+}
+
+
+const GModuleRef& GModuleManager::operator[](int i) const {
+    debugAssert(i >= 0 && i < m_size);
+    for (int p = NUM_PRIORITY - 1; p >= 0; --p) {
+        if (i < m_moduleArray[p].size()) {
+            return m_moduleArray[p][i];
+        } else {
+            // Look in the next array.  We are guaranteed
+            // not to underflow by the assertion above.
+            i -= m_moduleArray[p].size();
+        }
+    }
+
+    static GModuleRef tmp;
+    return tmp;
+}
+
+
+void GModuleManager::beginLock() {
+    debugAssert(! m_locked);
+    m_locked = true;
+}
+
+
+void GModuleManager::endLock() {
+    debugAssert(m_locked);
+    m_locked = false;
+
+    // Process add list
+    for (int i = 0; i < m_addList.size(); ++i) {
+        add(m_addList[i].module, m_addList[i].priority);
+    }
+    m_addList.clear();
+
+    // Process remove list
+    for (int i = 0; i < m_removeList.size(); ++i) {
+        remove(m_removeList[i]);
+    }
+    m_removeList.clear();
+
+    if (m_removeAll) {
+        clear();
+        m_removeAll = false;
+    }
+}
+
+
+void GModuleManager::remove(const GModuleRef& m) {
+    if (m_locked) {
+        m_removeList.append(m);
+    } else {
+        for (int p = 0; p < NUM_PRIORITY; ++p) {
+            int j = m_moduleArray[p].findIndex(m);
+            if (j != -1) {
+                m_moduleArray[p].fastRemove(j);
+                --m_size;
+                return;
+            }
+        }
+        debugAssertM(false, "Removed a GModule that was not in the manager.");
+    }
+}
+
+
+void GModuleManager::add(const GModuleRef& m, EventPriority p) {
+    debugAssert(p >= LOW_PRIORITY && p <= HIGH_PRIORITY);
+    if (m_locked) {
+        m_addList.append(Add(m, p));
+    } else {
+        ++m_size;
+        m_moduleArray[p].append(m);
+    }
+}
+
+
+void GModuleManager::clear() {
+    if (m_locked) {
+        m_removeAll = true;
+    } else {
+        for (int p = 0; p < NUM_PRIORITY; ++p) {
+            m_moduleArray[p].clear();
+        }
+    }
+}
+
+// Iterate through all modules in priority order.
+// This same iteration code is used to implement
+// all GModule methods concisely.
+#define ITERATOR(body)\
+    beginLock();\
+    for (int p = NUM_PRIORITY - 1; p >= 0; --p) {\
+        Array<GModuleRef>& array = m_moduleArray[p];\
+        for (int i = array.size() - 1; i >= 0; --i) {\
+            body;\
+        }\
+    }\
+    endLock();
+
+void GModuleManager::getPosedModel(
+    Array<PosedModelRef>& posedArray, 
+    Array<PosedModel2DRef>& posed2DArray) {
+
+    ITERATOR(array[i]->getPosedModel(posedArray, posed2DArray));
+}
+
+
+void GModuleManager::onSimulation(RealTime rdt, SimTime sdt, SimTime idt) {
+    ITERATOR(array[i]->onSimulation(rdt, sdt, idt));
+}
+
+bool GModuleManager::onEvent(const GEvent& event) {
+    // if the event is ever consumed, abort iteration
+    ITERATOR(if (array[i]->onEvent(event)) { endLock(); return true; });
+    return false;
+}
+
+void GModuleManager::onUserInput(UserInput* ui) {
+    ITERATOR(array[i]->onUserInput(ui));
+}
+
+void GModuleManager::onNetwork() {
+    ITERATOR(array[i]->onNetwork());
+}
+
+void GModuleManager::onLogic() {
+    ITERATOR(array[i]->onLogic());
+}
+
+#undef ITERATOR
+
+
+bool GModuleManager::onEvent(const GEvent& event, GModuleManagerRef& a, GModuleManagerRef& b) {
+    a->beginLock();
+    b->beginLock();
+
+    for (int p = NUM_PRIORITY - 1; p >= 0; --p) {
+
+        // Process each, interlaced
+        for (int k = 0; k < 2; ++k) {
+            Array<GModuleRef>& array = 
+                (k == 0) ?
+                    a->m_moduleArray[p] :
+                    b->m_moduleArray[p];
+                
+            for (int i = array.size() - 1; i >= 0; --i) {
+                if (array[i]->onEvent(event)) {
+                    b->endLock();
+                    a->endLock();
+                    return true;
+                }
+            }
+        }
+
+    }
+    
+    b->endLock();
+    a->endLock();
+
+    return false;
+}
+
+
+} // G3D

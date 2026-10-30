@@ -1,348 +1,465 @@
-// from server: 63% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Player.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "Client.h"
-#include "Player.h"
-#include "security/SecurityContext.h"
-#include "v8datamodel/TimerService.h"
-#include "v8datamodel/CharacterAppearance.h"
-#include "v8datamodel/Accoutrement.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/SpawnLocation.h"
-#include "v8world/World.h"
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> loadCharacterFunction(&RBX::Network::Player::loadCharacter, "LoadCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> removeCharacterFunction(&RBX::Network::Player::removeCharacter, "RemoveCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetUnder13(&RBX::Network::Player::setUnder13, "SetUnder13", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetSuperSafeChat(&RBX::Network::Player::setSuperSafeChat, "SetSuperSafeChat", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, RBX::BrickColor> prop_teamColor("TeamColor", "Team", &RBX::Network::Player::getTeamColor, &RBX::Network::Player::setTeamColor, RBX::Reflection::PropertyDescriptor::STANDARD);
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, bool> prop_neutral("Neutral", "Team", &RBX::Network::Player::getNeutral, &RBX::Network::Player::setNeutral, RBX::Reflection::PropertyDescriptor::STANDARD);
-static RBX::Reflection::PropDescriptor<RBX::Network::Player, std::string> prop_characterAppearance("CharacterAppearance", "Data", &RBX::Network::Player::getCharacterAppearance, &RBX::Network::Player::setCharacterAppearance, RBX::Reflection::PropertyDescriptor::STANDARD);
-
-static RBX::Reflection::RefPropDescriptor<RBX::Network::Player, RBX::ModelInstance> prop_Character("Character", "Data", &RBX::Network::Player::getCharacter, &RBX::Network::Player::setCharacter, RBX::Reflection::PropertyDescriptor::STANDARD);
-
-static RBX::Reflection::SignalDesc<RBX::Network::Player, void(float)> event_Idled("Idled", "time");
-
-static void addChild(const boost::shared_ptr<RBX::ModelInstance>& parent, const boost::shared_ptr<RBX::Instance>& child)
-{
-	child->setParent(parent.get());
-}
-
-static void setAppearanceParent(boost::shared_ptr<RBX::Instance> parent, boost::shared_ptr<RBX::Instance> instance)
-{
-	if (dynamic_cast<RBX::CharacterAppearance*>(instance.get()))
-	{
-		instance->setParent(parent.get());
-	}
-	else if (dynamic_cast<RBX::Accoutrement*>(instance.get()))
-	{
-		instance->setParent(parent.get());
-	}
-	else
-	{
-		throw std::runtime_error("Attempt to add a non-CharacterAppearance/Accoutrement object to a character");
-	}
-}
-
-static void setAppearanceParentNull(RBX::Instance* instance)
-{
-	if (dynamic_cast<RBX::CharacterAppearance*>(instance))
-		instance->setParent(NULL);
-}
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
 namespace RBX
 {
-	namespace Network
+	const char* sInstance = "Instance";
+
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		Player::Player()
-			: teamColor(BrickColor::lego_1),
-			  neutral(true),
-			  under13(false),
-			  superSafeChat(false),
-			  userId(0),
-			  lastActivityTime(0.0)
+	}
+
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
+	{
+	}
+
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
+
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
+
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			Security::Context::current().requirePermission(Security::Administrator, "create a Player");
-			setName("Player");
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
+	}
 
-		Player::~Player()
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			setCharacter(NULL);
 		}
-
-		Backpack* Player::getPlayerBackpack() const
+	public:
+		void operator()(Instance* instance)
 		{
-			Backpack* backpack = findFirstChildOfType<Backpack>();
-
-			RBXASSERT(backpack != NULL);
-			return backpack;
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
 		}
+	};
 
-		void Player::onCharacterChangedFrontend()
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
 		{
-			RBXASSERT(Players::frontendProcessing(this, true));
-
-			Player* localPlayer = Players::findLocalPlayer(this);
-			if (this == localPlayer)
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				Workspace* workspace = ServiceProvider::find<Workspace>(this);
-				RBXASSERT(workspace != NULL);
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
+			}
+		}
+	}
 
-				if (!character)
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
 				{
-					workspace->getCamera()->setCameraType(Camera::FIXED_CAMERA);
-					workspace->getCamera()->setDistanceFromTarget(0.0f);
-					workspace->getCamera()->zoom(-1.0f);
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
 				}
 				else
 				{
-					workspace->getCamera()->setCameraSubject(Humanoid::modelIsCharacter(character.get()));
-					workspace->getCamera()->setCameraType(Camera::CUSTOM_CAMERA);
-					workspace->getCamera()->setDistanceFromTarget(13.0f);
-					workspace->getCamera()->zoom(-1.0f);
-					workspace->setDefaultMouseCommand();
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
 				}
 			}
 		}
+	}
 
-		void Player::setTeamColor(BrickColor value)
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
 		{
-			if (value != teamColor)
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
 			{
-				teamColor = value;
-				raisePropertyChanged(prop_teamColor);
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
+
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
 			}
 		}
 
-		void Player::setNeutral(bool value)
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
 		{
-			if (value != neutral)
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
 			{
-				neutral = value;
-				raisePropertyChanged(prop_neutral);
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
 			}
 		}
+	}
 
-		void Player::removeCharacter()
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
 		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("RemoveCharacter can only be called by the backend server");
-
-			setCharacter(NULL);
+			if (c[i]->name == findName)
+				return c[i].get();
 		}
 
-		void Player::setName(const std::string& value)
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
 		{
-			Security::Context::current().requirePermission(Security::Administrator, "set a Player's name");
-			Instance::setName(value);
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
 		}
 
-		void Player::setCharacterAppearance(const std::string& value)
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
 		{
-			if (value != characterAppearance)
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				characterAppearance = value;
-				if (Players::backendProcessing(this, false))
-					loadCharacterAppearance();
-
-				raisePropertyChanged(prop_characterAppearance);
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
 			}
 		}
+	}
 
-		void Player::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
 		{
-			if (oldProvider && Players::backendProcessing(oldProvider, true))
-				setCharacter(NULL);
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
 
-			Instance::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider && Players::frontendProcessing(newProvider, true))
-				onCharacterChangedFrontend();
-
-			if (!oldProvider && Players::frontendProcessing(newProvider, true))
-			{
-				RBXASSERT(Players::frontendProcessing(this, true));
-				lastActivityTime = G3D::System::getLocalTime();
-				doPeriodicIdleCheck();
-			}
+			parent->onDescendentRemoving(instance);
 		}
 
-		void Player::doPeriodicIdleCheck()
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
 		{
-			if (ServiceProvider::findServiceProvider(this))
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				RBXASSERT(Players::frontendProcessing(this, true));
-				if (lastActivityTime != 0.0)
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
 				{
-					G3D::RealTime idleTime = G3D::System::getLocalTime() - lastActivityTime;
-					if (idleTime > 120.0)
-					{
-						Players* players = ServiceProvider::find<Players>(this);
-						if (players && players->getLocalPlayer() && Players::clientIsPresent(this, true))
-						{
-							event_Idled.fire(this, idleTime);
-						}
-					}
-				}
-
-				TimerService* timerService = ServiceProvider::create<TimerService>(this);
-
-				if (timerService)
-					timerService->delay(boost::bind(&Player::doPeriodicIdleCheck, shared_from(this)), 30.0);
-			}
-		}
-
-		void Player::setCharacter(ModelInstance* value)
-		{
-			if (value != character.get())
-			{
-				if (character.get())
-				{
-					characterDiedConnection.disconnect();
-
-					Notifier<Player, CharacterRemoving>::raise(character.get());
-
-					if (Players::backendProcessing(this, false))
-						character->setParent(NULL);
-
-					character.reset();
-				}
-
-				if (value)
-				{
-					character = shared_from(value);
-
-					Notifier<Player, CharacterAdded>::raise(character.get());
-
-					if (Players::frontendProcessing(this, false))
-						onCharacterChangedFrontend();
-				}
-
-				raisePropertyChanged(prop_Character);
-			}
-		}
-
-		void Player::loadCharacterAppearance()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("LoadCharacterAppearance can only be called by the backend server");
-
-			removeCharacterAppearance();
-
-			if (character && !characterAppearance.empty())
-			{
-				std::vector<boost::shared_ptr<Instance>> characterApperance; // yes, the name's correct
-
-				{
-					std::vector<std::string> strings;
-					boost::algorithm::split(strings, this->characterAppearance, boost::algorithm::is_any_of(";"));
-
-					for (size_t i = 0; i < strings.size(); i++)
-					{
-						ContentProvider::singleton().load(ContentId(strings[i]), characterApperance);
-					}
-				}
-
-				std::for_each(characterApperance.begin(), characterApperance.end(), boost::bind(&setAppearanceParent, character, _1));
-
-				if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
-					workspace->getWorld()->update();
-			}
-		}
-
-		void Player::removeCharacterAppearance()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("RemoveCharacterAppearance can only be called by the backend server");
-
-			if (character)
-				character->for_eachChild(&setAppearanceParentNull);
-		}
-
-		void Player::rebuildBackpack()
-		{
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("rebuildBackpack can only be called by the backend server");
-
-			while (Backpack* r = findFirstChildOfType<Backpack>())
-			{
-				r->setParent(NULL);
-			}
-
-			boost::shared_ptr<Instance> backpack = Creatable::create<Backpack>();
-			backpack->setParent(this);
-
-			StarterPackService* starterPack = ServiceProvider::find<StarterPackService>(this);
-			if (starterPack)
-			{
-				for (size_t i = 0; i < starterPack->numChildren(); i++)
-				{
-					boost::shared_ptr<Instance> copy = starterPack->getChild(i)->clone();
-					copy->setParent(backpack.get());
+					(*iter).read(propertyElement, binder);
 				}
 			}
 		}
+	}
 
-		void Player::loadCharacter()
+	XmlElement* Instance::write()
+	{
+		if (archivable)
 		{
-			Workspace* workspace = ServiceProvider::find<Workspace>(this);
-			if (!workspace)
-				throw std::runtime_error("LoadCharacter can only be called when Player is in the world");
-
-			if (!Players::backendProcessing(this, true))
-				throw std::runtime_error("LoadCharacter can only be called by the backend server");
-
-			std::vector<boost::shared_ptr<Instance>> instances;
-			ContentProvider::singleton().load(ContentId::fromAssets("fonts\\character.rbxm"), instances);
-
-			if (instances.size() != 1)
-				throw std::runtime_error("character.rbxm should contain a Character model");
-
-			boost::shared_ptr<ModelInstance> model = boost::shared_dynamic_cast<ModelInstance>(instances.front());
-			if (!model)
-				throw std::runtime_error("character.rbxm should contain a Character model");
-
-			Humanoid* humanoid = Humanoid::modelIsCharacter(model.get());
-			if (!humanoid)
-				throw std::runtime_error("character.rbxm should contain a humanoid");
-
+			if (getClassName() != Name::getNullName())
 			{
-				std::vector<boost::shared_ptr<Instance>> extraSound;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidSound.rbxm"), extraSound);
-				std::for_each(extraSound.begin(), extraSound.end(), boost::bind(&addChild, model, _1));
-			}
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
 
-			{
-				std::vector<boost::shared_ptr<Instance>> extraHealth;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidHealth.rbxm"), extraHealth);
-				std::for_each(extraHealth.begin(), extraHealth.end(), boost::bind(&addChild, model, _1));
-			}
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
 
-			{
-				std::vector<boost::shared_ptr<Instance>> extraAnimate;
-				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidAnimate.rbxm"), extraAnimate);
-				std::for_each(extraAnimate.begin(), extraAnimate.end(), boost::bind(&addChild, model, _1));
+				return element;
 			}
-
-			model->setName(getName());
-			humanoid->buildJoints();
-			Instance::propArchivable.setValue(model.get(), false);
-			setCharacter(model.get());
-			
-			model->setParent(workspace);
-			loadCharacterAppearance();
-			
-			SpawnerService* spawnerService = ServiceProvider::find<SpawnerService>(this);
-			G3D::Vector3 dropPoint = spawnerService ? spawnerService->FindSpawnPositionForPlayer(this) : G3D::Vector3(0.0f, 20.0f, 25.0f);
-			workspace->moveToPoint(model.get(), dropPoint);
 		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
 	}
 }

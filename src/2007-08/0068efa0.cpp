@@ -1,8 +1,7 @@
-// from server: 50% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/Controls/XTColorDialog.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorDialog.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTColorDialog.cpp : implementation file

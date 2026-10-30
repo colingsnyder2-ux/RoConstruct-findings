@@ -1,37 +1,17 @@
-// from server: 41% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-struct Inner {
-    void sub_48A9B0(void*, void*);
-};
-
-struct Outer {
-    Inner* field0;
-    Inner* field4;
-    void construct(void* a, void* b);
-};
-
-void Outer::construct(void* a, void* b)
-{
-    Inner* p = (Inner*)a;
-    this->field0 = p;
-    ((Inner*)((char*)this + 4))->sub_48A9B0(a, b);
-    if (p != 0) {
-        Inner** slot = (Inner**)((char*)p + 0xa4);
-        if (slot != 0) {
-            *slot = p;
-            Inner* q = this->field4;
-            if (q != 0) {
-                _InterlockedExchangeAdd((volatile long*)((char*)q + 8), 1);
-            }
-            Inner* r = slot[1];
-            if (r != 0) {
-                if (_InterlockedExchangeAdd((volatile long*)((char*)r + 8), -1) == 1) {
-                    (*(void(**)(Inner*))(*(void***)r)[2])(r);
-                }
-            }
-            slot[1] = q;
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

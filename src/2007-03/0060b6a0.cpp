@@ -1,211 +1,287 @@
-// from server: 42% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlContMinEllipseCR2.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_codex_scorehud_color_order_21a493d6c6b3d438.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
-//
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
+#include "roc_espeon_scorehudportableheader11bfdf7c6129a99c.cpp"
+#include <typeinfo>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+	class BoardData
+	{
+	public:
+		std::vector<std::vector<std::string>> data;
+		std::vector<std::string> fields;
 
-#include "WmlContMinEllipseCR2.h"
-using namespace Wml;
+	public:
+		BoardData()
+		{
+		}
 
-#include <algorithm>
-#include <vector>
-using namespace std;
+		void SetSize(int dataSize, int fieldSize)
+		{
+			data.resize(dataSize);
+			for (int i = 0; i < dataSize; ++i)
+				data[i].resize(fieldSize);
 
-//----------------------------------------------------------------------------
-template <class Real>
-static void MaxProduct (int iQuantity, vector<Vector2<Real> >& rkA, Real& rfX,
-    Real& rfY)
-{
-    // Keep track of which constraint lines have already been used in the
-    // search.
-    bool* abUsed = new bool[iQuantity];
-    memset(abUsed,0,iQuantity*sizeof(bool));
+			fields.resize(fieldSize);
+		}
 
-    // Find the constraint line whose y-intercept (0,ymin) is closest to the
-    // origin.  This line contributes to the convex hull of the constraints
-    // and the search for the maximum starts here.  Also find the constraint
-    // line whose x-intercept (xmin,0) is closest to the origin.  This line
-    // contributes to the convex hull of the constraints and the search for
-    // the maximum terminates before or at this line.
-    int i, iYMin = -1;
-#ifdef _DEBUG
-    int iXMin = -1;
-#endif
-    Real fAXMax = (Real)0.0, fAYMax = (Real)0.0;  // A[i] >= (0,0) by design
-    for (i = 0; i < iQuantity; i++)
-    {
-        // The minimum x-intercept is 1/A[iXMin].X() for A[iXMin].X() the
-        // maximum of the A[i].X().
-        if ( rkA[i].X() > fAXMax )
-        {
-            fAXMax = rkA[i].X();
-#ifdef _DEBUG
-            iXMin = i;
-#endif
+		void AddField(std::string fieldName, int position)
+		{
+			fields[position] = fieldName;
+		}
+	};
+
+	class LeaderboardData
+	{
+	public:
+		std::vector<std::string> statNamesList;
+		std::map<Team*, std::vector<std::string>> playersByTeamList;
+		std::map<std::string, std::map<std::string, int>> statMap;
+		std::map<Team*, std::map<std::string, int>> teamTotals;
+	private:
+		Instance* context;
+
+	public:
+		LeaderboardData(Instance* context)
+			: context(context)
+		{
+		}
+
+		void CompileData();
+
+
+	private:
+		void AddTuple(std::string playerName, Team* team, std::string statName, int statValue)
+		{
+			if (std::find(statNamesList.begin(), statNamesList.end(), statName) == statNamesList.end())
+				statNamesList.push_back(statName);
+
+			if (std::find(playersByTeamList[team].begin(), playersByTeamList[team].end(), playerName) == playersByTeamList[team].end())
+				playersByTeamList[team].push_back(playerName);
+
+			statMap[playerName][statName] = statValue;
+		}
+	};
+
+
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::find<Teams>(const Instance*);
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+template<> Network::Players* ServiceProvider::find<Network::Players>(const Instance*);
+// Genuine public accessor bodies on opaque native receivers. Public SDK controls
+// prove their old inline offsets differ (name100/childrenf8/size134 vs native
+// name110/children108/size13c). These methods model their own native fields;
+// no private declarations/access modifiers, padding or virtual slots are changed.
+class InstanceApi {
+public:
+    Instance* findFirstChildByName(const std::string&) const;
+    size_t numChildren() const {
+        const boost::shared_ptr<Instances>& children=*(const boost::shared_ptr<Instances>*)((const char*)this+0x108);
+        return children ? children->size() : 0;
+    }
+    Instance* getChild(size_t i) {
+        return (**(const boost::shared_ptr<Instances>*)((const char*)this+0x108))[i].get();
+    }
+    const std::string& getName() const {
+        return *(const std::string*)((const char*)this+0x110);
+    }
+};
+class GuiItemApi {
+public:
+    void setGuiSize(const G3D::Vector2& value) {
+        *(G3D::Vector2*)((char*)this+0x13c)=value;
+    }
+};
+class PlayersApi {
+public:
+    boost::shared_ptr<const Instances> getPlayers();
+    int numPlayers() const {
+        return (int)(*(const CopyOnWrite<std::vector<boost::shared_ptr<Instance>>>*)((const char*)this+0x198))->size();
+    }
+};
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::find<Teams>(this);
+    if(!teams) return;
+    G3D::Rect2D viewport=adorn->getViewport();
+    float scale=viewport.width()/1024.0f;
+    float row=14.0f*scale;
+    if(mode==TEAM_DEATHMATCH) {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*320.0f;
+        float leaderboardSizeY=playerCount+(teamCount+1)*3;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    } else {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*240.0f;
+        float leaderboardSizeY=playerCount+teamCount*3+2;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    }
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            G3D::Color4 teamColor(team->getTeamColor().color3(),1);
+            adorn->drawFont2D(label,position,row,teamColor,G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                float width=rect.high.x-rect.low.x;
+                G3D::Vector2 position=rect.low;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                } else { position.x += 5.0f; }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
+}
 
-        // The minimum y-intercept is 1/A[iYMin].Y() for A[iYMin].Y() the
-        // maximum of the A[i].Y().
-        if ( rkA[i].Y() > fAYMax )
-        {
-            fAYMax = rkA[i].Y();
-            iYMin = i;
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+    }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
     }
-    assert( iXMin != -1 && iYMin != -1 );
-    abUsed[iYMin] = true;
+}
 
-    // The convex hull is searched in a clockwise manner starting with the
-    // constraint line constructed above.  The next vertex of the hull occurs
-    // as the closest point to the first vertex on the current constraint
-    // line.  The following loop finds each consecutive vertex.
-    Real fX0 = (Real)0.0, fXMax = ((Real)1.0)/fAXMax;
-    int j;
-    for (j = 0; j < iQuantity; j++)
-    {
-        // Find the line whose intersection with the current line is closest
-        // to the last hull vertex.  The last vertex is at (x0,y0) on the
-        // current line.
-        Real fX1 = fXMax;
-        int iLine = -1;
-        for (i = 0; i < iQuantity; i++)
-        {
-            if ( !abUsed[i] )
-            {
-                // This line not yet visited, process it.  Given current
-                // constraint line a0*x+b0*y =1 and candidate line
-                // a1*x+b1*y = 1, find the point of intersection.  The
-                // determinant of the system is d = a0*b1-a1*b0.  We only
-                // care about lines that have more negative slope than the
-                // previous one, that is, -a1/b1 < -a0/b0, in which case we
-                // process only lines for which d < 0.
-                Real fDet = rkA[iYMin].Kross(rkA[i]);
-                if ( fDet < (Real)0.0 )  // TO DO.  Need epsilon test here?
-                {
-                    // Compute the x-value for the point of intersection,
-                    // (x1,y1).  There may be floating point error issues in
-                    // the comparision 'rfX <= fX1'.  Consider modifying to
-                    // 'rfX <= fX1+epsilon'.
-                    rfX = (rkA[i].Y()-rkA[iYMin].Y())/fDet;
-                    if ( fX0 < rfX && rfX <= fX1)
-                    {
-                        iLine = i;
-                        fX1 = rfX;
-                    }
-                }
+// Native RTTI object 00960f78 is Value<int,&sIntValue> with the older char*
+// non-type template argument. Use the actual CRT interface and external native
+// type_info object instead of substituting the newer SDK's differently named type.
+extern const type_info nativeIntValueType;
+extern "C" void* __cdecl __RTDynamicCast(void*,long,void*,void*,int);
+// Actual descriptor's GetSet pointer at0097d39c. Native getValue slot8 takes
+// const DescribedBase*, returns int (__thiscall). No synthetic virtual class.
+extern void* nativeIntValueGetter;
+static int readNativeIntValue(Instance* instance) {
+    typedef int (__thiscall *GetValue)(void*,const Reflection::DescribedBase*);
+    return ((GetValue)(*(void***)nativeIntValueGetter)[2])(
+        nativeIntValueGetter,instance?(const Reflection::DescribedBase*)((char*)instance+0x14):0);
+}
+class TeamsApi {
+public:
+    boost::shared_ptr<const Instances> getTeams();
+};
+void ScoreHud::BuildBoardData(BoardData& board) {
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    if(!nativePlayers) return;
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)nativePlayers)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            board.SetSize(roster->size(),((InstanceApi*)stats)->numChildren()+1);
+            board.AddField("Player",0);
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j)
+                board.AddField(((InstanceApi*)((InstanceApi*)stats)->getChild(j))->getName(),j+1);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                __RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                int value=readNativeIntValue(((InstanceApi*)stats)->getChild(j));
+                board.data[i][j+1]=StringConverter<int>::convertToString(value);
+            }
+        } else {
+            board.SetSize(roster->size(),1);
+            board.AddField("Player List",0);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+        }
+    }
+    for(unsigned i=0;i<roster->size();++i)
+        if(board.data[i][0].size()>16) board.data[i][0].resize(16);
+}
+void LeaderboardData::CompileData() {
+    Network::Players* players=ServiceProvider::find<Network::Players>(context);
+    Teams* teams=ServiceProvider::create<Teams>(context);
+    boost::shared_ptr<const Instances> teamList=((TeamsApi*)teams)->getTeams();
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)players)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        playersByTeamList[teams->getTeamFromPlayer((Network::Player*)player)].push_back(((InstanceApi*)player)->getName());
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                Instance* value=(Instance*)__RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                if(value) AddTuple(((InstanceApi*)player)->getName(),teams->getTeamFromPlayer((Network::Player*)player),((InstanceApi*)value)->getName(),readNativeIntValue(value));
             }
         }
-
-        // Next vertex is at (x1,y1) whose x-value was computed above.  First
-        // check for the maximum of x*y on the current line for x in [x0,x1].
-        // On this interval the function is f(x) = x*(1-a0*x)/b0.  The
-        // derivative is f'(x) = (1-2*a0*x)/b0 and f'(r) = 0 when
-        // r = 1/(2*a0).  The three candidates for the maximum are f(x0),
-        // f(r), and f(x1).  Comparisons are made between r and the end points
-        // x0 and x1.  Since a0 = 0 is possible (constraint line is horizontal
-        // and f is increasing on line), the division in r is not performed
-        // and the comparisons are made between 1/2 = a0*r and a0*x0 or a0*x1.
-
-        // compare r < x0
-        if ( (Real)0.5 < rkA[iYMin].X()*fX0 )
-        {
-            // The maximum is f(x0) since the quadratic f decreases for
-            // x > r.
-            rfX = fX0;
-            rfY = ((Real)1.0-rkA[iYMin].X()*rfX)/rkA[iYMin].Y();  // = f(x0)
-            break;
-        }
-
-        // compare r < x1
-        if ( (Real)0.5 < rkA[iYMin].X()*fX1 )
-        {
-            // The maximum is f(r).  The search ends here because the
-            // current line is tangent to the level curve of f(x)=f(r)
-            // and x*y can therefore only decrease as we traverse further
-            // around the hull in the clockwise direction.
-            rfX = ((Real)0.5)/rkA[iYMin].X();
-            rfY = ((Real)0.5)/rkA[iYMin].Y();  // = f(r)
-            break;
-        }
-
-        // The maximum is f(x1).  The function x*y is potentially larger
-        // on the next line, so continue the search.
-        assert( iLine != -1 );
-        fX0 = fX1;
-        fX1 = fXMax;
-        abUsed[iLine] = true;
-        iYMin = iLine;
     }
-
-    assert( j < iQuantity );
-
-    delete[] abUsed;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void Wml::MinEllipseCR2 (int iQuantity, const Vector2<Real>* akPoint,
-    const Vector2<Real>& rkC, const Matrix2<Real>& rkR, Real afD[2])
-{
-    // Given center C and orientation R, finds minimum volume ellipsoid
-    // (X-C)^t R^t D R (X-C) = 1 where D is a diagonal matrix whose diagonal
-    // entries are positive.  The problem is equivalent to maximizing the
-    // product D[0]*D[1] given C and R and subject to the constraints
-    // (P[i]-C)^t R^t D R (P[i]-C) <= 1 for all input points P[i] with
-    // 0 <= i < N.  Each constraint has form A.X()*D[0]+A.Y()*D[1] <= 1
-    // where A.X() >= 0 and A.Y() >= 0.
-
-    vector<Vector2<Real> > kA(iQuantity);
-    for (int i = 0; i < iQuantity; i++)
-    {
-        Vector2<Real> kDiff = akPoint[i] - rkC;
-        Vector2<Real> kProd = rkR*kDiff;
-        kA[i].X() = kProd.X()*kProd.X();
-        kA[i].Y() = kProd.Y()*kProd.Y();
+    if(!teams) return;
+    for(unsigned i=0;i<((InstanceApi*)teams)->numChildren();++i) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(i));
+        if(!team) continue;
+        for(unsigned j=0;j<statNamesList.size();++j) {
+            teamTotals[team][statNamesList[j]]=0;
+            for(unsigned k=0;k<playersByTeamList[team].size();++k)
+                teamTotals[team][statNamesList[j]]+=statMap[playersByTeamList[team][k]][statNamesList[j]];
+        }
     }
-
-    // Lexicographical sort, (x0,y0) > (x1,y1) if x0 > x1 or if x0 = x1 and
-    // y0 > y1.  Remove all but first entry in blocks with x0 = x1 since the
-    // corresponding constraint lines for the first entry "hides" all the
-    // others from the origin.
-    sort(kA.begin(),kA.end());
-    typename vector<Vector2<Real> >::iterator pkEnd =
-        unique(kA.begin(),kA.end());
-    kA.erase(pkEnd,kA.end());
-
-    // Lexicographical sort, (x0,y0) > (x1,y1) if y0 > y1 or if y0 = y1 and
-    // x0 > x1.  Remove all but first entry in blocks with y0 = y1 since the
-    // corresponding constraint lines for the first entry "hides" all the
-    // others from the origin.
-    sort(kA.begin(),kA.end());
-    pkEnd = unique(kA.begin(),kA.end());
-    kA.erase(pkEnd,kA.end());
-
-    MaxProduct((int)kA.size(),kA,afD[0],afD[1]);
 }
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
-{
-template WML_ITEM void MinEllipseCR2<float> (int,
-    const Vector2<float>*, const Vector2<float>&, const Matrix2<float>&,
-    float afD[2]);
-
-template WML_ITEM void MinEllipseCR2<double> (int,
-    const Vector2<double>*, const Vector2<double>&, const Matrix2<double>&,
-    double afD[2]);
 }
-//----------------------------------------------------------------------------

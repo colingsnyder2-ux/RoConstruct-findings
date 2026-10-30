@@ -1,8 +1,7 @@
-// from server: 72% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreCompositorInstance.cpp
+// roc-lib: ogre-1.7.0 OgreMesh.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*
@@ -33,1081 +32,2184 @@ THE SOFTWARE.
 -----------------------------------------------------------------------------
 */
 #include "OgreStableHeaders.h"
-#include "OgreCompositorInstance.h"
-#include "OgreCompositorChain.h"
-#include "OgreCompositorManager.h"
-#include "OgreCompositionTargetPass.h"
-#include "OgreCompositionPass.h"
-#include "OgreCompositionTechnique.h"
-#include "OgreCustomCompositionPass.h"
-#include "OgreTechnique.h"
-#include "OgrePass.h"
-#include "OgreTexture.h"
+#include "OgreMesh.h"
+
+#include "OgreSubMesh.h"
 #include "OgreLogManager.h"
-#include "OgreMaterialManager.h"
-#include "OgreTextureManager.h"
-#include "OgreSceneManager.h"
+#include "OgreMeshSerializer.h"
+#include "OgreSkeletonManager.h"
+#include "OgreHardwareBufferManager.h"
 #include "OgreStringConverter.h"
 #include "OgreException.h"
-#include "OgreHardwarePixelBuffer.h"
-#include "OgreCamera.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreCompositorLogic.h"
+#include "OgreMeshManager.h"
+#include "OgreEdgeListBuilder.h"
+#include "OgreAnimation.h"
+#include "OgreAnimationState.h"
+#include "OgreAnimationTrack.h"
+#include "OgreOptimisedUtil.h"
+#include "OgreTangentSpaceCalc.h"
+#include "OgreLodStrategyManager.h"
+
 
 namespace Ogre {
-CompositorInstance::CompositorInstance(CompositionTechnique *technique,
-    CompositorChain *chain):
-    mCompositor(technique->getParent()), mTechnique(technique), mChain(chain),
-		mEnabled(false)
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
-	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceCreated(this);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorInstance::~CompositorInstance()
-{
-	const String& logicName = mTechnique->getCompositorLogicName();
-	if (!logicName.empty())
-	{
-		CompositorManager::getSingleton().
-			getCompositorLogic(logicName)->compositorInstanceDestroyed(this);
-	}
-
-    freeResources(false, true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setEnabled(bool value)
-{
-    if (mEnabled != value)
+    //-----------------------------------------------------------------------
+    MeshPtr::MeshPtr(const ResourcePtr& r) : SharedPtr<Mesh>()
     {
-        mEnabled = value;
-
-        // Create of free resource.
-        if (value)
+		// lock & copy other mutex pointer
+        OGRE_MUTEX_CONDITIONAL(r.OGRE_AUTO_MUTEX_NAME)
         {
-            createResources(false);
+		    OGRE_LOCK_MUTEX(*r.OGRE_AUTO_MUTEX_NAME)
+		    OGRE_COPY_AUTO_SHARED_MUTEX(r.OGRE_AUTO_MUTEX_NAME)
+            pRep = static_cast<Mesh*>(r.getPointer());
+            pUseCount = r.useCountPointer();
+            if (pUseCount)
+            {
+                ++(*pUseCount);
+            }
+        }
+    }
+    //-----------------------------------------------------------------------
+    MeshPtr& MeshPtr::operator=(const ResourcePtr& r)
+    {
+        if (pRep == static_cast<Mesh*>(r.getPointer()))
+            return *this;
+        release();
+		// lock & copy other mutex pointer
+        OGRE_MUTEX_CONDITIONAL(r.OGRE_AUTO_MUTEX_NAME)
+        {
+		    OGRE_LOCK_MUTEX(*r.OGRE_AUTO_MUTEX_NAME)
+		    OGRE_COPY_AUTO_SHARED_MUTEX(r.OGRE_AUTO_MUTEX_NAME)
+            pRep = static_cast<Mesh*>(r.getPointer());
+            pUseCount = r.useCountPointer();
+            if (pUseCount)
+            {
+                ++(*pUseCount);
+            }
+        }
+		else
+		{
+			// RHS must be a null pointer
+			assert(r.isNull() && "RHS must be null if it has no mutex!");
+			setNull();
+		}
+        return *this;
+    }
+    //-----------------------------------------------------------------------
+    void MeshPtr::destroy(void)
+    {
+        // We're only overriding so that we can destroy after full definition of Mesh
+        SharedPtr<Mesh>::destroy();
+    }
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    Mesh::Mesh(ResourceManager* creator, const String& name, ResourceHandle handle,
+        const String& group, bool isManual, ManualResourceLoader* loader)
+        : Resource(creator, name, handle, group, isManual, loader),
+        mBoundRadius(0.0f),
+        mBoneAssignmentsOutOfDate(false),
+        mIsLodManual(false),
+        mNumLods(1),
+        mVertexBufferUsage(HardwareBuffer::HBU_STATIC_WRITE_ONLY),
+        mIndexBufferUsage(HardwareBuffer::HBU_STATIC_WRITE_ONLY),
+        mVertexBufferShadowBuffer(true),
+        mIndexBufferShadowBuffer(true),
+        mPreparedForShadowVolumes(false),
+        mEdgeListsBuilt(false),
+        mAutoBuildEdgeLists(true), // will be set to false by serializers of 1.30 and above
+		mSharedVertexDataAnimationType(VAT_NONE),
+		mAnimationTypesDirty(true),
+		sharedVertexData(0)
+    {
+
+        // Initialise to default strategy
+        mLodStrategy = LodStrategyManager::getSingleton().getDefaultStrategy();
+
+		// Init first (manual) lod
+		MeshLodUsage lod;
+        lod.userValue = 0; // User value not used for base lod level
+		lod.value = mLodStrategy->getBaseValue();
+        lod.edgeData = NULL;
+        lod.manualMesh.setNull();
+		mMeshLodUsageList.push_back(lod);
+
+    }
+    //-----------------------------------------------------------------------
+    Mesh::~Mesh()
+    {
+        // have to call this here reather than in Resource destructor
+        // since calling virtual methods in base destructors causes crash
+        unload();
+    }
+    //-----------------------------------------------------------------------
+    SubMesh* Mesh::createSubMesh()
+    {
+        SubMesh* sub = OGRE_NEW SubMesh();
+        sub->parent = this;
+
+        mSubMeshList.push_back(sub);
+
+		if (isLoaded())
+			_dirtyState();
+
+        return sub;
+    }
+    //-----------------------------------------------------------------------
+    SubMesh* Mesh::createSubMesh(const String& name)
+	{
+		SubMesh *sub = createSubMesh();
+		nameSubMesh(name, (ushort)mSubMeshList.size()-1);
+		return sub ;
+	}
+    //-----------------------------------------------------------------------
+	void Mesh::destroySubMesh(unsigned short index)
+	{
+        if (index >= mSubMeshList.size())
+        {
+            OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+						"Index out of bounds.",
+						"Mesh::removeSubMesh");
+        }
+		SubMeshList::iterator i = mSubMeshList.begin();
+		std::advance(i, index);
+		mSubMeshList.erase(i);
+		
+		if (isLoaded())
+			_dirtyState();
+		
+	}
+    //-----------------------------------------------------------------------
+    void Mesh::destroySubMesh(const String& name)
+	{
+		unsigned short index = _getSubMeshIndex(name);
+		destroySubMesh(index);
+	}
+	//-----------------------------------------------------------------------
+    unsigned short Mesh::getNumSubMeshes() const
+    {
+        return static_cast< unsigned short >( mSubMeshList.size() );
+    }
+
+    //---------------------------------------------------------------------
+	void Mesh::nameSubMesh(const String& name, ushort index)
+	{
+		mSubMeshNameMap[name] = index ;
+	}
+
+	//---------------------------------------------------------------------
+	void Mesh::unnameSubMesh(const String& name)
+	{
+		SubMeshNameMap::iterator i = mSubMeshNameMap.find(name);
+		if (i != mSubMeshNameMap.end())
+			mSubMeshNameMap.erase(i);
+	}
+    //-----------------------------------------------------------------------
+    SubMesh* Mesh::getSubMesh(const String& name) const
+	{
+		ushort index = _getSubMeshIndex(name);
+		return getSubMesh(index);
+	}
+    //-----------------------------------------------------------------------
+    SubMesh* Mesh::getSubMesh(unsigned short index) const
+    {
+        if (index >= mSubMeshList.size())
+        {
+            OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+                "Index out of bounds.",
+                "Mesh::getSubMesh");
+        }
+
+        return mSubMeshList[index];
+    }
+	//-----------------------------------------------------------------------
+	void Mesh::postLoadImpl(void)
+	{
+		// Prepare for shadow volumes?
+		if (MeshManager::getSingleton().getPrepareAllMeshesForShadowVolumes())
+		{
+			if (mEdgeListsBuilt || mAutoBuildEdgeLists)
+			{
+				prepareForShadowVolume();
+			}
+
+			if (!mEdgeListsBuilt && mAutoBuildEdgeLists)
+			{
+				buildEdgeList();
+			}
+		}
+
+        // The loading process accesses lod usages directly, so
+        // transformation of user values must occur after loading is complete.
+
+        // Transform user lod values (starting at index 1, no need to transform base value)
+		for (MeshLodUsageList::iterator i = mMeshLodUsageList.begin(); i != mMeshLodUsageList.end(); ++i)
+            i->value = mLodStrategy->transformUserValue(i->userValue);
+	}
+	//-----------------------------------------------------------------------
+    void Mesh::prepareImpl()
+    {
+        // Load from specified 'name'
+        if (getCreator()->getVerbose())
+            LogManager::getSingleton().logMessage("Mesh: Loading "+mName+".");
+
+        mFreshFromDisk =
+            ResourceGroupManager::getSingleton().openResource(
+				mName, mGroup, true, this);
+ 
+        // fully prebuffer into host RAM
+        mFreshFromDisk = DataStreamPtr(OGRE_NEW MemoryDataStream(mName,mFreshFromDisk));
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::unprepareImpl()
+    {
+        mFreshFromDisk.setNull();
+    }
+    void Mesh::loadImpl()
+    {
+        MeshSerializer serializer;
+        serializer.setListener(MeshManager::getSingleton().getListener());
+
+        // If the only copy is local on the stack, it will be cleaned
+        // up reliably in case of exceptions, etc
+        DataStreamPtr data(mFreshFromDisk);
+        mFreshFromDisk.setNull();
+
+        if (data.isNull()) {
+            OGRE_EXCEPT(Exception::ERR_INVALID_STATE,
+                        "Data doesn't appear to have been prepared in " + mName,
+                        "Mesh::loadImpl()");
+        }
+
+		serializer.importMesh(data, this);
+
+        /* check all submeshes to see if their materials should be
+           updated.  If the submesh has texture aliases that match those
+           found in the current material then a new material is created using
+           the textures from the submesh.
+        */
+        updateMaterialForAllSubMeshes();
+    }
+
+    //-----------------------------------------------------------------------
+    void Mesh::unloadImpl()
+    {
+        // Teardown submeshes
+        for (SubMeshList::iterator i = mSubMeshList.begin();
+            i != mSubMeshList.end(); ++i)
+        {
+            OGRE_DELETE *i;
+        }
+        if (sharedVertexData)
+        {
+            OGRE_DELETE sharedVertexData;
+            sharedVertexData = NULL;
+        }
+		// Clear SubMesh lists
+		mSubMeshList.clear();
+		mSubMeshNameMap.clear();
+        // Removes all LOD data
+        removeLodLevels();
+        mPreparedForShadowVolumes = false;
+
+		// remove all poses & animations
+		removeAllAnimations();
+		removeAllPoses();
+
+        // Clear bone assignments
+        mBoneAssignments.clear();
+        mBoneAssignmentsOutOfDate = false;
+
+        // Removes reference to skeleton
+        setSkeletonName(StringUtil::BLANK);
+    }
+
+    //-----------------------------------------------------------------------
+    MeshPtr Mesh::clone(const String& newName, const String& newGroup)
+    {
+        // This is a bit like a copy constructor, but with the additional aspect of registering the clone with
+        //  the MeshManager
+
+        // New Mesh is assumed to be manually defined rather than loaded since you're cloning it for a reason
+        String theGroup;
+        if (newGroup == StringUtil::BLANK)
+        {
+            theGroup = this->getGroup();
         }
         else
         {
-            freeResources(false, true);
+            theGroup = newGroup;
+        }
+        MeshPtr newMesh = MeshManager::getSingleton().createManual(newName, theGroup);
+
+        // Copy submeshes first
+        vector<SubMesh*>::type::iterator subi;
+        SubMesh* newSub;
+        for (subi = mSubMeshList.begin(); subi != mSubMeshList.end(); ++subi)
+        {
+            newSub = newMesh->createSubMesh();
+            newSub->mMaterialName = (*subi)->mMaterialName;
+            newSub->mMatInitialised = (*subi)->mMatInitialised;
+            newSub->operationType = (*subi)->operationType;
+            newSub->useSharedVertices = (*subi)->useSharedVertices;
+            newSub->extremityPoints = (*subi)->extremityPoints;
+
+            if (!(*subi)->useSharedVertices)
+            {
+                // Copy unique vertex data
+				newSub->vertexData = (*subi)->vertexData->clone();
+                // Copy unique index map
+                newSub->blendIndexToBoneIndexMap = (*subi)->blendIndexToBoneIndexMap;
+            }
+
+            // Copy index data
+            OGRE_DELETE newSub->indexData;
+			newSub->indexData = (*subi)->indexData->clone();
+            // Copy any bone assignments
+            newSub->mBoneAssignments = (*subi)->mBoneAssignments;
+            newSub->mBoneAssignmentsOutOfDate = (*subi)->mBoneAssignmentsOutOfDate;
+            // Copy texture aliases
+            newSub->mTextureAliases = (*subi)->mTextureAliases;
+
+            // Copy lod face lists
+            newSub->mLodFaceList.reserve((*subi)->mLodFaceList.size());
+            ProgressiveMesh::LODFaceList::const_iterator facei;
+            for (facei = (*subi)->mLodFaceList.begin(); facei != (*subi)->mLodFaceList.end(); ++facei) {
+                IndexData* newIndexData = (*facei)->clone();
+                newSub->mLodFaceList.push_back(newIndexData);
+            }
         }
 
-		/// Notify chain state needs recompile.
-        mChain->_markDirty();
-    }
-}
-//-----------------------------------------------------------------------
-bool CompositorInstance::getEnabled()
-{
-    return mEnabled;
-}
-//-----------------------------------------------------------------------
+        // Copy shared geometry and index map, if any
+        if (sharedVertexData)
+        {
+            newMesh->sharedVertexData = sharedVertexData->clone();
+            newMesh->sharedBlendIndexToBoneIndexMap = sharedBlendIndexToBoneIndexMap;
+        }
 
-/** Clear framebuffer RenderSystem operation
- */
-class RSClearOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSClearOperation(uint32 buffers, ColourValue colour, Real depth, unsigned short stencil):
-		buffers(buffers), colour(colour), depth(depth), stencil(stencil)
-	{}
-	/// Which buffers to clear (FrameBufferType)
-	uint32 buffers;
-	/// Colour to clear in case FBT_COLOUR is set
-	ColourValue colour;
-	/// Depth to set in case FBT_DEPTH is set
-	Real depth;
-	/// Stencil value to set in case FBT_STENCIL is set
-	unsigned short stencil;
+		// Copy submesh names
+		newMesh->mSubMeshNameMap = mSubMeshNameMap ;
+        // Copy any bone assignments
+        newMesh->mBoneAssignments = mBoneAssignments;
+        newMesh->mBoneAssignmentsOutOfDate = mBoneAssignmentsOutOfDate;
+        // Copy bounds
+        newMesh->mAABB = mAABB;
+        newMesh->mBoundRadius = mBoundRadius;
 
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		rs->clearFrameBuffer(buffers, colour, depth, stencil);
-	}
-};
+        newMesh->mLodStrategy = mLodStrategy;
+		newMesh->mIsLodManual = mIsLodManual;
+		newMesh->mNumLods = mNumLods;
+		newMesh->mMeshLodUsageList = mMeshLodUsageList;
+        // Unreference edge lists, otherwise we'll delete the same lot twice, build on demand
+        MeshLodUsageList::iterator lodi;
+        for (lodi = newMesh->mMeshLodUsageList.begin(); lodi != newMesh->mMeshLodUsageList.end(); ++lodi) {
+            MeshLodUsage& lod = *lodi;
+            lod.edgeData = NULL;
+            // TODO: Copy manual lod meshes
+        }
 
-/** "Set stencil state" RenderSystem operation
- */
-class RSStencilOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSStencilOperation(bool stencilCheck,CompareFunction func,uint32 refValue,uint32 mask,
-		StencilOperation stencilFailOp,StencilOperation depthFailOp,StencilOperation passOp,
-		bool twoSidedOperation):
-		stencilCheck(stencilCheck),func(func),refValue(refValue),mask(mask),
-		stencilFailOp(stencilFailOp),depthFailOp(depthFailOp),passOp(passOp),
-		twoSidedOperation(twoSidedOperation)
-	{}
-	bool stencilCheck;
-	CompareFunction func; 
-    uint32 refValue;
-	uint32 mask;
-    StencilOperation stencilFailOp;
-    StencilOperation depthFailOp;
-    StencilOperation passOp;
-    bool twoSidedOperation;
+		newMesh->mVertexBufferUsage = mVertexBufferUsage;
+		newMesh->mIndexBufferUsage = mIndexBufferUsage;
+		newMesh->mVertexBufferShadowBuffer = mVertexBufferShadowBuffer;
+		newMesh->mIndexBufferShadowBuffer = mIndexBufferShadowBuffer;
 
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		rs->setStencilCheckEnabled(stencilCheck);
-		rs->setStencilBufferParams(func, refValue, mask, stencilFailOp, depthFailOp, passOp, twoSidedOperation);
-	}
-};
+        newMesh->mSkeletonName = mSkeletonName;
+        newMesh->mSkeleton = mSkeleton;
 
-/** "Render quad" RenderSystem operation
- */
-class RSQuadOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSQuadOperation(CompositorInstance *instance, uint32 pass_id, MaterialPtr mat):
-	  mat(mat),instance(instance), pass_id(pass_id),
-      mQuadCornerModified(false),
-      mQuadLeft(-1),
-      mQuadTop(1),
-      mQuadRight(1),
-      mQuadBottom(-1)
-	{
-		mat->load();
-		instance->_fireNotifyMaterialSetup(pass_id, mat);
-		technique = mat->getTechnique(0);
-		assert(technique);
-	}
-	MaterialPtr mat;
-	Technique *technique;
-	CompositorInstance *instance;
-	uint32 pass_id;
+		// Keep prepared shadow volume info (buffers may already be prepared)
+		newMesh->mPreparedForShadowVolumes = mPreparedForShadowVolumes;
 
-    bool mQuadCornerModified, mQuadFarCorners, mQuadFarCornersViewSpace;
-    Real mQuadLeft;
-    Real mQuadTop;
-    Real mQuadRight;
-    Real mQuadBottom;
-
-    void setQuadCorners(Real left,Real top,Real right,Real bottom)
-    {
-        mQuadLeft = left;
-        mQuadTop = top;
-        mQuadRight = right;
-        mQuadBottom = bottom;
-        mQuadCornerModified=true;
-    }
-
-	void setQuadFarCorners(bool farCorners, bool farCornersViewSpace)
-	{
-		mQuadFarCorners = farCorners;
-		mQuadFarCornersViewSpace = farCornersViewSpace;
-	}
-   
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		// Fire listener
-		instance->_fireNotifyMaterialRender(pass_id, mat);
-
-        Viewport* vp = rs->_getViewport();
-		Rectangle2D *rect = static_cast<Rectangle2D*>(CompositorManager::getSingleton()._getTexturedRectangle2D());
-
-		if (mQuadCornerModified)
+		// mEdgeListsBuilt and edgeData of mMeshLodUsageList
+		// will up to date on demand. Not copied since internal references, and mesh
+		// data may be altered
+		
+		// Clone vertex animation
+		for (AnimationList::iterator i = mAnimationsList.begin();
+			i != mAnimationsList.end(); ++i)
 		{
-			// insure positions are using peculiar render system offsets 
-			Real hOffset = rs->getHorizontalTexelOffset() / (0.5f * vp->getActualWidth());
-			Real vOffset = rs->getVerticalTexelOffset() / (0.5f * vp->getActualHeight());
-			rect->setCorners(mQuadLeft + hOffset, mQuadTop - vOffset, mQuadRight + hOffset, mQuadBottom - vOffset);
+			Animation *newAnim = i->second->clone(i->second->getName());
+			newMesh->mAnimationsList[i->second->getName()] = newAnim;
 		}
-
-		if(mQuadFarCorners)
+		// Clone pose list
+		for (PoseList::iterator i = mPoseList.begin(); i != mPoseList.end(); ++i)
 		{
-			const Ogre::Vector3 *corners = vp->getCamera()->getWorldSpaceCorners();
-			if(mQuadFarCornersViewSpace)
+			Pose* newPose = (*i)->clone();
+			newMesh->mPoseList.push_back(newPose);
+		}
+		newMesh->mSharedVertexDataAnimationType = mSharedVertexDataAnimationType;
+		newMesh->mAnimationTypesDirty = true;
+
+
+        newMesh->load();
+        newMesh->touch();
+
+        return newMesh;
+
+    }
+    //-----------------------------------------------------------------------
+    const AxisAlignedBox& Mesh::getBounds(void) const
+    {
+        return mAABB;
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::_setBounds(const AxisAlignedBox& bounds, bool pad)
+    {
+        mAABB = bounds;
+        Vector3 max = mAABB.getMaximum();
+        Vector3 min = mAABB.getMinimum();
+		mBoundRadius = Math::boundingRadiusFromAABB(mAABB);
+
+        if (pad)
+        {
+            // Pad out the AABB a little, helps with most bounds tests
+            Vector3 scaler = (max - min) * MeshManager::getSingleton().getBoundsPaddingFactor();
+            mAABB.setExtents(min  - scaler, max + scaler);
+            // Pad out the sphere a little too
+            mBoundRadius = mBoundRadius + (mBoundRadius * MeshManager::getSingleton().getBoundsPaddingFactor());
+        }
+        else
+        {
+            mAABB.setExtents(min, max);
+            mBoundRadius = mBoundRadius;
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::_setBoundingSphereRadius(Real radius)
+    {
+        mBoundRadius = radius;
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::setSkeletonName(const String& skelName)
+    {
+		if (skelName != mSkeletonName)
+		{
+			mSkeletonName = skelName;
+
+			if (skelName.empty())
 			{
-				const Ogre::Matrix4 &viewMat = vp->getCamera()->getViewMatrix(true);
-				rect->setNormals(viewMat*corners[5], viewMat*corners[6], viewMat*corners[4], viewMat*corners[7]);
+				// No skeleton
+				mSkeleton.setNull();
 			}
 			else
 			{
-				rect->setNormals(corners[5], corners[6], corners[4], corners[7]);
-			}
-		}
-
-		// Queue passes from mat
-		Technique::PassIterator i = technique->getPassIterator();
-		while(i.hasMoreElements())
-		{
-			sm->_injectRenderWithPass(
-				i.getNext(), 
-				rect,
-				false // don't allow replacement of shadow passes
-				);
-		}
-	}
-};
-
-/** "Set material scheme" RenderSystem operation
- */
-class RSSetSchemeOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSSetSchemeOperation(const String& schemeName) : mSchemeName(schemeName) {}
-	
-	String mPreviousScheme;
-	bool mPreviousLateResolving;
-
-	String mSchemeName;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		MaterialManager& matMgr = MaterialManager::getSingleton();
-		mPreviousScheme = matMgr.getActiveScheme();
-		matMgr.setActiveScheme(mSchemeName);
-
-		mPreviousLateResolving = sm->isLateMaterialResolving();
-		sm->setLateMaterialResolving(true);
-	}
-
-	const String& getPreviousScheme() const { return mPreviousScheme; }
-	bool getPreviousLateResolving() const { return mPreviousLateResolving; }
-};
-
-/** Restore the settings changed by the set scheme operation */
-class RSRestoreSchemeOperation: public CompositorInstance::RenderSystemOperation
-{
-public:
-	RSRestoreSchemeOperation(const RSSetSchemeOperation* setOperation) : 
-	  mSetOperation(setOperation) {}
-	
-	const RSSetSchemeOperation* mSetOperation;
-
-	virtual void execute(SceneManager *sm, RenderSystem *rs)
-	{
-		MaterialManager::getSingleton().setActiveScheme(mSetOperation->getPreviousScheme());
-		sm->setLateMaterialResolving(mSetOperation->getPreviousLateResolving());
-	}
-};
-
-void CompositorInstance::collectPasses(TargetOperation &finalState, CompositionTargetPass *target)
-{
-	/// Here, passes are converted into render target operations
-    Pass *targetpass;
-    Technique *srctech;
-	MaterialPtr mat, srcmat;
-	
-    CompositionTargetPass::PassIterator it = target->getPassIterator();
-    while(it.hasMoreElements())
-    {
-        CompositionPass *pass = it.getNext();
-        switch(pass->getType())
-        {
-        case CompositionPass::PT_CLEAR:
-			queueRenderSystemOp(finalState, OGRE_NEW RSClearOperation(
-				pass->getClearBuffers(),
-				pass->getClearColour(),
-				pass->getClearDepth(),
-				(ushort)pass->getClearStencil()
-				));
-            break;
-		case CompositionPass::PT_STENCIL:
-			queueRenderSystemOp(finalState, OGRE_NEW RSStencilOperation(
-				pass->getStencilCheck(),pass->getStencilFunc(), pass->getStencilRefValue(),
-				pass->getStencilMask(), pass->getStencilFailOp(), pass->getStencilDepthFailOp(),
-				pass->getStencilPassOp(), pass->getStencilTwoSidedOperation()
-				));
-            break;
-		case CompositionPass::PT_RENDERSCENE: 
-		{
-			if(pass->getFirstRenderQueue() < finalState.currentQueueGroupID)
-			{
-				/// Mismatch -- warn user
-				/// XXX We could support repeating the last queue, with some effort
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": Attempt to render queue "+
-					StringConverter::toString(pass->getFirstRenderQueue())+" before "+
-					StringConverter::toString(finalState.currentQueueGroupID));
-			}
-
-			RSSetSchemeOperation* setSchemeOperation = 0;
-			if (pass->getMaterialScheme() != StringUtil::BLANK)
-			{
-				//Add the triggers that will set the scheme and restore it each frame
-				finalState.currentQueueGroupID = pass->getFirstRenderQueue();
-				setSchemeOperation = OGRE_NEW RSSetSchemeOperation(pass->getMaterialScheme());
-				queueRenderSystemOp(finalState, setSchemeOperation);
-			}
-			
-			/// Add render queues
-			for(int x=pass->getFirstRenderQueue(); x<=pass->getLastRenderQueue(); ++x)
-			{
-				assert(x>=0);
-				finalState.renderQueues.set(x);
-			}
-			finalState.currentQueueGroupID = pass->getLastRenderQueue()+1;
-
-			if (setSchemeOperation != 0)
-			{
-				//Restoring the scheme after the queues have been rendered
-				queueRenderSystemOp(finalState, 
-					OGRE_NEW RSRestoreSchemeOperation(setSchemeOperation));
-			}
-
-			finalState.findVisibleObjects = true;
-			finalState.materialScheme = target->getMaterialScheme();
-			finalState.shadowsEnabled = target->getShadowsEnabled();
-
-            break;
-		}
-		case CompositionPass::PT_RENDERQUAD: {
-            srcmat = pass->getMaterial();
-			if(srcmat.isNull())
-            {
-                /// No material -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": No material defined for composition pass");
-                break;
-            }
-			srcmat->load();
-			if(srcmat->getNumSupportedTechniques()==0)  
-			{
-				/// No supported techniques -- warn user
-				LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-					+mCompositor->getName()+": material "+srcmat->getName()+" has no supported techniques");
-                break;
-			}
-			srctech = srcmat->getBestTechnique(0);
-			/// Create local material
-			MaterialPtr mat = createLocalMaterial(srcmat->getName());
-			/// Copy and adapt passes from source material
-			Technique::PassIterator i = srctech->getPassIterator();
-			while(i.hasMoreElements())
-			{
-				Pass *srcpass = i.getNext();
-				/// Create new target pass
-				targetpass = mat->getTechnique(0)->createPass();
-				(*targetpass) = (*srcpass);
-				/// Set up inputs
-				for(size_t x=0; x<pass->getNumInputs(); ++x)
+				// Load skeleton
+				try {
+					mSkeleton = SkeletonManager::getSingleton().load(skelName, mGroup);
+				}
+				catch (...)
 				{
-					const CompositionPass::InputTex& inp = pass->getInput(x);
-					if(!inp.name.empty())
+					mSkeleton.setNull();
+					// Log this error
+					String msg = "Unable to load skeleton ";
+					msg += skelName + " for Mesh " + mName
+						+ ". This Mesh will not be animated. "
+						+ "You can ignore this message if you are using an offline tool.";
+					LogManager::getSingleton().logMessage(msg);
+
+				}
+
+
+			}
+			if (isLoaded())
+				_dirtyState();
+		}
+    }
+    //-----------------------------------------------------------------------
+    bool Mesh::hasSkeleton(void) const
+    {
+        return !(mSkeletonName.empty());
+    }
+    //-----------------------------------------------------------------------
+    const SkeletonPtr& Mesh::getSkeleton(void) const
+    {
+        return mSkeleton;
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::addBoneAssignment(const VertexBoneAssignment& vertBoneAssign)
+    {
+        mBoneAssignments.insert(
+            VertexBoneAssignmentList::value_type(vertBoneAssign.vertexIndex, vertBoneAssign));
+        mBoneAssignmentsOutOfDate = true;
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::clearBoneAssignments(void)
+    {
+        mBoneAssignments.clear();
+        mBoneAssignmentsOutOfDate = true;
+    }
+    //-----------------------------------------------------------------------
+    void Mesh::_initAnimationState(AnimationStateSet* animSet)
+    {
+		// Animation states for skeletal animation
+		if (hasSkeleton())
+		{
+			// Delegate to Skeleton
+			assert(!mSkeleton.isNull() && "Skeleton not present");
+			mSkeleton->_initAnimationState(animSet);
+
+			// Take the opportunity to update the compiled bone assignments
+            _updateCompiledBoneAssignments();
+		}
+
+		// Animation states for vertex animation
+		for (AnimationList::iterator i = mAnimationsList.begin();
+			i != mAnimationsList.end(); ++i)
+		{
+			// Only create a new animation state if it doesn't exist
+			// We can have the same named animation in both skeletal and vertex
+			// with a shared animation state affecting both, for combined effects
+			// The animations should be the same length if this feature is used!
+			if (!animSet->hasAnimationState(i->second->getName()))
+			{
+				animSet->createAnimationState(i->second->getName(), 0.0,
+					i->second->getLength());
+			}
+
+		}
+
+    }
+	//---------------------------------------------------------------------
+	void Mesh::_refreshAnimationState(AnimationStateSet* animSet)
+	{
+		if (hasSkeleton())
+		{
+			mSkeleton->_refreshAnimationState(animSet);
+		}
+
+		// Merge in any new vertex animations
+		AnimationList::iterator i;
+		for (i = mAnimationsList.begin(); i != mAnimationsList.end(); ++i)
+		{
+			Animation* anim = i->second;
+			// Create animation at time index 0, default params mean this has weight 1 and is disabled
+			const String& animName = anim->getName();
+			if (!animSet->hasAnimationState(animName))
+			{
+				animSet->createAnimationState(animName, 0.0, anim->getLength());
+			}
+			else
+			{
+				// Update length incase changed
+				AnimationState* animState = animSet->getAnimationState(animName);
+				animState->setLength(anim->getLength());
+				animState->setTimePosition(std::min(anim->getLength(), animState->getTimePosition()));
+			}
+		}
+
+	}
+    //-----------------------------------------------------------------------
+    void Mesh::_updateCompiledBoneAssignments(void)
+    {
+        if (mBoneAssignmentsOutOfDate)
+            _compileBoneAssignments();
+
+        SubMeshList::iterator i;
+        for (i = mSubMeshList.begin(); i != mSubMeshList.end(); ++i)
+        {
+            if ((*i)->mBoneAssignmentsOutOfDate)
+            {
+                (*i)->_compileBoneAssignments();
+            }
+        }
+    }
+    //-----------------------------------------------------------------------
+    typedef multimap<Real, Mesh::VertexBoneAssignmentList::iterator>::type WeightIteratorMap;
+    unsigned short Mesh::_rationaliseBoneAssignments(size_t vertexCount, Mesh::VertexBoneAssignmentList& assignments)
+    {
+        // Iterate through, finding the largest # bones per vertex
+        unsigned short maxBones = 0;
+		bool existsNonSkinnedVertices = false;
+        VertexBoneAssignmentList::iterator i;
+
+        for (size_t v = 0; v < vertexCount; ++v)
+        {
+            // Get number of entries for this vertex
+            unsigned short currBones = static_cast<unsigned short>(assignments.count(v));
+			if (currBones <= 0)
+				existsNonSkinnedVertices = true;
+
+            // Deal with max bones update
+            // (note this will record maxBones even if they exceed limit)
+            if (maxBones < currBones)
+                maxBones = currBones;
+            // does the number of bone assignments exceed limit?
+            if (currBones > OGRE_MAX_BLEND_WEIGHTS)
+            {
+                // To many bone assignments on this vertex
+                // Find the start & end (end is in iterator terms ie exclusive)
+                std::pair<VertexBoneAssignmentList::iterator, VertexBoneAssignmentList::iterator> range;
+                // map to sort by weight
+                WeightIteratorMap weightToAssignmentMap;
+                range = assignments.equal_range(v);
+                // Add all the assignments to map
+                for (i = range.first; i != range.second; ++i)
+                {
+                    // insert value weight->iterator
+                    weightToAssignmentMap.insert(
+                        WeightIteratorMap::value_type(i->second.weight, i));
+                }
+                // Reverse iterate over weight map, remove lowest n
+                unsigned short numToRemove = currBones - OGRE_MAX_BLEND_WEIGHTS;
+                WeightIteratorMap::iterator remIt = weightToAssignmentMap.begin();
+
+                while (numToRemove--)
+                {
+                    // Erase this one
+                    assignments.erase(remIt->second);
+                    ++remIt;
+                }
+            } // if (currBones > OGRE_MAX_BLEND_WEIGHTS)
+
+            // Make sure the weights are normalised
+            // Do this irrespective of whether we had to remove assignments or not
+            //   since it gives us a guarantee that weights are normalised
+            //  We assume this, so it's a good idea since some modellers may not
+            std::pair<VertexBoneAssignmentList::iterator, VertexBoneAssignmentList::iterator> normalise_range = assignments.equal_range(v);
+            Real totalWeight = 0;
+            // Find total first
+            for (i = normalise_range.first; i != normalise_range.second; ++i)
+            {
+                totalWeight += i->second.weight;
+            }
+            // Now normalise if total weight is outside tolerance
+            if (!Math::RealEqual(totalWeight, 1.0f))
+            {
+                for (i = normalise_range.first; i != normalise_range.second; ++i)
+                {
+                    i->second.weight = i->second.weight / totalWeight;
+                }
+            }
+
+        }
+
+		if (maxBones > OGRE_MAX_BLEND_WEIGHTS)
+		{
+            // Warn that we've reduced bone assignments
+            LogManager::getSingleton().logMessage("WARNING: the mesh '" + mName + "' "
+                "includes vertices with more than " +
+                StringConverter::toString(OGRE_MAX_BLEND_WEIGHTS) + " bone assignments. "
+                "The lowest weighted assignments beyond this limit have been removed, so "
+                "your animation may look slightly different. To eliminate this, reduce "
+                "the number of bone assignments per vertex on your mesh to " +
+                StringConverter::toString(OGRE_MAX_BLEND_WEIGHTS) + ".");
+            // we've adjusted them down to the max
+            maxBones = OGRE_MAX_BLEND_WEIGHTS;
+
+        }
+
+		if (existsNonSkinnedVertices)
+		{
+            // Warn that we've non-skinned vertices
+            LogManager::getSingleton().logMessage("WARNING: the mesh '" + mName + "' "
+                "includes vertices without bone assignments. Those vertices will "
+				"transform to wrong position when skeletal animation enabled. "
+				"To eliminate this, assign at least one bone assignment per vertex "
+				"on your mesh.");
+		}
+
+        return maxBones;
+    }
+    //-----------------------------------------------------------------------
+    void  Mesh::_compileBoneAssignments(void)
+    {
+        unsigned short maxBones =
+            _rationaliseBoneAssignments(sharedVertexData->vertexCount, mBoneAssignments);
+
+        if (maxBones != 0)
+        {
+            compileBoneAssignments(mBoneAssignments, maxBones, 
+                sharedBlendIndexToBoneIndexMap, sharedVertexData);
+        }
+
+        mBoneAssignmentsOutOfDate = false;
+    }
+    //---------------------------------------------------------------------
+    void Mesh::buildIndexMap(const VertexBoneAssignmentList& boneAssignments,
+        IndexMap& boneIndexToBlendIndexMap, IndexMap& blendIndexToBoneIndexMap)
+    {
+        if (boneAssignments.empty())
+        {
+            // Just in case
+            boneIndexToBlendIndexMap.clear();
+            blendIndexToBoneIndexMap.clear();
+            return;
+        }
+
+        typedef set<unsigned short>::type BoneIndexSet;
+        BoneIndexSet usedBoneIndices;
+
+        // Collect actually used bones
+        VertexBoneAssignmentList::const_iterator itVBA, itendVBA;
+        itendVBA = boneAssignments.end();
+        for (itVBA = boneAssignments.begin(); itVBA != itendVBA; ++itVBA)
+        {
+            usedBoneIndices.insert(itVBA->second.boneIndex);
+        }
+
+        // Allocate space for index map
+        blendIndexToBoneIndexMap.resize(usedBoneIndices.size());
+        boneIndexToBlendIndexMap.resize(*usedBoneIndices.rbegin() + 1);
+
+        // Make index map between bone index and blend index
+        BoneIndexSet::const_iterator itBoneIndex, itendBoneIndex;
+        unsigned short blendIndex = 0;
+        itendBoneIndex = usedBoneIndices.end();
+        for (itBoneIndex = usedBoneIndices.begin(); itBoneIndex != itendBoneIndex; ++itBoneIndex, ++blendIndex)
+        {
+            boneIndexToBlendIndexMap[*itBoneIndex] = blendIndex;
+            blendIndexToBoneIndexMap[blendIndex] = *itBoneIndex;
+        }
+    }
+    //---------------------------------------------------------------------
+    void Mesh::compileBoneAssignments(
+        const VertexBoneAssignmentList& boneAssignments,
+        unsigned short numBlendWeightsPerVertex,
+        IndexMap& blendIndexToBoneIndexMap,
+        VertexData* targetVertexData)
+    {
+        // Create or reuse blend weight / indexes buffer
+        // Indices are always a UBYTE4 no matter how many weights per vertex
+        // Weights are more specific though since they are Reals
+        VertexDeclaration* decl = targetVertexData->vertexDeclaration;
+        VertexBufferBinding* bind = targetVertexData->vertexBufferBinding;
+        unsigned short bindIndex;
+
+        // Build the index map brute-force. It's possible to store the index map
+        // in .mesh, but maybe trivial.
+        IndexMap boneIndexToBlendIndexMap;
+        buildIndexMap(boneAssignments, boneIndexToBlendIndexMap, blendIndexToBoneIndexMap);
+
+        const VertexElement* testElem =
+            decl->findElementBySemantic(VES_BLEND_INDICES);
+        if (testElem)
+        {
+            // Already have a buffer, unset it & delete elements
+            bindIndex = testElem->getSource();
+            // unset will cause deletion of buffer
+            bind->unsetBinding(bindIndex);
+            decl->removeElement(VES_BLEND_INDICES);
+            decl->removeElement(VES_BLEND_WEIGHTS);
+        }
+        else
+        {
+            // Get new binding
+            bindIndex = bind->getNextIndex();
+        }
+
+        HardwareVertexBufferSharedPtr vbuf =
+            HardwareBufferManager::getSingleton().createVertexBuffer(
+                sizeof(unsigned char)*4 + sizeof(float)*numBlendWeightsPerVertex,
+                targetVertexData->vertexCount,
+                HardwareBuffer::HBU_STATIC_WRITE_ONLY,
+                true // use shadow buffer
+                );
+        // bind new buffer
+        bind->setBinding(bindIndex, vbuf);
+        const VertexElement *pIdxElem, *pWeightElem;
+
+        // add new vertex elements
+        // Note, insert directly after all elements using the same source as
+        // position to abide by pre-Dx9 format restrictions
+        const VertexElement* firstElem = decl->getElement(0);
+        if(firstElem->getSemantic() == VES_POSITION)
+        {
+            unsigned short insertPoint = 1;
+            while (insertPoint < decl->getElementCount() &&
+                decl->getElement(insertPoint)->getSource() == firstElem->getSource())
+            {
+                ++insertPoint;
+            }
+            const VertexElement& idxElem =
+                decl->insertElement(insertPoint, bindIndex, 0, VET_UBYTE4, VES_BLEND_INDICES);
+            const VertexElement& wtElem =
+                decl->insertElement(insertPoint+1, bindIndex, sizeof(unsigned char)*4,
+                VertexElement::multiplyTypeCount(VET_FLOAT1, numBlendWeightsPerVertex),
+                VES_BLEND_WEIGHTS);
+            pIdxElem = &idxElem;
+            pWeightElem = &wtElem;
+        }
+        else
+        {
+            // Position is not the first semantic, therefore this declaration is
+            // not pre-Dx9 compatible anyway, so just tack it on the end
+            const VertexElement& idxElem =
+                decl->addElement(bindIndex, 0, VET_UBYTE4, VES_BLEND_INDICES);
+            const VertexElement& wtElem =
+                decl->addElement(bindIndex, sizeof(unsigned char)*4,
+                VertexElement::multiplyTypeCount(VET_FLOAT1, numBlendWeightsPerVertex),
+                VES_BLEND_WEIGHTS);
+            pIdxElem = &idxElem;
+            pWeightElem = &wtElem;
+        }
+
+        // Assign data
+        size_t v;
+        VertexBoneAssignmentList::const_iterator i, iend;
+        i = boneAssignments.begin();
+		iend = boneAssignments.end();
+        unsigned char *pBase = static_cast<unsigned char*>(
+            vbuf->lock(HardwareBuffer::HBL_DISCARD));
+        // Iterate by vertex
+        float *pWeight;
+        unsigned char *pIndex;
+        for (v = 0; v < targetVertexData->vertexCount; ++v)
+        {
+            /// Convert to specific pointers
+            pWeightElem->baseVertexPointerToElement(pBase, &pWeight);
+            pIdxElem->baseVertexPointerToElement(pBase, &pIndex);
+            for (unsigned short bone = 0; bone < numBlendWeightsPerVertex; ++bone)
+            {
+                // Do we still have data for this vertex?
+                if (i != iend && i->second.vertexIndex == v)
+                {
+                    // If so, write weight
+                    *pWeight++ = i->second.weight;
+                    *pIndex++ = static_cast<unsigned char>(boneIndexToBlendIndexMap[i->second.boneIndex]);
+                    ++i;
+                }
+                else
+                {
+                    // Ran out of assignments for this vertex, use weight 0 to indicate empty
+                    *pWeight++ = 0.0f;
+                    *pIndex++ = 0;
+                }
+            }
+            pBase += vbuf->getVertexSize();
+        }
+
+        vbuf->unlock();
+
+    }
+    //---------------------------------------------------------------------
+    void Mesh::_notifySkeleton(SkeletonPtr& pSkel)
+    {
+        mSkeleton = pSkel;
+        mSkeletonName = pSkel->getName();
+    }
+    //---------------------------------------------------------------------
+    Mesh::BoneAssignmentIterator Mesh::getBoneAssignmentIterator(void)
+    {
+        return BoneAssignmentIterator(mBoneAssignments.begin(),
+            mBoneAssignments.end());
+    }
+    //---------------------------------------------------------------------
+    const String& Mesh::getSkeletonName(void) const
+    {
+        return mSkeletonName;
+    }
+    //---------------------------------------------------------------------
+    void Mesh::generateLodLevels(const LodValueList& lodValues,
+        ProgressiveMesh::VertexReductionQuota reductionMethod, Real reductionValue)
+    {
+#if OGRE_DEBUG_MODE
+        mLodStrategy->assertSorted(lodValues);
+#endif
+
+        removeLodLevels();
+
+		LogManager::getSingleton().stream()
+			<< "Generating " << lodValues.size()
+			<< " lower LODs for mesh " << mName;
+
+        SubMeshList::iterator isub, isubend;
+        isubend = mSubMeshList.end();
+        for (isub = mSubMeshList.begin(); isub != isubend; ++isub)
+        {
+            // check if triangles are present
+            if ((*isub)->indexData->indexCount > 0)
+            {
+                // Set up data for reduction
+                VertexData* pVertexData = (*isub)->useSharedVertices ? sharedVertexData : (*isub)->vertexData;
+
+                ProgressiveMesh pm(pVertexData, (*isub)->indexData);
+                pm.build(
+                static_cast<ushort>(lodValues.size()),
+                    &((*isub)->mLodFaceList),
+                    reductionMethod, reductionValue);
+
+            }
+            else
+            {
+                // create empty index data for each lod
+                for (size_t i = 0; i < lodValues.size(); ++i)
+                {
+                    (*isub)->mLodFaceList.push_back(OGRE_NEW IndexData);
+                }
+            }
+        }
+
+        // Iterate over the lods and record usage
+        LodValueList::const_iterator ivalue, ivalueend;
+        ivalueend = lodValues.end();
+        mMeshLodUsageList.resize(lodValues.size() + 1);
+        MeshLodUsageList::iterator ilod = mMeshLodUsageList.begin();
+        for (ivalue = lodValues.begin(); ivalue != ivalueend; ++ivalue)
+        {
+            // Record usage
+            MeshLodUsage& lod = *++ilod;
+            lod.userValue = (*ivalue);
+            lod.value = mLodStrategy->transformUserValue(lod.userValue);
+            lod.edgeData = 0;
+            lod.manualMesh.setNull();
+        }
+        mNumLods = static_cast<ushort>(lodValues.size() + 1);
+    }
+    //---------------------------------------------------------------------
+    ushort Mesh::getNumLodLevels(void) const
+    {
+        return mNumLods;
+    }
+    //---------------------------------------------------------------------
+    const MeshLodUsage& Mesh::getLodLevel(ushort index) const
+    {
+        assert(index < mMeshLodUsageList.size());
+        if (mIsLodManual && index > 0 && mMeshLodUsageList[index].manualMesh.isNull())
+        {
+            // Load the mesh now
+			try {
+				mMeshLodUsageList[index].manualMesh =
+					MeshManager::getSingleton().load(
+						mMeshLodUsageList[index].manualName,
+						mMeshLodUsageList[index].manualGroup);
+				// get the edge data, if required
+				if (!mMeshLodUsageList[index].edgeData)
+				{
+					mMeshLodUsageList[index].edgeData =
+						mMeshLodUsageList[index].manualMesh->getEdgeList(0);
+				}
+			}
+			catch (Exception& )
+			{
+				LogManager::getSingleton().stream()
+					<< "Error while loading manual LOD level "
+					<< mMeshLodUsageList[index].manualName
+					<< " - this LOD level will not be rendered. You can "
+					<< "ignore this error in offline mesh tools.";
+			}
+
+        }
+        return mMeshLodUsageList[index];
+    }
+    //---------------------------------------------------------------------
+	void Mesh::createManualLodLevel(Real lodValue, const String& meshName, const String& groupName)
+	{
+
+		// Basic prerequisites
+        assert((mIsLodManual || mNumLods == 1) && "Generated LODs already in use!");
+
+		mIsLodManual = true;
+		MeshLodUsage lod;
+		lod.userValue = lodValue;
+        lod.value = mLodStrategy->transformUserValue(lod.userValue);
+		lod.manualName = meshName;
+		lod.manualGroup = groupName.empty() ? mGroup : groupName;
+		lod.manualMesh.setNull();
+        lod.edgeData = 0;
+		mMeshLodUsageList.push_back(lod);
+		++mNumLods;
+
+        mLodStrategy->sort(mMeshLodUsageList);
+	}
+    //---------------------------------------------------------------------
+	void Mesh::updateManualLodLevel(ushort index, const String& meshName)
+	{
+
+		// Basic prerequisites
+		assert(mIsLodManual && "Not using manual LODs!");
+		assert(index != 0 && "Can't modify first lod level (full detail)");
+		assert(index < mMeshLodUsageList.size() && "Index out of bounds");
+		// get lod
+		MeshLodUsage* lod = &(mMeshLodUsageList[index]);
+
+		lod->manualName = meshName;
+		lod->manualMesh.setNull();
+        if (lod->edgeData) OGRE_DELETE lod->edgeData;
+        lod->edgeData = 0;
+	}
+    //---------------------------------------------------------------------
+	ushort Mesh::getLodIndex(Real value) const
+	{
+        // Get index from strategy
+        return mLodStrategy->getIndex(value, mMeshLodUsageList);
+	}
+    //---------------------------------------------------------------------
+	void Mesh::_setLodInfo(unsigned short numLevels, bool isManual)
+	{
+        assert(!mEdgeListsBuilt && "Can't modify LOD after edge lists built");
+
+		// Basic prerequisites
+        assert(numLevels > 0 && "Must be at least one level (full detail level must exist)");
+
+		mNumLods = numLevels;
+		mMeshLodUsageList.resize(numLevels);
+		// Resize submesh face data lists too
+		for (SubMeshList::iterator i = mSubMeshList.begin(); i != mSubMeshList.end(); ++i)
+		{
+			(*i)->mLodFaceList.resize(numLevels - 1);
+		}
+		mIsLodManual = isManual;
+	}
+    //---------------------------------------------------------------------
+	void Mesh::_setLodUsage(unsigned short level, MeshLodUsage& usage)
+	{
+        assert(!mEdgeListsBuilt && "Can't modify LOD after edge lists built");
+
+		// Basic prerequisites
+		assert(level != 0 && "Can't modify first lod level (full detail)");
+		assert(level < mMeshLodUsageList.size() && "Index out of bounds");
+
+		mMeshLodUsageList[level] = usage;
+	}
+    //---------------------------------------------------------------------
+	void Mesh::_setSubMeshLodFaceList(unsigned short subIdx, unsigned short level,
+		IndexData* facedata)
+	{
+        assert(!mEdgeListsBuilt && "Can't modify LOD after edge lists built");
+
+		// Basic prerequisites
+		assert(!mIsLodManual && "Not using generated LODs!");
+        assert(subIdx <= mSubMeshList.size() && "Index out of bounds");
+		assert(level != 0 && "Can't modify first lod level (full detail)");
+		assert(level <= mSubMeshList[subIdx]->mLodFaceList.size() && "Index out of bounds");
+
+		SubMesh* sm = mSubMeshList[subIdx];
+		sm->mLodFaceList[level - 1] = facedata;
+
+	}
+    //---------------------------------------------------------------------
+	ushort Mesh::_getSubMeshIndex(const String& name) const
+	{
+		SubMeshNameMap::const_iterator i = mSubMeshNameMap.find(name) ;
+		if (i == mSubMeshNameMap.end())
+            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "No SubMesh named " + name + " found.",
+                "Mesh::_getSubMeshIndex");
+
+		return i->second;
+	}
+    //---------------------------------------------------------------------
+    void Mesh::removeLodLevels(void)
+    {
+        if (!mIsLodManual)
+        {
+            // Remove data from SubMeshes
+            SubMeshList::iterator isub, isubend;
+            isubend = mSubMeshList.end();
+            for (isub = mSubMeshList.begin(); isub != isubend; ++isub)
+            {
+                (*isub)->removeLodLevels();
+            }
+        }
+
+        freeEdgeList();
+        mMeshLodUsageList.clear();
+
+        // Reinitialise
+        mNumLods = 1;
+		// Init first (manual) lod
+		MeshLodUsage lod;
+        lod.userValue = 0;
+		lod.value = mLodStrategy->getBaseValue();
+        lod.edgeData = 0;
+        lod.manualMesh.setNull();
+		mMeshLodUsageList.push_back(lod);
+		mIsLodManual = false;
+
+
+    }
+    //---------------------------------------------------------------------
+    Real Mesh::getBoundingSphereRadius(void) const
+    {
+        return mBoundRadius;
+    }
+    //---------------------------------------------------------------------
+	void Mesh::setVertexBufferPolicy(HardwareBuffer::Usage vbUsage, bool shadowBuffer)
+	{
+		mVertexBufferUsage = vbUsage;
+		mVertexBufferShadowBuffer = shadowBuffer;
+	}
+    //---------------------------------------------------------------------
+	void Mesh::setIndexBufferPolicy(HardwareBuffer::Usage vbUsage, bool shadowBuffer)
+	{
+		mIndexBufferUsage = vbUsage;
+		mIndexBufferShadowBuffer = shadowBuffer;
+	}
+    //---------------------------------------------------------------------
+    void Mesh::organiseTangentsBuffer(VertexData *vertexData,
+        VertexElementSemantic targetSemantic, unsigned short index, 
+		unsigned short sourceTexCoordSet)
+    {
+	    VertexDeclaration *vDecl = vertexData->vertexDeclaration ;
+	    VertexBufferBinding *vBind = vertexData->vertexBufferBinding ;
+
+	    const VertexElement *tangentsElem = vDecl->findElementBySemantic(targetSemantic, index);
+	    bool needsToBeCreated = false;
+
+	    if (!tangentsElem)
+        { // no tex coords with index 1
+			    needsToBeCreated = true ;
+	    }
+        else if (tangentsElem->getType() != VET_FLOAT3)
+        {
+            //  buffer exists, but not 3D
+            OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+                "Target semantic set already exists but is not 3D, therefore "
+				"cannot contain tangents. Pick an alternative destination semantic. ",
+                "Mesh::organiseTangentsBuffer");
+	    }
+
+	    HardwareVertexBufferSharedPtr newBuffer;
+	    if (needsToBeCreated)
+        {
+            // To be most efficient with our vertex streams,
+            // tack the new tangents onto the same buffer as the
+            // source texture coord set
+            const VertexElement* prevTexCoordElem =
+                vertexData->vertexDeclaration->findElementBySemantic(
+                    VES_TEXTURE_COORDINATES, sourceTexCoordSet);
+            if (!prevTexCoordElem)
+            {
+                OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
+                    "Cannot locate the first texture coordinate element to "
+					"which to append the new tangents.", 
+					"Mesh::orgagniseTangentsBuffer");
+            }
+            // Find the buffer associated with  this element
+            HardwareVertexBufferSharedPtr origBuffer =
+                vertexData->vertexBufferBinding->getBuffer(
+                    prevTexCoordElem->getSource());
+            // Now create a new buffer, which includes the previous contents
+            // plus extra space for the 3D coords
+		    newBuffer = HardwareBufferManager::getSingleton().createVertexBuffer(
+                origBuffer->getVertexSize() + 3*sizeof(float),
+                vertexData->vertexCount,
+			    origBuffer->getUsage(),
+			    origBuffer->hasShadowBuffer() );
+            // Add the new element
+		    vDecl->addElement(
+                prevTexCoordElem->getSource(),
+                origBuffer->getVertexSize(),
+                VET_FLOAT3,
+                targetSemantic,
+                index);
+            // Now copy the original data across
+            unsigned char* pSrc = static_cast<unsigned char*>(
+                origBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
+            unsigned char* pDest = static_cast<unsigned char*>(
+                newBuffer->lock(HardwareBuffer::HBL_DISCARD));
+            size_t vertSize = origBuffer->getVertexSize();
+            for (size_t v = 0; v < vertexData->vertexCount; ++v)
+            {
+                // Copy original vertex data
+                memcpy(pDest, pSrc, vertSize);
+                pSrc += vertSize;
+                pDest += vertSize;
+                // Set the new part to 0 since we'll accumulate in this
+                memset(pDest, 0, sizeof(float)*3);
+                pDest += sizeof(float)*3;
+            }
+            origBuffer->unlock();
+            newBuffer->unlock();
+
+            // Rebind the new buffer
+            vBind->setBinding(prevTexCoordElem->getSource(), newBuffer);
+	    }
+    }
+    //---------------------------------------------------------------------
+    void Mesh::buildTangentVectors(VertexElementSemantic targetSemantic, 
+		unsigned short sourceTexCoordSet, unsigned short index, 
+		bool splitMirrored, bool splitRotated, bool storeParityInW)
+    {
+
+		TangentSpaceCalc tangentsCalc;
+		tangentsCalc.setSplitMirrored(splitMirrored);
+		tangentsCalc.setSplitRotated(splitRotated);
+		tangentsCalc.setStoreParityInW(storeParityInW);
+
+		// shared geometry first
+		if (sharedVertexData)
+		{
+			tangentsCalc.setVertexData(sharedVertexData);
+			bool found = false;
+			for (SubMeshList::iterator i = mSubMeshList.begin(); i != mSubMeshList.end(); ++i)
+			{
+				SubMesh* sm = *i;
+				if (sm->useSharedVertices)
+				{
+					tangentsCalc.addIndexData(sm->indexData);
+					found = true;
+				}
+			}
+			if (found)
+			{
+				TangentSpaceCalc::Result res = 
+					tangentsCalc.build(targetSemantic, sourceTexCoordSet, index);
+
+				// If any vertex splitting happened, we have to give them bone assignments
+				if (getSkeletonName() != StringUtil::BLANK)
+				{
+					for (TangentSpaceCalc::IndexRemapList::iterator r = res.indexesRemapped.begin(); 
+						r != res.indexesRemapped.end(); ++r)
 					{
-						if(x < targetpass->getNumTextureUnitStates())
+						TangentSpaceCalc::IndexRemap& remap = *r;
+						// Copy all bone assignments from the split vertex
+						VertexBoneAssignmentList::iterator vbstart = mBoneAssignments.lower_bound(remap.splitVertex.first);
+						VertexBoneAssignmentList::iterator vbend = mBoneAssignments.upper_bound(remap.splitVertex.first);
+						for (VertexBoneAssignmentList::iterator vba = vbstart; vba != vbend; ++vba)
 						{
-							targetpass->getTextureUnitState((ushort)x)->setTextureName(getSourceForTex(inp.name, inp.mrtIndex));
-						} 
-						else
+							VertexBoneAssignment newAsgn = vba->second;
+							newAsgn.vertexIndex = static_cast<unsigned int>(remap.splitVertex.second);
+							// multimap insert doesn't invalidate iterators
+							addBoneAssignment(newAsgn);
+						}
+						
+					}
+				}
+
+				// Update poses (some vertices might have been duplicated)
+				// we will just check which vertices have been split and copy
+				// the offset for the original vertex to the corresponding new vertex
+				PoseIterator pose_it = getPoseIterator();
+
+				while( pose_it.hasMoreElements() )
+				{
+					Pose* current_pose = pose_it.getNext();
+					const Pose::VertexOffsetMap& offset_map = current_pose->getVertexOffsets();
+
+					for( TangentSpaceCalc::VertexSplits::iterator it = res.vertexSplits.begin();
+						it != res.vertexSplits.end(); ++it )
+					{
+						TangentSpaceCalc::VertexSplit& split = *it;
+
+						Pose::VertexOffsetMap::const_iterator found_offset = offset_map.find( split.first );
+
+						// copy the offset
+						if( found_offset != offset_map.end() )
 						{
-							/// Texture unit not there
-							LogManager::getSingleton().logMessage("Warning in compilation of Compositor "
-								+mCompositor->getName()+": material "+srcmat->getName()+" texture unit "
-								+StringConverter::toString(x)+" out of bounds");
+							current_pose->addVertex( split.second, found_offset->second );
 						}
 					}
 				}
 			}
+		}
 
-            RSQuadOperation * rsQuadOperation = OGRE_NEW RSQuadOperation(this,pass->getIdentifier(),mat);
-            Real left,top,right,bottom;
-            if (pass->getQuadCorners(left,top,right,bottom))
-                rsQuadOperation->setQuadCorners(left,top,right,bottom);
-			rsQuadOperation->setQuadFarCorners(pass->getQuadFarCorners(), pass->getQuadFarCornersViewSpace());
-			
-			queueRenderSystemOp(finalState,rsQuadOperation);
+		// Dedicated geometry
+		for (SubMeshList::iterator i = mSubMeshList.begin(); i != mSubMeshList.end(); ++i)
+		{
+			SubMesh* sm = *i;
+			if (!sm->useSharedVertices)
+			{
+				tangentsCalc.clear();
+				tangentsCalc.setVertexData(sm->vertexData);
+				tangentsCalc.addIndexData(sm->indexData);
+				TangentSpaceCalc::Result res = 
+					tangentsCalc.build(targetSemantic, sourceTexCoordSet, index);
+
+				// If any vertex splitting happened, we have to give them bone assignments
+				if (getSkeletonName() != StringUtil::BLANK)
+				{
+					for (TangentSpaceCalc::IndexRemapList::iterator r = res.indexesRemapped.begin(); 
+						r != res.indexesRemapped.end(); ++r)
+					{
+						TangentSpaceCalc::IndexRemap& remap = *r;
+						// Copy all bone assignments from the split vertex
+						VertexBoneAssignmentList::const_iterator vbstart = 
+							sm->getBoneAssignments().lower_bound(remap.splitVertex.first);
+						VertexBoneAssignmentList::const_iterator vbend = 
+							sm->getBoneAssignments().upper_bound(remap.splitVertex.first);
+						for (VertexBoneAssignmentList::const_iterator vba = vbstart; vba != vbend; ++vba)
+						{
+							VertexBoneAssignment newAsgn = vba->second;
+							newAsgn.vertexIndex = static_cast<unsigned int>(remap.splitVertex.second);
+							// multimap insert doesn't invalidate iterators
+							sm->addBoneAssignment(newAsgn);
+						}
+
+					}
+
+				}
 			}
-            break;
-		case CompositionPass::PT_RENDERCUSTOM:
-			RenderSystemOperation* customOperation = CompositorManager::getSingleton().
-				getCustomCompositionPass(pass->getCustomType())->createOperation(this, pass);
-			queueRenderSystemOp(finalState, customOperation);
-			break;
-        }
+		}
+
     }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileTargetOperations(CompiledState &compiledState)
-{
-    /// Collect targets of previous state
-	if(mPreviousInstance)
-	    mPreviousInstance->_compileTargetOperations(compiledState);
-    /// Texture targets
-    CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-    while(it.hasMoreElements())
+    //---------------------------------------------------------------------
+    bool Mesh::suggestTangentVectorBuildParams(VertexElementSemantic targetSemantic,
+		unsigned short& outSourceCoordSet, unsigned short& outIndex)
     {
-        CompositionTargetPass *target = it.getNext();
-        
-        TargetOperation ts(getTargetForTex(target->getOutputName()));
-        /// Set "only initial" flag, visibilityMask and lodBias according to CompositionTargetPass.
-        ts.onlyInitial = target->getOnlyInitial();
-        ts.visibilityMask = target->getVisibilityMask();
-        ts.lodBias = target->getLodBias();
-		ts.shadowsEnabled = target->getShadowsEnabled();
-        /// Check for input mode previous
-        if(target->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
+        // Go through all the vertex data and locate source and dest (must agree)
+        bool sharedGeometryDone = false;
+        bool foundExisting = false;
+		VertexElementSemantic foundSemantic = VES_TEXTURE_COORDINATES;
+        bool firstOne = true;
+        SubMeshList::iterator i, iend;
+        iend = mSubMeshList.end();
+        for (i = mSubMeshList.begin(); i != iend; ++i)
         {
-            /// Collect target state for previous compositor
-            /// The TargetOperation for the final target is collected seperately as it is merged
-            /// with later operations
-            mPreviousInstance->_compileOutputOperation(ts);
+            SubMesh* sm = *i;
+            VertexData* vertexData;
+
+            if (sm->useSharedVertices)
+            {
+                if (sharedGeometryDone)
+                    continue;
+                vertexData = sharedVertexData;
+                sharedGeometryDone = true;
+            }
+            else
+            {
+                vertexData = sm->vertexData;
+            }
+
+            const VertexElement *sourceElem = 0;
+            unsigned short targetIndex = 0;
+            for (targetIndex = 0; targetIndex < OGRE_MAX_TEXTURE_COORD_SETS; ++targetIndex)
+            {
+                const VertexElement* testElem =
+                    vertexData->vertexDeclaration->findElementBySemantic(
+                        VES_TEXTURE_COORDINATES, targetIndex);
+                if (!testElem)
+                    break; // finish if we've run out, t will be the target
+
+                if (!sourceElem)
+                {
+                    // We're still looking for the source texture coords
+                    if (testElem->getType() == VET_FLOAT2)
+                    {
+                        // Ok, we found it
+                        sourceElem = testElem;
+                    }
+                }
+                
+				if(!foundExisting && targetSemantic == VES_TEXTURE_COORDINATES)
+                {
+                    // We're looking for the destination
+                    // Check to see if we've found a possible
+                    if (testElem->getType() == VET_FLOAT3)
+                    {
+                        // This is a 3D set, might be tangents
+                        foundExisting = true;
+						foundSemantic = VES_TEXTURE_COORDINATES;
+                    }
+
+                }
+
+            }
+
+			if (!foundExisting && targetSemantic != VES_TEXTURE_COORDINATES)
+			{
+				targetIndex = 0;
+				// Look for existing semantic
+				const VertexElement* testElem =
+					vertexData->vertexDeclaration->findElementBySemantic(
+					targetSemantic, targetIndex);
+				if (testElem)
+				{
+					foundExisting = true;
+					foundSemantic = targetSemantic;
+				}
+
+			}
+
+            // After iterating, we should have a source and a possible destination (t)
+            if (!sourceElem)
+            {
+                OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
+                    "Cannot locate an appropriate 2D texture coordinate set for "
+                    "all the vertex data in this mesh to create tangents from. ",
+                    "Mesh::suggestTangentVectorBuildParams");
+            }
+            // Check that we agree with previous decisions, if this is not the
+            // first one, and if we're not just using the existing one
+            if (!firstOne && !foundExisting)
+            {
+                if (sourceElem->getIndex() != outSourceCoordSet)
+                {
+                    OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+                        "Multiple sets of vertex data in this mesh disagree on "
+                        "the appropriate index to use for the source texture coordinates. "
+                        "This ambiguity must be rectified before tangents can be generated.",
+                        "Mesh::suggestTangentVectorBuildParams");
+                }
+                if (targetIndex != outIndex)
+                {
+                    OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+                        "Multiple sets of vertex data in this mesh disagree on "
+                        "the appropriate index to use for the target texture coordinates. "
+                        "This ambiguity must be rectified before tangents can be generated.",
+                        "Mesh::suggestTangentVectorBuildParams");
+                }
+            }
+
+            // Otherwise, save this result
+            outSourceCoordSet = sourceElem->getIndex();
+            outIndex = targetIndex;
+
+            firstOne = false;
+
+       }
+
+        return foundExisting;
+
+    }
+    //---------------------------------------------------------------------
+    void Mesh::buildEdgeList(void)
+    {
+        if (mEdgeListsBuilt)
+            return;
+
+        // Loop over LODs
+        for (unsigned short lodIndex = 0; lodIndex < (unsigned short)mMeshLodUsageList.size(); ++lodIndex)
+        {
+            // use getLodLevel to enforce loading of manual mesh lods
+            MeshLodUsage& usage = const_cast<MeshLodUsage&>(getLodLevel(lodIndex));
+
+			bool atLeastOneIndexSet = false;
+
+            if (mIsLodManual && lodIndex != 0)
+            {
+                // Delegate edge building to manual mesh
+                // It should have already built it's own edge list while loading
+				if (!usage.manualMesh.isNull())
+				{
+					usage.edgeData = usage.manualMesh->getEdgeList(0);
+				}
+            }
+            else
+            {
+                // Build
+                EdgeListBuilder eb;
+                size_t vertexSetCount = 0;
+
+                if (sharedVertexData)
+                {
+                    eb.addVertexData(sharedVertexData);
+                    vertexSetCount++;
+                }
+
+                // Prepare the builder using the submesh information
+                SubMeshList::iterator i, iend;
+                iend = mSubMeshList.end();
+                for (i = mSubMeshList.begin(); i != iend; ++i)
+                {
+                    SubMesh* s = *i;
+					if (s->operationType != RenderOperation::OT_TRIANGLE_FAN && 
+						s->operationType != RenderOperation::OT_TRIANGLE_LIST && 
+						s->operationType != RenderOperation::OT_TRIANGLE_STRIP)
+					{
+                        continue;
+					}
+                    if (s->useSharedVertices)
+                    {
+                        // Use shared vertex data, index as set 0
+                        if (lodIndex == 0)
+                        {
+                            eb.addIndexData(s->indexData, 0, s->operationType);
+                        }
+                        else
+                        {
+                            eb.addIndexData(s->mLodFaceList[lodIndex-1], 0,
+                                s->operationType);
+                        }
+                    }
+                    else if(s->isBuildEdgesEnabled())
+                    {
+                        // own vertex data, add it and reference it directly
+                        eb.addVertexData(s->vertexData);
+                        if (lodIndex == 0)
+                        {
+                            // Base index data
+                            eb.addIndexData(s->indexData, vertexSetCount++,
+                                s->operationType);
+                        }
+                        else
+                        {
+                            // LOD index data
+                            eb.addIndexData(s->mLodFaceList[lodIndex-1],
+                                vertexSetCount++, s->operationType);
+                        }
+
+                    }
+					atLeastOneIndexSet = true;
+                }
+
+                if (atLeastOneIndexSet)
+				{
+					usage.edgeData = eb.build();
+
+                #if OGRE_DEBUG_MODE
+                    // Override default log
+                    Log* log = LogManager::getSingleton().createLog(
+                        mName + "_lod" + StringConverter::toString(lodIndex) +
+                        "_prepshadow.log", false, false);
+                    usage.edgeData->log(log);
+					// clean up log & close file handle
+					LogManager::getSingleton().destroyLog(log);
+                #endif
+				}
+				else
+				{
+					// create empty edge data
+					usage.edgeData = OGRE_NEW EdgeData();
+				}
+            }
         }
-        /// Collect passes of our own target
-        collectPasses(ts, target);
-        compiledState.push_back(ts);
+        mEdgeListsBuilt = true;
     }
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_compileOutputOperation(TargetOperation &finalState)
-{
-    /// Final target
-    CompositionTargetPass *tpass = mTechnique->getOutputTargetPass();
-    
-    /// Logical-and together the visibilityMask, and multiply the lodBias
-    finalState.visibilityMask &= tpass->getVisibilityMask();
-    finalState.lodBias *= tpass->getLodBias();
-    
-    if(tpass->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
+    //---------------------------------------------------------------------
+    void Mesh::freeEdgeList(void)
     {
-        /// Collect target state for previous compositor
-        /// The TargetOperation for the final target is collected seperately as it is merged
-        /// with later operations
-        mPreviousInstance->_compileOutputOperation(finalState);
+        if (!mEdgeListsBuilt)
+            return;
+
+        // Loop over LODs
+        MeshLodUsageList::iterator i, iend;
+        iend = mMeshLodUsageList.end();
+        unsigned short index = 0;
+        for (i = mMeshLodUsageList.begin(); i != iend; ++i, ++index)
+        {
+            MeshLodUsage& usage = *i;
+
+            if (!mIsLodManual || index == 0)
+            {
+                // Only delete if we own this data
+                // Manual LODs > 0 own their own
+                OGRE_DELETE usage.edgeData;
+            }
+            usage.edgeData = NULL;
+        }
+
+        mEdgeListsBuilt = false;
     }
-    /// Collect passes
-    collectPasses(finalState, tpass);
-}
-//-----------------------------------------------------------------------
-Compositor *CompositorInstance::getCompositor()
-{
-    return mCompositor;
-}
-//-----------------------------------------------------------------------
-CompositionTechnique *CompositorInstance::getTechnique()
-{
-    return mTechnique;
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::setTechnique(CompositionTechnique* tech, bool reuseTextures)
-{
-	if (mTechnique != tech)
-	{
-		if (reuseTextures)
-		{
-			// make sure we store all (shared) textures in use in our reserve pool
-			// this will ensure they don't get destroyed as unreferenced
-			// so they're ready to use again later
-			CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-			CompositorManager::UniqueTextureSet assignedTextures;
-			while(it.hasMoreElements())
-			{
-				CompositionTechnique::TextureDefinition *def = it.getNext();
-				if (def->pooled)
-				{
-					LocalTextureMap::iterator i = mLocalTextures.find(def->name);
-					if (i != mLocalTextures.end())
-					{
-						// overwriting duplicates is fine, we only want one entry per def
-						mReserveTextures[def] = i->second;
-					}
-
-				}
-			}
-		}
-		// replace technique
-		mTechnique = tech;
-
-		if (mEnabled)
-		{
-			// free up resources, but keep reserves if reusing
-			freeResources(false, !reuseTextures);
-			createResources(false);
-			/// Notify chain state needs recompile.
-			mChain->_markDirty();
-		}
-
-	}
-}
-//---------------------------------------------------------------------
-void CompositorInstance::setScheme(const String& schemeName, bool reuseTextures)
-{
-	CompositionTechnique* tech = mCompositor->getSupportedTechnique(schemeName);
-	if (tech)
-	{
-		setTechnique(tech, reuseTextures);
-	}
-}
-//-----------------------------------------------------------------------
-CompositorChain *CompositorInstance::getChain()
-{
-	return mChain;
-}
-//-----------------------------------------------------------------------
-const String& CompositorInstance::getTextureInstanceName(const String& name, 
-														 size_t mrtIndex)
-{
-	return getSourceForTex(name, mrtIndex);
-}
-//---------------------------------------------------------------------
-TexturePtr CompositorInstance::getTextureInstance(const String& name, size_t mrtIndex)
-{
-	// try simple textures first
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-	if(i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// try MRTs - texture (rather than target)
-	i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-	if (i != mLocalTextures.end())
-	{
-		return i->second;
-	}
-
-	// not present
-	return TexturePtr();
-
-}
-//-----------------------------------------------------------------------
-MaterialPtr CompositorInstance::createLocalMaterial(const String& srcName)
-{
-static size_t dummyCounter = 0;
-    MaterialPtr mat = 
-        MaterialManager::getSingleton().create(
-            "c" + StringConverter::toString(dummyCounter) + "/" + srcName,
-            ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME
-        );
-    ++dummyCounter;
-    /// This is safe, as we hold a private reference
-    /// XXX does not compile due to ResourcePtr conversion :
-    ///     MaterialManager::getSingleton().remove(mat);
-    MaterialManager::getSingleton().remove(mat->getName());
-    /// Remove all passes from first technique
-    mat->getTechnique(0)->removeAllPasses();
-    return mat;
-}
-//---------------------------------------------------------------------
-void CompositorInstance::notifyResized()
-{
-	freeResources(true, true);
-	createResources(true);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::createResources(bool forResizeOnly)
-{
-	static size_t dummyCounter = 0;
-    /// Create temporary textures
-    /// In principle, temporary textures could be shared between multiple viewports
-    /// (CompositorChains). This will save a lot of memory in case more viewports
-    /// are composited.
-    CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-    while(it.hasMoreElements())
+    //---------------------------------------------------------------------
+    void Mesh::prepareForShadowVolume(void)
     {
-        CompositionTechnique::TextureDefinition *def = it.getNext();
+        if (mPreparedForShadowVolumes)
+            return;
 
-		if (!def->refCompName.empty()) {
-			//This is a reference, isn't created in this compositor
-			continue;
-		}
-		if (def->scope == CompositionTechnique::TS_GLOBAL) {
-			//This is a global texture, just link the created resources from the parent
-			Compositor* parentComp = mTechnique->getParent();
-			if (def->formatList.size() > 1) 
-			{
-				size_t atch = 0;
-				for (PixelFormatList::iterator p = def->formatList.begin(); 
-					p != def->formatList.end(); ++p, ++atch)
-				{
-					Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, atch);
-					mLocalTextures[getMRTTexLocalName(def->name, atch)] = tex;
-				}
-				MultiRenderTarget* mrt = static_cast<MultiRenderTarget*>
-					(parentComp->getRenderTarget(def->name));
-				mLocalMRTs[def->name] = mrt;
-			}
-			else
-			{
-				Ogre::TexturePtr tex = parentComp->getTextureInstance(def->name, 0);
-				mLocalTextures[def->name] = tex;
-			}
-			continue;
-		}
-        /// Determine width and height
-        size_t width = def->width;
-        size_t height = def->height;
-		uint fsaa = 0;
-		String fsaaHint;
-		bool hwGamma = false;
+        if (sharedVertexData)
+        {
+            sharedVertexData->prepareForShadowVolume();
+        }
+        SubMeshList::iterator i, iend;
+        iend = mSubMeshList.end();
+        for (i = mSubMeshList.begin(); i != iend; ++i)
+        {
+            SubMesh* s = *i;
+            if (!s->useSharedVertices && 
+				(s->operationType == RenderOperation::OT_TRIANGLE_FAN || 
+				s->operationType == RenderOperation::OT_TRIANGLE_LIST ||
+				s->operationType == RenderOperation::OT_TRIANGLE_STRIP))
+            {
+                s->vertexData->prepareForShadowVolume();
+            }
+        }
+        mPreparedForShadowVolumes = true;
+    }
+    //---------------------------------------------------------------------
+    EdgeData* Mesh::getEdgeList(unsigned short lodIndex)
+    {
+        // Build edge list on demand
+        if (!mEdgeListsBuilt && mAutoBuildEdgeLists)
+        {
+            buildEdgeList();
+        }
 
-		// Skip this one if we're only (re)creating for a resize & it's not derived
-		// from the target size
-		if (forResizeOnly && width != 0 && height != 0)
-			continue;
+        return getLodLevel(lodIndex).edgeData;
+    }
+    //---------------------------------------------------------------------
+    const EdgeData* Mesh::getEdgeList(unsigned short lodIndex) const
+    {
+        return getLodLevel(lodIndex).edgeData;
+    }
+    //---------------------------------------------------------------------
+    void Mesh::prepareMatricesForVertexBlend(const Matrix4** blendMatrices,
+        const Matrix4* boneMatrices, const IndexMap& indexMap)
+    {
+        assert(indexMap.size() <= 256);
+        IndexMap::const_iterator it, itend;
+        itend = indexMap.end();
+        for (it = indexMap.begin(); it != itend; ++it)
+        {
+            *blendMatrices++ = boneMatrices + *it;
+        }
+    }
+    //---------------------------------------------------------------------
+    void Mesh::softwareVertexBlend(const VertexData* sourceVertexData,
+        const VertexData* targetVertexData,
+        const Matrix4* const* blendMatrices, size_t numMatrices,
+        bool blendNormals)
+    {
+        float *pSrcPos = 0;
+        float *pSrcNorm = 0;
+        float *pDestPos = 0;
+        float *pDestNorm = 0;
+        float *pBlendWeight = 0;
+        unsigned char* pBlendIdx = 0;
+        size_t srcPosStride = 0;
+        size_t srcNormStride = 0;
+        size_t destPosStride = 0;
+        size_t destNormStride = 0;
+        size_t blendWeightStride = 0;
+        size_t blendIdxStride = 0;
 
-		deriveTextureRenderTargetOptions(def->name, &hwGamma, &fsaa, &fsaaHint);
 
-        if(width == 0)
-            width = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualWidth()) * def->widthFactor);
-        if(height == 0)
-			height = static_cast<size_t>(
-				static_cast<float>(mChain->getViewport()->getActualHeight()) * def->heightFactor);
+        // Get elements for source
+        const VertexElement* srcElemPos =
+            sourceVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
+        const VertexElement* srcElemNorm =
+            sourceVertexData->vertexDeclaration->findElementBySemantic(VES_NORMAL);
+        const VertexElement* srcElemBlendIndices =
+            sourceVertexData->vertexDeclaration->findElementBySemantic(VES_BLEND_INDICES);
+        const VertexElement* srcElemBlendWeights =
+            sourceVertexData->vertexDeclaration->findElementBySemantic(VES_BLEND_WEIGHTS);
+        assert (srcElemPos && srcElemBlendIndices && srcElemBlendWeights &&
+            "You must supply at least positions, blend indices and blend weights");
+        // Get elements for target
+        const VertexElement* destElemPos =
+            targetVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
+        const VertexElement* destElemNorm =
+            targetVertexData->vertexDeclaration->findElementBySemantic(VES_NORMAL);
 
-		// determine options as a combination of selected options and possible options
-		if (!def->fsaa)
+        // Do we have normals and want to blend them?
+        bool includeNormals = blendNormals && (srcElemNorm != NULL) && (destElemNorm != NULL);
+
+
+        // Get buffers for source
+        HardwareVertexBufferSharedPtr srcPosBuf = sourceVertexData->vertexBufferBinding->getBuffer(srcElemPos->getSource());
+		HardwareVertexBufferSharedPtr srcIdxBuf = sourceVertexData->vertexBufferBinding->getBuffer(srcElemBlendIndices->getSource());
+		HardwareVertexBufferSharedPtr srcWeightBuf = sourceVertexData->vertexBufferBinding->getBuffer(srcElemBlendWeights->getSource());
+		HardwareVertexBufferSharedPtr srcNormBuf;
+
+        srcPosStride = srcPosBuf->getVertexSize();
+        
+        blendIdxStride = srcIdxBuf->getVertexSize();
+        
+        blendWeightStride = srcWeightBuf->getVertexSize();
+        if (includeNormals)
+        {
+            srcNormBuf = sourceVertexData->vertexBufferBinding->getBuffer(srcElemNorm->getSource());
+            srcNormStride = srcNormBuf->getVertexSize();
+        }
+        // Get buffers for target
+        HardwareVertexBufferSharedPtr destPosBuf = targetVertexData->vertexBufferBinding->getBuffer(destElemPos->getSource());
+		HardwareVertexBufferSharedPtr destNormBuf;
+        destPosStride = destPosBuf->getVertexSize();
+        if (includeNormals)
+        {
+            destNormBuf = targetVertexData->vertexBufferBinding->getBuffer(destElemNorm->getSource());
+            destNormStride = destNormBuf->getVertexSize();
+        }
+
+        void* pBuffer;
+
+        // Lock source buffers for reading
+        pBuffer = srcPosBuf->lock(HardwareBuffer::HBL_READ_ONLY);
+        srcElemPos->baseVertexPointerToElement(pBuffer, &pSrcPos);
+        if (includeNormals)
+        {
+            if (srcNormBuf != srcPosBuf)
+            {
+                // Different buffer
+                pBuffer = srcNormBuf->lock(HardwareBuffer::HBL_READ_ONLY);
+            }
+            srcElemNorm->baseVertexPointerToElement(pBuffer, &pSrcNorm);
+        }
+
+        // Indices must be 4 bytes
+        assert(srcElemBlendIndices->getType() == VET_UBYTE4 &&
+               "Blend indices must be VET_UBYTE4");
+        pBuffer = srcIdxBuf->lock(HardwareBuffer::HBL_READ_ONLY);
+        srcElemBlendIndices->baseVertexPointerToElement(pBuffer, &pBlendIdx);
+        if (srcWeightBuf != srcIdxBuf)
+        {
+            // Lock buffer
+            pBuffer = srcWeightBuf->lock(HardwareBuffer::HBL_READ_ONLY);
+        }
+        srcElemBlendWeights->baseVertexPointerToElement(pBuffer, &pBlendWeight);
+        unsigned short numWeightsPerVertex =
+            VertexElement::getTypeCount(srcElemBlendWeights->getType());
+
+
+        // Lock destination buffers for writing
+        pBuffer = destPosBuf->lock(
+            (destNormBuf != destPosBuf && destPosBuf->getVertexSize() == destElemPos->getSize()) ||
+            (destNormBuf == destPosBuf && destPosBuf->getVertexSize() == destElemPos->getSize() + destElemNorm->getSize()) ?
+            HardwareBuffer::HBL_DISCARD : HardwareBuffer::HBL_NORMAL);
+        destElemPos->baseVertexPointerToElement(pBuffer, &pDestPos);
+        if (includeNormals)
+        {
+            if (destNormBuf != destPosBuf)
+            {
+                pBuffer = destNormBuf->lock(
+                    destNormBuf->getVertexSize() == destElemNorm->getSize() ?
+                    HardwareBuffer::HBL_DISCARD : HardwareBuffer::HBL_NORMAL);
+            }
+            destElemNorm->baseVertexPointerToElement(pBuffer, &pDestNorm);
+        }
+
+        OptimisedUtil::getImplementation()->softwareVertexSkinning(
+            pSrcPos, pDestPos,
+            pSrcNorm, pDestNorm,
+            pBlendWeight, pBlendIdx,
+            blendMatrices,
+            srcPosStride, destPosStride,
+            srcNormStride, destNormStride,
+            blendWeightStride, blendIdxStride,
+            numWeightsPerVertex,
+            targetVertexData->vertexCount);
+
+        // Unlock source buffers
+        srcPosBuf->unlock();
+        srcIdxBuf->unlock();
+        if (srcWeightBuf != srcIdxBuf)
+        {
+            srcWeightBuf->unlock();
+        }
+        if (includeNormals && srcNormBuf != srcPosBuf)
+        {
+            srcNormBuf->unlock();
+        }
+        // Unlock destination buffers
+        destPosBuf->unlock();
+        if (includeNormals && destNormBuf != destPosBuf)
+        {
+            destNormBuf->unlock();
+        }
+
+    }
+	//---------------------------------------------------------------------
+	void Mesh::softwareVertexMorph(Real t,
+		const HardwareVertexBufferSharedPtr& b1,
+		const HardwareVertexBufferSharedPtr& b2,
+		VertexData* targetVertexData)
+	{
+		float* pb1 = static_cast<float*>(b1->lock(HardwareBuffer::HBL_READ_ONLY));
+		float* pb2;
+		if (b1.get() != b2.get())
 		{
-			fsaa = 0;
-			fsaaHint = StringUtil::BLANK;
-		}
-		hwGamma = hwGamma || def->hwGammaWrite;
-
-        /// Make the tetxure
-		RenderTarget* rendTarget;
-		if (def->formatList.size() > 1)
-		{
-			String MRTbaseName = "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			MultiRenderTarget* mrt = 
-				Root::getSingleton().getRenderSystem()->createMultiRenderTarget(MRTbaseName);
-			mLocalMRTs[def->name] = mrt;
-
-			// create and bind individual surfaces
-			size_t atch = 0;
-			for (PixelFormatList::iterator p = def->formatList.begin(); 
-				p != def->formatList.end(); ++p, ++atch)
-			{
-
-				String texname = MRTbaseName + "/" + StringConverter::toString(atch);
-				String mrtLocalName = getMRTTexLocalName(def->name, atch);
-				TexturePtr tex;
-				if (def->pooled)
-				{
-					// get / create pooled texture
-					tex = CompositorManager::getSingleton().getPooledTexture(texname,
-						mrtLocalName, 
-						width, height, *p, fsaa, fsaaHint,  
-						hwGamma && !PixelUtil::isFloatingPoint(*p), 
-						assignedTextures, this, def->scope);
-				}
-				else
-				{
-					tex = TextureManager::getSingleton().createManual(
-						texname, 
-						ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-						(uint)width, (uint)height, 0, *p, TU_RENDERTARGET, 0, 
-						hwGamma && !PixelUtil::isFloatingPoint(*p), fsaa, fsaaHint ); 
-				}
-				
-				RenderTexture* rt = tex->getBuffer()->getRenderTarget();
-				rt->setAutoUpdated(false);
-				mrt->bindSurface(atch, rt);
-
-				// Also add to local textures so we can look up
-				mLocalTextures[mrtLocalName] = tex;
-				
-			}
-
-			rendTarget = mrt;
+			pb2 = static_cast<float*>(b2->lock(HardwareBuffer::HBL_READ_ONLY));
 		}
 		else
 		{
-			String texName =  "c" + StringConverter::toString(dummyCounter++) + 
-				"/" + def->name + "/" + mChain->getViewport()->getTarget()->getName();
-			
-			// space in the name mixup the cegui in the compositor demo
-			// this is an auto generated name - so no spaces can't hart us.
-			std::replace( texName.begin(), texName.end(), ' ', '_' ); 
-
-			TexturePtr tex;
-			if (def->pooled)
-			{
-				// get / create pooled texture
-				tex = CompositorManager::getSingleton().getPooledTexture(texName, 
-					def->name, width, height, def->formatList[0], fsaa, fsaaHint,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), assignedTextures, 
-					this, def->scope);
-			}
-			else
-			{
-				tex = TextureManager::getSingleton().createManual(
-					texName, 
-					ResourceGroupManager::INTERNAL_RESOURCE_GROUP_NAME, TEX_TYPE_2D, 
-					(uint)width, (uint)height, 0, def->formatList[0], TU_RENDERTARGET, 0,
-					hwGamma && !PixelUtil::isFloatingPoint(def->formatList[0]), fsaa, fsaaHint); 
-			}
-
-			rendTarget = tex->getBuffer()->getRenderTarget();
-			mLocalTextures[def->name] = tex;
+			// Same buffer - track with only one entry or time index exactly matching
+			// one keyframe
+			// For simplicity of main code, interpolate still but with same val
+			pb2 = pb1;
 		}
-        
-        
-        /// Set up viewport over entire texture
-        rendTarget->setAutoUpdated( false );
 
-		// We may be sharing / reusing this texture, so test before adding viewport
-		if (rendTarget->getNumViewports() == 0)
-		{
-			Camera* camera = mChain->getViewport()->getCamera();
+		const VertexElement* posElem =
+			targetVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
+		assert(posElem);
+		HardwareVertexBufferSharedPtr destBuf =
+			targetVertexData->vertexBufferBinding->getBuffer(
+				posElem->getSource());
+		assert(posElem->getSize() == destBuf->getVertexSize() &&
+			"Positions must be in a buffer on their own for morphing");
+		float* pdst = static_cast<float*>(
+			destBuf->lock(HardwareBuffer::HBL_DISCARD));
 
-			// Save last viewport and current aspect ratio
-			Viewport* oldViewport = camera->getViewport();
-			Real aspectRatio = camera->getAspectRatio();
+        OptimisedUtil::getImplementation()->softwareVertexMorph(
+            t, pb1, pb2, pdst,
+            targetVertexData->vertexCount);
 
-			Viewport* v = rendTarget->addViewport( camera );
-			v->setClearEveryFrame( false );
-			v->setOverlaysEnabled( false );
-			v->setBackgroundColour( ColourValue( 0, 0, 0, 0 ) );
-
-			// Should restore aspect ratio, in case of auto aspect ratio
-			// enabled, it'll changed when add new viewport.
-			camera->setAspectRatio(aspectRatio);
-			// Should restore last viewport, i.e. never disturb user code
-			// which might based on that.
-			camera->_notifyViewport(oldViewport);
-		}
-    }
-
-	_fireNotifyResourcesCreated(forResizeOnly);
-}
-//---------------------------------------------------------------------
-void CompositorInstance::deriveTextureRenderTargetOptions(
-	const String& texname, bool *hwGammaWrite, uint *fsaa, String* fsaaHint)
-{
-	// search for passes on this texture def that either include a render_scene
-	// or use input previous
-	bool renderingScene = false;
-
-	CompositionTechnique::TargetPassIterator it = mTechnique->getTargetPassIterator();
-	while (it.hasMoreElements())
+		destBuf->unlock();
+		b1->unlock();
+		if (b1.get() != b2.get())
+			b2->unlock();
+	}
+	//---------------------------------------------------------------------
+	void Mesh::softwareVertexPoseBlend(Real weight,
+		const map<size_t, Vector3>::type& vertexOffsetMap,
+		VertexData* targetVertexData)
 	{
-		CompositionTargetPass* tp = it.getNext();
-		if (tp->getOutputName() == texname)
+		// Do nothing if no weight
+		if (weight == 0.0f)
+			return;
+
+		const VertexElement* posElem =
+			targetVertexData->vertexDeclaration->findElementBySemantic(VES_POSITION);
+		assert(posElem);
+		HardwareVertexBufferSharedPtr destBuf =
+			targetVertexData->vertexBufferBinding->getBuffer(
+			posElem->getSource());
+		assert(posElem->getSize() == destBuf->getVertexSize() &&
+			"Positions must be in a buffer on their own for pose blending");
+
+		// Have to lock in normal mode since this is incremental
+		float* pBase = static_cast<float*>(
+			destBuf->lock(HardwareBuffer::HBL_NORMAL));
+
+		// Iterate over affected vertices
+		for (map<size_t, Vector3>::type::const_iterator i = vertexOffsetMap.begin();
+			i != vertexOffsetMap.end(); ++i)
 		{
-			if (tp->getInputMode() == CompositionTargetPass::IM_PREVIOUS)
+			// Adjust pointer
+			float *pdst = pBase + i->first*3;
+
+			*pdst = *pdst + (i->second.x * weight);
+			++pdst;
+			*pdst = *pdst + (i->second.y * weight);
+			++pdst;
+			*pdst = *pdst + (i->second.z * weight);
+			++pdst;
+
+		}
+
+		destBuf->unlock();
+	}
+    //---------------------------------------------------------------------
+	size_t Mesh::calculateSize(void) const
+	{
+		// calculate GPU size
+		size_t ret = 0;
+		unsigned short i;
+		// Shared vertices
+		if (sharedVertexData)
+		{
+			for (i = 0;
+				i < sharedVertexData->vertexBufferBinding->getBufferCount();
+				++i)
 			{
-				// this may be rendering the scene implicitly
-				// Can't check mPreviousInstance against mChain->_getOriginalSceneCompositor()
-				// at this time, so check the position
-				CompositorChain::InstanceIterator instit = mChain->getCompositors();
-				renderingScene = true;
-				while(instit.hasMoreElements())
-				{
-					CompositorInstance* inst = instit.getNext();
-					if (inst == this)
-						break;
-					else if (inst->getEnabled())
-					{
-						// nope, we have another compositor before us, this will
-						// be doing the AA
-						renderingScene = false;
-					}
-				}
-				if (renderingScene)
-					break;
+				ret += sharedVertexData->vertexBufferBinding
+					->getBuffer(i)->getSizeInBytes();
 			}
-			else
+		}
+
+		SubMeshList::const_iterator si;
+		for (si = mSubMeshList.begin(); si != mSubMeshList.end(); ++si)
+		{
+			// Dedicated vertices
+			if (!(*si)->useSharedVertices)
 			{
-				// look for a render_scene pass
-				CompositionTargetPass::PassIterator pit = tp->getPassIterator();
-				while(pit.hasMoreElements())
+				for (i = 0;
+					i < (*si)->vertexData->vertexBufferBinding->getBufferCount();
+					++i)
 				{
-					CompositionPass* pass = pit.getNext();
-					if (pass->getType() == CompositionPass::PT_RENDERSCENE)
-					{
-						renderingScene = true;
-						break;
-					}
+					ret += (*si)->vertexData->vertexBufferBinding
+						->getBuffer(i)->getSizeInBytes();
 				}
+			}
+			if (!(*si)->indexData->indexBuffer.isNull())
+			{
+				// Index data
+				ret += (*si)->indexData->indexBuffer->getSizeInBytes();
 			}
 
 		}
+		return ret;
 	}
-
-	if (renderingScene)
+	//-----------------------------------------------------------------------------
+	bool Mesh::hasVertexAnimation(void) const
 	{
-		// Ok, inherit settings from target
-		RenderTarget* target = mChain->getViewport()->getTarget();
-		*hwGammaWrite = target->isHardwareGammaEnabled();
-		*fsaa = target->getFSAA();
-		*fsaaHint = target->getFSAAHint();
+		return !mAnimationsList.empty();
 	}
-	else
+	//---------------------------------------------------------------------
+	VertexAnimationType Mesh::getSharedVertexDataAnimationType(void) const
 	{
-		*hwGammaWrite = false;
-		*fsaa = 0;
-		*fsaaHint = StringUtil::BLANK;
-	}
-
-}
-//---------------------------------------------------------------------
-String CompositorInstance::getMRTTexLocalName(const String& baseName, size_t attachment)
-{
-	return baseName + "/" + StringConverter::toString(attachment);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::freeResources(bool forResizeOnly, bool clearReserveTextures)
-{
-    // Remove temporary textures 
-	// We only remove those that are not shared, shared textures are dealt with
-	// based on their reference count.
-	// We can also only free textures which are derived from the target size, if
-	// required (saves some time & memory thrashing / fragmentation on resize)
-
-	CompositionTechnique::TextureDefinitionIterator it = mTechnique->getTextureDefinitionIterator();
-	CompositorManager::UniqueTextureSet assignedTextures;
-	while(it.hasMoreElements())
-	{
-		CompositionTechnique::TextureDefinition *def = it.getNext();
-
-		if (!def->refCompName.empty()) 
+		if (mAnimationTypesDirty)
 		{
-			//This is a reference, isn't created here
-			continue;
+			_determineAnimationTypes();
 		}
-		
-		// potentially only remove this one if based on size
-		if (!forResizeOnly || def->width == 0 || def->height == 0)
-		{
-			size_t subSurf = def->formatList.size();
 
-			// Potentially many surfaces
-			for (size_t s = 0; s < subSurf; ++s)
-			{
-				String texName = subSurf > 1 ? getMRTTexLocalName(def->name, s)
-					: def->name;
-
-				LocalTextureMap::iterator i = mLocalTextures.find(texName);
-				if (i != mLocalTextures.end())
-				{
-					if (!def->pooled && def->scope != CompositionTechnique::TS_GLOBAL)
-					{
-						// remove myself from central only if not pooled and not global
-						TextureManager::getSingleton().remove(i->second->getName());
-					}
-
-					// remove from local
-					// reserves are potentially cleared later
-					mLocalTextures.erase(i);
-
-				}
-
-			} // subSurf
-
-			if (subSurf > 1)
-			{
-				LocalMRTMap::iterator mrti = mLocalMRTs.find(def->name);
-				if (mrti != mLocalMRTs.end())
-				{
-					if (def->scope != CompositionTechnique::TS_GLOBAL) 
-					{
-						// remove MRT if not global
-						Root::getSingleton().getRenderSystem()->destroyRenderTarget(mrti->second->getName());
-					}
-					
-					mLocalMRTs.erase(mrti);
-				}
-
-			}
-
-		} // not for resize or width/height 0
+		return mSharedVertexDataAnimationType;
 	}
-
-	if (clearReserveTextures)
+	//---------------------------------------------------------------------
+	void Mesh::_determineAnimationTypes(void) const
 	{
-		if (forResizeOnly)
+		// Don't check flag here; since detail checks on track changes are not
+		// done, allow caller to force if they need to
+
+		// Initialise all types to nothing
+		mSharedVertexDataAnimationType = VAT_NONE;
+		for (SubMeshList::const_iterator i = mSubMeshList.begin();
+			i != mSubMeshList.end(); ++i)
 		{
-			// just remove the ones which would be affected by a resize
-			for (ReserveTextureMap::iterator i = mReserveTextures.begin();
-				i != mReserveTextures.end(); )
+			(*i)->mVertexAnimationType = VAT_NONE;
+		}
+
+		// Scan all animations and determine the type of animation tracks
+		// relating to each vertex data
+		for(AnimationList::const_iterator ai = mAnimationsList.begin();
+			ai != mAnimationsList.end(); ++ai)
+		{
+			Animation* anim = ai->second;
+			Animation::VertexTrackIterator vit = anim->getVertexTrackIterator();
+			while (vit.hasMoreElements())
 			{
-				if (i->first->width == 0 || i->first->height == 0)
+				VertexAnimationTrack* track = vit.getNext();
+				ushort handle = track->getHandle();
+				if (handle == 0)
 				{
-					mReserveTextures.erase(i++);
+					// shared data
+					if (mSharedVertexDataAnimationType != VAT_NONE &&
+						mSharedVertexDataAnimationType != track->getAnimationType())
+					{
+						// Mixing of morph and pose animation on same data is not allowed
+						OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+							"Animation tracks for shared vertex data on mesh "
+							+ mName + " try to mix vertex animation types, which is "
+							"not allowed.",
+							"Mesh::_determineAnimationTypes");
+					}
+					mSharedVertexDataAnimationType = track->getAnimationType();
 				}
 				else
-					++i;
+				{
+					// submesh index (-1)
+					SubMesh* sm = getSubMesh(handle-1);
+					if (sm->mVertexAnimationType != VAT_NONE &&
+						sm->mVertexAnimationType != track->getAnimationType())
+					{
+						// Mixing of morph and pose animation on same data is not allowed
+						OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+							"Animation tracks for dedicated vertex data "
+							+ StringConverter::toString(handle-1) + " on mesh "
+							+ mName + " try to mix vertex animation types, which is "
+							"not allowed.",
+							"Mesh::_determineAnimationTypes");
+					}
+					sm->mVertexAnimationType = track->getAnimationType();
+
+				}
 			}
+		}
+
+		mAnimationTypesDirty = false;
+	}
+	//---------------------------------------------------------------------
+	Animation* Mesh::createAnimation(const String& name, Real length)
+	{
+		// Check name not used
+		if (mAnimationsList.find(name) != mAnimationsList.end())
+		{
+			OGRE_EXCEPT(
+				Exception::ERR_DUPLICATE_ITEM,
+				"An animation with the name " + name + " already exists",
+				"Mesh::createAnimation");
+		}
+
+		Animation* ret = OGRE_NEW Animation(name, length);
+
+		// Add to list
+		mAnimationsList[name] = ret;
+
+		// Mark animation types dirty
+		mAnimationTypesDirty = true;
+
+		return ret;
+
+	}
+	//---------------------------------------------------------------------
+	Animation* Mesh::getAnimation(const String& name) const
+	{
+		Animation* ret = _getAnimationImpl(name);
+		if (!ret)
+		{
+			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
+				"No animation entry found named " + name,
+				"Mesh::getAnimation");
+		}
+
+		return ret;
+	}
+	//---------------------------------------------------------------------
+	Animation* Mesh::getAnimation(unsigned short index) const
+	{
+		// If you hit this assert, then the index is out of bounds.
+		assert( index < mAnimationsList.size() );
+
+		AnimationList::const_iterator i = mAnimationsList.begin();
+
+		std::advance(i, index);
+
+		return i->second;
+
+	}
+	//---------------------------------------------------------------------
+	unsigned short Mesh::getNumAnimations(void) const
+	{
+		return static_cast<unsigned short>(mAnimationsList.size());
+	}
+	//---------------------------------------------------------------------
+	bool Mesh::hasAnimation(const String& name)
+	{
+		return _getAnimationImpl(name) != 0;
+	}
+	//---------------------------------------------------------------------
+	Animation* Mesh::_getAnimationImpl(const String& name) const
+	{
+		Animation* ret = 0;
+		AnimationList::const_iterator i = mAnimationsList.find(name);
+
+		if (i != mAnimationsList.end())
+		{
+			ret = i->second;
+		}
+
+		return ret;
+
+	}
+	//---------------------------------------------------------------------
+	void Mesh::removeAnimation(const String& name)
+	{
+		AnimationList::iterator i = mAnimationsList.find(name);
+
+		if (i == mAnimationsList.end())
+		{
+			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "No animation entry found named " + name,
+				"Mesh::getAnimation");
+		}
+
+		OGRE_DELETE i->second;
+
+		mAnimationsList.erase(i);
+
+		mAnimationTypesDirty = true;
+	}
+	//---------------------------------------------------------------------
+	void Mesh::removeAllAnimations(void)
+	{
+		AnimationList::iterator i = mAnimationsList.begin();
+		for (; i != mAnimationsList.end(); ++i)
+		{
+			OGRE_DELETE i->second;
+		}
+		mAnimationsList.clear();
+		mAnimationTypesDirty = true;
+	}
+	//---------------------------------------------------------------------
+	VertexData* Mesh::getVertexDataByTrackHandle(unsigned short handle)
+	{
+		if (handle == 0)
+		{
+			return sharedVertexData;
 		}
 		else
 		{
-			// clear all
-			mReserveTextures.clear();
+			return getSubMesh(handle-1)->vertexData;
 		}
 	}
-
-	// Now we tell the central list of textures to check if its unreferenced, 
-	// and to remove if necessary. Anything shared that was left in the reserve textures
-	// will not be released here
-	CompositorManager::getSingleton().freePooledTextures(true);
-}
-//---------------------------------------------------------------------
-RenderTarget* CompositorInstance::getRenderTarget(const String& name)
-{
-	return getTargetForTex(name);
-}
-//-----------------------------------------------------------------------
-RenderTarget *CompositorInstance::getTargetForTex(const String &name)
-{
-	// try simple texture
-	LocalTextureMap::iterator i = mLocalTextures.find(name);
-    if(i != mLocalTextures.end())
-		return i->second->getBuffer()->getRenderTarget();
-
-	// try MRTs
-	LocalMRTMap::iterator mi = mLocalMRTs.find(name);
-	if (mi != mLocalMRTs.end())
-		return mi->second;
-	else
-		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-			"CompositorInstance::getTargetForTex");
-
-}
-//-----------------------------------------------------------------------
-const String &CompositorInstance::getSourceForTex(const String &name, size_t mrtIndex)
-{
-	CompositionTechnique::TextureDefinition* texDef = mTechnique->getTextureDefinition(name);
-
-	if (!texDef->refCompName.empty()) 
+	//---------------------------------------------------------------------
+	Pose* Mesh::createPose(ushort target, const String& name)
 	{
-		//This is a reference - find the compositor and referenced texture definition
-		const CompositorPtr& refComp = CompositorManager::getSingleton().getByName(texDef->refCompName);
-		if (refComp.isNull())
+		Pose* retPose = OGRE_NEW Pose(target, name);
+		mPoseList.push_back(retPose);
+		return retPose;
+	}
+	//---------------------------------------------------------------------
+	Pose* Mesh::getPose(ushort index)
+	{
+		if (index >= getPoseCount())
 		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor",
-				"CompositorInstance::getSourceForTex");
-		}
-		CompositionTechnique::TextureDefinition* refTexDef = refComp->getSupportedTechnique()->getTextureDefinition(texDef->refTexName);
-		if (refTexDef == 0)
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "Referencing non-existent compositor texture",
-				"CompositorInstance::getSourceForTex");
+			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+				"Index out of bounds",
+				"Mesh::getPose");
 		}
 
-		switch (refTexDef->scope) 
+		return mPoseList[index];
+
+	}
+	//---------------------------------------------------------------------
+	Pose* Mesh::getPose(const String& name)
+	{
+		for (PoseList::iterator i = mPoseList.begin(); i != mPoseList.end(); ++i)
 		{
-			case CompositionTechnique::TS_CHAIN: 
+			if ((*i)->getName() == name)
+				return *i;
+		}
+		StringUtil::StrStreamType str;
+		str << "No pose called " << name << " found in Mesh " << mName;
+		OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
+			str.str(),
+			"Mesh::getPose");
+
+	}
+	//---------------------------------------------------------------------
+	void Mesh::removePose(ushort index)
+	{
+		if (index >= getPoseCount())
+		{
+			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
+				"Index out of bounds",
+				"Mesh::removePose");
+		}
+		PoseList::iterator i = mPoseList.begin();
+		std::advance(i, index);
+		OGRE_DELETE *i;
+		mPoseList.erase(i);
+
+	}
+	//---------------------------------------------------------------------
+	void Mesh::removePose(const String& name)
+	{
+		for (PoseList::iterator i = mPoseList.begin(); i != mPoseList.end(); ++i)
+		{
+			if ((*i)->getName() == name)
 			{
-				//Find the instance and check if it is before us
-				CompositorInstance* refCompInst = 0;
-				CompositorChain::InstanceIterator it = mChain->getCompositors();
-				bool beforeMe = true;
-				while (it.hasMoreElements())
-				{
-					CompositorInstance* nextCompInst = it.getNext();
-					if (nextCompInst->getCompositor()->getName() == texDef->refCompName)
-					{
-						refCompInst = nextCompInst;
-						break;
-					}
-					if (nextCompInst == this)
-					{
-						//We encountered ourselves while searching for the compositor -
-						//we are earlier in the chain.
-						beforeMe = false;
-					}
-				}
-				
-				if (refCompInst == 0 || !refCompInst->getEnabled()) 
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing inactive compositor texture",
-						"CompositorInstance::getSourceForTex");
-				}
-				if (!beforeMe)
-				{
-					OGRE_EXCEPT(Exception::ERR_INVALID_STATE, "Referencing compositor that is later in the chain",
-						"CompositorInstance::getSourceForTex");
-				}
-				return refCompInst->getTextureInstanceName(texDef->refTexName, mrtIndex);
+				OGRE_DELETE *i;
+				mPoseList.erase(i);
+				return;
 			}
-			case CompositionTechnique::TS_GLOBAL:
-				//Chain and global case - the referenced compositor will know how to handle
-				return refComp->getTextureInstanceName(texDef->refTexName, mrtIndex);
-			case CompositionTechnique::TS_LOCAL:
-			default:
-				OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Referencing local compositor texture",
-					"CompositorInstance::getSourceForTex");
 		}
-
-	} // End of handling texture references
-
-	if (texDef->formatList.size() == 1) 
-	{
-		//This is a simple texture
-		LocalTextureMap::iterator i = mLocalTextures.find(name);
-		if(i != mLocalTextures.end())
-		{
-			return i->second->getName();
-		}
+		StringUtil::StrStreamType str;
+		str << "No pose called " << name << " found in Mesh " << mName;
+		OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
+			str.str(),
+			"Mesh::removePose");
 	}
-	else
+	//---------------------------------------------------------------------
+	void Mesh::removeAllPoses(void)
 	{
-		// try MRTs - texture (rather than target)
-		LocalTextureMap::iterator i = mLocalTextures.find(getMRTTexLocalName(name, mrtIndex));
-		if (i != mLocalTextures.end())
+		for (PoseList::iterator i = mPoseList.begin(); i != mPoseList.end(); ++i)
 		{
-			return i->second->getName();
+			OGRE_DELETE *i;
 		}
+		mPoseList.clear();
 	}
-	
-	OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Non-existent local texture name", 
-		"CompositorInstance::getSourceForTex");
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::queueRenderSystemOp(TargetOperation &finalState, RenderSystemOperation *op)
-{
-	/// Store operation for current QueueGroup ID
-	finalState.renderSystemOperations.push_back(RenderSystemOpPair(finalState.currentQueueGroupID, op));
-	/// Tell parent for deletion
-	mChain->_queuedOperation(op);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::addListener(Listener *l)
-{
-	mListeners.push_back(l);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::removeListener(Listener *l)
-{
-	mListeners.erase(std::find(mListeners.begin(), mListeners.end(), l));
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialSetup(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyMaterialRender(pass_id, mat);
-}
-//-----------------------------------------------------------------------
-void CompositorInstance::_fireNotifyResourcesCreated(bool forResizeOnly)
-{
-	Listeners::iterator i, iend=mListeners.end();
-	for(i=mListeners.begin(); i!=iend; ++i)
-		(*i)->notifyResourcesCreated(forResizeOnly);
-}
-//-----------------------------------------------------------------------
-CompositorInstance::RenderSystemOperation::~RenderSystemOperation()
-{
-}
-//-----------------------------------------------------------------------
-CompositorInstance::Listener::~Listener()
-{
-}
-void CompositorInstance::Listener::notifyMaterialSetup(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyMaterialRender(uint32 pass_id, MaterialPtr &mat)
-{
-}
-void CompositorInstance::Listener::notifyResourcesCreated(bool forResizeOnly)
-{
-}
+	//---------------------------------------------------------------------
+	Mesh::PoseIterator Mesh::getPoseIterator(void)
+	{
+		return PoseIterator(mPoseList.begin(), mPoseList.end());
+	}
+	//---------------------------------------------------------------------
+	Mesh::ConstPoseIterator Mesh::getPoseIterator(void) const
+	{
+		return ConstPoseIterator(mPoseList.begin(), mPoseList.end());
+	}
+	//-----------------------------------------------------------------------------
+	const PoseList& Mesh::getPoseList(void) const
+	{
+		return mPoseList;
+	}
+	//---------------------------------------------------------------------
+	void Mesh::updateMaterialForAllSubMeshes(void)
+	{
+        // iterate through each sub mesh and request the submesh to update its material
+        vector<SubMesh*>::type::iterator subi;
+        for (subi = mSubMeshList.begin(); subi != mSubMeshList.end(); ++subi)
+        {
+            (*subi)->updateMaterialUsingTextureAliases();
+        }
+
+    }
+	//---------------------------------------------------------------------
+    const LodStrategy *Mesh::getLodStrategy() const
+    {
+        return mLodStrategy;
+    }
+    //---------------------------------------------------------------------
+    void Mesh::setLodStrategy(LodStrategy *lodStrategy)
+    {
+        mLodStrategy = lodStrategy;
+
+        assert(mMeshLodUsageList.size());
+        mMeshLodUsageList[0].value = mLodStrategy->getBaseValue();
+
+        // Re-transform user lod values (starting at index 1, no need to transform base value)
+		for (MeshLodUsageList::iterator i = mMeshLodUsageList.begin(); i != mMeshLodUsageList.end(); ++i)
+            i->value = mLodStrategy->transformUserValue(i->userValue);
+
+    }
+    //---------------------------------------------------------------------
 
 }
+

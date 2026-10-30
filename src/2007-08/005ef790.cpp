@@ -1,65 +1,21 @@
-// from server: 81% by colin
-// roc 2007-08 005ef790  unit: RBX::VSoundService::?$BoundPropGetSet  size: 78 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005ef790
-//
-// 005ef790  8b442404             mov eax, dword ptr [esp + 4]
-// 005ef794  85c0                 test eax, eax
-// 005ef796  56                   push esi
-// 005ef797  57                   push edi
-// 005ef798  8bf1                 mov esi, ecx
-// 005ef79a  7405                 je 0x5ef7a1
-// 005ef79c  8d78fc               lea edi, [eax - 4]
-// 005ef79f  eb02                 jmp 0x5ef7a3
-// 005ef7a1  33ff                 xor edi, edi
-// 005ef7a3  8b4608               mov eax, dword ptr [esi + 8]
-// 005ef7a6  8b542410             mov edx, dword ptr [esp + 0x10]
-// 005ef7aa  d902                 fld dword ptr [edx]
-// 005ef7ac  8d0c38               lea ecx, [eax + edi]
-// 005ef7af  d819                 fcomp dword ptr [ecx]
-// 005ef7b1  dfe0                 fnstsw ax
-// 005ef7b3  f6c444               test ah, 0x44
-// 005ef7b6  7b21                 jnp 0x5ef7d9
-// 005ef7b8  d902                 fld dword ptr [edx]
-// 005ef7ba  d919                 fstp dword ptr [ecx]
-// 005ef7bc  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005ef7bf  85c0                 test eax, eax
-// 005ef7c1  740b                 je 0x5ef7ce
-// 005ef7c3  8b4e04               mov ecx, dword ptr [esi + 4]
-// 005ef7c6  51                   push ecx
-// 005ef7c7  8b4e14               mov ecx, dword ptr [esi + 0x14]
-// 005ef7ca  03cf                 add ecx, edi
-// 005ef7cc  ffd0                 call eax
-// 005ef7ce  8b5604               mov edx, dword ptr [esi + 4]
-// 005ef7d1  52                   push edx
-// 005ef7d2  8bcf                 mov ecx, edi
-// 005ef7d4  e8374fe5ff           call 0x444710
-// 005ef7d9  5f                   pop edi
-// 005ef7da  5e                   pop esi
-// 005ef7db  c20800               ret 8
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_a72f4afc178082d4.cpp
 
-struct BoundPropGetSet {
-    void setValue(void* object, const float* value);
-};
-
-extern "C" void __fastcall sub_444710(int, int);
-
-void BoundPropGetSet::setValue(void* object, const float* value) {
-    char* base = (char*)object;
-    if (object != 0) {
-        base = (char*)object - 4;
-    } else {
-        base = 0;
-    }
-    float* member = (float*)(*(int*)((char*)this + 8) + (int)base);
-    if (*value != *member) {
-        *member = *value;
-        void (__fastcall *changed)(int, int) = *(void (__fastcall **)(int, int))((char*)this + 0x10);
-        if (changed != 0) {
-            int a = *(int*)((char*)this + 4);
-            int b = *(int*)((char*)this + 0x14) + (int)base;
-            changed(a, b);
-        }
-        int c = *(int*)((char*)this + 4);
-        sub_444710((int)base, c);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Gyro.cpp"

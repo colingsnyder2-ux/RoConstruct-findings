@@ -1,25 +1,11 @@
-// from server: 33% by atomic.potato
-struct Inner {
-    int a;
-    int b;
-    char pad[4];
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared-rtm roc_espeon_colorentrynativevector160b2e39d0f8f701.cpp
 
-struct Outer {
-    Inner inner;
-};
-
-extern "C" void __stdcall sub_98DE94(void*);
-
-void copy_range(Outer* dst, Outer* first, Outer* last, Outer* cur)
-{
-    while (first != last) {
-        if (cur) {
-            cur->inner.a = first->inner.a;
-            cur->inner.b = first->inner.b;
-            sub_98DE94(&cur->inner.pad[0]);
-        }
-        cur = (Outer*)((char*)cur + 12);
-        first = (Outer*)((char*)first + 12);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <afxwin.h>
+#include <vector>
+struct ColorEntry { unsigned int first; unsigned int second; CString name; };
+typedef char verifyColorEntry[(sizeof(ColorEntry)==12)?1:-1];
+template class std::vector<ColorEntry>;

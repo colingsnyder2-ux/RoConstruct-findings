@@ -1,43 +1,22 @@
-// from server: 31% by colin
-// roc 2007-08 00447b80  unit: CRenderSettings  size: 92 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00447b80
-//
-// 00447b80  6aff                 push -1
-// 00447b82  6858f97300           push 0x73f958
-// 00447b87  64a100000000         mov eax, dword ptr fs:[0]
-// 00447b8d  50                   push eax
-// 00447b8e  51                   push ecx
-// 00447b8f  56                   push esi
-// 00447b90  a188518b00           mov eax, dword ptr [0x8b5188]
-// 00447b95  33c4                 xor eax, esp
-// 00447b97  50                   push eax
-// 00447b98  8d44240c             lea eax, [esp + 0xc]
-// 00447b9c  64a300000000         mov dword ptr fs:[0], eax
-// 00447ba2  8bf1                 mov esi, ecx
-// 00447ba4  89742408             mov dword ptr [esp + 8], esi
-// 00447ba8  8d8efc000000         lea ecx, [esi + 0xfc]
-// 00447bae  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 00447bb6  ff15ace67700         call dword ptr [0x77e6ac]
-// 00447bbc  8bce                 mov ecx, esi
-// 00447bbe  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 00447bc6  e835dbffff           call 0x445700
-// 00447bcb  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00447bcf  64890d00000000       mov dword ptr fs:[0], ecx
-// 00447bd6  59                   pop ecx
-// 00447bd7  5e                   pop esi
-// 00447bd8  83c410               add esp, 0x10
-// 00447bdb  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_cd2b266264defee9.cpp
 
-struct CRenderSettings {
-    void sub_445700();
-    void destroy();
-};
-
-extern "C" void __stdcall sub_77E6AC(void*);
-extern "C" void __stdcall sub_73F958();
-
-void CRenderSettings::destroy()
-{
-    sub_77E6AC((char*)this + 0xfc);
-    sub_445700();
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

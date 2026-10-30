@@ -1,8 +1,7 @@
-// from server: 75% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaAtomicClasses.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll script/LuaAtomicClasses.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "script/LuaAtomicClasses.h"

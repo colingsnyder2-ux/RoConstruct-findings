@@ -9,7 +9,7 @@ namespace RBX
 		: Base(workspace),
 		  dragging(false)
 	{
-		RBXASSERT(mousePart);
+		                    ;
 		megaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));
 	}
 

@@ -1,14 +1,13 @@
-// from server: 37% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPCommandBarAnimation.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCommandBarAnimation.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPCommandBarAnimation.cpp : implementation file
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN

@@ -1,52 +1,19 @@
-// from server: 56% by colin
-struct Vector3 {
-    float x, y, z;
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_rootinsertnative8f1851f2d4c2cb63.cpp
 
-struct Instance {
-    char pad[8];
-};
-
-struct Instances {
-    Instance* begin;
-    Instance* end;
-};
-
-struct RootInstance {
-    Vector3 insertPoint;
-    Vector3 computeIdeInsertPoint();
-    void insertInstances(const Instances& instances, int mode, const Vector3* positionHint);
-};
-
-extern float g_insertScale;
-
-extern "C" void __cdecl sub_5BAD30(Vector3* out, const Instances* instances);
-extern "C" void __cdecl sub_5E1060(Vector3* out, const Vector3* a);
-
-void RootInstance::insertInstances(const Instances& instances, int mode, const Vector3* positionHint)
-{
-    if (instances.begin == 0)
-        return;
-    if (((char*)instances.end - (char*)instances.begin) >> 3 == 0)
-        return;
-
-    Vector3 center;
-    sub_5BAD30(&center, &instances);
-
-    Vector3 ide = computeIdeInsertPoint();
-
-    Vector3 size;
-    size.x = (ide.x + center.x) * g_insertScale - ide.x;
-    size.y = (center.y + ide.y) * g_insertScale - ide.y;
-    size.z = (center.z + ide.z) * g_insertScale - ide.z;
-
-    Vector3 result;
-    sub_5E1060(&result, &size);
-
-    Vector3 finalPos;
-    finalPos.x = result.x;
-    finalPos.y = result.y;
-    finalPos.z = result.z;
-
-    this->insertInstances(instances, 0, &finalPos);
+// Candidate translation unit (score above; library headers required).
+#pragma float_control(precise,off)
+#include <vector>
+#include <boost/weak_ptr.hpp>
+#include <util/Extents.h>
+namespace RBX {
+class PartInstance;
+typedef std::vector<boost::weak_ptr<PartInstance> > PartArray;
+class DragUtilities{public:static Extents computeExtents(const PartArray&);};
+class Dragger{public:static G3D::Vector3 toGrid(const G3D::Vector3&);};
+enum MoveType{MOVE_DROP=0};
+class RootInstance{public:G3D::Vector3 computeIdeInsertPoint();void moveSafe(PartArray&,G3D::Vector3,MoveType);void moveToIdeInsertPoint(PartArray&);};
+void RootInstance::moveToIdeInsertPoint(PartArray&partArray){if(partArray.size()>0){Extents extents=DragUtilities::computeExtents(partArray);G3D::Vector3 insertPoint=computeIdeInsertPoint();insertPoint=insertPoint-extents.bottomCenter();G3D::Vector3 move=Dragger::toGrid(insertPoint);moveSafe(partArray,move,MOVE_DROP);}}
 }

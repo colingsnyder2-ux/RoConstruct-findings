@@ -1,136 +1,58 @@
-// from server: 38% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Service.cpp
+// roc 2010-06 005db570  unit: RBX::ServiceProvider  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 005db570
+//
+// 005db570  51                   push ecx
+// 005db571  56                   push esi
+// 005db572  c744240400000000     mov dword ptr [esp + 4], 0
+// 005db57a  e881f2ffff           call 0x5da800
+// 005db57f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 005db583  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 005db587  83ec10               sub esp, 0x10
+// 005db58a  8bd4                 mov edx, esp
+// 005db58c  890a                 mov dword ptr [edx], ecx
+// 005db58e  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 005db592  894a04               mov dword ptr [edx + 4], ecx
+// 005db595  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 005db599  894a08               mov dword ptr [edx + 8], ecx
+// 005db59c  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 005db5a0  894a0c               mov dword ptr [edx + 0xc], ecx
+// 005db5a3  56                   push esi
+// 005db5a4  8bc8                 mov ecx, eax
+// 005db5a6  e8d57affff           call 0x5d3080
+// 005db5ab  8bc6                 mov eax, esi
+// 005db5ad  5e                   pop esi
+// 005db5ae  59                   pop ecx
+// 005db5af  c21400               ret 0x14
+// copied from an identical function in another client (function ?f@S@ns_ROCX000000@@QAE?AURet@2@UArg@2@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "v8tree/Service.h"
-#include <G3D/format.h>
-
-namespace RBX
+namespace ns_ROCX000000 {
+struct Ret
 {
-	const char* sServiceProvider = "ServiceProvider";
+    Ret(const Ret &);
+    ~Ret();
+    void *p;
+};
 
-	Reflection::BoundFuncDesc<ServiceProvider, boost::shared_ptr<Instance>(std::string), 1> ServiceProvider::func_service(&ServiceProvider::findServiceByClassNameString, "service", "name", Reflection::FunctionDescriptor::AnyCaller);
-	Reflection::BoundFuncDesc<ServiceProvider, boost::shared_ptr<Instance>(std::string), 1> ServiceProvider::func_GetService(&ServiceProvider::findServiceByClassNameString, "GetService", "name", Reflection::FunctionDescriptor::AnyCaller);
+struct Arg
+{
+    int f0, f1, f2, f3;
+};
 
-	size_t ServiceProvider::newIndex()
-	{
-		static size_t index = 0xFFFFFFFF; // max unsigned integer
-		return InterlockedIncrement((LONG*)&index);
-	}
+struct Impl
+{
+    Ret g(Arg arg);
+};
 
-	void ServiceProvider::onChildAdded(Instance* instance)
-	{
-		RBXASSERT(dynamic_cast<ServiceProvider*>(instance)==NULL);
+struct Getter { static Impl *get(); };
 
-		if (dynamic_cast<Service*>(instance))
-		{
-			if (instance->getClassName() != Name::getNullName())
-			{
-				RBXASSERT(!findServiceByClassName(instance->getClassName()));
-				serviceMap[&instance->getClassName()] = shared_from(instance);
-			}
-			Notifier<ServiceProvider, ServiceAdded>::raise(ServiceAdded(instance));
-		}
-	}
+struct S
+{
+    Ret f(Arg arg);
+};
 
-	void ServiceProvider::onChildRemoving(Instance* instance)
-	{
-		std::map<const Name*, boost::shared_ptr<Instance>>::iterator it = serviceMap.find(&instance->getClassName());
-		if (it != serviceMap.end())
-			Notifier<ServiceProvider, ServiceRemoving>::raise(ServiceRemoving(instance));
-	}
-
-	void ServiceProvider::onDescendentAdded(Instance* instance)
-	{
-		Instance::onDescendentAdded(instance);
-		instance->onServiceProvider(NULL, this);
-	}
-
-	void ServiceProvider::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		instance->onServiceProvider(this, NULL);
-		Instance::onDescendentRemoving(instance);
-	}
-
-	void ServiceProvider::onAddListener(Listener<ServiceProvider, ServiceAdded>* listener) const
-	{
-		if (getChildren())
-		{
-			std::vector<boost::shared_ptr<Instance>>::const_iterator end = getChildren()->end();
-			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = getChildren()->begin();
-
-			for (; iter != end; iter++)
-			{
-				if (dynamic_cast<Service*>(iter->get()))
-				{
-					Notifier<ServiceProvider, ServiceAdded>::raise(ServiceAdded(iter->get()), listener);
-				}
-			}
-		}
-	}
-
-	void ServiceProvider::clearServices()
-	{
-		RBXASSERT(numChildren()==0);
-		serviceArray.clear();
-		serviceMap.clear();
-	}
-
-	boost::shared_ptr<Instance> ServiceProvider::createChild(const Name& className)
-	{
-		RBXASSERT(className!=RBX::Name::getNullName());
-
-		boost::shared_ptr<Instance> instance = findServiceByClassName(className);
-		if (instance)
-		{
-			return instance;
-		}
-
-		return AbstractFactoryProduct<Instance>::create(className);
-	}
-
-	boost::shared_ptr<Instance> ServiceProvider::findServiceByClassName(const Name& className) const
-	{
-		RBXASSERT(className!=RBX::Name::getNullName());
-
-		std::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);
-		if (it != serviceMap.end())
-			return (*it).second;
-
-		return boost::shared_ptr<Instance>();
-	}
-
-	boost::shared_ptr<Instance> ServiceProvider::findServiceByClassNameString(std::string sName)
-	{
-		const Name& name = Name::lookup(sName);
-		if (name.empty())
-			throw std::runtime_error(G3D::format("'%s' is not a valid Service name", sName.c_str()));
-
-		return RBX::shared_from(create(this, name));
-	}
-
-	Instance* ServiceProvider::create(Instance* context, const Name& name)
-	{
-		ServiceProvider* provider = Instance::findFirstAncestorOfClass<ServiceProvider>(context);
-		if (!provider)
-			return NULL;
-
-		boost::shared_ptr<Instance> child = provider->createChild(name);
-		if (child)
-			child->setParent(provider);
-
-		return child.get();
-	}
-
-	// See: DataModel::askAddChild
-	// ServiceProvider likely has an implementation similar to this, but DataModel just reimplemented it in exactly the same way
-	// Many other ServiceProviders have implementations like this
-	// TODO: check match
-	bool ServiceProvider::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
+Ret S::f(Arg arg)
+{
+    Impl *impl = Getter::get();
+    return impl->g(arg);
+}
 }

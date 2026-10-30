@@ -1,27 +1,21 @@
-// from server: 87% by colin
-// roc 2007-08 005aca40  unit: RBX::World  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005aca40
-//
-// 005aca40  8b442404             mov eax, dword ptr [esp + 4]
-// 005aca44  d9810c010000         fld dword ptr [ecx + 0x10c]
-// 005aca4a  d918                 fstp dword ptr [eax]
-// 005aca4c  d98110010000         fld dword ptr [ecx + 0x110]
-// 005aca52  d95804               fstp dword ptr [eax + 4]
-// 005aca55  d98114010000         fld dword ptr [ecx + 0x114]
-// 005aca5b  d95808               fstp dword ptr [eax + 8]
-// 005aca5e  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_3d6a3979aa5022c0.cpp
 
-struct RBX_World {
-    char pad[0x10c];
-    float field_10c;
-    float field_110;
-    float field_114;
-    void getExtents(float* out);
-};
-
-void RBX_World::getExtents(float* out)
-{
-    out[0] = field_10c;
-    out[1] = field_110;
-    out[2] = field_114;
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Lighting.cpp"

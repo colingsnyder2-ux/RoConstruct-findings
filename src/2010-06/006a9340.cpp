@@ -1,7 +1,15 @@
-// from server: 45% by atomic.potato
-extern "C" int __cdecl sub_006a8f10(int, int, int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-int __cdecl sub_006a9340(int a, int b, int c)
-{
-    return sub_006a8f10(c, b, b < 0 ? -1 : 0, b, a);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

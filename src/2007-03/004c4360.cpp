@@ -1,89 +1,97 @@
-// roc 2007-03 004c4360  unit: seg_004c0000  size: 95 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004c4360
-//
-// 004c4360  56                   push esi
-// 004c4361  57                   push edi
-// 004c4362  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 004c4366  8bf1                 mov esi, ecx
-// 004c4368  8bcf                 mov ecx, edi
-// 004c436a  e8f1f50300           call 0x503960
-// 004c436f  33d2                 xor edx, edx
-// 004c4371  8bc8                 mov ecx, eax
-// 004c4373  f7760c               div dword ptr [esi + 0xc]
-// 004c4376  8b4608               mov eax, dword ptr [esi + 8]
-// 004c4379  8b1490               mov edx, dword ptr [eax + edx*4]
-// 004c437c  85d2                 test edx, edx
-// 004c437e  7437                 je 0x4c43b7
-// 004c4380  390a                 cmp dword ptr [edx], ecx
-// 004c4382  752c                 jne 0x4c43b0
-// 004c4384  d94204               fld dword ptr [edx + 4]
-// 004c4387  d907                 fld dword ptr [edi]
-// 004c4389  dae9                 fucompp 
-// 004c438b  dfe0                 fnstsw ax
-// 004c438d  f6c444               test ah, 0x44
-// 004c4390  7a1e                 jp 0x4c43b0
-// 004c4392  d94208               fld dword ptr [edx + 8]
-// 004c4395  d94704               fld dword ptr [edi + 4]
-// 004c4398  dae9                 fucompp 
-// 004c439a  dfe0                 fnstsw ax
-// 004c439c  f6c444               test ah, 0x44
-// 004c439f  7a0f                 jp 0x4c43b0
-// 004c43a1  d9420c               fld dword ptr [edx + 0xc]
-// 004c43a4  d94708               fld dword ptr [edi + 8]
-// 004c43a7  dae9                 fucompp 
-// 004c43a9  dfe0                 fnstsw ax
-// 004c43ab  f6c444               test ah, 0x44
-// 004c43ae  7b07                 jnp 0x4c43b7
-// 004c43b0  8b5220               mov edx, dword ptr [edx + 0x20]
-// 004c43b3  85d2                 test edx, edx
-// 004c43b5  75c9                 jne 0x4c4380
-// 004c43b7  5f                   pop edi
-// 004c43b8  8d4210               lea eax, [edx + 0x10]
-// 004c43bb  5e                   pop esi
-// 004c43bc  c20400               ret 4
-// copied from an identical function in another client (function ?find@HashTable@ns_ROCX000003@@QAEPAUVec3@2@PAU32@@Z)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_11ccee7d629bca29.cpp
 
-namespace ns_ROCX000003 {
-struct Vec3 {
-    float x;
-    float y;
-    float z;
-};
+// Candidate translation unit (score above; library headers required).
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
 
-struct Entry {
-    int key;
-    float x;
-    float y;
-    float z;
-    int pad[4];
-    Entry* next;
-};
-
-struct HashTable {
-    int unknown0;
-    int unknown4;
-    Entry** buckets;
-    unsigned int bucketCount;
-
-    Vec3* find(Vec3* key);
-};
-
-extern "C" unsigned int __fastcall hashVec3(Vec3* v);
-
-Vec3* HashTable::find(Vec3* key)
+namespace RBX { namespace View {
+class RenderSurfaceTypes
 {
-    unsigned int h = hashVec3(key);
-    unsigned int idx = h % bucketCount;
-    Entry* e = buckets[idx];
-    while (e != 0)
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
+
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
+#include <G3D/g3dmath.h>
+
+void flushUnusedMeshCache();
+
+namespace RBX {
+namespace View {
+
+class PBBMesh : public Render::Mesh
+{
+public:
+    PBBMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+    char pad[0x8c - sizeof(Render::Mesh)];
+};
+
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    struct Variations
     {
-        if (e->key == (int)h)
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<int, int> decalCache;
+        std::map<int, int> textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static Mesh* create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+};
+
+template<class Mesh, size_t numMeshes>
+Mesh* MeshFactory<Mesh, numMeshes>::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
+
+    if (!c->cache1.containsKey(surfaceTypes))
+        c->cache1.set(surfaceTypes, G3D::Table<G3D::Vector3, Variations>());
+
+    G3D::Table<G3D::Vector3, Variations>& sizeCache = c->cache1.get(surfaceTypes);
+
+    if (!sizeCache.containsKey(size))
+        sizeCache.set(size, Variations());
+
+    Variations& variation = sizeCache.get(size);
+
+    int index = G3D::iRandom(0, numMeshes - 1);
+    G3D::ReferenceCountedPointer<Render::Mesh>& ref = variation.meshes[index];
+    Mesh* mesh = static_cast<Mesh*>(ref.getPointer());
+    if (!mesh)
+    {
+        mesh = new Mesh(size, surfaceTypes);
+        ref = mesh;
+        if (++c->count % 100 == 0)
         {
-            if (e->x == key->x && e->y == key->y && e->z == key->z)
-                break;
+            G3D::ReferenceCountedPointer<Render::Mesh> keep = ref;
+            flushUnusedMeshCache();
         }
-        e = e->next;
     }
-    return (Vec3*)((char*)e + 0x10);
+    return mesh;
+}
+
+template class MeshFactory<PBBMesh, 4>;
 }
 }

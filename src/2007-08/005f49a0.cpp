@@ -1,42 +1,17 @@
-// from server: 83% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 30729
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/FaceInstance.h"
-#include "v8datamodel/PartInstance.h"
-#include "util/NormalId.h"
-#include "v8tree/Instance.h"
-#include "reflection/reflection.h"
-namespace RBX 
-{
-	const char* sFaceInstance = "FaceInstance";
-	const Reflection::EnumPropDescriptor<FaceInstance,NormalId> FaceInstance::prop_Face("Face", "Data", &FaceInstance::getFace, &FaceInstance::setFace, Reflection::PropertyDescriptor::STANDARD);
-
-	FaceInstance::FaceInstance()
-		:face(NORM_Z_NEG)
-	{
-	}
-
-	void FaceInstance::setFace(NormalId value) 
-	{
-		if (face != value) 
-		{
-			face = value;
-			raisePropertyChanged(prop_Face);
-		}
-	}
-
-
-	NormalId FaceInstance::getFace() const 
-	{
-		return face;
-	}
-
-	bool FaceInstance::askSetParent(const Instance* instance) const 
-	{
-		return dynamic_cast<const PartInstance*>(instance) != NULL;
-	}
-}
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

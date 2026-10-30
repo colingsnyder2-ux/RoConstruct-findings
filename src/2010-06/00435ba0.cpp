@@ -1,39 +1,15 @@
-// from server: 96% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.40.0 libs/regex/src/instances.cpp
+// roc-lib: rbxgs-dll roc_espeon_selectiongroupkeycopyad6d5bf51b76f222.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
-
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
-
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif
+#include <map>
+#include <vector>
+#include <algorithm>
+#include <boost/shared_ptr.hpp>
+struct Argument{char prefix[0x1c];void*key;};
+extern boost::shared_ptr<Argument>sharedArgument(Argument*);
+typedef std::vector<boost::shared_ptr<Argument> > Entries;
+struct Group:std::map<void*,Entries>{void remove(Argument*);};
+void Group::remove(Argument*argument){void*key=argument->key;iterator found=find(key);if(found!=end()){Entries::iterator current=std::find(found->second.begin(),found->second.end(),sharedArgument(argument));if(current!=found->second.end())found->second.erase(current);}}

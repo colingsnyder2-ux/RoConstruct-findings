@@ -1,99 +1,62 @@
-// from server: 76% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_eventfront_9136a3c85628154f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
+#include <string>
+#include <list>
+#include <boost/shared_ptr.hpp>
+typedef std::string String;
+typedef boost::shared_ptr<void> Shared;
+struct Object {
+    char padding[20];
+    char value;
+};
 
-namespace RBX
-{
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+struct E {
+    char padding[28];
+    String text;
+    Object* object;
+    unsigned unused;
+    Shared shared;
 
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+    E(const E&);
+    ~E();
+};
 
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
-	{
-		setName("Run Service");
-	}
+typedef std::list<E> List;
+struct Consumer {
+    char storage[72];
+    void consume(E);
+};
 
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
+struct Configuration {
+    char padding[304];
+    unsigned limit;
+};
 
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
+extern Configuration* __cdecl configuration();
 
-		if (join)
-			runThread->join();
-	}
+struct Dispatcher {
+    void send(void*, String, Shared);
+};
 
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
-		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
-		}
-	}
+extern Dispatcher dispatcher;
+struct S {
+    char padding[304];
+    Consumer consumer;
+    List list;
 
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
+    void f(const E*);
+};
 
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
+void S::f(const E* value) {
+    list.push_front(*value);
+    while(list.size()>configuration()->limit)list.pop_back();
+    consumer.consume(*value);
 
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
+    void* object = value->object ? &value->object->value : 0;
+    dispatcher.send(
+        object, value->text, value->shared);
 }

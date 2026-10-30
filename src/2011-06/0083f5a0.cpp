@@ -1,1232 +1,1053 @@
-// from server: 36% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbaseribbonelement.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportRecordItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This MFC Library source code supports the Microsoft Office Fluent User Interface 
-// (the "Fluent UI") and is provided only as referential material to supplement the 
-// Microsoft Foundation Classes Reference and related electronic documentation 
-// included with the MFC C++ library software.  
-// License terms to copy, use or distribute the Fluent UI are available separately.  
-// To learn more about our Fluent UI licensing program, please visit 
-// http://msdn.microsoft.com/officeui.
+// XTPReportRecordItem.cpp : implementation of the CXTPReportRecordItem class.
 //
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "afxbaseribbonelement.h"
+#include "Common/XTPDrawHelpers.h"
 
-#include "afxribboncategory.h"
-#include "afxribbonbar.h"
-#include "afxpopupmenu.h"
-#include "afxribbonpanelmenu.h"
-#include "afxkeyboardmanager.h"
-#include "afxvisualmanager.h"
-#include "afxribboncommandslistbox.h"
-#include "afxribbonquickaccesstoolbar.h"
-#include "afxribbonkeytip.h"
-#include "afxribbonres.h"
-#include "afxmenuimages.h"
-#include "afxmdiframewndex.h"
+#include "XTPReportRow.h"
+#include "XTPReportRecords.h"
+#include "XTPReportColumns.h"
+#include "XTPReportColumn.h"
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportHyperlink.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportInplaceControls.h"
+
+#include "Common/XTPPropExchange.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-static inline BOOL __stdcall IsSystemCommand(UINT uiCmd)
+#ifndef IDC_HAND
+#define IDC_HAND MAKEINTRESOURCE(32649)
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// XTP_REPORTRECORDITEM_ARGS
+
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS()
 {
-	return (uiCmd >= 0xF000 && uiCmd < 0xF1F0);
+	pControl = NULL;
+	pRow = NULL;
+	pColumn = NULL;
+	pItem = NULL;
+	rcItem.SetRectEmpty();
 }
 
-//////////////////////////////////////////////////////////////////////
-// CMFCRibbonSeparator
-
-IMPLEMENT_DYNCREATE(CMFCRibbonSeparator, CMFCRibbonBaseElement)
-
-CMFCRibbonSeparator::CMFCRibbonSeparator(BOOL bIsHoriz)
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS(CXTPReportControl* pControl, CXTPReportRow* pRow, CXTPReportColumn* pColumn)
 {
-	m_bIsHoriz = bIsHoriz;
+	ASSERT(pControl && pRow && pColumn);
+
+	this->pControl = pControl;
+	this->pRow = pRow;
+	this->pColumn = pColumn;
+	this->pItem = pRow->GetRecord()->GetItem(pColumn);
+	this->rcItem = pRow->GetItemRect(pItem);
+}
+XTP_REPORTRECORDITEM_ARGS::~XTP_REPORTRECORDITEM_ARGS()
+{
+
 }
 
-CSize CMFCRibbonSeparator::GetRegularSize(CDC* /*pDC*/)
+void XTP_REPORTRECORDITEM_ARGS::AddRef()
 {
-	ASSERT_VALID(this);
-	return CSize(4, 4);
+	CMDTARGET_ADDREF(pRow);
+	CMDTARGET_ADDREF(pColumn);
+	CMDTARGET_ADDREF(pItem);
+
 }
 
-void CMFCRibbonSeparator::CopyFrom(const CMFCRibbonBaseElement& s)
+void XTP_REPORTRECORDITEM_ARGS::Release()
 {
-	ASSERT_VALID(this);
-	CMFCRibbonBaseElement::CopyFrom(s);
+	if (pRow)
+		pRow->InternalRelease();
 
-	const CMFCRibbonSeparator& src =(const CMFCRibbonSeparator&) s;
-	m_bIsHoriz = src.m_bIsHoriz;
+	if (pColumn)
+		pColumn->InternalRelease();
+
+	if (pItem)
+		pItem->InternalRelease();
 }
 
-void CMFCRibbonSeparator::OnDraw(CDC* pDC)
+const XTP_REPORTRECORDITEM_ARGS& XTP_REPORTRECORDITEM_ARGS::operator=(const XTP_REPORTRECORDITEM_ARGS& src)
 {
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
+	pControl = src.pControl;
+	pRow     = src.pRow;
+	pColumn  = src.pColumn;
+	pItem    = src.pItem;
+	rcItem   = src.rcItem;
 
-	if (m_rect.IsRectEmpty())
-	{
-		return;
-	}
-
-	CRect rect = m_rect;
-
-	if (m_bQuickAccessMode)
-	{
-		rect.left = rect.CenterPoint().x - 1;
-		rect.right = rect.left + 2;
-
-		rect.DeflateRect(0, 3);
-
-		CMFCVisualManager::GetInstance()->OnDrawRibbonQuickAccessToolBarSeparator(pDC, this, rect);
-		return;
-	}
-
-	if (m_bIsHoriz)
-	{
-		rect.top = rect.CenterPoint().y;
-		rect.bottom = rect.top + 1;
-	}
-	else
-	{
-		rect.left = rect.CenterPoint().x;
-		rect.right = rect.left + 1;
-
-		rect.DeflateRect(0, 5);
-	}
-
-	CBasePane* pParentBar = NULL;
-
-	if (m_pParentMenu != NULL)
-	{
-		pParentBar = m_pParentMenu;
-	}
-	else
-	{
-		pParentBar = GetTopLevelRibbonBar();
-	}
-
-	if (pParentBar != NULL)
-	{
-		BOOL bDisableSideBarInXPMode = FALSE;
-
-		if (m_bIsDefaultMenuLook && m_pParentMenu != NULL)
-		{
-			bDisableSideBarInXPMode = m_pParentMenu->m_bDisableSideBarInXPMode;
-			rect.left += 2 * CMFCVisualManager::GetInstance()->GetMenuImageMargin() + 2;
-			m_pParentMenu->m_bDisableSideBarInXPMode = FALSE;
-		}
-
-		CMFCVisualManager::GetInstance()->OnDrawSeparator(pDC, pParentBar, rect, !m_bIsHoriz);
-
-		if (m_pParentMenu != NULL)
-		{
-			m_pParentMenu->m_bDisableSideBarInXPMode = bDisableSideBarInXPMode;
-		}
-	}
+	return *this;
 }
 
-int CMFCRibbonSeparator::AddToListBox(CMFCRibbonCommandsListBox* pWndListBox, BOOL /*bDeep*/)
+CXTPReportInplaceButtons::CXTPReportInplaceButtons()
 {
-	ASSERT_VALID(this);
-	ASSERT_VALID(pWndListBox);
-	ENSURE(pWndListBox->GetSafeHwnd() != NULL);
 
-	CString strText;
-	ENSURE(strText.LoadString(IDS_AFXBARRES_QAT_SEPARATOR));
-
-	int nIndex = pWndListBox->AddString(_T(" ") + strText);	// Should be always first!
-	pWndListBox->SetItemData(nIndex, (DWORD_PTR) this);
-
-	return nIndex;
 }
 
-void CMFCRibbonSeparator::OnDrawOnList(CDC* pDC, CString strText, int nTextOffset, CRect rect, BOOL /*bIsSelected*/, BOOL /*bHighlighted*/)
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemConstraint
+
+CXTPReportRecordItemConstraint::CXTPReportRecordItemConstraint()
 {
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
 
-	BOOL bIsDisabled = m_bIsDisabled;
-	m_bIsDisabled = FALSE;
-
-	const int nXMargin = 3;
-
-	rect.DeflateRect(nXMargin, 0);
-	rect.left += nTextOffset;
-
-	pDC->DrawText(strText, rect, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
-
-	m_bIsDisabled = bIsDisabled;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CMFCRibbonBaseElement
-
-IMPLEMENT_DYNAMIC(CMFCRibbonBaseElement, CObject)
-
-CMFCRibbonBaseElement::CMFCRibbonBaseElement()
-{
-	m_Location = RibbonElementNotInGroup;
-	m_nID = 0;
 	m_dwData = 0;
-	m_rect.SetRectEmpty();
-	m_pParent = NULL;
-	m_pParentGroup = NULL;
-	m_pParentMenu = NULL;
-	m_bCompactMode = FALSE;
-	m_bIntermediateMode = FALSE;
-	m_bFloatyMode = FALSE;
-	m_bQuickAccessMode = FALSE;
-	m_bIsHighlighted = FALSE;
-	m_bIsFocused = FALSE;
-	m_bIsPressed = FALSE;
-	m_bIsDisabled = FALSE;
-	m_bIsChecked = FALSE;
-	m_bIsRadio = FALSE;
-	m_bIsDroppedDown = FALSE;
-	m_pOriginal = NULL;
-	m_pRibbonBar = NULL;
-	m_nRow = -1;
-	m_bDontNotify = FALSE;
-	m_bTextAlwaysOnRight = FALSE;
-	m_pPopupMenu = NULL;
-	m_nImageOffset = 0;
-	m_bShowGroupBorder = FALSE;
-	m_bIsVisible = TRUE;
-	m_bIsDefaultMenuLook = FALSE;
-	m_bIsAlwaysLarge = FALSE;
-	m_bDrawDefaultIcon = TRUE;
-	m_bIsOnPaletteTop = FALSE;
-	m_bOnBeforeShowItemMenuIsSent = FALSE;
+	m_nIndex = 0;
 }
 
-CMFCRibbonBaseElement::~CMFCRibbonBaseElement()
+int CXTPReportRecordItemConstraint::GetIndex() const
 {
-	if (m_pPopupMenu != NULL)
-	{
-		ASSERT_VALID(m_pPopupMenu);
-		ENSURE(m_pPopupMenu->m_pParentRibbonElement == this);
-
-		m_pPopupMenu->m_pParentRibbonElement = NULL;
-		ClosePopupMenu();
-	}
+	return m_nIndex;
 }
 
-void CMFCRibbonBaseElement::SetID(UINT nID)
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemConstraints
+
+CXTPReportRecordItemConstraints::CXTPReportRecordItemConstraints()
 {
-	ASSERT_VALID(this);
-	m_nID = nID;
+}
+CXTPReportRecordItemConstraints::~CXTPReportRecordItemConstraints()
+{
+	RemoveAll();
 }
 
-void CMFCRibbonBaseElement::SetText(LPCTSTR lpszText)
+
+int CXTPReportRecordItemConstraints::GetCount() const
 {
-	ASSERT_VALID(this);
-	m_strText = lpszText == NULL ? _T("") : lpszText;
-
-	int nIndex = m_strText.Find(_T('\n'));
-	if (nIndex >= 0)
-	{
-		m_strKeys = m_strText.Mid(nIndex + 1);
-		m_strText = m_strText.Left(nIndex);
-	}
-
-	m_strText.TrimLeft();
-	m_strText.TrimRight();
+	return (int)m_arrConstraints.GetSize();
 }
 
-void CMFCRibbonBaseElement::SetKeys(LPCTSTR lpszKeys, LPCTSTR lpszMenuKeys)
+CXTPReportRecordItemConstraint* CXTPReportRecordItemConstraints::GetAt(int nIndex) const
 {
-	ASSERT_VALID(this);
-
-	m_strKeys = lpszKeys == NULL ? _T("") : lpszKeys;
-	m_strMenuKeys = lpszMenuKeys == NULL ? _T("") : lpszMenuKeys;
+	return m_arrConstraints.GetAt(nIndex);
 }
 
-void CMFCRibbonBaseElement::SetTextAlwaysOnRight(BOOL bSet)
+void CXTPReportRecordItemConstraints::RemoveAll()
 {
-	ASSERT_VALID(this);
-	m_bTextAlwaysOnRight = bSet;
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
 }
 
-void CMFCRibbonBaseElement::OnLButtonDown(CPoint /*point*/)
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemEditOptions
+
+CXTPReportRecordItemEditOptions::CXTPReportRecordItemEditOptions()
 {
-	CMFCRibbonPanel* pPanel = GetParentPanel();
-	if (pPanel != NULL)
-	{
-		ASSERT_VALID(pPanel);
+	m_bAllowEdit = TRUE;
+	m_bConstraintEdit = FALSE;
+	m_pConstraints = new CXTPReportRecordItemConstraints();
+	m_bSelectTextOnEdit = FALSE;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+	m_nMaxLength = 0;
 
-		CMFCRibbonBaseElement* pDroppedDown = pPanel->GetDroppedDown();
-		if (pDroppedDown != NULL)
-		{
-			ASSERT_VALID(pDroppedDown);
-			pDroppedDown->ClosePopupMenu();
-		}
-	}
 
-	if (m_pParentMenu != NULL)
-	{
-		return;
-	}
-
-	if (m_pRibbonBar != NULL)
-	{
-		ASSERT_VALID(m_pRibbonBar);
-
-		CMFCRibbonBaseElement* pDroppedDown = m_pRibbonBar->GetDroppedDown();
-		if (pDroppedDown != NULL)
-		{
-			ASSERT_VALID(pDroppedDown);
-			pDroppedDown->ClosePopupMenu();
-		}
-	}
-
-	if (m_pParent != NULL)
-	{
-		ASSERT_VALID(m_pParent);
-
-		CMFCRibbonBaseElement* pDroppedDown = m_pParent->GetDroppedDown();
-		if (pDroppedDown != NULL)
-		{
-			ASSERT_VALID(pDroppedDown);
-			pDroppedDown->ClosePopupMenu();
-		}
-	}
 }
 
-void CMFCRibbonBaseElement::OnUpdateCmdUI(CMFCRibbonCmdUI* pCmdUI, CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+CXTPReportRecordItemEditOptions::~CXTPReportRecordItemEditOptions()
 {
-	ASSERT_VALID(this);
-	ENSURE(pCmdUI != NULL);
+	RemoveButtons();
 
-	if (m_nID == 0 || IsSystemCommand(m_nID) ||
-		m_nID >= AFX_IDM_FIRST_MDICHILD)
-	{
-		return;
-	}
-
-	pCmdUI->m_pUpdated = this;
-
-	pCmdUI->m_nID = m_nID;
-	pCmdUI->DoUpdate(pTarget, bDisableIfNoHndler);
-
-	pCmdUI->m_pUpdated = NULL;
+	CMDTARGET_RELEASE(m_pConstraints);
 }
 
-BOOL CMFCRibbonBaseElement::NotifyControlCommand(BOOL bAccelerator, int nNotifyCode, WPARAM wParam, LPARAM lParam)
+void CXTPReportRecordItemEditOptions::RemoveButtons()
 {
-	UNREFERENCED_PARAMETER(bAccelerator);
-	UNREFERENCED_PARAMETER(nNotifyCode);
-	UNREFERENCED_PARAMETER(wParam);
-	UNREFERENCED_PARAMETER(lParam);
+	for (int j = 0; j < arrInplaceButtons.GetSize(); j++)
+		arrInplaceButtons[j]->InternalRelease();
 
-	return FALSE;
+	arrInplaceButtons.RemoveAll();
 }
 
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::HitTest(CPoint /*point*/)
+void CXTPReportRecordItemEditOptions::AddComboButton()
 {
-	ASSERT_VALID(this);
-	return this;
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_COMBOBUTTON));
 }
 
-CMFCRibbonBar* CMFCRibbonBaseElement::GetTopLevelRibbonBar() const
+void CXTPReportRecordItemEditOptions::AddExpandButton()
 {
-	ASSERT_VALID(this);
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_EXPANDBUTTON));
+}
 
-	if (m_pRibbonBar != NULL)
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(DWORD_PTR dwData)
+{
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
 	{
-		ASSERT_VALID(m_pRibbonBar);
-		return m_pRibbonBar;
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_dwData == dwData)
+			return pConstaint;
 	}
-
-	if (m_pParent != NULL)
-	{
-		ASSERT_VALID(m_pParent);
-
-		if (m_pParent->GetParentRibbonBar() != NULL)
-		{
-			ASSERT_VALID(m_pParent->GetParentRibbonBar());
-			return m_pParent->GetParentRibbonBar();
-		}
-	}
-
-	if (m_pParentMenu != NULL)
-	{
-		ASSERT_VALID(m_pParentMenu);
-		return m_pParentMenu->GetTopLevelRibbonBar();
-	}
-
 	return NULL;
 }
 
-void CMFCRibbonBaseElement::SetDroppedDown(CMFCPopupMenu* pPopupMenu)
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(LPCTSTR lpszConstraint)
 {
-	ASSERT_VALID(this);
-
-	m_pPopupMenu = pPopupMenu;
-
-	if (pPopupMenu != NULL)
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
 	{
-		ASSERT_VALID(pPopupMenu);
-		pPopupMenu->SetParentRibbonElement(this);
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_strConstraint == lpszConstraint)
+			return pConstaint;
 	}
+	return NULL;
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::AddConstraint(LPCTSTR lpszConstraint, DWORD_PTR dwData /*= 0*/)
+{
+	CXTPReportRecordItemConstraint* pConstaint = new CXTPReportRecordItemConstraint();
+
+	pConstaint->m_strConstraint = lpszConstraint;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_pConstraints->m_arrConstraints.Add(pConstaint);
+
+	return pConstaint;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItem
+
+IMPLEMENT_SERIAL(CXTPReportRecordItem, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItem::CXTPReportRecordItem()
+{
+	static const CString g_strFormatStringDef = _T("%s");
+
+	m_strFormatString = g_strFormatStringDef;
+	m_bEditable = TRUE;
+	m_pFontCaption = NULL;
+	m_bBoldText = FALSE;
+	m_clrText = XTP_REPORT_COLOR_DEFAULT;
+	m_clrBackground = XTP_REPORT_COLOR_DEFAULT;
+
+	m_nIconIndex = XTP_REPORT_NOICON;
+
+	m_pRecord = 0;
+	m_dwData = 0;
+
+	m_nSortPriority = -1;
+	m_nGroupPriority = -1;
+
+	m_bChecked = FALSE;
+	m_bHasCheckbox = FALSE;
+	m_pEditOptions = NULL;
+
+	m_bFocusable = TRUE;
+
+	m_pHyperlinks = NULL;
+
+
+}
+
+
+CXTPReportRecordItem::~CXTPReportRecordItem()
+{
+	CMDTARGET_RELEASE(m_pEditOptions);
+	CMDTARGET_RELEASE(m_pHyperlinks);
+}
+
+void CXTPReportRecordItem::DoMouseButtonClick()
+{
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+}
+
+void CXTPReportRecordItem::GetCaptionRect(XTP_REPORTRECORDITEM_ARGS* pDrawArgs, CRect& rcItem)
+{
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
+		return;
+
+	if (GetIconIndex() != XTP_REPORT_NOICON)
+		rcItem.left += pDrawArgs->pControl->GetPaintManager()->DrawBitmap(NULL, pDrawArgs->pControl, rcItem, GetIconIndex());
+
+	if (m_bHasCheckbox)
+		rcItem.left += 15;
+}
+
+void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem)
+{
+	BOOL bEditable = IsEditable() && (pDrawArgs->pColumn == NULL || pDrawArgs->pColumn->IsEditable());
+
+	CDC* pDC = pDrawArgs->pDC;
+	int eState = (bEditable ? 0: 2) + (IsChecked() ? 1 : 0);
+
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+
+	m_rcGlyph = rcItem;
+	CSize sizeGlyph = pPaintManager->DrawGlyph(NULL, m_rcGlyph, eState + 2);
+
+	CRect rcGlyph(m_rcGlyph);
+	// horizontal alignment
+	switch(nIconAlign)
+	{
+	case xtpColumnIconRight:
+		rcGlyph.left = rcItem.right - sizeGlyph.cx - 2;
+		// shift text box to the left
+		rcItem.right -= (2 + sizeGlyph.cx);
+		break;
+	case xtpColumnIconCenter:
+		rcGlyph.left = rcItem.CenterPoint().x - sizeGlyph.cx / 2 - 1;
+		rcGlyph.right = rcGlyph.left + sizeGlyph.cx;
+		break; // left text box as is - draw on image...
+	case xtpColumnIconLeft:
+	default:
+		rcGlyph.left += 2;
+		// shift text box to the right
+		rcItem.left += 2 + sizeGlyph.cx;
+		rcGlyph.right = rcItem.left - 1;
+		break;
+	}
+	// vertical alignment
+	switch(nIconAlign)
+	{
+	case xtpColumnIconTop:
+		rcGlyph.bottom = rcItem.top + sizeGlyph.cy + 2;
+		break;
+	case xtpColumnIconBottom:
+		rcGlyph.top = rcItem.bottom - sizeGlyph.cy - 2;
+		break;
+	}
+	// draw the glyph
+	pPaintManager->DrawGlyph(pDC, rcGlyph, eState + 2);
+}
+
+void CXTPReportRecordItem::OnDrawCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	ASSERT(pDrawArgs->pItem == this);
+	pDrawArgs->pControl->GetPaintManager()->DrawItemCaption(pDrawArgs, pMetrics);
+}
+
+
+int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
+{
+	CDC* pDC = pDrawArgs->pDC;
+	CRect& rcItem = pDrawArgs->rcItem;
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	CRgn rgn;
+	rgn.CreateRectRgn(rcItem.left, rcItem.top - 1, rcItem.right, rcItem.bottom);
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(&rgn);
+
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
+	pMetrics->strText = GetCaption(pDrawArgs->pColumn);
+	pDrawArgs->pRow->GetItemMetrics(pDrawArgs, pMetrics);
+
+	ASSERT(pMetrics->pFont);
+	ASSERT(pMetrics->clrForeground != XTP_REPORT_COLOR_DEFAULT);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->FillSolidRect(rcItem, pMetrics->clrBackground);
+
+	int nItemGlyphs = rcItem.left;
+
+	// draw tree inside item rect (see also HitTest function)
+	if (pDrawArgs->pColumn && pDrawArgs->pColumn->IsTreeColumn())
+	{
+		int nTreeDepth = pDrawArgs->pRow->GetTreeDepth() - pDrawArgs->pRow->GetGroupLevel();
+		if (nTreeDepth > 0)
+			nTreeDepth++;
+		rcItem.left += pDrawArgs->pControl->GetIndent(nTreeDepth);
+
+		BOOL bHasChildren = pDrawArgs->pRow->HasChildren();
+
+		CRect rcBitmap(rcItem);
+		CSize sizeBitmap = pPaintManager->DrawCollapsedBitmap(NULL, pDrawArgs->pRow, rcBitmap);
+
+		pPaintManager->DrawTreeStructure(pDrawArgs, pMetrics, rcItem, sizeBitmap);
+
+		int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+		// horizontal alignment
+		switch(nIconAlign)
+		{
+		case xtpColumnIconRight:
+			rcBitmap.left = rcBitmap.right - sizeBitmap.cx - 2;
+			break;
+		case xtpColumnIconLeft:
+			rcBitmap.right = rcBitmap.left + sizeBitmap.cx + 2;
+			break;
+		}
+		// vertical alignment
+		switch(nIconAlign)
+		{
+		case xtpColumnIconTop:
+			rcBitmap.bottom = rcBitmap.top + sizeBitmap.cy + 2;
+			break;
+		case xtpColumnIconBottom:
+			rcBitmap.top = rcBitmap.bottom - sizeBitmap.cy - 2;
+			break;
+		}
+		sizeBitmap = pPaintManager->DrawCollapsedBitmap(bHasChildren ? pDC : NULL, pDrawArgs->pRow, rcBitmap);
+
+		if (!pDC->IsPrinting() && bHasChildren)
+			pDrawArgs->pRow->SetCollapseRect(rcBitmap);
+
+		rcItem.left += sizeBitmap.cx + 2;
+	}
+
+	pDC->SetTextColor(pMetrics->clrForeground);
+
+	CFont* pOldFont = (CFont*)pDC->SelectObject(pMetrics->pFont);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->SetBkColor(pMetrics->clrBackground);
 	else
+		pDC->SetBkColor(pPaintManager->m_clrControlBack);
+
+	if (m_bHasCheckbox)
+		DrawCheckBox(pDrawArgs, rcItem);
+
+	// Do the draw bitmap pDC, rcItem, GetIconIndex()
+	if (pMetrics->nItemIcon != XTP_REPORT_NOICON || GetIconIndex() != XTP_REPORT_NOICON)
 	{
-		NotifyHighlightListItem(-1);
+		pPaintManager->DrawItemBitmap(pDrawArgs, rcItem, pMetrics->nItemIcon != XTP_REPORT_NOICON ? pMetrics->nItemIcon : GetIconIndex());
 	}
 
-	BOOL bWasDroppedDown = m_bIsDroppedDown;
-	m_bIsDroppedDown = pPopupMenu != NULL;
+	nItemGlyphs = (rcItem.left - nItemGlyphs);
 
-	if (!m_bIsDroppedDown)
+	OnDrawCaption(pDrawArgs, pMetrics);
+
+	int nItemTextWidth = nItemGlyphs + pDC->GetTextExtent(pMetrics->strText).cx + 4;
+
+	pDC->SelectObject(pOldFont);
+
+	pMetrics->InternalRelease();
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(NULL);
+
+	return nItemTextWidth;
+}
+
+
+void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	if (!pClickArgs || !pClickArgs->pControl)
+		return;
+
+	InternalAddRef();
+	CMDTARGET_ADDREF(pClickArgs->pColumn);
+	CMDTARGET_ADDREF(pClickArgs->pControl);
+
+	CXTPReportRow* pRow = pClickArgs->pRow;
+	CMDTARGET_ADDREF(pRow);
+
+	BOOL bCheckBoxClicked = FALSE;
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsEditable() && m_bHasCheckbox && (pClickArgs->pColumn == NULL || pClickArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pClickArgs))
 	{
-		m_bIsHighlighted = m_bIsPressed = FALSE;
-	}
-
-	if (bWasDroppedDown != m_bIsDroppedDown)
-	{
-		Redraw();
-	}
-
-	if (m_pParentMenu->GetSafeHwnd() != NULL && pPopupMenu == NULL)
-	{
-		ASSERT_VALID(m_pParentMenu);
-		ASSERT_VALID(m_pParentMenu->GetParent());
-
-		CMFCPopupMenu::m_pActivePopupMenu = (CMFCPopupMenu*) m_pParentMenu->GetParent();
-	}
-
-	m_bOnBeforeShowItemMenuIsSent = FALSE;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::Find(const CMFCRibbonBaseElement* pElement)
-{
-	ASSERT_VALID(this);
-	return (pElement == this) ? this : NULL;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::FindByID(UINT uiCmdID)
-{
-	ASSERT_VALID(this);
-	return (m_nID == uiCmdID) ? this : NULL;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::FindByData(DWORD_PTR dwData)
-{
-	ASSERT_VALID(this);
-	return (m_dwData == dwData) ? this : NULL;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::FindByOriginal(CMFCRibbonBaseElement* pOriginal)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pOriginal);
-	return (m_pOriginal == pOriginal) ? this : NULL;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::GetPressed()
-{
-	ASSERT_VALID(this);
-	return IsPressed() ? this : NULL;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::GetDroppedDown()
-{
-	ASSERT_VALID(this);
-	return IsDroppedDown() ? this : NULL;
-}
-
-CMFCRibbonBaseElement* CMFCRibbonBaseElement::GetHighlighted()
-{
-	ASSERT_VALID(this);
-	return IsHighlighted() ? this : NULL;
-}
-
-BOOL CMFCRibbonBaseElement::ReplaceByID(UINT uiCmdID, CMFCRibbonBaseElement* pElem)
-{
-	ASSERT_VALID(this);
-	UNREFERENCED_PARAMETER(uiCmdID);
-	UNREFERENCED_PARAMETER(pElem);
-
-	return FALSE;
-}
-
-void CMFCRibbonBaseElement::SetParentCategory(CMFCRibbonCategory* pParent)
-{
-	ASSERT_VALID(this);
-	m_pParent = pParent;
-}
-
-void CMFCRibbonBaseElement::CopyFrom(const CMFCRibbonBaseElement& src)
-{
-	ASSERT_VALID(this);
-
-	m_nID = src.m_nID;
-	m_dwData = src.m_dwData;
-	m_bTextAlwaysOnRight = src.m_bTextAlwaysOnRight;
-	m_strText = src.m_strText;
-	m_strKeys = src.m_strKeys;
-	m_strMenuKeys = src.m_strMenuKeys;
-	m_pParent = src.m_pParent;
-	m_pParentGroup = src.m_pParentGroup;
-	m_strToolTip = src.m_strToolTip;
-	m_strDescription = src.m_strDescription;
-	m_bQuickAccessMode = src.m_bQuickAccessMode;
-	m_bIsVisible = src.m_bIsVisible;
-	m_bIsDefaultMenuLook = src.m_bIsDefaultMenuLook;
-	m_bIsRadio = src.m_bIsRadio;
-	m_bIsAlwaysLarge = src.m_bIsAlwaysLarge;
-	m_bIsOnPaletteTop = src.m_bIsOnPaletteTop;
-}
-
-void CMFCRibbonBaseElement::SetParentMenu(CMFCRibbonPanelMenuBar* pMenuBar)
-{
-	ASSERT_VALID(this);
-
-	m_pParentMenu = pMenuBar;
-}
-
-void CMFCRibbonBaseElement::SetOriginal(CMFCRibbonBaseElement* pOriginal)
-{
-	ASSERT_VALID(this);
-
-	if (pOriginal != NULL)
-	{
-		ASSERT_VALID(pOriginal);
-
-		while (pOriginal->m_pOriginal != NULL)
+		// adjust vertical coordinates if virtual mode
+		if (pControl->IsVirtualMode())
 		{
-			pOriginal = pOriginal->m_pOriginal;
+			m_rcGlyph.top = pClickArgs->rcItem.top;
+			m_rcGlyph.bottom = pClickArgs->rcItem.bottom;
+		}
+		// check whether we're clicking glyph area
+		if (m_rcGlyph.PtInRect(pClickArgs->ptClient))
+		{
+			if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+			pControl->RedrawControl();
+
+			pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_CHECKED, &pClickArgs->ptClient);
+			bCheckBoxClicked = TRUE;
 		}
 	}
 
-	m_pOriginal = pOriginal;
-}
-
-CWnd* CMFCRibbonBaseElement::GetParentWnd() const
-{
-	ASSERT_VALID(this);
-
-	if (m_pRibbonBar != NULL)
+	if (!bCheckBoxClicked && IsAllowEdit(pClickArgs) && pControl->IsEditOnClick())
 	{
-		ASSERT_VALID(m_pRibbonBar);
-		return m_pRibbonBar;
-	}
-	else if (m_pParentMenu != NULL)
-	{
-		ASSERT_VALID(m_pParentMenu);
-		return m_pParentMenu;
-	}
-	else if (m_pParent != NULL)
-	{
-		ASSERT_VALID(m_pParent);
-		ASSERT_VALID(m_pParent->GetParentRibbonBar());
+		pControl->EditItem(pClickArgs);
 
-		return m_pParent->GetParentRibbonBar();
-	}
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
 
-	return NULL;
-}
-
-CMFCRibbonPanel* CMFCRibbonBaseElement::GetParentPanel() const
-{
-	ASSERT_VALID(this);
-
-	if (m_pParentMenu != NULL)
-	{
-		ASSERT_VALID(m_pParentMenu);
-
-		if (m_pParentMenu->m_pCategory != NULL)
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
 		{
-			ASSERT_VALID(m_pParentMenu->m_pCategory);
-			return m_pParentMenu->m_pCategory->FindPanelWithElem(this);
-		}
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
 
-		return m_pParentMenu->m_pPanel;
-	}
-	else if (m_pParent != NULL)
-	{
-		ASSERT_VALID(m_pParent);
-		return m_pParent->FindPanelWithElem(this);
-	}
-
-	return NULL;
-}
-
-BOOL CMFCRibbonBaseElement::IsMenuMode() const
-{
-	ASSERT_VALID(this);
-
-	if (m_pParentMenu != NULL)
-	{
-		ASSERT_VALID(m_pParentMenu);
-
-		if (m_pParentMenu->m_pPanel == NULL)
-		{
-			return FALSE;
-		}
-
-		ASSERT_VALID(m_pParentMenu->m_pPanel);
-
-		return m_pParentMenu->m_pPanel->IsMenuMode();
-	}
-
-	return FALSE;
-}
-
-void CMFCRibbonBaseElement::Redraw()
-{
-	ASSERT_VALID(this);
-
-	if (m_rect.IsRectEmpty())
-	{
-		return;
-	}
-
-	if (m_pParentMenu->GetSafeHwnd() != NULL)
-	{
-		m_pParentMenu->RedrawWindow(m_rect);
-		return;
-	}
-
-	CWnd* pWndParent = GetParentWnd();
-
-	if (pWndParent->GetSafeHwnd() != NULL)
-	{
-		pWndParent->RedrawWindow(m_rect);
-	}
-}
-
-CString CMFCRibbonBaseElement::GetToolTipText() const
-{
-	ASSERT_VALID(this);
-
-	if (IsDroppedDown())
-	{
-		return _T("");
-	}
-
-	CString strTipText = m_strToolTip;
-
-	if (m_bQuickAccessMode && strTipText.IsEmpty())
-	{
-		strTipText = m_strText;
-
-		const CString strDummyAmpSeq = _T("\001\001");
-
-		strTipText.Replace(_T("&&"), strDummyAmpSeq);
-		strTipText.Remove(_T('&'));
-		strTipText.Replace(strDummyAmpSeq, _T("&"));
-	}
-
-	//--------------------
-	// Add shortcut label:
-	//--------------------
-	CWnd* pWndParent = NULL;
-
-	if (m_pRibbonBar != NULL)
-	{
-		pWndParent = m_pRibbonBar;
-	}
-	else if (m_pParentMenu != NULL)
-	{
-		pWndParent = m_pParentMenu;
-	}
-	else if (m_pParent != NULL)
-	{
-		ASSERT_VALID(m_pParent);
-		pWndParent = m_pParent->GetParentRibbonBar();
-	}
-
-	CString strLabel;
-	CFrameWnd* pParentFrame = AFXGetParentFrame(pWndParent) == NULL ? NULL : AFXGetTopLevelFrame(AFXGetParentFrame(pWndParent));
-
-	if (pParentFrame != NULL && (CKeyboardManager::FindDefaultAccelerator(m_nID, strLabel, pParentFrame, TRUE) ||
-		CKeyboardManager::FindDefaultAccelerator(m_nID, strLabel, pParentFrame->GetActiveFrame(), FALSE)))
-	{
-		strTipText += _T(" (");
-		strTipText += strLabel;
-		strTipText += _T(')');
-	}
-
-	return strTipText;
-}
-
-CString CMFCRibbonBaseElement::GetDescription() const
-{
-	ASSERT_VALID(this);
-	return m_strDescription;
-}
-
-void CMFCRibbonBaseElement::SetToolTipText(LPCTSTR lpszText)
-{
-	ASSERT_VALID(this);
-	m_strToolTip = lpszText == NULL ? _T("") : lpszText;
-}
-
-void CMFCRibbonBaseElement::SetDescription(LPCTSTR lpszText)
-{
-	ASSERT_VALID(this);
-	m_strDescription = lpszText == NULL ? _T("") : lpszText;
-}
-
-void CMFCRibbonBaseElement::UpdateTooltipInfo()
-{
-	ASSERT_VALID(this);
-
-	if (m_nID == 0 || m_nID == (UINT)-1)
-	{
-		return;
-	}
-
-	CString strText;
-	if (!strText.LoadString(m_nID))
-	{
-		return;
-	}
-
-	m_strToolTip.Empty();
-	m_strDescription.Empty();
-
-	if (strText.IsEmpty())
-	{
-		return;
-	}
-
-	AfxExtractSubString(m_strDescription, strText, 0);
-	AfxExtractSubString(m_strToolTip, strText, 1, '\n');
-
-	const CString strDummyAmpSeq = _T("\001\001");
-
-	m_strToolTip.Replace(_T("&&"), strDummyAmpSeq);
-	m_strToolTip.Remove(_T('&'));
-	m_strToolTip.Replace(strDummyAmpSeq, _T("&"));
-}
-
-void CMFCRibbonBaseElement::OnAfterChangeRect(CDC* /*pDC*/)
-{
-	ASSERT_VALID(this);
-
-	if (m_strToolTip.IsEmpty())
-	{
-		UpdateTooltipInfo();
-	}
-}
-
-BOOL CMFCRibbonBaseElement::NotifyCommand(BOOL bWithDelay)
-{
-	ASSERT_VALID(this);
-
-	if (m_pOriginal != NULL)
-	{
-		if (m_bQuickAccessMode && (m_bIsHighlighted || m_bIsPressed || m_bIsFocused))
-		{
-			m_bIsHighlighted = m_bIsPressed = m_bIsFocused = FALSE;
-			Redraw();
-		}
-
-		ASSERT_VALID(m_pOriginal);
-		return m_pOriginal->NotifyCommand(bWithDelay);
-	}
-
-	UINT uiID = GetNotifyID();
-
-	if (uiID == 0 || uiID == (UINT)-1)
-	{
-		return FALSE;
-	}
-
-	CMFCRibbonBar* pRibbonBar = GetTopLevelRibbonBar();
-	if (pRibbonBar == NULL)
-	{
-		return FALSE;
-	}
-
-	ASSERT_VALID(pRibbonBar);
-
-	CWnd* pWndParent = pRibbonBar->GetParent();
-	if (pWndParent == NULL)
-	{
-		return FALSE;
-	}
-
-	m_bIsHighlighted = m_bIsPressed = m_bIsFocused = FALSE;
-
-	Redraw();
-
-	ASSERT_VALID(pWndParent);
-
-	if (uiID == AFX_IDM_FIRST_MDICHILD)
-	{
-		HWND hwndMDIChild = (HWND) m_dwData;
-
-		if (::IsWindow(hwndMDIChild))
-		{
-			CMFCRibbonBar* pTopLevelRibbon = GetTopLevelRibbonBar();
-			if (pTopLevelRibbon != NULL)
+			if (pEditOptions->m_bSelectTextOnEdit)
 			{
-				CMDIFrameWndEx* pMDIFrameWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, pTopLevelRibbon->GetTopLevelFrame());
-
-				if (pMDIFrameWnd != NULL)
-				{
-					WINDOWPLACEMENT	wndpl;
-					wndpl.length = sizeof(WINDOWPLACEMENT);
-					::GetWindowPlacement(hwndMDIChild,&wndpl);
-
-					if (wndpl.showCmd == SW_SHOWMINIMIZED)
-					{
-						::ShowWindow(hwndMDIChild, SW_RESTORE);
-					}
-
-					if (bWithDelay)
-					{
-						::PostMessage(pMDIFrameWnd->m_hWndMDIClient, WM_MDIACTIVATE, (WPARAM) hwndMDIChild, 0);
-					}
-					else
-					{
-						::SendMessage(pMDIFrameWnd->m_hWndMDIClient, WM_MDIACTIVATE, (WPARAM) hwndMDIChild, 0);
-					}
-
-					return TRUE;
-				}
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
 			}
 		}
 	}
 
-	if (bWithDelay)
+	pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_CLICK, &pClickArgs->ptClient);
+
+	// Determine Hyperlink Click
+	int nHyperlink = HitTestHyperlink(pClickArgs->ptClient);
+	if (nHyperlink >= 0)
 	{
-		pWndParent->PostMessage(WM_COMMAND, uiID);
-	}
-	else
-	{
-		pWndParent->SendMessage(WM_COMMAND, uiID);
+		pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_HYPERLINK, &pClickArgs->ptClient, nHyperlink);
 	}
 
-	return TRUE;
+	CMDTARGET_RELEASE(pRow);
+	CMDTARGET_RELEASE(pClickArgs->pColumn);
+	CMDTARGET_RELEASE(pClickArgs->pControl);
+	InternalRelease();
 }
 
-void CMFCRibbonBaseElement::PostMenuCommand(UINT /*uiCmdId*/)
+int CXTPReportRecordItem::HitTestHyperlink(CPoint ptClick)
 {
-	ASSERT_VALID(this);
-
-	m_bIsDroppedDown = FALSE;
-	Redraw();
-
-	if (m_pParentMenu != NULL)
+	int nHyperlinks = GetHyperlinksCount();
+	CXTPReportHyperlink* pHyperlink;
+	for (int nHyperlink = 0; nHyperlink < nHyperlinks; nHyperlink++)
 	{
-		ASSERT_VALID(m_pParentMenu);
-		m_pParentMenu->GetParent()->SendMessage(WM_CLOSE);
+		pHyperlink = GetHyperlinkAt(nHyperlink);
+		ASSERT(pHyperlink);
+		if (pHyperlink && pHyperlink->m_rcHyperSpot.PtInRect(ptClick))
+			return nHyperlink;
 	}
+	return -1;
 }
 
-void CMFCRibbonBaseElement::GetElementsByID(UINT uiCmdID, CArray <CMFCRibbonBaseElement*, CMFCRibbonBaseElement*>& arElements)
+void CXTPReportRecordItem::OnDblClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
 {
-	ASSERT_VALID(this);
+	CXTPReportControl* pControl = pClickArgs->pControl;
 
-	if (uiCmdID == m_nID)
+	if (IsAllowEdit(pClickArgs) && !pControl->IsEditOnClick() && pControl->GetInplaceEdit()->GetItem() != this)
 	{
-		arElements.Add(this);
-	}
-}
+		pControl->EditItem(pClickArgs);
 
-void CMFCRibbonBaseElement::GetItemIDsList(CList<UINT,UINT>& lstItems) const
-{
-	ASSERT_VALID(this);
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
 
-	if (m_nID != 0 && m_nID != (UINT)-1 && lstItems.Find(m_nID) == NULL)
-	{
-		lstItems.AddTail(m_nID);
-	}
-}
-
-int CMFCRibbonBaseElement::AddToListBox(CMFCRibbonCommandsListBox* pWndListBox, BOOL /*bDeep*/)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pWndListBox);
-	ENSURE(pWndListBox->GetSafeHwnd() != NULL);
-
-	if (m_nID == 0 || m_nID == (UINT)-1)
-	{
-		return -1;
-	}
-
-	if (m_nID >= ID_FILE_MRU_FILE1 && m_nID <= ID_FILE_MRU_FILE16)
-	{
-		return -1;
-	}
-
-	for (int i = 0; i < pWndListBox->GetCount (); i++)
-	{
-		CMFCRibbonBaseElement* pItem = (CMFCRibbonBaseElement*) pWndListBox->GetItemData (i);
-		if (pItem == NULL)
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
 		{
-			continue;
-		}
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
 
-		ASSERT_VALID (pItem);
-
-		if (pItem->m_nID == m_nID && !pItem->HasMenu ())
-		{
-			// Already exist, don't add it
-			return -1;
+			if (pEditOptions->m_bSelectTextOnEdit)
+			{
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
+			}
 		}
 	}
 
-
-	UpdateTooltipInfo();
-
-	CString strText = m_strToolTip;
-	if (strText.IsEmpty())
-	{
-		strText = GetText();
-	}
-
-	const CString strDummyAmpSeq = _T("\001\001");
-
-	strText.Replace(_T("&&"), strDummyAmpSeq);
-	strText.Remove(_T('&'));
-	strText.Replace(strDummyAmpSeq, _T("&"));
-
-	int nIndex = pWndListBox->AddString(strText);
-	pWndListBox->SetItemData(nIndex, (DWORD_PTR) this);
-
-	return nIndex;
+	pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_DBLCLK, &pClickArgs->ptClient, -1);
 }
 
-void CMFCRibbonBaseElement::OnDrawOnList(CDC* pDC, CString strText, int nTextOffset, CRect rect, BOOL /*bIsSelected*/, BOOL /*bHighlighted*/)
+void CXTPReportRecordItem::OnMouseMove(UINT /*nFlags*/, CPoint point)
 {
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-
-	BOOL bIsDisabled = m_bIsDisabled;
-	m_bIsDisabled = FALSE;
-
-	if (m_bDrawDefaultIcon)
+	int nHyperlink = HitTestHyperlink(point);
+	if (nHyperlink >= 0)
 	{
-		CRect rectImage = rect;
-		rectImage.right = rect.left + nTextOffset;
-
-		CMFCVisualManager::GetInstance()->OnDrawDefaultRibbonImage(pDC, rectImage);
+		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_HAND));
 	}
-
-	CRect rectText = rect;
-
-	rectText.left += nTextOffset;
-
-	const int nXMargin = 3;
-	rectText.DeflateRect(nXMargin, 0);
-
-	pDC->DrawText(strText, rectText, DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
-	m_bIsDisabled = bIsDisabled;
 }
 
-void CMFCRibbonBaseElement::ClosePopupMenu()
+void CXTPReportRecordItem::SetFont(CFont* pFont)
 {
-	ASSERT_VALID(this);
+	m_pFontCaption = pFont;
+}
 
-	if (m_pPopupMenu != NULL && ::IsWindow(m_pPopupMenu->m_hWnd))
+void CXTPReportRecordItem::SetBold(BOOL bBold)
+{
+	m_bBoldText = bBold;
+}
+
+void CXTPReportRecordItem::SetTextColor(COLORREF clrText)
+{
+	m_clrText = clrText;
+}
+
+void CXTPReportRecordItem::SetBackgroundColor(COLORREF clrBackground)
+{
+	m_clrBackground = clrBackground;
+}
+
+int CXTPReportRecordItem::Compare(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (!pItem)
+		return 0;
+
+	if (m_nSortPriority != -1 || pItem->m_nSortPriority != -1)
+		return m_nSortPriority - pItem->m_nSortPriority;
+
+	return m_pRecord->GetRecords()->Compare(GetCaption(pColumn), pItem->GetCaption(pColumn));
+}
+
+CFont* CXTPReportRecordItem::GetFont()
+{
+	return m_pFontCaption;
+}
+
+CString CXTPReportRecordItem::GetGroupCaption(CXTPReportColumn* pColumn)
+{
+	if (!m_strGroupCaption.IsEmpty())
+		return m_strGroupCaption;
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
 	{
-		if (m_pPopupMenu->InCommand())
+		CString str;
+		if (str.LoadString(nID))
+		{
+			return str;
+		}
+	}
+
+	return pColumn->GetCaption() + _T(": ") + GetCaption(pColumn);
+}
+
+int CXTPReportRecordItem::CompareGroupCaption(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (m_nGroupPriority != -1)
+		return m_nGroupPriority - pItem->m_nGroupPriority;
+
+	if (!m_strGroupCaption.IsEmpty())
+		return m_pRecord->GetRecords()->Compare(m_strGroupCaption, pItem->m_strGroupCaption);
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+		return nID - pItem->GetGroupCaptionID(pColumn);
+
+	return Compare(pColumn, pItem);
+}
+
+int CXTPReportRecordItem::GetGroupCaptionID(CXTPReportColumn* /*pColumn*/)
+{
+	return m_nGroupPriority;
+}
+
+
+void CXTPReportRecordItem::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pItemMetrics)
+{
+	if (m_clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrBackground = m_clrBackground;
+
+	if (m_clrText != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrForeground = m_clrText;
+
+	if (m_pFontCaption != NULL)
+		pItemMetrics->pFont = m_pFontCaption;
+	else if (m_bBoldText)
+		pItemMetrics->pFont = &pDrawArgs->pControl->GetPaintManager()->m_fontBoldText;
+
+}
+
+int CXTPReportRecordItem::GetIndex() const
+{
+	return m_pRecord ? m_pRecord->IndexOf(this) : -1;
+}
+
+BOOL CXTPReportRecordItem::IsEditable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	ASSERT(m_pRecord);
+	return m_pRecord ? m_pRecord->m_bEditable && m_bEditable && IsFocusable() : FALSE;
+}
+
+
+BOOL CXTPReportRecordItem::IsFocusable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	return m_bFocusable;
+}
+
+void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (IsEditable() && OnRequestEdit(pItemArgs))
+	{
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pItemArgs->pColumn);
+		ASSERT(pEditOptions);
+
+		CXTPReportInplaceButtons* pInpaceButtons = &pEditOptions->arrInplaceButtons;
+
+		CRect rcButtons(pItemArgs->rcItem);
+		CXTPClientRect rcControl(pItemArgs->pControl);
+
+		int i;
+		// calculate buttons widths
+		int nButtonsWidthIn = 0, nButtonsWidthOut = 0;
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			if (pButton->IsInsideCellButton())
+				nButtonsWidthIn += pButton->GetWidth();
+			else
+				nButtonsWidthOut += pButton->GetWidth();
+		}
+
+		// adjust buttons rect
+		if (rcButtons.right + nButtonsWidthOut > rcControl.right)
+			rcButtons.right = rcControl.right - nButtonsWidthOut;
+
+		int nLeftMin = max(rcControl.left, pItemArgs->rcItem.left);
+		if (rcButtons.right - nButtonsWidthIn < nLeftMin)
+			rcButtons.right = nLeftMin + nButtonsWidthIn;
+
+		// create buttons
+		rcButtons.left = rcButtons.right;
+
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			pButton->Create(pItemArgs, rcButtons);
+
+			pControl->GetInplaceButtons()->Add(pButton);
+		}
+
+		// adjust item rect
+		pItemArgs->rcItem.right = rcButtons.left + 1;
+
+		if (pEditOptions->m_bAllowEdit)
+		{
+			pEdit->Create(pItemArgs);
+		}
+		else if (pInpaceButtons->GetSize() > 0)
+		{
+			OnInplaceButtonDown(pInpaceButtons->GetAt(0));
+		}
+
+		//----------------------------------------------------
+		XTP_NM_REPORTRECORDITEM nm;
+		::ZeroMemory(&nm, sizeof(nm));
+
+		nm.pItem = this;
+		nm.pRow = pItemArgs->pRow;
+		nm.pColumn = pItemArgs->pColumn;
+
+		pControl->SendNotifyMessage(XTP_NM_REPORT_BEGINEDIT, (NMHDR*)&nm);
+	}
+}
+
+void CXTPReportRecordItem::OnCancelEdit(CXTPReportControl* pControl, BOOL bApply)
+{
+	CXTPReportInplaceButtons* pInpaceButtons = pControl->GetInplaceButtons();
+
+	for (int i = 0; i < pInpaceButtons->GetSize(); i++)
+	{
+		CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+		pButton->DestroyWindow();
+		pButton->SetItemArgs(0);
+	}
+	pInpaceButtons->RemoveAll();
+
+	CXTPReportInplaceList* pInpaceList = pControl->GetInplaceList();
+	if (pInpaceList->GetSafeHwnd())
+	{
+		pInpaceList->DestroyWindow();
+	}
+
+
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (bApply && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)pEdit);
+	}
+
+	pEdit->HideWindow();
+	pEdit->SetItemArgs(0);
+	pEdit->DestroyWindow(); // pControl->SetFocus();
+
+
+}
+
+void CXTPReportRecordItem::OnConstraintChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraint* pConstraint)
+{
+	OnEditChanged(pItemArgs, pConstraint->m_strConstraint);
+}
+
+void CXTPReportRecordItem::OnValidateEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+	XTP_REPORTRECORDITEM_ARGS args = *pItemArgs;
+
+	if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		args.AddRef();
+
+		BOOL bRedraw = FALSE;
+		CMDTARGET_RELEASE(pEdit->pItem); //pEdit->pItem = NULL;
+
+		if (GetEditOptions(args.pColumn)->m_bConstraintEdit)
+		{
+			if (pEdit->m_pSelectedConstraint)
+			{
+				OnConstraintChanged(&args, pEdit->m_pSelectedConstraint);
+				bRedraw = TRUE;
+			}
+		}
+		else
+		{
+			CString strValue;
+			pEdit->GetWindowText(strValue);
+
+			if (GetCaption(args.pColumn) != strValue)
+			{
+				OnEditChanged(&args, strValue);
+				bRedraw = TRUE;
+			}
+		}
+		if (bRedraw)
+		{
+			pControl->RedrawControl();
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
+		}
+		else
+		{
+			OnEditCanceled(pItemArgs);
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_EDIT_CANCELED, 0);
+		}
+
+		pEdit->SetItemArgs(0);
+
+		args.Release();
+	}
+}
+
+BOOL CXTPReportRecordItem::IsAllowEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	BOOL bIsAllowEdit = pItemArgs->pControl->IsAllowEdit();
+
+	if (m_pRecord)
+	{
+		// is header record
+		if (m_pRecord->m_pRecords == pItemArgs->pControl->GetHeaderRecords())
+		{
+			bIsAllowEdit = pItemArgs->pControl->IsHeaderRowsAllowEdit();
+		}
+		else
+			// is footer record
+			if (m_pRecord->m_pRecords == pItemArgs->pControl->GetFooterRecords())
+			{
+				bIsAllowEdit = pItemArgs->pControl->IsFooterRowsAllowEdit();
+			}
+	}
+
+	return bIsAllowEdit && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));
+
+/*  return pItemArgs->pControl->IsAllowEdit() && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));*/
+}
+
+BOOL CXTPReportRecordItem::OnRequestEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	XTP_NM_REPORTREQUESTEDIT nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.bCancel = FALSE;
+	nm.pItem = this;
+	nm.pRow = pItemArgs->pRow;
+	nm.pColumn = pItemArgs->pColumn;
+
+	pControl->SendNotifyMessage(XTP_NM_REPORT_REQUESTEDIT, (NMHDR*)&nm);
+
+	return !nm.bCancel;
+}
+
+BOOL CXTPReportRecordItem::OnChar(XTP_REPORTRECORDITEM_ARGS* pItemArgs, UINT nChar)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	if ((nChar == VK_SPACE) && IsEditable() && m_bHasCheckbox && (pItemArgs->pColumn == NULL || pItemArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pItemArgs))
+	{
+		if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+		pControl->RedrawControl();
+
+		pControl->SendMessageToParent(pItemArgs->pRow, this, pItemArgs->pColumn, XTP_NM_REPORT_CHECKED, NULL);
+		return TRUE;
+	}
+
+	if (IsAllowEdit(pItemArgs))
+	{
+		pControl->EditItem(pItemArgs);
+
+		CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+		if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+		{
+			pEdit->SetFocus();
+			pEdit->SetSel(0, -1);
+			if (nChar != VK_TAB) pEdit->SendMessage(WM_CHAR, nChar);
+		}
+		return TRUE;
+
+	}
+	return FALSE;
+}
+
+CXTPReportRecordItemEditOptions* CXTPReportRecordItem::GetEditOptions(CXTPReportColumn* pColumn)
+{
+	if (m_pEditOptions)
+		return m_pEditOptions;
+
+	if (pColumn)
+		return pColumn->GetEditOptions();
+
+	return m_pEditOptions = new CXTPReportRecordItemEditOptions();
+}
+
+void CXTPReportRecordItem::OnInplaceButtonDown(CXTPReportInplaceButton* pButton)
+{
+	CXTPReportControl* pControl = pButton->pControl;
+
+	XTP_NM_REPORTINPLACEBUTTON nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.pButton = pButton;
+	nm.pItem = this;
+
+	if (pControl->SendNotifyMessage(XTP_NM_REPORT_INPLACEBUTTONDOWN, (NMHDR*)&nm) == TRUE)
+		return;
+
+	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
+	{
+		CXTPReportInplaceList* pList = pControl->GetInplaceList();
+
+		XTP_REPORTRECORDITEM_ARGS itemArgs = *pButton;
+		if (!itemArgs.pColumn && !itemArgs.pControl && !itemArgs.pItem && !itemArgs.pRow)
 		{
 			return;
 		}
+		ASSERT(itemArgs.pItem == this);
 
-		m_pPopupMenu->m_bAutoDestroyParent = FALSE;
-		m_pPopupMenu->CloseMenu();
-	}
+		CXTPWindowRect rcButton(pButton);
+		pControl->ScreenToClient(&rcButton);
+		itemArgs.rcItem.right = rcButton.right;
+		itemArgs.rcItem.bottom  = rcButton.bottom;
 
-	m_pPopupMenu = NULL;
-	m_bOnBeforeShowItemMenuIsSent = FALSE;
-}
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(itemArgs.pColumn);
 
-BOOL CMFCRibbonBaseElement::CanBeAddedToQuickAccessToolBar() const
-{
-	ASSERT_VALID(this);
-
-	return m_nID != 0 && m_nID != (UINT)-1 && !IsStandardCommand(m_nID);
-}
-
-BOOL CMFCRibbonBaseElement::OnAddToQAToolbar(CMFCRibbonQuickAccessToolBar& qat)
-{
-	qat.Add(this);
-	return TRUE;
-}
-
-BOOL CMFCRibbonBaseElement::StretchToWholeRow(CDC* /*pDC*/, int nHeight)
-{
-	ASSERT_VALID(this);
-
-	if (!CanBeStretched() || m_bCompactMode || m_bIntermediateMode)
-	{
-		return FALSE;
-	}
-
-	m_rect.bottom = m_rect.top + nHeight;
-	return TRUE;
-}
-
-BOOL CMFCRibbonBaseElement::SetACCData(CWnd* pParent, CAccessibilityData& data)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pParent);
-
-	data.Clear();
-
-	data.m_strAccName = m_strText.IsEmpty() ? m_strToolTip : m_strText;
-	data.m_strAccName.Remove(_T('&'));
-	data.m_strAccName.Trim();
-
-	data.m_nAccRole = IsMenuMode() ? ROLE_SYSTEM_MENUITEM : ROLE_SYSTEM_PUSHBUTTON;
-
-	data.m_strDescription = m_strDescription;
-	data.m_nAccHit = 1;
-	data.m_strAccDefAction = IsMenuMode () ? _T("Execute") : _T("Press");
-
-	data.m_bAccState = STATE_SYSTEM_FOCUSABLE;
-	if (IsChecked())
-	{
-		data.m_bAccState |= STATE_SYSTEM_CHECKED;
-	}
-
-	if (IsDisabled())
-	{
-		data.m_bAccState |= STATE_SYSTEM_UNAVAILABLE;
-	}
-
-	if (IsPressed() || IsMenuMode() && IsHighlighted())
-	{
-		data.m_bAccState |= STATE_SYSTEM_FOCUSED;
-	}
-
-	data.m_rectAccLocation = m_rect;
-	pParent->ClientToScreen(&data.m_rectAccLocation);
-
-	CString strKeys = m_strKeys;
-
-	if (!m_bQuickAccessMode && m_pParentMenu != NULL && strKeys.GetLength() < 2)
-	{
-		// Try to find key from label:
-		int nIndexAmp = m_strText.Find(_T('&'));
-
-		if (nIndexAmp >= 0 && nIndexAmp < m_strText.GetLength() - 1 && m_strText[nIndexAmp + 1] != _T('&'))
+		if (pEditOptions->GetConstraints()->GetCount() > 0)
 		{
-			strKeys = m_strText.Mid(nIndexAmp + 1, 1);
+			pList->Create(&itemArgs, pEditOptions->GetConstraints());
 		}
 	}
+}
 
-	if (!strKeys.IsEmpty())
+CXTPReportHyperlinks* CXTPReportRecordItem::GetHyperlinks()
+{
+	if (!m_pHyperlinks)
+		m_pHyperlinks = new CXTPReportHyperlinks();
+
+	return m_pHyperlinks;
+}
+
+void CXTPReportRecordItem::DoPropExchange(CXTPPropExchange* pPX)
+{
+	PX_DWord(pPX, _T("TextColor"), (DWORD&)m_clrText, XTP_REPORT_COLOR_DEFAULT);
+	PX_DWord(pPX, _T("BackgroundColor"), (DWORD&)m_clrBackground, XTP_REPORT_COLOR_DEFAULT);
+
+	PX_Bool(pPX, _T("BoldText"), m_bBoldText, FALSE);
+
+	PX_String(pPX, _T("Format"), m_strFormatString, _T("%s"));
+
+	PX_Bool(pPX, _T("Editable"), m_bEditable, TRUE);
+
+	PX_Int(pPX, _T("IconIndex"), m_nIconIndex, XTP_REPORT_NOICON);
+
+	PX_Int(pPX, _T("SortPriority"), m_nSortPriority, -1);
+	PX_Int(pPX, _T("GroupPriority"), m_nGroupPriority, -1);
+
+	PX_String(pPX, _T("GroupCaption"), m_strGroupCaption, _T(""));
+
+	PX_Bool(pPX, _T("Focusable"), m_bFocusable, TRUE);
+
+	PX_Bool(pPX, _T("Checked"), m_bChecked, FALSE);
+	PX_Bool(pPX, _T("HasCheckbox"), m_bHasCheckbox, FALSE);
+
+	ULONGLONG ullData = m_dwData;
+	PX_UI8(pPX, _T("Data"), ullData, 0);
+	m_dwData = (DWORD_PTR)ullData;
+
+	PX_String(pPX, _T("Tooltip"), m_strTooltip, _T(""));
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_98)
 	{
-		data.m_strAccKeys = _T("Alt, ");
+		PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
+	}
 
-		if (m_pParent != NULL)
+
+	// Hyperlinks
+	CXTPPropExchangeSection secHyperlinks(pPX->GetSection(_T("Hyperlinks")));
+
+	CXTPReportHyperlinks arHyperlinks;
+
+	if (pPX->IsStoring() && m_pHyperlinks)
+	{
+		arHyperlinks.CopyFrom(m_pHyperlinks);
+	}
+
+	arHyperlinks.DoPropExchange(&secHyperlinks);
+
+	if (pPX->IsLoading())
+	{
+		if (arHyperlinks.GetSize())
 		{
-			ASSERT_VALID(m_pParent);
-			data.m_strAccKeys += m_pParent->m_Tab.m_strKeys + _T(", ");
+			if (GetHyperlinks())
+				GetHyperlinks()->CopyFrom(&arHyperlinks);
 		}
-
-		data.m_strAccKeys += strKeys;
-	}
-
-	return TRUE;
-}
-
-void CMFCRibbonBaseElement::OnDrawKeyTip(CDC* pDC, const CRect& rect, BOOL bIsMenu)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-
-	if (m_strKeys.IsEmpty())
-	{
-		return;
-	}
-
-	CMFCVisualManager::GetInstance()->OnDrawRibbonKeyTip(pDC, this, rect, bIsMenu ? m_strMenuKeys : m_strKeys);
-}
-
-CSize CMFCRibbonBaseElement::GetKeyTipSize(CDC* pDC)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-
-	if (!m_bQuickAccessMode && m_pParentMenu != NULL && m_strKeys.GetLength() < 2)
-	{
-		// Try to find key from label:
-		int nIndexAmp = m_strText.Find(_T('&'));
-
-		if (nIndexAmp >= 0 && nIndexAmp < m_strText.GetLength() - 1 && m_strText [nIndexAmp + 1] != _T('&'))
+		else if (m_pHyperlinks)
 		{
-			m_strKeys = m_strText.Mid(nIndexAmp + 1, 1);
+			m_pHyperlinks->RemoveAll();
 		}
 	}
-
-	if (m_strKeys.IsEmpty())
-	{
-		return CSize(0, 0);
-	}
-
-	const CString strMin = _T("O");
-
-	CSize sizeMin = pDC->GetTextExtent(strMin);
-	CSize sizeText = pDC->GetTextExtent(m_strKeys);
-
-	sizeText.cx = max(sizeText.cx, sizeMin.cx);
-	sizeText.cy = max(sizeText.cy, sizeMin.cy);
-
-	return CSize(sizeText.cx + 10, sizeText.cy + 2);
 }
-
-BOOL CMFCRibbonBaseElement::OnKey(BOOL bIsMenuKey)
-{
-	ASSERT_VALID(this);
-
-	if (m_bIsDisabled)
-	{
-		return FALSE;
-	}
-
-	if (m_rect.IsRectEmpty())
-	{
-		CMFCRibbonPanel* pParentPanel = GetParentPanel();
-		if (pParentPanel != NULL)
-		{
-			ASSERT_VALID(pParentPanel);
-
-			if (pParentPanel->IsCollapsed())
-			{
-				if (!HasMenu())
-				{
-					if (!NotifyCommand(TRUE))
-					{
-						return FALSE;
-					}
-
-					if (m_pParentMenu != NULL)
-					{
-						CMFCRibbonBar* pTopLevelRibbon = GetTopLevelRibbonBar();
-
-						// Close menu:
-						ASSERT_VALID(m_pParentMenu);
-
-						CFrameWnd* pParentFrame = AFXGetParentFrame(m_pParentMenu);
-						ASSERT_VALID(pParentFrame);
-
-						pParentFrame->DestroyWindow();
-
-						if (pTopLevelRibbon != NULL && pTopLevelRibbon->GetTopLevelFrame() != NULL)
-						{
-							pTopLevelRibbon->GetTopLevelFrame()->SetFocus();
-						}
-					}
-
-					return TRUE;
-				}
-				else
-				{
-					CMFCRibbonBar* pTopLevelRibbon = GetTopLevelRibbonBar();
-					if (pTopLevelRibbon != NULL)
-					{
-						pTopLevelRibbon->HideKeyTips();
-					}
-
-					CMFCRibbonPanelMenu* pPopup = pParentPanel->ShowPopup();
-					if (pPopup != NULL)
-					{
-						ASSERT_VALID(pPopup);
-
-						CMFCRibbonBaseElement* pPopupElem = pPopup->FindByOrigin(this);
-						if (pPopupElem != NULL)
-						{
-							ASSERT_VALID(pPopupElem);
-							return pPopupElem->OnKey(bIsMenuKey);
-						}
-					}
-				}
-			}
-		}
-
-		return FALSE;
-	}
-
-	return NotifyCommand(TRUE);
-}
-
-void CMFCRibbonBaseElement::AddToKeyList(CArray<CMFCRibbonKeyTip*,CMFCRibbonKeyTip*>& arElems)
-{
-	ASSERT_VALID(this);
-
-	arElems.Add(new CMFCRibbonKeyTip(this));
-
-	if (!m_strMenuKeys.IsEmpty() && HasMenu())
-	{
-		arElems.Add(new CMFCRibbonKeyTip(this, TRUE));
-	}
-}
-
-int CMFCRibbonBaseElement::GetDropDownImageWidth() const
-{
-	ASSERT_VALID(this);
-
-	int cxImage = CMenuImages::Size().cx;
-
-	if (afxGlobalData.GetRibbonImageScale() > 1.)
-	{
-		cxImage = (int)(.5 + afxGlobalData.GetRibbonImageScale() * cxImage);
-	}
-
-	return cxImage;
-}
-
-void CMFCRibbonBaseElement::NotifyHighlightListItem(int nIndex)
-{
-	ASSERT_VALID(this);
-
-	CMFCRibbonBar* pRibbonBar = GetTopLevelRibbonBar();
-	if (pRibbonBar == NULL)
-	{
-		return;
-	}
-
-	ASSERT_VALID(pRibbonBar);
-
-	CWnd* pWndParent = pRibbonBar->GetParent();
-	if (pWndParent == NULL)
-	{
-		return;
-	}
-
-	pWndParent->SendMessage(AFX_WM_ON_HIGHLIGHT_RIBBON_LIST_ITEM, (WPARAM)nIndex, (LPARAM)this);
-}
-
-void CMFCRibbonBaseElement::OnShowPopupMenu()
-{
-	ASSERT_VALID(this);
-
-	CMFCRibbonBar* pRibbonBar = GetTopLevelRibbonBar();
-	if (pRibbonBar == NULL)
-	{
-		return;
-	}
-
-	ASSERT_VALID(pRibbonBar);
-
-	CWnd* pWndParent = pRibbonBar->GetParent();
-	if (pWndParent == NULL)
-	{
-		return;
-	}
-
-	if (!m_bOnBeforeShowItemMenuIsSent)
-	{
-		m_bOnBeforeShowItemMenuIsSent = TRUE;
-		pWndParent->SendMessage(AFX_WM_ON_BEFORE_SHOW_RIBBON_ITEM_MENU, (WPARAM)0, (LPARAM)this);
-	}
-}
-
-
 

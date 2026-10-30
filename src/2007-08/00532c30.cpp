@@ -1,71 +1,17 @@
-// from server: 78% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Selection.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Selection.h"
-
-#include "util/object.h"
-#include "util/standardout.h"
-
-#include <algorithm>
-
-namespace RBX {
-
-const char sSelection[] = "Selection";
-
-// FUNCTION: WEBSERVICE 0x1005d440
-void Selection::raiseRemoved(boost::shared_ptr<Instance> item)
-{
-	SelectionChanged event(boost::shared_ptr<Instance>(), item);
-
-	for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end();
-		 ++iter) {
-		(*iter)->VTable0x00(event);
-	}
-
-	Notifier<Selection, SelectionChanged>::raise(event);
-}
-
-// FUNCTION: WEBSERVICE 0x1005d5e0
-Selection::~Selection()
-{
-}
-
-// STUB: WEBSERVICE 0x1005e1f0
-void Selection::removeFromSelection(const Instance* instance)
-{
-	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > items = selection.write();
-
-	std::vector<boost::shared_ptr<Instance> >::iterator iter =
-		std::find(items->begin(), items->end(), shared_from(instance));
-
-	if (iter != items->end()) {
-		boost::shared_ptr<Instance> removedItem = *iter;
-
-		items->erase(iter);
-
-		instance->Notifier<Instance, AncestorChanged>::removeListener(this);
-
-		raiseRemoved(removedItem);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1005e870
-void Selection::onEvent(const Instance* source, AncestorChanged event)
-{
-	const Instance* sourceRoot = source->getParent() != NULL ? source->getParent()->getRootAncestor() : source;
-
-	if (sourceRoot != getRootAncestor()) {
-		removeFromSelection(source);
-	}
-}
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::Selection, RBX::Instance, RBX::sSelection>;
-template class RBX::Reflection::
-	Described<RBX::Selection, RBX::sSelection, RBX::FactoryProduct<RBX::Selection, RBX::Instance, RBX::sSelection> >;
-template class RBX::DescribedCreatable<RBX::Selection, RBX::Instance, RBX::sSelection>;
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

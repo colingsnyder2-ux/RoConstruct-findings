@@ -1,10 +1,27 @@
-// from server: 72% by colin
-extern "C" int __stdcall sub_62FC6E();
-extern "C" int __stdcall sub_62FC68(int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_04fd8290f2921435.cpp
 
-int __stdcall sub_401000(int a)
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afx.h>
+#include <atlbase.h>
+#include <statreg.h>
+
+struct RocRegParser : ATL::CRegParser
 {
-    if (a == 0x8007000E)
-        a = sub_62FC6E();
-    return sub_62FC68(a);
+    RocRegParser() : ATL::CRegParser(0) {}
+    HRESULT roc_add(ATL::CRegKey& k, LPCTSTR n, LPTSTR t) { return AddValue(k, n, t); }
+};
+
+HRESULT roc_regparser_addvalue(RocRegParser* p, ATL::CRegKey& k, LPCTSTR n, LPTSTR t)
+{
+    return p->roc_add(k, n, t);
 }

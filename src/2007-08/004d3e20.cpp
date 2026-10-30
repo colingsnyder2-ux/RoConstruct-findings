@@ -1,64 +1,97 @@
-// from server: 29% by colin
-struct Texture {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    void method(int a, int b);
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_11ccee7d629bca29.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
+
+namespace RBX { namespace View {
+class RenderSurfaceTypes
+{
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
+
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
+#include <G3D/g3dmath.h>
+
+void flushUnusedMeshCache();
+
+namespace RBX {
+namespace View {
+
+class PBBMesh : public Render::Mesh
+{
+public:
+    PBBMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+    char pad[0x8c - sizeof(Render::Mesh)];
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __cdecl func_4cdf20();
-extern "C" void __cdecl func_4d0100(int);
-extern "C" void __cdecl func_4d2150();
-extern "C" void* __cdecl func_4d3170();
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<int, int> decalCache;
+        std::map<int, int> textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static Mesh* create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+};
 
-void Texture::method(int a, int b) {
-    int* p = (int*)a;
-    int val = *p;
-    int idx = val % fieldC;
-    int* arr = (int*)field8;
-    int existing = arr[idx];
-    if (existing == 0) {
-        void* mem = operator_new(0x1c);
-        if (mem != 0) {
-            func_4d2150();
-            void* result = func_4d3170();
-            arr[idx] = (int)result;
-        } else {
-            arr[idx] = 0;
-        }
-        field4++;
-        return;
-    }
-    int count = 1;
-    int found = 0;
-    int* node = (int*)existing;
-    while (node != 0) {
-        if (val == node[0]) {
-            found = 1;
-            break;
-        }
-        node = (int*)node[6];
-        count++;
-    }
-    if (!found && count > 5) {
-        int limit = field4 * 10;
-        if (fieldC < limit) {
-            func_4d0100(fieldC * 2 + 1);
+template<class Mesh, size_t numMeshes>
+Mesh* MeshFactory<Mesh, numMeshes>::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
+
+    if (!c->cache1.containsKey(surfaceTypes))
+        c->cache1.set(surfaceTypes, G3D::Table<G3D::Vector3, Variations>());
+
+    G3D::Table<G3D::Vector3, Variations>& sizeCache = c->cache1.get(surfaceTypes);
+
+    if (!sizeCache.containsKey(size))
+        sizeCache.set(size, Variations());
+
+    Variations& variation = sizeCache.get(size);
+
+    int index = G3D::iRandom(0, numMeshes - 1);
+    G3D::ReferenceCountedPointer<Render::Mesh>& ref = variation.meshes[index];
+    Mesh* mesh = static_cast<Mesh*>(ref.getPointer());
+    if (!mesh)
+    {
+        mesh = new Mesh(size, surfaceTypes);
+        ref = mesh;
+        if (++c->count % 100 == 0)
+        {
+            G3D::ReferenceCountedPointer<Render::Mesh> keep = ref;
+            flushUnusedMeshCache();
         }
     }
-    int idx2 = val % fieldC;
-    void* mem2 = operator_new(0x1c);
-    if (mem2 != 0) {
-        int* arr2 = (int*)field8;
-        int old = arr2[idx2];
-        func_4d2150();
-        func_4d3170();
-        arr2[idx2] = (int)mem2;
-    } else {
-        int* arr3 = (int*)field8;
-        arr3[idx2] = 0;
-    }
-    field4++;
+    return mesh;
+}
+
+template class MeshFactory<PBBMesh, 4>;
+}
 }

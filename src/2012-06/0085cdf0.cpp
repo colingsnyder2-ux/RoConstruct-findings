@@ -1,12 +1,15 @@
-// from server: 68% by atomic.potato
-extern "C" void __cdecl func_0085ccd0(void*, void*, void*, void*, void*, void*);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-struct S
-{
-    void f(void*, void*, void*, void*, void*);
-};
-
-void S::f(void* a, void* b, void* c, void* d, void* e)
-{
-    func_0085ccd0(this, e, d, a, b, c);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

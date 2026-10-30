@@ -1,8 +1,7 @@
-// from server: 82% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/BrickColor.cpp
+// roc-lib: rbxgs-dll v8datamodel/BrickColor.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/BrickColor.h"

@@ -1,41 +1,17 @@
-// from server: 42% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-struct Name;
-
-struct Creator {
-    void* field0;
-    void* field4;
-    void construct(void* a, void* b);
-};
-
-struct FactoryProduct {
-    void* field0;
-    Creator creator;
-    void FactoryProduct_ctor(void* a, void* b);
-};
-
-void FactoryProduct::FactoryProduct_ctor(void* a, void* b) {
-    this->field0 = a;
-    this->creator.construct(a, b);
-    if (a != 0) {
-        void** p = (void**)((char*)a + 0xa4);
-        if (p != 0) {
-            *p = a;
-            void* old = this->creator.field0;
-            if (old != 0) {
-                _InterlockedExchangeAdd((volatile long*)((char*)old + 8), 1);
-            }
-            void* old2 = p[1];
-            if (old2 != 0) {
-                if (_InterlockedExchangeAdd((volatile long*)((char*)old2 + 8), -1) == 1) {
-                    void** vt = *(void***)old2;
-                    void (*fn)(void*) = (void (*)(void*))vt[2];
-                    fn(old2);
-                }
-            }
-            p[1] = old;
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

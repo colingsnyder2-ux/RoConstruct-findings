@@ -1,526 +1,359 @@
-// from server: 51% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: atl-8.0 atl.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_ec5fb5ef45733f80.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Active Template Library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Active Template Library Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the	
-// Active Template Library product.
+#define _DLL 1
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include <RakPeer.h>
+#include <BitStream.h>
+#include "Client.h"
+#include "Server.h"
+#include "Players.h"
+#include "Streaming.h"
+#include "PacketIds.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/Teams.h"
+#include "util/standardout.h"
 
-// atl.cpp : Implementation of DLL Exports.
-
-#include "stdafx.h"
-#include "resource.h"
-#include "RegObj.h"
-#include "AtlAssem.h"
-#include <io.h>
-
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_Registrar, CDLLRegObject)
-	OBJECT_ENTRY_NON_CREATEABLE(CAxHostWindow)
-END_OBJECT_MAP()
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle);  /* local function */
-
-/////////////////////////////////////////////////////////////////////////////
-// DLL Entry Point
-
-extern "C"
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
+template<class Class>
+class PluginInterfaceAdapter : public PluginInterface
 {
-	if (dwReason == DLL_PROCESS_ATTACH)
+private:
+	Class* c;
+protected:
+	PluginInterfaceAdapter(Class* c)
+		: PluginInterface(),
+		  c(c)
 	{
-		bAtlAxWinInitialized = false;
-		OSVERSIONINFOA info;
-		info.dwOSVersionInfoSize = sizeof(info);
-		if (GetVersionExA(&info))
+	}
+public:
+	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
+};
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>, std::string), 2> funcReportAbuse(&RBX::Network::Players::reportAbuse, "ReportAbuse", "player", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_players(&RBX::Network::Players::getPlayers, "players", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_GetPlayers(&RBX::Network::Players::getPlayers, "GetPlayers", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_createLocalPlayer(&RBX::Network::Players::createLocalPlayer, "CreateLocalPlayer", "userId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> func_setAbuseReportUrl(&RBX::Network::Players::setAbuseReportUrl, "SetAbuseReportUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacterOld(&RBX::Network::Players::playerFromCharacter, "playerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacter(&RBX::Network::Players::playerFromCharacter, "GetPlayerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerAdded("PlayerAdded", "player");
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerRemoving("PlayerRemoving", "player");
+
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerCount("NumPlayers", "Data", &RBX::Network::Players::numPlayers, NULL, RBX::Reflection::PropertyDescriptor::UI);
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerMaxCount("MaxPlayers", "Data", &RBX::Network::Players::getMaxPlayers, &RBX::Network::Players::setMaxPlayers, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_GetPlayerByID(&RBX::Network::Players::getPlayerByID, "GetPlayerByID", "userID", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> funcChat(&RBX::Network::Players::chat, "Chat", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
+{
+	namespace Network
+	{
+		class Players::Plugin : public PluginInterfaceAdapter<Players>
 		{
-#ifdef _UNICODE
-			if (info.dwPlatformId != VER_PLATFORM_WIN32_NT)
+		public:
+			Plugin(Players* players)
+				: PluginInterfaceAdapter<Players>(players)
 			{
-				MessageBoxA(NULL, "Can not run Unicode version of ATL80.DLL on Windows 95, Windows98 or Windows Me.\nPlease install the ANSI version.", "ATL", MB_ICONSTOP|MB_OK);
-				return FALSE;
 			}
-#else
-			if (info.dwPlatformId == VER_PLATFORM_WIN32_NT)
-			{
-				OutputDebugString(_T("Slight Performace loss due to running ANSI version of ATL80.DLL on Windows NT, Windows 2000, Windows XP or Windows Server 2003 \nPlease install the Unicode version.\n"));
-			}
-#endif
-		}
-#ifdef _DEBUG
-		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF);
-		int n = 0;
-		_CrtSetBreakAlloc(n);
-#endif
-		_Module.Init(ObjectMap, hInstance, &LIBID_ATLLib);
-#ifdef _ATL_DEBUG_INTERFACES
-		int ni = 0;
-		_Module.m_nIndexBreakAt = ni;
-#endif // _ATL_DEBUG_INTERFACES
-
-#if defined(_ATL_CHECK_MANIFEST)
-#define _ATL_ABSENT_MANIFEST_ERROR_MSG	"R6034\n" \
-										"An application has made an attempt to load ATL80.DLL incorrectly.\n" \
-										"Please contact the application's support team for more information.\n"
-#define _ATL_ABSENT_MANIFEST_ERROR_DBGMSG	"R6034\n" \
-											"An application has made an attempt to load ATL80.DLL without using a manifest.\n" \
-											"This is an unsupported way to load Visual C++ DLLs. You need to modify your application to build with a manifest.\n" \
-											"For more information, see the \"Visual C++ Libraries as Shared Side-by-Side Assemblies\" topic in the product documentation.\n"
-
-		if (!_atl_check_manifest(hInstance))
-		{
-			__try
-			{
-				MessageBoxA(NULL, _ATL_ABSENT_MANIFEST_ERROR_MSG, "Microsoft Visual C++ Runtime Library", MB_ICONSTOP|MB_OK);
-			}
-			__except( EXCEPTION_EXECUTE_HANDLER )
-			{
-				OutputDebugStringA(_ATL_ABSENT_MANIFEST_ERROR_DBGMSG);
-				DebugBreak();
-			}
-			return FALSE;
-		}
-#endif
-
-		DisableThreadLibraryCalls(hInstance);
-	}
-	else if (dwReason == DLL_PROCESS_DETACH)
-	{
-#ifdef _DEBUG
-		::OutputDebugString(_T("ATL80.DLL exiting.\n"));
-#endif
-		_Module.Term();
-		if (bAtlAxWinInitialized)
-			AtlAxWinTerm();
-#ifdef _DEBUG
-		if (_CrtDumpMemoryLeaks())
-			::MessageBeep(MB_ICONEXCLAMATION);
-#endif
-	}
-	return TRUE;    // ok
-}
-
-namespace ATL
-{
-STDAPI AtlCreateRegistrar(IRegistrar** ppReg)
-{
-	if (ppReg == NULL)
-		return E_POINTER;
-	*ppReg = NULL;
-
-	return( CDLLRegObject::_CreatorClass::CreateInstance(NULL, IID_IRegistrar, (void**)ppReg) );
-}
-
-STDAPI AtlUpdateRegistryFromResourceD(HINSTANCE hInst, LPCOLESTR lpszRes,
-	BOOL bRegister, struct _ATL_REGMAP_ENTRY* pMapEntries, IRegistrar* pReg)
-{
-	ATLASSERT(hInst != NULL);
-	if (hInst == NULL)
-		return E_INVALIDARG;
-
-	HRESULT hRes = S_OK;
-	CComPtr<IRegistrar> p;
-
-	if (pReg != NULL)
-		p = pReg;
-	else
-	{
-		hRes = AtlCreateRegistrar(&p);
-	}
-	if (NULL != pMapEntries)
-	{
-		while (NULL != pMapEntries->szKey)
-		{
-			ATLASSERT(NULL != pMapEntries->szData);
-			p->AddReplacement(pMapEntries->szKey, pMapEntries->szData);
-			pMapEntries++;
-		}
-	}
-	if (SUCCEEDED(hRes))
-	{
-		TCHAR szModule[_MAX_PATH];
-		int nRet = GetModuleFileName(hInst, szModule, _MAX_PATH);
-		if(nRet == _MAX_PATH)
-			return AtlHresultFromWin32(ERROR_BUFFER_OVERFLOW);
+		};
 		
-		if(nRet == 0)
-			return AtlHresultFromLastError();
+		Players::Players()
+			: players(std::vector<boost::shared_ptr<Instance>>()),
+			  peer(NULL),
+			  maxPlayers(12)
+		{
+			setName("Players");
+			plugin.reset(new Plugin(this));
+		}
 
-		USES_CONVERSION_EX;
-		LPOLESTR pszModule = T2OLE_EX(szModule, _ATL_SAFE_ALLOCA_DEF_THRESHOLD);
-#ifndef _UNICODE
-		if(pszModule == NULL) 
-			return E_OUTOFMEMORY;
-#endif
-		
-		// Buffer Size is Multiplied by 2 because we are calling ReplaceSingleQuote
-		OLECHAR pszModuleUnquoted[_MAX_PATH * 2];
-		CAtlModule::EscapeSingleQuote(pszModuleUnquoted, _countof(pszModuleUnquoted), pszModule);
-		if (hInst == GetModuleHandle(NULL)) // register as EXE
+		Players::~Players()
 		{
-			// If Registering as an EXE, then we quote the resultant path.
-			// We don't do it for a DLL, because LoadLibrary fails if the path is
-			// quoted
-			OLECHAR pszModuleQuote[(_MAX_PATH + _ATL_QUOTES_SPACE)*2];
-			pszModuleQuote[0] = OLESTR('\"');			
-#if _SECURE_ATL
-			if(!ocscpy_s(pszModuleQuote + 1, ((_MAX_PATH + _ATL_QUOTES_SPACE)*2)-1, pszModuleUnquoted))
-			{
-				return E_FAIL;
-			}
-			size_t nLen = ocslen(pszModuleQuote);
-#else
-			ocscpy(pszModuleQuote + 1, pszModuleUnquoted);
-			int nLen = ocslen(pszModuleQuote);
-#endif
-			pszModuleQuote[nLen] = OLESTR('\"');
-			pszModuleQuote[nLen + 1] = 0;
-			
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleQuote);			
+			if (peer)
+				peer->DetachPlugin(plugin.get());
+
+			peer = NULL;
 		}
-		else
+
+		bool Players::clientIsPresent(const Instance* context, bool testInDatamodel)
 		{
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleUnquoted);
+			return Client::clientIsPresent(context, testInDatamodel);
 		}
-		
-		if(FAILED(hRes))
-			return hRes;
-	
-		hRes = p->AddReplacement(OLESTR("Module_Raw"), pszModuleUnquoted);
-		if(FAILED(hRes))
-			return hRes;
-	
-		LPCOLESTR szType = OLESTR("REGISTRY");
-		if (IS_INTRESOURCE(lpszRes))
+
+		bool Players::askAddChild(const Instance* instance) const
 		{
-			if (bRegister)
-				hRes = p->ResourceRegister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
+			return dynamic_cast<const Player*>(instance) != NULL;
+		}
+
+		void Players::setConnection(RakPeerInterface* peer)
+		{
+			if (this->peer)
+				this->peer->DetachPlugin(plugin.get());
+
+			this->peer = peer;
+
+			if (peer)
+				peer->AttachPlugin(plugin.get());
+		}
+
+		Player* Players::findLocalPlayer(const Instance* context)
+		{
+			Players* players = ServiceProvider::find<Players>(context);
+			return players ? players->getLocalPlayer() : NULL;
+		}
+
+		ModelInstance* Players::findLocalCharacter(const Instance* context)
+		{
+			Player* player = Players::findLocalPlayer(context);
+			return player ? player->getCharacter() : NULL;
+		}
+
+		void Players::setAbuseReportUrl(std::string value)
+		{
+			if (value.empty())
+				abuseReporter.reset(NULL);
 			else
-				hRes = p->ResourceUnregister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
+				abuseReporter.reset(new AbuseReporter(value));
 		}
-		else
+
+		void Players::setMaxPlayers(int value)
 		{
-			if (bRegister)
-				hRes = p->ResourceRegisterSz(pszModule, lpszRes, szType);
+			if (value != maxPlayers)
+			{
+				maxPlayers = value;
+				raisePropertyChanged(propPlayerMaxCount);
+			}
+		}
+
+		void Players::reportAbuse(boost::shared_ptr<Instance> player, std::string comment)
+		{
+			reportAbuse(dynamic_cast<Player*>(player.get()), comment);
+		}
+
+		void Players::reportAbuse(Player* player, std::string comment)
+		{
+			if (abuseReporter)
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Submitting abuse report from %s", player ? player->getName().c_str() : "[[[anonymous]]]");
+				
+				AbuseReport r;
+				r.submitterID = localPlayer ? localPlayer->getUserID() : 0;
+				r.allegedAbuserID = player ? player->getUserID() : 0;
+				r.comment = comment;
+
+				abuseReporter->add(r, chatHistory);
+			}
 			else
-				hRes = p->ResourceUnregisterSz(pszModule, lpszRes, szType);
-		}
-
-	}
-	return hRes;
-}
-
-// Cannot pull these in from the static lib. The functions they reference are decorated
-// with C++ calling convention. The functions are exported from the DLL with the 
-// C calling convention
-#ifdef _DEBUG
-//CAtlWinModule _AtlWinModule;
-CAtlComModule _AtlComModule;
-#endif
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-/* used in _ATL_CHECK_MANIFEST */
-#define _PATH_LEN 8000
-#define _WINSXS_FOLDER _T("WinSxS\\")
-
-#ifdef _UNICODE
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringW"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryW"
-#define _TCSRCHR wcsrchr
-#define _TCSNCAT_S wcsncat_s
-#else
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringA"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryA"
-#define _TCSRCHR strrchr
-#define _TCSNCAT_S strncat_s
-#endif
-
-#define _MANIFEST_FILENAME _T(__LIBRARIES_ASSEMBLY_NAME_PREFIX)_T(".ATL.manifest")
-#define _ATL_DLL_FILENAME _T("atl80.dll")
-
-typedef BOOL (WINAPI * PFN_FINDAC)(DWORD dwFlags, const GUID *lpExtensionGuid,ULONG ulSectionId,LPCTSTR lpStringToFind,PACTCTX_SECTION_KEYED_DATA ReturnedData);
-typedef UINT (WINAPI * PFN_GETSYSTEMWINDOWSDIRECTORY)(LPTSTR lpBuffer,  UINT uSize);
-
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle)
-{
-	/* We check that the dll is loaded through a manifest.
-	 *
-	 * We check several conditions and exceptions:
-	 *
-	 * (1)  if (pre-fusion OS)
-	 *         return TRUE; [no need to check]
-	 *
-	 * (2)  if (dll is loaded from system32)
-	 *          return FALSE;
-	 *
-	 * (3)  if (!(loaded through a manifest))
-	 *          return FALSE;
-	 *
-	 * (4)  if (loaded from %SystemRoot%\WinSxS)
-	 *          return TRUE; [loaded from the WinSxS cache]
-	 *
-	 * (5)  if (manifest is in the same folder as the dll)
-	 *          return TRUE;
-	 *
-	 * (6)  return FALSE; [loaded with another manifest]
-	 *
-	 * In general, when we encounter an error condition or something
-	 * which blocks us from checking if the dll is loaded through a
-	 * manifest, we do not return an error, but we let the dll to be
-	 * loaded. Notice that this is not a security feature: it's an helper
-	 * which will try (as much as possible) to discourage the practice
-	 * of not using a manifest to load the ATL dll.
-	 */
-
-	TCHAR moduleFilePath[_PATH_LEN];
-	TCHAR systemRoot[MAX_PATH];
-	size_t moduleFilePathLen = 0;
-	size_t systemRootLen = 0;
-
-	PFN_FINDAC pfnFindActCtxSectionString =NULL;
-	/* check condition (1) */
-	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
-
-		pfnFindActCtxSectionString = (PFN_FINDAC) GetProcAddress(hKernel32, _FINDACTCTXSECTIONSTRING);
-
-		if (pfnFindActCtxSectionString == NULL) 
-		{
-			/* pre-fusion OS, so no more checking.*/
-			return TRUE;
-		}
-	}
-
-	///* retrieve moduleFilePath and systemRoot */
-	{
-		TCHAR tempPath[_PATH_LEN];
-		TCHAR *myTestModuleName = NULL;
-		DWORD ret = GetModuleFileName(hDllHandle, tempPath, _countof(tempPath));
-		if (ret == 0 || ret >= _countof(tempPath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		ret = GetLongPathName(tempPath, moduleFilePath, _countof(moduleFilePath));
-		if (ret == 0 || ret >= _countof(moduleFilePath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	  * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-
-		myTestModuleName = const_cast<TCHAR*>(_TCSRCHR(moduleFilePath, L'\\'));
-
-		if (myTestModuleName == NULL)
-		{
-			/* error: we could not find a backslash in moduleFilePath */
-			return TRUE;
-		}
-		myTestModuleName++;
-		*myTestModuleName = 0;
-		/* moduleFilePath now contains only the path of the module ending with a backslash */
-		moduleFilePathLen = _tcsnlen(moduleFilePath, _countof(moduleFilePath));
-
-		ret = GetSystemDirectory(systemRoot, _countof(systemRoot));
-		if (ret == 0 || ret >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		systemRootLen = ret;
-		if (systemRoot[systemRootLen - 1] != _T('\\'))
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\"), _TRUNCATE) != 0)
 			{
-				/* error or not enough space */
-				return TRUE;
+				StandardOut::singleton()->print(MESSAGE_INFO, "Sending abuse report to game server via Raknet");
+				if (!peer)
+					throw std::runtime_error("Can\'t report abuse: Not in a networked game");
+
+				RakNet::BitStream bitStream;
+				bitStream << (unsigned char)ID_REPORT_ABUSE;
+				bitStream << (localPlayer ? localPlayer->getUserID() : 0);
+				bitStream << (player ? player->getUserID() : 0);
+				bitStream << comment;
+
+				peer->Send(&bitStream, HIGH_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
 			}
 		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
-	}
 
-	/* check condition (2) */
-	if (moduleFilePathLen == systemRootLen)
-	{
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)moduleFilePathLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
+		Player* Players::getPlayerFromCharacter(Instance* character)
 		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			return FALSE; /* dll loaded from system32 */
-		}
-	}
-
-	/* check condition (3) */
-	{
-		ACTCTX_SECTION_KEYED_DATA askd = { sizeof(askd) };
-		if (!(*pfnFindActCtxSectionString)(0, NULL, ACTIVATION_CONTEXT_SECTION_DLL_REDIRECTION, _ATL_DLL_FILENAME, &askd))
-		{
-			/* no activation context used to load ATL DLL, means no manifest present in the process */
-			return FALSE;
-		}
-	}
-
-	/* check condition (4) */
-	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		PFN_GETSYSTEMWINDOWSDIRECTORY pfnGetSystemWindowsDirectory = NULL;
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
-
-		pfnGetSystemWindowsDirectory = (PFN_GETSYSTEMWINDOWSDIRECTORY) GetProcAddress(hKernel32, _GETSYSTEMWINDOWSDIRECTORY);
-
-		if (pfnGetSystemWindowsDirectory == NULL) 
-		{
-			/* pre-win2k OS, so no more checking. We shouldn't get to here because we checked OS version earlier */
-			return TRUE;
-		}
-
-		/* retrieves the windows folder */
-		systemRootLen = pfnGetSystemWindowsDirectory(systemRoot, _countof(systemRoot));
-		if (systemRootLen == 0 || systemRootLen >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		if (systemRoot[systemRootLen - 1] != L'\\')
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\") _WINSXS_FOLDER, _TRUNCATE) != 0)
+			Players* players = ServiceProvider::find<Players>(character);
+			if (players)
 			{
-				/* error or not enough space */
-				return TRUE;
+				boost::shared_ptr<Instance> found = players->playerFromCharacter(shared_from(character));
+				return static_cast<Player*>(found.get());
+			}
+			else
+			{
+				return NULL;
 			}
 		}
-		else
+
+
+		bool Players::backendProcessing(const Instance* context, bool testInDatamodel)
 		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _WINSXS_FOLDER, _TRUNCATE) != 0)
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return sp && !Client::clientIsPresent(context, testInDatamodel);
+		}
+
+		bool Players::frontendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return sp && !Server::serverIsPresent(context, testInDatamodel);
+		}
+
+		boost::shared_ptr<Instance> Players::playerFromCharacter(boost::shared_ptr<Instance> character)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> myPlayers = getPlayers();
+
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = myPlayers->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = myPlayers->end();
+
+			for (; iter != end; iter++)
 			{
-				/* error or not enough space */
-				return TRUE;
+				if (static_cast<Player*>(iter->get())->getCharacter() == static_cast<ModelInstance*>(character.get()))
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		boost::shared_ptr<Instance> Players::getPlayerByID(int userID)
+		{
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = players->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = players->end();
+
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getUserID() == userID)
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		void Players::onEvent(const Player* source, CharacterAdded event)
+		{
+			RBXASSERT(backendProcessing(this, true));
+			const_cast<Player*>(source)->rebuildBackpack();
+		}
+
+		void Players::addChatMessage(const ChatMessage& message)
+		{
+			chatHistory.push_front(message);
+
+			while (chatHistory.size() > (size_t)GameSettings::singleton().chatHistory)
+			{
+				chatHistory.pop_back();
+			}
+
+			Notifier<Players, ChatMessage>::raise(message);
+			Player::event_Chatted.fire(message.source.get(), message.message, message.destination);
+		}
+
+		void Players::onChildAdded(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			if (player->getUserID() > 0)
+			{
+				boost::shared_ptr<Instance> otherPlayer = getPlayerByID(player->getUserID());
+				if (otherPlayer)
+					otherPlayer->setParent(NULL);
+			}
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->push_back(shared_from(child));
+
+			if (backendProcessing(this, true))
+			{
+				player->Notifier<Player, CharacterAdded>::addListener(this);
+				player->rebuildBackpack();
+
+				if (Teams* teams = ServiceProvider::find<Teams>(this))
+					teams->assignNewPlayerToTeam(player);
+
+				event_PlayerAdded.fire(this, shared_from(player));
 			}
 		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
+		
+		void Players::onChildRemoving(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
 
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)systemRootLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->erase(std::find(myPlayers->begin(), myPlayers->end(), shared_from(child)));
+
+			if (backendProcessing(this, false))
+				event_PlayerRemoving.fire(this, shared_from(player));
+
+			Notifier<Player, CharacterAdded>::disconnect(player, this);
 		}
-		if( CSTR_EQUAL == nRet )
+
+		void Players::onChildChanged(Instance* instance, const PropertyChanged& event)
 		{
-			/* moduleFileName begins with %SYSTEMROOT%\WinSxS\ */
-			return TRUE; /* dll has been loaded from the WinSxS cache */
+			if (instance == localPlayer.get() && &event.getProperty().getDescriptor() == &Player::prop_SuperSafeChat)
+			{
+				bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+				Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+			}
+		}
+
+		// 98% match
+		boost::shared_ptr<Instance> Players::createLocalPlayer(int userId)
+		{
+			if (localPlayer)
+				throw std::runtime_error("Local player already exists");
+
+			localPlayer = Creatable::create<Player>();
+			Player::prop_userId.setValue(localPlayer.get(), userId);
+			localPlayer->setParent(this);
+			raisePropertyChanged(propLocalPlayer);
+
+			bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+			Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+
+			return localPlayer;
+		}
+
+		void AbuseReport::addMessage(const ChatMessage& cm)
+		{
+			int userId = cm.source ? Player::prop_userId.getValue(cm.source.get()) : 0;
+			AbuseReport::Message m = {userId, cm.message};
+			messages.push_back(m);
+		}
+
+		AbuseReporter::AbuseReporter(std::string abuseUrl)
+			: _data(new AbuseReporter::data)
+		{
+			requestProcessor.reset(new worker_thread(boost::bind(&AbuseReporter::processRequests, _data, abuseUrl), "rbx_abusereporter"));
+		}
+
+		void AbuseReporter::add(AbuseReport& r, const std::list<ChatMessage>& chatHistory)
+		{
+			std::for_each(chatHistory.begin(), chatHistory.end(), boost::bind(&AbuseReport::addMessage, boost::ref(r), _1));
+
+			{
+				boost::mutex::scoped_lock lock(_data->requestSync);
+				_data->queue.push(r);
+			}
+
+			requestProcessor->wake();
 		}
 	}
-
-	/* check condition (5) */
-	{
-		WIN32_FIND_DATA findData = { 0 };
-		HANDLE hFind = INVALID_HANDLE_VALUE;
-
-		if (_TCSNCAT_S(moduleFilePath, _countof(moduleFilePath), _MANIFEST_FILENAME, _TRUNCATE) != 0)
-		{
-			/* error or truncation */
-			return TRUE;
-		}
-
-		hFind = FindFirstFile(moduleFilePath, &findData);
-		if (hFind != INVALID_HANDLE_VALUE) 
-		{
-			FindClose(hFind);
-			return TRUE; /* manifest is in the same folder as the dll */
-		} 
-		/* we could not find the manifest in the same folder as the dll */
-		moduleFilePath[moduleFilePathLen] = 0;
-		/* restore moduleFilePath so that it contains only the path of the module with final backslash */
-	}
-
-	/* case (6): loaded with another manifest */
-	return FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-/*
-STDAPI DllCanUnloadNow(void)
-{
-	return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-	return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	return _Module.RegisterServer(TRUE);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-	//No need to unregister typelib since ATL is a system component.
-	return S_OK;
-}
-*/
-
-#include <delayimp.h>
-
-extern "C"
-{
-FARPROC
-WINAPI
-Downlevel_DelayLoadFailureHook(
-	UINT unReason,
-	PDelayLoadInfo pDelayInfo
-	);
-
-PfnDliHook __pfnDliFailureHook2 = Downlevel_DelayLoadFailureHook;
-
 }

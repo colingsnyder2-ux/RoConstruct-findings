@@ -1,29 +1,47 @@
-// from server: 0% by atomic.potato
-extern "C" void* __cdecl sub_7A79A0(unsigned int size);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
-struct VVirtualUser {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-struct FactoryProductCreator {
-    void* field0;
-    void* __thiscall create(unsigned int a, unsigned int b);
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
 
-void* __thiscall FactoryProductCreator::create(unsigned int a, unsigned int b)
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    VVirtualUser* p = (VVirtualUser*)sub_7A79A0(0x14);
-    if (p != 0) {
-        p->field4 = (void*)1;
-        p->field8 = (void*)1;
-        p->field0 = (void*)0xA2B1A8;
-        p->fieldC = (void*)a;
-    } else {
-        p = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
     }
-    this->field0 = p;
-    return this;
 }

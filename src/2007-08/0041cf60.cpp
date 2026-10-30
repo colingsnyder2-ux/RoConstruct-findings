@@ -1,4 +1,3 @@
-// from server: 70% by colin
 // roc 2007-08 0041cf60  unit: InsertDecal  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041cf60
 //
@@ -14,16 +13,18 @@
 // 0041cf76  c20400               ret 4
 // 0041cf79  b801000000           mov eax, 1
 // 0041cf7e  c20400               ret 4
+// copied from an identical function in another client (function ?g@S@@QAEHPAU1@@Z)
 
-struct InsertDecal {
-    int f(int);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S {
+    bool f(S*);
+    int g(S*);
 };
 
-int InsertDecal::f(int a) {
-    if (a != 0) {
-        if (!((InsertDecal*)this)->f(a)) {
-            return 0;
-        }
-    }
+int S::g(S* other)
+{
+    if (other && !other->f(this))
+        return 0;
     return 1;
 }

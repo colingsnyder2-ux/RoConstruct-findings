@@ -1,166 +1,152 @@
-// from server: 50% by colin
+// roc-cl: 30729
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Selection.cpp
+// roc-lib: rbxgs script/LuaMemory.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Selection.h"
+#include "script/LuaMemory.h"
+#include "boost/pool/singleton_pool.hpp"
+#include <algorithm>
 
-static RBX::Reflection::BoundFuncDesc<RBX::Selection, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_getSelection(&RBX::Selection::getSelection2, "Get", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Selection, void(boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>), 1> func_setSelection(&RBX::Selection::setSelection, "Set", "selection", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-namespace RBX
+LuaAllocator::LuaAllocator()
+    : heapSize(0),
+      heapCount(0),
+      maxHeapSize(0),
+      maxHeapCount(0)
 {
-	Selection::Selection()
-		: selection(std::vector<boost::shared_ptr<Instance>>())
-	{
-		setName("Selection");
-	}
+}
 
-	Selection::~Selection()
-	{
-		RBXASSERT(size() == 0);
-	}
+void LuaAllocator::clearHeapMax()
+{
+    maxHeapSize = 0;
+    maxHeapCount = 0;
+}
 
-	void Selection::addFilteredSelection(ISelectionBase* fs)
-	{
-		filteredSelections.push_back(fs);
-	}
+void LuaAllocator::getHeapStats(size_t& heapSize, size_t& heapCount, size_t& maxHeapSize, size_t& maxHeapCount) const
+{
+    heapSize = this->heapSize;
+    heapCount = this->heapCount;
+    maxHeapSize = this->maxHeapSize;
+    maxHeapCount = this->maxHeapCount;
+}
 
-	void Selection::removeFilteredSelection(ISelectionBase* fs)
-	{
-		filteredSelections.erase(std::find(filteredSelections.begin(), filteredSelections.end(), fs));
-	}
+void* LuaAllocator::alloc(void* ud, void* ptr, size_t osize, size_t nsize)
+{
+    return static_cast<LuaAllocator*>(ud)->alloc(ptr, osize, nsize);
+}
 
-	void Selection::raiseAdded(boost::shared_ptr<Instance> instance)
-	{
-		SelectionChanged event(instance, boost::shared_ptr<Instance>());
+template <int a, int b>
+void* bucketRealloc(void* ptr, size_t osize, size_t nsize)
+{
+    void* result;
 
-		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
-		{
-			(*iter)->onSelectionChanged(event);
-		}
+    if (nsize > b)
+    {
+        if (osize <= b && osize)
+        {
+            result = malloc(nsize);
+            memcpy(result, ptr, osize);
 
-		Notifier<Selection, SelectionChanged>::raise(event);
-	}
+            if (osize > a)
+                boost::singleton_pool<LuaAllocator, b>::free(ptr);
+            else
+                boost::singleton_pool<LuaAllocator, a>::free(ptr);
+        }
+        else
+        {
+            result = realloc(ptr, nsize);
+        }
+    }
+    else
+    {
+        if (nsize > a)
+        {
+            if (osize > b)
+            {
+                result = boost::singleton_pool<LuaAllocator, b>::malloc();
+                memcpy(result, ptr, nsize);
+                free(ptr);
+            }
+            else
+            {
+                if (osize > a)
+                {
+                    result = ptr;
+                }
+                else
+                {
+                    result = boost::singleton_pool<LuaAllocator, b>::malloc();
 
-	void Selection::raiseRemoved(boost::shared_ptr<Instance> source)
-	{
-		SelectionChanged event(boost::shared_ptr<Instance>(), source);
+                    if (osize > 0)
+                    {
+                        memcpy(result, ptr, osize);
+                        boost::singleton_pool<LuaAllocator, a>::free(ptr);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (nsize > 0)
+            {
+                if (osize > b)
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                    memcpy(result, ptr, nsize);
+                    free(ptr);
+                }
+                else if (osize > a)
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                    memcpy(result, ptr, nsize);
+                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
+                }
+                else if (osize > 0)
+                {
+                    result = ptr;
+                }
+                else 
+                {
+                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
+                }
+            }
+            else 
+            {
+                if (osize > b)
+                {
+                    free(ptr);
+                }
+                else if (osize > a)
+                {
+                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
+                }
+                else if (osize > 0)
+                {
+                    boost::singleton_pool<LuaAllocator, a>::free(ptr);
+                }
 
-		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
-		{
-			(*iter)->onSelectionChanged(event);
-		}
+                result = 0;
+            }
+        }
+    }
 
-		Notifier<Selection, SelectionChanged>::raise(event);
-	}
+    return result;
+}
 
-	void Selection::toggleSelection(Instance* instance)
-	{
-		boost::shared_ptr<Instance> shared = shared_from(instance);
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+void* LuaAllocator::alloc(void* ptr, size_t osize, size_t nsize)
+{
+    void* result = bucketRealloc<16, 32>(ptr, osize, nsize);
 
-		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+    heapSize += (nsize-osize);
 
-		if (found == sel->end())
-		{
-			sel->push_back(shared);
-			instance->Notifier<Instance, AncestorChanged>::addListener(this);
-			raiseAdded(shared);
-		}
-		else
-		{
-			sel->erase(found);
-			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
-			raiseRemoved(shared);
-		}
-	}
+    if (osize == 0)
+        heapCount++;
 
-	void Selection::addToSelection(Instance* instance)
-	{
-		boost::shared_ptr<Instance> shared = shared_from(instance);
-		RBXASSERT(instance);
+    if (nsize == 0)
+        heapCount--;
 
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+    maxHeapSize = std::max<size_t>(maxHeapSize, heapSize);
+    maxHeapCount = std::max<size_t>(maxHeapCount, heapCount);
 
-		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
-
-		if (found == sel->end())
-		{
-			sel->push_back(shared);
-			instance->Notifier<Instance, AncestorChanged>::addListener(this);
-			raiseAdded(shared);
-		}
-	}
-	
-	void Selection::removeFromSelection(const Instance* instance)
-	{
-		RBXASSERT(instance);
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
-
-		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared_from(instance));
-
-		if (found != sel->end())
-		{
-			boost::shared_ptr<Instance> nonConst = *found;
-
-			sel->erase(found);
-			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
-			raiseRemoved(nonConst);
-		}
-	}
-
-	void Selection::clearSelection()
-	{
-		while (!selection->empty())
-		{
-			boost::shared_ptr<Instance> instance = selection->back();
-			selection.write()->pop_back();
-
-			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
-			raiseRemoved(instance);
-		}
-	}
-
-	void Selection::setSelection(Instance* instance)
-	{
-		boost::shared_ptr<Instance> inst = shared_from(instance);
-		
-		while (!selection->empty())
-		{
-			boost::shared_ptr<Instance> item = selection->back();
-
-			if (item == inst)
-			{
-				if (selection->size() == 1)
-					return;
-
-				boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
-				sel->back() = sel->front();
-				sel->front() = item;
-			}
-			else
-			{
-				selection.write()->pop_back();
-				item->Notifier<Instance, AncestorChanged>::removeListener(this);
-				raiseRemoved(item);
-			}
-		}
-
-		if (inst)
-		{
-			selection.write()->push_back(inst);
-			instance->Notifier<Instance, AncestorChanged>::addListener(this);
-			raiseAdded(inst);
-		}
-	}
-
-	void Selection::onEvent(const Instance* source, AncestorChanged event)
-	{
-		if (source->getRootAncestor() != this->getRootAncestor())
-			removeFromSelection(source);
-	}
+    return result;
 }

@@ -1,39 +1,46 @@
-// from server: 52% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// roc-lib: rbxgs-dll roc_espeon_captionthirdnative035b4b9d7643926e.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+struct String;
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+extern bool (__thiscall *stringEmpty)(const String *);
+extern String *(__thiscall *stringFromText)(String *, const char *);
+extern String *(__thiscall *stringCopy)(String *, const String &);
+extern void (__thiscall *stringDestroy)(String *);
 
-#define BOOST_REGEX_SOURCE
+struct String {
+    void *data;
 
-#include <boost/regex/config.hpp>
+    __declspec(dllimport) String(const char *);
+    __declspec(dllimport) String(const String &);
+    __declspec(dllimport) ~String() throw();
+    bool empty() const;
+};
 
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
+inline bool String::empty() const {
+    return stringEmpty(this);
+}
 
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
+struct ProviderString : String { __declspec(dllimport) ~ProviderString() throw(); };
+struct Provider {
+    ProviderString getText();
+};
 
-#include <boost/regex.hpp>
+struct S {
+    char padding0[0xd8];
+    String primary;
+    String secondary;
+    char padding1[0x7c];
+    Provider *provider;
 
-#endif
+    String getText();
+};
+
+String S::getText() {
+    return !secondary.empty() ? secondary :
+           !primary.empty() ? primary :
+           provider ? static_cast<const String&>(provider->getText()) : static_cast<const String&>(String(""));
+}

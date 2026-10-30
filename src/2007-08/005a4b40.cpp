@@ -1,32 +1,14 @@
-// from server: 54% by colin
-// roc 2007-08 005a4b40  unit: RBX::VRunService::?$Listener  size: 136 bytes
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_release_app_8147264549f6ffe2.cpp
 
-struct std_string {
-    char data[0x1c];
-    std_string(const char*);
-    ~std_string();
-};
-
-extern "C" {
-    void* __stdcall sub_77e698();
-    void* __stdcall sub_77e6ac();
-}
-
-struct Listener {
-    char pad[0xbc];
-    void* field_bc;
-    void* get();
-};
-
-void* sub_53e7a0(void* a, void* b);
-
-void* Listener::get()
-{
-    void* result = 0;
-    if (field_bc != 0) {
-        std_string s("Right Arm");
-        result = sub_53e7a0(field_bc, &s);
-        s.~std_string();
-    }
-    return result;
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#include "roc_espeon_aug2007_fullstack_kernel_f8a73bbedf69f85e.cpp"

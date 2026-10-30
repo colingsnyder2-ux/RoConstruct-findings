@@ -1,57 +1,16 @@
-// from server: 30% by TrollStein
-struct allocator {
-    char* allocate(unsigned int, const void*);
-    void deallocate(char*, unsigned int);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_ca18cb6bd8223514.cpp
 
-struct streambuf {
-    int sgetn(char*, int);
-};
-
-struct S {
-    int __cdecl f(char*, int);
-};
-
-extern "C" void* __stdcall sub_77E618(void*, void*);
-extern "C" int __stdcall sub_77E60C(void*, void*, void*);
-extern "C" void __stdcall sub_77E610(void*, void*);
-extern "C" void __cdecl sub_54B810(void*, char*, int);
-
-int S::f(char* buf, int count) {
-    void* local1 = 0;
-    void* local2 = 0;
-    void* local3 = 0;
-    char* p = 0;
-    int total = 0;
-    int result = -1;
-
-    void* h = sub_77E618(&local1, buf);
-    p = (char*)h;
-    local2 = buf;
-    local3 = (void*)count;
-    local1 = 0;
-
-    for (;;) {
-        void* v = *(void**)&local3;
-        void* w = *(void**)v;
-        void* x = *(void**)w;
-        void* y = *(void**)((char*)x + 4);
-        void* z = *(void**)((char*)y + (int)x + 0x28);
-        int n = sub_77E60C(z, p, buf);
-        if (n != 0) {
-            total = n;
-        } else {
-            total = -1;
-        }
-        if (total != -1) {
-            break;
-        }
-        sub_54B810(&local1, p, total);
-        p += total;
-    }
-
-    if (p != 0) {
-        sub_77E610(&local1, p);
-    }
-    return result;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <string>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+template void boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::input,char,std::char_traits<char>,std::allocator<char> >,char,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>::push_impl<boost::iostreams::detail::mode_adapter<boost::iostreams::input,std::streambuf> >(const boost::iostreams::detail::mode_adapter<boost::iostreams::input,std::streambuf> &,int,int);
+template void boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::input,char,std::char_traits<char>,std::allocator<char> >,char,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>::push_impl<boost::iostreams::detail::mode_adapter<boost::iostreams::input,std::iostream> >(const boost::iostreams::detail::mode_adapter<boost::iostreams::input,std::iostream> &,int,int);
+template void boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::output,char,std::char_traits<char>,std::allocator<char> >,char,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>::push_impl<boost::iostreams::detail::mode_adapter<boost::iostreams::output,std::streambuf> >(const boost::iostreams::detail::mode_adapter<boost::iostreams::output,std::streambuf> &,int,int);
+template void boost::iostreams::detail::chain_base<boost::iostreams::chain<boost::iostreams::output,char,std::char_traits<char>,std::allocator<char> >,char,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>::push_impl<boost::iostreams::detail::mode_adapter<boost::iostreams::output,std::iostream> >(const boost::iostreams::detail::mode_adapter<boost::iostreams::output,std::iostream> &,int,int);
+template std::streamsize boost::iostreams::detail::copy_impl<boost::reference_wrapper<std::istream>,boost::iostreams::back_insert_device<std::string> >(boost::reference_wrapper<std::istream>&,boost::iostreams::back_insert_device<std::string>&,std::streamsize,boost::mpl::false_,boost::mpl::false_);

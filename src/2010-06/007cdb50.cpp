@@ -1,8 +1,7 @@
-// from server: 97% by colin
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportView.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportView.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPReportView.cpp : implementation of the CXTPReportView class.

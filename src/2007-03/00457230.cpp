@@ -1,99 +1,36 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc 2007-03 00457230  unit: seg_00450000  size: 35 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00457230
+//
+// 00457230  8b442408             mov eax, dword ptr [esp + 8]
+// 00457234  8b4804               mov ecx, dword ptr [eax + 4]
+// 00457237  8b10                 mov edx, dword ptr [eax]
+// 00457239  56                   push esi
+// 0045723a  57                   push edi
+// 0045723b  51                   push ecx
+// 0045723c  ffd2                 call edx
+// 0045723e  8bf0                 mov esi, eax
+// 00457240  8b442410             mov eax, dword ptr [esp + 0x10]
+// 00457244  83c404               add esp, 4
+// 00457247  b916000000           mov ecx, 0x16
+// 0045724c  8bf8                 mov edi, eax
+// 0045724e  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 00457250  5f                   pop edi
+// 00457251  5e                   pop esi
+// 00457252  c3                   ret 
+// copied from an identical function in another client (function ?f@@YA?AUResult@@PAUS@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Result {
+    int data[22];
+};
 
-namespace RBX
+struct S {
+    Result* (__cdecl *function)(void*);
+    void* argument;
+};
+
+Result __cdecl f(S* s)
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
-
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
-	{
-		setName("Run Service");
-	}
-
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
-
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
-
-		if (join)
-			runThread->join();
-	}
-
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
-		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
-		}
-	}
-
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
-
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
+    return *s->function(s->argument);
 }

@@ -1,35 +1,15 @@
-// from server: 39% by TrollStein
-extern "C" {
-    int __stdcall sub_77E674(int, int, void*);
-    void* __stdcall sub_77E540(void*, void*);
-    void* __stdcall sub_77E58C(void*, void*);
-    int __stdcall sub_77E498(void*);
-    void __stdcall sub_77E678(void*);
-    void* __stdcall sub_77E710(void*, const char*);
-}
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_lexicalnumericfamilya52e07e2b09c48ec.cpp
 
-struct S {
-    char pad[0x18];
-};
-
-int __cdecl f(int arg)
-{
-    char buf[0xa0];
-    int local;
-    void* p;
-
-    sub_77E674(3, 1, buf);
-    local = 0;
-    p = sub_77E540(buf, &arg);
-    if ((*(int*)((char*)p + 8) & 6) == 0) {
-        void* q = sub_77E58C(buf, &local);
-        if ((*(int*)((char*)q + 8) & 6) != 0) {
-            if (sub_77E498(buf) == -1) {
-                sub_77E678(buf);
-                return arg;
-            }
-        }
-    }
-    sub_77E710(buf, "bad lexical cast: source type value could not be interpreted as target");
-    return 0;
-}
+// Candidate translation unit (score above; library headers required).
+#include <exception>
+#define BOOST_NO_EXCEPTIONS
+namespace boost{__declspec(noreturn) void throw_exception(const std::exception&);}
+#include <boost/lexical_cast.hpp>
+#include <string>
+int convertInt(const std::string&s){return boost::lexical_cast<int>(s);}
+unsigned convertUnsigned(const std::string&s){return boost::lexical_cast<unsigned>(s);}
+float convertFloat(const std::string&s){return boost::lexical_cast<float>(s);}
+double convertDouble(const std::string&s){return boost::lexical_cast<double>(s);}

@@ -1,108 +1,55 @@
-// from server: 47% by atomic.potato
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc 2010-06 00621740  unit: RBX::DropperTool  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00621740
+//
+// 00621740  56                   push esi
+// 00621741  8b742408             mov esi, dword ptr [esp + 8]
+// 00621745  85f6                 test esi, esi
+// 00621747  742c                 je 0x621775
+// 00621749  8b0e                 mov ecx, dword ptr [esi]
+// 0062174b  85c9                 test ecx, ecx
+// 0062174d  7409                 je 0x621758
+// 0062174f  8b01                 mov eax, dword ptr [ecx]
+// 00621751  8b5004               mov edx, dword ptr [eax + 4]
+// 00621754  ffd2                 call edx
+// 00621756  eb05                 jmp 0x62175d
+// 00621758  b80c93b700           mov eax, 0xb7930c
+// 0062175d  68100abb00           push 0xbb0a10
+// 00621762  8bc8                 mov ecx, eax
+// 00621764  ff15d8a89e00         call dword ptr [0x9ea8d8]
+// 0062176a  84c0                 test al, al
+// 0062176c  7407                 je 0x621775
+// 0062176e  8b06                 mov eax, dword ptr [esi]
+// 00621770  83c004               add eax, 4
+// 00621773  5e                   pop esi
+// 00621774  c3                   ret 
+// 00621775  33c0                 xor eax, eax
+// 00621777  5e                   pop esi
+// 00621778  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000000_00642c10@@YAPAXPAUAny@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+#include <typeinfo>
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+// boost::any_cast<T>(any *) shape: 0xb0030c = typeid(void), 0xb1316c = typeid(T)
+extern const type_info type_descriptor_b0030c;
+extern const type_info type_descriptor_b1316c;
 
-boost::mutex& moo2()
+struct Placeholder
 {
-	static boost::mutex mutex2;
-	return mutex2;
-}
+    virtual ~Placeholder();
+    virtual const type_info &type() const;
+};
 
-void initMoo()
+struct Any
 {
-	moo2();
-}
+    Placeholder *content;
+    const type_info &type() const { return content ? content->type() : type_descriptor_b0030c; }
+};
 
-namespace RBX
+struct Holder : Placeholder { int held; };
+
+void *func_00642c10(Any *operand)
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+    if (operand && operand->type() == type_descriptor_b1316c)
+        return &static_cast<Holder *>(operand->content)->held;
+    return 0;
 }

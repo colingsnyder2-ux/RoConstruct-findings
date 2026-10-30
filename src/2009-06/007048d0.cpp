@@ -1,102 +1,91 @@
-// from server: 51% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client Rendering/AppDraw/HitTest.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
+#include "appdraw/HitTest.h"
 
-namespace RBX
+#include "appdraw/Part.h"
+
+#include <G3D/AABox.h>
+#include <G3D/Capsule.h>
+#include <G3D/CollisionDetection.h>
+#include <G3D/Sphere.h>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x101ecd70
+bool HitTest::hitTestBall(
+	const Part& part,
+	G3D::Ray& rayInPartCoords,
+	G3D::Vector3& hitPointInPartCoords,
+	float gridToReal
+)
 {
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
+	float radius = part.gridSize.x * gridToReal * 0.5;
 
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
-
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
-
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-		}
-
-		View::~View()
-		{
-			sceneManager->clear();
-
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
-
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
-
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
-
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
-
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
-
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
-
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
-
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
-		}
+	if (G3D::CollisionDetection::collisionTimeForMovingPointFixedSphere(
+			rayInPartCoords.origin,
+			rayInPartCoords.direction,
+			G3D::Sphere(G3D::Vector3::ZERO3, radius),
+			hitPointInPartCoords
+		) != G3D::inf()) {
+		return true;
 	}
+
+	return false;
 }
+
+// FUNCTION: WEBSERVICE 0x101ece50
+bool HitTest::hitTestCylinder(
+	const Part& part,
+	G3D::Ray& rayInPartCoords,
+	G3D::Vector3& hitPointInPartCoords,
+	float gridToReal
+)
+{
+	float radius = part.gridSize.z * gridToReal * 0.5;
+
+	return G3D::CollisionDetection::collisionTimeForMovingPointFixedCapsule(
+			   rayInPartCoords.origin,
+			   rayInPartCoords.direction,
+			   G3D::Capsule(G3D::Vector3::ZERO3, G3D::Vector3(part.gridSize.x * gridToReal * 0.5, 0, 0), radius),
+			   hitPointInPartCoords
+		   ) != G3D::inf();
+}
+
+// FUNCTION: WEBSERVICE 0x101ecf00
+bool HitTest::hitTestBox(
+	const Part& part,
+	G3D::Ray& rayInPartCoords,
+	G3D::Vector3& hitPointInPartCoords,
+	float gridToReal
+)
+{
+	G3D::Vector3 halfRealSize = part.gridSize * gridToReal * 0.5;
+
+	return G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+		rayInPartCoords.origin,
+		rayInPartCoords.direction,
+		G3D::AABox(-halfRealSize, halfRealSize),
+		hitPointInPartCoords
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x101ecfc0
+bool HitTest::hitTest(const Part& part, G3D::Ray& rayInPartCoords, G3D::Vector3& hitPointInPartCoords, float gridToReal)
+{
+	switch (part.type) {
+	case Part::BLOCK_PART:
+		return hitTestBox(part, rayInPartCoords, hitPointInPartCoords, gridToReal);
+	case Part::BALL_PART:
+		return hitTestBall(part, rayInPartCoords, hitPointInPartCoords, gridToReal);
+	case Part::CYLINDER_PART:
+		return hitTestCylinder(part, rayInPartCoords, hitPointInPartCoords, gridToReal);
+	}
+
+	return false;
+}
+
+} // namespace RBX

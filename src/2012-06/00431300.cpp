@@ -1,650 +1,223 @@
-// from server: 59% by colin
-// roc-lang: cpp
+// roc 2012-06 00431300  unit: ThreadLogManager  size: 180 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 00431300
+//
+// 00431300  6aff                 push -1
+// 00431302  68a3c9a900           push 0xa9c9a3
+// 00431307  64a100000000         mov eax, dword ptr fs:[0]
+// 0043130d  50                   push eax
+// 0043130e  64892500000000       mov dword ptr fs:[0], esp
+// 00431315  83ec08               sub esp, 8
+// 00431318  56                   push esi
+// 00431319  33c0                 xor eax, eax
+// 0043131b  89442408             mov dword ptr [esp + 8], eax
+// 0043131f  8b74241c             mov esi, dword ptr [esp + 0x1c]
+// 00431323  57                   push edi
+// 00431324  8bf9                 mov edi, ecx
+// 00431326  8b0d3c87e100         mov ecx, dword ptr [0xe1873c]
+// 0043132c  83c104               add ecx, 4
+// 0043132f  89442418             mov dword ptr [esp + 0x18], eax
+// 00431333  8b01                 mov eax, dword ptr [ecx]
+// 00431335  8b5004               mov edx, dword ptr [eax + 4]
+// 00431338  56                   push esi
+// 00431339  ffd2                 call edx
+// 0043133b  8d4c2408             lea ecx, [esp + 8]
+// 0043133f  c744240c01000000     mov dword ptr [esp + 0xc], 1
+// 00431347  ff158447b200         call dword ptr [0xb24784]
+// 0043134d  8b4708               mov eax, dword ptr [edi + 8]
+// 00431350  50                   push eax
+// 00431351  8d4f0c               lea ecx, [edi + 0xc]
+// 00431354  c744241c01000000     mov dword ptr [esp + 0x1c], 1
+// 0043135c  ff154026b200         call dword ptr [0xb22640]
+// 00431362  50                   push eax
+// 00431363  8d4c2410             lea ecx, [esp + 0x10]
+// 00431367  6888f3b400           push 0xb4f388
+// 0043136c  51                   push ecx
+// 0043136d  ff158847b200         call dword ptr [0xb24788]
+// 00431373  83c410               add esp, 0x10
+// 00431376  8d4c2408             lea ecx, [esp + 8]
+// 0043137a  ff159847b200         call dword ptr [0xb24798]
+// 00431380  50                   push eax
+// 00431381  8bce                 mov ecx, esi
+// 00431383  ff158426b200         call dword ptr [0xb22684]
+// 00431389  83e804               sub eax, 4
+// 0043138c  50                   push eax
+// 0043138d  8bce                 mov ecx, esi
+// 0043138f  ff15f826b200         call dword ptr [0xb226f8]
+// 00431395  8d4c2408             lea ecx, [esp + 8]
+// 00431399  ff15d047b200         call dword ptr [0xb247d0]
+// 0043139f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 004313a3  5f                   pop edi
+// 004313a4  8bc6                 mov eax, esi
+// 004313a6  5e                   pop esi
+// 004313a7  64890d00000000       mov dword ptr fs:[0], ecx
+// 004313ae  83c414               add esp, 0x14
+// 004313b1  c20400               ret 4
+// copied from an identical function in another client (function ?fileName@ThreadLogManager@@UAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ)
+
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// roc-lang: cpp
+// Genuine VC2008 RTM and MFC90 consumed DLL interfaces.
 
-// Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
-
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        cregex.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: Implements high level class boost::RexEx
-  */
-
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/cregex.hpp>
-#include <boost/regex.hpp>
-#if !defined(BOOST_NO_STD_STRING)
-#include <map>
-#include <list>
-#include <boost/regex/v4/fileiter.hpp>
-typedef boost::match_flag_type match_flag_type;
-#include <cstdio>
-
-namespace boost{
-
-#ifdef __BORLANDC__
-#if __BORLANDC__ < 0x530
-//
-// we need to instantiate the vector classes we use
-// since declaring a reference to type doesn't seem to
-// do the job...
-std::vector<std::size_t> inst1;
-std::vector<std::string> inst2;
-#endif
-#endif
-
-namespace{
-
-template <class iterator>
-std::string to_string(iterator i, iterator j)
-{
-   std::string s;
-   while(i != j)
-   {
-      s.append(1, *i);
-      ++i;
-   }
-   return s;
-}
-
-inline std::string to_string(const char* i, const char* j)
-{
-   return std::string(i, j);
-}
-
-}
-namespace re_detail{
-
-class RegExData
-{
+typedef unsigned int size_t;typedef int ptrdiff_t;
+namespace std {
+template<class _Elem>struct char_traits;
+template<class _Ty>struct _Allocator_base {typedef _Ty value_type;};
+template<class _Ty>
+class allocator
+		: public _Allocator_base<_Ty>
+	{	
 public:
-   enum type
-   {
-      type_pc,
-      type_pf,
-      type_copy
-   };
-   regex e;
-   cmatch m;
-#ifndef BOOST_REGEX_NO_FILEITER
-   match_results<mapfile::iterator> fm;
-#endif
-   type t;
-   const char* pbase;
-#ifndef BOOST_REGEX_NO_FILEITER
-   mapfile::iterator fbase;
-#endif
-   std::map<int, std::string, std::less<int> > strings;
-   std::map<int, std::ptrdiff_t, std::less<int> > positions;
-   void update();
-   void clean();
-   RegExData() : e(), m(),
-#ifndef BOOST_REGEX_NO_FILEITER
-   fm(),
-#endif
-   t(type_copy), pbase(0),
-#ifndef BOOST_REGEX_NO_FILEITER
-   fbase(),
-#endif
-   strings(), positions() {}
+	typedef _Allocator_base<_Ty> _Mybase;
+	typedef typename _Mybase::value_type value_type;
+	typedef value_type  *pointer;
+	typedef value_type & reference;
+	typedef const value_type  *const_pointer;
+	typedef const value_type & const_reference;
+	typedef size_t size_type;
+	typedef ptrdiff_t difference_type;
+	template<class _Other>
+		struct rebind
+		{	
+		typedef allocator<_Other> other;
+		};
+allocator() throw();allocator(const allocator<_Ty>&) throw();};
+class __declspec(dllimport) _Container_base_secure {};
+class __declspec(dllimport) _String_base
+		: public _Container_base_secure
+	{	
+public:
+	 static void __cdecl _Xlen();	
+	 static void __cdecl _Xran();	
+	 static void __cdecl _Xinvarg();
+	};
+template<class _Ty,class _Alloc>
+class _String_val
+		: public _String_base
+	{	
+protected:
+	typedef typename _Alloc::template
+		rebind<_Ty>::other _Alty;
+	 _String_val(_Alty _Al = _Alty())
+		: _Alval(_Al)
+		{	
+		}
+public:
+	 _String_val(const _String_val &_Right)
+		: _Alval(_Right._Alval)
+		{	
+		}
+protected:
+	_Alty _Alval;	
+	};
+template<class _Elem,class _Traits,class _Ax>
+class basic_string
+		: public _String_val<_Elem, _Ax>
+	{	
+public:
+	typedef basic_string<_Elem, _Traits, _Ax> _Myt;
+	typedef _String_val<_Elem, _Ax> _Mybase;
+	typedef typename _Mybase::_Alty _Alloc;
+	typedef typename _Alloc::size_type size_type;
+	typedef typename _Alloc::difference_type _Dift;
+	typedef _Dift difference_type;
+	typedef typename _Alloc::pointer _Tptr;
+	typedef typename _Alloc::const_pointer _Ctptr;
+	typedef _Tptr pointer;
+	typedef _Ctptr const_pointer;
+	typedef typename _Alloc::reference _Reft;
+	typedef _Reft reference;
+	typedef typename _Alloc::const_reference const_reference;
+	typedef typename _Alloc::value_type value_type;
+
+basic_string();basic_string(const _Myt& _Right);~basic_string();
+const _Elem * c_str() const;
+size_type size() const;
+_Myt& insert(size_type _Off,const _Elem *_Ptr);
+enum
+		{	
+		_BUF_SIZE = 16 / sizeof (_Elem) < 1 ? 1
+			: 16 / sizeof(_Elem)};private:
+union _Bxty
+		{	
+		_Elem _Buf[_BUF_SIZE];
+		_Elem *_Ptr;
+		} _Bx;
+ size_type _Mysize;	
+	size_type _Myres;	
+	};
+typedef basic_string<char,char_traits<char>,allocator<char> >string;
+template class __declspec(dllimport) allocator<char>;
+template class __declspec(dllimport) _String_val<char,allocator<char> >;
+template class __declspec(dllimport) basic_string<char,char_traits<char>,allocator<char> >;
+}
+
+// Consumed MFC90 RTM template interfaces, copied from atlsimpstr.h,
+// cstringt.h and afxstr.h. Unconsumed APIs and DLL definitions omitted.
+typedef char* LPSTR;typedef const char* LPCSTR;
+typedef wchar_t* LPWSTR;typedef const wchar_t* LPCWSTR;
+namespace ATL {
+template<typename BaseType=char>class ChTraitsBase {
+public:typedef char XCHAR;typedef LPSTR PXSTR;typedef LPCSTR PCXSTR;
+typedef wchar_t YCHAR;typedef LPWSTR PYSTR;typedef LPCWSTR PCYSTR;
 };
-
-void RegExData::update()
-{
-   strings.erase(strings.begin(), strings.end());
-   positions.erase(positions.begin(), positions.end());
-   if(t == type_pc)
-   {
-      for(unsigned int i = 0; i < m.size(); ++i)
-      {
-         if(m[i].matched) strings[i] = std::string(m[i].first, m[i].second);
-         positions[i] = m[i].matched ? m[i].first - pbase : -1;
-      }
-   }
-#ifndef BOOST_REGEX_NO_FILEITER
-   else
-   {
-      for(unsigned int i = 0; i < fm.size(); ++i)
-      {
-         if(fm[i].matched) strings[i] = to_string(fm[i].first, fm[i].second);
-         positions[i] = fm[i].matched ? fm[i].first - fbase : -1;
-      }
-   }
-#endif
-   t = type_copy;
+template<typename BaseType,bool t_bMFCDLL=false>class CSimpleStringT {
+public:
+typedef typename ChTraitsBase<BaseType>::XCHAR XCHAR;
+typedef typename ChTraitsBase<BaseType>::PXSTR PXSTR;
+typedef typename ChTraitsBase<BaseType>::PCXSTR PCXSTR;
+typedef typename ChTraitsBase<BaseType>::YCHAR YCHAR;
+typedef typename ChTraitsBase<BaseType>::PYSTR PYSTR;
+typedef typename ChTraitsBase<BaseType>::PCYSTR PCYSTR;
+~CSimpleStringT() throw();
+operator PCXSTR() const throw();
+private:PXSTR m_pszData;
+};
+template<typename _CharType>class ChTraitsCRT;
 }
-
-void RegExData::clean()
-{
-#ifndef BOOST_REGEX_NO_FILEITER
-   fbase = mapfile::iterator();
-   fm = match_results<mapfile::iterator>();
-#endif
+template<typename _CharType,class StringIterator=ATL::ChTraitsCRT<_CharType> >class StrTraitMFC_DLL;
+namespace ATL {
+namespace _CSTRING_IMPL_ {
+template<typename _CharType,class StringTraits>struct _MFCDLLTraitsCheck {const static bool c_bIsMFCDLLTraits=false;};
+template<typename _CharType>struct _MFCDLLTraitsCheck<_CharType,StrTraitMFC_DLL<_CharType,ATL::ChTraitsCRT<_CharType> > > {const static bool c_bIsMFCDLLTraits=true;};
 }
-
-} // namespace
-
-RegEx::RegEx()
-{
-   pdata = new re_detail::RegExData();
-}
-
-RegEx::RegEx(const RegEx& o)
-{
-   pdata = new re_detail::RegExData(*(o.pdata));
-}
-
-RegEx::~RegEx()
-{
-   delete pdata;
-}
-
-RegEx::RegEx(const char* c, bool icase)
-{
-   pdata = new re_detail::RegExData();
-   SetExpression(c, icase);
-}
-
-RegEx::RegEx(const std::string& s, bool icase)
-{
-   pdata = new re_detail::RegExData();
-   SetExpression(s.c_str(), icase);
-}
-
-RegEx& RegEx::operator=(const RegEx& o)
-{
-   *pdata = *(o.pdata);
-   return *this;
-}
-
-RegEx& RegEx::operator=(const char* p)
-{
-   SetExpression(p, false);
-   return *this;
-}
-
-unsigned int RegEx::SetExpression(const char* p, bool icase)
-{
-   boost::uint_fast32_t f = icase ? regex::normal | regex::icase : regex::normal;
-   return pdata->e.set_expression(p, f);
-}
-
-unsigned int RegEx::error_code()const
-{
-   return pdata->e.error_code();
-}
-
-
-std::string RegEx::Expression()const
-{
-   return pdata->e.expression();
-}
-
-//
-// now matching operators:
-//
-bool RegEx::Match(const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   if(regex_match(p, end, pdata->m, pdata->e, flags))
-   {
-      pdata->update();
-      return true;
-   }
-   return false;
-}
-
-bool RegEx::Search(const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   if(regex_search(p, end, pdata->m, pdata->e, flags))
-   {
-      pdata->update();
-      return true;
-   }
-   return false;
-}
-namespace re_detail{
-struct pred1
-{
-   GrepCallback cb;
-   RegEx* pe;
-   pred1(GrepCallback c, RegEx* i) : cb(c), pe(i) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      return cb(*pe);
-   }
+template<typename BaseType,class StringTraits>class CStringT:
+public CSimpleStringT<BaseType,_CSTRING_IMPL_::_MFCDLLTraitsCheck<BaseType,StringTraits>::c_bIsMFCDLLTraits> {
+public:
+typedef CSimpleStringT<BaseType,_CSTRING_IMPL_::_MFCDLLTraitsCheck<BaseType,StringTraits>::c_bIsMFCDLLTraits>CThisSimpleString;
+typedef StringTraits StrTraits;
+typedef typename CThisSimpleString::XCHAR XCHAR;
+typedef typename CThisSimpleString::PXSTR PXSTR;
+typedef typename CThisSimpleString::PCXSTR PCXSTR;
+typedef typename CThisSimpleString::YCHAR YCHAR;
+typedef typename CThisSimpleString::PYSTR PYSTR;
+typedef typename CThisSimpleString::PCYSTR PCYSTR;
+CStringT() throw();~CStringT() throw();
+void __cdecl Format(PCXSTR pszFormat,...);
 };
 }
-unsigned int RegEx::Grep(GrepCallback cb, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred1(cb, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-namespace re_detail{
-struct pred2
-{
-   std::vector<std::string>& v;
-   RegEx* pe;
-   pred2(std::vector<std::string>& o, RegEx* e) : v(o), pe(e) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      v.push_back(std::string(m[0].first, m[0].second));
-      return true;
-   }
-private:
-   pred2& operator=(const pred2&);
+template class __declspec(dllimport) ATL::CSimpleStringT<char,true>;
+template class __declspec(dllimport) ATL::CStringT<char,StrTraitMFC_DLL<char> >;
+typedef ATL::CStringT<char,StrTraitMFC_DLL<char> > CStringA;
+namespace RBX {class Log;class ILogProvider {public:virtual Log*provideLog()=0;};}
+class LogManager {
+public:
+ virtual~LogManager();
+ virtual std::string fileName()=0;
+protected:
+ RBX::Log*log;
+ int number;
+ std::string name;
 };
+class MainLogManager:public RBX::ILogProvider,public LogManager {public:virtual RBX::Log*provideLog();virtual std::string fileName();};
+extern MainLogManager*mainLogManager;
+class ThreadLogManager:public LogManager {public:virtual std::string fileName();};
+std::string ThreadLogManager::fileName(){
+ std::string result=mainLogManager->fileName();
+ CStringA suffix;
+ suffix.Format("_%s_%d",name.c_str(),number);
+ result.insert(result.size()-4,static_cast<const char*>(suffix));
+ return result;
 }
-
-unsigned int RegEx::Grep(std::vector<std::string>& v, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred2(v, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-namespace re_detail{
-struct pred3
-{
-   std::vector<std::size_t>& v;
-   const char* base;
-   RegEx* pe;
-   pred3(std::vector<std::size_t>& o, const char* pb, RegEx* p) : v(o), base(pb), pe(p) {}
-   bool operator()(const cmatch& m)
-   {
-      pe->pdata->m = m;
-      v.push_back(static_cast<std::size_t>(m[0].first - base));
-      return true;
-   }
-private:
-   pred3& operator=(const pred3&);
-};
-}
-unsigned int RegEx::Grep(std::vector<std::size_t>& v, const char* p, match_flag_type flags)
-{
-   pdata->t = re_detail::RegExData::type_pc;
-   pdata->pbase = p;
-   const char* end = p;
-   while(*end)++end;
-
-   unsigned int result = regex_grep(re_detail::pred3(v, p, this), p, end, pdata->e, flags);
-   if(result)
-      pdata->update();
-   return result;
-}
-#ifndef BOOST_REGEX_NO_FILEITER
-namespace re_detail{
-struct pred4
-{
-   GrepFileCallback cb;
-   RegEx* pe;
-   const char* file;
-   bool ok;
-   pred4(GrepFileCallback c, RegEx* i, const char* f) : cb(c), pe(i), file(f), ok(true) {}
-   bool operator()(const match_results<mapfile::iterator>& m)
-   {
-      pe->pdata->t = RegExData::type_pf;
-      pe->pdata->fm = m;
-      pe->pdata->update();
-      ok = cb(file, *pe);
-      return ok;
-   }
-};
-}
-namespace{
-void BuildFileList(std::list<std::string>* pl, const char* files, bool recurse)
-{
-   file_iterator start(files);
-   file_iterator end;
-   if(recurse)
-   {
-      // go through sub directories:
-      char buf[MAX_PATH];
-      re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, start.root()));
-      if(*buf == 0)
-      {
-         re_detail::overflow_error_if_not_zero(re_detail::strcpy_s(buf, MAX_PATH, "."));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
-      }
-      else
-      {
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, directory_iterator::separator()));
-         re_detail::overflow_error_if_not_zero(re_detail::strcat_s(buf, MAX_PATH, "*"));
-      }
-      directory_iterator dstart(buf);
-      directory_iterator dend;
-
-      // now get the file mask bit of "files":
-      const char* ptr = files;
-      while(*ptr) ++ptr;
-      while((ptr != files) && (*ptr != *directory_iterator::separator()) && (*ptr != '/'))--ptr;
-      if(ptr != files) ++ptr;
-
-      while(dstart != dend)
-      {
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
-         (::sprintf_s)(buf, sizeof(buf), "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
-#else
-         (std::sprintf)(buf, "%s%s%s", dstart.path(), directory_iterator::separator(), ptr);
-#endif
-         BuildFileList(pl, buf, recurse);
-         ++dstart;
-      }
-   }
-   while(start != end)
-   {
-      pl->push_back(*start);
-      ++start;
-   }
-}
-}
-
-unsigned int RegEx::GrepFiles(GrepFileCallback cb, const char* files, bool recurse, match_flag_type flags)
-{
-   unsigned int result = 0;
-   std::list<std::string> file_list;
-   BuildFileList(&file_list, files, recurse);
-   std::list<std::string>::iterator start, end;
-   start = file_list.begin();
-   end = file_list.end();
-
-   while(start != end)
-   {
-      mapfile map((*start).c_str());
-      pdata->t = re_detail::RegExData::type_pf;
-      pdata->fbase = map.begin();
-      re_detail::pred4 pred(cb, this, (*start).c_str());
-      int r = regex_grep(pred, map.begin(), map.end(), pdata->e, flags);
-      result += r;
-      ++start;
-      pdata->clean();
-      if(pred.ok == false)
-         return result;
-   }
-
-   return result;
-}
-
-
-unsigned int RegEx::FindFiles(FindFilesCallback cb, const char* files, bool recurse, match_flag_type flags)
-{
-   unsigned int result = 0;
-   std::list<std::string> file_list;
-   BuildFileList(&file_list, files, recurse);
-   std::list<std::string>::iterator start, end;
-   start = file_list.begin();
-   end = file_list.end();
-
-   while(start != end)
-   {
-      mapfile map((*start).c_str());
-      pdata->t = re_detail::RegExData::type_pf;
-      pdata->fbase = map.begin();
-
-      if(regex_search(map.begin(), map.end(), pdata->fm, pdata->e, flags))
-      {
-         ++result;
-         if(false == cb((*start).c_str()))
-            return result;
-      }
-      //pdata->update();
-      ++start;
-      //pdata->clean();
-   }
-
-   return result;
-}
-#endif
-
-#ifdef BOOST_REGEX_V3
-#define regex_replace regex_merge
-#endif
-
-std::string RegEx::Merge(const std::string& in, const std::string& fmt,
-                    bool copy, match_flag_type flags)
-{
-   std::string result;
-   re_detail::string_out_iterator<std::string> i(result);
-   if(!copy) flags |= format_no_copy;
-   regex_replace(i, in.begin(), in.end(), pdata->e, fmt.c_str(), flags);
-   return result;
-}
-
-std::string RegEx::Merge(const char* in, const char* fmt,
-                    bool copy, match_flag_type flags)
-{
-   std::string result;
-   if(!copy) flags |= format_no_copy;
-   re_detail::string_out_iterator<std::string> i(result);
-   regex_replace(i, in, in + std::strlen(in), pdata->e, fmt, flags);
-   return result;
-}
-
-std::size_t RegEx::Split(std::vector<std::string>& v, 
-                      std::string& s,
-                      match_flag_type flags,
-                      unsigned max_count)
-{
-   return regex_split(std::back_inserter(v), s, pdata->e, flags, max_count);
-}
-
-
-
-//
-// now operators for returning what matched in more detail:
-//
-std::size_t RegEx::Position(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched ? pdata->m[i].first - pdata->pbase : RegEx::npos;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched ? pdata->fm[i].first - pdata->fbase : RegEx::npos;
-#endif
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::ptrdiff_t, std::less<int> >::iterator pos = pdata->positions.find(i);
-      if(pos == pdata->positions.end())
-         return RegEx::npos;
-      return (*pos).second;
-      }
-   }
-   return RegEx::npos;
-}
-
-std::size_t RegEx::Marks()const
-{
-   return pdata->e.mark_count();
-}
-
-
-std::size_t RegEx::Length(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched ? pdata->m[i].second - pdata->m[i].first : RegEx::npos;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched ? pdata->fm[i].second - pdata->fm[i].first : RegEx::npos;
-#endif
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos == pdata->strings.end())
-         return RegEx::npos;
-      return (*pos).second.size();
-      }
-   }
-   return RegEx::npos;
-}
-
-bool RegEx::Matched(int i)const
-{
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      return pdata->m[i].matched;
-#ifndef BOOST_REGEX_NO_FILEITER
-   case re_detail::RegExData::type_pf:
-      return pdata->fm[i].matched;
-#endif      
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos == pdata->strings.end())
-         return false;
-      return true;
-      }
-   }
-   return false;
-}
-
-
-std::string RegEx::What(int i)const
-{
-   std::string result;
-   switch(pdata->t)
-   {
-   case re_detail::RegExData::type_pc:
-      if(pdata->m[i].matched) 
-         result.assign(pdata->m[i].first, pdata->m[i].second);
-      break;
-   case re_detail::RegExData::type_pf:
-      if(pdata->m[i].matched) 
-         result.assign(to_string(pdata->m[i].first, pdata->m[i].second));
-      break;
-   case re_detail::RegExData::type_copy:
-      {
-      std::map<int, std::string, std::less<int> >::iterator pos = pdata->strings.find(i);
-      if(pos != pdata->strings.end())
-         result = (*pos).second;
-      break;
-      }
-   }
-   return result;
-}
-
-#ifdef BOOST_HAS_LONG_LONG
-const std::size_t RegEx::npos = static_cast<std::size_t>(~0ULL);
-#else
-const std::size_t RegEx::npos = static_cast<std::size_t>(~0UL);
-#endif
-
-} // namespace boost
-
-#if defined(__BORLANDC__) && (__BORLANDC__ >= 0x550) && (__BORLANDC__ <= 0x551) && !defined(_RWSTD_COMPILE_INSTANTIATE)
-//
-// this is an ugly hack to work around an ugly problem:
-// by default this file will produce unresolved externals during
-// linking unless _RWSTD_COMPILE_INSTANTIATE is defined (Borland bug).
-// However if _RWSTD_COMPILE_INSTANTIATE is defined then we get separate
-// copies of basic_string's static data in the RTL and this DLL, this messes
-// with basic_string's memory management and results in run-time crashes,
-// Oh sweet joy of Catch 22....
-//
-namespace std{
-template<> template<>
-basic_string<char>& BOOST_REGEX_DECL
-basic_string<char>::replace<const char*>(char* f1, char* f2, const char* i1, const char* i2)
-{
-   unsigned insert_pos = f1 - begin();
-   unsigned remove_len = f2 - f1;
-   unsigned insert_len = i2 - i1;
-   unsigned org_size = size();
-   if(insert_len > remove_len)
-   {
-      append(insert_len-remove_len, ' ');
-      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
-      std::copy(i1, i2, begin() + insert_pos);
-   }
-   else
-   {
-      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
-      std::copy(i1, i2, begin() + insert_pos);
-      erase(size() + insert_len - remove_len);
-   }
-   return *this;
-}
-template<> template<>
-basic_string<wchar_t>& BOOST_REGEX_DECL
-basic_string<wchar_t>::replace<const wchar_t*>(wchar_t* f1, wchar_t* f2, const wchar_t* i1, const wchar_t* i2)
-{
-   unsigned insert_pos = f1 - begin();
-   unsigned remove_len = f2 - f1;
-   unsigned insert_len = i2 - i1;
-   unsigned org_size = size();
-   if(insert_len > remove_len)
-   {
-      append(insert_len-remove_len, ' ');
-      std::copy_backward(begin() + insert_pos + remove_len, begin() + org_size, end());
-      std::copy(i1, i2, begin() + insert_pos);
-   }
-   else
-   {
-      std::copy(begin() + insert_pos + remove_len, begin() + org_size, begin() + insert_pos + insert_len);
-      std::copy(i1, i2, begin() + insert_pos);
-      erase(size() + insert_len - remove_len);
-   }
-   return *this;
-}
-} // namespace std
-#endif
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+typedef char NativeMfcStringSize[sizeof(CStringA)==4?1:-1];
+typedef char NativeStdStringSize[sizeof(std::string)==28?1:-1];

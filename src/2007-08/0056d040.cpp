@@ -1,37 +1,20 @@
-// from server: 26% by Viper
-struct Lua_State;
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_nativefunctionrefconvertc8dd1859e965d579.cpp
 
-struct RBX_Lua_FunctionRef {
-    void* ref;
-    void* state;
-    void __cdecl assign(void* other);
-};
-
-extern "C" {
-    void* __stdcall sub_4142F0();
-    void* __stdcall sub_535E40(void*);
-    void* __stdcall sub_56C880();
-    void __stdcall sub_56CE80(void*);
-    void __stdcall sub_412DC0(void*, void*);
-    void __stdcall sub_630B9E(void*, void*);
-    void* __stdcall sub_77E698(const char*);
-    int __stdcall sub_77E708(void*, void*);
-    void __stdcall sub_8410C0();
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#define _CPPUNWIND 1
+#undef _DEBUG
+#include <stdexcept>
+#include "reflection/type.h"
+#include "script/ThreadRef.h"
+namespace RBX { namespace Reflection {
+template<> Lua::FunctionRef& Value::convert<Lua::FunctionRef>() {
+ if(isType<void>()) {value=Lua::FunctionRef();_type=&Type::singleton<Lua::FunctionRef>();}
+ Lua::FunctionRef* result=boost::any_cast<Lua::FunctionRef>(&value);
+ if(!result)throw std::runtime_error("Unable to cast value to RBX::Lua::FunctionRef");
+ return *result;
 }
-
-void RBX_Lua_FunctionRef::assign(void* other)
-{
-    void* p = sub_4142F0();
-    void* q = 0;
-    sub_535E40(&q);
-    void* tmp = *(void**)q;
-    *(void**)q = this->state;
-    this->state = tmp;
-    if (q) {
-        void** vt = *(void***)q;
-        void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-        fn(q, 1);
-    }
-    sub_56CE80(&p);
-    this->ref = sub_56C880();
-}
+}}

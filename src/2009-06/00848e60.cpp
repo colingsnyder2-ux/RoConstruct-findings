@@ -1,69 +1,179 @@
-// from server: 24% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render Material.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_resume_medium_published_shade_float_ff33c8ae26610b09.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/Material.h"
+#include "renderlib/TextureProxy.h"
 
-namespace RBX
+#include "decomp.h"
+#include "util/standardout.h"
+
+#include <G3D/GImage.h>
+#include <G3D/format.h>
+#include <algorithm>
+
+namespace RBX {
+namespace Render {
+
+// STUB: WEBSERVICE 0x10168ea0
+void TextureProxy::shadePixel(const G3D::Color3uint8& base, G3D::Color3uint8& lighting)
 {
-	namespace Render
-	{
-		Material::Level::Level(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
-			: emptyLevel(false),
-			  mBaseTexture(baseTexture),
-			  mColor(color),
-			  mSpecular(specular),
-			  mShiny(shiny),
-			  mReflect(reflect),
-			  mTransparent(transparent)
-		{
-			if (baseTexture.notNull())
-				mMatte = baseTexture->alphaOnlyVersion();
+	for (int i = 0; i < 3; i++) {
+		const int shade = lighting[i];
+		float color = base[i];
 
-			if (mTransparent > 0.0f)
-				mReflect = 0.0f;
+		if (shade > 130) {
+			float a = std::min(float((shade - 128.0f) / 128.0f), 1.0f);
+			color = (1.0 - a) * color + 255.0f * a;
+		}
+		else if (shade < 126) {
+			float a = shade / 128.0f;
+			a = 0.5 + a * 0.5;
+			color = color * a;
 		}
 
-		Material::Level::Level()
-			: emptyLevel(true),
-			  mColor(G3D::Color3::white()),
-			  mSpecular(0.0f),
-			  mShiny(0.0f),
-			  mReflect(0.0f),
-			  mTransparent(0.0f)
-		{
-		}
-
-		Material::Level::~Level() {}
-
-		void Material::Level::configureRenderDevice(G3D::RenderDevice* renderDevice) const
-		{
-			renderDevice->setColor(mColor);
-			renderDevice->setSpecularCoefficient(mSpecular);
-			renderDevice->setShininess(mShiny);
-			renderDevice->setTexture(0, baseTexture(renderDevice));
-		}
-
-		Material::Material() {}
-		Material::~Material() {}
-
-		const Material::Level& Material::appendEmptyLevel()
-		{
-			return levels.next();
-		}
-
-		const Material::Level& Material::appendLevel(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
-		{
-			levels.push_back(Material::Level(baseTexture, color, specular, shiny, reflect, transparent));
-			return levels.last();
-		}
-
-		bool Material::veryTransparent() const
-		{
-			return levels.size() > 0 && levels.front().mTransparent > 0.25f;
-		}
+		lighting[i] = std::min(255, std::max(0, G3D::iRound(255.0 * pow(color / 255.0, 1.0))));
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x10169100
+TextureProxyRef TextureProxy::shade(const G3D::Color3& baseColor, const TextureProxyRef& baseTex)
+{
+	TextureProxy* answer = new TextureProxy(baseTex);
+
+	answer->textureManager = textureManager;
+	answer->root = baseTex;
+	answer->shadeColor = baseColor;
+	answer->shadeTexture = this;
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x101691d0
+G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
+{
+	return texture;
+}
+
+// STUB: WEBSERVICE 0x10169200
+G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::resolve(G3D::RenderDevice* rd)
+{
+	if (!loaded) {
+		if (!shadeTexture.isNull()) {
+			char encodedFileName[1024];
+
+			sprintf(
+				encodedFileName,
+				"%g%g%g%s",
+				shadeColor.r,
+				shadeColor.g,
+				shadeColor.b,
+				shadeTexture->filename.c_str()
+			);
+
+			texture = textureManager->findTexture(encodedFileName);
+
+			if (texture.isNull()) {
+				static std::string lastFilename = shadeTexture->filename;
+				static G3D::GImage cachedBumpImage(lastFilename, G3D::GImage::AUTODETECT);
+
+				if (lastFilename != shadeTexture->filename) {
+					lastFilename = shadeTexture->filename;
+					cachedBumpImage.load(lastFilename, G3D::GImage::AUTODETECT);
+				}
+
+				G3D::GImage bumpImage(cachedBumpImage);
+				G3D::Color3uint8 colorTable[256];
+
+				for (int i = 0; i < 256; i++) {
+					colorTable[i].r = colorTable[i].g = colorTable[i].b = i;
+					shadePixel(shadeColor, colorTable[i]);
+				}
+
+				int numPixels = bumpImage.width * bumpImage.height;
+
+				for (int i = 0; i < numPixels; i++) {
+					bumpImage.pixel3()[i] = colorTable[bumpImage.pixel3()[i].r];
+				}
+
+				texture = G3D::Texture::fromGImage(
+					G3D::format(
+						"Generated bump texture, color = (%3.1f, %3.1f, %3.1f)",
+						shadeColor.r,
+						shadeColor.g,
+						shadeColor.b
+					),
+					bumpImage,
+					G3D::TextureFormat::RGB8
+				);
+
+				textureManager->cacheTexture(texture, encodedFileName);
+			}
+		}
+		else if (root.isNull()) {
+			try {
+				if (filename == "") {
+					texture = G3D::Texture::createEmpty(8, 8);
+				}
+				else {
+					texture = textureManager->loadTexture(
+						filename,
+						G3D::TextureFormat::AUTO,
+						tiled ? G3D::Texture::TILE : G3D::Texture::TRANSPARENT_BORDER
+					);
+				}
+			}
+			catch (std::exception& e) {
+				StandardOut::singleton()
+					->print(MESSAGE_ERROR, "Failed to load texture '%s', %s", filename.c_str(), e.what());
+				texture = NULL;
+			}
+			catch (...) {
+				StandardOut::singleton()
+					->print(MESSAGE_ERROR, "Failed to load texture '%s', unknown exception", filename.c_str());
+				texture = NULL;
+			}
+		}
+		else {
+			G3D::TextureRef t = root->resolve(rd);
+
+			if (!t.isNull() && !t->opaque()) {
+				texture = t->alphaOnlyVersion();
+			}
+		}
+
+		root = NULL;
+		shadeTexture = NULL;
+		loaded = true;
+	}
+
+	return texture;
+}
+
+// FUNCTION: WEBSERVICE 0x10169920
+TextureProxyRef TextureProxy::alphaOnlyVersion()
+{
+	return new TextureProxy(this);
+}
+
+// FUNCTION: WEBSERVICE 0x101699c0
+G3D::Vector2 TextureProxy::getSize()
+{
+	G3D::TextureRef t = getIfResolved();
+	G3D::Vector2 size;
+
+	if (!t.isNull()) {
+		size.x = (float) t->texelWidth();
+		size.y = (float) t->texelHeight();
+	}
+	else {
+		size.y = 0;
+		size.x = 0;
+	}
+
+	return size;
+}
+
+} // namespace Render
+} // namespace RBX

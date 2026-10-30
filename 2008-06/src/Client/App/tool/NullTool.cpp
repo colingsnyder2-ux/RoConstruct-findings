@@ -93,4 +93,29 @@ namespace RBX
 			}
 		}
 	}
+
+	const char* sNullTool = "NullTool";
+
+	NullTool::NullTool(Workspace* workspace)
+		: Base(workspace)
+	{
+	}
+
+	NullTool::~NullTool() {}
+
+	const std::string NullTool::getCursorName() const
+	{
+		return "ArrowFarCursor";
+	}
+
+	MouseCommand* NullTool::isSticky() const
+	{
+		return new NullTool(workspace);
+	}
+
+	MouseCommand* NullTool::onMouseUp(const UIEvent& uiEvent)
+	{
+		releaseCapture();
+		return this;
+	}
 }

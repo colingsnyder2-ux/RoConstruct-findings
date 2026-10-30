@@ -1,14 +1,13 @@
-// from server: 75% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Ribbon/XTPRibbonTab.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Ribbon\XTPRibbonTab.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
 //
 // This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,25 +27,11 @@
 #include "stdafx.h"
 
 #include "Common/XTPPropExchange.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
-
-#include "TabManager/XTPTabManager.h"
-
-#include "CommandBars/XTPCommandBarsDefines.h"
-#include "CommandBars/XTPCommandBar.h"
-#include "CommandBars/XTPToolBar.h"
-#include "CommandBars/XTPMenuBar.h"
-#include "CommandBars/XTPPopupBar.h"
-#include "CommandBars/XTPControl.h"
-#include "CommandBars/XTPControlButton.h"
-#include "CommandBars/XTPControlPopup.h"
 
 
 #include "XTPRibbonTab.h"
 #include "XTPRibbonGroup.h"
 #include "XTPRibbonGroups.h"
-#include "XTPRibbonPopups.h"
 #include "XTPRibbonBar.h"
 #include "XTPRibbonControlTab.h"
 
@@ -67,7 +52,7 @@ CXTPRibbonTabContextHeader::CXTPRibbonTabContextHeader(CXTPRibbonTab* pFirstTab)
 		return;
 	m_pLastTab = m_pFirstTab = pFirstTab;
 	m_color = pFirstTab->GetContextColor();
-	m_strCaption = pFirstTab->GetContextCaption();
+	m_strCpation = pFirstTab->GetContextCaption();
 	m_rcRect.SetRectEmpty();
 	pFirstTab->m_pContextHeader = this;
 }
@@ -255,13 +240,4 @@ void CXTPRibbonTab::DoPropExchange(CXTPPropExchange* pPX)
 	m_pGroups->DoPropExchange(&secGroups);
 }
 
-BOOL CXTPRibbonTab::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
-{
-	if (nCode == CN_EVENT && nID == XTP_CN_REDRAWPARENT)
-	{
-		GetRibbonBar()->Redraw(0, FALSE);
-		return TRUE;
-	}
-	return CCmdTarget::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-}
 

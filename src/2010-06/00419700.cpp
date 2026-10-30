@@ -10,9 +10,10 @@
 // 00419712  e879ffffff           call 0x419690
 // 00419717  83c404               add esp, 4
 // 0041971a  c3                   ret 
-// copied from an identical function in another client (function ?sub_41be00@ns_ROCX000008@@YAHHH@Z)
+// copied from an identical function in another client (function ?sub_41be00@ns_ROCX00000c@ns_ROCX000000@@YAHHH@Z)
 
-namespace ns_ROCX000008 {
+namespace ns_ROCX000000 {
+namespace ns_ROCX00000c {
 extern "C" int __cdecl sub_41bd80(int arg);
 
 int __cdecl sub_41be00(int a, int b)
@@ -20,5 +21,6 @@ int __cdecl sub_41be00(int a, int b)
     if (b == 4)
         return (int)0x80004005;
     return sub_41bd80(a);
+}
 }
 }

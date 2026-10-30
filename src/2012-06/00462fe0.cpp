@@ -1,161 +1,61 @@
-// from server: 24% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/SerializerV2.cpp
+// roc-lib: rbxgs roc_espclaude_277ac2163fb35fc7.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8xml/SerializerV2.h"
-#include "v8datamodel/DataModel.h"
+#include <vector>
+#include <stddef.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
-#include <algorithm>
-
-bool ArchiveBinder::resolveRefs()
+#include <boost/function.hpp>
+namespace RBX {
+template<class Class>
+boost::shared_ptr<Class> shared_from(Class* r)
 {
-	size_t counts = std::count_if(idrefBindings.begin(), idrefBindings.end(), boost::bind(&ArchiveBinder::resolveIDREF, this, _1));
-
-	return MergeBinder::resolveRefs() && counts == idrefBindings.size();
+	return r ? boost::shared_static_cast<Class>(r->shared_from_this()) : boost::shared_ptr<Class>();
 }
-
-bool ArchiveBinder::resolveIDREF(IDREFBinding binding)
+class Instance;
+struct ChildrenHolder { std::vector<boost::shared_ptr<Instance> > v; };
+struct VEmpty {};
+class Instance : public boost::enable_shared_from_this<Instance>, public virtual VEmpty {
+public:
+	virtual ~Instance();
+	char pad0[0x108 - 0x10];
+	ChildrenHolder* children;
+	char pad1[0x268 - 0x10c];
+	boost::shared_ptr<Instance> clone();
+	size_t numChildren() const
+	{
+		if (children)
+			return children->v.size();
+		else
+			return 0;
+	}
+};
+class TimerService {
+public:
+	void delay(boost::function0<void> func, double seconds);
+};
+class Flag : public Instance {
+public:
+	boost::shared_ptr<Instance> evilClone;
+	char pad2[0x288 - 0x270];
+	TimerService* timer;
+private:
+	void doUglyPeriodicCloneHack();
+};
+typedef char chk1[(offsetof(Flag, evilClone) == 0x268) ? 1 : -1];
+typedef char chk2[(offsetof(Flag, timer) == 0x288) ? 1 : -1];
+typedef char chk3[(offsetof(Instance, children) == 0x108) ? 1 : -1];
+void Flag::doUglyPeriodicCloneHack()
 {
-	std::string s;
-	bool success = binding.valueIDREF->getValue(s);
+	evilClone = clone();
 
-	RBXASSERT(success);
-	RBXASSERT(value_IDREF_nil.name.compare(s));
-	RBXASSERT(value_IDREF_null.name.compare(s));
-	RBXASSERT(s != "");
-
-	std::map<std::string, RBX::InstanceHandle>::iterator found = idMap.find(s);
-	if (found != idMap.end())
+	if (timer && numChildren() == 0)
 	{
-		RBX::InstanceHandle& foundHandle = found->second;
-		binding.idref->assignIDREF(binding.propertyOwner,foundHandle);
-		return true;
-	}
-	else
-	{
-		binding.idref->assignIDREF(binding.propertyOwner,RBX::InstanceHandle(NULL));
-		return false;
-	}
-}
-
-bool ArchiveBinder::processID(const XmlNameValuePair* valueID, RBX::Instance* source)
-{
-	if (!MergeBinder::processID(valueID, source))
-	{
-		std::string s;
-		bool success = valueID->getValue(s);
-
-		RBXASSERT(success);
-		RBXASSERT(idMap.find(s) == idMap.end());
-
-		idMap[s] = shared_from(source);
-	}
-
-	return true;
-}
-
-bool ArchiveBinder::processIDREF(const XmlNameValuePair* valueIDREF, RBX::Reflection::DescribedBase* propertyOwner, const RBX::IIDREF* idref)
-{
-	if (!MergeBinder::processIDREF(valueIDREF, propertyOwner, idref))
-	{
-		IDREFBinding binding = {valueIDREF, propertyOwner, idref};
-		idrefBindings.push_back(binding);
-	}
-
-	return true;
-}
-
-static void buildIsolationMap(XmlElement* element, std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
-{
-	XmlAttribute* referent = element->findAttribute(name_referent);
-	if (referent)
-	{
-		RBX::InstanceHandle h;
-		bool success = referent->getValue(h);
-
-		RBXASSERT(success);
-		RBXASSERT(isolationMap.find(h.getTarget().get()) == isolationMap.end());
-
-		isolationMap[h.getTarget().get()] = RBX::InstanceHandle();
-	}
-
-	for (XmlElement* child = element->firstChild(); child != NULL; child = element->nextChild(child))
-	{
-		buildIsolationMap(child, isolationMap);
+		timer->delay(boost::bind(&Flag::doUglyPeriodicCloneHack, shared_from(this)), 2.0f);
 	}
 }
-
-static void isolate(XmlElement* element, const std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
-{
-	element->replaceHandles(isolationMap);
-
-	for (XmlAttribute* attr = element->getFirstAttribute(); attr != NULL; attr = element->getNextAttribute(attr))
-	{
-		attr->replaceHandles(isolationMap);
-	}
-
-	for (XmlElement* elem = element->firstChild(); elem != NULL; elem = element->nextChild(elem))
-	{
-		isolate(elem, isolationMap);
-	}
-}
-
-void SerializerV2::isolateHandles(XmlElement* root)
-{
-	std::map<RBX::Instance*, RBX::InstanceHandle> isolationMap;
-
-	buildIsolationMap(root, isolationMap);
-	isolate(root, isolationMap);
-}
-
-XmlElement* SerializerV2::newRootElement()
-{
-	static const RBX::Name& tag_xmlnsxmime = RBX::Name::declare("xmlns:xmime", -1);
-
-	XmlElement* thisElement = new XmlElement(tag_roblox);
-	thisElement->addAttribute(tag_xmlnsxmime,"http://www.w3.org/2005/05/xmlmime");
-	thisElement->addAttribute(tag_xmlnsxsi,"http://www.w3.org/2001/XMLSchema-instance");
-	thisElement->addAttribute(tag_xsinoNamespaceSchemaLocation,"http://www.roblox.com/roblox.xsd");
-
-	thisElement->addAttribute(tag_version, 4);
-
-	thisElement->pushBackChild(new XmlElement(tag_External, &value_IDREF_null));
-	thisElement->pushBackChild(new XmlElement(tag_External, &value_IDREF_nil));
-
-	return thisElement;
-}
-
-void SerializerV2::load(XmlElement* root, RBX::DataModel* dataModel)
-{
-	ArchiveBinder binder;
-	dataModel->readChildren(root, binder);
-
-	binder.resolveRefs();
-}
-
-void SerializerV2::loadXML(std::istream& stream, RBX::DataModel* dataModel)
-{
-	TextXmlParser machine(stream.rdbuf());
-	std::auto_ptr<XmlElement> root = machine.parse();
-
-	if (root->getTag() == tag_roblox)
-	{
-		XmlAttribute* version = root->findAttribute(tag_version);
-		if (!version->getValue(schemaVersionLoading))
-			throw std::runtime_error("SerializerV2::loadXML no version number");
-
-		if (schemaVersionLoading < 4)
-			throw std::runtime_error("SerializerV2::loadXML schemaVersionLoading<4");
-
-		load(root.get(), dataModel);
-		dataModel->setDirty(false);
-	}
-	else
-	{
-		schemaVersionLoading = 1;
-		throw std::runtime_error("SerializerV2::loadXML ill-formed XML. No Roblox tag");
-	}
 }

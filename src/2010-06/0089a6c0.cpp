@@ -1,14 +1,13 @@
-// from server: 25% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPMessageBar.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTButton.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPMessageBar.cpp : implementation of the CXTPMessageBar class.
+// XTButton.cpp : implementation of the CXTButton class.
 //
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,13 +26,13 @@
 
 #include "stdafx.h"
 
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPOffice2007Image.h"
-#include "Common/XTPToolTipContext.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
 
-#include "XTPCommandBars.h"
-#include "XTPPaintManager.h"
-#include "XTPMessageBar.h"
+#include "XTThemeManager.h"
+#include "XTButtonTheme.h"
+#include "XTButton.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,492 +40,578 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifndef WM_QUERYUISTATE
+#define WM_UPDATEUISTATE    0x0128
+#define WM_QUERYUISTATE     0x0129
 
-CXTPMessageBarButton::CXTPMessageBarButton()
+#define UISF_HIDEACCEL      0x2
+#define UISF_HIDEFOCUS      0x1
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTButton
+/////////////////////////////////////////////////////////////////////////////
+IMPLEMENT_DYNAMIC(CXTButton, CButton)
+
+IMPLEMENT_THEME_HOST(CXTButton)
+IMPLEMENT_THEME_REFRESH(CXTButton, CButton)
+
+CXTButton::CXTButton(CRuntimeClass* pThemeFactoryClass/*=NULL*/)
+: CXTThemeManagerStyleHost(pThemeFactoryClass ? pThemeFactoryClass : GetThemeFactoryClass())
+, m_nBorderGap(4)
+, m_nImageGap(8)
+, m_bUserPosition(false)
+, m_bChecked(false)
+, m_dwxStyle(BS_XT_FLAT | BS_XT_SHOWFOCUS)
+, m_sizeImage(CSize(0, 0))
+, m_ptImage(CPoint(0, 0))
+, m_ptText(CPoint(0, 0))
+, m_pIcon(NULL)
+, m_bPreSubclassInit(true)
 {
-	m_rcButton.SetRectEmpty();
-	m_nID = 0;
-	m_bPressed = FALSE;
+	m_bOwnerDraw = FALSE;
+	m_bPushed = FALSE;
 	m_bHot = FALSE;
 }
 
-void CXTPMessageBarButton::PerformClick(CXTPMessageBar* pBar, CPoint pt)
+
+CXTButton::~CXTButton()
 {
-	if ((::GetCapture() != NULL))
+	CleanUpGDI();
+
+	CMDTARGET_RELEASE(m_pIcon);
+}
+
+HICON CXTButton::GetNormalIcon()
+{
+	return m_pIcon ? (HICON)m_pIcon->GetIcon() : NULL;
+}
+
+HICON CXTButton::GetSelectedIcon()
+{
+	return m_pIcon ? (HICON)m_pIcon->GetHotIcon() : NULL;
+}
+
+
+BEGIN_MESSAGE_MAP(CXTButton, CButton)
+	//{{AFX_MSG_MAP(CXTButton)
+	ON_WM_ERASEBKGND()
+	ON_WM_MOUSEMOVE()
+	ON_WM_CREATE()
+	ON_WM_SETFOCUS()
+	ON_WM_KILLFOCUS()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_PAINT()
+	ON_WM_SYSCOLORCHANGE()
+	//}}AFX_MSG_MAP
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_MESSAGE(BM_SETSTYLE, OnDefaultAndInvalidate)
+	ON_MESSAGE(BM_SETCHECK, OnDefaultAndInvalidate)
+	ON_MESSAGE(WM_CAPTURECHANGED, OnDefaultAndInvalidate)
+	ON_MESSAGE_VOID(WM_ENABLE, OnInvalidate)
+	ON_MESSAGE(WM_UPDATEUISTATE, OnUpdateUIState)
+	ON_MESSAGE(BM_SETSTATE, OnSetState)
+	ON_MESSAGE(WM_SETTEXT, OnSetText)
+	//}}AFX_MSG_MAP
+	ON_WM_GETDLGCODE()
+	ON_MESSAGE(BM_SETSTYLE, OnSetStyle)
+END_MESSAGE_MAP()
+
+void CXTButton::DrawItem(LPDRAWITEMSTRUCT lpDIS)
+{
+	GetTheme()->DrawItem(lpDIS, this);
+}
+
+void CXTButton::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (GetButtonStyle() == BS_GROUPBOX)
 		return;
 
-	m_bPressed = TRUE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
+	CButton::OnMouseMove(nFlags, point);
 
-	::SetCapture(pBar->GetSafeHwnd());
+	CRect rc;
+	GetClientRect(&rc);
 
-	BOOL bClick = FALSE, bPressed;
-
-	while (::GetCapture() == pBar->GetSafeHwnd())
+	BOOL bHot = rc.PtInRect(point);
+	if (bHot != m_bHot)
 	{
-		MSG msg;
+		m_bHot = bHot;
+		Invalidate(FALSE);
 
-		if (!::GetMessage(&msg, NULL, 0, 0))
-			break;
-
-		switch (msg.message)
+		if (m_bHot)
 		{
-			case WM_MOUSEMOVE:
-				pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
-
-				bPressed = m_rcButton.PtInRect(pt);
-
-				if (bPressed != m_bPressed)
-				{
-					m_bPressed = bPressed;
-					pBar->InvalidateRect(m_rcButton, FALSE);
-				}
-
-				break;
-
-			case WM_LBUTTONUP:
-				bClick = m_bPressed;
-				goto ExitLoop;
-
-			case WM_KEYDOWN:
-				if (msg.wParam != VK_ESCAPE)
-					break;
-
-			case WM_CANCELMODE:
-			case WM_RBUTTONDOWN:
-				goto ExitLoop;
-
-			default:
-				DispatchMessage (&msg);
-				break;
+			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, HOVER_DEFAULT};
+			_TrackMouseEvent(&tme);
 		}
 	}
+}
 
-ExitLoop:
-	ReleaseCapture();
+LRESULT CXTButton::OnSetState(WPARAM wParam, LPARAM /*lParam*/)
+{
+	BOOL bVisible = GetStyle() & WS_VISIBLE;
+	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
+	Default();
+	if (bVisible) ModifyStyle(0, WS_VISIBLE);
 
-	m_bPressed = FALSE;
-	pBar->InvalidateRect(m_rcButton, FALSE);
+	m_bPushed = (wParam != 0);
+	Invalidate(FALSE);
 
-	if (bClick)
+	return 0;
+}
+
+void CXTButton::OnSetFocus(CWnd* pOldWnd)
+{
+	CButton::OnSetFocus(pOldWnd);
+	Invalidate(FALSE);
+}
+
+void CXTButton::OnKillFocus(CWnd* pNewWnd)
+{
+	CButton::OnKillFocus(pNewWnd);
+	Invalidate(FALSE);
+}
+
+LRESULT CXTButton::OnDefaultAndInvalidate(WPARAM, LPARAM)
+{
+	LRESULT lResult = Default();
+	Invalidate(FALSE);
+
+	return lResult;
+}
+
+void CXTButton::OnInvalidate()
+{
+	Invalidate(FALSE);
+}
+
+LRESULT CXTButton::OnPrintClient(WPARAM wParam, LPARAM lParam)
+{
+	if ((lParam & PRF_CLIENT) == 0)
+		return Default();
+
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC) OnDraw(pDC);
+	return 1;
+}
+
+void CXTButton::OnPaint()
+{
+	CPaintDC dcPaint(this);
+	CXTPBufferDC dc(dcPaint); // device context for painting
+	OnDraw(&dc);
+}
+
+void CXTButton::OnDraw(CDC* pDC)
+{
+	DRAWITEMSTRUCT dis;
+	ZeroMemory(&dis, sizeof(DRAWITEMSTRUCT));
+
+	dis.CtlType = ODT_BUTTON;
+	dis.CtlID = GetDlgCtrlID();
+	dis.itemState = 0;
+
+	if (::GetFocus() == m_hWnd) dis.itemState |= ODS_FOCUS;
+	if (m_bPushed) dis.itemState |= ODS_SELECTED;
+
+	LRESULT dwState = SendMessage(WM_QUERYUISTATE);
+
+	if (dwState & UISF_HIDEACCEL) dis.itemState |= ODS_NOACCEL;
+	if (dwState & UISF_HIDEFOCUS) dis.itemState |= ODS_NOFOCUSRECT;
+
+	if (!IsWindowEnabled()) dis.itemState |= ODS_DISABLED;
+
+	dis.hwndItem = m_hWnd;
+	dis.hDC = pDC->GetSafeHdc();
+	dis.rcItem = CXTPClientRect(this);
+
+	DrawItem(&dis);
+}
+
+BYTE CXTButton::GetButtonStyle() const
+{
+	BYTE bStyle = BYTE(GetStyle() & 0xF);
+	return bStyle;
+}
+
+LRESULT CXTButton::OnUpdateUIState(WPARAM wParam, LPARAM lParam)
+{
+	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_UPDATEUISTATE, wParam, lParam);
+	Invalidate(FALSE);
+
+	return lResult;
+}
+
+LRESULT CXTButton::OnSetText(WPARAM wParam, LPARAM lParam)
+{
+	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_SETTEXT, wParam, lParam);
+	Invalidate(FALSE);
+
+	return lResult;
+}
+
+BOOL CXTButton::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+bool CXTButton::Init()
+{
+	m_bOwnerDraw = m_hWnd && ((GetStyle() & 0xF) == BS_OWNERDRAW);
+	if (m_hWnd) Invalidate(FALSE);
+
+	return true;
+}
+
+void CXTButton::PreSubclassWindow()
+{
+	CButton::PreSubclassWindow();
+
+	if (m_bPreSubclassInit)
 	{
-		pBar->Click(this);
+		// Initialize the control.
+		Init();
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar
-
-CXTPMessageBar::CXTPMessageBar()
+int CXTButton::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	m_pMarkupContext = NULL;
-	m_pUIElement = NULL;
+	if (CButton::OnCreate(lpCreateStruct) == -1)
+		return -1;
 
-	m_rcBorder.SetRect(3, 3, 3, 3);
-	m_rcPadding.SetRect(5, 0, 5, 0);
-	m_rcContent.SetRectEmpty();
+	// Initialize the control.
+	Init();
 
-	m_pCommandBars = NULL;
-
-	m_pHotButton = NULL;
-
+	return 0;
 }
 
-CXTPMessageBar::~CXTPMessageBar()
+BOOL CXTButton::PreCreateWindow(CREATESTRUCT& cs)
 {
-	XTPMarkupReleaseElement(m_pUIElement);
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	RemoveButtons();
-}
-
-BOOL CXTPMessageBar::Create(CXTPCommandBars* pCommandBars, DWORD dwStyle, UINT nID)
-{
-	m_dwStyle = (dwStyle & CBRS_ALL);
-	m_pCommandBars = pCommandBars;
-
-	if (!CWnd::Create(AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle, CRect(0, 0, 0, 0), pCommandBars->GetSite(), nID))
+	if (!CButton::PreCreateWindow(cs))
 		return FALSE;
 
-	if (m_pCommandBars->IsLayoutRTL())
-	{
-		ModifyStyleEx(0, WS_EX_LAYOUTRTL);
-	}
+	// When creating controls dynamically Init() must
+	// be called from OnCreate() and not from
+	// PreSubclassWindow().
+
+	m_bPreSubclassInit = false;
 
 	return TRUE;
 }
 
 
-void CXTPMessageBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+UINT CXTButton::OnGetDlgCode()
 {
-	// update the dialog controls added to the status bar
-	UpdateDialogControls(pTarget, bDisableIfNoHndler);
-}
-
-CSize CXTPMessageBar::CalcFixedLayout(BOOL, BOOL /*bHorz*/)
-{
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	CSize size(32767, 40);
-	return size;
-}
-
-
-void CXTPMessageBar::EnableMarkup(BOOL bEnableMarkup)
-{
-	XTPMarkupReleaseContext(m_pMarkupContext);
-
-	if (bEnableMarkup)
+	if (m_bOwnerDraw)
 	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
+		if (GetFocus() == this)
+			return DLGC_DEFPUSHBUTTON | DLGC_BUTTON;
+
+		return DLGC_BUTTON ;
 	}
+	return CButton::OnGetDlgCode();
 }
 
-void CXTPMessageBar::AddButton(UINT nID, LPCTSTR lpszCaption, LPCTSTR lpszToolTop)
+LRESULT CXTButton::OnSetStyle(WPARAM wParam, LPARAM lParam)
 {
-	CXTPMessageBarButton* pButton = new CXTPMessageBarButton();
-	pButton->m_nID = nID;
-	pButton->m_strCaption = lpszCaption;
-	pButton->m_strToolTip = lpszToolTop;
-
-	m_arrButtons.Add(pButton);
-	Invalidate(FALSE);
-}
-
-void CXTPMessageBar::RemoveButtons()
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
+	if (m_bOwnerDraw)
 	{
-		delete m_arrButtons[i];
-	}
-	m_arrButtons.RemoveAll();
-	m_pHotButton = NULL;
+		DWORD dwOldStyle = GetStyle();
 
-	if (m_hWnd) Invalidate(FALSE);
-}
+		ModifyStyle(0, (long)wParam | BS_OWNERDRAW,0);
 
-void CXTPMessageBar::SetMessage(LPCTSTR lpszMessage)
-{
-	m_strContent = lpszMessage;
+		if ((dwOldStyle != GetStyle()) && LOWORD(lParam))
+			Invalidate();
 
-	XTPMarkupReleaseElement(m_pUIElement);
-
-	if (m_pMarkupContext)
-	{
-		m_pUIElement = XTPMarkupParseText(m_pMarkupContext, lpszMessage);
-	}
-	Invalidate(FALSE);
-}
-
-CXTPPaintManager* CXTPMessageBar::GetPaintManager() const
-{
-	return m_pCommandBars->GetPaintManager();
-}
-
-BEGIN_MESSAGE_MAP(CXTPMessageBar, CControlBar)
-	//{{AFX_MSG_MAP(CXTPMessageBar)
-	ON_WM_PAINT()
-	ON_WM_SIZE()
-	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONDOWN()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPMessageBar message handlers
-
-
-void CXTPMessageBar::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-
-	CXTPBufferDC dc(dcPaint);
-
-	CXTPFontDC font(&dc, GetPaintManager()->GetRegularFont());
-
-	RecalcLayout(&dc);
-
-	FillMessageBar(&dc);
-
-	DrawContent(&dc);
-
-	DrawButtons(&dc);
-}
-
-void CXTPMessageBar::DrawButtons(CDC* pDC)
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		DrawButton(pDC, pButton);
-	}
-};
-
-void CXTPMessageBar::DrawButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	BOOL bCloseButton = (pButton->m_nID == SC_CLOSE);
-
-	GetPaintManager()->DrawMessageBarButton(pDC, pButton);
-
-	if (!bCloseButton)
-	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(GetPaintManager()->m_clrMessageBarText);
-		pDC->DrawText(pButton->m_strCaption, pButton->m_rcButton, DT_CENTER | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
-	}
-}
-
-void CXTPMessageBar::FillMessageBar(CDC* pDC)
-{
-	GetPaintManager()->FillMessageBar(pDC, this);
-}
-
-void CXTPMessageBar::DrawContent(CDC* pDC)
-{
-	COLORREF clrText = GetPaintManager()->m_clrMessageBarText;
-
-	if (m_pUIElement)
-	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), clrText);
-		XTPMarkupRenderElement(m_pUIElement, pDC->GetSafeHdc(), m_rcContent);
-	}
-	else
-	{
-		pDC->SetBkMode(TRANSPARENT);
-		pDC->SetTextColor(clrText);
-		pDC->DrawText(m_strContent, m_rcContent, DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
-	}
-}
-
-CRect CXTPMessageBar::GetMessageRect()
-{
-	BOOL bCloseButton = FindButton(SC_CLOSE) != NULL;
-
-	CXTPClientRect rc(this);
-	rc.left += m_rcBorder.left;
-	rc.top += m_rcBorder.top;
-	rc.right -= m_rcBorder.right + (bCloseButton ? 18 : 0);
-	rc.bottom -= m_rcBorder.bottom;
-
-	return rc;
-}
-
-CSize CXTPMessageBar::MeasureContent(CDC* pDC)
-{
-	if (m_pUIElement)
-	{
-		XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)GetPaintManager()->GetRegularFont()->GetSafeHandle(), COLORREF_NULL);
-		CSize sz = XTPMarkupMeasureElement(m_pUIElement);
-		return sz;
+		return 0;
 	}
 
-	CSize sz = pDC->GetTextExtent(m_strContent);
-	return sz;
+	return OnDefaultAndInvalidate(wParam, lParam);
 }
 
-CSize CXTPMessageBar::MeasureButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	if (pButton->m_nID == SC_CLOSE)
-		return CSize(18, 18);
-
-
-	CSize sz = pDC->GetTextExtent(pButton->m_strCaption);
-	sz.cy = max(sz.cy + 2, 23);
-	sz.cx = max(89, sz.cx + 10);
-
-	return sz;
-}
-
-void CXTPMessageBar::RecalcLayout(CDC* pDC)
-{
-	if (!m_hWnd)
-		return;
-
-	CXTPClientRect rcClient(this);
-
-	CSize szContent = MeasureContent(pDC);
-
-	m_rcContent = CRect(CPoint(m_rcBorder.left + m_rcPadding.left, (rcClient.Height() - szContent.cy) /2), szContent);
-
-	int nLeft = m_rcContent.right, i;
-
-	CXTPMessageBarButton* pCloseButton = NULL;
-
-	for (i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == SC_CLOSE)
-		{
-			pCloseButton = pButton;
-			continue;
-		}
-
-		CSize szButton = MeasureButton(pDC, pButton);
-
-		pButton->m_rcButton = CRect(CPoint(nLeft + m_rcPadding.right, (rcClient.Height() - szButton.cy) /2), szButton);
-		nLeft = pButton->m_rcButton.right;
-	}
-
-	int nRight = rcClient.right - m_rcBorder.right - m_rcPadding.right - (pCloseButton ? 18 : 0);
-	if (nLeft > nRight)
-	{
-		nLeft = m_rcBorder.left + m_rcPadding.left;
-
-		for (i = (int)m_arrButtons.GetSize() - 1; i >= 0; i--)
-		{
-			CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-			if (pButton->m_nID == SC_CLOSE)
-				continue;
-
-			int nWidth = pButton->m_rcButton.Width();
-			pButton->m_rcButton.right = nRight;
-			pButton->m_rcButton.left = nRight - nWidth;
-			if (pButton->m_rcButton.left < nLeft)
-			{
-				pButton->m_rcButton.SetRectEmpty();
-			}
-			else
-			{
-				nRight = nRight - nWidth - m_rcPadding.right;
-			}
-		}
-
-		m_rcContent.right = nRight;
-	}
-
-	if (pCloseButton)
-	{
-		CSize szButton = MeasureButton(pDC, pCloseButton);
-		pCloseButton->m_rcButton = CRect(CPoint(rcClient.right - szButton.cx - 1, m_rcBorder.top), szButton);
-	}
-};
-
-void CXTPMessageBar::OnSize(UINT nType, int cx, int cy)
-{
-	CControlBar::OnSize(nType, cx, cy);
-
-	Invalidate(FALSE);
-}
-
-BOOL CXTPMessageBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	if (m_pUIElement)
-	{
-		if (XTPMarkupRelayMessage(m_pUIElement, message, wParam, lParam, pResult))
-			return TRUE;
-	}
-
-	m_pCommandBars->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
-
-	return CControlBar::OnWndMsg(message, wParam, lParam, pResult);
-}
-
-CXTPMessageBarButton* CXTPMessageBar::FindButton(UINT nID) const
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_nID == nID)
-			return pButton;
-	}
-
-	return NULL;
-
-}
-CXTPMessageBarButton* CXTPMessageBar::HitTestButton(CPoint point) const
-{
-	for (int i = 0; i < m_arrButtons.GetSize(); i++)
-	{
-		CXTPMessageBarButton* pButton = m_arrButtons.GetAt(i);
-		if (pButton->m_rcButton.PtInRect(point))
-			return pButton;
-	}
-
-	return NULL;
-}
-
-void CXTPMessageBar::OnMouseLeave()
+void CXTButton::OnMouseLeave()
 {
 	OnMouseMove(0, CPoint(-1, -1));
 }
 
-void CXTPMessageBar::OnMouseMove(UINT nFlags, CPoint point)
+//////////////////////////////////////////////////////////////////////////
+//
+
+CSize CXTButton::GetImageSize() const
 {
-	CXTPMessageBarButton* pButton = HitTestButton(point);
+	if (!GetTheme()->IsIconVisible())
+		return CSize(0, 0);
 
-	if (pButton != m_pHotButton)
+	return m_sizeImage;
+}
+
+CPoint CXTButton::GetImagePoint() const
+{
+	if (!GetTheme()->IsIconVisible())
+		return CPoint(0, 0);
+
+	return m_ptImage;
+}
+
+CPoint CXTButton::GetTextPoint() const
+{
+	if (!GetTheme()->IsIconVisible())
+		return CPoint(0, 0);
+
+	return m_ptText;
+}
+
+void CXTButton::CleanUpGDI()
+{
+	if (m_pIcon)
 	{
-		if (m_pHotButton) m_pHotButton->m_bHot = FALSE;
+		m_pIcon->Refresh();
+	}
+}
 
-		m_pHotButton = pButton;
+BOOL CXTButton::SetIcon(CSize size, UINT nID, UINT nHotID/*= 0*/, BOOL bRedraw/*= TRUE*/)
+{
+	return CXTButton::SetIcon(
+		size, MAKEINTRESOURCE(nID), MAKEINTRESOURCE(nHotID), bRedraw);
+}
 
-		if (m_pHotButton) m_pHotButton->m_bHot = TRUE;
+BOOL CXTButton::SetIcon(CSize size, LPCTSTR lpszID, LPCTSTR lpszHotID/*= NULL*/, BOOL bRedraw/*= TRUE*/)
+{
+	CXTPImageManagerIconHandle hIcon;
+	CXTPImageManagerIconHandle hIconHot;
 
-		if (m_pHotButton)
+	hIcon.CreateIconFromResource(lpszID, size);
+
+	// Return false if the icon handle is NULL.
+	if (hIcon.IsEmpty())
+	{
+		TRACE0("Failed to load Icon resource.\n");
+		return FALSE;
+	}
+
+	// If we are using a pushed image as well...
+	if (lpszHotID)
+	{
+		hIconHot.CreateIconFromResource(lpszHotID, size);
+
+		// Return false if the icon handle is NULL.
+		if (hIconHot.IsEmpty())
 		{
-			TRACKMOUSEEVENT tme =
-			{
-				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
-			};
-			_TrackMouseEvent(&tme);
+			TRACE0("Failed to load Icon resource.\n");
+			return FALSE;
 		}
-
-		Invalidate(FALSE);
 	}
 
-	CControlBar::OnMouseMove(nFlags, point);
+	return CXTButton::SetIcon(size, hIcon, hIconHot, bRedraw);
 }
 
-void CXTPMessageBar::OnLButtonDown(UINT nFlags, CPoint point)
+BOOL CXTButton::SetIcon(CSize size, CXTPImageManagerIcon* pIcon, BOOL bRedraw/*= TRUE*/)
 {
-	if (m_pHotButton)
-	{
-		m_pHotButton->PerformClick(this, point);
-		return;
-	}
+	m_sizeImage = size;
 
-	CControlBar::OnLButtonDown(nFlags, point);
+	// Construct the icon manager.
+	CMDTARGET_RELEASE(m_pIcon);
+
+	m_pIcon = pIcon;
+
+	// Redraw the button.
+	if (::IsWindow(m_hWnd) && bRedraw)
+		Invalidate();
+
+	return TRUE;
 }
 
-INT_PTR CXTPMessageBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+BOOL CXTButton::SetIcon(CSize size, CXTPImageManagerIconHandle hIcon, CXTPImageManagerIconHandle hIconHot, BOOL bRedraw/*= TRUE*/)
 {
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(!hIcon.IsEmpty());
 
-	// check child windows first by calling CControlBar
-	INT_PTR nHit = CControlBar::OnToolHitTest(point, pTI);
-	if (nHit != -1)
-		return nHit;
+	// Save the image size and set the icon
+	// handles to NULL.
+	size = size != CSize(0) ? size : hIcon.GetExtent();
 
-	if (m_pHotButton)
-	{
-		nHit = m_pHotButton->m_nID;
+	CXTPImageManagerIcon* pIcon = new CXTPImageManagerIcon(0, size.cx, size.cy);
+	pIcon->SetIcon(hIcon);
 
-		CString strTip = m_pHotButton->m_strToolTip;
-		if (strTip.IsEmpty())
-			return -1;
+	if (!hIconHot.IsEmpty())
+		pIcon->SetHotIcon(hIconHot);
 
-		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, m_pHotButton->m_rcButton, nHit, strTip, strTip, _T(""), m_pCommandBars->GetImageManager());
-
-		return nHit;
-	}
-	return -1;
+	return SetIcon(size, pIcon, bRedraw);
 }
 
-void CXTPMessageBar::Click(CXTPMessageBarButton* pButton)
-{
-	if (pButton->m_nID == SC_CLOSE)
-	{
-		SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_HIDEWINDOW);
 
-		m_pCommandBars->RecalcFrameLayout();
+BOOL CXTButton::SetIcon(CSize size, HICON hIcon, HICON hIconHot/*= NULL*/, BOOL bRedraw/*= TRUE*/)
+{
+	return SetIcon(size, CXTPImageManagerIconHandle(hIcon), CXTPImageManagerIconHandle(hIconHot), bRedraw);
+}
+
+BOOL CXTButton::SetBitmap(CSize size, UINT nID, BOOL bRedraw/*= TRUE*/)
+{
+	// Free previous resources (if any).
+
+	CXTPImageManagerIconHandle hIconHandle;
+
+	BOOL bAlphaBitmap = FALSE;
+	HBITMAP hBitmap = CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nID), &bAlphaBitmap);
+
+	if (!hBitmap)
+		return FALSE;
+
+	if (bAlphaBitmap)
+	{
+		hIconHandle = hBitmap; // Will call DeleteObject;
 	}
 	else
 	{
-		m_pCommandBars->GetSite()->SendMessage(WM_COMMAND, pButton->m_nID);
+		CBitmap bmpIcon;
+		bmpIcon.Attach(hBitmap);
+
+		// convert the bitmap to a transparent icon.
+		HICON hIcon = CXTPTransparentBitmap(bmpIcon).ConvertToIcon();
+
+		hIconHandle = hIcon; // Will call DestoyIcon;
+	}
+
+	if (hIconHandle.IsEmpty())
+		return FALSE;
+
+	return CXTButton::SetIcon(size, hIconHandle, CXTPImageManagerIconHandle(), bRedraw);
+}
+
+BOOL CXTButton::SetTextAndImagePos(CPoint ptImage, CPoint ptText, BOOL bRedraw/*= TRUE*/)
+{
+	m_ptImage = ptImage;
+	m_ptText = ptText;
+
+	// Redraw the button.
+	if (::IsWindow(m_hWnd) && bRedraw)
+		Invalidate();
+
+	m_bUserPosition = TRUE;
+	return TRUE;
+}
+
+DWORD CXTButton::SetXButtonStyle(DWORD dwxStyle, BOOL bRedraw/*= TRUE*/)
+{
+	DWORD dwOldStyle = m_dwxStyle;
+	m_dwxStyle = dwxStyle;
+
+	if ((m_dwxStyle & BS_XT_XPFLAT) == BS_XT_XPFLAT)
+		SetTheme(new CXTButtonThemeOfficeXP());
+	else if ((m_dwxStyle & BS_XT_FLAT) == BS_XT_FLAT)
+		SetTheme(new CXTButtonTheme());
+
+	// Redraw the button.
+	if (::IsWindow(m_hWnd) && bRedraw)
+		Invalidate();
+
+	return dwOldStyle;
+}
+
+
+BOOL CXTButton::IsThemeValid() const
+{
+	return (GetTheme() != NULL);
+}
+
+CXTPImageManagerIcon* CXTButton::GetIcon() const
+{
+	return m_pIcon;
+}
+
+CString CXTButton::GetButtonText(BOOL bRemoveAmpersand)
+{
+	CString strText;
+	GetWindowText(strText);
+
+	if (bRemoveAmpersand)
+		XTPDrawHelpers()->StripMnemonics(strText);
+
+	return strText;
+}
+
+void CXTButton::SetAlternateColors(COLORREF clr3DFace, COLORREF clr3DHilight, COLORREF clr3DShadow, COLORREF clrBtnText)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetAlternateColors(
+			clr3DFace, clr3DHilight, clr3DShadow, clrBtnText);
 	}
 }
 
+void CXTButton::SetColorFace(COLORREF clrFace)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorFace(clrFace);
+	}
+}
+
+COLORREF CXTButton::GetColorFace()
+{
+	if (IsThemeValid())
+	{
+		return GetTheme()->GetColorFace();
+	}
+	return GetXtremeColor(COLOR_3DFACE);
+}
+
+void CXTButton::SetColorHilite(COLORREF clrHilite)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorHilite(clrHilite);
+	}
+}
+
+void CXTButton::SetColorShadow(COLORREF clrShadow)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorShadow(clrShadow);
+	}
+}
+
+void CXTButton::SetColorText(COLORREF clrText)
+{
+	if (IsThemeValid())
+	{
+		GetTheme()->SetColorText(clrText);
+	}
+}
+
+void CXTButton::SetXPFlatColors(COLORREF clrBorder, COLORREF clrHighlight, COLORREF clrPressed)
+{
+	if (IsThemeValid())
+	{
+		CXTButtonTheme* pButtonTheme = GetTheme();
+		if (pButtonTheme->GetTheme() == xtThemeOfficeXP)
+		{
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetColorHilite(clrBorder);
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetColorShadow(clrBorder);
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetBackHiliteColor(clrHighlight);
+			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetBackPushedColor(clrPressed);
+		}
+	}
+}
+
+void CXTButton::ResetImage()
+{
+	if (IsThemeValid())
+	{
+		if (GetTheme()->IsIconVisible())
+		{
+			GetTheme()->ShowIcon(FALSE);
+		}
+		else
+		{
+			GetTheme()->ShowIcon(TRUE);
+		}
+		Invalidate();
+	}
+}
+
+CFont* CXTButton::SetFontEx(CFont* pFont)
+{
+	CFont* pOldFont = GetFont();
+	CButton::SetFont(pFont);
+	return pOldFont;
+}

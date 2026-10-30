@@ -1,17 +1,5 @@
-// from server: 39% by atomic.potato
-typedef unsigned long DWORD;
-typedef int BOOL;
-typedef void* HANDLE;
-
-extern "C" BOOL __stdcall HeapFree(HANDLE, DWORD, void*);
-
-struct CXTIconHandle {
-    HANDLE heap;
-    void Free(void*);
-};
-
-void CXTIconHandle::Free(void* p)
-{
-    if (p)
-        HeapFree(heap, 0, p);
-}
+// from server: 57% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlstr.obj

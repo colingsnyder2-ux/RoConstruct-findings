@@ -1,24 +1,12 @@
-// from server: 80% by colin
-struct BodyMover {
-    char pad[0x100];
-    void f(int, int, int);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_628b6eb1ba34767d.cpp
 
-struct Inner {
-    char pad[0x44];
-    char (__thiscall *fn)(Inner*);
-};
-
-void __stdcall G1_func_005a91c0(int*, int);
-
-void BodyMover::f(int, int, int)
-{
-    Inner* self = (Inner*)((char*)this - 0xf0);
-    char (__thiscall *fn)(Inner*) = self->fn;
-    if (fn(self)) {
-        int* a = *(int**)((char*)this + 8);
-        int b = *(int*)((char*)a + 0x1d8);
-        int* c = *(int**)((char*)this + 4);
-        G1_func_005a91c0(c, b);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/Gyro.cpp"

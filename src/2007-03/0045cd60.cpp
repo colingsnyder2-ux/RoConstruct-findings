@@ -1,8 +1,7 @@
-// from server: 99% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: scintilla-mfc-1.20-vc8 ScintillaDocView.cpp
+// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*

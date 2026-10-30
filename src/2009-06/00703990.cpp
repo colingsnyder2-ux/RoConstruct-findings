@@ -1,102 +1,82 @@
-// from server: 47% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client Rendering/AppDraw/DrawAdorn.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
+#include "appdraw/DrawAdorn.h"
 
-namespace RBX
+#include "appdraw/Part.h"
+#include "decomp.h"
+#include "util/Math.h"
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x101ed030
+void DrawAdorn::cylinder(
+	Adorn* adorn,
+	const G3D::CoordinateFrame& worldC,
+	int axis,
+	float length,
+	float radius,
+	const G3D::Color3& color
+)
 {
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
+	const G3D::Matrix3& axisRotation = Math::getAxisRotationMatrix(axis);
+	G3D::CoordinateFrame rotatedWorldC(worldC.rotation * axisRotation, worldC.translation);
 
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+	adorn->setObjectToWorldMatrix(rotatedWorldC);
 
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+	adorn->cylinderAlongX(radius, length, color, G3D::Color4::clear());
+}
 
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-		}
+// FUNCTION: WEBSERVICE 0x101ed0e0
+void DrawAdorn::surfaceBorder(
+	Adorn* adorn,
+	const G3D::Vector3& halfRealSize,
+	float highlight,
+	int surfaceId,
+	const G3D::Color4& color
+)
+{
+	int axis = surfaceId % 3;
+	int polarity = surfaceId < 3 ? 1 : -1;
 
-		View::~View()
-		{
-			sceneManager->clear();
+	float cZ = polarity * halfRealSize[axis];
 
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
+	int cY = (axis + 1) % 3;
 
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
+	G3D::Vector3 p0;
+	G3D::Vector3 p1;
 
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
+	p0[axis] = cZ - highlight;
+	p1[axis] = cZ + highlight;
 
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
+	int cX = (axis + 2) % 3;
 
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
+	for (int direction = 0; direction < 2; ++direction) {
+		int c2 = direction != 0 ? cY : cX;
+		int c3 = direction != 0 ? cX : cY;
 
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
+		for (int c = -1; c <= 1; c += 2) {
+			p0[c2] = c * halfRealSize[c2] - highlight;
+			p1[c2] = c * halfRealSize[c2] + highlight;
+			p0[c3] = -halfRealSize[c3] - highlight;
+			p1[c3] = halfRealSize[c3] + highlight;
 
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
-
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
+			adorn->box(G3D::AABox(p0, p1), color, G3D::Color4::clear());
 		}
 	}
 }
+
+// FUNCTION: WEBSERVICE 0x101ed270
+void DrawAdorn::partSurface(const Part& part, int surfaceId, Adorn* adorn, const G3D::Color4& color)
+{
+	adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+	G3D::Vector3 halfRealSize = part.gridSize * 0.5f;
+
+	surfaceBorder(adorn, halfRealSize, 0.2f, surfaceId, color);
+}
+
+} // namespace RBX

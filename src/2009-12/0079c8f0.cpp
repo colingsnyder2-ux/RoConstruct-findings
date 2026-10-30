@@ -1,10 +1,7 @@
-// from server: 94% by atomic.potato
-extern "C" void __cdecl Function78A830(int, int);
-extern "C" void __cdecl Function788D60(int, double);
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-int Function79C8F0(int value)
-{
-    Function78A830(value, 1);
-    Function788D60(value, 0.6931471805599453);
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

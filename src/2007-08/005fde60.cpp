@@ -1,12 +1,17 @@
-// from server: 81% by colin
+// from server: 100% by tajop
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+
+// cursor name is a std::string at +0x20; operator=(const char*) is imported from MSVCP80.
 struct GameTool {
     char pad[0x20];
+    std::string cursor;
+    void* hit(int a, float* v);
+    bool test(void* r, float* v);
     void f(int a);
 };
-
-extern "C" int __stdcall sub_5e3f80(int, float*);
-extern "C" int __stdcall sub_5fde20(int, float*);
-extern "C" void __stdcall sub_77e62c(void*, const char*);
 
 void GameTool::f(int a)
 {
@@ -20,16 +25,16 @@ void GameTool::f(int a)
     v[1] = 0.0f;
     v[2] = 0.0f;
 
-    int r = sub_5e3f80(a, v);
+    void* r = hit(a, v);
     if (r == 0) {
-        sub_77e62c((char*)this + 0x20, "ArrowCursor");
+        cursor = "ArrowFarCursor";
         return;
     }
 
-    if (!sub_5fde20(r, v)) {
-        sub_77e62c((char*)this + 0x20, "ArrowFarCursor");
+    if (!test(r, v)) {
+        cursor = "ArrowCursor";
         return;
     }
 
-    sub_77e62c((char*)this + 0x20, "DragCursor");
+    cursor = "DragCursor";
 }

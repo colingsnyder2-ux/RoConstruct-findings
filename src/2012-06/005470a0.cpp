@@ -1,22 +1,17 @@
-// from server: 22% by colin
-struct S {
-    char pad0[8];
-    char field8;
-    char pad9[0x24 - 9];
-    char field24;
-    char pad25[3];
-    int field28;
-    void f();
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_eventdequecomplete_a69694a1f98b5af2.cpp
 
-extern "C" void __stdcall G1_func_00544e60();
-extern "C" void __cdecl G1_func_00982114(void*);
-extern "C" void __stdcall G1_func_00b2263c();
-
-void S::f()
-{
-    G1_func_00544e60();
-    G1_func_00982114(*(void**)((char*)this + 0x28));
-    *(int*)((char*)this + 0x28) = 0;
-    G1_func_00b2263c();
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <list>
+#include <deque>
+struct Record { unsigned value; std::string first,second; };
+struct Element { unsigned first,second; std::string name; std::list<Record> values; };
+bool operator==(const Record&,const Record&);
+bool operator<(const Record&,const Record&);
+bool operator==(const Element&,const Element&);
+bool operator<(const Element&,const Element&);
+template class std::list<Record>;
+template class std::deque<Element>;

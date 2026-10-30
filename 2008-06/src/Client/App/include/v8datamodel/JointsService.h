@@ -39,5 +39,6 @@ namespace RBX
 		{
 			setName("JointsService");
 		}
+		virtual ~JointsService();
 	};
 }

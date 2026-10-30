@@ -1,102 +1,94 @@
-// from server: 33% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-lib: rbxgs-dll roc_espclaude_1d61d29842ff4973.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
 
-namespace RBX
+namespace RBX { namespace View {
+class RenderSurfaceTypes
 {
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
 
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
 
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+void flushUnusedMeshCache();
 
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-		}
+namespace RBX {
+namespace View {
 
-		View::~View()
-		{
-			sceneManager->clear();
+class WedgeMesh : public Render::Mesh
+{
+public:
+    WedgeMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+    char pad[0x8c - sizeof(Render::Mesh)];
+};
 
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<int, int> decalCache;
+        std::map<int, int> textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static Mesh* create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+};
 
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
+template<class Mesh, size_t numMeshes>
+Mesh* MeshFactory<Mesh, numMeshes>::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
 
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
+    if (!c->cache1.containsKey(surfaceTypes))
+        c->cache1.set(surfaceTypes, G3D::Table<G3D::Vector3, Variations>());
 
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
+    G3D::Table<G3D::Vector3, Variations>& sizeCache = c->cache1.get(surfaceTypes);
 
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
+    if (!sizeCache.containsKey(size))
+        sizeCache.set(size, Variations());
 
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
+    Variations& variation = sizeCache.get(size);
 
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
+    Mesh* mesh = static_cast<Mesh*>(variation.meshes[0].getPointer());
+    if (!mesh)
+    {
+        mesh = new Mesh(size, surfaceTypes);
+        variation.meshes[0] = mesh;
+        if (++c->count % 100 == 0)
+        {
+            G3D::ReferenceCountedPointer<Render::Mesh> keep = variation.meshes[0];
+            flushUnusedMeshCache();
+        }
+    }
+    return mesh;
+}
 
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
-		}
-	}
+template class MeshFactory<WedgeMesh, 1>;
+}
 }

@@ -1,39 +1,96 @@
-// from server: 49% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// roc 2010-06 0041d870  unit: CSelectionTreeCtrl  size: 110 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0041d870
+//
+// 0041d870  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 0041d874  33c9                 xor ecx, ecx
+// 0041d876  3bc1                 cmp eax, ecx
+// 0041d878  7441                 je 0x41d8bb
+// 0041d87a  83f801               cmp eax, 1
+// 0041d87d  743c                 je 0x41d8bb
+// 0041d87f  83f802               cmp eax, 2
+// 0041d882  7459                 je 0x41d8dd
+// 0041d884  83f803               cmp eax, 3
+// 0041d887  7521                 jne 0x41d8aa
+// 0041d889  56                   push esi
+// 0041d88a  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 0041d88e  8b0e                 mov ecx, dword ptr [esi]
+// 0041d890  6890ceb700           push 0xb7ce90
+// 0041d895  ff15d8a89e00         call dword ptr [0x9ea8d8]
+// 0041d89b  0fb6c0               movzx eax, al
+// 0041d89e  f7d8                 neg eax
+// 0041d8a0  1bc0                 sbb eax, eax
+// 0041d8a2  23442408             and eax, dword ptr [esp + 8]
+// 0041d8a6  8906                 mov dword ptr [esi], eax
+// 0041d8a8  5e                   pop esi
+// 0041d8a9  c3                   ret 
+// 0041d8aa  8b442408             mov eax, dword ptr [esp + 8]
+// 0041d8ae  c70090ceb700         mov dword ptr [eax], 0xb7ce90
+// 0041d8b4  884804               mov byte ptr [eax + 4], cl
+// 0041d8b7  884805               mov byte ptr [eax + 5], cl
+// 0041d8ba  c3                   ret 
+// 0041d8bb  8b442408             mov eax, dword ptr [esp + 8]
+// 0041d8bf  3bc1                 cmp eax, ecx
+// 0041d8c1  741a                 je 0x41d8dd
+// 0041d8c3  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 0041d8c7  8b11                 mov edx, dword ptr [ecx]
+// 0041d8c9  8910                 mov dword ptr [eax], edx
+// 0041d8cb  8b5104               mov edx, dword ptr [ecx + 4]
+// 0041d8ce  895004               mov dword ptr [eax + 4], edx
+// 0041d8d1  8b5108               mov edx, dword ptr [ecx + 8]
+// 0041d8d4  895008               mov dword ptr [eax + 8], edx
+// 0041d8d7  8b490c               mov ecx, dword ptr [ecx + 0xc]
+// 0041d8da  89480c               mov dword ptr [eax + 0xc], ecx
+// 0041d8dd  c3                   ret 
+// copied from an identical function in another client (function ?manage@@YAXABTfunction_buffer@@AAT1@W4functor_manager_operation_type@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+#include <typeinfo>
+#include <new>
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+// boost::detail::function::functor_manager<F>::manage for a small, trivially copyable functor
+// stored in place; 0xb33668 is typeid(F)
+extern const type_info type_descriptor_b33668;
 
-#define BOOST_REGEX_SOURCE
+struct Functor
+{
+    int f0, f1, f2, f3;
+};
 
-#include <boost/regex/config.hpp>
+union function_buffer
+{
+    void *obj_ptr;
+    struct
+    {
+        const type_info *type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+    char data[16];
+};
 
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
+enum functor_manager_operation_type
+{
+    clone_functor_tag,
+    move_functor_tag,
+    destroy_functor_tag,
+    check_functor_type_tag,
+    get_functor_type_tag
+};
 
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif
+void manage(const function_buffer &in_buffer, function_buffer &out_buffer, functor_manager_operation_type op)
+{
+    if (op == clone_functor_tag || op == move_functor_tag) {
+        const Functor *in_functor = reinterpret_cast<const Functor *>(&in_buffer.data);
+        new ((void *)&out_buffer.data) Functor(*in_functor);
+    } else if (op == destroy_functor_tag) {
+    } else if (op == check_functor_type_tag) {
+        const type_info &check_type = *out_buffer.type.type;
+        if (check_type == type_descriptor_b33668)
+            out_buffer.obj_ptr = (void *)&in_buffer.data;
+        else
+            out_buffer.obj_ptr = 0;
+    } else {
+        out_buffer.type.type = &type_descriptor_b33668;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
+    }
+}

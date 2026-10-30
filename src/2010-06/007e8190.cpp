@@ -1,14 +1,13 @@
-// from server: 38% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTShellTreeBase.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTTreeBase.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTShellTreeView.cpp : implementation file
+// XTTreeBase.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,18 +25,13 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPResourceManager.h"
+#include <windowsx.h>
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
 #include "Common/XTPSystemHelpers.h"
 
-#include "XTFunctions.h"
-#include "XTDropSource.h"
-
+#include "XTVC50Helpers.h"
 #include "XTTreeBase.h"
-#include "XTShellSettings.h"
-#include "XTShellPidl.h"
-#include "XTShellTreeBase.h"
-#include "XTComboBoxEx.h"
 
 
 #ifdef _DEBUG
@@ -46,1156 +40,1978 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTShellTreeBase
+#ifndef SCROLL_TIMER_PERIOD
+#define SCROLL_TIMER_PERIOD 75
+#endif
 
-CXTShellTreeBase::CXTShellTreeBase()
-: m_bTunneling(false)
-{
-	m_bContextMenu = TRUE;
-	m_pComboBox = NULL;
-	m_uFlags = SHCONTF_FOLDERS | SHCONTF_NONFOLDERS;
-	m_ulSFGAOFlags = SFGAO_HASSUBFOLDER | SFGAO_FOLDER | SFGAO_DISPLAYATTRMASK | SFGAO_REMOVABLE | SFGAO_COMPRESSED | SFGAO_ENCRYPTED;
+#ifndef HOVER_TIMER_PERIOD
+#define HOVER_TIMER_PERIOD  85
+#endif
 
-	if (m_shSettings.ShowAllFiles() && !m_shSettings.ShowSysFiles())
-	{
-		m_uFlags |= SHCONTF_INCLUDEHIDDEN;
-	}
+#ifndef COLOR_HOTLIGHT
+#define COLOR_HOTLIGHT      26
+#endif // COLOR_HOTLIGHT
 
-	m_nRootFolder = CSIDL_DESKTOP;
-	m_bShowFiles = FALSE;
-	m_bShowShellLinkIcons = FALSE;
-}
 
-CXTShellTreeBase::~CXTShellTreeBase()
-{
-
-}
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTShellTreeBase message handlers
+// CXTTreeBase
 
-HTREEITEM CXTShellTreeBase::InsertDesktopItem(int nFolder /*= CSIDL_DESKTOP*/)
+CXTTreeBase::CXTTreeBase()
+: m_hSelect(NULL)
+, m_bMultiSelect(false)
+, m_bBandLabel(true)
+, m_bActionDone(false)
+, m_bOkToEdit(true)
+, m_htiEdit(NULL)
+, m_htiLast(NULL)
 {
-	HTREEITEM hItem = TVI_ROOT;
+	m_pTreeCtrl = NULL;
+}
 
-	CShellMalloc lpMalloc;
+CXTTreeBase::~CXTTreeBase()
+{
+}
 
-	if (!lpMalloc)
-		return NULL;
+/////////////////////////////////////////////////////////////////////////////
+// CXTTreeBase message handlers
 
-	// Get ShellFolder Pidl
-	LPITEMIDLIST pidlDesktop = NULL;
-	if (FAILED(::SHGetSpecialFolderLocation(NULL, nFolder, &pidlDesktop)))
+void CXTTreeBase::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// If multiselect control, process possible left
+	// click drag selection.
+	if (m_bMultiSelect)
 	{
-		pidlDesktop = NULL;
-	}
+		UINT nHitFlags = 0;
 
-	// insert the desktop.
-	if (pidlDesktop)
-	{
-		SHFILEINFO fileInfo;
-		::ZeroMemory(&fileInfo, sizeof(fileInfo));
+		HTREEITEM hItemHit = m_pTreeCtrl->HitTest(point, &nHitFlags);
+		HTREEITEM hItemSel = m_pTreeCtrl->GetSelectedItem();
 
-		::SHGetFileInfo((LPCTSTR)pidlDesktop, NULL, &fileInfo, sizeof(fileInfo),
-			SHGFI_PIDL | SHGFI_ATTRIBUTES | SHGFI_DISPLAYNAME);
-
-		TV_ITEM  tvi;
-		tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-
-		// Allocate memory for ITEMDATA struct
-		XT_TVITEMDATA* lptvid = new XT_TVITEMDATA;
-		if (lptvid != NULL)
+		// if expanding/contracting call base class.
+		if ((nHitFlags & (TVHT_ONITEMBUTTON | TVHT_ONITEMSTATEICON)) != 0)
 		{
-			GetNormalAndSelectedIcons(pidlDesktop, &tvi);
-
-			// Now, make a copy of the ITEMIDLIST and store the parent folders SF.
-			lptvid->lpi = DuplicateItem(lpMalloc, pidlDesktop);
-			lptvid->lpsfParent = NULL;
-			lptvid->lpifq = ConcatPidls(lpMalloc, NULL, pidlDesktop);
-
-			TCHAR szBuff[MAX_PATH];
-			STRCPY_S(szBuff, MAX_PATH, fileInfo.szDisplayName);
-
-			tvi.lParam = (LPARAM)lptvid;
-			tvi.pszText = szBuff;
-			tvi.cchTextMax = MAX_PATH;
-
-			// Populate the TreeVeiw Insert Struct
-			// The item is the one filled above.
-			// Insert it after the last item inserted at this level.
-			// And indicate this is a root entry.
-			TV_INSERTSTRUCT tvins;
-			tvins.item = tvi;
-			tvins.hInsertAfter = hItem;
-			tvins.hParent = hItem;
-
-			// Add the item to the tree
-			hItem = m_pTreeCtrl->InsertItem(&tvins);
+			m_pTreeCtrl->Default();
+			return;
 		}
 
-		if (pidlDesktop)
+		if (HasEditLabels())
 		{
-			lpMalloc.Free(pidlDesktop);
+			if (!(nFlags & (MK_CONTROL | MK_SHIFT)) && (nHitFlags & TVHT_ONITEMLABEL))
+			{
+				if (m_bOkToEdit && hItemHit == hItemSel)
+				{
+					SelectAll(FALSE);
+					SelectItem(hItemHit);
+
+					m_pTreeCtrl->Default();
+					return;
+				}
+			}
+
+			if ((nHitFlags & TVHT_ONITEM) == 0)
+			{
+				m_bOkToEdit = false;
+			}
+			else if (GetFocusedItem() == hItemSel)
+			{
+				m_bOkToEdit = true;
+			}
+		}
+
+		OnButtonDown(TRUE, nFlags, point);
+	}
+
+	else
+	{
+		m_pTreeCtrl->Default();
+	}
+}
+
+void CXTTreeBase::OnRButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	if (m_pTreeCtrl->GetStyle() & TVS_SINGLEEXPAND)
+	{
+		m_pTreeCtrl->Default();
+		return;
+	}
+
+
+	// hittest to get the tree item under the cursor
+	// and select it.
+	UINT uFlags = 0;
+	HTREEITEM hItem = m_pTreeCtrl->HitTest(point, &uFlags);
+	if (hItem != NULL && (uFlags & TVHT_ONITEM) != 0)
+	{
+		// if the item is not selected, clear previous
+		// selections and select the item under cursor.
+		if (!IsSelected(hItem))
+		{
+			SelectAll(FALSE);
+			SelectItem(hItem);
+		}
+	}
+	else
+	{
+		// clear previous selections.
+		SelectAll(FALSE);
+	}
+
+	// call Default() so correct notification messages are
+	// sent such as TVN_BEGINRDRAG.
+	m_pTreeCtrl->Default();
+
+	// get the owner of the tree control.
+	//HWND hWnd = m_pTreeCtrl->GetOwner()->m_hWnd;
+
+	//if (::IsWindow(hWnd))
+	//{
+		// construct a NMHDR struct...
+		//NMHDR mHDR;
+		//mHDR.hwndFrom = m_pTreeCtrl->m_hWnd;
+		//mHDR.code = NM_RCLICK;
+		//mHDR.idFrom = m_pTreeCtrl->GetDlgCtrlID();
+
+		// and send a WM_NOTIFY message to our owner.
+		//SendNotify(&mHDR);
+	//}
+}
+
+void CXTTreeBase::OnSetFocus(CWnd* /*pOldWnd*/)
+{
+	if (m_bMultiSelect)
+	{
+		//'emulated' selected items will remain greyed
+		// if application gets covered
+		HTREEITEM hItem = GetFirstSelectedItem();
+		while (hItem)
+		{
+			RECT rect;
+			m_pTreeCtrl->GetItemRect(hItem, &rect, TRUE);
+			m_pTreeCtrl->InvalidateRect(&rect);
+			hItem = GetNextSelectedItem(hItem);
+		}
+	}
+
+	m_pTreeCtrl->Default();
+}
+
+void CXTTreeBase::OnKillFocus(CWnd* /*pNewWnd*/)
+{
+	m_pTreeCtrl->Default();
+
+	if (m_bMultiSelect)
+	{
+		//'emulated' selected items may not get
+		// refreshed to grey
+		HTREEITEM hItem = GetFirstSelectedItem();
+		while (hItem)
+		{
+			RECT rect;
+			m_pTreeCtrl->GetItemRect(hItem, &rect, TRUE);
+			m_pTreeCtrl->InvalidateRect(&rect);
+			hItem = GetNextSelectedItem(hItem);
+		}
+	}
+}
+
+void CXTTreeBase::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
+{
+	if (!m_bMultiSelect)
+	{
+		m_pTreeCtrl->Default();
+		return;
+	}
+
+	BOOL bCtrl = (::GetKeyState(VK_CONTROL) < 0);
+	BOOL bShift = (::GetKeyState(VK_SHIFT) < 0);
+
+
+	if (!bCtrl && !bShift)
+	{
+		UINT uCount = GetSelectedCount();
+
+		if ((uCount > 1) || (uCount == 1 && !IsSelected(GetFocusedItem())))
+			SelectAll(FALSE);
+	}
+
+	HTREEITEM hSel = NULL;
+	switch (nChar)
+	{
+	case VK_UP:
+	case VK_DOWN:
+	case VK_PRIOR:
+	case VK_NEXT:
+		hSel = m_pTreeCtrl->GetSelectedItem();
+		if (!m_hSelect)
+		{
+			m_hSelect = hSel;
+		}
+		if (!bCtrl && !bShift)
+		{
+			m_hSelect = NULL;   //reset
+		}
+		break;
+	}
+
+	BOOL bDir = (nChar == VK_UP) || (nChar == VK_PRIOR);
+
+	m_pTreeCtrl->Default();
+	if (!hSel || (!bCtrl && !bShift))
+	{
+		return;
+	}
+
+	HTREEITEM hNext = (nChar == VK_NEXT) || (nChar == VK_PRIOR) ? GetFocusedItem() :
+		bDir ? m_pTreeCtrl->GetPrevVisibleItem(hSel) : m_pTreeCtrl->GetNextVisibleItem(hSel);
+
+	if (!hNext)
+	{
+		hNext = hSel;
+	}
+	if (bShift)
+	{
+		SelectItems(m_hSelect, hNext, TRUE);
+	}
+	else if (bCtrl)
+	{
+		SetItemState(hNext, TVIS_FOCUSED, TVIS_FOCUSED);
+	}
+}
+
+BOOL CXTTreeBase::OnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;
+	*pResult = 0;
+
+	// set m_htiEdit equal to pTVDispInfo->item.hItem.
+	m_htiEdit = pTVDispInfo->item.hItem;
+
+	return FALSE;   //pass to parent
+}
+
+BOOL CXTTreeBase::OnEndLabelEdit(NMHDR* /*pNMHDR*/, LRESULT* pResult)
+{
+	*pResult = 0;
+
+	// set m_htiEdit equal to NULL.
+	m_htiEdit = NULL;
+
+	return FALSE;   //pass to parent
+}
+
+BOOL CXTTreeBase::OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	if (!m_bMultiSelect)
+		return FALSE;
+
+	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
+	*pResult = 0;
+
+	if ((pNMTreeView->action == TVE_COLLAPSE) || (pNMTreeView->action == TVE_COLLAPSERESET))
+	{
+		// clear selection of children, it would be confusing otherwise
+		// - the notifications can be over-ridden to stop the de-selection
+		// if required.
+		// Unfortunately, the parent window can't over-ride this functionality
+		// because MFC gives this class first crack.  So if changes are required
+		// a derived class will have to be used..
+		ASSERT(pNMTreeView->itemNew.hItem);
+
+		// if a descendent item has focus the parent will get selected as a
+		// consequence of collapsing the tree, so preserve
+		// (if the parent was already selected it will gain focus, but
+		// that's acceptable)
+		BOOL bWasSel = IsSelected(pNMTreeView->itemNew.hItem);
+		BOOL bWasFocus = SelectChildren(pNMTreeView->itemNew.hItem, FALSE, TRUE);
+
+		if (bWasFocus && !bWasSel)
+		{
+			FocusItem(pNMTreeView->itemNew.hItem); // give parent focus.
+		}
+	}
+
+	return FALSE;   //pass to parent
+}
+
+HTREEITEM CXTTreeBase::GetNextItem(HTREEITEM hItem) const
+{
+	HTREEITEM hti = NULL;
+
+	if (m_pTreeCtrl->ItemHasChildren(hItem))
+	{
+		hti = m_pTreeCtrl->GetChildItem(hItem);
+	}
+
+	if (hti == NULL)
+	{
+		while ((hti = m_pTreeCtrl->GetNextSiblingItem(hItem)) == NULL)
+		{
+			if ((hItem = m_pTreeCtrl->GetParentItem(hItem)) == NULL)
+				return NULL;
+		}
+	}
+
+	return hti;
+}
+
+HTREEITEM CXTTreeBase::GetPrevItem(HTREEITEM hItem) const
+{
+	HTREEITEM hti = NULL;
+
+	hti = m_pTreeCtrl->GetPrevSiblingItem(hItem);
+	if (hti == NULL)
+	{
+		hti = m_pTreeCtrl->GetParentItem(hItem);
+	}
+	else
+	{
+		hti = GetLastItem(hti);
+	}
+
+	return hti;
+}
+
+HTREEITEM CXTTreeBase::GetLastItem(HTREEITEM hItem) const
+{
+	// Temporary used variable
+	HTREEITEM htiNext;
+
+	// Get the last item at the top level
+	if (hItem == NULL)
+	{
+		hItem = m_pTreeCtrl->GetRootItem();
+	}
+
+	while (m_pTreeCtrl->ItemHasChildren(hItem) != NULL)
+	{
+		// Find the last child of hItem
+		htiNext = m_pTreeCtrl->GetChildItem(hItem);
+		while (htiNext != NULL)
+		{
+			hItem = htiNext;
+			htiNext = m_pTreeCtrl->GetNextSiblingItem(htiNext);
 		}
 	}
 
 	return hItem;
+
 }
 
-
-void CXTShellTreeBase::PopulateTreeView()
+HTREEITEM CXTTreeBase::FindItemInBranch(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALSE*/,
+	BOOL bWholeWord /*= FALSE*/, HTREEITEM htiItem /*= NULL*/)
 {
-	// Get a pointer to the desktop folder.
-	CShellSpecialFolder lpsfFolder(m_nRootFolder);
-	if (!lpsfFolder)
-		return;
+	HTREEITEM htiFound = NULL;
 
-	// turn off redraw and remove all tree items.
-	m_pTreeCtrl->SetRedraw(FALSE);
-	m_pTreeCtrl->DeleteAllItems();
+	if (!m_pTreeCtrl->ItemHasChildren(htiItem))
+		return NULL;
 
-	HTREEITEM hItemDesktop = InsertDesktopItem(m_nRootFolder);
-
-	LPITEMIDLIST pidlRoot = NULL;
-	if (FAILED(::SHGetSpecialFolderLocation(NULL, m_nRootFolder, &pidlRoot)))
+	CString strSearch = lpszSearch;
+	int iLen = strSearch.GetLength();
+	if (iLen == 0)
 	{
-		pidlRoot = NULL;
+		return NULL;
 	}
 
-	// Fill in the tree view from the root.
-	InitTreeViewItems(lpsfFolder, pidlRoot, hItemDesktop);
-
-	if (pidlRoot)
+	if (!bCaseSensitive)
 	{
-		CShellMalloc malloc;
-		malloc.Free(pidlRoot);
+		strSearch.MakeLower();
 	}
 
-	// Sort the items in the tree view
-	SortChildren(hItemDesktop);
-
-	HTREEITEM hItemRoot = m_pTreeCtrl->GetRootItem();
-	m_pTreeCtrl->Expand(hItemRoot, TVE_EXPAND);
-
-	if (hItemDesktop != TVI_ROOT)
+	HTREEITEM htiChild = m_pTreeCtrl->GetChildItem(htiItem);
+	while (htiChild != NULL)
 	{
-		HTREEITEM hItemChild = m_pTreeCtrl->GetChildItem(hItemDesktop);
-		m_pTreeCtrl->Select(hItemChild, TVGN_CARET);
-
-		if ((::GetWindowLong(m_pTreeCtrl->m_hWnd, GWL_STYLE) & TVS_SINGLEEXPAND) == 0)
+		if (m_pTreeCtrl->ItemHasChildren(htiChild))
 		{
-			m_pTreeCtrl->Expand(hItemChild, TVE_EXPAND);
+			htiFound = FindItemInBranch(lpszSearch, bCaseSensitive, bWholeWord, htiChild);
+			if (htiFound != NULL)
+				return htiFound;
 		}
 
-		// get the item path.
-		CString strFolderPath;
-		GetFolderItemPath(hItemChild, strFolderPath);
-
-		// call virtual change notify method.
-		SelectionChanged(hItemChild, strFolderPath);
-	}
-	else
-	{
-		m_pTreeCtrl->Select(hItemRoot, TVGN_CARET);
-
-		// get the item path.
-		CString strFolderPath;
-		GetFolderItemPath(hItemRoot, strFolderPath);
-
-		// call virtual change notify method.
-		SelectionChanged(hItemRoot, strFolderPath);
-	}
-
-	// turn on redraw and refresh tree.
-	m_pTreeCtrl->SetRedraw(TRUE);
-	m_pTreeCtrl->RedrawWindow();
-	m_pTreeCtrl->SetFocus();
-}
-
-void CXTShellTreeBase::SetAttributes(HTREEITEM hItem, DWORD dwAttributes)
-{
-	if (hItem != NULL)
-	{
-		// set the display attributes for the tree item.
-		if (dwAttributes != 0)
+		CString strItemText = m_pTreeCtrl->GetItemText(htiChild);
+		if (!bCaseSensitive)
 		{
-			MapShellFlagsToItemAttributes(m_pTreeCtrl, hItem, dwAttributes);
-
-			// the item is compress or encrypted, show alt color.
-			if (m_shSettings.ShowCompColor())
-			{
-				if (dwAttributes & SFGAO_COMPRESSED)
-					SetItemColor(hItem, m_shSettings.m_crCompColor);
-
-				else if (dwAttributes & SFGAO_ENCRYPTED)
-					SetItemColor(hItem, m_shSettings.m_crEncrColor);
-			}
+			strItemText.MakeLower();
 		}
 
-	}
-}
-
-BOOL CXTShellTreeBase::InitTreeViewItems(LPSHELLFOLDER lpsf, LPITEMIDLIST  lpifq, HTREEITEM     hParent)
-{
-	CWaitCursor wait; // show wait cursor.
-
-	// Allocate a shell memory object.
-	CShellMalloc lpMalloc;
-
-	if (!lpMalloc)
-		return FALSE;
-
-	// Get the IEnumIDList object for the given folder.
-	LPENUMIDLIST lpe = NULL;
-	if (FAILED(lpsf->EnumObjects(::GetParent(m_pTreeCtrl->m_hWnd), m_uFlags, &lpe)))
-		return FALSE;
-
-	if (lpe == NULL)
-		return FALSE;
-
-	ULONG        ulFetched = 0;
-	HTREEITEM    hPrev = NULL;
-	LPITEMIDLIST lpi = NULL;
-
-	// Enumerate through the list of folder and non-folder objects.
-	while (lpe->Next(1, &lpi, &ulFetched) == S_OK)
-	{
-		// Create a fully qualified path to the current item
-		// the SH* shell api's take a fully qualified path pidl,
-		// (see GetIcon above where I call SHGetFileInfo) whereas the
-		// interface methods take a relative path pidl.
-
-		// Determine what type of object we have.
-		ULONG ulAttrs = GetAttributes(lpsf, lpi, m_ulSFGAOFlags);
-
-		// We need this next if statement so that we don't add things like
-		// the MSN to our tree.  MSN is not a folder, but according to the
-		// shell it has subfolders.
-		if ((ulAttrs & SFGAO_FOLDER) || m_bShowFiles)
+		int iIndex;
+		while ((iIndex = strItemText.Find(strSearch)) != -1)
 		{
-			TV_ITEM  tvi;
-			tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-
-			if ((ulAttrs & SFGAO_HASSUBFOLDER) || (m_bShowFiles && (ulAttrs & SFGAO_FOLDER)))
+			// Search string found
+			if (bWholeWord)
 			{
-				//This item has sub-folders, so let's put the + in the TreeView.
-				//The first time the user clicks on the item, we'll populate the
-				//sub-folders.
-				tvi.cChildren = 1;
-				tvi.mask |= TVIF_CHILDREN;
-			}
-
-			// Allocate memory for ITEMDATA struct
-			CString szBuff;
-			XT_TVITEMDATA* lptvid = new XT_TVITEMDATA;
-			if (lptvid == NULL || GetName(lpsf, lpi, SHGDN_NORMAL, szBuff) == FALSE)
-			{
-				if (lptvid)
+				// Check preceding char
+				if (iIndex != 0)
 				{
-					lpMalloc.Free(lptvid);
+					if (_istalpha(strItemText[iIndex-1]) || strItemText[iIndex-1] == '_')
+					{
+						// Not whole word
+						strItemText = strItemText.Right(strItemText.GetLength() -
+							iIndex - iLen);
+						continue;
+					}
 				}
-				if (lpe)
+
+				// Check succeeding char
+				if (strItemText.GetLength() > iIndex + iLen &&
+					(_istalpha(strItemText[iIndex + iLen]) ||
+					(strItemText[iIndex + iLen] == '_')))
 				{
-					lpe->Release();
+					// Not whole word
+					strItemText = strItemText.Right(strItemText.GetLength() -
+						iIndex - strSearch.GetLength());
+					continue;
 				}
-				if (lpi)
-				{
-					lpMalloc.Free(lpi);
-				}
-				return FALSE;
 			}
 
-
-			// Now, make a copy of the ITEMIDLIST and store the parent folders SF.
-			lptvid->lpi = DuplicateItem(lpMalloc, lpi);
-			lptvid->lpsfParent = lpsf;
-			lptvid->lpifq = ConcatPidls(lpMalloc, lpifq, lpi);
-			lpsf->AddRef();
-
-			GetNormalAndSelectedIcons(lptvid->lpifq, &tvi);
-
-			tvi.lParam = (LPARAM)lptvid;
-			tvi.pszText = (LPTSTR)(LPCTSTR)szBuff;
-			tvi.cchTextMax = 0;
-
-			// Populate the TreeVeiw Insert Struct
-			// The item is the one filled above.
-			// Insert it after the last item inserted at this level.
-			// And indicate this is a root entry.
-			TV_INSERTSTRUCT tvins;
-			tvins.item = tvi;
-			tvins.hInsertAfter = hPrev;
-			tvins.hParent = hParent;
-
-			// Add the item to the tree
-			hPrev = m_pTreeCtrl->InsertItem(&tvins);
-			SetAttributes(hPrev, ulAttrs);
-		}
-
-		// Free the pidl that the shell gave us.
-		if (lpi)
-		{
-			lpMalloc.Free(lpi);
-			lpi = 0;
-		}
-	}
-	if (lpi)
-	{
-		lpMalloc.Free(lpi);
-	}
-
-	if (lpe)
-	{
-		lpe->Release();
-	}
-
-	return TRUE;
-}
-
-void CXTShellTreeBase::GetNormalAndSelectedIcons(LPITEMIDLIST lpifq, LPTV_ITEM lptvitem)
-{
-	// Note that we don't check the return value here because if GetIcon()
-	// fails, then we're in big trouble...
-	lptvitem->iImage = GetItemIcon(lpifq,
-		SHGFI_PIDL | SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
-
-	lptvitem->iSelectedImage = GetItemIcon(lpifq,
-		SHGFI_PIDL | SHGFI_SYSICONINDEX | SHGFI_SMALLICON | SHGFI_OPENICON);
-}
-
-void CXTShellTreeBase::OnFolderExpanding(NM_TREEVIEW* pNMTreeView)
-{
-	if (!(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE))
-	{
-		// Long pointer to TreeView item data
-		XT_TVITEMDATA* lptvid = (XT_TVITEMDATA*)pNMTreeView->itemNew.lParam;
-		if (lptvid != NULL && lptvid->lpsfParent != NULL)
-		{
-			LPSHELLFOLDER lpsf = NULL;
-			if (SUCCEEDED(lptvid->lpsfParent->BindToObject(lptvid->lpi,
-				0, IID_IShellFolder, (LPVOID *)&lpsf)))
+			if (IsFindValid(htiChild))
 			{
-				InitTreeViewItems(lpsf, lptvid->lpifq, pNMTreeView->itemNew.hItem);
+				return htiChild;
 			}
 
-			SortChildren(pNMTreeView->itemNew.hItem);
-
-			m_pTreeCtrl->SetItemState(pNMTreeView->itemNew.hItem, TVIS_EXPANDEDONCE, TVIS_EXPANDEDONCE);
-		}
-	}
-}
-
-HTREEITEM CXTShellTreeBase::GetContextMenu()
-{
-	CPoint point;
-	::GetCursorPos(&point);
-	m_pTreeCtrl->ScreenToClient(&point);
-
-	TV_HITTESTINFO tvhti;
-	tvhti.pt = point;
-	m_pTreeCtrl->HitTest(&tvhti);
-
-	if (tvhti.flags & (TVHT_ONITEMLABEL | TVHT_ONITEMICON))
-	{
-		// Long pointer to TreeView item data
-		XT_TVITEMDATA*  lptvid = (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(tvhti.hItem);
-
-		m_pTreeCtrl->ClientToScreen(&point);
-
-		if (lptvid->lpsfParent == NULL)
-		{
-			LPSHELLFOLDER lpShellFolder;
-			if (FAILED(::SHGetDesktopFolder(&lpShellFolder)))
+			else
 			{
-				return NULL;
-			}
-
-			ShowContextMenu(m_pTreeCtrl->m_hWnd,
-				lpShellFolder, lptvid->lpi, &point);
-
-			if (lpShellFolder)
-			{
-				lpShellFolder->Release();
+				break;
 			}
 		}
-		else
-		{
-			ShowContextMenu(m_pTreeCtrl->m_hWnd,
-				lptvid->lpsfParent, lptvid->lpi, &point);
-		}
 
-		return tvhti.hItem;
+		htiChild = m_pTreeCtrl->GetNextSiblingItem(htiChild);
 	}
 
 	return NULL;
 }
 
-void CXTShellTreeBase::SortChildren(HTREEITEM hParent)
+HTREEITEM CXTTreeBase::FindItem(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALSE*/,
+	BOOL bDownDir /*= TRUE*/, BOOL bWholeWord /*= FALSE*/, HTREEITEM hItem /*= NULL*/)
 {
-	TV_SORTCB tvscb;
-	tvscb.hParent = hParent;
-	tvscb.lParam = 1;
-	tvscb.lpfnCompare = TreeViewCompareProc;
-	m_pTreeCtrl->SortChildrenCB(&tvscb);
-}
+	CString str = lpszSearch;
 
-BOOL CXTShellTreeBase::OnFolderSelected(NM_TREEVIEW* pNMTreeView, CString &strFolderPath)
-{
-	// check tree item handle.
-	if (!pNMTreeView || !pNMTreeView->itemNew.hItem)
-		return FALSE;
-
-	// set a reference to the tree item struct.
-	TVITEM& tvi = pNMTreeView->itemNew;
-
-	// Long pointer to TreeView item data
-	XT_TVITEMDATA*  lptvid = (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(tvi.hItem);
-	if (lptvid && lptvid->lpi && lptvid->lpsfParent)
+	int lenSearchStr = str.GetLength();
+	if (lenSearchStr == 0)
 	{
-		LPSHELLFOLDER lpsf = NULL;
-		if (SUCCEEDED(lptvid->lpsfParent->BindToObject(lptvid->lpi,
-			0, IID_IShellFolder, (LPVOID*)&lpsf)))
-		{
-			if (m_pTreeCtrl->ItemHasChildren(tvi.hItem) && (tvi.state & TVIS_EXPANDEDONCE) == 0)
-			{
-				InitTreeViewItems(lpsf, lptvid->lpifq, tvi.hItem);
-				SortChildren(tvi.hItem);
-				m_pTreeCtrl->SetItemState(tvi.hItem, TVIS_EXPANDEDONCE, TVIS_EXPANDEDONCE);
-			}
+		return NULL;
+	}
 
-			if (lpsf)
-			{
-				lpsf->Release();
-			}
+	// For the first pass, set the current item equal to the selection
+	HTREEITEM htiSel = hItem ? hItem : m_pTreeCtrl->GetSelectedItem();
+
+	// If NULL, use root item.
+	if (htiSel == NULL)
+		htiSel = m_pTreeCtrl->GetRootItem();
+
+	HTREEITEM htiCur = htiSel;
+	CString strSearch = str;
+
+	// make sure it ends if we started with no selection
+	if ((htiCur == NULL) && (htiSel != NULL))
+	{
+		if (bDownDir)
+		{
+			htiCur = m_pTreeCtrl->GetRootItem();
+		}
+		else
+		{
+			htiCur = GetLastItem(NULL);
 		}
 	}
 
-	return GetFolderItemPath(tvi.hItem, strFolderPath);
-}
-
-BOOL CXTShellTreeBase::InitSystemImageLists()
-{
-	HIMAGELIST himlSmall = GetSystemImageList(SHGFI_SMALLICON);
-
-	if (himlSmall)
+	if (!bCaseSensitive)
 	{
-		TreeView_SetImageList(m_pTreeCtrl->GetSafeHwnd(), himlSmall, TVSIL_NORMAL);
-		return TRUE;
+		strSearch.MakeLower();
 	}
 
-	return FALSE;
-}
+	// For the first pass only, we check to see if it
+	// is the item we're looking for.
+	BOOL bFirstPass = TRUE;
 
-BOOL CXTShellTreeBase::GetSelectedFolderPath(CString &strFolderPath)
-{
-	HTREEITEM hItem = m_pTreeCtrl->GetSelectedItem();
-	return GetFolderItemPath(hItem, strFolderPath);
-}
-
-BOOL CXTShellTreeBase::FindTreeItem(HTREEITEM hItem, XT_LVITEMDATA* lplvid, BOOL bRecursively)
-{
-	if (lplvid == NULL)
+	while (htiCur && (htiCur != htiSel || bFirstPass))
 	{
-		return FALSE;
-	}
+		bFirstPass = FALSE;
 
-	if (!bRecursively)
-	{
-		hItem = m_pTreeCtrl->GetChildItem(hItem);
-	}
-
-	while (hItem)
-	{
-		// Long pointer to TreeView item data
-		XT_TVITEMDATA*  lptvid = (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(hItem);
-		if (lptvid)
+		CString strItemText = m_pTreeCtrl->GetItemText(htiCur);
+		if (!bCaseSensitive)
 		{
-			if (SCODE_CODE(GetScode(lplvid->lpsfParent->CompareIDs(
-				0, lplvid->lpi, lptvid->lpi))) == 0)
-			{
-				m_pTreeCtrl->EnsureVisible(hItem);
-				m_pTreeCtrl->SelectItem(hItem);
-				return TRUE;
-			}
+			strItemText.MakeLower();
 		}
 
-		if (bRecursively)
+		int iIndex;
+		while ((iIndex = strItemText.Find(strSearch)) != -1)
 		{
-			HTREEITEM hNextItem = m_pTreeCtrl->GetChildItem(hItem);
-			if (hNextItem)
+			// Search string found
+			if (bWholeWord)
 			{
-				if (FindTreeItem(hNextItem, lplvid))
+				// Check preceding char
+				if (iIndex != 0)
 				{
-					return TRUE;
+					if (_istalpha(strItemText[iIndex-1]) || strItemText[iIndex-1] == '_')
+					{
+						// Not whole word
+						strItemText = strItemText.Right(strItemText.GetLength() -
+							iIndex - lenSearchStr);
+						continue;
+					}
 				}
-			}
-		}
 
-		hItem = m_pTreeCtrl->GetNextSiblingItem(hItem);
-	}
-
-	return FALSE;
-}
-
-void CXTShellTreeBase::OnItemexpanding(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-	OnFolderExpanding(pNMTreeView);
-	*pResult = 0;
-}
-
-void CXTShellTreeBase::SelectionChanged(HTREEITEM hItem, CString strFolderPath)
-{
-	if (hItem != NULL && !m_bTunneling)
-	{
-		if (!m_pComboBox || !::IsWindow(m_pComboBox->m_hWnd))
-			return;
-
-		// update combo box association.
-		if (m_pComboBox->IsKindOf(RUNTIME_CLASS(CXTComboBoxEx)))
-		{
-			CXTComboBoxEx* pComboBoxEx = DYNAMIC_DOWNCAST(CXTComboBoxEx, m_pComboBox);
-			ASSERT_VALID(pComboBoxEx);
-
-			int nFound = CB_ERR;
-			int nIndex;
-			for (nIndex = 0; nIndex < pComboBoxEx->GetCount(); ++nIndex)
-			{
-				CString strText;
-				pComboBoxEx->GetLBText(nIndex, strText);
-
-				if (strFolderPath.Compare(strText) == 0)
+				// Check succeeding char
+				if (strItemText.GetLength() > iIndex + lenSearchStr &&
+					(_istalpha(strItemText[iIndex + lenSearchStr]) ||
+					(strItemText[iIndex + lenSearchStr] == '_')))
 				{
-					nFound = nIndex;
-					pComboBoxEx->SetCurSel(nIndex);
-					break;
+					// Not whole word
+					strItemText = strItemText.Right(strItemText.GetLength() -
+						iIndex - strSearch.GetLength());
+					continue;
 				}
 			}
 
-			if (nFound == CB_ERR)
+			if (IsFindValid(htiCur))
 			{
-				HTREEITEM hti = m_pTreeCtrl->GetSelectedItem();
-				ASSERT(hti);
-
-				if (strFolderPath.IsEmpty())
-				{
-					strFolderPath = m_pTreeCtrl->GetItemText(hti);
-				}
-
-				int nImage, nSelectedImage;
-				m_pTreeCtrl->GetItemImage(hti, nImage, nSelectedImage);
-
-				pComboBoxEx->InsertItem(0, strFolderPath, 0, nImage, nImage);
-				pComboBoxEx->SetCurSel(0);
-				pComboBoxEx->SetItemDataPtr(0, hti);
-			}
-		}
-
-		else if (m_pComboBox->IsKindOf(RUNTIME_CLASS(CComboBox)))
-		{
-			CComboBox* pComboBox = DYNAMIC_DOWNCAST(CComboBox, m_pComboBox);
-			ASSERT_VALID(pComboBox);
-
-			int nFound = pComboBox->FindStringExact(-1, strFolderPath);
-			if (nFound == CB_ERR)
-			{
-				HTREEITEM hti = m_pTreeCtrl->GetSelectedItem();
-				ASSERT(hti);
-
-				pComboBox->InsertString(0, strFolderPath);
-				pComboBox->SetCurSel(0);
-				pComboBox->SetItemDataPtr(0, (HTREEITEM)hti);
+				return htiCur;
 			}
 			else
 			{
-				pComboBox->SetCurSel(nFound);
-			}
-		}
-	}
-}
-
-void CXTShellTreeBase::OnDeleteTreeItem(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-
-	XT_TVITEMDATA* lptvid = (XT_TVITEMDATA*)pNMTreeView->itemOld.lParam;
-	if (lptvid != NULL)
-	{
-		CShellMalloc lpMalloc;
-
-		if (lptvid->lpi)
-		{
-			lpMalloc.Free(lptvid->lpi);
-			lptvid->lpi = NULL;
-		}
-		if (lptvid->lpsfParent)
-		{
-			lptvid->lpsfParent->Release();
-			lptvid->lpsfParent = NULL;
-		}
-		if (lptvid->lpifq)
-		{
-			lpMalloc.Free(lptvid->lpifq);
-			lptvid->lpifq = NULL;
-		}
-
-		delete lptvid;
-	}
-
-	*pResult = 0;
-}
-
-void CXTShellTreeBase::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-
-	if (pNMTreeView)
-	{
-		// get a reference to the tree item struct.
-		TVITEM& tvi = pNMTreeView->itemNew;
-
-		// initialize the tree node.
-		CString strFolderPath;
-		if (!OnFolderSelected(pNMTreeView, strFolderPath))
-		{
-			// could not determine path from IDL, make sure
-			// path is empty.
-			strFolderPath.Empty();
-		}
-
-		// call virtual change notify method.
-		SelectionChanged(tvi.hItem, strFolderPath);
-
-		// mimic modern Windows Explorer behavior.
-		if (XTOSVersionInfo()->IsWinXPOrGreater())
-		{
-			// expand selected item.
-			if (tvi.hItem && m_pTreeCtrl->ItemHasChildren(tvi.hItem))
-			{
-				m_pTreeCtrl->Expand(tvi.hItem, TVE_EXPAND);
-			}
-
-			// collapse siblings.
-			if (tvi.hItem != TVI_ROOT)
-			{
-				HTREEITEM hItem = m_pTreeCtrl->GetChildItem(
-					m_pTreeCtrl->GetParentItem(tvi.hItem));
-
-				while (hItem != NULL)
-				{
-					if (hItem != tvi.hItem)
-					{
-						m_pTreeCtrl->Expand(hItem, TVE_COLLAPSE);
-					}
-
-					hItem = m_pTreeCtrl->GetNextSiblingItem(hItem);
-				}
-			}
-		}
-	}
-
-	*pResult = 0;
-}
-
-void CXTShellTreeBase::OnRclick(NMHDR* /*pNMHDR*/, LRESULT* pResult)
-{
-	// Display the shell context menu.
-	if (m_bContextMenu == TRUE)
-	{
-		HTREEITEM hItem = GetContextMenu();
-		if (hItem != NULL)
-		{
-			// TODO: Additional error handling.
-		}
-	}
-
-	*pResult = 0;
-}
-
-
-BOOL CXTShellTreeBase::InitializeTree(DWORD dwStyle/*= TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT*/)
-{
-	if (m_pTreeCtrl->GetImageList(TVSIL_NORMAL) == NULL)
-	{
-		// Initialize the system image list for the tree control.
-		VERIFY(InitSystemImageLists());
-
-		// Set the style for the tree control, remove styles that change depending on OS.
-		m_pTreeCtrl->ModifyStyle(TVS_HASLINES | TVS_LINESATROOT | TVS_TRACKSELECT, dwStyle);
-
-		// Make sure multi-select mode is disabled.
-		EnableMultiSelect(FALSE);
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-void CXTShellTreeBase::InitTreeNode(HTREEITEM hItem, XT_TVITEMDATA* lptvid)
-{
-	m_pTreeCtrl->SetRedraw(FALSE);
-	if (lptvid)
-	{
-		LPSHELLFOLDER lpsf = NULL;
-		if (SUCCEEDED(lptvid->lpsfParent->BindToObject(lptvid->lpi,
-			0, IID_IShellFolder, (LPVOID *)&lpsf)))
-		{
-			InitTreeViewItems(lpsf, lptvid->lpifq, hItem);
-		}
-
-		SortChildren(hItem);
-	}
-
-	m_pTreeCtrl->SetRedraw(TRUE);
-}
-
-HTREEITEM CXTShellTreeBase::SearchTree(HTREEITEM hItem, LPCITEMIDLIST pABSPidl)
-{
-	XT_TVITEMDATA *pItem = NULL;
-	HTREEITEM hChildItem = m_pTreeCtrl->GetChildItem(hItem);
-
-	CShellSpecialFolder pShellFolder;
-	if (!pShellFolder)
-		return NULL;
-
-	while (hChildItem)
-	{
-		// Get the pidl that is stored in the tree node
-		pItem = (XT_TVITEMDATA *)m_pTreeCtrl->GetItemData(hChildItem);
-
-		// See if it matches the one we're looking for
-		if (ComparePidls(pItem->lpifq, pABSPidl, pShellFolder))
-		{
-			m_pTreeCtrl->Select(hChildItem, TVGN_CARET);
-
-			// Ensure that we are expanded
-			UINT uState = m_pTreeCtrl->GetItemState(hChildItem, TVIS_EXPANDEDONCE);
-			if (!(uState & TVIS_EXPANDEDONCE))
-			{
-				InitTreeNode(hChildItem, (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(hChildItem));
-				m_pTreeCtrl->SetItemState(hChildItem, TVIS_EXPANDEDONCE, TVIS_EXPANDEDONCE);
-			}
-			break;
-		}
-
-		// Didn't compare... try next one
-		hChildItem = m_pTreeCtrl->GetNextSiblingItem(hChildItem);
-	}
-
-	return hChildItem;
-}
-
-BOOL CXTShellTreeBase::TunnelTree(CString strFindPath)
-{
-	if (strFindPath.IsEmpty())
-		return false;
-
-	m_bTunneling = true;
-
-	BOOL bLock = m_pTreeCtrl->LockWindowUpdate();
-	BOOL bFound = false;
-
-	LPITEMIDLIST pidlPath;
-
-	// Attempt to get the folder's item list
-	pidlPath = IDLFromPath(strFindPath);
-
-	// If it is NULL then see if it is one of the special folders
-	if (pidlPath == NULL)
-	{
-		// These are the ones we care about.
-		const int nCSIDLMax = 0x001b;
-		for (int i = 0; i <= nCSIDLMax; i++)
-		{
-			LPITEMIDLIST pidlSpecialPath = NULL;
-			if (::SHGetSpecialFolderLocation(NULL, i, &pidlSpecialPath) != NOERROR)
-				continue;
-
-			SHFILEINFO fileInfo;
-			::ZeroMemory(&fileInfo, sizeof(fileInfo));
-			::SHGetFileInfo((LPCTSTR)pidlSpecialPath, NULL, &fileInfo, sizeof(fileInfo),
-				SHGFI_PIDL | SHGFI_DISPLAYNAME);
-
-			CString cs = fileInfo.szDisplayName;
-			if (cs.CompareNoCase(strFindPath) == 0)
-			{
-				// Found the pidl for the special folder
-				pidlPath = pidlSpecialPath;
 				break;
 			}
 		}
-	}
 
-	if (pidlPath != NULL)
-	{
-		// Now work through the list and tree nodes until we compare
-		int nItems = GetPidlCount(pidlPath);
-		LPITEMIDLIST pPartPidl;
-		LPITEMIDLIST pABSPidl = NULL;
-		HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
-		bFound = false;
-
-		// Loop through all the parts and see if we can find a match in the tree.  It should
-		// be there unless something got added to the namespace after we built the tree last
-		// and we didn't catch it, but that's pretty unlikely.
-		for (int i = 0; i < nItems; i++)
+		htiCur = bDownDir ? GetNextItem(htiCur) : GetPrevItem(htiCur);
+		if (htiCur == NULL)
 		{
-			pPartPidl = CopyPidlItem(pidlPath, i);
-			pABSPidl = ConcatPidls(pABSPidl, pPartPidl);
-			FreePidl(pPartPidl);
-
-			hItem = SearchTree(hItem, pABSPidl);
-			if (!hItem)
-				break; // Our partial path should still found
-		}
-
-		// If it was found the final path should compare to the full path entered
-		// and the hItem should be set to the place in the tree where the path ends
-		if (hItem && (nItems == 0 || ComparePidls(pidlPath, pABSPidl, NULL)))
-		{
-			m_pTreeCtrl->Select(hItem, TVGN_CARET);
-			// Ensure that we are expanded
-			UINT uState = m_pTreeCtrl->GetItemState(hItem, TVIS_EXPANDEDONCE);
-			if (!(uState & TVIS_EXPANDEDONCE))
+			if (bDownDir)
 			{
-				InitTreeNode(hItem, (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(hItem));
-				m_pTreeCtrl->SetItemState(hItem, TVIS_EXPANDEDONCE, TVIS_EXPANDEDONCE);
+				htiCur = m_pTreeCtrl->GetRootItem();
 			}
-			bFound = true;
-		}
-
-		// Clean up
-		if (pidlPath)
-			FreePidl(pidlPath);
-
-		if (pABSPidl)
-			FreePidl(pABSPidl);
-	}
-	else
-	{
-		// Must not be a special folder (stand alone) or a path that ParseDisplayName() doesn't recognize so look through tree
-		// directly to see if we can find it that way.
-		// Start at Desktop ...
-		HTREEITEM hItemRoot = m_pTreeCtrl->GetRootItem();
-		TCHAR* pszNext = NULL;
-		TCHAR szBuff[MAX_PATH];
-
-		STRCPY_S(szBuff, MAX_PATH, strFindPath);
-
-		TCHAR* lpszContext = 0;
-		pszNext = STRTOK_S(szBuff, _T("\\/"), &lpszContext);
-
-		bFound = false;
-
-		if (pszNext != NULL)
-		{
-			CString strItemText(m_pTreeCtrl->GetItemText(hItemRoot));
-
-			// Are we looking from desktop?
-			if (strItemText.CompareNoCase(pszNext) == 0)
-				pszNext = STRTOK_S(NULL, _T("\\/"), &lpszContext);
-
-			hItemRoot = m_pTreeCtrl->GetChildItem(hItemRoot);
-
-			// Ensure that we are expanded
-			UINT uState = m_pTreeCtrl->GetItemState(hItemRoot, TVIS_EXPANDEDONCE);
-			if (!(uState & TVIS_EXPANDEDONCE))
+			else
 			{
-				InitTreeNode(hItemRoot, (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(hItemRoot));
-				m_pTreeCtrl->SetItemState(hItemRoot, TVIS_EXPANDEDONCE, TVIS_EXPANDEDONCE);
-			}
-
-			while (pszNext && hItemRoot)
-			{
-				strItemText = m_pTreeCtrl->GetItemText(hItemRoot);
-				if (strItemText.CompareNoCase(pszNext) == 0)
-				{
-					// Found it
-					// We know this was successful - expand at this new root
-					m_pTreeCtrl->Select(hItemRoot, TVGN_CARET);
-
-					// Ensure that we are expanded
-					uState = m_pTreeCtrl->GetItemState(hItemRoot, TVIS_EXPANDEDONCE);
-					if (!(uState & TVIS_EXPANDEDONCE))
-					{
-						InitTreeNode(hItemRoot, (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(hItemRoot));
-						m_pTreeCtrl->SetItemState(hItemRoot, TVIS_EXPANDEDONCE, TVIS_EXPANDEDONCE);
-					}
-					pszNext = STRTOK_S(NULL, _T("\\/"), &lpszContext);
-					if (pszNext)
-					{
-						// Move down a level
-						hItemRoot = m_pTreeCtrl->GetChildItem(hItemRoot);
-					}
-				}
-				else
-				{
-					hItemRoot = m_pTreeCtrl->GetNextSiblingItem(hItemRoot);
-				}
+				htiCur = GetLastItem(NULL);
 			}
 		}
 	}
 
-	if (bLock)
-	{
-		m_pTreeCtrl->UnlockWindowUpdate();
-	}
-
-	m_bTunneling = false;
-
-	// make sure list gets updated.
-	SelectionChanged(m_pTreeCtrl->GetSelectedItem(), strFindPath);
-	return bFound;
+	return NULL;
 }
 
-BOOL CXTShellTreeBase::GetFolderItemPath(HTREEITEM hItem, CString& strFolderPath)
-{
-	if (hItem == NULL)
-		return FALSE;
-
-	XT_TVITEMDATA* lptvid = (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(hItem);
-	if (lptvid && lptvid->lpi)
-	{
-		if (lptvid->lpsfParent)
-		{
-			// Determine what type of object we have.
-			ULONG ulAttrs = SFGAO_FILESYSTEM;
-			lptvid->lpsfParent->GetAttributesOf(1, (const struct _ITEMIDLIST **)&lptvid->lpi, &ulAttrs);
-
-			// if the object is a file, folder or root set the path.
-			if (ulAttrs & SFGAO_FILESYSTEM)
-			{
-				TCHAR szFolderPath[_MAX_PATH];
-				if (::SHGetPathFromIDList(lptvid->lpifq, szFolderPath))
-				{
-					strFolderPath = szFolderPath;
-					return TRUE;
-				}
-			}
-		}
-		else
-		{
-			// Determine what type of object we have.
-			SHFILEINFO sfi;
-			::ZeroMemory(&sfi, sizeof(SHFILEINFO));
-
-			::SHGetFileInfo((TCHAR*)lptvid->lpi, 0, &sfi,
-				sizeof(SHFILEINFO), SHGFI_PIDL | SHGFI_ATTRIBUTES);
-
-			// if the object is a file, folder or root set the path.
-			if (sfi.dwAttributes & SFGAO_FILESYSTEM)
-			{
-				TCHAR szFolderPath[_MAX_PATH];
-				if (::SHGetPathFromIDList(lptvid->lpi, szFolderPath))
-				{
-					strFolderPath = szFolderPath;
-					return TRUE;
-				}
-			}
-		}
-	}
-
-	return FALSE;
-}
-
-CString CXTShellTreeBase::PathFindNextComponent(const CString& pszPath)
-{
-	// Find the path delimiter
-	int nIndex = pszPath.Find(_T('\\'));
-
-	if (nIndex == -1)
-		return _T("");
-
-	return pszPath.Mid(nIndex + 1);
-}
-
-void CXTShellTreeBase::PopulateTree(LPCTSTR lpszPath)
-{
-	CString strFolder = lpszPath;
-	CString strNextFolder;
-	CString strPath;
-
-	CShellMalloc lpMalloc;
-	if (!lpMalloc)
-		return;
-
-	// Get a pointer to the desktop folder.
-	LPSHELLFOLDER lpSF = NULL;
-	if (FAILED(::SHGetDesktopFolder(&lpSF)))
-		return;
-
-	LPITEMIDLIST lpIDL = NULL;
-
-	// turn off redraw and remove all tree items.
-	m_pTreeCtrl->SetRedraw(FALSE);
-	m_pTreeCtrl->DeleteAllItems();
-
-	do
-	{
-		// Get the Next Component
-		strNextFolder = PathFindNextComponent(strFolder);
-		if (!strNextFolder.IsEmpty())
-		{
-			strPath = strFolder.Left(strFolder.GetLength() -
-				strNextFolder.GetLength());
-		}
-		else
-		{
-			strPath = strFolder;
-			strNextFolder.Empty();
-		}
-
-		// Get ShellFolder Pidl
-		ULONG eaten;
-		if (FAILED(lpSF->ParseDisplayName(NULL, NULL, (LPOLESTR)XTP_CT2CW(strPath),
-			&eaten, &lpIDL, NULL)))
-		{
-			break;
-		}
-
-		LPSHELLFOLDER lpSF2 = NULL;
-		if (FAILED(lpSF->BindToObject(lpIDL, 0, IID_IShellFolder, (LPVOID*)&lpSF2)))
-		{
-			break;
-		}
-
-		lpMalloc.Free(lpIDL);
-
-		// Release the Parent Folder pointer.
-		lpSF->Release();
-
-		// Change Folder Info
-		lpSF = lpSF2;
-		strFolder = strNextFolder;
-	}
-	while (!strNextFolder.IsEmpty());
-
-	// get the base folders item ide list.
-	lpIDL = IDLFromPath(lpszPath);
-
-	SHFILEINFO fileInfo;
-	::ZeroMemory(&fileInfo, sizeof(fileInfo));
-
-	::SHGetFileInfo((LPCTSTR)lpIDL, NULL, &fileInfo, sizeof(fileInfo),
-		SHGFI_PIDL | SHGFI_ATTRIBUTES | SHGFI_DISPLAYNAME);
-
-	TV_ITEM  tvi;
-	tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-
-	// Allocate memory for ITEMDATA struct
-	XT_TVITEMDATA* lptvid = new XT_TVITEMDATA;
-	if (lptvid != NULL)
-	{
-		HTREEITEM hItem = TVI_ROOT;
-
-		// get the normal and selected icons for the path.
-		GetNormalAndSelectedIcons(lpIDL, &tvi);
-
-		// Now, make a copy of the ITEMIDLIST and store the parent folders SF.
-		lptvid->lpi = DuplicateItem(lpMalloc, lpIDL);
-		lptvid->lpsfParent = NULL;
-		lptvid->lpifq = ConcatPidls(lpMalloc, NULL, lpIDL);
-
-		TCHAR szBuff[MAX_PATH];
-		STRCPY_S(szBuff, MAX_PATH, fileInfo.szDisplayName);
-
-		tvi.lParam = (LPARAM)lptvid;
-		tvi.pszText = szBuff;
-		tvi.cchTextMax = MAX_PATH;
-
-		// Populate the TreeView Insert Struct
-		// The item is the one filled above.
-		// Insert it after the last item inserted at this level.
-		// And indicate this is a root entry.
-		TV_INSERTSTRUCT tvins;
-		tvins.item = tvi;
-		tvins.hInsertAfter = hItem;
-		tvins.hParent = hItem;
-
-		// Add the item to the tree
-		hItem = m_pTreeCtrl->InsertItem(&tvins);
-
-		// insert child items.
-		InitTreeViewItems(lpSF, lpIDL, hItem);
-
-		// Sort the items in the tree view
-		SortChildren(TVI_ROOT);
-
-		// expand parent.
-		m_pTreeCtrl->Expand(hItem, TVE_EXPAND);
-	}
-
-	// turn on redraw and refresh tree.
-	m_pTreeCtrl->SetRedraw(TRUE);
-	m_pTreeCtrl->RedrawWindow();
-
-	lpMalloc.Free(lpIDL);
-
-	if (lpSF)
-	{
-		lpSF->Release();
-	}
-}
-
-void CXTShellTreeBase::AssociateCombo(CWnd* pWnd)
-{
-	ASSERT_VALID(pWnd); // must be a valid window.
-
-	if (::IsWindow(pWnd->GetSafeHwnd()))
-	{
-		m_pComboBox = pWnd;
-
-		if (m_pComboBox->IsKindOf(RUNTIME_CLASS(CXTComboBoxEx)))
-		{
-			HIMAGELIST hImageList = GetSystemImageList(SHGFI_SMALLICON);
-
-			if (hImageList != NULL)
-			{
-				CXTComboBoxEx* pComboBoxEx = DYNAMIC_DOWNCAST(CXTComboBoxEx, m_pComboBox);
-				ASSERT_VALID(pComboBoxEx);
-				pComboBoxEx->SetImageList(CImageList::FromHandle(hImageList));
-			}
-		}
-	}
-}
-
-BOOL CXTShellTreeBase::OnEraseBkgnd(CDC* /*pDC*/)
+BOOL CXTTreeBase::IsFindValid(HTREEITEM)
 {
 	return TRUE;
 }
 
-void CXTShellTreeBase::OnPaint()
+void CXTTreeBase::SetItemFont(HTREEITEM hItem, LOGFONT& logfont)
 {
-	CPaintDC dc(m_pTreeCtrl);
-	DoPaint(dc, TRUE);
+	CLRFONT cf;
+	if (!m_mapColorFont.Lookup(hItem, cf))
+	{
+		cf.color = COLORREF_NULL;
+	}
+
+	cf.logfont = logfont;
+	m_mapColorFont[hItem] = cf;
 }
 
-void CXTShellTreeBase::BeginDrag(NM_TREEVIEW* pNMTreeView)
+BOOL CXTTreeBase::GetItemFont(HTREEITEM hItem, LOGFONT* plogfont)
 {
-	// Long pointer to ListView item data
-	XT_TVITEMDATA*  lplvid = (XT_TVITEMDATA*)m_pTreeCtrl->GetItemData(pNMTreeView->itemNew.hItem);
-	ASSERT(lplvid);
-
-	if (lplvid && lplvid->lpsfParent)
+	CLRFONT cf;
+	if (!m_mapColorFont.Lookup(hItem, cf))
 	{
-		LPDATAOBJECT lpdo;
+		return FALSE;
+	}
 
-		HRESULT hResult = lplvid->lpsfParent->GetUIObjectOf(AfxGetMainWnd()->m_hWnd, 1,
-			(const struct _ITEMIDLIST**)&lplvid->lpi, IID_IDataObject, 0, (LPVOID*)&lpdo);
+	if (cf.logfont.lfFaceName[0] == _T('\0'))
+	{
+		return FALSE;
+	}
 
-		if (SUCCEEDED(hResult))
+	*plogfont = cf.logfont;
+
+	return TRUE;
+
+}
+
+void CXTTreeBase::SetItemBold(HTREEITEM hItem, BOOL bBold)
+{
+	SetItemState(hItem, bBold ? TVIS_BOLD : 0, TVIS_BOLD);
+	m_pTreeCtrl->InvalidateRect(NULL);
+}
+
+BOOL CXTTreeBase::GetItemBold(HTREEITEM hItem)
+{
+	return GetItemState(hItem, TVIS_BOLD) & TVIS_BOLD;
+}
+
+void CXTTreeBase::SetItemColor(HTREEITEM hItem, COLORREF color)
+{
+	CLRFONT cf;
+	m_mapColorFont.Lookup(hItem, cf);
+
+	cf.color = color;
+	m_mapColorFont[hItem] = cf;
+	m_pTreeCtrl->InvalidateRect(NULL);
+}
+
+COLORREF CXTTreeBase::GetItemColor(HTREEITEM hItem)
+{
+	CLRFONT cf;
+	if (m_mapColorFont.Lookup(hItem, cf))
+		return cf.color;
+
+	return COLORREF_NULL;
+}
+
+void CXTTreeBase::SetItemBackColor(HTREEITEM hItem, COLORREF color)
+{
+	CLRFONT cf;
+	m_mapColorFont.Lookup(hItem, cf);
+
+	cf.colorBack = color;
+	m_mapColorFont[hItem] = cf;
+	m_pTreeCtrl->InvalidateRect(NULL);
+}
+
+COLORREF CXTTreeBase::GetItemBackColor(HTREEITEM hItem)
+{
+	CLRFONT cf;
+	if (m_mapColorFont.Lookup(hItem, cf))
+		return cf.colorBack;
+
+	return COLORREF_NULL;
+}
+
+COLORREF CXTTreeBase::GetTreeBackColor() const
+{
+	// if the tree is disabled return disabled back color.
+	if (!m_pTreeCtrl->IsWindowEnabled())
+		return GetXtremeColor(COLOR_3DFACE);
+
+#if _MSC_VER >= 1200 // MFC 6.0
+
+	if (XTPSystemVersion()->GetComCtlVersion() >= MAKELONG(71, 4))
+	{
+		// is there a user defined color available ?
+		COLORREF crBack = m_pTreeCtrl->GetBkColor();
+		if (crBack != COLORREF_NULL)
+			return crBack;
+	}
+
+#endif
+
+	// return the system window color.
+	return GetXtremeColor(COLOR_WINDOW);
+}
+
+COLORREF CXTTreeBase::GetTreeTextColor() const
+{
+	// if the tree is disabled return disabled text color.
+	if (!m_pTreeCtrl->IsWindowEnabled())
+		return GetXtremeColor(COLOR_GRAYTEXT);
+
+#if _MSC_VER >= 1200 // MFC 6.0
+	if (XTPSystemVersion()->GetComCtlVersion() >= MAKELONG(71, 4))
+	{
+		// is ther a user defined color available ?
+		COLORREF crText = m_pTreeCtrl->GetTextColor();
+		if (crText != COLORREF_NULL)
+			return crText;
+	}
+
+#endif
+
+	// return the system window text color.
+	return GetXtremeColor(COLOR_WINDOWTEXT);
+}
+
+COLORREF CXTTreeBase::GetItemBackColor(UINT uState, bool bTreeHasFocus, DWORD dwStyle, COLORREF crBack) const
+{
+	// if the tree item is selected or drop highlighted.
+	if (uState & TVIS_SELECTED || uState & TVIS_DROPHILITED)
+	{
+		// if the tree has focus and draw the text background hilite color.
+		if (bTreeHasFocus || uState & TVIS_DROPHILITED)
 		{
-			LPDROPSOURCE lpds = new CXTDropSource();
-			ASSERT(lpds != NULL);
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_HIGHLIGHT);
+			else
+				return GetXtremeColor(COLOR_GRAYTEXT);
+		}
 
-			DWORD dwEffect;
-			::DoDragDrop(lpdo, lpds,
-				DROPEFFECT_COPY | DROPEFFECT_MOVE | DROPEFFECT_LINK, &dwEffect);
-
-			lpdo->Release();
-			lpds->Release();
+		// if the tree does not have focus and the TVS_SHOWSELALWAYS flag is
+		// set draw the text background hilite color.
+		else if (dwStyle & TVS_SHOWSELALWAYS)
+		{
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_3DFACE);
+			else
+				return GetXtremeColor(COLOR_GRAYTEXT);
 		}
 	}
+
+	return crBack;
+}
+
+COLORREF CXTTreeBase::GetItemTextColor(UINT uState, bool bTreeHasFocus, DWORD dwStyle, COLORREF crText) const
+{
+	// if the tree item is selected or drop highlighted.
+	if (uState & TVIS_SELECTED || uState & TVIS_DROPHILITED)
+	{
+		// if the tree has focus and draw the text hilite color.
+		if (bTreeHasFocus || uState & TVIS_DROPHILITED)
+		{
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_HIGHLIGHTTEXT);
+			else
+				return GetXtremeColor(COLOR_3DFACE);
+		}
+
+		// if the tree does not have focus and the TVS_SHOWSELALWAYS flag is
+		// set draw the text hilite color.
+		else if (dwStyle & TVS_SHOWSELALWAYS)
+		{
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_WINDOWTEXT);
+			else
+				return GetXtremeColor(COLOR_3DFACE);
+		}
+	}
+
+	return crText;
+}
+
+
+void CXTTreeBase::DoPaint(CDC& dc, BOOL bInternal)
+{
+	// Get the client rect.
+	CRect rcClient;
+	m_pTreeCtrl->GetClientRect(&rcClient);
+
+	const COLORREF crTreeBack = GetTreeBackColor();
+	const COLORREF crTreeText = GetTreeTextColor();
+
+	// Paint to a memory device context to help
+	// eliminate screen flicker.
+	CXTPBufferDC memDC(dc, rcClient);
+	memDC.FillSolidRect(rcClient, crTreeBack);
+
+	// Now let the window do its default painting...
+	m_pTreeCtrl->DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
+
+	if (!bInternal)
+		return;
+
+	int nSavedDC = memDC.SaveDC();
+
+	// check to see if a tree label is getting edited.
+	BOOL bEditing = (HasEditLabels() && m_pTreeCtrl->GetEditControl());
+
+	// if not editing, make sure the edit item is set to NULL.
+	if (!bEditing)
+		m_htiEdit = NULL;
+
+	// check to see if the tree is enabled.
+	BOOL bIsEnabled = m_pTreeCtrl->IsWindowEnabled();
+
+	// check to see if the tree has focus.
+	bool bTreeHasFocus = (CWnd::GetFocus() == m_pTreeCtrl);
+
+	// get the style for the tree.
+	DWORD dwStyle = m_pTreeCtrl->GetStyle();
+
+	// get the visible count.
+	HTREEITEM hItem = m_pTreeCtrl->GetFirstVisibleItem();
+	int iVisibleCount = m_pTreeCtrl->GetVisibleCount()+1;
+
+	LOGFONT treefont;
+	if (!m_pTreeCtrl->GetFont()->GetLogFont(&treefont))
+	{
+		::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &treefont);
+	}
+
+
+	while (hItem && iVisibleCount--)
+	{
+		// get the tree item rect.
+		CRect rcItem;
+		m_pTreeCtrl->GetItemRect(hItem, &rcItem, TRUE);
+
+		// refresh the background.
+		CRect rcFill = rcItem;
+		rcFill.right = rcClient.right;
+		memDC.FillSolidRect(&rcFill, crTreeBack);
+
+		// get the state of the tree item.
+		UINT uState = GetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED | TVIS_DROPHILITED);
+
+		if (m_pTreeCtrl->GetDropHilightItem() && uState & TVIS_SELECTED && hItem != m_pTreeCtrl->GetDropHilightItem())
+			uState ^= TVIS_SELECTED;
+
+		BOOL bSelected = ((uState & (TVIS_SELECTED | TVIS_DROPHILITED)) != 0);
+
+		bool bUnderline = m_htiLast == hItem;
+
+		// define the background and text colors.
+		COLORREF crItemBack = GetItemBackColor(
+			uState, bTreeHasFocus, dwStyle, crTreeBack);
+		COLORREF crItemText = GetItemTextColor(
+			uState, bTreeHasFocus, dwStyle, crTreeText);
+
+		// if the item is getting edited paint white.
+		if (m_htiEdit == hItem)
+		{
+			crItemBack = crTreeBack;
+			crItemText = crTreeBack;
+		}
+
+		// create the LOGFONT used by the tree item.
+		LOGFONT logfont;
+		logfont = treefont;
+
+
+		CLRFONT cf;
+		if (m_mapColorFont.Lookup(hItem, cf))
+		{
+			if (!bSelected && bIsEnabled)
+			{
+				if (cf.color != COLORREF_NULL)
+					crItemText = cf.color;
+
+				if (cf.colorBack != COLORREF_NULL)
+					crItemBack = cf.colorBack;
+			}
+
+			if (cf.logfont.lfFaceName[0] != _T('\0'))
+			{
+				logfont = cf.logfont;
+			}
+		}
+
+		if (GetItemBold(hItem))
+		{
+			logfont.lfWeight = FW_BOLD;
+		}
+
+		if (dwStyle & TVS_TRACKSELECT)
+		{
+			logfont.lfUnderline = bUnderline ? (BYTE)1 : (BYTE)0;
+
+			if (logfont.lfUnderline && !bSelected)
+			{
+				if (XTOSVersionInfo()->IsWin95() || XTOSVersionInfo()->IsWinNT4())
+					crItemText = GetXtremeColor(COLOR_HIGHLIGHT);
+				else
+					crItemText = GetXtremeColor(COLOR_HOTLIGHT);
+			}
+		}
+
+		// create a CFont object from the LOGFONT structure and
+		// select it into the current device context.
+		CFont fontDC;
+		fontDC.CreateFontIndirect(&logfont);
+		CFont* pOldFont = memDC.SelectObject(&fontDC);
+
+		// get the text for the tree item and determine its size.
+		CString strItem = m_pTreeCtrl->GetItemText(hItem);
+		CSize sizeText = memDC.GetTextExtent(strItem);
+
+		// if the text is wider than the tree item label, adjust accordingly.
+		if (rcItem.Width() < sizeText.cx)
+		{
+			rcItem.right = rcItem.left + sizeText.cx + 2;
+		}
+
+		// set the font foreground and background colors.
+		memDC.SetBkColor(crItemBack);
+		memDC.SetTextColor(crItemText);
+
+		// draw the label background if selected.
+		if (bSelected)
+		{
+			memDC.FillSolidRect(&rcItem, crItemBack);
+		}
+
+		CRect rcText(rcItem);
+		rcText.OffsetRect(3, 0);
+
+		// draw the text and restore the device context.
+		memDC.DrawText(strItem, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_NOPREFIX);
+
+		// draw the focus rect.
+		if ((uState & TVIS_FOCUSED))
+		{
+			if (!bEditing && bIsEnabled && CWnd::GetFocus() == m_pTreeCtrl)
+			{
+				memDC.SetTextColor(crTreeText);
+				memDC.DrawFocusRect(&rcItem);
+			}
+		}
+
+		memDC.SelectObject(pOldFont);
+		fontDC.DeleteObject();
+
+		// move to the next visible item.
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+
+	memDC.RestoreDC(nSavedDC);
+}
+
+
+HTREEITEM CXTTreeBase::GetPrevSelectedItem(HTREEITEM hItem) const
+{
+	for (hItem = m_pTreeCtrl->GetPrevVisibleItem(hItem);
+		hItem != NULL;
+		hItem = m_pTreeCtrl->GetPrevVisibleItem(hItem))
+	{
+		if (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED)
+		{
+			return hItem;
+		}
+	}
+
+	return NULL;
+}
+
+UINT CXTTreeBase::GetSelectedCount() const
+{
+	UINT nCount = 0;
+	HTREEITEM hItem = GetFirstSelectedItem();
+	while (hItem)
+	{
+		nCount++;
+		hItem = GetNextSelectedItem(hItem);
+	}
+	return nCount;
+}
+
+BOOL CXTTreeBase::EnableMultiSelect(BOOL bMultiSelect)
+{
+	BOOL bReturn = m_bMultiSelect;
+	m_bMultiSelect = bMultiSelect;
+
+	if (!m_bMultiSelect)
+	{
+		HTREEITEM hItem = m_pTreeCtrl->GetSelectedItem();
+		if (hItem && !IsSelected(hItem))
+		{
+			hItem = NULL;
+		}
+		SelectAllIgnore(FALSE, hItem);
+		if (hItem)
+		{
+			SelectItem(hItem);
+		}
+	}
+
+	return bReturn;
+}
+
+BOOL CXTTreeBase::SetItemState(HTREEITEM hItem, UINT nState, UINT nStateMask)
+{
+	ASSERT(hItem);
+	if (!hItem)
+		return FALSE;
+
+	if (!m_bMultiSelect)
+	{
+		return m_pTreeCtrl->SetItemState(hItem, nState, nStateMask);
+	}
+
+	HTREEITEM hFocus = m_pTreeCtrl->GetSelectedItem();           // current focus
+	BOOL bWasFocus = (hFocus == hItem);
+	BOOL bFocusWasSel = hFocus && IsSelected(hFocus); // selection state of current focus
+	BOOL bWasSel = IsSelected(hItem);            // select state of acting item
+
+	UINT nS = (nState & ~TVIS_FOCUSED);
+	UINT nSM = (nStateMask & ~TVIS_FOCUSED);
+
+	BOOL bVista = XTPSystemVersion()->IsWinVistaOrGreater();
+
+	if (nStateMask & TVIS_FOCUSED)
+	{
+		//wanted to affect focus
+		if (nState & TVIS_FOCUSED)
+		{
+			if (bVista)
+			{
+				//wanted to set focus
+				if (!bWasFocus && hFocus)
+				{
+					//because SelectItem would de-select the current 'real' selection
+					// (the one with focus), need to make the tree ctrl think there is
+					// no 'real' selection but still keep the the old item selected
+					//it has to be done before the SelectItem call because
+					// otherwise the TVN_SELCHANGING/ED notification handlers
+					// wouldn't be able to get the proper list of selected items
+					m_pTreeCtrl->SelectItem(NULL); //will cause notify, but can be taken as focus change
+					m_pTreeCtrl->SetItemState(hFocus, TVIS_SELECTED, TVIS_SELECTED);
+				}
+
+				if (!m_pTreeCtrl->SelectItem(hItem))    //set focus (will consequently select, if not already focused)
+				{
+					return FALSE;
+				}
+
+				if (!bWasFocus && hFocus)
+				{
+					m_pTreeCtrl->SetItemState(hFocus, bFocusWasSel ? TVIS_SELECTED : 0, TVIS_SELECTED);
+				}
+			}
+			else
+			{
+				//wanted to set focus
+				if (!bWasFocus && bFocusWasSel)
+				{
+					//because SelectItem would de-select the current 'real' selection
+					// (the one with focus), need to make the tree ctrl think there is
+					// no 'real' selection but still keep the the old item selected
+					//it has to be done before the SelectItem call because
+					// otherwise the TVN_SELCHANGING/ED notification handlers
+					// wouldn't be able to get the proper list of selected items
+					m_pTreeCtrl->SelectItem(NULL); //will cause notify, but can be taken as focus change
+					m_pTreeCtrl->SetItemState(hFocus, TVIS_SELECTED, TVIS_SELECTED);
+					m_pTreeCtrl->UpdateWindow();
+				}
+
+				if (!m_pTreeCtrl->SelectItem(hItem))    //set focus (will consequently select, if not already focused)
+				{
+					return FALSE;
+				}
+			}
+
+			if (nStateMask & TVIS_SELECTED)
+			{
+				//wanted to affect select state
+				if (nState & TVIS_SELECTED)
+				{
+					//wanted to select, already done if wasn't focused
+					if (!bVista && (!bWasFocus || bFocusWasSel))
+					{
+						nS &= ~TVIS_SELECTED;
+						nSM &= ~TVIS_SELECTED;
+					}
+				}
+				//else wanted to clear, base call will do that
+			}
+			else
+			{
+				//didn't want to affect select state
+				if (!bWasSel)
+				{
+					//it wasn't previously selected, let base clear (correct)
+					nS &= ~TVIS_SELECTED;
+					nSM |= TVIS_SELECTED;
+				}
+				//else was already selected, no harm done
+			}
+		}
+		else
+		{
+			//wanted to clear focus
+			if (bWasFocus)
+			{
+				//it had the focus
+				m_pTreeCtrl->SelectItem(NULL);  //clear focus
+				if (!(nStateMask & TVIS_SELECTED))
+				{
+					//didn't want to affect select state
+					if (bWasSel)
+					{
+						//it was selected, so restore
+						ASSERT(!(nS & TVIS_SELECTED));
+						ASSERT(!(nSM & TVIS_SELECTED));
+						//set state here, to avoid double-notify
+						m_pTreeCtrl->SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+						//let base do other states
+					}
+				}
+				else if (nState & TVIS_SELECTED)
+				{
+					//wanted to select (but clear focus)
+					if (bWasSel)
+					{
+						//if was selected, restore
+						m_pTreeCtrl->SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+					}
+					//don't want to notify, default did it
+					nS &= ~TVIS_SELECTED;
+					nSM &= ~TVIS_SELECTED;
+				}
+			}
+		}
+	}
+
+	if (!nSM)
+	{
+		return TRUE;    //no other states to alter
+	}
+
+	if (nSM & TVIS_SELECTED)
+	{
+		//still need to alter selection state
+		NMTREEVIEW nmtv;
+		nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
+		nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
+		nmtv.hdr.code = TVN_SELCHANGING;
+		nmtv.itemOld.mask = nmtv.itemNew.mask = 0;
+		nmtv.itemOld.hItem = nmtv.itemNew.hItem = NULL;
+
+		TVITEM& item = (nS & TVIS_SELECTED) ? nmtv.itemNew : nmtv.itemOld;
+		item.mask = TVIF_HANDLE | TVIF_PARAM;
+		item.hItem = hItem;
+		item.lParam = m_pTreeCtrl->GetItemData(hItem);
+		item.state = nS;
+		item.stateMask = nSM;
+
+		if (SendNotify(&nmtv.hdr))
+		{
+			return FALSE;   //sel-changing stopped
+		}
+
+		VERIFY(m_pTreeCtrl->SetItemState(hItem, nS, nSM));
+		nmtv.hdr.code = TVN_SELCHANGED;
+		SendNotify(&nmtv.hdr);
+		nS &= ~TVIS_SELECTED;
+		nSM &= ~TVIS_SELECTED;
+	}
+
+	if (!nSM)
+	{
+		return TRUE;
+	}
+
+	return m_pTreeCtrl->SetItemState(hItem, nS, nSM);
+}
+
+UINT CXTTreeBase::GetItemState(HTREEITEM hItem, UINT nStateMask) const
+{
+	UINT n = m_pTreeCtrl->GetItemState(hItem, nStateMask & ~TVIS_FOCUSED);
+	if (nStateMask & TVIS_FOCUSED)
+	{
+		if (m_pTreeCtrl->GetSelectedItem() == hItem)
+		{
+			n |= TVIS_FOCUSED;
+		}
+	}
+	return n;
+}
+
+BOOL CXTTreeBase::SelectItem(HTREEITEM hItem)
+{
+	if (m_bMultiSelect)
+	{
+		return SetItemState(hItem,
+			TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
+	}
+	else
+	{
+		return m_pTreeCtrl->SelectItem(hItem);
+	}
+}
+
+BOOL CXTTreeBase::FocusItem(HTREEITEM hItem)
+{
+	ASSERT(m_bMultiSelect);
+
+	BOOL bRet = FALSE;
+	if (hItem)
+	{
+		bRet = SetItemState(hItem, TVIS_FOCUSED, TVIS_FOCUSED);
+	}
+	else
+	{
+		hItem = m_pTreeCtrl->GetSelectedItem();
+		if (hItem)
+		{
+			bRet = SetItemState(hItem, 0, TVIS_FOCUSED);
+		}
+	}
+	return bRet;
+}
+
+LRESULT CXTTreeBase::SendNotify(LPNMHDR pNMHDR)
+{
+	CWnd* pWndOwner = m_pTreeCtrl->GetOwner();
+	if (pWndOwner->GetSafeHwnd())
+	{
+		return ::SendMessage(pWndOwner->m_hWnd, WM_NOTIFY,
+			(WPARAM)pNMHDR->idFrom, (LPARAM)pNMHDR);
+	}
+
+	return NULL;
+}
+
+HTREEITEM CXTTreeBase::GetFirstSelectedItem() const
+{
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		if (IsSelected(hItem))
+		{
+			break;
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	return hItem;
+}
+
+HTREEITEM CXTTreeBase::GetNextSelectedItem(HTREEITEM hItem) const
+{
+	hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	while (hItem)
+	{
+		if (IsSelected(hItem))
+		{
+			break;
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	return hItem;
+}
+
+void CXTTreeBase::SelectAll(BOOL bSelect /*= TRUE*/, HTREEITEM htItem/*= NULL*/)
+{
+	bSelect = !!bSelect;    //ensure 0 or 1
+	UINT nState = bSelect ? TVIS_SELECTED : 0;
+
+	if (htItem == NULL)
+		htItem = m_pTreeCtrl->GetRootItem();
+
+	while (htItem)
+	{
+		if (IsSelected(htItem) != bSelect)
+		{
+			SetItemState(htItem, nState, TVIS_SELECTED);
+		}
+		htItem = m_pTreeCtrl->GetNextVisibleItem(htItem);
+	}
+}
+
+void CXTTreeBase::SelectAllIgnore(BOOL bSelect, HTREEITEM hIgnore)
+{
+	//special case to avoid multiple notifications for
+	// the same item
+	bSelect = !!bSelect;    //ensure 0 or 1
+	UINT nState = bSelect ? TVIS_SELECTED : 0;
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		if (hItem != hIgnore)
+		{
+			if (IsSelected(hItem) != bSelect)
+			{
+				SetItemState(hItem, nState, TVIS_SELECTED);
+			}
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+}
+
+void CXTTreeBase::SelectItems(HTREEITEM hFirst, HTREEITEM hLast, BOOL bOnly /*= TRUE*/)
+{
+	//locate (and select) either first or last
+	// (so order is arbitrary)
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		if ((hItem == hFirst) || (hItem == hLast))
+		{
+			if (hFirst != hLast)
+			{
+				if (!IsSelected(hItem))
+				{
+					SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+				}
+				hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+			}
+			break;
+		}
+
+		if (bOnly && IsSelected(hItem))
+		{
+			SetItemState(hItem, 0, TVIS_SELECTED);
+		}
+
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+
+	//select rest of range
+	while (hItem)
+	{
+		if (!IsSelected(hItem))
+		{
+			SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+		}
+		if ((hItem == hFirst) || (hItem == hLast))
+		{
+			hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+			break;
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	if (!bOnly)
+	{
+		return;
+	}
+	while (hItem)
+	{
+		if (IsSelected(hItem))
+		{
+			SetItemState(hItem, 0, TVIS_SELECTED);
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+}
+
+BOOL CXTTreeBase::OnButtonDown(BOOL bLeft, UINT nFlags, CPoint point)
+{
+	UINT      nHF = 0;
+	HTREEITEM hItem = NULL;
+
+	if (!m_bMultiSelect)
+		return TRUE;
+
+	BOOL bBase = FALSE;
+
+	hItem = m_pTreeCtrl->HitTest(point, &nHF);
+	if (hItem)
+	{
+		//base always handles expanding items
+		//(doesn't really mean much to right button, but pass anyway)
+		bBase = (nHF & (TVHT_ONITEMBUTTON));
+		if (!bBase && bLeft && (m_pTreeCtrl->GetStyle() & TVS_CHECKBOXES))
+		{
+			//when the tree has check-boxes, the default handler makes
+			// a quick selection of the clicked item, then re-selects
+			// the previously selected item - to cause a sel-changed
+			// notification.  Fortunately it doesn't affect the multi-
+			// selection, so can pass on.
+			bBase = (nHF & TVHT_ONITEMSTATEICON);
+
+#ifdef _MST_MULTI_CHECK
+			//Use the above define if you want all selected items to
+			// be checked the same when any one of them is checked
+			// - Interestingly this doesn't happen in the listview control
+			//  (LVS_EX_CHECKBOXES)
+			if (bBase)
+			{
+				//the default selection notification would mess
+				// the multi-selection up, so generate the notification
+				// manually
+				// (anyway, this is smoother than the selection flicker
+				//  the default gives)
+				NMTREEVIEW nmtv;
+#ifdef TVN_CHKCHANGE
+				nmtv.hdr.code = TVN_CHKCHANGE;
+#else
+				nmtv.hdr.code = TVN_SELCHANGED;
+#endif
+				nmtv.hdr.hwndFrom = m_hWnd;
+				nmtv.hdr.idFrom = ::GetDlgCtrlID(m_hWnd);
+				nmtv.itemOld.hItem = NULL;
+				nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
+
+				BOOL bChk = !GetCheck(hItem);
+				if (IsSelected(hItem))
+				{
+					HTREEITEM h = GetFirstSelectedItem();
+					while (h)
+					{
+						if (!GetCheck(h) == bChk) //! to ensure 0 or 1
+						{
+							SetCheck(h, bChk);
+#ifdef TVN_CHKCHANGE
+							//only send multiple check-change
+							// notifications (not sel-changed)
+							if (h != hItem) //clicked item will be done last
+							{
+								nmtv.itemNew.hItem = h;
+								nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(h);
+								SendNotify(&nmtv.hdr);
+							}
+#endif
+						}
+						h = GetNextSelectedItem(h);
+					}
+				}
+				else
+				{
+					SetCheck(hItem, bChk);
+				}
+				//notify clicked item
+				nmtv.itemNew.hItem = hItem;
+				nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(hItem);
+				SendNotify(&nmtv.hdr);
+				return TRUE;
+			}
+#endif
+		}
+	}
+
+	if (bBase)
+		return TRUE;
+
+	if (!hItem || (nHF & (TVHT_ONITEMRIGHT | TVHT_NOWHERE | TVHT_ONITEMINDENT)))
+	{
+		//clicked in space, do rubber-banding
+		DoBanding(nFlags, point);
+		return TRUE;
+	}
+
+	ASSERT(nHF & (TVHT_ONITEM | TVHT_ONITEMSTATEICON));   //nothing else left
+
+	DoPreSelection(hItem, bLeft, nFlags);
+	DoAction(hItem, bLeft, nFlags, point);
+
+	return m_bActionDone;  // as set in doaction
+}
+
+void CXTTreeBase::DoPreSelection(HTREEITEM hItem, BOOL bLeft, UINT nFlags)
+{
+	if (bLeft)
+	{
+		//if shift key down, select immediately
+		if ((nFlags & MK_SHIFT))
+		{
+			if (!m_hSelect)
+			{
+				m_hSelect = m_pTreeCtrl->GetSelectedItem(); //focus
+			}
+
+			SetItemState(hItem, TVIS_FOCUSED, TVIS_FOCUSED);    //focus changes to last clicked
+			SelectItems(m_hSelect, hItem, !(nFlags & MK_CONTROL));
+		}
+		else
+		{
+			if (!(nFlags & MK_CONTROL))
+			{
+				//if ctrl was down, then the selection is delayed until
+				// mouse up, otherwise select the one item
+				if (!IsSelected(hItem))
+				{
+					SelectAllIgnore(FALSE, hItem);
+				}
+				SetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
+			}
+			m_hSelect = NULL;   //reset when a non-shift operation occurs
+		}
+		return;
+	}
+
+	//right mouse
+	if (nFlags & (MK_CONTROL | MK_SHIFT))
+	{
+		if (!(nFlags & MK_SHIFT))
+		{
+			m_hSelect = hItem;
+		}
+		return;     //do nothing if shift or ctrl
+	}
+	if (!IsSelected(hItem))
+	{
+		SelectAllIgnore(FALSE, hItem);
+	}
+	SetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
+}
+
+void CXTTreeBase::DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point)
+{
+	m_bActionDone = false;
+	::SetCapture(m_pTreeCtrl->m_hWnd);
+	ASSERT(::GetCapture() == m_pTreeCtrl->m_hWnd);
+
+	MSG msg;
+	UINT nDone = 0;
+	CPoint pt;
+	CSize sizeDrag(::GetSystemMetrics(SM_CXDRAG), ::GetSystemMetrics(SM_CYDRAG));
+
+	while (!nDone && ::GetMessage(&msg, NULL, 0, 0))
+	{
+		if (::GetCapture() != m_pTreeCtrl->m_hWnd)
+		{
+			break;
+		}
+		switch (msg.message)
+		{
+			case WM_MOUSEMOVE:
+				pt.x = GET_X_LPARAM(msg.lParam);
+				pt.y = GET_Y_LPARAM(msg.lParam);
+				if ((abs(pt.x - point.x) > sizeDrag.cx) ||
+					((abs(pt.y - point.y) > sizeDrag.cy)))
+				{
+					nDone = 2;
+				}
+				//because we exit loop, button up will still be dispatched
+				// which means WM_CONTEXTMENU will be sent after TVN_BEGINRDRAG
+				// - this is the same behavior as original tree
+				break;
+
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+				nDone = 1;
+				break;
+
+			default:
+				::DispatchMessage(&msg);
+				break;
+		}
+
+	}
+
+	::ReleaseCapture();
+	ASSERT(::GetCapture() != m_pTreeCtrl->m_hWnd);
+
+	//construct tree notification info
+	NMTREEVIEW nmtv;
+	nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
+	nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
+	nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
+	nmtv.itemNew.hItem = hItem;
+	nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(hItem);
+	DWORD dwStyle = m_pTreeCtrl->GetStyle();
+
+	if (nDone == 1)
+	{
+		//click
+		if (!(nFlags & MK_SHIFT) && bLeft)
+		{
+			if ((nFlags & MK_CONTROL))
+			{
+				UINT nState = (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED) ? 0 : TVIS_SELECTED;
+				SetItemState(hItem, TVIS_FOCUSED | nState, TVIS_FOCUSED | TVIS_SELECTED);
+			}
+			else
+			{
+				SelectAllIgnore(FALSE, hItem);
+				SetItemState(hItem, TVIS_FOCUSED | TVIS_SELECTED, TVIS_FOCUSED | TVIS_SELECTED);
+			}
+		}
+		if (::GetFocus() != m_pTreeCtrl->m_hWnd)
+		{
+			::SetFocus(m_pTreeCtrl->m_hWnd);
+		}
+
+		nmtv.hdr.code = bLeft ? NM_CLICK : NM_RCLICK;
+		SendNotify(&nmtv.hdr);
+		m_bActionDone = true;
+	}
+	else if (nDone == 2)
+	{
+		//drag
+		SetItemState(hItem, TVIS_FOCUSED | TVIS_SELECTED, TVIS_FOCUSED | TVIS_SELECTED);
+		if (!(dwStyle & TVS_DISABLEDRAGDROP))
+		{
+			nmtv.hdr.code = bLeft ? TVN_BEGINDRAG : TVN_BEGINRDRAG;
+			nmtv.ptDrag = point;
+			SendNotify(&nmtv.hdr);
+		}
+		m_bActionDone = true;
+	}
+}
+
+void CXTTreeBase::DoBanding(UINT nFlags, CPoint point)
+{
+	if (::GetFocus() != m_pTreeCtrl->m_hWnd)
+	{
+		::SetFocus(m_pTreeCtrl->m_hWnd);
+	}
+
+	::SetCapture(m_pTreeCtrl->m_hWnd);
+
+	CTypedPtrList<CPtrList, HTREEITEM> list;
+	if (nFlags & (MK_SHIFT | MK_CONTROL))
+	{
+		GetSelectedList(list);
+	}
+
+	CClientDC dc(m_pTreeCtrl);
+	CRect rectCli;
+	m_pTreeCtrl->GetClientRect(&rectCli);
+
+	MSG msg;
+	BOOL bDone = FALSE;
+	CPoint pt;
+	CSize sizeDrag(::GetSystemMetrics(SM_CXDRAG), ::GetSystemMetrics(SM_CYDRAG));
+	BOOL bDrag = FALSE;
+	CSize sizeEdge(1, 1);
+
+	UINT_PTR nTimer = m_pTreeCtrl->SetTimer(1, SCROLL_TIMER_PERIOD, NULL);  //for scroll
+	CPoint ptScr(m_pTreeCtrl->GetScrollPos(SB_HORZ), m_pTreeCtrl->GetScrollPos(SB_VERT));
+	CRect rect(0, 0, 0, 0);
+	UINT h = 0;
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	if (hItem)
+	{
+		m_pTreeCtrl->GetItemRect(hItem, &rect, FALSE);
+		ptScr.y *= (h = rect.Height());     //this assumes equal height items
+	}
+	point += ptScr;
+
+	while (!bDone && ::GetMessage(&msg, NULL, 0, 0))
+	{
+		if (::GetCapture() != m_pTreeCtrl->m_hWnd)
+		{
+			break;
+		}
+
+		switch (msg.message)
+		{
+			case WM_TIMER:
+				{
+					if (msg.wParam == SCROLL_TIMER_PERIOD)
+					{
+						pt = msg.pt;
+						m_pTreeCtrl->ScreenToClient(&pt);
+						if (rectCli.PtInRect(pt))
+						{
+							::DispatchMessage(&msg);
+							break;
+						}
+						msg.lParam = MAKELPARAM(pt.x, pt.y);
+					}
+					else
+					{
+						break;
+					}
+				}
+				//fall through to mouse move
+
+			case WM_MOUSEMOVE:
+				pt.x = GET_X_LPARAM(msg.lParam);
+				pt.y = GET_Y_LPARAM(msg.lParam);
+				if (!bDrag)
+				{
+					if ((abs(pt.x - point.x) <= sizeDrag.cx) &&
+						((abs(pt.y - point.y) <= sizeDrag.cy)))
+					{
+						break;
+					}
+					bDrag = TRUE;
+					if (!(nFlags & (MK_CONTROL | MK_SHIFT)))
+					{
+						SelectAll(FALSE);
+					}
+					m_pTreeCtrl->UpdateWindow();
+					rect.SetRect(point, point);
+					dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);
+				}
+
+				dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);    //delete
+
+				if (pt.y < rectCli.top)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_VSCROLL, SB_LINEUP, 0);
+				}
+				else if (pt.y >= rectCli.bottom)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
+				}
+				if (pt.x < rectCli.left)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_HSCROLL, SB_LINELEFT, 0);
+				}
+				else if (pt.x >= rectCli.right)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_HSCROLL, SB_LINERIGHT, 0);
+				}
+
+				ptScr = point;
+				ptScr.x -= m_pTreeCtrl->GetScrollPos(SB_HORZ);
+				ptScr.y -= m_pTreeCtrl->GetScrollPos(SB_VERT) * h;
+				rect.SetRect(ptScr, pt);
+				rect.NormalizeRect();
+				UpdateSelectionForRect(rect, nFlags, list);
+				dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);    //draw
+				break;
+
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+				bDone = TRUE;
+				break;
+
+			case WM_KEYDOWN:
+				if (LOWORD(msg.wParam) == VK_ESCAPE)
+				{
+					SelectAll(FALSE);
+					bDone = TRUE;
+					break;
+				}
+				//dispatch
+
+			default:
+				::DispatchMessage(&msg);
+				break;
+		}
+	}
+	m_pTreeCtrl->KillTimer(nTimer);
+	::ReleaseCapture();
+
+	if (bDrag)
+	{
+		dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);
+	}
+	else
+	{
+		if (!(nFlags & (MK_CONTROL | MK_SHIFT)))
+		{
+			SelectAll(FALSE);
+		}
+	}
+}
+
+void CXTTreeBase::UpdateSelectionForRect(LPCRECT pRect, UINT nFlags, CTypedPtrList<CPtrList, HTREEITEM>& list)
+{
+	CRect rect;
+	BOOL bSel;
+	POSITION pos;
+
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		bSel = IsSelected(hItem);
+		m_pTreeCtrl->GetItemRect(hItem, &rect, m_bBandLabel);
+		if (rect.IntersectRect(rect, pRect))
+		{
+			//item in rect
+			pos = list.Find(hItem);
+			if (!bSel && !pos)
+			{
+				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+			}
+			else if ((nFlags & MK_CONTROL) && pos)
+			{
+				SetItemState(hItem, 0, TVIS_SELECTED);
+			}
+			else if ((nFlags & MK_SHIFT) && pos)
+			{
+				list.RemoveAt(pos);     //if shift and in rect, don't lock anymore
+			}
+		}
+		else
+		{
+			//item not in rect
+			pos = list.Find(hItem);
+			if (bSel && !pos)
+			{
+				SetItemState(hItem, 0, TVIS_SELECTED);
+			}
+			else if (pos)
+			{
+				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+			}
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	m_pTreeCtrl->UpdateWindow();
+}
+
+BOOL CXTTreeBase::SelectChildren(HTREEITEM hParent, BOOL bSelect /*= TRUE*/, BOOL bRecurse /*= TRUE*/)
+{
+	UINT nS = bSelect ? TVIS_SELECTED : 0;
+
+	BOOL bFocusWasInHere = FALSE;
+
+	HTREEITEM hItem = GetNextItem(hParent, TVGN_CHILD);
+	while (hItem)
+	{
+		UINT nState = GetItemState(hItem, TVIS_SELECTED | TVIS_EXPANDED | TVIS_FOCUSED);
+		if ((nState & TVIS_SELECTED) != nS)
+		{
+			SetItemState(hItem, nS, TVIS_SELECTED);
+		}
+		bFocusWasInHere |= (nState & TVIS_FOCUSED);
+		if (bRecurse && (nState & TVIS_EXPANDED))
+		{
+			bFocusWasInHere |= SelectChildren(hItem, bSelect, bRecurse);
+		}
+		hItem = m_pTreeCtrl->GetNextSiblingItem(hItem);
+	}
+	return bFocusWasInHere;
+}
+
+void CXTTreeBase::GetSelectedList(CTypedPtrList<CPtrList, HTREEITEM>& list) const
+{
+	list.RemoveAll();
+
+	HTREEITEM hItem = GetFirstSelectedItem();
+	while (hItem)
+	{
+		list.AddTail(hItem);
+		hItem = GetNextSelectedItem(hItem);
+	}
+}
+
+BOOL CXTTreeBase::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	NMHDR* pNMHDR = (NMHDR*)lParam;
+
+	switch (pNMHDR->code)
+	{
+	case TTN_SHOW:
+		{
+			// get a pointer to the tooltip control.
+			HWND hWnd = TreeView_GetToolTips(m_pTreeCtrl->m_hWnd);
+			if (hWnd != NULL)
+			{
+				// make sure the tooltip is at the top of the "Z" order, otherwise
+				// it will appear behind popup windows....
+				::SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0,
+					SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			}
+		}
+		break;
+	}
+
+	return m_pTreeCtrl->CTreeCtrl::OnNotify(wParam, lParam, pResult);
+}
+
+BOOL CXTTreeBase::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		// ensure that keystrokes are handled by the edit control.
+		if (HasEditLabels() && m_pTreeCtrl->GetEditControl())
+		{
+			::TranslateMessage(pMsg);
+			::DispatchMessage(pMsg);
+
+			return TRUE;
+		}
+
+		// toggle expand / contract when return key is hit.
+		if (pMsg->wParam == VK_RETURN)
+		{
+			HTREEITEM htItem = m_pTreeCtrl->GetSelectedItem();
+			if (htItem != NULL)
+			{
+				m_pTreeCtrl->Expand(htItem, TVE_TOGGLE);
+			}
+		}
+	}
+
+	return m_pTreeCtrl->CTreeCtrl::PreTranslateMessage(pMsg);
+}
+
+BOOL CXTTreeBase::OnDeleteItem(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
+
+	// Remove the tree item from the map.
+	m_mapColorFont.RemoveKey(pNMTreeView->itemOld.hItem);
+	*pResult = 0;
+
+	return FALSE;
+}
+
+bool CXTTreeBase::HasEditLabels() const
+{
+	return ((m_pTreeCtrl->GetStyle() & TVS_EDITLABELS) == TVS_EDITLABELS);
+}
+
+void CXTTreeBase::OnSize(UINT /*nType*/, int /*cx*/, int /*cy*/)
+{
+	m_pTreeCtrl->Default();
+
+	// MFCBUG: During label editing if the tree is resized while
+	// there is an edit box open the edit box is not moved to the
+	// new location of the tree item, but is left in it previous
+	// location.
+
+	if (HasEditLabels() && m_htiEdit)
+	{
+		CEdit* pEdit = m_pTreeCtrl->GetEditControl();
+		if (pEdit && ::IsWindow(pEdit->m_hWnd))
+		{
+			CRect rcEdit;
+			pEdit->GetWindowRect(&rcEdit);
+
+			CRect rcItem;
+			m_pTreeCtrl->GetItemRect(m_htiEdit, &rcItem, TRUE);
+
+			rcItem.top -= 1;
+			rcItem.left -= 3;
+			rcItem.right = rcItem.left + rcEdit.Width();
+			rcItem.bottom = rcItem.top + rcEdit.Height();
+
+			pEdit->MoveWindow(&rcItem);
+		}
+	}
+}
+
+void CXTTreeBase::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
+	{
+		TV_HITTESTINFO hit;
+		::ZeroMemory(&hit, sizeof(hit));
+
+		hit.pt = point;
+		m_pTreeCtrl->HitTest(&hit);
+
+		HTREEITEM hItem = hit.hItem && hit.flags & TVHT_ONITEM ? hit.hItem : NULL;
+
+		if (m_htiLast != hItem)
+		{
+			m_htiLast = hItem;
+
+			if (m_htiLast)
+			{
+				UINT_PTR uID = m_pTreeCtrl->SetTimer(HOVER_TIMER_PERIOD, 55, NULL);
+				ASSERT(uID == HOVER_TIMER_PERIOD);
+			}
+
+			m_pTreeCtrl->Invalidate(FALSE);
+		}
+	}
+
+
+	m_pTreeCtrl->Default();
+}
+
+void CXTTreeBase::OnTimer(UINT_PTR nIDEvent)
+{
+	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
+	{
+		if (nIDEvent == HOVER_TIMER_PERIOD)
+		{
+			if (m_htiLast != NULL)
+			{
+				CPoint pt(::GetMessagePos());
+				CRect rc;
+				m_pTreeCtrl->GetWindowRect(&rc);
+
+				if (rc.PtInRect(pt) == FALSE)
+				{
+					m_pTreeCtrl->KillTimer(HOVER_TIMER_PERIOD);
+
+					m_htiLast = NULL;
+					m_pTreeCtrl->Invalidate(FALSE);
+				}
+			}
+			else
+			{
+				m_pTreeCtrl->KillTimer(HOVER_TIMER_PERIOD);
+			}
+			return;
+		}
+	}
+
+	m_pTreeCtrl->Default();
+}
+
+void CXTTreeBase::OnNcMouseMove(UINT /*nHitTest*/, CPoint /*point*/)
+{
+	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
+	{
+		if (m_htiLast)
+		{
+			m_htiLast = NULL;
+			m_pTreeCtrl->Invalidate(FALSE);
+		}
+	}
+
+	m_pTreeCtrl->Default();
+}
+
+bool CXTTreeBase::Init()
+{
+	if (!::IsWindow(m_pTreeCtrl->GetSafeHwnd()))
+		return false;
+
+	return true;
 }

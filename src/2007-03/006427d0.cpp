@@ -1,1498 +1,1053 @@
-// from server: 52% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/daodfx.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportRecordItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPReportRecordItem.cpp : implementation of the CXTPReportRecordItem class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
-
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "math.h"
+#include "Common/XTPDrawHelpers.h"
 
+#include "XTPReportRow.h"
+#include "XTPReportRecords.h"
+#include "XTPReportColumns.h"
+#include "XTPReportColumn.h"
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportHyperlink.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportInplaceControls.h"
 
+#include "Common/XTPPropExchange.h"
 
+#ifdef _DEBUG
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-#pragma warning(disable: 4311 4312)  // Disable /Wp64 warnings, since DAO isn't supported on Win64
-
-//////////////////////////////////////////////////////////////////////////
-// Helpers
-
-// Helpers for floating point operations
-AFX_STATIC_DATA const float _afxFloatPseudoNull = AFX_RFX_SINGLE_PSEUDO_NULL;
-AFX_STATIC_DATA const double _afxDoublePseudoNull = AFX_RFX_DOUBLE_PSEUDO_NULL;
-
-// Long binary allocation helper
-void AFX_CDECL AllocLongBinary(CLongBinary& lb, DWORD dwDataLength);
-
-// Memory allocation callbacks used by ICDAOGetRows
-STDAPI DaoStringAllocCallback(DWORD dwLen, DWORD pData, void** ppv);
-STDAPI DaoBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv);
-STDAPI DaoLongBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv);
+#ifndef IDC_HAND
+#define IDC_HAND MAKEINTRESOURCE(32649)
+#endif
 
 //////////////////////////////////////////////////////////////////////////
-// CDaoFieldExchange
+// XTP_REPORTRECORDITEM_ARGS
 
-CDaoFieldExchange::CDaoFieldExchange(UINT nOperation,
-	CDaoRecordset* prs, void* pvField)
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS()
 {
-	ASSERT(nOperation < MaxDFXOperation);
-
-	m_nFieldType = none;
-	m_nOperation = nOperation;
-	m_prs = prs;
-	m_pvField = pvField;
-	m_nField = 0;
-	m_nParam = 0;
+	pControl = NULL;
+	pRow = NULL;
+	pColumn = NULL;
+	pItem = NULL;
+	rcItem.SetRectEmpty();
 }
 
-BOOL CDaoFieldExchange::IsValidOperation()
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS(CXTPReportControl* pControl, CXTPReportRow* pRow, CXTPReportColumn* pColumn)
 {
-	if (m_nOperation >= MaxDFXOperation)
+	ASSERT(pControl && pRow && pColumn);
+
+	this->pControl = pControl;
+	this->pRow = pRow;
+	this->pColumn = pColumn;
+	this->pItem = pRow->GetRecord()->GetItem(pColumn);
+	this->rcItem = pRow->GetItemRect(pItem);
+}
+XTP_REPORTRECORDITEM_ARGS::~XTP_REPORTRECORDITEM_ARGS()
+{
+
+}
+
+void XTP_REPORTRECORDITEM_ARGS::AddRef()
+{
+	CMDTARGET_ADDREF(pRow);
+	CMDTARGET_ADDREF(pColumn);
+	CMDTARGET_ADDREF(pItem);
+
+}
+
+void XTP_REPORTRECORDITEM_ARGS::Release()
+{
+	if (pRow)
+		pRow->InternalRelease();
+
+	if (pColumn)
+		pColumn->InternalRelease();
+
+	if (pItem)
+		pItem->InternalRelease();
+}
+
+const XTP_REPORTRECORDITEM_ARGS& XTP_REPORTRECORDITEM_ARGS::operator=(const XTP_REPORTRECORDITEM_ARGS& src)
+{
+	pControl = src.pControl;
+	pRow     = src.pRow;
+	pColumn  = src.pColumn;
+	pItem    = src.pItem;
+	rcItem   = src.rcItem;
+
+	return *this;
+}
+
+CXTPReportInplaceButtons::CXTPReportInplaceButtons()
+{
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemConstraint
+
+CXTPReportRecordItemConstraint::CXTPReportRecordItemConstraint()
+{
+
+	m_dwData = 0;
+	m_nIndex = 0;
+}
+
+int CXTPReportRecordItemConstraint::GetIndex() const
+{
+	return m_nIndex;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemConstraints
+
+CXTPReportRecordItemConstraints::CXTPReportRecordItemConstraints()
+{
+}
+CXTPReportRecordItemConstraints::~CXTPReportRecordItemConstraints()
+{
+	RemoveAll();
+}
+
+
+int CXTPReportRecordItemConstraints::GetCount() const
+{
+	return (int)m_arrConstraints.GetSize();
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemConstraints::GetAt(int nIndex) const
+{
+	return m_arrConstraints.GetAt(nIndex);
+}
+
+void CXTPReportRecordItemConstraints::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemEditOptions
+
+CXTPReportRecordItemEditOptions::CXTPReportRecordItemEditOptions()
+{
+	m_bAllowEdit = TRUE;
+	m_bConstraintEdit = FALSE;
+	m_pConstraints = new CXTPReportRecordItemConstraints();
+	m_bSelectTextOnEdit = FALSE;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+	m_nMaxLength = 0;
+
+
+}
+
+CXTPReportRecordItemEditOptions::~CXTPReportRecordItemEditOptions()
+{
+	RemoveButtons();
+
+	CMDTARGET_RELEASE(m_pConstraints);
+}
+
+void CXTPReportRecordItemEditOptions::RemoveButtons()
+{
+	for (int j = 0; j < arrInplaceButtons.GetSize(); j++)
+		arrInplaceButtons[j]->InternalRelease();
+
+	arrInplaceButtons.RemoveAll();
+}
+
+void CXTPReportRecordItemEditOptions::AddComboButton()
+{
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_COMBOBUTTON));
+}
+
+void CXTPReportRecordItemEditOptions::AddExpandButton()
+{
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_EXPANDBUTTON));
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(DWORD_PTR dwData)
+{
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
 	{
-		// Invalid operation
-		ASSERT(FALSE);
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_dwData == dwData)
+			return pConstaint;
+	}
+	return NULL;
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(LPCTSTR lpszConstraint)
+{
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
+	{
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_strConstraint == lpszConstraint)
+			return pConstaint;
+	}
+	return NULL;
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::AddConstraint(LPCTSTR lpszConstraint, DWORD_PTR dwData /*= 0*/)
+{
+	CXTPReportRecordItemConstraint* pConstaint = new CXTPReportRecordItemConstraint();
+
+	pConstaint->m_strConstraint = lpszConstraint;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_pConstraints->m_arrConstraints.Add(pConstaint);
+
+	return pConstaint;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItem
+
+IMPLEMENT_SERIAL(CXTPReportRecordItem, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItem::CXTPReportRecordItem()
+{
+	static const CString g_strFormatStringDef = _T("%s");
+
+	m_strFormatString = g_strFormatStringDef;
+	m_bEditable = TRUE;
+	m_pFontCaption = NULL;
+	m_bBoldText = FALSE;
+	m_clrText = XTP_REPORT_COLOR_DEFAULT;
+	m_clrBackground = XTP_REPORT_COLOR_DEFAULT;
+
+	m_nIconIndex = XTP_REPORT_NOICON;
+
+	m_pRecord = 0;
+	m_dwData = 0;
+
+	m_nSortPriority = -1;
+	m_nGroupPriority = -1;
+
+	m_bChecked = FALSE;
+	m_bHasCheckbox = FALSE;
+	m_pEditOptions = NULL;
+
+	m_bFocusable = TRUE;
+
+	m_pHyperlinks = NULL;
+
+
+}
+
+
+CXTPReportRecordItem::~CXTPReportRecordItem()
+{
+	CMDTARGET_RELEASE(m_pEditOptions);
+	CMDTARGET_RELEASE(m_pHyperlinks);
+}
+
+void CXTPReportRecordItem::DoMouseButtonClick()
+{
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+}
+
+void CXTPReportRecordItem::GetCaptionRect(XTP_REPORTRECORDITEM_ARGS* pDrawArgs, CRect& rcItem)
+{
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
+		return;
+
+	if (GetIconIndex() != XTP_REPORT_NOICON)
+		rcItem.left += pDrawArgs->pControl->GetPaintManager()->DrawBitmap(NULL, pDrawArgs->pControl, rcItem, GetIconIndex());
+
+	if (m_bHasCheckbox)
+		rcItem.left += 15;
+}
+
+void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem)
+{
+	BOOL bEditable = IsEditable() && (pDrawArgs->pColumn == NULL || pDrawArgs->pColumn->IsEditable());
+
+	CDC* pDC = pDrawArgs->pDC;
+	int eState = (bEditable ? 0: 2) + (IsChecked() ? 1 : 0);
+
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+
+	m_rcGlyph = rcItem;
+	CSize sizeGlyph = pPaintManager->DrawGlyph(NULL, m_rcGlyph, eState + 2);
+
+	CRect rcGlyph(m_rcGlyph);
+	// horizontal alignment
+	switch(nIconAlign)
+	{
+	case xtpColumnIconRight:
+		rcGlyph.left = rcItem.right - sizeGlyph.cx - 2;
+		// shift text box to the left
+		rcItem.right -= (2 + sizeGlyph.cx);
+		break;
+	case xtpColumnIconCenter:
+		rcGlyph.left = rcItem.CenterPoint().x - sizeGlyph.cx / 2 - 1;
+		rcGlyph.right = rcGlyph.left + sizeGlyph.cx;
+		break; // left text box as is - draw on image...
+	case xtpColumnIconLeft:
+	default:
+		rcGlyph.left += 2;
+		// shift text box to the right
+		rcItem.left += 2 + sizeGlyph.cx;
+		rcGlyph.right = rcItem.left - 1;
+		break;
+	}
+	// vertical alignment
+	switch(nIconAlign)
+	{
+	case xtpColumnIconTop:
+		rcGlyph.bottom = rcItem.top + sizeGlyph.cy + 2;
+		break;
+	case xtpColumnIconBottom:
+		rcGlyph.top = rcItem.bottom - sizeGlyph.cy - 2;
+		break;
+	}
+	// draw the glyph
+	pPaintManager->DrawGlyph(pDC, rcGlyph, eState + 2);
+}
+
+void CXTPReportRecordItem::OnDrawCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	ASSERT(pDrawArgs->pItem == this);
+	pDrawArgs->pControl->GetPaintManager()->DrawItemCaption(pDrawArgs, pMetrics);
+}
+
+
+int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
+{
+	CDC* pDC = pDrawArgs->pDC;
+	CRect& rcItem = pDrawArgs->rcItem;
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	CRgn rgn;
+	rgn.CreateRectRgn(rcItem.left, rcItem.top - 1, rcItem.right, rcItem.bottom);
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(&rgn);
+
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
+	pMetrics->strText = GetCaption(pDrawArgs->pColumn);
+	pDrawArgs->pRow->GetItemMetrics(pDrawArgs, pMetrics);
+
+	ASSERT(pMetrics->pFont);
+	ASSERT(pMetrics->clrForeground != XTP_REPORT_COLOR_DEFAULT);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->FillSolidRect(rcItem, pMetrics->clrBackground);
+
+	int nItemGlyphs = rcItem.left;
+
+	// draw tree inside item rect (see also HitTest function)
+	if (pDrawArgs->pColumn && pDrawArgs->pColumn->IsTreeColumn())
+	{
+		int nTreeDepth = pDrawArgs->pRow->GetTreeDepth() - pDrawArgs->pRow->GetGroupLevel();
+		if (nTreeDepth > 0)
+			nTreeDepth++;
+		rcItem.left += pDrawArgs->pControl->GetIndent(nTreeDepth);
+
+		BOOL bHasChildren = pDrawArgs->pRow->HasChildren();
+
+		CRect rcBitmap(rcItem);
+		CSize sizeBitmap = pPaintManager->DrawCollapsedBitmap(NULL, pDrawArgs->pRow, rcBitmap);
+
+		pPaintManager->DrawTreeStructure(pDrawArgs, pMetrics, rcItem, sizeBitmap);
+
+		int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+		// horizontal alignment
+		switch(nIconAlign)
+		{
+		case xtpColumnIconRight:
+			rcBitmap.left = rcBitmap.right - sizeBitmap.cx - 2;
+			break;
+		case xtpColumnIconLeft:
+			rcBitmap.right = rcBitmap.left + sizeBitmap.cx + 2;
+			break;
+		}
+		// vertical alignment
+		switch(nIconAlign)
+		{
+		case xtpColumnIconTop:
+			rcBitmap.bottom = rcBitmap.top + sizeBitmap.cy + 2;
+			break;
+		case xtpColumnIconBottom:
+			rcBitmap.top = rcBitmap.bottom - sizeBitmap.cy - 2;
+			break;
+		}
+		sizeBitmap = pPaintManager->DrawCollapsedBitmap(bHasChildren ? pDC : NULL, pDrawArgs->pRow, rcBitmap);
+
+		if (!pDC->IsPrinting() && bHasChildren)
+			pDrawArgs->pRow->SetCollapseRect(rcBitmap);
+
+		rcItem.left += sizeBitmap.cx + 2;
+	}
+
+	pDC->SetTextColor(pMetrics->clrForeground);
+
+	CFont* pOldFont = (CFont*)pDC->SelectObject(pMetrics->pFont);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->SetBkColor(pMetrics->clrBackground);
+	else
+		pDC->SetBkColor(pPaintManager->m_clrControlBack);
+
+	if (m_bHasCheckbox)
+		DrawCheckBox(pDrawArgs, rcItem);
+
+	// Do the draw bitmap pDC, rcItem, GetIconIndex()
+	if (pMetrics->nItemIcon != XTP_REPORT_NOICON || GetIconIndex() != XTP_REPORT_NOICON)
+	{
+		pPaintManager->DrawItemBitmap(pDrawArgs, rcItem, pMetrics->nItemIcon != XTP_REPORT_NOICON ? pMetrics->nItemIcon : GetIconIndex());
+	}
+
+	nItemGlyphs = (rcItem.left - nItemGlyphs);
+
+	OnDrawCaption(pDrawArgs, pMetrics);
+
+	int nItemTextWidth = nItemGlyphs + pDC->GetTextExtent(pMetrics->strText).cx + 4;
+
+	pDC->SelectObject(pOldFont);
+
+	pMetrics->InternalRelease();
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(NULL);
+
+	return nItemTextWidth;
+}
+
+
+void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	if (!pClickArgs || !pClickArgs->pControl)
+		return;
+
+	InternalAddRef();
+	CMDTARGET_ADDREF(pClickArgs->pColumn);
+	CMDTARGET_ADDREF(pClickArgs->pControl);
+
+	CXTPReportRow* pRow = pClickArgs->pRow;
+	CMDTARGET_ADDREF(pRow);
+
+	BOOL bCheckBoxClicked = FALSE;
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsEditable() && m_bHasCheckbox && (pClickArgs->pColumn == NULL || pClickArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pClickArgs))
+	{
+		// adjust vertical coordinates if virtual mode
+		if (pControl->IsVirtualMode())
+		{
+			m_rcGlyph.top = pClickArgs->rcItem.top;
+			m_rcGlyph.bottom = pClickArgs->rcItem.bottom;
+		}
+		// check whether we're clicking glyph area
+		if (m_rcGlyph.PtInRect(pClickArgs->ptClient))
+		{
+			if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+			pControl->RedrawControl();
+
+			pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_CHECKED, &pClickArgs->ptClient);
+			bCheckBoxClicked = TRUE;
+		}
+	}
+
+	if (!bCheckBoxClicked && IsAllowEdit(pClickArgs) && pControl->IsEditOnClick())
+	{
+		pControl->EditItem(pClickArgs);
+
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
+
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
+		{
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
+
+			if (pEditOptions->m_bSelectTextOnEdit)
+			{
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
+			}
+		}
+	}
+
+	pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_CLICK, &pClickArgs->ptClient);
+
+	// Determine Hyperlink Click
+	int nHyperlink = HitTestHyperlink(pClickArgs->ptClient);
+	if (nHyperlink >= 0)
+	{
+		pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_HYPERLINK, &pClickArgs->ptClient, nHyperlink);
+	}
+
+	CMDTARGET_RELEASE(pRow);
+	CMDTARGET_RELEASE(pClickArgs->pColumn);
+	CMDTARGET_RELEASE(pClickArgs->pControl);
+	InternalRelease();
+}
+
+int CXTPReportRecordItem::HitTestHyperlink(CPoint ptClick)
+{
+	int nHyperlinks = GetHyperlinksCount();
+	CXTPReportHyperlink* pHyperlink;
+	for (int nHyperlink = 0; nHyperlink < nHyperlinks; nHyperlink++)
+	{
+		pHyperlink = GetHyperlinkAt(nHyperlink);
+		ASSERT(pHyperlink);
+		if (pHyperlink && pHyperlink->m_rcHyperSpot.PtInRect(ptClick))
+			return nHyperlink;
+	}
+	return -1;
+}
+
+void CXTPReportRecordItem::OnDblClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsAllowEdit(pClickArgs) && !pControl->IsEditOnClick() && pControl->GetInplaceEdit()->GetItem() != this)
+	{
+		pControl->EditItem(pClickArgs);
+
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
+
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
+		{
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
+
+			if (pEditOptions->m_bSelectTextOnEdit)
+			{
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
+			}
+		}
+	}
+
+	pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_DBLCLK, &pClickArgs->ptClient, -1);
+}
+
+void CXTPReportRecordItem::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	int nHyperlink = HitTestHyperlink(point);
+	if (nHyperlink >= 0)
+	{
+		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_HAND));
+	}
+}
+
+void CXTPReportRecordItem::SetFont(CFont* pFont)
+{
+	m_pFontCaption = pFont;
+}
+
+void CXTPReportRecordItem::SetBold(BOOL bBold)
+{
+	m_bBoldText = bBold;
+}
+
+void CXTPReportRecordItem::SetTextColor(COLORREF clrText)
+{
+	m_clrText = clrText;
+}
+
+void CXTPReportRecordItem::SetBackgroundColor(COLORREF clrBackground)
+{
+	m_clrBackground = clrBackground;
+}
+
+int CXTPReportRecordItem::Compare(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (!pItem)
+		return 0;
+
+	if (m_nSortPriority != -1 || pItem->m_nSortPriority != -1)
+		return m_nSortPriority - pItem->m_nSortPriority;
+
+	return m_pRecord->GetRecords()->Compare(GetCaption(pColumn), pItem->GetCaption(pColumn));
+}
+
+CFont* CXTPReportRecordItem::GetFont()
+{
+	return m_pFontCaption;
+}
+
+CString CXTPReportRecordItem::GetGroupCaption(CXTPReportColumn* pColumn)
+{
+	if (!m_strGroupCaption.IsEmpty())
+		return m_strGroupCaption;
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+	{
+		CString str;
+		if (str.LoadString(nID))
+		{
+			return str;
+		}
+	}
+
+	return pColumn->GetCaption() + _T(": ") + GetCaption(pColumn);
+}
+
+int CXTPReportRecordItem::CompareGroupCaption(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (m_nGroupPriority != -1)
+		return m_nGroupPriority - pItem->m_nGroupPriority;
+
+	if (!m_strGroupCaption.IsEmpty())
+		return m_pRecord->GetRecords()->Compare(m_strGroupCaption, pItem->m_strGroupCaption);
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+		return nID - pItem->GetGroupCaptionID(pColumn);
+
+	return Compare(pColumn, pItem);
+}
+
+int CXTPReportRecordItem::GetGroupCaptionID(CXTPReportColumn* /*pColumn*/)
+{
+	return m_nGroupPriority;
+}
+
+
+void CXTPReportRecordItem::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pItemMetrics)
+{
+	if (m_clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrBackground = m_clrBackground;
+
+	if (m_clrText != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrForeground = m_clrText;
+
+	if (m_pFontCaption != NULL)
+		pItemMetrics->pFont = m_pFontCaption;
+	else if (m_bBoldText)
+		pItemMetrics->pFont = &pDrawArgs->pControl->GetPaintManager()->m_fontBoldText;
+
+}
+
+int CXTPReportRecordItem::GetIndex() const
+{
+	return m_pRecord ? m_pRecord->IndexOf(this) : -1;
+}
+
+BOOL CXTPReportRecordItem::IsEditable() const
+{
+	if (this == NULL)
 		return FALSE;
+
+	ASSERT(m_pRecord);
+	return m_pRecord ? m_pRecord->m_bEditable && m_bEditable && IsFocusable() : FALSE;
+}
+
+
+BOOL CXTPReportRecordItem::IsFocusable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	return m_bFocusable;
+}
+
+void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (IsEditable() && OnRequestEdit(pItemArgs))
+	{
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pItemArgs->pColumn);
+		ASSERT(pEditOptions);
+
+		CXTPReportInplaceButtons* pInpaceButtons = &pEditOptions->arrInplaceButtons;
+
+		CRect rcButtons(pItemArgs->rcItem);
+		CXTPClientRect rcControl(pItemArgs->pControl);
+
+		int i;
+		// calculate buttons widths
+		int nButtonsWidthIn = 0, nButtonsWidthOut = 0;
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			if (pButton->IsInsideCellButton())
+				nButtonsWidthIn += pButton->GetWidth();
+			else
+				nButtonsWidthOut += pButton->GetWidth();
+		}
+
+		// adjust buttons rect
+		if (rcButtons.right + nButtonsWidthOut > rcControl.right)
+			rcButtons.right = rcControl.right - nButtonsWidthOut;
+
+		int nLeftMin = max(rcControl.left, pItemArgs->rcItem.left);
+		if (rcButtons.right - nButtonsWidthIn < nLeftMin)
+			rcButtons.right = nLeftMin + nButtonsWidthIn;
+
+		// create buttons
+		rcButtons.left = rcButtons.right;
+
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			pButton->Create(pItemArgs, rcButtons);
+
+			pControl->GetInplaceButtons()->Add(pButton);
+		}
+
+		// adjust item rect
+		pItemArgs->rcItem.right = rcButtons.left + 1;
+
+		if (pEditOptions->m_bAllowEdit)
+		{
+			pEdit->Create(pItemArgs);
+		}
+		else if (pInpaceButtons->GetSize() > 0)
+		{
+			OnInplaceButtonDown(pInpaceButtons->GetAt(0));
+		}
+
+		//----------------------------------------------------
+		XTP_NM_REPORTRECORDITEM nm;
+		::ZeroMemory(&nm, sizeof(nm));
+
+		nm.pItem = this;
+		nm.pRow = pItemArgs->pRow;
+		nm.pColumn = pItemArgs->pColumn;
+
+		pControl->SendNotifyMessage(XTP_NM_REPORT_BEGINEDIT, (NMHDR*)&nm);
+	}
+}
+
+void CXTPReportRecordItem::OnCancelEdit(CXTPReportControl* pControl, BOOL bApply)
+{
+	CXTPReportInplaceButtons* pInpaceButtons = pControl->GetInplaceButtons();
+
+	for (int i = 0; i < pInpaceButtons->GetSize(); i++)
+	{
+		CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+		pButton->DestroyWindow();
+		pButton->SetItemArgs(0);
+	}
+	pInpaceButtons->RemoveAll();
+
+	CXTPReportInplaceList* pInpaceList = pControl->GetInplaceList();
+	if (pInpaceList->GetSafeHwnd())
+	{
+		pInpaceList->DestroyWindow();
 	}
 
-	// Operations valid for both field types
-#ifdef _DEBUG
-	if (m_nOperation == DumpField || m_nOperation == SetFieldNull)
+
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (bApply && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)pEdit);
+	}
+
+	pEdit->HideWindow();
+	pEdit->SetItemArgs(0);
+	pEdit->DestroyWindow(); // pControl->SetFocus();
+
+
+}
+
+void CXTPReportRecordItem::OnConstraintChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraint* pConstraint)
+{
+	OnEditChanged(pItemArgs, pConstraint->m_strConstraint);
+}
+
+void CXTPReportRecordItem::OnValidateEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+	XTP_REPORTRECORDITEM_ARGS args = *pItemArgs;
+
+	if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		args.AddRef();
+
+		BOOL bRedraw = FALSE;
+		CMDTARGET_RELEASE(pEdit->pItem); //pEdit->pItem = NULL;
+
+		if (GetEditOptions(args.pColumn)->m_bConstraintEdit)
+		{
+			if (pEdit->m_pSelectedConstraint)
+			{
+				OnConstraintChanged(&args, pEdit->m_pSelectedConstraint);
+				bRedraw = TRUE;
+			}
+		}
+		else
+		{
+			CString strValue;
+			pEdit->GetWindowText(strValue);
+
+			if (GetCaption(args.pColumn) != strValue)
+			{
+				OnEditChanged(&args, strValue);
+				bRedraw = TRUE;
+			}
+		}
+		if (bRedraw)
+		{
+			pControl->RedrawControl();
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
+		}
+		else
+		{
+			OnEditCanceled(pItemArgs);
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_EDIT_CANCELED, 0);
+		}
+
+		pEdit->SetItemArgs(0);
+
+		args.Release();
+	}
+}
+
+BOOL CXTPReportRecordItem::IsAllowEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	BOOL bIsAllowEdit = pItemArgs->pControl->IsAllowEdit();
+
+	if (m_pRecord)
+	{
+		// is header record
+		if (m_pRecord->m_pRecords == pItemArgs->pControl->GetHeaderRecords())
+		{
+			bIsAllowEdit = pItemArgs->pControl->IsHeaderRowsAllowEdit();
+		}
+		else
+			// is footer record
+			if (m_pRecord->m_pRecords == pItemArgs->pControl->GetFooterRecords())
+			{
+				bIsAllowEdit = pItemArgs->pControl->IsFooterRowsAllowEdit();
+			}
+	}
+
+	return bIsAllowEdit && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));
+
+/*  return pItemArgs->pControl->IsAllowEdit() && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));*/
+}
+
+BOOL CXTPReportRecordItem::OnRequestEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	XTP_NM_REPORTREQUESTEDIT nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.bCancel = FALSE;
+	nm.pItem = this;
+	nm.pRow = pItemArgs->pRow;
+	nm.pColumn = pItemArgs->pColumn;
+
+	pControl->SendNotifyMessage(XTP_NM_REPORT_REQUESTEDIT, (NMHDR*)&nm);
+
+	return !nm.bCancel;
+}
+
+BOOL CXTPReportRecordItem::OnChar(XTP_REPORTRECORDITEM_ARGS* pItemArgs, UINT nChar)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	if ((nChar == VK_SPACE) && IsEditable() && m_bHasCheckbox && (pItemArgs->pColumn == NULL || pItemArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pItemArgs))
+	{
+		if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+		pControl->RedrawControl();
+
+		pControl->SendMessageToParent(pItemArgs->pRow, this, pItemArgs->pColumn, XTP_NM_REPORT_CHECKED, NULL);
 		return TRUE;
-#endif
-
-	// Operations only valid for outputColumn OR param types
-	if ((m_nOperation == AddToParameterList) ||
-		(m_nOperation == BindParam))
-		return (m_nFieldType == param);
-	else
-		return (m_nFieldType == outputColumn);
-}
-
-void CDaoFieldExchange::AppendParamType(CString& strParamList,
-	DWORD dwParamType)
-{
-	switch (dwParamType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		strParamList += " Text";
-		break;
-
-	case AFX_RFX_BINARY:
-		strParamList += " LongBinary";
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		strParamList += " LongBinary";
-		break;
-
-	case AFX_RFX_BOOL:
-		strParamList += " Bit";
-		break;
-
-	case AFX_RFX_BYTE:
-		strParamList += " Byte";
-		break;
-
-	case AFX_RFX_SHORT:
-		strParamList += " Short";
-		break;
-
-	case AFX_RFX_LONG:
-		strParamList += " Long";
-		break;
-
-	case AFX_RFX_CURRENCY:
-		strParamList += " Currency";
-		break;
-
-	case AFX_RFX_SINGLE:
-		strParamList += " IEEESingle";
-		break;
-
-	case AFX_RFX_DOUBLE:
-		strParamList += " IEEEDouble";
-		break;
-
-	case AFX_RFX_DATE:
-		strParamList += " DateTime";
-		break;
-	}
-}
-
-CDaoFieldCache* CDaoFieldExchange::GetCacheValue(CDaoRecordset* prs, void* pv)
-{
-	// Lookup storage locations
-	void* pvCache=NULL;
-	if (prs == NULL || !prs->m_pMapFieldCache->Lookup(pv, pvCache))
-		AfxThrowDaoException(AFX_DAO_ERROR_DFX_BIND);
-	ASSERT(pvCache!=NULL);
-	return (CDaoFieldCache*)pvCache;
-}
-
-void CDaoFieldExchange::SetNullValue(void* pv, DWORD dwDataType)
-{
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		((CString*)pv)->Empty();
-		break;
-
-	case AFX_RFX_BINARY:
-		((CByteArray*)pv)->SetSize(0);
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		((CLongBinary*)pv)->m_dwDataLength = 0;
-		break;
-
-	case AFX_RFX_BOOL:
-		*(BOOL*)pv = AFX_RFX_BOOL_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_BYTE:
-		*(BYTE*)pv = AFX_RFX_BYTE_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_SHORT:
-		*(short*)pv = AFX_RFX_SHORT_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_LONG:
-		*(long*)pv = AFX_RFX_LONG_PSEUDO_NULL;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		((COleCurrency*)pv)->SetStatus(COleCurrency::null);
-		break;
-
-	case AFX_RFX_SINGLE:
-		*(float*)pv = _afxFloatPseudoNull;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		*(double*)pv = _afxDoublePseudoNull;
-		break;
-
-	case AFX_RFX_DATE:
-		((COleDateTime*)pv)->SetStatus(COleDateTime::null);
-		break;
-	}
-}
-
-BOOL CDaoFieldExchange::IsNullValue(void* pv, DWORD dwDataType)
-{
-	BOOL bNull = FALSE;
-
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		if (((CString*)pv)->IsEmpty())
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_BINARY:
-		if (((CByteArray*)pv)->GetSize() == 0)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		if (((CLongBinary*)pv)->m_dwDataLength == 0)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_BOOL:
-		if (*(BOOL*)pv == AFX_RFX_BOOL_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_BYTE:
-		if (*(BYTE*)pv == AFX_RFX_BYTE_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_SHORT:
-		if (*(short*)pv == AFX_RFX_SHORT_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_LONG:
-		if (*(long*)pv == AFX_RFX_LONG_PSEUDO_NULL)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		if (((COleCurrency*)pv)->GetStatus() == COleCurrency::null)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_SINGLE:
-		if (*(float*)pv == _afxFloatPseudoNull)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		if (*(double*)pv == _afxDoublePseudoNull)
-			bNull = TRUE;
-		break;
-
-	case AFX_RFX_DATE:
-		if (((COleDateTime*)pv)->GetStatus() == COleDateTime::null)
-			bNull = TRUE;
-		break;
 	}
 
-	return bNull;
-}
-
-void CDaoFieldExchange::AllocCacheValue(CDaoFieldCache*& pCache,
-	DWORD dwDataType)
-{
-	// Initialize a new field cache
-	pCache = new CDaoFieldCache;
-	pCache->m_nStatus = 0;
-
-	switch (dwDataType)
+	if (IsAllowEdit(pItemArgs))
 	{
-	default:
-		ASSERT(FALSE);
-		break;
+		pControl->EditItem(pItemArgs);
 
-	case AFX_RFX_TEXT:
-		pCache->m_pvData = new CString();
-		pCache->m_nDataType = AFX_RFX_TEXT;
-		break;
+		CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
 
-	case AFX_RFX_BINARY:
-		pCache->m_pvData = new CByteArray();
-		pCache->m_nDataType = AFX_RFX_BINARY;
-		break;
+		if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+		{
+			pEdit->SetFocus();
+			pEdit->SetSel(0, -1);
+			if (nChar != VK_TAB) pEdit->SendMessage(WM_CHAR, nChar);
+		}
+		return TRUE;
 
-	case AFX_RFX_LONGBINARY:
-		pCache->m_pvData = new CLongBinary();
-		pCache->m_nDataType = AFX_RFX_LONGBINARY;
-		break;
-
-	case AFX_RFX_BOOL:
-		pCache->m_nDataType = AFX_RFX_BOOL;
-		break;
-
-	case AFX_RFX_BYTE:
-		pCache->m_nDataType = AFX_RFX_BYTE;
-		break;
-
-	case AFX_RFX_SHORT:
-		pCache->m_nDataType = AFX_RFX_SHORT;
-		break;
-
-	case AFX_RFX_LONG:
-		pCache->m_nDataType = AFX_RFX_LONG;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		pCache->m_pvData = new COleCurrency();
-		pCache->m_nDataType = AFX_RFX_CURRENCY;
-		break;
-
-	case AFX_RFX_SINGLE:
-		pCache->m_nDataType = AFX_RFX_SINGLE;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		pCache->m_pvData = new double;
-		pCache->m_nDataType = AFX_RFX_DOUBLE;
-		break;
-
-	case AFX_RFX_DATE:
-		pCache->m_pvData = new COleDateTime();
-		pCache->m_nDataType = AFX_RFX_DATE;
-		break;
 	}
+	return FALSE;
 }
 
-void CDaoFieldExchange::DeleteCacheValue(CDaoFieldCache* pCache,
-	DWORD dwDataType)
+CXTPReportRecordItemEditOptions* CXTPReportRecordItem::GetEditOptions(CXTPReportColumn* pColumn)
 {
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
+	if (m_pEditOptions)
+		return m_pEditOptions;
 
-	case AFX_RFX_TEXT:
-		delete (CString*)pCache->m_pvData;
-		break;
+	if (pColumn)
+		return pColumn->GetEditOptions();
 
-	case AFX_RFX_BINARY:
-		delete (CByteArray*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		delete (CLongBinary*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_BOOL:
-	case AFX_RFX_BYTE:
-	case AFX_RFX_SHORT:
-	case AFX_RFX_LONG:
-	case AFX_RFX_SINGLE:
-		break;
-
-	case AFX_RFX_CURRENCY:
-		delete (COleCurrency*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		delete (double*)pCache->m_pvData;
-		break;
-
-	case AFX_RFX_DATE:
-		delete (COleDateTime*)pCache->m_pvData;
-		break;
-	}
-
-	delete pCache;
-	pCache = NULL;
+	return m_pEditOptions = new CXTPReportRecordItemEditOptions();
 }
 
-void CDaoFieldExchange::CopyValue(void* pvSrc, void* pvDest,
-	DWORD dwDataType)
+void CXTPReportRecordItem::OnInplaceButtonDown(CXTPReportInplaceButton* pButton)
 {
-	switch (dwDataType)
+	CXTPReportControl* pControl = pButton->pControl;
+
+	XTP_NM_REPORTINPLACEBUTTON nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.pButton = pButton;
+	nm.pItem = this;
+
+	if (pControl->SendNotifyMessage(XTP_NM_REPORT_INPLACEBUTTONDOWN, (NMHDR*)&nm) == TRUE)
+		return;
+
+	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
 	{
-	default:
-		ASSERT(FALSE);
-		break;
+		CXTPReportInplaceList* pList = pControl->GetInplaceList();
 
-	case AFX_RFX_TEXT:
-		*(CString*)pvDest = *(CString*)pvSrc;
-		break;
-
-	case AFX_RFX_BINARY:
-		((CByteArray*)pvDest)->Copy(*(CByteArray*)pvSrc);
-		break;
-
-	case AFX_RFX_LONGBINARY:
+		XTP_REPORTRECORDITEM_ARGS itemArgs = *pButton;
+		if (!itemArgs.pColumn && !itemArgs.pControl && !itemArgs.pItem && !itemArgs.pRow)
 		{
-			CLongBinary* pLongBinarySrc = (CLongBinary*)pvSrc;
-			CLongBinary* pLongBinaryDest = (CLongBinary*)pvDest;
-
-			// Reallocate memory in destination if necessary
-			AllocLongBinary(*pLongBinaryDest, pLongBinarySrc->m_dwDataLength);
-			pLongBinaryDest->m_dwDataLength =
-				pLongBinarySrc->m_dwDataLength;
-
-			BYTE* pbSrc = (BYTE*)::GlobalLock(pLongBinarySrc->m_hData);
-			BYTE* pbDest = (BYTE*)::GlobalLock(pLongBinaryDest->m_hData);
-			Checked::memcpy_s(pbDest, (size_t)pLongBinaryDest->m_dwDataLength, 
-				pbSrc, (size_t)pLongBinarySrc->m_dwDataLength);
-			::GlobalUnlock(pLongBinarySrc->m_hData);
-			::GlobalUnlock(pLongBinaryDest->m_hData);
-		}
-		break;
-
-	case AFX_RFX_BOOL:
-		*(BOOL*)pvDest = *(BOOL*)pvSrc;
-		break;
-
-	case AFX_RFX_BYTE:
-		*(BYTE*)pvDest = *(BYTE*)pvSrc;
-		break;
-
-	case AFX_RFX_SHORT:
-		*(short*)pvDest = *(short*)pvSrc;
-		break;
-
-	case AFX_RFX_LONG:
-		*(long*)pvDest = *(long*)pvSrc;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		*(COleCurrency*)pvDest = *(COleCurrency*)pvSrc;
-		break;
-
-	case AFX_RFX_SINGLE:
-		*(float*)pvDest = *(float*)pvSrc;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		*(double*)pvDest = *(double*)pvSrc;
-		break;
-
-	case AFX_RFX_DATE:
-		*(COleDateTime*)pvDest = *(COleDateTime*)pvSrc;
-		break;
-	}
-}
-
-BOOL CDaoFieldExchange::CompareValue(void* pvSrc, void* pvDest,
-	DWORD dwDataType)
-{
-	BOOL bDirty = FALSE;
-
-	switch (dwDataType)
-	{
-	default:
-		ASSERT(FALSE);
-		break;
-
-	case AFX_RFX_TEXT:
-		if (*(CString*)pvDest != *(CString*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_BINARY:
-		{
-			CByteArray* pByteArraySrc = (CByteArray*)pvSrc;
-			CByteArray* pByteArrayDest = (CByteArray*)pvDest;
-
-			INT_PTR nSize = pByteArraySrc->GetSize();
-			// If sizes don't compare, must be dirty
-			if (nSize != pByteArrayDest->GetSize())
-				bDirty = TRUE;
-			else
-			{
-				// If sizes compare, compare the data
-				if (memcmp(pByteArrayDest->GetData(), pByteArraySrc->GetData(), (size_t)nSize) != 0)
-					bDirty = TRUE;
-			}
-		}
-		break;
-
-	case AFX_RFX_LONGBINARY:
-		{
-			CLongBinary* pLongBinarySrc = (CLongBinary*)pvSrc;
-			CLongBinary* pLongBinaryDest = (CLongBinary*)pvDest;
-
-			BYTE* pbSrc = (BYTE*)::GlobalLock(pLongBinarySrc->m_hData);
-			BYTE* pbDest = (BYTE*)::GlobalLock(pLongBinaryDest->m_hData);
-
-			// If sizes don't compare, must be dirty
-			if (pLongBinarySrc->m_dwDataLength !=
-				pLongBinaryDest->m_dwDataLength)
-			{
-				bDirty = TRUE;
-			}
-			else
-			{
-				// If sizes compare, compare the data
-				if (memcmp(pbDest, pbSrc, (size_t)pLongBinarySrc->m_dwDataLength) != 0)
-					bDirty = TRUE;
-			}
-
-			::GlobalUnlock(pLongBinarySrc->m_hData);
-			::GlobalUnlock(pLongBinaryDest->m_hData);
-		}
-		break;
-
-	case AFX_RFX_BOOL:
-		if (*(BOOL*)pvDest != *(BOOL*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_BYTE:
-		if (*(BYTE*)pvDest != *(BYTE*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_SHORT:
-		if (*(short*)pvDest != *(short*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_LONG:
-		if (*(long*)pvDest != *(long*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_CURRENCY:
-		if (*(COleCurrency*)pvDest != *(COleCurrency*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_SINGLE:
-		if (*(float*)pvDest != *(float*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_DOUBLE:
-		if (*(double*)pvDest != *(double*)pvSrc)
-			bDirty = TRUE;
-		break;
-
-	case AFX_RFX_DATE:
-		if (*(COleDateTime*)pvDest != *(COleDateTime*)pvSrc)
-			bDirty = TRUE;
-		break;
-	}
-
-	return bDirty;
-}
-
-void CDaoFieldExchange::FillVariant(void* pvValue, DWORD dwDataType,
-	COleVariant** ppVar)
-{
-	COleVariant* pVar;
-
-	if (dwDataType == AFX_RFX_TEXT)
-		pVar = new COleVariant(*(CString*)pvValue, VT_BSTRT);
-	else if (dwDataType == AFX_RFX_BOOL)
-		pVar = new COleVariant(*(long*)pvValue, VT_BOOL);
-	else
-	{
-		pVar = new COleVariant;
-
-		switch (dwDataType)
-		{
-		default:
-			ASSERT(FALSE);
-			break;
-
-		case AFX_RFX_BINARY:
-			*pVar = *(CByteArray*)pvValue;
-			break;
-
-		case AFX_RFX_LONGBINARY:
-			*pVar = *(CLongBinary*)pvValue;
-			break;
-
-		case AFX_RFX_BYTE:
-			*pVar = *(BYTE*)pvValue;
-			break;
-
-		case AFX_RFX_SHORT:
-			*pVar = *(short*)pvValue;
-			break;
-
-		case AFX_RFX_LONG:
-			*pVar = *(long*)pvValue;
-			break;
-
-		case AFX_RFX_CURRENCY:
-			*pVar = *(COleCurrency*)pvValue;
-			break;
-
-		case AFX_RFX_SINGLE:
-			*pVar = *(float*)pvValue;
-			break;
-
-		case AFX_RFX_DOUBLE:
-			*pVar = *(double*)pvValue;
-			break;
-
-		case AFX_RFX_DATE:
-			*pVar = *(COleDateTime*)pvValue;
-		}
-	}
-
-	*ppVar = pVar;
-}
-
-// Default implementation for RFX functions
-void CDaoFieldExchange::Default(LPCTSTR lpszName, void* pv,
-	DWORD dwColumnType, DWORD dwBindOptions)
-{
-	switch (m_nOperation)
-	{
-	case AddToParameterList:
-		if (m_nParam != 1)
-			m_prs->m_strSQL += ",";
-		m_prs->m_strSQL += lpszName;
-		AppendParamType(m_prs->m_strSQL, dwColumnType);
-		return;
-
-	case AddToSelectList:
-		if (m_nField != 1)
-			m_prs->m_strSQL += ",";
-		m_prs->m_strSQL += lpszName;
-		return;
-
-	case BindField:
-		{
-			// Query parser needs "[" & "]", GetRows can't tolerate them.
-			LPTSTR lpszNoBracketName = new TCHAR[lstrlen(lpszName) + 1];
-			m_prs->StripBrackets(lpszName, lpszNoBracketName);
-
-			// Finish setting up column binding info struct
-			LPDAOCOLUMNBINDING pcb =
-				&m_prs->m_prgDaoColBindInfo[m_nField-1];
-			pcb->cbInfoOffset =
-				(DWORD)&m_prs->m_pulColumnLengths[m_nField-1];
-#ifndef _UNICODE
-			pcb->columnID.dwKind = DAOCOLKIND_STR;
-			pcb->columnID.lpstr = lpszNoBracketName;
-#else
-			pcb->columnID.dwKind = DAOCOLKIND_WSTR;
-			pcb->columnID.lpwstr = lpszNoBracketName;
-#endif
-
-			// Setup the field index map (and store value as void ptr)
-			m_prs->m_pMapFieldIndex->SetAt(pv, (void*)m_nField);
-		}
-		return;
-
-	case BindParam:
-		{
-			COleVariant* pvar = NULL;
-			TRY
-			{
-				// NULL params not supported, use IS NULL in SQL
-				// (i.e. - m_strFilter = _T("Foo IS NULL");
-				FillVariant(pv, dwColumnType, &pvar);
-				m_prs->m_pQueryDef->SetParamValue(lpszName, *pvar);
-			}
-			CATCH_ALL(e)
-			{
-				delete pvar;
-				THROW_LAST();
-			}
-			END_CATCH_ALL
-			delete pvar;
-		}
-		return;
-
-	case Fixup:
-		if (m_prs->GetFieldLength(m_nField-1) == DAO_NULL)
-		{
-			// Set the value to PSEUDO NULL and mark the status NULL
-			SetNullValue(pv, dwColumnType);
-			m_prs->SetNullFieldStatus(m_nField-1);
-		}
-		return;
-
-	case AllocCache:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			CDaoFieldCache* pCache;
-
-			// Allocate new storage and add to map
-			AllocCacheValue(pCache, dwColumnType);
-			m_prs->m_pMapFieldCache->SetAt(pv, pCache);
-		}
-		return;
-
-	case StoreField:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			CDaoFieldCache* pCache = GetCacheValue(m_prs, pv);
-
-			// Copy the data to the cache
-			if (dwBindOptions & AFX_DAO_CACHE_BY_VALUE)
-				CopyValue(pv, (void*)&pCache->m_pvData, dwColumnType);
-			else
-				CopyValue(pv, pCache->m_pvData, dwColumnType);
-
-			// Cache the NULL status
-			if (m_prs->IsFieldStatusNull(m_nField-1))
-				pCache->m_nStatus |= AFX_DAO_FIELD_FLAG_NULL;
-			else
-				pCache->m_nStatus &= ~AFX_DAO_FIELD_FLAG_NULL;
-		}
-		return;
-
-	case LoadField:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			CDaoFieldCache* pCache = GetCacheValue(m_prs, pv);
-
-			// Copy the data from the cache
-			if (dwBindOptions & AFX_DAO_CACHE_BY_VALUE)
-				CopyValue((void*)&pCache->m_pvData, pv, dwColumnType);
-			else
-				CopyValue(pCache->m_pvData, pv, dwColumnType);
-
-			// Set the NULL status from the cache
-			if (pCache->m_nStatus & AFX_DAO_FIELD_FLAG_NULL)
-				m_prs->SetNullFieldStatus(m_nField-1);
-			else
-				m_prs->ClearNullFieldStatus(m_nField-1);
-		}
-		return;
-
-	case SetFieldNull:
-		// Setting field NOT NULL doesn't require field exchange
-		if ((m_pvField == NULL && m_nFieldType == outputColumn)
-			|| m_pvField == pv)
-		{
-			SetNullValue(pv, dwColumnType);
-
-			// Also set the status array if not a parameter
-			if (m_nFieldType == outputColumn)
-				m_prs->SetNullFieldStatus(m_nField-1);
-
-#ifdef _DEBUG
-			m_nFieldFound = m_nField;
-#endif
-		}
-		return;
-
-	case MarkForAddNew:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			// Don't need to do anything if field marked dirty
-			if (!m_prs->IsFieldStatusDirty(m_nField-1))
-			{
-				// Mark dirty & not NULL if not set to pseudo NULL value
-				if (!IsNullValue(pv, dwColumnType))
-				{
-					m_prs->SetDirtyFieldStatus(m_nField-1);
-					m_prs->ClearNullFieldStatus(m_nField-1);
-				}
-			}
-		}
-		return;
-
-	case MarkForEdit:
-		if (dwBindOptions & AFX_DAO_ENABLE_FIELD_CACHE)
-		{
-			// If value not pseudo NULL value, clear NULL status
-			if (!IsNullValue(pv, dwColumnType))
-				m_prs->ClearNullFieldStatus(m_nField-1);
-
-			// If field already marked dirty, don't need to check cache
-			if (!m_prs->IsFieldStatusDirty(m_nField-1))
-			{
-				CDaoFieldCache* pCache = GetCacheValue(m_prs, pv);
-
-				BOOL bNullField = m_prs->IsFieldStatusNull(m_nField-1);
-				BOOL bNullCache = pCache->m_nStatus & AFX_DAO_FIELD_FLAG_NULL;
-
-				void* pvData;
-				if (dwBindOptions & AFX_DAO_CACHE_BY_VALUE)
-					pvData = &pCache->m_pvData;
-				else
-					pvData = pCache->m_pvData;
-
-				// Mark dirty if NULL status differs or value differs
-				if ( (bNullCache && !bNullField) ||
-					(!bNullCache && bNullField) ||
-					CompareValue(pv, pvData, dwColumnType))
-				{
-					m_prs->SetDirtyFieldStatus(m_nField-1);
-				}
-			}
-		}
-		return;
-
-	case SetDirtyField:
-		if (m_prs->IsFieldStatusDirty(m_nField-1))
-		{
-			COleVariant* pvar = NULL;
-			TRY
-			{
-				// If field is NULL don't set the value
-				if (!m_prs->IsFieldStatusNull(m_nField-1))
-					FillVariant(pv, dwColumnType, &pvar);
-				else
-				{
-					pvar = new COleVariant;
-					pvar->vt = VT_NULL;
-				}
-
-				// SetFieldValue (put_Collect) doesn't like brackets
-				// Assumes no brackets if first char not a bracket
-				LPTSTR lpszModifiedName = NULL;
-				if (*lpszName == '[')
-				{
-					lpszModifiedName = new TCHAR[lstrlen(lpszName) + 1];
-
-					// Copy the name with no brackets, and reset lpszName
-					m_prs->StripBrackets(lpszName, lpszModifiedName);
-					lpszName = lpszModifiedName;
-				}
-
-				m_prs->SetFieldValue(lpszName, *pvar);
-				delete [] lpszModifiedName;
-			}
-			CATCH_ALL(e)
-			{
-				delete pvar;
-				THROW_LAST();
-			}
-			END_CATCH_ALL
-			delete pvar;
-		}
-		return;
-
-	default:
-		ASSERT(FALSE);
-		return;
-	}
-}
-
-void AFXAPI DFX_Text(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	CString& value, int nPreAllocSize, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	DWORD dwDAOType;
-
-#ifdef _UNICODE
-	dwDAOType = DAO_WCHAR;
-#else
-	dwDAOType = DAO_CHAR;
-#endif
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			// Pre-allocate buffer to prevent needless re-allocations
-			value.GetBuffer(nPreAllocSize);
-			value.ReleaseBuffer();
-
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = dwDAOType;
-			pcb->dwBinding = DAOBINDING_DIRECT | DAOBINDING_CALLBACK;
-			pcb->dwUser = (DWORD)&value;
-			pcb->cbDataOffset = (DWORD)DaoStringAllocCallback;
-			pcb->cbMaxLen = INT_MAX;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_TEXT,
-			dwBindOptions);
-		return;
-
-	case CDaoFieldExchange::Fixup:
-		if (pFX->m_prs->m_pulColumnLengths[pFX->m_nField-1] == 0 ||
-			pFX->m_prs->m_pulColumnLengths[pFX->m_nField-1] == DAO_NULL)
-		{
-			// If null or empty string set length zero
-			value.GetBufferSetLength(0);
-		}
-		else
-		{
-			// Make sure length correct
-			value.GetBufferSetLength(
-				((pFX->m_prs->m_pulColumnLengths[pFX->m_nField-1])/sizeof(TCHAR))-1);
-		}
-
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_TEXT, dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Binary(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	CByteArray& value, int nPreAllocSize, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			// Pre-allocate buffer to prevent needless re-allocations
-			value.SetSize(nPreAllocSize);
-
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BYTES;
-			pcb->dwBinding = DAOBINDING_DIRECT | DAOBINDING_CALLBACK;
-			pcb->dwUser = (DWORD)&value;
-			pcb->cbDataOffset = (ULONG)DaoBinaryAllocCallback;
-			pcb->cbMaxLen = INT_MAX;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_BINARY,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_LongBinary(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	CLongBinary& value, DWORD dwPreAllocSize, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			// Pre-allocate buffer to prevent needless re-allocations
-			AllocLongBinary(value, dwPreAllocSize);
-
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BYTES;
-			pcb->dwBinding = DAOBINDING_DIRECT | DAOBINDING_CALLBACK;
-			pcb->dwUser = (DWORD)&value;
-			pcb->cbDataOffset = (DWORD)DaoLongBinaryAllocCallback;
-			pcb->cbMaxLen = ULONG_MAX;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_LONGBINARY, dwBindOptions);
-		return;
-
-	case CDaoFieldExchange::Fixup:
-		// Unlock data locked in DaoLongBinaryAllocCallback
-		if (value.m_dwDataLength != 0)
-			::GlobalUnlock(value.m_hData);
-
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_LONGBINARY, dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Bool(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	BOOL& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BOOL;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_BOOL,
-			dwBindOptions);
-		return;
-
-	case CDaoFieldExchange::Fixup:
-		// Convert BOOL value from AFX_DAO_TRUE/FALSE to TRUE/FALSE
-		value = (value != AFX_DAO_FALSE);
-
-		pFX->Default(lpszName, (void*)&value,
-			AFX_RFX_BOOL, dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Byte(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	BYTE& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_BYTE;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_BYTE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Short(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	short& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_I2;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_SHORT,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Long(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	long& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_I4;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_LONG,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Currency(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	COleCurrency& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_CURRENCY;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value.m_cur;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(CURRENCY);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-
-			// Finish setting up column binding struct
-			pFX->Default(lpszName, (void*)&value, AFX_RFX_CURRENCY,
-				dwBindOptions);
 			return;
 		}
+		ASSERT(itemArgs.pItem == this);
 
-	case CDaoFieldExchange::Fixup:
-		// Must reset the valid currency flag
-		if (pFX->m_prs->GetFieldLength(pFX->m_nField-1) == DAO_NULL)
-			value.SetStatus(COleCurrency::null);
-		else
-			value.SetStatus(COleCurrency::valid);
+		CXTPWindowRect rcButton(pButton);
+		pControl->ScreenToClient(&rcButton);
+		itemArgs.rcItem.right = rcButton.right;
+		itemArgs.rcItem.bottom  = rcButton.bottom;
 
-		// Fall through to reset the NULL status
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(itemArgs.pColumn);
 
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_CURRENCY,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << ":" << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Single(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	float& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	// Mark as CACHE_BY_VALUE (size <= sizeof(void*))
-	dwBindOptions |= AFX_DAO_CACHE_BY_VALUE;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
+		if (pEditOptions->GetConstraints()->GetCount() > 0)
 		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_R4;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_SINGLE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_Double(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	double& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_R8;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(value);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-		}
-		// Fall through to finish setting up column binding struct
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_DOUBLE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << " = " << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-void AFXAPI DFX_DateTime(CDaoFieldExchange* pFX, LPCTSTR lpszName,
-	COleDateTime& value, DWORD dwBindOptions)
-{
-	(pFX->m_nFieldType == CDaoFieldExchange::outputColumn) ?
-		++pFX->m_nField: ++pFX->m_nParam;
-
-	// Do nothing if op not supported for outputColumn or param type
-	if (!pFX->IsValidOperation())
-		return;
-
-	switch (pFX->m_nOperation)
-	{
-	case CDaoFieldExchange::BindField:
-		{
-			LPDAOCOLUMNBINDING pcb =
-				&pFX->m_prs->m_prgDaoColBindInfo[pFX->m_nField-1];
-			pcb->dwDataType = DAO_DATE;
-			pcb->dwBinding = DAOBINDING_DIRECT;
-			pcb->cbDataOffset = (DWORD)&value.m_dt;
-			pcb->dwUser = 0;
-			pcb->cbMaxLen = sizeof(DATE);
-
-			pFX->m_prs->m_cbFixedLengthFields += pcb->cbMaxLen;
-
-			// Finish setting up column binding struct
-			pFX->Default(lpszName,(void*)&value, AFX_RFX_DATE,
-				dwBindOptions);
-			return;
-		}
-
-	case CDaoFieldExchange::Fixup:
-		// Must reset the valid currency flag
-		if (pFX->m_prs->GetFieldLength(pFX->m_nField-1) == DAO_NULL)
-			value.SetStatus(COleDateTime::null);
-		else
-			value.SetStatus(COleDateTime::valid);
-
-		// Fall through to reset the NULL status
-
-	default:
-		pFX->Default(lpszName, (void*)&value, AFX_RFX_DATE,
-			dwBindOptions);
-		return;
-
-#ifdef _DEBUG
-	case CDaoFieldExchange::DumpField:
-		*pFX->m_pdcDump << "\n" << lpszName << ":" << value;
-		return;
-#endif //_DEBUG
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// DAO memory allocation callback helpers
-
-STDAPI DaoStringAllocCallback(DWORD dwLen, DWORD pData, void** ppv)
-{
-	LPTSTR lpsz;
-	CString* pstr = (CString*)pData;
-
-#ifndef _UNICODE
-	// If using ANSI DAO interfaces, DAO reports field length
-	// rather than data length. In this case there will not be space
-	// for NULL terminator if data length equals field length. Make room.
-	dwLen++;
-	if (dwLen == 2)
-	{
-		//Workaround DAO bug: FIX: DAO 3.6 Causes Debug Errors in MFC DAO Non-Unicode Builds
-		//Problem with a text field that is defined to be only one character in length
-		dwLen*=2;
-	}
-#endif
-
-	TRY
-	{
-		// Only re-allocate if necessary
-		lpsz = pstr->GetBufferSetLength(dwLen/sizeof(TCHAR));
-		*ppv = (void*)(dwLen > 0 ? lpsz : NULL);
-	}
-	CATCH_ALL(e)
-	{
-		e->Delete();
-		return E_OUTOFMEMORY;
-	}
-	END_CATCH_ALL
-
-	return S_OK;
-}
-
-
-STDAPI DaoBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv)
-{
-	CByteArray* pByteArray = (CByteArray*)pData;
-
-	TRY
-	{
-		// Only re-allocate if necessary
-		pByteArray->SetSize(dwLen);
-		*ppv = (void*)(dwLen > 0 ? &((*pByteArray)[0]) : NULL);
-	}
-	CATCH_ALL(e)
-	{
-		// Only exceptions thrown should be CMemoryException
-		e->Delete();
-		return E_OUTOFMEMORY;
-	}
-	END_CATCH_ALL
-
-	return S_OK;
-}
-
-
-STDAPI DaoLongBinaryAllocCallback(DWORD dwLen, DWORD pData, void** ppv)
-{
-	CLongBinary* pLongBinary = (CLongBinary*)pData;
-
-	TRY
-	{
-		AllocLongBinary(*pLongBinary, dwLen);
-	}
-	CATCH_ALL(e)
-	{
-		// Only exception is memory exception, just pass back error.
-		DELETE_EXCEPTION(e);
-		return E_OUTOFMEMORY;
-	}
-	END_CATCH_ALL
-
-	if (pLongBinary->m_dwDataLength != 0)
-	{
-		const BYTE* pByte;
-		pByte = (const BYTE*)::GlobalLock(pLongBinary->m_hData);
-
-		// If mem can't be locked, free up and return error
-		if (pByte == NULL)
-		{
-			::GlobalFree(pLongBinary->m_hData);
-			pLongBinary->m_hData = NULL;
-			return E_OUTOFMEMORY;
-		}
-
-		*ppv = (void*)pByte;
-	}
-	else
-		*ppv = NULL;
-
-	return S_OK;
-}
-
-void AFX_CDECL AllocLongBinary(CLongBinary& lb, DWORD dwDataLength)
-{
-	if (lb.m_hData == NULL)
-	{
-		if (dwDataLength > 0)
-		{
-			// Alloc memory, return error if not possible
-			lb.m_hData = ::GlobalAlloc(GMEM_MOVEABLE, dwDataLength);
-			if (lb.m_hData == NULL)
-				AfxThrowMemoryException();
+			pList->Create(&itemArgs, pEditOptions->GetConstraints());
 		}
 	}
-	else if (::GlobalSize(lb.m_hData) < dwDataLength)
-	{
-		// Save the old address in case ReAlloc fails
-		HGLOBAL hOldData = lb.m_hData;
-
-		// Alloc more mem, free up mem and throw exception if not possible
-		lb.m_hData = ::GlobalReAlloc(hOldData, dwDataLength, GMEM_MOVEABLE);
-		if (lb.m_hData == NULL)
-		{
-			lb.m_hData = hOldData;
-			AfxThrowMemoryException();
-		}
-	}
-	lb.m_dwDataLength = dwDataLength;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// Inline function declarations expanded out-of-line
+CXTPReportHyperlinks* CXTPReportRecordItem::GetHyperlinks()
+{
+	if (!m_pHyperlinks)
+		m_pHyperlinks = new CXTPReportHyperlinks();
 
-#ifndef _AFX_ENABLE_INLINES
+	return m_pHyperlinks;
+}
 
-#define _AFXDAODFX_INLINE
-#include "afxdao.inl"
+void CXTPReportRecordItem::DoPropExchange(CXTPPropExchange* pPX)
+{
+	PX_DWord(pPX, _T("TextColor"), (DWORD&)m_clrText, XTP_REPORT_COLOR_DEFAULT);
+	PX_DWord(pPX, _T("BackgroundColor"), (DWORD&)m_clrBackground, XTP_REPORT_COLOR_DEFAULT);
 
-#endif
+	PX_Bool(pPX, _T("BoldText"), m_bBoldText, FALSE);
+
+	PX_String(pPX, _T("Format"), m_strFormatString, _T("%s"));
+
+	PX_Bool(pPX, _T("Editable"), m_bEditable, TRUE);
+
+	PX_Int(pPX, _T("IconIndex"), m_nIconIndex, XTP_REPORT_NOICON);
+
+	PX_Int(pPX, _T("SortPriority"), m_nSortPriority, -1);
+	PX_Int(pPX, _T("GroupPriority"), m_nGroupPriority, -1);
+
+	PX_String(pPX, _T("GroupCaption"), m_strGroupCaption, _T(""));
+
+	PX_Bool(pPX, _T("Focusable"), m_bFocusable, TRUE);
+
+	PX_Bool(pPX, _T("Checked"), m_bChecked, FALSE);
+	PX_Bool(pPX, _T("HasCheckbox"), m_bHasCheckbox, FALSE);
+
+	ULONGLONG ullData = m_dwData;
+	PX_UI8(pPX, _T("Data"), ullData, 0);
+	m_dwData = (DWORD_PTR)ullData;
+
+	PX_String(pPX, _T("Tooltip"), m_strTooltip, _T(""));
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_98)
+	{
+		PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
+	}
 
 
-/////////////////////////////////////////////////////////////////////////////
+	// Hyperlinks
+	CXTPPropExchangeSection secHyperlinks(pPX->GetSection(_T("Hyperlinks")));
+
+	CXTPReportHyperlinks arHyperlinks;
+
+	if (pPX->IsStoring() && m_pHyperlinks)
+	{
+		arHyperlinks.CopyFrom(m_pHyperlinks);
+	}
+
+	arHyperlinks.DoPropExchange(&secHyperlinks);
+
+	if (pPX->IsLoading())
+	{
+		if (arHyperlinks.GetSize())
+		{
+			if (GetHyperlinks())
+				GetHyperlinks()->CopyFrom(&arHyperlinks);
+		}
+		else if (m_pHyperlinks)
+		{
+			m_pHyperlinks->RemoveAll();
+		}
+	}
+}
+

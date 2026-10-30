@@ -1,100 +1,51 @@
-// from server: 0% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Renderbuffer.cpp
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
-@file Renderbuffer.cpp
 
-@maintainer Daniel Hilferty, djhilferty@users.sourceforge.net
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-@cite http://oss.sgi.com/projects/ogl-sample/registry/EXT/framebuffer_object.txt
+struct Object {
+    virtual ~Object();
+};
 
-@created 2006-01-07
-@edited  2006-02-14
-*/
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-#include "GLG3D/Renderbuffer.h"
-#include "GLG3D/glcalls.h"
-#include "GLG3D/TextureFormat.h"
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
 
-namespace G3D {
+struct Count : CountBase {
+    Object* object;
 
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
 
-/////////////////////////////////////////////////////////////////////////////
+extern void __cdecl deleteObject(Object*);
 
-Renderbuffer::Renderbuffer (	
-    const std::string&			_name, 
-    const GLuint				_imageID,
-    const G3D::TextureFormat*	_format, 
-    const int					_width, 
-    const int					_height) : 
-    mName(_name),
-    mImageID(_imageID),
-    mFormat(_format),
-    mWidth(_width),
-    mHeight(_height) {
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
 
-    // Intentionally empty
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
+    }
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }
-
-
-Renderbuffer::~Renderbuffer () {
-    glDeleteRenderbuffersEXT(1, &mImageID);
-}
-
-
-RenderbufferRef Renderbuffer::fromGLRenderbuffer(
-    const std::string&			_name, 
-    const GLuint				_imageID,
-    const G3D::TextureFormat	*_format) {
-
-    GLint w, h;
-
-    // Extract the width and height
-    glGetRenderbufferParameterivEXT (GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_WIDTH_EXT, &w);
-    glGetRenderbufferParameterivEXT (GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_WIDTH_EXT, &h);
-    debugAssertGLOk();
-
-    // Create new renderbuffer
-    return new Renderbuffer(_name, _imageID, _format, w, h);
-}
-
-
-RenderbufferRef Renderbuffer::createEmpty(
-    const std::string&			_name, 
-    const G3D::TextureFormat*   _format, 
-    const int					_width, 
-    const int					_height) {
-    // New Renderbuffer ID
-    GLuint _imageID;
-
-    // Save old renderbuffer state
-    GLint origBuffer;
-    glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &origBuffer);
-
-    // Generate buffer
-    glGenRenderbuffersEXT (1, &_imageID);
-    debugAssertGLOk();
-
-    // Bind the buffer
-    glBindRenderbufferEXT (GL_RENDERBUFFER_EXT, _imageID);
-    debugAssertGLOk();
-
-    // Allocate storage for it
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, _format->OpenGLFormat, _width, _height);
-
-    // Check for successful generation (ie, no INVALID_OPERATION)
-    debugAssertGLOk();
-
-    // Restore renderbuffer state
-    glBindRenderbufferEXT (GL_RENDERBUFFER_EXT, origBuffer);
-    debugAssertGLOk();
-
-    // Create new renderbuffer
-    return new Renderbuffer(_name, _imageID, _format, _width, _height);
-}
-
-} // End Namespace G3D

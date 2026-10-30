@@ -1,48 +1,17 @@
-// from server: 36% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-struct ICreator {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-};
-
-struct Creator : ICreator {
-    void* field0;
-    void* field4;
-};
-
-struct FactoryProduct {
-    void* field0;
-    Creator creator;
-    FactoryProduct(void* a, void* b);
-};
-
-void __stdcall sub_40E1F0(Creator* self, void* a, void* b);
-
-FactoryProduct::FactoryProduct(void* a, void* b)
-{
-    this->field0 = a;
-    sub_40E1F0(&this->creator, a, b);
-    this->creator.field0 = 0;
-    if (a != 0) {
-        char* p = (char*)a + 0xa4;
-        if (p != 0) {
-            *(void**)p = a;
-            void* old = this->creator.field0;
-            if (old != 0) {
-                _InterlockedExchangeAdd((volatile long*)((char*)old + 8), 1);
-            }
-            void* cur = *(void**)(p + 4);
-            if (cur != 0) {
-                if (_InterlockedExchangeAdd((volatile long*)((char*)cur + 8), -1) == 1) {
-                    void** vt = *(void***)cur;
-                    void (*fn)(void*) = (void (*)(void*))vt[2];
-                    fn(cur);
-                }
-            }
-            *(void**)(p + 4) = old;
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

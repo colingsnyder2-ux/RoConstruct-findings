@@ -1,8 +1,7 @@
-// from server: 94% by colin
-// roc-lang: c
 // roc-cl: 50727
+// roc-lang: c
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.7 pngwutil.c
+// roc-lib: g3d-6.09-png-dll pngwutil.c
 
 // Candidate translation unit (score above; library headers required).
 
@@ -18,6 +17,10 @@
 #define PNG_INTERNAL
 #include "png.h"
 #ifdef PNG_WRITE_SUPPORTED
+
+#ifdef _MSC_VER
+#   pragma warning( disable : 4244 )
+#endif
 
 /* Place a 32-bit number into a buffer in PNG byte order.  We work
  * with unsigned numbers for convenience, although one supported

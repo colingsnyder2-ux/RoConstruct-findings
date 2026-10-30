@@ -1,162 +1,120 @@
-// from server: 0% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render AggregatingSceneManager.cpp
+// roc-lib: rbxgs-dll roc_native_content_load_08181d6e956245b9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/AggregatingSceneManager.h"
+#define _DLL
+#include "util/ContentProvider.h"
+#include "util/Http.h"
+#include "util/StandardOut.h"
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <algorithm>
+#include <vector>
+#include <list>
+#include <map>
 
-namespace RBX
-{
-	namespace Render
-	{
-		AggregatingSceneManager::AggregatingSceneManager(RenderScene* renderScene)
-			: SceneManager(renderScene)
-		{
-		}
+namespace RBX {
+// Status values are independently visible in the 2008 caller (1/2).
+// The 2016 AsyncHttpQueue names corroborate their meaning.
+enum RequestResult { Waiting, Succeeded, Failed };
+typedef boost::function<void(RequestResult, std::istream&)> RequestCallback;
+struct ContentRequest {
+    ContentId id;
+    std::vector<RequestCallback> callbacks;
+    bool operator==(const ContentId& other) const {return id.toString()==other.toString();}
+};
+void readContent(RequestCallback, RequestResult, boost::shared_ptr<const std::string>);
 
-		AggregatingSceneManager::~AggregatingSceneManager() {}
+// Native 2007 cache/failed-URL records. Only the owning class revision differs.
+struct CachedContentRecord {
+    boost::shared_ptr<const std::string> data;
+    boost::shared_ptr<const std::string> filename;
+};
+struct FailedUrlRecord {
+    std::string url;
+    boost::posix_time::ptime expiration;
+    FailedUrlRecord(const char*);
+};
 
-		void AggregatingSceneManager::addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			addToScene(chunk);
-		}
-
-		void AggregatingSceneManager::removeModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			invalidSleepingModels.erase(chunk);
-			invalidMovingModels.erase(chunk);
-
-			G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
-			if (aggregate.notNull())
-				deconstructAggregate(aggregate);
-
-			removeFromScene(chunk);
-			dequeueSleepingChunk(chunk);
-		}
-
-		void AggregatingSceneManager::setSleeping(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool sleeping)
-		{
-			if (sleeping)
-			{
-				bool erased = invalidMovingModels.erase(chunk) == 1;
-
-				if (erased)
-					invalidSleepingModels.insert(chunk);
-
-				queueSleepingChunk(chunk);
-			}
-			else
-			{
-				bool erased = invalidSleepingModels.erase(chunk) == 1;
-
-				if (erased)
-					invalidMovingModels.insert(chunk);
-
-				G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
-				if (aggregate.notNull())
-					deconstructAggregate(aggregate);
-
-				dequeueSleepingChunk(chunk);
-			}
-		}
-
-		void AggregatingSceneManager::invalidateModel(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool isSleeping)
-		{
-			if (isSleeping)
-				invalidSleepingModels.insert(chunk);
-			else
-				invalidMovingModels.insert(chunk);
-		}
-
-		void AggregatingSceneManager::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
-
-			for (; iter != end; iter++)
-			{
-				if (iter->second->dequeueSleepingChunk(chunk))
-					break;
-			}
-		}
-
-		void AggregatingSceneManager::clear()
-		{
-			invalidSleepingModels.clear();
-			invalidMovingModels.clear();
-
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
-			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
-
-			for (; iter != end; iter++)
-			{
-				iter->second->clear();
-			}
-
-			clearScene();
-		}
-
-		bool AggregatingSceneManager::Bucket::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			std::vector<G3D::ReferenceCountedPointer<Chunk>>::iterator found = std::find(queue.begin(), queue.end(), chunk);
-
-			if (found != queue.end())
-			{
-				queue.erase(found);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		void AggregatingSceneManager::queueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
-		{
-			G3D::ReferenceCountedPointer<Bucket> queue;
-
-			{
-				BucketKey key(chunk);
-
-				std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.find(key);
-
-				if (iter == buckets.end())
-				{
-					queue = new Bucket;
-					buckets[key] = queue;
-				}
-				else
-				{
-					queue = iter->second;
-				}
-			}
-
-			queue->addToQueue(chunk);
-		}
-
-		bool AggregatingSceneManager::BucketKey::operator<(const AggregatingSceneManager::BucketKey& that) const
-		{
-			if (this->material < that.material)
-				return true;
-			if (this->material > that.material)
-				return false;
-
-			if (this->castsShadows < that.castsShadows)
-				return true;
-			if (this->castsShadows > that.castsShadows)
-				return false;
-
-			if (this->polygonOffset < that.polygonOffset)
-				return true;
-			if (this->polygonOffset > that.polygonOffset)
-				return false;
-
-			if (this->cullable < that.cullable)
-				return true;
-			else
-				return false;
-		}
-	}
+std::string nativeFindAsset(ContentId); // 00560460 cdecl string return/byvalue32B
+std::string nativeFindHashFile(ContentId); // 0055fdc0 sameABI
+class RequestProcessorView {
+    template<class T> T& at(unsigned offset) {
+        return *reinterpret_cast<T*>(reinterpret_cast<char*>(this) + offset);
+    }
+    boost::mutex& requestSync() { return at<boost::mutex>(0x130); }
+    std::list<ContentRequest>& requestQueue() { return at<std::list<ContentRequest> >(0x138); }
+    std::list<FailedUrlRecord>& failedUrls() { return at<std::list<FailedUrlRecord> >(0x154); }
+    boost::mutex& contentCacheMutex() { return at<boost::mutex>(0x170); }
+    std::map<ContentId, CachedContentRecord>& contentCache() {
+        return at<std::map<ContentId, CachedContentRecord> >(0x178);
+    }
+public:
+    bool isUrlBad(const char*);
+    CachedContentRecord* loadContent(ContentId, int mode, const RequestCallback* callback);
+};
+CachedContentRecord* RequestProcessorView::loadContent(ContentId id, int mode, const RequestCallback* callback) {
+    if (id.isNull()) return NULL;
+    {
+        boost::mutex::scoped_lock lock(contentCacheMutex());
+        std::map<ContentId,CachedContentRecord>::iterator found = contentCache().find(id);
+        if (found != contentCache().end()) return &found->second;
+    }
+    if (id.isAsset()) {
+        boost::shared_ptr<const std::string> filename(new std::string(nativeFindAsset(id)));
+        if (filename->empty()) return NULL;
+        boost::mutex::scoped_lock lock(contentCacheMutex());
+        CachedContentRecord& content = contentCache()[id];
+        content.filename = filename;
+        return &content;
+    } else {
+        boost::shared_ptr<const std::string> filename(new std::string(nativeFindHashFile(id)));
+        if (!filename->empty()) {
+            boost::mutex::scoped_lock lock(contentCacheMutex());
+            CachedContentRecord& content = contentCache()[id];
+            content.filename = filename;
+            return &content;
+        }
+    }
+    if (id.isHttp()) {
+        switch(mode) {
+        case 1: {
+            boost::mutex::scoped_lock lock(requestSync());
+            if (!isUrlBad(id.c_str())) {
+                std::list<ContentRequest>::iterator found = std::find(requestQueue().begin(),requestQueue().end(),id);
+                if (found == requestQueue().end()) {
+                    requestQueue().push_back(ContentRequest());
+                    ContentRequest& request = requestQueue().back();
+                    request.id = id;
+                    if (callback) request.callbacks.push_back(*callback);
+                } else if (callback) {
+                    found->callbacks.push_back(*callback);
+                }
+            }
+            at<worker_thread*>(0x198)->wake();
+            break;
+        }
+        case 2: {
+            boost::shared_ptr<std::string> text(new std::string);
+            try {
+                Http(id.toString()).get(*text);
+            } catch (std::exception&) {
+                boost::mutex::scoped_lock lock(requestSync());
+                {
+                    FailedUrlRecord failed(id.c_str());
+                    failedUrls().push_front(failed);
+                }
+                throw;
+            }
+            boost::mutex::scoped_lock lock(contentCacheMutex());
+            CachedContentRecord& content = contentCache()[id];
+            content.data = text;
+            return &content;
+        }
+        }
+    }
+    return NULL;
+}
 }

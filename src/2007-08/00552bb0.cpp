@@ -1,39 +1,12 @@
-// from server: 32% by colin
-struct S {
-    void* vfptr0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    S* construct(void* arg);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_1a066d61bcfa73c0.cpp
 
-extern "C" void __stdcall sub_552A70(void* p);
-
-extern void* g_77E4CC;
-extern void* g_77E4DC;
-extern void* g_77E4E0;
-
-S* S::construct(void* arg)
-{
-    if (arg != 0) {
-        *(void**)((char*)this + 8) = (void*)0x7A7D04;
-        *(void**)((char*)this + 0x14) = g_77E4E0;
-        *(void**)((char*)this + 0x14) = g_77E4DC;
-    }
-    *(void**)((char*)this + 4) = 0;
-    *(void**)this = (void*)0x7A78B0;
-    sub_552A70((char*)this + 8);
-    *(void**)this = (void*)0x7A7CE0;
-    void* p = *(void**)((char*)this + 8);
-    void* q = *(void**)((char*)p + 4);
-    *(void**)((char*)q + (int)this + 8) = (void*)0x7A7CD8;
-    sub_552A70((char*)this + 0xC);
-    *(void**)((char*)this + 4) = (char*)this + 0xC;
-    void* r = *(void**)((char*)this + 0xC);
-    *(void**)((char*)r + 0xC) = this;
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <boost/iostreams/filtering_stream.hpp>
+template class boost::iostreams::filtering_stream<boost::iostreams::input>;
+template class boost::iostreams::filtering_stream<boost::iostreams::output>;
+template class boost::iostreams::chain<boost::iostreams::input>;
+template class boost::iostreams::chain<boost::iostreams::output>;

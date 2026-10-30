@@ -1,8 +1,7 @@
-// from server: 73% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Log.cpp
+// roc-lib: g3d-6.09 roc_g3d_log_guard_18744d5ad0bb680e.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
@@ -126,8 +125,10 @@ void __cdecl Log::vprintf(const char* fmt, va_list argPtr) {
 
 
 void Log::print(const std::string& s) {
-    printHeader();
-    fprintf(logFile, "%s", s.c_str());
+    if (logFile != NULL) {
+        printHeader();
+        fprintf(logFile, "%s", s.c_str());
+    }
 }
 
 

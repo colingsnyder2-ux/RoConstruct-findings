@@ -1,27 +1,39 @@
-// from server: 83% by colin
-struct DataModel;
+// from server: 100% by tajop
+#include <string>
 
-struct S {
-    void* vtable;
-    char pad[8];
-    DataModel* model;
-    S* init(DataModel* dm);
+namespace RBX {
+
+class VerbContainer {
 };
 
-extern "C" void* __stdcall sub_77E698(const char*);
-extern "C" void __stdcall sub_564C50(void* a, void* b);
+class Verb {
+public:
+    Verb(VerbContainer* container, std::string name);
+    virtual ~Verb();
+    virtual void doIt();
+private:
+    void* field_4;
+    void* field_8;
+};
 
-S* S::init(DataModel* dm) {
-    char* p;
-    if (dm != 0) {
-        p = (char*)dm + 0x14c;
-    } else {
-        p = 0;
-    }
-    char buf[0x1c];
-    sub_77E698("ForceAssertion");
-    sub_564C50(this, p);
-    this->model = dm;
-    this->vtable = (void*)0x7a90a8;
-    return this;
+class DataModelBase {
+    char pad[0x14c];
+};
+
+class DataModel : public DataModelBase, public VerbContainer {
+};
+
+class StatsVerb : public Verb {
+public:
+    StatsVerb(DataModel* dataModel);
+    virtual void doIt();
+private:
+    DataModel* dataModel;
+};
+
+StatsVerb::StatsVerb(DataModel* dataModel)
+    : Verb(dataModel, "Stats"), dataModel(dataModel)
+{
+}
+
 }

@@ -1,180 +1,433 @@
-// from server: 57% by intel
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
 
 // Candidate translation unit (score above; library headers required).
-/* Copyright (c) 2002-2005 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying
- * file LICENSE-1.0 or http://www.boost.org/LICENSE-1.0)
- * Author: Jeff Garland, Bart Garst
- * $Date: 2005/06/21 03:34:50 $
- */
+#include "util/ContentProvider.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/FileSystem.h"
+#include "v8xml/SerializerV2.h"
+#include <atlutil.h>
+#include <G3D/format.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/copy.hpp>
 
+namespace RBX
+{
+	// TODO: check match
+	bool operator<(const ContentId& a, const ContentId& b)
+	{
+		return a.toString() < b.toString();
+	}
 
+	bool operator!=(const ContentId& a, const ContentId& b)
+	{
+		return a.toString() != b.toString();
+	}
 
-#ifndef BOOST_DATE_TIME_SOURCE
-#define BOOST_DATE_TIME_SOURCE
-#endif
-#include "boost/date_time/gregorian/greg_month.hpp"
-#include "boost/date_time/gregorian/greg_facet.hpp"
-#include "boost/date_time/date_format_simple.hpp"
-#include "boost/date_time/compiler_config.hpp"
-#if defined(BOOST_DATE_TIME_INCLUDE_LIMITED_HEADERS)
-#include "boost/date_time/gregorian/formatters_limited.hpp"
-#else
-#include "boost/date_time/gregorian/formatters.hpp"
-#endif
-#include "boost/date_time/date_parsing.hpp"
-#include "boost/date_time/gregorian/parsers.hpp"
+	ContentId ContentId::fromAssets(const std::string& filePath)
+	{
+		std::string header = "rbxasset://";
+		return ContentId(header + filePath);
+	}
 
-#include "greg_names.hpp"
-namespace boost {
-namespace gregorian {
+	ContentProvider::ContentProvider()
+	{
+		char path[MAX_PATH];
+		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
+		{
+			this->singleton().setAssetFolder(path);
+		}
+		else
+		{
+			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
+		}
 
-  /*! Returns a shared pointer to a map of Month strings & numbers.
-   * Strings are both full names and abbreviations.
-   * Ex. ("jan",1), ("february",2), etc...
-   * Note: All characters are lowercase - for case insensitivity
-   */
-  greg_month::month_map_ptr_type greg_month::get_month_map_ptr()
-  {
-    static month_map_ptr_type month_map_ptr(new greg_month::month_map_type());
+		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
+	}
 
-    if(month_map_ptr->empty()) {
-      std::string s("");
-      for(unsigned short i = 1; i <= 12; ++i) {
-        greg_month m(static_cast<month_enum>(i));
-        s = m.as_long_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-        s = m.as_short_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-      }
-    }
-    return month_map_ptr;
-  }
+	ContentProvider::~ContentProvider()
+	{
+		requestProcessor->join();
+	}
 
+	bool ContentProvider::isHttpUrl(const std::string& s)
+	{
+		if (s.find("http://") == 0)
+			return true;
 
-  //! Returns 3 char english string for the month ex: Jan, Feb, Mar, Apr
-  const char*
-  greg_month::as_short_string() const 
-  {
-    return short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as string in english ex: January, February
-  const char*
-  greg_month::as_long_string()  const 
-  {
-    return long_month_names[value_-1];
-  }
- 
-  //! Return special_value from string argument
-  /*! Return special_value from string argument. If argument is 
-   * not one of the special value names (defined in names.hpp), 
-   * return 'not_special' */
-  special_values special_value_from_string(const std::string& s) {
-    short i = date_time::find_match(special_value_names,
-                                    special_value_names,
-                                    date_time::NumSpecialValues,
-                                    s);
-    if(i > date_time::NumSpecialValues) { // match not found
-      return not_special;
-    }
-    else {
-      return static_cast<special_values>(i);
-    }
-  }
+		if (s.find("https://") == 0)
+			return true;
 
+		return false;
+	}
 
-#ifndef BOOST_NO_STD_WSTRING
-  //! Returns 3 wchar_t english string for the month ex: Jan, Feb, Mar, Apr
-  const wchar_t*
-  greg_month::as_short_wstring() const 
-  {
-    return w_short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as wchar_t string in english ex: January, February
-  const wchar_t*
-  greg_month::as_long_wstring()  const 
-  {
-    return w_long_month_names[value_-1];
-  }
-#endif // BOOST_NO_STD_WSTRING
-  
-#ifndef BOOST_DATE_TIME_NO_LOCALE
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, char>* 
-  create_facet_def(char type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    
-    return new facet_def(short_month_names,
-                         long_month_names,
-                         special_value_names,
-                         short_weekday_names,
-                         long_weekday_names);
-  }
-  
-  //! generates a locale with the set of gregorian name-strings of type char*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, char type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    return std::locale(loc, new facet_def(short_month_names,
-                                          long_month_names,
-                                          special_value_names,
-                                          short_weekday_names,
-                                          long_weekday_names)
-        );
-  }
-  
-#ifndef BOOST_NO_STD_WSTRING
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, wchar_t>* 
-  create_facet_def(wchar_t type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config,wchar_t> facet_def;
-    
-    return new facet_def(w_short_month_names,
-                         w_long_month_names,
-                         w_special_value_names,
-                         w_short_weekday_names,
-                         w_long_weekday_names);
-  }
+	std::string ContentProvider::assetFolder() const
+	{
+		return assetFolderPath;
+	}
 
-  //! generates a locale with the set of gregorian name-strings of type wchar_t*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, wchar_t type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, wchar_t> facet_def;
-    return std::locale(loc, new facet_def(w_short_month_names,
-                                          w_long_month_names,
-                                          w_special_value_names,
-                                          w_short_weekday_names,
-                                          w_long_weekday_names)
-        );
-  }
-#endif // BOOST_NO_STD_WSTRING
-#endif // BOOST_DATE_TIME_NO_LOCALE
+	bool ContentProvider::isRequestQueueEmpty()
+	{
+		boost::mutex::scoped_lock lock(requestSync);
+		return requestQueue.empty();
+	}
 
-} } //namespace gregorian
+	bool ContentProvider::isUrlBad(const char* url)
+	{
+		boost::mutex::scoped_lock lock(requestSync);
 
+		std::list<FailedUrl>::iterator iter = failedUrls.begin();
+		std::list<FailedUrl>::iterator end = failedUrls.end();
 
+		for (; iter != end; iter++)
+		{
+			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
+			{
+				failedUrls.erase(iter, end);
+				return false;
+			}
+			else if (iter->url == url)
+			{
+				return true;
+			}
+		}
 
+		return false;
+	}
 
+	void ContentProvider::clearContentCache()
+	{
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+		contentCache.clear();
+	}
 
+	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
+	{
+		boost::scoped_ptr<std::istream> stream(getContent(id));
+		
+		TextXmlParser machine(stream->rdbuf());
+		boost::scoped_ptr<XmlElement> root(machine.parse());
 
+		SerializerV2().loadInstances(root.get(), instances);
+	}
+
+	bool ContentProvider::hasContent(ContentId id)
+	{
+		return loadContent(id, NoHttpRequest) != NULL;
+	}
+
+	std::string ContentProvider::getAssetFile(const std::string& filePath)
+	{
+		return getFile(ContentId::fromAssets(filePath));
+	}
+
+	std::string ContentProvider::getFile(ContentId ticket)
+	{
+		CachedContent* content = loadContent(ticket, SyncHttpRequest);
+		if (content && registerFile(content))
+		{
+			return *content->filename;
+		}
+
+		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+	}
+
+	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return false;
+
+		if (!registerFile(content))
+			return false;
+
+		filename = *content->filename;
+		return true;
+	}
+
+	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return boost::shared_ptr<const std::string>();
+
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+
+		if (!content->data)
+		{
+			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
+			std::ostringstream data;
+
+			boost::iostreams::copy(stream, data);
+
+			content->data.reset(new std::string(data.str()));
+		}
+
+		return content->data;
+	}
+
+	std::string ContentProvider::findAsset(ContentId contentId)
+	{
+		RBXASSERT(contentId.isAsset());
+
+		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	std::string ContentProvider::findFile(ContentId contentId)
+	{
+		RBXASSERT(contentId.isFile());
+
+		const char* file = contentId.c_str();
+		file += 7;
+
+		ATL::CPath filePath(file);
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	static ATL::CPath getLocalCachePath(bool createPath)
+	{
+		ATL::CPath path;
+
+		if (createPath)
+		{
+			static std::string s = FileSystem::getCacheDirectory(true);
+			path.m_strPath.SetString(s.c_str());
+		}
+		else
+		{
+			static std::string s = FileSystem::getCacheDirectory(false);
+			path.m_strPath.SetString(s.c_str());
+		}
+
+		return path;
+	}
+
+	std::string ContentProvider::findHashFile(ContentId contentId)
+	{
+		ATL::CPath cachePath = getLocalCachePath(true);
+
+		ATL::CPath filePath = cachePath;
+		filePath.Append(contentId.c_str());
+
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	void ContentProvider::setAssetFolder(const char* sPath)
+	{
+		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
+
+		ATL::CPath path(sPath);
+
+		if (path.IsRelative())
+			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
+
+		if (!path.IsDirectory())
+			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
+
+		path.AddBackslash();
+		assetFolderPath = path;
+	}
+
+	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	{
+		ContentId id;
+
+		{
+			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
+			hasher->addData(content);
+			id = ContentId(hasher->toString(), mimeType);
+		}
+
+		ATL::CPath filePath = getLocalCachePath(true);
+		filePath.Append(id.c_str());
+
+		if (!filePath.FileExists())
+		{
+			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
+			content.clear();
+			content.seekg(0, std::ios::beg);
+
+			do
+			{
+				char buffer[1024];
+				content.read(buffer, sizeof(buffer));
+				outStream.write(buffer, content.gcount());
+			}
+			while (content.gcount() > 0);
+		}
+
+		return id;
+	}
+
+	bool ContentProvider::registerFile(CachedContent* item)
+	{
+		CachedContent temp;
+
+		{
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			temp = *item;
+		}
+
+		if (!temp.filename)
+		{
+			std::istringstream ss(*temp.data);
+			ContentId hash = registerContent(ss, Name::getNullName());
+
+			std::string filename = findHashFile(hash);
+			if (filename.empty())
+				return false;
+
+			temp.filename.reset(new std::string(filename));
+
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			*item = temp;
+		}
+
+		return true;
+	}
+
+	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
+	{
+		ContentId contentId(id);
+
+		if (hasContent(contentId))
+		{
+			stream.clear();
+			stream.seekg(dataLength, std::ios::cur);
+		}
+		else
+		{
+			ATL::CPath filePath = getLocalCachePath(true);
+			filePath.Append(contentId.c_str());
+
+			std::ofstream content;
+			content.open(filePath, std::ios::binary | std::ios::out);
+
+			char data;
+
+			for (unsigned long i = 0; i < dataLength; i++)
+			{
+				RBXASSERT(content.good());
+				stream.get(data);
+				content << data;
+			}
+		}
+
+		return contentId;
+	}
+
+	ContentProvider::FailedUrl::FailedUrl(const char* url)
+		: url(url),
+		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
+	{
+	}
+
+	class MD5HasherImpl : public MD5Hasher
+	{
+	private:
+		HCRYPTPROV hProv;
+		HCRYPTHASH hHash;
+		std::string result;
+
+	public:
+		MD5HasherImpl()
+			: hProv(NULL),
+			  hHash(NULL),
+			  result()
+		{
+			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
+			}
+
+			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
+			}
+		}
+		~MD5HasherImpl()
+		{
+		}
+
+	public:
+		virtual void addData(const char* data, size_t nBytes)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(const std::string& data)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(std::istream& data)
+		{
+			data.clear();
+			data.seekg(0, std::ios_base::beg);
+
+			char buffer[1024];
+			do
+			{
+				data.read(buffer, sizeof(buffer));
+				addData(buffer, data.gcount());
+			}
+			while (data.gcount() > 0);
+		}
+		virtual std::string toString()
+		{
+			c_str();
+			return result;
+		}
+		virtual const char* c_str()
+		{
+			if (result.empty())
+			{
+				DWORD hashSize;
+				DWORD hashSizeLen = sizeof(DWORD);
+				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				char* hashValue = new char[hashSize];
+				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				for (int i = 0; i < (int)hashSize; ++i)
+				{
+					ATL::CString temp;
+					temp.Format("%x", hashValue[i]);
+					result += temp.GetString();
+				}
+
+				delete[] hashValue;
+			}
+
+			return result.c_str();
+		}
+	};
+
+	MD5Hasher* MD5Hasher::create()
+	{
+		return new MD5HasherImpl();
+	}
+}

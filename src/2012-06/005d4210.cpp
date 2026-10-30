@@ -1,17 +1,22 @@
-// from server: 80% by atomic.potato
-extern "C" void* __cdecl CreateValue(void*);
-extern "C" int __cdecl CheckValue(void*, void*);
-
-struct S {
-    void* value;
-    int Creator();
+// from server: 100% by tajop
+struct Settings {
+    bool check(void*);
 };
 
-int S::Creator()
+struct S {
+    void* field0;
+    void* field1;
+    void* field2;
+    Settings* settings;
+    void* get();
+    void* Creator();
+};
+
+void* S::Creator()
 {
-    void* p = value;
-    void* q = CreateValue(this);
-    if (CheckValue(p, q))
-        return (int)((char*)this - 0x1c);
+    Settings* p = settings;
+    void* q = get();
+    if (p->check(q))
+        return (char*)this - 0x1c;
     return 0;
 }

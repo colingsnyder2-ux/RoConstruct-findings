@@ -1,28 +1,17 @@
-// from server: 37% by colin
-struct FactoryProduct {
-    void construct();
-    int init();
-    char pad[0x90];
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-extern "C" void __fastcall sub_5F04A0(void*);
-extern "C" int __fastcall sub_5F3A40();
-
-void FactoryProduct::construct() {
-    sub_5F04A0(this);
-    *(int*)((char*)this + 0x00) = 0x7c0db4;
-    *(int*)((char*)this + 0x04) = 0x7c0dac;
-    *(int*)((char*)this + 0x10) = 0x7c0da4;
-    *(int*)((char*)this + 0x14) = 0x7c0d94;
-    *(int*)((char*)this + 0x2c) = 0x7c0d84;
-    *(int*)((char*)this + 0x44) = 0x7c0d74;
-    *(int*)((char*)this + 0x5c) = 0x7c0d64;
-    *(int*)((char*)this + 0x74) = 0x7c0d54;
-    *(int*)((char*)this + 0x8c) = 0x7c0d44;
-    *(int*)((char*)this + 0x0c) = sub_5F3A40();
-}
-
-FactoryProduct* FactoryProduct_ctor(FactoryProduct* self) {
-    self->construct();
-    return self;
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

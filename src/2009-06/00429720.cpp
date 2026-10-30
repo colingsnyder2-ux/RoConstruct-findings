@@ -1,58 +1,51 @@
-// from server: 0% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPFrameWnd.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPFrameWnd.cpp : implementation for the CXTPFrameWnd and CXTPMDIFrameWnd classes.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "Resource.h"
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPDrawHelpers.h"
+struct Object {
+    virtual ~Object();
+};
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBar.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPShortcutManager.h"
-#include "XTPControl.h"
-#include "XTPControlEdit.h"
-#include "XTPFrameWnd.h"
+struct CountBase {
+    long useCount;
+    long weakCount;
 
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
 
-IMPLEMENT_DYNCREATE(CXTPFrameWnd, CFrameWnd)
+struct Count : CountBase {
+    Object* object;
 
-CXTPFrameWnd::CXTPFrameWnd()
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-
-}
-
-
-IMPLEMENT_DYNCREATE(CXTPMDIFrameWnd, CMDIFrameWnd)
-
-CXTPMDIFrameWnd::CXTPMDIFrameWnd()
-{
-
+    try {
+        count = new Count(p);
+    }
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

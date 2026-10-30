@@ -1,102 +1,87 @@
-// from server: 85% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_f740c1278594c036.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
-
-namespace RBX
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/signals.hpp>
+#include <G3D/ReferenceCount.h>
+namespace RBX {
+namespace Reflection { class PropertyDescriptor; }
+class SignalSource { public: virtual ~SignalSource(); };
+class InstanceBase0 { public: virtual ~InstanceBase0(); char pad[0x10]; };
+class Instance : public InstanceBase0, public SignalSource {
+public:
+    template<class F> void visitChildren(F f);
+};
+class PartInstance : public Instance { };
+template<class Sig> class TSignalDesc {
+public:
+    boost::signals::connection connect(SignalSource* source, const boost::slot<boost::function<Sig> >& slot, int pos);
+};
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_childAdded;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_childRemoved;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_ancestryChanged;
+extern TSignalDesc<void(const Reflection::PropertyDescriptor*)> event_propertyChanged;
+namespace Render {
+class Chunk : public G3D::ReferenceCountedObject {
+public:
+    Chunk(float polygonOffset);
+    virtual ~Chunk();
+    char pad[0x1c];
+};
+class Material : public G3D::ReferenceCountedObject { };
+class Mesh : public G3D::ReferenceCountedObject { };
+class SceneManager {
+public:
+    virtual void v0();
+    virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk);
+};
+}
+namespace ViewNew {
+struct CFrame { CFrame(); float m[12]; };
+class View { public: int pad; Render::SceneManager* sceneManager; };
+class SpecialShape;
+class PartChunk : public Render::Chunk {
+private:
+    CFrame coordinateFrame;
+    boost::signals::scoped_connection childAddedConnection;
+    boost::signals::scoped_connection childRemovedConnection;
+    boost::signals::scoped_connection ancestorChangedConnection;
+    boost::signals::scoped_connection propertyChangedConnection;
+    boost::signals::scoped_connection shapePropertyChangedConnection;
+protected:
+    boost::shared_ptr<PartInstance> partInstance;
+    G3D::ReferenceCountedPointer<Render::Material> material;
+    bool materialInvalid;
+    G3D::ReferenceCountedPointer<Render::Mesh> mesh;
+    View* view;
+    SpecialShape* specialShape;
+public:
+    PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view);
+    virtual ~PartChunk();
+    void onAncestorChanged(boost::shared_ptr<Instance> ancestor);
+    void onChildAdded(boost::shared_ptr<Instance> child);
+    void onChildRemoved(boost::shared_ptr<Instance> child);
+    virtual void onPropertyChanged(const Reflection::PropertyDescriptor* descriptor);
+};
+PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
+    : Render::Chunk(polygonOffset),
+      partInstance(partInstance),
+      view(view),
+      materialInvalid(true),
+      specialShape(NULL)
 {
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
-
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
-
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
-
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-		}
-
-		View::~View()
-		{
-			sceneManager->clear();
-
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
-
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
-
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
-
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
-
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
-
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
-
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
-
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
-		}
-	}
+    view->sceneManager->addModel(this);
+    childAddedConnection = event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1), 10);
+    childRemovedConnection = event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1), 10);
+    ancestorChangedConnection = event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1), 10);
+    propertyChangedConnection = event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1), 10);
+    if (partInstance)
+        partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
+}
+}
 }

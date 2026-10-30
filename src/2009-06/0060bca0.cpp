@@ -1,30 +1,22 @@
-// from server: 31% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_entrylocal_7feebf1d3fc40bcb.cpp
 
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
-};
+// Candidate translation unit (score above; library headers required).
 
-struct ClearBackpack {
-    void clear(void (*fn)(RefCounted*), RefCounted* begin, RefCounted* end);
-};
 
-void ClearBackpack::clear(void (*fn)(RefCounted*), RefCounted* begin, RefCounted* end)
-{
-    if (begin == end) {
-        return;
-    }
-    do {
-        RefCounted* p = begin;
-        RefCounted tmp;
-        tmp.vptr = p->vptr;
-        tmp.refcount = p->refcount;
-        if (tmp.refcount != 0) {
-            _InterlockedExchangeAdd(&tmp.refcount, 1);
-        }
-        fn(&tmp);
-        begin = (RefCounted*)((char*)begin + 8);
-    } while (begin != end);
+#include <boost/shared_ptr.hpp>
+typedef boost::shared_ptr<void> Entry;
+
+typedef void (__cdecl *Callback)(Entry);
+
+struct Iterator { unsigned int owner; Entry* position; };
+Callback __cdecl process(Iterator first, Iterator last, Callback callback) {
+    Entry* current = first.position;
+    Entry* finish = last.position;
+    for (; current != finish; ++current)
+        callback(*current);
+    return callback;
 }

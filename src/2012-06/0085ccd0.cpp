@@ -1,11 +1,15 @@
-// from server: 69% by atomic.potato
-extern "C" void __cdecl fn(unsigned int, unsigned int, unsigned int, unsigned int,
-                            unsigned int, unsigned int, unsigned int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-struct S {
-};
-
-void __cdecl f(unsigned int a, unsigned int b, unsigned int c, unsigned int d,
-          unsigned int e, unsigned int f, unsigned int g) {
-    fn(g, f, e, d, c, b, a);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

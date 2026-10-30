@@ -1,15 +1,17 @@
-// from server: 97% by atomic.potato
+// from server: 100% by tajop
 extern "C" void continuation();
+extern "C" const int vt0, vt1, vt2, vt3;
 
 struct S
 {
-    int a;
-    int b;
+    const int* a;
+    const int* b;
     int c;
     int d;
     int e;
-    int value;
-    int g;
+    int f2;
+    const int* g;
+    const int* h;
 
     void f();
 };
@@ -19,9 +21,9 @@ int g_value;
 void S::f()
 {
     g_value = 0;
-    a = 0xba7154;
-    b = 0xba714c;
-    g = 0xba7140;
-    e = 0xba7134;
+    a = &vt0;
+    b = &vt1;
+    g = &vt2;
+    h = &vt3;
     continuation();
 }

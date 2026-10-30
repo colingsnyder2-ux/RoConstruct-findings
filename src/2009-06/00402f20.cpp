@@ -1,10 +1,21 @@
-// from server: 0% by atomic.potato
-extern "C" __declspec(dllimport) void __stdcall InitializeCriticalSection(void*);
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GF /Gy /GS- /MD
+// roc-lib: atl-9.0-dll regobj.cpp
 
-struct S {
-    void f();
-};
+// Candidate translation unit (score above; library headers required).
+// This is a part of the Active Template Library.
+// Copyright (C) Microsoft Corporation
+// All rights reserved.
+//
+// This source code is only intended as a supplement to the
+// Active Template Library Reference and related
+// electronic documentation provided with the library.
+// See these sources for detailed information regarding the	
+// Active Template Library product.
 
-void S::f() {
-    InitializeCriticalSection((void*)0);
-}
+// RegObj.cpp
+
+#include "stdafx.h"
+#include "resource.h"
+#include "RegObj.h"

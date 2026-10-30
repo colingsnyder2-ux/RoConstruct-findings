@@ -1,240 +1,117 @@
-// from server: 24% by colin
-struct Node {
-    Node* parent;
-    Node* left;
-    Node* right;
-    char color;
-    char isNil;
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_scorehud_family_1346da7936040480.cpp
 
-struct Tree {
-    Node* header;
-    int count;
-};
-
-extern "C" {
-    void __stdcall sub_77E698(void*);
-    void __stdcall sub_77E69C(void*);
-    void __stdcall sub_77E6F8(void*);
-    void __stdcall sub_77E6AC(void*);
-    void __cdecl sub_62FC62(void*);
-    void __cdecl sub_630B9E(void*, void*);
-    void __cdecl sub_4D0870(void*);
-    Node* __cdecl sub_438E90(Node*);
-    Node* __cdecl sub_4CD5E0(Node*);
-    void __cdecl sub_4CD710(Node*);
-    void __cdecl sub_4D02F0(Node*);
+// Candidate translation unit (score above; library headers required).
+#include <gui/ScoreHud.h>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+// Opaque public API receivers keep older headers' private Instance/Gui/Players
+// layouts out of these calls. Signatures are the genuine public declarations.
+class InstanceApi { public: size_t numChildren() const; Instance* getChild(size_t); const std::string& getName() const; };
+class GuiItemApi { public: void setGuiSize(const G3D::Vector2&); };
+class PlayersApi { public: int numPlayers() const; };
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::create<Teams>(this);
+    if(!teams) return;
+    float scale=adorn->getViewport().width()/1024.0f;
+    float row=14.0f*scale;
+    unsigned teamCount=((InstanceApi*)teams)->numChildren();
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    unsigned playerCount=((PlayersApi*)nativePlayers)->numPlayers();
+    unsigned rows=mode==TEAM_DEATHMATCH ? playerCount+3*(teamCount+1) : playerCount+3*teamCount+2;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*(mode==TEAM_DEATHMATCH?320.0f:240.0f),rows*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                G3D::Vector2 position(rect.low.x,rect.low.y);
+                float width=rect.high.x-rect.low.x;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
 }
 
-struct ScoreHud {
-    char pad0[4];
-    Tree* tree;
-    char pad8[0x18];
-    void* vecBegin;
-    void* vecEnd;
-    void* vecCap;
-    char pad28[0x14];
-    int refCount;
-
-    void func(void* arg1, void* arg2, void* arg3);
-};
-
-void ScoreHud::func(void* arg1, void* arg2, void* arg3)
-{
-    char* p = (char*)arg1;
-    if (p[0x21] != 0) {
-        char buf1[0x18];
-        char buf2[0x18];
-        sub_77E698(buf1);
-        sub_77E6F8(buf2);
-        sub_77E69C(buf1);
-        sub_630B9E(buf2, (void*)0x83F364);
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
     }
-
-    void* local = 0;
-    sub_4D0870(&local);
-
-    Node* header = tree->header;
-    Node* node;
-    if (header->isNil) {
-        node = header->right;
-    } else {
-        Node* r = header->right;
-        if (r->isNil) {
-            node = header;
-        } else {
-            Node* cur = (Node*)arg2;
-            if (cur == header) {
-                node = cur->right;
-            } else {
-                node = cur->right;
-                goto erase_done;
-            }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
     }
-
-    {
-        Node* parent = node->parent;
-        if (!node->isNil) {
-            node->parent = parent;
-        }
-        Node* h = tree->header;
-        if (h->parent == node) {
-            h->parent = node;
-        } else if (parent->left == node) {
-            parent->left = node;
-        } else {
-            parent->right = node;
-        }
-        Node* h2 = tree->header;
-        if (h2->left == node) {
-            if (node->isNil) {
-                h2->left = parent;
-            } else {
-                h2->left = sub_438E90(node);
-            }
-        }
-        Node* h3 = tree->header;
-        if (h3->right == node) {
-            if (node->isNil) {
-                h3->right = parent;
-            } else {
-                h3->right = sub_4CD5E0(node);
-            }
-        }
-    }
-    goto after_erase;
-
-erase_done:
-    {
-        Node* parent = node->parent;
-        parent->parent = (Node*)arg2;
-        ((Node*)arg2)->left = node->left;
-        if ((Node*)arg2 == node->right) {
-            parent = (Node*)arg2;
-        } else {
-            Node* r = node->right;
-            if (!node->isNil) {
-                r->parent = parent;
-            }
-            parent->left = node;
-            node->right = ((Node*)arg2)->right;
-            ((Node*)arg2)->right->parent = node;
-        }
-        Node* h = tree->header;
-        if (h->parent == node) {
-            h->parent = (Node*)arg2;
-        } else {
-            Node* np = node->parent;
-            if (np->left == node) {
-                np->left = (Node*)arg2;
-            } else {
-                np->right = (Node*)arg2;
-            }
-        }
-        node->parent = ((Node*)arg2)->parent;
-        char c = node->color;
-        node->color = ((Node*)arg2)->color;
-        ((Node*)arg2)->color = c;
-    }
-
-after_erase:
-    {
-        char one = 1;
-        if (node->color == one) {
-            Node* h = tree->header;
-            Node* root = h->parent;
-            while (node != root && node->color == one) {
-                Node* parent = node->parent;
-                if (parent->left == node) {
-                    Node* sibling = parent->right;
-                    if (sibling->color == one) {
-                        sibling->color = 0;
-                        parent->color = one;
-                        sub_4CD710(parent);
-                        sibling = parent->right;
-                    }
-                    if (!sibling->isNil) {
-                        Node* sl = sibling->left;
-                        Node* sr = sibling->right;
-                        if (sl->color != one && sr->color != one) {
-                            sibling->color = one;
-                            node = parent;
-                        } else {
-                            if (sr->color != one) {
-                                sl->color = one;
-                                sibling->color = 0;
-                                sub_4D02F0(sibling);
-                                sibling = parent->right;
-                            }
-                            sibling->color = parent->color;
-                            parent->color = one;
-                            sibling->right->color = one;
-                            sub_4CD710(parent);
-                            node = tree->header->parent;
-                        }
-                    } else {
-                        sibling->color = one;
-                        node = parent;
-                    }
-                } else {
-                    Node* sibling = parent->left;
-                    if (sibling->color == one) {
-                        sibling->color = 0;
-                        parent->color = one;
-                        sub_4D02F0(parent);
-                        sibling = parent->left;
-                    }
-                    if (!sibling->isNil) {
-                        Node* sl = sibling->left;
-                        Node* sr = sibling->right;
-                        if (sl->color != one && sr->color != one) {
-                            sibling->color = one;
-                            node = parent;
-                        } else {
-                            if (sl->color != one) {
-                                sr->color = one;
-                                sibling->color = 0;
-                                sub_4CD710(sibling);
-                                sibling = parent->left;
-                            }
-                            sibling->color = parent->color;
-                            parent->color = one;
-                            sibling->left->color = one;
-                            sub_4D02F0(parent);
-                            node = tree->header->parent;
-                        }
-                    } else {
-                        sibling->color = one;
-                        node = parent;
-                    }
-                }
-            }
-            node->color = one;
-        }
-    }
-
-    {
-        void* p = vecBegin;
-        if (p != 0) {
-            void* e = vecEnd;
-            while (p != e) {
-                sub_77E6AC(p);
-                p = (char*)p + 0x1c;
-            }
-            sub_62FC62(vecBegin);
-        }
-        vecBegin = 0;
-        vecEnd = 0;
-        vecCap = 0;
-        sub_62FC62(0);
-    }
-
-    {
-        int* rc = (int*)arg3;
-        int c = rc[2];
-        if (c > 0) {
-            rc[2] = c - 1;
-        }
-    }
+}
 }

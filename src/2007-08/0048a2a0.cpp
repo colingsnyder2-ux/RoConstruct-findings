@@ -1,167 +1,21 @@
-// from server: 56% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-
-#include "util/Timer.h"
-#include "v8datamodel/DataModel.h"
-
-#include <algorithm>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/xtime.hpp>
-
-namespace RBX {
-
-const char sRunService[] = "RunService";
-
-Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
-
-static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
-
-// FUNCTION: WEBSERVICE 0x10054320
-void RunService::endRunThread(bool join)
-{
-	stopRequested = true;
-	stateChangedCondition.notify_all();
-
-	if (join) {
-		runThread->join();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100543b0
-void RunService::onAncestorChanged(const AncestorChanged& event)
-{
-	if (getParent() == NULL) {
-		endRunThread(false);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10054cb0
-void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
-{
-	double desiredTime = getRealTime();
-
-	while (true) {
-		const double timeLeft = desiredTime - getRealTime();
-
-		{
-			boost::mutex::scoped_lock lock(viewMutex);
-
-			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
-				iter->first->AdjustThrottle(timeLeft);
-			}
-		}
-
-		const double waitTime = std::max(0.0, timeLeft);
-
-		boost::xtime xt;
-
-		boost::xtime_get(&xt, boost::TIME_UTC);
-		xt.nsec += (int) (waitTime * 1000000000.0);
-
-		bool signalled;
-
-		{
-			boost::mutex::scoped_lock lock(runMutex);
-
-			signalled = stateChangedCondition.timed_wait(lock, xt);
-		}
-
-		if (!signalled) {
-			boost::xtime xt;
-
-			boost::xtime_get(&xt, boost::TIME_UTC);
-			xt.sec += 1;
-
-			boost::mutex::scoped_lock lock(runMutex);
-
-			if (invalidRunViewCount != 0) {
-				runViewsDoneCondition.timed_wait(lock, xt);
-			}
-		}
-
-		if (timeLeft <= 0.0) {
-			desiredTime = getRealTime();
-		}
-
-		{
-			DataModel::Lock lock(dataModel);
-
-			if (stopRequested) {
-				break;
-			}
-
-			dataModel->step(framePeriod);
-		}
-
-		desiredTime += framePeriod;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10054fd0
-void RunService::invalidateRunViews()
-{
-	boost::mutex::scoped_lock lock(viewMutex);
-
-	if (invalidRunViewCount != 0) {
-		return;
-	}
-
-	invalidRunViewCount = views.size();
-
-	if (invalidRunViewCount > 0) {
-		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
-			iter->first->InvalidateRunView();
-			iter->second = false;
-		}
-
-		runViewsDoneCondition.notify_all();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10055380
-RunService::~RunService()
-{
-}
-
-// FUNCTION: WEBSERVICE 0x10056950
-RunService::RunService()
-	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
-	  runDisabled(false)
-{
-	setName("Run Service");
-}
-
-// STUB: WEBSERVICE 0x100573e0
-void RunService::start()
-{
-	STUB(0x100573e0);
-}
-
-// FUNCTION: WEBSERVICE 0x100577f0
-void RunService::raiseHeartbeat(float time, float step)
-{
-	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-	event_Heartbeat.fire(this, step);
-}
-
-// FUNCTION: WEBSERVICE 0x10057860
-void RunService::raiseStepped(float time, float step)
-{
-	Notifier<RunService, Stepped>::raise(Stepped(time, step));
-	event_Stepped.fire(this, time, step);
-}
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
-template class RBX::Reflection::Described<
-	RBX::RunService,
-	RBX::sRunService,
-	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
-template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

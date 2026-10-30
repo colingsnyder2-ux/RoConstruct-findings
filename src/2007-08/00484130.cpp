@@ -1,7 +1,6 @@
-// from server: 60% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-flags: /O2 /GS /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/Shader.cpp
 
 // Candidate translation unit (score above; library headers required).

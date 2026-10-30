@@ -1,20 +1,16 @@
-// from server: 54% by colin
-struct ServiceProvider {
-    char pad[0x58];
-    ServiceProvider(const ServiceProvider& other);
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_5f426dfd96d21d45.cpp
 
-extern "C" void __stdcall copy_string(void* dst, const void* src);
-
-ServiceProvider::ServiceProvider(const ServiceProvider& other) {
-    *reinterpret_cast<int*>(this) = *reinterpret_cast<const int*>(&other);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 4) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 4);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 8) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 8);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0xc) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 0xc);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x10) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 0x10);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x14) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 0x14);
-    copy_string(reinterpret_cast<char*>(this) + 0x18, reinterpret_cast<const char*>(&other) + 0x18);
-    copy_string(reinterpret_cast<char*>(this) + 0x34, reinterpret_cast<const char*>(&other) + 0x34);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x50) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 0x50);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x54) = *reinterpret_cast<const int*>(reinterpret_cast<const char*>(&other) + 0x54);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::basic_gzip_decompressor<std::allocator<char> >;

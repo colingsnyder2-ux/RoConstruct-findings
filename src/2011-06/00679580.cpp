@@ -1,108 +1,61 @@
-// from server: 53% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: rbxgs roc_unit_a64c7995e27db59e.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
+#undef _RELEASEASSERT
+#pragma include_alias("v8tree/Instance.h","roc_unit_b34763c2f3d3f398.cpp")
+#include "v8datamodel/Team.h"
 
 namespace RBX
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
+	const char* sTeam = "Team";
+
+	static Reflection::PropDescriptor<Team, int> prop_Score("Score", "Data", &Team::getScore, &Team::setScore, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Team, BrickColor> prop_Color("TeamColor", "Data", &Team::getTeamColor, &Team::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Team, bool> prop_AutoAssignable("AutoAssignable", "Data", &Team::getAutoAssignable, &Team::setAutoAssignable, Reflection::PropertyDescriptor::STANDARD);
+
+	Team::Team()
+		: score(0),
+		  autoAssignable(true),
+		  autoColorCharacters(true)
 	{
-		boost::call_once(initMoo, flag);
-		return moo2();
+		setName("Team");
+		color = BrickColor::lego_1;
 	}
 
-	std::map<int, Name*>& Name::dictionary()
+	int Team::getScore() const
 	{
-		static std::map<int, Name*> d;
-		return d;
+		return score;
 	}
 
-	Name::NamMap& Name::namMap()
+	void Team::setScore(int newScore)
 	{
-		static NamMap n;
-		return n;
+		score = newScore;
+		raisePropertyChanged(prop_Score);
 	}
 
-	const Name& Name::getNullName()
+	BrickColor Team::getTeamColor() const
 	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
+		return color;
 	}
 
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
+	void Team::setTeamColor(BrickColor newColor)
 	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
+		if (color == newColor) return;
+		color = newColor;
+		raisePropertyChanged(prop_Color);
 	}
 
-	const Name& Name::lookup(const std::string& sName)
+	bool Team::getAutoAssignable() const
 	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
+		return autoAssignable;
 	}
 
-	const Name& Name::lookup(const char* sName)
+	void Team::setAutoAssignable(bool value)
 	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
+		autoAssignable = value;
+		raisePropertyChanged(prop_AutoAssignable);
 	}
 }

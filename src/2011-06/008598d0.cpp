@@ -1,14 +1,13 @@
-// from server: 27% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPControls.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControls.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControls.cpp : implementation of the CXTPControls class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -253,15 +252,6 @@ CXTPControl* CXTPControls::AddMenuItem(CMenu* pMenu, int nIndex)
 			return NULL;
 		pControl->m_controlType = controlType;
 		pControl->SetStyle(buttonStyle);
-
-		MENUITEMINFO info;
-		ZeroMemory(&info, sizeof(MENUITEMINFO));
-		info.cbSize = sizeof(MENUITEMINFO);
-		info.fMask = MIIM_DATA;
-
-		::GetMenuItemInfo(pMenu->m_hMenu, nIndex, TRUE, &info);
-
-		pControl->SetTag(info.dwItemData);
 	}
 
 	CXTPControlAction* pAction = pCommandBars->FindAction(nID);
@@ -329,7 +319,7 @@ CXTPControl* CXTPControls::Add(XTPControlType controlType, int nId, LPCTSTR strP
 			if (nId == XTP_ID_WINDOWLIST) pControl = (CXTPControl*)CXTPControlWindowList::CreateObject();
 			else if (nId == XTP_ID_WORKSPACE_ACTIONS) pControl = (CXTPControl*)CXTPControlWorkspaceActions::CreateObject();
 			else if (nId == ID_VIEW_TOOLBAR) pControl = (CXTPControl*)CXTPControlToolbars::CreateObject();
-			else if (nId == XTP_ID_FILE_MRU && !bTemporary) pControl = (CXTPControl*)CXTPControlRecentFileList::CreateObject();
+			else if (nId == XTP_ID_FILE_MRU) pControl = (CXTPControl*)CXTPControlRecentFileList::CreateObject();
 			else
 			pControl = (CXTPControl*)CXTPControlButton::CreateObject();
 			break;
@@ -393,7 +383,7 @@ CXTPControl* CXTPControls::Add(XTPControlType controlType, int nId, LPCTSTR strP
 					}
 				}
 				if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
-				pControlPopup->SetCaption(strCaption);
+				pControlPopup->m_strCaption = strCaption;
 				if (pPopupMenu)
 				{
 					pPopupBar->LoadMenu(pPopupMenu);
@@ -507,7 +497,6 @@ void CXTPControls::RemoveAll()
 
 		OnControlRemoved(pControl);
 
-		pControl->SetParent(NULL);
 		pControl->InternalRelease();
 	}
 }
@@ -685,8 +674,6 @@ struct CXTPControls::XTPBUTTONINFO  // struct for CalcDynamicSize ;
 	BOOL bBeginGroup;
 	XTPButtonStyle buttonStyle;
 	CXTPControl* pControl;
-	CSize szSeparators;
-	CSize szSpacing;
 
 	void EnsureButtonSize(CDC* pDC)
 	{
@@ -720,10 +707,8 @@ struct CXTPControls::XTPBUTTONINFO  // struct for CalcDynamicSize ;
 
 };
 
-CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, BOOL bVert)
+CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, const CSize& szSeparators, BOOL bVert)
 {
-	const CSize& szSeparators = pData->szSeparators;
-	const CSize& szSpacing = pData->szSpacing;
 
 	CPoint cur(0, 0);
 	CSize sizeResult(0, 0);
@@ -740,12 +725,13 @@ CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, BOOL bVert)
 
 		if (bVert)
 		{
-			if (!pControl->bWrap && !bFirst)
-				cur.y += pControl->bBeginGroup ? szSeparators.cx : szSpacing.cx;
+			if (pControl->bBeginGroup && !pControl->bWrap && !bFirst)
+				cur.y += szSeparators.cx;
+
 
 			if (pControl->bWrap)
 			{
-				cur.x -= nRow + (pControl->bBeginGroup ? szSeparators.cy : szSpacing.cy);
+				cur.x -= nRow + (pControl->bBeginGroup ? szSeparators.cy : 0);
 				nRow = cur.y = 0;
 			}
 			nRow = max(nRow, szControl.cx);
@@ -761,12 +747,12 @@ CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, BOOL bVert)
 		else
 		{
 
-			if (!pControl->bWrap && !bFirst)
-				cur.x += pControl->bBeginGroup ? szSeparators.cx : szSpacing.cx;
+			if (pControl->bBeginGroup && !pControl->bWrap && !bFirst)
+				cur.x += szSeparators.cx;
 
 			if (pControl->bWrap)
 			{
-				cur.y += nRow + (pControl->bBeginGroup ? szSeparators.cy : szSpacing.cy);
+				cur.y += nRow + (pControl->bBeginGroup ? szSeparators.cy : 0);
 				nRow = cur.x = 0;
 			}
 			nRow = max(nRow, szControl.cy);
@@ -783,13 +769,12 @@ CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, BOOL bVert)
 	return sizeResult;
 }
 
-int CXTPControls::_WrapToolBar(XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
+int CXTPControls::_WrapToolBar(XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode, const CSize& szSeparators)
 {
 	int nResult = 0, x = 0;
 	BOOL bVert = dwMode & LM_VERTDOCK;
 	BOOL bFirst = TRUE;
-	int nSeparator = pData->szSeparators.cx;
-	int nSpacing = pData->szSpacing.cx;
+	int nSeparator = bVert ? szSeparators.cy : szSeparators.cx;
 
 	for (int i = 0; i < GetCount(); i++)
 	{
@@ -802,8 +787,8 @@ int CXTPControls::_WrapToolBar(XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
 
 		int dx = bVert ? pControl->szControl.cy : pControl->szControl.cx;
 
-		if (!bFirst)
-			dx += pControl->bBeginGroup ? nSeparator : nSpacing;
+		if (pControl->bBeginGroup && !bFirst)
+			dx += nSeparator;
 
 		BOOL bWrap = (x + dx > nWidth) || ((dwMode & LM_POPUP) && pControl->bBeginGroup && !bFirst);
 
@@ -864,24 +849,24 @@ int CXTPControls::_WrapToolBar(XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
 	return nResult + 1;
 }
 
-void  CXTPControls::_SizePopupToolBar(XTPBUTTONINFO* pData, DWORD dwMode)
+void  CXTPControls::_SizePopupToolBar(XTPBUTTONINFO* pData, DWORD dwMode, const CSize& szSeparators)
 {
 	CSize sizeMax, sizeMin, sizeMid;
 
 	// Wrap ToolBar vertically
-	_WrapToolBar(pData, 0, dwMode);
-	sizeMin = _CalcSize(pData, FALSE);
+	_WrapToolBar(pData, 0, dwMode, szSeparators);
+	sizeMin = _CalcSize(pData, szSeparators);
 
 	// Wrap ToolBar horizontally
-	_WrapToolBar(pData, 32767, dwMode);
-	sizeMax = _CalcSize(pData, FALSE);
+	_WrapToolBar(pData, 32767, dwMode, szSeparators);
+	sizeMax = _CalcSize(pData, szSeparators);
 
 	while (sizeMin.cx < sizeMax.cx)
 	{
 		sizeMid.cx = (sizeMin.cx + sizeMax.cx) / 2;
 
-		_WrapToolBar(pData, sizeMid.cx, dwMode);
-		sizeMid = _CalcSize(pData, FALSE);
+		_WrapToolBar(pData, sizeMid.cx, dwMode, szSeparators);
+		sizeMid = _CalcSize(pData, szSeparators);
 
 		if (sizeMid.cy > sizeMid.cx)
 		{
@@ -897,7 +882,7 @@ void  CXTPControls::_SizePopupToolBar(XTPBUTTONINFO* pData, DWORD dwMode)
 	}
 }
 
-void  CXTPControls::_SizeFloatableBar(XTPBUTTONINFO* pData, int nLength, DWORD dwMode)
+void  CXTPControls::_SizeFloatableBar(XTPBUTTONINFO* pData, int nLength, DWORD dwMode, const CSize& szSeparators)
 {
 	if (! (dwMode & LM_LENGTHY))
 	{
@@ -905,18 +890,18 @@ void  CXTPControls::_SizeFloatableBar(XTPBUTTONINFO* pData, int nLength, DWORD d
 
 		// Wrap ToolBar as specified
 		nMax = nLength;
-		nTarget = _WrapToolBar(pData, nMax, dwMode);
+		nTarget = _WrapToolBar(pData, nMax, dwMode, szSeparators);
 
 		// Wrap ToolBar vertically
 		nMin = 0;
-		nCurrent = _WrapToolBar(pData, nMin, dwMode);
+		nCurrent = _WrapToolBar(pData, nMin, dwMode, szSeparators);
 
 		if (nCurrent != nTarget)
 		{
 			while (nMin < nMax)
 			{
 				nMid = (nMin + nMax) / 2;
-				nCurrent = _WrapToolBar(pData, nMid, dwMode);
+				nCurrent = _WrapToolBar(pData, nMid, dwMode, szSeparators);
 
 				if (nCurrent == nTarget)
 					nMax = nMid;
@@ -924,39 +909,39 @@ void  CXTPControls::_SizeFloatableBar(XTPBUTTONINFO* pData, int nLength, DWORD d
 				{
 					if (nMin == nMid)
 					{
-						_WrapToolBar(pData, nMax, dwMode);
+						_WrapToolBar(pData, nMax, dwMode, szSeparators);
 						break;
 					}
 					nMin = nMid;
 				}
 			}
 		}
-		CSize size = _CalcSize(pData, FALSE);
-		_WrapToolBar(pData, size.cx, dwMode);
+		CSize size = _CalcSize(pData, szSeparators);
+		_WrapToolBar(pData, size.cx, dwMode, szSeparators);
 	}
 	else
 	{
 		CSize sizeMax, sizeMin, sizeMid;
 
 		// Wrap ToolBar vertically
-		_WrapToolBar(pData, 0, dwMode);
-		sizeMin = _CalcSize(pData, FALSE);
+		_WrapToolBar(pData, 0, dwMode, szSeparators);
+		sizeMin = _CalcSize(pData, szSeparators);
 
 		// Wrap ToolBar horizontally
-		_WrapToolBar(pData, 32767, dwMode);
-		sizeMax = _CalcSize(pData, FALSE);
+		_WrapToolBar(pData, 32767, dwMode, szSeparators);
+		sizeMax = _CalcSize(pData, szSeparators);
 
 		while (sizeMin.cx < sizeMax.cx)
 		{
 			sizeMid.cx = (sizeMin.cx + sizeMax.cx) / 2;
-			_WrapToolBar(pData, sizeMid.cx, dwMode);
-			sizeMid = _CalcSize(pData, FALSE);
+			_WrapToolBar(pData, sizeMid.cx, dwMode, szSeparators);
+			sizeMid = _CalcSize(pData, szSeparators);
 
 			if (nLength < sizeMid.cy)
 			{
 				if (sizeMin == sizeMid)
 				{
-					_WrapToolBar(pData, sizeMax.cx, dwMode);
+					_WrapToolBar(pData, sizeMax.cx, dwMode, szSeparators);
 					return;
 				}
 				sizeMin = sizeMid;
@@ -1440,9 +1425,6 @@ CSize CXTPControls::CalcDynamicSize(CDC* pDC, int nLength, DWORD dwMode, const C
 		for (int j = 0; j < GetCount(); j++)
 			pData[j].Attach(pDC, GetAt(j));
 
-		pData->szSeparators = szSeparators;
-		pData->szSpacing = m_pParent->m_szButtonSpacing;
-
 		if (dwMode & LM_MRUWIDTH)
 		{
 			nLength = m_pParent->m_nMRUWidth;
@@ -1465,34 +1447,34 @@ CSize CXTPControls::CalcDynamicSize(CDC* pDC, int nLength, DWORD dwMode, const C
 
 			if (dwMode & LM_POPUP)
 			{
-				_WrapToolBar(pData, m_pParent->m_nMRUWidth, dwMode);
-				CSize sz = _CalcSize(pData, FALSE);
+				_WrapToolBar(pData, m_pParent->m_nMRUWidth, dwMode, szSeparators);
+				CSize sz = _CalcSize(pData, szSeparators);
 
 				if ((sz.cy > sz.cx * 3) && (m_pParent->m_nMRUWidth <= 0))
 				{
-					_SizePopupToolBar(pData, dwMode);
+					_SizePopupToolBar(pData, dwMode, szSeparators);
 				}
 				else
 				{
-					_WrapToolBar(pData, sz.cx , dwMode);
+					_WrapToolBar(pData, sz.cx , dwMode, szSeparators);
 				}
 
 			}
 			else if (dwMode & LM_HORZDOCK)
 			{
-				_WrapToolBar(pData, nLength - rcBorder.right - rcBorder.left, dwMode);
+				_WrapToolBar(pData, nLength - rcBorder.right - rcBorder.left, dwMode, szSeparators);
 			}
 			else if (dwMode & LM_VERTDOCK)
 			{
-				_WrapToolBar(pData, nLength - rcBorder.top - rcBorder.bottom, dwMode);
+				_WrapToolBar(pData, nLength - rcBorder.top - rcBorder.bottom, dwMode, szSeparators);
 			}
 			else
 			{
-				_SizeFloatableBar(pData, nLength - ((dwMode & LM_LENGTHY) ? rcBorder.top + rcBorder.bottom : rcBorder.right + rcBorder.left), dwMode);
+				_SizeFloatableBar(pData, nLength - ((dwMode & LM_LENGTHY) ? rcBorder.top + rcBorder.bottom : rcBorder.right + rcBorder.left), dwMode, szSeparators);
 			}
 
 
-			sizeResult = _CalcSize(pData, dwMode & LM_VERTDOCK);
+			sizeResult = _CalcSize(pData, szSeparators, dwMode & LM_VERTDOCK);
 		}
 
 		if (nWidth > 0)
@@ -1546,18 +1528,14 @@ void CXTPControls::_MakeSameWidth(int nStart, int nLast, int nWidth)
 	}
 }
 
-CSize CXTPControls::CalcPopupSize(CDC* pDC, int nLength, int nMRUWidth, const CRect& rcBorder)
+CSize CXTPControls::CalcPopupSize(CDC* pDC, int nLength, const CRect& rcBorder)
 {
 	RECT rcWork;
 	SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcWork, 0);
 
 	int i;
 
-	CXTPPaintManager* pPaintManager = m_pParent->GetPaintManager();
-
-	CXTPFontDC fontControl(pDC, pPaintManager->GetCommandBarFont(m_pParent));
-
-	CSize szSeparators(pPaintManager->DrawCommandBarSeparator(NULL, m_pParent, NULL, FALSE));
+	CSize szSeparators(m_pParent->GetPaintManager()->DrawCommandBarSeparator(NULL, m_pParent, NULL, FALSE));
 
 
 	CRect rcControl;
@@ -1577,6 +1555,7 @@ CSize CXTPControls::CalcPopupSize(CDC* pDC, int nLength, int nMRUWidth, const CR
 		if (!pControl->IsVisible())
 			continue;
 
+		CXTPFontDC fontControl(pDC, m_pParent->GetPaintManager()->GetCommandBarFont(m_pParent, pControl->IsItemDefault()));
 		CSize szControl = pControl->GetSize(pDC);
 
 		pControl->SetWrap(FALSE);
@@ -1609,9 +1588,6 @@ CSize CXTPControls::CalcPopupSize(CDC* pDC, int nLength, int nMRUWidth, const CR
 
 		if (nWidthColumn < szControl.cx) nWidthColumn = szControl.cx;
 	}
-	if (nMRUWidth > 0 && nMRUWidth < 30000)
-		nWidthColumn = nMRUWidth - rcBorder.left - rcBorder.right;
-
 	_MakeSameWidth(nFirstInColumn, GetCount(), nWidthColumn);
 
 
@@ -1759,25 +1735,5 @@ int CXTPControls::CommandToIndex(int nIDFind) const
 			return iIndex;
 	}
 	return -1;
-}
-
-int CXTPControls::CompareByCaption(const CXTPControl** ppItem1, const CXTPControl** ppItem2)
-{
-	CString strCaption1((*ppItem1)->GetCaption());
-	CString strCaption2((*ppItem2)->GetCaption());
-
-	XTPDrawHelpers()->StripMnemonics(strCaption1);
-	XTPDrawHelpers()->StripMnemonics(strCaption2);
-
-	return strCaption1.CompareNoCase(strCaption2);
-}
-
-void CXTPControls::Sort()
-{
-	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
-
-	qsort(m_arrControls.GetData(), (size_t)m_arrControls.GetSize(), sizeof(CXTPControl*), (GENERICCOMPAREFUNC)CompareByCaption);
-
-	RefreshIndexes();
 }
 

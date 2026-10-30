@@ -1,154 +1,78 @@
-// from server: 50% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/boost.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_safearrayvectorf35682ede47b583a.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/boost.hpp"
-#include "util/standardout.h"
-#include "util/Debug.h"
-#include <boost/bind.hpp>
-#include <windows.h>
-#include <boost/thread/tss.hpp>
-#include <boost/thread/once.hpp>
+// from server: 89% by colin
+typedef long HRESULT;
 
-namespace RBX
+struct Element {
+    char data[16];
+};
+
+struct SafeArray {
+    char padding[12];
+    Element* data;
+};
+
+struct SafeArrayBound {
+    unsigned long count;
+    long lower;
+};
+
+extern "C" SafeArray* (__stdcall *SafeArrayCreate)(
+    unsigned short, unsigned int, SafeArrayBound*);
+extern "C" HRESULT (__stdcall *SafeArrayLock)(SafeArray*);
+extern "C" HRESULT (__stdcall *SafeArrayUnlock)(SafeArray*);
+
+struct ArrayAccess {
+    SafeArray* array;
+    Element* f(unsigned int index);
+    ~ArrayAccess();
+};
+
+ArrayAccess::~ArrayAccess()
 {
-	namespace boost_detail
-	{
-		boost::thread_specific_ptr<std::string>* foo;
-		
-		boost::once_flag once_init_foo = BOOST_ONCE_INIT;
-		void init_foo()
-		{
-			static boost::thread_specific_ptr<std::string> value;
-			foo = &value;
-		}
+    if (array)
+        SafeArrayUnlock(array);
+}
 
-		void set_foo(std::string* value)
-		{
-			boost::call_once(&boost_detail::init_foo, boost_detail::once_init_foo);
-			boost_detail::foo->reset(value);
-		}
-	}
+struct Value {
+    unsigned long words[2];
+};
 
-	// Thread name stuff based on https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/xcb2z8hs(v=vs.90)
-	static bool nameThreads = true;
+#include <vector>
+typedef std::vector<Value> Values;
 
-	typedef struct tagTHREADNAME_INFO
-	{
-		DWORD dwType;
-		LPCSTR szName;
-		DWORD dwThreadID;
-		DWORD dwFlags;
-	} THREADNAME_INFO;
+extern void __cdecl G1_func_00416370(Value*, Element*);
 
-	void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName)
-	{
-		THREADNAME_INFO info;
-		info.dwType = 0x1000;
-		info.szName = szThreadName;
-		info.dwThreadID = dwThreadID;
-		info.dwFlags = 0;
+SafeArray* __cdecl func_004165e0(Values* values)
+{
+    ArrayAccess access;
+    SafeArrayBound bound;
+    bound.count = static_cast<unsigned long>(
+        values->size());
+    bound.lower = 0;
 
-		__try
-		{
-			if (nameThreads)
-				RaiseException(0x406D1388, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info);
-		}
-		__except (EXCEPTION_CONTINUE_EXECUTION)
-		{
-		}
-	}
+    SafeArray* result = SafeArrayCreate(12, 1, &bound);
+    access.array = result;
 
-	void set_thread_name(const char* name)
-	{
-		boost_detail::set_foo(new std::string(name));
-		SetThreadName(GetCurrentThreadId(), name);
-	}
+    if (result)
+        SafeArrayLock(result);
 
-	class ThreadPrioritySetter
-	{
-	private:
-		const int old;
-		bool success;
-	  
-	public:
-		ThreadPrioritySetter(int priority)
-			: old(GetThreadPriority(GetCurrentThread())),
-			  success(SetThreadPriority(GetCurrentThread(), priority) == TRUE)
-		{
-		}
-		~ThreadPrioritySetter()
-		{
-			if (success)
-				SetThreadPriority(GetCurrentThread(), old);
-		}
-	};
+    unsigned int i = 0;
+    unsigned int count = static_cast<unsigned int>(
+        values->size());
+    while (i < count) {
+        Value* value = &(*values)[i];
+        G1_func_00416370(value, access.f(i));
+        ++i;
+        count = static_cast<unsigned int>(
+            values->size());
+    }
 
-	void run_in_background(const boost::function0<void>& threadfunc, std::string name)
-	{
-		try
-		{
-			set_thread_name(name.c_str());
-
-			{
-				ThreadPrioritySetter set(THREAD_PRIORITY_BELOW_NORMAL);
-				threadfunc();
-			}
-		}
-		catch (std::exception& ex)
-		{
-			StandardOut::singleton()->print(MESSAGE_ERROR, "Crashed via C++ exception in run_in_background:", ex.what());
-			RBXASSERT(false);
-		}
-	}
-
-	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)
-	{
-		return boost::bind(&run_in_background, threadfunc, std::string(name));
-	}
-
-	worker_thread::worker_thread(const boost::function0<enum work_result>& work_function, const char* name)
-		: _data(new data()),
-		  thread(background_function(boost::bind(&threadProc, _data, work_function), name))
-	{
-	}
-
-	worker_thread::~worker_thread()
-	{
-		boost::mutex::scoped_lock scoped_lock(_data->sync);
-		_data->endRequest = true;
-		_data->wakeCondition.notify_all();
-	}
-
-	void worker_thread::join()
-	{
-		{
-			boost::mutex::scoped_lock scoped_lock(_data->sync);
-			_data->endRequest = true;
-			_data->wakeCondition.notify_all();
-		}
-
-		thread.join();
-	}
-
-	void worker_thread::wake()
-	{
-		boost::mutex::scoped_lock scoped_lock(_data->sync);
-		_data->wakeCondition.notify_all();
-	}
-
-	void worker_thread::threadProc(boost::shared_ptr<data> data, const boost::function0<enum work_result>& work_function)
-	{
-		while (!data->endRequest)
-		{
-			if (work_function() != more)
-			{
-				boost::mutex::scoped_lock scoped_lock(data->sync);
-				data->wakeCondition.wait(scoped_lock);	
-			}
-		}
-	}
+    SafeArrayUnlock(result);
+    access.array = 0;
+    return result;
 }

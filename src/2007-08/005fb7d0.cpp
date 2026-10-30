@@ -1,14 +1,14 @@
-// from server: 95% by colin
+// from server: 100% by tajop
 struct StudsTool {
     char pad[0x18];
     void* field18;
     void construct(void* workspace);
 };
 
-extern "C" void* __cdecl func_00561b10(void* a, int b);
+extern "C" void* __cdecl func_00561b10(void* a);
 
 struct Ret {
-    void method_0058c810();
+    void method_0058c810(int);
 };
 
 struct Inner {
@@ -29,7 +29,6 @@ void StudsTool::construct(void* workspace)
     cmd->method_005b9520();
     cmd->method_005b9270(3);
     cmd->inner->method_00573d80();
-    void* p = field18;
-    Ret* r = (Ret*)func_00561b10(p, 8);
-    r->method_0058c810();
+    ((Ret*)func_00561b10(field18))->method_0058c810(8);
 }
+

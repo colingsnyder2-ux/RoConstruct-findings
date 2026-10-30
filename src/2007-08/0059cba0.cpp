@@ -1,57 +1,18 @@
-// from server: 45% by colin
-struct FactoryProduct {
-    void destroy();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_fb63b88aae133a20.cpp
 
-extern "C" int __stdcall InterlockedDecrement(int*);
-extern "C" void __stdcall sub_457DD0();
-extern "C" void __stdcall sub_77E6AC();
-
-void FactoryProduct::destroy() {
-    int* p;
-    p = *(int**)((char*)this + 0x2c);
-    if (p != 0) {
-        if (InterlockedDecrement(p + 1) == 0) {
-            sub_457DD0();
-            p = *(int**)((char*)this + 0x2c);
-            if (p != 0) {
-                (*(void(__thiscall**)(int*, int))*(int*)p)(p, 1);
-            }
-        }
-        *(int*)((char*)this + 0x2c) = 0;
-    }
-    p = *(int**)((char*)this + 0x28);
-    if (p != 0) {
-        if (InterlockedDecrement(p + 1) == 0) {
-            sub_457DD0();
-            p = *(int**)((char*)this + 0x28);
-            if (p != 0) {
-                (*(void(__thiscall**)(int*, int))*(int*)p)(p, 1);
-            }
-        }
-        *(int*)((char*)this + 0x28) = 0;
-    }
-    p = *(int**)((char*)this + 0x24);
-    if (p != 0) {
-        if (InterlockedDecrement(p + 1) == 0) {
-            sub_457DD0();
-            p = *(int**)((char*)this + 0x24);
-            if (p != 0) {
-                (*(void(__thiscall**)(int*, int))*(int*)p)(p, 1);
-            }
-        }
-        *(int*)((char*)this + 0x24) = 0;
-    }
-    p = *(int**)((char*)this + 0x20);
-    if (p != 0) {
-        if (InterlockedDecrement(p + 1) == 0) {
-            sub_457DD0();
-            p = *(int**)((char*)this + 0x20);
-            if (p != 0) {
-                (*(void(__thiscall**)(int*, int))*(int*)p)(p, 1);
-            }
-        }
-        *(int*)((char*)this + 0x20) = 0;
-    }
-    sub_77E6AC();
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/Tool.cpp"

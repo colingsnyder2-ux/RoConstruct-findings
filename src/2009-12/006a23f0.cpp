@@ -1,36 +1,28 @@
-// from server: 41% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_scripterror_1ca97978f1e1d7fa.cpp
 
-extern "C" int __cdecl sub_63E9E0(int*);
-extern "C" int __cdecl sub_63E780(int, int, int, int);
-extern "C" int __cdecl sub_788BA0(int, int, int);
+// Candidate translation unit (score above; library headers required).
 
-struct Holder {
-    void (__thiscall *vtbl)(void);
-    volatile long ref1;
-    volatile long ref2;
+#include <boost/shared_ptr.hpp>
+
+struct Logger {
+    void __cdecl reportError(int, const char*, const char*);
 };
 
-struct S {
-    void __cdecl func(int a, int b, int c);
-};
+typedef boost::shared_ptr<Logger> Handle;
 
-void S::func(int a, int b, int c)
+extern Handle __cdecl getHandle();
+extern const char* __cdecl getText(void*, int, unsigned int*);
+extern const char errorFormat[];
+
+int __cdecl callback(void* state)
 {
-    int local[2];
-    sub_63E9E0(local);
-    int esi = local[0];
-    int v = sub_788BA0(c, -1, 0);
-    sub_63E780(esi, 3, 0x9d2bf8, v);
-    Holder* h = (Holder*)b;
-    if (h) {
-        if (_InterlockedExchangeAdd(&h->ref1, -1) == 1) {
-            h->vtbl();
-            if (_InterlockedExchangeAdd(&h->ref2, -1) == 1) {
-                h->vtbl();
-            }
-        }
+    {
+        getHandle()->reportError(3, errorFormat, getText(state, -1, 0));
     }
-    *(int*)0 = *(int*)4;
+    int* p = 0;
+    p[0] = p[1];
+    return 0;
 }

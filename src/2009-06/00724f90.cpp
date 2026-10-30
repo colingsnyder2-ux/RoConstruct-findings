@@ -1,14 +1,14 @@
-// from server: 61% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPPaintManager.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPPaintManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPPaintManager.cpp : implementation of the CXTPPaintManager class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -33,36 +33,23 @@
 #include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPResourceManager.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPMarkupRender.h"
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPSystemHelpers.h"
-
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBars.h"
-#include "XTPCommandBar.h"
-#include "XTPPopupBar.h"
-#include "XTPMessageBar.h"
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlPopup.h"
-#include "XTPControlEdit.h"
-#include "XTPControlComboBox.h"
-#include "XTPControlProgress.h"
-#include "XTPScrollBase.h"
-#include "XTPControlGallery.h"
-#include "XTPStatusBar.h"
 
 #include "XTPPaintManager.h"
-#include "XTPOffice2003Theme.h"
-#include "XTPResourceTheme.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "XTPControlGallery.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPPopupBar.h"
+#include "XTPControlComboBox.h"
+#include "XTPControlEdit.h"
+#include "XTPControls.h"
+#include "XTPStatusBar.h"
 
 #ifdef _XTP_INCLUDE_RIBBON
-#include "Ribbon/XTPRibbonPaintManager.h"
-#include "Ribbon/XTPRibbonSystemTheme.h"
-#endif
+#include "XTPOffice2007Theme.h"
 #include "Ribbon/XTPRibbonTheme.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,6 +57,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace XTPPaintThemes;
 
 CXTPPaintManager* CXTPPaintManager::s_pInstance = NULL;
 
@@ -85,7 +73,6 @@ public:
 	}
 
 } __xtpPaintManagerDestructor;
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,8 +94,6 @@ CXTPPaintManager::CNonClientMetrics::CNonClientMetrics()
 		sizeof(NONCLIENTMETRICS), this, 0));
 }
 
-IMPLEMENT_DYNAMIC(CXTPPaintManager, CCmdTarget)
-
 CXTPPaintManager::CXTPPaintManager()
 {
 	m_bFlatToolBar = FALSE;
@@ -120,6 +105,7 @@ CXTPPaintManager::CXTPPaintManager()
 	m_bUseStandardFont = TRUE;
 	m_bShowShadow = TRUE;
 	m_bEmbossedDisabledText = TRUE;
+	m_nShadowOptions = 0;
 	m_nStatusBarMinHeight = 20;
 
 	m_bThemedStatusBar = FALSE;
@@ -150,23 +136,17 @@ CXTPPaintManager::CXTPPaintManager()
 	m_bOffsetPopupLabelText = TRUE;
 
 	m_nEditHeight = 0;
-	m_nFontHeight = 0;
 	m_bAutoResizeIcons = FALSE;
 
 	m_bWrapCaptionBelowText = TRUE;
+	m_bResourceCharSet = FALSE;
 
-	m_rcStatusBarBorder.SetRect(0, 0, 0, 0);
+	m_rcStatusButtonMargins.SetRect(0, 0, 0, 0);
 
-	m_themeStatusBar = new CXTPWinThemeWrapper();
-	m_themeButton = new CXTPWinThemeWrapper();
 
 	XTPImageManager()->RefreshAll();
 
 	m_pGalleryPaintManager = new CXTPControlGalleryPaintManager(this);
-	m_pSliderPaintManager = new CXTPSliderPaintManager(this);
-	m_pProgressPaintManager = new CXTPProgressPaintManager(this);
-	m_pFramePaintManager = NULL;
-	m_pRibbonPaintManager = NULL;
 
 
 	m_pfnSetLayeredWindowAttributes = NULL;
@@ -176,8 +156,6 @@ CXTPPaintManager::CXTPPaintManager()
 	{
 		m_pfnSetLayeredWindowAttributes = (PVOID) ::GetProcAddress(hLib, "SetLayeredWindowAttributes");
 	}
-
-	m_pShadowManager = new CXTPShadowManager();
 }
 
 XTPCurrentSystemTheme CXTPPaintManager::GetCurrentSystemTheme()
@@ -213,23 +191,7 @@ void CXTPPaintManager::SetColors(int cElements, CONST INT* lpaElements, CONST CO
 
 CXTPPaintManager::~CXTPPaintManager()
 {
-	SAFE_DELETE(m_pGalleryPaintManager);
-	SAFE_DELETE(m_pSliderPaintManager);
-	SAFE_DELETE(m_pProgressPaintManager);
-	SAFE_DELETE(m_pFramePaintManager);
-
-	CMDTARGET_RELEASE(m_pShadowManager);
-
-	if (m_pRibbonPaintManager)
-		((CCmdTarget*)m_pRibbonPaintManager)->InternalRelease();
-
-	SAFE_DELETE(m_themeStatusBar);
-	SAFE_DELETE(m_themeButton);
-}
-
-int CXTPPaintManager::GetShadowOptions() const
-{
-	return m_pShadowManager->GetShadowOptions();
+	delete m_pGalleryPaintManager;
 }
 
 XTP_COMMANDBARS_ICONSINFO* CXTPPaintManager::GetIconsInfo()
@@ -237,8 +199,10 @@ XTP_COMMANDBARS_ICONSINFO* CXTPPaintManager::GetIconsInfo()
 	return &m_iconsInfo;
 }
 
-void CXTPPaintManager::UpdateColors()
+void CXTPPaintManager::RefreshMetrics()
 {
+	UpdateFonts();
+
 	RefreshXtremeColors();
 
 	CXTPColorManager* pColorManager = XTPColorManager();
@@ -246,72 +210,32 @@ void CXTPPaintManager::UpdateColors()
 	for (int i = 0; i <= XPCOLOR_LAST; i++)
 		m_arrColor[i].SetStandardValue(pColorManager->GetColor(i));
 
-}
-
-void CXTPPaintManager::RefreshMetrics()
-{
-	UpdateFonts();
-	UpdateColors();
-
-	m_pShadowManager->SetShadowColor(0);
+	m_clrShadowFactor = 0;
 	m_clrStatusTextColor = GetXtremeColor(COLOR_BTNTEXT);
-	m_clrStatusTextGrayColor = GetXtremeColor(COLOR_GRAYTEXT);
-
-	m_clrMessageBarText = GetXtremeColor(COLOR_INFOTEXT);
 
 	m_clrFloatingGripper.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
 	m_clrFloatingGripperText.SetStandardValue(GetXtremeColor(COLOR_3DHIGHLIGHT));
 
 	m_clrDisabledIcon.SetStandardValue(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DSHADOW));
 
-	m_themeStatusBar->CloseTheme();
+	m_themeStatusBar.CloseTheme();
 
 	if (m_bThemedStatusBar)
 	{
-		m_themeStatusBar->OpenThemeData(NULL, L"STATUS");
+		m_themeStatusBar.OpenThemeData(NULL, L"STATUS");
 
-		if (m_themeStatusBar->IsAppThemed())
-			m_themeStatusBar->GetThemeColor(SP_PANE, 0, TMT_TEXTCOLOR, &m_clrStatusTextColor);
+		if (m_themeStatusBar.IsAppThemed())
+			m_themeStatusBar.GetThemeColor(SP_PANE, 0, TMT_TEXTCOLOR, &m_clrStatusTextColor);
 	}
 
-	m_themeButton->CloseTheme();
+	m_themeButton.CloseTheme();
 	if (m_bThemedCheckBox)
 	{
-		m_themeButton->OpenTheme(NULL, L"BUTTON");
+		m_themeButton.OpenTheme(NULL, L"BUTTON");
 	}
 
-	if (m_pGalleryPaintManager) m_pGalleryPaintManager->RefreshMetrics();
-	if (m_pSliderPaintManager) m_pSliderPaintManager->RefreshMetrics();
-	if (m_pProgressPaintManager) m_pProgressPaintManager->RefreshMetrics();
-	if (m_pFramePaintManager) m_pFramePaintManager->RefreshMetrics();
-
-#ifdef _XTP_INCLUDE_RIBBON
-	if (m_pRibbonPaintManager) m_pRibbonPaintManager->RefreshMetrics();
-#endif
+	m_pGalleryPaintManager->RefreshMetrics();
 }
-
-CXTPFramePaintManager* CXTPPaintManager::GetFramePaintManager()
-{
-	if (!m_pFramePaintManager)
-	{
-		m_pFramePaintManager = new CXTPRibbonSystemFrameTheme(this);
-		m_pFramePaintManager->RefreshMetrics();
-	}
-	return m_pFramePaintManager;
-}
-
-CXTPRibbonPaintManager* CXTPPaintManager::GetRibbonPaintManager()
-{
-#ifdef _XTP_INCLUDE_RIBBON
-	if (!m_pRibbonPaintManager)
-	{
-		m_pRibbonPaintManager = new CXTPRibbonSystemTheme(this);
-		m_pRibbonPaintManager->RefreshMetrics();
-	}
-#endif
-	return m_pRibbonPaintManager;
-}
-
 
 int CXTPPaintManager::GetControlHeight() const
 {
@@ -326,11 +250,10 @@ CXTPPaintManager* CXTPPaintManager::CreateTheme(XTPPaintTheme paintTheme)
 	else if (paintTheme == xtpThemeOffice2003) pInstance = new CXTPOffice2003Theme();
 	else if (paintTheme == xtpThemeNativeWinXP) pInstance = new CXTPNativeXPTheme();
 	else if (paintTheme == xtpThemeWhidbey) pInstance = new CXTPWhidbeyTheme();
-	else if (paintTheme == xtpThemeVisualStudio2008) pInstance = new CXTPVisualStudio2008Theme();
-	else if (paintTheme == xtpThemeResource) pInstance = new CXTPResourceTheme();
+#ifdef _XTP_INCLUDE_RIBBON
+	else if (paintTheme == xtpThemeOffice2007) pInstance = new CXTPOffice2007Theme();
 	else if (paintTheme == xtpThemeRibbon) pInstance = new CXTPRibbonTheme();
-	else if (paintTheme == xtpThemeVisualStudio2010) pInstance = new CXTPVisualStudio2010Theme();
-	else if (paintTheme == xtpThemeVisualStudio6) pInstance = new CXTPVisualStudio6Theme();
+#endif
 	else pInstance = new CXTPDefaultTheme();
 
 	ASSERT(pInstance);
@@ -379,15 +302,15 @@ void CXTPPaintManager::Triangle(CDC* pDC, CPoint pt0, CPoint pt1, CPoint pt2, CO
 	pDC->Polygon(pts, 3);
 }
 
-void CXTPPaintManager::Rectangle(CDC* pDC, LPCRECT rc, int nPen, int nBrush)
+void CXTPPaintManager::Rectangle(CDC* pDC, CRect rc, int nPen, int nBrush)
 {
 	if (nBrush != -1) pDC->FillSolidRect(rc, GetXtremeColor(nBrush));
 	if (nPen != nBrush && nPen != -1) pDC->Draw3dRect(rc, GetXtremeColor(nPen), GetXtremeColor(nPen));
 }
 
-void CXTPPaintManager::Draw3dRect(CDC* pDC, LPCRECT rc, int nTopLeft, int nBottomRight)
+void CXTPPaintManager::Draw3dRect(CDC* pDC, CRect rc, int nTopLeft, int nBottomRight)
 {
-	pDC->Draw3dRect(rc, GetXtremeColor(nTopLeft), GetXtremeColor(nBottomRight));
+	pDC->Draw3dRect(&rc, GetXtremeColor(nTopLeft), GetXtremeColor(nBottomRight));
 }
 
 void CXTPPaintManager::_DrawCheckMark(CDC* pDC, CRect rc, COLORREF clr, BOOL bLayoutRTL /*= FALSE*/)
@@ -437,8 +360,7 @@ AFX_INLINE COLORREF Mix(CDC* pDC, int x, int y, COLORREF clrBorder, COLORREF clr
 
 void CXTPPaintManager::AlphaEllipse(CDC* pDC, CRect rc, COLORREF clrBorder, COLORREF clrFace)
 {
-	if (rc.Width() != rc.Height())
-		return;
+	ASSERT(rc.Width() == rc.Height());
 	double x0 = double(rc.left + rc.right - 1) / 2;
 	double y0 = double(rc.top + rc.bottom - 1) / 2;
 	double radius = double(rc.right - rc.left - 1) / 2 - 0.25;
@@ -459,7 +381,7 @@ void CXTPPaintManager::AlphaEllipse(CDC* pDC, CRect rc, COLORREF clrBorder, COLO
 	}
 }
 
-void CXTPPaintManager::DrawPopupBarRadioMark(CDC* pDC, CRect rcCheck, BOOL /*bEnabled*/, COLORREF clr)
+void CXTPPaintManager::DrawRadioMark(CDC* pDC, CRect rcCheck, COLORREF clr)
 {
 	CPoint pt(rcCheck.CenterPoint());
 	CRect rcRadio(pt.x - 3, pt.y - 3, pt.x + 3, pt.y + 3);
@@ -467,7 +389,7 @@ void CXTPPaintManager::DrawPopupBarRadioMark(CDC* pDC, CRect rcCheck, BOOL /*bEn
 	AlphaEllipse(pDC, rcRadio, clr, clr);
 }
 
-void CXTPPaintManager::DrawPopupBarCheckMark(CDC* pDC, CRect rc, BOOL /*bEnabled*/, COLORREF clr)
+void CXTPPaintManager::DrawCheckMark(CDC* pDC, CRect rc, COLORREF clr)
 {
 	BOOL bLayoutRTL = CXTPDrawHelpers::IsContextRTL(pDC);
 
@@ -487,30 +409,6 @@ void CXTPPaintManager::DrawComboExpandMark(CDC* pDC, CRect rc, COLORREF clr)
 	Triangle(pDC, CPoint(pt.x - nWidth, pt.y - nWidth/2), CPoint(pt.x + nWidth, pt.y - nWidth/2), CPoint (pt.x , pt.y - nWidth/2 + nWidth), clr);
 }
 
-void CXTPPaintManager::FillCompositeRect(CDC* pDC, LPCRECT lpRect, COLORREF clrPen)
-{
-	if (!lpRect)
-		return;
-
-	CSize sz(lpRect->right - lpRect->left, lpRect->bottom - lpRect->top);
-	CBitmap bmp;
-	LPDWORD lpBits;
-	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
-	if (!lpBits)
-		return;
-
-	CXTPCompatibleDC dc(pDC, &bmp);
-
-	DWORD clr = 0xFF000000 + RGB(GetBValue(clrPen), GetGValue(clrPen), GetRValue(clrPen));
-
-	for (int i = sz.cx * sz.cy - 1; i >= 0; i--)
-	{
-		*lpBits++ = clr;
-	}
-
-	pDC->BitBlt(lpRect->left, lpRect->top, sz.cx, sz.cy, &dc, 0, 0, SRCCOPY);
-}
-
 void CXTPPaintManager::HorizontalLine(CDC* pDC, int x0, int y, int x1, COLORREF clrPen)
 {
 	pDC->FillSolidRect(x0, y, x1 - x0, 1, clrPen);
@@ -526,23 +424,11 @@ void CXTPPaintManager::Line(CDC* pDC, CPoint p0, CPoint p1)
 	pDC->MoveTo(p0);
 	pDC->LineTo(p1);
 }
-
 void CXTPPaintManager::Line(CDC* pDC, int x0, int y0, int x1, int y1, int nPen)
 {
-	if (x0 == x1)
-	{
-		VerticalLine(pDC, x0, y0, y1, GetXtremeColor(nPen));
-	}
-	else if (y0 == y1)
-	{
-		HorizontalLine(pDC, x0, y0, x1, GetXtremeColor(nPen));
-	}
-	else
-	{
-		CXTPPenDC pen(*pDC, GetXtremeColor(nPen));
-		pDC->MoveTo(x0, y0);
-		pDC->LineTo(x1, y1);
-	}
+	CXTPPenDC pen(*pDC, GetXtremeColor(nPen));
+	pDC->MoveTo(x0, y0);
+	pDC->LineTo(x1, y1);
 }
 void CXTPPaintManager::Pixel(CDC* pDC, int x, int y, int nPen)
 {
@@ -589,7 +475,7 @@ void CXTPPaintManager::SplitString(const CString& str, CString& strFirstRow, CSt
 #define XTP_DTT_COMPOSITED      (1UL << 13)     // Draws text with antialiased alpha (needs a DIB section)
 #define XTP_DTT_TEXTCOLOR       (1UL << 0)
 
-void CXTPPaintManager::DrawTextApi(CDC* pDC, const CString& str, LPRECT lpRect, UINT format, BOOL bComposited)
+void DrawTextApi(CDC* pDC, const CString& str, LPRECT lpRect, UINT format, BOOL bComposited)
 {
 	if (!bComposited)
 	{
@@ -878,17 +764,11 @@ void CXTPPaintManager::SetCommandBarsFontIndirect(LOGFONT* pLogFont, BOOL bUseSt
 	m_nTextHeight = dc.GetTextExtent(_T(" "), 1).cy + 6;
 }
 
-void CXTPPaintManager::SetFontHeight(int nFontHeight)
-{
-	m_nFontHeight = nFontHeight;
-	RefreshMetrics();
-}
-
 void CXTPPaintManager::UpdateFonts()
 {
 	CNonClientMetrics ncm;
 
-	BYTE lfCharSet = XTPResourceManager()->GetFontCharset();
+	BYTE lfCharSet = m_bResourceCharSet ? XTPResourceManager()->GetLanguageInfo()->nFontCharSet : ncm.lfMenuFont.lfCharSet;
 
 	if (m_bUseStandardFont)
 	{
@@ -899,12 +779,6 @@ void CXTPPaintManager::UpdateFonts()
 		lf.lfItalic = ncm.lfMenuFont.lfItalic;
 		lf.lfCharSet = lfCharSet;
 		lf.lfQuality = ncm.lfMenuFont.lfQuality;
-
-		if (m_nFontHeight > 0)
-		{
-			int nBaseHeight = m_nFontHeight >= 13 ? m_nFontHeight : 11;
-			lf.lfHeight = nBaseHeight * 120 / 96;
-		}
 
 		STRCPY_S(lf.lfFaceName, LF_FACESIZE, ncm.lfMenuFont.lfFaceName);
 
@@ -917,7 +791,7 @@ void CXTPPaintManager::UpdateFonts()
 	}
 
 	LOGFONT lfIcon;
-	VERIFY(CXTPDrawHelpers::GetIconLogFont(&lfIcon));
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
 
 	if (m_bClearTypeTextQuality && XTPSystemVersion()->IsClearTypeTextQualitySupported())
 	{
@@ -941,13 +815,6 @@ void CXTPPaintManager::UpdateFonts()
 
 void CXTPPaintManager::DrawControlEntry(CDC* pDC, CXTPControl* pButton)
 {
-#ifdef _XTP_INCLUDE_RIBBON
-	if (pButton->GetRibbonGroup() && m_pRibbonPaintManager)
-	{
-		if (m_pRibbonPaintManager->DrawRibbonGroupControlEntry(pDC, pButton))
-			return;
-	}
-#endif
 	DrawRectangle(pDC, pButton->GetRect(), pButton->GetSelected(), pButton->GetPressed(), pButton->GetEnabled(), pButton->GetChecked(),
 		pButton->GetPopuped(), pButton->GetParent()->GetType(), pButton->GetParent()->GetPosition());
 }
@@ -1003,7 +870,7 @@ CSize CXTPPaintManager::DrawControlEdit(CDC* pDC, CXTPControlEdit* pControlEdit,
 				CSize szIcon = pControlEdit->GetIconSize();
 
 				CXTPImageManagerIcon* pImage = pControlEdit->GetImage(szIcon.cx);
-				szIcon = GetStretchIconSize(pImage, szIcon);
+				szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
 
 				CPoint pt = CPoint(rc.left + 3, rc.CenterPoint().y - szIcon.cy/2);
 				DrawImage(pDC, pt, szIcon, pImage, FALSE, FALSE, bEnabled, FALSE, FALSE);
@@ -1080,7 +947,7 @@ CSize CXTPPaintManager::DrawControlComboBox(CDC* pDC, CXTPControlComboBox* pCont
 				CSize szIcon = pControlCombo->GetIconSize();
 
 				CXTPImageManagerIcon* pImage = pControlCombo->GetImage(szIcon.cx);
-				szIcon = GetStretchIconSize(pImage, szIcon);
+				szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
 
 				CPoint pt = CPoint(rc.left + 3, rc.CenterPoint().y - szIcon.cy/2);
 				DrawImage(pDC, pt, szIcon, pImage, FALSE, FALSE, bEnabled, FALSE, FALSE);
@@ -1160,63 +1027,11 @@ void CXTPPaintManager::FillDockBar(CDC* pDC, CXTPDockBar* pBar)
 	pDC->FillSolidRect(CXTPClientRect((CWnd*)pBar), GetXtremeColor(COLOR_3DFACE));
 }
 
-void CXTPPaintManager::FillMessageBar(CDC* pDC, CXTPMessageBar* pBar)
-{
-	CXTPClientRect rcClient(pBar);
-	pDC->FillSolidRect(rcClient, GetXtremeColor(COLOR_3DFACE));
-
-	CRect rcMessage = pBar->GetMessageRect();
-	pDC->Draw3dRect(rcMessage, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
-
-	rcMessage.DeflateRect(1, 1);
-	pDC->FillSolidRect(rcMessage, GetXtremeColor(COLOR_INFOBK));
-}
-
-void CXTPPaintManager::DrawMessageBarButton(CDC* pDC, CXTPMessageBarButton* pButton)
-{
-	BOOL bCloseButton = (pButton->m_nID == SC_CLOSE);
-	CRect rc(pButton->m_rcButton);
-
-	if (pButton->m_bPressed)
-	{
-		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-		DrawRectangle(pDC, rc, pButton->m_bHot, pButton->m_bPressed, TRUE, FALSE, FALSE, xtpBarTypeNormal, xtpBarTop);
-	}
-	else if (pButton->m_bHot)
-	{
-		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-		DrawRectangle(pDC, rc, pButton->m_bHot, FALSE, TRUE, FALSE, FALSE, xtpBarTypeNormal, xtpBarTop);
-
-	}
-	else if (!bCloseButton)
-	{
-		pDC->FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-		pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DSHADOW));
-	}
-
-	if (bCloseButton)
-	{
-		CPoint pt = rc.CenterPoint();
-		CXTPPenDC pen(pDC, 0);
-
-		pDC->MoveTo(pt.x - 4, pt.y - 3);
-		pDC->LineTo(pt.x + 3, pt.y + 4);
-		pDC->MoveTo(pt.x - 3, pt.y - 3);
-		pDC->LineTo(pt.x + 4, pt.y + 4);
-
-		pDC->MoveTo(pt.x - 4, pt.y + 3);
-		pDC->LineTo(pt.x + 3, pt.y - 4);
-		pDC->MoveTo(pt.x - 3, pt.y + 3);
-		pDC->LineTo(pt.x + 4, pt.y - 4);
-	}
-}
-
-
 void CXTPPaintManager::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
 {
-	if (m_bThemedStatusBar && m_themeStatusBar->IsAppThemed())
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
 	{
-		m_themeStatusBar->DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, CXTPClientRect((CWnd*)pBar), 0);
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), 0, 0, CXTPClientRect((CWnd*)pBar), 0);
 	}
 	else
 	{
@@ -1224,29 +1039,10 @@ void CXTPPaintManager::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
 	}
 }
 
-XTPBarTextOrientation CXTPPaintManager::GetControlTextOrientation(CXTPControl* pControl)
+CFont* CXTPPaintManager::GetCommandBarFont(CXTPCommandBar* pBar, BOOL bBold)
 {
-	XTPBarTextOrientation nTextOrientation = pControl->GetParent()->GetTextOrientation();
-	if (nTextOrientation != xtpBarTextAuto)
-		return nTextOrientation;
+	return (pBar->GetPosition() == xtpBarLeft || pBar->GetPosition() == xtpBarRight) ? (bBold ? &m_fontVertBold: &m_fontVert) : (bBold ? &m_fontRegularBold : &m_fontRegular);
 
-	return (pControl->GetParent()->GetPosition() == xtpBarLeft || pControl->GetParent()->GetPosition() == xtpBarRight) ? xtpBarTextVertical : xtpBarTextHorizontal;
-}
-
-CFont* CXTPPaintManager::GetControlFont(CXTPControl* pControl)
-{
-	return GetControlTextOrientation(pControl) == xtpBarTextVertical ? (pControl->IsItemDefault() ? &m_fontVertBold: &m_fontVert) : (pControl->IsItemDefault() ? &m_fontRegularBold : &m_fontRegular);
-}
-
-CFont* CXTPPaintManager::GetCommandBarFont(CXTPCommandBar* pCommandBar)
-{
-	XTPBarTextOrientation nTextOrientation = pCommandBar->GetTextOrientation();
-	if (nTextOrientation == xtpBarTextAuto)
-	{
-		nTextOrientation = pCommandBar->GetPosition() == xtpBarLeft || pCommandBar->GetPosition() == xtpBarRight ? xtpBarTextVertical : xtpBarTextHorizontal;
-	}
-
-	return nTextOrientation == xtpBarTextVertical ? &m_fontVert : &m_fontRegular;
 }
 
 CSize CXTPPaintManager::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlType, CXTPControl* pButton, CXTPCommandBar* pBar, BOOL bDraw, LPVOID lpParam)
@@ -1348,7 +1144,7 @@ CSize CXTPPaintManager::DrawSpecialControl(CDC* pDC, XTPSpecialControl controlTy
 
 CSize CXTPPaintManager::DrawControlText(CDC* pDC, CXTPControl* pButton, CRect rcText, BOOL bDraw, BOOL bTriangled, CSize szButton, BOOL bDrawImage)
 {
-	BOOL bVert = GetControlTextOrientation(pButton) == xtpBarTextVertical;
+	BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarRight || pButton->GetParent()->GetPosition() == xtpBarLeft;
 
 	if (!bVert)
 	{
@@ -1394,7 +1190,8 @@ CRect CXTPPaintManager::GetSplitButtonCommandRect(CXTPControl* pButton)
 	{
 		int nSplitDropDownHeight = GetSplitDropDownHeight();
 
-		BOOL bVert = GetControlTextOrientation(pButton) == xtpBarTextVertical;
+		BOOL bVert = pParent->GetPosition() == xtpBarLeft ||
+			pParent->GetPosition() == xtpBarRight;
 
 		return bVert ? CRect(rc.left + nSplitDropDownHeight, rc.top, rc.right, rc.bottom) :
 			CRect(rc.left, rc.top, rc.right, rc.bottom - nSplitDropDownHeight);
@@ -1408,7 +1205,7 @@ CSize CXTPPaintManager::DrawControlCheckBoxMark(CDC* pDC, CRect rc, BOOL bDraw, 
 {
 	if (bDraw)
 	{
-		if (m_bThemedCheckBox && m_themeButton->IsAppThemed())
+		if (m_bThemedCheckBox && m_themeButton.IsAppThemed())
 		{
 			int nState = 0;
 			if (!bEnabled)
@@ -1424,7 +1221,7 @@ CSize CXTPPaintManager::DrawControlCheckBoxMark(CDC* pDC, CRect rc, BOOL bDraw, 
 			if (bChecked == 2)
 				nState += 8;
 
-			m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_CHECKBOX, nState + 1, rc, 0);
+			m_themeButton.DrawThemeBackground(pDC->GetSafeHdc(), BP_CHECKBOX, nState + 1, rc, 0);
 
 		}
 		else
@@ -1442,7 +1239,7 @@ CSize CXTPPaintManager::DrawControlRadioButtonMark(CDC* pDC, CRect rc, BOOL bDra
 {
 	if (bDraw)
 	{
-		if (m_bThemedCheckBox && m_themeButton->IsAppThemed())
+		if (m_bThemedCheckBox && m_themeButton.IsAppThemed())
 		{
 			int nState = 0;
 			if (!bEnabled)
@@ -1458,7 +1255,7 @@ CSize CXTPPaintManager::DrawControlRadioButtonMark(CDC* pDC, CRect rc, BOOL bDra
 			if (bChecked == 2)
 				nState += 8;
 
-			m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_RADIOBUTTON, nState + 1, rc, 0);
+			m_themeButton.DrawThemeBackground(pDC->GetSafeHdc(), BP_RADIOBUTTON, nState + 1, rc, 0);
 
 		}
 		else
@@ -1529,23 +1326,17 @@ CSize CXTPPaintManager::DrawControlPopupParent(CDC* pDC, CXTPControl* pButton, B
 
 	CSize szImage(GetPopupBarImageSize(pParent));
 
-	int nGripperWidth = GetPopupBarGripperWidth(pParent) - 1;
+	BOOL bDoubleGripper = pParent->IsPopupBar() ? ((CXTPPopupBar*)pParent)->IsDoubleGripper() : FALSE;
+	int nGripperWidth = bDoubleGripper ? szImage.cx * 2 : szImage.cx;
 
 	BOOL bSelected = pButton->GetSelected(), bEnabled = pButton->GetEnabled();
 	if (controlType == xtpControlSplitButtonPopup && bEnabled == TRUE_SPLITDROPDOWN)
 		bEnabled = FALSE;
 
-	if (pButton->GetType() == xtpControlLabel)
-	{
-		CSize szIcon = GetIconSize(pButton);
-		CXTPImageManagerIcon* pImage = pButton->GetIconId() != 0 && bDrawImage ? pButton->GetImage(szIcon.cx) : NULL;
-
-		if (!m_bOffsetPopupLabelText && !pImage)
-			nGripperWidth = 0;
-
-		if (!bDrawImage)
-			szImage.cy = m_nTextHeight;
-	}
+	if (pButton->GetType() == xtpControlLabel && !m_bOffsetPopupLabelText)
+		nGripperWidth = 0;
+	if (pButton->GetType() == xtpControlLabel && !bDrawImage)
+		szImage.cy = m_nTextHeight;
 
 	if (bDraw)
 	{
@@ -1621,23 +1412,9 @@ int CXTPPaintManager::GetSplitDropDownHeight() const
 	return nSplitDropDownHeight;
 }
 
-CSize CXTPPaintManager::GetStretchIconSize(CXTPImageManagerIcon* pImage, CSize szIcon)
-{
-	if (!pImage)
-		return szIcon;
-
-	int nHeight = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
-	if (nHeight <= szIcon.cy + 1)
-		return CSize(szIcon.cx, nHeight);
-
-	int nWidth = szIcon.cy * pImage->GetWidth() / pImage->GetHeight();
-	return CSize(nWidth, szIcon.cy);
-
-}
-
 CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton, BOOL bDraw)
 {
-	CXTPFontDC font(pDC, GetControlFont(pButton));
+	CXTPFontDC font(pDC, GetCommandBarFont(pButton->GetParent(), pButton->IsItemDefault()));
 
 	CRect rcButton = bDraw ? pButton->GetRect() : CXTPEmptyRect();
 	XTPControlType controlType = pButton->GetType();
@@ -1646,15 +1423,13 @@ CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton,
 	CSize szIcon = GetIconSize(pButton);
 	CSize szButton = pButton->GetButtonSize();
 
-	BOOL bVert = GetControlTextOrientation(pButton) == xtpBarTextVertical;
+	BOOL bVert = pButton->GetParent()->GetPosition() == xtpBarRight || pButton->GetParent()->GetPosition() == xtpBarLeft;
 
 	BOOL bDrawImage = (buttonStyle == xtpButtonAutomatic && controlType != xtpControlPopup) ||
 		(buttonStyle == xtpButtonIcon) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow);
 
 	CXTPImageManagerIcon* pImage = (bDrawImage && pButton->GetIconId() != 0) ? pButton->GetImage(szIcon.cx) : NULL;
 	bDrawImage = bDrawImage && (pImage != NULL);
-
-	CSize szStretchIcon = GetStretchIconSize(pImage, szIcon);
 
 	BOOL bDrawText = pButton->IsCaptionVisible();
 
@@ -1723,17 +1498,7 @@ CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton,
 		}
 		else
 		{
-			BOOL bDrawSplitButtonFrame = TRUE;
-
-#ifdef _XTP_INCLUDE_RIBBON
-			if (pButton->GetRibbonGroup() && m_pRibbonPaintManager)
-			{
-				if (m_pRibbonPaintManager->DrawRibbonGroupControlEntry(pDC, pButton))
-					bDrawSplitButtonFrame = FALSE;
-			}
-#endif
-			if (bDrawSplitButtonFrame)
-				DrawSplitButtonFrame(pDC, pButton, rcButton);
+			DrawSplitButtonFrame(pDC, pButton, rcButton);
 		}
 		pDC->SetTextColor(GetControlTextColor(pButton));
 	}
@@ -1753,9 +1518,9 @@ CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton,
 		{
 			if (bDrawImage)
 			{
-				CPoint pt = bVert ? CPoint(rcButton.left + 4 + nSplitDropDownHeight, rcButton.CenterPoint().y - szStretchIcon.cy / 2) :
-					CPoint(rcButton.CenterPoint().x - szStretchIcon.cx / 2, rcButton.top + 3);
-				DrawImage(pDC, pt, szStretchIcon, pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
+				CPoint pt = bVert ? CPoint(rcButton.left + 4 + nSplitDropDownHeight, rcButton.CenterPoint().y - szIcon.cy / 2) :
+					CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 3);
+				DrawImage(pDC, pt, CSize(szIcon.cx, 0), pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
 			}
 
 			CRect rcText = rcButton;
@@ -1794,8 +1559,8 @@ CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton,
 		{
 			if (controlType == xtpControlSplitButtonPopup) rcButton.right -= m_nSplitButtonDropDownWidth;
 
-			CPoint pt = CPoint(rcButton.CenterPoint().x - szStretchIcon.cx / 2, rcButton.top + 4);
-			DrawImage(pDC, pt, szStretchIcon, pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
+			CPoint pt = CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 4);
+			DrawImage(pDC, pt, CSize(szIcon.cx, 0), pImage, bSelected, bPressed, bEnabled, bChecked, bPopuped);
 
 			CRect rcText = rcButton;
 			rcText.top += szButton.cy - 4;
@@ -1819,7 +1584,7 @@ CSize CXTPPaintManager::DrawControlToolBarParent(CDC* pDC, CXTPControl* pButton,
 
 	if (bDraw && pImage)
 	{
-		szIcon = szStretchIcon;
+		szIcon.cy = pImage->GetHeight() * szIcon.cx / pImage->GetWidth();
 
 		CPoint pt = !bVert ? CPoint(rcButton.left + 3, rcButton.CenterPoint().y - szIcon.cy / 2) :
 			CPoint(rcButton.CenterPoint().x - szIcon.cx / 2, rcButton.top + 3);
@@ -1903,10 +1668,10 @@ void CXTPPaintManager::GradientFill(CDC* pDC, LPRECT lpRect, COLORREF crFrom, CO
 
 void CXTPPaintManager::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
 {
-	if (m_bThemedStatusBar && m_themeStatusBar->IsAppThemed())
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
 	{
 		CRect rcGripper(rcClient.right - 18, rcClient.top, rcClient.right, rcClient.bottom);
-		m_themeStatusBar->DrawThemeBackground(pDC->GetSafeHdc(), SP_GRIPPER, 0, &rcGripper, 0);
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), SP_GRIPPER, 0, &rcGripper, 0);
 	}
 	else
 	{
@@ -2141,6 +1906,8 @@ void CXTPPaintManager::DrawStatusBarButtonFace(CDC* pDC, CRect rcItem, CXTPStatu
 {
 	if (pPane->IsHighlighted() || pPane->IsPressed() || pPane->IsChecked())
 	{
+		rcItem.DeflateRect(m_rcStatusButtonMargins);
+
 		DrawRectangle(pDC, rcItem, pPane->IsHighlighted(), pPane->IsPressed(), TRUE,
 			pPane->IsChecked(), FALSE, xtpBarTypeNormal, xtpBarBottom);
 	}
@@ -2149,9 +1916,9 @@ void CXTPPaintManager::DrawStatusBarButtonFace(CDC* pDC, CRect rcItem, CXTPStatu
 
 void CXTPPaintManager::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* pPane, BOOL bGripperPane)
 {
-	if (m_bThemedStatusBar && m_themeStatusBar->IsAppThemed())
+	if (m_bThemedStatusBar && m_themeStatusBar.IsAppThemed())
 	{
-		m_themeStatusBar->DrawThemeBackground(pDC->GetSafeHdc(), bGripperPane ? SP_GRIPPERPANE : SP_PANE, 0, rc, 0);
+		m_themeStatusBar.DrawThemeBackground(pDC->GetSafeHdc(), bGripperPane ? SP_GRIPPERPANE : SP_PANE, 0, rc, 0);
 	}
 	else
 	{
@@ -2160,22 +1927,16 @@ void CXTPPaintManager::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBar
 	}
 }
 
-void CXTPPaintManager::DrawStatusBarPaneSeparator(CDC* pDC, CRect rc, CXTPStatusBarPane* /*pPane*/)
-{
-	CRect rcSeparator(rc.left - 2, rc.top, rc.left, rc.bottom);
-	Draw3dRect(pDC, rcSeparator, COLOR_3DSHADOW, COLOR_BTNHILIGHT);
-}
-
 void CXTPPaintManager::DrawStatusBarPaneEntry(CDC* pDC, CRect rcItem, CXTPStatusBarPane* pPane)
 {
-	BOOL bEnabled = pPane->IsEnabled();
+	BOOL bEnabled = !(pPane->GetStyle() & SBPS_DISABLED);
 	BOOL bDrawText = bEnabled || pPane->GetStatusBar()->GetDrawDisabledText();
 
 	if (pPane->GetBackgroundColor() != (COLORREF)-1)
 	{
 		CRect rcBackground(rcItem);
 
-		if (pPane->HasBorders())
+		if (!(pPane->GetStyle() & SBPS_NOBORDERS))
 			rcBackground.DeflateRect(1, 1);
 
 		pDC->FillSolidRect(rcBackground, pPane->GetBackgroundColor());
@@ -2186,24 +1947,14 @@ void CXTPPaintManager::DrawStatusBarPaneEntry(CDC* pDC, CRect rcItem, CXTPStatus
 	}
 
 	CXTPFontDC font(pDC, pPane->GetTextFont());
-	rcItem.DeflateRect(pPane->GetPadding());
-
+	rcItem.DeflateRect(pPane->GetMargins());
 	CString str = pPane->GetText();
-	CXTPMarkupUIElement* pUIElement = pPane->GetMarkupUIElement();
+
 	CXTPImageManagerIcon* pIcon = pPane->GetImage();
-
-	COLORREF clrNormalText = pPane->IsButton() && (pPane->IsHighlighted() || pPane->IsPressed()) ?
-		GetRectangleTextColor(pPane->IsHighlighted(), pPane->IsPressed(), bEnabled, FALSE, FALSE, xtpBarTypeNormal, xtpBarBottom) : m_clrStatusTextColor;
-
-	COLORREF clrText = !bEnabled ? pPane->GetTextGrayColor() != (COLORREF)-1 ? pPane->GetTextGrayColor(): m_clrStatusTextGrayColor: pPane->GetTextColor() != (COLORREF)-1 ? pPane->GetTextColor() : clrNormalText;
-
-	pDC->SetTextColor(clrText);
-	XTPMarkupSetDefaultFont(pPane->GetStatusBar()->GetMarkupContext(), (HFONT)pPane->GetTextFont()->GetSafeHandle(), clrText);
 
 	if (pPane->GetTextAlignment() != DT_LEFT)
 	{
-		int nWidth = pUIElement ? XTPMarkupMeasureElement(pUIElement).cx : pDC->GetTextExtent(str).cx;
-
+		int nWidth = pDC->GetTextExtent(str).cx;
 		nWidth += pIcon ? pIcon->GetWidth() + (nWidth > 0 ? 2 : 0) : 0;
 
 		if (rcItem.Width() > nWidth)
@@ -2225,64 +1976,17 @@ void CXTPPaintManager::DrawStatusBarPaneEntry(CDC* pDC, CRect rcItem, CXTPStatus
 		{
 			pIcon->Draw(pDC, CPoint(rcItem.left, (rcItem.top + rcItem.bottom - pIcon->GetHeight()) / 2), bEnabled ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
 		}
-		rcItem.left += pIcon->GetWidth() + 2;
+		rcItem.OffsetRect(pIcon->GetWidth() + 2, 0);
 	}
 
 	if (bDrawText)
 	{
-		if (pUIElement)
-		{
-			XTPMarkupMeasureElement(pUIElement, rcItem.Width(), INT_MAX);
-			XTPMarkupRenderElement(pUIElement, pDC->GetSafeHdc(), rcItem);
-		}
-		else
-		{
-			pDC->SetBkMode(TRANSPARENT);
-			pDC->DrawText(str, rcItem, DT_SINGLELINE | DT_VCENTER | DT_EXPANDTABS | DT_NOPREFIX);
-		}
+		pDC->SetBkMode(TRANSPARENT);
+		pDC->SetTextColor(!bEnabled ? GetXtremeColor(COLOR_GRAYTEXT): pPane->GetTextColor() != (COLORREF)-1 ? pPane->GetTextColor() : m_clrStatusTextColor);
+		pDC->DrawText(str, rcItem, DT_SINGLELINE | DT_VCENTER | DT_EXPANDTABS | DT_NOPREFIX);
 	}
 }
 
-int CXTPPaintManager::DrawStatusBarSwitchPane(CDC* pDC, CRect rcItem, CXTPStatusBarSwitchPane* pPane)
-{
-	int nWidth = 0;
-	int nCount = pPane->GetSwitchCount();
-
-	if (pDC)
-	{
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPStatusBarSwitchPane::SWITCH* pSwitch = pPane->GetSwitch(i);
-
-			rcItem.right = rcItem.left + pSwitch->nWidth;
-			BOOL bEnabled = pPane->IsEnabled() && pSwitch->bEnabled;
-
-			DrawRectangle(pDC, rcItem, pSwitch->bHighlighted, pSwitch->bPressed, bEnabled, pSwitch->bChecked, FALSE, xtpBarTypeNormal, xtpBarTop);
-
-			CXTPImageManagerIcon* pIcon = pPane->GetStatusBar()->GetImageManager()->GetImage(pSwitch->nID, ICON_SMALL);
-			if (pIcon)
-			{
-				CPoint pt((rcItem.left + rcItem.right - pIcon->GetWidth()) / 2, (rcItem.top + rcItem.bottom - pIcon->GetHeight()) / 2);
-				pIcon->Draw(pDC, pt, pIcon->GetIcon(!bEnabled ? xtpImageDisabled : pSwitch->bChecked ? xtpImageChecked : xtpImageNormal));
-			}
-
-			rcItem.left = rcItem.right;
-		}
-
-	}
-	else
-	{
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPStatusBarSwitchPane::SWITCH* pSwitch = pPane->GetSwitch(i);
-			pSwitch->nWidth = 18;
-
-			nWidth += pSwitch->nWidth;
-		}
-	}
-
-	return nWidth;
-}
 
 CSize CXTPPaintManager::DrawCommandBarGripper(CDC* pDC, CXTPCommandBar* pBar, BOOL bDraw)
 {
@@ -2380,18 +2084,6 @@ CSize CXTPPaintManager::GetAutoIconSize(BOOL bLarge) const
 	}
 
 	return bLarge ? CSize(32, 32) : CSize(16, 16);
-}
-
-void CXTPPaintManager::DrawControlMDIButton(CDC* pDC, CXTPControlButton* pButton)
-{
-	CFont font;
-	font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
-	CFont* pFont = pDC->SelectObject(&font);
-	DrawControlEntry(pDC, pButton);
-	pDC->SetTextColor(GetControlTextColor(pButton));
-	pDC->DrawText(pButton->GetParameter(), pButton->GetRect(), DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-	pDC->SelectObject(pFont);
-
 }
 
 

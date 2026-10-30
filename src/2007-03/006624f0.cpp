@@ -1,601 +1,526 @@
-// from server: 49% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\CommandBars\XTPCustomizeCommandsPage.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8xml/XmlSerializer.h"
-#include "util/Debug.h"
-#include "util/base64.hpp"
-#include "reflection/type.h"
-#include <G3D/format.h>
-#include <sstream>
+// XTPCustomizeCommandsPage.cpp : implementation of the CXTPCustomizeCommandsPage class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-class Whitespaces
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPResourceManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPControls.h"
+#include "XTPControl.h"
+#include "XTPControlPopup.h"
+#include "XTPPaintManager.h"
+#include "XTPCustomizeTools.h"
+#include "XTPCustomizeSheet.h"
+#include "XTPCommandBar.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPCustomizeCommandsPage.h"
+#include "XTPMouseManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+XTP_COMMANDBARS_CATEGORYINFO::XTP_COMMANDBARS_CATEGORYINFO(LPCTSTR _strCategory, CXTPCommandBars* pCommandBars)
 {
-public:
-	char data[256];
-  
-public:
-	Whitespaces()
+	strCategory = _strCategory;
+	pControls = new CXTPControls;
+	pControls->SetCommandBars(pCommandBars);
+}
+XTP_COMMANDBARS_CATEGORYINFO::~XTP_COMMANDBARS_CATEGORYINFO()
+{
+	pControls->InternalRelease();
+}
+
+
+
+void CXTPCustomizeCommandsListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+	CRect rc(lpDrawItemStruct->rcItem);
+	CXTPControl* pControl = (CXTPControl*)lpDrawItemStruct->itemData;
+	if (pControl)
 	{
-		data[9] = true;
-		data[10] = true;
-		data[12] = true;
-		data[13] = true;
-		data[32] = true;
+		BOOL bSelected = (lpDrawItemStruct->itemState & ODS_SELECTED);
+		CXTPCommandBars* pCommandBars = m_pCommandBars;
+		pCommandBars->GetPaintManager()->DrawListBoxControl(pDC, pControl, rc, bSelected, TRUE, pCommandBars);
 	}
-};
-
-static Whitespaces whitespaces;
-
-XmlParser::XmlParser(std::streambuf* buffer)
-	: buffer(buffer)
-{
-	
 }
 
-void TextXmlParser::skipWhitespace()
+BEGIN_MESSAGE_MAP(CXTPCustomizeCommandsListBox, CListBox)
+	//{{AFX_MSG_MAP(CXTPCustomizeCommandsPage)
+	ON_WM_LBUTTONDOWN()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+LRESULT CXTPCustomizeCommandsListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	while (whitespaces.data[(char)buffer->sgetc()])
-		buffer->sbumpc();
-}
-
-std::string TextXmlParser::readTag()
-{
-	skipWhitespace();
-
-	if ((char)buffer->sbumpc() != '<')
-		throw std::runtime_error("tag expected");
-
-	std::string tag;
-	tag += '<';
-
-	char lastChar;
-	do
+	switch (message)
 	{
-		lastChar = buffer->sbumpc();
-		tag += lastChar;
-	}
-	while (lastChar != '>');
-
-	return tag;
-}
-
-std::string TextXmlParser::readFirstTag()
-{
-	skipWhitespace();
-
-	std::string s;
-	char c = buffer->sbumpc();
-	if (c != '<')
-	{
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		if (c != '<')
+	case WM_PAINT:
 		{
-			for (int i = 0; i != 50; i++)
+			CPaintDC dc(this);
+			CXTPClientRect rc(this);
+			CXTPBufferDC memDC(dc, rc);
+
+			m_pCommandBars->GetPaintManager()->DrawListBoxControl(&memDC, NULL, CXTPClientRect(this), FALSE, TRUE, m_pCommandBars);
+
+			return CListBox::DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
+		}
+
+	case WM_ERASEBKGND:
+		CDC* pDC = CDC::FromHandle((HDC)wParam);
+
+		m_pCommandBars->GetPaintManager()->DrawListBoxControl(pDC, NULL, CXTPClientRect(this), FALSE, TRUE, m_pCommandBars);
+		return TRUE;
+	}
+
+	return CListBox::WindowProc(message, wParam, lParam);
+}
+
+
+void CXTPCustomizeCommandsListBox::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	CXTPCommandBars* pCommandBars = m_pCommandBars;
+	ASSERT(pCommandBars);
+	if (!pCommandBars)
+		return;
+
+	pCommandBars->SetDragControl(NULL);
+
+	BOOL bOutside;
+	int nIndex = (int)ItemFromPoint(point, bOutside);
+	CXTPControl* pControl = NULL;
+	if (!bOutside && m_bDragable)
+	{
+		if (SetCurSel(nIndex) != LB_ERR)
+		{
+			// Already selected, start drag operation
+			pControl = (CXTPControl*)GetItemData(nIndex);
+
+			// since we are eating the message, if the selection has changed, notify the owner.
+			CWnd* pWndOwner = GetOwner();
+			if (pWndOwner)
 			{
-				if (buffer->sgetc() == -1)
-					continue;
-				s += buffer->sbumpc();
+				SetFocus();
+
+				pWndOwner->PostMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
+					LBN_SELCHANGE), (LPARAM)m_hWnd);
 			}
 
-			std::string message = "tag expected after Byte-Order-Mark:";
-			message += s;
-			throw std::runtime_error(message);
-		}
-	}
-
-	std::string tag;
-	tag += c;
-
-	char lastChar;
-	do
-	{
-		lastChar = buffer->sbumpc();
-		tag += lastChar;
-	}
-	while (lastChar != '>');
-
-	return tag;
-}
-
-std::string decodeString(std::string source)
-{
-	std::string result;
-
-	size_t i = 0;
-	while (i < source.size())
-	{
-		char c = source[i++];
-		if (c == '&')
-		{
-			std::string entity;
-			while (i < source.size())
+			// Special case for New Menu
+			if (pControl && pControl->GetCommandBar() &&
+				pControl->GetCommandBar()->GetControlCount() == 0)
 			{
-				c = source[i++];
-				if (c == ';')
-					break;
-				entity += c;
+				pControl = pControl->Clone(TRUE);
+
+				CXTPCustomizeDropSource* pDropSource = pCommandBars->GetDropSource();
+				pDropSource->DoDragDrop(pControl, TRUE);
+
+				pControl->InternalRelease();
+				return;
 			}
 
-			if (entity == "lt")
-				result += '<';
-			else if (entity == "gt")
-				result += '>';
-			else if (entity == "amp")
-				result += '&';
-			else if (entity == "quot")
-				result += '"';
-			else if (entity == "apos")
-				result += '\'';
-			else if (entity[0] == '#')
-				result += atoi(entity.substr(1).c_str());
-			else
-				RBXASSERT(0);
-		}
-		else
-		{
-			result += c;
-		}
-	}
-
-	return result;
-}
-
-std::string TextXmlParser::readText(bool decode)
-{
-	skipWhitespace();
-
-	std::string text;
-	while ((char)buffer->sgetc() != '<')
-		text += buffer->sgetc();
-
-	if (decode)
-		text = decodeString(text);
-
-	return text;
-}
-
-std::string TextXmlParser::removeTag(const std::string& contents, int& index)
-{
-	size_t i = 0;
-	while (whitespaces.data[contents[i]] && i < contents.size())
-		i++;
-
-	size_t j = i;
-	while (!whitespaces.data[contents[j]] && j < contents.size())
-		j++;
-
-	std::string contentsNoTag = contents.substr(i, j - i);
-	index = (int)j + 1;
-
-	return contentsNoTag;
-}
-
-std::string TextXmlParser::findNextToken(const std::string& contents, int& index)
-{
-	size_t i;
-	for (i = index; i < contents.size(); i++)
-	{
-		if (!whitespaces.data[contents[i]])
-			break;
-	}
-
-	bool inQuotes = false;
-	size_t j = i;
-
-	for (; j < contents.size(); j++)
-	{
-		if (contents[j] == '"')
-		{
-			inQuotes = !inQuotes;
-		}
-		else if (!inQuotes && whitespaces.data[contents[j]])
-		{
-			break;
-		}
-	}
-
-	if (j != i)
-	{
-		std::string answer = contents.substr(i, j - i);
-		index = (int)j + 1;
-		return answer;
-	}
-
-	index = (int)contents.size();
-	return "";
-}
-
-XmlElement* TextXmlParser::parseAttributes(const std::string& currentTag)
-{
-	std::string tagGuts = currentTag.substr(1, currentTag.size() - 2);
-
-	int index = 0;
-	std::string tagName = removeTag(tagGuts, index);
-
-	XmlElement* element = new XmlElement(RBX::Name::lookup(tagName));
-
-	std::string attribute = findNextToken(tagGuts, index);
-	while (attribute.size() > 0)
-	{
-		size_t equalsSignIndex = attribute.find("=", 0, 1);
-		std::string attributeName = attribute.substr(0, equalsSignIndex);
-
-		size_t startQuoteMarkIndex = attribute.find('\"');
-		size_t endQuoteMarkIndex = attribute.rfind('\"');
-		std::string text = decodeString(attribute.substr(startQuoteMarkIndex + 1, endQuoteMarkIndex - startQuoteMarkIndex - 1));
-
-		element->addAttribute(RBX::Name::lookup(attributeName), text);
-
-		attribute = findNextToken(tagGuts, index);
-	}
-
-	return element;
-}
-
-bool isCloseTag(const std::string& test)
-{
-	if (test.size() >= 2)
-		return test.substr(0, 2) == "</";
-
-	return false;
-}
-
-bool endsWithClose(const std::string& test)
-{
-	if (test.size() >= 2)
-		return test.substr(test.size() - 2, 2) == "/>";
-
-	return false;
-}
-
-std::auto_ptr<XmlElement> TextXmlParser::parse()
-{
-	if (buffer->sgetc() == -1)
-		throw std::runtime_error("TextXmlParser::parse empty file");
-
-	bool firstTag = true;
-	while (true)
-	{
-		std::string currentTag;
-		if (firstTag)
-		{
-			firstTag = false;
-			currentTag = readFirstTag();
-			if (currentTag.substr(0, 2) == "<?")
-				continue;
-		}
-		else
-		{
-			currentTag = readTag();
-		}
-
-		XmlElement* currentElement = elements.empty() ? NULL : elements.top();
-		if (isCloseTag(currentTag))
-		{
-			if (!currentElement)
-				throw std::runtime_error(G3D::format("TextXmlParser::parse - Got close tag %s without open tag.", currentTag.c_str()));
-
-			elements.pop();
-			if (elements.empty())
-				return std::auto_ptr<XmlElement>(currentElement);
-		}
-		else
-		{
-			XmlElement* newElement = parseAttributes(currentTag);
-			elements.push(newElement);
-
-			if (newElement->getTag() == RBX::Reflection::Type::singleton<RBX::ContentId>().tag)
+			if (pControl)
 			{
-				bool isXsiNil;
-				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
-				if (xsiNilAttribute && xsiNilAttribute->getValue(isXsiNil) && !isXsiNil)
+
+				CXTPCustomizeDropSource* pDropSource = pCommandBars->GetDropSource();
+				pDropSource->DoDragDrop(pControl, TRUE);
+
+				return;
+			}
+		}
+	}
+
+	// process as a click first
+	CListBox::OnLButtonDown(nFlags, point);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeCommandsPage property page
+
+IMPLEMENT_DYNCREATE(CXTPCustomizeCommandsPage, CPropertyPage)
+
+CXTPCustomizeCommandsPage::CXTPCustomizeCommandsPage(CXTPCustomizeSheet* pSheet)
+	: CPropertyPage(XTP_IDD_PAGE_COMMANDS), m_pSheet(pSheet)
+{
+	//{{AFX_DATA_INIT(CXTPCustomizeCommandsPage)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+}
+
+CXTPCustomizeCommandsPage::~CXTPCustomizeCommandsPage()
+{
+	for (int i = 0; i < m_arrCategories.GetSize(); i++)
+	{
+		delete m_arrCategories[i];
+	}
+}
+
+void CXTPCustomizeCommandsPage::DoDataExchange(CDataExchange* pDX)
+{
+	CPropertyPage::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CXTPCustomizeCommandsPage)
+	DDX_Control(pDX, XTP_IDC_LIST_COMMANDS, m_lstCommands);
+	DDX_Control(pDX, XTP_IDC_LIST_CATEGORIES, m_lstCategories);
+	//}}AFX_DATA_MAP
+}
+
+XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::FindCategory(LPCTSTR strCategory) const
+{
+	for (int i = 0; i < m_arrCategories.GetSize(); i++)
+	{
+		if (m_arrCategories[i]->strCategory.Compare(strCategory) == 0)
+			return m_arrCategories[i];
+	}
+	return NULL;
+}
+
+XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::GetCategoryInfo(int nIndex)
+{
+	if (nIndex >= 0 && nIndex < m_arrCategories.GetSize())
+		return m_arrCategories[nIndex];
+	return NULL;
+}
+
+BOOL CXTPCustomizeCommandsPage::AddCategory(LPCTSTR strCategory, CMenu* pMenu, BOOL bListSubItems)
+{
+	CXTPControls* pCategoryControls = InsertCategory(strCategory);
+
+	int nCount = pMenu->GetMenuItemCount();
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if (pMenu->GetMenuItemID(i) > 0)
+		{
+			CXTPControlPopup* pControl = DYNAMIC_DOWNCAST(CXTPControlPopup,
+				pCategoryControls->AddMenuItem(pMenu, i));
+
+			if (pControl && bListSubItems)
+			{
+				CXTPControls* pControls = pControl->GetCommandBar()->GetControls();
+				for (int j = 0; j < pControls->GetCount(); j++)
 				{
-					if (readText(false) == "")
-					{
-						const RBX::Name* mimeType;
-						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
-						if (mimeTypeAttribute)
-							mimeTypeAttribute->getValue(mimeType);
-						else
-							mimeType = &RBX::Name::getNullName();
-
-						std::string contentChild = readTag();
-						std::string tagName = contentChild.substr(1, contentChild.size() - 2);
-
-						if (tagName.substr(0, 6) == "binary")
-						{
-							std::stringbuf encoded(readText(false), std::ios_base::in);
-							std::stringstream decoded;
-
-							int ioStatus = 0;
-							base64<char> decoder;
-							decoder.get(
-								std::istreambuf_iterator<char>(&encoded),
-								std::istreambuf_iterator<char>(),
-								std::ostreambuf_iterator<char>(decoded),
-								ioStatus);
-
-							decoded.flush();
-
-							RBX::ContentId contentId = RBX::ContentProvider::singleton().registerContent(decoded, *mimeType);
-							newElement->setValue(contentId);
-						}
-						else if (tag_hash == tagName)
-						{
-							std::string name = readText(false);
-							newElement->setValue(RBX::ContentId(name.c_str(), *mimeType));
-						}
-						else if (tagName.substr(0, 3) == "url")
-						{
-							std::string url = readText(true);
-							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
-						}
-						else if (tag_null == tagName)
-						{
-							newElement->setValue(RBX::ContentId());
-						}
-						else
-						{
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - Unknown tag '%s'.", tagName.substr(0, 32).c_str()));
-						}
-
-						std::string closingTag = readTag();
-						if (!isCloseTag(closingTag))
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
-					}
-				}
-			}
-			else
-			{
-				newElement->setValue(readText(true));
-			}
-
-			currentElement->pushBackChild(newElement);
-
-			if (endsWithClose(currentTag))
-				elements.pop();
-		}
-	}
-}
-
-XmlWriter::XmlWriter(std::ostream& stream)
-	: stream(stream)
-{
-}
-
-int XmlWriter::getHandleIndex(RBX::InstanceHandle h)
-{
-	std::map<RBX::InstanceHandle, int>::iterator iter = handles.find(h);
-	if (iter == handles.end())
-	{
-		int index = (int)handles.size();
-		handles[h] = index;
-		return index;
-	}
-	else
-	{
-		return iter->second;
-	}
-}
-
-void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
-{
-	for (int i = 0; i < depth; i++)
-		stream << '\t';
-
-	stream << '<' << element->getTag().name;
-
-	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL; attribute = attribute->nextSibling())
-	{
-		stream << ' ' << attribute->getTag().name << "=\"";
-		encodedWrite(stream, attribute->toString(this));
-		stream << '\"';
-	}
-
-	if (extraAttribute)
-	{
-		stream << ' ' << extraAttribute->getTag().name << "=\"";
-		encodedWrite(stream, extraAttribute->toString(this));
-		stream << '\"';
-	}
-
-	stream << '>';
-}
-
-void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
-{
-	for (int i = 0; i < depth; i++)
-		stream << '\t';
-
-	stream << "</" << element->getTag().name << '>';
-}
-
-void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode->isValueType<RBX::ContentId>())
-	{
-		writeOpenTag(xmlNode, depth, NULL);
-
-		RBX::ContentId contentId;
-		xmlNode->getValue(contentId);
-		if (contentId.isNull())
-		{
-			stream << "<null></null>";
-		}
-		else
-		{
-			stream << "<hash>";
-			stream << xmlNode->toString(this);
-			stream << "</hash>";
-		}
-	}
-	else
-	{
-		writeOpenTag(xmlNode, depth, NULL);
-		encodedWrite(stream, xmlNode->toString(this));
-	}
-}
-
-void TextXmlWriter::serialize(const XmlElement* xmlNode)
-{
-	serialize(xmlNode, 0);
-}
-
-void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode)
-	{
-		serializeNode(xmlNode, depth);
-		if (xmlNode->firstChild())
-		{
-			for (const XmlElement* child = xmlNode->firstChild(); child != NULL; child = child->nextSibling())
-			{
-				stream << '\n';
-				serialize(child, depth + 1);
-			}
-			stream << '\n';
-			writeCloseTag(xmlNode, depth);
-		}
-		else
-		{
-			writeCloseTag(xmlNode, 0);
-		}
-	}
-}
-
-void TextXmlWriter::encodedWrite(std::ostream& stream, const std::string& text)
-{
-	encodedWrite(stream, text.c_str());
-}
-
-void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
-{
-	size_t len = strlen(text);
-	for (size_t i = 0; i != len; ++i)
-	{
-		unsigned char c = *text++;
-		if (c == '<')
-		{
-			stream << "&lt;";
-		}
-		else if (c == '>')
-		{
-			stream << "&gt;";
-		}
-		else if (c == '&')
-		{
-			stream << "&amp;";
-		}
-		else if (c == '"')
-		{
-			stream << "&quot;";
-		}
-		else if (c == '\'')
-		{
-			stream << "&apos";
-		}
-		else if (c >= ' ' && c <= '~') // every other printable character
-		{
-			stream << c;
-		}
-		else
-		{
-			char buffer[8];
-			sprintf(buffer, "&#%d;", c);
-			stream << buffer;
-		}
-	}
-}
-
-void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode->isValueType<RBX::ContentId>())
-	{
-		RBX::ContentId contentId;
-		xmlNode->getValue(contentId);
-
-		if (contentId.mimeType() == RBX::Name::getNullName())
-		{
-			writeOpenTag(xmlNode, depth, NULL);
-		}
-		else
-		{
-			XmlAttribute mimeTypeAttribute(tag_mimeType, contentId.mimeType().c_str());
-			writeOpenTag(xmlNode, depth, &mimeTypeAttribute);
-		}
-
-		if (!xmlNode->findAttribute(name_xsinil))
-		{
-			if (contentId.isNull())
-			{
-				stream << "<null></null>";
-			}
-			else
-			{
-				if (contentId.isAsset() || contentId.isHttp())
-				{
-					stream << "<url>";
-					TextXmlWriter::encodedWrite(stream, contentId.toString());
-					stream << "</url>";
-				}
-				else if (embeddedContent.find(contentId) == embeddedContent.end())
-				{
-					embeddedContent.insert(contentId);
-
-					std::auto_ptr<std::istream> contentStream;
-
-					try
-					{
-						contentStream = RBX::ContentProvider::singleton().getContent(contentId);
-
-						if (contentId.mimeType() == RBX::Name::getNullName())
-						{
-							stream << "<binary>";
-						}
-						else
-						{
-							stream << "<binary xmime:contentType=\"" << contentId.mimeType().c_str() << "\">";
-						}
-
-						std::istreambuf_iterator<char> _From(contentStream->rdbuf());
-						std::istreambuf_iterator<char> _To;
-						std::ostreambuf_iterator<char> _Out(stream.rdbuf());
-						int _State;
-
-						base64<char> encoder;
-						encoder.put(_From, _To, _Out, _State, base64<>::crlf());
-
-						stream << "</binary>";
-					}
-					catch (std::exception&)
-					{
-						goto hash;
-					}
-				}
-				else
-				{
-hash:
-					embeddedContent.insert(contentId);
-
-					stream << "<hash>";
-					stream << xmlNode->toString(this);
-					stream << "</hash>";
+					pCategoryControls->AddClone(pControls->GetAt(j));
 				}
 			}
 		}
 	}
-	else
+
+	return TRUE;
+}
+
+BOOL CXTPCustomizeCommandsPage::_LoadToolBar(CXTPCommandBar* pCommandBar, UINT nIDResource)
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
+
+	struct CToolBarData
 	{
-		TextXmlWriter::serializeNode(xmlNode, depth);
+		WORD wVersion;
+		WORD wWidth;
+		WORD wHeight;
+		WORD wItemCount;
+		WORD* items()
+		{ return (WORD*)(this + 1); }
+	};
+
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return FALSE;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	if (!hInst)
+		return FALSE;
+
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (!hRsrc)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (!hGlobal)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (!pData)
+		return FALSE;
+
+	ASSERT(pData->wVersion == 1);
+	ASSERT(pData->wWidth == 16);
+
+	int i;
+	UINT* pItems = new UINT[pData->wItemCount];
+
+	for (i = 0; i < pData->wItemCount; i++)
+		pItems[i] = pData->items()[i];
+
+	BOOL bResult = pCommandBar->SetButtons(pItems, pData->wItemCount);
+
+	delete[] pItems;
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return bResult;
+}
+
+BOOL CXTPCustomizeCommandsPage::AddToolbarCategory(LPCTSTR strCategory, UINT nIDResource)
+{
+	CXTPControls* pCategoryControls = InsertCategory(strCategory);
+	ASSERT(pCategoryControls);
+	if (!pCategoryControls)
+		return FALSE;
+
+	CXTPCommandBar* pCommandBar = (CXTPCommandBar*)CXTPCommandBar::CreateObject();
+	pCommandBar->SetCommandBars(m_pSheet->GetCommandBars());
+
+	if (!_LoadToolBar(pCommandBar, nIDResource))
+	{
+		pCommandBar->InternalRelease();
+		return FALSE;
+	}
+
+	for (int i = 0; i < pCommandBar->GetControlCount(); i++)
+	{
+		pCategoryControls->AddClone(pCommandBar->GetControl(i));
+	}
+	pCommandBar->InternalRelease();
+
+	return TRUE;
+}
+
+
+BOOL CXTPCustomizeCommandsPage::AddCategories(UINT nIDResource, BOOL bListSubItems)
+{
+	CMenu menu;
+	if (!XTPResourceManager()->LoadMenu(&menu, nIDResource))
+		return FALSE;
+
+	int nCount = menu.GetMenuItemCount();
+
+	for (int i = 0; i < nCount; i++)
+	{
+		CString strCategory;
+		if (XTPResourceManager()->GetMenuLocaleString(&menu, i, strCategory, MF_BYPOSITION) > 0)
+		{
+			CMenu* pMenu = menu.GetSubMenu(i);
+			if (pMenu)
+			{
+				CXTPPaintManager::StripMnemonics(strCategory);
+
+				int iPos = strCategory.Find(_T('\t'));
+				if (iPos > 0)
+				{
+					strCategory.ReleaseBuffer(iPos);
+				}
+
+				if (!AddCategory(strCategory, pMenu, bListSubItems))
+					return FALSE;
+			}
+		}
+
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPCustomizeCommandsPage::AddCategories(CXTPControls* pControls)
+{
+	for (int i = 0; i < pControls->GetCount(); i++)
+	{
+		CXTPControl* pControl = pControls->GetAt(i);
+		CString strCategory = pControl->GetCategory();
+
+		if (!strCategory.IsEmpty())
+		{
+			CXTPControls* pCategoryControls = InsertCategory(strCategory);
+			pCategoryControls->AddClone(pControl);
+		}
+	}
+	return TRUE;
+}
+
+
+BOOL CXTPCustomizeCommandsPage::InsertBuiltInMenus(UINT nIDResourceMenu, UINT nIDResourceCategory, int nIndex)
+{
+	CMenu menu;
+	if (!XTPResourceManager()->LoadMenu(&menu, nIDResourceMenu))
+		return FALSE;
+
+	CString strCategory;
+	XTPResourceManager()->LoadString(&strCategory, nIDResourceCategory);
+
+	ASSERT(FindCategory(strCategory) == NULL);
+
+	XTP_COMMANDBARS_CATEGORYINFO* pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
+	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
+
+	int nCount = menu.GetMenuItemCount();
+
+	for (int i = 0; i < nCount; i++)
+	{
+		pInfo->pControls->AddMenuItem(&menu, i);
+	}
+	return TRUE;
+}
+
+void CXTPCustomizeCommandsPage::InsertNewMenuCategory(UINT nIDResource, int nIndex)
+{
+	CString strCategory;
+	XTPResourceManager()->LoadString(&strCategory, nIDResource);
+
+	ASSERT(FindCategory(strCategory) == NULL);
+
+	XTP_COMMANDBARS_CATEGORYINFO* pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
+	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
+
+	CXTPControl* pControl = pInfo->pControls->Add(xtpControlPopup, 0);
+	pControl->SetCaption(strCategory);
+}
+
+CXTPControls* CXTPCustomizeCommandsPage::InsertCategory(LPCTSTR strCategory, int nIndex)
+{
+	XTP_COMMANDBARS_CATEGORYINFO* pInfo = FindCategory(strCategory);
+	if (!pInfo)
+	{
+		pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
+		m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
+	}
+	return pInfo->pControls;
+}
+
+CXTPControls* CXTPCustomizeCommandsPage::GetControls(LPCTSTR strCategory)
+{
+	XTP_COMMANDBARS_CATEGORYINFO* pInfo = FindCategory(strCategory);
+	return pInfo ? pInfo->pControls : NULL;
+}
+
+
+void CXTPCustomizeCommandsPage::InsertAllCommandsCategory(UINT nIDResource, int nIndex)
+{
+	CString strCategory;
+	XTPResourceManager()->LoadString(&strCategory, nIDResource);
+
+	ASSERT(FindCategory(strCategory) == NULL);
+
+	XTP_COMMANDBARS_CATEGORYINFO* pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
+
+	for (int i = 0; i < m_arrCategories.GetSize(); i++)
+	{
+		CXTPControls* pControls = m_arrCategories[i]->pControls;
+		for (int j = 0; j < pControls->GetCount(); j++)
+		{
+			pInfo->pControls->AddClone(pControls->GetAt(j));
+		}
+	}
+
+
+	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
+
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPCustomizeCommandsPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CXTPCustomizeCommandsPage)
+	ON_LBN_SELCHANGE(XTP_IDC_LIST_CATEGORIES, OnCategoriesSelectionChanged)
+	ON_WM_DESTROY()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCustomizeCommandsPage message handlers
+
+
+BOOL CXTPCustomizeCommandsPage::OnInitDialog()
+{
+	CPropertyPage::OnInitDialog();
+
+
+	for (int i = 0; i < m_arrCategories.GetSize(); i++)
+	{
+		int nIndex = m_lstCategories.AddString(m_arrCategories[i]->strCategory);
+		m_lstCategories.SetItemData(nIndex, i);
+
+		if (i == 0) m_lstCategories.SetCurSel(0);
+	}
+
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+	CSize sz = pCommandBars->GetPaintManager()->DrawListBoxControl(NULL, NULL, CRect(0, 0, 0, 0), FALSE, FALSE, pCommandBars);
+	m_lstCommands.SetItemHeight(-1, sz.cy);
+
+	m_lstCommands.m_pCommandBars = m_pSheet->GetCommandBars();
+	m_lstCommands.m_bDragable = TRUE;
+
+	if (pCommandBars->IsLayoutRTL())
+	{
+		m_lstCommands.ModifyStyleEx(0, WS_EX_LAYOUTRTL);
+		m_lstCategories.ModifyStyleEx(0, WS_EX_RIGHT | WS_EX_LEFTSCROLLBAR | WS_EX_RTLREADING);
+	}
+
+	pCommandBars->GetMouseManager()->AddTrustedWindow(m_hWnd);
+
+
+	OnCategoriesSelectionChanged();
+
+	return FALSE;
+}
+
+void CXTPCustomizeCommandsPage::OnDestroy()
+{
+	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
+
+	pCommandBars->GetMouseManager()->RemoveTrustedWindow(m_hWnd);
+
+	CPropertyPage::OnDestroy();
+}
+
+void CXTPCustomizeCommandsPage::OnCategoriesSelectionChanged()
+{
+
+	m_lstCommands.ResetContent();
+
+	int nIndex = m_lstCategories.GetCurSel();
+
+	if (nIndex == LB_ERR)
+		return;
+
+	XTP_COMMANDBARS_CATEGORYINFO* pInfo = GetCategoryInfo((int)m_lstCategories.GetItemData(nIndex));
+
+	if (pInfo == NULL)
+		return;
+
+	for (int i = 0; i < pInfo->pControls->GetCount(); i++)
+	{
+		CXTPControl* pControl = pInfo->pControls->GetAt(i);
+		m_lstCommands.SendMessage(LB_INSERTSTRING, m_lstCommands.GetCount(), (LPARAM)pControl);
 	}
 }

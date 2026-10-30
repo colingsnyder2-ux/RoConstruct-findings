@@ -1,28 +1,39 @@
-// from server: 84% by colin
-struct DataModel;
+// from server: 100% by tajop
+#include <string>
 
-struct S {
-    void* field0;
-    void* field4;
-    void* field8;
-    DataModel* fieldC;
-    void construct(DataModel*);
+namespace RBX {
+
+class VerbContainer {
 };
 
-extern "C" void* __stdcall sub_77E698(const char*);
-extern "C" void sub_564C50(void*, void*);
+class Verb {
+public:
+    Verb(VerbContainer* container, std::string name);
+    virtual ~Verb();
+    virtual void doIt();
+private:
+    void* field_4;
+    void* field_8;
+};
 
-void S::construct(DataModel* a)
+class DataModelBase {
+    char pad[0x14c];
+};
+
+class DataModel : public DataModelBase, public VerbContainer {
+};
+
+class ClearBackpackVerb : public Verb {
+public:
+    ClearBackpackVerb(DataModel* dataModel);
+    virtual void doIt();
+private:
+    DataModel* dataModel;
+};
+
+ClearBackpackVerb::ClearBackpackVerb(DataModel* dataModel)
+    : Verb(dataModel, "ClearBackpack"), dataModel(dataModel)
 {
-    void* p;
-    if (a != 0)
-        p = (char*)a + 0x14c;
-    else
-        p = 0;
+}
 
-    char buf[0x1c];
-    sub_77E698("ClearBackpack");
-    sub_564C50(this, p);
-    this->fieldC = a;
-    *(void**)this = (void*)0x7a915c;
 }

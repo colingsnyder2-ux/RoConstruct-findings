@@ -1,349 +1,148 @@
-// from server: 62% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8kernel/Body.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_simbody_native_full_family_6e9d82d2be587087.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8kernel/Body.h"
+#pragma include_alias("v8kernel/SimBody.h", "../roc_simbody_native_impulse_header_5e17b5962a7ab7c7.cpp")
+#undef _RELEASEASSERT
 #include "v8kernel/SimBody.h"
-#include "util/Debug.h"
-using namespace RBX;
-
-Body::Body()
-	:index(-1),
-	canThrottle(true),
-	cofm(NULL),
-	root(NULL),
-	parent(NULL),
-	link(NULL),
-	simBody(NULL),
-	stateIndex(getNextStateIndex()),
-	moment(G3D::Matrix3::identity()),
-	mass(0.0f)
+#include "v8kernel/Constants.h"
+#include "v8kernel/Body.h"
+#include "util/Units.h"
+namespace RBX
 {
-	root = this;
-	simBody = new SimBody(this);
+
+SimBody::SimBody(RBX::Body* _body)
+			:body(_body),
+			dirty(1),
+			force(G3D::Vector3::zero()),
+			torque(G3D::Vector3::zero()),
+			constantForceY(0.0f)
+{}
+
+SimBody::~SimBody() {}
+
+G3D::Vector3 vecUnkPercent(G3D::Vector3& input)
+{
+	return G3D::Vector3(1.0f / input.x, 1.0f / input.y, 1.0f / input.z);
 }
 
-Body::~Body()
+float precentInline(float fNum)
 {
-	RBXASSERT(numChildren() == 0);
-	if (parent)
-		setParent(NULL);
-	RBXASSERT(!parent);
-	RBXASSERT(!link);
-	RBXASSERT(index == -1);
-	RBXASSERT(simBody);
-	delete simBody;
-	simBody = NULL;
-	RBXASSERT(!cofm);
-	RBXASSERT(root == this);
+	return 1.0f / fNum;
 }
 
-void Body::updatePV() const
+__forceinline void SimBody::unkSimInline(float fNum)
 {
-	RBXASSERT((parent != NULL) || (getRootConst() == this));
+	massRecip = 1.0f / fNum;
+	momentRecip = vecUnkPercent(Math::toDiagonal(body->getBranchIBody()));
+}
 
-	if (parent && this->stateIndex != getRootConst()->getStateIndex())
+void SimBody::update()
+{
+	RBXASSERT(dirty);
 	{
-		Body* tempParent = getParent();
-		tempParent->updatePV();
-		PV& tempPV = tempParent->pv;
-		this->pv = tempPV.pvAtLocalCoord(getMeInParent());
-		this->stateIndex = root->getStateIndex();
+		const G3D::Vector3 cofmOffset = body->getCofmOffset();
+		pv = body->getPV().pvAtLocalOffset(cofmOffset);
 	}
+	qOrientation = Quaternion::Quaternion(pv.position.rotation);
+	qOrientation *= precentInline(qOrientation.magnitude());
+	angMomentum = pv.velocity.rotational * body->getBranchIWorld();
+	float _mass = body->getBranchMass();
+	unkSimInline(_mass);
+	constantForceY = body->getBranchMass() * Units::kmsAccelerationToRbx(Constants::getKmsGravity()).y;
+	dirty = false;
 }
 
-void Body::resetRoot(RBX::Body* newRoot)
+void mulMatrixMatrixTranspose(const G3D::Matrix3& _mat0, const G3D::Matrix3& _mat1, G3D::Matrix3& _answer)
 {
-	RBXASSERT(newRoot == calcRoot());
-	root = newRoot;
-	for (int i = 0; i < children.size(); i++)
+	//just like matrixMulInline, these pointers are required for matching
+	const float* matrix0 = &_mat0[0][0];
+	const float* matrix1 = &_mat1[0][0];
+	float *answer = &_answer[0][0];
+
+	//this part is mostly copied from operator* from matrix3 and transpose function as reference
+	for (int iRow = 0; iRow < 3; iRow++)
 	{
-		children[i]->resetRoot(newRoot);
-	}
-}
-
-float Body::kineticEnergy() const
-{
-	float calc = (pv.velocity.rotational.dot(getIWorld() * pv.velocity.rotational) + pv.velocity.linear.dot(pv.velocity.linear) * mass) / 2;
-	return calc;
-
-}
-
-int Body::getNextStateIndex()
-{
-	static int p;
-	if (++p == INT_MAX)
-		p = 1;
-	return p;
-}
-
-void Body::advanceStateIndex()
-{
-	stateIndex = getNextStateIndex();
-}
-
-bool Body::validateParentCofmDirty()
-{
-	RBXASSERT(cofm);
-	RBXASSERT(cofm->getIsDirty());
-	if (getParent())
-		getParent()->validateParentCofmDirty();
-	return true;
-}
-
-void Body::makeCofmDirty()
-{
-	if (cofm && cofm->getIsDirty())
-	{
-		// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion
-		#if defined(_DEBUG) || defined(_RELEASEASSERT)
-		if (Debugable::assertAction == Debugable::CrashOnAssert)
+		for (int iCol = 0; iCol < 3; iCol++)
 		{
-			if (parent)
-				parent->validateParentCofmDirty();
-			RBXASSERT(getRootSimBody()->getDirty());
-		}
-		#endif
-	}
-	else
-	{
-		if (getParent())
-		{
-			RBXASSERT(!simBody);
-			getParent()->makeCofmDirty();
-		}
-		else
-		{
-			RBXASSERT(root == this);
-			if (simBody)
-				simBody->makeDirty();
-		}
-		if (cofm)
-		{
-			cofm->makeDirty();
-			RBXASSERT(numChildren() > 0);
-		}
-		else
-		{
-			RBXASSERT(!numChildren());
+            answer[iRow*3+iCol] =
+                matrix0[iRow*3+0] * matrix1[iCol*3+0] +
+                matrix0[iRow*3+1] * matrix1[iCol*3+1] +
+                matrix0[iRow*3+2] * matrix1[iCol*3+2];
 		}
 	}
 }
 
-void Body::onChildAdded(RBX::Body* child)
+//this is cursed but its the only way i got it to match
+//this might be actually how roblox wrote it because pointers are used in mulMatrixMatrixTranspose too
+void matrixMulInline(const G3D::Matrix3& _mat, const G3D::Vector3& _vec, G3D::Matrix3& _answer)
 {
-	makeCofmDirty();
-	children.fastAppend(child);
-	if (!cofm)
-	{
-		RBXASSERT(numChildren() == 1);
-		cofm = new Cofm(this);
-	}
+	const float* matrix = &_mat[0][0];
+	float* answer = _answer[0];
+	answer[0] = matrix[0]*_vec.x;
+	answer[1] = matrix[1]*_vec.y;
+	answer[2] = matrix[2]*_vec.z;
+	answer[3] = matrix[3]*_vec.x;
+	answer[4] = matrix[4]*_vec.y;
+	answer[5] = matrix[5]*_vec.z;
+	answer[6] = matrix[6]*_vec.x;
+	answer[7] = matrix[7]*_vec.y;
+	answer[8] = matrix[8]*_vec.z;
 }
 
-void Body::onChildRemoved(RBX::Body* child)
+
+G3D::Vector3 computeRotVel(const G3D::Matrix3& rot, const G3D::Vector3& momentRecip, const G3D::Vector3& angMomentum)
 {
-	RBXASSERT(cofm);
-	children.fastRemove(child);
-	if (numChildren() == 0)
-	{
-		delete cofm;
-		cofm = NULL;
-	}
-	makeCofmDirty();
+	G3D::Matrix3 temp;
+	G3D::Matrix3 iWorldInv;
+	matrixMulInline(rot, momentRecip, temp);
+	mulMatrixMatrixTranspose(temp, rot, iWorldInv);
+	return iWorldInv * angMomentum;
 }
 
-void Body::setMass(float _mass)
+//temporary for now?
+G3D::Vector3& denormFixFunc()
 {
-	if (mass != _mass)
-	{
-		makeCofmDirty();
-		mass = _mass;
-	}
+	static G3D::Vector3 denormFix = G3D::Vector3(9.9999997e-21f, 9.9999997e-21f, 9.9999997e-21f);
+	return denormFix;
 }
 
-void Body::step(float dt, bool throttling)
+void SimBody::step()
 {
-	RBXASSERT(!getParent());
-	RBXASSERT(simBody);
-
-	if (throttling && canThrottle)
-	{
-		simBody->resetAccumulators();
-	}
-	else
-	{
-		simBody->step(dt);
-
-		pv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();
-		advanceStateIndex();
-	}
+ static G3D::Vector3 denormalSmall(1e-20f,1e-20f,1e-20f);
+ updateIfDirty();
+ angMomentum *= 0.9998f;
+ angMomentum += rotationalImpulse + torque * dt;
+ pv.velocity.rotational = computeRotVel(getPV().position.rotation, momentRecip, angMomentum) + denormalSmall;
+ Quaternion qDot(Quaternion(pv.velocity.rotational,0) * qOrientation * 0.5f);
+ qOrientation += qDot * dt;
+ qOrientation *= 1.0f / qOrientation.magnitude();
+ qOrientation.toRotationMatrix(pv.position.rotation);
+ pv.velocity.linear += massRecip * (impulse + force * dt);
+ pv.position.translation += pv.velocity.linear * dt;
+ force = G3D::Vector3(0,constantForceY,0);
+ torque = G3D::Vector3(0,0,0);
+ impulse = G3D::Vector3(0,0,0);
+ rotationalImpulse = G3D::Vector3(0,0,0);
+ angMomentum += denormalSmall;
+ pv.velocity.linear += denormalSmall;
 }
 
-void Body::setVelocity(const Velocity& worldVelocity)
+
+PV SimBody::getOwnerPV()
 {
-	if (!getParent())
-	{
-		pv.velocity = worldVelocity;
-		advanceStateIndex();
-		if (simBody)
-			simBody->makeDirty();
-	}
+	RBXASSERT(!dirty);
+	G3D::Vector3 cofmOffset = body->getCofmOffset();
+	return pv.pvAtLocalOffset(G3D::Vector3(-cofmOffset.x, -cofmOffset.y, -cofmOffset.z));
 }
 
-void Body::setParent(Body* newParent)
+//compiler optimizes out unused functions in header
+void SimBody::matchDummy()
 {
-	RBXASSERT(!newParent || newParent->getParent() != this);
-	RBXASSERT(newParent != this);
-
-	if (parent != newParent)
-	{
-		if (link)
-		{
-			link->setBody(NULL);
-			link = NULL;
-		}
-
-		if (getParent())
-		{
-			RBXASSERT(root == getParent()->getRoot());
-			RBXASSERT(!simBody);
-			parent->onChildRemoved(this);
-		}
-		else
-		{
-			RBXASSERT(root = this);
-			RBXASSERT(simBody);
-			delete simBody;
-			simBody = NULL;
-		}
-
-		parent = newParent;
-
-		if (newParent)
-		{
-			newParent->onChildAdded(this);
-		}
-		else
-		{
-			simBody = new SimBody(this);
-		}
-		Body* myRoot = getParent() ? getParent()->calcRoot() : this;
-		myRoot->advanceStateIndex();
-		resetRoot(myRoot);
-	}
-}
-
-Body* Body::getWorldBody()
-{
-	static Body b = Body();
-	return &b;
-}
-
-G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
-{
-	if (descendant == this)
-	{
-		return G3D::CoordinateFrame();
-	}
-	else if (descendant == parent)
-	{
-		RBXASSERT(parent);
-		return getLink() ? getLink()->getChildInParent() : meInParent;
-	}
-	else
-	{
-		RBXASSERT(parent);
-		return parent->getMeInDescendant(descendant) * meInParent;
-	}
-}
-
-void Body::setPv(const PV& _pv)
-{
-	if (parent)
-	{
-		RBXASSERT(0);
-	}
-	else
-	{
-		pv = _pv;
-		if (simBody)
-			simBody->makeDirty();
-		advanceStateIndex();
-	}
-	RBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);
-	RBXASSERT(Math::isOrthonormal(pv.position.rotation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));
-}
-
-void Body::setCoordinateFrame(const G3D::CoordinateFrame& worldCord)
-{
-	updatePV();
-	setPv(PV::PV(worldCord, pv.velocity));
-}
-
-void Body::setMeInParent(const G3D::CoordinateFrame& _meInParent)
-{
-	RBXASSERT(Math::longestVector3Component(_meInParent.translation) < 1000000.0);
-
-	if (getLink())
-	{
-		RBXASSERT(0);
-		getLink()->setBody(NULL);
-		link = NULL;
-	}
-
-	if (getParent())
-	{
-		meInParent = _meInParent;
-		makeCofmDirty();
-		root->advanceStateIndex();
-	}
-	else
-	{
-		RBXASSERT(0);
-	}
-}
-
-G3D::Vector3 Body::getBranchCofmPos() const
-{
-	return cofm ? pv.position.pointToWorldSpace(getPos()) : getCoordinateFrame().translation;
-}
-
-G3D::CoordinateFrame Body::getBranchCofmCoordinateFrame() const
-{
-	return G3D::CoordinateFrame(getPV().position.rotation, getBranchCofmPos());
-}
-
-G3D::Matrix3 Body::getIWorldAtPoint(const G3D::Vector3& point) const
-{
-	float _mass = mass;
-	updatePV(); //supposed to be inlined probably
-	G3D::Matrix3 iBody = moment;
-	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(iBody, pv.position.rotation);
-	return Math::getIWorldAtPoint(getPV().position.translation, point, iWorldAtCofm, _mass);
-}
-
-G3D::Matrix3 Body::getBranchIWorldAtPoint(const G3D::Vector3& point) const
-{
-	float _mass = getBranchMass();
-	updatePV(); //more probably inlined updatePV calls
-	G3D::Matrix3 _moment = cofm ? cofm->getMoment() : moment;
-	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(_moment, pv.position.rotation);
-	return Math::getIWorldAtPoint(getBranchCofmPos(), point, iWorldAtCofm, _mass);
-}
-
-void Body::matchDummy()
-{
-	accumulateForceAtBranchCofm(G3D::Vector3(1.3f,1.2f,1.7f));
-	accumulateTorque(G3D::Vector3(6.3f,4.2f,9.7f));
-	setMoment(G3D::Matrix3());
 	resetAccumulators();
-	mass = getBranchMass();
-	index = getBranchForce().z + getBranchTorque().y + getBranchIBodyV3().x;
+	accumulateForce(G3D::Vector3(0.1f, 0.5f, 0.2f), G3D::Vector3(0.6f, 0.10f, 0.8f));
+}
+
 }

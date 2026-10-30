@@ -1,47 +1,14 @@
-// from server: 55% by colin
-extern "C" {
-    void __stdcall func_77e518();
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_389d0bd197ae56e1.cpp
 
-struct basic_streambuf
-{
-    void __thiscall init();
-};
-
-struct S
-{
-    char pad0[0x3c];
-    char f3c;
-    char pad3d[7];
-    char f44;
-    char pad45[3];
-    int f48;
-    int f4c;
-    int f50;
-    int f54;
-    int f58;
-    void* f0;
-    void __thiscall sub_54c0d0(int*, int, int);
-    S(int*, int, int);
-};
-
-void __thiscall basic_streambuf::init()
-{
-    func_77e518();
-}
-
-S::S(int* a, int b, int c)
-{
-    basic_streambuf* sb = (basic_streambuf*)this;
-    sb->init();
-    f3c = 0;
-    f44 = 0;
-    f48 = 0;
-    f4c = 0;
-    f50 = 0;
-    f54 = 0;
-    f58 = 0x10;
-    f0 = (void*)0x7a79fc;
-    int v = *a;
-    sub_54c0d0(&v, b, c);
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <istream>
+#include <ostream>
+#include <boost/ref.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::istream> >;
+template class boost::iostreams::stream_buffer<boost::reference_wrapper<std::ostream> >;

@@ -1,5 +1,4 @@
-// from server: 70% by colin
-// roc 2007-08 0055ff20  unit: seg_00550000  size: 47 bytes
+// roc 2007-08 0055ff20  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055ff20
 //
 // 0055ff20  8b442404             mov eax, dword ptr [esp + 4]
@@ -17,24 +16,12 @@
 // 0055ff49  8bc6                 mov eax, esi
 // 0055ff4b  5e                   pop esi
 // 0055ff4c  c20400               ret 4
-// library rbxgs/v8datamodel\Selection.cpp (function ??0?$FilteredSelection@VC@@@...)
+// copied from an identical function in another client (function ??0CutVerb@@QAE@H@Z)
 
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Selection.cpp
-
-struct FilteredSelection {
-    void* vtable;
-    void construct(void* arg);
-};
-
-extern "C" void __stdcall string_ctor(void* self, const char* s);
-extern "C" void __stdcall base_ctor(FilteredSelection* self);
-
-void FilteredSelection::construct(void* arg) {
-    char buf[28];
-    string_ctor(buf, "SelectionDown");
-    base_ctor(this);
-    this->vtable = (void*)0x7a94a8;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("SelectionDown",p){}

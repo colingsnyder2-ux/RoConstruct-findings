@@ -1,22 +1,51 @@
-// from server: 0% by atomic.potato
-extern "C" void* __cdecl sub_0098211A(unsigned int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
-struct ChatLine
-{
-    void* value;
-    ChatLine(void*);
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-ChatLine::ChatLine(void* arg)
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-    value = 0;
-    void* p = sub_0098211A(0x10);
-    if (p != 0)
-    {
-        ((unsigned int*)p)[1] = 1;
-        ((unsigned int*)p)[2] = 1;
-        *(unsigned int*)p = 0x00bffe54;
-        ((unsigned int*)p)[3] = (unsigned int)arg;
+    try {
+        count = new Count(p);
     }
-    value = p;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

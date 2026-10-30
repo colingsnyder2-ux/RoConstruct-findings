@@ -1,1074 +1,1054 @@
-// from server: 71% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxcolorpickerctrl.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportRecordItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPReportRecordItem.cpp : implementation of the CXTPReportRecordItem class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
 
-#include <math.h>
-#include "afxcontrolbarutil.h"
-#include "afxglobals.h"
-#include "afxcolorpickerctrl.h"
-#include "afxdrawmanager.h"
+#include "XTPReportRow.h"
+#include "XTPReportRecords.h"
+#include "XTPReportColumns.h"
+#include "XTPReportColumn.h"
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportHyperlink.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportInplaceControls.h"
+
+#include "Common/XTPPropExchange.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-#define AFX_DEFAULT_WIDTH_OF_LUMINANCE_BAR 20
-#define AFX_DEFAULT_OFFSET_OF_LUMINANCE_BAR 5
-#define AFX_DEFAULT_LUMINANCE 0.50f
-#define AFX_PICKER_CURSOR_SIZE 19
-#define AFX_LUM_CURSOR_SIZE 9
+#ifndef IDC_HAND
+#define IDC_HAND MAKEINTRESOURCE(32649)
+#endif
 
-// Hex
-#define AFX_NUM_LEVELS 7
-#define AFX_CELL_EDGES 6
-#define AFX_GRAY_CELLS_NUM 15 // + 2(Black and white)
-#define AFX_TAN30 0.57735026918962F
-#define AFX_YOFFSET (1.5F * AFX_TAN30)
-#define AFX_PI 3.14159265358979
+//////////////////////////////////////////////////////////////////////////
+// XTP_REPORTRECORDITEM_ARGS
 
-static const float cfxOffset[] = { -0.5, -1.0, -0.5, 0.5, 1.0, 0.5 };
-static const float cfyOffset[] = { AFX_YOFFSET, 0.0, -AFX_YOFFSET, -AFX_YOFFSET, 0.0, AFX_YOFFSET };
-
-static const COLORREF colorWhite = RGB(255, 255, 255);
-static const COLORREF colorBlack = RGB(0, 0, 0);
-
-static long __stdcall AlignColor(long lPart, const long lDelta)
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS()
 {
-	if (lDelta == 0)
-	{
-		return lPart;
-	}
-
-	if (lPart < lDelta)
-	{
-		return 0;
-	}
-
-	if (lPart > 255 - lDelta)
-	{
-		return 255;
-	}
-
-	if (abs(lPart - 128) < lDelta)
-	{
-		return 128;
-	}
-
-	if (abs(lPart - 192) < lDelta)
-	{
-		return 192;
-	}
-
-	return lPart;
+	pControl = NULL;
+	pRow = NULL;
+	pColumn = NULL;
+	pItem = NULL;
+	rcItem.SetRectEmpty();
 }
 
-class CCellObj : public CObject
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS(CXTPReportControl* pControl, CXTPReportRow* pRow, CXTPReportColumn* pColumn)
 {
-	friend class CMFCColorPickerCtrl;
+	ASSERT(pControl && pRow && pColumn);
 
-	CCellObj( CPalette* pPalette, const COLORREF color, const int x, const int y, const int nCellWidth, const long lDelta)
+	this->pControl = pControl;
+	this->pRow = pRow;
+	this->pColumn = pColumn;
+	this->pItem = pRow->GetRecord()->GetItem(pColumn);
+	this->rcItem = pRow->GetItemRect(pItem);
+}
+XTP_REPORTRECORDITEM_ARGS::~XTP_REPORTRECORDITEM_ARGS()
+{
+
+}
+
+void XTP_REPORTRECORDITEM_ARGS::AddRef()
+{
+	CMDTARGET_ADDREF(pRow);
+	CMDTARGET_ADDREF(pColumn);
+	CMDTARGET_ADDREF(pItem);
+
+}
+
+void XTP_REPORTRECORDITEM_ARGS::Release()
+{
+	if (pRow)
+		pRow->InternalRelease();
+
+	if (pColumn)
+		pColumn->InternalRelease();
+
+	if (pItem)
+		pItem->InternalRelease();
+}
+
+const XTP_REPORTRECORDITEM_ARGS& XTP_REPORTRECORDITEM_ARGS::operator=(const XTP_REPORTRECORDITEM_ARGS& src)
+{
+	pControl = src.pControl;
+	pRow     = src.pRow;
+	pColumn  = src.pColumn;
+	pItem    = src.pItem;
+	rcItem   = src.rcItem;
+
+	return *this;
+}
+
+CXTPReportInplaceButtons::CXTPReportInplaceButtons()
+{
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemConstraint
+
+CXTPReportRecordItemConstraint::CXTPReportRecordItemConstraint()
+{
+
+	m_dwData = 0;
+	m_nIndex = 0;
+}
+
+int CXTPReportRecordItemConstraint::GetIndex() const
+{
+	return m_nIndex;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemConstraints
+
+CXTPReportRecordItemConstraints::CXTPReportRecordItemConstraints()
+{
+}
+CXTPReportRecordItemConstraints::~CXTPReportRecordItemConstraints()
+{
+	RemoveAll();
+}
+
+
+int CXTPReportRecordItemConstraints::GetCount() const
+{
+	return (int)m_arrConstraints.GetSize();
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemConstraints::GetAt(int nIndex) const
+{
+	return m_arrConstraints.GetAt(nIndex);
+}
+
+void CXTPReportRecordItemConstraints::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItemEditOptions
+
+CXTPReportRecordItemEditOptions::CXTPReportRecordItemEditOptions()
+{
+	m_bAllowEdit = TRUE;
+	m_bConstraintEdit = FALSE;
+	m_pConstraints = new CXTPReportRecordItemConstraints();
+	m_bSelectTextOnEdit = FALSE;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+	m_nMaxLength = 0;
+
+
+}
+
+CXTPReportRecordItemEditOptions::~CXTPReportRecordItemEditOptions()
+{
+	RemoveButtons();
+
+	CMDTARGET_RELEASE(m_pConstraints);
+}
+
+void CXTPReportRecordItemEditOptions::RemoveButtons()
+{
+	for (int j = 0; j < arrInplaceButtons.GetSize(); j++)
+		arrInplaceButtons[j]->InternalRelease();
+
+	arrInplaceButtons.RemoveAll();
+}
+
+void CXTPReportRecordItemEditOptions::AddComboButton()
+{
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_COMBOBUTTON));
+}
+
+void CXTPReportRecordItemEditOptions::AddExpandButton()
+{
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_EXPANDBUTTON));
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(DWORD_PTR dwData)
+{
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
 	{
-		m_x = x;
-		m_y = y;
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_dwData == dwData)
+			return pConstaint;
+	}
+	return NULL;
+}
 
-		m_nCellWidth = nCellWidth;
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(LPCTSTR lpszConstraint)
+{
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
+	{
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_strConstraint == lpszConstraint)
+			return pConstaint;
+	}
+	return NULL;
+}
 
-		// Approximate color to one of "standard" colors:
-		long lRed = AlignColor(GetRValue(color), lDelta);
-		long lGreen = AlignColor(GetGValue(color), lDelta);
-		long lBlue = AlignColor(GetBValue(color), lDelta);
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::AddConstraint(LPCTSTR lpszConstraint, DWORD_PTR dwData /*= 0*/)
+{
+	CXTPReportRecordItemConstraint* pConstaint = new CXTPReportRecordItemConstraint();
 
-		m_CellColor = RGB(lRed, lGreen, lBlue);
+	pConstaint->m_strConstraint = lpszConstraint;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_pConstraints->m_arrConstraints.Add(pConstaint);
 
-		if (afxGlobalData.m_nBitsPerPixel == 8) // 256 colors
+	return pConstaint;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPReportRecordItem
+
+IMPLEMENT_SERIAL(CXTPReportRecordItem, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItem::CXTPReportRecordItem()
+{
+	static const CString g_strFormatStringDef = _T("%s");
+
+	m_strFormatString = g_strFormatStringDef;
+	m_bEditable = TRUE;
+	m_pFontCaption = NULL;
+	m_bBoldText = FALSE;
+	m_clrText = XTP_REPORT_COLOR_DEFAULT;
+	m_clrBackground = XTP_REPORT_COLOR_DEFAULT;
+
+	m_nIconIndex = XTP_REPORT_NOICON;
+
+	m_pRecord = 0;
+	m_dwData = 0;
+
+	m_nSortPriority = -1;
+	m_nGroupPriority = -1;
+
+	m_bChecked = FALSE;
+	m_bHasCheckbox = FALSE;
+	m_pEditOptions = NULL;
+
+	m_bFocusable = TRUE;
+
+	m_pHyperlinks = NULL;
+
+
+}
+
+
+CXTPReportRecordItem::~CXTPReportRecordItem()
+{
+	CMDTARGET_RELEASE(m_pEditOptions);
+	CMDTARGET_RELEASE(m_pHyperlinks);
+}
+
+void CXTPReportRecordItem::DoMouseButtonClick()
+{
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+}
+
+void CXTPReportRecordItem::GetCaptionRect(XTP_REPORTRECORDITEM_ARGS* pDrawArgs, CRect& rcItem)
+{
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
+		return;
+
+	if (GetIconIndex() != XTP_REPORT_NOICON)
+		rcItem.left += pDrawArgs->pControl->GetPaintManager()->DrawBitmap(NULL, pDrawArgs->pControl, rcItem, GetIconIndex());
+
+	if (m_bHasCheckbox)
+		rcItem.left += 15;
+}
+
+void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem)
+{
+	BOOL bEditable = IsEditable() && (pDrawArgs->pColumn == NULL || pDrawArgs->pColumn->IsEditable());
+
+	CDC* pDC = pDrawArgs->pDC;
+	int eState = (bEditable ? 0: 2) + (IsChecked() ? 1 : 0);
+
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+
+	m_rcGlyph = rcItem;
+	CSize sizeGlyph = pPaintManager->DrawGlyph(NULL, m_rcGlyph, eState + 2);
+
+	CRect rcGlyph(m_rcGlyph);
+	// horizontal alignment
+	switch(nIconAlign)
+	{
+	case xtpColumnIconRight:
+		rcGlyph.left = rcItem.right - sizeGlyph.cx - 2;
+		// shift text box to the left
+		rcItem.right -= (2 + sizeGlyph.cx);
+		break;
+	case xtpColumnIconCenter:
+		rcGlyph.left = rcItem.CenterPoint().x - sizeGlyph.cx / 2 - 1;
+		rcGlyph.right = rcGlyph.left + sizeGlyph.cx;
+		break; // left text box as is - draw on image...
+	case xtpColumnIconLeft:
+	default:
+		rcGlyph.left += 2;
+		// shift text box to the right
+		rcItem.left += 2 + sizeGlyph.cx;
+		rcGlyph.right = rcItem.left - 1;
+		break;
+	}
+	// vertical alignment
+	switch(nIconAlign)
+	{
+	case xtpColumnIconTop:
+		rcGlyph.bottom = rcItem.top + sizeGlyph.cy + 2;
+		break;
+	case xtpColumnIconBottom:
+		rcGlyph.top = rcItem.bottom - sizeGlyph.cy - 2;
+		break;
+	}
+	// draw the glyph
+	pPaintManager->DrawGlyph(pDC, rcGlyph, eState + 2);
+}
+
+void CXTPReportRecordItem::OnDrawCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	ASSERT(pDrawArgs->pItem == this);
+	pDrawArgs->pControl->GetPaintManager()->DrawItemCaption(pDrawArgs, pMetrics);
+}
+
+
+int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
+{
+	CDC* pDC = pDrawArgs->pDC;
+	CRect& rcItem = pDrawArgs->rcItem;
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	CRgn rgn;
+	rgn.CreateRectRgn(rcItem.left, rcItem.top - 1, rcItem.right, rcItem.bottom);
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(&rgn);
+
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
+	pMetrics->strText = GetCaption(pDrawArgs->pColumn);
+	pDrawArgs->pRow->GetItemMetrics(pDrawArgs, pMetrics);
+
+	ASSERT(pMetrics->pFont);
+	ASSERT(pMetrics->clrForeground != XTP_REPORT_COLOR_DEFAULT);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->FillSolidRect(rcItem, pMetrics->clrBackground);
+
+	int nItemGlyphs = rcItem.left;
+
+	// draw tree inside item rect (see also HitTest function)
+	if (pDrawArgs->pColumn && pDrawArgs->pColumn->IsTreeColumn())
+	{
+		int nTreeDepth = pDrawArgs->pRow->GetTreeDepth() - pDrawArgs->pRow->GetGroupLevel();
+		if (nTreeDepth > 0)
+			nTreeDepth++;
+		rcItem.left += pDrawArgs->pControl->GetIndent(nTreeDepth);
+
+		BOOL bHasChildren = pDrawArgs->pRow->HasChildren();
+
+		CRect rcBitmap(rcItem);
+		CSize sizeBitmap = pPaintManager->DrawCollapsedBitmap(NULL, pDrawArgs->pRow, rcBitmap);
+
+		pPaintManager->DrawTreeStructure(pDrawArgs, pMetrics, rcItem, sizeBitmap);
+
+		int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+		// horizontal alignment
+		switch(nIconAlign)
 		{
-			ASSERT_VALID(pPalette);
+		case xtpColumnIconRight:
+			rcBitmap.left = rcBitmap.right - sizeBitmap.cx - 2;
+			break;
+		case xtpColumnIconLeft:
+			rcBitmap.right = rcBitmap.left + sizeBitmap.cx + 2;
+			break;
+		}
+		// vertical alignment
+		switch(nIconAlign)
+		{
+		case xtpColumnIconTop:
+			rcBitmap.bottom = rcBitmap.top + sizeBitmap.cy + 2;
+			break;
+		case xtpColumnIconBottom:
+			rcBitmap.top = rcBitmap.bottom - sizeBitmap.cy - 2;
+			break;
+		}
+		sizeBitmap = pPaintManager->DrawCollapsedBitmap(bHasChildren ? pDC : NULL, pDrawArgs->pRow, rcBitmap);
 
-			UINT uiPalIndex = pPalette->GetNearestPaletteIndex(color);
-			m_CellDrawColor = PALETTEINDEX(uiPalIndex);
+		if (!pDC->IsPrinting() && bHasChildren)
+			pDrawArgs->pRow->SetCollapseRect(rcBitmap);
+
+		rcItem.left += sizeBitmap.cx + 2;
+	}
+
+	pDC->SetTextColor(pMetrics->clrForeground);
+
+	CFont* pOldFont = (CFont*)pDC->SelectObject(pMetrics->pFont);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->SetBkColor(pMetrics->clrBackground);
+	else
+		pDC->SetBkColor(pPaintManager->m_clrControlBack);
+
+	if (m_bHasCheckbox)
+		DrawCheckBox(pDrawArgs, rcItem);
+
+	// Do the draw bitmap pDC, rcItem, GetIconIndex()
+	if (pMetrics->nItemIcon != XTP_REPORT_NOICON || GetIconIndex() != XTP_REPORT_NOICON)
+	{
+		pPaintManager->DrawItemBitmap(pDrawArgs, rcItem, pMetrics->nItemIcon != XTP_REPORT_NOICON ? pMetrics->nItemIcon : GetIconIndex());
+	}
+
+	nItemGlyphs = (rcItem.left - nItemGlyphs);
+
+	OnDrawCaption(pDrawArgs, pMetrics);
+
+	int nItemTextWidth = nItemGlyphs + pDC->GetTextExtent(pMetrics->strText).cx + 4;
+
+	pDC->SelectObject(pOldFont);
+
+	pMetrics->InternalRelease();
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(NULL);
+
+	return nItemTextWidth;
+}
+
+
+void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	if (!pClickArgs || !pClickArgs->pControl)
+		return;
+
+	InternalAddRef();
+	CMDTARGET_ADDREF(pClickArgs->pColumn);
+	CMDTARGET_ADDREF(pClickArgs->pControl);
+
+	CXTPReportRow* pRow = pClickArgs->pRow;
+	CMDTARGET_ADDREF(pRow);
+
+	BOOL bCheckBoxClicked = FALSE;
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsEditable() && m_bHasCheckbox && (pClickArgs->pColumn == NULL || pClickArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pClickArgs))
+	{
+		// adjust vertical coordinates if virtual mode
+		if (pControl->IsVirtualMode())
+		{
+			m_rcGlyph.top = pClickArgs->rcItem.top;
+			m_rcGlyph.bottom = pClickArgs->rcItem.bottom;
+		}
+		// check whether we're clicking glyph area
+		if (m_rcGlyph.PtInRect(pClickArgs->ptClient))
+		{
+			if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+			pControl->RedrawControl();
+
+			pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_CHECKED, &pClickArgs->ptClient);
+			bCheckBoxClicked = TRUE;
+		}
+	}
+
+	if (!bCheckBoxClicked && IsAllowEdit(pClickArgs) && pControl->IsEditOnClick())
+	{
+		pControl->EditItem(pClickArgs);
+
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
+
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
+		{
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
+
+			if (pEditOptions->m_bSelectTextOnEdit)
+			{
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
+			}
+		}
+	}
+
+	pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_CLICK, &pClickArgs->ptClient);
+
+	// Determine Hyperlink Click
+	int nHyperlink = HitTestHyperlink(pClickArgs->ptClient);
+	if (nHyperlink >= 0)
+	{
+		pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_HYPERLINK, &pClickArgs->ptClient, nHyperlink);
+	}
+
+	CMDTARGET_RELEASE(pRow);
+	CMDTARGET_RELEASE(pClickArgs->pColumn);
+	CMDTARGET_RELEASE(pClickArgs->pControl);
+	InternalRelease();
+}
+
+int CXTPReportRecordItem::HitTestHyperlink(CPoint ptClick)
+{
+	int nHyperlinks = GetHyperlinksCount();
+	CXTPReportHyperlink* pHyperlink;
+	for (int nHyperlink = 0; nHyperlink < nHyperlinks; nHyperlink++)
+	{
+		pHyperlink = GetHyperlinkAt(nHyperlink);
+		ASSERT(pHyperlink);
+		if (pHyperlink && pHyperlink->m_rcHyperSpot.PtInRect(ptClick))
+			return nHyperlink;
+	}
+	return -1;
+}
+
+void CXTPReportRecordItem::OnDblClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsAllowEdit(pClickArgs) && !pControl->IsEditOnClick() && pControl->GetInplaceEdit()->GetItem() != this)
+	{
+		pControl->EditItem(pClickArgs);
+
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
+
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
+		{
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
+
+			if (pEditOptions->m_bSelectTextOnEdit)
+			{
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
+			}
+		}
+	}
+
+	pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_DBLCLK, &pClickArgs->ptClient, -1);
+}
+
+void CXTPReportRecordItem::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	int nHyperlink = HitTestHyperlink(point);
+	if (nHyperlink >= 0)
+	{
+		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_HAND));
+	}
+}
+
+void CXTPReportRecordItem::SetFont(CFont* pFont)
+{
+	m_pFontCaption = pFont;
+}
+
+void CXTPReportRecordItem::SetBold(BOOL bBold)
+{
+	m_bBoldText = bBold;
+}
+
+void CXTPReportRecordItem::SetTextColor(COLORREF clrText)
+{
+	m_clrText = clrText;
+}
+
+void CXTPReportRecordItem::SetBackgroundColor(COLORREF clrBackground)
+{
+	m_clrBackground = clrBackground;
+}
+
+int CXTPReportRecordItem::Compare(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (!pItem)
+		return 0;
+
+	if (m_nSortPriority != -1 || pItem->m_nSortPriority != -1)
+		return m_nSortPriority - pItem->m_nSortPriority;
+
+	return m_pRecord->GetRecords()->Compare(GetCaption(pColumn), pItem->GetCaption(pColumn));
+}
+
+CFont* CXTPReportRecordItem::GetFont()
+{
+	return m_pFontCaption;
+}
+
+CString CXTPReportRecordItem::GetGroupCaption(CXTPReportColumn* pColumn)
+{
+	if (!m_strGroupCaption.IsEmpty())
+		return m_strGroupCaption;
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+	{
+		CString str;
+		if (str.LoadString(nID))
+		{
+			return str;
+		}
+	}
+
+	return pColumn->GetCaption() + _T(": ") + GetCaption(pColumn);
+}
+
+int CXTPReportRecordItem::CompareGroupCaption(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (m_nGroupPriority != -1)
+		return m_nGroupPriority - pItem->m_nGroupPriority;
+
+	if (!m_strGroupCaption.IsEmpty())
+		return m_pRecord->GetRecords()->Compare(m_strGroupCaption, pItem->m_strGroupCaption);
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+		return nID - pItem->GetGroupCaptionID(pColumn);
+
+	return Compare(pColumn, pItem);
+}
+
+int CXTPReportRecordItem::GetGroupCaptionID(CXTPReportColumn* /*pColumn*/)
+{
+	return m_nGroupPriority;
+}
+
+
+void CXTPReportRecordItem::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pItemMetrics)
+{
+	if (m_clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrBackground = m_clrBackground;
+
+	if (m_clrText != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrForeground = m_clrText;
+
+	if (m_pFontCaption != NULL)
+		pItemMetrics->pFont = m_pFontCaption;
+	else if (m_bBoldText)
+		pItemMetrics->pFont = &pDrawArgs->pControl->GetPaintManager()->m_fontBoldText;
+
+}
+
+int CXTPReportRecordItem::GetIndex() const
+{
+	return m_pRecord ? m_pRecord->IndexOf(this) : -1;
+}
+
+BOOL CXTPReportRecordItem::IsEditable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	ASSERT(m_pRecord);
+	return m_pRecord ? m_pRecord->m_bEditable && m_bEditable && IsFocusable() : FALSE;
+}
+
+
+BOOL CXTPReportRecordItem::IsFocusable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	return m_bFocusable;
+}
+
+void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (IsEditable() && OnRequestEdit(pItemArgs))
+	{
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pItemArgs->pColumn);
+		ASSERT(pEditOptions);
+
+		CXTPReportInplaceButtons* pInpaceButtons = &pEditOptions->arrInplaceButtons;
+
+		CRect rcButtons(pItemArgs->rcItem);
+		CXTPClientRect rcControl(pItemArgs->pControl);
+
+		int i;
+		// calculate buttons widths
+		int nButtonsWidthIn = 0, nButtonsWidthOut = 0;
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			if (pButton->IsInsideCellButton())
+				nButtonsWidthIn += pButton->GetWidth();
+			else
+				nButtonsWidthOut += pButton->GetWidth();
+		}
+
+		// adjust buttons rect
+		if (rcButtons.right + nButtonsWidthOut > rcControl.right)
+			rcButtons.right = rcControl.right - nButtonsWidthOut;
+
+		int nLeftMin = max(rcControl.left, pItemArgs->rcItem.left);
+		if (rcButtons.right - nButtonsWidthIn < nLeftMin)
+			rcButtons.right = nLeftMin + nButtonsWidthIn;
+
+		// create buttons
+		rcButtons.left = rcButtons.right;
+
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			pButton->Create(pItemArgs, rcButtons);
+
+			pControl->GetInplaceButtons()->Add(pButton);
+		}
+
+		// adjust item rect
+		pItemArgs->rcItem.right = rcButtons.left + 1;
+
+		if (pEditOptions->m_bAllowEdit)
+		{
+			pEdit->Create(pItemArgs);
+		}
+		else if (pInpaceButtons->GetSize() > 0)
+		{
+			OnInplaceButtonDown(pInpaceButtons->GetAt(0));
+		}
+
+		//----------------------------------------------------
+		XTP_NM_REPORTRECORDITEM nm;
+		::ZeroMemory(&nm, sizeof(nm));
+
+		nm.pItem = this;
+		nm.pRow = pItemArgs->pRow;
+		nm.pColumn = pItemArgs->pColumn;
+
+		pControl->SendNotifyMessage(XTP_NM_REPORT_BEGINEDIT, (NMHDR*)&nm);
+	}
+}
+
+void CXTPReportRecordItem::OnCancelEdit(CXTPReportControl* pControl, BOOL bApply)
+{
+	CXTPReportInplaceButtons* pInpaceButtons = pControl->GetInplaceButtons();
+
+	for (int i = 0; i < pInpaceButtons->GetSize(); i++)
+	{
+		CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+		pButton->DestroyWindow();
+		pButton->SetItemArgs(0);
+	}
+	pInpaceButtons->RemoveAll();
+
+	CXTPReportInplaceList* pInpaceList = pControl->GetInplaceList();
+	if (pInpaceList->GetSafeHwnd())
+	{
+		pInpaceList->DestroyWindow();
+	}
+
+
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (bApply && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)pEdit);
+	}
+
+	pEdit->HideWindow();
+	pEdit->SetItemArgs(0);
+	pEdit->DestroyWindow(); // pControl->SetFocus();
+
+
+}
+
+void CXTPReportRecordItem::OnConstraintChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraint* pConstraint)
+{
+	OnEditChanged(pItemArgs, pConstraint->m_strConstraint);
+}
+
+void CXTPReportRecordItem::OnValidateEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+	XTP_REPORTRECORDITEM_ARGS args = *pItemArgs;
+
+	if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		args.AddRef();
+
+		BOOL bRedraw = FALSE;
+		CMDTARGET_RELEASE(pEdit->pItem); //pEdit->pItem = NULL;
+
+		if (GetEditOptions(args.pColumn)->m_bConstraintEdit)
+		{
+			if (pEdit->m_pSelectedConstraint)
+			{
+				OnConstraintChanged(&args, pEdit->m_pSelectedConstraint);
+				bRedraw = TRUE;
+			}
 		}
 		else
 		{
-			m_CellDrawColor = m_CellColor;
-		}
+			CString strValue;
+			pEdit->GetWindowText(strValue);
 
-		GetPoints(m_x, m_y, nCellWidth, m_CellPoints);
-	}
-
-	BOOL HitTest(POINT pt)
-	{
-		CRgn rgn;
-		rgn.CreatePolygonRgn(m_CellPoints, AFX_CELL_EDGES, ALTERNATE);
-
-		return rgn.PtInRegion(pt);
-	}
-
-	void GetPoints(int x, int y, int nCellWidth, POINT* pptArray)
-	{
-		// side length = half the height * sin(60)
-		int nHalfWidth = nCellWidth / 2;
-		int nSideLength = static_cast<int>(static_cast<float>(nCellWidth) * AFX_TAN30);
-		int nTemp = nSideLength/2;
-
-		pptArray[0].x = x - nHalfWidth;
-		pptArray[0].y = y - nTemp;
-
-		pptArray[1].x = x;
-		pptArray[1].y = y - nHalfWidth;
-
-		pptArray[2].x = x + nHalfWidth;
-		pptArray[2].y = y - nTemp;
-
-		pptArray[3].x = x + nHalfWidth;
-		pptArray[3].y = y + nTemp;
-
-		pptArray[4].x = x;
-		pptArray[4].y = y + nHalfWidth;
-
-		pptArray[5].x = x - nHalfWidth;
-		pptArray[5].y = y + nTemp;
-	}
-
-	void Draw(CDC* pDC)
-	{
-		ASSERT_VALID(pDC);
-
-		CBrush br(m_CellDrawColor);
-		CPen pen(PS_SOLID, 1, m_CellDrawColor);
-
-		CBrush* pOldBrush = pDC->SelectObject(&br);
-		CPen* pOldPen = pDC->SelectObject(&pen);
-
-		pDC->Polygon(m_CellPoints, AFX_CELL_EDGES);
-
-		pDC->SelectObject(pOldPen);
-		pDC->SelectObject(pOldBrush);
-	}
-
-	void DrawSelected(CDC* pDC)
-	{
-		ASSERT_VALID(pDC);
-
-		CBrush* pBrWhite = CBrush::FromHandle((HBRUSH) ::GetStockObject(WHITE_BRUSH));
-		ASSERT_VALID(pBrWhite);
-
-		CBrush* pBrBlack = CBrush::FromHandle((HBRUSH) ::GetStockObject(BLACK_BRUSH));
-		ASSERT_VALID(pBrBlack);
-
-		CRgn rgnOne, rgnTwo, rgnThree;
-
-		POINT ptArrayTwo[AFX_CELL_EDGES];
-		GetPoints(m_x, m_y - 1, m_nCellWidth + 2, ptArrayTwo);
-
-		rgnTwo.CreatePolygonRgn((POINT*)&ptArrayTwo, AFX_CELL_EDGES, ALTERNATE);
-		pDC->FrameRgn(&rgnTwo, pBrWhite, 2, 2);
-
-		POINT ptArrayThree[AFX_CELL_EDGES];
-		GetPoints(m_x, m_y, m_nCellWidth + 2, ptArrayThree);
-
-		rgnThree.CreatePolygonRgn((POINT*)&ptArrayThree, AFX_CELL_EDGES, ALTERNATE);
-		pDC->FrameRgn(&rgnThree, pBrBlack, 1, 1);
-
-		POINT ptArrayOne[AFX_CELL_EDGES];
-		GetPoints(m_x, m_y, m_nCellWidth - 1, ptArrayOne);
-
-		rgnOne.CreatePolygonRgn((POINT*)&ptArrayOne, AFX_CELL_EDGES, ALTERNATE);
-		pDC->FrameRgn(&rgnOne, pBrBlack, 1, 1);
-	}
-
-	POINT m_CellPoints [AFX_CELL_EDGES];
-	COLORREF m_CellColor;
-	COLORREF m_CellDrawColor;
-	int m_x;
-	int m_y;
-	int m_nCellWidth;
-};
-
-//----------------------------------------------------------------------
-// CMFCColorPickerCtrl class
-//----------------------------------------------------------------------
-
-CMFCColorPickerCtrl::CMFCColorPickerCtrl()
-{
-	m_colorNew = 0;
-	m_colorOriginal = 0;
-
-	CDrawingManager::RGBtoHSL(m_colorNew, &m_dblHue, &m_dblSat, &m_dblLum);
-
-	m_nLumBarWidth  = AFX_DEFAULT_WIDTH_OF_LUMINANCE_BAR;
-	m_COLORTYPE = PICKER;
-
-	m_dblLum = 0.500;
-	m_pPalette = NULL;
-}
-
-CMFCColorPickerCtrl::~CMFCColorPickerCtrl()
-{
-	for (int i = 0; i < m_arCells.GetSize(); i ++)
-	{
-		delete m_arCells [i];
-	}
-}
-
-BEGIN_MESSAGE_MAP(CMFCColorPickerCtrl, CButton)
-	//{{AFX_MSG_MAP(CMFCColorPickerCtrl)
-	ON_WM_LBUTTONDOWN()
-	ON_WM_MOUSEMOVE()
-	ON_WM_LBUTTONUP()
-	ON_WM_SIZE()
-	ON_WM_GETDLGCODE()
-	ON_WM_KEYDOWN()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	ON_WM_QUERYNEWPALETTE()
-	ON_WM_PALETTECHANGED()
-	ON_WM_ERASEBKGND()
-	ON_WM_CANCELMODE()
-	ON_WM_LBUTTONDBLCLK()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-//----------------------------------------------------------------------
-// CMFCColorPickerCtrl message handlers
-//----------------------------------------------------------------------
-
-int CMFCColorPickerCtrl::GetAngleFromPoint(int nX, int nY)
-{
-	double dAngle = atan2((double) nY, (double)nX);
-
-	return(int)(dAngle * 180.0/AFX_PI);
-}
-
-void CMFCColorPickerCtrl::CreateHexGreyScaleBar()
-{
-	if (m_arCells.GetSize() != 0)
-	{
-		// Already created
-		return;
-	}
-
-	CRect area;
-	GetClientRect(area);
-
-	int nCellSize = min(area.Height() / 2 - 2, area.Width() /(AFX_GRAY_CELLS_NUM  / 2 + 6));
-	if ((nCellSize % 2) != 0)
-	{
-		nCellSize ++;
-	}
-
-	const int nCellLargeSize = nCellSize * 2;
-
-	int yCenter = (area.top + area.bottom) / 2;
-	int nSideLength = static_cast<int>(static_cast<float>(nCellSize) * AFX_TAN30 * 1.5);
-
-	int y1 = yCenter - nSideLength / 2;
-	int y2 = y1 + nSideLength;
-
-	int nRGBOffset = 255 /(AFX_GRAY_CELLS_NUM + 2);
-
-	int nStartOffset = area.left;
-
-	for (int nRowNum = 0; nRowNum < 2; nRowNum++)
-	{
-		if (nRowNum == 1)
-		{
-			// Draw large white cell:
-			int x1 = nStartOffset +(nCellLargeSize / 2);
-			m_arCells.Add(new CCellObj(m_pPalette, colorWhite, x1, yCenter, nCellLargeSize, 0));
-		}
-
-		int x = nCellLargeSize + nCellSize + nStartOffset;
-		int nCurry = y1;
-		int nRGB = 255 - nRGBOffset;
-
-		for (int i = 0; i < AFX_GRAY_CELLS_NUM; i++)
-		{
-			COLORREF color = RGB(nRGB, nRGB, nRGB);
-			if (nRowNum == 1)
+			if (GetCaption(args.pColumn) != strValue)
 			{
-				m_arCells.Add(new CCellObj(m_pPalette, color, x, nCurry, nCellSize, 7));
+				OnEditChanged(&args, strValue);
+				bRedraw = TRUE;
 			}
-
-			x += (nCellSize / 2);
-
-			nCurry = (nCurry == y1) ? y2 : y1; // Toggle Y
-			nRGB -= nRGBOffset;
 		}
-
-		if (nRowNum == 1)
+		if (bRedraw)
 		{
-			// Draw large black cell:
-			int x1 = (x + nCellSize +(nCellSize / 2)) - 1;
-
-			m_arCells.Add(new CCellObj(m_pPalette, colorBlack, x1, yCenter, nCellLargeSize, 0));
+			pControl->RedrawControl();
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
 		}
-
-		x += nCellLargeSize +(nCellSize / 2);
-
-		if (nRowNum == 0)
+		else
 		{
-			nStartOffset = (area.right - x) / 2;
+			OnEditCanceled(pItemArgs);
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_EDIT_CANCELED, 0);
 		}
+
+		pEdit->SetItemArgs(0);
+
+		args.Release();
 	}
 }
 
-void CMFCColorPickerCtrl::SelectCellHexagon(BYTE R, BYTE G, BYTE B)
+BOOL CXTPReportRecordItem::IsAllowEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 {
-	SetColor(RGB(R, G, B));
+	BOOL bIsAllowEdit = pItemArgs->pControl->IsAllowEdit();
+
+	if (m_pRecord)
+	{
+		// is header record
+		if (m_pRecord->m_pRecords == pItemArgs->pControl->GetHeaderRecords())
+		{
+			bIsAllowEdit = pItemArgs->pControl->IsHeaderRowsAllowEdit();
+		}
+		else
+			// is footer record
+			if (m_pRecord->m_pRecords == pItemArgs->pControl->GetFooterRecords())
+			{
+				bIsAllowEdit = pItemArgs->pControl->IsFooterRowsAllowEdit();
+			}
+	}
+
+	return bIsAllowEdit && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));
+
+/*  return pItemArgs->pControl->IsAllowEdit() && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));*/
 }
 
-void CMFCColorPickerCtrl::SetColor(COLORREF Color)
+BOOL CXTPReportRecordItem::OnRequestEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
 {
-	m_colorNew = Color;
-	CDrawingManager::RGBtoHSL(m_colorNew, &m_dblHue, &m_dblSat, &m_dblLum);
+	CXTPReportControl* pControl = pItemArgs->pControl;
 
-	if (GetSafeHwnd() != NULL)
+	XTP_NM_REPORTREQUESTEDIT nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.bCancel = FALSE;
+	nm.pItem = this;
+	nm.pRow = pItemArgs->pRow;
+	nm.pColumn = pItemArgs->pColumn;
+
+	pControl->SendNotifyMessage(XTP_NM_REPORT_REQUESTEDIT, (NMHDR*)&nm);
+
+	return !nm.bCancel;
+}
+
+BOOL CXTPReportRecordItem::OnChar(XTP_REPORTRECORDITEM_ARGS* pItemArgs, UINT nChar)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	if ((nChar == VK_SPACE) && IsEditable() && m_bHasCheckbox && (pItemArgs->pColumn == NULL || pItemArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pItemArgs))
 	{
-		RedrawWindow();
+		if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+		pControl->RedrawControl();
+
+		pControl->SendMessageToParent(pItemArgs->pRow, this, pItemArgs->pColumn, XTP_NM_REPORT_CHECKED, NULL);
+		return TRUE;
 	}
-};
 
-BOOL CMFCColorPickerCtrl::SelectCellHexagon(int x, int y)
-{
-	for (int i = 0; i < m_arCells.GetSize(); i ++)
+	if (IsAllowEdit(pItemArgs))
 	{
-		CCellObj* pCell = (CCellObj*) m_arCells [i];
-		ASSERT_VALID(pCell);
+		pControl->EditItem(pItemArgs);
 
-		if (pCell->HitTest(CPoint(x, y)))
+		CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+		if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
 		{
-			m_colorNew = pCell->m_CellColor;
-			CDrawingManager::RGBtoHSL(m_colorNew, &m_dblHue, &m_dblSat, &m_dblLum);
-			return TRUE;
+			pEdit->SetFocus();
+			pEdit->SetSel(0, -1);
+			if (nChar != VK_TAB) pEdit->SendMessage(WM_CHAR, nChar);
 		}
-	}
+		return TRUE;
 
+	}
 	return FALSE;
 }
 
-void CMFCColorPickerCtrl::CreateHexagon()
+CXTPReportRecordItemEditOptions* CXTPReportRecordItem::GetEditOptions(CXTPReportColumn* pColumn)
 {
-	if (m_arCells.GetSize() != 0)
-	{
-		// Already created, do nothing
+	if (m_pEditOptions)
+		return m_pEditOptions;
+
+	if (pColumn)
+		return pColumn->GetEditOptions();
+
+	return m_pEditOptions = new CXTPReportRecordItemEditOptions();
+}
+
+void CXTPReportRecordItem::OnInplaceButtonDown(CXTPReportInplaceButton* pButton)
+{
+	CXTPReportControl* pControl = pButton->pControl;
+
+	XTP_NM_REPORTINPLACEBUTTON nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.pButton = pButton;
+	nm.pItem = this;
+
+	if (pControl->SendNotifyMessage(XTP_NM_REPORT_INPLACEBUTTONDOWN, (NMHDR*)&nm) == TRUE)
 		return;
-	}
 
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	// Normalize to squere:
-	if (rectClient.Height() < rectClient.Width())
+	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
 	{
-		rectClient.DeflateRect((rectClient.Width() - rectClient.Height()) / 2, 0);
-	}
-	else
-	{
-		rectClient.DeflateRect(0, (rectClient.Height() - rectClient.Width()) / 2);
-	}
+		CXTPReportInplaceList* pList = pControl->GetInplaceList();
 
-	ASSERT(abs(rectClient.Height() - rectClient.Width()) <= 1);
-
-	int nCellSize = rectClient.Height() /(2 * AFX_NUM_LEVELS - 1) + 1;
-
-	int x = (rectClient.left + rectClient.right) / 2;
-	int y = (rectClient.top + rectClient.bottom) / 2;
-
-	// Add center cell
-	m_arCells.Add(new CCellObj(m_pPalette, colorWhite, x, y, nCellSize, 0));
-
-	// for each level
-	for (int nLevel = 1; nLevel < AFX_NUM_LEVELS; nLevel++)
-	{
-		// store the level start position
-		int nPosX = x +(nCellSize * nLevel);
-		int nPosY = y;
-
-		// for each side
-		for (int nSide = 0; nSide < AFX_NUM_LEVELS - 1; nSide++)
-		{
-			// set the deltas for the side
-			int nDx = static_cast<int>(static_cast<float>(nCellSize) * cfxOffset[nSide]);
-			int nDy = static_cast<int>(static_cast<float>(nCellSize) * cfyOffset[nSide]);
-
-			// for each cell per side
-			for (int nCell = 0; nCell < nLevel; nCell++)
-			{
-				int nAngle = GetAngleFromPoint(nPosX - x, nPosY - y);
-
-				double L = 1. *(AFX_NUM_LEVELS - nLevel) / AFX_NUM_LEVELS + .1;
-
-				m_arCells.Add(new CCellObj(m_pPalette, CDrawingManager::HLStoRGB_TWO((float) nAngle, L, 1.0F), nPosX, nPosY, nCellSize, 16));
-
-				// offset the position
-				nPosX += nDx;
-				nPosY += nDy;
-			}
-		}
-	}
-}
-
-void CMFCColorPickerCtrl::DrawHex(CDC* pDC)
-{
-	ASSERT_VALID(pDC);
-
-	afxGlobalData.DrawParentBackground(this, pDC);
-
-	CCellObj* pSelCell = NULL;
-
-	for (int i = 0; i < m_arCells.GetSize(); i ++)
-	{
-		CCellObj* pCell = (CCellObj*) m_arCells [i];
-		ASSERT_VALID(pCell);
-
-		pCell->Draw(pDC);
-
-		if (pCell->m_CellColor == m_colorNew)
-		{
-			pSelCell = pCell;
-		}
-	}
-
-	if (pSelCell != NULL)
-	{
-		pSelCell->DrawSelected(pDC);
-	}
-}
-
-void CMFCColorPickerCtrl::DrawPicker(CDC* pDC)
-{
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	CSize szColorPicker = rectClient.Size();
-
-	if (m_bmpPicker.GetSafeHandle() == NULL)
-	{
-		// Prepare picker's bitmap:
-		CDC dcMem;
-		if (dcMem.CreateCompatibleDC(pDC) && m_bmpPicker.CreateCompatibleBitmap(pDC, szColorPicker.cx, szColorPicker.cy))
-		{
-			CBitmap* pOldBmp = dcMem.SelectObject(&m_bmpPicker);
-
-			int nStep = (afxGlobalData.m_nBitsPerPixel > 8) ? 1 : 4;
-
-			for (int i= 0;i<szColorPicker.cy;i += nStep)
-			{
-				for (int j=0;j<szColorPicker.cx;j += nStep)
-				{
-					CPoint pt(j, szColorPicker.cy - i - nStep);
-					COLORREF color = CDrawingManager::HLStoRGB_ONE((double)j/(double)szColorPicker.cx, AFX_DEFAULT_LUMINANCE, (double)i/(double)szColorPicker.cy);
-
-					if (afxGlobalData.m_nBitsPerPixel > 8) // High/True color
-					{
-						// Draw exact color:
-						dcMem.SetPixelV(pt, color);
-					}
-					else
-					{
-						// Draw dithered rectangle:
-						CBrush br(color);
-						dcMem.FillRect(CRect(pt, CSize(nStep, nStep)), &br);
-					}
-				}
-			}
-
-			dcMem.SelectObject(pOldBmp);
-		}
-	}
-
-	pDC->DrawState(CPoint(0, 0), szColorPicker, &m_bmpPicker, DSS_NORMAL);
-}
-
-void CMFCColorPickerCtrl :: DrawLuminanceBar(CDC* pDC)
-{
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	rectClient.DeflateRect(0, AFX_DEFAULT_OFFSET_OF_LUMINANCE_BAR);
-
-	for (int y = rectClient.top; y <= rectClient.bottom; y ++)
-	{
-		COLORREF col = 	CDrawingManager::HLStoRGB_ONE(m_dblHue, LumFromPoint(y), m_dblSat);
-
-		CBrush br(col);
-		pDC->FillRect(CRect(0, y, m_nLumBarWidth, y + 1), &br);
-	}
-}
-
-void CMFCColorPickerCtrl::DrawCursor(CDC* pDC, const CRect& rect)
-{
-	const int nHalfSize = rect.Width() / 2; // Assume square
-
-	if (m_COLORTYPE == PICKER)
-	{
-		COLORREF colorFocus = (GetFocus() == this) ? colorBlack : colorWhite;
-
-		pDC->FillSolidRect((rect.left + nHalfSize) - 1, rect.top, 3, 5, colorFocus); // Top
-		pDC->FillSolidRect((rect.left + nHalfSize) - 1, rect.bottom - 5, 3, 5, colorFocus); // Bottom
-		pDC->FillSolidRect(rect.left, (rect.top + nHalfSize) - 1, 5, 3, colorFocus); // Left
-		pDC->FillSolidRect(rect.right - 5, (rect.top + nHalfSize) - 1, 5, 3, colorFocus); // Right
-	}
-	else if (m_COLORTYPE == LUMINANCE)
-	{
-		POINT pt[3];
-		pt[0].x = rect.left;
-		pt[0].y = rect.top + nHalfSize;
-
-		pt[1].x = rect.right - 1;
-		pt[1].y = rect.top;
-
-		pt[2].x = rect.right - 1;
-		pt[2].y = rect.bottom - 1;
-
-		CPen pen(PS_SOLID, 1, afxGlobalData.clrBtnText);
-
-		CBrush br(GetFocus() == this ? afxGlobalData.clrBtnText : afxGlobalData.clrBtnShadow);
-
-		CBrush* poldBrush = pDC->SelectObject(&br);
-		CPen* poldPen = pDC->SelectObject(&pen);
-
-		pDC->Polygon(pt, 3);
-
-		pDC->SelectObject(poldBrush);
-		pDC->SelectObject(poldPen);
-	}
-}
-
-void CMFCColorPickerCtrl::SetOriginalColor(COLORREF ref)
-{
-	ASSERT(m_COLORTYPE == CURRENT);
-	m_colorOriginal = ref;
-}
-
-void CMFCColorPickerCtrl::SetHLS(double hue, double luminance, double saturation, BOOL bInvalidate)
-{
-	if (hue != -1)
-		m_dblHue = hue;
-
-	if (saturation != -1)
-		m_dblSat = saturation;
-
-	if (luminance != -1)
-		m_dblLum = luminance;
-
-	m_colorNew = CDrawingManager::HLStoRGB_TWO(m_dblHue, m_dblSat, m_dblLum);
-
-	if (bInvalidate && GetSafeHwnd() != NULL)
-	{
-		Invalidate();
-		UpdateWindow();
-	}
-}
-
-void CMFCColorPickerCtrl::GetHLS(double *hue, double *luminance, double *saturation)
-{
-	*hue = m_dblHue;
-	*luminance = m_dblLum;
-	*saturation = m_dblSat;
-}
-
-void CMFCColorPickerCtrl::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	SetCapture();
-	SetFocus();
-
-	OnMouseMove(nFlags, point);
-}
-
-void CMFCColorPickerCtrl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (GetCapture() != this)
-	{
-		return;
-	}
-
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	point.x = min(max(rectClient.left, point.x), rectClient.right);
-	point.y = min(max(rectClient.top, point.y), rectClient.bottom);
-
-	switch (m_COLORTYPE)
-	{
-	case LUMINANCE:
-		{
-			CRect rectCursorOld = GetCursorRect();
-			rectCursorOld.InflateRect(1, 1);
-
-			m_dblLum = LumFromPoint(point.y);
-			m_colorNew = CDrawingManager::HLStoRGB_ONE(m_dblHue, m_dblLum, m_dblSat);
-
-			InvalidateRect(rectCursorOld);
-			InvalidateRect(GetCursorRect());
-		}
-		break;
-
-	case PICKER:
-		{
-			CRect rectCursorOld = GetCursorRect();
-			rectCursorOld.InflateRect(1, 1);
-
-			if (nFlags & MK_CONTROL)
-			{
-				point.x = GetCursorPos().x;
-			}
-
-			if (nFlags & MK_SHIFT)
-			{
-				point.y = GetCursorPos().y;
-			}
-
-			m_dblHue = (double) point.x /(double) rectClient.Width();
-			m_dblSat = 1. -(double) point.y / rectClient.Height();
-			m_colorNew = CDrawingManager::HLStoRGB_ONE(m_dblHue, m_dblLum, m_dblSat);
-
-			InvalidateRect(rectCursorOld);
-			InvalidateRect(GetCursorRect());
-		}
-		break;
-
-	case HEX:
-	case HEX_GREYSCALE:
-		if (!SelectCellHexagon(point.x, point.y))
+		XTP_REPORTRECORDITEM_ARGS itemArgs = *pButton;
+		if (!itemArgs.pColumn && !itemArgs.pControl && !itemArgs.pItem && !itemArgs.pRow)
 		{
 			return;
 		}
+		ASSERT(itemArgs.pItem == this);
 
-		Invalidate();
-		break;
-	}
+		CXTPWindowRect rcButton(pButton);
+		pControl->ScreenToClient(&rcButton);
+		itemArgs.rcItem.right = rcButton.right;
+		itemArgs.rcItem.bottom  = rcButton.bottom;
 
-	NotifyParent();
-	UpdateWindow();
-}
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(itemArgs.pColumn);
 
-void CMFCColorPickerCtrl::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if (GetCapture() == this)
-		::ReleaseCapture();
-
-	CButton::OnLButtonUp(nFlags, point);
-}
-
-// this function must be call before the first paint message
-// on the picker control
-void CMFCColorPickerCtrl::SetLuminanceBarWidth(int w)
-{
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	w = min(w, rectClient.Width() * 3 / 4);
-
-	m_nLumBarWidth = w;
-	Invalidate();
-}
-
-void CMFCColorPickerCtrl::OnSize(UINT nType, int cx, int cy)
-{
-	CButton::OnSize(nType, cx, cy);
-
-	if (m_bmpPicker.GetSafeHandle() != NULL)
-	{
-		// picker's bitmap should be rebuild!
-		::DeleteObject(m_bmpPicker.Detach());
-	}
-
-	Invalidate();
-	UpdateWindow();
-}
-
-void CMFCColorPickerCtrl::SetType(COLORTYPE colorType)
-{
-	m_COLORTYPE = colorType;
-}
-
-UINT CMFCColorPickerCtrl::OnGetDlgCode()
-{
-	return DLGC_WANTARROWS;
-}
-
-void CMFCColorPickerCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	const double dblDelta = .05;
-
-	switch (m_COLORTYPE)
-	{
-	case PICKER:
+		if (pEditOptions->GetConstraints()->GetCount() > 0)
 		{
-			CRect rectCursorOld = GetCursorRect();
-			rectCursorOld.InflateRect(1, 1);
-
-			double dblSat = m_dblSat;
-			double dblHue = m_dblHue;
-
-			switch (nChar)
-			{
-			case VK_UP:
-				m_dblSat += dblDelta;
-				break;
-
-			case VK_DOWN:
-				m_dblSat -= dblDelta;
-				break;
-
-			case VK_LEFT:
-				m_dblHue -= dblDelta;
-				break;
-
-			case VK_RIGHT:
-				m_dblHue += dblDelta;
-				break;
-			}
-
-			m_dblSat = min(1., max(0., m_dblSat));
-			m_dblHue = min(1., max(0., m_dblHue));
-
-			if (m_dblHue != dblHue || m_dblSat != dblSat)
-			{
-				m_colorNew = CDrawingManager::HLStoRGB_ONE(m_dblHue, m_dblLum, m_dblSat);
-
-				InvalidateRect(rectCursorOld);
-				InvalidateRect(GetCursorRect());
-
-				NotifyParent();
-			}
-		}
-		break;
-
-	case LUMINANCE:
-		{
-			CRect rectCursorOld = GetCursorRect();
-			rectCursorOld.InflateRect(1, 1);
-
-			double dblLum = m_dblLum;
-
-			switch (nChar)
-			{
-			case VK_UP:
-				m_dblLum += dblDelta;
-				break;
-
-			case VK_DOWN:
-				m_dblLum -= dblDelta;
-				break;
-			}
-
-			m_dblLum = min(1., max(0., m_dblLum));
-			if (dblLum != m_dblLum)
-			{
-				m_colorNew = CDrawingManager::HLStoRGB_ONE(m_dblHue, m_dblLum, m_dblSat);
-
-				InvalidateRect(rectCursorOld);
-				InvalidateRect(GetCursorRect());
-
-				NotifyParent();
-			}
-		}
-		break;
-
-	case HEX:
-	case HEX_GREYSCALE:
-	default:
-		break;
-		// TBD
-	}
-
-	CButton::OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CMFCColorPickerCtrl::OnSetFocus(CWnd* pOldWnd)
-{
-	CButton::OnSetFocus(pOldWnd);
-
-	Invalidate();
-}
-
-void CMFCColorPickerCtrl::OnKillFocus(CWnd* pNewWnd)
-{
-	CButton::OnKillFocus(pNewWnd);
-
-	Invalidate();
-}
-
-BOOL CMFCColorPickerCtrl::OnQueryNewPalette()
-{
-	Invalidate();
-	return CButton::OnQueryNewPalette();
-}
-
-void CMFCColorPickerCtrl::OnPaletteChanged(CWnd* pFocusWnd)
-{
-	CButton::OnPaletteChanged(pFocusWnd);
-
-	if (pFocusWnd->GetSafeHwnd() != GetSafeHwnd())
-	{
-		Invalidate();
-	}
-}
-
-BOOL CMFCColorPickerCtrl::PreCreateWindow(CREATESTRUCT& cs)
-{
-	cs.style |= BS_OWNERDRAW;
-	cs.style &= ~BS_DEFPUSHBUTTON;
-
-	return CButton::PreCreateWindow(cs);
-}
-
-void CMFCColorPickerCtrl::PreSubclassWindow()
-{
-	ModifyStyle(BS_DEFPUSHBUTTON, BS_OWNERDRAW);
-	CButton::PreSubclassWindow();
-}
-
-void CMFCColorPickerCtrl::DrawItem(LPDRAWITEMSTRUCT lpDIS)
-{
-	ENSURE(lpDIS != NULL);
-	ENSURE(lpDIS->CtlType == ODT_BUTTON);
-	ASSERT_VALID(m_pPalette);
-
-	CDC* pDCDraw = CDC::FromHandle(lpDIS->hDC);
-	ASSERT_VALID(pDCDraw);
-
-	CPalette* pCurPalette = pDCDraw->SelectPalette(m_pPalette, FALSE);
-	pDCDraw->RealizePalette();
-
-	CRect rectClip;
-	pDCDraw->GetClipBox(rectClip);
-
-	CRect rectClient = lpDIS->rcItem;
-
-	CDC* pDC = pDCDraw;
-	BOOL m_bMemDC = FALSE;
-	CDC dcMem;
-	CBitmap bmp;
-	CBitmap* pOldBmp = NULL;
-	CPalette* pCurMemPalette = NULL;
-
-	if (dcMem.CreateCompatibleDC(pDCDraw) && bmp.CreateCompatibleBitmap(pDCDraw, rectClient.Width(), rectClient.Height()))
-	{
-		// Off-screen DC successfully created. Better paint to it then!
-		m_bMemDC = TRUE;
-		pOldBmp = dcMem.SelectObject(&bmp);
-		pDC = &dcMem;
-
-		pCurMemPalette = pDC->SelectPalette(m_pPalette, FALSE);
-		pDC->RealizePalette();
-
-		afxGlobalData.DrawParentBackground(this, pDC);
-	}
-
-	switch (m_COLORTYPE)
-	{
-	case HEX:
-		CreateHexagon();
-		DrawHex(pDC);
-		break;
-
-	case HEX_GREYSCALE:
-		CreateHexGreyScaleBar();
-		DrawHex(pDC);
-		break;
-
-	case CURRENT:
-		{
-			COLORREF clrText = pDC->GetTextColor();
-
-			int nHalf = rectClient.Height() / 2;
-			pDC->FillSolidRect(0, 0, rectClient.Width(), nHalf, m_colorNew);
-			pDC->FillSolidRect(0, nHalf, rectClient.Width(), nHalf, m_colorOriginal);
-
-			pDC->SetTextColor(clrText); // Text color was changed by FillSolidRect
-
-			// Draw frame
-			pDC->Draw3dRect(rectClient, afxGlobalData.clrBtnDkShadow, afxGlobalData.clrBtnDkShadow);
-		}
-		break;
-
-	case PICKER:
-		DrawPicker(pDC);
-		DrawCursor(pDC, GetCursorRect());
-		pDC->Draw3dRect(rectClient, afxGlobalData.clrBtnDkShadow, afxGlobalData.clrBtnHilite);
-		break;
-
-	case LUMINANCE:
-		DrawLuminanceBar(pDC);
-
-		// Draw marker:
-		afxGlobalData.DrawParentBackground(this, pDC, CRect(m_nLumBarWidth, 0, rectClient.Width() - m_nLumBarWidth, rectClient.Height()));
-		DrawCursor(pDC, GetCursorRect());
-		break;
-	}
-
-	if (m_bMemDC)
-	{
-		// Copy the results to the on-screen DC:
-		pDCDraw->BitBlt(rectClip.left, rectClip.top, rectClip.Width(), rectClip.Height(), &dcMem, rectClip.left, rectClip.top, SRCCOPY);
-
-		if (pCurMemPalette != NULL)
-		{
-			dcMem.SelectPalette(pCurMemPalette, FALSE);
-		}
-
-		dcMem.SelectObject(pOldBmp);
-	}
-
-	if (pCurPalette != NULL)
-	{
-		pDCDraw->SelectPalette(pCurPalette, FALSE);
-	}
-}
-
-void CMFCColorPickerCtrl::SetPalette(CPalette* pPalette)
-{
-	ASSERT_VALID(pPalette);
-	m_pPalette = pPalette;
-
-	if (m_bmpPicker.GetSafeHandle() != NULL)
-	{
-		// picker's bitmap should be rebuild!
-		::DeleteObject(m_bmpPicker.Detach());
-	}
-
-	if (GetSafeHwnd() != NULL)
-	{
-		Invalidate();
-		UpdateWindow();
-	}
-}
-
-BOOL CMFCColorPickerCtrl::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-double CMFCColorPickerCtrl::LumFromPoint(int nY)
-{
-	ASSERT(m_COLORTYPE == LUMINANCE);
-
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	rectClient.DeflateRect(0, AFX_DEFAULT_OFFSET_OF_LUMINANCE_BAR);
-
-	nY = min(max(rectClient.top, nY), rectClient.bottom);
-	return((double) rectClient.bottom - nY) / rectClient.Height();
-}
-
-int CMFCColorPickerCtrl::PointFromLum(double dblLum)
-{
-	ASSERT(m_COLORTYPE == LUMINANCE);
-
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	rectClient.DeflateRect(0, AFX_DEFAULT_OFFSET_OF_LUMINANCE_BAR);
-	return rectClient.top +(int)((1. - dblLum) * rectClient.Height());
-}
-
-CPoint CMFCColorPickerCtrl::GetCursorPos()
-{
-	CRect rectClient;
-	GetClientRect(rectClient);
-
-	CPoint point(0, 0);
-
-	switch (m_COLORTYPE)
-	{
-	case LUMINANCE:
-		point =  CPoint(rectClient.left + m_nLumBarWidth + 6, PointFromLum(m_dblLum));
-		break;
-
-	case PICKER:
-		point =  CPoint((long)((double) rectClient.Width() * m_dblHue),
-			(long)((1. - m_dblSat) * rectClient.Height()));
-		break;
-
-	case HEX:
-	case HEX_GREYSCALE:
-	default:
-		ASSERT(FALSE);
-	}
-
-	return point;
-}
-
-CRect CMFCColorPickerCtrl::GetCursorRect()
-{
-	CRect rect;
-
-	switch (m_COLORTYPE)
-	{
-	case PICKER:
-		rect = CRect(GetCursorPos(), CSize(AFX_PICKER_CURSOR_SIZE, AFX_PICKER_CURSOR_SIZE));
-		break;
-
-	case LUMINANCE:
-		rect = CRect(GetCursorPos(), CSize(AFX_LUM_CURSOR_SIZE, AFX_LUM_CURSOR_SIZE));
-		break;
-
-	case HEX:
-	case HEX_GREYSCALE:
-	default:
-		ASSERT(FALSE);
-		rect.SetRectEmpty();
-	}
-
-	rect.OffsetRect(-rect.Width() / 2, -rect.Height() / 2);
-	return rect;
-}
-
-void CMFCColorPickerCtrl::OnCancelMode()
-{
-	CButton::OnCancelMode();
-}
-
-void CMFCColorPickerCtrl::NotifyParent()
-{
-	CWnd* pParent = GetParent();
-	if (pParent != NULL)
-	{
-		pParent->SendMessage( WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(), BN_CLICKED), (LPARAM) GetSafeHwnd());
-	}
-}
-
-void CMFCColorPickerCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	switch (m_COLORTYPE)
-	{
-	case PICKER:
-	case HEX:
-	case HEX_GREYSCALE:
-		{
-			if (SelectCellHexagon(point.x, point.y))
-			{
-				CWnd* pParent = GetParent();
-				if (pParent != NULL)
-				{
-					pParent->SendMessage( WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(), BN_DOUBLECLICKED), (LPARAM) GetSafeHwnd());
-				}
-			}
-
-			return;
+			pList->Create(&itemArgs, pEditOptions->GetConstraints());
 		}
 	}
-
-	CButton::OnLButtonDblClk(nFlags, point);
 }
 
+CXTPReportHyperlinks* CXTPReportRecordItem::GetHyperlinks()
+{
+	if (!m_pHyperlinks)
+		m_pHyperlinks = new CXTPReportHyperlinks();
+
+	return m_pHyperlinks;
+}
+
+void CXTPReportRecordItem::DoPropExchange(CXTPPropExchange* pPX)
+{
+	PX_DWord(pPX, _T("TextColor"), (DWORD&)m_clrText, XTP_REPORT_COLOR_DEFAULT);
+	PX_DWord(pPX, _T("BackgroundColor"), (DWORD&)m_clrBackground, XTP_REPORT_COLOR_DEFAULT);
+
+	PX_Bool(pPX, _T("BoldText"), m_bBoldText, FALSE);
+
+	PX_String(pPX, _T("Format"), m_strFormatString, _T("%s"));
+
+	PX_Bool(pPX, _T("Editable"), m_bEditable, TRUE);
+
+	PX_Int(pPX, _T("IconIndex"), m_nIconIndex, XTP_REPORT_NOICON);
+
+	PX_Int(pPX, _T("SortPriority"), m_nSortPriority, -1);
+	PX_Int(pPX, _T("GroupPriority"), m_nGroupPriority, -1);
+
+	PX_String(pPX, _T("GroupCaption"), m_strGroupCaption, _T(""));
+
+	PX_Bool(pPX, _T("Focusable"), m_bFocusable, TRUE);
+
+	PX_Bool(pPX, _T("Checked"), m_bChecked, FALSE);
+	PX_Bool(pPX, _T("HasCheckbox"), m_bHasCheckbox, FALSE);
+
+	ULONGLONG ullData = m_dwData;
+	PX_UI8(pPX, _T("Data"), ullData, 0);
+	m_dwData = (DWORD_PTR)ullData;
+
+	PX_String(pPX, _T("Tooltip"), m_strTooltip, _T(""));
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_98)
+	{
+		PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
+	}
+
+
+	// Hyperlinks
+	CXTPPropExchangeSection secHyperlinks(pPX->GetSection(_T("Hyperlinks")));
+
+	CXTPReportHyperlinks arHyperlinks;
+
+	if (pPX->IsStoring() && m_pHyperlinks)
+	{
+		arHyperlinks.CopyFrom(m_pHyperlinks);
+	}
+
+	arHyperlinks.DoPropExchange(&secHyperlinks);
+
+	if (pPX->IsLoading())
+	{
+		if (arHyperlinks.GetSize())
+		{
+			if (GetHyperlinks())
+				GetHyperlinks()->CopyFrom(&arHyperlinks);
+		}
+		else if (m_pHyperlinks)
+		{
+			m_pHyperlinks->RemoveAll();
+		}
+	}
+}
 

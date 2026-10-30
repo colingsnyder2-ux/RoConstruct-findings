@@ -1,14 +1,13 @@
-// from server: 63% by colin
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Calendar/XTPCalendarUtils.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/PropertyGrid/XTPPropertyGridItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarUtils.cpp: implementation of the CXTPCalendarUtils class.
+// XTPPropertyGridItem.cpp : implementation of the CXTPPropertyGridItem class.
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -25,759 +24,1463 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include "resource.h"
-#include <math.h>
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPVC50Helpers.h"
+#include "StdAfx.h"
+#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPSystemHelpers.h"
+#include "Common/XTPImageManager.h"
 
-#include "XTPCalendarRecurrencePattern.h"
-#include "XTPCalendarData.h"
-#include "XTPCalendarUtils.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
+
 
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
 #endif
 
-////////////////////////////////////////////////////////////////////////////
-BOOL CXTPCalendarUtils::s_bUseResourceFileLocale = FALSE;
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItem
 
-BOOL CXTPCalendarUtils::IsUseResourceFileLocale()
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItem, CCmdTarget)
+
+CXTPPropertyGridItem::CXTPPropertyGridItem(LPCTSTR lpszCaption, LPCTSTR strValue, CString* pBindString)
 {
-	return s_bUseResourceFileLocale;
+
+	Init();
+	SetPrompt(lpszCaption);
+	m_strDefaultValue = m_strValue = strValue;
+
+	BindToString(pBindString);
 }
 
-void CXTPCalendarUtils::SetUseResourceFileLocale(BOOL bUseResourceFileLocale)
+
+CXTPPropertyGridItem::CXTPPropertyGridItem(UINT nID, LPCTSTR strValue, CString* pBindString)
 {
-	s_bUseResourceFileLocale = bUseResourceFileLocale;
-}
+	Init();
+	m_nID = nID;
 
-LCID CXTPCalendarUtils::GetActiveLCID()
-{
-	LCID lcidCurr = LOCALE_USER_DEFAULT;
-
-	if (s_bUseResourceFileLocale)
-		lcidCurr = MAKELCID(XTPResourceManager()->GetResourcesLangID(), SORT_DEFAULT);
-
-	return lcidCurr;
-}
-
-////////////////////////////////////////////////////////////////////////////
-CXTPCalendarUtils::CXTPCalendarUtils()
-{
-}
-
-int CXTPCalendarUtils::GetLocaleLong(LCTYPE LCType)
-{
-	TCHAR szResult[5];
-
-	int nResult = ::GetLocaleInfo(GetActiveLCID(), LCType , szResult, 4);
-	ASSERT(nResult == 2);
-	return _ttoi(szResult);
-}
-
-CString CXTPCalendarUtils::GetLocaleString(LCTYPE LCType, int nMaxLength)
-{
-	CString strResult;
-
-	int nResult = ::GetLocaleInfo(GetActiveLCID(), LCType , strResult.GetBufferSetLength(nMaxLength), nMaxLength);
-	strResult.ReleaseBuffer();
-	ASSERT(strResult.GetLength() == nResult - 1);
-
-	return strResult;
-}
-
-CString CXTPCalendarUtils::GetDateFormat(CONST SYSTEMTIME* lpDate, LPCTSTR lpFormat)
-{
-	CString strResult;
-
-	int nResult = ::GetDateFormat(GetActiveLCID(), 0, lpDate, lpFormat, strResult.GetBufferSetLength(255), 255);
-	strResult.ReleaseBuffer();
-	ASSERT(strResult.GetLength() == nResult - 1 || strResult.GetLength() == 0);
-
-	return strResult;
-}
-
-CString CXTPCalendarUtils::GetTimeFormat(CONST SYSTEMTIME* lpTime, LPCTSTR lpFormat)
-{
-	CString strResult;
-
-	int nResult = ::GetTimeFormat(GetActiveLCID(), 0, lpTime, lpFormat, strResult.GetBufferSetLength(255), 255);
-	strResult.ReleaseBuffer();
-	ASSERT(strResult.GetLength() == nResult - 1);
-
-	if (strResult.IsEmpty())
+	CString strPrompt;
+	if (strPrompt.LoadString(nID))
 	{
-		SYSTEMTIME MySystemTime;
-		MySystemTime = *lpTime;
-		CString s, t;
-		s.Format(_T("%d"), MySystemTime.wYear);
-		MySystemTime.wYear += 2000;
-		t.Format(_T("%d"), MySystemTime.wYear);
-		nResult = ::GetTimeFormat(GetActiveLCID(), 0, &MySystemTime, lpFormat, strResult.GetBufferSetLength(255), 255);
-		strResult.ReleaseBuffer();
-		ASSERT(strResult.GetLength() == nResult - 1);
-		REPLACE_S(strResult, t, s);
-	}
-	return strResult;
-}
-
-CString CXTPCalendarUtils::GetDateFormat(CONST COleDateTime& dtDate, LPCTSTR lpFormat)
-{
-	SYSTEMTIME stDate;
-	if (dtDate.GetYear() <= 1601 || (dtDate.GetYear() == 1601 && dtDate.GetMonth() <= 4))
-	{
-		COleDateTime dtFutureDay(dtDate);
-		dtFutureDay.SetDate(dtFutureDay.GetYear() + 2000, dtFutureDay.GetMonth(), dtFutureDay.GetDay());
-		GETASSYSTEMTIME_DT(dtFutureDay, stDate);
-		CString sResult = GetDateFormat(&stDate, lpFormat);
-
-		CString s, t;
-		s.Format(_T("%d"), dtDate.GetYear());
-		t.Format(_T("%d"), dtFutureDay.GetYear());
-		REPLACE_S(sResult, t, s);
-
-		return sResult;
-	}
-	else
-	{
-		GETASSYSTEMTIME_DT(dtDate, stDate);
-		return GetDateFormat(&stDate, lpFormat);
-	}
-}
-
-CString CXTPCalendarUtils::GetTimeFormat(CONST COleDateTime& dtTime, LPCTSTR lpFormat)
-{
-	SYSTEMTIME stTime;
-	GETASSYSTEMTIME_DT(dtTime, stTime);
-	return GetTimeFormat(&stTime, lpFormat);
-}
-
-CString CXTPCalendarUtils::GetTimeFormat(int nHour, int nMinutes, LPCTSTR lpFormat)
-{
-	SYSTEMTIME stTime;
-	::ZeroMemory(&stTime, sizeof(stTime));
-
-	stTime.wHour = (WORD)nHour;
-	stTime.wMinute = (WORD)nMinutes;
-
-	return GetTimeFormat(&stTime, lpFormat);
-}
-
-///***
-
-COleDateTime CXTPCalendarUtils::RetriveEventEndDate(const CXTPCalendarEvent* pEvent)
-{
-	if (!pEvent)
-	{
-		ASSERT(FALSE);
-		return COleDateTime((DATE)0);
+		SetPrompt(strPrompt);
 	}
 
-	COleDateTime dtStartDay = ResetTime(pEvent->GetStartTime());
-	COleDateTime dtEndDay = ResetTime(pEvent->GetEndTime());
-
-	if (IsZeroTime(pEvent->GetEndTime()) && dtStartDay < dtEndDay)
-	{
-		dtEndDay -= COleDateTimeSpan(1, 0, 0, 0);
-	}
-	return dtEndDay;
+	m_strDefaultValue = m_strValue = strValue;
+	BindToString(pBindString);
 }
 
-BOOL CXTPCalendarUtils::CalcDayOfMonth(COleDateTime& rdtDate, int nWhichDay, int nWhichDayMask)
+CXTPPropertyGridItem::~CXTPPropertyGridItem()
 {
-	ASSERT(nWhichDay >= xtpCalendarWeekFirst && nWhichDay <= xtpCalendarWeekLast);
-	ASSERT((nWhichDayMask & (~xtpCalendarDayAllWeek)) == 0);
+	Clear();
+}
 
-	COleDateTime dtYMD;
-	dtYMD.SetDate(rdtDate.GetYear(), rdtDate.GetMonth(), 1);
-
-	COleDateTimeSpan spStep(nWhichDay == xtpCalendarWeekLast ? -1 : 1, 0, 0, 0);
-
-	if (nWhichDay == xtpCalendarWeekLast)
+void CXTPPropertyGridItem::Clear()
+{
+	if (m_pGrid && m_pGrid->m_pSelected == this)
 	{
-		CXTPCalendarUtils::ShiftDate_Month(dtYMD, 1);
-		COleDateTimeSpan spInitStep(-1, 0, 0, 0);
-		dtYMD += spInitStep;
+		m_pGrid->m_pSelected = NULL;
 	}
 
-	int nFCount = nWhichDay == xtpCalendarWeekLast ? xtpCalendarWeekLast-1 : xtpCalendarWeekFirst-1;
-
-	for (int i = 0; i < 31; i++)
+	if (m_pGrid && m_pGrid->m_pHotButton && m_pInplaceButtons)
 	{
-		int nWD = dtYMD.GetDayOfWeek();
-		int nWDMask = CXTPCalendarUtils::GetDayOfWeekMask(nWD);
-
-		if (nWhichDayMask & nWDMask)
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
 		{
-			nFCount++;
-
-			if (nFCount == nWhichDay)
+			if (m_pInplaceButtons->GetAt(i) == m_pGrid->m_pHotButton)
 			{
-				rdtDate = dtYMD;
-				return TRUE;
+				m_pGrid->m_pHotButton = NULL;
+				break;
 			}
 		}
-		dtYMD += spStep;
 	}
 
-	ASSERT(FALSE);
-	return FALSE;
+	if (m_pGrid && GetInplaceList().m_pItem == this)
+	{
+		GetInplaceList().DestroyItem();
+	}
+	if (m_pGrid && GetInplaceEdit().m_pItem == this)
+	{
+		GetInplaceEdit().DestroyItem();
+	}
+
+	if (m_pChilds)
+	{
+		m_pChilds->Clear();
+		CMDTARGET_RELEASE(m_pChilds);
+	}
+
+	if (m_pConstraints)
+	{
+		m_pConstraints->m_pItem = NULL;
+		CMDTARGET_RELEASE(m_pConstraints);
+	}
+
+	CMDTARGET_RELEASE(m_pValueMetrics);
+	CMDTARGET_RELEASE(m_pCaptionMetrics);
+	CMDTARGET_RELEASE(m_pInplaceButtons);
+
+	SAFE_DELETE(m_pInplaceControls);
+
+	m_pGrid = NULL;
 }
 
-int CXTPCalendarUtils::GetWeekOfYear(COleDateTime dtDate, int nFirstDayOfWeekIndex)
+void CXTPPropertyGridItem::SetPrompt(LPCTSTR lpszPrompt)
 {
-	COleDateTime dtFirst(dtDate.GetYear(), 1, 1, 0, 0, 0);
-	COleDateTime dtFirstWeekDate = ShiftDateToWeekBegin(dtFirst, nFirstDayOfWeekIndex);
+	if (lpszPrompt == 0)
+		return;
 
-	COleDateTimeSpan spDiff = dtDate - dtFirstWeekDate;
+	LPCTSTR lpszDescription = _tcschr(lpszPrompt, _T('\n'));
 
-	int nDayOfYear = (int)spDiff.GetTotalDays();
-	int nWeek = nDayOfYear / 7 + 1;
-
-	return nWeek;
-}
-
-BOOL CXTPCalendarUtils::IsWin9x()
-{
-	return XTPSystemVersion()->IsWin9x();
-}
-
-BOOL CXTPCalendarUtils::SystemTimeToTzSpecificLocalTime(
-					const TIME_ZONE_INFORMATION* pTZI,
-					const SYSTEMTIME* pUTime, SYSTEMTIME* pTzTime)
-{
-	if (!pTZI || !pUTime || !pTzTime)
+	if (lpszDescription == NULL)
 	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	if (!CXTPCalendarUtils::IsWin9x())
-	{
-		return ::SystemTimeToTzSpecificLocalTime((TIME_ZONE_INFORMATION*)pTZI,
-			(SYSTEMTIME*)pUTime, pTzTime);
-	}
-
-	//---------------------------------------------------------------------------
-	COleDateTime dtUTime(*pUTime);
-	COleDateTime dtTzTime = dtUTime;
-
-	int nBias_min = pTZI->Bias;
-
-	if (pTZI->StandardDate.wMonth)
-	{
-		nBias_min += pTZI->StandardBias;
-	}
-
-	BOOL bDayLight = FALSE;
-	int nDLBias_min = 0;
-	if (pTZI->DaylightDate.wMonth != 0 && pTZI->DaylightBias != 0)
-	{
-		bDayLight = TRUE;
-		nDLBias_min = (pTZI->DaylightBias - pTZI->StandardBias);
-	}
-
-	dtTzTime = dtUTime - Minutes2Span(nBias_min);
-
-	if (bDayLight && IsInDst(pTZI, dtTzTime))
-	{
-		dtTzTime -= Minutes2Span(nDLBias_min);
-	}
-
-	return GETASSYSTEMTIME_DT(dtTzTime, *pTzTime);
-}
-
-BOOL CXTPCalendarUtils::IsInDst(const TIME_ZONE_INFORMATION* pTZI,
-								COleDateTime dtTime)
-{
-	if (pTZI->StandardDate.wMonth == 0 ||
-		pTZI->DaylightDate.wMonth == 0 || pTZI->DaylightBias == 0)
-	{
-		return FALSE;
-	}
-
-	COleDateTime dtStandard(dtTime.GetYear(), pTZI->StandardDate.wMonth, 1,
-						pTZI->StandardDate.wHour, pTZI->StandardDate.wMinute,
-						pTZI->StandardDate.wSecond);
-
-	COleDateTime dtDaylight(dtTime.GetYear(), pTZI->DaylightDate.wMonth, 1,
-						pTZI->DaylightDate.wHour, pTZI->DaylightDate.wMinute,
-						pTZI->DaylightDate.wSecond);
-
-	BOOL bRes1 = CalcDayOfMonth(dtStandard, pTZI->StandardDate.wDay,
-								GetDayOfWeekMask(pTZI->StandardDate.wDayOfWeek + 1));
-
-	BOOL bRes2 = CalcDayOfMonth(dtDaylight, pTZI->DaylightDate.wDay,
-								GetDayOfWeekMask(pTZI->DaylightDate.wDayOfWeek + 1));
-
-	if (!bRes1 || !bRes2)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	if (dtStandard < dtDaylight)
-	{
-		if (dtTime >= dtDaylight || dtTime < dtStandard)
-		{
-			return TRUE;
-		}
+		m_strCaption = lpszPrompt;
 	}
 	else
 	{
-		if (dtTime >= dtDaylight && dtTime < dtStandard)
+		int nLen = (int)(lpszDescription - lpszPrompt);
+		LPTSTR lpszCaption = m_strCaption.GetBufferSetLength(nLen);
+
+		MEMCPY_S(lpszCaption, lpszPrompt, nLen * sizeof(TCHAR));
+		m_strDescription = lpszDescription + 1;
+	}
+}
+
+
+void CXTPPropertyGridItem::Init()
+{
+	m_bHidden = FALSE;
+	m_bExpanded = FALSE;
+	m_nIndex = -1;
+	m_bVisible = FALSE;
+	m_pParent = 0;
+	m_pGrid = 0;
+	m_nIndent = 0;
+	m_strValue = "";
+	m_bReadOnly = FALSE;
+	m_bCategory = FALSE;
+	m_nID = 0;
+	m_nFlags = xtpGridItemHasEdit;
+	m_pConstraints = new CXTPPropertyGridItemConstraints(this);
+	m_pInplaceButtons = new CXTPPropertyGridInplaceButtons(this);
+	m_pInplaceControls = new CXTPPropertyGridInplaceControls();
+	m_pConstraints->SetCurrent(-1);
+	m_pBindString = 0;
+	m_bConstraintEdit = FALSE;
+
+	m_bAutoComplete = FALSE;
+
+	m_nLinesCount = 1;
+	m_nHeight = -1;
+
+	m_nDropDownItemCount = 10;
+
+	m_bExpandable = TRUE;
+
+	m_bUseMask = FALSE;
+	m_bPassword = FALSE;
+	m_chPrompt = _T('*');
+
+	m_dwData = 0;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+
+	EnableAutomation();
+
+	m_pValueMetrics = 0;
+	m_pCaptionMetrics = 0;
+
+
+	m_pChilds = new CXTPPropertyGridItems();
+}
+
+void CXTPPropertyGridItem::OnAddChildItem()
+{
+	if (!m_bCategory) SetFlags(m_nFlags);
+}
+
+void CXTPPropertyGridItem::SetFlags(UINT nFlags)
+{
+	ASSERT(!m_bCategory);
+	m_nFlags = nFlags;
+
+	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_EXPANDBUTTON);
+	m_pInplaceButtons->Remove(XTP_ID_PROPERTYGRID_COMBOBUTTON);
+
+	if (m_nFlags & xtpGridItemHasExpandButton)
+		m_pInplaceButtons->AddExpandButton();
+
+	if (m_nFlags & xtpGridItemHasComboButton)
+		m_pInplaceButtons->AddComboButton();
+}
+
+UINT CXTPPropertyGridItem::GetFlags() const
+{
+	return m_nFlags;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetValueMetrics() const
+{
+	if (m_pValueMetrics == 0)
+		m_pValueMetrics = new CXTPPropertyGridItemMetrics(m_pGrid->GetPaintManager());
+	return m_pValueMetrics;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetCaptionMetrics() const
+{
+	if (m_pCaptionMetrics == 0)
+		m_pCaptionMetrics = new CXTPPropertyGridItemMetrics(m_pGrid->GetPaintManager());
+	return m_pCaptionMetrics;
+}
+
+CXTPPropertyGridItemMetrics* CXTPPropertyGridItem::GetMetrics(BOOL bValueMetrics, BOOL bCreate /*= TRUE*/) const
+{
+	if (bCreate)
+		return bValueMetrics ? GetValueMetrics() : GetCaptionMetrics();
+
+	return bValueMetrics ? m_pValueMetrics : m_pCaptionMetrics;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItem::AddChildItem(CXTPPropertyGridItem* pItem)
+{
+	return InsertChildItem(m_pChilds->GetCount(), pItem);
+}
+
+void CXTPPropertyGridItem::SetIndent(int nIndent)
+{
+	m_nIndent = nIndent;
+
+	for (int i = 0; i < m_pChilds->GetCount(); i++)
+	{
+		m_pChilds->GetAt(i)->SetIndent(nIndent + 1);
+	}
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItem::InsertChildItem(int nIndex, CXTPPropertyGridItem* pItem)
+{
+	ASSERT(pItem);
+	if (!pItem)
+		return NULL;
+
+	ASSERT(!pItem->IsCategory() || IsCategory());
+	ASSERT(m_pGrid != NULL);
+	if (!m_pGrid)
+		return pItem;
+
+	if (nIndex < 0 || nIndex > m_pChilds->GetCount())
+		nIndex = m_pChilds->GetCount();
+
+	m_pChilds->InsertAt(nIndex, pItem);
+	pItem->m_pGrid = m_pGrid;
+
+	ASSERT(pItem->m_pParent == NULL);
+	pItem->m_pParent = this;
+	pItem->SetIndent(m_nIndent + 1);
+
+	pItem->OnAddChildItem();
+
+	if (m_bVisible)
+	{
+		if (m_bExpanded) m_pGrid->SetPropertySort(m_pGrid->m_properetySort, TRUE);
+		else if (m_pGrid->GetSafeHwnd() && m_pChilds->GetCount() == 1) m_pGrid->Invalidate(FALSE);
+	}
+
+	return pItem;
+}
+
+void CXTPPropertyGridItem::Move(CXTPPropertyGridItem* pParent, int nIndex /* = -1 */)
+{
+	if (!pParent)
+		return;
+
+	InternalAddRef();
+	Remove();
+	pParent->InsertChildItem(nIndex, this);
+}
+
+void CXTPPropertyGridItem::Collapse()
+{
+	if (!m_bExpanded) return;
+
+	if (m_pGrid->m_nLockUpdate == 0)
+	{
+		if (m_pGrid->GetSafeHwnd() && m_bVisible)
 		{
-			return TRUE;
+			m_pGrid->_DoCollapse(this);
+			m_pGrid->OnSelectionChanged();
 		}
 	}
 
+	m_bExpanded = FALSE;
+
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+}
+
+void CXTPPropertyGridItem::Expand()
+{
+	if (m_bExpanded) return;
+
+	if (m_pGrid->m_nLockUpdate == 0)
+	{
+		if (m_pGrid->GetSafeHwnd() && m_bVisible)
+		{
+			m_pGrid->_DoExpand(this, m_nIndex);
+			m_pGrid->_RefreshIndexes();
+			m_pGrid->OnSelectionChanged();
+		}
+	}
+
+	m_bExpanded = TRUE;
+
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMEXPANDCHANGED, (LPARAM)this);
+
+}
+
+BOOL CXTPPropertyGridItem::HasParent(CXTPPropertyGridItem* pParent)
+{
+	if (m_pParent == NULL) return FALSE;
+	if (m_pParent == pParent) return TRUE;
+	return m_pParent->HasParent(pParent);
+}
+
+void CXTPPropertyGridItem::Select()
+{
+	ASSERT(m_pGrid);
+	if (!m_pGrid)
+		return;
+
+	if (m_bVisible)
+	{
+		m_pGrid->SetCurSel(m_nIndex);
+		m_pGrid->OnSelectionChanged();
+	}
+}
+
+void CXTPPropertyGridItem::OnDeselect()
+{
+	if (m_pGrid) m_pGrid->FocusInplaceButton(NULL);
+	OnValidateEdit();
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnDestroyWindow();
+	}
+}
+
+void CXTPPropertyGridItem::OnValidateEdit()
+{
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+	wndEdit.HideWindow();
+
+	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
+	{
+		CString strValue;
+		wndEdit.GetWindowText(strValue);
+		wndEdit.m_pItem = NULL;
+
+		if (wndEdit.m_bCancel)
+		{
+			OnCancelEdit();
+		}
+		else if (wndEdit.m_bEditMode && OnAfterEdit(strValue))
+		{
+			if (m_strValue != strValue && !wndEdit.m_bCancel)
+			{
+				OnValueChanged(strValue);
+			}
+		}
+	}
+}
+
+void CXTPPropertyGridItem::SetEditText(const CString& str)
+{
+	if (!m_pGrid) return;
+
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+	if (wndEdit.GetSafeHwnd() && wndEdit.m_pItem == this)
+	{
+		wndEdit.SetWindowText(str);
+	}
+}
+
+void CXTPPropertyGridItem::SetValue(CString strValue)
+{
+	m_strValue = strValue;
+
+	if (m_pBindString)
+	{
+		*m_pBindString = strValue;
+	}
+
+	SetEditText(m_strValue);
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnValueChanged();
+	}
+
+	SAFE_INVALIDATE(m_pGrid);
+}
+
+void CXTPPropertyGridItem::OnValueChanged(CString strValue)
+{
+	if (!m_pGrid)
+		return;
+
+	SetValue(strValue);
+	SAFE_INVALIDATE(m_pGrid);
+	m_pGrid->SendNotifyMessage(XTP_PGN_ITEMVALUE_CHANGED, (LPARAM)this);
+}
+
+BOOL CXTPPropertyGridItem::OnRequestEdit()
+{
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_REQUESTEDIT, (LPARAM)&notify);
+	}
+	return !notify.bCancel;
+}
+
+BOOL CXTPPropertyGridItem::OnAfterEdit(CString& strValue)
+{
+	if (!m_pGrid)
+		return FALSE;
+
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.strValue = strValue;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_AFTEREDIT, (LPARAM)&notify);
+		strValue = notify.strValue;
+	}
+	return !notify.bCancel;
+}
+
+void CXTPPropertyGridItem::OnCancelEdit()
+{
+	XTP_PROPERTYGRID_NOTIFYEDIT notify;
+	notify.bCancel = FALSE;
+	notify.pItem = this;
+
+	if (m_pGrid)
+	{
+		m_pGrid->SendNotifyMessage(XTP_PGN_CANCELEDIT, (LPARAM)&notify);
+	}
+}
+
+
+void CXTPPropertyGridItem::OnSelect()
+{
+	ASSERT(m_bVisible);
+
+	CString strValue(m_strValue);
+
+	if (m_pInplaceControls->GetCount() > 0)
+	{
+		CRect rcValue(GetInplaceWindowsRect());
+
+		for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+		{
+			CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+			pControl->OnCreateWindow(rcValue);
+		}
+	}
+
+	if (m_nFlags & xtpGridItemHasEdit)
+	{
+		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+
+		wndEdit.SetValue(strValue);
+		wndEdit.Create(this, GetValueRect());
+		wndEdit.SetReadOnly(GetReadOnly() || m_bConstraintEdit);
+	}
+	else
+	{
+		GetInplaceEdit().HideWindow();
+	}
+}
+
+DWORD CXTPPropertyGridItem::GetEditStyle() const
+{
+	return WS_CHILD | (m_bPassword ? ES_PASSWORD: 0) | (IsMultiLine() ? ES_MULTILINE : 0) | m_dwEditStyle;
+}
+
+void CXTPPropertyGridItem::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (GetReadOnly())
+		return;
+
+	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
+		return;
+
+	if ((pButton->GetID() == XTP_ID_PROPERTYGRID_COMBOBUTTON) && !m_pConstraints->IsEmpty() && OnRequestEdit())
+	{
+		GetInplaceList().Create(this, GetItemRect());
+		m_pGrid->Invalidate(FALSE);
+	}
+}
+
+CRect CXTPPropertyGridItem::GetInplaceWindowsRect()
+{
+	ASSERT(m_bVisible);
+	CRect rc = GetItemRect();
+	CRect rcValue(m_pGrid->GetDividerPos() + 1, rc.top + 1, rc.right, rc.bottom - 1);
+
+	if (IsInplaceButtonsVisible())
+	{
+		for (int i = 0; i < m_pInplaceButtons->GetCount(); i++)
+			rcValue.right -= m_pInplaceButtons->GetAt(i)->GetWidth();
+	}
+
+	m_pGrid->GetPaintManager()->AdjustItemValueRect(this, rcValue);
+
+	return rcValue;
+}
+
+CRect CXTPPropertyGridItem::GetValueRect()
+{
+	CRect rcValue = GetInplaceWindowsRect();
+
+	for (int i = m_pInplaceControls->GetCount() - 1; i >= 0; i--)
+	{
+		CXTPPropertyGridInplaceControl* pControl = m_pInplaceControls->GetAt(i);
+		pControl->OnAdjustValueRect(rcValue);
+	}
+
+	return rcValue;
+}
+
+CRect CXTPPropertyGridItem::GetItemRect() const
+{
+	CRect rc;
+	m_pGrid->GetItemRect(m_nIndex, rc);
+	return rc;
+}
+
+BOOL CXTPPropertyGridItem::OnChar(UINT nChar)
+{
+	ASSERT(nChar != VK_TAB);
+
+	if ((m_nFlags & xtpGridItemHasEdit) && (nChar != VK_ESCAPE))
+	{
+		OnSelect();
+
+		CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+		if (wndEdit.GetSafeHwnd() && wndEdit.IsWindowVisible() && wndEdit.GetItem() == this)
+		{
+			wndEdit.SetFocus();
+			wndEdit.SetSel(0, -1);
+			if ((nChar != VK_TAB) && (wndEdit.GetItem() == this)) wndEdit.SendMessage(WM_CHAR, nChar);
+		}
+
+		return TRUE;
+	}
+	else if (nChar == VK_TAB)
+	{
+		if (m_pInplaceButtons->GetCount() > 0)
+		{
+			m_pGrid->GetPropertyGrid()->OnNavigate(xtpGridUIInplaceEdit, TRUE, this);
+		}
+	}
 	return FALSE;
 }
 
-COleDateTime CXTPCalendarUtils::GetCurrentTime()
+BOOL CXTPPropertyGridItem::IsValueChanged() const
 {
-	SYSTEMTIME st;
-	::ZeroMemory(&st, sizeof(st));
-
-	::GetLocalTime(&st);
-
-	COleDateTime dtNow(st);
-
-	return dtNow;
+	return m_strDefaultValue != m_strValue;
 }
 
-CString CXTPCalendarUtils::GetTimeFormatString_HrMin()
+void CXTPPropertyGridItem::ResetValue()
 {
-	////////////////////////////////////////////////////////////////////////////
-	//  LOCALE_STIME    // time separator
-	//
-	//  LOCALE_ITLZERO  //leading zeros in time field
-	//      0 No leading zeros for hours.
-	//      1 Leading zeros for hours.
-	//
-	//  LOCALE_ITIME    // time format specifier
-	//      0 AM / PM 12-hour format.
-	//      1 24-hour format.
-	//
-	//  LOCALE_ITIMEMARKPOSN    // time marker position
-	//      0 Use as suffix.
-	//      1 Use as prefix.
-	//
-	//  LOCALE_S1159    // AM designator
-	//  LOCALE_S2359    // PM designator
-	////////////////////////////////////////////////////////////////////////////
+	OnValueChanged(m_strDefaultValue);
+}
 
-	CString strTmp;
+void CXTPPropertyGridItem::SetDefaultValue(LPCTSTR lpszDefaultValue)
+{
+	m_strDefaultValue = lpszDefaultValue;
+}
 
-	CString strTimeSeparator = CXTPCalendarUtils::GetLocaleString(LOCALE_STIME, 16);
+void CXTPPropertyGridItem::OnLButtonUp(UINT /*nFlags*/, CPoint /*point*/)
+{
 
-	strTmp = CXTPCalendarUtils::GetLocaleString(LOCALE_ITIME, 16);
-	BOOL b24_HFormat = _ttoi(strTmp) == 1;
+}
 
-	strTmp = CXTPCalendarUtils::GetLocaleString(LOCALE_ITLZERO, 16);
-	BOOL bH_LZero = _ttoi(strTmp) == 1;
+BOOL CXTPPropertyGridItem::PtInValueRect(CPoint point)
+{
+	CRect rc(GetValueRect());
+	return rc.PtInRect(point);
+}
 
-	strTmp = CXTPCalendarUtils::GetLocaleString(LOCALE_ITIMEMARKPOSN, 16);
-	BOOL bAM_PM_Prefix = _ttoi(strTmp) == 1;
-
-	//---------------------------------------------------------------------------
-	CString strTimeFormat;
-	strTimeFormat += strTimeSeparator;
-	strTimeFormat += _T("mm");
-
-	if (b24_HFormat)
+void CXTPPropertyGridItem::OnLButtonDblClk(UINT /*nFlags*/, CPoint point)
+{
+	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
+	if (pInplaceButton && IsInplaceButtonsVisible())
 	{
-		strTmp = bH_LZero ? _T("HH") : _T("H");
-		strTimeFormat = strTmp + strTimeFormat;
+		OnSelect();
+		return;
 	}
-	else //12 AM/PM Format
-	{
-		strTmp = bH_LZero ? _T("hh") : _T("h");
-		strTimeFormat = strTmp + strTimeFormat;
 
-		if (bAM_PM_Prefix)
-		{
-			strTimeFormat = _T("tt ") + strTimeFormat;
-		}
+	if (HasChilds() && IsExpandable())
+	{
+		if (m_bExpanded)
+			Collapse();
 		else
+			Expand();
+	}
+	else
+	{
+		OnSelect();
+
+		if (m_nFlags & xtpGridItemHasEdit)
 		{
-			strTimeFormat = strTimeFormat + _T(" tt");
-		}
-	}
-	//---------------------------------------------------------------------------
-
-	return strTimeFormat;
-}
-
-int CXTPCalendarUtils::ParceTimeString_min(LPCTSTR pcszTime_HrMin)
-{
-	CString strTime = pcszTime_HrMin;
-	strTime.TrimLeft(); strTime.TrimRight();
-
-	CString strPM = CXTPCalendarUtils::GetLocaleString(LOCALE_S2359, 20);
-	strPM.MakeUpper();
-	strTime.MakeUpper();
-
-	// By default Am, or 24 hr format.
-	BOOL bPM = !strPM.IsEmpty() && strTime.Find(strPM) >= 0;
-
-	// remove prefixed AmPm and other non-digits in the beginning
-	CString strTmp;
-	strTmp = strTime.SpanExcluding(_T("0123456789"));
-	int nTmpLen = strTmp.GetLength();
-	if (nTmpLen)
-	{
-		DELETE_S(strTime, 0, nTmpLen);
-	}
-
-	//-------------------------------------------------
-	CString strHr, strMin;
-	strHr = strTime.SpanIncluding(_T("0123456789"));
-	int nHrLen = strHr.GetLength();
-	if (!nHrLen)
-	{
-		return -1;
-	}
-	DELETE_S(strTime, 0, nHrLen);
-
-	CString strTimeSeparator = CXTPCalendarUtils::GetLocaleString(LOCALE_STIME, 16);
-	TCHAR ctTimeSep = strTimeSeparator.GetLength() ? (TCHAR)strTimeSeparator[0] : (TCHAR)0;
-
-	if (strTime.IsEmpty() || (strTime[0] != ctTimeSep && strTime[0] != _T(':')))
-	{
-		return -1;
-	}
-	DELETE_S(strTime, 0);
-
-	strMin = strTime.SpanIncluding(_T("0123456789"));
-	TCHAR* pChar1 = NULL, *pChar2 = NULL;
-	int nHr = _tcstol(strHr, &pChar1, 10);
-	int nMin = _tcstol(strMin, &pChar2, 10);
-
-	int nResult_min = nHr * 60 + nMin;
-
-	if (bPM && nResult_min <= 12 * 60)
-		nResult_min += 12 * 60;
-
-	if (nResult_min > 24 * 60)
-		nResult_min = nResult_min % (24 * 60);
-
-	return nResult_min;
-}
-
-CFont* CXTPCalendarUtils::GetMaxHeightFont(CArray<CFont*, CFont*>& arFonts, CDC* pDC, int* pnMaxHeight)
-{
-	CFont* pFontMax = NULL;
-
-	int nMaxHeight = 0;
-	int nCount = (int)arFonts.GetSize();
-	for (int i = 0; i < nCount; i++)
-	{
-		CFont* pFont = arFonts[i];
-		if (pFont && pFont->m_hObject)
-		{
-			if (pDC)
+			CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+			if (wndEdit.GetSafeHwnd() && wndEdit.IsWindowVisible() && wndEdit.GetItem() == this)
 			{
-				CXTPFontDC autoFont(pDC, pFont);
-				CSize szFi = pDC->GetTextExtent(_T("Aq"), 2);
+				wndEdit.SetFocus();
 
-				if (szFi.cy > nMaxHeight)
+				if (wndEdit.GetItem() == this && !GetReadOnly() && wndEdit.SelectConstraint(+1, TRUE))
 				{
-					pFontMax = pFont;
-					nMaxHeight = szFi.cy;
+					OnValidateEdit();
+
 				}
-			}
-			else
-			{
-				LOGFONT lf;
-				int nRes = pFont->GetLogFont(&lf);
-				ASSERT(nRes);
-				if (nRes)
+				else
 				{
-					int nHeight = abs(lf.lfHeight) + (lf.lfWeight < FW_BOLD ? 0 : 1);
-					if (nHeight > nMaxHeight)
-					{
-						pFontMax = pFont;
-						nMaxHeight = nHeight;
-					}
+					wndEdit.SetSel(0, -1);
 				}
 			}
 		}
+		else if (!GetReadOnly())
+		{
+			SelectNextConstraint();
+		}
 	}
+}
 
-	if (pnMaxHeight)
+BOOL CXTPPropertyGridItem::SelectNextConstraint()
+{
+	CXTPPropertyGridItemConstraints* pList = GetConstraints();
+	if (pList->IsEmpty())
+		return FALSE;
+
+	if (!OnRequestEdit())
+		return FALSE;
+
+	int nIndex = pList->FindConstraint(m_strValue);
+
+	nIndex += +1;
+	if (nIndex >= pList->GetCount()) nIndex = 0;
+	if (nIndex < 0) nIndex = (ULONG)pList->GetCount() - 1;
+
+	CString strValue = pList->GetAt(nIndex);
+
+	if (!OnAfterEdit(strValue))
+		return FALSE;
+
+	pList->SetCurrent(nIndex);
+	OnValueChanged(strValue);
+	return TRUE;
+}
+
+BOOL CXTPPropertyGridItem::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	BOOL bOldSelected = IsSelected();
+	Select();
+
+	CXTPPropertyGridInplaceButton* pInplaceButton = m_pInplaceButtons->HitTest(point);
+	if (pInplaceButton && IsInplaceButtonsVisible())
 	{
-		*pnMaxHeight = nMaxHeight;
+		if (!bOldSelected && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
+			return TRUE;
+		pInplaceButton->OnLButtonDown(nFlags, point);
+		return TRUE;
 	}
-	return pFontMax;
+
+	int nOffset = (m_nIndent - (IsCategory() ? 0 : 1)) * XTP_PGI_EXPAND_BORDER;
+
+	if ((point.x >= nOffset && point.x <= XTP_PGI_EXPAND_BORDER + nOffset) && IsExpandable())
+	{
+		if (m_bExpanded)
+			Collapse();
+		else
+			Expand();
+	}
+
+	if ((m_nFlags & xtpGridItemHasEdit) && PtInValueRect(point))
+	{
+		mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	}
+
+	if (m_nFlags == xtpGridItemHasComboButton && PtInValueRect(point) && !GetReadOnly()
+		&& (m_pInplaceButtons->GetCount() == 1))
+	{
+		OnInplaceButtonDown(m_pInplaceButtons->GetAt(0));
+	}
+
+	return TRUE;
 }
 
-CXTPCalendarUtils::CXTPTimesResourceIDs::CXTPTimesResourceIDs()
+void CXTPPropertyGridItem::BindToString(CString* pBindString)
 {
-	s_mapMinutes.SetAt(0, XTP_IDS_CALENDAR_MINUTES_0);
-	s_mapMinutes.SetAt(1, XTP_IDS_CALENDAR_MINUTES_1);
-	s_mapMinutes.SetAt(5, XTP_IDS_CALENDAR_MINUTES_5);
-	s_mapMinutes.SetAt(10, XTP_IDS_CALENDAR_MINUTES_10);
-	s_mapMinutes.SetAt(15, XTP_IDS_CALENDAR_MINUTES_15);
-	s_mapMinutes.SetAt(30, XTP_IDS_CALENDAR_MINUTES_30);
-
-	s_mapHours.SetAt(1, XTP_IDS_CALENDAR_HOURS_1);
-	s_mapHours.SetAt(2, XTP_IDS_CALENDAR_HOURS_2);
-	s_mapHours.SetAt(3, XTP_IDS_CALENDAR_HOURS_3);
-	s_mapHours.SetAt(4, XTP_IDS_CALENDAR_HOURS_4);
-	s_mapHours.SetAt(5, XTP_IDS_CALENDAR_HOURS_5);
-	s_mapHours.SetAt(6, XTP_IDS_CALENDAR_HOURS_6);
-	s_mapHours.SetAt(7, XTP_IDS_CALENDAR_HOURS_7);
-	s_mapHours.SetAt(8, XTP_IDS_CALENDAR_HOURS_8);
-	s_mapHours.SetAt(9, XTP_IDS_CALENDAR_HOURS_9);
-	s_mapHours.SetAt(10, XTP_IDS_CALENDAR_HOURS_10);
-	s_mapHours.SetAt(11, XTP_IDS_CALENDAR_HOURS_11);
-	s_mapHours.SetAt(12, XTP_IDS_CALENDAR_DAYS_0_5);
-	s_mapHours.SetAt(18, XTP_IDS_CALENDAR_HOURS_18);
-
-	s_mapDays.SetAt(1, XTP_IDS_CALENDAR_DAYS_1);
-	s_mapDays.SetAt(2, XTP_IDS_CALENDAR_DAYS_2);
-	s_mapDays.SetAt(3, XTP_IDS_CALENDAR_DAYS_3);
-
-	s_mapWeeks.SetAt(1, XTP_IDS_CALENDAR_WEEKS_1);
-	s_mapWeeks.SetAt(2, XTP_IDS_CALENDAR_WEEKS_2);
+	m_pBindString = pBindString;
+	if (m_pBindString)
+	{
+		*m_pBindString = m_strValue;
+	}
 }
 
-CString CXTPCalendarUtils::LoadString(UINT nIDResource)
+void CXTPPropertyGridItem::OnBeforeInsert()
 {
-	CString str;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&str, nIDResource));
+	if (m_pBindString && *m_pBindString != m_strValue)
+	{
+		m_strValue = *m_pBindString;
+	}
+}
+
+void CXTPPropertyGridItem::EnsureVisible()
+{
+	if (!m_bVisible)
+	{
+		CXTPPropertyGridItem* pItem = GetParentItem();
+
+		while (pItem)
+		{
+			pItem->Expand();
+			pItem = pItem->GetParentItem();
+		}
+	}
+
+	if (!m_bVisible || (m_nIndex == -1))
+		return;
+
+	if (m_nIndex < m_pGrid->GetTopIndex())
+	{
+		m_pGrid->SetTopIndex(m_nIndex);
+		return;
+	}
+
+	int top = 0;
+	int nTopIndex = m_pGrid->GetTopIndex();
+	int bottom = CXTPClientRect(m_pGrid).bottom;
+
+	for (int i = nTopIndex; i < m_pGrid->GetCount(); i++)
+	{
+		int nRowHeight = m_pGrid->GetItemHeight(i);
+
+		if (top + nRowHeight > bottom)
+			break;
+
+		if (i == m_nIndex)
+			return;
+
+		top += nRowHeight;
+	}
+
+	int nHeight = bottom;
+	for (top = m_nIndex; top >= 0; top--)
+	{
+		int nRowHeight = m_pGrid->GetItemHeight(top);
+
+		if (nHeight - nRowHeight < 0)
+		{
+			if (top != m_nIndex)
+				top++;
+			break;
+		}
+
+		nHeight -= nRowHeight;
+	}
+	m_pGrid->SetTopIndex(top);
+}
+
+CXTPPropertyGridInplaceEdit& CXTPPropertyGridItem::GetInplaceEdit()
+{
+	if (m_pGrid) return *m_pGrid->m_pGrid->m_pInplaceEdit;
+
+	static CXTPPropertyGridInplaceEdit  wndEdit;
+	return wndEdit;
+}
+
+CXTPPropertyGridInplaceList& CXTPPropertyGridItem::GetInplaceList()
+{
+	if (m_pGrid) return *m_pGrid->m_pGrid->m_pInplaceListBox;
+
+	static CXTPPropertyGridInplaceList  wndListBox;
+	return wndListBox;
+}
+
+BOOL CXTPPropertyGridItem::IsInplaceButtonsVisible() const
+{
+	if (!m_pGrid)
+		return FALSE;
+
+	if (!IsSelected() && !m_pGrid->GetPropertyGrid()->GetShowInplaceButtonsAlways())
+		return FALSE;
+
+	return !GetReadOnly() && m_pInplaceButtons->GetCount() > 0;
+}
+
+CXTPPropertyGridInplaceButtons* CXTPPropertyGridItem::GetInplaceButtons() const
+{
+	return m_pInplaceButtons;
+}
+
+CXTPPropertyGridInplaceControls* CXTPPropertyGridItem::GetInplaceControls() const
+{
+	return m_pInplaceControls;
+}
+
+// Deletes the item.
+void CXTPPropertyGridItem::Remove()
+{
+	if (!m_pGrid)
+		return;
+
+	CXTPPropertyGridItems* pItems = GetParentItem() == 0 ? m_pGrid->m_pCategories : GetParentItem()->m_pChilds;
+	ASSERT(pItems);
+	int nIndex = pItems ? pItems->Find(this) : -1;
+
+	if (nIndex == -1)
+		return;
+
+	pItems->m_arrItems.RemoveAt(nIndex);
+
+	m_pParent = NULL;
+
+	if (m_pGrid) m_pGrid->Refresh();
+	InternalRelease();
+}
+
+BOOL CXTPPropertyGridItem::IsHidden() const
+{
+	return m_bHidden;
+}
+void CXTPPropertyGridItem::SetHidden(BOOL bHidden)
+{
+	if (bHidden == m_bHidden)
+		return;
+
+	m_bHidden = bHidden;
+
+	m_pGrid->Refresh();
+}
+
+BOOL CXTPPropertyGridItem::HasVisibleChilds() const
+{
+	for (int i = 0; i < m_pChilds->GetCount(); i++)
+	{
+		if (!m_pChilds->GetAt(i)->IsHidden())
+			return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CXTPPropertyGridItem::IsSelected() const
+{
+	return m_pGrid && m_pGrid->GetSelectedItem() == this;
+}
+
+void CXTPPropertyGridItem::Refresh(BOOL bInvalidate /*= TRUE*/)
+{
+	if (m_pGrid && m_pGrid->GetSafeHwnd())
+	{
+		if (IsSelected())
+		{
+			OnDeselect();
+			OnSelect();
+
+		}
+		if (bInvalidate)
+		{
+			m_pGrid->Invalidate(FALSE);
+		}
+	}
+}
+
+void CXTPPropertyGridItem::SetReadOnly(BOOL bReadOnly)
+{
+	if (m_bReadOnly != bReadOnly)
+	{
+		m_bReadOnly = bReadOnly;
+		Refresh(TRUE);
+	}
+}
+
+void CXTPPropertyGridItem::SetMask(LPCTSTR strMask, LPCTSTR strLiteral, TCHAR chPrompt /*= _T('_')*/)
+{
+	m_bUseMask = TRUE;
+	m_strMask = strMask;
+	m_strLiteral = strLiteral;
+	m_chPrompt = chPrompt;
+	Refresh(FALSE);
+}
+
+CString CXTPPropertyGridItem::GetViewValue()
+{
+	CString str = GetValue();
+	if (m_bPassword)
+	{
+		return CString(m_chPrompt, str.GetLength());
+	}
 	return str;
 }
 
-BOOL CXTPCalendarUtils::LoadString2(CString& rstrString, UINT nIDResource)
+CString CXTPPropertyGridItem::GetMaskedText() const
 {
-	CString str;
-	BOOL bFind = XTPResourceManager()->LoadString(&str, nIDResource);
-	if (bFind)
+	if (m_bUseMask)
 	{
-		rstrString = str;
-	}
-	return bFind;
-}
+		int nLength = m_strValue.GetLength();
 
-void CXTPCalendarUtils::TextPrepareSingleline(CString& rstrString)
-{
-	REPLACE_S(rstrString, '\n', ' ');
-}
+		CString strBuffer;
+		for (int i = 0; i < nLength; ++i)
+		{
+			if (m_strLiteral[i] == m_chPrompt)
+			{
+				strBuffer += m_strValue.GetAt(i);
+			}
+		}
 
-CString CXTPCalendarUtils::FormatTimeDuration(int nMinutes, BOOL bRoundly)
-{
-	static CXTPTimesResourceIDs s_RCData;
-
-	int nWeeks = nMinutes / (7*24*60);
-	int nWeeks_r = nMinutes % (7*24*60);
-
-	int nDays = nMinutes / (24*60);
-	int nDays_r = nMinutes % (24*60);
-
-	int nHours = nMinutes / 60;
-	int nHours_r = nMinutes % 60;
-
-	CString strDuration;
-	UINT nStrID = 0;
-
-	if ((bRoundly || nWeeks_r == 0) && nWeeks)
-	{
-		if (s_RCData.s_mapWeeks.Lookup(nWeeks, nStrID) && nStrID)
-			strDuration = LoadString(nStrID);
-		else
-			strDuration.Format(_T("%d %s"), nWeeks, (LPCTSTR)LoadString(XTP_IDS_CALENDAR_WEEKS));
-	}
-	else if ((bRoundly  || nDays_r == 0) && nDays)
-	{
-		if (s_RCData.s_mapDays.Lookup(nDays, nStrID) && nStrID)
-			strDuration = LoadString(nStrID);
-		else
-			strDuration.Format(_T("%d %s"), nDays, (LPCTSTR)LoadString(XTP_IDS_CALENDAR_DAYS));
-	}
-	else if ((bRoundly || nHours_r == 0) && nHours)
-	{
-		if (s_RCData.s_mapHours.Lookup(nHours, nStrID) && nStrID)
-			strDuration = LoadString(nStrID);
-		else
-			strDuration.Format(_T("%d %s"), nHours, (LPCTSTR)LoadString(XTP_IDS_CALENDAR_HOURS));
+		return strBuffer;
 	}
 	else
 	{
-		if (s_RCData.s_mapMinutes.Lookup(nMinutes, nStrID) && nStrID)
-			strDuration = LoadString(nStrID);
-		else
-			strDuration.Format(_T("%d %s"), nMinutes, (LPCTSTR)LoadString(XTP_IDS_CALENDAR_MINUTES));
+		return m_strValue;
 	}
-
-	return strDuration;
 }
 
-int CXTPCalendarUtils::ParceTimeDuration_min(LPCTSTR pcszTime)
+void CXTPPropertyGridItem::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
 {
-	CString strTime = pcszTime;
-
-	strTime.TrimLeft(); strTime.TrimRight();
-
-	CString strValue, strScale;
-	strValue = strTime.SpanIncluding(_T("-+0123456789,."));
-	int nValueLen = strValue.GetLength();
-	if (!nValueLen)
+	if (m_nHeight != -1)
 	{
-		return INT_MIN;
+		lpMeasureItemStruct->itemHeight = m_nHeight;
 	}
-	DELETE_S(strTime, 0, nValueLen);
-
-	strScale = strTime;
-	strScale.TrimLeft();
-
-	TCHAR* pChar = NULL;
-	REPLACE_S(strValue, _T(","), _T("."));
-	double dValue = _tcstod(strValue, &pChar);
-
-	CStringArray arSIname;
-	CStringArray arSIname2;
-	CUIntArray   arSIvalue;
-
-	arSIname.Add(LoadString(XTP_IDS_CALENDAR_TIME_PREFIX_MINUTES));
-	arSIname2.Add(_T("min"));
-	arSIvalue.Add(1);
-
-	arSIname.Add(LoadString(XTP_IDS_CALENDAR_TIME_PREFIX_HOURS));
-	arSIname2.Add(_T("h"));
-	arSIvalue.Add(60);
-
-	arSIname.Add(LoadString(XTP_IDS_CALENDAR_TIME_PREFIX_DAYS));
-	arSIname2.Add(_T("d"));
-	arSIvalue.Add(24*60);
-
-	arSIname.Add(LoadString(XTP_IDS_CALENDAR_TIME_PREFIX_WEEKS));
-	arSIname2.Add(_T("w"));
-	arSIvalue.Add(7*24*60);
-
-	int nCount = (int)arSIname.GetSize();
-	for (int i = 0; i < nCount; i++)
+	else if (m_nLinesCount > 1)
 	{
-		if (_tcsnicmp(strScale, arSIname[i], arSIname[i].GetLength()) == 0 ||
-			_tcsnicmp(strScale, arSIname2[i], arSIname2[i].GetLength()) == 0)
+		lpMeasureItemStruct->itemHeight = (lpMeasureItemStruct->itemHeight - 4) * m_nLinesCount + 4;
+
+	}
+}
+
+
+void CXTPPropertyGridItem::SetMaskedText(LPCTSTR lpszMaskedText)
+{
+	CString strMaskedText = lpszMaskedText;
+
+	if (m_bUseMask)
+	{
+		int nLen = strMaskedText.GetLength();
+		int x = 0;
+
+		m_strValue = m_strLiteral;
+
+		for (int i = 0; (i < m_strValue.GetLength()) && (x < nLen); i++)
 		{
-			return (int)(dValue * arSIvalue[i]);
+			if (strMaskedText[x] == m_strValue[i])
+			{
+				x++;
+			}
+			else if (m_strValue[i] == m_chPrompt)
+			{
+				m_strValue.SetAt(i, strMaskedText[x]);
+				x++;
+			}
 		}
 	}
-
-	return (int)dValue; // minutes
-}
-
-BOOL CXTPCalendarUtils::TrackMouseEvent(DWORD dwFlags, HWND hwndTrack, DWORD dwHoverTime)
-{
-	TRACKMOUSEEVENT tme;
-	tme.cbSize = sizeof(tme);
-	tme.dwFlags = dwFlags;
-	tme.hwndTrack = hwndTrack;
-	tme.dwHoverTime = dwHoverTime;
-
-	return _TrackMouseEvent (&tme);
-}
-
-
-BOOL CXTPCalendarUtils::IsFormatChar(TCHAR t)
-{
-	return t == 'm' || t == 'M' || t == 'y' || t == 'Y' || t == 'd' || t == 'D' || t == 'g';
-}
-
-void CXTPCalendarUtils::StripFormat(CString& strFormat, int nIndex, int nRemove)
-{
-	if (nIndex + nRemove == strFormat.GetLength())
-		strFormat.ReleaseBuffer(nIndex);
 	else
-		DELETE_S(strFormat, nIndex, nRemove);
-
-	int nLast = nIndex;
-	nIndex--;
-
-	while (nIndex >= 0 && !IsFormatChar(strFormat[nIndex]))
 	{
-		if (strFormat[nIndex] == '\'')
-		{
-			nIndex--;
-			while (nIndex > 0 && strFormat[nIndex] != '\'') nIndex--;
-		}
-		nIndex--;
+		m_strValue = strMaskedText;
 	}
 
-	nIndex++;
-	DELETE_S(strFormat, nIndex, nLast - nIndex);
-
-	int nFirst = nIndex;
-
-	while (nIndex < strFormat.GetLength() && !IsFormatChar(strFormat[nIndex]))
-	{
-		if (strFormat[nIndex] == '\'')
-		{
-			nIndex++;
-			while (nIndex < strFormat.GetLength() && strFormat[nIndex] != '\'') nIndex++;
-		}
-		nIndex++;
-	}
-
-	if (nFirst == 0 || nIndex == strFormat.GetLength())
-		DELETE_S(strFormat, nFirst, nIndex - nFirst);
+	SetValue(m_strValue);
 }
 
-CString CXTPCalendarUtils::RemoveFormatPart(CString strFormat, LPCTSTR lpszRemove)
+void CXTPPropertyGridItem::SetDescription(LPCTSTR lpszDescription)
 {
-	int nRemove = (int)_tcslen(lpszRemove);
-
-	int nIndex = FIND_S(strFormat, lpszRemove, 0);
-	while (nIndex >= 0)
-	{
-		if (nIndex + nRemove == strFormat.GetLength())
-		{
-			StripFormat(strFormat, nIndex, nRemove);
-			return strFormat;
-		}
-		else
-		{
-			if (!IsFormatChar(strFormat[nIndex + nRemove]))
-			{
-				StripFormat(strFormat, nIndex, nRemove);
-				return strFormat;
-			}
-			else
-			{
-				nIndex += nRemove;
-				while (nIndex < strFormat.GetLength() && IsFormatChar(strFormat[nIndex]))
-				{
-					nIndex++;
-				}
-			}
-		}
-		nIndex = FIND_S(strFormat, lpszRemove, nIndex + 1);
-	}
-
-	return strFormat;
+	m_strDescription = lpszDescription;
+	if (IsSelected()) GetGrid()->GetParent()->Invalidate(FALSE);
 }
 
-CString CXTPCalendarUtils::RemoveFormatPart(CString strFormat, TCHAR cRemove)
+int CXTPPropertyGridItem::GetIndex() const
 {
-	int nIndex = FIND_S(strFormat, cRemove, 0);
-	if (nIndex < 0)
-		return strFormat;
+	return m_nIndex;
+}
 
-	int nRemove = 1;
-	while (nIndex + nRemove < strFormat.GetLength() && strFormat[nIndex + nRemove] == cRemove)
+
+void CXTPPropertyGridItem::OnDrawItemConstraint(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint, CRect rc, BOOL bSelected)
+{
+	GetGrid()->GetPaintManager()->DrawInplaceListItem(pDC, pConstraint, rc, bSelected);
+}
+
+CSize CXTPPropertyGridItem::OnMergeItemConstraint(CDC* pDC, CXTPPropertyGridItemConstraint* pConstraint)
+{
+	int nThumbLength = GetSystemMetrics(SM_CXHTHUMB);
+
+	CSize sz = pDC->GetTextExtent(pConstraint->m_strConstraint);
+
+	return CSize(sz.cx + nThumbLength * 2, sz.cy + 3);
+}
+
+void CXTPPropertyGridItem::SetFocusToInplaceControl()
+{
+	CXTPPropertyGridInplaceEdit& wndEdit = GetInplaceEdit();
+
+	if (wndEdit.GetSafeHwnd() && wndEdit.GetItem() == this)
 	{
-		nRemove++;
+		wndEdit.SetFocus();
+		wndEdit.SetSel(0, -1);
+	}
+}
+
+void CXTPPropertyGridItem::AddComboButton()
+{
+	GetInplaceButtons()->AddComboButton();
+}
+
+void CXTPPropertyGridItem::AddExpandButton()
+{
+	GetInplaceButtons()->AddExpandButton();
+}
+
+CXTPPropertyGridInplaceSlider* CXTPPropertyGridItem::AddSliderControl()
+{
+	CXTPPropertyGridInplaceSlider* pSlider = new CXTPPropertyGridInplaceSlider(this);
+	m_pInplaceControls->Add(pSlider);
+
+	return pSlider;
+}
+
+CXTPPropertyGridInplaceSpinButton* CXTPPropertyGridItem::AddSpinButton()
+{
+	CXTPPropertyGridInplaceSpinButton* pSpinButton = new CXTPPropertyGridInplaceSpinButton(this);
+	m_pInplaceControls->Add(pSpinButton);
+
+	return pSpinButton;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Accessible
+
+CCmdTarget* CXTPPropertyGridItem::GetAccessible()
+{
+	return this;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleParent(IDispatch* FAR* ppdispParent)
+{
+	SAFE_MANAGE_STATE(m_pModuleState);
+
+	*ppdispParent = NULL;
+
+	return m_pGrid->InternalQueryInterface(&IID_IAccessible, (void**)ppdispParent);
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleName(VARIANT varChild, BSTR* pszName)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	CString strCaption = GetCaption();
+
+	*pszName = strCaption.AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszDescription = GetDescription().AllocSysString();
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
+{
+	if (!pvarRole)
+		return E_INVALIDARG;
+
+	pvarRole->vt = VT_EMPTY;
+
+	if (GetChildIndex(&varChild) == CHILDID_SELF)
+	{
+		pvarRole->vt = VT_I4;
+		pvarRole->lVal = ROLE_SYSTEM_ROW;
+		return S_OK;
 	}
 
-	StripFormat(strFormat, nIndex, nRemove);
-
-	return strFormat;
+	return E_INVALIDARG;
 }
+
+HRESULT CXTPPropertyGridItem::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
+{
+	if (!pvarState)
+		return E_INVALIDARG;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	pvarState->vt = VT_I4;
+	pvarState->lVal = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE |
+		(IsSelected() ? STATE_SYSTEM_FOCUSED : 0);
+
+	if (!IsVisible())
+		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
+
+	if (GetReadOnly())
+		pvarState->lVal |= STATE_SYSTEM_READONLY;
+
+	return S_OK;
+}
+
+
+HRESULT CXTPPropertyGridItem::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
+{
+	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
+
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	if (!m_pGrid->GetSafeHwnd())
+		return S_OK;
+
+	CRect rcItem;
+	m_pGrid->GetItemRect(GetIndex(), &rcItem);
+	m_pGrid->ClientToScreen(&rcItem);
+
+	*pxLeft = rcItem.left;
+	*pyTop = rcItem.top;
+	*pcxWidth = rcItem.Width();
+	*pcyHeight = rcItem.Height();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
+{
+	if (pvarID == NULL)
+		return E_INVALIDARG;
+
+	pvarID->vt = VT_EMPTY;
+
+	if (!m_pGrid->GetSafeHwnd())
+		return S_FALSE;
+
+	if (!CXTPWindowRect(m_pGrid).PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	pvarID->vt = VT_I4;
+	pvarID->lVal = 0;
+
+	CRect rcItem;
+	m_pGrid->GetItemRect(GetIndex(), &rcItem);
+	m_pGrid->ClientToScreen(&rcItem);
+
+	if (!rcItem.PtInRect(CPoint(xLeft, yTop)))
+		return S_FALSE;
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	Select();
+
+	return S_OK;
+}
+
+HRESULT CXTPPropertyGridItem::GetAccessibleValue(VARIANT varChild, BSTR* pszValue)
+{
+	if (GetChildIndex(&varChild) != CHILDID_SELF)
+		return E_INVALIDARG;
+
+	*pszValue = GetValue().AllocSysString();
+	return S_OK;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItems
+
+CXTPPropertyGridItems::CXTPPropertyGridItems()
+{
+
+}
+
+void CXTPPropertyGridItems::Clear()
+{
+	CXTPPropertyGridView* pGrid = GetCount() > 0 ? m_arrItems[0]->m_pGrid : 0;
+
+	if (pGrid)
+	{
+		if (pGrid->m_nLockUpdate == 0)
+			pGrid->ResetContent();
+		pGrid->m_nLockUpdate++;
+	}
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		m_arrItems[i]->Clear();
+		m_arrItems[i]->InternalRelease();
+	}
+	m_arrItems.RemoveAll();
+
+	if (pGrid)
+	{
+		pGrid->m_nLockUpdate--;
+		if (pGrid->m_nLockUpdate == 0)
+			pGrid->Refresh();
+
+	}
+
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::GetAt(int nIndex) const
+{
+	if (nIndex >= 0 && nIndex < GetCount())
+	{
+		return m_arrItems.GetAt(nIndex);
+	}
+	return 0;
+}
+
+void CXTPPropertyGridItems::RemoveAt (int nIndex)
+{
+	CXTPPropertyGridItem* pItem = GetAt(nIndex);
+
+	if (pItem)
+	{
+		m_arrItems.RemoveAt(nIndex);
+
+		if (pItem->GetGrid())
+		{
+			pItem->GetGrid()->Refresh();
+		}
+
+		pItem->InternalRelease();
+	}
+}
+
+int CXTPPropertyGridItems::Find(CXTPPropertyGridItem* pItem) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (m_arrItems[i] == pItem)
+			return i;
+	}
+	return -1;
+}
+
+
+void CXTPPropertyGridItems::AddTail(CXTPPropertyGridItems* pItems)
+{
+	ASSERT(this != pItems);
+
+	for (int i = 0; i < pItems->GetCount(); i++)
+	{
+		AddTail(pItems->GetAt(i));
+	}
+}
+
+int CXTPPropertyGridItems::CompareFunc(const CXTPPropertyGridItem** ppItem1, const CXTPPropertyGridItem** ppItem2)
+{
+	return (*ppItem1)->GetCaption().Compare((*ppItem2)->GetCaption());
+}
+
+void CXTPPropertyGridItems::Sort()
+{
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
+
+	qsort(m_arrItems.GetData(), m_arrItems.GetSize(), sizeof(CXTPPropertyGridItem*), (GENERICCOMPAREFUNC)CompareFunc);
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::FindItem(LPCTSTR strCaption) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pItem = GetAt(i);
+		if (pItem->GetCaption().Compare(strCaption) == 0)
+			return pItem;
+
+		CXTPPropertyGridItem* pChild = pItem->m_pChilds->FindItem(strCaption);
+		if (pChild) return pChild;
+	}
+	return NULL;
+}
+
+CXTPPropertyGridItem* CXTPPropertyGridItems::FindItem(UINT nID) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPPropertyGridItem* pItem = GetAt(i);
+		if (pItem->GetID() == nID)
+			return pItem;
+
+		CXTPPropertyGridItem* pChild = pItem->m_pChilds->FindItem(nID);
+		if (pChild) return pChild;
+	}
+	return NULL;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemConstraint
+CXTPPropertyGridItemConstraint::CXTPPropertyGridItemConstraint()
+{
+	m_nIndex = 0;
+	m_dwData = 0;
+	m_nImage = -1;
+	m_pItem = 0;
+}
+
+CXTPImageManagerIcon* CXTPPropertyGridItemConstraint::GetImage() const
+{
+	ASSERT(m_pItem);
+
+	if (!m_pItem)
+		return NULL;
+
+	if (m_nImage == -1)
+		return NULL;
+
+	return m_pItem->GetGrid()->GetImageManager()->GetImage(m_nImage, 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemConstraints
+
+// Summary: Constructs a CXTPPropertyGridItemConstraints object
+CXTPPropertyGridItemConstraints::CXTPPropertyGridItemConstraints(CXTPPropertyGridItem* pItem)
+{
+	m_pItem = pItem;
+	m_nCurrent = -1;
+
+}
+
+CXTPPropertyGridItemConstraints::~CXTPPropertyGridItemConstraints()
+{
+	RemoveAll();
+}
+
+CXTPPropertyGridItemConstraint* CXTPPropertyGridItemConstraints::AddConstraint(LPCTSTR str, DWORD_PTR dwData, int nImage)
+{
+	CXTPPropertyGridItemConstraint* pConstaint = new CXTPPropertyGridItemConstraint();
+
+	pConstaint->m_strConstraint = str;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_arrConstraints.Add(pConstaint);
+	pConstaint->m_pItem = m_pItem;
+	pConstaint->m_nImage = nImage;
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+
+	return pConstaint;
+}
+
+CString CXTPPropertyGridItemConstraints::GetAt(int nIndex) const
+{
+	return nIndex >= 0 && nIndex < GetCount() ? m_arrConstraints.GetAt(nIndex)->m_strConstraint : _T("");
+}
+
+void CXTPPropertyGridItemConstraints::RemoveAll()
+{
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+}
+
+void CXTPPropertyGridItemConstraints::RemoveAt(int nIndex)
+{
+	m_arrConstraints[nIndex]->InternalRelease();
+	m_arrConstraints.RemoveAt(nIndex);
+
+	for (int i = nIndex; i < GetCount(); i++)
+		m_arrConstraints[i]->m_nIndex = i;
+
+	SAFE_CALLPTR(m_pItem, OnConstraintsChanged());
+}
+
+int CXTPPropertyGridItemConstraints::FindConstraint(LPCTSTR str) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (GetAt(i).CompareNoCase(str) == 0)
+			return i;
+	}
+	return -1;
+}
+
+int CXTPPropertyGridItemConstraints::FindConstraint(DWORD_PTR dwData) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (dwData == GetConstraintAt(i)->m_dwData)
+			return i;
+	}
+	return -1;
+}
+
+CXTPPropertyGridItemConstraint* CXTPPropertyGridItemConstraints::GetConstraintAt(int nIndex) const
+{
+	return m_arrConstraints[nIndex];
+}
+
+int CXTPPropertyGridItemConstraints::CompareFunc(const CXTPPropertyGridItemConstraint** ppConstraint1, const CXTPPropertyGridItemConstraint** ppConstraint2)
+{
+	return (*ppConstraint1)->m_strConstraint.Compare((*ppConstraint2)->m_strConstraint);
+
+}
+
+void CXTPPropertyGridItemConstraints::Sort()
+{
+	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
+
+	qsort(m_arrConstraints.GetData(), (size_t)m_arrConstraints.GetSize(), sizeof(CXTPPropertyGridItemConstraint*), (GENERICCOMPAREFUNC)CompareFunc);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemCategory
+
+CXTPPropertyGridItemCategory::CXTPPropertyGridItemCategory(LPCTSTR strCaption)
+	:CXTPPropertyGridItem(strCaption)
+{
+	m_bCategory = TRUE;
+	m_nFlags = 0;
+}
+
+CXTPPropertyGridItemCategory::CXTPPropertyGridItemCategory(UINT nID)
+	:CXTPPropertyGridItem(nID)
+{
+	m_bCategory = TRUE;
+	m_nFlags = 0;
+}
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+//  Acteve X Methods
+//
+
+
+BEGIN_INTERFACE_MAP(CXTPPropertyGridItem, CCmdTarget)
+	INTERFACE_PART(CXTPPropertyGridItem, IID_IAccessible, ExternalAccessible)
+END_INTERFACE_MAP()

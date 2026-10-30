@@ -1,4 +1,3 @@
-// from server: 93% by atomic.potato
 // roc 2010-06 006f78a0  unit: RBX::VFrame::?$FactoryProduct  size: 98 bytes
 // Make this compile to the exact bytes below, then: roc check 2010-06 006f78a0
 //
@@ -38,33 +37,56 @@
 // 006f78fb  8b4904               mov ecx, dword ptr [ecx + 4]
 // 006f78fe  894804               mov dword ptr [eax + 4], ecx
 // 006f7901  c3                   ret 
+// copied from an identical function in another client (function ?manage@@YAXABTfunction_buffer@@AAT1@W4functor_manager_operation_type@@@Z)
 
-struct type_info {
-    bool operator==(const type_info&) const;
+#include <typeinfo>
+#include <new>
+
+// boost::detail::function::functor_manager<F>::manage for a small, trivially copyable functor
+// stored in place; 0xb3346c is typeid(F)
+extern const type_info type_descriptor_b3346c;
+
+struct Functor
+{
+    int f0, f1;
 };
 
-struct S {
+union function_buffer
+{
+    void *obj_ptr;
+    struct
+    {
+        const type_info *type;
+        bool const_qualified;
+        bool volatile_qualified;
+    } type;
+    char data[8];
 };
 
-void __cdecl f(int a1, void* a2, int a3) {
-    if (a3 == 0 || a3 == 1) {
-        if (a2 != 0) {
-            *(int*)a2 = *(int*)a1;
-            *(int*)((char*)a2 + 4) = *(int*)(a1 + 4);
-        }
-        return;
+enum functor_manager_operation_type
+{
+    clone_functor_tag,
+    move_functor_tag,
+    destroy_functor_tag,
+    check_functor_type_tag,
+    get_functor_type_tag
+};
+
+void manage(const function_buffer &in_buffer, function_buffer &out_buffer, functor_manager_operation_type op)
+{
+    if (op == clone_functor_tag || op == move_functor_tag) {
+        const Functor *in_functor = reinterpret_cast<const Functor *>(&in_buffer.data);
+        new ((void *)&out_buffer.data) Functor(*in_functor);
+    } else if (op == destroy_functor_tag) {
+    } else if (op == check_functor_type_tag) {
+        const type_info &check_type = *out_buffer.type.type;
+        if (check_type == type_descriptor_b3346c)
+            out_buffer.obj_ptr = (void *)&in_buffer.data;
+        else
+            out_buffer.obj_ptr = 0;
+    } else {
+        out_buffer.type.type = &type_descriptor_b3346c;
+        out_buffer.type.const_qualified = false;
+        out_buffer.type.volatile_qualified = false;
     }
-    if (a3 == 2) {
-        return;
-    }
-    if (a3 == 3) {
-        int* p = (int*)a2;
-        int v = *p;
-        bool r = ((const type_info*)v)->operator==(*(const type_info*)0xbde318);
-        *p = r ? 0 : a1;
-        return;
-    }
-    *(int*)a2 = 0xbde318;
-    *((char*)a2 + 4) = 0;
-    *((char*)a2 + 5) = 0;
 }

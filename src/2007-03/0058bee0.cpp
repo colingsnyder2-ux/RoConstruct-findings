@@ -1,153 +1,24 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaMemory.cpp
+// roc 2007-03 0058bee0  unit: seg_00580000  size: 18 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 0058bee0
+//
+// 0058bee0  8b442404             mov eax, dword ptr [esp + 4]
+// 0058bee4  8b4804               mov ecx, dword ptr [eax + 4]
+// 0058bee7  8b10                 mov edx, dword ptr [eax]
+// 0058bee9  51                   push ecx
+// 0058beea  ffd2                 call edx
+// 0058beec  8b00                 mov eax, dword ptr [eax]
+// 0058beee  83c404               add esp, 4
+// 0058bef1  c3                   ret 
+// copied from an identical function in another client (function ?f@@YAHPAUS@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "script/LuaMemory.h"
-#include "boost/pool/singleton_pool.hpp"
-#include <algorithm>
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S {
+    int* (__cdecl *function)(void*);
+    void* argument;
+};
 
-LuaAllocator::LuaAllocator()
-    : heapSize(0),
-      heapCount(0),
-      maxHeapSize(0),
-      maxHeapCount(0)
+int __cdecl f(S* s)
 {
-}
-
-void LuaAllocator::clearHeapMax()
-{
-    maxHeapSize = 0;
-    maxHeapCount = 0;
-}
-
-void LuaAllocator::getHeapStats(size_t& heapSize, size_t& heapCount, size_t& maxHeapSize, size_t& maxHeapCount) const
-{
-    heapSize = this->heapSize;
-    heapCount = this->heapCount;
-    maxHeapSize = this->maxHeapSize;
-    maxHeapCount = this->maxHeapCount;
-}
-
-void* LuaAllocator::alloc(void* ud, void* ptr, size_t osize, size_t nsize)
-{
-    return static_cast<LuaAllocator*>(ud)->alloc(ptr, osize, nsize);
-}
-
-template <int a, int b>
-void* bucketRealloc(void* ptr, size_t osize, size_t nsize)
-{
-    void* result;
-
-    if (nsize > b)
-    {
-        if (osize <= b && osize)
-        {
-            result = malloc(nsize);
-            memcpy(result, ptr, osize);
-
-            if (osize > a)
-                boost::singleton_pool<LuaAllocator, b>::free(ptr);
-            else
-                boost::singleton_pool<LuaAllocator, a>::free(ptr);
-        }
-        else
-        {
-            result = realloc(ptr, nsize);
-        }
-    }
-    else
-    {
-        if (nsize > a)
-        {
-            if (osize > b)
-            {
-                result = boost::singleton_pool<LuaAllocator, b>::malloc();
-                memcpy(result, ptr, nsize);
-                free(ptr);
-            }
-            else
-            {
-                if (osize > a)
-                {
-                    result = ptr;
-                }
-                else
-                {
-                    result = boost::singleton_pool<LuaAllocator, b>::malloc();
-
-                    if (osize > 0)
-                    {
-                        memcpy(result, ptr, osize);
-                        boost::singleton_pool<LuaAllocator, a>::free(ptr);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (nsize > 0)
-            {
-                if (osize > b)
-                {
-                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
-                    memcpy(result, ptr, nsize);
-                    free(ptr);
-                }
-                else if (osize > a)
-                {
-                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
-                    memcpy(result, ptr, nsize);
-                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
-                }
-                else if (osize > 0)
-                {
-                    result = ptr;
-                }
-                else 
-                {
-                    result = boost::singleton_pool<LuaAllocator, a>::malloc();
-                }
-            }
-            else 
-            {
-                if (osize > b)
-                {
-                    free(ptr);
-                }
-                else if (osize > a)
-                {
-                    boost::singleton_pool<LuaAllocator, b>::free(ptr);
-                }
-                else if (osize > 0)
-                {
-                    boost::singleton_pool<LuaAllocator, a>::free(ptr);
-                }
-
-                result = 0;
-            }
-        }
-    }
-
-    return result;
-}
-
-void* LuaAllocator::alloc(void* ptr, size_t osize, size_t nsize)
-{
-    void* result = bucketRealloc<16, 32>(ptr, osize, nsize);
-
-    heapSize += (nsize-osize);
-
-    if (osize == 0)
-        heapCount++;
-
-    if (nsize == 0)
-        heapCount--;
-
-    maxHeapSize = std::max<size_t>(maxHeapSize, heapSize);
-    maxHeapCount = std::max<size_t>(maxHeapCount, heapCount);
-
-    return result;
+    return *s->function(s->argument);
 }

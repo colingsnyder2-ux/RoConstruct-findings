@@ -1,71 +1,17 @@
-// from server: 27% by colin
-struct Notifier {
-    char pad0[0xE8];
-    int fieldE8;
-    char padEC[0x14];
-    int field100;
-    char pad104[0x14];
-    int field118;
-    char pad11C[0x14];
-    int field130;
-    int field134;
-    char pad138[0x8];
-    int field140;
-    int field144;
-    void destroy();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-extern "C" void __cdecl free(void*);
-extern "C" void __stdcall sub_4AD480(int*, int*, int, int*, int*);
-extern "C" void __stdcall sub_40DB50(int, int, int, int);
-extern "C" void __stdcall sub_5402B0(void*);
-
-void Notifier::destroy()
-{
-    int local;
-
-    sub_4AD480(&field140, &field140, field144, &field140, &local);
-    free((void*)field144);
-    field144 = 0;
-    field140 = 0;
-
-    if (field134 != 0) {
-        sub_40DB50(field134, field130, field134, (int)this);
-        free((void*)field134);
-    }
-    field134 = 0;
-    field130 = 0;
-    field130 = 0;
-
-    if (this != 0) {
-        field118 = 0x7a71e0;
-        if (field118 != 0) {
-            free((void*)field118);
-        }
-        field118 = 0;
-        field118 = 0;
-        field118 = 0;
-    }
-
-    if (this != 0) {
-        field100 = 0x7a71d0;
-        if (field100 != 0) {
-            free((void*)field100);
-        }
-        field100 = 0;
-        field100 = 0;
-        field100 = 0;
-    }
-
-    if (this != 0) {
-        fieldE8 = 0x7a71c0;
-        if (fieldE8 != 0) {
-            free((void*)fieldE8);
-        }
-        fieldE8 = 0;
-        fieldE8 = 0;
-        fieldE8 = 0;
-    }
-
-    sub_5402B0(this);
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

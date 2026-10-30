@@ -1,67 +1,27 @@
-// from server: 53% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/usinstances.cpp
+// roc-lib: openrbx-client roc_espeon_receivernonpodfunctorsbbcab0aa6dd9a911.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
-
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        winstances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex unsigned short template instances (MSVC only).
-  */
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_NO_WREGEX) && defined(BOOST_REGEX_HAS_OTHER_WCHAR_T) && !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_US_INSTANTIATE
-
-#ifdef _DLL_CPPLIB
-#include <boost/detail/workaround.hpp>
-//
-// This is a horrible workaround, without declaring these symbols extern we get
-// duplicate symbol errors when linking if the application is built without
-// /Zc:wchar_t
-//
-namespace std{
-template _CRTIMP2 bool __cdecl operator==(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-template _CRTIMP2 bool __cdecl operator==(
-   const unsigned short *,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-template _CRTIMP2 bool __cdecl operator==(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const unsigned short *);
-template _CRTIMP2 bool __cdecl operator<(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-template _CRTIMP2 bool __cdecl operator>(
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
-   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
-#if BOOST_WORKAROUND(BOOST_MSVC, > 1300) && BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))
-template<> _CRTIMP2 std::size_t __cdecl char_traits<unsigned short>::length(unsigned short const*);
-#endif
-}
-#endif
-
-
-#include <boost/regex.hpp>
-
-#endif
-
-
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/identity.hpp>
+struct __declspec(align(8)) S {
+ char storage[0x280];
+ ~S();
+ bool keep(unsigned value) const;
+};
+struct Key { Key() {} typedef const S& result_type; const S& operator()(const S& s) const { return s; } };
+struct Hash { Hash() {} size_t operator()(const S&) const; };
+struct Equal { Equal() {} bool operator()(const S&,const S&) const; };
+struct Less { Less() {} bool operator()(const S&,const S&) const; };
+typedef boost::multi_index_container<S, boost::multi_index::indexed_by<boost::multi_index::hashed_unique<Key,Hash,Equal>,boost::multi_index::ordered_non_unique<Key,Less> > > Table;
+struct Receiver {
+ virtual ~Receiver();
+ void* owner;
+ Table table;
+ Receiver(void*);
+};
+Receiver::Receiver(void* p):owner(p) {}

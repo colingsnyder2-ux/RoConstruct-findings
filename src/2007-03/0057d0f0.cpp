@@ -1,10 +1,12 @@
-// from server: 98% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_legacy_workspace_93127973b511c075.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
 #include "v8datamodel/Workspace.h"
 #include "v8datamodel/PartInstance.h"
 #include "v8datamodel/MouseCommand.h"

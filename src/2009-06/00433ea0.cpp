@@ -1,39 +1,20 @@
-// from server: 49% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.40.0 libs/regex/src/instances.cpp
+// roc-lib: rbxgs-dll roc_king_originala_selection_collector_db598200248d75c7.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+#include <vector>
+#include <algorithm>
+#include <boost/bind.hpp>
+struct NativeGridNodeView { char prefix[0xa4]; std::vector<NativeGridNodeView*> children; };
+struct NativeSelectionCollectorView {
+ char prefix[4];
+ std::vector<NativeGridNodeView*> values;
+ void operator()(NativeGridNodeView* node);
+};
+void NativeSelectionCollectorView::operator()(NativeGridNodeView* node) {
+ values.push_back(node);
+ std::for_each(node->children.begin(),node->children.end(),boost::bind(&NativeSelectionCollectorView::operator(),this,_1));
+}
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
-
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif

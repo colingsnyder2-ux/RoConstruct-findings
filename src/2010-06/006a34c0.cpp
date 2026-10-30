@@ -1,20 +1,10 @@
-// from server: 69% by atomic.potato
-struct UString_sink_stream_buffer {
-    char pad0[16];
-    int* m_first;
-    char pad1[12];
-    int* m_second;
-    char pad2[12];
-    int* m_count;
-    char pad3[8];
-    int m_value;
-    void f();
-};
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-void UString_sink_stream_buffer::f()
-{
-    int value = m_value;
-    *m_first = value;
-    *m_second = value;
-    *m_count = value - value;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

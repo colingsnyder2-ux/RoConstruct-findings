@@ -1,349 +1,129 @@
-// from server: 39% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8kernel/Body.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_native_app_workspace_204628b39e4ec2d0.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8kernel/Body.h"
-#include "v8kernel/SimBody.h"
-#include "util/Debug.h"
-using namespace RBX;
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_arg_header_14221fd67bb3ca43.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_flags_header_a6acc69782cd7c29.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-Body::Body()
-	:index(-1),
-	canThrottle(true),
-	cofm(NULL),
-	root(NULL),
-	parent(NULL),
-	link(NULL),
-	simBody(NULL),
-	stateIndex(getNextStateIndex()),
-	moment(G3D::Matrix3::identity()),
-	mass(0.0f)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp>)
+#pragma include_alias("util/IRenderable.h", "../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp")
+#pragma include_alias(<util/IRenderable.h>, <../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp>)
+#pragma include_alias("v8datamodel/JointInstance.h", "../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp")
+#pragma include_alias(<v8datamodel/JointInstance.h>, <../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp>)
+#pragma include_alias("v8world/IMoving.h", "../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp")
+#pragma include_alias(<v8world/IMoving.h>, <../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp>)
+#pragma include_alias("v8kernel/IStage.h", "../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp")
+#pragma include_alias(<v8kernel/IStage.h>, <../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp>)
+#pragma include_alias("reflection/function.h", "../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp")
+#pragma include_alias(<reflection/function.h>, <../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp>)
+#pragma include_alias("reflection/member.h", "../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp")
+#pragma include_alias(<reflection/member.h>, <../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp>)
+#pragma include_alias("reflection/property.h", "../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp")
+#pragma include_alias(<reflection/property.h>, <../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp>)
+#pragma include_alias("reflection/signal.h", "../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp")
+#pragma include_alias(<reflection/signal.h>, <../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp>)
+#pragma include_alias("script/Script.h", "../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp")
+#pragma include_alias(<script/Script.h>, <../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp>)
+#pragma include_alias("util/ICameraSubject.h", "../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp")
+#pragma include_alias(<util/ICameraSubject.h>, <../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp>)
+#pragma include_alias("util/IControllable.h", "../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp")
+#pragma include_alias(<util/IControllable.h>, <../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp>)
+#pragma include_alias("util/ILocation.h", "../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp")
+#pragma include_alias(<util/ILocation.h>, <../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp>)
+#pragma include_alias("v8datamodel/ICameraOwner.h", "../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp")
+#pragma include_alias(<v8datamodel/ICameraOwner.h>, <../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp>)
+#pragma include_alias("v8datamodel/ICharacterSubject.h", "../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp")
+#pragma include_alias(<v8datamodel/ICharacterSubject.h>, <../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp>)
+#pragma include_alias("v8datamodel/IPrimaryPart.h", "../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp")
+#pragma include_alias(<v8datamodel/IPrimaryPart.h>, <../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp>)
+#pragma include_alias("v8datamodel/PVInstance.h", "../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp")
+#pragma include_alias(<v8datamodel/PVInstance.h>, <../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp>)
+#pragma include_alias("v8tree/Service.h", "../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp")
+#pragma include_alias(<v8tree/Service.h>, <../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp>)
+#pragma include_alias("util/UIEvent.h", "../roc_espeon_aug2007_uievent_header_3f3774ebe50da7af.cpp")
+#pragma include_alias(<util/UIEvent.h>, <../roc_espeon_aug2007_uievent_header_3f3774ebe50da7af.cpp>)
+#pragma include_alias("v8datamodel/Workspace.h", "../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp")
+#pragma include_alias(<v8datamodel/Workspace.h>, <../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp>)
+#include "v8datamodel/Flag.h"
+#include "v8datamodel/FlagStand.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/TimerService.h"
+#include "humanoid/Humanoid.h"
+#include "Network/Player.h"
+
+namespace RBX
 {
-	root = this;
-	simBody = new SimBody(this);
-}
+	static Reflection::PropDescriptor<Flag, BrickColor> prop_Color("TeamColor", "Data", &Flag::getTeamColor, &Flag::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
 
-Body::~Body()
-{
-	RBXASSERT(numChildren() == 0);
-	if (parent)
-		setParent(NULL);
-	RBXASSERT(!parent);
-	RBXASSERT(!link);
-	RBXASSERT(index == -1);
-	RBXASSERT(simBody);
-	delete simBody;
-	simBody = NULL;
-	RBXASSERT(!cofm);
-	RBXASSERT(root == this);
-}
-
-void Body::updatePV() const
-{
-	RBXASSERT((parent != NULL) || (getRootConst() == this));
-
-	if (parent && this->stateIndex != getRootConst()->getStateIndex())
+	Flag::Flag()
+		: timer(NULL)
 	{
-		Body* tempParent = getParent();
-		tempParent->updatePV();
-		PV& tempPV = tempParent->pv;
-		this->pv = tempPV.pvAtLocalCoord(getMeInParent());
-		this->stateIndex = root->getStateIndex();
+		setName("Flag");
 	}
-}
 
-void Body::resetRoot(RBX::Body* newRoot)
-{
-	RBXASSERT(newRoot == calcRoot());
-	root = newRoot;
-	for (int i = 0; i < children.size(); i++)
+	Flag::~Flag() {}
+
+	BrickColor Flag::getTeamColor() const
 	{
-		children[i]->resetRoot(newRoot);
+		return teamColor;
 	}
-}
 
-float Body::kineticEnergy() const
-{
-	float calc = (pv.velocity.rotational.dot(getIWorld() * pv.velocity.rotational) + pv.velocity.linear.dot(pv.velocity.linear) * mass) / 2;
-	return calc;
-
-}
-
-int Body::getNextStateIndex()
-{
-	static int p;
-	if (++p == INT_MAX)
-		p = 1;
-	return p;
-}
-
-void Body::advanceStateIndex()
-{
-	stateIndex = getNextStateIndex();
-}
-
-bool Body::validateParentCofmDirty()
-{
-	RBXASSERT(cofm);
-	RBXASSERT(cofm->getIsDirty());
-	if (getParent())
-		getParent()->validateParentCofmDirty();
-	return true;
-}
-
-void Body::makeCofmDirty()
-{
-	if (cofm && cofm->getIsDirty())
+	void Flag::setTeamColor(BrickColor color)
 	{
-		// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion
-		#if defined(_DEBUG) || defined(_RELEASEASSERT)
-		if (Debugable::assertAction == Debugable::CrashOnAssert)
-		{
-			if (parent)
-				parent->validateParentCofmDirty();
-			RBXASSERT(getRootSimBody()->getDirty());
-		}
-		#endif
+		teamColor = color;
+		raisePropertyChanged(prop_Color);
 	}
-	else
+
+	void Flag::onChildAdded(Instance* instance)
 	{
-		if (getParent())
+		if (dynamic_cast<PartInstance*>(instance))
 		{
-			RBXASSERT(!simBody);
-			getParent()->makeCofmDirty();
-		}
-		else
-		{
-			RBXASSERT(root == this);
-			if (simBody)
-				simBody->makeDirty();
-		}
-		if (cofm)
-		{
-			cofm->makeDirty();
-			RBXASSERT(numChildren() > 0);
-		}
-		else
-		{
-			RBXASSERT(!numChildren());
+			if (PartInstance* handle = getHandle())
+			{
+				flagTouched = PartInstance::event_Touched.connect(handle, boost::bind(&Flag::onEvent_flagTouched, this, _1));
+			}
 		}
 	}
-}
 
-void Body::onChildAdded(RBX::Body* child)
-{
-	makeCofmDirty();
-	children.fastAppend(child);
-	if (!cofm)
+	void Flag::doUglyPeriodicCloneHack()
 	{
-		RBXASSERT(numChildren() == 1);
-		cofm = new Cofm(this);
-	}
-}
+		evilClone = clone();
 
-void Body::onChildRemoved(RBX::Body* child)
-{
-	RBXASSERT(cofm);
-	children.fastRemove(child);
-	if (numChildren() == 0)
-	{
-		delete cofm;
-		cofm = NULL;
-	}
-	makeCofmDirty();
-}
-
-void Body::setMass(float _mass)
-{
-	if (mass != _mass)
-	{
-		makeCofmDirty();
-		mass = _mass;
-	}
-}
-
-void Body::step(float dt, bool throttling)
-{
-	RBXASSERT(!getParent());
-	RBXASSERT(simBody);
-
-	if (throttling && canThrottle)
-	{
-		simBody->resetAccumulators();
-	}
-	else
-	{
-		simBody->step(dt);
-
-		pv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();
-		advanceStateIndex();
-	}
-}
-
-void Body::setVelocity(const Velocity& worldVelocity)
-{
-	if (!getParent())
-	{
-		pv.velocity = worldVelocity;
-		advanceStateIndex();
-		if (simBody)
-			simBody->makeDirty();
-	}
-}
-
-void Body::setParent(Body* newParent)
-{
-	RBXASSERT(!newParent || newParent->getParent() != this);
-	RBXASSERT(newParent != this);
-
-	if (parent != newParent)
-	{
-		if (link)
+		if (timer && numChildren() == 0)
 		{
-			link->setBody(NULL);
-			link = NULL;
+			timer->delay(boost::bind(&Flag::doUglyPeriodicCloneHack, shared_from(this)), 2.0f);
 		}
-
-		if (getParent())
-		{
-			RBXASSERT(root == getParent()->getRoot());
-			RBXASSERT(!simBody);
-			parent->onChildRemoved(this);
-		}
-		else
-		{
-			RBXASSERT(root = this);
-			RBXASSERT(simBody);
-			delete simBody;
-			simBody = NULL;
-		}
-
-		parent = newParent;
-
-		if (newParent)
-		{
-			newParent->onChildAdded(this);
-		}
-		else
-		{
-			simBody = new SimBody(this);
-		}
-		Body* myRoot = getParent() ? getParent()->calcRoot() : this;
-		myRoot->advanceStateIndex();
-		resetRoot(myRoot);
 	}
-}
-
-Body* Body::getWorldBody()
-{
-	static Body b = Body();
-	return &b;
-}
-
-G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
-{
-	if (descendant == this)
-	{
-		return G3D::CoordinateFrame();
-	}
-	else if (descendant == parent)
-	{
-		RBXASSERT(parent);
-		return getLink() ? getLink()->getChildInParent() : meInParent;
-	}
-	else
-	{
-		RBXASSERT(parent);
-		return parent->getMeInDescendant(descendant) * meInParent;
-	}
-}
-
-void Body::setPv(const PV& _pv)
-{
-	if (parent)
-	{
-		RBXASSERT(0);
-	}
-	else
-	{
-		pv = _pv;
-		if (simBody)
-			simBody->makeDirty();
-		advanceStateIndex();
-	}
-	RBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);
-	RBXASSERT(Math::isOrthonormal(pv.position.rotation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));
-	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));
-}
-
-void Body::setCoordinateFrame(const G3D::CoordinateFrame& worldCord)
-{
-	updatePV();
-	setPv(PV::PV(worldCord, pv.velocity));
-}
-
-void Body::setMeInParent(const G3D::CoordinateFrame& _meInParent)
-{
-	RBXASSERT(Math::longestVector3Component(_meInParent.translation) < 1000000.0);
-
-	if (getLink())
-	{
-		RBXASSERT(0);
-		getLink()->setBody(NULL);
-		link = NULL;
-	}
-
-	if (getParent())
-	{
-		meInParent = _meInParent;
-		makeCofmDirty();
-		root->advanceStateIndex();
-	}
-	else
-	{
-		RBXASSERT(0);
-	}
-}
-
-G3D::Vector3 Body::getBranchCofmPos() const
-{
-	return cofm ? pv.position.pointToWorldSpace(getPos()) : getCoordinateFrame().translation;
-}
-
-G3D::CoordinateFrame Body::getBranchCofmCoordinateFrame() const
-{
-	return G3D::CoordinateFrame(getPV().position.rotation, getBranchCofmPos());
-}
-
-G3D::Matrix3 Body::getIWorldAtPoint(const G3D::Vector3& point) const
-{
-	float _mass = mass;
-	updatePV(); //supposed to be inlined probably
-	G3D::Matrix3 iBody = moment;
-	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(iBody, pv.position.rotation);
-	return Math::getIWorldAtPoint(getPV().position.translation, point, iWorldAtCofm, _mass);
-}
-
-G3D::Matrix3 Body::getBranchIWorldAtPoint(const G3D::Vector3& point) const
-{
-	float _mass = getBranchMass();
-	updatePV(); //more probably inlined updatePV calls
-	G3D::Matrix3 _moment = cofm ? cofm->getMoment() : moment;
-	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(_moment, pv.position.rotation);
-	return Math::getIWorldAtPoint(getBranchCofmPos(), point, iWorldAtCofm, _mass);
-}
-
-void Body::matchDummy()
-{
-	accumulateForceAtBranchCofm(G3D::Vector3(1.3f,1.2f,1.7f));
-	accumulateTorque(G3D::Vector3(6.3f,4.2f,9.7f));
-	setMoment(G3D::Matrix3());
-	resetAccumulators();
-	mass = getBranchMass();
-	index = getBranchForce().z + getBranchTorque().y + getBranchIBodyV3().x;
 }

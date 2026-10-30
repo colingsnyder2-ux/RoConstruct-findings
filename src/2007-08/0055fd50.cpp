@@ -1,4 +1,3 @@
-// from server: 60% by colin
 // roc 2007-08 0055fd50  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fd50
 //
@@ -17,19 +16,12 @@
 // 0055fd79  8bc6                 mov eax, esi
 // 0055fd7b  5e                   pop esi
 // 0055fd7c  c20400               ret 4
+// copied from an identical function in another client (function ??0CutVerb@@QAE@H@Z)
 
-struct FilteredSelection {
-    FilteredSelection* construct(char*);
-};
-
-extern "C" void* __stdcall MSVCP80_basic_string_ctor(void*, const char*);
-extern void G1_func_0055fc40();
-
-FilteredSelection* FilteredSelection::construct(char* name)
-{
-    char buf[0x1c];
-    MSVCP80_basic_string_ctor(buf, name);
-    G1_func_0055fc40();
-    *(void**)this = (void*)0x7a93dc;
-    return this;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("SnapSelection",p){}

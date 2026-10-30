@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 41% by Yeetserama
 extern "C" void* __cdecl func_0062fef6(unsigned int size);
 extern "C" int __cdecl func_0040a380(void* p);
 
@@ -19,7 +19,7 @@ int __stdcall VCApp_CComAggObject::CreateInstance(void* pOuter, void* pUnkOuter,
     if (p != 0)
     {
         hr = func_0040a380(pOuter);
-        if (hr == 0)
+        if (hr != 0)
         {
             void** vtbl = *(void***)p;
             int (*fn)(void*, void*, void**) = (int (*)(void*, void*, void**))vtbl[0];

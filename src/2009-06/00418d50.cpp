@@ -1,4 +1,3 @@
-// from server: 72% by atomic.potato
 // roc 2009-06 00418d50  unit: CRBXHTMLControlSite::XDocHostUIHandler  size: 26 bytes
 // Make this compile to the exact bytes below, then: roc check 2009-06 00418d50
 //
@@ -9,28 +8,24 @@
 // 00418d5f  8b82ac010000         mov eax, dword ptr [edx + 0x1ac]
 // 00418d65  ffd0                 call eax
 // 00418d67  c20400               ret 4
+// copied from an identical function in another client (function ?f@S@ns_ROCX000002@@QAGXXZ)
 
-struct Inner {
-    virtual void vf_1ac();
+namespace ns_ROCX000002 {
+// from server: 100% by atomic.potato
+struct S {
+    void __stdcall f();
 };
 
-struct Mid {
-    char pad[0x20];
-    Inner* p;
-};
+void __stdcall S::f()
+{
+    struct T {
+        void *vtable;
+    };
 
-struct Outer {
-    char pad[0xcc];
-    Mid* m;
-};
-
-struct CRBXHTMLControlSite {
-    void f(void* arg);
-};
-
-void CRBXHTMLControlSite::f(void* arg) {
-    Outer* o = (Outer*)((char*)arg - 0xcc);
-    Mid* m = o->m;
-    Inner* in = m->p;
-    in->vf_1ac();
+    T *p = *(T **)((char *)this - 0xcc);
+    T *q = *(T **)((char *)p + 0x20);
+    typedef void (__thiscall *Fn)(T *);
+    Fn fn = (Fn)(*(void **)((char *)*(void **)q + 0x1ac));
+    fn(q);
+}
 }

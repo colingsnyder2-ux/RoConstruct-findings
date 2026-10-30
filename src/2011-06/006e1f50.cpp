@@ -1,28 +1,15 @@
-// from server: 41% by atomic.potato
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-
-
-
-extern "C" void __stdcall sub_a40528(char*, unsigned int);
-extern "C" void __stdcall sub_a40608();
-
-struct UString_sink_stream_buffer {
-    char pad0[0x40];
-    char f40;
-    char f41;
-    char pad42[6];
-    char* f48;
-    unsigned int f4c;
-    void dtor();
-};
-
-void UString_sink_stream_buffer::dtor()
-{
-    if (f48) {
-        sub_a40528(f48, f4c);
-    }
-    if (f41) {
-        f41 = 0;
-    }
-    sub_a40608();
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

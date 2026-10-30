@@ -1,108 +1,58 @@
-// from server: 40% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc 2010-06 00791b90  unit: RBX::HUMAN::MovingNoPhysicsBase  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00791b90
+//
+// 00791b90  51                   push ecx
+// 00791b91  56                   push esi
+// 00791b92  c744240400000000     mov dword ptr [esp + 4], 0
+// 00791b9a  e8e110ceff           call 0x472c80
+// 00791b9f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 00791ba3  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 00791ba7  83ec10               sub esp, 0x10
+// 00791baa  8bd4                 mov edx, esp
+// 00791bac  890a                 mov dword ptr [edx], ecx
+// 00791bae  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 00791bb2  894a04               mov dword ptr [edx + 4], ecx
+// 00791bb5  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 00791bb9  894a08               mov dword ptr [edx + 8], ecx
+// 00791bbc  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 00791bc0  894a0c               mov dword ptr [edx + 0xc], ecx
+// 00791bc3  56                   push esi
+// 00791bc4  8bc8                 mov ecx, eax
+// 00791bc6  e865feffff           call 0x791a30
+// 00791bcb  8bc6                 mov eax, esi
+// 00791bcd  5e                   pop esi
+// 00791bce  59                   pop ecx
+// 00791bcf  c21400               ret 0x14
+// copied from an identical function in another client (function ?f@S@ns_ROCX000000@@QAE?AURet@2@UArg@2@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
+namespace ns_ROCX000000 {
+struct Ret
 {
-	static boost::mutex mutex2;
-	return mutex2;
+    Ret(const Ret &);
+    ~Ret();
+    void *p;
+};
+
+struct Arg
+{
+    int f0, f1, f2, f3;
+};
+
+struct Impl
+{
+    Ret g(Arg arg);
+};
+
+struct Getter { static Impl *get(); };
+
+struct S
+{
+    Ret f(Arg arg);
+};
+
+Ret S::f(Arg arg)
+{
+    Impl *impl = Getter::get();
+    return impl->g(arg);
 }
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
 }

@@ -560,11 +560,32 @@
     "user": "colin"
   },
   {
+    "addr": "00583860",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00583920",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "00583a40",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex",
     "user": "colin"
+  },
+  {
+    "addr": "00583ba0",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "00583da0",
@@ -1260,6 +1281,20 @@
     "user": "colin"
   },
   {
+    "addr": "005cbf90",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "005cc040",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005cc690",
     "client": "2008-06",
     "job": "23ba88f68b6f4336a4e355013c7f394c",
@@ -1638,6 +1673,20 @@
     "user": "colin"
   },
   {
+    "addr": "005e5860",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "005e5b50",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e5da0",
     "client": "2008-06",
     "job": "c56c7dbe1b29497fab60da63ed13ef16",
@@ -1656,6 +1705,13 @@
     "client": "2008-06",
     "job": "faf71c09cb364b30abcd758bcc92a68a",
     "model": "Codex",
+    "user": "colin"
+  },
+  {
+    "addr": "005e7450",
+    "client": "2008-06",
+    "job": "2b73a7058da44834952848ffd5d4ee68",
+    "model": "gpt-6",
     "user": "colin"
   },
   {
@@ -1729,6 +1785,13 @@
     "user": "colin"
   },
   {
+    "addr": "005e8000",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e8050",
     "client": "2008-06",
     "job": "a76582d4868d40cfb32c15461b097791",
@@ -1741,6 +1804,13 @@
     "job": "a76582d4868d40cfb32c15461b097791",
     "model": "gpt-6",
     "user": "colin"
+  },
+  {
+    "addr": "005e8140",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005e81b0",
@@ -1757,6 +1827,13 @@
     "user": "colin"
   },
   {
+    "addr": "005e8470",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e8500",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
@@ -1764,11 +1841,25 @@
     "user": "colin"
   },
   {
+    "addr": "005e85b0",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e86f0",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex",
     "user": "colin"
+  },
+  {
+    "addr": "005e8d30",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005e9150",
@@ -1811,6 +1902,13 @@
     "job": "29c85cb76c6d49faa66d060a542d4de5",
     "model": "deepseek-v4.1-flash",
     "user": "coldek"
+  },
+  {
+    "addr": "005ea5e0",
+    "client": "2008-06",
+    "job": "b3c4cb191d88467e9c762f01bf43f48a",
+    "model": "gpt-6",
+    "user": "colin"
   },
   {
     "addr": "005ea880",
@@ -1925,6 +2023,20 @@
     "user": "colin"
   },
   {
+    "addr": "005fdb70",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "005fdc40",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005fe030",
     "client": "2008-06",
     "job": "049e96d76a3f4247996576ed7902e79f",
@@ -1958,6 +2070,13 @@
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
     "user": "colin"
+  },
+  {
+    "addr": "005fe6d0",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005ff1a0",
@@ -2034,6 +2153,13 @@
     "client": "2008-06",
     "job": "9167482492314a8b8a6e73ad3024c76e",
     "model": "Claude Opus 5.5",
+    "user": "colin"
+  },
+  {
+    "addr": "0060a0f0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
     "user": "colin"
   },
   {
@@ -2128,6 +2254,13 @@
     "user": "colin"
   },
   {
+    "addr": "0060e840",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "0060e970",
     "client": "2008-06",
     "job": "7defe8d7595148459e4686995a58c17c",
@@ -2140,6 +2273,34 @@
     "job": "6a7eb2d7653645a7aed3a1a0ed748c35",
     "model": "gpt-6",
     "user": "colin"
+  },
+  {
+    "addr": "0060ed40",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060f0a0",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060f3e0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0060fc20",
+    "client": "2008-06",
+    "job": "e7bf453a40ed41edb8aaae021bfb6e0e",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "0060fef0",
@@ -2303,6 +2464,13 @@
     "user": "colin"
   },
   {
+    "addr": "00618200",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "0062b030",
     "client": "2008-06",
     "job": "17aa606f8bf541a0a3ec6c47ae387959",
@@ -2343,6 +2511,13 @@
     "job": "0e9e29d062944c2195b02e71d3218e3f",
     "model": "gpt-6.1-sol",
     "user": "colin"
+  },
+  {
+    "addr": "006308f0",
+    "client": "2008-06",
+    "job": "72e0cc406874442e92ccf2226772409b",
+    "model": "gpt-6.1-sol",
+    "user": "coldek"
   },
   {
     "addr": "00632370",
@@ -2408,6 +2583,20 @@
     "user": "coldek"
   },
   {
+    "addr": "00642270",
+    "client": "2008-06",
+    "job": "498fcc2e7e1c45869facb62f677ff5eb",
+    "model": "GPT-5",
+    "user": "colin"
+  },
+  {
+    "addr": "006423e0",
+    "client": "2008-06",
+    "job": "498fcc2e7e1c45869facb62f677ff5eb",
+    "model": "GPT-5",
+    "user": "colin"
+  },
+  {
     "addr": "00642fc0",
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
@@ -2450,6 +2639,13 @@
     "user": "coldek"
   },
   {
+    "addr": "00645ae0",
+    "client": "2008-06",
+    "job": "8fb3a8e3f3f34e989423ec4c1f01ecdf",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "00645af0",
     "client": "2008-06",
     "job": "0e9e29d062944c2195b02e71d3218e3f",
@@ -2478,6 +2674,34 @@
     "user": "colin"
   },
   {
+    "addr": "00649130",
+    "client": "2008-06",
+    "job": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00649170",
+    "client": "2008-06",
+    "job": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00649190",
+    "client": "2008-06",
+    "job": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "006498b0",
+    "client": "2008-06",
+    "job": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "00649f20",
     "client": "2008-06",
     "job": "a76582d4868d40cfb32c15461b097791",
@@ -2488,6 +2712,13 @@
     "addr": "0064a200",
     "client": "2008-06",
     "job": "a76582d4868d40cfb32c15461b097791",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "0064a3d0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
     "model": "gpt-6",
     "user": "colin"
   },
@@ -2520,6 +2751,13 @@
     "user": "colin"
   },
   {
+    "addr": "0064f070",
+    "client": "2008-06",
+    "job": "00e49e6686714f1c936a833f527f0353",
+    "model": "GPT-5",
+    "user": "colin"
+  },
+  {
     "addr": "00658a00",
     "client": "2008-06",
     "job": "de7b9eae5623429791a439bbab6a29c6",
@@ -2531,6 +2769,13 @@
     "client": "2008-06",
     "job": "0e9e29d062944c2195b02e71d3218e3f",
     "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "006602b0",
+    "client": "2008-06",
+    "job": "43efaa2fbda944079018684c1d090546",
+    "model": "GPT-5",
     "user": "colin"
   },
   {
@@ -2590,6 +2835,13 @@
     "user": "colin"
   },
   {
+    "addr": "006663f0",
+    "client": "2008-06",
+    "job": "aacbc5f44eab4703b5d124edd51c655d",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "006683b0",
     "client": "2008-06",
     "job": "a7480fdea7e547a99dac0c2f27fdf944",
@@ -2597,10 +2849,52 @@
     "user": "coldek"
   },
   {
+    "addr": "006683f0",
+    "client": "2008-06",
+    "job": "5d7a0e8e4b1f498f937c36372b0fc438",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "00668850",
+    "client": "2008-06",
+    "job": "5d7a0e8e4b1f498f937c36372b0fc438",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "00669780",
+    "client": "2008-06",
+    "job": "310c52c1a5334eec93e6ab971d0506ae",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00669cf0",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
+    "addr": "00669d10",
+    "client": "2008-06",
+    "job": "05a9c896175b44238c694313cf62cb19",
+    "model": "gpt-6",
+    "user": "colin"
+  },
+  {
     "addr": "0066a570",
     "client": "2008-06",
     "job": "ae59330ca7914e1caae5836cc55500e4",
     "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "0066a630",
+    "client": "2008-06",
+    "job": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+    "model": "gpt-6",
     "user": "colin"
   },
   {

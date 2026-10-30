@@ -1,1234 +1,853 @@
-// from server: 69% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreConvexBody.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_unit_9dc8eed6b8f2db5a.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-(Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Assembly.h"
+#include "v8world/Controller.h"
+#include "v8world/World.h"
+#include "AppDraw/Draw.h"
+#include "AppDraw/DrawAdorn.h"
+#include "AppDraw/HitTest.h"
+#include "tool/Dragger.h"
+#include <G3D/CoordinateFrame.h>
+#include "reflection/type.h"
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Copyright (c) 2006 Matthias Fink, netAllied GmbH <matthias.fink@web.de>								
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreConvexBody.h"
-#include "OgreException.h"
-#include "OgreVector3.h"
-#include <OgreLogManager.h>
-#include <OgreRay.h>
-#include <OgreFrustum.h>
-#include <OgreAxisAlignedBox.h>
-
-
-namespace Ogre
+namespace RBX
 {
+	const char* category_Part = "Part";
 
+	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_unjoin(&PartInstance::destroyJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_join(&PartInstance::join, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<PartInstance, float(void), 0> desc_getMass(&PartInstance::getMass, "GetMass", Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-	//-----------------------------------------------------------------------
-	// Statics
-	//-----------------------------------------------------------------------
-	ConvexBody::PolygonList ConvexBody::msFreePolygons;
-#if OGRE_THREAD_SUPPORT
-	boost::recursive_mutex ConvexBody::msFreePolygonsMutex;
-#endif
-	//-----------------------------------------------------------------------
-	void ConvexBody::_initialisePool()
+	static Reflection::EnumPropDescriptor<PartInstance, Part::PartType> prop_shapeUi("Shape", category_Part, &PartInstance::getPartType, &PartInstance::setPartTypeUi, Reflection::PropertyDescriptor::UI);
+
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_PositionUi("Position", "Data", &PartInstance::getTranslationUi, &PartInstance::setTranslationUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_Velocity("Velocity", "Data", &PartInstance::getLinearVelocity, &PartInstance::setLinearVelocity, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_RotVelocity("RotVelocity", "Data", &PartInstance::getRotationalVelocity, &PartInstance::setRotationalVelocity, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_SizeUi("Size", category_Part, &PartInstance::getPartSizeUi, &PartInstance::setPartSizeUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, bool> prop_Dragging("DraggingV1", "Behavior", &PartInstance::getDragging, &PartInstance::setDragging, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactorUi("formFactor", category_Part, &PartInstance::getFormFactor, &PartInstance::setFormFactorUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactor("FormFactor", category_Part, &PartInstance::getFormFactor, &PartInstance::setFormFactorXml, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<PartInstance, float> prop_Friction("Friction", category_Part, &PartInstance::getFriction, &PartInstance::setFriction, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, float> prop_Elasticity("Elasticity", category_Part, &PartInstance::getElasticity, &PartInstance::setElasticity, Reflection::PropertyDescriptor::STANDARD);
+
+	namespace Reflection
 	{
-		OGRE_LOCK_MUTEX(msFreePolygonsMutex)
-
-		if (msFreePolygons.empty())
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<G3D::CoordinateFrame>()
 		{
-			const size_t initialSize = 30;
-
-			// Initialise polygon pool with 30 polys
-			msFreePolygons.resize(initialSize);
-			for (size_t i = 0; i < initialSize; ++i)
-			{
-				msFreePolygons[i] = OGRE_NEW_T(Polygon, MEMCATEGORY_SCENE_CONTROL)();
-			}
+			static Type type("CoordinateFrame", typeid(G3D::CoordinateFrame));
+			return type;
 		}
 	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::_destroyPool()
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	PartInstance::PartInstance()
+		: Base("Part"),
+		  partType(Part::BLOCK_PART),
+		  formFactor(BRICK),
+		  color(BrickColor::defaultColor()),
+		  transparency(0.0f),
+		  reflectance(0.0f),
+		  locked(false),
+		  surfaces(this),
+		  renderImportance(0.0f),
+		  primitive(new Primitive(Geometry::GEOMETRY_BLOCK)),
+		  alphaModifier(1.0f),
+		  myWorld(NULL),
+		  PersistentPart(this, &PartInstance::computePersistentPart),
+		  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)
 	{
-		OGRE_LOCK_MUTEX(msFreePolygonsMutex)
+		primitive->setSurfaceType(NORM_Y, STUDS);
+		primitive->setSurfaceType(NORM_Y_NEG, INLET);
+		primitive->setGridSize(G3D::Vector3(4.0f, 1.2f, 2.0f));
+		primitive->setFriction(0.3f);
+		primitive->setElasticity(0.5f);
+		primitive->setAnchor(false);
+		primitive->setCanCollide(true);
+		primitive->setOwner(this);
+
+		onGuidChanged();
+	}
+#pragma warning (pop)
+
+	PartInstance::~PartInstance()
+	{
+		RBXASSERT(!primitive->getClump());
+		RBXASSERT(!myWorld);
+	}
+
+	Surfaces& PartInstance::getSurfaces()
+	{
+		return surfaces;
+	}
+
+	const Surfaces& PartInstance::getSurfaces() const
+	{
+		return surfaces;
+	}
+
+	void PartInstance::onGuidChanged()
+	{
+		RBXASSERT(!myWorld);
+		primitive->setGuid(getGuid());
+	}
+
+	bool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)
+	{
+		bool null = part.get() && part->myWorld;
+		RBXASSERT(!null || part->primitive->inPipeline());
+		return null;
+	}
+
+	void PartInstance::destroyJoints()
+	{
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world)
+			world->destroyJoints(primitive.get());
+	}
+
+	void PartInstance::join()
+	{
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world)
+			world->createJoints(primitive.get());
+	}
+
+	bool PartInstance::computeSurfacesNeedAdorn() const
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			Surface& current = surfaces[(NormalId)i];
+			if (current.getSurfaceType() == ROTATE || current.getSurfaceType() == ROTATE_P || current.getSurfaceType() == ROTATE_V)
+				return true;
+		}
+		return false;
+	}
+
+	void PartInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
+	{
+		RBXASSERT(legacyOffset.get());
+
+		G3D::CoordinateFrame myState = parentState * *legacyOffset;
+		primitive->setGridCorner(myState);
+	}
+
+	bool PartInstance::isControllable() const
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			Surface& current = surfaces[(NormalId)i];
+			if ((current.getSurfaceType() == ROTATE_P || current.getSurfaceType() == ROTATE_V) && current.isControllable())
+				return true;
+		}
+		return false;
+	}
+
+	void PartInstance::onSurfaceChanged(RBX::NormalId surfId)
+	{
+		PersistentPart.setDirty();
+		IsControllable.setDirty();
+		SurfacesNeedAdorn.setDirty();
+		shouldRenderSetDirty();
+	}
+
+	void PartInstance::setPhysics(const G3D::CoordinateFrame& value)
+	{
+		if (value != getCoordinateFrame())
+		{
+			RBXASSERT(Math::isOrthonormal(value.rotation));
+			primitive->setCoordinateFrame(value);
+			PersistentPart.setDirty();
+			onExtentsChanged();
+		}
+	}
+
+	void PartInstance::setPhysics(const G3D::CoordinateFrame& cf, const Velocity& vel)
+	{
+		primitive->getBody()->setVelocity(vel);
+		setPhysics(cf);
+	}
+
+	const G3D::CoordinateFrame& PartInstance::getCoordinateFrame() const
+	{
+		return primitive->getCoordinateFrame();
+	}
+
+	const G3D::Vector3& PartInstance::getTranslationUi() const
+	{
+		return primitive->getBody()->getCoordinateFrame().translation;
+	}
+
+	float PartInstance::getMass()
+	{
+		return primitive->getBody()->getMass();
+	}
+
+	const Velocity& PartInstance::getVelocity() const
+	{
+		return primitive->getBody()->getVelocity();
+	}
+
+	const G3D::Vector3& PartInstance::getLinearVelocity() const
+	{
+		return getVelocity().linear;
+	}
+
+	const G3D::Vector3& PartInstance::getRotationalVelocity() const
+	{
+		return getVelocity().rotational;
+	}
+
+	const G3D::Vector3& PartInstance::getPartSizeXml() const
+	{
+		return primitive->getGeometry()->getGridSize();
+	}
+
+	G3D::Vector3 PartInstance::getPartSizeUi() const
+	{
+		return getPartSizeXml();
+	}
+
+	bool PartInstance::getDragging() const
+	{
+		return primitive->getDragging();
+	}
+
+	bool PartInstance::getCanCollide() const
+	{
+		return !primitive->getDragging() && primitive->getCanCollide() ? true : false;
+	}
+
+	bool PartInstance::getAnchored() const
+	{
+		return primitive->getAnchor();
+	}
+
+	float PartInstance::getFriction() const
+	{
+		return primitive->getFriction();
+	}
+
+	float PartInstance::getElasticity() const
+	{
+		return primitive->getElasticity();
+	}
+
+	Extents PartInstance::getExtentsWorld() const
+	{
+		return primitive->getExtentsWorld();
+	}
+
+	Extents PartInstance::getExtentsLocal() const
+	{
+		return primitive->getExtentsLocal();
+	}
+
+	G3D::CoordinateFrame PartInstance::worldSnapLocation() const
+	{
+		G3D::Vector3 halfSize = getPartSizeXml() * 0.5f;
+
+		G3D::Vector3 snapInPart;
+		snapInPart.y = -halfSize.y;
+		snapInPart.x = halfSize.x - G3D::iRound(floorf(halfSize.x));
+		snapInPart.z = halfSize.z - G3D::iRound(floorf(halfSize.z));
+
+		G3D::CoordinateFrame localSnapLocation(snapInPart);
+		return primitive->getCoordinateFrame() * localSnapLocation;
+	}
+
+	bool PartInstance::aligned() const
+	{
+		G3D::CoordinateFrame myCoord = worldSnapLocation();
+		G3D::CoordinateFrame myCoordSnapped = Math::snapToGrid(myCoord, Dragger::dragSnap());
+
+		return Math::fuzzyEq(myCoord, myCoordSnapped, 0.00001, 0.00001);
+	}
+
+
+	G3D::Vector3 PartInstance::uiToXmlSize(const G3D::Vector3& uiSize) const
+	{
+		G3D::Vector3 gridUiSize = Math::iRoundVector3(uiSize.max(G3D::Vector3(1.0f, 1.0f, 1.0f)));
+		G3D::Vector3 xmlSize = gridUiSize;
 		
-		for (PolygonList::iterator i = msFreePolygons.begin(); 
-			i != msFreePolygons.end(); ++i)
+		switch (formFactor)
 		{
-			OGRE_DELETE_T(*i, Polygon, MEMCATEGORY_SCENE_CONTROL);
+		case BRICK:
+			xmlSize.y *= 1.2f;
+			break;
+		case PLATE:
+			xmlSize.y *= 0.4f;
+			break;
 		}
-		msFreePolygons.clear();
-	}
-	//-----------------------------------------------------------------------
-	Polygon* ConvexBody::allocatePolygon()
-	{
-		OGRE_LOCK_MUTEX(msFreePolygonsMutex)
 
-		if (msFreePolygons.empty())
+		return xmlSize;
+	}
+
+	const Part& PartInstance::getPart() const
+	{
+		const Part& part = PersistentPart.getValueRef();
+		part.coordinateFrame = primitive->getCoordinateFrame();
+		return part;
+	}
+
+	Part PartInstance::computePersistentPart() const
+	{
+		const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+		float transparency = 1.0f - alpha();
+
+		return Part(partType, getPartSizeXml(), G3D::Color4(getColor3(), transparency), surfaces.surf6(), cframe);
+	}
+
+	const RBX::PartInstance* PartInstance::fromPrimitiveConst(const Primitive* p)
+	{
+		RBXASSERT(!p || dynamic_cast<PartInstance*>(p->getOwner()));
+
+		if (p)
+			return rbx_static_cast<PartInstance*>(p->getOwner());
+		else
+			return NULL;
+	}
+
+	PartInstance* PartInstance::fromPrimitive(Primitive* p)
+	{
+		return const_cast<PartInstance*>(fromPrimitiveConst(p));
+	}
+
+	bool PartInstance::shouldRender3dAdorn() const
+	{
+		return partType == Part::CYLINDER_PART ||
+			   SurfacesNeedAdorn || 
+			   highlightSleepParts || 
+			   highlightAwakeParts || 
+			   showPartCoord || 
+			   showAnchoredParts ||
+			   showUnalignedParts ||
+			   showSpanningTree;
+	}
+
+	bool PartInstance::getLocked(Instance* instance)
+	{
+		PartInstance* thisPart = dynamic_cast<PartInstance*>(instance);
+
+		if (thisPart)
 		{
-			// if we ran out of polys to use, create a new one
-			// hopefully this one will return to the pool in due course
-			return OGRE_NEW_T(Polygon, MEMCATEGORY_SCENE_CONTROL)();
+			return thisPart->locked;
 		}
 		else
 		{
-			Polygon* ret = msFreePolygons.back();
-			ret->reset();
-
-			msFreePolygons.pop_back();
-
-			return ret;
-
-		}
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::freePolygon(Polygon* poly)
-	{
-		OGRE_LOCK_MUTEX(msFreePolygonsMutex)
-		msFreePolygons.push_back(poly);
-	}
-	//-----------------------------------------------------------------------
-	//-----------------------------------------------------------------------
-	ConvexBody::ConvexBody()
-	{
-		// Reserve space for 8 polys, normally 6 faces plus a couple of clips
-		mPolygons.reserve(8);
-
-	}
-	//-----------------------------------------------------------------------
-	ConvexBody::~ConvexBody()
-	{
-		reset();
-	}
-	//-----------------------------------------------------------------------
-	ConvexBody::ConvexBody( const ConvexBody& cpy )
-	{
-		for ( size_t i = 0; i < cpy.getPolygonCount(); ++i )
-		{
-			Polygon *p = allocatePolygon();
-			*p = cpy.getPolygon( i );
-			mPolygons.push_back( p );
-		}
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::define(const Frustum& frustum)
-	{
-		// ordering of the points:
-		// near (0-3), far (4-7); each (top-right, top-left, bottom-left, bottom-right)
-		//	   5-----4
-		//	  /|    /|
-		//	 / |   / |
-		//	1-----0  |
-		//	|  6--|--7
-		//	| /   | /
-		//	|/    |/
-		//	2-----3
-		
-		const Vector3 *pts = frustum.getWorldSpaceCorners();
-
-		/// reset ConvexBody
-		reset();
-
-		/// update vertices: near, far, left, right, bottom, top; fill in ccw
-		Polygon *poly;
-
-		// near
-		poly = allocatePolygon();
-		poly->insertVertex( pts[0] );
-		poly->insertVertex( pts[1] );
-		poly->insertVertex( pts[2] );
-		poly->insertVertex( pts[3] );
-		mPolygons.push_back( poly );
-
-		// far
-		poly = allocatePolygon();
-		poly->insertVertex( pts[5] );
-		poly->insertVertex( pts[4] );
-		poly->insertVertex( pts[7] );
-		poly->insertVertex( pts[6] );
-		mPolygons.push_back( poly );
-
-		// left
-		poly = allocatePolygon();
-		poly->insertVertex( pts[5] );
-		poly->insertVertex( pts[6] );
-		poly->insertVertex( pts[2] );
-		poly->insertVertex( pts[1] );
-		mPolygons.push_back( poly ); 
-
-		// right
-		poly = allocatePolygon();
-		poly->insertVertex( pts[4] );
-		poly->insertVertex( pts[0] );
-		poly->insertVertex( pts[3] );
-		poly->insertVertex( pts[7] );
-		mPolygons.push_back( poly ); 
-
-		// bottom
-		poly = allocatePolygon();
-		poly->insertVertex( pts[6] );
-		poly->insertVertex( pts[7] );
-		poly->insertVertex( pts[3] );
-		poly->insertVertex( pts[2] );
-		mPolygons.push_back( poly ); 
-
-		// top
-		poly = allocatePolygon();
-		poly->insertVertex( pts[4] );
-		poly->insertVertex( pts[5] );
-		poly->insertVertex( pts[1] );
-		poly->insertVertex( pts[0] );
-		mPolygons.push_back( poly ); 
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::define(const AxisAlignedBox& aab)
-	{
-		// ordering of the AAB points:
-		//		1-----2
-		//	   /|    /|
-		//	  / |   / |
-		//   5-----4  |
-		//   |  0--|--3
-		//   | /   | /
-		//   |/    |/
-		//   6-----7
-		
-		const Vector3& min = aab.getMinimum();
-		const Vector3& max = aab.getMaximum();
-
-		Vector3 currentVertex = min;
-
-		Polygon *poly;
-
-		// reset body
-		reset();
-
-		// far
-		poly = allocatePolygon();
-		poly->insertVertex( currentVertex ); // 0 
-		currentVertex.y = max.y;
-		poly->insertVertex( currentVertex ); // 1
-		currentVertex.x = max.x;
-		poly->insertVertex( currentVertex ); // 2
-		currentVertex.y = min.y;
-		poly->insertVertex( currentVertex ); // 3
-		insertPolygon( poly );
-
-		// right
-		poly = allocatePolygon();
-		poly->insertVertex( currentVertex ); // 3
-		currentVertex.y = max.y;
-		poly->insertVertex( currentVertex ); // 2
-		currentVertex.z = max.z;
-		poly->insertVertex( currentVertex ); // 4
-		currentVertex.y = min.y;
-		poly->insertVertex( currentVertex ); // 7
-		insertPolygon( poly ); 
-
-		// near
-		poly = allocatePolygon();
-		poly->insertVertex( currentVertex ); // 7
-		currentVertex.y = max.y;
-		poly->insertVertex( currentVertex ); // 4
-		currentVertex.x = min.x;
-		poly->insertVertex( currentVertex ); // 5
-		currentVertex.y = min.y;
-		poly->insertVertex( currentVertex ); // 6
-		insertPolygon( poly );
-
-		// left
-		poly = allocatePolygon();
-		poly->insertVertex( currentVertex ); // 6
-		currentVertex.y = max.y;
-		poly->insertVertex( currentVertex ); // 5
-		currentVertex.z = min.z;
-		poly->insertVertex( currentVertex ); // 1
-		currentVertex.y = min.y;
-		poly->insertVertex( currentVertex ); // 0
-		insertPolygon( poly ); 
-
-		// bottom
-		poly = allocatePolygon();
-		poly->insertVertex( currentVertex ); // 0 
-		currentVertex.x = max.x;
-		poly->insertVertex( currentVertex ); // 3
-		currentVertex.z = max.z;
-		poly->insertVertex( currentVertex ); // 7 
-		currentVertex.x = min.x;
-		poly->insertVertex( currentVertex ); // 6
-		insertPolygon( poly );
-
-		// top
-		poly = allocatePolygon();
-		currentVertex = max;
-		poly->insertVertex( currentVertex ); // 4
-		currentVertex.z = min.z;
-		poly->insertVertex( currentVertex ); // 2
-		currentVertex.x = min.x;
-		poly->insertVertex( currentVertex ); // 1
-		currentVertex.z = max.z;
-		poly->insertVertex( currentVertex ); // 5
-		insertPolygon( poly );
-		
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::clip(const AxisAlignedBox& aab)
-	{
-		// only process finite boxes
-		if (!aab.isFinite())
-			return;
-		// ordering of the AAB points:
-		//		1-----2
-		//	   /|    /|
-		//	  / |   / |
-		//   5-----4  |
-		//   |  0--|--3
-		//   | /   | /
-		//   |/    |/
-		//   6-----7
-
-		const Vector3& min = aab.getMinimum();
-		const Vector3& max = aab.getMaximum();
-
-		// clip object for each plane of the AAB
-		Plane p;
-
-
-		// front
-		p.redefine(Vector3::UNIT_Z, max);
-		clip(p);
-
-		// back
-		p.redefine(Vector3::NEGATIVE_UNIT_Z, min);
-		clip(p);
-		
-		// left
-		p.redefine(Vector3::NEGATIVE_UNIT_X, min);
-		clip(p);
-		
-		// right
-		p.redefine(Vector3::UNIT_X, max);
-		clip(p);
-		
-		// bottom
-		p.redefine(Vector3::NEGATIVE_UNIT_Y, min);
-		clip(p);
-		
-		// top
-		p.redefine(Vector3::UNIT_Y, max);
-		clip(p);
-
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::clip(const Frustum& fr)
-	{
-		// clip the body with each plane
-		for ( unsigned short i = 0; i < 6; ++i )
-		{
-			// clip, but keep positive space this time since frustum planes are 
-			// the opposite to other cases (facing inwards rather than outwards)
-			clip(fr.getFrustumPlane(i), false);
-		}
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::clip(const ConvexBody& body)
-	{
-		if ( this == &body )
-			return;
-
-		// for each polygon; clip 'this' with each plane of 'body'
-		// front vertex representation is ccw
-
-		Plane pl;
-
-		for ( size_t iPoly = 0; iPoly < body.getPolygonCount(); ++iPoly )
-		{
-			const Polygon& p = body.getPolygon( iPoly );
-
-			OgreAssert( p.getVertexCount() >= 3, "A valid polygon must contain at least three vertices." );
-
-			// set up plane with first three vertices of the polygon (a polygon is always planar)
-			pl.redefine( p.getVertex( 0 ), p.getVertex( 1 ), p.getVertex( 2 ) );
-
-			clip(pl);
-		}
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::extend(const Vector3& pt)
-	{
-		// Erase all polygons facing towards the point. For all edges that
-		// are not removed twice (once in AB and once BA direction) build a
-		// convex polygon (triangle) with the point.
-		Polygon::EdgeMap edgeMap;
-
-		for ( size_t i = 0; i < getPolygonCount(); ++i )
-		{
-			const Vector3& normal = getNormal( i );
-			// direction of the point in regard to the polygon
-			// the polygon is planar so we can take an arbitrary vertex
-			Vector3 ptDir  = pt - getVertex( i, 0 );
-			ptDir.normalise();
-
-			// remove polygon if dot product is greater or equals null.
-			if ( normal.dotProduct( ptDir ) >= 0 )
+			for (size_t i = 0; i < instance->numChildren(); i++)
 			{
-				// store edges (copy them because if the polygon is deleted
-				// its vertices are also deleted)
-				storeEdgesOfPolygon( i, &edgeMap );
-
-				// remove polygon
-				deletePolygon( i );
-
-				// decrement iterator because of deleted polygon
-				--i; 
+				if (getLocked(instance->getChild(i)))
+					return true;
 			}
-		}
-
-		// point is already a part of the hull (point lies inside)
-		if ( edgeMap.empty() )
-			return;
-
-		// remove the edges that are twice in the list (once from each side: AB,BA)
-
-		Polygon::EdgeMap::iterator it;
-		// iterate from first to the element before the last one
-		for (Polygon::EdgeMap::iterator itStart = edgeMap.begin(); 
-			itStart != edgeMap.end(); )
-		{
-			// compare with iterator + 1 to end
-			// don't need to skip last entry in itStart since omitted in inner loop
-			it = itStart;
-			++it;
-
-			bool erased = false;
-			// iterate from itStart+1 to the element before the last one
-			for ( ; it != edgeMap.end(); ++it )
-			{	
-				if (itStart->first.positionEquals(it->second) &&
-					 itStart->second.positionEquals(it->first))
-				{
-					edgeMap.erase(it);
-					// increment itStart before deletion (iterator invalidation)
-					Polygon::EdgeMap::iterator delistart = itStart++;
-					edgeMap.erase(delistart);
-					erased = true;
-
-					break; // found and erased
-				}
-			}
-			// increment itStart if we didn't do it when erasing
-			if (!erased)
-				++itStart;
-
-		}
-
-		// use the remaining edges to build triangles with the point
-		// the vertices of the edges are in ccw order (edgePtA-edgePtB-point
-		// to form a ccw polygon)
-		while ( !edgeMap.empty() )
-		{
-			Polygon::EdgeMap::iterator it = edgeMap.begin();
-
-			// build polygon it.first, it.second, point
-			Polygon *p = allocatePolygon();
-
-			p->insertVertex(it->first);
-			p->insertVertex(it->second);
-
-			p->insertVertex( pt );
-			// attach polygon to body
-			insertPolygon( p );
-
-			// erase the vertices from the list
-			// pointers are now held by the polygon
-			edgeMap.erase( it );
-		}
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::reset( void )
-	{
-		for (PolygonList::iterator it = mPolygons.begin(); 
-			it != mPolygons.end(); ++it)
-		{
-			freePolygon(*it);
-		}
-		mPolygons.clear();
-	}
-	//-----------------------------------------------------------------------
-	size_t ConvexBody::getPolygonCount( void ) const
-	{
-		return mPolygons.size();
-	}
-	//-----------------------------------------------------------------------
-	size_t ConvexBody::getVertexCount( size_t poly ) const
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position out of range" );
-		
-		return mPolygons[ poly ]->getVertexCount();
-	}
-	//-----------------------------------------------------------------------
-	bool ConvexBody::hasClosedHull( void ) const
-	{
-		// if this map is returned empty, the body is closed
-		Polygon::EdgeMap edgeMap = getSingleEdges();
-
-		return edgeMap.empty();
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::mergePolygons( void )
-	{
-		// Merge all polygons that lay in the same plane as one big polygon.
-		// A convex body does not have two seperate regions (seperated by polygons
-		// with different normals) where the same normal occurs, so we can simply
-		// search all similar normals of a polygon. Two different options are 
-		// possible when the normals fit:
-		// - the two polygons are neighbors
-		// - the two polygons aren't neighbors (but a third, fourth,.. polygon lays
-		//   in between)
-
-		// Signals if the body holds polygons which aren't neighbors but have the same
-		// normal. That means another step has to be processed.
-		bool bDirty = false;
-
-		for ( size_t iPolyA = 0; iPolyA < getPolygonCount(); ++iPolyA )
-		{
-			// ??
-			OgreAssert( iPolyA >= 0, "strange..." );
-
-			for ( size_t iPolyB = iPolyA+1; iPolyB < getPolygonCount(); ++iPolyB )
-			{
-				const Vector3& n1 = getNormal( iPolyA );
-				const Vector3& n2 = getNormal( iPolyB );
-
-				// if the normals point into the same direction
-				if ( n1.directionEquals( n2, Radian( Degree( 0.00001 ) ) )  )
-				{
-					// indicates if a neighbor has been found and joined
-					bool bFound = false;
-
-					// search the two fitting vertices (if there are any) for the common edge
-					const size_t numVerticesA = getVertexCount( iPolyA );
-					for ( size_t iVertexA = 0; iVertexA < numVerticesA; ++iVertexA )
-					{
-						const size_t numVerticesB = getVertexCount( iPolyB );
-						for ( size_t iVertexB = 0; iVertexB < numVerticesB; ++iVertexB )
-						{
-							const Vector3& aCurrent	= getVertex( iPolyA, iVertexA );
-							const Vector3& aNext		= getVertex( iPolyA, (iVertexA + 1) % getVertexCount( iPolyA ) );
-							const Vector3& bCurrent	= getVertex( iPolyB, iVertexB );
-							const Vector3& bNext		= getVertex( iPolyB, (iVertexB + 1) % getVertexCount( iPolyB ) );
-
-							// if the edge is the same the current vertex of A has to be equal to the next of B and the other
-							// way round
-							if ( aCurrent.positionEquals(bNext) &&
-								 bCurrent.positionEquals(aNext))
-							{
-								// polygons are neighbors, assemble new one
-								Polygon *pNew = allocatePolygon();
-
-								// insert all vertices of A up to the join (including the common vertex, ignoring
-								// whether the first vertex of A may be a shared vertex)
-								for ( size_t i = 0; i <= iVertexA; ++i )
-								{
-									pNew->insertVertex( getVertex( iPolyA, i%numVerticesA ) );
-								}
-
-								// insert all vertices of B _after_ the join to the end
-								for ( size_t i = iVertexB + 2; i < numVerticesB; ++i )
-								{
-									pNew->insertVertex( getVertex( iPolyB, i ) );
-								}
-
-								// insert all vertices of B from the beginning up to the join (including the common vertex
-								// and excluding the first vertex if the first is part of the shared edge)
-								for ( size_t i = 0; i <= iVertexB; ++i )
-								{
-									pNew->insertVertex( getVertex( iPolyB, i%numVerticesB ) );
-								}
-
-								// insert all vertices of A _after_ the join to the end
-								for ( size_t i = iVertexA + 2; i < numVerticesA; ++i )
-								{
-									pNew->insertVertex( getVertex( iPolyA, i ) );
-								}
-
-								// in case there are double vertices (in special cases), remove them
-								for ( size_t i = 0; i < pNew->getVertexCount(); ++i )
-								{
-									const Vector3& a = pNew->getVertex( i );
-									const Vector3& b = pNew->getVertex( (i + 1) % pNew->getVertexCount() );
-
-									// if the two vertices are the same...
-									if (a.positionEquals(b))
-									{
-										// remove a
-										pNew->deleteVertex( i );
-
-										// decrement counter
-										--i;
-									}
-								}
-
-								// delete the two old ones
-								OgreAssert( iPolyA != iPolyB, "PolyA and polyB are the same!" );
-								
-								// polyB is always higher than polyA, so delete polyB first
-								deletePolygon( iPolyB );
-								deletePolygon( iPolyA );
-
-								// continue with next (current is deleted, so don't jump to the next after the next)
-								--iPolyA;
-								--iPolyB;
-
-								// insert new polygon
-								insertPolygon( pNew );
-
-								bFound = true;
-								break;
-							}
-						}
-						
-						if ( bFound )
-						{
-							break;
-						}
-					}
-
-					if ( bFound == false )
-					{
-						// there are two polygons available with the same normal direction, but they
-						// could not be merged into one single because of no shared edge
-						bDirty = true;
-						break;
-					}
-				}
-			}
-		}
-
-		// recursion to merge the previous non-neighbors
-		if ( bDirty )
-		{
-			mergePolygons();
-		}
-	}
-	//-----------------------------------------------------------------------
-	const Vector3& ConvexBody::getNormal( size_t poly )
-	{
-		OgreAssert( poly >= 0 && poly < getPolygonCount(), "Search position out of range" );
-		
-		return mPolygons[ poly ]->getNormal();
-	}
-	//-----------------------------------------------------------------------
-	AxisAlignedBox ConvexBody::getAABB( void ) const
-	{
-		AxisAlignedBox aab;
-
-		for ( size_t i = 0; i < getPolygonCount(); ++i )
-		{
-			for ( size_t j = 0; j < getVertexCount( i ); ++j )
-			{
-				aab.merge( getVertex( i, j ) );
-			}
-		}
-
-		return aab;
-	}
-	//-----------------------------------------------------------------------
-	bool ConvexBody::operator == ( const ConvexBody& rhs ) const
-	{
-		if ( getPolygonCount() != rhs.getPolygonCount() )
 			return false;
-
-		// Compare the polygons. They may not be in correct order.
-		// A correct convex body does not have identical polygons in its body.
-		bool *bChecked = OGRE_ALLOC_T(bool, getPolygonCount(), MEMCATEGORY_SCENE_CONTROL);
-		for ( size_t i=0; i<getPolygonCount(); ++i )
-		{
-			bChecked[ i ] = false;
 		}
+	}
 
-		for ( size_t i=0; i<getPolygonCount(); ++i )
+	void PartInstance::onParentControllerChanged()
+	{
+		PVInstance::onParentControllerChanged();
+		PersistentPart.setDirty();
+		primitive->setController(getTopPVController());
+	}
+
+	void PartInstance::onCanAggregateChanged(bool canAggregate)
+	{
+		RBXASSERT(canAggregate == getCanAggregate());
+		Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
+		shouldRenderSetDirty();
+	}
+
+	void PartInstance::onAncestorChanged(const AncestorChanged& event)
+	{
+		Instance::onAncestorChanged(event);
+		RBXASSERT(primitive.get());
+
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world != myWorld)
 		{
-			bool bFound = false;
+			RBXASSERT(myWorld || !primitive->getClump());
 
-			for ( size_t j=0; j<getPolygonCount(); ++j )
+			if (myWorld)
 			{
-				const Polygon& pA = getPolygon( i );
-				const Polygon& pB = rhs.getPolygon( j );
+				setMovingManager(NULL);
+				myWorld->removePrimitive(primitive.get());
+			}
 
-				if ( pA == pB )
+			myWorld = world;
+
+			if (world)
+			{
+				world->insertPrimitive(primitive.get());
+				setMovingManager(Workspace::getMyWorkspaceFast(this));
+				primitive->setController(getTopPVController());
+			}
+		}
+	}
+
+	void PartInstance::onTouchThisStep(boost::shared_ptr<PartInstance> other)
+	{
+		event_Touched.fire(this, other);
+	}
+
+	void PartInstance::onChildAdded(Instance* child)
+	{
+		PVInstance::onChildAdded(child);
+	}
+
+	void PartInstance::onCameraNear(float distance)
+	{
+		if (distance < 3.0f)
+			setAlphaModifier(0.0f);
+		else if (distance < 6.0f)
+			setAlphaModifier(0.5f);
+		else
+			setAlphaModifier(1.0f);
+	}
+
+	void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+	{
+		Draw::selectionBox(getPart(), adorn, selectState);
+	}
+
+	void PartInstance::render3dAdorn(Adorn* adorn)
+	{
+		if (partType == Part::CYLINDER_PART || SurfacesNeedAdorn)
+			Draw::partAdorn(getPart(), adorn, Controller::controllerTypeToColor(getTopPVController()->getControllerType()));
+
+		if (highlightSleepParts && primitive->getAssembly())
+		{
+			Sim::AssemblyState sleepStatus = primitive->getAssembly()->getRootClump()->getSleepStatus();
+
+			if (sleepStatus != Sim::ANCHORED && sleepStatus != Sim::AWAKE)
+			{
+				G3D::Color3 sleepColor;
+
+				switch (sleepStatus)
 				{
-					bFound = true;
-					bChecked[ i ] = true;
+				case Sim::RECURSIVE_WAKE_PENDING:
+				case Sim::WAKE_PENDING:
+					sleepColor = G3D::Color3::purple();
+					break;
+				case Sim::SLEEPING_CHECKING:
+					sleepColor = G3D::Color3::orange();
+					break;
+				case Sim::SLEEPING_DEEPLY:
+					sleepColor = G3D::Color3::yellow();
+					break;
+				default:
+					RBXASSERT(0);
+					sleepColor = sleepColor;
 					break;
 				}
-			}
-
-			if ( bFound == false )
-			{
-				OGRE_FREE(bChecked, MEMCATEGORY_SCENE_CONTROL);
-				bChecked = 0;
-				return false;
+				
+				Draw::selectionBox(getPart(), adorn, sleepColor);
 			}
 		}
 
-		for ( size_t i=0; i<getPolygonCount(); ++i )
+		if (highlightAwakeParts && primitive->getAssembly())
 		{
-			if ( bChecked[ i ] != true )
+			Sim::AssemblyState sleepStatus = primitive->getAssembly()->getRootClump()->getSleepStatus();
+
+			if (sleepStatus != Sim::ANCHORED && sleepStatus != Sim::SLEEPING_DEEPLY)
 			{
-				OGRE_FREE(bChecked, MEMCATEGORY_SCENE_CONTROL);
-				bChecked = 0;
-				return false;
-			}
-		}
+				G3D::Color3 wakeColor;
 
-		OGRE_FREE(bChecked, MEMCATEGORY_SCENE_CONTROL);
-		bChecked = 0;
-		return true;
-	}
-	//-----------------------------------------------------------------------
-	std::ostream& operator<< ( std::ostream& strm, const ConvexBody& body )
-	{
-		strm << "POLYGON INFO (" << body.getPolygonCount() << ")" << std::endl;
-
-		for ( size_t i = 0; i < body.getPolygonCount(); ++i )
-		{
-			strm << "POLYGON " << i << ", ";
-			strm << body.getPolygon( i );
-		}
-
-		return strm;
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::insertPolygon(Polygon* pdata, size_t poly )
-	{
-		OgreAssert(poly <= getPolygonCount(), "Insert position out of range" );
-		OgreAssert( pdata != NULL, "Polygon is NULL" );
-
-		PolygonList::iterator it = mPolygons.begin();
-		std::advance(it, poly);
-
-		mPolygons.insert( it, pdata );
-
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::insertPolygon(Polygon* pdata)
-	{
-		OgreAssert( pdata != NULL, "Polygon is NULL" );
-
-		mPolygons.push_back( pdata );
-
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::insertVertex(size_t poly, const Vector3& vdata, size_t vertex )
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position (polygon) out of range" );
-		
-		mPolygons[poly]->insertVertex(vdata, vertex);
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::insertVertex(size_t poly, const Vector3& vdata)
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position (polygon) out of range" );
-
-		mPolygons[poly]->insertVertex(vdata);
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::deletePolygon(size_t poly)
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position out of range" );
-
-		PolygonList::iterator it = mPolygons.begin();
-		std::advance(it, poly);
-		
-		freePolygon(*it);
-		mPolygons.erase(it);
-	}
-	//-----------------------------------------------------------------------
-	Polygon* ConvexBody::unlinkPolygon(size_t poly)
-	{
-		OgreAssert( poly >= 0 && poly < getPolygonCount(), "Search position out of range" );
-
-		PolygonList::iterator it = mPolygons.begin();
-		std::advance(it, poly);
-
-		// safe address
-		Polygon *pRet = *it;
-		
-		// delete entry
-		mPolygons.erase(it);	
-
-		// return polygon pointer
-
-		return pRet;
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::moveDataFromBody(ConvexBody& body)
-	{
-		body.mPolygons.swap(this->mPolygons);
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::deleteVertex(size_t poly, size_t vertex)
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position out of range" );
-
-		mPolygons[poly]->deleteVertex(vertex);
-	}
-	//-----------------------------------------------------------------------
-	const Polygon& ConvexBody::getPolygon(size_t poly) const
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position out of range");
-
-		return *mPolygons[poly];
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::setPolygon(Polygon* pdata, size_t poly)
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position out of range" );
-		OgreAssert(pdata != NULL, "Polygon is NULL" );
-
-		if (pdata != mPolygons[poly])
-		{
-			// delete old polygon
-			freePolygon(mPolygons[ poly ]);
-
-			// set new polygon
-			mPolygons[poly] = pdata;
-		}
-	}
-	//-----------------------------------------------------------------------
-	const Vector3& ConvexBody::getVertex(size_t poly, size_t vertex) const
-	{
-		OgreAssert( poly >= 0 && poly < getPolygonCount(), "Search position out of range" );
-		
-		return mPolygons[poly]->getVertex(vertex);
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::setVertex(size_t poly, const Vector3& vdata, size_t vertex)
-	{
-		OgreAssert(poly < getPolygonCount(), "Search position out of range");
-		
-		mPolygons[poly]->setVertex(vdata, vertex);
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::storeEdgesOfPolygon(size_t poly, Polygon::EdgeMap *edgeMap ) const
-	{
-		OgreAssert(poly <= getPolygonCount(), "Search position out of range" );
-		OgreAssert( edgeMap != NULL, "TEdgeMap ptr is NULL" );
-
-		mPolygons[poly]->storeEdges(edgeMap);
-	}
-	//-----------------------------------------------------------------------
-	Polygon::EdgeMap ConvexBody::getSingleEdges() const
-	{
-		Polygon::EdgeMap edgeMap;
-
-		// put all edges of all polygons into a list every edge has to be
-		// walked in each direction once	
-		for ( size_t i = 0; i < getPolygonCount(); ++i )
-		{
-			const Polygon& p = getPolygon( i );
-
-			for ( size_t j = 0; j < p.getVertexCount(); ++j )
-			{
-				const Vector3& a = p.getVertex( j );
-				const Vector3& b = p.getVertex( ( j + 1 ) % p.getVertexCount() );
-
-				edgeMap.insert( Polygon::Edge( a, b ) );
-			}
-		}
-
-		// search corresponding parts
-		Polygon::EdgeMap::iterator it;
-		Polygon::EdgeMap::iterator itStart;
-		Polygon::EdgeMap::const_iterator itEnd;
-		while( !edgeMap.empty() )
-		{
-			it = edgeMap.begin(); ++it;	// start one element after itStart
-			itStart = edgeMap.begin();	// the element to be compared with the others
-			itEnd = edgeMap.end();		// beyond the last element
-			
-			bool bFound = false;
-
-			for ( ; it != itEnd; ++it )
-			{
-				if (itStart->first.positionEquals(it->second) &&
-					 itStart->second.positionEquals(it->first))
+				switch (sleepStatus)
 				{
-					// erase itStart and it
-					edgeMap.erase( it );
-					edgeMap.erase( itStart );
-
-					bFound = true;
-
-					break; // found
+				case Sim::SLEEPING_CHECKING:
+					wakeColor = G3D::Color3::red();
+					break;
+				case Sim::AWAKE:
+					wakeColor = G3D::Color3::orange();
+					break;					
+				case Sim::RECURSIVE_WAKE_PENDING:
+				case Sim::WAKE_PENDING:
+					wakeColor = G3D::Color3::purple();
+					break;
+				default:
+					RBXASSERT(0);
+					wakeColor = wakeColor;
+					break;
 				}
-			}
-
-			if ( bFound == false )
-			{
-				break;	// not all edges could be matched
-						// body is not closed
+				
+				Draw::selectionBox(getPart(), adorn, wakeColor);
 			}
 		}
 
-		return edgeMap;
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::allocateSpace( size_t numPolygons, size_t numVertices )
-	{
-		reset();
+		if (showPartCoord)
+			renderCoordinateFrame(adorn);
 
-		// allocate numPolygons polygons with each numVertices vertices
-		for ( size_t iPoly = 0; iPoly < numPolygons; ++iPoly )
+		if (showAnchoredParts && primitive->getAnchor())
 		{
-			Polygon *poly = allocatePolygon();
+			float transparency = 1.0f - alpha();
+			G3D::Color4 color(G3D::Color3::gray(), transparency);
+			const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
 
-			for ( size_t iVertex = 0; iVertex < numVertices; ++iVertex )
-			{
-				poly->insertVertex( Vector3::ZERO );
-			}
-
-			mPolygons.push_back( poly );
+			DrawAdorn::partSurface(getPart(), Math::getClosestObjectNormalId(G3D::Vector3(0.0f, -1.0f, 0.0f), cframe.rotation), adorn, color);
 		}
-	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::clip( const Plane& pl, bool keepNegative )
-	{
-		if ( getPolygonCount() == 0 )
-			return;
 
-		// current will be used as the reference body
-		ConvexBody current;
-		current.moveDataFromBody(*this);
-		
-		OgreAssert( this->getPolygonCount() == 0, "Body not empty!" );
-		OgreAssert( current.getPolygonCount() != 0, "Body empty!" );
+		if (showUnalignedParts && !aligned())
+			Draw::selectionBox(getPart(), adorn, G3D::Color3::yellow());
 
-		// holds all intersection edges for the different polygons
-		Polygon::EdgeMap intersectionEdges;
-
-		// clip all polygons by the intersection plane
-		// add only valid or intersected polygons to *this
-		for ( size_t iPoly = 0; iPoly < current.getPolygonCount(); ++iPoly )
+		if (showSpanningTree)
 		{
+			setAlphaModifier(0.3f);
 
-			// fetch vertex count and ignore polygons with less than three vertices
-			// the polygon is not valid and won't be added
-			const size_t vertexCount = current.getVertexCount( iPoly );
-			if ( vertexCount < 3 )
-				continue;
-
-			// current polygon
-			const Polygon& p = current.getPolygon( iPoly );
-
-			// the polygon to assemble
-			Polygon *pNew = allocatePolygon();
-
-			// the intersection polygon (indeed it's an edge or it's empty)
-			Polygon *pIntersect = allocatePolygon();
-			
-			// check if polygons lie inside or outside (or on the plane)
-			// for each vertex check where it is situated in regard to the plane
-			// three possibilities appear:
-			Plane::Side clipSide = keepNegative ? Plane::POSITIVE_SIDE : Plane::NEGATIVE_SIDE;
-			// - side is clipSide: vertex will be clipped
-			// - side is !clipSide: vertex will be untouched
-			// - side is NOSIDE:   vertex will be untouched
-			Plane::Side *side = OGRE_ALLOC_T(Plane::Side, vertexCount, MEMCATEGORY_SCENE_CONTROL);
-			for ( size_t iVertex = 0; iVertex < vertexCount; ++iVertex )
+			Assembly* assembly = primitive->getAssembly();
+			if (assembly && primitive.get() == assembly->getMainPrimitive())
 			{
-				side[ iVertex ] = pl.getSide( p.getVertex( iVertex ) );
-			}
+				adorn->setObjectToWorldMatrix(G3D::CoordinateFrame(primitive->getCoordinateFrame().translation));
 
-			// now we check the side combinations for the current and the next vertex
-			// four different combinations exist:
-			// - both points inside (or on the plane): keep the second (add it to the body)
-			// - both points outside: discard both (don't add them to the body)
-			// - first vertex is inside, second is outside: add the intersection point
-			// - first vertex is outside, second is inside: add the intersection point, then the second
-			for ( size_t iVertex = 0; iVertex < vertexCount; ++iVertex )
-			{
-				// determine the next vertex
-				size_t iNextVertex = ( iVertex + 1 ) % vertexCount;
-
-				const Vector3& vCurrent = p.getVertex( iVertex );
-				const Vector3& vNext    = p.getVertex( iNextVertex );
-
-				// case 1: both points inside (store next)
-				if ( side[ iVertex ]     != clipSide &&		// NEGATIVE or NONE
-					 side[ iNextVertex ] != clipSide )		// NEGATIVE or NONE
+				if (primitive->getAnchor())
 				{
-					// keep the second
-					pNew->insertVertex( vNext );
-				}
-
-				// case 3: inside -> outside (store intersection)
-				else if ( side[ iVertex ]		!= clipSide &&
-						  side[ iNextVertex ]	== clipSide )
-				{
-					// Do an intersection with the plane. We use a ray with a start point and a direction.
-					// The ray is forced to hit the plane with any option available (eigher current or next
-					// is the starting point)
-
-					// intersect from the outside vertex towards the inside one
-					Vector3 vDirection = vCurrent - vNext;
-					vDirection.normalise();
-					Ray ray( vNext, vDirection );
-					std::pair< bool, Real > intersect = ray.intersects( pl );
-
-					// store intersection
-					if ( intersect.first )
-					{
-						// convert distance to vector
-						Vector3 vIntersect = ray.getPoint( intersect.second );	
-
-						// store intersection
-						pNew->insertVertex( vIntersect );
-						pIntersect->insertVertex( vIntersect );
-					}
-				}
-
-				// case 4: outside -> inside (store intersection, store next)
-				else if ( side[ iVertex ]		== clipSide &&
-					side[ iNextVertex ]			!= clipSide )
-				{
-					// Do an intersection with the plane. We use a ray with a start point and a direction.
-					// The ray is forced to hit the plane with any option available (eigher current or next
-					// is the starting point)
-
-					// intersect from the outside vertex towards the inside one
-					Vector3 vDirection = vNext - vCurrent;
-					vDirection.normalise();
-					Ray ray( vCurrent, vDirection );
-					std::pair< bool, Real > intersect = ray.intersects( pl );
-
-					// store intersection
-					if ( intersect.first )
-					{
-						// convert distance to vector
-						Vector3 vIntersect = ray.getPoint( intersect.second );
-
-						// store intersection
-						pNew->insertVertex( vIntersect );
-						pIntersect->insertVertex( vIntersect );
-					}
-
-					pNew->insertVertex( vNext );
-
-				}
-				// else:
-				// case 2: both outside (do nothing)
-					
-			}
-
-			// insert the polygon only, if at least three vertices are present
-			if ( pNew->getVertexCount() >= 3 )
-			{
-				// in case there are double vertices, remove them
-				pNew->removeDuplicates();
-
-				// in case there are still at least three vertices, insert the polygon
-				if ( pNew->getVertexCount() >= 3 )
-				{
-					this->insertPolygon( pNew );
+					adorn->sphere(G3D::Sphere(G3D::Vector3::zero(), 0.5f), G3D::Color3::green(), G3D::Color4::clear());
 				}
 				else
 				{
-					// delete pNew because it's empty or invalid
-					freePolygon(pNew);
-					pNew = 0;
+					G3D::Vector3 boxSize = G3D::Vector3::one() * 0.25f;
+					adorn->box(G3D::AABox(-boxSize, boxSize), G3D::Color3::green(), G3D::Color4::clear());
 				}
+			}
+		}
+	}
+
+	bool PartInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
+	{
+		const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+		G3D::Ray rayInPartCoords = cframe.toObjectSpace(worldRay);
+		G3D::Vector3 hitPointInPartCoords;
+
+		if (HitTest::hitTest(getPart(), rayInPartCoords, hitPointInPartCoords, 1.0f))
+		{
+			const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame(); // roblox be like: lets do it again why not
+			worldHitPoint = cframe.pointToWorldSpace(hitPointInPartCoords);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void PartInstance::safeMove()
+	{
+		RBXASSERT(primitive.get());
+
+		if (World* world = Workspace::getWorldIfInWorkspace(this))
+		{
+			G3D::Array<Primitive*> temp;
+			temp.append(primitive.get());
+			
+			Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), world->getContactManager());
+		}
+	}
+
+	void PartInstance::primitivesToParts(const G3D::Array<Primitive*>& primitives, G3D::Array<boost::shared_ptr<PartInstance>>& parts)
+	{
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			PartInstance* part = fromPrimitive(primitives[i]);
+			parts.push_back(shared_from(part));
+		}
+	}
+
+	void PartInstance::findParts(Instance* instance, std::vector<boost::weak_ptr<RBX::PartInstance>>& parts)
+	{
+		if (PartInstance* part = dynamic_cast<PartInstance*>(instance))
+			parts.push_back(shared_from(part));
+
+		for (size_t i = 0; i < instance->numChildren(); i++)
+		{
+			findParts(instance->getChild(i), parts);
+		}
+	}
+
+	void PartInstance::setCoordinateFrame(const G3D::CoordinateFrame& value)
+	{
+		if (value != getCoordinateFrame())
+		{
+			G3D::CoordinateFrame newValue = value;
+			Math::orthonormalizeIfNecessary(newValue.rotation);
+			setPhysics(newValue);
+
+			raisePropertyChanged(prop_CFrame);
+			raisePropertyChanged(prop_PositionUi);
+		}
+	}
+
+	void PartInstance::setPartSizeXml(const G3D::Vector3& rbxSize)
+	{
+		if (rbxSize != getPartSizeXml())
+		{
+			G3D::Vector3 newRbxSize = partType == Part::BLOCK_PART ? rbxSize : rbxSize.xxx();
+			RBXASSERT(newRbxSize.max(G3D::Vector3(1.0f, 0.4f, 1.0f)) == newRbxSize);
+
+			if (legacyOffset.get())
+			{
+				G3D::CoordinateFrame oldCorner = primitive->getGridCorner();
+				primitive->setGridSize(newRbxSize);
+				primitive->setGridCorner(oldCorner);
 			}
 			else
 			{
-				// delete pNew because it's empty or invalid
-				freePolygon(pNew);
-				pNew = 0;
+				primitive->setGridSize(newRbxSize);
 			}
 
-			// insert intersection polygon only, if there are two vertices present
-			if ( pIntersect->getVertexCount() == 2 )
-			{
-				intersectionEdges.insert( Polygon::Edge( pIntersect->getVertex( 0 ),
-														  pIntersect->getVertex( 1 ) ) );
-			}
+			raisePropertyChanged(prop_Size);
+			raisePropertyChanged(prop_SizeUi);
+			PersistentPart.setDirty();
+			onExtentsChanged();
+		}
+	}
 
-			// delete intersection polygon
-			// vertices were copied (if there were any)
-			freePolygon(pIntersect);
-			pIntersect = 0;
+	//93.96% match
+	//not matching for the same reason as PartInstance::setFormFactorUi
+	void PartInstance::setPartSizeUi(const G3D::Vector3& uiSize)
+	{
+		destroyJoints();
 
-			// delete side info
-			OGRE_FREE(side, MEMCATEGORY_SCENE_CONTROL);
-			side = 0;
+		G3D::Vector3 adjustedUiSize = uiSize;
+
+		switch (formFactor)
+		{
+		case BRICK:
+			adjustedUiSize.y = uiSize.y * 5.0f/6.0f;
+			break;
+		case PLATE:
+			adjustedUiSize.y = uiSize.y * 2.5f;
+			break;
 		}
 
-		// if the polygon was partially clipped, close it
-		// at least three edges are needed for a polygon
-		if ( intersectionEdges.size() >= 3 )
-		{
-			Polygon *pClosing = allocatePolygon();
-
-			// Analyze the intersection list and insert the intersection points in ccw order
-			// Each point is twice in the list because of the fact that we have a convex body
-			// with convex polygons. All we have to do is order the edges (an even-odd pair)
-			// in a ccw order. The plane normal shows us the direction.
-			Polygon::EdgeMap::iterator it = intersectionEdges.begin();
-
-			// check the cross product of the first two edges
-			Vector3 vFirst  = it->first;
-			Vector3 vSecond = it->second;
-
-			// remove inserted edge
-			intersectionEdges.erase( it );
-
-			Vector3 vNext;
-
-			// find mating edge
-			if (findAndEraseEdgePair(vSecond, intersectionEdges, vNext))
-			{
-				// detect the orientation
-				// the polygon must have the same normal direction as the plane and then n
-				Vector3 vCross = ( vFirst - vSecond ).crossProduct( vNext - vSecond );
-				bool frontside = ( pl.normal ).directionEquals( vCross, Degree( 1 ) );
-
-				// first inserted vertex
-				Vector3 firstVertex;
-				// currently inserted vertex
-				Vector3 currentVertex;
-				// direction equals -> front side (walk ccw)
-				if ( frontside )
-				{
-					// start with next as first vertex, then second, then first and continue with first to walk ccw
-					pClosing->insertVertex( vNext );
-					pClosing->insertVertex( vSecond );
-					pClosing->insertVertex( vFirst );
-					firstVertex		= vNext;
-					currentVertex	= vFirst;
-
-				#ifdef _DEBUG_INTERSECTION_LIST
-					std::cout << "Plane: n=" << pl.normal << ", d=" << pl.d << std::endl;
-					std::cout << "First inserted vertex: " << *next << std::endl;
-					std::cout << "Second inserted vertex: " << *vSecond << std::endl;
-					std::cout << "Third inserted vertex: " << *vFirst << std::endl;
-				#endif
-				}
-				// direction does not equal -> back side (walk cw)
-				else
-				{
-					// start with first as first vertex, then second, then next and continue with next to walk ccw
-					pClosing->insertVertex( vFirst );
-					pClosing->insertVertex( vSecond );
-					pClosing->insertVertex( vNext );
-					firstVertex		= vFirst;
-					currentVertex	= vNext;
-
-					#ifdef _DEBUG_INTERSECTION_LIST
-						std::cout << "Plane: n=" << pl.normal << ", d=" << pl.d << std::endl;
-						std::cout << "First inserted vertex: " << *vFirst << std::endl;
-						std::cout << "Second inserted vertex: " << *vSecond << std::endl;
-						std::cout << "Third inserted vertex: " << *next << std::endl;
-					#endif
-				}
-
-				// search mating edges that have a point in common
-				// continue this operation as long as edges are present
-				while ( !intersectionEdges.empty() )
-				{
-
-					if (findAndEraseEdgePair(currentVertex, intersectionEdges, vNext))
-					{
-						// insert only if it's not the last (which equals the first) vertex
-						if ( !intersectionEdges.empty() )
-						{
-							currentVertex = vNext;
-							pClosing->insertVertex( vNext );
-						}
-					}
-					else
-					{
-						// degenerated...
-						break;
-					}
-
-				} // while intersectionEdges not empty
-
-				// insert polygon (may be degenerated!)
-				this->insertPolygon( pClosing );
-
-			}
-			// mating intersection edge NOT found!
-			else
-			{
-				freePolygon(pClosing);
-			}
-
-		} // if intersectionEdges contains more than three elements
+		setPartSizeXml(uiToXmlSize(adjustedUiSize));
+		safeMove();
+		join();
 	}
-	//-----------------------------------------------------------------------
-	bool ConvexBody::findAndEraseEdgePair(const Vector3& vec, 
-		Polygon::EdgeMap& intersectionEdges, Vector3& vNext ) const
+
+	void PartInstance::setTranslationUi(const G3D::Vector3& set)
 	{
-		Polygon::EdgeMap::iterator it = intersectionEdges.begin();
+		G3D::CoordinateFrame current = primitive->getCoordinateFrame();
 
-		for (Polygon::EdgeMap::iterator it = intersectionEdges.begin(); 
-			it != intersectionEdges.end(); ++it)
+		if (current.translation != set)
 		{
-			if (it->first.positionEquals(vec))
-			{
-				vNext = it->second;
+			current.translation = set;
 
-				// erase found edge
-				intersectionEdges.erase( it );
-
-				return true; // found!
-			}
-			else if (it->second.positionEquals(vec))
-			{
-				vNext = it->first;
-
-				// erase found edge
-				intersectionEdges.erase( it );
-
-				return true; // found!
-			}
+			destroyJoints();
+			
+			setCoordinateFrame(current);
+			safeMove();
+			join();
 		}
-
-		return false; // not found!
 	}
-	//-----------------------------------------------------------------------
-	void ConvexBody::logInfo( void ) const
+
+	void PartInstance::setDragging(bool value)
 	{
-		StringUtil::StrStreamType ssOut( std::stringstream::out );
-		ssOut << *this;
-		
-		Ogre::LogManager::getSingleton().logMessage( Ogre::LML_NORMAL, ssOut.str()  );
+		if (value != getDragging())
+		{
+			primitive->setDragging(value);
+			raisePropertyChanged(prop_Dragging);
+		}
+	}
+
+	void PartInstance::setRenderImportance(float value)
+	{
+		if (value != getRenderImportance())
+		{
+			renderImportance = value;
+			raisePropertyChanged(prop_RenderImportance);
+		}
+	}
+
+	void PartInstance::setCanCollide(bool value)
+	{
+		if (value != getCanCollide())
+		{
+			primitive->setCanCollide(value);
+			raisePropertyChanged(prop_CanCollide);
+		}
+	}
+
+	void PartInstance::setAnchored(bool value)
+	{
+		if (value != getAnchored())
+		{
+			primitive->setAnchor(value);
+			raisePropertyChanged(prop_Anchored);
+		}
+	}
+
+	void PartInstance::setPartLocked(bool value)
+	{
+		if (value != getPartLocked())
+		{
+			locked = value;
+			raisePropertyChanged(prop_Locked);
+		}
+	}
+
+	void PartInstance::setTransparency(float value)
+	{
+		if (value != getTransparencyXml())
+		{
+			transparency = value;
+			raisePropertyChanged(prop_Transparency);
+		}
+	}
+
+	void PartInstance::setAlphaModifier(float value)
+	{
+		if (value != alphaModifier)
+		{
+			alphaModifier = value;
+			raisePropertyChanged(prop_Transparency);
+		}
+	}
+
+	void PartInstance::setReflectance(float value)
+	{
+		if (value != getReflectance())
+		{
+			reflectance = value;
+			raisePropertyChanged(prop_Reflectance);
+		}
+	}
+
+	void PartInstance::setColor(BrickColor value)
+	{
+		if (value != color)
+		{
+			color = value;
+			raisePropertyChanged(prop_BrickColor);
+			raisePropertyChanged(prop_Color);
+		}
+	}
+
+	void PartInstance::setFormFactorXml(FormFactor value)
+	{
+		if (value != getFormFactor())
+		{
+			formFactor = value;
+			raisePropertyChanged(prop_formFactor);
+		}
+	}
+
+	//94.32% match
+	//there is a way to match it 100% but it is Not Clean. try to find a cleaner way.
+	void PartInstance::setFormFactorUi(FormFactor value)
+	{
+		if (partType != Part::BLOCK_PART)
+			value = SYMETRIC;
+
+		if (value != getFormFactor())
+		{
+			destroyJoints();
+
+			setFormFactorXml(value);
+
+			G3D::Vector3 uiSize = getPartSizeUi();
+			uiSize.y = G3D::max<float>(1.0, G3D::iRound(uiSize.y));
+
+			G3D::Vector3 xmlSize = uiToXmlSize(uiSize);
+			setPartSizeXml(xmlSize);
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setFriction(float friction)
+	{
+		float newFriction = G3D::clamp(friction, 0.0f, 2.0f);
+		if (newFriction != getFriction())
+		{
+			primitive->setFriction(newFriction);
+			raisePropertyChanged(prop_Friction);
+		}
+	}
+
+	void PartInstance::setElasticity(float elasticity)
+	{
+		float newElasticity = G3D::clamp(elasticity, 0.0f, 1.0f);
+		if (newElasticity != getElasticity())
+		{
+			primitive->setElasticity(newElasticity);
+			raisePropertyChanged(prop_Elasticity);
+		}
+	}
+
+	void PartInstance::setPartTypeXml(Part::PartType _type)
+	{
+		if (getPartType() != _type)
+		{
+			partType = _type;
+			primitive->setPrimitiveType(_type == Part::BLOCK_PART ? Geometry::GEOMETRY_BLOCK : Geometry::GEOMETRY_BALL);
+
+			if (partType != Part::BLOCK_PART)
+				setFormFactorXml(SYMETRIC);
+
+			raisePropertyChanged(prop_shapeXml);
+			raisePropertyChanged(prop_shapeUi);
+
+			PersistentPart.setDirty();
+			shouldRenderSetDirty();
+			onExtentsChanged();
+		}
+	}
+
+	void PartInstance::setPartTypeUi(Part::PartType _type)
+	{
+		if (partType != Part::BLOCK_PART)
+			RBXASSERT(formFactor == SYMETRIC);
+
+		if (getPartType() != _type)
+		{
+			destroyJoints();
+
+			setPartTypeXml(_type);
+
+			if (_type != Part::BLOCK_PART)
+			{
+				G3D::Vector3 xmlSize = uiToXmlSize(getPartSizeUi());
+				setPartSizeXml(xmlSize);
+				safeMove();
+			}
+
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setLinearVelocity(const G3D::Vector3& set)
+	{
+		Velocity vel = getVelocity();
+		if (vel.linear != set)
+		{
+			vel.linear = set;
+			primitive->getBody()->setVelocity(vel);
+			raisePropertyChanged(prop_RotVelocity);
+		}
+	}
+
+	void PartInstance::setRotationalVelocity(const G3D::Vector3& set)
+	{
+		Velocity vel = getVelocity();
+		if (vel.rotational != set)
+		{
+			vel.rotational = set;
+			primitive->getBody()->setVelocity(vel);
+			raisePropertyChanged(prop_RotVelocity);
+		}
+	}
+
+	bool PartInstance::reportTouches() const
+	{
+		return !event_Touched.empty(this);
 	}
 }
-

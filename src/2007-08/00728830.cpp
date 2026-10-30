@@ -1,10 +1,18 @@
-// from server: 28% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_boost133_signals_core_74519259638e3a60.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#define BOOST_SIGNALS_SOURCE
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 // Boost.Signals library
 
 // Copyright Douglas Gregor 2001-2004. Use, modification and
@@ -16,126 +24,63 @@
 
 #define BOOST_SIGNALS_SOURCE
 
-#include <boost/signals/detail/named_slot_map.hpp>
-#include <cassert>
-#include <map>
-#include <list>
-#include <typeinfo>
+#include <boost/signals/slot.hpp>
 
-namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
+namespace boost {
+  namespace BOOST_SIGNALS_NAMESPACE {
+    namespace detail {
+      void slot_base::create_connection()
+      {
+        // Create a new connection object
+        basic_connection* con = new basic_connection();
 
-typedef std::list<connection_slot_pair> group_list;
-typedef group_list::iterator slot_pair_iterator;
-typedef std::map<stored_group, group_list, compare_type> slot_container_type;
-typedef slot_container_type::iterator group_iterator;
-typedef slot_container_type::const_iterator const_group_iterator;
+        /* nothrow */ {
+          // The signal portion isn't really necessary, except that we need a
+          // signal for the connection to be connected.
+          con->signal = static_cast<void*>(this);
+          con->signal_data = 0;
+          con->blocked_ = false ;
+          con->signal_disconnect = &bound_object_destructed;
+        }
 
+        // This connection watches for destruction of bound objects. Note
+        // that the reset routine will delete con if an allocation throws
+        data->watch_bound_objects.reset(con);
 
-#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
-void named_slot_map_iterator::decrement() { assert(false); }
-void named_slot_map_iterator::advance(difference_type) { assert(false); }
-#endif
+        // We create a scoped connection, so that exceptions thrown while
+        // adding bound objects will cause a cleanup of the bound objects
+        // already connected.
+        scoped_connection safe_connection(data->watch_bound_objects);
 
-named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
-{
-  clear();
-}
+        // Now notify each of the bound objects that they are connected to this
+        // slot.
+        for(std::vector<const trackable*>::iterator i =
+              data->bound_objects.begin();
+            i != data->bound_objects.end(); ++i) {
+          // Notify the object that the slot is connecting to it
+          BOOST_SIGNALS_NAMESPACE::detail::bound_object binding;
+          (*i)->signal_connected(data->watch_bound_objects, binding);
 
-void named_slot_map::clear()
-{
-  groups.clear();
-  groups[stored_group(stored_group::sk_front)];
-  groups[stored_group(stored_group::sk_back)];
-  back = groups.end();
-  --back;
-}
+          // This will notify the bound object that the connection just made
+          // should be disconnected if an exception is thrown before the
+          // end of this iteration
+          BOOST_SIGNALS_NAMESPACE::detail::auto_disconnect_bound_object
+            disconnector(binding);
 
-named_slot_map::iterator named_slot_map::begin()
-{
-  return named_slot_map::iterator(groups.begin(), groups.end());
-}
+          // Add the binding to the list of bindings for the connection
+          con->bound_objects.push_back(binding);
 
-named_slot_map::iterator named_slot_map::end()
-{
-  return named_slot_map::iterator(groups.end(), groups.end());
-}
+          // The connection object now knows about the bound object, so if an
+          // exception is thrown later the connection object will notify the
+          // bound object of the disconnection automatically
+          disconnector.release();
+        }
 
-named_slot_map::iterator
-named_slot_map::insert(const stored_group& name, const connection& con,
-                       const any& slot, connect_position at)
-{
-  group_iterator group;
-  if (name.empty()) {
-    switch (at) {
-    case at_front: group = groups.begin(); break;
-    case at_back: group = back; break;
-    }
-  } else {
-    group = groups.find(name);
-    if (group == groups.end()) {
-      slot_container_type::value_type v(name, group_list());
-      group = groups.insert(v).first;
-    }
-  }
-  iterator it;
-  it.group = group;
-  it.last_group = groups.end();
+        // No exceptions will be thrown past this point.
+        safe_connection.release();
 
-  switch (at) {
-  case at_back:
-    group->second.push_back(connection_slot_pair(con, slot));
-    it.slot_ = group->second.end();
-    it.slot_assigned = true;
-    --(it.slot_);
-    break;
-
-  case at_front:
-    group->second.push_front(connection_slot_pair(con, slot));
-    it.slot_ = group->second.begin();
-    it.slot_assigned = true;
-    break;
-  }
-  return it;
-}
-
-void named_slot_map::disconnect(const stored_group& name)
-{
-  group_iterator group = groups.find(name);
-  if (group != groups.end()) {
-    slot_pair_iterator i = group->second.begin();
-    while (i != group->second.end()) {
-      slot_pair_iterator next = i;
-      ++next;
-      i->first.disconnect();
-      i = next;
-    }
-    groups.erase(group);
-  }
-}
-
-void named_slot_map::erase(iterator pos)
-{
-  // Erase the slot
-  pos.slot_->first.disconnect();
-  pos.group->second.erase(pos.slot_);
-}
-
-void named_slot_map::remove_disconnected_slots()
-{
-  // Remove any disconnected slots
-  group_iterator g = groups.begin();
-  while (g != groups.end()) {
-    slot_pair_iterator s = g->second.begin();
-    while (s != g->second.end()) {
-      if (s->first.connected()) ++s;
-      else g->second.erase(s++);
-    }
-
-    // Clear out empty groups
-    if (empty(g)) groups.erase(g++);
-    else ++g;
-  }
-}
-
-
-} } }
+        data->watch_bound_objects.set_controlling(true);
+      }
+    } // end namespace detail
+  } // end namespace BOOST_SIGNALS_NAMESPACE
+} // end namespace boost

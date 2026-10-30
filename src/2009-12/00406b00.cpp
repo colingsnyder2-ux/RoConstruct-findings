@@ -1,13 +1,13 @@
-// from server: 61% by atomic.potato
-extern "C" int __stdcall sub_406990(int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_atl_typeinfo_getti_88c46520c3afb67d.cpp
 
-struct S {
-    char pad[4];
-    int f(int, int);
-};
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND
+#include <atlbase.h>
+#include <atlcom.h>
 
-int S::f(int a, int b) {
-    if (this)
-        return sub_406990((int)(this->pad), a, b);
-    return sub_406990(0, a, b);
-}
+typedef HRESULT (ATL::CComTypeInfoHolder::*RocGetTIFunction)(LCID);
+RocGetTIFunction volatile roc_get_type_info =
+    static_cast<RocGetTIFunction>(&ATL::CComTypeInfoHolder::GetTI);

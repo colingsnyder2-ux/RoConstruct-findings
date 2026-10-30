@@ -1,345 +1,287 @@
-// from server: 57% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreSceneManagerEnumerator.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_codex_scorehud_color_order_21a493d6c6b3d438.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include "roc_espeon_scorehudportableheader11bfdf7c6129a99c.cpp"
+#include <typeinfo>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+	class BoardData
+	{
+	public:
+		std::vector<std::vector<std::string>> data;
+		std::vector<std::string> fields;
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+	public:
+		BoardData()
+		{
+		}
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+		void SetSize(int dataSize, int fieldSize)
+		{
+			data.resize(dataSize);
+			for (int i = 0; i < dataSize; ++i)
+				data[i].resize(fieldSize);
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+			fields.resize(fieldSize);
+		}
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+		void AddField(std::string fieldName, int position)
+		{
+			fields[position] = fieldName;
+		}
+	};
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreSceneManagerEnumerator.h"
+	class LeaderboardData
+	{
+	public:
+		std::vector<std::string> statNamesList;
+		std::map<Team*, std::vector<std::string>> playersByTeamList;
+		std::map<std::string, std::map<std::string, int>> statMap;
+		std::map<Team*, std::map<std::string, int>> teamTotals;
+	private:
+		Instance* context;
 
-#include "OgreDynLibManager.h"
-#include "OgreDynLib.h"
-#include "OgreConfigFile.h"
-#include "OgreMaterial.h"
-#include "OgreException.h"
-#include "OgreRoot.h"
-#include "OgreLogManager.h"
+	public:
+		LeaderboardData(Instance* context)
+			: context(context)
+		{
+		}
+
+		void CompileData();
 
 
-namespace Ogre {
+	private:
+		void AddTuple(std::string playerName, Team* team, std::string statName, int statValue)
+		{
+			if (std::find(statNamesList.begin(), statNamesList.end(), statName) == statNamesList.end())
+				statNamesList.push_back(statName);
 
-    //-----------------------------------------------------------------------
-    template<> SceneManagerEnumerator* Singleton<SceneManagerEnumerator>::ms_Singleton = 0;
-    SceneManagerEnumerator* SceneManagerEnumerator::getSingletonPtr(void)
-    {
-        return ms_Singleton;
+			if (std::find(playersByTeamList[team].begin(), playersByTeamList[team].end(), playerName) == playersByTeamList[team].end())
+				playersByTeamList[team].push_back(playerName);
+
+			statMap[playerName][statName] = statValue;
+		}
+	};
+
+
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::find<Teams>(const Instance*);
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+template<> Network::Players* ServiceProvider::find<Network::Players>(const Instance*);
+// Genuine public accessor bodies on opaque native receivers. Public SDK controls
+// prove their old inline offsets differ (name100/childrenf8/size134 vs native
+// name110/children108/size13c). These methods model their own native fields;
+// no private declarations/access modifiers, padding or virtual slots are changed.
+class InstanceApi {
+public:
+    Instance* findFirstChildByName(const std::string&) const;
+    size_t numChildren() const {
+        const boost::shared_ptr<Instances>& children=*(const boost::shared_ptr<Instances>*)((const char*)this+0x108);
+        return children ? children->size() : 0;
     }
-    SceneManagerEnumerator& SceneManagerEnumerator::getSingleton(void)
-    {  
-        assert( ms_Singleton );  return ( *ms_Singleton );  
+    Instance* getChild(size_t i) {
+        return (**(const boost::shared_ptr<Instances>*)((const char*)this+0x108))[i].get();
     }
-
-    //-----------------------------------------------------------------------
-    SceneManagerEnumerator::SceneManagerEnumerator()
-		: mInstanceCreateCount(0), mCurrentRenderSystem(0)
-    {
-        addFactory(&mDefaultFactory);
-
+    const std::string& getName() const {
+        return *(const std::string*)((const char*)this+0x110);
     }
-    //-----------------------------------------------------------------------
-    SceneManagerEnumerator::~SceneManagerEnumerator()
-    {
-		// Destroy all remaining instances
-		// Really should have shutdown and unregistered by now, but catch here in case
-		for (Instances::iterator i = mInstances.begin(); i != mInstances.end(); ++i)
-		{
-			// destroy instances
-			for(Factories::iterator f = mFactories.begin(); f != mFactories.end(); ++f)
-			{
-				if ((*f)->getMetaData().typeName == i->second->getTypeName())
-				{
-					(*f)->destroyInstance(i->second);
-					break;
-				}
-			}
-
-		}
-		mInstances.clear();
-
+};
+class GuiItemApi {
+public:
+    void setGuiSize(const G3D::Vector2& value) {
+        *(G3D::Vector2*)((char*)this+0x13c)=value;
     }
-	//-----------------------------------------------------------------------
-	void SceneManagerEnumerator::addFactory(SceneManagerFactory* fact)
-	{
-		mFactories.push_back(fact);
-		// add to metadata
-		mMetaDataList.push_back(&fact->getMetaData());
-		// Log
-		LogManager::getSingleton().logMessage("SceneManagerFactory for type '" +
-			fact->getMetaData().typeName + "' registered.");
-	}
-	//-----------------------------------------------------------------------
-	void SceneManagerEnumerator::removeFactory(SceneManagerFactory* fact)
-	{
-		// destroy all instances for this factory
-		for (Instances::iterator i = mInstances.begin(); i != mInstances.end(); )
-		{
-			SceneManager* instance = i->second;
-			if (instance->getTypeName() == fact->getMetaData().typeName)
-			{
-				fact->destroyInstance(instance);
-				Instances::iterator deli = i++;
-				mInstances.erase(deli);
-			}
-			else
-			{
-				++i;
-			}
-		}
-		// remove from metadata
-		for (MetaDataList::iterator m = mMetaDataList.begin(); m != mMetaDataList.end(); ++m)
-		{
-			if(*m == &(fact->getMetaData()))
-			{
-				mMetaDataList.erase(m);
-				break;
-			}
-		}
-		mFactories.remove(fact);
-	}
-	//-----------------------------------------------------------------------
-	const SceneManagerMetaData* SceneManagerEnumerator::getMetaData(const String& typeName) const
-	{
-		for (MetaDataList::const_iterator i = mMetaDataList.begin(); 
-			i != mMetaDataList.end(); ++i)
-		{
-			if (typeName == (*i)->typeName)
-			{
-				return *i;
-			}
-		}
-
-	    OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-		    "No metadata found for scene manager of type '" + typeName + "'",
-		    "SceneManagerEnumerator::createSceneManager");
-
-	}
-	//-----------------------------------------------------------------------
-	SceneManagerEnumerator::MetaDataIterator 
-	SceneManagerEnumerator::getMetaDataIterator(void) const
-	{
-		return MetaDataIterator(mMetaDataList.begin(), mMetaDataList.end());
-
-	}
-	//-----------------------------------------------------------------------
-	SceneManager* SceneManagerEnumerator::createSceneManager(
-		const String& typeName, const String& instanceName)
-	{
-		if (mInstances.find(instanceName) != mInstances.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-				"SceneManager instance called '" + instanceName + "' already exists",
-				"SceneManagerEnumerator::createSceneManager");
-		}
-
-		SceneManager* inst = 0;
-		for(Factories::iterator i = mFactories.begin(); i != mFactories.end(); ++i)
-		{
-			if ((*i)->getMetaData().typeName == typeName)
-			{
-				if (instanceName.empty())
-				{
-					// generate a name
-					StringUtil::StrStreamType s;
-					s << "SceneManagerInstance" << ++mInstanceCreateCount;
-					inst = (*i)->createInstance(s.str());
-				}
-				else
-				{
-					inst = (*i)->createInstance(instanceName);
-				}
-				break;
-			}
-		}
-
-		if (!inst)
-		{
-			// Error!
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"No factory found for scene manager of type '" + typeName + "'",
-				"SceneManagerEnumerator::createSceneManager");
-		}
-
-		/// assign rs if already configured
-		if (mCurrentRenderSystem)
-			inst->_setDestinationRenderSystem(mCurrentRenderSystem);
-
-		mInstances[inst->getName()] = inst;
-		
-		return inst;
-		
-
-	}
-	//-----------------------------------------------------------------------
-	SceneManager* SceneManagerEnumerator::createSceneManager(
-		SceneTypeMask typeMask, const String& instanceName)
-	{
-		if (mInstances.find(instanceName) != mInstances.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-				"SceneManager instance called '" + instanceName + "' already exists",
-				"SceneManagerEnumerator::createSceneManager");
-		}
-
-		SceneManager* inst = 0;
-		String name = instanceName;
-		if (name.empty())
-		{
-			// generate a name
-			StringUtil::StrStreamType s;
-			s << "SceneManagerInstance" << ++mInstanceCreateCount;
-			name = s.str();
-		}
-
-		// Iterate backwards to find the matching factory registered last
-		for(Factories::reverse_iterator i = mFactories.rbegin(); i != mFactories.rend(); ++i)
-		{
-			if ((*i)->getMetaData().sceneTypeMask & typeMask)
-			{
-				inst = (*i)->createInstance(name);
-				break;
-			}
-		}
-
-		// use default factory if none
-		if (!inst)
-			inst = mDefaultFactory.createInstance(name);
-
-		/// assign rs if already configured
-		if (mCurrentRenderSystem)
-			inst->_setDestinationRenderSystem(mCurrentRenderSystem);
-		
-		mInstances[inst->getName()] = inst;
-
-		return inst;
-
-	}
-	//-----------------------------------------------------------------------
-	void SceneManagerEnumerator::destroySceneManager(SceneManager* sm)
-	{
-		// Erase instance from map
-		mInstances.erase(sm->getName());
-
-		// Find factory to destroy
-		for(Factories::iterator i = mFactories.begin(); i != mFactories.end(); ++i)
-		{
-			if ((*i)->getMetaData().typeName == sm->getTypeName())
-			{
-				(*i)->destroyInstance(sm);
-				break;
-			}
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	SceneManager* SceneManagerEnumerator::getSceneManager(const String& instanceName) const
-	{
-		Instances::const_iterator i = mInstances.find(instanceName);
-		if(i != mInstances.end())
-		{
-			return i->second;
-		}
-		else
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"SceneManager instance with name '" + instanceName + "' not found.",
-				"SceneManagerEnumerator::getSceneManager");
-		}
-
-	}
-	//-----------------------------------------------------------------------
-	SceneManagerEnumerator::SceneManagerIterator 
-	SceneManagerEnumerator::getSceneManagerIterator(void)
-	{
-		return SceneManagerIterator(mInstances.begin(), mInstances.end());
-
-	}
-	//-----------------------------------------------------------------------
-    void SceneManagerEnumerator::setRenderSystem(RenderSystem* rs)
-    {
-		mCurrentRenderSystem = rs;
-
-		for (Instances::iterator i = mInstances.begin(); i != mInstances.end(); ++i)
-		{
-            i->second->_setDestinationRenderSystem(rs);
+};
+class PlayersApi {
+public:
+    boost::shared_ptr<const Instances> getPlayers();
+    int numPlayers() const {
+        return (int)(*(const CopyOnWrite<std::vector<boost::shared_ptr<Instance>>>*)((const char*)this+0x198))->size();
+    }
+};
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::find<Teams>(this);
+    if(!teams) return;
+    G3D::Rect2D viewport=adorn->getViewport();
+    float scale=viewport.width()/1024.0f;
+    float row=14.0f*scale;
+    if(mode==TEAM_DEATHMATCH) {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*320.0f;
+        float leaderboardSizeY=playerCount+(teamCount+1)*3;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    } else {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*240.0f;
+        float leaderboardSizeY=playerCount+teamCount*3+2;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    }
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
-
+        rect.low.y+=row;
     }
-    //-----------------------------------------------------------------------
-    void SceneManagerEnumerator::shutdownAll(void)
-    {
-		for (Instances::iterator i = mInstances.begin(); i != mInstances.end(); ++i)
-		{
-			// shutdown instances (clear scene)
-			i->second->clearScene();			
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            G3D::Color4 teamColor(team->getTeamColor().color3(),1);
+            adorn->drawFont2D(label,position,row,teamColor,G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
-
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                float width=rect.high.x-rect.low.x;
+                G3D::Vector2 position=rect.low;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                } else { position.x += 5.0f; }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
     }
-    //-----------------------------------------------------------------------
-	const String DefaultSceneManagerFactory::FACTORY_TYPE_NAME = "DefaultSceneManager";
-    //-----------------------------------------------------------------------
-	void DefaultSceneManagerFactory::initMetaData(void) const
-	{
-		mMetaData.typeName = FACTORY_TYPE_NAME;
-		mMetaData.description = "The default scene manager";
-		mMetaData.sceneTypeMask = ST_GENERIC;
-		mMetaData.worldGeometrySupported = false;
-	}
-    //-----------------------------------------------------------------------
-	SceneManager* DefaultSceneManagerFactory::createInstance(
-		const String& instanceName)
-	{
-		return OGRE_NEW DefaultSceneManager(instanceName);
-	}
-    //-----------------------------------------------------------------------
-	void DefaultSceneManagerFactory::destroyInstance(SceneManager* instance)
-	{
-		OGRE_DELETE instance;
-	}
-    //-----------------------------------------------------------------------
-    //-----------------------------------------------------------------------
-	DefaultSceneManager::DefaultSceneManager(const String& name)
-		: SceneManager(name)
-	{
-	}
-    //-----------------------------------------------------------------------
-	DefaultSceneManager::~DefaultSceneManager()
-	{
-	}
-    //-----------------------------------------------------------------------
-	const String& DefaultSceneManager::getTypeName(void) const
-	{
-		return DefaultSceneManagerFactory::FACTORY_TYPE_NAME;
-	}
-    //-----------------------------------------------------------------------
+}
 
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+    }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+    }
+}
 
+// Native RTTI object 00960f78 is Value<int,&sIntValue> with the older char*
+// non-type template argument. Use the actual CRT interface and external native
+// type_info object instead of substituting the newer SDK's differently named type.
+extern const type_info nativeIntValueType;
+extern "C" void* __cdecl __RTDynamicCast(void*,long,void*,void*,int);
+// Actual descriptor's GetSet pointer at0097d39c. Native getValue slot8 takes
+// const DescribedBase*, returns int (__thiscall). No synthetic virtual class.
+extern void* nativeIntValueGetter;
+static int readNativeIntValue(Instance* instance) {
+    typedef int (__thiscall *GetValue)(void*,const Reflection::DescribedBase*);
+    return ((GetValue)(*(void***)nativeIntValueGetter)[2])(
+        nativeIntValueGetter,instance?(const Reflection::DescribedBase*)((char*)instance+0x14):0);
+}
+class TeamsApi {
+public:
+    boost::shared_ptr<const Instances> getTeams();
+};
+void ScoreHud::BuildBoardData(BoardData& board) {
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    if(!nativePlayers) return;
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)nativePlayers)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            board.SetSize(roster->size(),((InstanceApi*)stats)->numChildren()+1);
+            board.AddField("Player",0);
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j)
+                board.AddField(((InstanceApi*)((InstanceApi*)stats)->getChild(j))->getName(),j+1);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                __RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                int value=readNativeIntValue(((InstanceApi*)stats)->getChild(j));
+                board.data[i][j+1]=StringConverter<int>::convertToString(value);
+            }
+        } else {
+            board.SetSize(roster->size(),1);
+            board.AddField("Player List",0);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+        }
+    }
+    for(unsigned i=0;i<roster->size();++i)
+        if(board.data[i][0].size()>16) board.data[i][0].resize(16);
+}
+void LeaderboardData::CompileData() {
+    Network::Players* players=ServiceProvider::find<Network::Players>(context);
+    Teams* teams=ServiceProvider::create<Teams>(context);
+    boost::shared_ptr<const Instances> teamList=((TeamsApi*)teams)->getTeams();
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)players)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        playersByTeamList[teams->getTeamFromPlayer((Network::Player*)player)].push_back(((InstanceApi*)player)->getName());
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                Instance* value=(Instance*)__RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                if(value) AddTuple(((InstanceApi*)player)->getName(),teams->getTeamFromPlayer((Network::Player*)player),((InstanceApi*)value)->getName(),readNativeIntValue(value));
+            }
+        }
+    }
+    if(!teams) return;
+    for(unsigned i=0;i<((InstanceApi*)teams)->numChildren();++i) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(i));
+        if(!team) continue;
+        for(unsigned j=0;j<statNamesList.size();++j) {
+            teamTotals[team][statNamesList[j]]=0;
+            for(unsigned k=0;k<playersByTeamList[team].size();++k)
+                teamTotals[team][statNamesList[j]]+=statMap[playersByTeamList[team][k]][statNamesList[j]];
+        }
+    }
+}
 }

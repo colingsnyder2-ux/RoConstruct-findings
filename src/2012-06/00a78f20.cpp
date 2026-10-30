@@ -1,8 +1,7 @@
-// from server: 37% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTColorSelectorCtrlTheme.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorSelectorCtrlTheme.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTColorSelectorCtrlTheme.cpp: implementation of the XTColorSelectorCtrlTheme class.

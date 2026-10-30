@@ -1,27 +1,51 @@
-// from server: 0% by 41k
-struct W4FriendEventType {
-    enum Enum {
-        kEvent1 = 1,
-        kEvent2 = 2
-    };
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-struct FriendService {
-    W4FriendEventType::Enum event;
-    int eventData;
-    int eventData2;
-    int eventData3;
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
 };
 
-extern "C" void* create_friend_service(void* unused, FriendService* out, int type);
+struct Count : CountBase {
+    Object* object;
 
-void* create_friend_service(void* unused, FriendService* out, int type) {
-    if (type != W4FriendEventType::kEvent1) {
-        return create_friend_service(unused, out, type);
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
     }
-    out->event = static_cast<W4FriendEventType::Enum>(W4FriendEventType::kEvent1);
-    out->eventData = 1;
-    out->eventData2 = 1;
-    out->eventData3 = 0x693e3c;
-    return out;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

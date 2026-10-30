@@ -1,14 +1,13 @@
-// from server: 30% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPCustomizeCommandsPage.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCustomizeCommandsPage.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPCustomizeCommandsPage.cpp : implementation of the CXTPCustomizeCommandsPage class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -78,7 +77,6 @@ void CXTPCustomizeCommandsListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 BEGIN_MESSAGE_MAP(CXTPCustomizeCommandsListBox, CListBox)
 	//{{AFX_MSG_MAP(CXTPCustomizeCommandsPage)
 	ON_WM_LBUTTONDOWN()
-	ON_WM_SETFOCUS()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -108,13 +106,6 @@ LRESULT CXTPCustomizeCommandsListBox::WindowProc(UINT message, WPARAM wParam, LP
 	return CListBox::WindowProc(message, wParam, lParam);
 }
 
-void CXTPCustomizeCommandsListBox::OnSetFocus(CWnd* pOldWnd)
-{
-	CListBox::OnSetFocus(pOldWnd);
-
-	if ((GetKeyState(VK_TAB) < 0 || GetKeyState(VK_MENU) < 0) && GetCurSel() == -1)
-		SetCurSel(0);
-}
 
 void CXTPCustomizeCommandsListBox::OnLButtonDown(UINT nFlags, CPoint point)
 {
@@ -214,7 +205,7 @@ XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::FindCategory(LPCTSTR st
 	return NULL;
 }
 
-XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::GetCategoryInfo(int nIndex) const
+XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::GetCategoryInfo(int nIndex)
 {
 	if (nIndex >= 0 && nIndex < m_arrCategories.GetSize())
 		return m_arrCategories[nIndex];
@@ -434,7 +425,7 @@ CXTPControls* CXTPCustomizeCommandsPage::GetControls(LPCTSTR strCategory)
 }
 
 
-void CXTPCustomizeCommandsPage::InsertAllCommandsCategory(UINT nIDResource, int nIndex, BOOL bSortCommands)
+void CXTPCustomizeCommandsPage::InsertAllCommandsCategory(UINT nIDResource, int nIndex)
 {
 	CString strCategory;
 	XTPResourceManager()->LoadString(&strCategory, nIDResource);
@@ -451,8 +442,6 @@ void CXTPCustomizeCommandsPage::InsertAllCommandsCategory(UINT nIDResource, int 
 			pInfo->pControls->AddClone(pControls->GetAt(j));
 		}
 	}
-
-	if (bSortCommands) pInfo->pControls->Sort();
 
 
 	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
@@ -532,9 +521,6 @@ void CXTPCustomizeCommandsPage::OnCategoriesSelectionChanged()
 	for (int i = 0; i < pInfo->pControls->GetCount(); i++)
 	{
 		CXTPControl* pControl = pInfo->pControls->GetAt(i);
-		if (!pControl->IsVisible())
-			continue;
-
 		m_lstCommands.SendMessage(LB_INSERTSTRING, m_lstCommands.GetCount(), (LPARAM)pControl);
 	}
 }

@@ -1,14 +1,13 @@
-// from server: 70% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTButton.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTButton.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTButton.cpp : implementation of the CXTButton class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -244,13 +243,7 @@ LRESULT CXTButton::OnUpdateUIState(WPARAM wParam, LPARAM lParam)
 
 LRESULT CXTButton::OnSetText(WPARAM wParam, LPARAM lParam)
 {
-	BOOL bVisible = GetStyle() & WS_VISIBLE;
-	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
-
-	LRESULT lResult = DefWindowProc(WM_SETTEXT, wParam, lParam);
-
-	if (bVisible) ModifyStyle(0, WS_VISIBLE);
-
+	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_SETTEXT, wParam, lParam);
 	Invalidate(FALSE);
 
 	return lResult;
@@ -263,8 +256,6 @@ BOOL CXTButton::OnEraseBkgnd(CDC* /*pDC*/)
 
 bool CXTButton::Init()
 {
-	GetTheme()->RefreshMetrics();
-
 	m_bOwnerDraw = m_hWnd && ((GetStyle() & 0xF) == BS_OWNERDRAW);
 	if (m_hWnd) Invalidate(FALSE);
 

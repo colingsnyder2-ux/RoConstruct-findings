@@ -1,497 +1,388 @@
-// from server: 60% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/afxstate.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTThemeManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTThemeManager.cpp: implementation of the CXTThemeManager class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <stddef.h>
+#include "XTThemeManager.h"
+#include "Common/XTPDrawHelpers.h"
 
-
-
-#pragma warning(disable: 4074)
-#pragma init_seg(compiler)
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE push/pop implementation
-
-#ifdef _AFXDLL
-AFX_MODULE_STATE* AFXAPI AfxSetModuleState(AFX_MODULE_STATE* pNewState)
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ASSERT(pState);
-	if(pState)
-	{
-	AFX_MODULE_STATE* pPrevState = pState->m_pModuleState;
-	pState->m_pModuleState = pNewState;
-	return pPrevState;
-}
-	else
-	{
-		return NULL;
-	}
-}
-
-AFX_MAINTAIN_STATE::~AFX_MAINTAIN_STATE()
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ASSERT(pState);
-	if(pState)
-	{
-	pState->m_pModuleState = m_pPrevModuleState;
-}
-}
-#endif //_AFXDLL
-
-AFX_MAINTAIN_STATE2::AFX_MAINTAIN_STATE2(AFX_MODULE_STATE* pNewState) throw()
-{
-#ifdef _AFXDLL
-	m_pThreadState = _afxThreadState;
-	ASSERT(m_pThreadState);
-	if(m_pThreadState)
-	{
-	m_pPrevModuleState = m_pThreadState->m_pModuleState;
-	m_pThreadState->m_pModuleState = pNewState;
-	}
-	else
-	{
-		// This is a very bad state; we have no good way to report the error at this moment
-		// since exceptions from here are not expected
-		m_pPrevModuleState=NULL;
-		m_pThreadState=NULL;
-	}
-#endif
-
-	if (AfxGetAmbientActCtx() && 
-		pNewState->m_hActCtx != INVALID_HANDLE_VALUE)
-	{
-		m_bValidActCtxCookie = AfxActivateActCtx(pNewState->m_hActCtx, &m_ulActCtxCookie);
-	}
-	else
-	{
-		m_bValidActCtxCookie = FALSE;
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// _AFX_THREAD_STATE implementation
-
-_AFX_THREAD_STATE::_AFX_THREAD_STATE()
-{
 #ifdef _DEBUG
-	m_nDisablePumpCount = 0;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#define new DEBUG_NEW
 #endif
-	m_msgCur.message = WM_NULL;
-	m_nMsgLast = WM_NULL;
-	//::GetCursorPos(&(m_ptCursorLast));
-	m_ptCursorLast = CPoint(0,0);
+
+CProcessLocal<CXTThemeManager> CXTThemeManager::m_sThemeManager;
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTThemeManagerStyle
+
+CXTThemeManagerStyle::CXTThemeManagerStyle()
+: m_enumTheme(xtThemeDefault)
+, m_pFactory(NULL)
+{
+
 }
 
-_AFX_THREAD_STATE::~_AFX_THREAD_STATE()
+CXTThemeManagerStyle::~CXTThemeManagerStyle()
 {
-	// unhook windows hooks
-	if (m_hHookOldMsgFilter != NULL)
-		::UnhookWindowsHookEx(m_hHookOldMsgFilter);
-	if (m_hHookOldCbtFilter != NULL)
-		::UnhookWindowsHookEx(m_hHookOldCbtFilter);
 
-	// free safety pool buffer
-	if (m_pSafetyPoolBuffer != NULL)
-		free(m_pSafetyPoolBuffer);
-
-	// parking window must have already been cleaned up by now!
-	ASSERT(m_pWndPark == NULL);
 }
 
-_AFX_THREAD_STATE* AFXAPI AfxGetThreadState()
+void CXTThemeManagerStyle::RefreshMetrics()
 {
-	_AFX_THREAD_STATE *pState =_afxThreadState.GetData();
-	ENSURE(pState != NULL); 
-	return pState;
+
 }
 
-THREAD_LOCAL(_AFX_THREAD_STATE, _afxThreadState)
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE implementation
-
-#ifdef _AFXDLL
-AFX_MODULE_STATE::AFX_MODULE_STATE(BOOL bDLL, WNDPROC pfnAfxWndProc,
-	DWORD dwVersion, BOOL bSystem)
-#else
-AFX_MODULE_STATE::AFX_MODULE_STATE(BOOL bDLL)
-#endif
+BOOL CXTThemeManagerStyle::IsOfficeTheme()
 {
-#ifndef _AFX_NO_OLE_SUPPORT
-	m_factoryList.Construct(offsetof(COleObjectFactory, m_pNextFactory));
-#endif
-	m_classList.Construct(offsetof(CRuntimeClass, m_pNextClass));
+	return m_enumTheme != xtThemeDefault;
+}
 
-	m_fRegisteredClasses = 0;
-	m_bDLL = (BYTE)bDLL;
-#ifdef _AFXDLL
-	m_pfnAfxWndProc = pfnAfxWndProc;
-	m_dwVersion = dwVersion;
-	m_bSystem = (BYTE)bSystem;
-#endif
-	BOOL bEnable = TRUE;
-	TRY
+BOOL CXTThemeManagerStyle::TakeSnapShot(CWnd* pWndOwner)
+{
+	CWnd *pWndParent = pWndOwner->GetParent();
+	if (::IsWindow(pWndParent->GetSafeHwnd()))
 	{
-		//Preallocate the registered classes string, but CRT memory leak report is
-		//called before the string frees memory, so need to disable tracking.
-		bEnable = AfxEnableMemoryTracking(FALSE);
-		m_strUnregisterList.Preallocate(4096);
-		AfxEnableMemoryTracking(bEnable);	
-	}		
-	CATCH(CMemoryException, e)
-	{
-		AfxEnableMemoryTracking(bEnable);	
-		DELETE_EXCEPTION(e);
+		if (m_bmpSnapShot.GetSafeHandle() != NULL)
+			m_bmpSnapShot.DeleteObject();
+
+		//convert our coordinates to our parent coordinates.
+		CXTPWindowRect rc(pWndOwner);
+		pWndParent->ScreenToClient(&rc);
+
+		//copy what's on the parents background at this point
+		CDC *pDC = pWndParent->GetDC();
+
+		CDC memDC;
+		memDC.CreateCompatibleDC(pDC);
+		m_bmpSnapShot.CreateCompatibleBitmap(pDC, rc.Width(), rc.Height());
+
+		CXTPBitmapDC bitmapDC(&memDC, &m_bmpSnapShot);
+		memDC.BitBlt(0, 0, rc.Width(), rc.Height(), pDC, rc.left, rc.top, SRCCOPY);
+
+		pWndParent->ReleaseDC(pDC);
+
+		return TRUE;
 	}
-	END_CATCH
-	// app starts out in "user control"
-	m_bUserCtrl = TRUE;
 
-#ifndef _AFX_NO_OCC_SUPPORT
-	m_lockList.Construct(offsetof(COleControlLock, m_pNextLock));
-#endif
-#ifdef _AFXDLL
-	m_libraryList.Construct(offsetof(CDynLinkLibrary, m_pNextDLL));
-#endif
-	
-
-	bEnable = AfxEnableMemoryTracking(FALSE);		
-	//Fusion: allocate dll wrappers array.
-	m_pDllIsolationWrappers = new CDllIsolationWrapperBase*[2];
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	m_pDllIsolationWrappers[_AFX_COMCTL32_ISOLATION_WRAPPER_INDEX] = new CComCtlWrapper;
-#endif
-	m_pDllIsolationWrappers[_AFX_COMMDLG_ISOLATION_WRAPPER_INDEX] = new CCommDlgWrapper;
-	AfxEnableMemoryTracking(bEnable);
-	m_bSetAmbientActCtx = TRUE;
-	m_hActCtx = NULL;
+	return FALSE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Activation Context API wrappers
-
-#define AFX_ACTCTX_API_INIT_PROCPTR(hKernel,name) \
-	pfn##name = (PFN_##name) GetProcAddress(hKernel, #name)\
-	
-
-/////////////////////////////////////////////////////////////////////////////
-// Global function pointers for Context (WinSxS/Manifest) API, to be init during MFC global init.
-#define AFX_ACTCTX_API_PTR_DEFINE(name, type, params) \
-	typedef type (WINAPI* PFN_##name)params; \
-	PFN_##name pfn##name = NULL;
-
-AFX_ACTCTX_API_PTR_DEFINE(CreateActCtxW, HANDLE, (PCACTCTXW));
-AFX_ACTCTX_API_PTR_DEFINE(ReleaseActCtx, void, (HANDLE));
-AFX_ACTCTX_API_PTR_DEFINE(ActivateActCtx, BOOL, (HANDLE, ULONG_PTR*));
-AFX_ACTCTX_API_PTR_DEFINE(DeactivateActCtx, BOOL, (DWORD, ULONG_PTR));
-
-AFX_STATIC void AFXAPI _AfxInitContextAPI()
+BOOL CXTThemeManagerStyle::DrawTransparentBack(CDC* pDC, CWnd* pWndOwner)
 {
-	static HMODULE hKernel = NULL;
-	if (hKernel == NULL)
+	if (::GetWindowLong(pWndOwner->GetSafeHwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT)
 	{
-		hKernel = GetModuleHandle(_T("KERNEL32"));
-		ENSURE(hKernel != NULL);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,CreateActCtxW);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,ReleaseActCtx);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,ActivateActCtx);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,DeactivateActCtx);	
+		// Get background.
+		if (!TakeSnapShot(pWndOwner))
+			return FALSE;
+
+		CXTPClientRect rc(pWndOwner);
+
+		CDC memDC;
+		memDC.CreateCompatibleDC(pDC);
+
+		CXTPBitmapDC bitmapDC(&memDC, &m_bmpSnapShot);
+		pDC->BitBlt(0, 0, rc.Width(), rc.Height(), &memDC, 0, 0, SRCCOPY);
+
+		return TRUE;
 	}
+
+	return FALSE;
 }
 
-#if (_WIN32_WINNT >= 0x0500) || (_WIN32_FUSION >= 0x0100)
-HANDLE AFXAPI AfxCreateActCtxW(PCACTCTXW pActCtx)
-{	
-	HANDLE hCtx = pfnCreateActCtxW != 0 ? pfnCreateActCtxW(pActCtx) : INVALID_HANDLE_VALUE;
-	return hCtx;
-}
-#else
-HANDLE AFXAPI AfxCreateActCtxW(void *pActCtx)
-{	
-	HANDLE hCtx = pfnCreateActCtxW != 0 ? pfnCreateActCtxW(pActCtx) : INVALID_HANDLE_VALUE;
-	return hCtx;
-}
-#endif
+//////////////////////////////////////////////////////////////////////////
+// CXTThemeManagerStyleFactory
 
-void AFXAPI AfxReleaseActCtx(HANDLE hActCtx)
-{	
-	if (pfnReleaseActCtx != 0)
-	{
-		pfnReleaseActCtx(hActCtx);
-	}
-}
+IMPLEMENT_DYNCREATE(CXTThemeManagerStyleFactory, CObject)
 
-BOOL AFXAPI AfxActivateActCtx(HANDLE hActCtx, ULONG_PTR *lpCookie) 
-{	
-	BOOL rc = pfnActivateActCtx != 0 ? pfnActivateActCtx(hActCtx, lpCookie) : FALSE;	
-	return rc;
-}
-
-BOOL AFXAPI AfxDeactivateActCtx(DWORD dwFlags, ULONG_PTR ulCookie)
-{	
-	BOOL rc = pfnDeactivateActCtx != 0 ? pfnDeactivateActCtx(dwFlags, ulCookie) : FALSE;
-	return rc;
-}
-
-eActCtxResult AFXAPI AfxActivateActCtxWrapper(HANDLE hActCtx, ULONG_PTR *lpCookie)
+CXTThemeManagerStyleFactory::CXTThemeManagerStyleFactory()
+: m_pTheme(NULL)
+, m_pNextFactory(NULL)
 {
-	ENSURE_ARG(lpCookie!=NULL);
-	eActCtxResult eResult=ActCtxFailed;
-	if (pfnActivateActCtx != 0)
-	{ 
-		eResult=AfxActivateActCtx(hActCtx, lpCookie) ? ActCtxSucceeded : ActCtxFailed;
-	} else
-	{		
-		eResult=ActCtxNoFusion;
-	}
-		
-	return eResult;	
+	XTThemeManager()->m_factoryList.AddHead(this);
+	m_hostList.Construct(offsetof(CXTThemeManagerStyleHost, m_pNextHost));
 }
 
-void AFX_MODULE_STATE::CreateActivationContext()
+CXTThemeManagerStyleFactory::~CXTThemeManagerStyleFactory()
 {
-	_AfxInitContextAPI();
-	HMODULE hModule = m_hCurrentInstanceHandle;
+	SAFE_DELETE(m_pTheme);
+	XTThemeManager()->m_factoryList.Remove(this);
+	m_hostList.RemoveAll();
+}
 
-	WCHAR rgchFullModulePath[MAX_PATH + 2];
-	rgchFullModulePath[_countof(rgchFullModulePath) - 1] = 0;
-	rgchFullModulePath[_countof(rgchFullModulePath) - 2] = 0;
-	DWORD dw = GetModuleFileNameW(hModule, rgchFullModulePath, _countof(rgchFullModulePath)-1);
-	if (dw == 0)
-	{
+CXTThemeManagerStyle* CXTThemeManagerStyleFactory::CreateTheme(XTThemeStyle /*theme*/)
+{
+	ASSERT(FALSE);
+	return NULL;
+}
+
+void CXTThemeManagerStyleFactory::SetTheme(CXTThemeManagerStyle* pTheme)
+{
+	ASSERT(pTheme);
+	if (!pTheme)
 		return;
-	}
-	if (rgchFullModulePath[_countof(rgchFullModulePath) - 2] != 0)
+
+	SAFE_DELETE(m_pTheme);
+	m_pTheme = pTheme;
+
+	m_pTheme->m_pFactory = this;
+	m_pTheme->RefreshMetrics();
+
+	for (CXTThemeManagerStyleHost* pHost = m_hostList.GetHead();
+			pHost != NULL; pHost = pHost->m_pNextHost)
 	{
-		SetLastError(ERROR_BUFFER_OVERFLOW);
+		pHost->OnThemeChanged();
+	}
+}
+
+void CXTThemeManagerStyleFactory::SetTheme(XTThemeStyle theme)
+{
+	SetTheme(CreateTheme(theme));
+}
+
+CXTThemeManagerStyle* CXTThemeManagerStyleFactory::GetSafeTheme()
+{
+	if (m_pTheme == 0)
+	{
+		m_pTheme = CreateTheme(XTThemeManager()->m_enumTheme);
+
+		m_pTheme->m_pFactory = this;
+		m_pTheme->RefreshMetrics();
+	}
+	return m_pTheme;
+}
+
+void CXTThemeManagerStyleFactory::RefreshMetrics()
+{
+	if (m_pTheme)
+	{
+		m_pTheme->RefreshMetrics();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTThemeManagerStyleHost
+
+CXTThemeManagerStyleHost::CXTThemeManagerStyleHost(CRuntimeClass* pThemeFactoryClass)
+{
+	m_bAutoDeleteCustomFactory = FALSE;
+
+	m_pDefaultFactory = NULL;
+	m_pCustomFactory = NULL;
+	m_pNextHost = NULL;
+	m_pThemeFactoryClass = NULL;
+
+	if (pThemeFactoryClass)
+	{
+		InitStyleHost(pThemeFactoryClass);
+	}
+}
+
+void CXTThemeManagerStyleHost::InitStyleHost(CRuntimeClass* pThemeFactoryClass)
+{
+	ASSERT(pThemeFactoryClass);
+	if (!pThemeFactoryClass)
 		return;
-	}
-	//First try ID 2 and then ID 1 - this is to consider also a.dll.manifest file
-	//for dlls, which ID 2 ignores.
-	ACTCTXW actCtx;
-	actCtx.cbSize = sizeof(actCtx);
-	actCtx.dwFlags = ACTCTX_FLAG_RESOURCE_NAME_VALID | ACTCTX_FLAG_HMODULE_VALID;
-	actCtx.lpSource = rgchFullModulePath;
-	actCtx.lpResourceName =  MAKEINTRESOURCEW(ISOLATIONAWARE_MANIFEST_RESOURCE_ID);
-	actCtx.hModule = hModule;
-	m_hActCtx = AfxCreateActCtxW(&actCtx);
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{		
-		actCtx.lpResourceName =  MAKEINTRESOURCEW(ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID);
-		m_hActCtx = AfxCreateActCtxW(&actCtx);
-	}
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{		
-		actCtx.lpResourceName =  MAKEINTRESOURCEW(CREATEPROCESS_MANIFEST_RESOURCE_ID);
-		m_hActCtx = AfxCreateActCtxW(&actCtx);
-	}
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
+	ASSERT(pThemeFactoryClass->IsDerivedFrom(RUNTIME_CLASS(CXTThemeManagerStyleFactory)));
+
+	if (m_pDefaultFactory)
 	{
-		m_hActCtx = NULL;
-	}		
+		m_pDefaultFactory->m_hostList.Remove(this);
+	}
+
+	m_pThemeFactoryClass = pThemeFactoryClass;
+
+	m_pDefaultFactory = XTThemeManager()->GetDefaultThemeFactory(pThemeFactoryClass);
+	m_pDefaultFactory->m_hostList.AddHead(this);
 }
 
-AFX_MODULE_STATE::~AFX_MODULE_STATE()
+CXTThemeManagerStyleHost::~CXTThemeManagerStyleHost()
 {
-#ifndef _AFX_NO_DAO_SUPPORT
-	delete m_pDaoState;
-#endif
+	GetSafeThemeFactory()->m_hostList.Remove(this);
 
-	// clean up type lib cache map, if any
-	if (m_pTypeLibCacheMap != NULL)
+	if (m_bAutoDeleteCustomFactory)
 	{
-		m_pTypeLibCacheMap->RemoveAll(&m_typeLibCache);
-		delete m_pTypeLibCacheMap;
-	}
-	//Fusion: delete each member of the array and the array itself
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	delete m_pDllIsolationWrappers[_AFX_COMCTL32_ISOLATION_WRAPPER_INDEX];
-#endif
-	delete m_pDllIsolationWrappers[_AFX_COMMDLG_ISOLATION_WRAPPER_INDEX];
-	delete [] m_pDllIsolationWrappers;
-	if (m_hActCtx != NULL && m_hActCtx != INVALID_HANDLE_VALUE)
-	{
-		AfxReleaseActCtx(m_hActCtx);
-		m_hActCtx = INVALID_HANDLE_VALUE;
+		SAFE_DELETE(m_pCustomFactory);
 	}
 }
 
-void CTypeLibCacheMap::RemoveAll(void* pExcept)
+CXTThemeManagerStyleFactory* CXTThemeManagerStyleHost::CreateThemeFactory()
 {
-	POSITION pos = GetStartPosition();
-	void* pTypeLibID;
-	CTypeLibCache* pCache;
-	while (pos != NULL)
+	return (CXTThemeManagerStyleFactory*)m_pThemeFactoryClass->CreateObject();
+}
+
+CXTThemeManagerStyleFactory* CXTThemeManagerStyleHost::GetSafeThemeFactory() const
+{
+	if (m_pCustomFactory != NULL)
+		return m_pCustomFactory;
+
+	return m_pDefaultFactory;
+}
+
+
+CXTThemeManagerStyle* CXTThemeManagerStyleHost::GetSafeTheme() const
+{
+	CXTThemeManagerStyleFactory* pFactory = GetSafeThemeFactory();
+	ASSERT(pFactory);
+	if (!pFactory)
+		return NULL;
+
+	return pFactory->GetSafeTheme();
+}
+
+void CXTThemeManagerStyleHost::SetTheme (XTThemeStyle theme)
+{
+	SetTheme(m_pDefaultFactory->CreateTheme(theme));
+}
+
+void CXTThemeManagerStyleHost::SetTheme (CXTThemeManagerStyle* pTheme)
+{
+	if (m_pCustomFactory == NULL && pTheme == NULL)
+		return;
+
+	GetSafeThemeFactory()->m_hostList.Remove(this);
+
+	if (m_bAutoDeleteCustomFactory)
 	{
-		GetNextAssoc(pos, pTypeLibID, (void*&)pCache);
-		if (pCache != pExcept)
-			delete pCache;
+		SAFE_DELETE(m_pCustomFactory);
 	}
-}
-
-AFX_MODULE_THREAD_STATE::AFX_MODULE_THREAD_STATE()
-{
-	m_nLastHit = static_cast<INT_PTR>(-1);
-	m_nLastStatus = static_cast<INT_PTR>(-1);
-	m_pLastInfo = NULL;
-
-	m_frameList.Construct(offsetof(CFrameWnd, m_pNextFrameWnd));
-
-	// Note: it is only necessary to initialize non-zero data
-	m_pfnNewHandler = &AfxNewHandler;
-}
-
-AFX_MODULE_THREAD_STATE::~AFX_MODULE_THREAD_STATE()
-{
-	// cleanup thread local tooltip window
-	if (m_pToolTip != NULL)
-		m_pToolTip->DestroyToolTipCtrl();
-
-	delete m_pLastInfo;
-
-	// cleanup temp/permanent maps (just the maps themselves)
-	delete m_pmapHWND;
-	delete m_pmapHMENU;
-	delete m_pmapHDC;
-	delete m_pmapHGDIOBJ;
-	delete m_pmapHIMAGELIST;
-
-#ifndef _AFX_NO_SOCKET_SUPPORT
-	// cleanup socket notification list
-	if (m_plistSocketNotifications != NULL)
-		while (!m_plistSocketNotifications->IsEmpty())
-			delete m_plistSocketNotifications->RemoveHead();
-#ifndef _AFXDLL
-	// cleanup dynamically allocated socket maps
-	delete m_pmapSocketHandle;
-	delete m_pmapDeadSockets;
-	delete m_plistSocketNotifications;
-#endif
-#endif //!_AFX_NO_SOCKET_SUPPORT
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE for base application
-
-LRESULT CALLBACK AfxWndProcBase(HWND, UINT, WPARAM, LPARAM);
-
-class _AFX_BASE_MODULE_STATE : public AFX_MODULE_STATE
-{
-public:
-#ifdef _AFXDLL
-	_AFX_BASE_MODULE_STATE() : AFX_MODULE_STATE(TRUE, AfxWndProcBase, _MFC_VER)
-#else
-	_AFX_BASE_MODULE_STATE() : AFX_MODULE_STATE(TRUE)
-#endif
-		{ }
-};
-
-PROCESS_LOCAL(_AFX_BASE_MODULE_STATE, _afxBaseModuleState)
-
-#ifdef _AFXDLL
-
-#undef AfxWndProc
-LRESULT CALLBACK
-AfxWndProcBase(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
-{
-	AFX_MANAGE_STATE(_afxBaseModuleState.GetData());
-	return AfxWndProc(hWnd, nMsg, wParam, lParam);
-}
-
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// helper functions for module state
-
-AFX_MODULE_STATE* AFXAPI AfxGetAppModuleState()
-{
-	return _afxBaseModuleState.GetData();
-}
-
-AFX_MODULE_STATE* AFXAPI AfxGetModuleState()
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ENSURE(pState);
-	AFX_MODULE_STATE* pResult;
-	if (pState->m_pModuleState != NULL)
+	if (pTheme != NULL)
 	{
-		// thread state's module state serves as override
-		pResult = pState->m_pModuleState;
+		m_pCustomFactory = CreateThemeFactory();
+		m_pCustomFactory->SetTheme(pTheme);
+		m_bAutoDeleteCustomFactory = TRUE;
 	}
 	else
 	{
-		// otherwise, use global app state
-		pResult = _afxBaseModuleState.GetData();
+		m_pCustomFactory = NULL;
+		m_bAutoDeleteCustomFactory = FALSE;
 	}
-	ENSURE(pResult != NULL);
-	return pResult;
+
+	OnThemeChanged();
+	GetSafeThemeFactory()->m_hostList.AddHead(this);
 }
 
-HINSTANCE AFXAPI AfxGetInstanceHandleHelper()
+void CXTThemeManagerStyleHost::AttachThemeFactory(CXTThemeManagerStyleFactory* pFactory)
 {
-	return AfxGetModuleState()->m_hCurrentInstanceHandle;
-}
+	GetSafeThemeFactory()->m_hostList.Remove(this);
 
-BOOL AFXAPI AfxIsModuleDll()
-{
-	return AfxGetModuleState()->m_bDLL;
-}
-
-BOOL AFXAPI AfxInitCurrentStateApp()
-{
-	CWinApp* pApp = AfxGetModuleState()->m_pCurrentWinApp;
-	if (pApp != NULL && !pApp->InitInstance())
+	if (m_bAutoDeleteCustomFactory)
 	{
-		// Init Failed
-		pApp->ExitInstance();
-		AfxWinTerm();
-		return FALSE;
+		SAFE_DELETE(m_pCustomFactory);
 	}
-	return TRUE;
+	m_pCustomFactory = pFactory;
+	m_bAutoDeleteCustomFactory = FALSE;
+
+	OnThemeChanged();
+	GetSafeThemeFactory()->m_hostList.AddHead(this);
 }
 
-AFX_MODULE_THREAD_STATE* AFXAPI AfxGetModuleThreadState()
+void CXTThemeManagerStyleHost::OnThemeChanged()
 {
-	AFX_MODULE_THREAD_STATE* pResult=AfxGetModuleState()->m_thread.GetData();
-	ENSURE(pResult != NULL);
-	return pResult;
+	// Can be overridden by subclass
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CTypeLibCache::Unlock
-// (Note: the rest of CTypeLibCache is implemented in oletyplb.cpp)
 
-void CTypeLibCache::Unlock()
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CXTThemeManager::CXTThemeManager()
 {
-	ASSERT(m_cRef > 0);
+	m_factoryList.Construct(offsetof(CXTThemeManagerStyleFactory, m_pNextFactory));
+	m_enumTheme = xtThemeDefault;
+}
 
-	if (InterlockedDecrement(&m_cRef) == 0)
+CXTThemeManager::~CXTThemeManager()
+{
+	POSITION pos = m_mapDefaultFactories.GetStartPosition();
+	void* pThemeFactoryClass;
+	CXTThemeManagerStyleFactory* pFactory = 0;
+	while (pos)
 	{
-		if (m_ptinfo != NULL)
-		{
-			m_ptinfo->Release();
-			m_ptinfo = NULL;
-		}
-		if (m_ptlib != NULL)
-		{
-			m_ptlib->Release();
-			m_ptlib = NULL;
-		}
+		m_mapDefaultFactories.GetNextAssoc(pos, pThemeFactoryClass, (void *&)pFactory);
+		SAFE_DELETE(pFactory);
 	}
+
+	ASSERT(m_factoryList.m_pHead == 0);
+	m_factoryList.RemoveAll();
+}
+
+CXTThemeManagerStyleFactory* CXTThemeManager::GetDefaultThemeFactory(CRuntimeClass* pThemeFactoryClass)
+{
+	ASSERT(pThemeFactoryClass);
+	if (!pThemeFactoryClass)
+		return 0;
+	ASSERT(pThemeFactoryClass->IsDerivedFrom(RUNTIME_CLASS(CXTThemeManagerStyleFactory)));
+
+	CXTThemeManagerStyleFactory* pFactory = 0;
+
+	if (!m_mapDefaultFactories.Lookup(pThemeFactoryClass, (void *&)pFactory))
+	{
+		pFactory = (CXTThemeManagerStyleFactory*)pThemeFactoryClass->CreateObject();
+		m_mapDefaultFactories.SetAt(pThemeFactoryClass, pFactory);
+	}
+
+	return pFactory;
+}
+
+void CXTThemeManager::SetTheme(XTThemeStyle eTheme)
+{
+	if (m_enumTheme == eTheme)
+		return;
+
+	m_enumTheme = eTheme;
+
+	RefreshXtremeColors();
+
+	POSITION pos = m_mapDefaultFactories.GetStartPosition();
+	void* pThemeFactoryClass;
+	CXTThemeManagerStyleFactory* pFactory = 0;
+	while (pos)
+	{
+		m_mapDefaultFactories.GetNextAssoc(pos, pThemeFactoryClass, (void *&)pFactory);
+
+		pFactory->SetTheme(eTheme);
+	}
+}
+
+void CXTThemeManager::RefreshMetrics()
+{
+	RefreshXtremeColors();
+
+	for (CXTThemeManagerStyleFactory* pFactory = m_factoryList.GetHead();
+			pFactory != NULL; pFactory = pFactory->m_pNextFactory)
+	{
+		pFactory->RefreshMetrics();
+	}
+}
+
+_XTP_EXT_CLASS CXTThemeManager* AFX_CDECL XTThemeManager()
+{
+	return CXTThemeManager::m_sThemeManager.GetData();
 }

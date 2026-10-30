@@ -1,14 +1,13 @@
-// from server: 37% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPCommandBarAnimation.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCommandBarAnimation.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPCommandBarAnimation.cpp : implementation file
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -29,11 +28,7 @@
 
 #include "Common/XTPImageManager.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPColorManager.h"
 
-#include "XTPCommandBarsDefines.h"
 #include "XTPCommandBarAnimation.h"
 #include "XTPCommandBar.h"
 #include "XTPPaintManager.h"
@@ -136,17 +131,14 @@ void CXTPCommandBarAnimation::AnimateRect(CClientDC& dc, CAnimateInfo* pai)
 		BYTE* pDestBits = NULL;
 		HBITMAP hbmDest = CXTPImageManager::Create32BPPDIBSection(dc, cx, cy, &pDestBits);
 
-		if (hbmDest && pDestBits)
-		{
-			AlphaBlendU(pDestBits, pai->pSrcBackBits, cx, cy, pai->pSrcBits, (BYTE)(255 * pai->m_nAnimation / MAXANIMATION));
+		AlphaBlendU(pDestBits, pai->pSrcBackBits, cx, cy, pai->pSrcBits, (BYTE)(255 * pai->m_nAnimation / MAXANIMATION));
 
-			HBITMAP hOldBitmap = (HBITMAP)::SelectObject(memDC, hbmDest);
+		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(memDC, hbmDest);
 
-			dc.BitBlt(rcPaint.left, rcPaint.top, cx, cy, &memDC, 0, 0, SRCCOPY);
+		dc.BitBlt(rcPaint.left, rcPaint.top, cx, cy, &memDC, 0, 0, SRCCOPY);
 
-			::SelectObject(memDC, hOldBitmap);
-			DeleteObject(hbmDest);
-		}
+		::SelectObject(memDC, hOldBitmap);
+		DeleteObject(hbmDest);
 	}
 
 	pai->m_nAnimation++;

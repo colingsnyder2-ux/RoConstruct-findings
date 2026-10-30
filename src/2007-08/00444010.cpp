@@ -1,444 +1,465 @@
-// from server: 66% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Gyro.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Gyro.h"
-#include "v8datamodel/PartInstance.h"
-#include <Network/Players.h>
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
 namespace RBX
 {
-	const char* sBodyPosition = "BodyPosition";
-	const char* sBodyVelocity = "BodyVelocity";
-	const char* sBodyGyro = "BodyGyro";
-	const char* sBodyForce = "BodyForce";
-	const char* sBodyThrust = "BodyThrust";
-	const char* sRocket = "Rocket";
+	const char* sInstance = "Instance";
 
-	void registerBodyMovers()
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		BodyGyro::classDescriptor();
-		BodyPosition::classDescriptor();
-		BodyVelocity::classDescriptor();
-		BodyForce::classDescriptor();
-		BodyThrust::classDescriptor();
-		Rocket::classDescriptor();
 	}
 
-	BodyMover::BodyMover(const char* name)
-		: Instance(name),
-		  world(NULL),
-		  part(NULL)
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
 	}
 
-	BodyMover::~BodyMover()
+	Instance::~Instance()
 	{
-		RBXASSERT(world == NULL);
-		RBXASSERT(part == NULL);
+		RBXASSERT(!parent);
 	}
 
-	void BodyMover::updateWorld()
+	bool Instance::askAddChild(const Instance* instance) const
 	{
-		World* worldIfInWorkspace = (part != NULL) ? Workspace::getWorldIfInWorkspace(this) : NULL;
-		if (world != worldIfInWorkspace)
+		return false;
+	}
+
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			if (world)
-				world->getKernel().removeConnector2ndPass(this);
-			world = worldIfInWorkspace;
-			if (worldIfInWorkspace)
+			name = value;
+			raisePropertyChanged(desc_Name);
+		}
+	}
+
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
+		{
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
+
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				worldIfInWorkspace->getKernel().insertConnector2ndPass(this);
-				Notifier<RunService,Stepped>::connect(ServiceProvider::create<RunService>(this), this);
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
 		}
 	}
 
-	void BodyMover::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	void Instance::removeAllChildren()
 	{
-		Notifier<RunService,Stepped>::disconnect(ServiceProvider::create<RunService>(oldProvider), this);
-
-		Instance::onServiceProvider(oldProvider, newProvider);
-
-		updateWorld();
-	}
-
-	void BodyMover::onEvent(const RunService* source, Stepped event)
-	{
-		if (preventBodySleep())
+		while (children)
 		{
-			world->ticklePrimitive(part->getPrimitive());
+			children->back()->setParent(NULL);
 		}
 	}
 
-	void BodyMover::onAncestorChanged(const AncestorChanged& event)
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
 	{
-		Instance::onAncestorChanged(event);
+		Instance* p = parent;
 
-		if (event.child == this)
-			part = dynamic_cast<PartInstance*>(event.newParent);
-		updateWorld();
+		if (p)
+			p->onChildChanged(instance, event);
 	}
 
-	bool BodyMover::askSetParent(const Instance* instance) const
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
 	{
-		return dynamic_cast<const PartInstance*>(instance) != NULL;
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
 	}
 
-	Reflection::RefPropDescriptor<Rocket, PartInstance> Rocket::prop_Target("Target", "Goals", &Rocket::getTarget, &Rocket::setTarget, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> Rocket::prop_targetOffset("TargetOffset", "Goals", &Rocket::targetOffset, &Rocket::onGoalChanged, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_targetRadius("TargetRadius", "Goals", &Rocket::targetRadius, &Rocket::onGoalChanged, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_MaxSpeed("MaxSpeed", "Thrust", &Rocket::maxSpeed, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_MaxThrust("MaxThrust", "Thrust", &Rocket::maxThrust, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_ThrustP("ThrustP", "Thrust", &Rocket::kThrustP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_ThrustD("ThrustD", "Thrust", &Rocket::kThrustD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_TurnP("TurnP", "Turn", &Rocket::kTurnP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_TurnD("TurnD", "Turn", &Rocket::kTurnD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> Rocket::prop_MaxTorque("MaxTorque", "Turn", &Rocket::maxTorque, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> Rocket::prop_CartoonFactor("CartoonFactor", "Goals", &Rocket::cartoonFactor, Reflection::PropertyDescriptor::STANDARD);
-
-	Reflection::BoundFuncDesc<Rocket, void(void), 0> Rocket::func_Fire(&Rocket::fire, "Fire", Reflection::FunctionDescriptor::AnyCaller);
-	Reflection::BoundFuncDesc<Rocket, void(void), 0> Rocket::func_Abort(&Rocket::abort, "Abort", Reflection::FunctionDescriptor::AnyCaller);
-
-	Reflection::SignalDesc<Rocket, void(void)> Rocket::event_ReachedTarget("ReachedTarget");
-
-	Rocket::Rocket()
-		: Base("Rocket"),
-		  active(false),
-		  targetOffset(),
-		  target(),
-		  firedEvent(false),
-		  targetRadius(4.0f),
-		  maxThrust(4000.0f),
-		  kThrustP(5.0f),
-		  kThrustD(0.001f),
-		  maxSpeed(30.0f),
-		  kTurnP(3000.0f),
-		  kTurnD(500.0f),
-		  maxTorque(G3D::Vector3(400000.0f, 400000.0f, 0.0f)),
-		  cartoonFactor(0.7f)
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
 	{
-	}
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
 
-	void Rocket::onEvent(const RunService* source, Stepped event)
-	{
-		if (preventBodySleep()) world->ticklePrimitive(part->getPrimitive());
-
-		if (active && !firedEvent && part)
+		if (classAttrib)
 		{
-			G3D::Vector3 pos = part->getCoordinateFrame().translation;
-			G3D::Vector3 targetWorld = target.get() ? target->getCoordinateFrame().pointToWorldSpace(targetOffset) : targetOffset;
-			pos = pos - targetWorld;
-			if (pos.squaredMagnitude() <= targetRadius * targetRadius)
+			if (classAttrib->getValue(className))
 			{
-				Rocket::event_ReachedTarget.fire(this);
-				firedEvent = true;
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
 			}
 		}
 	}
 
-	void Rocket::fire()
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
 	{
-		if (!Workspace::findWorkspace(this))
-			throw std::runtime_error("Rocket:Fire may only be called when the Rocket is in the Workspace");
-		if (Network::Players::clientIsPresent(this, true))
-			throw std::runtime_error("Rocket:Fire may not be called from a client");
-		active = true;
-	}
-
-	void Rocket::abort()
-	{
-		active = false;
-	}
-
-	void Rocket::setTarget(PartInstance* value)
-	{
-		if (target.get() != value)
+		if (element)
 		{
-			target = shared_from<PartInstance>(value);
-			firedEvent = false;
-			raisePropertyChanged(Rocket::prop_Target);
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
 		}
 	}
-	
 
-
-	void Rocket::computeForce(const float dt, bool throttling)
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
 	{
-		if (!active)
-			return;
-
-		Body* body = part->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
-
-		G3D::Vector3 targetPos = target.get() ? target->getCoordinateFrame().pointToWorldSpace(targetOffset) : targetOffset;
-		G3D::Vector3 targetDelta = targetPos - body->getCoordinateFrame().translation; // fabricated name, may change
-		G3D::Vector3 targetDir = targetDelta.direction();
-		G3D::Vector3 pAccel = targetDelta * kThrustP;
-		Body* root = body->getRoot();
-
-		G3D::Vector3 force = pAccel * root->getBranchMass();
-
-		if (root->getVelocity().linear.squaredMagnitude() > maxSpeed * maxSpeed)
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
 		{
-			G3D::Vector3 dir = root->getVelocity().linear.direction();
-			float dotProduct = dir.dot(force);
-			if (dotProduct > 0.0f)
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
 			{
-				force -= dir * dotProduct;
-				pAccel = dir * maxSpeed;
-				G3D::Vector3 low = root->getVelocity().linear - pAccel;
-				force -= (low * root->getBranchMass()) / dt;
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
+
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
 			}
 		}
 
-		G3D::Vector3 adjustedVelocity = (root->getBranchMass() * kThrustD) * root->getVelocity().linear; // fabricated name, may change
-		force -= adjustedVelocity;
-
-		force -= body->getBranchForce();
-
-		Math::fixDenorm(force);
-
-		force = force.clamp(G3D::Vector3(-maxThrust, -maxThrust, -maxThrust), G3D::Vector3(maxThrust, maxThrust, maxThrust));
-
-		root->accumulateForceAtBranchCofm(force);
-
-		G3D::Vector3 unitForce = force.squaredMagnitude() > 0.000001f ? force.fastDirection() : G3D::Vector3::zero(); // fabricated name, may change
-		G3D::Vector3 forceCartoon = unitForce * (1.0f - cartoonFactor); // fabricated name, may change
-		G3D::Vector3 newDirection = forceCartoon + (targetDir * cartoonFactor); // fabricated name, may change
-		turn(body, newDirection.direction());
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
 	}
 
-	G3D::Vector3 Rocket::turn(Body* body, const G3D::Vector3& targetDir)
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 	{
-		G3D::Vector3 targetObjectSpace = body->getCoordinateFrame().vectorToObjectSpace(targetDir);
-
-		Body* root = body->getRoot();
-		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
-
-		float desiredTorqueX = targetObjectSpace.y * root->getBranchIBodyV3().x * kTurnP;
-		float desiredTorqueY = -(targetObjectSpace.x * root->getBranchIBodyV3().y * kTurnP);
-
-		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
-		
-		if (fabs(desiredTorqueX - torqueBody.x) < root->getBranchIBodyV3().x * maxTorque.x)
-			torqueBody.x = desiredTorqueX;
-		else
-			torqueBody.x += desiredTorqueX;
-		
-		if (fabs(desiredTorqueY - torqueBody.y) < root->getBranchIBodyV3().y * maxTorque.y)
-			torqueBody.y = desiredTorqueY;
-		else
-			torqueBody.y += desiredTorqueY;
-
-		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
-		torqueBody.x -= (root->getBranchIBodyV3().x * angVelBody.x) * kTurnD;
-		torqueBody.y -= (root->getBranchIBodyV3().y * angVelBody.y) * kTurnD;
-
-		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
-		root->accumulateTorque(addedTorque);
-
-		return targetObjectSpace;
+		return;
 	}
 
-
-	Reflection::BoundProp<float, 1> BodyGyro::prop_kP("P", "Goals", &BodyGyro::kP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> BodyGyro::prop_kD("D", "Goals", &BodyGyro::kD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyGyro::prop_maxTorque("maxTorque", "Goals", &BodyGyro::maxTorque, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::CoordinateFrame, 1> BodyGyro::prop_cframe("cframe", "Goals", &BodyGyro::cframe, Reflection::PropertyDescriptor::STANDARD);
-
-	BodyGyro::BodyGyro()
-		: Base("BodyGyro"),
-		  kP(3000.0f),
-		  kD(500.0f),
-		  maxTorque(G3D::Vector3(400000.0f, 0.0f, 400000.0f)),
-		  cframe()
+	bool Instance::contains(const Instance* child) const
 	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
 	}
 
-	void BodyGyro::computeForce(const float dt, bool throttling)
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
 	{
-		Body* body = part->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
-
-		computeBalance(body);
-		computeOrientation(body);
+		return AbstractFactoryProduct::create(className);
 	}
 
-	void BodyGyro::computeOrientation(Body* body)
+	int Instance::findChildIndex(const Instance* instance) const
 	{
-		if (G3D::fuzzyEq(maxTorque.y, 0.0f))
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
+
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
 			return;
 
-		Body* root = body->getRoot();
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
 
-		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
 
+			oldParent->onChildRemoving(this);
 
-		G3D::Vector3 localZNegAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.lookVector());
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
 
+			if (c->empty())
+				oldParent->children.reset();
 
-		float desiredTorqueY = -(root->getBranchIBodyV3().y * localZNegAxis.x * kP);
+			parent = NULL;
 
-		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
 
-		if (fabs(desiredTorqueY - torqueBody.y) < root->getBranchIBodyV3().y * maxTorque.y)
-			torqueBody.y = desiredTorqueY;
-		else
-			torqueBody.y = torqueBody.y + desiredTorqueY;
+			oldParent->onChildRemoved(this);
 
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
 
-		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
-		torqueBody.y = torqueBody.y - kD * root->getBranchIBodyV3().y * angVelBody.y;
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
 
-		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
+		parent = newParent;
 
-		root->accumulateTorque(addedTorque);
-	}
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
 
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
 
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
 
-	void BodyGyro::computeBalance(Body* body)
-	{
-		if (G3D::fuzzyEq(maxTorque.x, 0.0f) && G3D::fuzzyEq(maxTorque.z, 0.0f))
-			return;
-
-		Body* root = body->getRoot();
-		G3D::Vector3 oldTorqueWorld = root->getBranchTorque();
-		G3D::Vector3 localYAxis = body->getCoordinateFrame().vectorToObjectSpace(cframe.upVector());
-		float desiredTorqueX = root->getBranchIBodyV3().x * localYAxis.z * kP;
-		float desiredTorqueZ = -(root->getBranchIBodyV3().z * localYAxis.x * kP);
-
-		G3D::Vector3 torqueBody = body->getCoordinateFrame().vectorToObjectSpace(oldTorqueWorld);
-
-		if (fabs(desiredTorqueX - torqueBody.x) < root->getBranchIBodyV3().x * maxTorque.x)
-			torqueBody.x = desiredTorqueX;
-		else
-			torqueBody.x += desiredTorqueX;
-
-		if (fabs(desiredTorqueZ - torqueBody.z) < root->getBranchIBodyV3().z * maxTorque.z)
-			torqueBody.z = desiredTorqueZ;
-		else
-			torqueBody.z += desiredTorqueZ;
-
-		G3D::Vector3 angVelBody = body->getCoordinateFrame().vectorToObjectSpace(body->getVelocity().rotational);
-		torqueBody.x -= (root->getBranchIBodyV3().x * angVelBody.x) * kD;
-		torqueBody.z -= (root->getBranchIBodyV3().z * angVelBody.z) * kD;
-
-		G3D::Vector3 addedTorque = body->getCoordinateFrame().vectorToWorldSpace(torqueBody) - oldTorqueWorld;
-
-		root->accumulateTorque(addedTorque);
-	}
-
-	Reflection::BoundProp<float, 1> BodyPosition::prop_kP("P", "Goals", &BodyPosition::kP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<float, 1> BodyPosition::prop_kD("D", "Goals", &BodyPosition::kD, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyPosition::prop_maxForce("maxForce", "Goals", &BodyPosition::maxForce, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyPosition::prop_position("position", "Goals", &BodyPosition::position, Reflection::PropertyDescriptor::STANDARD);
-
-
-
-	static Reflection::BoundFuncDesc<BodyPosition, G3D::Vector3(void), 0> func_getLastForceOld(&BodyPosition::getLastForce, "lastForce", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<BodyPosition, G3D::Vector3(void), 0> func_getLastForce(&BodyPosition::getLastForce, "GetLastForce", Reflection::FunctionDescriptor::AnyCaller);
-
-	BodyPosition::BodyPosition()
-		: Base("BodyPosition"),
-		  kP(10000.0f),
-		  kD(1250.0f),
-		  maxForce(G3D::Vector3(4000.0f, 4000.0f, 4000.0f)),
-		  position(G3D::Vector3(0.0f, 50.0f, 0.0f)),
-		  lastForce()
-	{
-	}
-
-
-
-	void BodyPosition::computeForce(const float dt, bool throttling)
-	{
-		RBXASSERT(part->getPrimitive()->getBody() != NULL);
-		Body* body = part->getPrimitive()->getBody();
-		
-		G3D::Vector3 pAccel = (position - body->getCoordinateFrame().translation) * kP;
-		pAccel = pAccel + (body->getVelocity().linear * -kD);
-		//Body* root = body->getRoot();
-		lastForce = pAccel * body->getRoot()->getBranchMass();
-		lastForce = lastForce.clamp(-maxForce, maxForce);
-		
-		body->getRoot()->accumulateForce(lastForce, body->getRoot()->getCoordinateFrame().translation);
-	}
-
-	Reflection::BoundProp<float, 1> BodyVelocity::prop_kP("P", "Goals", &BodyVelocity::kP, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyVelocity::prop_maxForce("maxForce", "Goals", &BodyVelocity::maxForce, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyVelocity::prop_velocity("velocity", "Goals", &BodyVelocity::velocity, Reflection::PropertyDescriptor::STANDARD);
-
-
-
-	static Reflection::BoundFuncDesc<BodyVelocity, G3D::Vector3(void), 0> func_getLastForceVOld(&BodyVelocity::getLastForce, "lastForce", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<BodyVelocity, G3D::Vector3(void), 0> func_getLastForceV(&BodyVelocity::getLastForce, "GetLastForce", Reflection::FunctionDescriptor::AnyCaller);
-
-	BodyVelocity::BodyVelocity()
-		: Base("BodyVelocity"),
-		  kP(1250.0f),
-		  maxForce(G3D::Vector3(4000.0f, 4000.0f, 4000.0f)),
-		  velocity(G3D::Vector3(0.0f, 2.0f, 0.0f)),
-		  lastForce()
-	{
-	}
-
-
-	void BodyVelocity::computeForce(const float dt, bool throttling)
-	{
-		RBXASSERT(part->getPrimitive()->getBody() != NULL);
-		Body* body = part->getPrimitive()->getBody();
-		//Body* root = part->getPrimitive()->getBody()->getRoot();
-
-		G3D::Vector3 pAccel = (velocity - body->getVelocity().linear) * kP;
-
-		lastForce = pAccel * body->getRoot()->getBranchMass();
-		lastForce = lastForce.clamp(-maxForce, maxForce);
-
-		body->getRoot()->accumulateForce(lastForce, body->getRoot()->getCoordinateFrame().translation);
-	}
-
-
-
-	Reflection::BoundProp<G3D::Vector3, 1> BodyForce::prop_Force("force", "Goals", &BodyForce::force, Reflection::PropertyDescriptor::STANDARD);
-
-
-	BodyForce::BodyForce()
-		: Base("BodyForce"),
-		  force(G3D::Vector3::unitY())
-	{
-	}
-
-	void BodyForce::computeForce(const float dt, bool throttling)
-	{
-		RBXASSERT(part->getPrimitive()->getBody() != NULL);
-		Body* root = part->getPrimitive()->getBody()->getRoot();
-
-		root->accumulateForce(force, root->getCoordinateFrame().translation);
-	}
-
-	Reflection::BoundProp<G3D::Vector3, 1> BodyThrust::prop_force("force", "Goals", &BodyThrust::force, Reflection::PropertyDescriptor::STANDARD);
-	Reflection::BoundProp<G3D::Vector3, 1> BodyThrust::prop_location("location", "Goals", &BodyThrust::location, Reflection::PropertyDescriptor::STANDARD);
-
-
-	BodyThrust::BodyThrust()
-		: Base("BodyThrust"),
-		  force(G3D::Vector3::unitY()),
-		  location(G3D::Vector3::zero())
-	{
-	}
-
-	void BodyThrust::computeForce(const float dt, bool throttling)
-	{
-		Body* body = part->getPrimitive()->getBody();
-		RBXASSERT(body != NULL);
-
-		G3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);
-		G3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);
-		body->accumulateForce(worldForce, worldPos);
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
 	}
 }

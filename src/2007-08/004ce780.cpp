@@ -1,174 +1,90 @@
-// from server: 11% by colin
-struct Node {
-    Node* left;
-    Node* parent;
-    Node* right;
-    char  color;
-    char  isnil;
-    char  pad[2];
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-view-dll MaterialFactory.cpp
 
-struct Tree {
-    Node* head;
-    int   count;
-};
+// Candidate translation unit (score above; library headers required).
+#include "MaterialFactory.h"
+#include "util/ContentProvider.h"
 
-struct String {
-    void* rep;
-    union {
-        char buf[16];
-        char* ptr;
-    };
-    unsigned int size;
-    unsigned int res;
-};
+static const float specular = 0.9f;
+static const float shiny = 50.0f;
 
-struct Exception {
-    void* vfptr;
-};
-
-extern "C" {
-    void* __stdcall sub_77E698(const char*);
-    void* __stdcall sub_77E69C(void*, void*);
-    void* __stdcall sub_77E6F8(void*);
-}
-
-void __cdecl sub_630B9E(void*, void*);
-void __cdecl sub_62FC62(void*);
-void __cdecl sub_4CD890(void*);
-void __cdecl sub_4D0870(void*);
-void __cdecl sub_4CD710(void*);
-void __cdecl sub_4D02F0(void*);
-void* __cdecl sub_438E90(void*);
-void* __cdecl sub_4CD5E0(void*);
-
-struct Table {
-    char pad0[4];
-    Tree* tree;
-    int   refcount;
-    char pad1[0x18];
-    void* vtable;
-    char pad2[4];
-
-    void erase(Node*);
-    void rotate_left(Node*);
-    void rotate_right(Node*);
-    void rebalance(Node*);
-    void destroy(Node*);
-    void clear();
-    void insert_unique(void*);
-};
-
-void Table::erase(Node* target)
+namespace RBX
 {
-    Node* head = tree->head;
-    Node* y;
-    Node* x;
-    Node* z;
+	namespace View
+	{
+		MaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)
+		{
+			surfacesTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\surfaces.png"), true);
+			fileMeshTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\JohnTex.png"), false);
+			megaTexture = new MegaTextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\SurfacesStrip.png"));
+		}
 
-    if (target->left == 0) {
-        y = target;
-    } else if (target->right == 0) {
-        y = target;
-    } else {
-        y = target->right;
-        while (y->left != 0)
-            y = y->left;
-    }
+		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMaterial(Attributes attributes)
+		{
+			G3D::ReferenceCountedPointer<Render::Material> material;
 
-    if (y->left != 0)
-        x = y->left;
-    else
-        x = y->right;
+			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = database.find(attributes);
+			if (iter != database.end())
+			{
+				material = iter->second.createStrongPtr();
+			}
 
-    if (x != 0)
-        x->parent = y->parent;
+			if (material.isNull())
+			{
+				G3D::Color3 color3 = attributes.color.color3();
+				G3D::ReferenceCountedPointer<Render::TextureProxy> surfacesTexture = getSurfacesTexture(color3);
 
-    if (y->parent == head)
-        head->parent = x;
-    else if (y == y->parent->left)
-        y->parent->left = x;
-    else
-        y->parent->right = x;
+				material = new Render::Material;
+				if (attributes.transparency == 1.0f)
+				{
+					material->appendEmptyLevel();
+				}
+				else
+				{
+					material->appendLevel(surfacesTexture, G3D::Color3::WHITE, specular, shiny, attributes.reflectance, attributes.transparency);
+				}
 
-    if (y != target) {
-        if (target->left == y) {
-            if (x != 0)
-                x->parent = y;
-        } else {
-            if (x != 0)
-                x->parent = y->parent;
-            y->left = target->left;
-            y->left->parent = y;
-            y->right = target->right;
-            y->right->parent = y;
-        }
-        if (target->parent == head)
-            head->parent = y;
-        else if (target == target->parent->left)
-            target->parent->left = y;
-        else
-            target->parent->right = y;
-        y->parent = target->parent;
-        {
-            char c = target->color;
-            target->color = y->color;
-            y->color = c;
-        }
-    }
+				database[attributes] = material;
+			}
 
-    if (target->color == 1) {
-        while (x != head->parent && x->color == 1) {
-            if (x == x->parent->left) {
-                Node* w = x->parent->right;
-                if (w->color == 0) {
-                    w->color = 1;
-                    x->parent->color = 0;
-                    rotate_left(x->parent);
-                    w = x->parent->right;
-                }
-                if (w->left->color == 1 && w->right->color == 1) {
-                    w->color = 0;
-                    x = x->parent;
-                } else {
-                    if (w->right->color == 1) {
-                        w->left->color = 1;
-                        w->color = 0;
-                        rotate_right(w);
-                        w = x->parent->right;
-                    }
-                    w->color = x->parent->color;
-                    x->parent->color = 1;
-                    w->right->color = 1;
-                    rotate_left(x->parent);
-                    x = head->parent;
-                }
-            } else {
-                Node* w = x->parent->left;
-                if (w->color == 0) {
-                    w->color = 1;
-                    x->parent->color = 0;
-                    rotate_right(x->parent);
-                    w = x->parent->left;
-                }
-                if (w->right->color == 1 && w->left->color == 1) {
-                    w->color = 0;
-                    x = x->parent;
-                } else {
-                    if (w->left->color == 1) {
-                        w->right->color = 1;
-                        w->color = 0;
-                        rotate_left(w);
-                        w = x->parent->left;
-                    }
-                    w->color = x->parent->color;
-                    x->parent->color = 1;
-                    w->left->color = 1;
-                    rotate_right(x->parent);
-                    x = head->parent;
-                }
-            }
-        }
-        x->color = 1;
-    }
+			return material;
+		}
+
+		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMegaMaterial(Attributes attributes)
+		{
+			Attributes filteredAttributes = {BrickColor::defaultColor(), attributes.transparency, attributes.reflectance};
+
+			G3D::ReferenceCountedPointer<Render::Material> material;
+
+			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = megaDatabase.find(filteredAttributes);
+			if (iter != megaDatabase.end())
+			{
+				material = iter->second.createStrongPtr();
+			}
+
+			if (material.isNull())
+			{
+				material = new Render::Material;
+				if (attributes.transparency == 1.0f)
+				{
+					material->appendEmptyLevel();
+				}
+				else
+				{
+					material->appendLevel(megaTexture, G3D::Color3::white(), specular, shiny, attributes.reflectance, attributes.transparency);
+				}
+
+				megaDatabase[filteredAttributes] = material;
+			}
+
+			return material;
+		}
+
+		G3D::ReferenceCountedPointer<Render::TextureProxy> MaterialFactory::getSurfacesTexture(G3D::Color3 tint)
+		{
+			return surfacesTexture->shade(tint, NULL);
+		}
+	}
 }

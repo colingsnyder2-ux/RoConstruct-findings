@@ -1,121 +1,78 @@
-// from server: 31% by colin
-// roc-lang: cpp
+// roc 2009-06 005186c0  unit: RBX::PartChunk  size: 91 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 005186c0
+//
+// 005186c0  8b442404             mov eax, dword ptr [esp + 4]
+// 005186c4  8b11                 mov edx, dword ptr [ecx]
+// 005186c6  8910                 mov dword ptr [eax], edx
+// 005186c8  8b5104               mov edx, dword ptr [ecx + 4]
+// 005186cb  895004               mov dword ptr [eax + 4], edx
+// 005186ce  8b5108               mov edx, dword ptr [ecx + 8]
+// 005186d1  895008               mov dword ptr [eax + 8], edx
+// 005186d4  8b510c               mov edx, dword ptr [ecx + 0xc]
+// 005186d7  89500c               mov dword ptr [eax + 0xc], edx
+// 005186da  8b5110               mov edx, dword ptr [ecx + 0x10]
+// 005186dd  895010               mov dword ptr [eax + 0x10], edx
+// 005186e0  8b5114               mov edx, dword ptr [ecx + 0x14]
+// 005186e3  895014               mov dword ptr [eax + 0x14], edx
+// 005186e6  8b5104               mov edx, dword ptr [ecx + 4]
+// 005186e9  8b5214               mov edx, dword ptr [edx + 0x14]
+// 005186ec  895104               mov dword ptr [ecx + 4], edx
+// 005186ef  85d2                 test edx, edx
+// 005186f1  7525                 jne 0x518718
+// 005186f3  56                   push esi
+// 005186f4  8b710c               mov esi, dword ptr [ecx + 0xc]
+// 005186f7  57                   push edi
+// 005186f8  ff01                 inc dword ptr [ecx]
+// 005186fa  8b11                 mov edx, dword ptr [ecx]
+// 005186fc  3bd6                 cmp edx, esi
+// 005186fe  7d12                 jge 0x518712
+// 00518700  8b7910               mov edi, dword ptr [ecx + 0x10]
+// 00518703  8b1497               mov edx, dword ptr [edi + edx*4]
+// 00518706  895104               mov dword ptr [ecx + 4], edx
+// 00518709  85d2                 test edx, edx
+// 0051870b  74eb                 je 0x5186f8
+// 0051870d  5f                   pop edi
+// 0051870e  5e                   pop esi
+// 0051870f  c20800               ret 8
+// 00518712  5f                   pop edi
+// 00518713  c6411401             mov byte ptr [ecx + 0x14], 1
+// 00518717  5e                   pop esi
+// 00518718  c20800               ret 8
+// copied from an identical function in another client (function ??ES@@QAE?AU0@H@Z)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client RbxView/PBBMesh.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "PBBMesh.h"
-
-#include "QuadVolume.h"
-
-#include <G3D/Vector3int16.h>
-
-// SIZE 0x28
-class PBBBuilder : public RBX::View::LevelBuilder
-{
-private:
-	G3D::Vector3int16 strips; // 0x20
-
-public:
-	PBBBuilder(
-		G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-		G3D::Vector3 size,
-		RBX::View::RenderSurfaceTypes surfaceTypes
-	);
-
-protected:
-	virtual void buildTop(Purpose purpose);    // vtable+0x04
-	virtual void buildBottom(Purpose purpose); // vtable+0x08
-	virtual void buildLeft(Purpose purpose);   // vtable+0x0c
-	virtual void buildRight(Purpose purpose);  // vtable+0x10
-	virtual void buildFront(Purpose purpose);  // vtable+0x14
-	virtual void buildBack(Purpose purpose);   // vtable+0x18
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Node {
+    char padding[20];
+    Node* next;
 };
 
-DECOMP_SIZE_ASSERT(PBBBuilder, 0x28)
+struct S {
+    int index;
+    Node* current;
+    int unknown;
+    int count;
+    Node** buckets;
+    bool ended;
 
-// STUB: WEBSERVICE 0x1017abc0
-PBBBuilder::PBBBuilder(
-	G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-	G3D::Vector3 size,
-	RBX::View::RenderSurfaceTypes surfaceTypes
-)
-	: RBX::View::LevelBuilder(level, size, surfaceTypes), strips(0, 0, 0)
+    S operator++(int);
+};
+
+S S::operator++(int)
 {
-	strips.x = G3D::max(1, (int) (size.x / 6.0));
-	strips.y = G3D::max(1, (int) (size.y / 6.0));
-	strips.z = G3D::max(1, (int) (size.z / 6.0));
+    S previous = *this;
+    current = current->next;
+    if (current)
+        return previous;
 
-	strips.x = G3D::min(4, (int) strips.x);
-	strips.y = G3D::min(4, (int) strips.y);
-	strips.z = G3D::min(4, (int) strips.z);
+    int limit = count;
+next_bucket:
+    if (++index < limit) {
+        current = buckets[index];
+        if (!current)
+            goto next_bucket;
+        return previous;
+    }
+    ended = true;
+    return previous;
 }
-
-// STUB: WEBSERVICE 0x1017d7c0
-void PBBBuilder::buildTop(Purpose)
-{
-	STUB(0x1017d7c0);
-}
-
-// STUB: WEBSERVICE 0x1017d820
-void PBBBuilder::buildBottom(Purpose)
-{
-	STUB(0x1017d820);
-}
-
-// STUB: WEBSERVICE 0x1017d880
-void PBBBuilder::buildLeft(Purpose)
-{
-	STUB(0x1017d880);
-}
-
-// STUB: WEBSERVICE 0x1017d8e0
-void PBBBuilder::buildRight(Purpose)
-{
-	STUB(0x1017d8e0);
-}
-
-// STUB: WEBSERVICE 0x1017d940
-void PBBBuilder::buildFront(Purpose)
-{
-	STUB(0x1017d940);
-}
-
-// STUB: WEBSERVICE 0x1017d9a0
-void PBBBuilder::buildBack(Purpose)
-{
-	STUB(0x1017d9a0);
-}
-
-namespace RBX {
-namespace View {
-
-// STUB: WEBSERVICE 0x1017da00
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId decalFace)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
-
-	builder.buildFace(decalFace, LevelBuilder::Decal);
-}
-
-// STUB: WEBSERVICE 0x1017db60
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId, const G3D::Vector2&)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
-}
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createDecal(const G3D::Vector3&, NormalId);
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createTexture(const G3D::Vector3&, NormalId, const G3D::Vector2&);
-
-} // namespace View
-} // namespace RBX

@@ -1,61 +1,44 @@
-// from server: 54% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_65cb7ef5d764b5af.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma float_control(precise, off)
+#include "G3D/Vector3.h"
+#include "G3D/Matrix3.h"
+static inline G3D::Vector3 getColumn(const G3D::Matrix3& m, int c) { return G3D::Vector3(m[0][c], m[1][c], m[2][c]); }
+static inline G3D::Vector3 getWorldNormal(int id, const G3D::Matrix3& mat) { return (1 - (id / 3) * 2) * getColumn(mat, id % 3); }
+typedef G3D::Vector3 Vector3;
 struct Instance {
-    static Instance* fastDynamicCast(Instance*);
+    void* getCastObject();
+    const G3D::Matrix3& getMatrix();
 };
 
-struct PartInstance;
-
-struct Vector3 {
-    float x, y, z;
+struct Model {
+    void setDirection(const Vector3&);
 };
 
-struct CoordinateFrame {
-    Vector3 translation;
-    float r00, r01, r02;
-    float r10, r11, r12;
-    float r20, r21, r22;
+struct Argument {
+    Instance* instance;
+    int face;
 };
 
-struct PartPrimitive {
-    void getExtentsLocal(Vector3* out) const;
-};
+extern unsigned char sourceType;
+extern unsigned char destinationType;
 
-struct PartInstance : Instance {
-    PartPrimitive* getPartPrimitive();
-    CoordinateFrame getCoordinateFrame() const;
-};
+extern "C" void* __cdecl runtimeCast(
+    void*, long, void*, void*, int);
 
-struct Frustum {
-    bool containsAABB(const Vector3& extents, const CoordinateFrame& cframe) const;
-};
-
-struct ModelInstance {
-    void render3dAdorn(int adorn);
-};
-
-extern "C" int __cdecl sub_630D36(int);
-extern "C" int __stdcall sub_5BB2E0(int, int, int, int);
-extern "C" int __stdcall sub_573F80(int);
-extern "C" void __stdcall sub_530320(int, int, int, int);
-
-void ModelInstance::render3dAdorn(int adorn)
+void __stdcall setFront(Argument* argument)
 {
-    int* p = (int*)&adorn;
-    int v = *p;
-    int a = sub_5BB2E0(v, 0, 0x898fc0, 0x88c6b8);
-    int b = sub_630D36(a);
-    if (b) {
-        int idx = *(int*)((char*)&adorn + 4);
-        int c = sub_573F80(v);
-        int q = idx / 3;
-        int r = idx - q * 3;
-        float f0 = ((float*)c)[r];
-        float f1 = ((float*)c)[r + 3];
-        float f2 = ((float*)c)[r + 6];
-        float t = (float)(1 - q * 2);
-        float o0 = f0 * t;
-        float o1 = f1 * t;
-        float o2 = f2 * t;
-        sub_530320(b, (int)&o0, (int)&o1, (int)&o2);
+    Instance* instance = argument->instance;
+    Model* model = static_cast<Model*>(runtimeCast(
+        instance->getCastObject(), 0,
+        &sourceType, &destinationType, 0));
+
+    if (model) {
+        int face = argument->face;
+        model->setDirection(getWorldNormal(face, instance->getMatrix()));
     }
 }

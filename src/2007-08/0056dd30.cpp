@@ -1,153 +1,41 @@
-// from server: 67% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8tree/enumproperty.cpp
+// roc-lib: rbxgs-dll roc_unit_cae07938f2228138.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/enumconverter.h"
-#include "reflection/property.h"
+#include "G3D/Vector2int16.h"
 #include "util/ContentProvider.h"
-#include "util/NormalId.h"
+#include "reflection/type.h"
+#include "util/Utilities.h"
+#include "G3D/format.h"
+#include "G3D/Vector3.h"
+#include "G3D/Color3.h"
+#include "G3D/CoordinateFrame.h"
 #include "v8datamodel/BrickColor.h"
-#include "v8tree/Instance.h"
-
-#include <G3D/Color3.h>
-#include <G3D/Vector3.h>
-#include <string>
-#include <vector>
-
-namespace RBX {
-namespace Reflection {
-
-// FUNCTION: WEBSERVICE 0x1003ef60
-template <>
-const Type& Type::singleton<boost::shared_ptr<DescribedBase> >()
-{
-	static Type type("Object", typeid(boost::shared_ptr<DescribedBase>));
-
-	return type;
+#include <stdexcept>
+namespace RBX { namespace Reflection {
+template<class T> T& Value::genericConvert() {
+    T* id = boost::any_cast<T>(&value);
+    if (id) return *id;
+    if (isType<std::string>()) {
+        T v;
+        if (StringConverter<T>::convertToValue(*boost::any_cast<std::string>(&value),v)) {
+            value = v;
+            _type = &Type::singleton<T>();
+            return *boost::any_cast<T>(&value);
+        }
+    }
+    throw std::runtime_error(G3D::format("Unable to cast %s to %s", _type->tag.c_str(), Type::singleton<T>().tag.c_str()));
 }
-
-// FUNCTION: WEBSERVICE 0x1003efd0
-template <>
-const Type& Type::singleton<boost::shared_ptr<Instance> >()
-{
-	static Type type("Instance", typeid(boost::shared_ptr<Instance>));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f040
-template <>
-const Type& Type::singleton<boost::shared_ptr<const std::vector<boost::shared_ptr<Instance> > > >()
-{
-	static Type type("Objects", typeid(boost::shared_ptr<const std::vector<boost::shared_ptr<Instance> > >));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f0b0
-template <>
-const Type& Type::singleton<int>()
-{
-	static Type type("int", typeid(int));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f120
-template <>
-const Type& Type::singleton<bool>()
-{
-	static Type type("bool", typeid(bool));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f190
-template <>
-const Type& Type::singleton<float>()
-{
-	static Type type("float", typeid(float));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f200
-template <>
-const Type& Type::singleton<double>()
-{
-	static Type type("double", typeid(double));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f270
-template <>
-const Type& Type::singleton<ContentId>()
-{
-	static Type type("Content", typeid(ContentId));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f2e0
-template <>
-const Type& Type::singleton<std::string>()
-{
-	static Type type("string", typeid(std::string));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f350
-template <>
-const Type& Type::singleton<G3D::Vector3>()
-{
-	static Type type("Vector3", typeid(G3D::Vector3));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f3c0
-template <>
-const Type& Type::singleton<G3D::Color3>()
-{
-	static Type type("Color3", typeid(G3D::Color3));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f430
-template <>
-const Type& Type::singleton<std::vector<Value> >()
-{
-	static Type type("Table", typeid(std::vector<Value>));
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x1003f5c0
-template <>
-const Type& Type::singleton<BrickColor>()
-{
-	static Type type("BrickColor", typeid(BrickColor), "int");
-
-	return type;
-}
-
-// FUNCTION: WEBSERVICE 0x100421f0
-template <>
-EnumDesc<NormalId>::EnumDesc() : EnumDescriptor("NormalId", typeid(NormalId))
-{
-	addPair(NORM_Y, "Top");
-	addPair(NORM_Y_NEG, "Bottom");
-	addPair(NORM_Z, "Back");
-	addPair(NORM_Z_NEG, "Front");
-	addPair(NORM_X, "Right");
-	addPair(NORM_X_NEG, "Left");
-}
-
-} // namespace Reflection
-} // namespace RBX
+template int& Value::genericConvert<int>();
+template bool& Value::genericConvert<bool>();
+template float& Value::genericConvert<float>();
+template double& Value::genericConvert<double>();
+template G3D::Vector3& Value::genericConvert<G3D::Vector3>();
+template G3D::Color3& Value::genericConvert<G3D::Color3>();
+template G3D::CoordinateFrame& Value::genericConvert<G3D::CoordinateFrame>();
+template RBX::BrickColor& Value::genericConvert<RBX::BrickColor>();
+template G3D::Vector2int16& Value::genericConvert<G3D::Vector2int16>();
+template RBX::ContentId& Value::genericConvert<RBX::ContentId>();
+}}

@@ -1,628 +1,464 @@
-// from server: 26% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/ctlpbag.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-#include "stdafx.h"
-
-
-
-#define new DEBUG_NEW
-
-/////////////////////////////////////////////////////////////////////////////
-// CBlobProperty
-
-class CBlobProperty : public IPersistStream
+namespace RBX
 {
-public:
-	CBlobProperty(HGLOBAL pBlob = NULL);
-	HGLOBAL GetBlob();
+	const char* sInstance = "Instance";
 
-	STDMETHOD_(ULONG, AddRef)();
-	STDMETHOD_(ULONG, Release)();
-	STDMETHOD(QueryInterface)(REFIID, LPVOID*);
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
 
-	STDMETHOD(GetClassID)(LPCLSID);
-	STDMETHOD(IsDirty)();
-	STDMETHOD(Load)(LPSTREAM);
-	STDMETHOD(Save)(LPSTREAM, BOOL);
-	STDMETHOD(GetSizeMax)(ULARGE_INTEGER*);
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
 
-protected:
-	long m_dwRef;
-	HGLOBAL m_hBlob;
-};
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
 
-CBlobProperty::CBlobProperty(HGLOBAL hBlob) :
-	m_hBlob(hBlob),
-	m_dwRef(1)
-{
-}
-
-HGLOBAL CBlobProperty::GetBlob()
-{
-	return m_hBlob;
-}
-
-STDMETHODIMP_(ULONG) CBlobProperty::AddRef()
-{
-	return InterlockedIncrement(&m_dwRef);
-}
-
-STDMETHODIMP_(ULONG) CBlobProperty::Release()
-{
-	if (InterlockedDecrement(&m_dwRef) > 0)
-		return m_dwRef;
-
-	delete this;
-	return 0;
-}
-
-STDMETHODIMP CBlobProperty::QueryInterface(REFIID riid, LPVOID* ppvObj)
-{
-	if (IsEqualIID(riid, IID_IUnknown) ||
-		IsEqualIID(riid, IID_IPersist) ||
-		IsEqualIID(riid, IID_IPersistStream))
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		AddRef();
-		*ppvObj = this;
-		return S_OK;
 	}
 
-	*ppvObj = NULL;
-	return E_NOINTERFACE;
-}
-
-AFX_STATIC_DATA const CLSID _afx_CLSID_BlobProperty =
-{ 0xf6f07540, 0x42ec, 0x11ce, { 0x81, 0x35, 0x0, 0xaa, 0x0, 0x4b, 0xb8, 0x51 } };
-
-STDMETHODIMP CBlobProperty::GetClassID(LPCLSID pClsid)
-{
-	ENSURE_ARG(pClsid != NULL);
-	*pClsid = _afx_CLSID_BlobProperty;
-	return S_OK;
-}
-
-STDMETHODIMP CBlobProperty::IsDirty()
-{
-	return S_OK;
-}
-
-STDMETHODIMP CBlobProperty::Load(LPSTREAM pStream)
-{
-	ENSURE_ARG(pStream != NULL);
-	ULONG cb;
-	ULONG cbRead;
-	HRESULT hr = pStream->Read(&cb, sizeof(ULONG), &cbRead);
-
-	if (FAILED(hr))
-		return hr;
-
-	if (sizeof(ULONG) != cbRead)
-		return E_FAIL;
-
-	HGLOBAL hBlobNew = GlobalAlloc(GMEM_MOVEABLE, sizeof(ULONG)+cb);
-	if (hBlobNew == NULL)
-		return E_OUTOFMEMORY;
-
-	void* pBlobNew = GlobalLock(hBlobNew);
-	*(ULONG*)pBlobNew = cb;
-	hr = pStream->Read(((ULONG*)pBlobNew)+1, cb, &cbRead);
-	GlobalUnlock(hBlobNew);
-
-	if (FAILED(hr))
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
-		GlobalFree(hBlobNew);
-		return hr;
-	}
-	if (cb != cbRead)
-	{
-		GlobalFree(hBlobNew);
-		return E_FAIL;
 	}
 
-	GlobalFree(m_hBlob);
-	m_hBlob = hBlobNew;
-	return S_OK;
-}
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
 
-STDMETHODIMP CBlobProperty::Save(LPSTREAM pStream, BOOL)
-{
-	ENSURE_ARG(pStream != NULL);
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
 
-	void* pBlob = GlobalLock(m_hBlob);
-	if (pBlob == NULL)
-		return E_OUTOFMEMORY;
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
 
-	ULONG cb = ULONG(sizeof(ULONG)) + *(ULONG*)pBlob;
-	ULONG cbWritten;
-	HRESULT hr = pStream->Write(pBlob, cb, &cbWritten);
-
-	GlobalUnlock(m_hBlob);
-
-	if (FAILED(hr))
-		return hr;
-
-	if (cb != cbWritten)
-		return E_FAIL;
-
-	return S_OK;
-}
-
-STDMETHODIMP CBlobProperty::GetSizeMax(ULARGE_INTEGER* pcbSize)
-{
-	ENSURE_ARG(pcbSize != NULL);
-
-	void* pBlob = GlobalLock(m_hBlob);
-	if (pBlob == NULL)
-		return E_OUTOFMEMORY;
-
-	pcbSize->HighPart = 0;
-	pcbSize->LowPart = ULONG(sizeof(ULONG)) + *(ULONG*)pBlob;
-
-	GlobalUnlock(m_hBlob);
-	return S_OK;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CPropbagPropExchange
-
-class CPropbagPropExchange : public CPropExchange
-{
-public:
-	CPropbagPropExchange(LPPROPERTYBAG pPropBag, LPERRORLOG pErrorLog,
-		BOOL bLoading, BOOL bSaveAllProperties=FALSE);
-	~CPropbagPropExchange();
-
-// Operations
-	virtual BOOL ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-				void* pvProp, const void* pvDefault = NULL);
-	virtual BOOL ExchangeBlobProp(LPCTSTR pszPropName, HGLOBAL* phBlob,
-				HGLOBAL hBlobDefault = NULL);
-	virtual BOOL ExchangeFontProp(LPCTSTR pszPropName, CFontHolder& font,
-				const FONTDESC* pFontDesc, LPFONTDISP pFontDispAmbient);
-	virtual BOOL ExchangePersistentProp(LPCTSTR pszPropName,
-				LPUNKNOWN* ppUnk, REFIID iid, LPUNKNOWN pUnkDefault);
-
-// Implementation
-	LPPROPERTYBAG m_pPropBag;
-	LPERRORLOG m_pErrorLog;
-	BOOL m_bSaveAllProperties;
-};
-
-CPropbagPropExchange::CPropbagPropExchange(LPPROPERTYBAG pPropBag,
-	LPERRORLOG pErrorLog, BOOL bLoading, BOOL bSaveAllProperties) :
-	m_pPropBag(pPropBag),
-	m_pErrorLog(pErrorLog),
-	m_bSaveAllProperties(bSaveAllProperties)
-{
-	m_bLoading = bLoading;
-	if (pPropBag != NULL)
-		pPropBag->AddRef();
-	if (pErrorLog != NULL)
-		pErrorLog->AddRef();
-}
-
-CPropbagPropExchange::~CPropbagPropExchange()
-{
-	RELEASE(m_pPropBag);
-	RELEASE(m_pErrorLog);
-}
-
-BOOL CPropbagPropExchange::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-	void* pvProp, const void* pvDefault)
-{
-	ASSERT_POINTER(m_pPropBag, IPropertyBag);
-	ASSERT(AfxIsValidAddress(pvProp, 1, FALSE));
-	ASSERT((pvDefault == NULL) || AfxIsValidAddress(pvDefault, 1, FALSE));
-
-	if (m_pPropBag == NULL)
-		return FALSE;
-
-	ENSURE_ARG(AfxIsValidString(pszPropName));
-	ENSURE_ARG(pvProp != NULL);
-
-	BOOL bSuccess = TRUE;
-	VARIANT var;
-	AfxVariantInit(&var);
-	V_VT(&var) = vtProp;
-
-	if (vtProp == VT_LPSTR)
-		V_VT(&var) = VT_BSTR;
-
-	const CStringW strPropName(pszPropName);
-	if (m_bLoading)
-	{		
-		if (FAILED(m_pPropBag->Read(strPropName.GetString(), &var, m_pErrorLog)))
-			return _AfxCopyPropValue(vtProp, pvProp, pvDefault);
-
-		switch (vtProp)
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-		case VT_UI1:
-			*(BYTE*)pvProp = V_UI1(&var);
-			break;
-
-		case VT_I2:
-			*(short*)pvProp = V_I2(&var);
-			break;
-
-		case VT_I4:
-			*(long*)pvProp = V_I4(&var);
-			break;
-
-		case VT_BOOL:
-			*(BOOL*)pvProp = (BOOL)V_BOOL(&var);
-			break;
-
-		case VT_LPSTR:
-		case VT_BSTR:
-			*(CString*)pvProp = V_BSTR(&var);
-			break;
-
-		case VT_CY:
-			*(CY*)pvProp = V_CY(&var);
-			break;
-
-		case VT_R4:
-			Checked::memcpy_s(pvProp, sizeof(float), &V_R4(&var), sizeof(float));
-			break;
-
-		case VT_R8:
-			Checked::memcpy_s(pvProp, sizeof(double), &V_R8(&var), sizeof(double));
-			break;
-
-		default:
-			bSuccess = FALSE;
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
-	else
+
+	void Instance::onDescendentAdded(Instance* instance)
 	{
-		if (m_bSaveAllProperties ||
-			!_AfxIsSamePropValue(vtProp, pvProp, pvDefault))
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			switch (vtProp)
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
+
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-			case VT_UI1:
-				V_UI1(&var) = *(BYTE*)pvProp;
-				break;
-
-			case VT_I2:
-				V_I2(&var) = *(short*)pvProp;
-				break;
-
-			case VT_I4:
-				V_I4(&var) = *(long*)pvProp;
-				break;
-
-			case VT_BOOL:
-				V_BOOL(&var) = (VARIANT_BOOL)*(BOOL*)pvProp;
-				break;
-
-			case VT_LPSTR:
-			case VT_BSTR:
-				V_BSTR(&var) = ((CString*)pvProp)->AllocSysString();
-				break;
-
-			case VT_CY:
-				V_CY(&var) = *(CY*)pvProp;
-				break;
-
-			case VT_R4:
-				Checked::memcpy_s(&V_R4(&var), sizeof(float), pvProp, sizeof(float));
-				break;
-
-			case VT_R8:
-				Checked::memcpy_s(&V_R8(&var), sizeof(double), pvProp, sizeof(double));
-				break;
-
-			default:
-				return FALSE;
-			}
-			bSuccess = SUCCEEDED(m_pPropBag->Write(strPropName.GetString(), &var));
-		}
-	}
-
-	VariantClear(&var);
-	return bSuccess;
-}
-
-BOOL CPropbagPropExchange::ExchangeBlobProp(LPCTSTR pszPropName,
-	HGLOBAL* phBlob, HGLOBAL hBlobDefault)
-{
-	ASSERT_POINTER(m_pPropBag, IPropertyBag);
-	ASSERT_POINTER(phBlob, HGLOBAL);
-
-	if (m_pPropBag == NULL)
-		return FALSE;
-
-	ENSURE_ARG(AfxIsValidString(pszPropName));
-	ENSURE_ARG(phBlob != NULL);
-
-	BOOL bSuccess = FALSE;
-	VARIANT var;
-	AfxVariantInit(&var);
-	V_VT(&var) = VT_UNKNOWN;
-
-	const CStringW strPropName(pszPropName);
-	if (m_bLoading)
-	{
-		if (*phBlob != NULL)
-		{
-			GlobalFree(*phBlob);
-			*phBlob = NULL;
-		}
-
-		CBlobProperty* pBlobProp = new CBlobProperty;
-		V_UNKNOWN(&var) = pBlobProp;
-
-		if (SUCCEEDED(m_pPropBag->Read(strPropName.GetString(), &var, m_pErrorLog)))
-		{
-			*phBlob = pBlobProp->GetBlob();
-			bSuccess = TRUE;
-		}
-		else
-		{
-			if (hBlobDefault != NULL)
-				bSuccess = _AfxCopyBlob(phBlob, hBlobDefault);
-		}
-
-		pBlobProp->Release();
-	}
-	else
-	{
-		CBlobProperty* pBlobProp = new CBlobProperty(*phBlob);
-		V_UNKNOWN(&var) = pBlobProp;
-		bSuccess = SUCCEEDED(m_pPropBag->Write(strPropName.GetString(), &var));
-		pBlobProp->Release();
-	}
-	return bSuccess;
-}
-
-BOOL CPropbagPropExchange::ExchangeFontProp(LPCTSTR pszPropName,
-	CFontHolder& font, const FONTDESC* pFontDesc,
-	LPFONTDISP pFontDispAmbient)
-{
-	ASSERT_POINTER(m_pPropBag, IPropertyBag);
-	ASSERT_POINTER(&font, CFontHolder);
-	ASSERT_NULL_OR_POINTER(pFontDesc, FONTDESC);
-	ASSERT_NULL_OR_POINTER(pFontDispAmbient, IFontDisp);
-
-	if (m_pPropBag == NULL)
-		return FALSE;
-
-	ENSURE_ARG(AfxIsValidString(pszPropName));
-
-	BOOL bSuccess = FALSE;
-	VARIANT var;
-	AfxVariantInit(&var);
-	V_VT(&var) = VT_UNKNOWN;
-
-	
-	const CStringW strPropName(pszPropName);
-	if (m_bLoading)
-	{
-		LPFONT pFont = NULL;
-
-		bSuccess =
-			SUCCEEDED(m_pPropBag->Read(strPropName.GetString(), &var,
-				m_pErrorLog)) &&
-			SUCCEEDED(V_UNKNOWN(&var)->QueryInterface(IID_IFont,
-				(LPVOID*)&pFont));
-
-		if (bSuccess)
-		{
-			ASSERT_POINTER(pFont, IFont);
-			font.SetFont(pFont);
-		}
-		else
-		{
-			// Initialize font to its default state
-			font.InitializeFont(pFontDesc, pFontDispAmbient);
-		}
-		VariantClear(&var);
-	}
-	else
-	{
-		if ((font.m_pFont == NULL) ||
-			(_AfxIsSameFont(font, pFontDesc, pFontDispAmbient) &&
-				!m_bSaveAllProperties))
-		{
-			bSuccess = TRUE;
-		}
-		else
-		{
-			V_UNKNOWN(&var) = font.m_pFont;
-			bSuccess = SUCCEEDED(m_pPropBag->Write(strPropName.GetString(), &var));
-		}
-	}
-
-	return bSuccess;
-}
-
-BOOL CPropbagPropExchange::ExchangePersistentProp(LPCTSTR pszPropName,
-	LPUNKNOWN* ppUnk, REFIID iid, LPUNKNOWN pUnkDefault)
-{
-	ASSERT_POINTER(m_pPropBag, IPropertyBag);
-	ASSERT_POINTER(ppUnk, LPUNKNOWN);
-	ASSERT_NULL_OR_POINTER(pUnkDefault, IUnknown);
-
-	if (m_pPropBag == NULL)
-		return FALSE;
-
-	ENSURE_ARG(AfxIsValidString(pszPropName));
-	ENSURE_ARG(ppUnk != NULL);
-
-	BOOL bSuccess = FALSE;
-	VARIANT var;
-	AfxVariantInit(&var);
-	V_VT(&var) = VT_UNKNOWN;
-	
-	const CStringW strPropName(pszPropName);
-	if (m_bLoading)
-	{
-		RELEASE(*ppUnk);
-		*ppUnk = NULL;
-
-		bSuccess =
-			SUCCEEDED(m_pPropBag->Read(strPropName.GetString(), &var,
-				m_pErrorLog)) &&
-			SUCCEEDED(V_UNKNOWN(&var)->QueryInterface(iid, (LPVOID*)ppUnk));
-
-		if (!bSuccess)
-		{
-			// Use default value.
-			if (pUnkDefault != NULL)
-			{
-				bSuccess = SUCCEEDED(pUnkDefault->QueryInterface(iid,
-					(LPVOID*)ppUnk));
-			}
-			else
-			{
-				bSuccess = TRUE;
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
 		}
-		VariantClear(&var);
 	}
-	else
+
+	void Instance::removeAllChildren()
 	{
-		if ((*ppUnk == NULL) ||
-			(_AfxIsSameUnknownObject(iid, *ppUnk, pUnkDefault) &&
-				!m_bSaveAllProperties))
+		while (children)
 		{
-			bSuccess = TRUE;
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
 		}
 		else
+			readProperty(element, binder);
+	}
+
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
 		{
-			V_UNKNOWN(&var) = *ppUnk;
-			bSuccess = SUCCEEDED(m_pPropBag->Write(strPropName.GetString(), &var));
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
 		}
 	}
 
-	return bSuccess;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// COleControl::XPersistPropertyBag
-
-STDMETHODIMP_(ULONG) COleControl::XPersistPropertyBag::AddRef()
-{
-	METHOD_PROLOGUE_EX_(COleControl, PersistPropertyBag)
-	return (ULONG)pThis->ExternalAddRef();
-}
-
-STDMETHODIMP_(ULONG) COleControl::XPersistPropertyBag::Release()
-{
-	METHOD_PROLOGUE_EX_(COleControl, PersistPropertyBag)
-	return (ULONG)pThis->ExternalRelease();
-}
-
-STDMETHODIMP COleControl::XPersistPropertyBag::QueryInterface(
-	REFIID iid, LPVOID* ppvObj)
-{
-	METHOD_PROLOGUE_EX_(COleControl, PersistPropertyBag)
-	return (HRESULT)pThis->ExternalQueryInterface(&iid, ppvObj);
-}
-
-STDMETHODIMP COleControl::XPersistPropertyBag::GetClassID(LPCLSID lpClassID)
-{
-	METHOD_PROLOGUE_EX_(COleControl, PersistPropertyBag)
-	return pThis->GetClassID(lpClassID);
-}
-
-STDMETHODIMP COleControl::XPersistPropertyBag::InitNew()
-{
-	METHOD_PROLOGUE_EX(COleControl, PersistPropertyBag)
-
-	// Delegate to OnResetState.
-	pThis->OnResetState();
-
-	// Unless IOleObject::SetClientSite is called after this, we can
-	// count on ambient properties being available while loading.
-	pThis->m_bCountOnAmbients = TRUE;
-
-	// Properties have been initialized
-	pThis->m_bInitialized = TRUE;
-
-	// Uncache cached ambient properties
-	if (_afxAmbientCache)
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
 	{
-		_afxAmbientCache->Cache(NULL);
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
 	}
 
-	return S_OK;
-}
-
-STDMETHODIMP COleControl::XPersistPropertyBag::Load(LPPROPERTYBAG pPropBag,
-	LPERRORLOG pErrorLog)
-{
-	METHOD_PROLOGUE_EX(COleControl, PersistPropertyBag)
-
-	HRESULT hr;
-
-	TRY
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
 	{
-		CPropbagPropExchange px(pPropBag, pErrorLog, TRUE);
-		pThis->DoPropExchange(&px);
-		hr = S_OK;
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
 	}
-	CATCH_ALL(e)
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
 	{
-		hr = E_FAIL;
-		DELETE_EXCEPTION(e);
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
 	}
-	END_CATCH_ALL
 
-	// Properties have probably changed
-	pThis->BoundPropertyChanged(DISPID_UNKNOWN);
-	pThis->InvalidateControl();
-
-	// Clear the modified flag.
-	pThis->m_bModified = FALSE;
-
-	// Properties have been initialized
-	pThis->m_bInitialized = TRUE;
-
-	// Uncache cached ambient properties
-	_afxAmbientCache->Cache(NULL);
-
-	return hr;
-}
-
-STDMETHODIMP COleControl::XPersistPropertyBag::Save(LPPROPERTYBAG pPropBag,
-	BOOL fClearDirty, BOOL fSaveAllProperties)
-{
-	METHOD_PROLOGUE_EX(COleControl, PersistPropertyBag)
-
-	HRESULT hr;
-
-	TRY
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
 	{
-		CPropbagPropExchange px(pPropBag, NULL, FALSE, fSaveAllProperties);
-		pThis->DoPropExchange(&px);
-		hr = S_OK;
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
 	}
-	CATCH_ALL(e)
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
 	{
-		hr = E_FAIL;
-		DELETE_EXCEPTION(e);
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
 	}
-	END_CATCH_ALL
 
-	// Bookkeeping:  Clear the dirty flag, if requested.
-	if (fClearDirty)
-		pThis->m_bModified = FALSE;
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
 
-	return hr;
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }

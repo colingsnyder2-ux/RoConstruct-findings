@@ -1,121 +1,28 @@
-// from server: 43% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client RbxView/PBBMesh.cpp
+// roc-lib: rbxgs-view roc_espeon_aug2007_view_52a48c557d2a1d5d.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "PBBMesh.h"
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "../App/roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "../App/roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "../App/roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-#include "QuadVolume.h"
-
-#include <G3D/Vector3int16.h>
-
-// SIZE 0x28
-class PBBBuilder : public RBX::View::LevelBuilder
-{
-private:
-	G3D::Vector3int16 strips; // 0x20
-
-public:
-	PBBBuilder(
-		G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-		G3D::Vector3 size,
-		RBX::View::RenderSurfaceTypes surfaceTypes
-	);
-
-protected:
-	virtual void buildTop(Purpose purpose);    // vtable+0x04
-	virtual void buildBottom(Purpose purpose); // vtable+0x08
-	virtual void buildLeft(Purpose purpose);   // vtable+0x0c
-	virtual void buildRight(Purpose purpose);  // vtable+0x10
-	virtual void buildFront(Purpose purpose);  // vtable+0x14
-	virtual void buildBack(Purpose purpose);   // vtable+0x18
-};
-
-DECOMP_SIZE_ASSERT(PBBBuilder, 0x28)
-
-// STUB: WEBSERVICE 0x1017abc0
-PBBBuilder::PBBBuilder(
-	G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-	G3D::Vector3 size,
-	RBX::View::RenderSurfaceTypes surfaceTypes
-)
-	: RBX::View::LevelBuilder(level, size, surfaceTypes), strips(0, 0, 0)
-{
-	strips.x = G3D::max(1, (int) (size.x / 6.0));
-	strips.y = G3D::max(1, (int) (size.y / 6.0));
-	strips.z = G3D::max(1, (int) (size.z / 6.0));
-
-	strips.x = G3D::min(4, (int) strips.x);
-	strips.y = G3D::min(4, (int) strips.y);
-	strips.z = G3D::min(4, (int) strips.z);
-}
-
-// STUB: WEBSERVICE 0x1017d7c0
-void PBBBuilder::buildTop(Purpose)
-{
-	STUB(0x1017d7c0);
-}
-
-// STUB: WEBSERVICE 0x1017d820
-void PBBBuilder::buildBottom(Purpose)
-{
-	STUB(0x1017d820);
-}
-
-// STUB: WEBSERVICE 0x1017d880
-void PBBBuilder::buildLeft(Purpose)
-{
-	STUB(0x1017d880);
-}
-
-// STUB: WEBSERVICE 0x1017d8e0
-void PBBBuilder::buildRight(Purpose)
-{
-	STUB(0x1017d8e0);
-}
-
-// STUB: WEBSERVICE 0x1017d940
-void PBBBuilder::buildFront(Purpose)
-{
-	STUB(0x1017d940);
-}
-
-// STUB: WEBSERVICE 0x1017d9a0
-void PBBBuilder::buildBack(Purpose)
-{
-	STUB(0x1017d9a0);
-}
-
-namespace RBX {
-namespace View {
-
-// STUB: WEBSERVICE 0x1017da00
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId decalFace)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
-
-	builder.buildFace(decalFace, LevelBuilder::Decal);
-}
-
-// STUB: WEBSERVICE 0x1017db60
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId, const G3D::Vector2&)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
-}
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createDecal(const G3D::Vector3&, NormalId);
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createTexture(const G3D::Vector3&, NormalId, const G3D::Vector2&);
-
-} // namespace View
-} // namespace RBX
+#include "Part.cpp"

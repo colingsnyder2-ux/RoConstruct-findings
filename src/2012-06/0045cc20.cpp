@@ -1,34 +1,47 @@
-// from server: 0% by atomic.potato
-extern "C" void* __cdecl sub_98211a(unsigned int size);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
-struct VDecalFactoryProductCreator {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-struct VDecalFactoryProductCreatorHolder {
-    void* ptr;
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
 
-struct VDecalFactoryProductCreatorOwner {
-    VDecalFactoryProductCreatorHolder* holder;
-    VDecalFactoryProductCreatorOwner* __thiscall construct(void* arg);
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
 };
 
-VDecalFactoryProductCreatorOwner* VDecalFactoryProductCreatorOwner::construct(void* arg) {
-    VDecalFactoryProductCreator* obj;
-    this->holder = 0;
-    obj = (VDecalFactoryProductCreator*)sub_98211a(0x14);
-    if (obj != 0) {
-        obj->field4 = (void*)1;
-        obj->field8 = (void*)1;
-        obj->field0 = (void*)0xb553e4;
-        obj->fieldC = arg;
-    } else {
-        obj = 0;
+S::S(Object* object, Deleter deleter) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
     }
-    this->holder = (VDecalFactoryProductCreatorHolder*)obj;
-    return this;
 }

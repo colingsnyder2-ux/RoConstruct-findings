@@ -1,99 +1,71 @@
-// from server: 73% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-lib: rbxgs-dll roc_wordlist_plain_native_family_a48f6f07beb1c62f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
+#pragma include_alias("util/ContentProvider.h", "../roc_wordlist_static_asset_header_179d09ed9a896b44.cpp")
+#include <set>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "util/ContentProvider.h"
+namespace RBX {
+	class WordList
+	{
+	private:
+		std::set<std::string> blacklist;
+		void decrypt(std::string& str);
+	public:
+		WordList();
+		~WordList();
 
-namespace RBX
+		bool ContainsProfanity(std::string str);
+
+	};
+
+
+void WordList::decrypt(std::string& str)
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	for(unsigned i = 0; i<str.size(); ++i){
+		str[i] = 0x55 ^ str[i];
+	}
+}
 
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+WordList::WordList()
+{
+	/* Load blacklist
 
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
+	
+	*/
+
+	std::string filename = ContentProvider::getAssetFile("Fonts\\diogenes.fnt");
+	
+	std::ifstream infile(filename.c_str());
+	std::string line;
+	while( std::getline(infile, line, '\n'))
 	{
-		setName("Run Service");
+		boost::to_lower(line);
+		boost::trim(line);
+		blacklist.insert(line);
 	}
 
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
+	infile.close();
+}
+WordList::~WordList()
+{
 
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
+}
+bool WordList::ContainsProfanity(std::string str)
+{
+	/*
+	1. Convert query to lower case
+	2. Check for in black list
+	*/
 
-		if (join)
-			runThread->join();
-	}
+	boost::to_lower(str);
 
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
-		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
-		}
-	}
+	return blacklist.find(str) != blacklist.end();
+}
 
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
 
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
 }

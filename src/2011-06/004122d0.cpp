@@ -1,180 +1,65 @@
-// from server: 34% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+// roc 2011-06 004122d0  unit: UString_sink::?$stream_buffer  size: 64 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 004122d0
+//
+// 004122d0  56                   push esi
+// 004122d1  57                   push edi
+// 004122d2  8b3dc019a400         mov edi, dword ptr [0xa419c0]
+// 004122d8  6a00                 push 0
+// 004122da  8bf1                 mov esi, ecx
+// 004122dc  8b8678010000         mov eax, dword ptr [esi + 0x178]
+// 004122e2  8b4020               mov eax, dword ptr [eax + 0x20]
+// 004122e5  6a00                 push 0
+// 004122e7  688b010000           push 0x18b
+// 004122ec  50                   push eax
+// 004122ed  ffd7                 call edi
+// 004122ef  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 004122f3  3bc8                 cmp ecx, eax
+// 004122f5  7d14                 jge 0x41230b
+// 004122f7  6a00                 push 0
+// 004122f9  51                   push ecx
+// 004122fa  8b8e78010000         mov ecx, dword ptr [esi + 0x178]
+// 00412300  8b5120               mov edx, dword ptr [ecx + 0x20]
+// 00412303  6882010000           push 0x182
+// 00412308  52                   push edx
+// 00412309  ffd7                 call edi
+// 0041230b  5f                   pop edi
+// 0041230c  5e                   pop esi
+// 0041230d  c20400               ret 4
+// copied from an identical function in another client (function ?removeItem@S@ns_ROCX00000a@@QAEXH@Z)
 
-// Candidate translation unit (score above; library headers required).
-/* Copyright (c) 2002-2005 CrystalClear Software, Inc.
- * Use, modification and distribution is subject to the 
- * Boost Software License, Version 1.0. (See accompanying
- * file LICENSE-1.0 or http://www.boost.org/LICENSE-1.0)
- * Author: Jeff Garland, Bart Garst
- * $Date: 2005/06/21 03:34:50 $
- */
+namespace ns_ROCX00000a {
+// from server: 88% by colin
+extern "C" long (__stdcall *SendMessageA)(void *, unsigned int, unsigned int, long);
+extern "C" void (__cdecl *free)(void *);
 
+struct Control {
+    char padding[0x20];
+    void *window;
+};
 
+struct S {
+    char padding[0x178];
+    Control *control;
+    void removeItem(int index);
+};
 
-#ifndef BOOST_DATE_TIME_SOURCE
-#define BOOST_DATE_TIME_SOURCE
-#endif
-#include "boost/date_time/gregorian/greg_month.hpp"
-#include "boost/date_time/gregorian/greg_facet.hpp"
-#include "boost/date_time/date_format_simple.hpp"
-#include "boost/date_time/compiler_config.hpp"
-#if defined(BOOST_DATE_TIME_INCLUDE_LIMITED_HEADERS)
-#include "boost/date_time/gregorian/formatters_limited.hpp"
-#else
-#include "boost/date_time/gregorian/formatters.hpp"
-#endif
-#include "boost/date_time/date_parsing.hpp"
-#include "boost/date_time/gregorian/parsers.hpp"
+void S::removeItem(int index)
+{
+    long (__stdcall *send)(void *, unsigned int, unsigned int, long) = SendMessageA;
+    void *w = control->window;
+    if (index < send(w, 0x18B, 0, 0))
+        send(control->window, 0x182, index, 0);
+}
 
-#include "greg_names.hpp"
-namespace boost {
-namespace gregorian {
+struct Buffer {
+    void *data;
+    int count;
+    void release();
+};
 
-  /*! Returns a shared pointer to a map of Month strings & numbers.
-   * Strings are both full names and abbreviations.
-   * Ex. ("jan",1), ("february",2), etc...
-   * Note: All characters are lowercase - for case insensitivity
-   */
-  greg_month::month_map_ptr_type greg_month::get_month_map_ptr()
-  {
-    static month_map_ptr_type month_map_ptr(new greg_month::month_map_type());
-
-    if(month_map_ptr->empty()) {
-      std::string s("");
-      for(unsigned short i = 1; i <= 12; ++i) {
-        greg_month m(static_cast<month_enum>(i));
-        s = m.as_long_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-        s = m.as_short_string();
-        s = date_time::convert_to_lower(s);
-        month_map_ptr->insert(std::make_pair(s, i));
-      }
-    }
-    return month_map_ptr;
-  }
-
-
-  //! Returns 3 char english string for the month ex: Jan, Feb, Mar, Apr
-  const char*
-  greg_month::as_short_string() const 
-  {
-    return short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as string in english ex: January, February
-  const char*
-  greg_month::as_long_string()  const 
-  {
-    return long_month_names[value_-1];
-  }
- 
-  //! Return special_value from string argument
-  /*! Return special_value from string argument. If argument is 
-   * not one of the special value names (defined in names.hpp), 
-   * return 'not_special' */
-  special_values special_value_from_string(const std::string& s) {
-    short i = date_time::find_match(special_value_names,
-                                    special_value_names,
-                                    date_time::NumSpecialValues,
-                                    s);
-    if(i > date_time::NumSpecialValues) { // match not found
-      return not_special;
-    }
-    else {
-      return static_cast<special_values>(i);
-    }
-  }
-
-
-#ifndef BOOST_NO_STD_WSTRING
-  //! Returns 3 wchar_t english string for the month ex: Jan, Feb, Mar, Apr
-  const wchar_t*
-  greg_month::as_short_wstring() const 
-  {
-    return w_short_month_names[value_-1];
-  }
-  
-  //! Returns full name of month as wchar_t string in english ex: January, February
-  const wchar_t*
-  greg_month::as_long_wstring()  const 
-  {
-    return w_long_month_names[value_-1];
-  }
-#endif // BOOST_NO_STD_WSTRING
-  
-#ifndef BOOST_DATE_TIME_NO_LOCALE
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, char>* 
-  create_facet_def(char type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    
-    return new facet_def(short_month_names,
-                         long_month_names,
-                         special_value_names,
-                         short_weekday_names,
-                         long_weekday_names);
-  }
-  
-  //! generates a locale with the set of gregorian name-strings of type char*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, char type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, char> facet_def;
-    return std::locale(loc, new facet_def(short_month_names,
-                                          long_month_names,
-                                          special_value_names,
-                                          short_weekday_names,
-                                          long_weekday_names)
-        );
-  }
-  
-#ifndef BOOST_NO_STD_WSTRING
-  /*! creates an all_date_names_put object with the correct set of names.
-   * This function is only called in the event of an exception where
-   * the imbued locale containing the needed facet is for some reason 
-   * unreachable.
-   */
-  BOOST_DATE_TIME_DECL 
-  boost::date_time::all_date_names_put<greg_facet_config, wchar_t>* 
-  create_facet_def(wchar_t type)
-  {
-    typedef 
-      boost::date_time::all_date_names_put<greg_facet_config,wchar_t> facet_def;
-    
-    return new facet_def(w_short_month_names,
-                         w_long_month_names,
-                         w_special_value_names,
-                         w_short_weekday_names,
-                         w_long_weekday_names);
-  }
-
-  //! generates a locale with the set of gregorian name-strings of type wchar_t*
-  BOOST_DATE_TIME_DECL std::locale generate_locale(std::locale& loc, wchar_t type){
-    typedef boost::date_time::all_date_names_put<greg_facet_config, wchar_t> facet_def;
-    return std::locale(loc, new facet_def(w_short_month_names,
-                                          w_long_month_names,
-                                          w_special_value_names,
-                                          w_short_weekday_names,
-                                          w_long_weekday_names)
-        );
-  }
-#endif // BOOST_NO_STD_WSTRING
-#endif // BOOST_DATE_TIME_NO_LOCALE
-
-} } //namespace gregorian
-
-
-
-
-
-
+void Buffer::release()
+{
+    if (count > 0)
+        free(data);
+}
+}

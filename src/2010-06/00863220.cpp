@@ -1,14 +1,13 @@
-// from server: 49% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPaneMiniWnd.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\DockingPane\XTPDockingPaneMiniWnd.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneMiniWnd.cpp : implementation of the CXTPDockingPaneMiniWnd class.
 //
 // This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -31,14 +30,9 @@
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPToolTipContext.h"
 #include "Common/XTPResourceManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPColorManager.h"
-
 #include "TabManager/XTPTabManager.h"
 
-#include "XTPDockingPaneDefines.h"
-#include "XTPDockingPaneBase.h"
-#include "XTPDockingPaneBaseContainer.h"
+
 #include "XTPDockingPaneMiniWnd.h"
 #include "XTPDockingPane.h"
 #include "XTPDockingPaneSplitterContainer.h"
@@ -46,7 +40,6 @@
 #include "XTPDockingPaneContext.h"
 #include "XTPDockingPaneManager.h"
 #include "XTPDockingPaneLayout.h"
-#include "XTPDockingPanePaintManager.h"
 #include "XTPDockingPaneAutoHidePanel.h"
 
 #ifdef _DEBUG
@@ -136,9 +129,8 @@ CXTPDockingPaneMiniWnd::~CXTPDockingPaneMiniWnd()
 	DestroyWindow();
 }
 
-void CXTPDockingPaneMiniWnd::Copy(CXTPDockingPaneBase* pCloneBase, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+void CXTPDockingPaneMiniWnd::Copy(CXTPDockingPaneMiniWnd* pClone, CXTPPaneToPaneMap* pMap)
 {
-	CXTPDockingPaneMiniWnd* pClone = (CXTPDockingPaneMiniWnd*)pCloneBase;
 	ASSERT(pMap);
 
 	m_pTopContainer = (CXTPDockingPaneSplitterContainer*)pClone->m_pTopContainer->Clone(m_pLayout, pMap);
@@ -151,7 +143,7 @@ void CXTPDockingPaneMiniWnd::Copy(CXTPDockingPaneBase* pCloneBase, CXTPPaneToPan
 	m_bCollapsed = ((CXTPDockingPaneMiniWnd*)pClone)->m_bCollapsed;
 	m_nExpandedHeight = ((CXTPDockingPaneMiniWnd*)pClone)->m_nExpandedHeight;
 
-	if (m_bCollapsed && pClone->m_hWnd)
+	if (m_bCollapsed)
 	{
 		m_rcWindow.bottom = m_rcWindow.top + GetPaintManager()->GetCaptionHeight() + 8;
 	}
@@ -162,6 +154,22 @@ void CXTPDockingPaneMiniWnd::Copy(CXTPDockingPaneBase* pCloneBase, CXTPPaneToPan
 		m_pTopContainer->OnParentContainerChanged(m_pTopContainer);
 		OnChildContainerChanged(m_pTopContainer);
 	}
+}
+
+
+CXTPDockingPaneBase* CXTPDockingPaneMiniWnd::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	ASSERT(pMap);
+
+	CXTPDockingPaneMiniWnd* pPane = (CXTPDockingPaneMiniWnd*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	pPane->Copy(this, pMap);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
+
+
 }
 
 void CXTPDockingPaneMiniWnd::RemovePane(CXTPDockingPaneBase* pPane)
@@ -201,6 +209,9 @@ void CXTPDockingPaneMiniWnd::InvalidatePane(BOOL /*bSelectionChanged*/)
 	CString strTitle = (nCount != 1) ? GetDockingPaneManager()->m_strFloatingFrameCaption : ((CXTPDockingPaneTabbedContainer*)lstTabbed.GetHead())->GetTitle();
 	SetWindowText(strTitle);
 
+	if ((GetStyle() & WS_VISIBLE) == 0 && nCount > 0 && m_hWnd)
+		ShowWindow(SW_SHOWNOACTIVATE);
+
 	if (nCount > 0)
 	{
 		BOOL bEnabled = FALSE;
@@ -221,38 +232,14 @@ void CXTPDockingPaneMiniWnd::InvalidatePane(BOOL /*bSelectionChanged*/)
 		if (!bEnabled || !m_bCloseEnabled)
 		{
 			CMenu* pSysMenu = GetSystemMenu(FALSE);
-			pSysMenu->EnableMenuItem(SC_CLOSE, MF_BYCOMMAND | (bEnabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+			pSysMenu->EnableMenuItem(SC_CLOSE, MF_BYCOMMAND | (bEnabled ? MF_ENABLED : MF_DISABLED));
 			m_bCloseEnabled = bEnabled;
 		}
-		if ((GetStyle() & WS_CHILD) == 0)
-			UpdatePosition();
-
-		if ((GetStyle() & WS_VISIBLE) == 0)
-			ShowWindow(SW_SHOWNOACTIVATE);
+		if ((GetStyle() & WS_CHILD) == 0) MoveWindow(CXTPWindowRect(this));
 	}
 	SendMessage(WM_NCPAINT);
 
 	OnFocusChanged();
-}
-
-void CXTPDockingPaneMiniWnd::UpdatePosition()
-{
-	CXTPWindowRect rc(this);
-	CSize sz = rc.Size();
-
-	if (IsThemed())
-	{
-		MINMAXINFO mmi;
-		ZeroMemory(&mmi, sizeof(mmi));
-		mmi.ptMaxTrackSize.x = 32000;
-		mmi.ptMaxTrackSize.y = 32000;
-
-		GetMinMaxInfo(&mmi);
-		sz.cx = max(min(sz.cx, mmi.ptMaxTrackSize.x), mmi.ptMinTrackSize.x);
-		sz.cy = max(min(sz.cy, mmi.ptMaxTrackSize.y), mmi.ptMinTrackSize.y);
-	}
-
-	MoveWindow(rc.left, rc.top, sz.cx, sz.cy);
 }
 
 void CXTPDockingPaneMiniWnd::CreateContainer()
@@ -311,9 +298,7 @@ void CXTPDockingPaneMiniWnd::RecalcLayout(BOOL /*bNotify*/)
 		m_pTopContainer->OnSizeParent(this, layout.rect, &layout);
 
 		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
-		{
 			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
-		}
 
 		CWnd::GetWindowRect(&m_pTopContainer->m_rcWindow);
 		ScreenToClient(&m_pTopContainer->m_rcWindow);
@@ -339,12 +324,9 @@ BOOL CXTPDockingPaneMiniWnd::Create(CRect rc)
 
 	CXTPDockingPaneContext::EnsureVisible(rc);
 
-	CWnd* pParentWnd = GetDockingPaneManager()->GetSite();
-
-	if (pParentWnd->GetStyle() & WS_CHILD) pParentWnd = AfxGetMainWnd();
 
 	if (!CMiniFrameWnd::CreateEx(dwExStyle,
-		_T("XTPDockingPaneMiniWnd"), _T(""), dwStyle, rc, pParentWnd))
+		_T("XTPDockingPaneMiniWnd"), _T(""), dwStyle, rc, GetDockingPaneManager()->GetSite()))
 	{
 		return FALSE;
 	}
@@ -377,10 +359,10 @@ BOOL CXTPDockingPaneMiniWnd::Create(CRect rc)
 BEGIN_MESSAGE_MAP(CXTPDockingPaneMiniWnd, CMiniFrameWnd)
 	ON_WM_CLOSE()
 	ON_WM_NCLBUTTONDOWN()
-	ON_WM_NCRBUTTONUP()
+	ON_WM_NCRBUTTONDOWN()
 	ON_WM_NCLBUTTONDBLCLK()
 	ON_WM_DESTROY()
-	ON_WM_CONTEXTMENU()
+
 	ON_WM_NCHITTEST_EX()
 	ON_WM_NCPAINT()
 	ON_WM_NCCALCSIZE()
@@ -469,8 +451,6 @@ void CXTPDockingPaneMiniWnd::OnClose()
 {
 	if (m_pTopContainer)
 	{
-		m_pCaptionButtons->CheckForMouseOver(CPoint(-1, -1));
-
 		CXTPDockingPaneManager* pManager = GetDockingPaneManager();
 
 		CXTPDockingPaneBaseList lst;
@@ -486,10 +466,10 @@ void CXTPDockingPaneMiniWnd::OnClose()
 
 			pPane->InternalAddRef();
 
-			if (!pManager->NotifyAction(xtpPaneActionClosing, pPane))
+			if (!pManager->_OnAction(xtpPaneActionClosing, pPane))
 			{
 				pPane->Close();
-				pManager->NotifyAction(xtpPaneActionClosed, pPane);
+				pManager->_OnAction(xtpPaneActionClosed, pPane);
 			}
 
 			pPane->InternalRelease();
@@ -540,52 +520,46 @@ void CXTPDockingPaneMiniWnd::FindPane(XTPDockingPaneType type, CXTPDockingPaneBa
 	}
 }
 
-void CXTPDockingPaneMiniWnd::OnContextMenu(CWnd* pWnd, CPoint point)
+void CXTPDockingPaneMiniWnd::OnNcRButtonDown(UINT nHitTest, CPoint point)
 {
-	CXTPDockingPaneBaseList lst;
-	FindPane(xtpPaneTypeTabbedContainer, &lst);
+	if (nHitTest == HTCAPTION)
+	{
+		CXTPDockingPaneBaseList lst;
+		FindPane(xtpPaneTypeTabbedContainer, &lst);
 
-	CXTPDockingPane* pSelectedPane = 0;
-	if (lst.GetCount() == 1)
-	{
-		pSelectedPane = ((CXTPDockingPaneTabbedContainer*)lst.GetHead())->GetSelected();
-	}
-	else
-	{
-		POSITION pos = lst.GetHeadPosition();
-		while (pos)
+		CXTPDockingPane* pSelectedPane = 0;
+		if (lst.GetCount() == 1)
 		{
-			CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)lst.GetNext(pos);
-			if (pContainer->IsActive())
+			pSelectedPane = ((CXTPDockingPaneTabbedContainer*)lst.GetHead())->GetSelected();
+		}
+		else
+		{
+			POSITION pos = lst.GetHeadPosition();
+			while (pos)
 			{
-				pSelectedPane = pContainer->GetSelected();
-				break;
+				CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)lst.GetNext(pos);
+				if (pContainer->IsActive())
+				{
+					pSelectedPane = pContainer->GetSelected();
+					break;
+				}
 			}
+		}
+
+		if (pSelectedPane)
+		{
+			pSelectedPane->SetFocus();
+			XTP_DOCKINGPANE_CLICK menu;
+			menu.pPane = pSelectedPane;
+			menu.pt = point;
+			menu.rcExclude.SetRectEmpty();
+
+			if (GetDockingPaneManager()->NotifyOwner(XTP_DPN_PANEMENUCLICK, (LPARAM)&menu))
+				return;
 		}
 	}
 
-	if (pSelectedPane) pSelectedPane->SetFocus();
-	XTP_DOCKINGPANE_CLICK menu;
-	menu.pPane = pSelectedPane;
-	menu.pt = point;
-	menu.rcExclude.SetRectEmpty();
-	menu.pContainer = this;
-
-	if (GetDockingPaneManager()->NotifyOwner(XTP_DPN_CONTEXTMENU, (LPARAM)&menu))
-		return;
-
-	CMiniFrameWnd::OnContextMenu(pWnd, point);
-}
-
-void CXTPDockingPaneMiniWnd::OnNcRButtonUp(UINT nHitTest, CPoint point)
-{
-	if (IsThemed() && (nHitTest == HTCAPTION))
-	{
-		OnContextMenu(this, point);
-		return;
-	}
-
-	CMiniFrameWnd::OnNcRButtonUp(nHitTest, point);
+	CMiniFrameWnd::OnNcRButtonDown(nHitTest, point);
 }
 
 void CXTPDockingPaneMiniWnd::OnNcLButtonDblClk(UINT nHitTest, CPoint /*point*/)
@@ -668,23 +642,12 @@ void CXTPDockingPaneMiniWnd::OnNcPaint()
 {
 	if (IsThemed())
 	{
-		CWindowDC dc(this);
-
-		CRect rcClient;
-		GetClientRect(rcClient);
-		CRect rcWindow;
-		GetWindowRect(rcWindow);
-		ScreenToClient(rcWindow);
-
-		rcClient.OffsetRect(-rcWindow.left, -rcWindow.top);
-		dc.ExcludeClipRect(rcClient);
-
-		CXTPDockingPanePaintManager* pPaintManager = GetPaintManager();
-
 		CXTPWindowRect rc(this);
 		rc.OffsetRect(-rc.TopLeft());
-		pPaintManager->DrawFloatingFrame(&dc, this, rc);
+		CWindowDC dc(this);
 
+		CXTPDockingPanePaintManager* pPaintManager = GetPaintManager();
+		pPaintManager->DrawFloatingFrame(dc, this, rc);
 	}
 	else
 	{
@@ -804,7 +767,6 @@ BOOL CXTPDockingPaneMiniWnd::OnCaptionButtonDown(CXTPDockingPaneCaptionButton* p
 			CXTPDockingPaneManager* pManager = GetDockingPaneManager();
 			XTP_DOCKINGPANE_CLICK menu;
 
-			menu.pContainer = this;
 			menu.rcExclude = pButton->GetRect();
 			CXTPWindowRect rcWindow(this);
 
@@ -823,7 +785,7 @@ BOOL CXTPDockingPaneMiniWnd::OnCaptionButtonDown(CXTPDockingPaneCaptionButton* p
 			pButton->m_bPressed = TRUE;
 			SendMessage(WM_NCPAINT);
 
-			pManager->NotifyOwner(XTP_DPN_CONTEXTMENU, (LPARAM)&menu);
+			pManager->NotifyOwner(XTP_DPN_PANEMENUCLICK, (LPARAM)&menu);
 
 			pButton->m_bPressed = FALSE;
 			if (m_hWnd) SendMessage(WM_NCPAINT);
@@ -836,9 +798,18 @@ BOOL CXTPDockingPaneMiniWnd::OnCaptionButtonDown(CXTPDockingPaneCaptionButton* p
 
 BOOL CXTPDockingPaneMiniWnd::OnAction(XTPDockingPaneAction action)
 {
-	if (m_pTopContainer)
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	CXTPDockingPaneBaseList lstChilds;
+
+	FindPane(xtpPaneTypeDockingPane, &lstChilds);
+	POSITION pos = lstChilds.GetHeadPosition();
+
+	while (pos)
 	{
-		return m_pTopContainer->OnAction(action);
+		CXTPDockingPane* pPane = (CXTPDockingPane*)lstChilds.GetNext(pos);
+
+		if (pManager->_OnAction(action, pPane))
+			return TRUE;
 	}
 
 	return FALSE;
@@ -1086,16 +1057,6 @@ void CXTPDockingPaneMiniWnd::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
 	CMiniFrameWnd::OnGetMinMaxInfo(lpMMI);
 
-	if (IsThemed())
-	{
-		lpMMI->ptMinTrackSize.x = 46;
-	}
-
-	GetMinMaxInfo(lpMMI);
-}
-
-void CXTPDockingPaneMiniWnd::GetMinMaxInfo(LPMINMAXINFO lpMMI) const
-{
 	if (m_pTopContainer && ((!m_bCollapsed || m_bExpanded) && !m_bSlideOut))
 	{
 		CXTPWindowRect rcWindow(this);

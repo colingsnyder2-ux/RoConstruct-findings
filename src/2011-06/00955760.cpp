@@ -1,13 +1,38 @@
-// from server: 48% by atomic.potato
-struct S {
-    char pad[8];
-    void f(int, int, int);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.44.0 libs/regex/src/instances.cpp
 
-extern "C" void __stdcall helper(int, int, int, int, int, int);
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
 
-void S::f(int a, int b, int c)
-{
-    char zero = 0;
-    helper((int)zero, a, b, c, (int)(long)&zero, (int)(long)&zero);
-}
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        instances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex narrow character template instances.
+  */
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/regex/config.hpp>
+
+#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_NARROW_INSTANTIATE
+
+#ifdef __BORLANDC__
+#pragma hrdstop
+#endif
+
+#include <boost/regex.hpp>
+
+#endif

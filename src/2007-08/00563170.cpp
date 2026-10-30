@@ -1,6 +1,7 @@
-// from server: 95% by colin
+// from server: 100% by tajop
 struct PrimaryControllerCommand {
-    int field0;
+    virtual void v0();
+    virtual void v1(int);
     int field4;
     void method_5621B0(int);
     void method_4108B0(int);
@@ -12,8 +13,6 @@ void PrimaryControllerCommand::func(int arg)
     method_5621B0(1);
     PrimaryControllerCommand* self = (PrimaryControllerCommand*)arg;
     self->method_4108B0(-1);
-    int* vtable = *(int**)self;
-    void (__thiscall *fn)(void*, int) = (void (__thiscall *)(void*, int))vtable[1];
     self->field4 = -1;
-    fn(self, 1);
+    self->v1(1);
 }

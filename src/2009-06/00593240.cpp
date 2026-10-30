@@ -1,10 +1,14 @@
-// from server: 98% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: jpeg-6b jmemmgr.c
+// roc-lib: g3d-6.09-ijg-dll jmemmgr.c
 
 // Candidate translation unit (score above; library headers required).
+#ifdef _MSC_VER
+#   pragma warning( disable : 4100 )
+#   pragma warning( disable : 4127 )
+#   pragma warning( disable : 4244 )
+#endif
 /*
  * jmemmgr.c
  *

@@ -1,78 +1,8 @@
-// from server: 67% by colin
-struct MouseCommand {
-    char pad[4];
-    int field4;
-    int field8;
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 GLG3Dcpp/roc_export_a69fe47bb0e6952c.cpp
 
-struct GroupDragTool : MouseCommand {
-    void update(int a, int b);
-};
-
-extern int g_8c8304;
-extern int g_8c8308;
-extern float g_797b38;
-extern float g_797b34;
-extern float g_797988;
-
-extern "C" int __stdcall sub_599700(int);
-extern "C" int __cdecl sub_630d60(int);
-
-void GroupDragTool::update(int a, int b) {
-    int old = field4;
-    field4 = a;
-
-    int limit;
-    if (!(g_8c8308 & 1)) {
-        g_8c8308 |= 1;
-        limit = 10;
-        g_8c8304 = limit;
-    } else {
-        limit = g_8c8304;
-    }
-
-    int cur8 = field8;
-    int cur4 = field4;
-
-    if (cur4 > cur8) {
-        if (cur8 != 0) {
-            field8 = a;
-            sub_599700(old);
-            return;
-        }
-        if (cur4 < limit) {
-            field8 = limit;
-            sub_599700(old);
-            return;
-        }
-
-        float scale = g_797b38;
-        unsigned int t = (unsigned int)cur8 * 4;
-        if (t > 0x61a80) {
-            scale = g_797b34;
-        } else if (t > 0xfa00) {
-            scale = g_797988;
-        }
-
-        int tmp = cur8;
-        int prod = (int)((float)tmp * scale);
-        int res = sub_630d60(prod);
-        res = res - cur8 + cur4;
-        field8 = res;
-        if (res < g_8c8304) {
-            field8 = g_8c8304;
-        }
-        sub_599700(old);
-        return;
-    }
-
-    int third = cur8 / 3;
-    if (cur4 <= third) {
-        if (b != 0 && cur4 > limit) {
-            if (cur4 >= old) {
-                cur4 = old;
-            }
-            sub_599700(cur4);
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include "C:/Users/colin/RoConstruct/tools/libs/g3d-6.09/source/include/GLG3D/roc_export_a4482a3a22a70903.h"
+#include "C:/Users/colin/RoConstruct/tools/libs/g3d-6.09/source/GLG3Dcpp/Texture.cpp"

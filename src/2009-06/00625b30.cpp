@@ -1,130 +1,85 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/Script.cpp
+// roc 2009-06 00625b30  unit: RBX::VTextureId::?$TypedPropertyDescriptor  size: 101 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00625b30
+//
+// 00625b30  6aff                 push -1
+// 00625b32  6868a88600           push 0x86a868
+// 00625b37  64a100000000         mov eax, dword ptr fs:[0]
+// 00625b3d  50                   push eax
+// 00625b3e  64892500000000       mov dword ptr fs:[0], esp
+// 00625b45  83ec20               sub esp, 0x20
+// 00625b48  56                   push esi
+// 00625b49  8b7118               mov esi, dword ptr [ecx + 0x18]
+// 00625b4c  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 00625b50  8d442404             lea eax, [esp + 4]
+// 00625b54  50                   push eax
+// 00625b55  e8e6feffff           call 0x625a40
+// 00625b5a  8b16                 mov edx, dword ptr [esi]
+// 00625b5c  8b520c               mov edx, dword ptr [edx + 0xc]
+// 00625b5f  50                   push eax
+// 00625b60  8b442438             mov eax, dword ptr [esp + 0x38]
+// 00625b64  50                   push eax
+// 00625b65  8bce                 mov ecx, esi
+// 00625b67  c744243400000000     mov dword ptr [esp + 0x34], 0
+// 00625b6f  ffd2                 call edx
+// 00625b71  8d4c2404             lea ecx, [esp + 4]
+// 00625b75  c744242cffffffff     mov dword ptr [esp + 0x2c], 0xffffffff
+// 00625b7d  ff15c4e48900         call dword ptr [0x89e4c4]
+// 00625b83  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 00625b87  5e                   pop esi
+// 00625b88  64890d00000000       mov dword ptr fs:[0], ecx
+// 00625b8f  83c42c               add esp, 0x2c
+// 00625b92  c20800               ret 8
+// copied from an identical function in another client (function ?f@S@@QAEXPAXPAUValue@@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include "script/Script.h"
-#include "script/ScriptContext.h"
-#include "v8tree/Service.h"
-#include "boost/thread/once.hpp"
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern void (__thiscall *destroy_string)(void*);
 
-using namespace RBX;
-
-const Reflection::PropDescriptor<Script, std::string> Script::prop_EmbeddedSourceCode("Source", "Data", &Script::getEmbeddedCode, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::LEGACY);
-const Reflection::PropDescriptor<Script, ContentId> Script::prop_SourceCodeId("LinkedSource", "Data", &Script::getScriptId, &Script::setScriptId, Reflection::PropertyDescriptor::LEGACY);
-Reflection::BoundProp<bool, true> Script::prop_Disabled("Disabled", "Behavior", &Script::disabled, Reflection::PropertyDescriptor::STANDARD);
-
-static boost::shared_ptr<const std::string> helloWorld;
-static boost::once_flag flagInitScriptCpp = BOOST_ONCE_INIT;
-
-void initScriptCpp()
+namespace std
 {
-    helloWorld.reset(new std::string("print(\"Hello world!\")\r\n"));
-}
+    template<class T> struct char_traits {};
+    template<class T> class allocator {};
 
-const char* RBX::sScript = "Script";
-
-Script::Script()
-    : DescribedCreatable("Script"),
-      disabled(false),
-      owner(NULL)
-{
-    boost::call_once(&initScriptCpp, flagInitScriptCpp);
-    embeddedSource = helloWorld;
-}
-
-const char* RBX::sLocalScript = "LocalScript";
-
-LocalScript::LocalScript()
-{
-    setName("LocalScript");
-}
-
-Script::~Script()
-{
-    RBXASSERT(owner == NULL);
-}
-
-void Script::setEmbeddedCode(const std::string& value)
-{
-    if (getEmbeddedCode() != value)
+    template<class T, class Traits, class Alloc>
+    class basic_string
     {
-        embeddedSource.reset(new std::string(value));
-        raisePropertyChanged(prop_EmbeddedSourceCode);
-    }
-}
+        char storage[32];
+    public:
+        ~basic_string();
+    };
 
-void Script::setScriptId(const ContentId& value)
-{
-    if (getScriptId() != value)
+    template<class T, class Traits, class Alloc>
+    inline basic_string<T, Traits, Alloc>::~basic_string()
     {
-        scriptId = value;
-        requestCode();
-        raisePropertyChanged(prop_SourceCodeId);
-    }
-}
-
-void Script::onAncestorChanged(const AncestorChanged& event)
-{
-    Instance::onAncestorChanged(event);
-
-    IScriptOwner* newOwner = NULL;
-    Instance* parent = this->getParent();
-
-    while (parent)
-    {
-        IScriptOwner* parentOwner = dynamic_cast<IScriptOwner*>(parent);
-
-        if (parentOwner)
-        {
-            newOwner = parentOwner->scriptShouldRun(this);
-
-            if (newOwner)
-                break;
-        }
-
-        parent = parent->getParent();
+        destroy_string(this);
     }
 
-    if (newOwner != owner)
-    {
-        if (owner)
-            owner->releaseScript(this);
-
-        owner = newOwner;
-
-        ScriptContext* sc = ServiceProvider::find<ScriptContext>(this);
-
-        if (sc)
-        {
-            sc->removeScript(this);
-
-            if (owner)
-                owner->runScript(this, sc);
-        }
-    }
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+struct Value
 {
-	if (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))
-	{
-		sc->removeScript(this);
-	}
+    std::string get();
+};
 
-	Instance::onServiceProvider(oldProvider, newProvider);
-}
-
-boost::shared_ptr<const std::string> Script::requestCode()
+struct Setter
 {
-    if (scriptId.isNull())
-    {
-        return embeddedSource;
-    }
-    else 
-    {
-        return ContentProvider::singleton().requestContentString(scriptId);
-    }
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void slot2() = 0;
+    virtual void set(void*, const std::string&) = 0;
+};
+
+struct S
+{
+    char padding[24];
+    Setter* setter;
+
+    void f(void*, Value*);
+};
+
+void S::f(void* object, Value* value)
+{
+    Setter* target = setter;
+    target->set(object, value->get());
 }

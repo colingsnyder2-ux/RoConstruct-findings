@@ -1,108 +1,57 @@
-// from server: 52% by colin
-// roc-lang: cpp
+// roc 2009-06 006ca810  unit: RBX::SlingshotTool  size: 70 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006ca810
+//
+// 006ca810  51                   push ecx
+// 006ca811  83792c00             cmp dword ptr [ecx + 0x2c], 0
+// 006ca815  56                   push esi
+// 006ca816  c744240400000000     mov dword ptr [esp + 4], 0
+// 006ca81e  741e                 je 0x6ca83e
+// 006ca820  8379280a             cmp dword ptr [ecx + 0x28], 0xa
+// 006ca824  7e18                 jle 0x6ca83e
+// 006ca826  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 006ca82a  6898c58e00           push 0x8ec598
+// 006ca82f  8bce                 mov ecx, esi
+// 006ca831  ff15b4e48900         call dword ptr [0x89e4b4]
+// 006ca837  8bc6                 mov eax, esi
+// 006ca839  5e                   pop esi
+// 006ca83a  59                   pop ecx
+// 006ca83b  c20400               ret 4
+// 006ca83e  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 006ca842  68b0098e00           push 0x8e09b0
+// 006ca847  8bce                 mov ecx, esi
+// 006ca849  ff15b4e48900         call dword ptr [0x89e4b4]
+// 006ca84f  8bc6                 mov eax, esi
+// 006ca851  5e                   pop esi
+// 006ca852  59                   pop ecx
+// 006ca853  c20400               ret 4
+// copied from an identical function in another client (function ?func@SlingshotTool@@QAE?AUString@@XZ)
+
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+struct String;
+extern void (__thiscall *stringConstructor)(String *, const char *);
+extern const char GunWaitCursor[];
+extern const char GunCursor[];
 
-// Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+struct String {
+    char storage[28];
+    String(const char *);
+};
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
+inline String::String(const char *text) {
+    stringConstructor(this, text);
 }
 
-void initMoo()
-{
-	moo2();
-}
+struct SlingshotTool {
+    char pad[0x28];
+    int field28;
+    int field2c;
+    String func();
+};
 
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+String SlingshotTool::func() {
+    volatile int state = 0;
+    if (field2c && field28 > 10)
+        return String(GunWaitCursor);
+    return String(GunCursor);
 }

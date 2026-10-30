@@ -1,24 +1,16 @@
-// from server: 46% by colin
-struct S_func_0054e090 {
-    char pad[0x28];
-    unsigned int m_28;
-    unsigned int m_2c;
-    void f(unsigned int arg);
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-extern "C" {
-    void __stdcall sub_77e698(void*);
-    void __stdcall sub_77e6ac(void*);
-    void __stdcall sub_412dc0(void*, void*);
-}
-
-void S_func_0054e090::f(unsigned int arg) {
-    char buf[8];
-    sub_77e698(buf);
-    sub_412dc0(this, buf);
-    *(unsigned int*)this = 0x7a783c;
-    sub_77e6ac(buf);
-    m_28 = arg;
-    *(unsigned int*)this = 0x7a7af4;
-    m_2c = *(unsigned int*)0x7ba580;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

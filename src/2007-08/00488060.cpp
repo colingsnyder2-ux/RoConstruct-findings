@@ -1,214 +1,28 @@
-// from server: 99% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Lighting.cpp
+// roc-lib: rbxgs-net roc_espeon_aug2007_network_stack_8cd54c815be08ee2.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "util/RunStateOwner.h"
-
-namespace RBX
-{
-	const char* sLighting = "Lighting";
-
-	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_AmbientTop("TopAmbientV9", "Appearance", &Lighting::getAmbientTop, &Lighting::setAmbientTop, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_AmbientBottom("BottomAmbientV9", "Appearance", &Lighting::getAmbientBottom, &Lighting::setAmbientBottom, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_LightColor("SpotLightV9", "Appearance", &Lighting::getLightColor, &Lighting::setLightColor, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_ClearColor("ClearColor", "Appearance", &Lighting::getClearColor3, &Lighting::setClearColor3, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::PropDescriptor<Lighting, std::string> prop_Time("TimeOfDay", "Data", &Lighting::getTimeStr, &Lighting::setTimeStr, Reflection::PropertyDescriptor::STANDARD);
-	static Reflection::PropDescriptor<Lighting, float> prop_GeographicLatitude("GeographicLatitude", "Data", &Lighting::getGeographicLatitude, &Lighting::setGeographicLatitude, Reflection::PropertyDescriptor::STANDARD);
-
-	static Reflection::BoundFuncDesc<Lighting, float(void), 0> prop_GetMoonPhase(&Lighting::getMoonPhase, "GetMoonPhase", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<Lighting, G3D::Vector3(void), 0> prop_GetMoonPosition(&Lighting::getMoonPosition, "GetMoonDirection", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<Lighting, G3D::Vector3(void), 0> prop_GetSunPosition(&Lighting::getSunPosition, "GetSunDirection", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<Lighting, double(void), 0> prop_GetMinutesAfterMidnight(&Lighting::getMinutesAfterMidnight, "GetMinutesAfterMidnight", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<Lighting, void(double), 1> prop_SetMinutesAfterMidnight(&Lighting::setMinutesAfterMidnight, "SetMinutesAfterMidnight", "minutes", Reflection::FunctionDescriptor::AnyCaller);
-
-	Lighting::Lighting()
-		: Base(),
-		  ambientTop(209/255.0f, 208/255.0f, 217/255.0f),
-		  ambientBottom(122/255.0f, 134/255.0f, 120/255.0f),
-		  hasSky(true),
-		  clearColor(G3D::Color3::white()),
-		  timeOfDay(boost::posix_time::duration_from_string("14:00:00"))
-	{
-		skyParameters.lightColor = G3D::Color3(152/255.0f, 137/255.0f, 102/255.0f);
-		skyParameters.setTime(timeOfDay.total_seconds());
-		setName("Lighting");
-	}
-
-	G3D::Vector3 Lighting::getMoonPosition()
-	{
-		return (skyParameters.physicallyCorrect) ? skyParameters.trueMoonPosition : skyParameters.moonPosition;
-	}
-
-	G3D::Vector3 Lighting::getSunPosition()
-	{
-		return (skyParameters.physicallyCorrect) ? skyParameters.trueSunPosition : skyParameters.sunPosition;
-	}
-
-	void Lighting::replaceSky(Sky* newSky)
-	{
-		while (Sky* currentSky = findFirstChildOfType<Sky>())
-		{
-			currentSky->setParent(NULL);
-		}
-
-		newSky->setParent(this);
-	}
-
-	std::string Lighting::getTimeStr() const
-	{
-		return boost::posix_time::to_simple_string(timeOfDay);
-	}
-
-	void Lighting::setTimeStr(const std::string& value)
-	{
-		setTime(boost::posix_time::duration_from_string(value));
-	}
-
-	void Lighting::setClearColor(G3D::Color4 value)
-	{
-		if (value != clearColor)
-		{
-			clearColor = value;
-
-			raisePropertyChanged(desc_ClearColor);
-			fireLightingChanged(false);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::setLightColor(G3D::Color3 value)
-	{
-		if (value != skyParameters.lightColor)
-		{
-			skyParameters.lightColor = value;
-
-			raisePropertyChanged(desc_LightColor);
-			fireLightingChanged(false);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::setAmbientBottom(G3D::Color3 value)
-	{
-		if (value != ambientBottom)
-		{
-			ambientBottom = value;
-
-			raisePropertyChanged(desc_AmbientBottom);
-			fireLightingChanged(false);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::setAmbientTop(G3D::Color3 value)
-	{
-		if (value != ambientTop)
-		{
-			ambientTop = value;
-
-			raisePropertyChanged(desc_AmbientTop);
-			fireLightingChanged(false);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::setGeographicLatitude(float value)
-	{
-		if (value != skyParameters.geoLatitude)
-		{
-			skyParameters.geoLatitude = value;
-
-			raisePropertyChanged(prop_GeographicLatitude);
-			fireLightingChanged(false);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::setTime(const boost::posix_time::time_duration& value)
-	{
-		int totalSeconds = value.total_seconds();
-		totalSeconds -= (totalSeconds / 86400) * 86400;
-
-		if (timeOfDay.total_seconds() != totalSeconds)
-		{
-			timeOfDay = boost::posix_time::seconds(totalSeconds);
-			skyParameters.setTime(timeOfDay.total_seconds());
-
-			raisePropertyChanged(prop_Time);
-			fireLightingChanged(false);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	double Lighting::getMinutesAfterMidnight()
-	{
-		return timeOfDay.total_milliseconds() / 60000.0;
-	}
-
-	void Lighting::setMinutesAfterMidnight(double value)
-	{
-		setTime(boost::posix_time::seconds(value * 60.0));
-	}
-
-	void Lighting::onChildAdded(Instance* child)
-	{
-		Sky* newSky = dynamic_cast<Sky*>(child);
-
-		if (newSky)
-		{
-			sky = shared_from(newSky);
-
-			fireLightingChanged(true);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::onChildRemoving(Instance* child)
-	{
-		if (sky.get() == child)
-		{
-			sky.reset();
-
-			fireLightingChanged(true);
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	void Lighting::onChildChanged(Instance* instance, const PropertyChanged& event)
-	{
-		Instance::onChildChanged(instance, event);
-		if (sky.get() == instance)
-		{
-			fireLightingChanged(true);
-
-			RunService* runService = ServiceProvider::find<RunService>(this);
-			if (runService)
-				runService->invalidateRunViews();
-		}
-	}
-
-	bool Lighting::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Sky*>(instance) != NULL;
-	}
-}
+#define _DLL 1
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
+#include "Player.cpp"

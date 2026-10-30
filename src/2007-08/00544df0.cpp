@@ -1,49 +1,434 @@
-// from server: 48% by colin
-// roc 2007-08 00544df0  unit: RBX::VDebugSettings::?$GlobalSettingsItem  size: 101 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00544df0
-//
-// 00544df0  6aff                 push -1
-// 00544df2  6879be7500           push 0x75be79
-// 00544df7  64a100000000         mov eax, dword ptr fs:[0]
-// 00544dfd  50                   push eax
-// 00544dfe  64892500000000       mov dword ptr fs:[0], esp
-// 00544e05  83ec1c               sub esp, 0x1c
-// 00544e08  53                   push ebx
-// 00544e09  6a07                 push 7
-// 00544e0b  6a00                 push 0
-// 00544e0d  8d44240c             lea eax, [esp + 0xc]
-// 00544e11  50                   push eax
-// 00544e12  ff1538e67700         call dword ptr [0x77e638]
-// 00544e18  68f86e7a00           push 0x7a6ef8
-// 00544e1d  50                   push eax
-// 00544e1e  c744243000000000     mov dword ptr [esp + 0x30], 0
-// 00544e26  ff15f8e57700         call dword ptr [0x77e5f8]
-// 00544e2c  83c408               add esp, 8
-// 00544e2f  8d4c2404             lea ecx, [esp + 4]
-// 00544e33  8ad8                 mov bl, al
-// 00544e35  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
-// 00544e3d  ff15ace67700         call dword ptr [0x77e6ac]
-// 00544e43  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 00544e47  8ac3                 mov al, bl
-// 00544e49  5b                   pop ebx
-// 00544e4a  64890d00000000       mov dword ptr fs:[0], ecx
-// 00544e51  83c428               add esp, 0x28
-// 00544e54  c3                   ret 
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
 
-struct S {
-    bool f();
-};
+// Candidate translation unit (score above; library headers required).
+#include "util/ContentProvider.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/FileSystem.h"
+#include "v8xml/SerializerV2.h"
+#include <atlutil.h>
+#include <G3D/format.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/copy.hpp>
 
-extern "C" int __stdcall GetModuleFileNameA(int, char*, int);
-extern "C" int __stdcall CompareStringA(int, int, const char*, int, const char*, int);
-extern "C" void __stdcall sub_77E6AC(void*);
-extern "C" void __stdcall sub_77E638(void*, int, int);
-
-bool S::f()
+namespace RBX
 {
-    char buf[28];
-    sub_77E638(buf, 0, 7);
-    bool r = CompareStringA(0, 0, buf, 0, "file://", 7) == 0;
-    sub_77E6AC(buf);
-    return r;
+	// TODO: check match
+	bool operator<(const ContentId& a, const ContentId& b)
+	{
+		return a.toString() < b.toString();
+	}
+
+	bool operator!=(const ContentId& a, const ContentId& b)
+	{
+		return a.toString() != b.toString();
+	}
+
+	ContentId ContentId::fromAssets(const std::string& filePath)
+	{
+		std::string header = "rbxasset://";
+		return ContentId(header + filePath);
+	}
+
+	ContentProvider::ContentProvider()
+	{
+		char path[MAX_PATH];
+		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
+		{
+			this->singleton().setAssetFolder(path);
+		}
+		else
+		{
+			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
+		}
+
+		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
+	}
+
+	ContentProvider::~ContentProvider()
+	{
+		requestProcessor->join();
+	}
+
+	bool ContentProvider::isHttpUrl(const std::string& s)
+	{
+		if (s.find("http://") == 0)
+			return true;
+
+		if (s.find("https://") == 0)
+			return true;
+
+		return false;
+	}
+
+	std::string ContentProvider::assetFolder() const
+	{
+		return assetFolderPath;
+	}
+
+	bool ContentProvider::isRequestQueueEmpty()
+	{
+		boost::mutex::scoped_lock lock(requestSync);
+		return requestQueue.empty();
+	}
+
+	bool ContentProvider::isUrlBad(const char* url)
+	{
+		boost::mutex::scoped_lock lock(requestSync);
+
+		std::list<FailedUrl>::iterator iter = failedUrls.begin();
+		std::list<FailedUrl>::iterator end = failedUrls.end();
+
+		for (; iter != end; iter++)
+		{
+			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
+			{
+				failedUrls.erase(iter, end);
+				return false;
+			}
+			else if (iter->url == url)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void ContentProvider::clearContentCache()
+	{
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+		contentCache.clear();
+	}
+
+	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
+	{
+		boost::scoped_ptr<std::istream> stream(getContent(id));
+		
+		TextXmlParser machine(stream->rdbuf());
+		boost::scoped_ptr<XmlElement> root(machine.parse());
+
+		SerializerV2().loadInstances(root.get(), instances);
+	}
+
+	bool ContentProvider::hasContent(ContentId id)
+	{
+		return loadContent(id, NoHttpRequest) != NULL;
+	}
+
+	std::string ContentProvider::getAssetFile(const std::string& filePath)
+	{
+		return getFile(ContentId::fromAssets(filePath));
+	}
+
+	std::string ContentProvider::getFile(ContentId ticket)
+	{
+		CachedContent* content = loadContent(ticket, SyncHttpRequest);
+		if (content && registerFile(content))
+		{
+			return *content->filename;
+		}
+
+		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+	}
+
+	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return false;
+
+		if (!registerFile(content))
+			return false;
+
+		filename = *content->filename;
+		return true;
+	}
+
+	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return boost::shared_ptr<const std::string>();
+
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+
+		if (!content->data)
+		{
+			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
+			std::ostringstream data;
+
+			boost::iostreams::copy(stream, data);
+
+			content->data.reset(new std::string(data.str()));
+		}
+
+		return content->data;
+	}
+
+	std::string ContentProvider::findAsset(ContentId contentId)
+	{
+		RBXASSERT(contentId.isAsset());
+
+		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	std::string ContentProvider::findFile(ContentId contentId)
+	{
+		RBXASSERT(contentId.isFile());
+
+		const char* file = contentId.c_str();
+		file += 7;
+
+		ATL::CPath filePath(file);
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	static ATL::CPath getLocalCachePath(bool createPath)
+	{
+		ATL::CPath path;
+
+		if (createPath)
+		{
+			static std::string s = FileSystem::getCacheDirectory(true);
+			path.m_strPath.SetString(s.c_str());
+		}
+		else
+		{
+			static std::string s = FileSystem::getCacheDirectory(false);
+			path.m_strPath.SetString(s.c_str());
+		}
+
+		return path;
+	}
+
+	std::string ContentProvider::findHashFile(ContentId contentId)
+	{
+		ATL::CPath cachePath = getLocalCachePath(true);
+
+		ATL::CPath filePath = cachePath;
+		filePath.Append(contentId.c_str());
+
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	void ContentProvider::setAssetFolder(const char* sPath)
+	{
+		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
+
+		ATL::CPath path(sPath);
+
+		if (path.IsRelative())
+			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
+
+		if (!path.IsDirectory())
+			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
+
+		path.AddBackslash();
+		assetFolderPath = path;
+	}
+
+	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	{
+		ContentId id;
+
+		{
+			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
+			hasher->addData(content);
+			id = ContentId(hasher->toString(), mimeType);
+		}
+
+		ATL::CPath filePath = getLocalCachePath(true);
+		filePath.Append(id.c_str());
+
+		if (!filePath.FileExists())
+		{
+			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
+			content.clear();
+			content.seekg(0, std::ios::beg);
+
+			do
+			{
+				char buffer[1024];
+				content.read(buffer, sizeof(buffer));
+				outStream.write(buffer, content.gcount());
+			}
+			while (content.gcount() > 0);
+		}
+
+		return id;
+	}
+
+	bool ContentProvider::registerFile(CachedContent* item)
+	{
+		CachedContent temp;
+
+		{
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			temp = *item;
+		}
+
+		if (!temp.filename)
+		{
+			std::istringstream ss(*temp.data);
+			ContentId hash = registerContent(ss, Name::getNullName());
+
+			std::string filename = findHashFile(hash);
+			if (filename.empty())
+				return false;
+
+			temp.filename.reset(new std::string(filename));
+
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			*item = temp;
+		}
+
+		return true;
+	}
+
+	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
+	{
+		ContentId contentId(id);
+
+		if (hasContent(contentId))
+		{
+			stream.clear();
+			stream.seekg(dataLength, std::ios::cur);
+		}
+		else
+		{
+			ATL::CPath filePath = getLocalCachePath(true);
+			filePath.Append(contentId.c_str());
+
+			std::ofstream content;
+			content.open(filePath, std::ios::binary | std::ios::out);
+
+			char data;
+
+			for (unsigned long i = 0; i < dataLength; i++)
+			{
+				RBXASSERT(content.good());
+				stream.get(data);
+				content << data;
+			}
+		}
+
+		return contentId;
+	}
+
+	ContentProvider::FailedUrl::FailedUrl(const char* url)
+		: url(url),
+		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
+	{
+	}
+
+	class MD5HasherImpl : public MD5Hasher
+	{
+	private:
+		HCRYPTPROV hProv;
+		HCRYPTHASH hHash;
+		std::string result;
+
+	public:
+		MD5HasherImpl()
+			: hProv(NULL),
+			  hHash(NULL),
+			  result()
+		{
+			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
+			}
+
+			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
+			}
+		}
+		~MD5HasherImpl()
+		{
+		}
+
+	public:
+		virtual void addData(const char* data, size_t nBytes)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(const std::string& data)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(std::istream& data)
+		{
+			data.clear();
+			data.seekg(0, std::ios_base::beg);
+
+			char buffer[1024];
+			do
+			{
+				data.read(buffer, sizeof(buffer));
+				addData(buffer, data.gcount());
+			}
+			while (data.gcount() > 0);
+		}
+		virtual std::string toString()
+		{
+			c_str();
+			return result;
+		}
+		virtual const char* c_str()
+		{
+			if (result.empty())
+			{
+				DWORD hashSize;
+				DWORD hashSizeLen = sizeof(DWORD);
+				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				char* hashValue = new char[hashSize];
+				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				for (int i = 0; i < (int)hashSize; ++i)
+				{
+					ATL::CString temp;
+					temp.Format("%x", hashValue[i]);
+					result += temp.GetString();
+				}
+
+				delete[] hashValue;
+			}
+
+			return result.c_str();
+		}
+	};
+
+	MD5Hasher* MD5Hasher::create()
+	{
+		return new MD5HasherImpl();
+	}
 }

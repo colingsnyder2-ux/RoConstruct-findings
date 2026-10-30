@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by tajop
 extern "C" {
     typedef unsigned int UINT;
     typedef unsigned int UINT_PTR;
@@ -14,8 +14,9 @@ struct CXTPDockingPaneMiniWnd {
     char pad2[0x128 - 0x24];
     int m_nTimerInterval;
     int m_nTimerCount;
-    int m_nTimerState;
+    int m_nTimerSteps;
     int m_nTimerActive;
+    int m_nTimerState;
     int m_nTimerFlag;
     int sub_6df790(int);
     void sub_6dec90(int);
@@ -40,7 +41,7 @@ void CXTPDockingPaneMiniWnd::OnTimer()
         m_nTimerCount = m_nTimerInterval;
         m_nTimerState = 1;
         sub_6dec90(1);
-        m_nTimerActive = 8;
+        m_nTimerSteps = 8;
         SetTimer(m_hWnd, 1, 0x64, 0);
         sub_6df790(0xd);
     }

@@ -30,3 +30,21 @@ namespace RBX
 		return HitTestFilter::INCLUDE_PRIM;
 	}
 }
+
+
+namespace RBX
+{
+	HitTestFilter::Result UnlockedPartByLocalCharacter::filterResult(const Primitive* testMe) const
+	{
+		HitTestFilter::Result result = HitTestFilter::INCLUDE_PRIM;
+		if (character && head)
+		{
+			const PartInstance* p = PartInstance::fromPrimitiveConst(testMe);
+			if (p->isDescendentOf(character.get()))
+				result = head->getIsTransparent() ? HitTestFilter::IGNORE_PRIM : HitTestFilter::STOP_TEST;
+		}
+		if (result == HitTestFilter::INCLUDE_PRIM)
+			result = Unlocked::unlocked(testMe) ? HitTestFilter::INCLUDE_PRIM : HitTestFilter::STOP_TEST;
+		return result;
+	}
+}

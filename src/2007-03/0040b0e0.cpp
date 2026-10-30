@@ -1,218 +1,161 @@
-// from server: 59% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_boost133_nested_92046d542337fd6b.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/Gui.h"
+// Boost.Function library
 
-namespace RBX
-{
-	const G3D::Color4& GuiItem::disabledFill()
-	{
-		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
-		return c;
-	}
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
 
-	const G3D::Color4& GuiItem::translucentBackdrop()
-	{
-		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
-		return c;
-	}
+// For more information, see http://www.boost.org
 
-	G3D::Vector2 GuiRoot::canvasSize;
-	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
-	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
 
-	GuiItem::GuiItem() 
-	{
-		setName("Unnamed GuiItem");
-	}
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
+#endif
+#include "reflection/signal.h"
+#include "boost/bind.hpp"
+#include "util/boost.hpp"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
 
-	const GuiItem* GuiItem::getGuiItem(int index) const
-	{
-		return dynamic_cast<const GuiItem*>(getChild(index));
-	}
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
 
-	GuiItem* GuiItem::getGuiItem(int index)
-	{
-		return dynamic_cast<GuiItem*>(getChild(index));
-	}
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
 
-	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
-	{
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			GuiItem* current = getGuiItem((int)i);
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
 
-			if (current && current != focus.get())
-			{
-				GuiResponse itemResponse = current->process(event);
-				if (itemResponse.wasUsed())
-				{
-					this->loseFocus();
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
 
-					focus = shared_from(current);
-					focus->loseFocus();
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
 
-					return itemResponse;
-				}
-			}
-		}
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
+#else
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
 
-		return GuiResponse::notUsed();
-	}
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		if (instance == focus)
-			loseFocus();
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-		Instance::onDescendentRemoving(instance);
-	}
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
 
-	Rect GuiItem::getMyRect() const
-	{
-		G3D::Vector2 pos = getPosition();
-		return Rect(pos, pos + getSize());
-	}
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-	const GuiItem* GuiItem::getGuiParent() const
-	{
-		return dynamic_cast<const GuiItem*>(getParent());
-	}
-	
-	GuiResponse GuiItem::process(const GuiEvent& event)
-	{
-		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
-			return GuiResponse::notUsed();
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
 
-		if (focus)
-		{
-			if (focus->canLoseFocus())
-			{
-				GuiResponse response = processNonFocus(event);
-				if (response.wasUsed())
-					return response;
-			}
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-			GuiResponse focusResponse = focus->process(event);
-			if (focusResponse.wasUsed())
-				return focusResponse;
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
 
-			loseFocus();
-		}
 
-		RBXASSERT(!focus);
-		return processNonFocus(event);
-	}
-
-	void TopMenuBar::init()
-	{
-		layoutStyle = Layout::HORIZONTAL;
-		backdropColor = G3D::Color4::clear();
-		visible = true;
-	}
-
-	G3D::Vector2 TopMenuBar::getSize() const
-	{
-		G3D::Vector2 size(0.0f, 0.0f);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			const GuiItem* current = getGuiItem((int)i);
-
-			if (current)
-			{
-				G3D::Vector2 childSize = current->getSize();
-				switch (layoutStyle)
-				{
-				case Layout::VERTICAL:
-					size.x = G3D::max(size.x, childSize.x);
-					size.y += childSize.y;
-					break;
-				case Layout::HORIZONTAL:
-					size.x += childSize.x;
-					size.y = G3D::max(size.y, childSize.y);
-					break;
-				}
-			}
-		}
-
-		return size;
-	}
-
-	void TopMenuBar::render2d(Adorn* adorn)
-	{
-		if (isVisible())
-		{
-			if (backdropColor != G3D::Color4::clear())
-			{
-				adorn->rect2d(getMyRect2D(), backdropColor);
-			}
-
-			for (size_t i = 0; i < numChildren(); i++)
-			{
-				GuiItem* current = getGuiItem((int)i);
-				if (current)
-					current->render2d(adorn);
-			}
-		}
-	}
-
-	GuiResponse TopMenuBar::process(const GuiEvent& event)
-	{
-		if (isVisible())
-		{
-			GuiResponse response = GuiItem::process(event);
-			if (response.wasUsed())
-			{
-				return response;
-			}
-
-			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
-			{
-				return GuiResponse::used();
-			}
-		}
-
-		return GuiResponse::notUsed();
-	}
-
-	void RelativePanel::init(const Layout& layout)
-	{
-		setName("RelativePanel");
-		layoutStyle = layout.layoutStyle;
-		backdropColor = layout.backdropColor;
-		xLocation = layout.xLocation;
-		yLocation = layout.yLocation;
-		offset = layout.offset;
-	}
-
-	GuiRoot::GuiRoot() 
-	{
-		setName("GuiRoot");
-	}
-
-	int GuiRoot::normalizedFontSize(int fontSize)
-	{
-		static G3D::Vector2 percentSize(100.0f, 75.0f);
-		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
-	}
-
-	void GuiRoot::render2d(Adorn* adorn)
-	{
-		short height = static_cast<short>(adorn->getHeight());
-		short width = static_cast<short>(adorn->getWidth());
-
-		canvasSize = G3D::Vector2(width, height);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			GuiItem* current = getGuiItem((int)i);
-			if (current)
-				current->render2d(adorn);
-		}
-	}
 }
+
+// Enclosing declarations only name binary-proven nested types. No enclosing
+// objects, fields, base layout, or sizeof expressions are used here.
+class CLuaHtmlView { public: class Binder; };
+class ErrorUploader { public: struct data; };
+typedef boost::_bi::bind_t<void,boost::_mfi::mf0<void,CLuaHtmlView::Binder>,boost::_bi::list1<boost::_bi::value<boost::shared_ptr<CLuaHtmlView::Binder> > > > BinderCallback;
+typedef RBX::worker_thread::work_result (*ErrorWork)(boost::shared_ptr<ErrorUploader::data>);
+typedef boost::_bi::bind_t<RBX::worker_thread::work_result,ErrorWork,boost::_bi::list1<boost::_bi::value<boost::shared_ptr<ErrorUploader::data> > > > ErrorCallback;
+template struct recovered_boost133::functor_manager<BinderCallback,std::allocator<void> >;
+template struct recovered_boost133::functor_manager<ErrorCallback,std::allocator<void> >;

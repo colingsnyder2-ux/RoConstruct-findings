@@ -1,14 +1,13 @@
-// from server: 25% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTCaptionPopupWnd.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTCaptionPopupWnd.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTCaptionPopupWnd.cpp : implementation of the CXTCaptionPopupWnd class.
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -142,7 +141,7 @@ BOOL CXTCaptionPopupWnd::Create(const CRect& rect, CWnd* pParentWnd, CWnd* pChil
 
 	// Create the caption.
 	CString string;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&string, XT_IDS_CLICKKEEPOPEN));
+	VERIFY(XTPResourceManager()->LoadString(&string, XT_IDS_CLICKKEEPOPEN));
 
 	if (!m_Caption.Create(this, string, CPWS_EX_RAISED_EDGE,
 		WS_VISIBLE | SS_CENTER | SS_CENTERIMAGE, CXTPEmptyRect()))
@@ -165,7 +164,7 @@ BOOL CXTCaptionPopupWnd::Create(const CRect& rect, CWnd* pParentWnd, CWnd* pChil
 	imageList.Create(16, 15, ILC_COLOR8 | ILC_MASK, 0, 1);
 
 	CBitmap bmp;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadBitmap(&bmp, XT_IDB_BTN_OUT));
+	VERIFY(XTPResourceManager()->LoadBitmap(&bmp, XT_IDB_BTN_OUT));
 	imageList.Add(&bmp, RGB(255, 0, 255));
 
 	// Associate the button icon

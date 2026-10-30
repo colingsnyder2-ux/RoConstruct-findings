@@ -1,27 +1,12 @@
-// from server: 92% by colin
-struct BodyMover {
-    void func_005ef900(int, int);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_628b6eb1ba34767d.cpp
 
-extern "C" int __fastcall sub_00450ec0(void*);
-extern "C" void __fastcall sub_00432530(void*, void*);
-extern "C" void __fastcall sub_0057aa50(void*, int, int);
-extern "C" void __fastcall sub_005ef860(void*);
-
-void BodyMover::func_005ef900(int a, int b)
-{
-    char* ebx;
-    if (this)
-        ebx = (char*)this + 0xf0;
-    else
-        ebx = 0;
-
-    if (a) {
-        int eax = sub_00450ec0((void*)a);
-        if (eax)
-            sub_00432530((void*)(eax + 0x100), ebx);
-    }
-
-    sub_0057aa50(this, b, a);
-    sub_005ef860(this);
-}
+// Candidate translation unit (score above; library headers required).
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/Gyro.cpp"

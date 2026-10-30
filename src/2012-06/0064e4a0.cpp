@@ -1,235 +1,601 @@
-// from server: 75% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.5 pngwio.c
+// roc-lib: g3d-6.09-png-dll pngmem.c
 
 // Candidate translation unit (score above; library headers required).
 
-/* pngwio.c - functions for data output
+/* pngmem.c - stub functions for memory allocation
  *
- * libpng 1.2.5 - October 3, 2002
+ * libpng version 1.2.7 - September 12, 2004
  * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2002 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2004 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
- * This file provides a location for all output.  Users who need
- * special handling are expected to write functions that have the same
- * arguments as these and perform similar functions, but that possibly
- * use different output methods.  Note that you shouldn't change these
- * functions, but rather write replacement functions and then change
- * them at run time with png_set_write_fn(...).
+ * This file provides a location for all memory allocation.  Users who
+ * need special memory handling are expected to supply replacement
+ * functions for png_malloc() and png_free(), and to use
+ * png_create_read_struct_2() and png_create_write_struct_2() to
+ * identify the replacement functions.
  */
 
 #define PNG_INTERNAL
 #include "png.h"
-#ifdef PNG_WRITE_SUPPORTED
 
-/* Write the data to whatever output you are using.  The default routine
-   writes to a file pointer.  Note that this routine sometimes gets called
-   with very small lengths, so you should implement some kind of simple
-   buffering if you are using unbuffered writes.  This should never be asked
-   to write more than 64K on a 16 bit machine.  */
+/* Borland DOS special memory handler */
+#if defined(__TURBOC__) && !defined(_Windows) && !defined(__FLAT__)
+/* if you change this, be sure to change the one in png.h also */
 
-void /* PRIVATE */
-png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
+/* Allocate memory for a png_struct.  The malloc and memset can be replaced
+   by a single call to calloc() if this is thought to improve performance. */
+png_voidp /* PRIVATE */
+png_create_struct(int type)
 {
-   if (png_ptr->write_data_fn != NULL )
-      (*(png_ptr->write_data_fn))(png_ptr, data, length);
+#ifdef PNG_USER_MEM_SUPPORTED
+   return (png_create_struct_2(type, png_malloc_ptr_NULL, png_voidp_NULL));
+}
+
+/* Alternate version of png_create_struct, for use with user-defined malloc. */
+png_voidp /* PRIVATE */
+png_create_struct_2(int type, png_malloc_ptr malloc_fn, png_voidp mem_ptr)
+{
+#endif /* PNG_USER_MEM_SUPPORTED */
+   png_size_t size;
+   png_voidp struct_ptr;
+
+   if (type == PNG_STRUCT_INFO)
+     size = png_sizeof(png_info);
+   else if (type == PNG_STRUCT_PNG)
+     size = png_sizeof(png_struct);
    else
-      png_error(png_ptr, "Call to NULL write function");
-}
+     return (png_get_copyright(NULL));
 
-#if !defined(PNG_NO_STDIO)
-/* This is the function that does the actual writing of data.  If you are
-   not writing to a standard C stream, you should create a replacement
-   write_data function and use it at run time with png_set_write_fn(), rather
-   than changing the library. */
-#ifndef USE_FAR_KEYWORD
-void PNGAPI
-png_default_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-   png_uint_32 check;
-
-#if defined(_WIN32_WCE)
-   if ( !WriteFile((HANDLE)(png_ptr->io_ptr), data, length, &check, NULL) )
-      check = 0;
-#else
-   check = fwrite(data, 1, length, (png_FILE_p)(png_ptr->io_ptr));
-#endif
-   if (check != length)
-      png_error(png_ptr, "Write Error");
-}
-#else
-/* this is the model-independent version. Since the standard I/O library
-   can't handle far buffers in the medium and small models, we have to copy
-   the data.
-*/
-
-#define NEAR_BUF_SIZE 1024
-#define MIN(a,b) (a <= b ? a : b)
-
-void PNGAPI
-png_default_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
-{
-   png_uint_32 check;
-   png_byte *near_data;  /* Needs to be "png_byte *" instead of "png_bytep" */
-   png_FILE_p io_ptr;
-
-   /* Check if data really is near. If so, use usual code. */
-   near_data = (png_byte *)CVT_PTR_NOCHECK(data);
-   io_ptr = (png_FILE_p)CVT_PTR(png_ptr->io_ptr);
-   if ((png_bytep)near_data == data)
+#ifdef PNG_USER_MEM_SUPPORTED
+   if(malloc_fn != NULL)
    {
-#if defined(_WIN32_WCE)
-      if ( !WriteFile(io_ptr, near_data, length, &check, NULL) )
-         check = 0;
-#else
-      check = fwrite(near_data, 1, length, io_ptr);
-#endif
+      png_struct dummy_struct;
+      png_structp png_ptr = &dummy_struct;
+      png_ptr->mem_ptr=mem_ptr;
+      struct_ptr = (*(malloc_fn))(png_ptr, (png_uint_32)size);
    }
    else
+#endif /* PNG_USER_MEM_SUPPORTED */
+      struct_ptr = (png_voidp)farmalloc(size);
+   if (struct_ptr != NULL)
+      png_memset(struct_ptr, 0, size);
+   return (struct_ptr);
+}
+
+/* Free memory allocated by a png_create_struct() call */
+void /* PRIVATE */
+png_destroy_struct(png_voidp struct_ptr)
+{
+#ifdef PNG_USER_MEM_SUPPORTED
+   png_destroy_struct_2(struct_ptr, png_free_ptr_NULL, png_voidp_NULL);
+}
+
+/* Free memory allocated by a png_create_struct() call */
+void /* PRIVATE */
+png_destroy_struct_2(png_voidp struct_ptr, png_free_ptr free_fn,
+    png_voidp mem_ptr)
+{
+#endif
+   if (struct_ptr != NULL)
    {
-      png_byte buf[NEAR_BUF_SIZE];
-      png_size_t written, remaining, err;
-      check = 0;
-      remaining = length;
-      do
+#ifdef PNG_USER_MEM_SUPPORTED
+      if(free_fn != NULL)
       {
-         written = MIN(NEAR_BUF_SIZE, remaining);
-         png_memcpy(buf, data, written); /* copy far buffer to near buffer */
-#if defined(_WIN32_WCE)
-         if ( !WriteFile(io_ptr, buf, written, &err, NULL) )
-            err = 0;
-#else
-         err = fwrite(buf, 1, written, io_ptr);
-#endif
-         if (err != written)
-            break;
-         else
-            check += err;
-         data += written;
-         remaining -= written;
+         png_struct dummy_struct;
+         png_structp png_ptr = &dummy_struct;
+         png_ptr->mem_ptr=mem_ptr;
+         (*(free_fn))(png_ptr, struct_ptr);
+         return;
       }
-      while (remaining != 0);
+#endif /* PNG_USER_MEM_SUPPORTED */
+      farfree (struct_ptr);
    }
-   if (check != length)
-      png_error(png_ptr, "Write Error");
 }
 
-#endif
-#endif
+/* Allocate memory.  For reasonable files, size should never exceed
+ * 64K.  However, zlib may allocate more then 64K if you don't tell
+ * it not to.  See zconf.h and png.h for more information. zlib does
+ * need to allocate exactly 64K, so whatever you call here must
+ * have the ability to do that.
+ *
+ * Borland seems to have a problem in DOS mode for exactly 64K.
+ * It gives you a segment with an offset of 8 (perhaps to store its
+ * memory stuff).  zlib doesn't like this at all, so we have to
+ * detect and deal with it.  This code should not be needed in
+ * Windows or OS/2 modes, and only in 16 bit mode.  This code has
+ * been updated by Alexander Lehmann for version 0.89 to waste less
+ * memory.
+ *
+ * Note that we can't use png_size_t for the "size" declaration,
+ * since on some systems a png_size_t is a 16-bit quantity, and as a
+ * result, we would be truncating potentially larger memory requests
+ * (which should cause a fatal error) and introducing major problems.
+ */
 
-/* This function is called to output any data pending writing (normally
-   to disk).  After png_flush is called, there should be no data pending
-   writing in any buffers. */
-#if defined(PNG_WRITE_FLUSH_SUPPORTED)
-void /* PRIVATE */
-png_flush(png_structp png_ptr)
+png_voidp PNGAPI
+png_malloc(png_structp png_ptr, png_uint_32 size)
 {
-   if (png_ptr->output_flush_fn != NULL)
-      (*(png_ptr->output_flush_fn))(png_ptr);
-}
+   png_voidp ret;
 
-#if !defined(PNG_NO_STDIO)
-void PNGAPI
-png_default_flush(png_structp png_ptr)
-{
-#if !defined(_WIN32_WCE)
-   png_FILE_p io_ptr;
-   io_ptr = (png_FILE_p)CVT_PTR((png_ptr->io_ptr));
-   if (io_ptr != NULL)
-      fflush(io_ptr);
-#endif
-}
-#endif
-#endif
+   if (png_ptr == NULL || size == 0)
+      return (NULL);
 
-/* This function allows the application to supply new output functions for
-   libpng if standard C streams aren't being used.
-
-   This function takes as its arguments:
-   png_ptr       - pointer to a png output data structure
-   io_ptr        - pointer to user supplied structure containing info about
-                   the output functions.  May be NULL.
-   write_data_fn - pointer to a new output function that takes as its
-                   arguments a pointer to a png_struct, a pointer to
-                   data to be written, and a 32-bit unsigned int that is
-                   the number of bytes to be written.  The new write
-                   function should call png_error(png_ptr, "Error msg")
-                   to exit and output any fatal error messages.
-   flush_data_fn - pointer to a new flush function that takes as its
-                   arguments a pointer to a png_struct.  After a call to
-                   the flush function, there should be no data in any buffers
-                   or pending transmission.  If the output method doesn't do
-                   any buffering of ouput, a function prototype must still be
-                   supplied although it doesn't have to do anything.  If
-                   PNG_WRITE_FLUSH_SUPPORTED is not defined at libpng compile
-                   time, output_flush_fn will be ignored, although it must be
-                   supplied for compatibility. */
-void PNGAPI
-png_set_write_fn(png_structp png_ptr, png_voidp io_ptr,
-   png_rw_ptr write_data_fn, png_flush_ptr output_flush_fn)
-{
-   png_ptr->io_ptr = io_ptr;
-
-#if !defined(PNG_NO_STDIO)
-   if (write_data_fn != NULL)
-      png_ptr->write_data_fn = write_data_fn;
+#ifdef PNG_USER_MEM_SUPPORTED
+   if(png_ptr->malloc_fn != NULL)
+       ret = ((png_voidp)(*(png_ptr->malloc_fn))(png_ptr, (png_size_t)size));
    else
-      png_ptr->write_data_fn = png_default_write_data;
-#else
-   png_ptr->write_data_fn = write_data_fn;
-#endif
+       ret = (png_malloc_default(png_ptr, size));
+   if (ret == NULL && (png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+       png_error(png_ptr, "Out of memory!");
+   return (ret);
+}
 
-#if defined(PNG_WRITE_FLUSH_SUPPORTED)
-#if !defined(PNG_NO_STDIO)
-   if (output_flush_fn != NULL)
-      png_ptr->output_flush_fn = output_flush_fn;
-   else
-      png_ptr->output_flush_fn = png_default_flush;
-#else
-   png_ptr->output_flush_fn = output_flush_fn;
-#endif
-#endif /* PNG_WRITE_FLUSH_SUPPORTED */
+png_voidp PNGAPI
+png_malloc_default(png_structp png_ptr, png_uint_32 size)
+{
+   png_voidp ret;
+#endif /* PNG_USER_MEM_SUPPORTED */
 
-   /* It is an error to read while writing a png file */
-   if (png_ptr->read_data_fn != NULL)
+#ifdef PNG_MAX_MALLOC_64K
+   if (size > (png_uint_32)65536L)
    {
-      png_ptr->read_data_fn = NULL;
-      png_warning(png_ptr,
-         "Attempted to set both read_data_fn and write_data_fn in");
-      png_warning(png_ptr,
-         "the same structure.  Resetting read_data_fn to NULL.");
+      png_warning(png_ptr, "Cannot Allocate > 64K");
+      ret = NULL;
+   }
+   else
+#endif
+
+   if (size != (size_t)size)
+     ret = NULL;
+   else if (size == (png_uint_32)65536L)
+   {
+      if (png_ptr->offset_table == NULL)
+      {
+         /* try to see if we need to do any of this fancy stuff */
+         ret = farmalloc(size);
+         if (ret == NULL || ((png_size_t)ret & 0xffff))
+         {
+            int num_blocks;
+            png_uint_32 total_size;
+            png_bytep table;
+            int i;
+            png_byte huge * hptr;
+
+            if (ret != NULL)
+            {
+               farfree(ret);
+               ret = NULL;
+            }
+
+            if(png_ptr->zlib_window_bits > 14)
+               num_blocks = (int)(1 << (png_ptr->zlib_window_bits - 14));
+            else
+               num_blocks = 1;
+            if (png_ptr->zlib_mem_level >= 7)
+               num_blocks += (int)(1 << (png_ptr->zlib_mem_level - 7));
+            else
+               num_blocks++;
+
+            total_size = ((png_uint_32)65536L) * (png_uint_32)num_blocks+16;
+
+            table = farmalloc(total_size);
+
+            if (table == NULL)
+            {
+#ifndef PNG_USER_MEM_SUPPORTED
+               if ((png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+                  png_error(png_ptr, "Out Of Memory."); /* Note "O" and "M" */
+               else
+                  png_warning(png_ptr, "Out Of Memory.");
+#endif
+               return (NULL);
+            }
+
+            if ((png_size_t)table & 0xfff0)
+            {
+#ifndef PNG_USER_MEM_SUPPORTED
+               if ((png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+                  png_error(png_ptr,
+                    "Farmalloc didn't return normalized pointer");
+               else
+                  png_warning(png_ptr,
+                    "Farmalloc didn't return normalized pointer");
+#endif
+               return (NULL);
+            }
+
+            png_ptr->offset_table = table;
+            png_ptr->offset_table_ptr = farmalloc(num_blocks *
+               png_sizeof (png_bytep));
+
+            if (png_ptr->offset_table_ptr == NULL)
+            {
+#ifndef PNG_USER_MEM_SUPPORTED
+               if ((png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+                  png_error(png_ptr, "Out Of memory."); /* Note "O" and "M" */
+               else
+                  png_warning(png_ptr, "Out Of memory.");
+#endif
+               return (NULL);
+            }
+
+            hptr = (png_byte huge *)table;
+            if ((png_size_t)hptr & 0xf)
+            {
+               hptr = (png_byte huge *)((long)(hptr) & 0xfffffff0L);
+               hptr = hptr + 16L;  /* "hptr += 16L" fails on Turbo C++ 3.0 */
+            }
+            for (i = 0; i < num_blocks; i++)
+            {
+               png_ptr->offset_table_ptr[i] = (png_bytep)hptr;
+               hptr = hptr + (png_uint_32)65536L;  /* "+=" fails on TC++3.0 */
+            }
+
+            png_ptr->offset_table_number = num_blocks;
+            png_ptr->offset_table_count = 0;
+            png_ptr->offset_table_count_free = 0;
+         }
+      }
+
+      if (png_ptr->offset_table_count >= png_ptr->offset_table_number)
+      {
+#ifndef PNG_USER_MEM_SUPPORTED
+         if ((png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+            png_error(png_ptr, "Out of Memory."); /* Note "o" and "M" */
+         else
+            png_warning(png_ptr, "Out of Memory.");
+#endif
+         return (NULL);
+      }
+
+      ret = png_ptr->offset_table_ptr[png_ptr->offset_table_count++];
+   }
+   else
+      ret = farmalloc(size);
+
+#ifndef PNG_USER_MEM_SUPPORTED
+   if (ret == NULL)
+   {
+      if ((png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+         png_error(png_ptr, "Out of memory."); /* Note "o" and "m" */
+      else
+         png_warning(png_ptr, "Out of memory."); /* Note "o" and "m" */
+   }
+#endif
+
+   return (ret);
+}
+
+/* free a pointer allocated by png_malloc().  In the default
+   configuration, png_ptr is not used, but is passed in case it
+   is needed.  If ptr is NULL, return without taking any action. */
+void PNGAPI
+png_free(png_structp png_ptr, png_voidp ptr)
+{
+   if (png_ptr == NULL || ptr == NULL)
+      return;
+
+#ifdef PNG_USER_MEM_SUPPORTED
+   if (png_ptr->free_fn != NULL)
+   {
+      (*(png_ptr->free_fn))(png_ptr, ptr);
+      return;
+   }
+   else png_free_default(png_ptr, ptr);
+}
+
+void PNGAPI
+png_free_default(png_structp png_ptr, png_voidp ptr)
+{
+#endif /* PNG_USER_MEM_SUPPORTED */
+
+   if (png_ptr->offset_table != NULL)
+   {
+      int i;
+
+      for (i = 0; i < png_ptr->offset_table_count; i++)
+      {
+         if (ptr == png_ptr->offset_table_ptr[i])
+         {
+            ptr = NULL;
+            png_ptr->offset_table_count_free++;
+            break;
+         }
+      }
+      if (png_ptr->offset_table_count_free == png_ptr->offset_table_count)
+      {
+         farfree(png_ptr->offset_table);
+         farfree(png_ptr->offset_table_ptr);
+         png_ptr->offset_table = NULL;
+         png_ptr->offset_table_ptr = NULL;
+      }
+   }
+
+   if (ptr != NULL)
+   {
+      farfree(ptr);
    }
 }
 
-#if defined(USE_FAR_KEYWORD)
-#if defined(_MSC_VER)
-void *png_far_to_near(png_structp png_ptr,png_voidp ptr, int check)
+#else /* Not the Borland DOS special memory handler */
+
+/* Allocate memory for a png_struct or a png_info.  The malloc and
+   memset can be replaced by a single call to calloc() if this is thought
+   to improve performance noticably. */
+png_voidp /* PRIVATE */
+png_create_struct(int type)
 {
-   void *near_ptr;
-   void FAR *far_ptr;
-   FP_OFF(near_ptr) = FP_OFF(ptr);
-   far_ptr = (void FAR *)near_ptr;
-   if(check != 0)
-      if(FP_SEG(ptr) != FP_SEG(far_ptr))
-         png_error(png_ptr,"segment lost in conversion");
-   return(near_ptr);
+#ifdef PNG_USER_MEM_SUPPORTED
+   return (png_create_struct_2(type, png_malloc_ptr_NULL, png_voidp_NULL));
 }
-#  else
-void *png_far_to_near(png_structp png_ptr,png_voidp ptr, int check)
+
+/* Allocate memory for a png_struct or a png_info.  The malloc and
+   memset can be replaced by a single call to calloc() if this is thought
+   to improve performance noticably. */
+png_voidp /* PRIVATE */
+png_create_struct_2(int type, png_malloc_ptr malloc_fn, png_voidp mem_ptr)
 {
-   void *near_ptr;
-   void FAR *far_ptr;
-   near_ptr = (void FAR *)ptr;
-   far_ptr = (void FAR *)near_ptr;
-   if(check != 0)
-      if(far_ptr != ptr)
-         png_error(png_ptr,"segment lost in conversion");
-   return(near_ptr);
+#endif /* PNG_USER_MEM_SUPPORTED */
+   png_size_t size;
+   png_voidp struct_ptr;
+
+   if (type == PNG_STRUCT_INFO)
+      size = png_sizeof(png_info);
+   else if (type == PNG_STRUCT_PNG)
+      size = png_sizeof(png_struct);
+   else
+      return (NULL);
+
+#ifdef PNG_USER_MEM_SUPPORTED
+   if(malloc_fn != NULL)
+   {
+      png_struct dummy_struct;
+      png_structp png_ptr = &dummy_struct;
+      png_ptr->mem_ptr=mem_ptr;
+      struct_ptr = (*(malloc_fn))(png_ptr, size);
+      if (struct_ptr != NULL)
+         png_memset(struct_ptr, 0, size);
+      return (struct_ptr);
+   }
+#endif /* PNG_USER_MEM_SUPPORTED */
+
+#if defined(__TURBOC__) && !defined(__FLAT__)
+   struct_ptr = (png_voidp)farmalloc(size);
+#else
+# if defined(_MSC_VER) && defined(MAXSEG_64K)
+   struct_ptr = (png_voidp)halloc(size,1);
+# else
+   struct_ptr = (png_voidp)malloc(size);
+# endif
+#endif
+   if (struct_ptr != NULL)
+      png_memset(struct_ptr, 0, size);
+
+   return (struct_ptr);
 }
-#   endif
-#   endif
-#endif /* PNG_WRITE_SUPPORTED */
+
+
+/* Free memory allocated by a png_create_struct() call */
+void /* PRIVATE */
+png_destroy_struct(png_voidp struct_ptr)
+{
+#ifdef PNG_USER_MEM_SUPPORTED
+   png_destroy_struct_2(struct_ptr, png_free_ptr_NULL, png_voidp_NULL);
+}
+
+/* Free memory allocated by a png_create_struct() call */
+void /* PRIVATE */
+png_destroy_struct_2(png_voidp struct_ptr, png_free_ptr free_fn,
+    png_voidp mem_ptr)
+{
+#endif /* PNG_USER_MEM_SUPPORTED */
+   if (struct_ptr != NULL)
+   {
+#ifdef PNG_USER_MEM_SUPPORTED
+      if(free_fn != NULL)
+      {
+         png_struct dummy_struct;
+         png_structp png_ptr = &dummy_struct;
+         png_ptr->mem_ptr=mem_ptr;
+         (*(free_fn))(png_ptr, struct_ptr);
+         return;
+      }
+#endif /* PNG_USER_MEM_SUPPORTED */
+#if defined(__TURBOC__) && !defined(__FLAT__)
+      farfree(struct_ptr);
+#else
+# if defined(_MSC_VER) && defined(MAXSEG_64K)
+      hfree(struct_ptr);
+# else
+      free(struct_ptr);
+# endif
+#endif
+   }
+}
+
+/* Allocate memory.  For reasonable files, size should never exceed
+   64K.  However, zlib may allocate more then 64K if you don't tell
+   it not to.  See zconf.h and png.h for more information.  zlib does
+   need to allocate exactly 64K, so whatever you call here must
+   have the ability to do that. */
+
+png_voidp PNGAPI
+png_malloc(png_structp png_ptr, png_uint_32 size)
+{
+   png_voidp ret;
+
+#ifdef PNG_USER_MEM_SUPPORTED
+   if (png_ptr == NULL || size == 0)
+      return (NULL);
+
+   if(png_ptr->malloc_fn != NULL)
+       ret = ((png_voidp)(*(png_ptr->malloc_fn))(png_ptr, (png_size_t)size));
+   else
+       ret = (png_malloc_default(png_ptr, size));
+   if (ret == NULL && (png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+       png_error(png_ptr, "Out of Memory!");
+   return (ret);
+}
+
+png_voidp PNGAPI
+png_malloc_default(png_structp png_ptr, png_uint_32 size)
+{
+   png_voidp ret;
+#endif /* PNG_USER_MEM_SUPPORTED */
+
+   if (png_ptr == NULL || size == 0)
+      return (NULL);
+
+#ifdef PNG_MAX_MALLOC_64K
+   if (size > (png_uint_32)65536L)
+   {
+#ifndef PNG_USER_MEM_SUPPORTED
+      if(png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+         png_error(png_ptr, "Cannot Allocate > 64K");
+      else
+#endif
+         return NULL;
+   }
+#endif
+
+ /* Check for overflow */
+#if defined(__TURBOC__) && !defined(__FLAT__)
+ if (size != (unsigned long)size)
+   ret = NULL;
+ else
+   ret = farmalloc(size);
+#else
+# if defined(_MSC_VER) && defined(MAXSEG_64K)
+ if (size != (unsigned long)size)
+   ret = NULL;
+ else
+   ret = halloc(size, 1);
+# else
+ if (size != (size_t)size)
+   ret = NULL;
+ else
+   ret = malloc((size_t)size);
+# endif
+#endif
+
+#ifndef PNG_USER_MEM_SUPPORTED
+   if (ret == NULL && (png_ptr->flags&PNG_FLAG_MALLOC_NULL_MEM_OK) == 0)
+      png_error(png_ptr, "Out of Memory");
+#endif
+
+   return (ret);
+}
+
+/* Free a pointer allocated by png_malloc().  If ptr is NULL, return
+   without taking any action. */
+void PNGAPI
+png_free(png_structp png_ptr, png_voidp ptr)
+{
+   if (png_ptr == NULL || ptr == NULL)
+      return;
+
+#ifdef PNG_USER_MEM_SUPPORTED
+   if (png_ptr->free_fn != NULL)
+   {
+      (*(png_ptr->free_fn))(png_ptr, ptr);
+      return;
+   }
+   else png_free_default(png_ptr, ptr);
+}
+void PNGAPI
+png_free_default(png_structp png_ptr, png_voidp ptr)
+{
+   if (png_ptr == NULL || ptr == NULL)
+      return;
+
+#endif /* PNG_USER_MEM_SUPPORTED */
+
+#if defined(__TURBOC__) && !defined(__FLAT__)
+   farfree(ptr);
+#else
+# if defined(_MSC_VER) && defined(MAXSEG_64K)
+   hfree(ptr);
+# else
+   free(ptr);
+# endif
+#endif
+}
+
+#endif /* Not Borland DOS special memory handler */
+
+#if defined(PNG_1_0_X)
+#  define png_malloc_warn png_malloc
+#else
+/* This function was added at libpng version 1.2.3.  The png_malloc_warn()
+ * function will set up png_malloc() to issue a png_warning and return NULL
+ * instead of issuing a png_error, if it fails to allocate the requested
+ * memory.
+ */
+png_voidp PNGAPI
+png_malloc_warn(png_structp png_ptr, png_uint_32 size)
+{
+   png_voidp ptr;
+   png_uint_32 save_flags=png_ptr->flags;
+
+   png_ptr->flags|=PNG_FLAG_MALLOC_NULL_MEM_OK;
+   ptr = (png_voidp)png_malloc((png_structp)png_ptr, size);
+   png_ptr->flags=save_flags;
+   return(ptr);
+}
+#endif
+
+png_voidp PNGAPI
+png_memcpy_check (png_structp png_ptr, png_voidp s1, png_voidp s2,
+   png_uint_32 length)
+{
+   png_size_t size;
+
+   size = (png_size_t)length;
+   if ((png_uint_32)size != length)
+      png_error(png_ptr,"Overflow in png_memcpy_check.");
+
+   return(png_memcpy (s1, s2, size));
+}
+
+png_voidp PNGAPI
+png_memset_check (png_structp png_ptr, png_voidp s1, int value,
+   png_uint_32 length)
+{
+   png_size_t size;
+
+   size = (png_size_t)length;
+   if ((png_uint_32)size != length)
+      png_error(png_ptr,"Overflow in png_memset_check.");
+
+   return (png_memset (s1, value, size));
+
+}
+
+#ifdef PNG_USER_MEM_SUPPORTED
+/* This function is called when the application wants to use another method
+ * of allocating and freeing memory.
+ */
+void PNGAPI
+png_set_mem_fn(png_structp png_ptr, png_voidp mem_ptr, png_malloc_ptr
+  malloc_fn, png_free_ptr free_fn)
+{
+   png_ptr->mem_ptr = mem_ptr;
+   png_ptr->malloc_fn = malloc_fn;
+   png_ptr->free_fn = free_fn;
+}
+
+/* This function returns a pointer to the mem_ptr associated with the user
+ * functions.  The application should free any memory associated with this
+ * pointer before png_write_destroy and png_read_destroy are called.
+ */
+png_voidp PNGAPI
+png_get_mem_ptr(png_structp png_ptr)
+{
+   return ((png_voidp)png_ptr->mem_ptr);
+}
+#endif /* PNG_USER_MEM_SUPPORTED */

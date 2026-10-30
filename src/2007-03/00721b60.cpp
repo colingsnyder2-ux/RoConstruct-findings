@@ -1,258 +1,231 @@
-// from server: 57% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/docmapi.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTWndHook.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTWndHook.cpp : implementation of the CXTWndHook class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#pragma warning(disable: 4228)
-#include <mapi.h>
-#pragma warning(default: 4228)
+#include "Resource.h"
 
+#include "XTWndHook.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
-// MAPI implementation helpers and globals
-
-AFX_STATIC_DATA BOOL _afxIsMailAvail = (BOOL)-1;    // start out not determined
-
+// CXTWndHook implementation
 /////////////////////////////////////////////////////////////////////////////
-// _AFX_MAIL_STATE
-
-class _AFX_MAIL_STATE : public CNoTrackObject
+CXTWndHook::CXTWndHook()
 {
-public:
-	HINSTANCE m_hInstMail;      // handle to MAPI32.DLL
-	virtual ~_AFX_MAIL_STATE();
-};
-
-_AFX_MAIL_STATE::~_AFX_MAIL_STATE()
-{
-	if (m_hInstMail != NULL)
-		::FreeLibrary(m_hInstMail);
+	m_pNextHook = NULL;
+	m_pOldWndProc = NULL;
+	m_hWnd = NULL;
 }
 
-EXTERN_PROCESS_LOCAL(_AFX_MAIL_STATE, _afxMailState)
+CXTWndHook::~CXTWndHook()
+{
+	if (IsWindowHooked())
+	{
+		HookWindow((HWND)NULL);
+	}
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// CDocument MAPI support
+CXTWindowMap CXTWindowMap::m_mapHooks;
 
-void CDocument::OnFileSendMail()
+IMPLEMENT_DYNAMIC(CXTWndHook, CObject)
+
+BOOL CXTWndHook::HookWindow(HWND hWnd)
 {
 	ASSERT_VALID(this);
-	ASSERT(_afxIsMailAvail);   // update handler always gets called first
 
-	CWaitCursor wait;
-
-	_AFX_MAIL_STATE* pMailState = _afxMailState;
-	if (pMailState->m_hInstMail == NULL)
-		pMailState->m_hInstMail = ::AfxCtxLoadLibraryA("MAPI32.DLL");
-
-	if (pMailState->m_hInstMail == NULL)
+	// Hook the window
+	if (hWnd)
 	{
-		AfxMessageBox(AFX_IDP_FAILED_MAPI_LOAD);
-		return;
+		ASSERT(m_hWnd == NULL);
+		ASSERT(::IsWindow(hWnd));
+		CXTWindowMap::m_mapHooks.Add(hWnd, this);
 	}
-	ASSERT(pMailState->m_hInstMail != NULL);
 
-	ULONG (PASCAL *lpfnSendMail)(ULONG, ULONG_PTR, MapiMessage*, FLAGS, ULONG);
-	(FARPROC&)lpfnSendMail = GetProcAddress(pMailState->m_hInstMail, "MAPISendMail");
-	if (lpfnSendMail == NULL)
+	// Unhook the window
+	else if (m_hWnd)
 	{
-		AfxMessageBox(AFX_IDP_INVALID_MAPI_DLL);
-		return;
+		CXTWindowMap::m_mapHooks.Remove(this);
+		m_pOldWndProc = NULL;
 	}
-	ASSERT(lpfnSendMail != NULL);
 
-	TCHAR szTempName[_MAX_PATH];
-	TCHAR szPath[_MAX_PATH];
-	BOOL bRemoveTemp = FALSE;
-	if (m_strPathName.IsEmpty() || IsModified())
+	m_hWnd = hWnd;
+	return TRUE;
+}
+
+LRESULT CXTWndHook::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	return m_pNextHook ? m_pNextHook->WindowProc(message, wParam, lParam) :
+		::CallWindowProc(m_pOldWndProc, m_hWnd, message, wParam, lParam);
+}
+
+LRESULT CXTWndHook::Default()
+{
+	// MFC stores current MSG in thread state
+	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
+	// Note: must explicitly call CXTWndHook::WindowProc to avoid infinite
+	// recursion on virtual function
+	return CXTWndHook::WindowProc(curMsg.message, curMsg.wParam, curMsg.lParam);
+}
+////////////////////////////////////////////////////////////////
+// CXTWindowMap implementation
+////////////////////////////////////////////////////////////////
+CXTWindowMap::CXTWindowMap()
+{
+
+}
+
+CXTWindowMap::~CXTWindowMap()
+{
+
+}
+
+LRESULT CALLBACK CXTWindowMap::HookWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// Set up MFC message state just in case anyone wants it
+	// This is just like AfxCallWindowProc, but we can't use that because
+	// a CXTWndHook is not a CWnd.
+	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
+	MSG  oldMsg = curMsg;
+	curMsg.hwnd = hWnd;
+	curMsg.message = message;
+	curMsg.wParam = wParam;
+	curMsg.lParam = lParam;
+
+	// Get hook object for this window. Get from hook map
+	CXTWndHook* pXTWndHook = m_mapHooks.Lookup(hWnd);
+	ASSERT(pXTWndHook);
+	if (!pXTWndHook)
+		return 0;
+
+	LRESULT lResult;
+
+	// Window is being destroyed: unhook all hooks (for this window)
+	// and pass message to original window proc
+	if (message == WM_NCDESTROY)
 	{
-		// save to temporary path
-		VERIFY(GetTempPath(_countof(szPath), szPath) != 0);
-		VERIFY(GetTempFileName(szPath, _T("afx"), 0, szTempName) != 0);
+		WNDPROC wndproc = pXTWndHook->m_pOldWndProc;
+		m_mapHooks.RemoveAll(hWnd);
+		lResult = ::CallWindowProc(wndproc, hWnd, message, wParam, lParam);
 
-		// save it, but remember original modified flag
-		BOOL bModified = IsModified();
-		BOOL bResult = DoSave(szTempName, FALSE);
-		SetModifiedFlag(bModified);
-		if (!bResult)
+	}
+
+	// pass to message hook
+	else
+	{
+		lResult = pXTWndHook->WindowProc(message, wParam, lParam);
+	}
+
+	curMsg = oldMsg;
+	return lResult;
+}
+
+void CXTWindowMap::Add(HWND hWnd, CXTWndHook* pXTWndHook)
+{
+	ASSERT(hWnd && ::IsWindow(hWnd));
+
+	// Add to front of list
+	pXTWndHook->m_pNextHook = Lookup(hWnd);
+	SetAt(hWnd, pXTWndHook);
+
+	// If this is the first hook added, subclass the window
+	if (pXTWndHook->m_pNextHook == NULL)
+	{
+		pXTWndHook->m_pOldWndProc = (WNDPROC)GetWindowLongPtr(
+			hWnd, GWLP_WNDPROC);
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)HookWndProc);
+	}
+
+	// just copy wndproc from next hook
+	else
+	{
+		pXTWndHook->m_pOldWndProc = pXTWndHook->m_pNextHook->m_pOldWndProc;
+	}
+
+	ASSERT(pXTWndHook->m_pOldWndProc);
+}
+
+void CXTWindowMap::Remove(CXTWndHook* pUnHook)
+{
+	HWND hWnd = pUnHook->m_hWnd;
+	ASSERT(hWnd && ::IsWindow(hWnd));
+
+	CXTWndHook* pHook = Lookup(hWnd);
+	ASSERT(pHook);
+	if (!pHook)
+		return;
+
+	if (pHook == pUnHook)
+	{
+		// hook to remove is the one in the hash table: replace w/next
+		if (pHook->m_pNextHook)
 		{
-			TRACE(traceAppMsg, 0, "Warning: file save failed during File.Send Mail.\n");
-			return;
+			SetAt(hWnd, pHook->m_pNextHook);
 		}
-		bRemoveTemp = TRUE;
+
+		// This is the last hook for this window: restore wnd proc
+		else
+		{
+			RemoveKey(hWnd);
+			SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)pHook->m_pOldWndProc);
+		}
 	}
 	else
 	{
-		// use actual file since it isn't modified
-		Checked::tcsncpy_s(szTempName, _countof(szTempName), m_strPathName, _TRUNCATE);
-	}
-#ifdef _UNICODE
-	char szTempNameA[_MAX_PATH];
-	_wcstombsz(szTempNameA, szTempName, _countof(szTempNameA));
-#endif
-
-	// build an appropriate title for the attachment
-	TCHAR szTitle[_MAX_PATH];
-	if (!m_strPathName.IsEmpty())
-		AfxGetFileName(m_strPathName, szTitle, _countof(szTitle));
-	else
-	{
-		Checked::tcsncpy_s(szTitle, _countof(szTitle), m_strTitle, _TRUNCATE);
-		if (CString(::PathFindExtension(m_strTitle)).GetLength() == 0) // no extension
+		// Hook to remove is in the middle: just remove from linked list
+		while (pHook->m_pNextHook != pUnHook)
 		{
-			// append the default suffix if there is one
-			CString strExt;
-			CDocTemplate* pTemplate = GetDocTemplate();
-			if (pTemplate != NULL &&
-				pTemplate->GetDocString(strExt, CDocTemplate::filterExt))
-			{
-				if( lstrlen(szTitle) + lstrlen(strExt) < _countof(szTitle) )
-				{
-					Checked::tcscat_s(szTitle, _countof(szTitle), strExt);
-				}
-			}
+			pHook = pHook->m_pNextHook;
 		}
+
+		ASSERT(pHook && pHook->m_pNextHook == pUnHook);
+		pHook->m_pNextHook = pUnHook->m_pNextHook;
 	}
-
-#ifdef _UNICODE
-	char szTitleA[_MAX_PATH];
-	_wcstombsz(szTitleA, szTitle, _countof(szTitleA));
-#endif
-
-	// prepare the file description (for the attachment)
-	MapiFileDesc fileDesc;
-	memset(&fileDesc, 0, sizeof(fileDesc));
-	fileDesc.nPosition = (ULONG)-1;
-#ifdef _UNICODE
-	fileDesc.lpszPathName = szTempNameA;
-	fileDesc.lpszFileName = szTitleA;
-#else
-	fileDesc.lpszPathName = szTempName;
-	fileDesc.lpszFileName = szTitle;
-#endif
-
-	// prepare the message (empty with 1 attachment)
-	MapiMessage message;
-	memset(&message, 0, sizeof(message));
-	message.nFileCount = 1;
-	message.lpFiles = &fileDesc;
-
-	// prepare for modal dialog box
-	AfxGetApp()->EnableModeless(FALSE);
-	HWND hWndTop;
-	CWnd* pParentWnd = CWnd::GetSafeOwner(NULL, &hWndTop);
-
-	// some extra precautions are required to use MAPISendMail as it
-	// tends to enable the parent window in between dialogs (after
-	// the login dialog, but before the send note dialog).
-	pParentWnd->SetCapture();
-	::SetFocus(NULL);
-	pParentWnd->m_nFlags |= WF_STAYDISABLED;
-
-	int nError = lpfnSendMail(0, (ULONG_PTR)pParentWnd->GetSafeHwnd(),
-		&message, MAPI_LOGON_UI|MAPI_DIALOG, 0);
-
-	// after returning from the MAPISendMail call, the window must
-	// be re-enabled and focus returned to the frame to undo the workaround
-	// done before the MAPI call.
-	::ReleaseCapture();
-	pParentWnd->m_nFlags &= ~WF_STAYDISABLED;
-
-	pParentWnd->EnableWindow(TRUE);
-	::SetActiveWindow(NULL);
-	pParentWnd->SetActiveWindow();
-	pParentWnd->SetFocus();
-	if (hWndTop != NULL)
-		::EnableWindow(hWndTop, TRUE);
-	AfxGetApp()->EnableModeless(TRUE);
-
-	if (nError != SUCCESS_SUCCESS &&
-		nError != MAPI_USER_ABORT && nError != MAPI_E_LOGIN_FAILURE)
-	{
-		AfxMessageBox(AFX_IDP_FAILED_MAPI_SEND);
-	}
-
-	// remove temporary file, if temporary file was used
-	if (bRemoveTemp)
-		CFile::Remove(szTempName);
 }
 
-void CDocument::OnUpdateFileSendMail(CCmdUI* pCmdUI)
+void CXTWindowMap::RemoveAll(HWND hWnd)
 {
-	ASSERT_VALID(this);
-
-	if (_afxIsMailAvail == (BOOL)-1)
+	CXTWndHook* pXTWndHook;
+	while ((pXTWndHook = Lookup(hWnd)) != NULL)
 	{
-		_afxIsMailAvail = ::GetProfileInt(_T("MAIL"), _T("MAPI"), 0) != 0 &&
-			SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0;
-	}
-
-	// enable the Send... menu item if available
-	pCmdUI->Enable(_afxIsMailAvail);
-	CMenu* pMenu = pCmdUI->m_pMenu;
-	if (!_afxIsMailAvail && pMenu != NULL)
-	{
-		// remove the Send... menu and surrounding separators
-		UINT nStateAbove = pMenu->GetMenuState(pCmdUI->m_nIndex-1, MF_BYPOSITION);
-		UINT nStateBelow = pMenu->GetMenuState(pCmdUI->m_nIndex+1, MF_BYPOSITION);
-		pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
-		if (nStateAbove & nStateBelow & MF_SEPARATOR)
-		{
-			// a separator must be removed since the Send... is gone
-			if (nStateAbove != (UINT)-1)
-				pMenu->RemoveMenu(pCmdUI->m_nIndex-1, MF_BYPOSITION);
-			else if (nStateBelow != (UINT)-1)
-				pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
-		}
+		pXTWndHook->HookWindow((HWND)NULL);
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// COleDocument MAPI support
-
-void COleDocument::OnFileSendMail()
+CXTWndHook* CXTWindowMap::Lookup(HWND hWnd)
 {
-	ASSERT_VALID(this);
-	ASSERT(m_bRemember);
-
-	LPSTORAGE lpOrigStg = m_lpRootStg;
-	m_lpRootStg = NULL;
-
-	TRY
-	{
-		m_bRemember = FALSE;
-		CDocument::OnFileSendMail();
-	}
-	CATCH_ALL(e)
-	{
-		m_lpRootStg = lpOrigStg;
-		m_bRemember = TRUE;
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	m_lpRootStg = lpOrigStg;
-	m_bRemember = TRUE;
+	CXTWndHook* pFound = NULL;
+	if (!CMapPtrToPtr::Lookup(hWnd, (void*&)pFound))
+		return NULL;
+	ASSERT_KINDOF(CXTWndHook, pFound);
+	return pFound;
 }
 
-
-#pragma warning(disable: 4074)
-#pragma init_seg(lib)
-
-PROCESS_LOCAL(_AFX_MAIL_STATE, _afxMailState)
-
-/////////////////////////////////////////////////////////////////////////////
+IMPLEMENT_DYNAMIC(CXTWindowMap, CMapPtrToPtr)

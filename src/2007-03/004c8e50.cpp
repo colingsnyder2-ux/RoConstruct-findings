@@ -1,91 +1,73 @@
-// from server: 80% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view MaterialFactory.cpp
+// roc-lib: rbxgs-dll roc_espclaude_4f8d4db74da0eac9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "MaterialFactory.h"
-#include "util/ContentProvider.h"
+#define _DLL
+#include <G3D/ReferenceCount.h>
+#include <map>
 
-static const float specular = 0.9f;
-static const float shiny = 50.0f;
-
-namespace RBX
+namespace G3D {
+class Vector3 {
+public:
+    float x, y, z;
+    Vector3() {}
+    Vector3(const Vector3& V) : x(V.x), y(V.y), z(V.z) {}
+    operator float*() { return (float*)this; }
+    operator const float*() const { return (const float*)this; }
+};
+class Vector2 {
+public:
+    float x, y;
+    Vector2() {}
+    Vector2(const Vector2& v) { x = v.x; y = v.y; }
+    operator float*() { return (float*)this; }
+    operator const float*() const { return (const float*)this; }
+};
+}
+namespace RBX {
+enum NormalId { NORM_X };
+namespace Render { class Mesh : public G3D::ReferenceCountedObject {}; }
+namespace View {
+class PBBMesh;
+template <class T, int N>
+class MeshFactory
 {
-	namespace View
-	{
-		MaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)
-		{
-			surfacesTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\surfaces.png"), true);
-			fileMeshTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\JohnTex.png"), false);
-			megaTexture = new MegaTextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\SurfacesStrip.png"));
-		}
-
-		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMaterial(Attributes attributes)
-		{
-			G3D::ReferenceCountedPointer<Render::Material> material;
-
-			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = database.find(attributes);
-			if (iter != database.end())
-			{
-				material = iter->second.createStrongPtr();
-			}
-
-			if (material.isNull())
-			{
-				G3D::Color3 color3 = attributes.color.color3();
-				G3D::ReferenceCountedPointer<Render::TextureProxy> surfacesTexture = getSurfacesTexture(color3);
-
-				material = new Render::Material;
-				if (attributes.transparency == 1.0f)
-				{
-					material->appendEmptyLevel();
-				}
-				else
-				{
-					material->appendLevel(surfacesTexture, G3D::Color3::WHITE, specular, shiny, attributes.reflectance, attributes.transparency);
-				}
-
-				database[attributes] = material;
-			}
-
-			return material;
-		}
-
-		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMegaMaterial(Attributes attributes)
-		{
-			Attributes filteredAttributes = {BrickColor::defaultColor(), attributes.transparency, attributes.reflectance};
-
-			G3D::ReferenceCountedPointer<Render::Material> material;
-
-			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = megaDatabase.find(filteredAttributes);
-			if (iter != megaDatabase.end())
-			{
-				material = iter->second.createStrongPtr();
-			}
-
-			if (material.isNull())
-			{
-				material = new Render::Material;
-				if (attributes.transparency == 1.0f)
-				{
-					material->appendEmptyLevel();
-				}
-				else
-				{
-					material->appendLevel(megaTexture, G3D::Color3::white(), specular, shiny, attributes.reflectance, attributes.transparency);
-				}
-
-				megaDatabase[filteredAttributes] = material;
-			}
-
-			return material;
-		}
-
-		G3D::ReferenceCountedPointer<Render::TextureProxy> MaterialFactory::getSurfacesTexture(G3D::Color3 tint)
-		{
-			return surfacesTexture->shade(tint, NULL);
-		}
-	}
+public:
+    class DecalKey
+    {
+    private:
+        G3D::Vector3 size; // 0x00
+        NormalId face;     // 0x0c
+    public:
+        bool operator<(const DecalKey& other) const
+        {
+            if (face < other.face)
+                return true;
+            if (face > other.face)
+                return false;
+            return size < other.size;
+        }
+    };
+    class TextureKey : protected DecalKey
+    {
+    private:
+        G3D::Vector2 studsPerTile; // 0x10
+    public:
+        bool operator<(const TextureKey& other) const
+        {
+            if (studsPerTile < other.studsPerTile)
+                return true;
+            if (studsPerTile > other.studsPerTile)
+                return false;
+            return DecalKey::operator<(other);
+        }
+    };
+    typedef std::map<TextureKey, G3D::ReferenceCountedPointer<Render::Mesh> > TextureCache;
+    static TextureCache textureCache;
+    static G3D::ReferenceCountedPointer<Render::Mesh>& get(const TextureKey& key) { return textureCache[key]; }
+};
+template class MeshFactory<PBBMesh, 4>;
+}
 }

@@ -1,23 +1,30 @@
-// from server: 83% by colin
-struct Sub {
-    char pad[0x228];
-    int field228;
-};
+// from server: 100% by tajop
+namespace RBX {
 
-struct Inner {
+struct CameraState {
     char pad[0x18c];
-    int field18c;
+    int cameraType;
 };
 
-struct S {
+struct ICameraOwner {
+    virtual void unused0();
+    virtual CameraState* getCamera();
+};
+
+struct Workspace {
+    char pad[0x228];
+    ICameraOwner owner;
+};
+
+struct AttachCameraCommand {
     char pad[0xc];
-    Sub* ptr;
-    bool f();
+    Workspace* workspace;
+    bool isChecked();
 };
 
-bool S::f() {
-    Sub* p = ptr;
-    int (__stdcall *fn)(int) = (int (__stdcall *)(int))(*(int*)((char*)p + 0x228));
-    int r = fn(*(int*)((char*)p + 0x228));
-    return ((Inner*)r)->field18c == 1;
+bool AttachCameraCommand::isChecked()
+{
+    return workspace->owner.getCamera()->cameraType == 1;
+}
+
 }

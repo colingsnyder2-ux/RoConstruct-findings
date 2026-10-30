@@ -1,14 +1,13 @@
-// from server: 35% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Common/XTPToolTipContext.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPToolTipContext.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPToolTipContext.cpp: implementation of the CXTPToolTipContext class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -43,7 +42,6 @@
 #include "XTPSystemHelpers.h"
 #include "XTPRichRender.h"
 #include "XTPResourceManager.h"
-#include "XTPMarkupRender.h"
 
 #ifdef _INC_COMDEF
 // Warning "ComDef.h" was included
@@ -107,8 +105,6 @@ CXTPToolTipContextToolTip::CXTPToolTipContextToolTip(CXTPToolTipContext* pContex
 	m_toolDelay.Reset();
 
 	m_pIcon = NULL;
-
-	m_bWindowRegion = FALSE;
 
 	m_nDelayTimer = 0;
 	m_dwLastTip = 0;
@@ -476,76 +472,54 @@ CSize CXTPToolTipContextToolTip::GetToolSize(TOOLITEM* lpToolInfo)
 	CString str = GetToolText(lpToolInfo);
 
 	if (str.IsEmpty())
-	{
-		dc.SelectObject(pOldFont);
 		return CSize(0);
-	}
 
 	int nMaxTipWidth = GetMaxTipWidth();
 
 	CRect rcMargin = m_pContext->GetMargin();
 	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
 
-	DWORD dwFlags = DT_NOPREFIX | DT_EXPANDTABS;
+	CRect rc(0, 0, nMaxTipWidth - szMargin.cx, 0);
+	dc.DrawText(str, rc, DT_NOPREFIX | DT_CALCRECT | DT_WORDBREAK);
+	CSize sz = rc.Size();
 
 	BOOL bDrawImage = m_pIcon != NULL;
 	BOOL bDrawTitle = !m_strTitle.IsEmpty();
 	BOOL bDrawImageTop = TRUE;
 	CSize szImage(0, 0);
-	CSize szTitle(0, 0);
-
-	if (bDrawTitle)
-	{
-		CXTPFontDC fntTitle(&dc, &m_pContext->m_fntTitle);
-
-		CRect rcTitle(0, 0, 0, 0);
-		dc.DrawText(m_strTitle, rcTitle, dwFlags | DT_CALCRECT | DT_SINGLELINE);
-
-		szTitle = CSize(rcTitle.Width() + 4, rcTitle.Height() + 10 + 10);
-	}
 
 	if (bDrawImage)
 	{
-		CSize szIcon(m_pIcon->GetWidth(), m_pIcon->GetHeight());
-		bDrawImageTop = (szIcon.cy <= 16);
+		szImage = CSize(m_pIcon->GetWidth(), m_pIcon->GetHeight());
+		bDrawImageTop = (szImage.cy <= 16);
 
 		if (bDrawImageTop)
 		{
 			if (!bDrawTitle)
 			{
-				szImage.cx = szIcon.cx + 3;
-			}
-			else
-			{
-				szTitle.cx += szIcon.cx + 1;
+				sz.cx += szImage.cx + 3;
 			}
 		}
 		else
 		{
-			szImage.cx = szIcon.cx + 5;
+			sz.cx += szImage.cx + 5;
 		}
-		szImage.cy = szIcon.cy;
+		sz.cy = max(sz.cy, szImage.cy);
 	}
-
-	CRect rcText(0, 0, nMaxTipWidth - szMargin.cx, 0);
-
-	if (bDrawTitle)
-		rcText.right = max(szTitle.cx, nMaxTipWidth - szMargin.cx) - (10 + 15);
-
-	dc.DrawText(str, rcText, dwFlags | DT_CALCRECT | DT_WORDBREAK);
-	dc.SelectObject(pOldFont);
-
-	CSize szText = rcText.Size();
-
-	CSize sz(0, 0);
-	sz.cy = max(szImage.cy, szText.cy);
-	sz.cx = szImage.cx + szText.cx;
 
 	if (bDrawTitle)
 	{
-		sz.cx = max(sz.cx + 10 + 15, szTitle.cx);
-		sz.cy += szTitle.cy;
+		CXTPFontDC fntTitle(&dc, &m_pContext->m_fntTitle);
+
+		CRect rcTitle(0, 0, nMaxTipWidth - szMargin.cx - 25, 0);
+		dc.DrawText(m_strTitle, rcTitle, DT_NOPREFIX | DT_CALCRECT | DT_SINGLELINE);
+
+		sz.cy += rcTitle.Height() + 10 + 10;
+		sz.cx = max(sz.cx + 10 + 15, min(nMaxTipWidth - szMargin.cx, rcTitle.Width() + 4) + (bDrawImage && bDrawImageTop ? szImage.cx + 1: 0));
+
 	}
+
+	dc.SelectObject(pOldFont);
 
 	sz += szMargin;
 
@@ -657,39 +631,6 @@ int CXTPToolTipContextToolTip::GetCursorHeight() const
 	return MulDiv(i + 1, nBitSize, (int)bm.bmWidth) - (int)iconInfo.yHotspot;
 }
 
-void CXTPToolTipContextToolTip::SetRoundRectRegion(CWnd* pWnd)
-{
-	CXTPWindowRect rc(pWnd);
-	rc.OffsetRect(-rc.TopLeft());
-
-	int cx = rc.Width(), cy = rc.Height();
-
-	RECT rgn[] =
-	{
-		{1, 0, cx - 1, 1}, {0, 1, cx, cy - 1}, {1, cy - 1, cx - 1, cy}
-	};
-
-	int nSizeData = sizeof(RGNDATAHEADER) + sizeof(rgn);
-
-	RGNDATA* pRgnData = (RGNDATA*)malloc(nSizeData);
-	if (!pRgnData)
-		return;
-	MEMCPY_S(&pRgnData->Buffer, (void*)&rgn, sizeof(rgn));
-
-	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
-	pRgnData->rdh.iType = RDH_RECTANGLES;
-	pRgnData->rdh.nCount = sizeof(rgn) / sizeof(RECT);
-	pRgnData->rdh.nRgnSize = 0;
-	pRgnData->rdh.rcBound = CRect(0, 0, cx, cy);
-
-	CRgn rgnResult;
-	VERIFY(rgnResult.CreateFromData(NULL, nSizeData, pRgnData));
-
-	free(pRgnData);
-
-	pWnd->SetWindowRgn((HRGN)rgnResult.Detach(), FALSE);
-	m_bWindowRegion = TRUE;
-}
 
 void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
 {
@@ -706,11 +647,6 @@ void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
 		if (m_hWnd)
 		{
 			SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-			if (m_bWindowRegion)
-			{
-				SetWindowRgn(NULL, FALSE);
-				m_bWindowRegion = FALSE;
-			}
 		}
 
 		if (pVisibleTool)
@@ -746,22 +682,7 @@ void CXTPToolTipContextToolTip::SetVisibleTool(TOOLITEM* pVisibleTool)
 			EnsureVisible(rcToolTip);
 
 			SetWindowPos(&CWnd::wndTop, rcToolTip.left, rcToolTip.top,
-				rcToolTip.Width(), rcToolTip.Height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-
-			UINT_PTR id = pVisibleTool->uId;
-			NMHDR hdr = {0};
-			hdr.hwndFrom = m_hWnd;
-			hdr.idFrom = pVisibleTool->uId;
-			hdr.code = TTN_SHOW;
-			::SendMessage(pVisibleTool->hwnd, WM_NOTIFY, id, (LPARAM)&hdr);
-
-			if (GetStyle() & XTP_TTS_OFFICE2007FRAME)
-			{
-				SetRoundRectRegion(this);
-			}
-
-			SetWindowPos(0, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
-
+				rcToolTip.Width(), rcToolTip.Height(), SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
 			Invalidate(FALSE);
 
 			HookMouseMove(TRUE);
@@ -843,7 +764,7 @@ void CXTPToolTipContextToolTip::DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect 
 	rc.DeflateRect(m_pContext->GetMargin());
 	rc.DeflateRect(3, 3, 3, 3);
 
-	DWORD dwFlags = DT_NOPREFIX | DT_EXPANDTABS;
+	DWORD dwFlags = DT_NOPREFIX;
 	BOOL bLayoutRTL = lpToolInfo->hwnd && GetWindowLong(lpToolInfo->hwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL;
 
 	if (bLayoutRTL)
@@ -908,37 +829,12 @@ void CXTPToolTipContextToolTip::DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect 
 
 void CXTPToolTipContextToolTip::DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
 {
-	if (GetStyle() & XTP_TTS_OFFICE2007FRAME)
-	{
-		COLORREF clrLight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipLight"));
-		COLORREF clrDark = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipDark"));
+	pDC->FillSolidRect(rc, m_pContext->GetTipBkColor());
 
-		if (clrLight == COLORREF_NULL) clrLight = RGB(255, 255, 255);
-		if (clrDark == COLORREF_NULL) clrDark = RGB(201, 217, 239);
-
-		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
-
-		CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("TOOLTIPFRAME"));
-		if (pImage)
-		{
-			pImage->DrawImage(pDC, rc, pImage->GetSource(0, 1), CRect(3, 3, 3, 3), 0xFF00FF);
-		}
-		else
-		{
-			COLORREF clrBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipBorder"));
-			if (clrBorder == COLORREF_NULL) clrBorder = RGB(118, 118, 118);
-			pDC->Draw3dRect(rc, clrBorder, clrBorder);
-		}
-	}
+	if (GetStyle() & XTP_TTS_OFFICEFRAME)
+		pDC->Draw3dRect(rc, GetSysColor(COLOR_3DFACE), 0);
 	else
-	{
-		pDC->FillSolidRect(rc, m_pContext->GetTipBkColor());
-
-		if (GetStyle() & XTP_TTS_OFFICEFRAME)
-			pDC->Draw3dRect(rc, GetSysColor(COLOR_3DFACE), 0);
-		else
-			pDC->Draw3dRect(rc, 0, 0);
-	}
+		pDC->Draw3dRect(rc, 0, 0);
 }
 
 void CXTPToolTipContextToolTip::OnPaint()
@@ -1063,6 +959,32 @@ public:
 	}
 };
 
+class CXTPToolTipContext::COffice2007ToolTip : public CXTPToolTipContextToolTip
+{
+public:
+	COffice2007ToolTip(CXTPToolTipContext* pContext)
+		: CXTPToolTipContextToolTip(pContext)
+	{
+
+	}
+
+	void DrawBackground(CDC* pDC, TOOLITEM* /*lpToolInfo*/, CRect rc)
+	{
+		COLORREF clrLight = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipLight"));
+		COLORREF clrDark = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipDark"));
+		COLORREF clrBorder = XTPOffice2007Images()->GetImageColor(_T("Window"), _T("TooltipBorder"));
+
+		if (clrLight == COLORREF_NULL) clrLight = RGB(255, 255, 255);
+		if (clrDark == COLORREF_NULL) clrDark = RGB(201, 217, 239);
+		if (clrBorder == COLORREF_NULL) clrBorder = RGB(118, 118, 118);
+
+		XTPDrawHelpers()->GradientFill(pDC, rc, clrLight, clrDark, FALSE);
+
+		pDC->Draw3dRect(rc, clrBorder, clrBorder);
+
+	}
+};
+
 //////////////////////////////////////////////////////////////////////////
 // CXTPToolTipContext::CRichEditToolTip
 
@@ -1106,7 +1028,7 @@ CSize CXTPToolTipContext::CRichEditToolTip::GetToolSize(TOOLITEM* lpToolInfo)
 	if (m_pContext->GetFont()->GetLogFont(&lf))
 	{
 		cf.yHeight = -MulDiv(lf.lfHeight, 1440, ::GetDeviceCaps(dc, LOGPIXELSY));
-		WCSNCPY_S(cf.szFaceName, LF_FACESIZE, XTP_CT2CW(lf.lfFaceName), LF_FACESIZE);
+		WCSNCPY_S(cf.szFaceName, XTP_CT2CW(lf.lfFaceName), LF_FACESIZE);
 		cf.dwMask |= CFM_FACE | CFM_SIZE;
 	}
 
@@ -1130,75 +1052,6 @@ void CXTPToolTipContext::CRichEditToolTip::DrawEntry(CDC* pDC, TOOLITEM* /*lpToo
 	rc.DeflateRect(3, 3, 3, 3);
 
 	m_render.DrawText(pDC, rc);
-}
-
-class CXTPToolTipContext::CMarkupToolTip : public CXTPToolTipContextToolTip
-{
-public:
-	CMarkupToolTip(CXTPToolTipContext* pContext)
-		: CXTPToolTipContextToolTip(pContext)
-	{
-		m_pUIElement = NULL;
-		m_pMarkupContext = XTPMarkupCreateContext();
-	}
-
-	~CMarkupToolTip()
-	{
-		XTPMarkupReleaseElement(m_pUIElement);
-		XTPMarkupReleaseContext(m_pMarkupContext);
-	}
-
-protected:
-	virtual void DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc);
-	virtual CSize GetToolSize(TOOLITEM* lpToolInfo);
-
-protected:
-	CXTPMarkupUIElement* m_pUIElement;
-	CXTPMarkupContext* m_pMarkupContext;
-};
-
-CSize CXTPToolTipContext::CMarkupToolTip::GetToolSize(TOOLITEM* lpToolInfo)
-{
-	XTPMarkupReleaseElement(m_pUIElement);
-
-	CString sText = GetToolText(lpToolInfo);
-	if (sText.IsEmpty())
-		return CSize(0);
-
-	XTPMarkupSetDefaultFont(m_pMarkupContext, (HFONT)m_pContext->GetFont()->GetSafeHandle(), m_pContext->GetTipTextColor());
-
-	m_pUIElement = XTPMarkupParseText(m_pMarkupContext, sText);
-
-	if (!m_pUIElement)
-	{
-		return CXTPToolTipContextToolTip::GetToolSize(lpToolInfo);
-	}
-
-	CRect rcMargin = m_pContext->GetMargin();
-	CSize szMargin(3 + rcMargin.left + rcMargin.right + 3, 3 + rcMargin.top + rcMargin.bottom + 3);
-
-	CSize size = XTPMarkupMeasureElement(m_pUIElement, GetMaxTipWidth() - szMargin.cx);
-
-	size += szMargin;
-
-	return size;
-}
-
-void CXTPToolTipContext::CMarkupToolTip::DrawEntry(CDC* pDC, TOOLITEM* lpToolInfo, CRect rc)
-{
-	if (m_pUIElement)
-	{
-		CRect rcMargin = m_pContext->GetMargin();
-
-		CRect rcText(rc);
-		rcText.DeflateRect(3 + rcMargin.left, 3 + rcMargin.top, rcMargin.right + 3, rcMargin.bottom + 3);
-
-		XTPMarkupRenderElement(m_pUIElement, pDC->GetSafeHdc(), rcText);
-	}
-	else
-	{
-		CXTPToolTipContextToolTip::DrawEntry(pDC, lpToolInfo, rc);
-	}
 }
 
 #ifndef _XTP_EXCLUDE_HTML
@@ -1687,7 +1540,6 @@ CXTPToolTipContext::CXTPToolTipContext()
 		sizeof(NONCLIENTMETRICS), &ncm, 0));
 
 	ncm.lfStatusFont.lfWeight = FW_NORMAL;
-	ncm.lfStatusFont.lfCharSet = XTPResourceManager()->GetFontCharset();
 	m_fnt.CreateFontIndirect(&ncm.lfStatusFont);
 
 	ncm.lfStatusFont.lfWeight = FW_BOLD;
@@ -1784,8 +1636,7 @@ void CXTPToolTipContext::SetStyle(XTPToolTipStyle toolStyle)
 		m_toolStyle = toolStyle;
 		SAFE_DELETEWINDOW(m_pToolTip);
 
-		ModifyToolTipStyle(XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW, m_toolStyle == xtpToolTipOffice ? XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW : 0);
-		ModifyToolTipStyle(XTP_TTS_OFFICE2007FRAME, m_toolStyle == xtpToolTipOffice2007 ? XTP_TTS_OFFICE2007FRAME : 0);
+		ModifyToolTipStyle(m_toolStyle == xtpToolTipOffice ? 0: XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW, m_toolStyle == xtpToolTipOffice ? XTP_TTS_OFFICEFRAME | XTP_TTS_NOSHADOW : 0);
 	}
 }
 
@@ -1820,7 +1671,7 @@ void CXTPToolTipContext::SetTipBkColor(COLORREF clr)
 
 void CXTPToolTipContext::ModifyToolTipStyle(DWORD dwRemove, DWORD dwAdd)
 {
-	DWORD dwStyle = (m_dwStyle & ~dwRemove) | dwAdd;
+	DWORD dwStyle = (m_dwStyle | dwAdd) & ~dwRemove;
 
 	if (m_dwStyle != dwStyle)
 	{
@@ -1832,7 +1683,7 @@ void CXTPToolTipContext::ModifyToolTipStyle(DWORD dwRemove, DWORD dwAdd)
 COLORREF CXTPToolTipContext::GetTipTextColor() const
 {
 	return m_clrTipTextColor != COLORREF_NULL ? m_clrTipTextColor :
-		m_dwStyle & XTP_TTS_OFFICE2007FRAME ?  RGB(76, 76, 76) : GetXtremeColor(COLOR_INFOTEXT);
+		m_toolStyle == xtpToolTipOffice2007 ?  RGB(76, 76, 76) : GetXtremeColor(COLOR_INFOTEXT);
 }
 
 void CXTPToolTipContext::SetTipTextColor(COLORREF clr)
@@ -1931,15 +1782,12 @@ CWnd* CXTPToolTipContext::CreateToolTip(CWnd* /*pOwner*/)
 		return new CLunaToolTip(this);
 
 	case xtpToolTipOffice2007:
-		return new CXTPToolTipContextToolTip(this);
+		return new COffice2007ToolTip(this);
 
 #ifndef _XTP_EXCLUDE_HTML
 	case xtpToolTipHTML:
 		return new CHTMLToolTip(this);
 #endif
-
-	case xtpToolTipMarkup:
-		return new CMarkupToolTip(this);
 	}
 
 	return new CStandardToolTip();
@@ -1957,16 +1805,11 @@ void CXTPToolTipContext::CancelToolTips()
 		m_pToolTip->SendMessage(TTM_ACTIVATE, FALSE);
 }
 
-INT_PTR CXTPToolTipContext::OnToolHitTest(CWnd* pWnd, CPoint point, TOOLINFO* pToolInfo)
-{
-	return pWnd->OnToolHitTest(point, pToolInfo);
-}
-
 void CXTPToolTipContext::FilterToolTipMessageHelper(CWnd* pWndHost, MSG* pMsg, BOOL bIgnoreFlags)
 {
 	// this CWnd has tooltips enabled
 	UINT message = pMsg->message;
-	if ((message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE || message == WM_MOUSELEAVE ||
+	if ((message == WM_MOUSEMOVE || message == WM_NCMOUSEMOVE ||
 		message == WM_LBUTTONUP || message == WM_RBUTTONUP ||
 		message == WM_MBUTTONUP) &&
 		(GetKeyState(VK_LBUTTON) >= 0 && GetKeyState(VK_RBUTTON) >= 0 &&
@@ -2072,7 +1915,7 @@ void CXTPToolTipContext::FilterToolTipMessageHelper(CWnd* pWndHost, MSG* pMsg, B
 
 		tiHit.cbSize = m_bShowTitleAndDescription || m_bShowImage ? sizeof(XTP_TOOLTIP_TOOLINFO_EX) : sizeof(XTP_TOOLTIP_TOOLINFO);
 		tiHit.pToolInfo = &tc;
-		INT_PTR nHit = OnToolHitTest(pWndHost, point, (TOOLINFO*)&tiHit);
+		INT_PTR nHit = pWndHost->OnToolHitTest(point, (TOOLINFO*)&tiHit);
 
 		if (m_bShowTitleAndDescription && tc.lpszDescription &&
 			tc.lpszTitle && (_tcscmp(tc.lpszDescription, tc.lpszTitle) == 0))
@@ -2104,7 +1947,7 @@ void CXTPToolTipContext::FilterToolTipMessageHelper(CWnd* pWndHost, MSG* pMsg, B
 
 				VERIFY(pToolTip->SendMessage(TTM_ADDTOOL, 0, (LPARAM)&ti));
 
-				if ((m_toolStyle != xtpToolTipRTF && m_toolStyle != xtpToolTipHTML && m_toolStyle != xtpToolTipMarkup) && ((m_dwComCtlVersion >= VERSION_IE5) || (m_toolStyle != xtpToolTipStandard)))
+				if ((m_toolStyle != xtpToolTipRTF && m_toolStyle != xtpToolTipHTML) && ((m_dwComCtlVersion >= VERSION_IE5) || (m_toolStyle != xtpToolTipStandard)))
 				{
 					if (m_bShowTitleAndDescription && tc.lpszDescription && tc.lpszTitle)
 					{

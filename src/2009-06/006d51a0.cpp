@@ -1,10 +1,11 @@
-// from server: 23% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Face.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_face_project_family_daa8904a9d319c98.cpp
 
 // Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
 #include "util/Face.h"
 #include "util/Math.h"
 
@@ -134,28 +135,27 @@ namespace RBX
 
 	Face Face::projectOverlapOnMe(const Face& other) const
 	{
-		G3D::Vector3 normal = getU();
-		G3D::Vector3 v2 = getV();
+		const Face& f0 = (*this);
+		const Face& f1 = other;
 
+		//RBXASSERT(Face::hasOverlap(f0, f1, 1e-6f));
+		G3D::Vector3 normal[2];
 		float minL[2];
 		float maxL[2];
-		for (int i = 0; i < 2; ++i)
-		{
-			float f0min, f0max;
-			this->minMax(this->c0, normal, f0min, f0max);
 
-			float f1min, f1max;
-			other.minMax(this->c0, normal, f1min, f1max);
-
-			minL[i] = G3D::min(f0min, f1min);
-			maxL[i] = G3D::max(f0max, f1max);
+		normal[0] = f0.getU();
+		normal[1] = f0.getV();
+		for (int i = 0; i < 2; ++i) {
+			float f0min, f0max, f1min, f1max;
+			f0.minMax(f0.c0, normal[i], f0min, f0max);
+			f1.minMax(f0.c0, normal[i], f1min, f1max);
+			minL[i] = std::max(f0min, f1min);
+			maxL[i] = std::min(f0max, f1max);
 		}
-
-		return Face(
-			(normal * minL[1]) + (v2 * minL[1]) + this->c0,
-			(normal * minL[1]) + (v2 * minL[0]) + this->c0,
-			(normal * maxL[1]) + (v2 * minL[0]) + this->c0,
-			(normal * maxL[1]) + (v2 * minL[1]) + this->c0);
+		return Face(	f0.c0 + (normal[0] * minL[0] + normal[1] * minL[1]),
+						f0.c0 + (normal[0] * minL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * minL[1])		);
 	}
 
 	Face Face::fromExtentsSide(const Extents& e, NormalId faceId)

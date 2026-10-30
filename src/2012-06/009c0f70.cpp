@@ -1,14 +1,13 @@
-// from server: 54% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarController.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTTreeBase.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarController.cpp : implementation file
+// XTTreeBase.cpp : implementation file
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,35 +25,14 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
-
-#include "Common/XTPNotifyConnection.h"
+#include <windowsx.h>
 #include "Common/XTPColorManager.h"
-#include "Common/XTPSmartPtrInternalT.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPSystemHelpers.h"
 
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-#include "XTPCalendarNotifications.h"
-#include "XTPCalendarPtrCollectionT.h"
+#include "XTVC50Helpers.h"
+#include "XTTreeBase.h"
 
-#include "XTPCalendarEvent.h"
-#include "XTPCalendarEvents.h"
-
-#include "XTPCalendarView.h"
-#include "XTPCalendarWeekView.h"
-#include "XTPCalendarMonthView.h"
-#include "XTPCalendarDayView.h"
-#include "XTPCalendarTimeLineView.h"
-
-#include "XTPCalendarControl.h"
-
-#include "XTPCalendarResource.h"
-
-#include "XTPDatePickerControl.h"
-#include "XTPDatePickerPaintManager.h"
-#include "XTPDatePickerNotifications.h"
-
-#include "XTPCalendarController.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,1065 +40,1978 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// DBG
-#define DBG_TRACE_DP_NF
-#define DBG_TRACE_DP_TIMER
-
-//#define DBG_TRACE_DP_NF  TRACE
-//#define DBG_TRACE_DP_TIMER     TRACE
-// DBG
-
-/////////////////////////////////////////////////////////////////////////////
-#define XTP_CC_DONT_SCROLL_DP 1234567890
-
-#define XTP_CC_REFRESH_DAYS_STEP_TIMER_MS 120
-#define XTP_CC_REFRESH_DAYS_STEP_DAYS     3
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCalendarController
-
-const int nXTPMaxDayViewDays = 6;
-
-////////////////////////////////////////////////////////////////////////////
-CXTPCalendarController::CXTPDayInfoCache::CXTPMapTimers CXTPCalendarController::CXTPDayInfoCache::m_mapTimers;
-
-IMPLEMENT_DYNCREATE(CXTPCalendarController, CCmdTarget)
-//////////////////////////////////////////////////////////////////////////
-CXTPCalendarController::CXTPDayInfoCache::CXTPDayInfoCache()
-{
-	// 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001
-	m_mapDaysInfo.InitHashTable(503, FALSE);
-	m_mapDaysToRefresh.InitHashTable(503, FALSE);
-
-	m_pOwner = NULL;
-
-	m_uTimerID = 0;
-	m_dwLastRedrawTime = 0;
-	m_dwLastSelfClearTime = 0;
-	m_dwWaitingDataTime = 0;
-
-	m_uActivePriority = 1;
-}
-
-CXTPCalendarController::CXTPDayInfoCache::~CXTPDayInfoCache()
-{
-	KillTimer();
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::KillTimer()
-{
-	if (m_uTimerID)
-	{
-		::KillTimer(NULL, m_uTimerID);
-		m_mapTimers.RemoveKey(m_uTimerID);
-		m_uTimerID = 0;
-	}
-}
-
-BOOL CXTPCalendarController::CXTPDayInfoCache::HasEvents(DATE dtDay)
-{
-	XTPDayInfo tmpDI;
-	if (m_mapDaysInfo.Lookup((long)dtDay, tmpDI))
-	{
-		UpdateDayInfo(dtDay, tmpDI.bHasEvents);
-		return tmpDI.bHasEvents;
-	}
-	else
-	{
-		_RequestToRefreshDays(dtDay, dtDay, m_uActivePriority);
-	}
-	return FALSE;
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::Init(CXTPCalendarController* pOwner)
-{
-	ASSERT(pOwner);
-	m_pOwner = pOwner;
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::Clear()
-{
-	m_mapDaysInfo.RemoveAll();
-	m_mapDaysToRefresh.RemoveAll();
-	m_uActivePriority = 1;
-
-	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - CLEAR \n"));
-}
-
-UINT CXTPCalendarController::CXTPDayInfoCache::UpActivePriority()
-{
-	return ++m_uActivePriority;
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::UpdateDayInfo(DATE dtDay, BOOL bHasEvents)
-{
-	XTPDayInfo tmpDI = {bHasEvents, (DATE)CXTPCalendarUtils::GetCurrentTime()};
-	m_mapDaysInfo[(long)dtDay] = tmpDI;
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::ClearDays(COleDateTime dtDayFrom, COleDateTime dtDayTo)
-{
-	long nDay = min((long)dtDayFrom, (long)dtDayTo);
-	long nDay2 = max((long)dtDayFrom, (long)dtDayTo);
-	for (; nDay <= nDay2; nDay++)
-	{
-		m_mapDaysInfo.RemoveKey(nDay);
-	}
-
-	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - Clear days (%s - %s) \n"), (LPCTSTR)dtDayFrom.Format(), (LPCTSTR)dtDayTo.Format());
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::RequestToRefreshDays(COleDateTime dtDayFrom, COleDateTime dtDayTo)
-{
-	m_uActivePriority++;
-
-	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - RequestToRefreshDays (%s - %s). ActivePriority = %d \n"),
-					(LPCTSTR)dtDayFrom.Format(), (LPCTSTR)dtDayTo.Format(), m_uActivePriority);
-
-	_RequestToRefreshDays(dtDayFrom, dtDayTo, m_uActivePriority);
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::_RequestToRefreshDays(COleDateTime dtDayFrom, COleDateTime dtDayTo, UINT uPriority)
-{
-	ASSERT(m_pOwner);
-	if (!m_pOwner)
-	{
-		return;
-	}
-
-	long nDay = min((long)dtDayFrom, (long)dtDayTo);
-	long nDay2 = max((long)dtDayFrom, (long)dtDayTo);
-
-	// WARNING! - Ooo... The days range is too large!
-	ASSERT(nDay2 - nDay < 10*1000);
-
-	for (; nDay <= nDay2; nDay++)
-	{
-		m_mapDaysToRefresh[nDay] = uPriority;
-	}
-
-	if (m_mapDaysToRefresh.GetCount() && m_uTimerID == 0)
-	{
-		UINT uTimeOut = (UINT)m_pOwner->m_nBoldDaysIdleStepTime_ms;
-
-		m_uTimerID = ::SetTimer(NULL, 0, uTimeOut, OnTimerCallback);
-		m_mapTimers[m_uTimerID] = this;
-
-		DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - _RequestToRefreshDays, SetTimer (ID = %d) \n"), m_uTimerID);
-	}
-}
-
-void CXTPCalendarController::CXTPDayInfoCache::OnRefreshDays(int nDaysCountToRefresh)
-{
-	ASSERT(m_pOwner);
-
-	if (!XTP_SAFE_GET1(m_pOwner, m_pResourcesNf, NULL))
-	{
-		if (!m_dwWaitingDataTime)
-		{
-			m_dwWaitingDataTime = GetTickCount();
-			DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, Start Wait for data\n"));
-		}
-
-		if (abs((long)(GetTickCount() - m_dwWaitingDataTime)) >= 5000)
-		{
-			m_dwWaitingDataTime = 0;
-
-			if (m_uTimerID)
-			{
-				DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, KillTimer (ID = %d) \n"), m_uTimerID);
-				DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, end Wait for data\n"));
-
-				KillTimer();
-
-				OnSelfClearOld();
-			}
-		}
-		return;
-	}
-	else
-	{
-		if (m_dwWaitingDataTime)
-		{
-			DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, end Wait for data\n"));
-		}
-		m_dwWaitingDataTime = 0;
-	}
-
-	//***************************************************
-	for (int i = 0; i < nDaysCountToRefresh; i++)
-	{
-		long nDay_min = LONG_MAX;
-		UINT uPriority_max = 0;
-
-		POSITION pos = m_mapDaysToRefresh.GetStartPosition();
-		while (pos)
-		{
-			long nDay = 0;
-			UINT uPriority = 0;
-			m_mapDaysToRefresh.GetNextAssoc(pos, nDay, uPriority);
-
-			if (uPriority == uPriority_max && nDay < nDay_min ||
-				uPriority > uPriority_max)
-			{
-				uPriority_max = uPriority;
-				nDay_min = nDay;
-			}
-		}
-
-		if (nDay_min < LONG_MAX)
-		{
-			m_mapDaysToRefresh.RemoveKey(nDay_min);
-
-			COleDateTime dtDay((DATE)nDay_min);
-			BOOL bHasEvents = XTP_SAFE_GET1(m_pOwner, _HasEvents(dtDay), FALSE);
-
-			UpdateDayInfo(dtDay, bHasEvents);
-		}
-	}
-	//***************************************************
-
-	if (m_mapDaysToRefresh.GetCount() == 0 && m_uTimerID)
-	{
-		DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, KillTimer (ID = %d) \n"), m_uTimerID);
-		DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - Days In Cache %d \n"), m_mapDaysInfo.GetCount());
-
-		KillTimer();
-
-		OnSelfClearOld();
-	}
-
-	if (abs((long)(GetTickCount() - m_dwLastRedrawTime)) >= 500 || m_uTimerID == 0)
-	{
-		XTP_SAFE_CALL2(m_pOwner, m_pDatePickerCtrl, RedrawControl());
-		m_dwLastRedrawTime = GetTickCount();
-	}
-}
-void CXTPCalendarController::CXTPDayInfoCache::OnSelfClearOld()
-{
-
-#ifdef _DEBUG
-	int nUpdateTime_ms = 20 * 1000;
-	COleDateTimeSpan spCachePeriod(0, 0, 1, 0); // 1 min
-#else
-	int nUpdateTime_ms = 5 * 60 * 1000; // 5 min
-	COleDateTimeSpan spCachePeriod(0, 1, 0, 0); // 1 hour
+#ifndef SCROLL_TIMER_PERIOD
+#define SCROLL_TIMER_PERIOD 75
 #endif
 
-	if (abs((long)(GetTickCount() - m_dwLastSelfClearTime)) < nUpdateTime_ms)
-	{
-		return;
-	}
-	m_dwLastSelfClearTime = ::GetTickCount();
+#ifndef HOVER_TIMER_PERIOD
+#define HOVER_TIMER_PERIOD  85
+#endif
 
-	COleDateTime dtOldTime = CXTPCalendarUtils::GetCurrentTime();
-	dtOldTime -= spCachePeriod;
+#ifndef COLOR_HOTLIGHT
+#define COLOR_HOTLIGHT      26
+#endif // COLOR_HOTLIGHT
 
-	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnSelfClear, Start. Days In Cache %d \n"), m_mapDaysInfo.GetCount());
-
-	POSITION pos = m_mapDaysInfo.GetStartPosition();
-	while (pos)
-	{
-		long nDay = 0;
-		XTPDayInfo tmpDI;
-
-		m_mapDaysInfo.GetNextAssoc(pos, nDay, tmpDI);
-		if (tmpDI.dtLastAccessTime < dtOldTime)
-		{
-			m_mapDaysInfo.RemoveKey(nDay);
-		}
-	}
-
-	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnSelfClear, End. Days In Cache %d \n"), m_mapDaysInfo.GetCount());
-}
-
-VOID CALLBACK CXTPCalendarController::CXTPDayInfoCache::OnTimerCallback(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	UNREFERENCED_PARAMETER(hwnd);
-	UNREFERENCED_PARAMETER(uMsg);
-	UNREFERENCED_PARAMETER(dwTime);
-
-	CXTPDayInfoCache* pThis = m_mapTimers[idEvent];
-	ASSERT(pThis && pThis->m_pOwner);
-
-	if (pThis && pThis->m_pOwner)
-	{
-		//***********************
-		SAFE_MANAGE_STATE(pThis->m_pOwner->m_pModuleState);
-		//***********************
-
-		pThis->OnRefreshDays(pThis->m_pOwner->m_nBoldDaysPerIdleStep);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-
-CXTPCalendarController::CXTPCalendarController()
-{
-	m_pSink = new CXTPNotifySink();
-
-	m_pCalendarCtrl = NULL;
-	m_pDatePickerCtrl = NULL;
-	m_bAdjustingView = FALSE;
-
-	m_bBoldDaysWithEvents = TRUE;
-
-	m_bBoldDaysOnIdle = TRUE;
-	m_nBoldDaysPerIdleStep = XTP_CC_REFRESH_DAYS_STEP_DAYS;
-	m_nBoldDaysIdleStepTime_ms = XTP_CC_REFRESH_DAYS_STEP_TIMER_MS;
-
-	m_bUseActiveViewResoucesForBold = FALSE;
-
-	m_pResourcesNf = NULL;
-	m_eLastActiveView = -1;
-
-	m_cnidEventAdded = 0;
-	m_cnidEventChanged = 0;
-	m_cnidEventDeleted = 0;
-
-	m_DayInfoCache.Init(this);
-}
-
-CXTPCalendarController::~CXTPCalendarController()
-{
-	CMDTARGET_RELEASE(m_pCalendarCtrl);
-	CMDTARGET_RELEASE(m_pDatePickerCtrl);
-	CMDTARGET_RELEASE(m_pResourcesNf);
-
-	m_pSink->Delete();
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPCalendarController message handlers
+// CXTTreeBase
 
-void CXTPCalendarController::AdviseToNotifications()
+CXTTreeBase::CXTTreeBase()
+: m_hSelect(NULL)
+, m_bMultiSelect(false)
+, m_bBandLabel(true)
+, m_bActionDone(false)
+, m_bOkToEdit(true)
+, m_htiEdit(NULL)
+, m_htiLast(NULL)
 {
-	m_pSink->UnadviseAll();
+	m_pTreeCtrl = NULL;
+}
 
-	m_cnidEventAdded = 0;
-	m_cnidEventChanged = 0;
-	m_cnidEventDeleted = 0;
+CXTTreeBase::~CXTTreeBase()
+{
+}
 
-	CMDTARGET_RELEASE(m_pResourcesNf);
+/////////////////////////////////////////////////////////////////////////////
+// CXTTreeBase message handlers
 
-	// Advise to Calendar notifications
-	if (m_pCalendarCtrl)
+void CXTTreeBase::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// If multiselect control, process possible left
+	// click drag selection.
+	if (m_bMultiSelect)
 	{
-		CXTPNotifyConnection* pConnection = m_pCalendarCtrl ? m_pCalendarCtrl->GetConnection() : NULL;
-		ASSERT(pConnection);
+		UINT nHitFlags = 0;
 
-		if (!pConnection)
+		HTREEITEM hItemHit = m_pTreeCtrl->HitTest(point, &nHitFlags);
+		HTREEITEM hItemSel = m_pTreeCtrl->GetSelectedItem();
+
+		// if expanding/contracting call base class.
+		if ((nHitFlags & (TVHT_ONITEMBUTTON | TVHT_ONITEMSTATEICON)) != 0)
 		{
+			m_pTreeCtrl->Default();
 			return;
 		}
 
-		m_pSink->Advise(pConnection, XTP_NC_CALENDARVIEWWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarView));
-		m_pSink->Advise(pConnection, XTP_NC_CALENDAROPTIONSWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarOptionsChanged));
-		m_pSink->Advise(pConnection, XTP_NC_CALENDAR_RESOURCES_WHERE_CHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarResourcesChanged));
-		m_pSink->Advise(pConnection, XTP_NC_CALENDAR_THEME_CHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarThemeChanged));
-	}
-
-	// Advise to Date Picker notifications
-	if (m_pDatePickerCtrl)
-	{
-		CXTPNotifyConnection* pConnection = m_pDatePickerCtrl ? m_pDatePickerCtrl->GetConnection() : NULL;
-		ASSERT(pConnection);
-
-		if (!pConnection)
+		if (HasEditLabels())
 		{
-			return;
-		}
-
-		m_pSink->Advise(pConnection, XTP_NC_DATEPICKERBUTTONCLICKED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_DatePicker));
-		m_pSink->Advise(pConnection, XTP_NC_DATEPICKERSELECTIONCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_DatePicker));
-		m_pSink->Advise(pConnection, XTP_NC_DATEPICKERBEFOREGOMODAL, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_DatePicker));
-		m_pSink->Advise(pConnection, XTP_NC_DATEPICKERMONTHCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_DatePicker));
-		m_pSink->Advise(pConnection, XTP_NC_DATEPICKERGETDAYMETRICS, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_DtPickGetItemMetrics));
-	}
-}
-
-void CXTPCalendarController::_AdviseToDataChanged()
-{
-	ASSERT(m_pResourcesNf);
-	if (!m_pResourcesNf)
-	{
-		return;
-	}
-
-	CXTPNotifyConnection* pConnection = m_pResourcesNf->GetConnection();
-	ASSERT(pConnection);
-
-	if (!pConnection)
-	{
-		return;
-	}
-
-	m_cnidEventAdded = m_pSink->Advise(pConnection, XTP_NC_CALENDAREVENTWASADDED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarDataChanged));
-	m_cnidEventChanged = m_pSink->Advise(pConnection, XTP_NC_CALENDAREVENTWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarDataChanged));
-	m_cnidEventDeleted = m_pSink->Advise(pConnection, XTP_NC_CALENDAREVENTWASDELETED, CreateNotfySinkClassDelegate(this, &CXTPCalendarController::OnEvent_CalendarDataChanged));
-}
-
-void CXTPCalendarController::_UnadviseFromDataChanged()
-{
-	if (m_cnidEventAdded)
-	{
-		m_pSink->Unadvise(m_cnidEventAdded);
-	}
-
-	if (m_cnidEventChanged)
-	{
-		m_pSink->Unadvise(m_cnidEventChanged);
-	}
-
-	if (m_cnidEventDeleted)
-	{
-		m_pSink->Unadvise(m_cnidEventDeleted);
-	}
-
-	m_cnidEventAdded = 0;
-	m_cnidEventChanged = 0;
-	m_cnidEventDeleted = 0;
-}
-
-//BOOL CXTPCalendarController::IsFirstDayOfWeekShifted_FromSun2Mon()
-//{
-//  if (!m_pCalendarCtrl || !m_pCalendarCtrl->GetActiveView())
-//      return FALSE;
-//
-//  int nViewType = m_pCalendarCtrl->GetActiveView()->GetViewType();
-//  if (nViewType == xtpCalendarMonthView)
-//  {
-//      if (m_pCalendarCtrl->MonthView_IsCompressWeekendDays())
-//      {
-//          if (m_pCalendarCtrl->GetFirstDayOfWeek() == 1)
-//              return TRUE;
-//      }
-//  }
-//  else if (nViewType == xtpCalendarWeekView)
-//  {
-//      if (m_pCalendarCtrl->GetFirstDayOfWeek() == 1)
-//          return TRUE;
-//  }
-//  return FALSE;
-//}
-
-void CXTPCalendarController::OnEvent_CalendarView(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM lParam)
-{
-	if (!XTP_NC_CALENDARVIEWWASCHANGED == Event)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-	if (m_bAdjustingView)
-	{
-		return;
-	}
-
-	if (m_pDatePickerCtrl && m_pCalendarCtrl)
-	{
-		CXTPCalendarView* pView = m_pCalendarCtrl->GetActiveView();
-		if (!pView)
-			return;
-
-		int nViewTypeX = pView->GetViewType();
-
-		if (nViewTypeX == xtpCalendarWorkWeekView)
-			nViewTypeX = xtpCalendarDayView;
-
-		if (m_eLastActiveView != nViewTypeX)
-		{
-			m_eLastActiveView = nViewTypeX;
-			CMDTARGET_RELEASE(m_pResourcesNf);
-			_UnadviseFromDataChanged();
-
-			if (m_bBoldDaysOnIdle)
+			if (!(nFlags & (MK_CONTROL | MK_SHIFT)) && (nHitFlags & TVHT_ONITEMLABEL))
 			{
-				COleDateTime dtFirstVisibleDay, dtLastVisibleDay;
-				if (m_pDatePickerCtrl->GetVisibleRange(dtFirstVisibleDay, dtLastVisibleDay))
+				if (m_bOkToEdit && hItemHit == hItemSel)
 				{
-					m_DayInfoCache.RequestToRefreshDays(dtFirstVisibleDay, dtLastVisibleDay);
-				}
-			}
-		}
+					SelectAll(FALSE);
+					SelectItem(hItemHit);
 
-		COleDateTimeSpan spCompressCorrector(0, 0, 0, 0);
-		//if (IsFirstDayOfWeekShifted_FromSun2Mon())
-		//  spCompressCorrector.SetDateTimeSpan(-1, 0, 0, 0);
-
-		int nCount = pView->GetViewDayCount();
-		if (nCount > 0)
-		{
-			COleDateTime dtDay = m_pCalendarCtrl->GetActiveView()->GetViewDayDate(0);
-			dtDay += spCompressCorrector;
-			m_pDatePickerCtrl->SetSelRange(dtDay, dtDay);
-		}
-
-		for (int i = 1; i < nCount; i++)
-		{
-			COleDateTime dtDay = m_pCalendarCtrl->GetActiveView()->GetViewDayDate(i);
-			dtDay += spCompressCorrector;
-			m_pDatePickerCtrl->Select(dtDay);
-		}
-
-		if (lParam != XTP_CC_DONT_SCROLL_DP)
-			m_pDatePickerCtrl->EnsureVisibleSelection();
-
-		if (::IsWindow(m_pDatePickerCtrl->GetSafeHwnd()))
-		{
-			m_pDatePickerCtrl->RedrawControl();
-			m_pDatePickerCtrl->UpdateWindow();
-		}
-	}
-}
-
-void CXTPCalendarController::OnEvent_DatePicker(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM /*lParam*/)
-{
-	wParam;
-
-	switch (Event)
-	{
-	case XTP_NC_DATEPICKERBEFOREGOMODAL:
-		if (m_pDatePickerCtrl && m_pCalendarCtrl)
-		{
-			OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
-		}
-		break;
-	case XTP_NC_DATEPICKERBUTTONCLICKED:
-		DBG_TRACE_DP_NF(_T("OnEvent: DatePickerButtonClicked - ID = %u.     {CalendarController}. \n"), wParam);
-		break;
-	case XTP_NC_DATEPICKERMONTHCHANGED:
-		m_DayInfoCache.UpActivePriority();
-		break;
-	case XTP_NC_DATEPICKERSELECTIONCHANGED:
-		DBG_TRACE_DP_NF(_T("OnEvent: XTP_NC_DATEPICKERSELECTIONCHANGED.     {CalendarController}. \n"));
-		if (m_pDatePickerCtrl && m_pCalendarCtrl && m_pCalendarCtrl->GetActiveView())
-		{
-			BOOL bFastMode = m_pCalendarCtrl->m_bSwitchToDayViewIfPickedSingleDay;
-			BOOL bChanged = FALSE;
-
-			COleDateTime dtFrom;
-			COleDateTime dtTo;
-			if (m_pDatePickerCtrl->GetSelRange(dtFrom, dtTo))
-			{
-				int nFirstDayOfWeekIndex = m_pDatePickerCtrl->GetFirstDayOfWeek();
-				int nFirstDayOfWeek = dtFrom.GetDayOfWeek();
-				BOOL bWeekStart = (nFirstDayOfWeekIndex == nFirstDayOfWeek);
-
-				CXTPCalendarControl::CUpdateContext updateContext(m_pCalendarCtrl);
-
-				int nSelRangeDays = CXTPCalendarUtils::GetTotalDays(dtTo - dtFrom) + 1;
-				// count selected days
-				int nSelDays = 0;
-				COleDateTimeSpan spDay(1, 0, 0, 0);
-				for (COleDateTime dtDay = dtFrom; dtDay <= dtTo; dtDay += spDay)
-				{
-					if (m_pDatePickerCtrl->IsSelected(dtDay))
-						nSelDays++;
-				}
-				BOOL bDaysCont = (nSelRangeDays == nSelDays);
-//LOGIC TO SELECT VIEW TYPE <<
-				// Day view
-				int eViewMode = XTP_SAFE_GET2(m_pCalendarCtrl, GetActiveView(), GetViewType(), xtpCalendarDayView);
-
-				if (eViewMode == xtpCalendarTimeLineView)
-				{
-					CXTPCalendarTimeLineView* pView = (CXTPCalendarTimeLineView* ) m_pCalendarCtrl->GetActiveView();
-					if (pView)
-					{
-						pView->SetStartViewDate(dtFrom);
-						if (nSelRangeDays == 1)
-							pView->SetTimeScaleID(xtpTSPID_Day);
-						else if (nSelRangeDays <= 5)
-							pView->SetTimeScaleID(xtpTSPID_WorkWeek);
-						else if (nSelRangeDays <= 7)
-							pView->SetTimeScaleID(xtpTSPID_Week);
-						else
-							pView->SetTimeScaleID(xtpTSPID_Month);
-					}
-
+					m_pTreeCtrl->Default();
 					return;
 				}
+			}
 
-				if (nSelRangeDays <= nXTPMaxDayViewDays ||
-					!bDaysCont || !bWeekStart && nSelRangeDays <= 8)
-				{
-					m_bAdjustingView = TRUE;
-
-					// to save WorkWeek view mode
-
-					//if (eViewMode != xtpCalendarWorkWeekView || nSelDays != 1)
-					if (bFastMode &&
-						((eViewMode != xtpCalendarWorkWeekView)
-						&& (eViewMode != xtpCalendarFullWeekView))
-						|| nSelDays != 1)
-						eViewMode = xtpCalendarDayView;
-
-					if (eViewMode == xtpCalendarMonthView)
-					{
-						CXTPCalendarMonthView* pMonthView = DYNAMIC_DOWNCAST(CXTPCalendarMonthView, m_pCalendarCtrl->GetActiveView());
-						if (pMonthView)
-						{
-							pMonthView->SelectDay(dtFrom);
-							CXTPCalendarControl::CViewChangedContext viewChanged(m_pCalendarCtrl, xtpCalendarViewChangedLock);
-							COleDateTime dtBegin = dtFrom;
-							// Calculate weeks count
-							COleDateTime dtWeekFromBegin = pMonthView->GetGrid()->ShiftDateToCell_00(dtFrom);
-							COleDateTime dtWeekToEnd = pMonthView->GetGrid()->ShiftDateToCell_00(dtTo);
-							dtWeekToEnd += COleDateTimeSpan(7, 0, 0, 0);
-							int nSelectedWeeksRange = CXTPCalendarUtils::GetTotalDays(dtWeekToEnd - dtWeekFromBegin);
-
-							int nWeeks = nSelectedWeeksRange / 7;
-							nWeeks = max(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MIN, nWeeks);
-							nWeeks = min(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MAX, nWeeks);
-
-							pMonthView->GetGrid()->SetBeginDate(dtBegin);
-							pMonthView->GetGrid()->SetWeeksCount(nWeeks);
-
-							m_pCalendarCtrl->Populate();
-						}
-					}
-					else if ((eViewMode == xtpCalendarWorkWeekView)
-						|| (eViewMode == xtpCalendarFullWeekView)
-						|| (eViewMode == xtpCalendarWeekView))
-					{
-						CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, m_pCalendarCtrl->GetActiveView());
-						if (pDayView)
-						{
-							pDayView->UnselectAllEvents();
-
-							COleDateTime dtWWStart;
-							m_pCalendarCtrl->GetWorkDayStartTime(dtWWStart);
-							dtWWStart = CXTPCalendarUtils::UpdateDate(dtWWStart, dtFrom);
-
-							pDayView->SetSelection(dtWWStart, dtWWStart + pDayView->GetCellDuration());
-						}
-						else
-						{
-							CXTPCalendarWeekView* pWeekView = DYNAMIC_DOWNCAST(CXTPCalendarWeekView, m_pCalendarCtrl->GetActiveView());
-							if (pWeekView)
-							{
-								pWeekView->SelectDay(dtFrom);
-								pWeekView->SetBeginDate(dtFrom);
-								m_pCalendarCtrl->Populate();
-							}
-						}
-					}
-
-					//*** switch calendar view
-					m_pCalendarCtrl->SwitchActiveView((XTPCalendarViewType)eViewMode);
-					//***
-
-					CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, m_pCalendarCtrl->GetActiveView());
-
-					// DayView - set visible days
-					if (pDayView && eViewMode == xtpCalendarDayView)
-					{
-						COleDateTime dtSelStart, dtSelEnd;
-						BOOL bAllDay = FALSE;
-						BOOL bSel = pDayView->GetSelection(&dtSelStart, &dtSelEnd, &bAllDay);
-						if (bSel)
-						{
-							COleDateTimeSpan spSel = dtSelEnd - dtSelStart;
-							COleDateTimeSpan spSelMin = pDayView->GetCellDuration();
-							if (spSel < spSelMin)
-								bSel = FALSE;
-						}
-						if (!bSel)
-						{
-							m_pCalendarCtrl->GetWorkDayStartTime(dtSelStart);
-							dtSelEnd = dtSelStart + pDayView->GetCellDuration();
-							bAllDay = FALSE;
-						}
-						dtSelStart = CXTPCalendarUtils::UpdateDate(dtSelStart, dtFrom);
-						dtSelEnd = CXTPCalendarUtils::UpdateDate(dtSelEnd, dtFrom);
-
-						pDayView->ShowDay(dtFrom);
-
-						pDayView->SetSelection(dtSelStart, dtSelEnd, bAllDay);
-
-						// add other selected days to calendar view
-						for (COleDateTime dtDay(dtFrom + spDay); dtDay <= dtTo; dtDay += spDay)
-						{
-							if (m_pDatePickerCtrl->IsSelected(dtDay))
-								pDayView->AddDay(dtDay); // add it to Calendar View
-						}
-						m_pCalendarCtrl->Populate();
-					}
-					m_bAdjustingView = FALSE;
-
-					bChanged = TRUE;
-				}
-				// Week view
-				else if (nSelRangeDays == 7 && bDaysCont)
-				{
-					COleDateTime dtBegin = dtFrom;
-
-					m_bAdjustingView = TRUE;
-
-					if (m_pCalendarCtrl->m_bMultiColumnWeekMode)
-						m_pCalendarCtrl->SwitchActiveView(xtpCalendarFullWeekView);
-					else
-						m_pCalendarCtrl->SwitchActiveView(xtpCalendarWeekView);
-
-					CXTPCalendarWeekView* pWeekView = DYNAMIC_DOWNCAST(CXTPCalendarWeekView, m_pCalendarCtrl->GetActiveView());
-					if (pWeekView)
-					{
-						pWeekView->SetBeginDate(dtBegin);
-
-						m_pCalendarCtrl->Populate();
-					}
-					else if (m_pCalendarCtrl->m_bMultiColumnWeekMode)
-					{
-						CXTPCalendarDayView* pWeekDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, m_pCalendarCtrl->GetActiveView());
-						if (pWeekDayView)
-						{
-							pWeekDayView->ShowDays(dtBegin, dtTo);
-
-							m_pCalendarCtrl->Populate();
-						}
-					}
-					m_bAdjustingView = FALSE;
-
-					bChanged = TRUE;
-				}
-				// Month view
-				else
-				{
-					ASSERT(nSelRangeDays == nSelDays && nSelRangeDays > 7);
-
-					m_bAdjustingView = TRUE;
-
-					m_pCalendarCtrl->SwitchActiveView(xtpCalendarMonthView);
-					CXTPCalendarMonthView* pMonthView = DYNAMIC_DOWNCAST(CXTPCalendarMonthView, m_pCalendarCtrl->GetActiveView());
-					if (pMonthView)
-					{
-						CXTPCalendarControl::CViewChangedContext viewChanged(m_pCalendarCtrl, xtpCalendarViewChangedLock);
-						COleDateTime dtBegin = dtFrom;
-						// Calculate weeks count
-						COleDateTime dtWeekFromBegin = pMonthView->GetGrid()->ShiftDateToCell_00(dtFrom);
-						COleDateTime dtWeekToEnd = pMonthView->GetGrid()->ShiftDateToCell_00(dtTo);
-						dtWeekToEnd += COleDateTimeSpan(7, 0, 0, 0);
-						int nSelectedWeeksRange = CXTPCalendarUtils::GetTotalDays(dtWeekToEnd - dtWeekFromBegin);
-
-						int nWeeks = nSelectedWeeksRange / 7;
-						nWeeks = max(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MIN, nWeeks);
-						nWeeks = min(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MAX, nWeeks);
-
-						pMonthView->GetGrid()->SetBeginDate(dtBegin);
-						pMonthView->GetGrid()->SetWeeksCount(nWeeks);
-
-						m_pCalendarCtrl->Populate();
-					}
-					m_bAdjustingView = FALSE;
-
-					bChanged = TRUE;
-				}
-//LOGIC TO SELECT VIEW TYPE <<
-				if (bChanged)
-				{
-					OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, XTP_CC_DONT_SCROLL_DP);
-
-					if (m_pDatePickerCtrl->IsModal())
-					{
-						m_pCalendarCtrl->Invalidate(FALSE);
-						m_pCalendarCtrl->RedrawControl();
-					}
-				}
+			if ((nHitFlags & TVHT_ONITEM) == 0)
+			{
+				m_bOkToEdit = false;
+			}
+			else if (GetFocusedItem() == hItemSel)
+			{
+				m_bOkToEdit = true;
 			}
 		}
+
+		OnButtonDown(TRUE, nFlags, point);
+	}
+
+	else
+	{
+		m_pTreeCtrl->Default();
+	}
+}
+
+void CXTTreeBase::OnRButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	if (m_pTreeCtrl->GetStyle() & TVS_SINGLEEXPAND)
+	{
+		m_pTreeCtrl->Default();
+		return;
+	}
+
+
+	// hittest to get the tree item under the cursor
+	// and select it.
+	UINT uFlags = 0;
+	HTREEITEM hItem = m_pTreeCtrl->HitTest(point, &uFlags);
+	if (hItem != NULL && (uFlags & TVHT_ONITEM) != 0)
+	{
+		// if the item is not selected, clear previous
+		// selections and select the item under cursor.
+		if (!IsSelected(hItem))
+		{
+			SelectAll(FALSE);
+			SelectItem(hItem);
+		}
+	}
+	else
+	{
+		// clear previous selections.
+		SelectAll(FALSE);
+	}
+
+	// call Default() so correct notification messages are
+	// sent such as TVN_BEGINRDRAG.
+	m_pTreeCtrl->Default();
+
+	// get the owner of the tree control.
+	//HWND hWnd = m_pTreeCtrl->GetOwner()->m_hWnd;
+
+	//if (::IsWindow(hWnd))
+	//{
+		// construct a NMHDR struct...
+		//NMHDR mHDR;
+		//mHDR.hwndFrom = m_pTreeCtrl->m_hWnd;
+		//mHDR.code = NM_RCLICK;
+		//mHDR.idFrom = m_pTreeCtrl->GetDlgCtrlID();
+
+		// and send a WM_NOTIFY message to our owner.
+		//SendNotify(&mHDR);
+	//}
+}
+
+void CXTTreeBase::OnSetFocus(CWnd* /*pOldWnd*/)
+{
+	if (m_bMultiSelect)
+	{
+		//'emulated' selected items will remain greyed
+		// if application gets covered
+		HTREEITEM hItem = GetFirstSelectedItem();
+		while (hItem)
+		{
+			RECT rect;
+			m_pTreeCtrl->GetItemRect(hItem, &rect, TRUE);
+			m_pTreeCtrl->InvalidateRect(&rect);
+			hItem = GetNextSelectedItem(hItem);
+		}
+	}
+
+	m_pTreeCtrl->Default();
+}
+
+void CXTTreeBase::OnKillFocus(CWnd* /*pNewWnd*/)
+{
+	m_pTreeCtrl->Default();
+
+	if (m_bMultiSelect)
+	{
+		//'emulated' selected items may not get
+		// refreshed to grey
+		HTREEITEM hItem = GetFirstSelectedItem();
+		while (hItem)
+		{
+			RECT rect;
+			m_pTreeCtrl->GetItemRect(hItem, &rect, TRUE);
+			m_pTreeCtrl->InvalidateRect(&rect);
+			hItem = GetNextSelectedItem(hItem);
+		}
+	}
+}
+
+void CXTTreeBase::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
+{
+	if (!m_bMultiSelect)
+	{
+		m_pTreeCtrl->Default();
+		return;
+	}
+
+	BOOL bCtrl = (::GetKeyState(VK_CONTROL) < 0);
+	BOOL bShift = (::GetKeyState(VK_SHIFT) < 0);
+
+
+	if (!bCtrl && !bShift)
+	{
+		UINT uCount = GetSelectedCount();
+
+		if ((uCount > 1) || (uCount == 1 && !IsSelected(GetFocusedItem())))
+			SelectAll(FALSE);
+	}
+
+	HTREEITEM hSel = NULL;
+	switch (nChar)
+	{
+	case VK_UP:
+	case VK_DOWN:
+	case VK_PRIOR:
+	case VK_NEXT:
+		hSel = m_pTreeCtrl->GetSelectedItem();
+		if (!m_hSelect)
+		{
+			m_hSelect = hSel;
+		}
+		if (!bCtrl && !bShift)
+		{
+			m_hSelect = NULL;   //reset
+		}
 		break;
-	default:
-		ASSERT(FALSE);
 	}
-}
 
-void CXTPCalendarController::OnEvent_CalendarOptionsChanged(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM /*lParam*/)
-{
-	if (Event != XTP_NC_CALENDAROPTIONSWASCHANGED)
+	BOOL bDir = (nChar == VK_UP) || (nChar == VK_PRIOR);
+
+	m_pTreeCtrl->Default();
+	if (!hSel || (!bCtrl && !bShift))
 	{
-		ASSERT(FALSE);
 		return;
 	}
 
-	if ((int) wParam < 0)
-		SetFirstDayOfWeekToDatePicker();
+	HTREEITEM hNext = (nChar == VK_NEXT) || (nChar == VK_PRIOR) ? GetFocusedItem() :
+		bDir ? m_pTreeCtrl->GetPrevVisibleItem(hSel) : m_pTreeCtrl->GetNextVisibleItem(hSel);
+
+	if (!hNext)
+	{
+		hNext = hSel;
+	}
+	if (bShift)
+	{
+		SelectItems(m_hSelect, hNext, TRUE);
+	}
+	else if (bCtrl)
+	{
+		SetItemState(hNext, TVIS_FOCUSED, TVIS_FOCUSED);
+	}
 }
 
-void CXTPCalendarController::OnEvent_CalendarResourcesChanged(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM /*lParam*/)
+BOOL CXTTreeBase::OnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
 {
-	if (Event != XTP_NC_CALENDARDATAPROVIDERWASCHANGED)
-	{
-		ASSERT(FALSE);
-		return;
-	}
+	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;
+	*pResult = 0;
 
-	CMDTARGET_RELEASE(m_pResourcesNf);
-	_UnadviseFromDataChanged();
+	// set m_htiEdit equal to pTVDispInfo->item.hItem.
+	m_htiEdit = pTVDispInfo->item.hItem;
 
-	m_DayInfoCache.Clear();
+	return FALSE;   //pass to parent
 }
 
-void CXTPCalendarController::OnEvent_CalendarThemeChanged(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM /*lParam*/)
+BOOL CXTTreeBase::OnEndLabelEdit(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
-	if (Event != XTP_NC_CALENDAR_THEME_CHANGED)
-	{
-		ASSERT(FALSE);
-		return;
-	}
+	*pResult = 0;
 
-	if (m_pCalendarCtrl && m_pDatePickerCtrl)
+	// set m_htiEdit equal to NULL.
+	m_htiEdit = NULL;
+
+	return FALSE;   //pass to parent
+}
+
+BOOL CXTTreeBase::OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	if (!m_bMultiSelect)
+		return FALSE;
+
+	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
+	*pResult = 0;
+
+	if ((pNMTreeView->action == TVE_COLLAPSE) || (pNMTreeView->action == TVE_COLLAPSERESET))
 	{
-		if (m_pDatePickerCtrl->GetPaintTheme() != m_pCalendarCtrl->GetPaintTheme())
+		// clear selection of children, it would be confusing otherwise
+		// - the notifications can be over-ridden to stop the de-selection
+		// if required.
+		// Unfortunately, the parent window can't over-ride this functionality
+		// because MFC gives this class first crack.  So if changes are required
+		// a derived class will have to be used..
+		ASSERT(pNMTreeView->itemNew.hItem);
+
+		// if a descendent item has focus the parent will get selected as a
+		// consequence of collapsing the tree, so preserve
+		// (if the parent was already selected it will gain focus, but
+		// that's acceptable)
+		BOOL bWasSel = IsSelected(pNMTreeView->itemNew.hItem);
+		BOOL bWasFocus = SelectChildren(pNMTreeView->itemNew.hItem, FALSE, TRUE);
+
+		if (bWasFocus && !bWasSel)
 		{
-			m_pDatePickerCtrl->SetPaintTheme(m_pCalendarCtrl->GetPaintTheme());
+			FocusItem(pNMTreeView->itemNew.hItem); // give parent focus.
 		}
 	}
 
+	return FALSE;   //pass to parent
 }
 
-void CXTPCalendarController::OnEvent_CalendarDataChanged(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM lParam)
+HTREEITEM CXTTreeBase::GetNextItem(HTREEITEM hItem) const
 {
-	if (!m_pDatePickerCtrl)
+	HTREEITEM hti = NULL;
+
+	if (m_pTreeCtrl->ItemHasChildren(hItem))
 	{
-		return;
+		hti = m_pTreeCtrl->GetChildItem(hItem);
 	}
 
-	if (Event != XTP_NC_CALENDAREVENTWASADDED &&
-		Event != XTP_NC_CALENDAREVENTWASCHANGED&&
-		Event != XTP_NC_CALENDAREVENTWASDELETED)
+	if (hti == NULL)
 	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	COleDateTime dtFirstVisibleDay, dtLastVisibleDay;
-
-	BOOL bRes = m_pDatePickerCtrl->GetVisibleRange(dtFirstVisibleDay, dtLastVisibleDay);
-	if (!bRes)
-	{
-		return;
-	}
-
-	CXTPCalendarEvent* pEvent = (CXTPCalendarEvent*)lParam;
-	if (!pEvent)
-	{
-		return;
-	}
-
-	if (Event == XTP_NC_CALENDAREVENTWASADDED ||
-		Event == XTP_NC_CALENDAREVENTWASDELETED)
-	{
-		if (CXTPCalendarUtils::ResetTime(pEvent->GetStartTime()) > dtLastVisibleDay ||
-			CXTPCalendarUtils::ResetTime(pEvent->GetEndTime()) < dtFirstVisibleDay )
+		while ((hti = m_pTreeCtrl->GetNextSiblingItem(hItem)) == NULL)
 		{
-			return; // xtpCalendar_Skip;
+			if ((hItem = m_pTreeCtrl->GetParentItem(hItem)) == NULL)
+				return NULL;
 		}
+	}
 
-		if (m_bBoldDaysOnIdle)
-		{
-			m_DayInfoCache.ClearDays(pEvent->GetStartTime(), pEvent->GetEndTime());
-		}
+	return hti;
+}
+
+HTREEITEM CXTTreeBase::GetPrevItem(HTREEITEM hItem) const
+{
+	HTREEITEM hti = NULL;
+
+	hti = m_pTreeCtrl->GetPrevSiblingItem(hItem);
+	if (hti == NULL)
+	{
+		hti = m_pTreeCtrl->GetParentItem(hItem);
 	}
 	else
 	{
-		if (m_bBoldDaysOnIdle)
-		{
-			m_DayInfoCache.RequestToRefreshDays(dtFirstVisibleDay, dtLastVisibleDay);
+		hti = GetLastItem(hti);
+	}
 
-			COleDateTime dtFom = max(dtFirstVisibleDay, pEvent->GetStartTime());
-			COleDateTime dtTo = min(dtLastVisibleDay, pEvent->GetEndTime());
-			m_DayInfoCache.RequestToRefreshDays(dtFom, dtTo);
+	return hti;
+}
+
+HTREEITEM CXTTreeBase::GetLastItem(HTREEITEM hItem) const
+{
+	// Temporary used variable
+	HTREEITEM htiNext;
+
+	// Get the last item at the top level
+	if (hItem == NULL)
+	{
+		hItem = m_pTreeCtrl->GetRootItem();
+	}
+
+	while (m_pTreeCtrl->ItemHasChildren(hItem) != NULL)
+	{
+		// Find the last child of hItem
+		htiNext = m_pTreeCtrl->GetChildItem(hItem);
+		while (htiNext != NULL)
+		{
+			hItem = htiNext;
+			htiNext = m_pTreeCtrl->GetNextSiblingItem(htiNext);
 		}
 	}
 
-	m_pDatePickerCtrl->_RedrawControl(FALSE);
+	return hItem;
+
 }
 
-void CXTPCalendarController::SetFirstDayOfWeekToDatePicker()
+HTREEITEM CXTTreeBase::FindItemInBranch(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALSE*/,
+	BOOL bWholeWord /*= FALSE*/, HTREEITEM htiItem /*= NULL*/)
 {
-	if (m_pDatePickerCtrl && m_pCalendarCtrl)
-	{
-		int nFirstDayOfWeekIndex = m_pCalendarCtrl->GetFirstDayOfWeek();
-//<<<
-		int nOldFirstDayOfWeekIndex = m_pDatePickerCtrl->GetFirstDayOfWeek();
+	HTREEITEM htiFound = NULL;
 
-		COleDateTime dt1, dt2;
-		m_pDatePickerCtrl->GetSelRange(dt1, dt2);
-		dt1 += COleDateTimeSpan(nFirstDayOfWeekIndex - nOldFirstDayOfWeekIndex, 0, 0, 0);
-		dt2 += COleDateTimeSpan(nFirstDayOfWeekIndex - nOldFirstDayOfWeekIndex, 0, 0, 0);
+	if (!m_pTreeCtrl->ItemHasChildren(htiItem))
+		return NULL;
 
-		int nViewType = m_pCalendarCtrl->GetActiveView()->GetViewType();
-		if (nViewType == xtpCalendarWeekView)
-			m_pDatePickerCtrl->SetSelRange(dt1, dt2);
-//>>>
-		m_pDatePickerCtrl->SetFirstDayOfWeek(nFirstDayOfWeekIndex);
-	}
-}
-
-void CXTPCalendarController::OnEvent_DtPickGetItemMetrics(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM lParam)
-{
-	if (Event != XTP_NC_DATEPICKERGETDAYMETRICS)
+	CString strSearch = lpszSearch;
+	int iLen = strSearch.GetLength();
+	if (iLen == 0)
 	{
-		ASSERT(FALSE);
-		return;
-	}
-	if (!m_bBoldDaysWithEvents)
-	{
-		return;
+		return NULL;
 	}
 
-	const COleDateTime dtDay = (DATE)(XTP_DATE_VALUE)wParam;
-	XTP_DAYITEM_METRICS* pDayItemMetrics = (XTP_DAYITEM_METRICS*)lParam;
-	ASSERT(pDayItemMetrics);
-
-	if (!pDayItemMetrics || !m_pCalendarCtrl || !m_pDatePickerCtrl)
+	if (!bCaseSensitive)
 	{
-		return;
+		strSearch.MakeLower();
 	}
 
-	if (!m_pResourcesNf)
+	HTREEITEM htiChild = m_pTreeCtrl->GetChildItem(htiItem);
+	while (htiChild != NULL)
 	{
-		m_pResourcesNf = new CXTPCalendarResourcesNf();
-		if (!m_pResourcesNf)
+		if (m_pTreeCtrl->ItemHasChildren(htiChild))
 		{
-			return;
-		}
-		CXTPCalendarResources* pRC0 = m_pCalendarCtrl->GetResources();
-		if (m_bUseActiveViewResoucesForBold)
-		{
-			pRC0 = m_pCalendarCtrl->GetActiveView()->GetResources();
+			htiFound = FindItemInBranch(lpszSearch, bCaseSensitive, bWholeWord, htiChild);
+			if (htiFound != NULL)
+				return htiFound;
 		}
 
-		m_pResourcesNf->Append(pRC0);
+		CString strItemText = m_pTreeCtrl->GetItemText(htiChild);
+		if (!bCaseSensitive)
+		{
+			strItemText.MakeLower();
+		}
 
-		_AdviseToDataChanged();
+		int iIndex;
+		while ((iIndex = strItemText.Find(strSearch)) != -1)
+		{
+			// Search string found
+			if (bWholeWord)
+			{
+				// Check preceding char
+				if (iIndex != 0)
+				{
+					if (_istalpha(strItemText[iIndex-1]) || strItemText[iIndex-1] == '_')
+					{
+						// Not whole word
+						strItemText = strItemText.Right(strItemText.GetLength() -
+							iIndex - iLen);
+						continue;
+					}
+				}
 
-		m_pResourcesNf->ReBuildInternalData();
+				// Check succeeding char
+				if (strItemText.GetLength() > iIndex + iLen &&
+					(_istalpha(strItemText[iIndex + iLen]) ||
+					(strItemText[iIndex + iLen] == '_')))
+				{
+					// Not whole word
+					strItemText = strItemText.Right(strItemText.GetLength() -
+						iIndex - strSearch.GetLength());
+					continue;
+				}
+			}
+
+			if (IsFindValid(htiChild))
+			{
+				return htiChild;
+			}
+
+			else
+			{
+				break;
+			}
+		}
+
+		htiChild = m_pTreeCtrl->GetNextSiblingItem(htiChild);
 	}
 
-	BOOL bHasEvents = FALSE;
-
-	if (m_bBoldDaysOnIdle)
-	{
-		bHasEvents = m_DayInfoCache.HasEvents(dtDay);
-	}
-	else
-	{
-		// check whether specified day has events
-		bHasEvents = _HasEvents(dtDay);
-	}
-
-	// make the day with events as bold
-	if (bHasEvents)
-	{
-		// set bold to day metrics
-		pDayItemMetrics->SetFont(m_pDatePickerCtrl->GetPaintManager()->GetDayTextFontBold());
-	}
+	return NULL;
 }
-BOOL CXTPCalendarController::_HasEvents(COleDateTime dtDay)
+
+HTREEITEM CXTTreeBase::FindItem(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALSE*/,
+	BOOL bDownDir /*= TRUE*/, BOOL bWholeWord /*= FALSE*/, HTREEITEM hItem /*= NULL*/)
 {
-	ASSERT(m_pResourcesNf);
-	if (!m_pResourcesNf)
+	CString str = lpszSearch;
+
+	int lenSearchStr = str.GetLength();
+	if (lenSearchStr == 0)
+	{
+		return NULL;
+	}
+
+	// For the first pass, set the current item equal to the selection
+	HTREEITEM htiSel = hItem ? hItem : m_pTreeCtrl->GetSelectedItem();
+
+	// If NULL, use root item.
+	if (htiSel == NULL)
+		htiSel = m_pTreeCtrl->GetRootItem();
+
+	HTREEITEM htiCur = htiSel;
+	CString strSearch = str;
+
+	// make sure it ends if we started with no selection
+	if ((htiCur == NULL) && (htiSel != NULL))
+	{
+		if (bDownDir)
+		{
+			htiCur = m_pTreeCtrl->GetRootItem();
+		}
+		else
+		{
+			htiCur = GetLastItem(NULL);
+		}
+	}
+
+	if (!bCaseSensitive)
+	{
+		strSearch.MakeLower();
+	}
+
+	// For the first pass only, we check to see if it
+	// is the item we're looking for.
+	BOOL bFirstPass = TRUE;
+
+	while (htiCur && (htiCur != htiSel || bFirstPass))
+	{
+		bFirstPass = FALSE;
+
+		CString strItemText = m_pTreeCtrl->GetItemText(htiCur);
+		if (!bCaseSensitive)
+		{
+			strItemText.MakeLower();
+		}
+
+		int iIndex;
+		while ((iIndex = strItemText.Find(strSearch)) != -1)
+		{
+			// Search string found
+			if (bWholeWord)
+			{
+				// Check preceding char
+				if (iIndex != 0)
+				{
+					if (_istalpha(strItemText[iIndex-1]) || strItemText[iIndex-1] == '_')
+					{
+						// Not whole word
+						strItemText = strItemText.Right(strItemText.GetLength() -
+							iIndex - lenSearchStr);
+						continue;
+					}
+				}
+
+				// Check succeeding char
+				if (strItemText.GetLength() > iIndex + lenSearchStr &&
+					(_istalpha(strItemText[iIndex + lenSearchStr]) ||
+					(strItemText[iIndex + lenSearchStr] == '_')))
+				{
+					// Not whole word
+					strItemText = strItemText.Right(strItemText.GetLength() -
+						iIndex - strSearch.GetLength());
+					continue;
+				}
+			}
+
+			if (IsFindValid(htiCur))
+			{
+				return htiCur;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		htiCur = bDownDir ? GetNextItem(htiCur) : GetPrevItem(htiCur);
+		if (htiCur == NULL)
+		{
+			if (bDownDir)
+			{
+				htiCur = m_pTreeCtrl->GetRootItem();
+			}
+			else
+			{
+				htiCur = GetLastItem(NULL);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+BOOL CXTTreeBase::IsFindValid(HTREEITEM)
+{
+	return TRUE;
+}
+
+void CXTTreeBase::SetItemFont(HTREEITEM hItem, LOGFONT& logfont)
+{
+	CLRFONT cf;
+	if (!m_mapColorFont.Lookup(hItem, cf))
+	{
+		cf.color = COLORREF_NULL;
+	}
+
+	cf.logfont = logfont;
+	m_mapColorFont[hItem] = cf;
+}
+
+BOOL CXTTreeBase::GetItemFont(HTREEITEM hItem, LOGFONT* plogfont)
+{
+	CLRFONT cf;
+	if (!m_mapColorFont.Lookup(hItem, cf))
 	{
 		return FALSE;
 	}
 
-	const CXTPCalendarResources* pRCx = m_pResourcesNf->GetResourcesGroupedByDP();
-	int nRCCount = pRCx ? pRCx->GetCount() : 0;
-
-	for (int i = 0; i < nRCCount; i++)
+	if (cf.logfont.lfFaceName[0] == _T('\0'))
 	{
-		CXTPCalendarResource* pRC = pRCx->GetAt(i);
-		ASSERT(pRC);
-		CXTPCalendarEventsPtr ptrEvents = pRC ? pRC->RetrieveDayEvents(dtDay) : NULL;
-		if (ptrEvents && ptrEvents->GetCount() > 0)
+		return FALSE;
+	}
+
+	*plogfont = cf.logfont;
+
+	return TRUE;
+
+}
+
+void CXTTreeBase::SetItemBold(HTREEITEM hItem, BOOL bBold)
+{
+	SetItemState(hItem, bBold ? TVIS_BOLD : 0, TVIS_BOLD);
+	m_pTreeCtrl->InvalidateRect(NULL);
+}
+
+BOOL CXTTreeBase::GetItemBold(HTREEITEM hItem)
+{
+	return GetItemState(hItem, TVIS_BOLD) & TVIS_BOLD;
+}
+
+void CXTTreeBase::SetItemColor(HTREEITEM hItem, COLORREF color)
+{
+	CLRFONT cf;
+	m_mapColorFont.Lookup(hItem, cf);
+
+	cf.color = color;
+	m_mapColorFont[hItem] = cf;
+	m_pTreeCtrl->InvalidateRect(NULL);
+}
+
+COLORREF CXTTreeBase::GetItemColor(HTREEITEM hItem)
+{
+	CLRFONT cf;
+	if (m_mapColorFont.Lookup(hItem, cf))
+		return cf.color;
+
+	return COLORREF_NULL;
+}
+
+void CXTTreeBase::SetItemBackColor(HTREEITEM hItem, COLORREF color)
+{
+	CLRFONT cf;
+	m_mapColorFont.Lookup(hItem, cf);
+
+	cf.colorBack = color;
+	m_mapColorFont[hItem] = cf;
+	m_pTreeCtrl->InvalidateRect(NULL);
+}
+
+COLORREF CXTTreeBase::GetItemBackColor(HTREEITEM hItem)
+{
+	CLRFONT cf;
+	if (m_mapColorFont.Lookup(hItem, cf))
+		return cf.colorBack;
+
+	return COLORREF_NULL;
+}
+
+COLORREF CXTTreeBase::GetTreeBackColor() const
+{
+	// if the tree is disabled return disabled back color.
+	if (!m_pTreeCtrl->IsWindowEnabled())
+		return GetXtremeColor(COLOR_3DFACE);
+
+#if _MSC_VER >= 1200 // MFC 6.0
+
+	if (XTPSystemVersion()->GetComCtlVersion() >= MAKELONG(71, 4))
+	{
+		// is there a user defined color available ?
+		COLORREF crBack = m_pTreeCtrl->GetBkColor();
+		if (crBack != COLORREF_NULL)
+			return crBack;
+	}
+
+#endif
+
+	// return the system window color.
+	return GetXtremeColor(COLOR_WINDOW);
+}
+
+COLORREF CXTTreeBase::GetTreeTextColor() const
+{
+	// if the tree is disabled return disabled text color.
+	if (!m_pTreeCtrl->IsWindowEnabled())
+		return GetXtremeColor(COLOR_GRAYTEXT);
+
+#if _MSC_VER >= 1200 // MFC 6.0
+	if (XTPSystemVersion()->GetComCtlVersion() >= MAKELONG(71, 4))
+	{
+		// is ther a user defined color available ?
+		COLORREF crText = m_pTreeCtrl->GetTextColor();
+		if (crText != COLORREF_NULL)
+			return crText;
+	}
+
+#endif
+
+	// return the system window text color.
+	return GetXtremeColor(COLOR_WINDOWTEXT);
+}
+
+COLORREF CXTTreeBase::GetItemBackColor(UINT uState, bool bTreeHasFocus, DWORD dwStyle, COLORREF crBack) const
+{
+	// if the tree item is selected or drop highlighted.
+	if (uState & TVIS_SELECTED || uState & TVIS_DROPHILITED)
+	{
+		// if the tree has focus and draw the text background hilite color.
+		if (bTreeHasFocus || uState & TVIS_DROPHILITED)
 		{
-			return TRUE;
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_HIGHLIGHT);
+			else
+				return GetXtremeColor(COLOR_GRAYTEXT);
+		}
+
+		// if the tree does not have focus and the TVS_SHOWSELALWAYS flag is
+		// set draw the text background hilite color.
+		else if (dwStyle & TVS_SHOWSELALWAYS)
+		{
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_3DFACE);
+			else
+				return GetXtremeColor(COLOR_GRAYTEXT);
 		}
 	}
+
+	return crBack;
+}
+
+COLORREF CXTTreeBase::GetItemTextColor(UINT uState, bool bTreeHasFocus, DWORD dwStyle, COLORREF crText) const
+{
+	// if the tree item is selected or drop highlighted.
+	if (uState & TVIS_SELECTED || uState & TVIS_DROPHILITED)
+	{
+		// if the tree has focus and draw the text hilite color.
+		if (bTreeHasFocus || uState & TVIS_DROPHILITED)
+		{
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_HIGHLIGHTTEXT);
+			else
+				return GetXtremeColor(COLOR_3DFACE);
+		}
+
+		// if the tree does not have focus and the TVS_SHOWSELALWAYS flag is
+		// set draw the text hilite color.
+		else if (dwStyle & TVS_SHOWSELALWAYS)
+		{
+			if (m_pTreeCtrl->IsWindowEnabled())
+				return GetXtremeColor(COLOR_WINDOWTEXT);
+			else
+				return GetXtremeColor(COLOR_3DFACE);
+		}
+	}
+
+	return crText;
+}
+
+
+void CXTTreeBase::DoPaint(CDC& dc, BOOL bInternal)
+{
+	// Get the client rect.
+	CRect rcClient;
+	m_pTreeCtrl->GetClientRect(&rcClient);
+
+	const COLORREF crTreeBack = GetTreeBackColor();
+	const COLORREF crTreeText = GetTreeTextColor();
+
+	// Paint to a memory device context to help
+	// eliminate screen flicker.
+	CXTPBufferDC memDC(dc, rcClient);
+	memDC.FillSolidRect(rcClient, crTreeBack);
+
+	// Now let the window do its default painting...
+	m_pTreeCtrl->DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
+
+	if (!bInternal)
+		return;
+
+	int nSavedDC = memDC.SaveDC();
+
+	// check to see if a tree label is getting edited.
+	BOOL bEditing = (HasEditLabels() && m_pTreeCtrl->GetEditControl());
+
+	// if not editing, make sure the edit item is set to NULL.
+	if (!bEditing)
+		m_htiEdit = NULL;
+
+	// check to see if the tree is enabled.
+	BOOL bIsEnabled = m_pTreeCtrl->IsWindowEnabled();
+
+	// check to see if the tree has focus.
+	bool bTreeHasFocus = (CWnd::GetFocus() == m_pTreeCtrl);
+
+	// get the style for the tree.
+	DWORD dwStyle = m_pTreeCtrl->GetStyle();
+
+	// get the visible count.
+	HTREEITEM hItem = m_pTreeCtrl->GetFirstVisibleItem();
+	int iVisibleCount = m_pTreeCtrl->GetVisibleCount()+1;
+
+	LOGFONT treefont;
+	if (!m_pTreeCtrl->GetFont()->GetLogFont(&treefont))
+	{
+		::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &treefont);
+	}
+
+
+	while (hItem && iVisibleCount--)
+	{
+		// get the tree item rect.
+		CRect rcItem;
+		m_pTreeCtrl->GetItemRect(hItem, &rcItem, TRUE);
+
+		// refresh the background.
+		CRect rcFill = rcItem;
+		rcFill.right = rcClient.right;
+		memDC.FillSolidRect(&rcFill, crTreeBack);
+
+		// get the state of the tree item.
+		UINT uState = GetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED | TVIS_DROPHILITED);
+
+		if (m_pTreeCtrl->GetDropHilightItem() && uState & TVIS_SELECTED && hItem != m_pTreeCtrl->GetDropHilightItem())
+			uState ^= TVIS_SELECTED;
+
+		BOOL bSelected = ((uState & (TVIS_SELECTED | TVIS_DROPHILITED)) != 0);
+
+		bool bUnderline = m_htiLast == hItem;
+
+		// define the background and text colors.
+		COLORREF crItemBack = GetItemBackColor(
+			uState, bTreeHasFocus, dwStyle, crTreeBack);
+		COLORREF crItemText = GetItemTextColor(
+			uState, bTreeHasFocus, dwStyle, crTreeText);
+
+		// if the item is getting edited paint white.
+		if (m_htiEdit == hItem)
+		{
+			crItemBack = crTreeBack;
+			crItemText = crTreeBack;
+		}
+
+		// create the LOGFONT used by the tree item.
+		LOGFONT logfont;
+		logfont = treefont;
+
+
+		CLRFONT cf;
+		if (m_mapColorFont.Lookup(hItem, cf))
+		{
+			if (!bSelected && bIsEnabled)
+			{
+				if (cf.color != COLORREF_NULL)
+					crItemText = cf.color;
+
+				if (cf.colorBack != COLORREF_NULL)
+					crItemBack = cf.colorBack;
+			}
+
+			if (cf.logfont.lfFaceName[0] != _T('\0'))
+			{
+				logfont = cf.logfont;
+			}
+		}
+
+		if (GetItemBold(hItem))
+		{
+			logfont.lfWeight = FW_BOLD;
+		}
+
+		if (dwStyle & TVS_TRACKSELECT)
+		{
+			logfont.lfUnderline = bUnderline ? (BYTE)1 : (BYTE)0;
+
+			if (logfont.lfUnderline && !bSelected)
+			{
+				if (XTOSVersionInfo()->IsWin95() || XTOSVersionInfo()->IsWinNT4())
+					crItemText = GetXtremeColor(COLOR_HIGHLIGHT);
+				else
+					crItemText = GetXtremeColor(COLOR_HOTLIGHT);
+			}
+		}
+
+		// create a CFont object from the LOGFONT structure and
+		// select it into the current device context.
+		CFont fontDC;
+		fontDC.CreateFontIndirect(&logfont);
+		CFont* pOldFont = memDC.SelectObject(&fontDC);
+
+		// get the text for the tree item and determine its size.
+		CString strItem = m_pTreeCtrl->GetItemText(hItem);
+		CSize sizeText = memDC.GetTextExtent(strItem);
+
+		// if the text is wider than the tree item label, adjust accordingly.
+		if (rcItem.Width() < sizeText.cx)
+		{
+			rcItem.right = rcItem.left + sizeText.cx + 2;
+		}
+
+		// set the font foreground and background colors.
+		memDC.SetBkColor(crItemBack);
+		memDC.SetTextColor(crItemText);
+
+		// draw the label background if selected.
+		if (bSelected)
+		{
+			memDC.FillSolidRect(&rcItem, crItemBack);
+		}
+
+		CRect rcText(rcItem);
+		rcText.OffsetRect(3, 0);
+
+		// draw the text and restore the device context.
+		memDC.DrawText(strItem, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_NOPREFIX);
+
+		// draw the focus rect.
+		if ((uState & TVIS_FOCUSED))
+		{
+			if (!bEditing && bIsEnabled && CWnd::GetFocus() == m_pTreeCtrl)
+			{
+				memDC.SetTextColor(crTreeText);
+				memDC.DrawFocusRect(&rcItem);
+			}
+		}
+
+		memDC.SelectObject(pOldFont);
+		fontDC.DeleteObject();
+
+		// move to the next visible item.
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+
+	memDC.RestoreDC(nSavedDC);
+}
+
+
+HTREEITEM CXTTreeBase::GetPrevSelectedItem(HTREEITEM hItem) const
+{
+	for (hItem = m_pTreeCtrl->GetPrevVisibleItem(hItem);
+		hItem != NULL;
+		hItem = m_pTreeCtrl->GetPrevVisibleItem(hItem))
+	{
+		if (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED)
+		{
+			return hItem;
+		}
+	}
+
+	return NULL;
+}
+
+UINT CXTTreeBase::GetSelectedCount() const
+{
+	UINT nCount = 0;
+	HTREEITEM hItem = GetFirstSelectedItem();
+	while (hItem)
+	{
+		nCount++;
+		hItem = GetNextSelectedItem(hItem);
+	}
+	return nCount;
+}
+
+BOOL CXTTreeBase::EnableMultiSelect(BOOL bMultiSelect)
+{
+	BOOL bReturn = m_bMultiSelect;
+	m_bMultiSelect = bMultiSelect;
+
+	if (!m_bMultiSelect)
+	{
+		HTREEITEM hItem = m_pTreeCtrl->GetSelectedItem();
+		if (hItem && !IsSelected(hItem))
+		{
+			hItem = NULL;
+		}
+		SelectAllIgnore(FALSE, hItem);
+		if (hItem)
+		{
+			SelectItem(hItem);
+		}
+	}
+
+	return bReturn;
+}
+
+BOOL CXTTreeBase::SetItemState(HTREEITEM hItem, UINT nState, UINT nStateMask)
+{
+	ASSERT(hItem);
+	if (!hItem)
+		return FALSE;
+
+	if (!m_bMultiSelect)
+	{
+		return m_pTreeCtrl->SetItemState(hItem, nState, nStateMask);
+	}
+
+	HTREEITEM hFocus = m_pTreeCtrl->GetSelectedItem();           // current focus
+	BOOL bWasFocus = (hFocus == hItem);
+	BOOL bFocusWasSel = hFocus && IsSelected(hFocus); // selection state of current focus
+	BOOL bWasSel = IsSelected(hItem);            // select state of acting item
+
+	UINT nS = (nState & ~TVIS_FOCUSED);
+	UINT nSM = (nStateMask & ~TVIS_FOCUSED);
+
+	BOOL bVista = XTPSystemVersion()->IsWinVistaOrGreater();
+
+	if (nStateMask & TVIS_FOCUSED)
+	{
+		//wanted to affect focus
+		if (nState & TVIS_FOCUSED)
+		{
+			if (bVista)
+			{
+				//wanted to set focus
+				if (!bWasFocus && hFocus)
+				{
+					//because SelectItem would de-select the current 'real' selection
+					// (the one with focus), need to make the tree ctrl think there is
+					// no 'real' selection but still keep the the old item selected
+					//it has to be done before the SelectItem call because
+					// otherwise the TVN_SELCHANGING/ED notification handlers
+					// wouldn't be able to get the proper list of selected items
+					m_pTreeCtrl->SelectItem(NULL); //will cause notify, but can be taken as focus change
+					m_pTreeCtrl->SetItemState(hFocus, TVIS_SELECTED, TVIS_SELECTED);
+				}
+
+				if (!m_pTreeCtrl->SelectItem(hItem))    //set focus (will consequently select, if not already focused)
+				{
+					return FALSE;
+				}
+
+				if (!bWasFocus && hFocus)
+				{
+					m_pTreeCtrl->SetItemState(hFocus, bFocusWasSel ? TVIS_SELECTED : 0, TVIS_SELECTED);
+				}
+			}
+			else
+			{
+				//wanted to set focus
+				if (!bWasFocus && bFocusWasSel)
+				{
+					//because SelectItem would de-select the current 'real' selection
+					// (the one with focus), need to make the tree ctrl think there is
+					// no 'real' selection but still keep the the old item selected
+					//it has to be done before the SelectItem call because
+					// otherwise the TVN_SELCHANGING/ED notification handlers
+					// wouldn't be able to get the proper list of selected items
+					m_pTreeCtrl->SelectItem(NULL); //will cause notify, but can be taken as focus change
+					m_pTreeCtrl->SetItemState(hFocus, TVIS_SELECTED, TVIS_SELECTED);
+					m_pTreeCtrl->UpdateWindow();
+				}
+
+				if (!m_pTreeCtrl->SelectItem(hItem))    //set focus (will consequently select, if not already focused)
+				{
+					return FALSE;
+				}
+			}
+
+			if (nStateMask & TVIS_SELECTED)
+			{
+				//wanted to affect select state
+				if (nState & TVIS_SELECTED)
+				{
+					//wanted to select, already done if wasn't focused
+					if (!bVista && (!bWasFocus || bFocusWasSel))
+					{
+						nS &= ~TVIS_SELECTED;
+						nSM &= ~TVIS_SELECTED;
+					}
+				}
+				//else wanted to clear, base call will do that
+			}
+			else
+			{
+				//didn't want to affect select state
+				if (!bWasSel)
+				{
+					//it wasn't previously selected, let base clear (correct)
+					nS &= ~TVIS_SELECTED;
+					nSM |= TVIS_SELECTED;
+				}
+				//else was already selected, no harm done
+			}
+		}
+		else
+		{
+			//wanted to clear focus
+			if (bWasFocus)
+			{
+				//it had the focus
+				m_pTreeCtrl->SelectItem(NULL);  //clear focus
+				if (!(nStateMask & TVIS_SELECTED))
+				{
+					//didn't want to affect select state
+					if (bWasSel)
+					{
+						//it was selected, so restore
+						ASSERT(!(nS & TVIS_SELECTED));
+						ASSERT(!(nSM & TVIS_SELECTED));
+						//set state here, to avoid double-notify
+						m_pTreeCtrl->SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+						//let base do other states
+					}
+				}
+				else if (nState & TVIS_SELECTED)
+				{
+					//wanted to select (but clear focus)
+					if (bWasSel)
+					{
+						//if was selected, restore
+						m_pTreeCtrl->SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+					}
+					//don't want to notify, default did it
+					nS &= ~TVIS_SELECTED;
+					nSM &= ~TVIS_SELECTED;
+				}
+			}
+		}
+	}
+
+	if (!nSM)
+	{
+		return TRUE;    //no other states to alter
+	}
+
+	if (nSM & TVIS_SELECTED)
+	{
+		//still need to alter selection state
+		NMTREEVIEW nmtv;
+		nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
+		nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
+		nmtv.hdr.code = TVN_SELCHANGING;
+		nmtv.itemOld.mask = nmtv.itemNew.mask = 0;
+		nmtv.itemOld.hItem = nmtv.itemNew.hItem = NULL;
+
+		TVITEM& item = (nS & TVIS_SELECTED) ? nmtv.itemNew : nmtv.itemOld;
+		item.mask = TVIF_HANDLE | TVIF_PARAM;
+		item.hItem = hItem;
+		item.lParam = m_pTreeCtrl->GetItemData(hItem);
+		item.state = nS;
+		item.stateMask = nSM;
+
+		if (SendNotify(&nmtv.hdr))
+		{
+			return FALSE;   //sel-changing stopped
+		}
+
+		VERIFY(m_pTreeCtrl->SetItemState(hItem, nS, nSM));
+		nmtv.hdr.code = TVN_SELCHANGED;
+		SendNotify(&nmtv.hdr);
+		nS &= ~TVIS_SELECTED;
+		nSM &= ~TVIS_SELECTED;
+	}
+
+	if (!nSM)
+	{
+		return TRUE;
+	}
+
+	return m_pTreeCtrl->SetItemState(hItem, nS, nSM);
+}
+
+UINT CXTTreeBase::GetItemState(HTREEITEM hItem, UINT nStateMask) const
+{
+	UINT n = m_pTreeCtrl->GetItemState(hItem, nStateMask & ~TVIS_FOCUSED);
+	if (nStateMask & TVIS_FOCUSED)
+	{
+		if (m_pTreeCtrl->GetSelectedItem() == hItem)
+		{
+			n |= TVIS_FOCUSED;
+		}
+	}
+	return n;
+}
+
+BOOL CXTTreeBase::SelectItem(HTREEITEM hItem)
+{
+	if (m_bMultiSelect)
+	{
+		return SetItemState(hItem,
+			TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
+	}
+	else
+	{
+		return m_pTreeCtrl->SelectItem(hItem);
+	}
+}
+
+BOOL CXTTreeBase::FocusItem(HTREEITEM hItem)
+{
+	ASSERT(m_bMultiSelect);
+
+	BOOL bRet = FALSE;
+	if (hItem)
+	{
+		bRet = SetItemState(hItem, TVIS_FOCUSED, TVIS_FOCUSED);
+	}
+	else
+	{
+		hItem = m_pTreeCtrl->GetSelectedItem();
+		if (hItem)
+		{
+			bRet = SetItemState(hItem, 0, TVIS_FOCUSED);
+		}
+	}
+	return bRet;
+}
+
+LRESULT CXTTreeBase::SendNotify(LPNMHDR pNMHDR)
+{
+	CWnd* pWndOwner = m_pTreeCtrl->GetOwner();
+	if (pWndOwner->GetSafeHwnd())
+	{
+		return ::SendMessage(pWndOwner->m_hWnd, WM_NOTIFY,
+			(WPARAM)pNMHDR->idFrom, (LPARAM)pNMHDR);
+	}
+
+	return NULL;
+}
+
+HTREEITEM CXTTreeBase::GetFirstSelectedItem() const
+{
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		if (IsSelected(hItem))
+		{
+			break;
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	return hItem;
+}
+
+HTREEITEM CXTTreeBase::GetNextSelectedItem(HTREEITEM hItem) const
+{
+	hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	while (hItem)
+	{
+		if (IsSelected(hItem))
+		{
+			break;
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	return hItem;
+}
+
+void CXTTreeBase::SelectAll(BOOL bSelect /*= TRUE*/, HTREEITEM htItem/*= NULL*/)
+{
+	bSelect = !!bSelect;    //ensure 0 or 1
+	UINT nState = bSelect ? TVIS_SELECTED : 0;
+
+	if (htItem == NULL)
+		htItem = m_pTreeCtrl->GetRootItem();
+
+	while (htItem)
+	{
+		if (IsSelected(htItem) != bSelect)
+		{
+			SetItemState(htItem, nState, TVIS_SELECTED);
+		}
+		htItem = m_pTreeCtrl->GetNextVisibleItem(htItem);
+	}
+}
+
+void CXTTreeBase::SelectAllIgnore(BOOL bSelect, HTREEITEM hIgnore)
+{
+	//special case to avoid multiple notifications for
+	// the same item
+	bSelect = !!bSelect;    //ensure 0 or 1
+	UINT nState = bSelect ? TVIS_SELECTED : 0;
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		if (hItem != hIgnore)
+		{
+			if (IsSelected(hItem) != bSelect)
+			{
+				SetItemState(hItem, nState, TVIS_SELECTED);
+			}
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+}
+
+void CXTTreeBase::SelectItems(HTREEITEM hFirst, HTREEITEM hLast, BOOL bOnly /*= TRUE*/)
+{
+	//locate (and select) either first or last
+	// (so order is arbitrary)
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		if ((hItem == hFirst) || (hItem == hLast))
+		{
+			if (hFirst != hLast)
+			{
+				if (!IsSelected(hItem))
+				{
+					SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+				}
+				hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+			}
+			break;
+		}
+
+		if (bOnly && IsSelected(hItem))
+		{
+			SetItemState(hItem, 0, TVIS_SELECTED);
+		}
+
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+
+	//select rest of range
+	while (hItem)
+	{
+		if (!IsSelected(hItem))
+		{
+			SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+		}
+		if ((hItem == hFirst) || (hItem == hLast))
+		{
+			hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+			break;
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	if (!bOnly)
+	{
+		return;
+	}
+	while (hItem)
+	{
+		if (IsSelected(hItem))
+		{
+			SetItemState(hItem, 0, TVIS_SELECTED);
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+}
+
+BOOL CXTTreeBase::OnButtonDown(BOOL bLeft, UINT nFlags, CPoint point)
+{
+	UINT      nHF = 0;
+	HTREEITEM hItem = NULL;
+
+	if (!m_bMultiSelect)
+		return TRUE;
+
+	BOOL bBase = FALSE;
+
+	hItem = m_pTreeCtrl->HitTest(point, &nHF);
+	if (hItem)
+	{
+		//base always handles expanding items
+		//(doesn't really mean much to right button, but pass anyway)
+		bBase = (nHF & (TVHT_ONITEMBUTTON));
+		if (!bBase && bLeft && (m_pTreeCtrl->GetStyle() & TVS_CHECKBOXES))
+		{
+			//when the tree has check-boxes, the default handler makes
+			// a quick selection of the clicked item, then re-selects
+			// the previously selected item - to cause a sel-changed
+			// notification.  Fortunately it doesn't affect the multi-
+			// selection, so can pass on.
+			bBase = (nHF & TVHT_ONITEMSTATEICON);
+
+#ifdef _MST_MULTI_CHECK
+			//Use the above define if you want all selected items to
+			// be checked the same when any one of them is checked
+			// - Interestingly this doesn't happen in the listview control
+			//  (LVS_EX_CHECKBOXES)
+			if (bBase)
+			{
+				//the default selection notification would mess
+				// the multi-selection up, so generate the notification
+				// manually
+				// (anyway, this is smoother than the selection flicker
+				//  the default gives)
+				NMTREEVIEW nmtv;
+#ifdef TVN_CHKCHANGE
+				nmtv.hdr.code = TVN_CHKCHANGE;
+#else
+				nmtv.hdr.code = TVN_SELCHANGED;
+#endif
+				nmtv.hdr.hwndFrom = m_hWnd;
+				nmtv.hdr.idFrom = ::GetDlgCtrlID(m_hWnd);
+				nmtv.itemOld.hItem = NULL;
+				nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
+
+				BOOL bChk = !GetCheck(hItem);
+				if (IsSelected(hItem))
+				{
+					HTREEITEM h = GetFirstSelectedItem();
+					while (h)
+					{
+						if (!GetCheck(h) == bChk) //! to ensure 0 or 1
+						{
+							SetCheck(h, bChk);
+#ifdef TVN_CHKCHANGE
+							//only send multiple check-change
+							// notifications (not sel-changed)
+							if (h != hItem) //clicked item will be done last
+							{
+								nmtv.itemNew.hItem = h;
+								nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(h);
+								SendNotify(&nmtv.hdr);
+							}
+#endif
+						}
+						h = GetNextSelectedItem(h);
+					}
+				}
+				else
+				{
+					SetCheck(hItem, bChk);
+				}
+				//notify clicked item
+				nmtv.itemNew.hItem = hItem;
+				nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(hItem);
+				SendNotify(&nmtv.hdr);
+				return TRUE;
+			}
+#endif
+		}
+	}
+
+	if (bBase)
+		return TRUE;
+
+	if (!hItem || (nHF & (TVHT_ONITEMRIGHT | TVHT_NOWHERE | TVHT_ONITEMINDENT)))
+	{
+		//clicked in space, do rubber-banding
+		DoBanding(nFlags, point);
+		return TRUE;
+	}
+
+	ASSERT(nHF & (TVHT_ONITEM | TVHT_ONITEMSTATEICON));   //nothing else left
+
+	DoPreSelection(hItem, bLeft, nFlags);
+	DoAction(hItem, bLeft, nFlags, point);
+
+	return m_bActionDone;  // as set in doaction
+}
+
+void CXTTreeBase::DoPreSelection(HTREEITEM hItem, BOOL bLeft, UINT nFlags)
+{
+	if (bLeft)
+	{
+		//if shift key down, select immediately
+		if ((nFlags & MK_SHIFT))
+		{
+			if (!m_hSelect)
+			{
+				m_hSelect = m_pTreeCtrl->GetSelectedItem(); //focus
+			}
+
+			SetItemState(hItem, TVIS_FOCUSED, TVIS_FOCUSED);    //focus changes to last clicked
+			SelectItems(m_hSelect, hItem, !(nFlags & MK_CONTROL));
+		}
+		else
+		{
+			if (!(nFlags & MK_CONTROL))
+			{
+				//if ctrl was down, then the selection is delayed until
+				// mouse up, otherwise select the one item
+				if (!IsSelected(hItem))
+				{
+					SelectAllIgnore(FALSE, hItem);
+				}
+				SetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
+			}
+			m_hSelect = NULL;   //reset when a non-shift operation occurs
+		}
+		return;
+	}
+
+	//right mouse
+	if (nFlags & (MK_CONTROL | MK_SHIFT))
+	{
+		if (!(nFlags & MK_SHIFT))
+		{
+			m_hSelect = hItem;
+		}
+		return;     //do nothing if shift or ctrl
+	}
+	if (!IsSelected(hItem))
+	{
+		SelectAllIgnore(FALSE, hItem);
+	}
+	SetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
+}
+
+void CXTTreeBase::DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point)
+{
+	m_bActionDone = false;
+	::SetCapture(m_pTreeCtrl->m_hWnd);
+	ASSERT(::GetCapture() == m_pTreeCtrl->m_hWnd);
+
+	MSG msg;
+	UINT nDone = 0;
+	CPoint pt;
+	CSize sizeDrag(::GetSystemMetrics(SM_CXDRAG), ::GetSystemMetrics(SM_CYDRAG));
+
+	while (!nDone && ::GetMessage(&msg, NULL, 0, 0))
+	{
+		if (::GetCapture() != m_pTreeCtrl->m_hWnd)
+		{
+			break;
+		}
+		switch (msg.message)
+		{
+			case WM_MOUSEMOVE:
+				pt.x = GET_X_LPARAM(msg.lParam);
+				pt.y = GET_Y_LPARAM(msg.lParam);
+				if ((abs(pt.x - point.x) > sizeDrag.cx) ||
+					((abs(pt.y - point.y) > sizeDrag.cy)))
+				{
+					nDone = 2;
+				}
+				//because we exit loop, button up will still be dispatched
+				// which means WM_CONTEXTMENU will be sent after TVN_BEGINRDRAG
+				// - this is the same behavior as original tree
+				break;
+
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+				nDone = 1;
+				break;
+
+			default:
+				::DispatchMessage(&msg);
+				break;
+		}
+
+	}
+
+	::ReleaseCapture();
+	ASSERT(::GetCapture() != m_pTreeCtrl->m_hWnd);
+
+	//construct tree notification info
+	NMTREEVIEW nmtv;
+	nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
+	nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
+	nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
+	nmtv.itemNew.hItem = hItem;
+	nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(hItem);
+	DWORD dwStyle = m_pTreeCtrl->GetStyle();
+
+	if (nDone == 1)
+	{
+		//click
+		if (!(nFlags & MK_SHIFT) && bLeft)
+		{
+			if ((nFlags & MK_CONTROL))
+			{
+				UINT nState = (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED) ? 0 : TVIS_SELECTED;
+				SetItemState(hItem, TVIS_FOCUSED | nState, TVIS_FOCUSED | TVIS_SELECTED);
+			}
+			else
+			{
+				SelectAllIgnore(FALSE, hItem);
+				SetItemState(hItem, TVIS_FOCUSED | TVIS_SELECTED, TVIS_FOCUSED | TVIS_SELECTED);
+			}
+		}
+		if (::GetFocus() != m_pTreeCtrl->m_hWnd)
+		{
+			::SetFocus(m_pTreeCtrl->m_hWnd);
+		}
+
+		nmtv.hdr.code = bLeft ? NM_CLICK : NM_RCLICK;
+		SendNotify(&nmtv.hdr);
+		m_bActionDone = true;
+	}
+	else if (nDone == 2)
+	{
+		//drag
+		SetItemState(hItem, TVIS_FOCUSED | TVIS_SELECTED, TVIS_FOCUSED | TVIS_SELECTED);
+		if (!(dwStyle & TVS_DISABLEDRAGDROP))
+		{
+			nmtv.hdr.code = bLeft ? TVN_BEGINDRAG : TVN_BEGINRDRAG;
+			nmtv.ptDrag = point;
+			SendNotify(&nmtv.hdr);
+		}
+		m_bActionDone = true;
+	}
+}
+
+void CXTTreeBase::DoBanding(UINT nFlags, CPoint point)
+{
+	if (::GetFocus() != m_pTreeCtrl->m_hWnd)
+	{
+		::SetFocus(m_pTreeCtrl->m_hWnd);
+	}
+
+	::SetCapture(m_pTreeCtrl->m_hWnd);
+
+	CTypedPtrList<CPtrList, HTREEITEM> list;
+	if (nFlags & (MK_SHIFT | MK_CONTROL))
+	{
+		GetSelectedList(list);
+	}
+
+	CClientDC dc(m_pTreeCtrl);
+	CRect rectCli;
+	m_pTreeCtrl->GetClientRect(&rectCli);
+
+	MSG msg;
+	BOOL bDone = FALSE;
+	CPoint pt;
+	CSize sizeDrag(::GetSystemMetrics(SM_CXDRAG), ::GetSystemMetrics(SM_CYDRAG));
+	BOOL bDrag = FALSE;
+	CSize sizeEdge(1, 1);
+
+	UINT_PTR nTimer = m_pTreeCtrl->SetTimer(1, SCROLL_TIMER_PERIOD, NULL);  //for scroll
+	CPoint ptScr(m_pTreeCtrl->GetScrollPos(SB_HORZ), m_pTreeCtrl->GetScrollPos(SB_VERT));
+	CRect rect(0, 0, 0, 0);
+	UINT h = 0;
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	if (hItem)
+	{
+		m_pTreeCtrl->GetItemRect(hItem, &rect, FALSE);
+		ptScr.y *= (h = rect.Height());     //this assumes equal height items
+	}
+	point += ptScr;
+
+	while (!bDone && ::GetMessage(&msg, NULL, 0, 0))
+	{
+		if (::GetCapture() != m_pTreeCtrl->m_hWnd)
+		{
+			break;
+		}
+
+		switch (msg.message)
+		{
+			case WM_TIMER:
+				{
+					if (msg.wParam == SCROLL_TIMER_PERIOD)
+					{
+						pt = msg.pt;
+						m_pTreeCtrl->ScreenToClient(&pt);
+						if (rectCli.PtInRect(pt))
+						{
+							::DispatchMessage(&msg);
+							break;
+						}
+						msg.lParam = MAKELPARAM(pt.x, pt.y);
+					}
+					else
+					{
+						break;
+					}
+				}
+				//fall through to mouse move
+
+			case WM_MOUSEMOVE:
+				pt.x = GET_X_LPARAM(msg.lParam);
+				pt.y = GET_Y_LPARAM(msg.lParam);
+				if (!bDrag)
+				{
+					if ((abs(pt.x - point.x) <= sizeDrag.cx) &&
+						((abs(pt.y - point.y) <= sizeDrag.cy)))
+					{
+						break;
+					}
+					bDrag = TRUE;
+					if (!(nFlags & (MK_CONTROL | MK_SHIFT)))
+					{
+						SelectAll(FALSE);
+					}
+					m_pTreeCtrl->UpdateWindow();
+					rect.SetRect(point, point);
+					dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);
+				}
+
+				dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);    //delete
+
+				if (pt.y < rectCli.top)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_VSCROLL, SB_LINEUP, 0);
+				}
+				else if (pt.y >= rectCli.bottom)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
+				}
+				if (pt.x < rectCli.left)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_HSCROLL, SB_LINELEFT, 0);
+				}
+				else if (pt.x >= rectCli.right)
+				{
+					::SendMessage(m_pTreeCtrl->m_hWnd, WM_HSCROLL, SB_LINERIGHT, 0);
+				}
+
+				ptScr = point;
+				ptScr.x -= m_pTreeCtrl->GetScrollPos(SB_HORZ);
+				ptScr.y -= m_pTreeCtrl->GetScrollPos(SB_VERT) * h;
+				rect.SetRect(ptScr, pt);
+				rect.NormalizeRect();
+				UpdateSelectionForRect(rect, nFlags, list);
+				dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);    //draw
+				break;
+
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+				bDone = TRUE;
+				break;
+
+			case WM_KEYDOWN:
+				if (LOWORD(msg.wParam) == VK_ESCAPE)
+				{
+					SelectAll(FALSE);
+					bDone = TRUE;
+					break;
+				}
+				//dispatch
+
+			default:
+				::DispatchMessage(&msg);
+				break;
+		}
+	}
+	m_pTreeCtrl->KillTimer(nTimer);
+	::ReleaseCapture();
+
+	if (bDrag)
+	{
+		dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);
+	}
+	else
+	{
+		if (!(nFlags & (MK_CONTROL | MK_SHIFT)))
+		{
+			SelectAll(FALSE);
+		}
+	}
+}
+
+void CXTTreeBase::UpdateSelectionForRect(LPCRECT pRect, UINT nFlags, CTypedPtrList<CPtrList, HTREEITEM>& list)
+{
+	CRect rect;
+	BOOL bSel;
+	POSITION pos;
+
+	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
+	while (hItem)
+	{
+		bSel = IsSelected(hItem);
+		m_pTreeCtrl->GetItemRect(hItem, &rect, m_bBandLabel);
+		if (rect.IntersectRect(rect, pRect))
+		{
+			//item in rect
+			pos = list.Find(hItem);
+			if (!bSel && !pos)
+			{
+				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+			}
+			else if ((nFlags & MK_CONTROL) && pos)
+			{
+				SetItemState(hItem, 0, TVIS_SELECTED);
+			}
+			else if ((nFlags & MK_SHIFT) && pos)
+			{
+				list.RemoveAt(pos);     //if shift and in rect, don't lock anymore
+			}
+		}
+		else
+		{
+			//item not in rect
+			pos = list.Find(hItem);
+			if (bSel && !pos)
+			{
+				SetItemState(hItem, 0, TVIS_SELECTED);
+			}
+			else if (pos)
+			{
+				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
+			}
+		}
+		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
+	}
+	m_pTreeCtrl->UpdateWindow();
+}
+
+BOOL CXTTreeBase::SelectChildren(HTREEITEM hParent, BOOL bSelect /*= TRUE*/, BOOL bRecurse /*= TRUE*/)
+{
+	UINT nS = bSelect ? TVIS_SELECTED : 0;
+
+	BOOL bFocusWasInHere = FALSE;
+
+	HTREEITEM hItem = GetNextItem(hParent, TVGN_CHILD);
+	while (hItem)
+	{
+		UINT nState = GetItemState(hItem, TVIS_SELECTED | TVIS_EXPANDED | TVIS_FOCUSED);
+		if ((nState & TVIS_SELECTED) != nS)
+		{
+			SetItemState(hItem, nS, TVIS_SELECTED);
+		}
+		bFocusWasInHere |= (nState & TVIS_FOCUSED);
+		if (bRecurse && (nState & TVIS_EXPANDED))
+		{
+			bFocusWasInHere |= SelectChildren(hItem, bSelect, bRecurse);
+		}
+		hItem = m_pTreeCtrl->GetNextSiblingItem(hItem);
+	}
+	return bFocusWasInHere;
+}
+
+void CXTTreeBase::GetSelectedList(CTypedPtrList<CPtrList, HTREEITEM>& list) const
+{
+	list.RemoveAll();
+
+	HTREEITEM hItem = GetFirstSelectedItem();
+	while (hItem)
+	{
+		list.AddTail(hItem);
+		hItem = GetNextSelectedItem(hItem);
+	}
+}
+
+BOOL CXTTreeBase::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	NMHDR* pNMHDR = (NMHDR*)lParam;
+
+	switch (pNMHDR->code)
+	{
+	case TTN_SHOW:
+		{
+			// get a pointer to the tooltip control.
+			HWND hWnd = TreeView_GetToolTips(m_pTreeCtrl->m_hWnd);
+			if (hWnd != NULL)
+			{
+				// make sure the tooltip is at the top of the "Z" order, otherwise
+				// it will appear behind popup windows....
+				::SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0,
+					SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			}
+		}
+		break;
+	}
+
+	return m_pTreeCtrl->CTreeCtrl::OnNotify(wParam, lParam, pResult);
+}
+
+BOOL CXTTreeBase::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		// ensure that keystrokes are handled by the edit control.
+		if (HasEditLabels() && m_pTreeCtrl->GetEditControl())
+		{
+			::TranslateMessage(pMsg);
+			::DispatchMessage(pMsg);
+
+			return TRUE;
+		}
+
+		// toggle expand / contract when return key is hit.
+		if (pMsg->wParam == VK_RETURN)
+		{
+			HTREEITEM htItem = m_pTreeCtrl->GetSelectedItem();
+			if (htItem != NULL)
+			{
+				m_pTreeCtrl->Expand(htItem, TVE_TOGGLE);
+			}
+		}
+	}
+
+	return m_pTreeCtrl->CTreeCtrl::PreTranslateMessage(pMsg);
+}
+
+BOOL CXTTreeBase::OnDeleteItem(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
+
+	// Remove the tree item from the map.
+	m_mapColorFont.RemoveKey(pNMTreeView->itemOld.hItem);
+	*pResult = 0;
 
 	return FALSE;
 }
 
-
-void CXTPCalendarController::SetCalendar(CXTPCalendarControl* pCalendarCtrl)
+bool CXTTreeBase::HasEditLabels() const
 {
-	m_pSink->UnadviseAll();
+	return ((m_pTreeCtrl->GetStyle() & TVS_EDITLABELS) == TVS_EDITLABELS);
+}
 
-	if (m_pCalendarCtrl)
+void CXTTreeBase::OnSize(UINT /*nType*/, int /*cx*/, int /*cy*/)
+{
+	m_pTreeCtrl->Default();
+
+	// MFCBUG: During label editing if the tree is resized while
+	// there is an edit box open the edit box is not moved to the
+	// new location of the tree item, but is left in it previous
+	// location.
+
+	if (HasEditLabels() && m_htiEdit)
 	{
-		m_pCalendarCtrl->InternalRelease();
-	}
-	m_pCalendarCtrl = pCalendarCtrl;
-	if (m_pCalendarCtrl)
-	{
-		m_pCalendarCtrl->InternalAddRef();
+		CEdit* pEdit = m_pTreeCtrl->GetEditControl();
+		if (pEdit && ::IsWindow(pEdit->m_hWnd))
+		{
+			CRect rcEdit;
+			pEdit->GetWindowRect(&rcEdit);
 
-		AdviseToNotifications();
+			CRect rcItem;
+			m_pTreeCtrl->GetItemRect(m_htiEdit, &rcItem, TRUE);
 
-		SetFirstDayOfWeekToDatePicker();
+			rcItem.top -= 1;
+			rcItem.left -= 3;
+			rcItem.right = rcItem.left + rcEdit.Width();
+			rcItem.bottom = rcItem.top + rcEdit.Height();
 
-		OnEvent_CalendarThemeChanged(XTP_NC_CALENDAR_THEME_CHANGED, 0, 0);
-	}
-
-	if (m_pCalendarCtrl && m_pDatePickerCtrl)
-	{
-		m_eLastActiveView = -1; // to ensure update
-		OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
+			pEdit->MoveWindow(&rcItem);
+		}
 	}
 }
 
-void CXTPCalendarController::SetDatePicker(CXTPDatePickerControl* pDatePickerCtrl)
+void CXTTreeBase::OnMouseMove(UINT /*nFlags*/, CPoint point)
 {
-	m_pSink->UnadviseAll();
-
-	if (m_pDatePickerCtrl)
+	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
 	{
-		m_pDatePickerCtrl->InternalRelease();
+		TV_HITTESTINFO hit;
+		::ZeroMemory(&hit, sizeof(hit));
+
+		hit.pt = point;
+		m_pTreeCtrl->HitTest(&hit);
+
+		HTREEITEM hItem = hit.hItem && hit.flags & TVHT_ONITEM ? hit.hItem : NULL;
+
+		if (m_htiLast != hItem)
+		{
+			m_htiLast = hItem;
+
+			if (m_htiLast)
+			{
+				UINT_PTR uID = m_pTreeCtrl->SetTimer(HOVER_TIMER_PERIOD, 55, NULL);
+				ASSERT(uID == HOVER_TIMER_PERIOD);
+			}
+
+			m_pTreeCtrl->Invalidate(FALSE);
+		}
 	}
-	m_pDatePickerCtrl = pDatePickerCtrl;
-	if (m_pDatePickerCtrl)
-	{
-		m_pDatePickerCtrl->InternalAddRef();
 
-		m_pDatePickerCtrl->SetMaxSelCount(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MAX * 7);
 
-		AdviseToNotifications();
-
-		SetFirstDayOfWeekToDatePicker();
-
-		OnEvent_CalendarThemeChanged(XTP_NC_CALENDAR_THEME_CHANGED, 0, 0);
-	}
-
-	if (m_pCalendarCtrl && m_pDatePickerCtrl)
-	{
-		m_eLastActiveView = -1; // to ensure update
-		OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
-	}
+	m_pTreeCtrl->Default();
 }
 
-CXTPCalendarControl* CXTPCalendarController::GetCalendar() const
+void CXTTreeBase::OnTimer(UINT_PTR nIDEvent)
 {
-	return m_pCalendarCtrl;
-}
-
-CXTPDatePickerControl* CXTPCalendarController::GetDatePicker() const
-{
-	return m_pDatePickerCtrl;
-}
-
-void CXTPCalendarController::SetBoldDaysWithEvents(BOOL bBold)
-{
-	m_bBoldDaysWithEvents = bBold;
-
-	if (m_pResourcesNf && !m_bBoldDaysWithEvents)
+	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
 	{
-		CMDTARGET_RELEASE(m_pResourcesNf);
-		m_eLastActiveView = -1;
-		_UnadviseFromDataChanged();
+		if (nIDEvent == HOVER_TIMER_PERIOD)
+		{
+			if (m_htiLast != NULL)
+			{
+				CPoint pt(::GetMessagePos());
+				CRect rc;
+				m_pTreeCtrl->GetWindowRect(&rc);
 
-		m_DayInfoCache.Clear();
+				if (rc.PtInRect(pt) == FALSE)
+				{
+					m_pTreeCtrl->KillTimer(HOVER_TIMER_PERIOD);
+
+					m_htiLast = NULL;
+					m_pTreeCtrl->Invalidate(FALSE);
+				}
+			}
+			else
+			{
+				m_pTreeCtrl->KillTimer(HOVER_TIMER_PERIOD);
+			}
+			return;
+		}
 	}
+
+	m_pTreeCtrl->Default();
+}
+
+void CXTTreeBase::OnNcMouseMove(UINT /*nHitTest*/, CPoint /*point*/)
+{
+	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
+	{
+		if (m_htiLast)
+		{
+			m_htiLast = NULL;
+			m_pTreeCtrl->Invalidate(FALSE);
+		}
+	}
+
+	m_pTreeCtrl->Default();
+}
+
+bool CXTTreeBase::Init()
+{
+	if (!::IsWindow(m_pTreeCtrl->GetSafeHwnd()))
+		return false;
+
+	return true;
 }

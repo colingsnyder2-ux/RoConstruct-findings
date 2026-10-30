@@ -1,7 +1,6 @@
-// from server: 81% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-g3d GLG3Dcpp/RenderDevice.cpp
 
 // Candidate translation unit (score above; library headers required).

@@ -1,1209 +1,1219 @@
-// from server: 87% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Draw.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
+// roc-lib: rbxgs-g3d GLG3Dcpp/GLCaps.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
- @file Draw.cpp
-  
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @created 2003-10-29
- @edited  2006-02-18
- */
+  @file GLCaps.cpp
 
-#include "G3D/platform.h"
-#include "G3D/Rect2D.h"
-#include "G3D/AABox.h"
-#include "G3D/Box.h"
-#include "G3D/Ray.h"
-#include "G3D/Sphere.h"
-#include "G3D/Line.h"
-#include "G3D/LineSegment.h"
-#include "G3D/Capsule.h"
-#include "G3D/Cylinder.h"
-#include "GLG3D/Draw.h"
-#include "GLG3D/RenderDevice.h"
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @created 2004-03-28
+  @edited  2006-05-10
+*/
+
+#include "G3D/TextOutput.h"
 #include "GLG3D/GLCaps.h"
-#include "G3D/MeshAlg.h"
+#include "GLG3D/GWindow.h"
+#include "GLG3D/glcalls.h"
+#include "GLG3D/TextureFormat.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/RenderDevice.h"
+#include "G3D/NetworkDevice.h"
+#include "G3D/Log.h"
+
+#include <sstream>
 
 namespace G3D {
 
-const int Draw::WIRE_SPHERE_SECTIONS = 26;
-const int Draw::SPHERE_SECTIONS = 40;
+// Global init flags for GLCaps.  Because this is an integer constant (equal to zero),
+// we can safely assume that it will be initialized before this translation unit is
+// entered.
+bool GLCaps::_loadedExtensions = false;
+bool GLCaps::_initialized = false;
+bool GLCaps::_checkedForBugs = false;
 
-const int Draw::SPHERE_PITCH_SECTIONS = 20;
-const int Draw::SPHERE_YAW_SECTIONS = 40;
+int GLCaps::_numTextureCoords = 0;
+int GLCaps::_numTextures = 0;
+int GLCaps::_numTextureUnits = 0;
 
-void Draw::poly2DOutline(const Array<Vector2>& polygon, RenderDevice* renderDevice, const Color4& color) {
-    if (polygon.length() == 0) {
-        return;
+bool GLCaps::bug_glMultiTexCoord3fvARB = false;
+bool GLCaps::bug_normalMapTexGen = false;
+bool GLCaps::bug_redBlueMipmapSwap = false;
+bool GLCaps::bug_mipmapGeneration = false;
+bool GLCaps::bug_slowVBO = false;
+
+/**
+ Dummy function to which unloaded extensions can be set.
+ */
+static void __stdcall glIgnore(GLenum e) {
+    (void)e;
+}
+
+/** Cache of values supplied to supportsTextureFormat.
+    Works on pointers since there is no way for users
+    to construct their own TextureFormats.
+ */
+static Table<const TextureFormat*, bool>      _supportedTextureFormat;
+
+Set<std::string> GLCaps::extensionSet;
+
+
+GLCaps::Vendor GLCaps::computeVendor() {
+    std::string s = vendor();
+
+    if (s == "ATI Technologies Inc.") {
+        return ATI;
+    } else if (s == "NVIDIA Corporation") {
+        return NVIDIA;
+    } else if (s == "Brian Paul") {
+		return MESA;
+	} else {
+        return ARB;
     }
-    
-    renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
-        renderDevice->setColor(color);
-        for (int i = 0; i < polygon.length(); ++i) {
-            renderDevice->sendVertex(polygon[i]);
-        }
-        renderDevice->sendVertex(polygon[0]);
-    renderDevice->endPrimitive();
 }
 
 
-void Draw::poly2D(const Array<Vector2>& polygon, RenderDevice* renderDevice, const Color4& color) {
-    if (polygon.length() == 0) {
+#ifdef G3D_WIN32
+/**
+ Used by the Windows version of getDriverVersion().
+ @cite Based on code by Ted Peck tpeck@roundwave.com http://www.codeproject.com/dll/ShowVer.asp
+ */
+struct VS_VERSIONINFO { 
+    WORD                wLength; 
+    WORD                wValueLength; 
+    WORD                wType; 
+    WCHAR               szKey[1]; 
+    WORD                Padding1[1]; 
+    VS_FIXEDFILEINFO    Value; 
+    WORD                Padding2[1]; 
+    WORD                Children[1]; 
+};
+#endif
+
+std::string GLCaps::getDriverVersion() {
+	if (computeVendor() == MESA) {
+		// Mesa includes the driver version in the renderer version
+		// e.g., "1.5 Mesa 6.4.2"
+
+		static std::string _glVersion = (char*)glGetString(GL_VERSION);
+		int i = _glVersion.rfind(' ');
+		if (i == std::string::npos) {
+			return "Unknown (bad MESA driver string)";
+		} else {
+			return _glVersion.substr(i + 1, _glVersion.length() - i);
+		}
+	}
+
+    #ifdef G3D_WIN32
+    
+        std::string driver;
+
+        // Locate the windows\system directory
+        {
+            char sysDir[1024];
+            int sysSize = GetSystemDirectory(sysDir, 1024);
+            if (sysSize == 0) {
+                return "Unknown (can't find Windows directory)";
+            }
+            driver = sysDir;
+        }
+
+        switch (computeVendor()) {
+        case ATI:
+            driver = driver + "\\ati2dvag.dll";
+            break;
+
+        case NVIDIA:
+            driver = driver + "\\nv4_disp.dll";
+            break;
+		
+        default:
+            return "Unknown (Unknown vendor)";
+
+        }
+
+        char* lpdriver = const_cast<char*>(driver.c_str());
+        DWORD dummy;
+
+        int size = GetFileVersionInfoSize(lpdriver, &dummy);
+        if (size == 0) {
+            return "Unknown (Can't find driver)";
+        }
+
+        void* buffer = new uint8[size];
+
+        if (GetFileVersionInfo(lpdriver, 0, size, buffer) == 0) {
+            delete[] (uint8*)buffer;
+            return "Unknown";
+        }
+
+	    // Interpret the VS_VERSIONINFO header pseudo-struct
+	    VS_VERSIONINFO* pVS = (VS_VERSIONINFO*)buffer;
+        debugAssert(!wcscmp(pVS->szKey, L"VS_VERSION_INFO"));
+
+	    uint8* pVt = (uint8*) &pVS->szKey[wcslen(pVS->szKey) + 1];
+
+        #define roundoffs(a,b,r)	(((uint8*)(b) - (uint8*)(a) + ((r) - 1)) & ~((r) - 1))
+        #define roundpos(b, a, r)	(((uint8*)(a)) + roundoffs(a, b, r))
+
+	    VS_FIXEDFILEINFO* pValue = (VS_FIXEDFILEINFO*) roundpos(pVt, pVS, 4);
+
+        #undef roundoffs
+        #undef roundpos
+
+        std::string result = "Unknown (No information)";
+
+	    if (pVS->wValueLength) {
+	        result = format("%d.%d.%d.%d",
+                pValue->dwProductVersionMS >> 16,
+                pValue->dwProductVersionMS & 0xFFFF,
+	            pValue->dwProductVersionLS >> 16,
+                pValue->dwProductVersionLS & 0xFFFF);
+        }
+
+        delete[] (uint8*)buffer;
+
+        return result;
+    #else
+        return "Unknown";
+    #endif
+}
+
+void GLCaps::init() {
+    // TODO for 7.0: Call loadExtensions followed by checkAllBugs.  Remove
+    // checkAllBugs from the end of loadExtensions.
+
+    loadExtensions(Log::common());
+}
+
+// We're going to need exactly the same code for each of 
+// several extensions.
+#define DECLARE_EXT(extname)    bool GLCaps::_supports_##extname = false; 
+    DECLARE_EXT(GL_ARB_texture_non_power_of_two);
+    DECLARE_EXT(GL_EXT_texture_rectangle);
+    DECLARE_EXT(GL_ARB_vertex_program);
+    DECLARE_EXT(GL_NV_vertex_program2);
+    DECLARE_EXT(GL_ARB_vertex_buffer_object);
+    DECLARE_EXT(GL_ARB_fragment_program);
+    DECLARE_EXT(GL_ARB_multitexture);
+    DECLARE_EXT(GL_EXT_texture_edge_clamp);
+    DECLARE_EXT(GL_ARB_texture_border_clamp);
+    DECLARE_EXT(GL_EXT_texture_3D);
+    DECLARE_EXT(GL_EXT_stencil_wrap);
+    DECLARE_EXT(GL_EXT_stencil_two_side);
+    DECLARE_EXT(GL_ATI_separate_stencil);    
+    DECLARE_EXT(GL_EXT_texture_compression_s3tc);
+    DECLARE_EXT(GL_EXT_texture_cube_map);
+    DECLARE_EXT(GL_ARB_shadow);
+    DECLARE_EXT(GL_ARB_shader_objects);
+    DECLARE_EXT(GL_ARB_shading_language_100);
+    DECLARE_EXT(GL_ARB_fragment_shader);
+    DECLARE_EXT(GL_ARB_vertex_shader);
+    DECLARE_EXT(GL_EXT_framebuffer_object);
+#undef DECLARE_EXT
+
+void GLCaps::loadExtensions(Log* debugLog) {
+
+    debugAssert(glGetString(GL_VENDOR) != NULL);
+
+    if (_loadedExtensions) {
         return;
-    }
-    
-    renderDevice->beginPrimitive(RenderDevice::TRIANGLE_FAN);
-        renderDevice->setColor(color);
-        for (int i = 0; i < polygon.length(); ++i) {
-            renderDevice->sendVertex(polygon[i]);
-        }
-    renderDevice->endPrimitive();
-}
-
-
-void Draw::axes(
-    RenderDevice*       renderDevice,
-    const Color4&       xColor,
-    const Color4&       yColor,
-    const Color4&       zColor,
-    float               scale) {
-
-    axes(CoordinateFrame(), renderDevice, xColor, yColor, zColor, scale);
-}
-
-
-void Draw::arrow(
-    const Vector3&      start,
-    const Vector3&      direction,
-    RenderDevice*       renderDevice,
-    const Color4&       color,
-    float               scale) {
-    ray(Ray::fromOriginAndDirection(start, direction), renderDevice, color, scale);
-}
-
-
-void Draw::axes(
-    const CoordinateFrame& cframe,
-    RenderDevice*       renderDevice,
-    const Color4&       xColor,
-    const Color4&       yColor,
-    const Color4&       zColor,
-    float               scale) {
-
-    Vector3 c = cframe.translation;
-    Vector3 x = cframe.rotation.getColumn(0).direction() * 2 * scale;
-    Vector3 y = cframe.rotation.getColumn(1).direction() * 2 * scale;
-    Vector3 z = cframe.rotation.getColumn(2).direction() * 2 * scale;
-
-    Draw::arrow(c, x, renderDevice, xColor, scale);
-    Draw::arrow(c, y, renderDevice, yColor, scale);
-    Draw::arrow(c, z, renderDevice, zColor, scale);
-  
-    // Text label scale
-    const float xx = -3;
-    const float yy = xx * 1.4f;
-
-    // Project the 3D locations of the labels
-    Vector4 xc2D = renderDevice->project(c + x * 1.1f);
-    Vector4 yc2D = renderDevice->project(c + y * 1.1f);
-    Vector4 zc2D = renderDevice->project(c + z * 1.1f);
-
-    // If coordinates are behind the viewer, transform off screen
-    Vector2 x2D = (xc2D.w > 0) ? xc2D.xy() : Vector2(-2000, -2000);
-    Vector2 y2D = (yc2D.w > 0) ? yc2D.xy() : Vector2(-2000, -2000);
-    Vector2 z2D = (zc2D.w > 0) ? zc2D.xy() : Vector2(-2000, -2000);
-
-    // Compute the size of the labels
-    float xS = (xc2D.w > 0) ? clamp(10 * xc2D.w * scale, .1f, 5) : 0;
-    float yS = (yc2D.w > 0) ? clamp(10 * yc2D.w * scale, .1f, 5) : 0;
-    float zS = (zc2D.w > 0) ? clamp(10 * zc2D.w * scale, .1f, 5) : 0;
-
-    renderDevice->push2D();
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-        renderDevice->setLineWidth(2);
-
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            // X
-            renderDevice->setColor(xColor * 0.8f);
-            renderDevice->sendVertex(Vector2(-xx,  yy) * xS + x2D);
-            renderDevice->sendVertex(Vector2( xx, -yy) * xS + x2D);
-            renderDevice->sendVertex(Vector2( xx,  yy) * xS + x2D);
-            renderDevice->sendVertex(Vector2(-xx, -yy) * xS + x2D);
-
-            // Y
-            renderDevice->setColor(yColor * 0.8f);
-            renderDevice->sendVertex(Vector2(-xx,  yy) * yS + y2D);
-            renderDevice->sendVertex(Vector2(  0,  0)  * yS + y2D);
-            renderDevice->sendVertex(Vector2(  0,  0)  * yS + y2D);
-            renderDevice->sendVertex(Vector2(  0, -yy) * yS + y2D);
-            renderDevice->sendVertex(Vector2( xx,  yy) * yS + y2D);
-            renderDevice->sendVertex(Vector2(  0,  0)  * yS + y2D);
-        renderDevice->endPrimitive();
-
-        renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
-            // Z
-            renderDevice->setColor(zColor * 0.8f);    
-            renderDevice->sendVertex(Vector2( xx,  yy) * zS + z2D);
-            renderDevice->sendVertex(Vector2(-xx,  yy) * zS + z2D);
-            renderDevice->sendVertex(Vector2( xx, -yy) * zS + z2D);
-            renderDevice->sendVertex(Vector2(-xx, -yy) * zS + z2D);
-        renderDevice->endPrimitive();
-    renderDevice->pop2D();
-}
-
-
-void Draw::ray(
-    const Ray&          ray,
-    RenderDevice*       renderDevice,
-    const Color4&       color,
-    float               scale) {
-
-    Vector3 tip = ray.origin + ray.direction;
-    // Create a coordinate frame at the tip
-    Vector3 u = ray.direction.direction();
-    Vector3 v;
-    if (u.x == 0) {
-        v = Vector3::unitX();
     } else {
-        v = Vector3::unitY();
+        _loadedExtensions = true;
     }
-    Vector3 w = u.cross(v).direction();
-    v = w.cross(u).direction();
-    Vector3 back = tip - u * 0.3f * scale;
 
-    RenderDevice::ShadeMode oldShadeMode = renderDevice->shadeMode();
-    Color4 oldColor = renderDevice->color();
+    alwaysAssertM(! _initialized, "Internal error.");
 
-    renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-    renderDevice->setColor(color);
+    // Require an OpenGL context to continue
+    alwaysAssertM(glGetCurrentContext(), "Unable to load OpenGL extensions without a current context.");
 
-    float r = scale * .1f;
-    // Arrow head.  Need this beginprimitive call to sync up G3D and OpenGL
-    renderDevice->beginPrimitive(RenderDevice::TRIANGLES);
-        renderDevice->setNormal(u);
-        for (int a = 0; a < SPHERE_SECTIONS; ++a) {
-            float angle0 = a * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-            float angle1 = (a + 1) * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-            Vector3 dir0(cos(angle0) * v + sin(angle0) * w);
-            Vector3 dir1(cos(angle1) * v + sin(angle1) * w);
-            glNormal3fv(dir0);
-            glVertex3fv(tip);
+    // Initialize statically cached strings
+	vendor();
+    renderer();
+    glVersion();
+    driverVersion();
 
-            glVertex3fv(back + dir0 * r);
+    #define LOAD_EXTENSION(name) \
+        *((void**)&name) = glGetProcAddress(#name);
 
-            glNormal3fv(dir1);
-            glVertex3fv(back + dir1 * r);                
-        }
-    renderDevice->endPrimitive();
-    renderDevice->minGLStateChange(SPHERE_SECTIONS * 5);
+    // Don't load the multitexture extensions when they are
+    // statically linked
+    #ifndef G3D_GL_ARB_multitexture_static
+        LOAD_EXTENSION(glMultiTexCoord2fARB);
+        LOAD_EXTENSION(glMultiTexCoord1fARB);
+        LOAD_EXTENSION(glMultiTexCoord2fvARB);
+        LOAD_EXTENSION(glMultiTexCoord3fvARB);
+        LOAD_EXTENSION(glMultiTexCoord4fvARB);
+        LOAD_EXTENSION(glMultiTexCoord1dARB);
+        LOAD_EXTENSION(glMultiTexCoord2dvARB);
+        LOAD_EXTENSION(glMultiTexCoord3dvARB);
+        LOAD_EXTENSION(glMultiTexCoord4dvARB);
+        LOAD_EXTENSION(glActiveTextureARB);
+        LOAD_EXTENSION(glClientActiveTextureARB);
+    #endif
 
-    // Back of arrow head
-    renderDevice->beforePrimitive();
-    glBegin(GL_TRIANGLE_FAN);
-        glNormal3fv(-u);
-        for (int a = 0; a <= SPHERE_SECTIONS; ++a) {
-            float angle = a * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-            Vector3 dir = sin(angle) * v + cos(angle) * w;
-            glVertex3fv(back + dir * r);
-        }
-    glEnd();
-    renderDevice->afterPrimitive();
-    renderDevice->minGLStateChange(SPHERE_SECTIONS);
+    LOAD_EXTENSION(glBlendEquationEXT);
 
-    renderDevice->setColor(oldColor);
-    renderDevice->setShadeMode(oldShadeMode);
-    lineSegment(LineSegment::fromTwoPoints(ray.origin, back), renderDevice, color, scale);
-}
+    #ifdef G3D_WIN32
+        LOAD_EXTENSION(wglSwapIntervalEXT);
+        LOAD_EXTENSION(wglChoosePixelFormatARB);
+        LOAD_EXTENSION(wglAllocateMemoryNV);
+        LOAD_EXTENSION(wglFreeMemoryNV);
+    #endif
+    LOAD_EXTENSION(glVertexArrayRangeNV);
+    LOAD_EXTENSION(glCompressedTexImage2DARB);
+    LOAD_EXTENSION(glGetCompressedTexImageARB);
+    LOAD_EXTENSION(glGenFencesNV);
+    LOAD_EXTENSION(glDeleteFencesNV);
+    LOAD_EXTENSION(glSetFenceNV);
+    LOAD_EXTENSION(glFlushVertexArrayRangeNV);
+    LOAD_EXTENSION(glFinishFenceNV);
+    LOAD_EXTENSION(glGenProgramsARB);
+    LOAD_EXTENSION(glBindProgramARB);
+    LOAD_EXTENSION(glDeleteProgramsARB);
+    LOAD_EXTENSION(glProgramStringARB);
+    LOAD_EXTENSION(glProgramEnvParameter4fARB);
+    LOAD_EXTENSION(glProgramLocalParameter4fARB);
+    LOAD_EXTENSION(glProgramLocalParameter4fvARB);
+    LOAD_EXTENSION(glProgramEnvParameter4dvARB);
+    LOAD_EXTENSION(glProgramLocalParameter4dvARB);
+    LOAD_EXTENSION(glVertexAttribPointerARB);
+    LOAD_EXTENSION(glEnableVertexAttribArrayARB);
+    LOAD_EXTENSION(glDisableVertexAttribArrayARB);
+    LOAD_EXTENSION(glPointParameterfARB);
+    LOAD_EXTENSION(glPointParameterfvARB);
+    LOAD_EXTENSION(glMultiDrawArraysEXT);
+    LOAD_EXTENSION(glMultiDrawElementsEXT);
+    LOAD_EXTENSION(glCombinerParameterfvNV);
+    LOAD_EXTENSION(glCombinerParameterfNV);
+    LOAD_EXTENSION(glCombinerParameterivNV);
+    LOAD_EXTENSION(glCombinerParameteriNV);
+    LOAD_EXTENSION(glCombinerInputNV);
+    LOAD_EXTENSION(glCombinerOutputNV);
+    LOAD_EXTENSION(glFinalCombinerInputNV);
+    LOAD_EXTENSION(glGetCombinerInputParameterfvNV);
+    LOAD_EXTENSION(glGetCombinerInputParameterivNV);
+    LOAD_EXTENSION(glGetCombinerOutputParameterfvNV);
+    LOAD_EXTENSION(glGetCombinerOutputParameterivNV);
+    LOAD_EXTENSION(glGetFinalCombinerInputParameterfvNV);
+    LOAD_EXTENSION(glGetFinalCombinerInputParameterivNV);
+    LOAD_EXTENSION(glCombinerStageParameterfvNV);
+    LOAD_EXTENSION(glGetCombinerStageParameterfvNV);
+    LOAD_EXTENSION(glGenProgramsNV);
+    LOAD_EXTENSION(glDeleteProgramsNV);
+    LOAD_EXTENSION(glBindProgramNV);
+    LOAD_EXTENSION(glLoadProgramNV);
+    LOAD_EXTENSION(glTrackMatrixNV);
+    LOAD_EXTENSION(glProgramParameter4fvNV);
+    LOAD_EXTENSION(glActiveStencilFaceEXT);
+    LOAD_EXTENSION(glGetProgramParameterfvNV);
+    LOAD_EXTENSION(glGetProgramParameterdvNV);
+    LOAD_EXTENSION(glBindBufferARB);
+    LOAD_EXTENSION(glDeleteBuffersARB);
+    LOAD_EXTENSION(glGenBuffersARB);
+    LOAD_EXTENSION(glIsBufferARB);
+    LOAD_EXTENSION(glBufferDataARB);
+    LOAD_EXTENSION(glBufferSubDataARB);
+    LOAD_EXTENSION(glGetBufferSubDataARB);
+    LOAD_EXTENSION(glMapBufferARB);
+    LOAD_EXTENSION(glUnmapBufferARB);
+    LOAD_EXTENSION(glGetBufferParameterivARB);
+    LOAD_EXTENSION(glGetBufferPointervARB);
+    LOAD_EXTENSION(glDrawRangeElements);
 
+    LOAD_EXTENSION(glDeleteObjectARB);
+    LOAD_EXTENSION(glGetHandleARB);
+    LOAD_EXTENSION(glDetachObjectARB);
+    LOAD_EXTENSION(glCreateShaderObjectARB);
+    LOAD_EXTENSION(glShaderSourceARB);
+    LOAD_EXTENSION(glCompileShaderARB);
+    LOAD_EXTENSION(glCreateProgramObjectARB);
+    LOAD_EXTENSION(glAttachObjectARB);
+    LOAD_EXTENSION(glLinkProgramARB);
+    LOAD_EXTENSION(glUseProgramObjectARB);
+    LOAD_EXTENSION(glValidateProgramARB);
+    LOAD_EXTENSION(glUniform1fvARB);
+    LOAD_EXTENSION(glUniform2fvARB);
+    LOAD_EXTENSION(glUniform3fvARB);
+    LOAD_EXTENSION(glUniform4fvARB);
+    LOAD_EXTENSION(glUniform1iARB);
+    LOAD_EXTENSION(glUniform2iARB);
+    LOAD_EXTENSION(glUniform3iARB);
+    LOAD_EXTENSION(glUniform4iARB);
+    LOAD_EXTENSION(glUniformMatrix2fvARB);
+    LOAD_EXTENSION(glUniformMatrix3fvARB);
+    LOAD_EXTENSION(glUniformMatrix4fvARB);
+    LOAD_EXTENSION(glGetInfoLogARB);
+    LOAD_EXTENSION(glGetUniformLocationARB);
+    LOAD_EXTENSION(glGetAttribLocationARB);
+    LOAD_EXTENSION(glGetObjectParameterivARB);
+    LOAD_EXTENSION(glGetActiveUniformARB);
 
-void Draw::plane(
-    const Plane&         plane, 
-    RenderDevice*        renderDevice,
-    const Color4&        solidColor,
-    const Color4&        wireColor) {
+    LOAD_EXTENSION(glGenFragmentShadersATI);
+    LOAD_EXTENSION(glDeleteFragmentShaderATI);
+    LOAD_EXTENSION(glBindFragmentShaderATI);
+    LOAD_EXTENSION(glBeginFragmentShaderATI);
+    LOAD_EXTENSION(glEndFragmentShaderATI);
+    LOAD_EXTENSION(glPassTexCoordATI);
+    LOAD_EXTENSION(glSampleMapATI);
+    LOAD_EXTENSION(glSetFragmentShaderConstantATI);
+    LOAD_EXTENSION(glColorFragmentOp1ATI);
+    LOAD_EXTENSION(glColorFragmentOp2ATI);
+    LOAD_EXTENSION(glColorFragmentOp3ATI);
+    LOAD_EXTENSION(glAlphaFragmentOp1ATI);
+    LOAD_EXTENSION(glAlphaFragmentOp2ATI);
+    LOAD_EXTENSION(glAlphaFragmentOp3ATI);
 
-    renderDevice->pushState();
-    CoordinateFrame cframe0 = renderDevice->getObjectToWorldMatrix();
-
-    Vector3 N, P;
+    LOAD_EXTENSION(glDrawBuffersARB);
     
+    LOAD_EXTENSION(glTexImage3DEXT);
+
+    LOAD_EXTENSION(glStencilFuncSeparateATI);
+    LOAD_EXTENSION(glStencilOpSeparateATI);
+
+    #ifdef G3D_WIN32
+        
+        LOAD_EXTENSION(wglEnableGenlockI3D);
+        LOAD_EXTENSION(wglCreatePbufferEXT);
+        LOAD_EXTENSION(wglDestroyPbufferEXT);
+        
+    #elif defined(G3D_LINUX)
+
+        LOAD_EXTENSION(glXJoinSwapGroupNV);
+        LOAD_EXTENSION(glXBindSwapBarrierNV);
+        LOAD_EXTENSION(glXQuerySwapGroupNV);
+        LOAD_EXTENSION(glXQueryMaxSwapGroupsNV);
+        LOAD_EXTENSION(glXQueryFrameCountNV);
+        LOAD_EXTENSION(glXResetFrameCountNV);
+
+        LOAD_EXTENSION(glXCreateGLXPbufferSGIX);
+        LOAD_EXTENSION(glXDestroyGLXPbufferSGIX);
+        LOAD_EXTENSION(glXQueryGLXPbufferSGIX);
+        LOAD_EXTENSION(glXChooseFBConfigSGIX);
+        LOAD_EXTENSION(glXCreateContextWithConfigSGIX);
+    #endif
+
+    // Frame buffer object
+    LOAD_EXTENSION(glIsRenderBufferEXT);
+    LOAD_EXTENSION(glBindRenderbufferEXT);
+    LOAD_EXTENSION(glDeleteRenderbuffersEXT);
+    LOAD_EXTENSION(glGenRenderbuffersEXT);
+    LOAD_EXTENSION(glRenderbufferStorageEXT);
+    LOAD_EXTENSION(glGetRenderbufferParameterivEXT);
+    LOAD_EXTENSION(glIsFramebufferEXT);
+    LOAD_EXTENSION(glBindFramebufferEXT);
+    LOAD_EXTENSION(glDeleteFramebuffersEXT);
+    LOAD_EXTENSION(glGenFramebuffersEXT);
+    LOAD_EXTENSION(glCheckFramebufferStatusEXT);
+    LOAD_EXTENSION(glFramebufferTexture1DEXT);
+    LOAD_EXTENSION(glFramebufferTexture2DEXT);
+    LOAD_EXTENSION(glFramebufferTexture3DEXT);
+    LOAD_EXTENSION(glFramebufferRenderbufferEXT);
+    LOAD_EXTENSION(glGetFramebufferAttachmentParameterivEXT);
+    LOAD_EXTENSION(glGenerateMipmapEXT);
+
+    // Occlusion query
+    LOAD_EXTENSION(glBeginQueryARB);
+    LOAD_EXTENSION(glDeleteQueriesARB);
+    LOAD_EXTENSION(glEndQueryARB);
+    LOAD_EXTENSION(glGenQueriesARB);
+    LOAD_EXTENSION(glGetQueryivARB);
+    LOAD_EXTENSION(glGetQueryObjectivARB);
+    LOAD_EXTENSION(glGetQueryObjectuivARB);
+    LOAD_EXTENSION(glIsQueryARB);
+
+    // Depth bounds
+    LOAD_EXTENSION(glDepthBoundsEXT);
+
+    #undef LOAD_EXTENSION
+
+    std::istringstream extensions;
+	std::string extStringCopy = (char*)glGetString(GL_EXTENSIONS);
+    extensions.str(extStringCopy.c_str());
     {
-        double d;
-        plane.getEquation(N, d);
-        P = N * (float)d;
-    }
-
-    CoordinateFrame cframe1(P);
-    cframe1.lookAt(P + N);
-
-    renderDevice->setObjectToWorldMatrix(cframe0 * cframe1);
-
-    renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-    renderDevice->enableTwoSidedLighting();
-
-    if (solidColor.a > 0.0f) {
-        // Draw concentric circles around the origin.  We break them up to get good depth
-        // interpolation and reasonable shading.
-
-        renderDevice->setPolygonOffset(0.7);
-
-        if (solidColor.a < 1.0f) {
-            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        // Parse the extensions into the supported set
+        std::string s;
+        while (extensions >> s) {
+	        extensionSet.insert(s);
         }
 
-        renderDevice->setNormal(Vector3::unitZ());
-        renderDevice->setColor(solidColor);
+        // We're going to need exactly the same code for each of 
+        // several extensions.
+        #define DECLARE_EXT(extname) _supports_##extname = supports(#extname)
+            DECLARE_EXT(GL_ARB_texture_non_power_of_two);
+            DECLARE_EXT(GL_EXT_texture_rectangle);
+            DECLARE_EXT(GL_ARB_vertex_program);
+            DECLARE_EXT(GL_NV_vertex_program2);
+            DECLARE_EXT(GL_ARB_vertex_buffer_object);
+            DECLARE_EXT(GL_EXT_texture_edge_clamp);
+            DECLARE_EXT(GL_ARB_texture_border_clamp);
+            DECLARE_EXT(GL_EXT_texture_3D);
+            DECLARE_EXT(GL_ARB_fragment_program);
+            DECLARE_EXT(GL_ARB_multitexture);
+            DECLARE_EXT(GL_EXT_stencil_wrap);
+            DECLARE_EXT(GL_EXT_stencil_two_side);
+            DECLARE_EXT(GL_ATI_separate_stencil);            
+            DECLARE_EXT(GL_EXT_texture_compression_s3tc);
+            DECLARE_EXT(GL_EXT_texture_cube_map);
+            DECLARE_EXT(GL_ARB_shadow);
+            DECLARE_EXT(GL_ARB_shader_objects);
+            DECLARE_EXT(GL_ARB_shading_language_100);
+            DECLARE_EXT(GL_ARB_fragment_shader);
+            DECLARE_EXT(GL_ARB_vertex_shader);
+            DECLARE_EXT(GL_EXT_framebuffer_object);
+        #undef DECLARE_EXT
 
-        renderDevice->setCullFace(RenderDevice::CULL_NONE);
-        // Infinite strip
-        const int N = 12;
-        float r1 = 100;
-        renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
-            for (int i = 0; i <= N; ++i) {
-                float a = i * (float)G3D_TWO_PI / N;
-                float c = cosf(a);
-                float s = sinf(a);
-
-                renderDevice->sendVertex(Vector3(c * r1, s * r1, 0));
-                renderDevice->sendVertex(Vector4(c, s, 0, 0));
-            }
-        renderDevice->endPrimitive();
-
-        // Finite strips.  
-        float r2 = 0;
-        const int M = 4;
-        for (int j = 0; j < M; ++j) {
-            r2 = r1;
-            r1 = r1 / 3;
-            if (j == M - 1) {
-                // last pass
-                r1 = 0;
-            }
-
-            renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
-                for (int i = 0; i <= N; ++i) {
-                    float a = i * (float)G3D_TWO_PI / N;
-                    float c = cosf(a);
-                    float s = sinf(a);
-
-                    renderDevice->sendVertex(Vector3(c * r1, s * r1, 0));
-                    renderDevice->sendVertex(Vector3(c * r2, s * r2, 0));
-                }
-            renderDevice->endPrimitive();
+        // Verify that multitexture loaded correctly
+        if (supports_GL_ARB_multitexture() &&
+            ((glActiveTextureARB == NULL) ||
+            (glMultiTexCoord4fvARB == NULL))) {
+            _supports_GL_ARB_multitexture = false;
+            #ifdef G3D_WIN32
+                *((void**)&glActiveTextureARB) = (void*)glIgnore;
+            #endif
         }
 
+        _supports_GL_EXT_texture_rectangle = 
+            _supports_GL_EXT_texture_rectangle ||
+            supports("GL_NV_texture_rectangle");
 
+
+        // GL_ARB_texture_cube_map doesn't work on Radeon Mobility
+        // GL Renderer:    MOBILITY RADEON 9000 DDR x86/SSE2
+        // GL Version:     1.3.4204 WinXP Release
+        // Driver version: 6.14.10.6430
+
+		// GL Vendor:      ATI Technologies Inc.
+		// GL Renderer:    MOBILITY RADEON 7500 DDR x86/SSE2
+		// GL Version:     1.3.3842 WinXP Release
+		// Driver version: 6.14.10.6371
+
+		if (beginsWith(renderer(), "MOBILITY RADEON") &&
+			beginsWith(driverVersion(), "6.14.10.6")) {
+            Log::common()->printf("WARNING: This ATI Radeon Mobility card has a known bug with cube maps.\n"
+                "   Put cube map texture coordinates in the normals and use ARB_NORMAL_MAP to work around.\n\n");
+        }
     }
 
-    if (wireColor.a > 0) {
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-        renderDevice->setLineWidth(1.5);
-
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            renderDevice->setColor(wireColor);
-            renderDevice->setNormal(Vector3::unitZ());
-
-            // Lines to infinity
-            renderDevice->sendVertex(Vector4( 1, 0, 0, 0));
-            renderDevice->sendVertex(Vector4( 0, 0, 0, 1));
-
-            renderDevice->sendVertex(Vector4(-1, 0, 0, 0));
-            renderDevice->sendVertex(Vector4( 0, 0, 0, 1));
-
-            renderDevice->sendVertex(Vector4(0, -1, 0, 0));
-            renderDevice->sendVertex(Vector4(0,  0, 0, 1));
-
-            renderDevice->sendVertex(Vector4(0,  1, 0, 0));
-            renderDevice->sendVertex(Vector4(0,  0, 0, 1));
-        renderDevice->endPrimitive();
-
-        renderDevice->setLineWidth(0.5);
-
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-
-            // Horizontal and vertical lines
-            const int N = 10;
-            const float space = 1;
-            const float Ns = N * space;
-            for (int x = -N; x <= N; ++x) {
-                float sx = x * space;
-                renderDevice->sendVertex(Vector3( Ns, sx, 0));
-                renderDevice->sendVertex(Vector3(-Ns, sx, 0));
-
-                renderDevice->sendVertex(Vector3(sx,  Ns, 0));
-                renderDevice->sendVertex(Vector3(sx, -Ns, 0));
-            }
-
-        renderDevice->endPrimitive();
+    // Don't use more texture units than allowed at compile time.
+    if (GLCaps::supports_GL_ARB_multitexture()) {
+        _numTextureUnits = iMin(G3D_MAX_TEXTURE_UNITS, 
+                                glGetInteger(GL_MAX_TEXTURE_UNITS_ARB));
+    } else {
+        _numTextureUnits = 1;
     }
 
-    renderDevice->popState();
+    // NVIDIA cards with GL_NV_fragment_program have different 
+    // numbers of texture coords, units, and textures
+    if (GLCaps::supports("GL_NV_fragment_program")) {
+        glGetIntegerv(GL_MAX_TEXTURE_COORDS_NV, &_numTextureCoords);
+        _numTextureCoords = iClamp(_numTextureCoords,
+                                   _numTextureUnits,
+                                   G3D_MAX_TEXTURE_UNITS);
+
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_NV, &_numTextures);
+        _numTextures = iClamp(_numTextures,
+                              _numTextureUnits, 
+                              G3D_MAX_TEXTURE_UNITS);
+    } else {
+        _numTextureCoords = _numTextureUnits;
+        _numTextures      = _numTextureUnits;
+    }
+
+    if (! GLCaps::supports_GL_ARB_multitexture()) {
+        // No multitexture
+        if (debugLog) {
+            debugLog->println("No GL_ARB_multitexture support: "
+                              "forcing number of texture units "
+                              "to no more than 1");
+        }
+        _numTextureCoords = iMax(1, _numTextureCoords);
+        _numTextures      = iMax(1, _numTextures);
+        _numTextureUnits  = iMax(1, _numTextureUnits);
+    }
+    debugAssertGLOk();
+
+    checkAllBugs();
+
+    _initialized = true;
 }
+
+
+void GLCaps::checkAllBugs() {
+    if (_checkedForBugs) {
+        return;
+    } else {
+        _checkedForBugs = true;
+    }
+
+    alwaysAssertM(_loadedExtensions, "Cannot check for OpenGL bugs before extensions are loaded.");
+
+    checkBug_cubeMapBugs();
+    checkBug_redBlueMipmapSwap();
+    checkBug_mipmapGeneration();
+    checkBug_slowVBO();
+}
+
+
+bool GLCaps::hasBug_glMultiTexCoord3fvARB() {
+    alwaysAssertM(_initialized, "GLCaps has not been initialized.");
+    return bug_glMultiTexCoord3fvARB;
+}
+
+bool GLCaps::hasBug_normalMapTexGen() {
+    alwaysAssertM(_initialized, "GLCaps has not been initialized.");
+    return bug_normalMapTexGen;
+}
+
+
+bool GLCaps::hasBug_redBlueMipmapSwap() {
+    alwaysAssertM(_initialized, "GLCaps has not been initialized.");
+    return bug_redBlueMipmapSwap;
+}
+
+
+bool GLCaps::hasBug_mipmapGeneration() {
+    alwaysAssertM(_initialized, "GLCaps has not been initialized.");
+    return bug_mipmapGeneration;
+}
+
+
+bool GLCaps::hasBug_slowVBO() {
+    alwaysAssertM(_initialized, "GLCaps has not been initialized.");
+    return bug_slowVBO;
+}
+
+
+bool GLCaps::supports(const std::string& extension) {
+    return extensionSet.contains(extension);
+}
+
+
+bool GLCaps::supports(const TextureFormat* fmt) {
+
+    // First, check if we've already tested this format
+    if (! _supportedTextureFormat.containsKey(fmt)) {
+        uint8 bytes[8 * 8 * 4];
+
+        glPushAttrib(GL_TEXTURE_BIT);
+
+            // See if we can create a texture in this format
+            unsigned int id;
+            glGenTextures(1, &id);
+            glBindTexture(GL_TEXTURE_2D, id);
+
+            // Clear the old error flag
+            glGetError();
+            // 2D texture, level of detail 0 (normal), internal format, x size from image, y size from image, 
+            // border 0 (normal), rgb color data, unsigned byte data, and finally the data itself.
+            glTexImage2D(GL_TEXTURE_2D, 0, fmt->OpenGLFormat, 8, 8, 0, fmt->OpenGLBaseFormat, GL_UNSIGNED_BYTE, bytes);
+
+            bool success = (glGetError() == GL_NO_ERROR);
+            _supportedTextureFormat.set(fmt, success);
+
+            glDeleteTextures(1, &id);
+        // Restore old texture state
+        glPopAttrib();
+    }
+
+    return _supportedTextureFormat[fmt];
+}
+
+
+const std::string& GLCaps::glVersion() {
+    alwaysAssertM(_loadedExtensions, "Cannot call GLCaps::glVersion before GLCaps::init().");
+    static std::string _glVersion = (char*)glGetString(GL_VERSION);
+    return _glVersion;
+}
+
+
+const std::string& GLCaps::driverVersion() {
+    alwaysAssertM(_loadedExtensions, "Cannot call GLCaps::driverVersion before GLCaps::init().");
+    static std::string _driverVersion = getDriverVersion().c_str();
+	return _driverVersion;
+}
+
+
+const std::string& GLCaps::vendor() {
+    alwaysAssertM(_loadedExtensions, "Cannot call GLCaps::vendor before GLCaps::init().");
+    static std::string _driverVendor = (char*)glGetString(GL_VENDOR);
+	return _driverVendor;
+}
+
+
+const std::string& GLCaps::renderer() {
+    alwaysAssertM(_loadedExtensions, "Cannot call GLCaps::renderer before GLCaps::init().");
+    static std::string _glRenderer = (char*)glGetString(GL_RENDERER);
+	return _glRenderer;
+}
+
  
-
-
-void Draw::capsule(
-    const Capsule&       capsule, 
-    RenderDevice*        renderDevice,
-    const Color4&        solidColor,
-    const Color4&        wireColor) {
-
-    CoordinateFrame cframe(capsule.getPoint1());
-
-    Vector3 Y = (capsule.getPoint2() - capsule.getPoint1()).direction();
-    Vector3 X = (abs(Y.dot(Vector3::unitX())) > 0.9) ? Vector3::unitY() : Vector3::unitX();
-    Vector3 Z = X.cross(Y).direction();
-    X = Y.cross(Z);        
-    cframe.rotation.setColumn(0, X);
-    cframe.rotation.setColumn(1, Y);
-    cframe.rotation.setColumn(2, Z);
-
-    float radius = capsule.getRadius();
-    float height = (capsule.getPoint2() - capsule.getPoint1()).magnitude();
-
-    // Always render upright in object space
-    Sphere sphere1(Vector3::zero(), radius);
-    Sphere sphere2(Vector3(0, height, 0), radius);
-
-    Vector3 top(0, height, 0);
-
-    renderDevice->pushState();
-
-        renderDevice->setObjectToWorldMatrix(renderDevice->getObjectToWorldMatrix() * cframe);
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-
-        if (solidColor.a > 0) {
-            int numPasses = 1;
-
-            if (solidColor.a < 1) {
-                // Multiple rendering passes to get front/back blending correct
-                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-                numPasses = 2;
-                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
-                renderDevice->disableDepthWrite();
-            }
-
-            renderDevice->setColor(solidColor);
-            for (int k = 0; k < numPasses; ++k) {
-                sphereSection(sphere1, renderDevice, solidColor, false, true);
-                sphereSection(sphere2, renderDevice, solidColor, true, false);
-
-                // Cylinder faces
-                renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
-                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
-                        const float yaw0 = y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
-
-                        renderDevice->setNormal(v0);
-                        renderDevice->sendVertex(v0 * radius);
-                        renderDevice->sendVertex(v0 * radius + top);
-                    }
-                renderDevice->endPrimitive();
-
-                renderDevice->setCullFace(RenderDevice::CULL_BACK);
-            }
-
-        }
-
-        if (wireColor.a > 0) {
-            renderDevice->enableDepthWrite();
-            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-            wireSphereSection(sphere1, renderDevice, wireColor, false, true);
-            wireSphereSection(sphere2, renderDevice, wireColor, true, false);
-
-            // Line around center
-            renderDevice->setColor(wireColor);
-            Vector3 center(0, height / 2, 0);
-            renderDevice->setLineWidth(2);
-            renderDevice->beginPrimitive(RenderDevice::LINES);
-                for (int y = 0; y < WIRE_SPHERE_SECTIONS; ++y) {
-                    const float yaw0 = y * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
-                    const float yaw1 = (y + 1) * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
-
-                    Vector3 v0(cosf(yaw0), 0, sinf(yaw0));
-                    Vector3 v1(cosf(yaw1), 0, sinf(yaw1));
-
-                    renderDevice->setNormal(v0);
-                    renderDevice->sendVertex(v0 * radius + center);
-                    renderDevice->setNormal(v1);
-                    renderDevice->sendVertex(v1 * radius + center);
-                }
-
-                // Edge lines
-                for (int y = 0; y < 8; ++y) {
-                    const float yaw = y * (float)G3D_PI / 4;
-                    const Vector3 x(cosf(yaw), 0, sinf(yaw));
-        
-                    renderDevice->setNormal(x);
-                    renderDevice->sendVertex(x * radius);
-                    renderDevice->sendVertex(x * radius + top);
-                }
-            renderDevice->endPrimitive();
-        }
-
-    renderDevice->popState();
+bool GLCaps::supports_two_sided_stencil() {
+    return 
+        GLCaps::supports_GL_ATI_separate_stencil() ||
+        GLCaps::supports_GL_EXT_stencil_two_side();
 }
 
 
-void Draw::cylinder(
-    const Cylinder&      cylinder, 
-    RenderDevice*        renderDevice,
-    const Color4&        solidColor,
-    const Color4&        wireColor) {
+void GLCaps::checkBug_cubeMapBugs() {
+    bool hasCubeMap = strstr((char*)glGetString(GL_EXTENSIONS), "GL_EXT_texture_cube_map") != NULL;
 
-    CoordinateFrame cframe;
+    if (! hasCubeMap) {
+        bug_glMultiTexCoord3fvARB = false;
+        bug_normalMapTexGen = false;
+        // No cube map == no bug.
+        return;
+    }
+
+    // Save current GL state
+    unsigned int id;
+    glGenTextures(1, &id);
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+        glDrawBuffer(GL_BACK);
+        glReadBuffer(GL_BACK);
+        glClearColor(0,1,1,1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDisable(GL_DEPTH_TEST);
+
+        GLenum target[] = {
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB};
+
+
+        // Face colors
+        unsigned char color[6];
+
+        // Create a cube map
+        glActiveTextureARB(GL_TEXTURE0_ARB);
+        glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, id);
+        glEnable(GL_TEXTURE_CUBE_MAP_ARB);
     
-    cylinder.getReferenceFrame(cframe);
+        {
 
-    float radius = cylinder.radius();
-    float height = cylinder.height();
+            const int N = 16;
+            unsigned int image[N * N];
+            for (int f = 0; f < 6; ++f) {
 
-    // Always render upright in object space
-    Vector3 bot(0, -height / 2, 0);
-    Vector3 top(0, height / 2, 0);
+                color[f] = f * 40;
 
-    renderDevice->pushState();
+                // Fill each face with a different color
+                memset(image, color[f], N * N * sizeof(unsigned int));
 
-        renderDevice->setObjectToWorldMatrix(renderDevice->getObjectToWorldMatrix() * cframe);
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-
-        if (solidColor.a > 0) {
-            int numPasses = 1;
-
-            if (solidColor.a < 1) {
-                // Multiple rendering passes to get front/back blending correct
-                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-                numPasses = 2;
-                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
-                renderDevice->disableDepthWrite();
+                // 2D texture, level of detail 0 (normal), internal format, x size from image, y size from image, 
+                // border 0 (normal), rgb color data, unsigned byte data, and finally the data itself.
+                glTexImage2D(target[f], 0, GL_RGBA, N, N, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+                debugAssertGLOk();
             }
 
-            renderDevice->setColor(solidColor);
-            for (int k = 0; k < numPasses; ++k) {
-
-                // Top
-                renderDevice->beginPrimitive(RenderDevice::TRIANGLE_FAN);
-                    renderDevice->setNormal(Vector3::unitY());
-                    renderDevice->sendVertex(top);
-                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
-                        const float yaw0 = -y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
-
-                        renderDevice->sendVertex(v0 * radius + top);
-                    }
-                renderDevice->endPrimitive();
-
-                // Bottom
-                renderDevice->beginPrimitive(RenderDevice::TRIANGLE_FAN);
-                    renderDevice->setNormal(-Vector3::unitY());
-                    renderDevice->sendVertex(bot);
-                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
-                        const float yaw0 = y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
-
-                        renderDevice->sendVertex(v0 * radius + bot);
-                    }
-                renderDevice->endPrimitive();
-
-                // Cylinder faces
-                renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
-                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
-                        const float yaw0 = y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
-                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
-
-                        renderDevice->setNormal(v0);
-                        renderDevice->sendVertex(v0 * radius + bot);
-                        renderDevice->sendVertex(v0 * radius + top);
-                    }
-                renderDevice->endPrimitive();
-
-                renderDevice->setCullFace(RenderDevice::CULL_BACK);
-            }
-
+            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
+            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB, GL_TEXTURE_WRAP_R, GL_CLAMP);
         }
-
-        if (wireColor.a > 0) {
-            renderDevice->enableDepthWrite();
-            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-            // Line around center
-            renderDevice->setColor(wireColor);
-            renderDevice->setLineWidth(2);
-            renderDevice->beginPrimitive(RenderDevice::LINES);
-                for (int z = 0; z < 3; ++z) {
-                    Vector3 center(0, 0.0, 0);
-                    for (int y = 0; y < WIRE_SPHERE_SECTIONS; ++y) {
-                        const float yaw0 = y * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
-                        const float yaw1 = (y + 1) * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
-
-                        Vector3 v0(cos(yaw0), 0, sin(yaw0));
-                        Vector3 v1(cos(yaw1), 0, sin(yaw1));
-
-                        renderDevice->setNormal(v0);
-                        renderDevice->sendVertex(v0 * radius + center);
-                        renderDevice->setNormal(v1);
-                        renderDevice->sendVertex(v1 * radius + center);
-                    }
-                }
-
-                // Edge lines
-                for (int y = 0; y < 8; ++y) {
-                    const float yaw = y * (float)G3D_PI / 4;
-                    const Vector3 x(cos(yaw), 0, sin(yaw));
-                    const Vector3 xr = x * radius;
     
-                    // Side
-                    renderDevice->setNormal(x);
-                    renderDevice->sendVertex(xr + bot);
-                    renderDevice->sendVertex(xr + top);
 
-                    // Top
-                    renderDevice->setNormal(Vector3::unitY());
-                    renderDevice->sendVertex(top);
-                    renderDevice->sendVertex(xr + top);
+        // Set orthogonal projection
+        float viewport[4];
+        glGetFloatv(GL_VIEWPORT, viewport);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(viewport[0], viewport[0] + viewport[2], viewport[1] + viewport[3], viewport[1], -1, 10);
 
-                    // Bottom
-                    renderDevice->setNormal(Vector3::unitY());
-                    renderDevice->sendVertex(bot);
-                    renderDevice->sendVertex(xr + bot);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        glActiveTextureARB(GL_TEXTURE0_ARB + 0);
+        glMatrixMode(GL_TEXTURE);
+        glLoadIdentity();
+
+        glDisable(GL_TEXTURE_GEN_S);
+        glDisable(GL_TEXTURE_GEN_T);
+        glDisable(GL_TEXTURE_GEN_R);
+
+        // Render one sample from each cube map face
+        glDisable(GL_LIGHTING);
+        glDisable(GL_CULL_FACE);
+        glColor3f(1, 1, 1);
+
+        static const float corner[] = {
+            1.000000, -1.000000, 1.000000,
+            1.000000, -1.000000, -1.000000,
+            1.000000, 1.000000, -1.000000,
+            1.000000, 1.000000, 1.000000,
+
+            -1.000000, 1.000000, 1.000000,
+            -1.000000, 1.000000, -1.000000,
+            -1.000000, -1.000000, -1.000000,
+            -1.000000, -1.000000, 1.000000,
+
+            1.000000, 1.000000, 1.000000,
+            1.000000, 1.000000, -1.000000,
+            -1.000000, 1.000000, -1.000000,
+            -1.000000, 1.000000, 1.000000,
+
+            1.000000, -1.000000, 1.000000,
+            -1.000000, -1.000000, 1.000000,
+            -1.000000, -1.000000, -1.000000,
+            1.000000, -1.000000, -1.000000,
+
+            -1.000000, -1.000000, 1.000000,
+            1.000000, -1.000000, 1.000000,
+            1.000000, 1.000000, 1.000000,
+            -1.000000, 1.000000, 1.000000,
+
+            -1.000000, 1.000000, -1.000000,
+            1.000000, 1.000000, -1.000000,
+            1.000000, -1.000000, -1.000000,
+            -1.000000, -1.000000, -1.000000};
+
+        for (int i = 0; i < 2; ++i) {
+            // First time through, use multitex coord
+            if (i == 1) {
+                // Second time through, use normal map generation
+                glActiveTextureARB(GL_TEXTURE0_ARB + 0);
+                glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+                glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+                glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glEnable(GL_TEXTURE_GEN_R);
+            }
+
+            glBegin(GL_QUADS);
+
+                for (int f = 0; f < 6; ++f) {
+                    const float s = 10.0f;
+
+                    glMultiTexCoord3fvARB(GL_TEXTURE0_ARB, corner + 12 * f + 0);
+                    glNormal3fv(corner + 12 * f + 0);
+                    glVertex4f(f * s, 0, -1, 1);
+
+                    glMultiTexCoord3fvARB(GL_TEXTURE0_ARB, corner + 12 * f + 3);
+                    glNormal3fv(corner + 12 * f + 3);
+                    glVertex4f(f * s, s, -1, 1);
+
+                    glMultiTexCoord3fvARB(GL_TEXTURE0_ARB, corner + 12 * f + 6);
+                    glNormal3fv(corner + 12 * f + 6);
+                    glVertex4f((f + 1) * s, s, -1, 1);
+
+                    glMultiTexCoord3fvARB(GL_TEXTURE0_ARB, corner + 12 * f + 9);
+                    glNormal3fv(corner + 12 * f + 9);
+                    glVertex4f((f + 1) * s, 0, -1, 1);
                 }
-            renderDevice->endPrimitive();
-        }
+            glEnd();
 
-    renderDevice->popState();
-}
+            // Read back results
+            unsigned int readback[60];
+            glReadPixels(0, (int)(viewport[3] - 5), 60, 1, GL_RGBA, GL_UNSIGNED_BYTE, readback);
 
-    
-void Draw::vertexNormals(
-    const MeshAlg::Geometry&    geometry,
-    RenderDevice*               renderDevice,
-    const Color4&               color,
-    float                       scale) {
-
-    renderDevice->pushState();
-        renderDevice->setColor(color);
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-        const Array<Vector3>& vertexArray = geometry.vertexArray;
-        const Array<Vector3>& normalArray = geometry.normalArray;
-
-        const float D = clamp(5.0f / ::powf((float)vertexArray.size(), 0.25f), 0.1f, .8f) * scale;
-        
-        renderDevice->setLineWidth(1);
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            for (int v = 0; v < vertexArray.size(); ++v) {
-                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D);
-                renderDevice->sendVertex(vertexArray[v]);
-            }
-        renderDevice->endPrimitive();
-        
-        renderDevice->setLineWidth(2);
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            for (int v = 0; v < vertexArray.size(); ++v) {
-                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .96f);
-                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .84f);
-            }
-        renderDevice->endPrimitive();
-
-        renderDevice->setLineWidth(3);
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            for (int v = 0; v < vertexArray.size(); ++v) {
-                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .92f);
-                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .84f);
-            }
-        renderDevice->endPrimitive();
-    renderDevice->popState();
-}
-
-
-void Draw::vertexVectors(
-    const Array<Vector3>&       vertexArray,
-    const Array<Vector3>&       directionArray,
-    RenderDevice*               renderDevice,
-    const Color4&               color,
-    float                       scale) {
-
-    renderDevice->pushState();
-        renderDevice->setColor(color);
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-        const float D = clamp(5.0f / ::powf((float)vertexArray.size(), 0.25f), 0.1f, 0.8f) * scale;
-        
-        renderDevice->setLineWidth(1);
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            for (int v = 0; v < vertexArray.size(); ++v) {
-                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D);
-                renderDevice->sendVertex(vertexArray[v]);
-            }
-        renderDevice->endPrimitive();
-        
-        renderDevice->setLineWidth(2);
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            for (int v = 0; v < vertexArray.size(); ++v) {
-                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .96f);
-                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .84f);
-            }
-        renderDevice->endPrimitive();
-
-        renderDevice->setLineWidth(3);
-        renderDevice->beginPrimitive(RenderDevice::LINES);
-            for (int v = 0; v < vertexArray.size(); ++v) {
-                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .92f);
-                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .84f);
-            }
-        renderDevice->endPrimitive();
-    renderDevice->popState();
-}
-
-
-void Draw::line(
-    const Line&         line,
-    RenderDevice*       renderDevice,
-    const Color4&       color) {
-
-    renderDevice->pushState();
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-        renderDevice->setColor(color);
-        renderDevice->setLineWidth(2);
-        renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-        Vector3 v0 = line.point();
-        Vector3 d  = line.direction();
-        renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
-            // Off to infinity
-            renderDevice->sendVertex(Vector4(-d, 0));
-
-            for (int i = -10; i <= 10; i += 2) {
-                renderDevice->sendVertex(v0 + d * (float)i * 100.0f);
+            // Test result for errors
+            bool texbug = false;
+            for (int f = 0; f < 6; ++f) {
+                if ((readback[f * 10 + 5] & 0xFF) != color[f]) {
+                    texbug = true;
+                    break;
+                }
             }
 
-            // Off to infinity
-            renderDevice->sendVertex(Vector4(d, 0));
-        renderDevice->endPrimitive();
-    renderDevice->popState();
-}
-
-
-void Draw::lineSegment(
-    const LineSegment&  lineSegment,
-    RenderDevice*       renderDevice,
-    const Color4&       color,
-    float               scale) {
-
-    renderDevice->pushState();
-
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-        renderDevice->setColor(color);
-        
-        // Compute perspective line width
-        Vector3 v0 = lineSegment.endPoint(0);
-        Vector3 v1 = lineSegment.endPoint(1);
-
-        Vector4 s0 = renderDevice->project(v0);
-        Vector4 s1 = renderDevice->project(v1);
-
-        float L = 2 * scale;
-        if ((s0.w > 0) && (s1.w > 0)) {
-            L = 15.0f * (s0.w + s1.w) / 2.0f;
-        } else if (s0.w > 0) {
-            L = max(15 * s0.w, 10.0f);
-        } else if (s1.w > 0) {
-            L = max(15.0f * s1.w, 10.0f);
-        }
-
-        renderDevice->setLineWidth(L);
-
-        // Find the object space vector perpendicular to the line
-        // that points closest to the eye.
-        Vector3 eye = renderDevice->getObjectToWorldMatrix().pointToObjectSpace(renderDevice->getCameraToWorldMatrix().translation);
-        Vector3 E = eye - v0;
-        Vector3 V = v1 - v0;
-        Vector3 U = E.cross(V);
-        Vector3 N = V.cross(U).direction();
-
-        renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-        renderDevice->beginPrimitive(RenderDevice::LINES);        
-            renderDevice->setNormal(N);
-            renderDevice->sendVertex(v0);
-            renderDevice->sendVertex(v1);
-        renderDevice->endPrimitive();
-    renderDevice->popState();
-}
-
-
-void Draw::box(
-    const AABox&        _box,
-    RenderDevice*       renderDevice,
-    const Color4&       solidColor,
-    const Color4&       wireColor) {
-
-    box(_box.toBox(), renderDevice, solidColor, wireColor);
-}
-
-
-void Draw::box(
-    const Box&          box,
-    RenderDevice*       renderDevice,
-    const Color4&       solidColor,
-    const Color4&       wireColor) {
-
-    renderDevice->pushState();
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-
-        if (solidColor.a > 0) {
-            int numPasses = 1;
-
-            if (solidColor.a < 1) {
-                // Multiple rendering passes to get front/back blending correct
-                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-                numPasses = 2;
-                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
-                renderDevice->disableDepthWrite();
+            if (i == 0) {
+                bug_glMultiTexCoord3fvARB = texbug;
             } else {
-                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+                bug_normalMapTexGen = texbug;
             }
-
-            renderDevice->setColor(solidColor);
-            for (int k = 0; k < numPasses; ++k) {
-                renderDevice->beginPrimitive(RenderDevice::QUADS);
-                    for (int i = 0; i < 6; ++i) {
-                        Vector3 v0, v1, v2, v3;
-                        box.getFaceCorners(i, v0, v1, v2, v3);
-
-                        Vector3 n = (v1 - v0).cross(v3 - v0);
-                        renderDevice->setNormal(n.direction());
-                        renderDevice->sendVertex(v0);
-                        renderDevice->sendVertex(v1);
-                        renderDevice->sendVertex(v2);
-                        renderDevice->sendVertex(v3);
-                    }
-                renderDevice->endPrimitive();
-                renderDevice->setCullFace(RenderDevice::CULL_BACK);
-            }
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
 
-        if (wireColor.a > 0) {
-            renderDevice->enableDepthWrite();
-            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-            renderDevice->setColor(wireColor);
-            renderDevice->setLineWidth(2);
+    glPopAttrib();
 
-            Vector3 c = box.getCenter();
-            Vector3 v;
-
-            // Wire frame
-            renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
-            renderDevice->beginPrimitive(RenderDevice::LINES);
-
-                // Front and back
-                for (int i = 0; i < 8; i += 4) {
-                    for (int j = 0; j < 4; ++j) {
-                        v = box.getCorner(i + j);
-                        renderDevice->setNormal((v - c).direction());
-                        renderDevice->sendVertex(v);
-
-                        v = box.getCorner(i + ((j + 1) % 4));
-                        renderDevice->setNormal((v - c).direction());
-                        renderDevice->sendVertex(v);
-                    }
-                }
-
-                // Sides
-                for (int i = 0; i < 4; ++i) {
-                    v = box.getCorner(i);
-                    renderDevice->setNormal((v - c).direction());
-                    renderDevice->sendVertex(v);
-
-                    v = box.getCorner(i + 4);
-                    renderDevice->setNormal((v - c).direction());
-                    renderDevice->sendVertex(v);
-                }
-
-
-            renderDevice->endPrimitive();
-        }
-    renderDevice->popState();
+    glDeleteTextures(1, &id);
 }
 
 
-void Draw::wireSphereSection(
-    const Sphere&       sphere,
-    RenderDevice*       renderDevice,
-    const Color4&       color,
-    bool                top,
-    bool                bottom) {
+#if 0
+/** Called from hasBug_slowVBO */
+static void configureCameraAndLights() {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    float w = 0.8, h = 0.6;
+    glFrustum(-w/2, w/2, -h/2, h/2, 0.5, 100);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glShadeModel(GL_SMOOTH);
+
+    glCullFace(GL_BACK);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    {
+        float pos[4] = {-1.0, 1.0, 1.0, 0.0};
+        glLightfv(GL_LIGHT0, GL_POSITION, pos);
+
+        float col[4] = {1.0, 1.0, 1.0, 1.0};
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, col);
+
+    }
+
+    glEnable(GL_LIGHT1);
+    {
+        float pos[4] = {1.0, -1.0, 1.0, 0.0};
+        glLightfv(GL_LIGHT1, GL_POSITION, pos);
+
+        float col[4] = {0.4, 0.1, 0.1, 1.0};
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, col);
+    }
+
+    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+    {
+        float amb[4] = {0.5, 0.5, 0.5, 1.0};
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, amb);
+    }
+
+    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
+}
+#endif
+
+
+void GLCaps::checkBug_redBlueMipmapSwap() {
+    static bool hasAutoMipmap = false;
+    {
+        std::string ext = (char*)glGetString(GL_EXTENSIONS);
+        hasAutoMipmap = (ext.find("GL_SGIS_generate_mipmap") != std::string::npos);
+    }
+
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    GLuint id;
+    glGenTextures(1, &id);
+
+    glBindTexture(GL_TEXTURE_2D, id);
+
+    if (hasAutoMipmap) {
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+    }
+
+    int N = 4 * 4 * 3;
+    uint8* bytes = new uint8[N];
+
+    memset(bytes, 0, 4*4*3);
+    for (int i = 0; i < N; i += 3) {
+        bytes[i] = 0xFF;
+    }
+
+    // 2D texture, level of detail 0 (normal), internal format, x size from image, y size from image, 
+    // border 0 (normal), rgb color data, unsigned byte data, and finally the data itself.
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 4, 4, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);
+
+    // Read the data back.
+    glGetTexImage(GL_TEXTURE_2D,
+			      0,
+			      GL_RGB,
+			      GL_UNSIGNED_BYTE,
+			      bytes);
+
+    // Verify that the data made the round trip correctly
+    bug_redBlueMipmapSwap = 
+        (bytes[0] != 0xFF) ||
+        (bytes[1] != 0x00) ||
+        (bytes[2] != 0x00);
+
+    delete[] bytes;
+
+    // Draw to the screen.
+
+    glDeleteTextures(1, &id);
+    glPopAttrib();
+}
+
+void GLCaps::checkBug_mipmapGeneration() {
+    const std::string& r = renderer();
+
+	// The mip-maps are arbitrarily corrupted; we have not yet generated
+	// a reliable test for this case.
+
+    bug_mipmapGeneration = 
+        GLCaps::supports("GL_SGIS_generate_mipmap") &&
+		(beginsWith(r, "MOBILITY RADEON 90") ||
+		    beginsWith(r, "MOBILITY RADEON 57") ||
+		    beginsWith(r, "Intel 845G") ||
+		    beginsWith(r, "Intel 854G"));
+}
+
+
+void GLCaps::checkBug_slowVBO() {
+    bool hasVBO = 
+        (strstr((char*)glGetString(GL_EXTENSIONS), "GL_ARB_vertex_buffer_object") != NULL) &&
+            (glGenBuffersARB != NULL) && 
+            (glBufferDataARB != NULL) &&
+            (glDeleteBuffersARB != NULL);
+
+    if (! hasVBO) {
+		// Don't have VBO; don't have a bug!
+        bug_slowVBO = false;
+        return;
+    }
+
+	const std::string& r = renderer();
+
+    bug_slowVBO = beginsWith(r, "MOBILITY RADEON 7500");
+	return;
+
+    // TODO: Make a real test for this case
+#if 0
+    USE_TEMPORARY_CONTEXT;
+
+    // Load the vertex arrays.  It is important to create a reasonably coherent object;
+    // random triangles are a pathological case for the graphics card and will produce
+    // poor rendering performance.
+
+    // Vertices per side
+    const int sq = 187;
+
+    // Number of indices
+    const int N = (sq - 1) * (sq - 1) * 3 * 2;
+
+    // Number of vertices
+    const int V = sq * sq;
+
+    // Make a grid of triangles
+    std::vector<int> index(N);
+    {
+        int k = 0;
+        for (int i = 0; i < sq - 1; ++i) {
+            for (int j = 0; j < sq - 1; ++j) {
+                debugAssert(k < N - 5);
+
+                // Bottom triangle
+                index[k + 0] = i + j * sq;
+                index[k + 1] = i + (j + 1) * sq;
+                index[k + 2] = (i + 1) + (j + 1) * sq;
+
+                // Top triangle
+                index[k + 3] = i + j * sq;
+                index[k + 4] = (i + 1) + (j + 1) * sq;
+                index[k + 5] = (i + 1) + j * sq;
+
+                k += 6;
+            }
+        }
+    }
+
+    // Create data
+    std::vector<float> vertex(V * 3), normal(V * 3), texCoord(V * 2), color(V * 4);
+
+    // Map V indices to a sq x sq grid
+    for (int i = 0; i < sq; ++i) {
+        for (int j = 0; j < sq; ++j) {
+
+            int v = (i + j * sq) * 3;
+            float x = (i / (float)sq - 0.5) * 2;
+            float y = 0.5 - j / (float)sq;
+            float a = x * 2 * 3.1415927;
+            float r = ceil(cos(a * 10)) * 0.05 + 0.3; 
+            vertex[v + 0] = -cos(a) * r;
+            vertex[v + 1] = y;
+            vertex[v + 2] = sin(a) * r;
+
+            // Scale the normal
+            float s = 1.0 / sqrt(0.0001 + square(vertex[v]) + square(vertex[v + 1]) + square(vertex[v + 2]));
+            normal[v] = vertex[v] * s;
+            normal[v + 1] = vertex[v + 1] * s;
+            normal[v + 2] = vertex[v + 2] * s;
+
+            v = (i + j * sq) * 4;
+            color[v + 0] = r + 0.7;
+            color[v + 1] = 0.5;
+            color[v + 2] = 1.0 - r;
+            color[v + 3] = 1.0;
+
+
+            v = (i + j * sq) * 2;
+            texCoord[v] = i / (float)sq;
+            texCoord[v + 1] = j / (float)sq;
+        }
+    }
+
+    // number of objects to draw
+    const int count = 4;
+    const int frames = 15;
+    double t0 = 0;
+
+    size_t vertexSize   = V * sizeof(float) * 3;
+    size_t normalSize   = V * sizeof(float) * 3;
+    size_t colorSize    = V * sizeof(float) * 4;
+    size_t texCoordSize = V * sizeof(float) * 2;
+    size_t totalSize    = vertexSize + normalSize + texCoordSize + colorSize;
+
+    size_t indexSize    = N * sizeof(int);
+
+    debugAssert(frames >= 2);
+
+    // Time for each rendering method
+    double VBOTime;
+    double RAMTime;
+
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushClientAttrib(GL_ALL_CLIENT_ATTRIB_BITS);
+
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glPushClientAttrib(GL_ALL_CLIENT_ATTRIB_BITS);
+
+        GLuint vbo, indexBuffer;
+        glGenBuffersARB(1, &vbo);
+        glGenBuffersARB(1, &indexBuffer);
+
+        // Pointers relative to the start of the vbo in video memory
+        GLintptrARB vertexPtr   = 0;
+        GLintptrARB normalPtr   = vertexSize + vertexPtr;
+        GLintptrARB texCoordPtr = normalSize  + normalPtr;
+        GLintptrARB colorPtr    = texCoordSize + texCoordPtr;
+
+        GLintptrARB indexPtr    = 0;
+
+        // Upload data
+        glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer);
+        glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexSize, &index[0], GL_STATIC_DRAW_ARB);
+
+        glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo);
+        glBufferDataARB(GL_ARRAY_BUFFER_ARB, totalSize, NULL, GL_STATIC_DRAW_ARB);
+
+        glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, texCoordPtr, texCoordSize, &texCoord[0]);
+        glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, normalPtr,   normalSize,   &normal[0]);
+        glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, colorPtr,    colorSize,    &color[0]);
+        glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, vertexPtr,   vertexSize,   &vertex[0]);
     
-    int sections = WIRE_SPHERE_SECTIONS;
-    int start = top ? 0 : (sections / 2);
-    int stop = bottom ? sections : (sections / 2);
-
-    renderDevice->pushState();
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-        renderDevice->setColor(color);
-        renderDevice->setLineWidth(2);
-        renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
-        renderDevice->setCullFace(RenderDevice::CULL_BACK);
-        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-
-        float radius = sphere.radius;
-        const Vector3& center = sphere.center;
-
-        // Wire frame
-        for (int y = 0; y < 8; ++y) {
-            const float yaw = y * (float)G3D_PI / 4;
-            const Vector3 x(cos(yaw) * radius, 0, sin(yaw) * radius);
-            //const Vector3 z(-sin(yaw) * radius, 0, cos(yaw) * radius);
-
-            renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
-                for (int p = start; p <= stop; ++p) {
-                    const float pitch0 = p * (float)G3D_PI / (sections * 0.5f);
-
-                    Vector3 v0 = cosf(pitch0) * x + Vector3::unitY() * radius * sinf(pitch0);
-                    renderDevice->setNormal(v0.direction());
-                    renderDevice->sendVertex(v0 + center);
+        {
+            float k = 0;
+            configureCameraAndLights();
+            glDisable(GL_TEXTURE_2D);
+            glClearColor(1.0f, 1.0f, 1.0f, 0.04f);
+            glColor3f(1, .5, 0);
+            glFinish();
+            System::sleep(0.05);
+            for (int j = 0; j < frames + 1; ++j) {
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                // Don't count the first frame against us; it is cache warmup
+                if (j == 1) {
+                    t0 = System::time();
                 }
-            renderDevice->endPrimitive();
-        }
+                k += 3;
 
+                glEnableClientState(GL_NORMAL_ARRAY);
+                glEnableClientState(GL_COLOR_ARRAY);
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                glEnableClientState(GL_VERTEX_ARRAY);
 
-        int a = bottom ? -1 : 0;
-        int b = top ? 1 : 0; 
-        for (int p = a; p <= b; ++p) {
-            const float pitch = p * (float)G3D_PI / 6;
+                glNormalPointer(GL_FLOAT, 0, (void*)normalPtr);
+                glTexCoordPointer(2, GL_FLOAT, 0, (void*)texCoordPtr);
+                glColorPointer(4, GL_FLOAT, 0, (void*)colorPtr);
+                glVertexPointer(3, GL_FLOAT, 0, (void*)vertexPtr);
 
-            renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
-                for (int y = 0; y <= sections; ++y) {
-                    const float yaw0 = y * (float)G3D_PI / 13;
-                    Vector3 v0 = Vector3(cos(yaw0) * cos(pitch), sin(pitch), sin(yaw0) * cos(pitch)) * radius;
-                    renderDevice->setNormal(v0.direction());
-                    renderDevice->sendVertex(v0 + center);
+                for (int c = 0; c < count; ++c) {
+                    glMatrixMode(GL_MODELVIEW);
+                    glLoadIdentity();
+                    glTranslatef(c - (count - 1) / 2.0, 0, -2);
+                    glRotatef(k * ((c & 1) * 2 - 1) + 90, 0, 1, 0);
+
+                    glDrawElements(GL_TRIANGLES, N, GL_UNSIGNED_INT, (void*)indexPtr);
                 }
-            renderDevice->endPrimitive();
+                //RenderDevice::lastRenderDeviceCreated->window()->swapGLBuffers();
+                glFlush();
+            }
+            glFinish();
+            VBOTime = System::time() - t0;
         }
 
-    renderDevice->popState();
-}
+    glPopClientAttrib();
+    glPopAttrib();
 
+    glDeleteBuffersARB(1, &indexBuffer);
+    glDeleteBuffersARB(1, &vbo);
 
-void Draw::sphereSection(
-    const Sphere&       sphere,
-    RenderDevice*       renderDevice,
-    const Color4&       color,
-    bool                top,
-    bool                bottom) {
+    glPushClientAttrib(GL_ALL_CLIENT_ATTRIB_BITS);
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    {
+        float k = 0;
+        configureCameraAndLights();
+        glDisable(GL_TEXTURE_2D);
+        glClearColor(1.0f, 1.0f, 1.0f, 0.04f);
+        glColor3f(1, .5, 0);
+        glFinish();
+        System::sleep(0.05);
 
-    // The first time this is invoked we create a series of quad strips in a vertex array.
-    // Future calls then render from the array. 
-
-    CoordinateFrame cframe = renderDevice->getObjectToWorldMatrix();
-
-    // Auto-normalization will take care of normal length
-    cframe.translation += cframe.rotation * sphere.center;
-    cframe.rotation = cframe.rotation * sphere.radius;
-
-
-    // Track enable bits individually instead of using slow glPush
-    bool resetNormalize = false;
-    bool usedRescaleNormal = false;
-    if (GLCaps::supports("GL_EXT_rescale_normal")) {
-        // Switch to using GL_RESCALE_NORMAL, which should be slightly faster.
-        resetNormalize = (glIsEnabled(GL_NORMALIZE) == GL_TRUE);
-        usedRescaleNormal = true;
-        glDisable(GL_NORMALIZE);
-        glEnable(GL_RESCALE_NORMAL);
-    }
-
-    renderDevice->pushState();
-        renderDevice->setObjectToWorldMatrix(cframe);
-
-        renderDevice->setColor(color);
-        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
-
-        static bool initialized = false;
-        static VAR vbuffer;
-        static Array< uint16 > stripIndexArray;
-
-        if (! initialized) {
-            // The normals are the same as the vertices for a sphere
-            Array<Vector3> vertex;
-
-            stripIndexArray.resize(iFloor((G3D_PI / (float)SPHERE_PITCH_SECTIONS) + 2 * 
-                                   (G3D_PI * 2.0 / SPHERE_YAW_SECTIONS)));
-
-            int i = 0;
-
-            for (int p = 0; p < SPHERE_PITCH_SECTIONS; ++p) {
-                const float pitch0 = p * (float)G3D_PI / SPHERE_PITCH_SECTIONS;
-                const float pitch1 = (p + 1) * (float)G3D_PI / SPHERE_PITCH_SECTIONS;
-
-                const float sp0 = sin(pitch0);
-                const float sp1 = sin(pitch1);
-                const float cp0 = cos(pitch0);
-                const float cp1 = cos(pitch1);
-
-                for (int y = 0; y <= SPHERE_YAW_SECTIONS; ++y) {
-                    const float yaw = -y * (float)G3D_PI * 2.0f / SPHERE_YAW_SECTIONS;
-
-                    const float cy = cos(yaw);
-                    const float sy = sin(yaw);
-
-                    const Vector3 v0(cy * sp0, cp0, sy * sp0);
-                    const Vector3 v1(cy * sp1, cp1, sy * sp1);
-
-                    vertex.append(v0, v1);
-                    stripIndexArray.append(i, i + 1);
-                    i += 2;
-                }
-
-                const Vector3& degen = Vector3(1.0f * sp1, cp1, 0.0f * sp1);
-
-                vertex.append(degen, degen);
-                stripIndexArray.append(i, i + 1);
-                i += 2;    
+        for (int j = 0; j < frames; ++j) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // Don't count the first frame against us; it is cache warmup
+            if (j == 1) {
+                t0 = System::time();
             }
+            k += 3;
 
-            VARAreaRef area = VARArea::create(vertex.size() * sizeof(Vector3), VARArea::WRITE_ONCE);
-            vbuffer = VAR(vertex, area);
-            initialized = true;
+            glEnableClientState(GL_NORMAL_ARRAY);
+            glEnableClientState(GL_COLOR_ARRAY);
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            glEnableClientState(GL_VERTEX_ARRAY);
+
+            glNormalPointer(GL_FLOAT, 0, &normal[0]);
+            glColorPointer(4, GL_FLOAT, 0, &color[0]);
+            glTexCoordPointer(2, GL_FLOAT, 0, &texCoord[0]);
+            glVertexPointer(3, GL_FLOAT, 0, &vertex[0]);
+
+            for (int c = 0; c < count; ++c) {
+                glMatrixMode(GL_MODELVIEW);
+                glLoadIdentity();
+                glTranslatef(c - (count - 1) / 2.0, 0, -2);
+                glRotatef(k * ((c & 1) * 2 - 1) + 90, 0, 1, 0);
+
+                glDrawElements(GL_TRIANGLES, N, GL_UNSIGNED_INT, &index[0]);
+            }
+            glFlush();
+            //RenderDevice::lastRenderDeviceCreated->window()->swapGLBuffers();
         }
-
-        renderDevice->beginIndexedPrimitives();
-            renderDevice->setNormalArray(vbuffer);
-            renderDevice->setVertexArray(vbuffer);
-            if (top) {
-                renderDevice->sendIndices(RenderDevice::QUAD_STRIP, (stripIndexArray.length() / 2),
-                    stripIndexArray.getCArray());
-            }
-            if (bottom) {
-                renderDevice->sendIndices(RenderDevice::QUAD_STRIP, (stripIndexArray.length() / 2), 
-                    stripIndexArray.getCArray() + (stripIndexArray.length() / 2));
-            }
-        renderDevice->endIndexedPrimitives();
-
-    renderDevice->popState();
-
-    if (usedRescaleNormal) {
-        glDisable(GL_RESCALE_NORMAL);
-        if (resetNormalize) {
-            glEnable(GL_NORMALIZE);
-        }
+        glFinish();
+        RAMTime = System::time() - t0;
     }
+    glPopClientAttrib();
+    glPopAttrib();
+
+    glPopClientAttrib();
+    glPopAttrib();
+
+    Log::common()->printf("\n%d triangles\n", count * N / 3);
+    Log::common()->printf("RAM performance = %f FPS     VBO performance = %f FPS\n", (float)(frames - 1) / RAMTime, (float)(frames - 1)/ VBOTime);
+
+    // See if the RAM performance was conservatively faster.
+    value = RAMTime < VBOTime * 0.9;
+    return value;
+#endif
+}
+
+void describeSystem(
+    class RenderDevice*  rd, 
+    class NetworkDevice* nd, 
+    TextOutput& t) {
+
+	System::describeSystem(t);
+	rd->describeSystem(t);
+	nd->describeSystem(t);
 }
 
 
-void Draw::sphere(
-    const Sphere&       sphere,
-    RenderDevice*       renderDevice,
-    const Color4&       solidColor,
-    const Color4&       wireColor) {
-
-    if (solidColor.a > 0) {
-        renderDevice->pushState();
-
-            int numPasses = 1;
-
-            if (solidColor.a < 1) {
-                numPasses = 2;
-                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
-                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-                renderDevice->disableDepthWrite();
-            } else {
-                renderDevice->setCullFace(RenderDevice::CULL_BACK);
-            }
-
-            if (wireColor.a > 0) {
-                renderDevice->setPolygonOffset(3);
-            }
-
-            for (int k = 0; k < numPasses; ++k) {
-                sphereSection(sphere, renderDevice, solidColor, true, true);
-                renderDevice->setCullFace(RenderDevice::CULL_BACK);
-            }
-        renderDevice->popState();
-    }
-
-    if (wireColor.a > 0) {
-        wireSphereSection(sphere, renderDevice, wireColor, true, true);
-    }
-}
-
-
-void Draw::fullScreenImage(const GImage& im, RenderDevice* renderDevice) {
-    debugAssert( im.channels == 3 || im.channels == 4 );
-    renderDevice->push2D();
-        glPixelZoom((float)renderDevice->getWidth() / (float)im.width, 
-                   -(float)renderDevice->getHeight() / (float)im.height);
-        glRasterPos4d(0.0, 0.0, 0.0, 1.0);
-
-        glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glDrawPixels(im.width, im.height, (im.channels == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, (const GLvoid*)im.byte());
-
-        glPopClientAttrib();
-    renderDevice->pop2D();
-}
-
-
-void Draw::rect2D(
-    const Rect2D& rect,
-    RenderDevice* rd,
-    const Color4& color,
-    const Vector2& texCoord0,
-    const Vector2& texCoord1,
-    const Vector2& texCoord2,
-    const Vector2& texCoord3) {
-
-    Draw::rect2D(rect, rd, color,
-        Rect2D::xywh(0,0,texCoord0.x, texCoord0.y),
-        Rect2D::xywh(0,0,texCoord1.x, texCoord1.y),
-        Rect2D::xywh(0,0,texCoord2.x, texCoord2.y),
-        Rect2D::xywh(0,0,texCoord3.x, texCoord3.y));
-}
-
-
-void Draw::rect2D(
-    const Rect2D& rect,
-    RenderDevice* rd,
-    const Color4& color,
-    const Rect2D& texCoord0,
-    const Rect2D& texCoord1,
-    const Rect2D& texCoord2,
-    const Rect2D& texCoord3) {
-
-    const Rect2D* tx[4];
-    tx[0] = &texCoord0;
-    tx[1] = &texCoord1;
-    tx[2] = &texCoord2;
-    tx[3] = &texCoord3;
-
-    int N = iMin(4, GLCaps::numTextureCoords());
-
-    rd->pushState();
-    rd->setColor(color);
-    rd->beginPrimitive(RenderDevice::QUADS);
-        for (int i = 0; i < 4; ++i) {
-            for (int t = 0; t < N; ++t) {
-                rd->setTexCoord(t, tx[t]->corner(i));
-            }
-            rd->sendVertex(rect.corner(i));
-        }
-    rd->endPrimitive();
-    rd->popState();
-}
-
-
-void Draw::fastRect2D(
-    const Rect2D&       rect,
-    RenderDevice*       rd,
-    const Color4&       color) {
-
-    rd->setColor(color);
-    // Use begin primitive in case there are any 
-    // lazy state changes pending.
-    rd->beginPrimitive(RenderDevice::QUADS);
-        
-        glTexCoord2f(0, 0);
-        glVertex2f(rect.x0(), rect.y0());
-
-        glTexCoord2f(0, 1);
-        glVertex2f(rect.x0(), rect.y1());
-
-        glTexCoord2f(1, 1);
-        glVertex2f(rect.x1(), rect.y1());
-
-        glTexCoord2f(1, 0);
-        glVertex2f(rect.x1(), rect.y0());
-
-    rd->endPrimitive();
-
-    // Record the cost of the raw OpenGL calls
-    rd->minGLStateChange(8);
-}
-
-
-
-void Draw::rect2DBorder(
-    const class Rect2D& rect,
-    RenderDevice* rd,
-    const Color4& color,
-    float outerBorder,
-    float innerBorder) {
-
-
-    //
-    //
-    //   **************************************
-    //   **                                  **
-    //   * **                              ** *
-    //   *   ******************************   *
-    //   *   *                            *   *
-    //
-    //
-    const Rect2D outer = rect.border(outerBorder);
-    const Rect2D inner = rect.border(-innerBorder); 
-
-    rd->pushState();
-    rd->setColor(color);
-    rd->beginPrimitive(RenderDevice::QUAD_STRIP);
-
-    for (int i = 0; i < 5; ++i) {
-        int j = i % 4;
-        rd->sendVertex(outer.corner(j));
-        rd->sendVertex(inner.corner(j));
-    }
-
-    rd->endPrimitive();
-    rd->popState();
-}
-
-
-void Draw::frustum(
-    const class GCamera::Frustum& frustum,
-    RenderDevice* rd,
-    const Color4& color,
-    const Color4& wire) {
-
-    // Draw edges
-    rd->pushState();
-
-    if (wire.a > 0) {
-        rd->setColor(wire);
-        for (int f = 0; f < frustum.faceArray.size(); ++f) {
-            rd->beginPrimitive(RenderDevice::LINE_STRIP);
-            for (int v = 0; v < 5; ++v) {
-                rd->sendVertex(frustum.vertexPos[frustum.faceArray[f].vertexIndex[v % 4]]);
-            }
-            rd->endPrimitive();
-        }
-    }
-
-    rd->setDepthWrite(false);
-        rd->setCullFace(RenderDevice::CULL_NONE);
-        rd->enableTwoSidedLighting();
-        rd->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
-        rd->setColor(color);
-        rd->beginPrimitive(RenderDevice::QUADS);
-        for (int f = 0; f < frustum.faceArray.size(); ++f) {
-            rd->setNormal(frustum.faceArray[f].plane.normal());
-            for (int v = 0; v < 4; ++v) {
-                rd->sendVertex(frustum.vertexPos[frustum.faceArray[f].vertexIndex[v]]);
-            }
-        }
-        rd->endPrimitive();
-
-    rd->popState();
-    // TODO:face colors
+void describeSystem(
+    class RenderDevice*  rd, 
+    class NetworkDevice* nd, 
+    std::string&        s) {
+    
+    TextOutput t;
+    describeSystem(rd, nd, t);
+    t.commitString(s);
 }
 
 }

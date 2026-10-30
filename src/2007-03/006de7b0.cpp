@@ -1,218 +1,281 @@
-// from server: 47% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTMaskEdit.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/Gui.h"
+// XTMaskEdit.cpp : implementation of the CXTMaskEdit class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace RBX
+#include "stdafx.h"
+#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
+
+#include "XTGlobal.h"
+#include "XTMaskEdit.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTMaskEdit
+/////////////////////////////////////////////////////////////////////////////
+
+CXTMaskEdit::CXTMaskEdit()
 {
-	const G3D::Color4& GuiItem::disabledFill()
-	{
-		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
-		return c;
-	}
+}
 
-	const G3D::Color4& GuiItem::translucentBackdrop()
-	{
-		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
-		return c;
-	}
 
-	G3D::Vector2 GuiRoot::canvasSize;
-	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
-	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
+IMPLEMENT_DYNAMIC(CXTMaskEdit, CEdit)
 
-	GuiItem::GuiItem() 
-	{
-		setName("Unnamed GuiItem");
-	}
+BEGIN_MESSAGE_MAP(CXTMaskEdit, CEdit)
+	ON_MASKEDIT_REFLECT()
+END_MESSAGE_MAP()
 
-	const GuiItem* GuiItem::getGuiItem(int index) const
-	{
-		return dynamic_cast<const GuiItem*>(getChild(index));
-	}
+BOOL CXTMaskEdit::SetEditMask(LPCTSTR lpszMask, LPCTSTR lpszLiteral, LPCTSTR lpszDefault /*= NULL*/)
+{
+	return CXTMaskEditT<CEdit>::SetEditMask(lpszMask, lpszLiteral, lpszDefault);
+}
 
-	GuiItem* GuiItem::getGuiItem(int index)
-	{
-		return dynamic_cast<GuiItem*>(getChild(index));
-	}
+bool CXTMaskEdit::Initialize(CWnd* /*pParentWnd*/)
+{
+	SetFont(&XTAuxData().font);
+	return true;
+}
 
-	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
+/////////////////////////////////////////////////////////////////////////////
+// CXTDateEdit class
+/////////////////////////////////////////////////////////////////////////////
+
+CXTDateEdit::CXTDateEdit()
+{
+	m_bUseMask = true;
+	m_strMask = _T("00/00/0000");
+	m_strLiteral = _T("__/__/____");
+	m_strDefault = _T("00/00/0000");
+}
+
+COleDateTime CXTDateEdit::ReadOleDateTime(LPCTSTR lpszData)
+{
+	COleDateTime dt;
+	dt.ParseDateTime(lpszData);
+	return dt;
+}
+
+IMPLEMENT_DYNAMIC(CXTDateEdit, CXTMaskEdit)
+
+void CXTDateEdit::FormatOleDateTime(CString &strData, COleDateTime dt)
+{
+	strData = dt.Format(_T("%d/%m/%Y"));
+}
+
+void CXTDateEdit::SetDateTime(COleDateTime& dt)
+{
+	CString strText;
+	FormatOleDateTime(strText, dt);
+	m_strWindowText = m_strDefault = strText;
+	SetWindowText(strText);
+}
+
+void CXTDateEdit::SetDateTime(LPCTSTR strDate)
+{
+	m_strWindowText = m_strDefault = strDate;
+	SetWindowText(strDate);
+}
+
+COleDateTime CXTDateEdit::GetDateTime()
+{
+	CString strText;
+	GetWindowText(strText);
+	return ReadOleDateTime(strText);
+}
+
+CString CXTDateEdit::GetWindowDateTime()
+{
+	CString strText;
+	GetWindowText(strText);
+	return strText;
+}
+
+BOOL CXTDateEdit::ProcessMask(TCHAR& nChar, int nEndPos)
+{
+	// check the key against the mask
+	if (m_strMask[nEndPos] == _T('0') && _istdigit((TCHAR)nChar))
 	{
-		for (size_t i = 0; i < numChildren(); i++)
+		if (nEndPos == 0)
 		{
-			GuiItem* current = getGuiItem((int)i);
-
-			if (current && current != focus.get())
+			if (nChar > '3')
+				return FALSE;
+		}
+		if (nEndPos == 1)
+		{
+			if (m_strWindowText.GetAt(0) == _T('3'))
 			{
-				GuiResponse itemResponse = current->process(event);
-				if (itemResponse.wasUsed())
+				if (nChar > _T('1'))
+					return FALSE;
+			}
+		}
+		if (nEndPos == 3)
+		{
+			if (nChar > _T('1'))
+				return FALSE;
+		}
+		if (nEndPos == 4)
+		{
+			if (m_strWindowText.GetAt(3) == _T('1'))
+			{
+				if (nChar > _T('2'))
+					return FALSE;
+			}
+		}
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTTimeEdit class
+/////////////////////////////////////////////////////////////////////////////
+
+CXTTimeEdit::CXTTimeEdit()
+{
+	m_bMilitary = false;
+	m_bUseMask = true;
+	m_strMask = _T("00:00");
+	m_strLiteral = _T("__:__");
+	m_strDefault = _T("00:00");
+	m_iHours = 0;
+	m_iMins = 0;
+}
+
+IMPLEMENT_DYNAMIC(CXTTimeEdit, CXTDateEdit)
+
+void CXTTimeEdit::FormatOleDateTime(CString &strData, COleDateTime dt)
+{
+	if (dt.m_dt == 0)
+	{
+		strData = _T("00:00");
+	}
+	else
+	{
+		strData = dt.Format(_T("%H:%M"));
+	}
+}
+
+BOOL CXTTimeEdit::ProcessMask(TCHAR& nChar, int nEndPos)
+{
+	// check the key against the mask
+	if (m_strMask[nEndPos] == _T('0') && _istdigit(nChar))
+	{
+		switch (nEndPos)
+		{
+		case 0:
+			if (m_bMilitary)
+			{
+				if (nChar > _T('2'))
+					return FALSE;
+			}
+			else
+			{
+				if (nChar > _T('1'))
+					return FALSE;
+			}
+			return TRUE;
+
+		case 1:
+			if (m_bMilitary)
+			{
+				if (m_strWindowText.GetAt(0) == _T('2'))
 				{
-					this->loseFocus();
-
-					focus = shared_from(current);
-					focus->loseFocus();
-
-					return itemResponse;
+					if (nChar > _T('3'))
+						return FALSE;
 				}
 			}
-		}
-
-		return GuiResponse::notUsed();
-	}
-
-	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		if (instance == focus)
-			loseFocus();
-
-		Instance::onDescendentRemoving(instance);
-	}
-
-	Rect GuiItem::getMyRect() const
-	{
-		G3D::Vector2 pos = getPosition();
-		return Rect(pos, pos + getSize());
-	}
-
-	const GuiItem* GuiItem::getGuiParent() const
-	{
-		return dynamic_cast<const GuiItem*>(getParent());
-	}
-	
-	GuiResponse GuiItem::process(const GuiEvent& event)
-	{
-		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
-			return GuiResponse::notUsed();
-
-		if (focus)
-		{
-			if (focus->canLoseFocus())
+			else
 			{
-				GuiResponse response = processNonFocus(event);
-				if (response.wasUsed())
-					return response;
-			}
-
-			GuiResponse focusResponse = focus->process(event);
-			if (focusResponse.wasUsed())
-				return focusResponse;
-
-			loseFocus();
-		}
-
-		RBXASSERT(!focus);
-		return processNonFocus(event);
-	}
-
-	void TopMenuBar::init()
-	{
-		layoutStyle = Layout::HORIZONTAL;
-		backdropColor = G3D::Color4::clear();
-		visible = true;
-	}
-
-	G3D::Vector2 TopMenuBar::getSize() const
-	{
-		G3D::Vector2 size(0.0f, 0.0f);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			const GuiItem* current = getGuiItem((int)i);
-
-			if (current)
-			{
-				G3D::Vector2 childSize = current->getSize();
-				switch (layoutStyle)
+				if (m_strWindowText.GetAt(0) == _T('1'))
 				{
-				case Layout::VERTICAL:
-					size.x = G3D::max(size.x, childSize.x);
-					size.y += childSize.y;
-					break;
-				case Layout::HORIZONTAL:
-					size.x += childSize.x;
-					size.y = G3D::max(size.y, childSize.y);
-					break;
+					if (nChar > _T('2'))
+						return FALSE;
 				}
 			}
-		}
+			return TRUE;
 
-		return size;
-	}
+		case 3:
+			if (nChar > _T('5'))
+				return FALSE;
+			return TRUE;
 
-	void TopMenuBar::render2d(Adorn* adorn)
-	{
-		if (isVisible())
-		{
-			if (backdropColor != G3D::Color4::clear())
-			{
-				adorn->rect2d(getMyRect2D(), backdropColor);
-			}
-
-			for (size_t i = 0; i < numChildren(); i++)
-			{
-				GuiItem* current = getGuiItem((int)i);
-				if (current)
-					current->render2d(adorn);
-			}
+		case 4:
+			return TRUE;
 		}
 	}
 
-	GuiResponse TopMenuBar::process(const GuiEvent& event)
+	return FALSE;
+}
+
+void CXTTimeEdit::SetHours(int nHours)
+{
+	m_iHours = nHours;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
+
+void CXTTimeEdit::SetMins(int nMins)
+{
+	m_iMins = nMins;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
+
+void CXTTimeEdit::SetTime(int nHours, int nMins)
+{
+	m_iHours = nHours;
+	m_iMins = nMins;
+
+	CString strText;
+	strText.Format(_T("%02d:%02d"), m_iHours, m_iMins);
+	SetWindowText(strText);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// DDX_ routines
+/////////////////////////////////////////////////////////////////////////////
+
+_XTP_EXT_CLASS void AFXAPI DDX_XTOleDateTime(CDataExchange* pDX, int nIDC, CXTDateEdit& rControl, COleDateTime& rDateTime)
+{
+	DDX_Control(pDX, nIDC, rControl);
+
+	if (pDX->m_bSaveAndValidate)
 	{
-		if (isVisible())
-		{
-			GuiResponse response = GuiItem::process(event);
-			if (response.wasUsed())
-			{
-				return response;
-			}
-
-			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
-			{
-				return GuiResponse::used();
-			}
-		}
-
-		return GuiResponse::notUsed();
+		rDateTime = rControl.GetDateTime();
 	}
-
-	void RelativePanel::init(const Layout& layout)
+	else
 	{
-		setName("RelativePanel");
-		layoutStyle = layout.layoutStyle;
-		backdropColor = layout.backdropColor;
-		xLocation = layout.xLocation;
-		yLocation = layout.yLocation;
-		offset = layout.offset;
-	}
-
-	GuiRoot::GuiRoot() 
-	{
-		setName("GuiRoot");
-	}
-
-	int GuiRoot::normalizedFontSize(int fontSize)
-	{
-		static G3D::Vector2 percentSize(100.0f, 75.0f);
-		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
-	}
-
-	void GuiRoot::render2d(Adorn* adorn)
-	{
-		short height = static_cast<short>(adorn->getHeight());
-		short width = static_cast<short>(adorn->getWidth());
-
-		canvasSize = G3D::Vector2(width, height);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			GuiItem* current = getGuiItem((int)i);
-			if (current)
-				current->render2d(adorn);
-		}
+		rControl.SetDateTime(rDateTime);
 	}
 }

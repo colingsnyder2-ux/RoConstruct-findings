@@ -1,12 +1,8 @@
-// from server: 45% by atomic.potato
-extern "C" int __stdcall sub_719A4A(int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_throwwithrefcleanup8ebf9c1479d72038.cpp
 
-struct RBX_MaterialBase_Level {
-    void construct();
-};
-
-void RBX_MaterialBase_Level::construct()
-{
-    int local = 0;
-    sub_719A4A((int)&local, 0x9c0dc8);
-}
+// Candidate translation unit (score above; library headers required).
+#include "GLG3D/Renderbuffer.h"
+void unreachable(G3D::RenderbufferRef unused) { throw "shouldn't be here"; }

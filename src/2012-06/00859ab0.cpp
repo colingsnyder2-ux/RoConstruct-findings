@@ -1,24 +1,15 @@
-// from server: 52% by atomic.potato
-extern "C" {
-    typedef unsigned int DWORD;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-struct String {
-    char pad[0x1c];
-    String(const char*);
-    ~String();
-};
-
-struct Base {
-    void init(const String*);
-};
-
-struct Derived : Base {
-    Derived();
-};
-
-Derived::Derived() {
-    String s("no random access");
-    init(&s);
-    *(void**)this = (void*)0xbd4454;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

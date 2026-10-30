@@ -1,4 +1,3 @@
-// from server: 48% by colin
 // roc 2007-08 00690a30  unit: CXTSplitterWnd  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00690a30
 //
@@ -25,26 +24,12 @@
 // 00690a79  8b88b8000000         mov ecx, dword ptr [eax + 0xb8]
 // 00690a7f  894c2404             mov dword ptr [esp + 4], ecx
 // 00690a83  ff2560ed7700         jmp dword ptr [0x77ed60]
+// copied from an identical function in another client (function ?SetSplitCursor@CXTSplitterWnd@@MAEXH@Z)
 
-extern "C" int __stdcall func_006978f0();
-extern "C" int __stdcall func_00738ad8(int);
-extern "C" int __stdcall func_0077ed60(int);
-
-int __stdcall func_00690a30(int n)
-{
-    if (n != 1)
-        goto label_74;
-    if (n >= 0x65 && n <= 0x73)
-        goto label_74;
-    if (n != 2)
-        goto label_5f;
-    if (n >= 0xc9 && n <= 0xd7)
-        goto label_5f;
-    return func_00738ad8(n);
-
-label_5f:
-    return func_0077ed60(*(int *)(func_006978f0() + 0xb4));
-
-label_74:
-    return func_0077ed60(*(int *)(func_006978f0() + 0xb8));
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source/Controls/XTSplitterWnd.cpp
+// MFC 9 afximpl.h: AFX_CX_BORDER = AFX_CY_BORDER = 1.
+#define CX_BORDER 1
+#define CY_BORDER 1

@@ -1,12 +1,11 @@
-// from server: 69% by Yeetserama
-extern "C" int __stdcall sub_0054c4b0(int, int, int, int, int);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-struct UString_sink_stream_buffer
-{
-    int __cdecl write(int a, int b, int c, int d);
-};
-
-int UString_sink_stream_buffer::write(int a, int b, int c, int d)
-{
-    return sub_0054c4b0(a, b, c, d, 0);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

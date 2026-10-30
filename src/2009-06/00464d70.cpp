@@ -22,27 +22,25 @@
 // 00464d9a  e8a1c4ffff           call 0x461240
 // 00464d9f  5e                   pop esi
 // 00464da0  c3                   ret 
-// copied from an identical function in another client (function ?init@CScriptEditor@ns_ROCX000000@@QAEXXZ)
+// copied from an identical function in another client (function ?fn_ROCX000000@CScriptEditor@@QAEXXZ)
 
-namespace ns_ROCX000000 {
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Control {
+    int query(int, bool);
+    void update(int, int, bool);
+};
+
 struct CScriptEditor {
-    void init();
+    int* control();
+    void func_00464100();
 };
 
-struct Helper {
-    int f1(int a, int b);
-    int f2(int a, int b, int c);
-};
-
-extern "C" void* __cdecl sub_45D230();
-
-void CScriptEditor::init()
+void CScriptEditor::func_00464100()
 {
-    Helper* p = (Helper*)sub_45D230();
-    if (p->f1(1, 1)) {
-        p->f2(1, 0, 1);
-    } else {
-        p->f2(1, 0x10, 1);
-    }
-}
+    Control* p = reinterpret_cast<Control*>(control());
+    if (p->query(1, true))
+        p->update(1, 0, true);
+    else
+        p->update(1, 16, true);
 }

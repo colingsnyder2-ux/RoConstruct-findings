@@ -1,14 +1,13 @@
-// from server: 46% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/TabManager/XTPTabPaintManager.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\TabManager\XTPTabPaintManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPTabPaintManager.cpp: implementation of the CXTPTabPaintManager class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,7 +27,6 @@
 #include "stdafx.h"
 #include "Common/XTPVC80Helpers.h"
 #include "Common/XTPSystemHelpers.h"
-#include "Common/XTPMarkupRender.h"
 
 #include "XTPTabPaintManager.h"
 #include "XTPTabManager.h"
@@ -107,8 +105,6 @@ CXTPTabPaintManager::CXTPTabPaintManager()
 
 	m_szNavigateButton = CSize(14, 15);
 
-	m_bShowTabs = TRUE;
-
 	EnableAutomation();
 
 
@@ -128,20 +124,12 @@ CXTPTabPaintManager::CColorSet* CXTPTabPaintManager::SetColor(XTPTabColorStyle t
 	CColorSet* pColorSet = NULL;
 
 	m_tabColor = tabColor;
-
-	switch (tabColor)
-	{
-	case xtpTabColorWinNative: pColorSet = new CColorSetWinNative(); break;
-	case xtpTabColorVisualStudio2003: pColorSet = new CColorSetVisualStudio2003(); break;
-	case xtpTabColorVisualStudio2005: pColorSet = new CColorSetVisualStudio2005(); break;
-	case xtpTabColorVisualStudio2008: pColorSet = new CColorSetVisualStudio2008(); break;
-	case xtpTabColorVisualStudio2010: pColorSet = new CColorSetVisualStudio2010(); break;
-	case xtpTabColorOffice2003: pColorSet = new CColorSetOffice2003(); break;
-	case xtpTabColorOffice2007: pColorSet = new CColorSetOffice2007(); break;
-	case xtpTabColorOffice2007Access: pColorSet = new CColorSetOffice2007Access(); break;
-	case xtpTabColorOffice2010: break;
-	default: pColorSet = new CColorSetDefault(); break;
-	}
+	if (tabColor == xtpTabColorVisualStudio) pColorSet = new CColorSetVisualStudio();
+	else if (tabColor == xtpTabColorOffice2003) pColorSet = new CColorSetOffice2003();
+	else if (tabColor == xtpTabColorWinXP) pColorSet = new CColorSetWinXP();
+	else if (tabColor == xtpTabColorWhidbey) pColorSet = new CColorSetWhidbey();
+	else if (tabColor == xtpTabColorOffice2007) pColorSet = new CColorSetOffice2007();
+	else pColorSet = new CColorSetDefault();
 
 	return SetColorSet(pColorSet);
 }
@@ -175,7 +163,6 @@ CXTPTabPaintManager::CAppearanceSet* CXTPTabPaintManager::SetAppearance(XTPTabAp
 	else if (tabAppearance == xtpTabAppearanceVisio) pAppearanceSet = new CAppearanceSetVisio();
 	else if (tabAppearance == xtpTabAppearanceVisualStudio2005) pAppearanceSet = new CAppearanceSetVisualStudio2005();
 	else if (tabAppearance == xtpTabAppearancePropertyPage2007) pAppearanceSet = new CAppearanceSetPropertyPage2007();
-	else if (tabAppearance == xtpTabAppearancePropertyPageAccess2007) pAppearanceSet = new CAppearanceSetPropertyPageAccess2007();
 	else pAppearanceSet = new CAppearanceSetPropertyPage();
 
 	return SetAppearanceSet(pAppearanceSet);
@@ -239,7 +226,7 @@ void CXTPTabPaintManager::RefreshMetrics()
 	if (m_bUseStandardFont)
 	{
 		LOGFONT lfIcon;
-		VERIFY(CXTPDrawHelpers::GetIconLogFont(&lfIcon));
+		VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
 
 		SetFontIndirect(&lfIcon, TRUE);
 	}
@@ -411,11 +398,13 @@ void CXTPTabPaintManager::DrawTabControlEx(CXTPTabManager* pTabManager, CDC* pDC
 		m_pAppearanceSet->FillTabControl(pTabManager, pDC, rcClient);
 	}
 
+	int i;
+
 	CRect rcClipBox;
 	pDC->GetClipBox(rcClipBox);
 
 	if (m_bClipHeader)
-		rcClipBox = m_pAppearanceSet->GetHeaderClipBox(pDC, pTabManager);
+		rcClipBox.IntersectRect(rcClipBox, pTabManager->m_rcHeaderRect);
 
 	if (!rcClipBox.IsRectEmpty())
 	{
@@ -444,7 +433,7 @@ void CXTPTabPaintManager::DrawTabControlEx(CXTPTabManager* pTabManager, CDC* pDC
 		}
 	}
 
-	for (int i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
+	for (i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
 		pTabManager->GetNavigateButton(i)->Draw(pDC);
 
 }
@@ -472,11 +461,11 @@ int CXTPTabPaintManager::GetPrefixTextExtent(CDC* pDC, const CString& str, UINT 
 	return pDC->GetTextExtent(strClear).cx;
 }
 
-void CXTPTabPaintManager::DrawTextPathEllipsis(CDC* pDC, CXTPTabManager* pManager, const CString& strItem, CRect rcItem, UINT uFormat)
+void CXTPTabPaintManager::DrawTextPathEllipsis(CDC* pDC, const CString& strItem, CRect rcItem, UINT uFormat)
 {
 	if (strItem.Find(_T('\\')) != -1)
 	{
-		m_pAppearanceSet->DrawText(pDC, pManager, strItem, rcItem, uFormat | DT_PATH_ELLIPSIS);
+		pDC->DrawText(strItem, rcItem, uFormat | DT_PATH_ELLIPSIS);
 		return;
 	}
 
@@ -486,12 +475,12 @@ void CXTPTabPaintManager::DrawTextPathEllipsis(CDC* pDC, CXTPTabManager* pManage
 
 	if (cxItem <= rcItem.Width())
 	{
-		m_pAppearanceSet->DrawText(pDC, pManager, strItem, rcItem, uFormat);
+		pDC->DrawText(strItem, rcItem, uFormat);
 		return;
 	}
 	if (rcItem.Width() <= cxEllipsis)
 	{
-		m_pAppearanceSet->DrawText(pDC, pManager, CString(strEllipsis), rcItem, uFormat);
+		pDC->DrawText(strEllipsis, 3, rcItem, uFormat);
 		return;
 	}
 	int nWidth = rcItem.Width() - cxEllipsis;
@@ -514,7 +503,7 @@ void CXTPTabPaintManager::DrawTextPathEllipsis(CDC* pDC, CXTPTabManager* pManage
 		strResultRight = strItem.Right(nResultLength / 2);
 	}
 
-	m_pAppearanceSet->DrawText(pDC, pManager, strResultLeft + strEllipsis + strResultRight, rcItem, uFormat);
+	pDC->DrawText(strResultLeft + strEllipsis + strResultRight, rcItem, uFormat);
 }
 
 void CXTPTabPaintManager::DrawFocusRect(CDC* pDC, CXTPTabManagerItem* /*pItem*/, CRect rcItem)
@@ -538,9 +527,7 @@ int CXTPTabPaintManager::DrawSingleButtonIconAndText(CDC* pDC, CXTPTabManagerIte
 	if (layout == xtpTabLayoutRotated) bVertical = !bVertical;
 
 	CString strItem = pItem->GetCaption();
-
-	CFont* pFont = m_bBoldSelected && pItem->IsSelected() && pManager->IsActive() ? GetBoldFont(bVertical) : GetFont(bVertical);
-	CXTPFontDC fnt(pDC, pFont);
+	CXTPFontDC fnt(pDC, m_bBoldSelected && pItem->IsSelected() && pManager->IsActive() ? GetBoldFont(bVertical) : GetFont(bVertical));
 
 
 	CSize szIcon(m_szIcon);
@@ -635,11 +622,11 @@ int CXTPTabPaintManager::DrawSingleButtonIconAndText(CDC* pDC, CXTPTabManagerIte
 
 				if (m_bDrawTextPathEllipsis)
 				{
-					DrawTextPathEllipsis(pDC, pManager, strItem, rcItem, DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
+					DrawTextPathEllipsis(pDC, strItem, rcItem, DT_SINGLELINE | DT_NOCLIP | DT_NOPREFIX);
 				}
 				else
 				{
-					m_pAppearanceSet->DrawText(pDC, pManager, strItem, &rcItem, DT_SINGLELINE | DT_NOCLIP |
+					pDC->DrawText(strItem, &rcItem, DT_SINGLELINE | DT_NOCLIP |
 						DT_NOPREFIX | (m_bDrawTextEndEllipsis ? DT_END_ELLIPSIS : 0));
 				}
 			}
@@ -670,32 +657,16 @@ int CXTPTabPaintManager::DrawSingleButtonIconAndText(CDC* pDC, CXTPTabManagerIte
 			if (bDrawText && rcItem.right > rcItem.left)
 			{
 				rcItem.right -= m_rcButtonTextPadding.right + m_rcButtonMargin.right - (bDrawIcon ? 2 : 0);
-
-				if (pItem->GetMarkupUIElement())
+				if (m_bDrawTextPathEllipsis)
 				{
-					XTPMarkupSetDefaultFont(pItem->GetTabManager()->GetMarkupContext(), (HFONT)pFont->GetSafeHandle(), pDC->GetTextColor());
-
-					CRect rcText(rcItem);
-
-					if (m_nDrawTextFormat & DT_VCENTER)
-					{
-						CSize szText = XTPMarkupMeasureElement(pItem->GetMarkupUIElement());
-						rcText.top = (rcText.top + rcText.bottom - szText.cy) / 2;
-						rcText.bottom = rcText.top + szText.cy;
-					}
-
-					XTPMarkupRenderElement(pItem->GetMarkupUIElement(), pDC->GetSafeHdc(), rcText);
-				}
-				else if (m_bDrawTextPathEllipsis)
-				{
-					DrawTextPathEllipsis(pDC, pManager, strItem, rcItem, DT_SINGLELINE | m_nDrawTextFormat | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
+					DrawTextPathEllipsis(pDC, strItem, rcItem, DT_SINGLELINE | m_nDrawTextFormat | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
 				}
 				else
 				{
 					if (m_bDrawTextHidePrefix)
 						StripMnemonics(strItem);
 
-					m_pAppearanceSet->DrawText(pDC, pManager, strItem, rcItem, DT_SINGLELINE | m_nDrawTextFormat |
+					pDC->DrawText(strItem, rcItem, DT_SINGLELINE | m_nDrawTextFormat |
 						(m_bDrawTextHidePrefix || m_bDrawTextNoPrefix ? DT_NOPREFIX : 0) | (m_bDrawTextEndEllipsis ? DT_END_ELLIPSIS : 0));
 				}
 			}
@@ -726,26 +697,15 @@ int CXTPTabPaintManager::DrawSingleButtonIconAndText(CDC* pDC, CXTPTabManagerIte
 			for (int i = 0; i < pManager->GetItemCount(); i++)
 			{
 				CRect rcItemText(0, 0, 0, 0);
-				m_pAppearanceSet->DrawText(pDC, pManager, pManager->GetItem(i)->GetCaption(), rcItemText, DT_SINGLELINE | DT_CALCRECT | DT_NOCLIP | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
+				pDC->DrawText(pManager->GetItem(i)->GetCaption(), rcItemText, DT_SINGLELINE | DT_CALCRECT | DT_NOCLIP | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
 				nLength = max(nLength, rcItemText.Width());
 			}
 			return _GetButtonLength(nNavigateButtonsLength + nLength + m_rcButtonTextPadding.left + m_rcButtonTextPadding.right +
 				(!bDrawIcon ? 0: bVertical ? szIcon.cy : szIcon.cx), m_nMinTabWidth, m_nMaxTabWidth);
 		}
 
-		CSize szText(0);
-		if (pItem->GetMarkupUIElement())
-		{
-			XTPMarkupSetDefaultFont(pManager->GetMarkupContext(), (HFONT)pFont->GetSafeHandle(), pDC->GetTextColor());
-			szText = XTPMarkupMeasureElement(pItem->GetMarkupUIElement());
-		}
-		else
-		{
-			m_pAppearanceSet->DrawText(pDC, pManager, strItem, rcItem, DT_SINGLELINE | DT_CALCRECT | DT_NOCLIP | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
-			szText = rcItem.Size();
-		}
-
-		return _GetButtonLength(nNavigateButtonsLength + szText.cx + m_rcButtonTextPadding.left + m_rcButtonTextPadding.right +
+		pDC->DrawText(strItem, rcItem, DT_SINGLELINE | DT_CALCRECT | DT_NOCLIP | (m_bDrawTextNoPrefix ? DT_NOPREFIX : 0));
+		return _GetButtonLength(nNavigateButtonsLength + rcItem.Width() + m_rcButtonTextPadding.left + m_rcButtonTextPadding.right +
 			(!bDrawIcon ? 0: bVertical ? szIcon.cy : szIcon.cx), m_nMinTabWidth, m_nMaxTabWidth);
 	}
 }
@@ -1053,27 +1013,13 @@ void CXTPTabPaintManager::RepositionTabControlEx(CXTPTabManager* pTabManager, CD
 
 	CAppearanceSet::DeflateRectEx(rcClient, m_rcControlMargin, pTabManager->GetPosition());
 
-	int i;
-
-	if (!m_bShowTabs)
-	{
-		pTabManager->m_rcHeaderRect.SetRectEmpty();
-		for (i = 0; i < pTabManager->GetItemCount(); i++)
-		{
-			CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-			pItem->SetRect(CRect(0, 0, 0, 0));
-		}
-
-		for (i = pTabManager->GetNavigateButtonCount() - 1; i >= 0; i--)
-			pTabManager->GetNavigateButton(i)->SetRect(CRect(0, 0, 0, 0));
-
-		return;
-	}
 	if (pTabManager->GetLayout() == xtpTabLayoutMultiRow)
 	{
 		RepositionTabControlMultiRow(pTabManager, pDC, rcClient);
 		return;
 	}
+
+	int i;
 
 	for (i = 0; i < pTabManager->GetItemCount(); i++)
 	{
@@ -1151,7 +1097,6 @@ void CXTPTabPaintManager::RepositionTabControlEx(CXTPTabManager* pTabManager, CD
 			for (i = 0; i < pTabManager->GetItemCount(); i++)
 			{
 				CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-				if (!pItem->IsVisible()) continue;
 
 				if (pTabManager->GetPosition() == xtpTabPositionTop)
 				{
@@ -1230,7 +1175,6 @@ void CXTPTabPaintManager::RepositionTabControlEx(CXTPTabManager* pTabManager, CD
 			for (i = 0; i < pTabManager->GetItemCount(); i++)
 			{
 				CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-				if (!pItem->IsVisible()) continue;
 
 				if (pTabManager->GetPosition() == xtpTabPositionLeft)
 				{
@@ -1276,7 +1220,7 @@ void CXTPTabPaintManager::EnsureVisible(CXTPTabManager* pTabManager, CXTPTabMana
 		}
 		else if (rcItem.right > rcHeader.right)
 		{
-			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.right + rcHeader.right - 2);
+			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.right + rcHeader.right);
 		}
 
 	}
@@ -1288,7 +1232,7 @@ void CXTPTabPaintManager::EnsureVisible(CXTPTabManager* pTabManager, CXTPTabMana
 		}
 		else if (rcItem.bottom > rcHeader.bottom)
 		{
-			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.bottom + rcHeader.bottom - 2);
+			pTabManager->SetHeaderOffset(pTabManager->GetHeaderOffset() - rcItem.bottom + rcHeader.bottom);
 		}
 
 	}

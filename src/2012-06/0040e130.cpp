@@ -1,20 +1,29 @@
-// from server: 87% by atomic.potato
-extern int g_e165c8;
+// from server: 100% by tajop
+extern "C" void continuation();
+extern "C" const int vt0, vt1, vt2, vt3;
 
 struct S
 {
+    const int* a;
+    const int* b;
+    int c;
+    int d;
+    int e;
+    int f2;
+    const int* g;
+    const int* h;
+
     void f();
-    int a0;
-    int a4;
-    int a18;
-    int a1c;
 };
+
+int g_value;
 
 void S::f()
 {
-    g_e165c8 = 0;
-    a0 = 0xb43fec;
-    a4 = 0xb43fe4;
-    a18 = 0xb43fd8;
-    a1c = 0xb43fcc;
+    g_value = 0;
+    a = &vt0;
+    b = &vt1;
+    g = &vt2;
+    h = &vt3;
+    continuation();
 }

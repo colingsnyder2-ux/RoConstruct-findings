@@ -1,141 +1,35 @@
-// from server: 64% by TrollStein
-// roc-lang: cpp
+// roc 2012-06 00472870  unit: CRobloxApp  size: 69 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 00472870
+//
+// 00472870  64a100000000         mov eax, dword ptr fs:[0]
+// 00472876  6aff                 push -1
+// 00472878  68e9f5a900           push 0xa9f5e9
+// 0047287d  50                   push eax
+// 0047287e  64892500000000       mov dword ptr fs:[0], esp
+// 00472885  8d442410             lea eax, [esp + 0x10]
+// 00472889  50                   push eax
+// 0047288a  b954a2e100           mov ecx, 0xe1a254
+// 0047288f  c744240c00000000     mov dword ptr [esp + 0xc], 0
+// 00472897  ff152045b200         call dword ptr [0xb24520]
+// 0047289d  8d4c2410             lea ecx, [esp + 0x10]
+// 004728a1  ff15d047b200         call dword ptr [0xb247d0]
+// 004728a7  8b0c24               mov ecx, dword ptr [esp]
+// 004728aa  64890d00000000       mov dword ptr fs:[0], ecx
+// 004728b1  83c40c               add esp, 0xc
+// 004728b4  c3                   ret 
+// copied from an identical function in another client (function ?update@@YAXUValue@@@Z)
+
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
-
-// Candidate translation unit (score above; library headers required).
-// Boost.Signals library
-
-// Copyright Douglas Gregor 2001-2004. Use, modification and
-// distribution is subject to the Boost Software License, Version
-// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
-
-// For more information, see http://www.boost.org
-
-#define BOOST_SIGNALS_SOURCE
-
-#include <boost/signals/detail/named_slot_map.hpp>
-#include <cassert>
-#include <map>
-#include <list>
-#include <typeinfo>
-
-namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
-
-typedef std::list<connection_slot_pair> group_list;
-typedef group_list::iterator slot_pair_iterator;
-typedef std::map<stored_group, group_list, compare_type> slot_container_type;
-typedef slot_container_type::iterator group_iterator;
-typedef slot_container_type::const_iterator const_group_iterator;
-
-
-#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
-void named_slot_map_iterator::decrement() { assert(false); }
-void named_slot_map_iterator::advance(difference_type) { assert(false); }
-#endif
-
-named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
+struct Value;
+extern void (__thiscall *assignValue)(void *, const Value *);
+extern unsigned char globalObject;
+struct Value
 {
-  clear();
-}
-
-void named_slot_map::clear()
+    unsigned char storage[4];
+    __declspec(dllimport) ~Value() throw();
+};
+void update(Value value)
 {
-  groups.clear();
-  groups[stored_group(stored_group::sk_front)];
-  groups[stored_group(stored_group::sk_back)];
-  back = groups.end();
-  --back;
+    assignValue(&globalObject, &value);
 }
-
-named_slot_map::iterator named_slot_map::begin()
-{
-  return named_slot_map::iterator(groups.begin(), groups.end());
-}
-
-named_slot_map::iterator named_slot_map::end()
-{
-  return named_slot_map::iterator(groups.end(), groups.end());
-}
-
-named_slot_map::iterator
-named_slot_map::insert(const stored_group& name, const connection& con,
-                       const any& slot, connect_position at)
-{
-  group_iterator group;
-  if (name.empty()) {
-    switch (at) {
-    case at_front: group = groups.begin(); break;
-    case at_back: group = back; break;
-    }
-  } else {
-    group = groups.find(name);
-    if (group == groups.end()) {
-      slot_container_type::value_type v(name, group_list());
-      group = groups.insert(v).first;
-    }
-  }
-  iterator it;
-  it.group = group;
-  it.last_group = groups.end();
-
-  switch (at) {
-  case at_back:
-    group->second.push_back(connection_slot_pair(con, slot));
-    it.slot_ = group->second.end();
-    it.slot_assigned = true;
-    --(it.slot_);
-    break;
-
-  case at_front:
-    group->second.push_front(connection_slot_pair(con, slot));
-    it.slot_ = group->second.begin();
-    it.slot_assigned = true;
-    break;
-  }
-  return it;
-}
-
-void named_slot_map::disconnect(const stored_group& name)
-{
-  group_iterator group = groups.find(name);
-  if (group != groups.end()) {
-    slot_pair_iterator i = group->second.begin();
-    while (i != group->second.end()) {
-      slot_pair_iterator next = i;
-      ++next;
-      i->first.disconnect();
-      i = next;
-    }
-    groups.erase(group);
-  }
-}
-
-void named_slot_map::erase(iterator pos)
-{
-  // Erase the slot
-  pos.slot_->first.disconnect();
-  pos.group->second.erase(pos.slot_);
-}
-
-void named_slot_map::remove_disconnected_slots()
-{
-  // Remove any disconnected slots
-  group_iterator g = groups.begin();
-  while (g != groups.end()) {
-    slot_pair_iterator s = g->second.begin();
-    while (s != g->second.end()) {
-      if (s->first.connected()) ++s;
-      else g->second.erase(s++);
-    }
-
-    // Clear out empty groups
-    if (empty(g)) groups.erase(g++);
-    else ++g;
-  }
-}
-
-
-} } }

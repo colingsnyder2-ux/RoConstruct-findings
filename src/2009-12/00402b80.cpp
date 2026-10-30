@@ -1,10 +1,27 @@
-// from server: 72% by atomic.potato
-extern "C" int __cdecl Function_007f3b12();
-extern "C" int __cdecl Function_007f3b18(int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_04fd8290f2921435.cpp
 
-int Function_00402b80(int value)
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afx.h>
+#include <atlbase.h>
+#include <statreg.h>
+
+struct RocRegParser : ATL::CRegParser
 {
-    if (value == 0x8007000e)
-        value = Function_007f3b12();
-    return Function_007f3b18(value);
+    RocRegParser() : ATL::CRegParser(0) {}
+    HRESULT roc_add(ATL::CRegKey& k, LPCTSTR n, LPTSTR t) { return AddValue(k, n, t); }
+};
+
+HRESULT roc_regparser_addvalue(RocRegParser* p, ATL::CRegKey& k, LPCTSTR n, LPTSTR t)
+{
+    return p->roc_add(k, n, t);
 }

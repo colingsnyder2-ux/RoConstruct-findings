@@ -1,21 +1,26 @@
-// from server: 80% by colin
+// from server: 100% by tajop
+struct Obj_005dc2a0 {
+    bool func_005dc2a0();
+};
+
+extern "C" Obj_005dc2a0* __stdcall func_005b7ee0(const void* v, const void** out);
+
+struct GetSet {
+    virtual void v0();
+    virtual void v1();
+    virtual void getValue(const void* instance, const void** value);
+};
+
 struct SurfaceEnumPropDescriptor {
     char pad[0x1c];
-    void* field_1c;
+    GetSet* getset;
     bool equalValues(const void* a, const void* b) const;
 };
 
-extern "C" void* __stdcall func_005b7ee0(const void*, void*);
-extern "C" bool __stdcall func_005dc2a0(void*);
-
 bool SurfaceEnumPropDescriptor::equalValues(const void* a, const void* b) const
 {
-    void* v = func_005b7ee0(a, (void*)&b);
-    if (func_005dc2a0(v)) {
-        void* p = field_1c;
-        void* vt = *(void**)p;
-        void (*fn)(void*, const void*) = *(void (**)(void*, const void*))((char*)vt + 8);
-        fn(p, (const void*)&b);
+    if (func_005b7ee0(b, &b)->func_005dc2a0()) {
+        getset->getValue(a, &b);
         return true;
     }
     return false;

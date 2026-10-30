@@ -1,12 +1,11 @@
-// from server: 79% by atomic.potato
-extern "C" void __cdecl sub_726370(void *, void *, void *, void *, void *, void *);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-struct S
-{
-    void f(void *, void *, void *, void *, void *);
-};
-
-void S::f(void *a, void *b, void *c, void *d, void *e)
-{
-    sub_726370(this, a, b, c, d, e);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

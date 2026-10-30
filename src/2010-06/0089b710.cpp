@@ -1,14 +1,13 @@
-// from server: 99% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPScrollBase.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPScrollBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPScrollBase.cpp : implementation of the CXTPCommandBarScrollBarCtrl class.
+// XTPScrollBar.cpp : implementation of the CXTPScrollBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -31,30 +30,13 @@
 
 #include "XTPCommandBars.h"
 #include "XTPPaintManager.h"
-#include "XTPScrollBase.h"
+#include "XTPControlGallery.h"
+#include "XTPScrollBar.h"
 #include "XTPMouseManager.h"
-
-
-#define IDSYS_SCROLL 23345
-#define IDSYS_ANIMATE 23346
-
 
 //////////////////////////////////////////////////////////////////////////
 //  CXTPScrollBase
 
-CXTPScrollBase::SLIDERTICKS::SLIDERTICKS(double* pTicks, int nCount)
-{
-	this->nCount = nCount;
-	this->pTicks = new double[nCount];
-
-	for (int i = 0; i < nCount; i++)
-		this->pTicks[i] = pTicks[i];
-}
-
-CXTPScrollBase::SLIDERTICKS::~SLIDERTICKS()
-{
-	SAFE_DELETE(pTicks);
-}
 
 CXTPScrollBase::CXTPScrollBase()
 {
@@ -67,23 +49,11 @@ CXTPScrollBase::CXTPScrollBase()
 
 	m_bAnimation = FALSE;
 	m_nTimerElapse = 0;
-
-	m_pTicks = NULL;
 }
 
 CXTPScrollBase::~CXTPScrollBase()
 {
-	SAFE_DELETE(m_pTicks);
-}
 
-void CXTPScrollBase::SetTicks(double* pTicks, int nCount)
-{
-	SAFE_DELETE(m_pTicks);
-
-	if (nCount)
-	{
-		m_pTicks = new SLIDERTICKS(pTicks, nCount);
-	}
 }
 
 void CXTPScrollBase::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, SCROLLINFO* pSI)
@@ -96,15 +66,13 @@ void CXTPScrollBase::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, S
 	pSBInfo->rc = *lprc;
 	pSBInfo->pxPopup = 0;
 
-	CXTPScrollBarPaintManager* pPaintManager = GetScrollBarPaintManager();
-
 	if (fVert)
 	{
 		pSBInfo->pxTop = lprc->top;
 		pSBInfo->pxBottom = lprc->bottom;
 		pSBInfo->pxLeft = lprc->left;
 		pSBInfo->pxRight = lprc->right;
-		pSBInfo->cpxThumb = pPaintManager->m_cyVScroll;
+		pSBInfo->cpxThumb = GetGalleryPaintManager()->m_cyVScroll;
 	}
 	else
 	{
@@ -112,7 +80,7 @@ void CXTPScrollBase::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, S
 		pSBInfo->pxBottom = lprc->right;
 		pSBInfo->pxLeft = lprc->top;
 		pSBInfo->pxRight = lprc->bottom;
-		pSBInfo->cpxThumb = pPaintManager->m_cxHScroll;
+		pSBInfo->cpxThumb = GetGalleryPaintManager()->m_cxHScroll;
 	}
 
 	pSBInfo->pos = pSI->nPos;
@@ -134,8 +102,6 @@ void CXTPScrollBase::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, S
 
 		pSBInfo->cpxThumb = max(pSBInfo->cpxThumb / 2, i);
 	}
-
-	if (pPaintManager->m_cThumb > 0) pSBInfo->cpxThumb = pPaintManager->m_cThumb;
 
 	pSBInfo->pxMin = pSBInfo->pxTop + cpx;
 	pSBInfo->cpx = pSBInfo->pxBottom - cpx - pSBInfo->cpxThumb - pSBInfo->pxMin;
@@ -160,23 +126,7 @@ void CXTPScrollBase::SetupScrollInfo()
 	CalcScrollBarInfo(&rc, &m_spi, &si);
 }
 
-CRect CXTPScrollBase::GetScrollBarPartRect(int nPart) const
-{
-	CRect rc(m_spi.rc);
-
-	switch (nPart)
-	{
-		case XTP_HTSCROLLUP: return m_spi.fVert ? CRect(rc.left, rc.top, rc.right, rc.top + m_spi.pxUpArrow) : CRect(rc.left, rc.top, rc.left + m_spi.pxUpArrow, rc.bottom);
-		case XTP_HTSCROLLDOWN: return m_spi.fVert ? CRect(rc.left, rc.bottom - m_spi.pxDownArrow, rc.right, rc.bottom) : CRect(rc.right - m_spi.pxDownArrow, rc.top, rc.right, rc.bottom);
-		case XTP_HTSCROLLUPPAGE: return m_spi.fVert ? CRect(rc.left, rc.top + m_spi.pxUpArrow, rc.right, rc.top + m_spi.pxThumbTop) : CRect(rc.left + m_spi.pxUpArrow, rc.top, rc.left + m_spi.pxThumbTop, rc.bottom);
-		case XTP_HTSCROLLDOWNPAGE: return m_spi.fVert ? CRect(rc.left, rc.top + m_spi.pxThumbBottom, rc.right, rc.top + m_spi.pxDownArrow) : CRect(rc.left + m_spi.pxThumbBottom, rc.top, rc.left + m_spi.pxDownArrow, rc.bottom);
-		case XTP_HTSCROLLTHUMB: return m_spi.fVert ? CRect(rc.left, rc.top + m_spi.pxThumbTop, rc.right, rc.top + m_spi.pxThumbBottom) : CRect(rc.left + m_spi.pxThumbTop, rc.top, rc.left + m_spi.pxThumbBottom, rc.bottom);
-	}
-
-	return rc;
-}
-
-int CXTPScrollBase::HitTestScrollBar(POINT pt) const
+int CXTPScrollBase::HitTestScrollBar(POINT pt)
 {
 	int px = m_spi.fVert ? pt.y : pt.x;
 
@@ -243,7 +193,7 @@ void CXTPScrollBase::EndScroll(BOOL fCancel)
 	}
 }
 
-AFX_INLINE int SBPosFromPx(CXTPScrollBase::SCROLLBARPOSINFO*  pSBInfo, int px)
+int SBPosFromPx(CXTPScrollBase::SCROLLBARPOSINFO*  pSBInfo, int px)
 {
 	if (px < pSBInfo->pxMin)
 	{
@@ -314,7 +264,7 @@ void CXTPScrollBase::TrackThumb(UINT message, CPoint pt)
 
 	int px;
 
-	if (!PtInRect(&pSBTrack->rcTrack, pt) && (GetScrollBarPaintManager()->m_cThumb == 0))
+	if (!PtInRect(&pSBTrack->rcTrack, pt))
 		px = pSBInfo->pxStart;
 	else
 	{
@@ -653,7 +603,7 @@ XTPScrollBarStyle CXTPScrollBase::GetScrollBarStyle() const
 	if (m_scrollBarStyle != xtpScrollStyleDefault)
 		return m_scrollBarStyle;
 
-	switch (GetScrollBarPaintManager()->GetPaintManager()->BaseTheme())
+	switch (GetGalleryPaintManager()->GetPaintManager()->BaseTheme())
 	{
 		case xtpThemeOffice2000:
 			return xtpScrollStyleFlat;
@@ -668,19 +618,19 @@ XTPScrollBarStyle CXTPScrollBase::GetScrollBarStyle() const
 
 
 //////////////////////////////////////////////////////////////////////////
-// CXTPCommandBarScrollBarCtrl
+// CXTPScrollBar
 
-CXTPCommandBarScrollBarCtrl::CXTPCommandBarScrollBarCtrl()
+CXTPScrollBar::CXTPScrollBar()
 {
 	m_pCommandBars = 0;
 }
 
-CXTPCommandBarScrollBarCtrl::~CXTPCommandBarScrollBarCtrl()
+CXTPScrollBar::~CXTPScrollBar()
 {
 
 }
 
-BEGIN_MESSAGE_MAP(CXTPCommandBarScrollBarCtrl, CScrollBar)
+BEGIN_MESSAGE_MAP(CXTPScrollBar, CScrollBar)
 	//{{AFX_MSG_MAP(CXTPStatusBar)
 	ON_WM_PAINT()
 	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
@@ -697,12 +647,12 @@ BEGIN_MESSAGE_MAP(CXTPCommandBarScrollBarCtrl, CScrollBar)
 END_MESSAGE_MAP()
 
 
-CRect CXTPCommandBarScrollBarCtrl::GetScrollBarRect()
+CRect CXTPScrollBar::GetScrollBarRect()
 {
 	return CXTPClientRect(this);
 }
 
-void CXTPCommandBarScrollBarCtrl::GetScrollInfo(SCROLLINFO* psi)
+void CXTPScrollBar::GetScrollInfo(SCROLLINFO* psi)
 {
 	psi->cbSize = sizeof(SCROLLINFO);
 
@@ -710,25 +660,25 @@ void CXTPCommandBarScrollBarCtrl::GetScrollInfo(SCROLLINFO* psi)
 	::GetScrollInfo(m_hWnd, SB_CTL, psi);
 }
 
-BOOL CXTPCommandBarScrollBarCtrl::IsScrollBarEnabled() const
+BOOL CXTPScrollBar::IsScrollBarEnabled() const
 {
 	return IsWindowEnabled();
 }
 
-CWnd* CXTPCommandBarScrollBarCtrl::GetParentWindow() const
+CWnd* CXTPScrollBar::GetParentWindow() const
 {
 	return GetParent();
 }
 
-CXTPScrollBarPaintManager* CXTPCommandBarScrollBarCtrl::GetScrollBarPaintManager() const
+CXTPControlGalleryPaintManager* CXTPScrollBar::GetGalleryPaintManager() const
 {
 	if (m_pCommandBars)
-		return (CXTPScrollBarPaintManager*)m_pCommandBars->GetPaintManager()->GetGalleryPaintManager();
+		return m_pCommandBars->GetPaintManager()->GetGalleryPaintManager();
 
-	return (CXTPScrollBarPaintManager*)XTPPaintManager()->GetGalleryPaintManager();
+	return XTPPaintManager()->GetGalleryPaintManager();
 }
 
-void CXTPCommandBarScrollBarCtrl::OnPaint()
+void CXTPScrollBar::OnPaint()
 {
 	CPaintDC dcPaint(this); // device context for painting
 	CXTPBufferDC dc(dcPaint);
@@ -736,14 +686,14 @@ void CXTPCommandBarScrollBarCtrl::OnPaint()
 	OnDraw(&dc);
 }
 
-LRESULT CXTPCommandBarScrollBarCtrl::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+LRESULT CXTPScrollBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
 {
 	CDC* pDC = CDC::FromHandle((HDC)wParam);
 	if (pDC) OnDraw(pDC);
 	return 1;
 }
 
-void CXTPCommandBarScrollBarCtrl::OnDraw(CDC* pDC)
+void CXTPScrollBar::OnDraw(CDC* pDC)
 {
 	DefWindowProc(WM_PAINT, (WPARAM)pDC->GetSafeHdc(), 0);
 
@@ -752,33 +702,33 @@ void CXTPCommandBarScrollBarCtrl::OnDraw(CDC* pDC)
 	if (!m_pSBTrack || !m_pSBTrack->bTrackThumb)
 		SetupScrollInfo();
 
-	GetScrollBarPaintManager()->DrawScrollBar(pDC, this);
+	GetGalleryPaintManager()->DrawScrollBar(pDC, this);
 }
 
-void CXTPCommandBarScrollBarCtrl::DoScroll(int cmd, int pos)
+void CXTPScrollBar::DoScroll(int cmd, int pos)
 {
 	GetParent()->SendMessage((UINT)(m_spi.fVert ? WM_VSCROLL : WM_HSCROLL),
 		MAKELONG(cmd, pos), (LPARAM)m_hWnd);
 }
 
-void CXTPCommandBarScrollBarCtrl::RedrawScrollBar()
+void CXTPScrollBar::RedrawScrollBar()
 {
 	Invalidate(FALSE);
 }
 
 
-void CXTPCommandBarScrollBarCtrl::OnEnable(BOOL bEnable)
+void CXTPScrollBar::OnEnable(BOOL bEnable)
 {
 	CScrollBar::OnEnable(bEnable);
 	Invalidate(FALSE);
 }
 
-void CXTPCommandBarScrollBarCtrl::OnMouseLeave()
+void CXTPScrollBar::OnMouseLeave()
 {
 	OnMouseMove(0, CPoint(-1, -1));
 }
 
-void CXTPCommandBarScrollBarCtrl::OnMouseMove(UINT /*nFlags*/, CPoint point)
+void CXTPScrollBar::OnMouseMove(UINT /*nFlags*/, CPoint point)
 {
 	int ht = HitTestScrollBar(point);
 
@@ -796,23 +746,23 @@ void CXTPCommandBarScrollBarCtrl::OnMouseMove(UINT /*nFlags*/, CPoint point)
 }
 
 
-void CXTPCommandBarScrollBarCtrl::OnLButtonDown(UINT /*nFlags*/, CPoint point)
+void CXTPScrollBar::OnLButtonDown(UINT /*nFlags*/, CPoint point)
 {
 	PerformTrackInit(m_hWnd, point, &m_spi, (GetKeyState(VK_SHIFT) < 0) ? TRUE : FALSE);
 }
 
-void CXTPCommandBarScrollBarCtrl::OnContextMenu(CWnd* pWnd, CPoint pos)
+void CXTPScrollBar::OnContextMenu(CWnd* pWnd, CPoint pos)
 {
 	CScrollBar::OnContextMenu(pWnd, pos);
 	Invalidate(FALSE);
 }
 
-void CXTPCommandBarScrollBarCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
+void CXTPScrollBar::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
 	OnLButtonDown(nFlags, point);
 }
 
-LRESULT CXTPCommandBarScrollBarCtrl::OnSetScrollInfo(WPARAM wParam, LPARAM lParam)
+LRESULT CXTPScrollBar::OnSetScrollInfo(WPARAM wParam, LPARAM lParam)
 {
 	LRESULT bResult = DefWindowProc(SBM_SETSCROLLINFO, FALSE, lParam);
 
@@ -825,7 +775,7 @@ LRESULT CXTPCommandBarScrollBarCtrl::OnSetScrollInfo(WPARAM wParam, LPARAM lPara
 	return bResult;
 }
 
-LRESULT CXTPCommandBarScrollBarCtrl::OnGetScrollInfo(WPARAM wParam, LPARAM lParam)
+LRESULT CXTPScrollBar::OnGetScrollInfo(WPARAM wParam, LPARAM lParam)
 {
 	LRESULT bResult = DefWindowProc(SBM_GETSCROLLINFO, wParam, lParam);
 
@@ -840,406 +790,7 @@ LRESULT CXTPCommandBarScrollBarCtrl::OnGetScrollInfo(WPARAM wParam, LPARAM lPara
 }
 
 
-void CXTPCommandBarScrollBarCtrl::OnSetFocus(CWnd* pOldWnd)
+void CXTPScrollBar::OnSetFocus(CWnd* pOldWnd)
 {
 	pOldWnd;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPScrollBarPaintManager
-
-CXTPScrollBarPaintManager::CXTPScrollBarPaintManager(CXTPPaintManager* pPaintManager)
-{
-	m_pPaintManager = pPaintManager;
-
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	m_cThumb = 0;
-}
-
-CXTPScrollBarPaintManager::~CXTPScrollBarPaintManager()
-{
-
-}
-
-
-void CXTPScrollBarPaintManager::RefreshMetrics()
-{
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	m_themeScrollBar.OpenTheme(0, L"SCROLLBAR");
-}
-
-void CXTPScrollBarPaintManager::DrawArrowGlyph(CDC* pDC, CRect rcArrow, BOOL bHorz, BOOL bUpArrow, BOOL bEnabled)
-{
-	int nHeight = min(rcArrow.Width(), rcArrow.Height());
-	if (nHeight < 6) return;
-
-	int x = rcArrow.left + ((rcArrow.Width() - nHeight) / 2) + 2;
-	int y = rcArrow.top + ((rcArrow.Height() - nHeight) / 2) + 2;
-	nHeight -= 4;
-
-	COLORREF clr = bEnabled ? RGB(0, 0, 0) : GetSysColor(COLOR_3DSHADOW);
-
-	HFONT hFont = CreateFont(nHeight, 0, 0, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, 0, 0, 0, 0, _T("MARLETT"));
-	HFONT hOldFont = (HFONT)SelectObject(pDC->GetSafeHdc(), hFont);
-
-	SetTextColor(pDC->GetSafeHdc(), clr);
-	pDC->SetBkMode(TRANSPARENT);
-	TextOut(pDC->GetSafeHdc(), x, y, bHorz ? (bUpArrow ? _T("3") : _T("4")) : (bUpArrow ? _T("5") : _T("6")), 1);
-
-	SelectObject(pDC->GetSafeHdc(), hOldFont);
-	DeleteObject(hFont);
-}
-
-void CXTPScrollBarPaintManager::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
-{
-	#define GETPARTSTATE(ht, pressed, hot, normal, disabled) \
-		(!bEnabled ? disabled : nPressetHt == ht ? pressed : nHotHt == ht ? hot : normal)
-
-	CXTPScrollBase::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPScrollBase::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	BOOL nPressetHt = pSBTrack ? (pSBTrack->bTrackThumb || pSBTrack->fHitOld ? pSBInfo->ht : -1) : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-
-	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
-
-	if (cWidth <= 0)
-	{
-		return;
-	}
-
-	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
-
-	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
-	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
-
-	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
-		nBtnTrackPos = nBtnTrackSize = 0;
-	XTPScrollBarStyle style = pGallery->GetScrollBarStyle();
-
-	if (pSBInfo->fVert)
-	{
-		CRect rcVScroll(pSBInfo->rc);
-
-		CRect rcArrowUp(rcVScroll.left, rcVScroll.top, rcVScroll.right, pSBInfo->pxUpArrow);
-		CRect rcArrowDown(rcVScroll.left, pSBInfo->pxDownArrow, rcVScroll.right, rcVScroll.bottom);
-		CRect rcTrack(rcVScroll.left, rcArrowUp.bottom, rcVScroll.right, rcArrowDown.top);
-
-		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.right, rcTrack.top + nBtnTrackPos);
-		CRect rcBtnTrack(rcTrack.left, rcLowerTrack.bottom, rcTrack.right, rcLowerTrack.bottom + nBtnTrackSize);
-		CRect rcUpperTrack(rcTrack.left, rcBtnTrack.bottom, rcTrack.right, rcTrack.bottom);
-
-
-		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
-		{
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_UPPRESSED, ABS_UPHOT, ABS_UPNORMAL, ABS_UPDISABLED),  rcArrowUp, NULL);
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_DOWNPRESSED, ABS_DOWNHOT, ABS_DOWNNORMAL, ABS_DOWNDISABLED),  rcArrowDown, NULL);
-
-			if (!rcTrack.IsRectEmpty())
-			{
-				if (!rcLowerTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
-
-				if (!rcBtnTrack.IsRectEmpty())
-				{
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-					if (rcBtnTrack.Height() > 13)
-						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-				}
-
-				if (!rcUpperTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
-			}
-		}
-		else
-		{
-			if (style == xtpScrollStyleFlat)
-			{
-				pDC->FillSolidRect(rcArrowUp, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
-					pDC->Draw3dRect(rcArrowUp,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowUp, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-
-				DrawArrowGlyph(pDC, rcArrowUp, FALSE, TRUE, bEnabled);
-
-				pDC->FillSolidRect(rcArrowDown, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
-					pDC->Draw3dRect(rcArrowDown,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowDown, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				DrawArrowGlyph(pDC, rcArrowDown, FALSE, FALSE, bEnabled);
-
-			}
-			else
-			{
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowUp, DFC_SCROLL, DFCS_SCROLLUP | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowDown, DFC_SCROLL, DFCS_SCROLLDOWN | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
-			}
-
-			CWnd* pParent = pGallery->GetParentWindow();
-			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
-
-			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
-
-			if (nPressetHt == XTP_HTSCROLLUPPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
-			}
-
-			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
-			{
-				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
-
-				if (style == xtpScrollStyleFlat)
-				{
-					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				}
-				else
-				{
-					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
-				}
-			}
-
-			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
-			}
-		}
-	}
-	else
-	{
-		CRect rcHScroll(pSBInfo->rc);
-
-		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
-		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
-		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
-
-		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.left + nBtnTrackPos, rcTrack.bottom);
-		CRect rcBtnTrack(rcLowerTrack.right, rcTrack.top, rcLowerTrack.right + nBtnTrackSize, rcTrack.bottom);
-		CRect rcUpperTrack(rcBtnTrack.right, rcTrack.top, rcTrack.right, rcTrack.bottom);
-
-
-		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
-		{
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_LEFTPRESSED, ABS_LEFTHOT, ABS_LEFTNORMAL, ABS_LEFTDISABLED),  rcArrowLeft, NULL);
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_RIGHTPRESSED, ABS_RIGHTHOT, ABS_RIGHTNORMAL, ABS_RIGHTDISABLED),  rcArrowRight, NULL);
-
-			if (!rcTrack.IsRectEmpty())
-			{
-				if (!rcLowerTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
-
-				if (!rcBtnTrack.IsRectEmpty())
-				{
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-					if (rcBtnTrack.Width() > 13)
-						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-				}
-
-				if (!rcUpperTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
-			}
-		}
-		else
-		{
-			if (style == xtpScrollStyleFlat)
-			{
-				pDC->FillSolidRect(rcArrowLeft, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
-					pDC->Draw3dRect(rcArrowLeft,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowLeft, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-
-				DrawArrowGlyph(pDC, rcArrowLeft, TRUE, TRUE, bEnabled);
-
-				pDC->FillSolidRect(rcArrowRight, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
-					pDC->Draw3dRect(rcArrowRight,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowRight, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				DrawArrowGlyph(pDC, rcArrowRight, TRUE, FALSE, bEnabled);
-
-			}
-			else
-			{
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowLeft, DFC_SCROLL, DFCS_SCROLLLEFT | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowRight, DFC_SCROLL, DFCS_SCROLLRIGHT | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
-			}
-
-			CWnd* pParent = pGallery->GetParentWindow();
-			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
-
-			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
-
-			if (nPressetHt == XTP_HTSCROLLUPPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
-			}
-
-			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
-			{
-				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
-
-				if (style == xtpScrollStyleFlat)
-				{
-					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				}
-				else
-				{
-					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
-				}
-			}
-
-			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
-			}
-		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPSliderPaintManager
-
-CXTPSliderPaintManager::CXTPSliderPaintManager(CXTPPaintManager* pPaintManager)
-	: CXTPScrollBarPaintManager(pPaintManager)
-{
-}
-
-void CXTPSliderPaintManager::RefreshMetrics()
-{
-	CXTPScrollBarPaintManager::RefreshMetrics();
-
-	m_cyHScroll = 16;
-	m_cxHScroll = 16;
-
-	m_cThumb = 11;
-}
-
-void CXTPSliderPaintManager::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
-{
-	CXTPScrollBase::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPScrollBase::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	BOOL nPressetHt = pSBTrack ? (pSBTrack->bTrackThumb || pSBTrack->fHitOld ? pSBInfo->ht : -1) : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
-
-	if (cWidth <= 0)
-		return;
-
-	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
-
-	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
-	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
-
-	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
-		nBtnTrackPos = nBtnTrackSize = 0;
-
-	COLORREF clrFace = GetXtremeColor(COLOR_3DFACE);
-	COLORREF clrShadow = GetXtremeColor(COLOR_3DSHADOW);
-	COLORREF clrLight = GetXtremeColor(COLOR_3DHIGHLIGHT);
-
-	if (!pSBInfo->fVert)
-	{
-		CRect rcHScroll(pSBInfo->rc);
-
-		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
-		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
-		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
-		CRect rcBtnTrack(rcTrack.left + nBtnTrackPos, rcTrack.top, rcTrack.left + nBtnTrackPos + nBtnTrackSize, rcTrack.bottom);
-
-		CRect rcTrackDest(CPoint(rcTrack.left, (rcTrack.top + rcTrack.bottom - 2) / 2), CSize(rcTrack.Width(), 2));
-
-		pDC->FillSolidRect(rcTrackDest.left, rcTrackDest.top, rcTrackDest.Width(), 1, clrShadow);
-		pDC->FillSolidRect(rcTrackDest.left, rcTrackDest.top + 1, rcTrackDest.Width(), 1, clrLight);
-
-		CXTPScrollBase::SLIDERTICKS* pTicks = pGallery->GetTicks();
-		if (!pTicks || (pSBInfo->posMax <= pSBInfo->posMin))
-		{
-			CRect rcTrackTickDest(CPoint((rcTrackDest.left + rcTrackDest.right - 2) / 2,
-				(rcTrackDest.top + rcTrackDest.bottom - 8) / 2), CSize(2, 8));
-
-			pDC->FillSolidRect(rcTrackTickDest.left, rcTrackTickDest.top, 1, 4, clrShadow);
-			pDC->FillSolidRect(rcTrackTickDest.left, rcTrackTickDest.top + 5, 1, 2, clrShadow);
-			pDC->FillSolidRect(rcTrackTickDest.left + 1, rcTrackTickDest.top + 1, 1, 7, clrLight);
-		}
-		else
-		{
-			rcTrackDest.DeflateRect(6, 0);
-
-			for (int i = 0; i < pTicks->nCount; i++)
-			{
-				double dTick = pTicks->pTicks[i];
-				double dPos = (dTick - pSBInfo->posMin) * rcTrackDest.Width() / (pSBInfo->posMax - pSBInfo->posMin);
-
-				if (dPos >= 0 && dPos <= rcTrackDest.Width())
-				{
-					CRect rcTrackTickDest(CPoint(rcTrackDest.left + (int)dPos - 1,
-						(rcTrackDest.top + rcTrackDest.bottom - 8) / 2), CSize(2, 8));
-
-					pDC->FillSolidRect(rcTrackTickDest.left, rcTrackTickDest.top, 1, 4, clrShadow);
-					pDC->FillSolidRect(rcTrackTickDest.left, rcTrackTickDest.top + 5, 1, 2, clrShadow);
-					pDC->FillSolidRect(rcTrackTickDest.left + 1, rcTrackTickDest.top + 1, 1, 7, clrLight);
-				}
-			}
-		}
-
-		m_pPaintManager->AlphaEllipse(pDC, rcArrowLeft, clrShadow, nHotHt == XTP_HTSCROLLUP ? clrLight : clrFace);
-		if (nPressetHt != XTP_HTSCROLLUP)
-		{
-			rcArrowLeft.DeflateRect(1, 1);
-			m_pPaintManager->AlphaEllipse(pDC, rcArrowLeft, clrLight, nHotHt == XTP_HTSCROLLUP ? clrLight : clrFace);
-		}
-		CPoint ptCenter = rcArrowLeft.CenterPoint();
-		pDC->FillSolidRect(ptCenter.x - 4, ptCenter.y - 1, 8, 2, 0);
-
-		m_pPaintManager->AlphaEllipse(pDC, rcArrowRight, clrShadow, nHotHt == XTP_HTSCROLLDOWN ? clrLight : clrFace);
-		if (nPressetHt != XTP_HTSCROLLDOWN)
-		{
-			rcArrowRight.DeflateRect(1, 1);
-			m_pPaintManager->AlphaEllipse(pDC, rcArrowRight, clrLight, nHotHt == XTP_HTSCROLLDOWN ? clrLight : clrFace);
-		}
-		ptCenter = rcArrowRight.CenterPoint();
-		pDC->FillSolidRect(ptCenter.x - 4, ptCenter.y - 1, 8, 2, 0);
-		pDC->FillSolidRect(ptCenter.x - 1, ptCenter.y - 4, 2, 8, 0);
-
-		if (bEnabled)
-		{
-			CRect rc(CPoint((rcBtnTrack.left + rcBtnTrack.right - 8) / 2,
-				(rcBtnTrack.top + rcBtnTrack.bottom - 13) / 2), CSize(8, 13));
-
-			POINT pts[] = {rc.left, rc.top, rc.right, rc.top,
-				rc.right,  rc.bottom - 4, rc.left + 4, rc.bottom, rc.left, rc.bottom - 4, rc.left, rc.top};
-
-			CXTPPenDC pen (*pDC, nHotHt == XTP_HTSCROLLTHUMB ? clrLight : clrFace);
-			CXTPBrushDC brush (*pDC, nHotHt == XTP_HTSCROLLTHUMB ? clrLight : clrFace);
-
-			pDC->Polygon(pts, sizeof(pts) / sizeof(POINT));
-
-			pen.Color(clrShadow);
-			pDC->Polyline(pts, sizeof(pts) / sizeof(POINT));
-
-			if (nPressetHt != XTP_HTSCROLLTHUMB)
-			{
-				POINT pts2[] = {rc.left + 1, rc.top + 1, rc.right - 1, rc.top + 1,
-					rc.right - 1,  rc.bottom - 4, rc.left + 4, rc.bottom - 1, rc.left + 1, rc.bottom - 4, rc.left + 1, rc.top + 1};
-
-				pen.Color(clrLight);
-				pDC->Polyline(pts2, sizeof(pts2) / sizeof(POINT));
-			}
-		}
-	}
 }

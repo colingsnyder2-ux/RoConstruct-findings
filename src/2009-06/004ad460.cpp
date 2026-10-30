@@ -1,369 +1,454 @@
-// from server: 78% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/TextureFormat.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 GLG3Dcpp/glcalls.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
- @file TextureFormat.cpp
- 
- @maintainer Morgan McGuire, morgan@graphics3d.com
- 
- @created 2003-05-23
- @edited  2006-01-11
- */
+  @file glcalls.cpp
 
-#include "GLG3D/TextureFormat.h"
-#include "GLG3D/glheaders.h"
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @created 2002-08-07
+  @edited  2006-02-01
+*/
+
+#include "G3D/Matrix3.h"
+#include "G3D/Matrix4.h"
+#include "G3D/CoordinateFrame.h"
 #include "GLG3D/glcalls.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/GLCaps.h"
+
+
+#if defined(G3D_OSX)
+#include <mach-o/dyld.h>
+#endif
+
+
+#ifndef G3D_GL_ARB_multitexture_static
+PFNGLMULTITEXCOORD1FARBPROC                 glMultiTexCoord1fARB		    = NULL;
+PFNGLMULTITEXCOORD1DARBPROC                 glMultiTexCoord1dARB		    = NULL;
+
+PFNGLMULTITEXCOORD2FARBPROC                 glMultiTexCoord2fARB		    = NULL;
+PFNGLMULTITEXCOORD2FVARBPROC                glMultiTexCoord2fvARB		    = NULL;
+PFNGLMULTITEXCOORD2DVARBPROC                glMultiTexCoord2dvARB		    = NULL;
+
+PFNGLMULTITEXCOORD3FVARBPROC                glMultiTexCoord3fvARB		    = NULL;
+PFNGLMULTITEXCOORD3DVARBPROC                glMultiTexCoord3dvARB		    = NULL;
+
+PFNGLMULTITEXCOORD4FVARBPROC                glMultiTexCoord4fvARB		    = NULL;
+PFNGLMULTITEXCOORD4DVARBPROC                glMultiTexCoord4dvARB		    = NULL;
+
+PFNGLACTIVETEXTUREARBPROC                   glActiveTextureARB 			    = NULL;
+PFNGLCLIENTACTIVETEXTUREARBPROC             glClientActiveTextureARB	    = NULL;
+#endif
+
+
+PFNGLBLENDEQUATIONEXTPROC                   glBlendEquationEXT              = NULL;
+PFNGLTEXIMAGE3DEXTPROC                      glTexImage3DEXT                 = NULL;
+
+#ifdef G3D_WIN32
+
+PFNWGLSWAPINTERVALEXTPROC                   wglSwapIntervalEXT 			    = NULL;
+PFNWGLCHOOSEPIXELFORMATARBPROC              wglChoosePixelFormatARB		    = NULL;
+PFNWGLALLOCATEMEMORYNVPROC                  wglAllocateMemoryNV 		    = NULL;
+PFNWGLFREEMEMORYNVPROC                      wglFreeMemoryNV 			    = NULL;
+#endif
+
+PFNGLVERTEXARRAYRANGENVPROC                 glVertexArrayRangeNV 		    = NULL;
+PFNGLFLUSHVERTEXARRAYRANGENVPROC            glFlushVertexArrayRangeNV       = NULL;
+
+PFNGLCOMPRESSEDTEXIMAGE2DARBPROC            glCompressedTexImage2DARB 	    = NULL;
+PFNGLGETCOMPRESSEDTEXIMAGEARBPROC           glGetCompressedTexImageARB 	    = NULL;
+
+PFNGLGENFENCESNVPROC				        glGenFencesNV				    = NULL;
+PFNGLDELETEFENCESNVPROC				        glDeleteFencesNV			    = NULL;
+PFNGLSETFENCENVPROC					        glSetFenceNV				    = NULL;
+PFNGLFINISHFENCENVPROC	  			        glFinishFenceNV				    = NULL;
+
+PFNGLGENPROGRAMSARBPROC                     glGenProgramsARB                = NULL;
+PFNGLBINDPROGRAMARBPROC                     glBindProgramARB                = NULL;
+PFNGLDELETEPROGRAMSARBPROC                  glDeleteProgramsARB             = NULL;
+PFNGLPROGRAMSTRINGARBPROC                   glProgramStringARB              = NULL;
+PFNGLPROGRAMENVPARAMETER4FARBPROC           glProgramEnvParameter4fARB      = NULL;
+PFNGLPROGRAMLOCALPARAMETER4FARBPROC         glProgramLocalParameter4fARB    = NULL;
+PFNGLPROGRAMLOCALPARAMETER4FVARBPROC        glProgramLocalParameter4fvARB   = NULL;
+PFNGLPROGRAMENVPARAMETER4DVARBPROC          glProgramEnvParameter4dvARB     = NULL;
+PFNGLPROGRAMLOCALPARAMETER4DVARBPROC        glProgramLocalParameter4dvARB   = NULL;
+
+PFNGLGENPROGRAMSNVPROC                      glGenProgramsNV                 = NULL;
+PFNGLDELETEPROGRAMSNVPROC                   glDeleteProgramsNV              = NULL;
+PFNGLBINDPROGRAMNVPROC                      glBindProgramNV                 = NULL;
+PFNGLLOADPROGRAMNVPROC                      glLoadProgramNV                 = NULL;
+PFNGLTRACKMATRIXNVPROC                      glTrackMatrixNV                 = NULL;
+PFNGLPROGRAMPARAMETER4FVNVPROC              glProgramParameter4fvNV         = NULL;
+PFNGLGETPROGRAMPARAMETERFVNVPROC            glGetProgramParameterfvNV       = NULL;
+PFNGLGETPROGRAMPARAMETERDVNVPROC            glGetProgramParameterdvNV       = NULL;
+
+PFNGLVERTEXATTRIBPOINTERARBPROC             glVertexAttribPointerARB        = NULL;
+PFNGLENABLEVERTEXATTRIBARRAYARBPROC         glEnableVertexAttribArrayARB    = NULL;
+PFNGLDISABLEVERTEXATTRIBARRAYARBPROC        glDisableVertexAttribArrayARB   = NULL;
+
+PFNGLPOINTPARAMETERFARBPROC                 glPointParameterfARB            = NULL;
+PFNGLPOINTPARAMETERFVARBPROC                glPointParameterfvARB           = NULL;
+
+PFNGLMULTIDRAWARRAYSEXTPROC                 glMultiDrawArraysEXT            = NULL;
+PFNGLMULTIDRAWELEMENTSEXTPROC               glMultiDrawElementsEXT          = NULL;
+
+PFNGLCOMBINERPARAMETERFVNVPROC              glCombinerParameterfvNV         = NULL;
+PFNGLCOMBINERPARAMETERFNVPROC               glCombinerParameterfNV          = NULL;
+PFNGLCOMBINERPARAMETERIVNVPROC              glCombinerParameterivNV         = NULL;
+PFNGLCOMBINERPARAMETERINVPROC               glCombinerParameteriNV          = NULL;
+PFNGLCOMBINERINPUTNVPROC                    glCombinerInputNV               = NULL;
+PFNGLCOMBINEROUTPUTNVPROC                   glCombinerOutputNV              = NULL;
+PFNGLFINALCOMBINERINPUTNVPROC               glFinalCombinerInputNV          = NULL;
+PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC      glGetCombinerInputParameterfvNV        = NULL;
+PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC      glGetCombinerInputParameterivNV        = NULL;
+PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC     glGetCombinerOutputParameterfvNV       = NULL;
+PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC     glGetCombinerOutputParameterivNV       = NULL;
+PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC glGetFinalCombinerInputParameterfvNV   = NULL;
+PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC glGetFinalCombinerInputParameterivNV   = NULL;
+PFNGLCOMBINERSTAGEPARAMETERFVNVPROC         glCombinerStageParameterfvNV           = NULL;
+PFNGLGETCOMBINERSTAGEPARAMETERFVNVPROC      glGetCombinerStageParameterfvNV        = NULL;
+
+PFNGLACTIVESTENCILFACEEXTPROC               glActiveStencilFaceEXT          = NULL;
+
+PFNGLBINDBUFFERARBPROC glBindBufferARB = NULL;
+PFNGLDELETEBUFFERSARBPROC glDeleteBuffersARB = NULL;
+PFNGLGENBUFFERSARBPROC glGenBuffersARB = NULL;
+PFNGLISBUFFERARBPROC glIsBufferARB = NULL;
+PFNGLBUFFERDATAARBPROC glBufferDataARB = NULL;
+PFNGLBUFFERSUBDATAARBPROC glBufferSubDataARB = NULL;
+PFNGLGETBUFFERSUBDATAARBPROC glGetBufferSubDataARB = NULL;
+PFNGLMAPBUFFERARBPROC glMapBufferARB = NULL;
+PFNGLUNMAPBUFFERARBPROC glUnmapBufferARB = NULL;
+PFNGLGETBUFFERPARAMETERIVARBPROC glGetBufferParameterivARB = NULL;
+PFNGLGETBUFFERPOINTERVARBPROC glGetBufferPointervARB = NULL;
+PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements = NULL;
+
+PFNGLDELETEOBJECTARBPROC glDeleteObjectARB = NULL;
+PFNGLGETHANDLEARBPROC glGetHandleARB = NULL;
+PFNGLDETACHOBJECTARBPROC glDetachObjectARB = NULL;
+PFNGLCREATESHADEROBJECTARBPROC glCreateShaderObjectARB = NULL;
+PFNGLSHADERSOURCEARBPROC glShaderSourceARB = NULL;
+PFNGLCOMPILESHADERARBPROC glCompileShaderARB = NULL;
+PFNGLCREATEPROGRAMOBJECTARBPROC glCreateProgramObjectARB = NULL;
+PFNGLATTACHOBJECTARBPROC glAttachObjectARB = NULL;
+PFNGLLINKPROGRAMARBPROC glLinkProgramARB = NULL;
+PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB = NULL;
+PFNGLVALIDATEPROGRAMARBPROC glValidateProgramARB = NULL;
+PFNGLUNIFORM1FVARBPROC glUniform1fvARB = NULL;
+PFNGLUNIFORM2FVARBPROC glUniform2fvARB = NULL;
+PFNGLUNIFORM3FVARBPROC glUniform3fvARB = NULL;
+PFNGLUNIFORM4FVARBPROC glUniform4fvARB = NULL;
+PFNGLUNIFORM1IARBPROC glUniform1iARB = NULL;
+PFNGLUNIFORM2IARBPROC glUniform2iARB = NULL;
+PFNGLUNIFORM3IARBPROC glUniform3iARB = NULL;
+PFNGLUNIFORM4IARBPROC glUniform4iARB = NULL;
+PFNGLUNIFORMMATRIX2FVARBPROC glUniformMatrix2fvARB = NULL;
+PFNGLUNIFORMMATRIX3FVARBPROC glUniformMatrix3fvARB = NULL;
+PFNGLUNIFORMMATRIX4FVARBPROC glUniformMatrix4fvARB = NULL;
+PFNGLGETINFOLOGARBPROC glGetInfoLogARB = NULL;
+PFNGLGETUNIFORMLOCATIONARBPROC glGetUniformLocationARB = NULL;
+PFNGLGETATTRIBLOCATIONARB glGetAttribLocationARB = NULL;
+PFNGLGETOBJECTPARAMETERIVARBPROC glGetObjectParameterivARB = NULL;
+PFNGLGETACTIVEUNIFORMARBPROC glGetActiveUniformARB = NULL;
+
+PFNGLGENFRAGMENTSHADERSATIPROC glGenFragmentShadersATI = NULL;
+PFNGLDELETEFRAGMENTSHADERATIPROC glDeleteFragmentShaderATI = NULL;
+PFNGLBINDFRAGMENTSHADERATIPROC glBindFragmentShaderATI = NULL;
+PFNGLBEGINFRAGMENTSHADERATIPROC glBeginFragmentShaderATI = NULL;
+PFNGLENDFRAGMENTSHADERATIPROC glEndFragmentShaderATI = NULL;
+PFNGLPASSTEXCOORDATIPROC         glPassTexCoordATI = NULL;
+PFNGLSAMPLEMAPATIPROC            glSampleMapATI = NULL;
+PFNGLSETFRAGMENTSHADERCONSTANTATIPROC glSetFragmentShaderConstantATI = NULL;
+PFNGLCOLORFRAGMENTOP1ATIPROC glColorFragmentOp1ATI = NULL;
+PPFNGLCOLORFRAGMENTOP2ATIPROC glColorFragmentOp2ATI = NULL;
+PFNGLCOLORFRAGMENTOP3ATIPROC glColorFragmentOp3ATI = NULL;
+PFNGLALPHAFRAGMENTOP1ATIPROC glAlphaFragmentOp1ATI = NULL;
+PFNGLALPHAFRAGMENTOP2ATIPROC glAlphaFragmentOp2ATI = NULL;
+PFNGLALPHAFRAGMENTOP3ATIPROC glAlphaFragmentOp3ATI = NULL;
+
+#ifdef G3D_WIN32
+PFNWGLENABLEGENLOCKI3D wglEnableGenlockI3D = NULL;
+#elif defined(G3D_LINUX) 
+PFNGLXJOINSWAPGROUPNV glXJoinSwapGroupNV = NULL;
+PFNGLXBINDSWAPBARRIERNV glXBindSwapBarrierNV = NULL;
+PFNGLXQUERYSWAPGROUPNV glXQuerySwapGroupNV = NULL;
+PFNGLXQUERYMAXSWAPGROUPSNV glXQueryMaxSwapGroupsNV = NULL;
+PFNGLXQUERYFRAMECOUNTNV glXQueryFrameCountNV = NULL;
+PFNGLXRESETFRAMECOUNTNV glXResetFrameCountNV = NULL;
+
+PFNGLXCREATEGLXPBUFFERSGIX glXCreateGLXPbufferSGIX = NULL;
+PFNGLXDESTROYGLXPBUFFERSGIX glXDestroyGLXPbufferSGIX = NULL;
+PFNGLXQUERYGLXPBUFFERSGIX glXQueryGLXPbufferSGIX = NULL;
+PFNGLXCHOOSEFBCONFIGSGIX glXChooseFBConfigSGIX = NULL;
+PFNGLXCREATECONTEXTWITHCONFIGSGIX glXCreateContextWithConfigSGIX = NULL;
+
+#endif
+
+#ifdef G3D_WIN32
+PFNWGLCREATEPBUFFEREXTPROC wglCreatePbufferEXT = NULL;
+PFNWGLDESTROYPBUFFEREXTPROC wglDestroyPbufferEXT = NULL;
+#endif
+
+// Frame buffer object
+PFNGLISRENDERBUFFEREXTPROC glIsRenderBufferEXT = NULL;
+PFNGLBINDRENDERBUFFEREXTPROC glBindRenderbufferEXT = NULL;
+PFNGLDELETERENDERBUFFERSEXTPROC glDeleteRenderbuffersEXT = NULL;
+PFNGLGENRENDERBUFFERSEXTPROC glGenRenderbuffersEXT = NULL;
+PFNGLRENDERBUFFERSTORAGEEXTPROC glRenderbufferStorageEXT = NULL;
+PFNGLGETRENDERBUFFERPARAMETERIVEXTPROC glGetRenderbufferParameterivEXT = NULL;
+PFNGLISFRAMEBUFFEREXTPROC glIsFramebufferEXT = NULL;
+PFNGLBINDFRAMEBUFFEREXTPROC glBindFramebufferEXT = NULL;
+PFNGLDELETEFRAMEBUFFERSEXTPROC glDeleteFramebuffersEXT = NULL;
+PFNGLGENFRAMEBUFFERSEXTPROC glGenFramebuffersEXT = NULL;
+PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC glCheckFramebufferStatusEXT = NULL;
+PFNGLFRAMEBUFFERTEXTURE1DEXTPROC glFramebufferTexture1DEXT = NULL;
+PFNGLFRAMEBUFFERTEXTURE2DEXTPROC glFramebufferTexture2DEXT = NULL;
+PFNGLFRAMEBUFFERTEXTURE3DEXTPROC glFramebufferTexture3DEXT = NULL;
+PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC glFramebufferRenderbufferEXT = NULL;
+PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC glGetFramebufferAttachmentParameterivEXT = NULL;
+PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT = NULL;
+
+PFNGLDRAWBUFFERSARBPROC glDrawBuffersARB = NULL;
+
+
+// Query
+PFNGLBEGINQUERYARBPROC glBeginQueryARB = NULL;
+PFNGLDELETEQUERIESARBPROC glDeleteQueriesARB = NULL;
+PFNGLENDQUERYARB glEndQueryARB = NULL;
+PFNGLGENQUERIESARBPROC glGenQueriesARB = NULL;
+PFNGLGETQUERYIVARBPROC glGetQueryivARB = NULL;
+PFNGLGETQUERYOBJECTIVARBPROC glGetQueryObjectivARB = NULL;
+PFNGLGETQUERYOBJECTUIVARBPROC glGetQueryObjectuivARB = NULL;
+PFNGLISQUERYARBPROC glIsQueryARB = NULL;
+
+// ATI separate stencil
+PFNGLSTENCILFUNCSEPARATEATIPROC glStencilFuncSeparateATI = NULL;
+PFNGLSTENCILOPSEPARATEATIPROC glStencilOpSeparateATI = NULL;
+
+
+// Depth bounds
+PFNGLDEPTHBOUNDSEXTPROC glDepthBoundsEXT = NULL;
+
 
 namespace G3D {
-static bool INT = false;
-static bool FLOAT = true;
-static bool OPAQUEx = true;
- 
-const TextureFormat* TextureFormat::L8        = new TextureFormat(1, false, GL_LUMINANCE8, GL_LUMINANCE, 8, 0, 0, 0, 0, 0, 0, 8, 8, OPAQUEx, INT, TextureFormat::CODE_L8, TextureFormat::COLOR_SPACE_NONE);
 
-const TextureFormat* TextureFormat::L16       = new TextureFormat(1, false, GL_LUMINANCE16, GL_LUMINANCE, 16, 0, 0, 0, 0, 0, 0, 16, 16, OPAQUEx, INT, TextureFormat::CODE_L16, TextureFormat::COLOR_SPACE_NONE);
+/**
+ Sets up matrix m from rot and trans
+ */
+static void _getGLMatrix(GLfloat* m, const Matrix3& rot, const Vector3& trans) {
+    // GL wants a column major matrix
+    m[0] = rot[0][0];
+    m[1] = rot[1][0];
+    m[2] = rot[2][0];
+    m[3] = 0.0f;
 
-const TextureFormat* TextureFormat::L16F      = new TextureFormat(1, false, GL_LUMINANCE16F_ARB, GL_LUMINANCE, 16, 0, 0, 0, 0, 0, 0, 16, 16, OPAQUEx, FLOAT, TextureFormat::CODE_L16F, TextureFormat::COLOR_SPACE_NONE);
+    m[4] = rot[0][1];
+    m[5] = rot[1][1];
+    m[6] = rot[2][1];
+    m[7] = 0.0f;
 
-const TextureFormat* TextureFormat::L32F      = new TextureFormat(1, false, GL_LUMINANCE32F_ARB, GL_LUMINANCE, 32, 0, 0, 0, 0, 0, 0, 32, 32, OPAQUEx, FLOAT, TextureFormat::CODE_L32F, TextureFormat::COLOR_SPACE_NONE);
+    m[8] = rot[0][2];
+    m[9] = rot[1][2];
+    m[10] = rot[2][2];
+    m[11] = 0.0f;
 
-const TextureFormat* TextureFormat::A8        = new TextureFormat(1, false, GL_ALPHA8, GL_ALPHA, 0, 8, 0, 0, 0, 0, 0, 8, 8, !OPAQUEx, INT, TextureFormat::CODE_A8, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::A16       = new TextureFormat(1, false, GL_ALPHA16, GL_ALPHA, 0, 16, 0, 0, 0, 0, 0, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_A16, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::A16F      = new TextureFormat(1, false, GL_ALPHA16F_ARB, GL_ALPHA, 0, 16, 0, 0, 0, 0, 0, 16, 16, !OPAQUEx, FLOAT, TextureFormat::CODE_A16F, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::A32F      = new TextureFormat(1, false, GL_ALPHA32F_ARB, GL_ALPHA, 0, 32, 0, 0, 0, 0, 0, 32, 32, !OPAQUEx, FLOAT, TextureFormat::CODE_A32F, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::LA4       = new TextureFormat(2, false, GL_LUMINANCE4_ALPHA4, GL_LUMINANCE_ALPHA, 4, 4, 0, 0, 0, 0, 0, 8, 8, !OPAQUEx, INT, TextureFormat::CODE_LA4, TextureFormat::COLOR_SPACE_NONE);
- 
-const TextureFormat* TextureFormat::LA8       = new TextureFormat(2, false, GL_LUMINANCE8_ALPHA8, GL_LUMINANCE_ALPHA, 8, 8, 0, 0, 0, 0, 0, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_LA8, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::LA16      = new TextureFormat(2, false, GL_LUMINANCE16_ALPHA16, GL_LUMINANCE_ALPHA, 16, 16, 0, 0, 0, 0, 0, 16*2, 16*2, !OPAQUEx, INT, TextureFormat::CODE_LA16, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::LA16F     = new TextureFormat(2, false, GL_LUMINANCE_ALPHA16F_ARB, GL_LUMINANCE_ALPHA, 16, 16, 0, 0, 0, 0, 0, 16*2, 16*2, !OPAQUEx, FLOAT, TextureFormat::CODE_LA16F, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::LA32F     = new TextureFormat(2, false, GL_LUMINANCE_ALPHA32F_ARB, GL_LUMINANCE_ALPHA, 32, 32, 0, 0, 0, 0, 0, 32*2, 32*2, !OPAQUEx, FLOAT, TextureFormat::CODE_LA32F, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::RGB5      = new TextureFormat(3, false, GL_RGB5, GL_RGBA, 0, 0, 5, 5, 5, 0, 0, 16, 16, OPAQUEx, INT, TextureFormat::CODE_RGB5, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGB5A1    = new TextureFormat(4, false, GL_RGB5_A1, GL_RGBA, 0, 1, 5, 5, 5, 0, 0, 16, 16, OPAQUEx, INT, TextureFormat::CODE_RGB5A1, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGB8      = new TextureFormat(3, false, GL_RGB8, GL_RGB, 0, 0, 8, 8, 8, 0, 0, 24, 32, OPAQUEx, INT, TextureFormat::CODE_RGB8, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGB16     = new TextureFormat(3, false, GL_RGB16, GL_RGB, 0, 0, 16, 16, 16, 0, 0, 16*3, 16*3, OPAQUEx, INT, TextureFormat::CODE_RGB16, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGB16F    = new TextureFormat(3, false, GL_RGB16F_ARB, GL_RGB, 0, 0, 16, 16, 16, 0, 0, 16*3, 16*3, OPAQUEx, FLOAT, TextureFormat::CODE_RGB16F, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGB32F    = new TextureFormat(3, false, GL_RGB32F_ARB, GL_RGB, 0, 0, 32, 32, 32, 0, 0, 32*3, 32*3, OPAQUEx, FLOAT, TextureFormat::CODE_RGB32F, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA8     = new TextureFormat(4, false, GL_RGBA8, GL_RGBA, 0, 8, 8, 8, 8, 0, 0, 32, 32, false, INT, TextureFormat::CODE_RGBA8, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA16    = new TextureFormat(4, false, GL_RGBA16, GL_RGBA, 0, 16, 16, 16, 16, 0, 0, 16*4, 16*4, false, INT, TextureFormat::CODE_RGBA16, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA16F   = new TextureFormat(4, false, GL_RGBA16F_ARB, GL_RGBA, 0, 16, 16, 16, 16, 0, 0, 16*4, 16*4, false, FLOAT, TextureFormat::CODE_RGB16F, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA32F   = new TextureFormat(4, false, GL_RGBA32F_ARB, GL_RGBA, 0, 32, 32, 32, 32, 0, 0, 32*4, 32*4, false, FLOAT, TextureFormat::CODE_RGBA32F, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGB_DXT1  = new TextureFormat(3, true, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_RGB, 0, 0, 0, 0, 0, 0, 0, 64, 64, OPAQUEx, INT, TextureFormat::CODE_RGB_DXT1, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA_DXT1 = new TextureFormat(4, true, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_RGBA, 0, 0, 0, 0, 0, 0, 0, 64, 64, !OPAQUEx, INT, TextureFormat::CODE_RGBA_DXT1, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA_DXT3 = new TextureFormat(4, true, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_RGBA, 0, 0, 0, 0, 0, 0, 0, 128, 128, !OPAQUEx, INT, TextureFormat::CODE_RGBA_DXT3, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::RGBA_DXT5 = new TextureFormat(4, true, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_RGBA, 0, 0, 0, 0, 0, 0, 0, 128, 128, !OPAQUEx, INT, TextureFormat::CODE_RGBA_DXT5, TextureFormat::COLOR_SPACE_RGB);
-
-const TextureFormat* TextureFormat::DEPTH16   = new TextureFormat(1, false, GL_DEPTH_COMPONENT16_ARB, GL_DEPTH_COMPONENT, 0, 0, 0, 0, 0, 0, 16, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_DEPTH16, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::DEPTH24   = new TextureFormat(1, false, GL_DEPTH_COMPONENT24_ARB, GL_DEPTH_COMPONENT, 0, 0, 0, 0, 0, 0, 24, 32, 24, !OPAQUEx, INT, TextureFormat::CODE_DEPTH24, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::DEPTH32   = new TextureFormat(1, false, GL_DEPTH_COMPONENT32_ARB, GL_DEPTH_COMPONENT, 0, 0, 0, 0, 0, 0, 32, 32, 32, !OPAQUEx, INT, TextureFormat::CODE_DEPTH32, TextureFormat::COLOR_SPACE_NONE);
-
-// These formats are for use with Renderbuffers only!
-const TextureFormat* TextureFormat::STENCIL1 = new TextureFormat(1, false, GL_STENCIL_INDEX1_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 1, 1, 1, !OPAQUEx, INT, TextureFormat::CODE_STENCIL1, TextureFormat::COLOR_SPACE_NONE);
-	
-const TextureFormat* TextureFormat::STENCIL4 = new TextureFormat(1, false, GL_STENCIL_INDEX4_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 4, 4, 4, !OPAQUEx, INT, TextureFormat::CODE_STENCIL4, TextureFormat::COLOR_SPACE_NONE);
-	
-const TextureFormat* TextureFormat::STENCIL8 = new TextureFormat(1, false, GL_STENCIL_INDEX8_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 8, 8, 8, !OPAQUEx, INT, TextureFormat::CODE_STENCIL8, TextureFormat::COLOR_SPACE_NONE);
-	
-const TextureFormat* TextureFormat::STENCIL16 = new TextureFormat(1, false, GL_STENCIL_INDEX16_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 16, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_STENCIL16, TextureFormat::COLOR_SPACE_NONE);
-
-const TextureFormat* TextureFormat::AUTO      = NULL;
-
-bool TextureFormat::valid = true;
-
-const TextureFormat* TextureFormat::depth(int depthBits) {
-
-    if (depthBits == SAME_AS_SCREEN) {
-        // Detect screen depth
-        depthBits = glGetInteger(GL_DEPTH_BITS);
-    }
-
-    switch (depthBits) {
-    case 16:
-        return DEPTH16;
-
-    case 24:
-        return DEPTH24;
-
-    case 32:
-        return DEPTH32;
-
-    default:
-        debugAssertM(false, "Depth must be 16, 24, or 32.");
-        return DEPTH32;
-    }
-}
-
-const TextureFormat* TextureFormat::stencil(int bits) {
-
-    if (bits == SAME_AS_SCREEN) {
-        // Detect screen depth
-        bits = glGetInteger(GL_STENCIL_BITS);
-    }
-
-    switch (bits) {
-    case 1:
-        return STENCIL1;
-
-    case 4:
-        return STENCIL4;
-
-    case 8:
-        return STENCIL8;
-
-    case 16:
-        return STENCIL16;
-
-    default:
-        debugAssertM(false, "Stencil must be 1, 4, 8 or 16.");
-        return STENCIL16;
-    }
-}
-
-const TextureFormat* fromCode(TextureFormat::Code code) {
-    switch (code) {
-    case TextureFormat::CODE_L8:
-        return TextureFormat::L8;
-        break;
-    case TextureFormat::CODE_L16:
-        return TextureFormat::L16;
-        break;
-    case TextureFormat::CODE_L16F:
-        return TextureFormat::L16F;
-        break;
-    case TextureFormat::CODE_L32F:
-        return TextureFormat::L32F;
-        break;
-
-    case TextureFormat::CODE_A8:
-        return TextureFormat::A8;
-        break;
-    case TextureFormat::CODE_A16:
-        return TextureFormat::A16;
-        break;
-    case TextureFormat::CODE_A16F:
-        return TextureFormat::A16F;
-        break;
-    case TextureFormat::CODE_A32F:
-        return TextureFormat::A32F;
-        break;
-
-    case TextureFormat::CODE_LA4:
-        return TextureFormat::LA4;
-        break;
-    case TextureFormat::CODE_LA8:
-        return TextureFormat::LA8;
-        break;
-    case TextureFormat::CODE_LA16:
-        return TextureFormat::LA16;
-        break;
-    case TextureFormat::CODE_LA16F:
-        return TextureFormat::LA16F;
-        break;
-    case TextureFormat::CODE_LA32F:
-        return TextureFormat::LA32F;
-        break;
-
-    case TextureFormat::CODE_RGB5:
-        return TextureFormat::RGB5;
-        break;
-    case TextureFormat::CODE_RGB5A1:
-        return TextureFormat::RGB5A1;
-        break;
-    case TextureFormat::CODE_RGB8:
-        return TextureFormat::RGB8;
-        break;
-    case TextureFormat::CODE_RGB16:
-        return TextureFormat::RGB16;
-        break;
-    case TextureFormat::CODE_RGB16F:
-        return TextureFormat::RGB16F;
-        break;
-    case TextureFormat::CODE_RGB32F:
-        return TextureFormat::RGB32F;
-        break;
-
-    case TextureFormat::CODE_ARGB8:
-        debugAssertM(TextureFormat::AUTO, "Unsupported TextureFormat at decoding.");
-        return TextureFormat::AUTO;
-        break;
-    case TextureFormat::CODE_BGR8:
-        debugAssertM(TextureFormat::AUTO, "Unsupported TextureFormat at decoding.");
-        return TextureFormat::AUTO;
-        break;
-
-    case TextureFormat::CODE_RGBA8:
-        return TextureFormat::RGBA8;
-        break;
-    case TextureFormat::CODE_RGBA16:
-        return TextureFormat::RGBA16;
-        break;
-    case TextureFormat::CODE_RGBA16F:
-        return TextureFormat::RGBA16F;
-        break;
-    case TextureFormat::CODE_RGBA32F:
-        return TextureFormat::RGBA32F;
-        break;
-
-    case TextureFormat::CODE_BAYER_RGGB8:
-    case TextureFormat::CODE_BAYER_GRBG8:
-    case TextureFormat::CODE_BAYER_GBRG8:
-    case TextureFormat::CODE_BAYER_BGGR8:
-    case TextureFormat::CODE_BAYER_RGGB32F:
-    case TextureFormat::CODE_BAYER_GRBG32F:
-    case TextureFormat::CODE_BAYER_GBRG32F:
-    case TextureFormat::CODE_BAYER_BGGR32F:
-
-    case TextureFormat::CODE_HSV8:
-    case TextureFormat::CODE_HSV32F:
-
-    case TextureFormat::CODE_YUV8:
-    case TextureFormat::CODE_YUV32F:
-        debugAssertM(TextureFormat::AUTO, "Unsupported TextureFormat at decoding.");
-        return TextureFormat::AUTO;
-        break;
-
-    case TextureFormat::CODE_RGB_DXT1:
-        return TextureFormat::RGB_DXT1;
-        break;
-    case TextureFormat::CODE_RGBA_DXT1:
-        return TextureFormat::RGBA_DXT1;
-        break;
-    case TextureFormat::CODE_RGBA_DXT3:
-        return TextureFormat::RGBA_DXT3;
-        break;
-    case TextureFormat::CODE_RGBA_DXT5:
-        return TextureFormat::RGBA_DXT5;
-        break;
-
-    case TextureFormat::CODE_DEPTH16:
-        return TextureFormat::DEPTH16;
-        break;
-    case TextureFormat::CODE_DEPTH24:
-        return TextureFormat::DEPTH24;
-        break;
-    case TextureFormat::CODE_DEPTH32:
-        return TextureFormat::DEPTH32;
-        break;
-
-    case TextureFormat::CODE_STENCIL1:
-        return TextureFormat::STENCIL1;
-        break;
-    case TextureFormat::CODE_STENCIL4:
-        return TextureFormat::STENCIL4;
-        break;
-    case TextureFormat::CODE_STENCIL8:
-        return TextureFormat::STENCIL8;
-        break;
-    case TextureFormat::CODE_STENCIL16:
-        return TextureFormat::STENCIL16;
-        break;
-
-    default:
-        return NULL;
-    }
+    m[12] = trans[0];
+    m[13] = trans[1];
+    m[14] = trans[2];
+    m[15] = 1.0f;
 }
 
 
-static class TextureFormatCleanup {
-public:
-
-	~TextureFormatCleanup() {
-		TextureFormat::valid = false;
-
-        delete const_cast<TextureFormat*>(TextureFormat::L8);
-
-        delete const_cast<TextureFormat*>(TextureFormat::L16);
-
-        delete const_cast<TextureFormat*>(TextureFormat::L16F);
-    
-        delete const_cast<TextureFormat*>(TextureFormat::L32F);
-
-        delete const_cast<TextureFormat*>(TextureFormat::A8);
-
-        delete const_cast<TextureFormat*>(TextureFormat::A16);
-
-        delete const_cast<TextureFormat*>(TextureFormat::A16F);
-    
-        delete const_cast<TextureFormat*>(TextureFormat::A32F);
-
-        delete const_cast<TextureFormat*>(TextureFormat::LA4);
-
-        delete const_cast<TextureFormat*>(TextureFormat::LA8);
-
-        delete const_cast<TextureFormat*>(TextureFormat::LA16);
-
-        delete const_cast<TextureFormat*>(TextureFormat::LA16F);
-    
-        delete const_cast<TextureFormat*>(TextureFormat::LA32F);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGB5);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGB5A1);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGB8);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGB16);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGB16F);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGB32F);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA8);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA16);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA16F);
-    
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA32F);
-    
-        delete const_cast<TextureFormat*>(TextureFormat::RGB_DXT1);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA_DXT1);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA_DXT3);
-
-        delete const_cast<TextureFormat*>(TextureFormat::RGBA_DXT5);
-
-        delete const_cast<TextureFormat*>(TextureFormat::DEPTH16);
-
-        delete const_cast<TextureFormat*>(TextureFormat::DEPTH24);
-
-        delete const_cast<TextureFormat*>(TextureFormat::DEPTH32);
-
-        delete const_cast<TextureFormat*>(TextureFormat::STENCIL1);
-
-        delete const_cast<TextureFormat*>(TextureFormat::STENCIL4);
-
-        delete const_cast<TextureFormat*>(TextureFormat::STENCIL8);
-
-        delete const_cast<TextureFormat*>(TextureFormat::STENCIL16);
-	}
-} _textureFormatCleanup;
-
+void glGetMatrix(GLenum name, Matrix4& m) {
+    float f[16];
+    glGetFloatv(name, f);
+    debugAssertGLOk();
+    m = Matrix4(f).transpose();
 }
+
+
+Matrix4 glGetMatrix(GLenum name) {
+    Matrix4 m;
+    glGetMatrix(name, m);
+    return m;
+}
+
+
+void glLoadMatrix(const CoordinateFrame &cf) {
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, cf.rotation, cf.translation);
+    glLoadMatrixf(matrix);
+}
+
+
+void glLoadMatrix(const Matrix4& m) {
+    GLfloat matrix[16];
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            // Transpose
+            matrix[c * 4 + r] = m[r][c];
+        }
+    }
+
+    glLoadMatrixf(matrix);
+}
+
+
+void glLoadInvMatrix(const CoordinateFrame &cf) {
+    Matrix3 rotInv = cf.rotation.transpose();
+
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, rotInv, rotInv * -cf.translation);
+    glLoadMatrixf(matrix);
+}
+
+void glMultInvMatrix(const CoordinateFrame &cf) {
+    Matrix3 rotInv = cf.rotation.transpose();
+
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, rotInv, rotInv * -cf.translation);
+    glMultMatrixf(matrix);
+}
+
+void glMultMatrix(const CoordinateFrame &cf) {
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, cf.rotation, cf.translation);
+    glMultMatrixf(matrix);
+}
+
+
+Vector2 glGetVector2(GLenum which) {
+    float v[4];
+    glGetFloatv(which, v);
+    return Vector2(v[0], v[1]);
+}
+
+
+Vector3 glGetVector3(GLenum which) {
+    float v[4];
+    glGetFloatv(which, v);
+    return Vector3(v[0], v[1], v[2]);
+}
+
+
+Vector4 glGetVector4(GLenum which) {
+    float v[4];
+    glGetFloatv(which, v);
+    return Vector4(v[0], v[1], v[2], v[3]);
+}
+
+
+/**
+ Takes an object space point to screen space using the current MODELVIEW and
+ PROJECTION matrices. The resulting xy values are in <B>pixels</B> and
+ are relative to the viewport origin, the z 
+ value is on the glDepthRange scale, and the w value contains rhw (-1/z for
+ camera space z), which is useful for scaling line and point size.
+ */
+Vector4 glToScreen(const Vector4& v) {
+    
+    // Get the matrices and viewport
+    double modelView[16];
+    double projection[16];
+    double viewport[4];
+    double depthRange[2];
+
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetDoublev(GL_VIEWPORT, viewport);
+    glGetDoublev(GL_DEPTH_RANGE, depthRange);
+
+    // Compose the matrices into a single row-major transformation
+    Vector4 T[4];
+    int r, c, i;
+    for (r = 0; r < 4; ++r) {
+        for (c = 0; c < 4; ++c) {
+            T[r][c] = 0;
+            for (i = 0; i < 4; ++i) {
+                // OpenGL matrices are column major
+                T[r][c] += projection[r + i * 4] * modelView[i + c * 4];
+            }
+        }
+    }
+
+    // Transform the vertex
+    Vector4 result;
+    for (r = 0; r < 4; ++r) {
+        result[r] = T[r].dot(v);
+    }
+
+    // Homogeneous divide
+    const double rhw = 1 / result.w;
+
+    return Vector4(
+        (1 + result.x * rhw) * viewport[2] / 2 + viewport[0],
+        (1 - result.y * rhw) * viewport[3] / 2 + viewport[1],
+        (result.z * rhw) * (depthRange[1] - depthRange[0]) + depthRange[0],
+        rhw);
+}
+
+void glDisableAllTextures() {
+  glDisable(GL_TEXTURE_2D);
+  if (GLCaps::supports_GL_EXT_texture_3D()) {
+    glDisable(GL_TEXTURE_3D);
+  }
+  if (GLCaps::supports_GL_EXT_texture_cube_map()) {
+    glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+  }
+  glDisable(GL_TEXTURE_1D);
+  
+  if (GLCaps::supports_GL_EXT_texture_rectangle()) {
+    glDisable(GL_TEXTURE_RECTANGLE_EXT);
+  }
+}
+  
+
+#if defined(G3D_OSX)
+void* NSGLGetProcAddress(const char *name)
+{
+	/* This code is from Apple's tech note QA1188.
+	    Apple states that this can be called from Cocoa
+	    or Carbon applications, as long as they use Mach-O
+	    executable rather than CFM.  G3D certainly used
+	    Mach-O.
+	 */
+
+	    NSSymbol symbol;
+	    char *symbolName;
+
+	    // Prepend a '_' for the Unix C symbol mangling convention
+	    symbolName = (char*)malloc(strlen (name) + 2);
+	    strcpy(symbolName + 1, name);
+	    symbolName[0] = '_';
+	    symbol = NULL;
+
+		const mach_header* mh = 
+			NSAddImage("/System/Library/Frameworks/OpenGL.Framework/Libraries/libGL.dylib",
+					   NSADDIMAGE_OPTION_RETURN_ON_ERROR);
+		  
+		bool rc = NSIsSymbolNameDefinedInImage(mh, symbolName);
+		
+		if (rc)
+		{
+			symbol = NSLookupSymbolInImage(mh, symbolName,
+										NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+		
+		}
+	    
+		free (symbolName);
+	    
+		if (!symbol)
+			return NULL;
+		
+		void* addr = NSAddressOfSymbol(symbol);
+		 
+		return addr; 
+}
+#endif
+
+} // namespace
+
+

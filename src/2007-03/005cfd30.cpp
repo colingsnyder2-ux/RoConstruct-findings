@@ -1,23 +1,4 @@
-// from server: 73% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O1 /Ob2 /Oy /GS- /EHsc /MD
-// roc-lib: rbxgs reflection/reflection_function.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include "reflection/function.h"
-#include "reflection/object.h"
-
-namespace RBX
-{
-	namespace Reflection
-	{
-		FunctionDescriptor::FunctionDescriptor(ClassDescriptor& classDescriptor, const char* name, Security security)
-			: MemberDescriptor(classDescriptor, name, "Function"),
-			  security(security),
-			  signature()
-		{
-			classDescriptor.FunctionContainer::declare(this);
-		}
-	}
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void get(void*,int);}; struct S{void* f(void*);};
+void* S::f(void* p){((B*)((char*)this+428))->get(p,1); return p;}

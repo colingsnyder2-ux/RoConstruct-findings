@@ -1,10 +1,18 @@
-// from server: 47% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_boost133_signals_core_6e196a12d96bb448.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define _DLL 1
+#define _MT 1
+#define BOOST_SIGNALS_SOURCE
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 // Boost.Signals library
 
 // Copyright Douglas Gregor 2001-2004. Use, modification and
@@ -30,6 +38,46 @@ typedef std::map<stored_group, group_list, compare_type> slot_container_type;
 typedef slot_container_type::iterator group_iterator;
 typedef slot_container_type::const_iterator const_group_iterator;
 
+named_slot_map_iterator::named_slot_map_iterator() : slot_assigned(false) {}
+
+named_slot_map_iterator::
+named_slot_map_iterator(const named_slot_map_iterator& other)
+  : group(other.group), last_group(other.last_group),
+    slot_assigned(other.slot_assigned)
+{
+  if (slot_assigned) slot_ = other.slot_;
+}
+
+named_slot_map_iterator&
+named_slot_map_iterator::operator=(const named_slot_map_iterator& other)
+{
+  slot_assigned = other.slot_assigned;
+  group = other.group;
+  last_group = other.last_group;
+  if (slot_assigned) slot_ = other.slot_;
+  return *this;
+}
+
+
+connection_slot_pair& named_slot_map_iterator::dereference() const
+{ return *slot_; }
+
+void named_slot_map_iterator::increment()
+{
+  ++slot_;
+  if (slot_ == group->second.end()) {
+    ++group;
+    init_next_group();
+  }
+}
+
+bool
+named_slot_map_iterator::equal(const named_slot_map_iterator& other) const
+{
+  return (group == other.group
+          && (group == last_group
+              || slot_ == other.slot_));
+}
 
 #if BOOST_WORKAROUND(_MSC_VER, <= 1400)
 void named_slot_map_iterator::decrement() { assert(false); }

@@ -1,218 +1,464 @@
-// from server: 77% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/Gui.h"
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
 namespace RBX
 {
-	const G3D::Color4& GuiItem::disabledFill()
+	const char* sInstance = "Instance";
+
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
-		return c;
 	}
 
-	const G3D::Color4& GuiItem::translucentBackdrop()
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
-		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
-		return c;
 	}
 
-	G3D::Vector2 GuiRoot::canvasSize;
-	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
-	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
-
-	GuiItem::GuiItem() 
+	Instance::~Instance()
 	{
-		setName("Unnamed GuiItem");
+		RBXASSERT(!parent);
 	}
 
-	const GuiItem* GuiItem::getGuiItem(int index) const
+	bool Instance::askAddChild(const Instance* instance) const
 	{
-		return dynamic_cast<const GuiItem*>(getChild(index));
+		return false;
 	}
 
-	GuiItem* GuiItem::getGuiItem(int index)
+	bool Instance::askSetParent(const Instance* instance) const
 	{
-		return dynamic_cast<GuiItem*>(getChild(index));
+		return false;
 	}
 
-	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
+	void Instance::setName(const std::string& value)
 	{
-		for (size_t i = 0; i < numChildren(); i++)
+		if (name != value)
 		{
-			GuiItem* current = getGuiItem((int)i);
+			name = value;
+			raisePropertyChanged(desc_Name);
+		}
+	}
 
-			if (current && current != focus.get())
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
+		{
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
+
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				GuiResponse itemResponse = current->process(event);
-				if (itemResponse.wasUsed())
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
+			}
+		}
+	}
+
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
 				{
-					this->loseFocus();
-
-					focus = shared_from(current);
-					focus->loseFocus();
-
-					return itemResponse;
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
 				}
 			}
 		}
-
-		return GuiResponse::notUsed();
 	}
 
-	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
 	{
-		if (instance == focus)
-			loseFocus();
-
-		Instance::onDescendentRemoving(instance);
-	}
-
-	Rect GuiItem::getMyRect() const
-	{
-		G3D::Vector2 pos = getPosition();
-		return Rect(pos, pos + getSize());
-	}
-
-	const GuiItem* GuiItem::getGuiParent() const
-	{
-		return dynamic_cast<const GuiItem*>(getParent());
-	}
-	
-	GuiResponse GuiItem::process(const GuiEvent& event)
-	{
-		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
-			return GuiResponse::notUsed();
-
-		if (focus)
+		if (element)
 		{
-			if (focus->canLoseFocus())
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
 			{
-				GuiResponse response = processNonFocus(event);
-				if (response.wasUsed())
-					return response;
+				readChild(current, binder);
 			}
+		}
+	}
 
-			GuiResponse focusResponse = focus->process(event);
-			if (focusResponse.wasUsed())
-				return focusResponse;
-
-			loseFocus();
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
 		}
 
-		RBXASSERT(!focus);
-		return processNonFocus(event);
-	}
-
-	void TopMenuBar::init()
-	{
-		layoutStyle = Layout::HORIZONTAL;
-		backdropColor = G3D::Color4::clear();
-		visible = true;
-	}
-
-	G3D::Vector2 TopMenuBar::getSize() const
-	{
-		G3D::Vector2 size(0.0f, 0.0f);
-
-		for (size_t i = 0; i < numChildren(); i++)
+		if (element->getTag() == tag_Item)
 		{
-			const GuiItem* current = getGuiItem((int)i);
-
-			if (current)
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
 			{
-				G3D::Vector2 childSize = current->getSize();
-				switch (layoutStyle)
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
+
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		return;
+	}
+
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
+
+		return false;
+	}
+
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
+
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
 				{
-				case Layout::VERTICAL:
-					size.x = G3D::max(size.x, childSize.x);
-					size.y += childSize.y;
-					break;
-				case Layout::HORIZONTAL:
-					size.x += childSize.x;
-					size.y = G3D::max(size.y, childSize.y);
-					break;
+					(*iter).read(propertyElement, binder);
 				}
 			}
 		}
-
-		return size;
 	}
 
-	void TopMenuBar::render2d(Adorn* adorn)
+	XmlElement* Instance::write()
 	{
-		if (isVisible())
+		if (archivable)
 		{
-			if (backdropColor != G3D::Color4::clear())
+			if (getClassName() != Name::getNullName())
 			{
-				adorn->rect2d(getMyRect2D(), backdropColor);
-			}
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
 
-			for (size_t i = 0; i < numChildren(); i++)
-			{
-				GuiItem* current = getGuiItem((int)i);
-				if (current)
-					current->render2d(adorn);
-			}
-		}
-	}
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
 
-	GuiResponse TopMenuBar::process(const GuiEvent& event)
-	{
-		if (isVisible())
-		{
-			GuiResponse response = GuiItem::process(event);
-			if (response.wasUsed())
-			{
-				return response;
-			}
-
-			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
-			{
-				return GuiResponse::used();
+				return element;
 			}
 		}
 
-		return GuiResponse::notUsed();
+		return new XmlElement(tag_External, InstanceHandle(this));
 	}
-
-	void RelativePanel::init(const Layout& layout)
+  
+	void Instance::setParent(Instance* newParent)
 	{
-		setName("RelativePanel");
-		layoutStyle = layout.layoutStyle;
-		backdropColor = layout.backdropColor;
-		xLocation = layout.xLocation;
-		yLocation = layout.yLocation;
-		offset = layout.offset;
-	}
+		if (newParent == parent)
+			return;
 
-	GuiRoot::GuiRoot() 
-	{
-		setName("GuiRoot");
-	}
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
 
-	int GuiRoot::normalizedFontSize(int fontSize)
-	{
-		static G3D::Vector2 percentSize(100.0f, 75.0f);
-		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
-	}
-
-	void GuiRoot::render2d(Adorn* adorn)
-	{
-		short height = static_cast<short>(adorn->getHeight());
-		short width = static_cast<short>(adorn->getWidth());
-
-		canvasSize = G3D::Vector2(width, height);
-
-		for (size_t i = 0; i < numChildren(); i++)
+		if (oldParent)
 		{
-			GuiItem* current = getGuiItem((int)i);
-			if (current)
-				current->render2d(adorn);
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
 		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
 	}
 }

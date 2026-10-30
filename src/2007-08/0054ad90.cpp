@@ -1,35 +1,15 @@
-// from server: 52% by colin
-extern "C" {
-    void __stdcall _invalid_parameter_noinfo(void);
-    void __stdcall _invalid_parameter_noinfo_noreturn(void);
-    void* __cdecl memcpy_s(void*, unsigned int, const void*, unsigned int);
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-8.0-dll roc_boost_atl_f4b0910a5d2d7185.cpp
 
-struct S {
-    void* field;
-    void* f(void* a, int b, int c);
-};
-
-void* S::f(void* a, int b, int c) {
-    if (c == 0) {
-        _invalid_parameter_noinfo_noreturn();
-    }
-    if (a == 0 && b != 0) {
-        _invalid_parameter_noinfo_noreturn();
-    }
-    void** vtable = *(void***)c;
-    void* result = ((void* (__stdcall*)(int, int))vtable[0])(1, b);
-    if (result == 0) {
-        _invalid_parameter_noinfo();
-    }
-    char* p = (char*)result + 0x10;
-    this->field = p;
-    if (b < 0 || b > *(int*)(p - 8)) {
-        _invalid_parameter_noinfo_noreturn();
-    }
-    *(int*)(p - 0xc) = b;
-    char* dst = (char*)this->field;
-    dst[b] = 0;
-    memcpy_s(this->field, b, a, b);
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#define _MBCS 1
+#include <atlbase.h>
+#include <atlstr.h>
+#include <atlutil.h>
+template class ATL::CSimpleStringT<char,false>;
+template class ATL::CSimpleStringT<char,true>;
+class UrlProbe : public ATL::CUrl { public: BOOL set(const char*); };
+BOOL UrlProbe::set(const char* text) { return SetSchemeName(text); }

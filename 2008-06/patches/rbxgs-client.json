@@ -331,6 +331,14 @@
   [
    "BodyThrust::computeForce(const float dt, bool throttling)\n\t{\n\t\tBody* body = part.lock()->getPrimitive()->getBody();\n\t\tRBXASSERT(body != NULL);\n\n\t\tG3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);\n\t\tG3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);\n\t\tbody->accumulateForce(worldForce, worldPos);\n\t}",
    "BodyThrust::computeForce(const float dt, bool throttling)\n\t{\n\t\tBody* body = part.lock()->getPrimitive()->getBody();\n\t\t                       ;\n\n\t\tG3D::Vector3 worldForce = body->getCoordinateFrame().vectorToWorldSpace(force);\n\t\tG3D::Vector3 worldPos = body->getCoordinateFrame().pointToWorldSpace(location);\n\t\tbody->accumulateForce(worldForce, worldPos);\n\t}"
+  ],
+  [
+   "\t\t\tpart = boost::shared_dynamic_cast<PartInstance>(shared_from(event.newParent));\n\t\tupdateWorld();",
+   "\t\t\tpart = shared_from(dynamic_cast<PartInstance*>(event.newParent));\n\t\tWorld* nextWorld = part.lock().get() ? Workspace::getWorldIfInWorkspace(this) : NULL;\n\t\tif (world != nextWorld)\n\t\t{\n\t\t\tif (world)\n\t\t\t\tworld->getKernel().removeConnector2ndPass(this);\n\t\t\tworld = nextWorld;\n\t\t\tif (world)\n\t\t\t\tworld->getKernel().insertConnector2ndPass(this);\n\t\t}"
+  ],
+  [
+   "#include <Network/Players.h>",
+   "#include <Network/Players.h>\n\n// Preserve the existing vendor helper used by other translation units (004ca2b0).\ntemplate boost::shared_ptr<RBX::PartInstance> boost::shared_dynamic_cast<RBX::PartInstance, RBX::Instance>(const boost::shared_ptr<RBX::Instance>&);"
   ]
  ],
  "App/include/reflection/object.h": [
@@ -575,6 +583,10 @@
   [
    "\t\t\t// TODO: get this fully matching\n\t\t\t// check RotateJoint::getChannelValue\n\t\t\tconst SurfaceData* data = surfaceData[id];\n\t\t\treturn data ? *data : SurfaceData::empty();\n",
    "\t\t\tif (!surfaceData[id])\n\t\t\t\treturn SurfaceData::empty();\n\t\t\telse\n\t\t\t\treturn *surfaceData[id];\n"
+  ],
+  [
+   "\t\tvoid setAnchor(bool _anchored);\n",
+   "\t\tvoid setAnchor(bool _anchored);\n\t\tvoid setFlag0xaa(bool value); // 0x5e8140\n"
   ]
  ],
  "App/v8world/Primitive.cpp": [
@@ -697,6 +709,18 @@
   [
    "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tanchored = _anchored;\n\n\t\tbool exists = getAnchor();\n\n\t\tif (_anchored || dragging)\n\t\t\t_anchored = true;\n\n\t\tif (_anchored == exists)\n\t\t\treturn;\n\n\t\tif (_anchored)\n\t\t{\n\t\t\tRBXASSERT(!getAnchorObject());\n\t\t\tsetAnchorObject(new Anchor(this));\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(getAnchorObject());\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t\n\t\t\tdelete getAnchorObject();\n\t\t\tsetAnchorObject(NULL);\n\t\t}\n\t}",
    "\tvoid Primitive::setAnchor(bool _anchored)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (anchored != _anchored)\n\t\t{\n\t\t\tanchored = _anchored;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}"
+  ],
+  [
+   "\tvoid Primitive::setCanCollide(bool value)\n\t{",
+   "\tvoid Primitive::setFlag0xaa(bool value)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (flag0xaa != value)\n\t\t{\n\t\t\tflag0xaa = value;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}\n\n\tvoid Primitive::setPV(const PV& pv)\n\t{\n\t\tbody->setVelocity(pv.velocity);\n\t\tsetCoordinateFrame(pv.position);\n\t}\n\n\tvoid Primitive::setCanCollide(bool value)\n\t{"
+  ],
+  [
+   "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\n\t\t\tfloat newSize = geometry->getGridVolume();\n\t\t\tbody->setMass(newSize);\n\t\t\tbody->setMoment(geometry->getMoment(newSize));\n\t\t\tJointK.setDirty();\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}",
+   "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\t\t\tsetMassInertia(geometry->getGridVolume());\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}\n\n\tvoid Primitive::setMassInertia(float mass)\n\t{\n\t\tbody->setMass(mass);\n\t\tbody->setMoment(geometry->getMoment(mass));\n\t\tJointK.setDirty();\n\t}"
+  ],
+  [
+   "Primitive::setGuid(const Guid& value) \n\t{\n\t\tRBXASSERT(!world);\n\t\tguid.copyDataFrom(value);\n\t\tguidSetExternally = true;\n\t}",
+   "Primitive::setGuid(const Guid& value) \n\t{\n\t\t                 ;\n\t\tguid.copyDataFrom(value);\n\t\tguidSetExternally = true;\n\t}"
   ]
  ],
  "App/include/v8datamodel/PartInstance.h": [
@@ -1205,6 +1229,10 @@
   [
    "\t\tWorld* getWorld()\n\t\t{",
    "\t\tWorld* getWorld2008()\n\t\t{\n\t\t\tif (!currentStage)\n\t\t\t\treturn NULL;\n\n\t\t\tIStage* upstream;\n\t\t\tif (currentStage->getStageType() != (IStage::StageType)7)\n\t\t\t\tupstream = currentStage;\n\t\t\telse\n\t\t\t\tupstream = currentStage->getUpstream();\n\n\t\t\treturn rbx_static_cast<IWorldStage*>(upstream)->getWorld();\n\t\t}\n\n\t\tWorld* getWorld()\n\t\t{"
+  ],
+  [
+   "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\tRBXASSERT(iStage);\n\t\t\tRBXASSERT(currentStage);\n\n\t\t\treturn",
+   "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\treturn"
   ]
  ],
  "App/v8datamodel/Tool.cpp": [
@@ -1251,6 +1279,22 @@
   [
    "\t\t\t\tif (name->toString() == \"BackendToolState\" || name->toString() == \"ActivationState\")\n\t\t\t\t\treturn;",
    "\t\t\t\tif (name->name == \"BackendToolState\" || name->name == \"ActivationState\")\n\t\t\t\t\treturn;"
+  ],
+  [
+   "\tTool::ToolState Tool::computeDesiredState()\n\t{\n\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\tif (!getHandleConst())",
+   "\tTool::ToolState Tool::computeDesiredState()\n\t{\n\t\tif (!getHandleConst())"
+  ],
+  [
+   "\tvoid Tool::onEvent_AddedBackend(boost::shared_ptr<Instance> child)\n\t{\n\t\tif (child.get() != this)\n\t\t{\n\t\t\tRBXASSERT(ServiceProvider::findServiceProvider(this));\n\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\t\tToolState state = computeDesiredState();\n\t\t\tconst ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);\n\n\t\t\tRBXASSERT(serviceProvider);\n\n\t\t\tsetDesiredState(state, serviceProvider);\n\t\t}\n\t}",
+   "\tvoid Tool::rebuildBackendState()\n\t{\n\t\tToolState state = computeDesiredState();\n\t\tsetDesiredState(state, ServiceProvider::findServiceProvider(this));\n\t}\n\n\tvoid Tool::onEvent_AddedBackend(boost::shared_ptr<Instance> child)\n\t{\n\t\tif (child.get() != this)\n\t\t{\n\t\t\trebuildBackendState();\n\t\t}\n\t}"
+  ],
+  [
+   "\t\tif (ServiceProvider::findServiceProvider(this) && child.get() != this)\n\t\t{\n\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\t\tif (child.get() == (Instance*)this->weld.get())\n\t\t\t{\n\t\t\t\tRBXASSERT(Tool::drawSelected());\n\t\t\t\tsetDesiredState(HAS_TORSO, ServiceProvider::findServiceProvider(this));\n\t\t\t}\n\n\t\t\tToolState state = computeDesiredState();\n\t\t\tconst ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);\n\n\t\t\tRBXASSERT(serviceProvider);\n\n\t\t\tsetDesiredState(state, serviceProvider);\n\t\t}",
+   "\t\tif (ServiceProvider::findServiceProvider(this) && child.get() != this)\n\t\t{\n\t\t\tif (child.get() == (Instance*)this->weld.get())\n\t\t\t{\n\t\t\t\tsetDesiredState(HAS_TORSO, ServiceProvider::findServiceProvider(this));\n\t\t\t}\n\n\t\t\trebuildBackendState();\n\t\t}"
+  ],
+  [
+   "\t\tHumanoid* humanoid = Humanoid::modelIsCharacter(getParent());\n\t\tRBXASSERT(humanoid);\n\n\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\tRBXASSERT(rightArm);\n\n\t\tPartInstance* handle = getHandle();\n\t\tRBXASSERT(handle);\n\n\t\tbuildWeld(rightArm, handle, humanoid->getRightArmGrip(), grip, \"RightGrip\");",
+   "\t\tHumanoid* humanoid = Humanoid::modelIsCharacter(getParent());\n\t\tPartInstance* rightArm = humanoid->getRightArm();\n\n\t\tPartInstance* handle = getHandle();\n\t\tif (handle)\n\t\t\thandle->setCanCollide(false);\n\n\t\tbuildWeld(rightArm, handle, humanoid->getRightArmGrip(), grip, \"RightGrip\");"
   ]
  ],
  "App/v8datamodel/ModelInstance.cpp": [
@@ -1293,12 +1337,56 @@
   [
    "\t\t\tmodifiers.push_back(modifier);\n\t}\n",
    "\t\t\tmodifiers.push_back(modifier);\n\t}\n\n\tvoid ModelInstance::onChildRemoving(Instance* child)\n\t{\n\t\tIModelModifier* modifier = dynamic_cast<IModelModifier*>(child);\n\t\tif (modifier)\n\t\t\tmodifiers.erase(std::find(modifiers.begin(), modifiers.end(), modifier));\n\t}\n"
+  ],
+  [
+   "\tvoid ModelInstance::setPrimaryPart(PartInstance* set)\n\t{",
+   "\tvoid ModelInstance::setFrontAndTop(const G3D::Vector3& front)\n\t{\n\t\tif (primaryPart)\n\t\t{\n\t\t\tG3D::CoordinateFrame cf;\n\t\t\tcf.lookAt(front);\n\t\t\tmodelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * cf.rotation, G3D::Vector3::zero());\n\t\t\tdirtyAll();\n\t\t}\n\t}\n\n\tvoid ModelInstance::setPrimaryPart(PartInstance* set)\n\t{"
   ]
  ],
  "App/v8datamodel/JointsService.cpp": [
   [
    "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\t\tRBXASSERT(event.joint != NULL);\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\t\tRBXASSERT(jointOwner);\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}",
    "\tvoid JointsService::onEvent(const World* source, AutoDestroy event)\n\t{\n\n\t\tIJointOwner* jointOwner = event.joint->getJointOwner();\n\n\t\tif (jointOwner)\n\t\t\tstatic_cast<JointInstance*>(jointOwner)->setParent(NULL);\n\t}"
+  ],
+  [
+   "\tvoid JointsService::onDescendentAdded(Instance* instance)",
+   "\tJointsService::~JointsService()\n\t{\n\t}\n\n\tvoid JointsService::onDescendentAdded(Instance* instance)"
+  ],
+  [
+   "\t\tRBXASSERT(event.joint != NULL);\n\t\tRBXASSERT(event.joint->getJointOwner() == NULL);\n\n\t\tboost::shared_ptr<JointInstance> ji;\n\t\t\n\t\tswitch (event.joint->getJointType())",
+   "\t\tJoint* joint = event.joint;\n\t\tboost::shared_ptr<JointInstance> ji;\n\t\t\n\t\tswitch (joint->getJointType())"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Snap>(event.joint);",
+   "\t\t\tji = Creatable::create<Snap>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Weld>(event.joint);",
+   "\t\t\tji = Creatable::create<Weld>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Glue>(event.joint);",
+   "\t\t\tji = Creatable::create<Glue>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<Rotate>(event.joint);",
+   "\t\t\tji = Creatable::create<Rotate>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<RotateP>(event.joint);",
+   "\t\t\tji = Creatable::create<RotateP>(joint);"
+  ],
+  [
+   "\t\t\tji = Creatable::create<RotateV>(event.joint);",
+   "\t\t\tji = Creatable::create<RotateV>(joint);"
+  ],
+  [
+   "\t\t\tbreak;\n\t\tdefault:\n\t\t\tRBXASSERT(0);\n\t\t}",
+   "\t\t\tbreak;\n\t\t}"
+  ],
+  [
+   "\t\tworld = NULL;\n\t\tInstance::onServiceProvider(oldProvider, newProvider);\n\t\tif",
+   "\t\tworld = NULL;\n\t\tif"
   ]
  ],
  "App/v8world/MutilJoint.cpp": [
@@ -1463,6 +1551,10 @@
   [
    "\t\t\t// for some reason local is being taken as operator*'s LHS\n\t\t\t// and not part->getCoordinateFrame()\n\t\t\tG3D::CoordinateFrame local = computeLocalCoordinateFrame();\n\t\t\tc = part->getCoordinateFrame()*local;",
    "\t\t\tc = part->getCoordinateFrame()*computeLocalCoordinateFrame();"
+  ],
+  [
+   "\tvoid VelocityMotor::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\n\t\tsetPart(0, dynamic_cast<Feature*>(this->getParent()));\n\n\t\tWorld* oldWorld = motorJoint()->getWorld();\n\t\tWorld* wsWorld = Workspace::getWorldIfInWorkspace(this);\n\n\t\tif (oldWorld != wsWorld)\n\t\t{\n\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(motorJoint());\n\t\t\t\tsetPart(0, NULL);\n\t\t\t\tsetPart(1, NULL);\n\t\t\t\tRBXASSERT(!motorJoint()->getWorld());\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(motorJoint());\n\t\t\t\tRBXASSERT(motorJoint()->getWorld());\n\t\t\t}\n\t\t}\n\t}\n",
+   "\tvoid VelocityMotor::onAncestorChanged(const AncestorChanged& event)\n\t{\n\t\tInstance::onAncestorChanged(event);\n\n\t\tsetPart(0, dynamic_cast<Feature*>(this->getParent()));\n\n\t\tWorld* oldWorld = motorJoint()->getWorld2008();\n\t\tWorld* wsWorld = Workspace::getWorldIfInWorkspace(this);\n\n\t\tif (oldWorld != wsWorld)\n\t\t{\n\t\t\tif (oldWorld)\n\t\t\t{\n\t\t\t\toldWorld->removeJoint(motorJoint());\n\t\t\t\tsetPart(0, NULL);\n\t\t\t\tsetPart(1, NULL);\n\t\t\t\t\n\t\t\t}\n\n\t\t\tif (wsWorld)\n\t\t\t{\n\t\t\t\twsWorld->insertJoint(motorJoint());\n\t\t\t\t\n\t\t\t}\n\t\t}\n\t}\n"
   ]
  ],
  "App/v8datamodel/PVInstance.cpp": [
@@ -1663,6 +1755,10 @@
   [
    "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
    "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+  ],
+  [
+   "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}",
+   "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\t                    ;\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}"
   ]
  ],
  "App/v8datamodel/ToolMouseCommand.cpp": [
@@ -1799,6 +1895,18 @@
   [
    "\t\tRBXASSERT(unitSearchRay.direction.isUnit());\n\t\tG3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);",
    "\t\tif (false)\n\t\t\tRBXASSERT(unitSearchRay.direction.isUnit());\n\t\tG3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);"
+  ],
+  [
+   "#include \"tool/DragUtilities.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"tool/DragUtilities.h\"\n"
+  ],
+  [
+   "DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)\n\t{\n\t\tRBXASSERT(notJoined(parts));\n\t\t\n\t\tfor (size_t i = 0; i < parts.size(); i++)\n\t\t{\n\t\t\tboost::shared_ptr<PartInstance> part = parts[i].lock();\n\t\t\tif (PartInstance::nonNullInWorkspace(part))\n\t\t\t\tpart->join();\n\t\t}\n\t}",
+   "DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)\n\t{\n\t\t                           ;\n\t\t\n\t\tfor (size_t i = 0; i < parts.size(); i++)\n\t\t{\n\t\t\tboost::shared_ptr<PartInstance> part = parts[i].lock();\n\t\t\tif (PartInstance::nonNullInWorkspace(part))\n\t\t\t\tpart->join();\n\t\t}\n\t}"
+  ],
+  [
+   "DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)\n\t{\n\t\tRBXASSERT(pos == Math::toGrid(pos, 0.1f));\n\n\t\tG3D::CoordinateFrame partCoord = part->getCoordinateFrame();\n\t\tpartCoord.translation += pos;\n\n\t\tif (part->aligned())\n\t\t\tpartCoord = Math::snapToGrid(partCoord, 0.1f);\n\n\t\tpart->setCoordinateFrame(partCoord);\n\t}",
+   "DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)\n\t{\n\t\t                                         ;\n\n\t\tG3D::CoordinateFrame partCoord = part->getCoordinateFrame();\n\t\tpartCoord.translation += pos;\n\n\t\tif (part->aligned())\n\t\t\tpartCoord = Math::snapToGrid(partCoord, 0.1f);\n\n\t\tpart->setCoordinateFrame(partCoord);\n\t}"
   ]
  ],
  "App/util/Math.cpp": [
@@ -1911,6 +2019,10 @@
   [
    "\t\t\t\tif (overlapOn1[j].dot(normal) > tolerance)",
    "\t\t\t\tif (fabs(overlapOn1[j].dot(normal) + distance) > tolerance)"
+  ],
+  [
+   "\t\tRBXASSERT(tolerance > 0.0);",
+   ""
   ]
  ],
  "App/v8world/Block.cpp": [
@@ -1955,6 +2067,14 @@
   [
    "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(false);\n\t\t}",
    "\t\tif (Math::legalCameraCoord(coord))\n\t\t{\n\t\t\tgCamera.setCoordinateFrame(coord);\n\t\t}"
+  ],
+  [
+   "\t\treturn currentDistance;\n\t}\n}",
+   "\t\treturn currentDistance;\n\t}\n\n\tbool Camera::canZoom(int direction) const\n\t{\n\t\tfloat distance = goalToFocusDistance();\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();\n\t}\n\n\tbool Camera::canTilt(int direction) const\n\t{\n\t\tfloat elevation = Math::elevationAngle(cameraGoal.lookVector());\n\t\tif (direction < 0)\n\t\t\treturn elevation >= -Math::piHalf();\n\t\telse\n\t\t\treturn elevation <= Math::piHalf();\n\t}\n}"
+  ],
+  [
+   "\t\tfloat distance = goalToFocusDistance();\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();",
+   "\t\tG3D::Vector3 v = cameraGoal.translation - cameraFocus.translation;\n\t\tfloat distance = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);\n\t\tif (direction > 0)\n\t\t\treturn distance > distanceMin();\n\t\telse\n\t\t\treturn distance < distanceMax();"
   ]
  ],
  "RbxGraphics/include/RbxGraphics/Adorn.h": [
@@ -2043,6 +2163,10 @@
   [
    "World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tassertNotInStep();\n\n\t\tstd::set<Primitive*> ignore;\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tignore.insert(primitives[i]);\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tcreateJoints(primitives[i], &ignore);\n\t}",
    "World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\tstd::set<Primitive*> ignore;\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tignore.insert(primitives[i]);\n\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tcreateJoints(primitives[i], &ignore);\n}"
+  ],
+  [
+   "World::~World()\n\t{\n\t\tRBXASSERT(numJoints == 0);\n\t\tRBXASSERT(numContacts == 0);\n\t\tRBXASSERT(primitives.size() == 0);\n\t\tRBXASSERT(breakableJoints.size() == 0);\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}",
+   "World::~World()\n\t{\n\t\t                         ;\n\t\t                           ;\n\t\t                                 ;\n\t\t                                      ;\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}"
   ]
  ],
  "App/include/v8datamodel/TimerService.h": [
@@ -2073,6 +2197,18 @@
   [
    "\tvoid JointStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInPipeline(this);\n\n\t\tif (edgeHasPrimitivesDownstream(e))\n\t\t{\n\t\t\tmoveEdgeToDownstream(e);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(e->getEdgeType() == Edge::JOINT);\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tinsertToList(j);\n\t\t\tinsertToMap(j, j->getPrimitive(0));\n\t\t\tinsertToMap(j, j->getPrimitive(1));\n\t\t}\n\t}\n",
    "\t__declspec(noinline) bool JointStage::acceptsJoint(Joint* j)\n\t{\n\t\treturn edgeHasPrimitivesDownstream(j);\n\t}\n\n\t__declspec(noinline) void JointStage::addLocally(Joint* j)\n\t{\n\t\tinsertToList(j);\n\t\tinsertToMap(j, j->getPrimitive(0));\n\t\tinsertToMap(j, j->getPrimitive(1));\n\t}\n\n\tvoid JointStage::onEdgeAdded(Edge* e)\n\t{\n\t\te->putInPipeline(this);\n\n\t\tif (acceptsJoint(rbx_static_cast<Joint*>(e)))\n\t\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t\telse\n\t\t\taddLocally(rbx_static_cast<Joint*>(e));\n\t}\n"
+  ],
+  [
+   "\t\tif (e->downstreamOfStage(this))\n\t\t{\n\t\t\tRBXASSERT(edgeHasPrimitivesDownstream(e));\n\t\t\tremoveEdgeFromDownstream(e);\n\t\t\te->removeFromPipeline(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(e->getEdgeType() == Edge::JOINT);\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tremoveFromList(j);\n\t\t\tremoveFromMap",
+   "\t\tif (e->downstreamOfStage(this))\n\t\t{\n\t\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\t\te->removeFromPipeline(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tincompleteJoints.erase(j);\n\t\t\tremoveFromMap"
+  ],
+  [
+   "\t\t\tif (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT)\n\t\t\t{\n\t\t\t\tRBXASSERT(edgeHasPrimitivesDownstream(j));\n\t\t\t\ttempJointList.push_back(j);\n\t\t\t}\n\t\t}\n\n\t\tfor (size_t i = 0; i < tempJointList.size(); ++i) // why loop here???\n\t\t{\n\t\t\tremoveJointFromDownstream(j);\n\t\t\tinsertToList(j);\n\t\t\tinsertToMap(j, p);\n\n\t\t\tPrimitive* otherP = j->otherPrimitive(p);\n\t\t\tinsertToMap(j, otherP);\n\t\t}",
+   "\t\t\tif (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT && j->downstreamOfStage(this))\n\t\t\t\ttempJointList.push_back(j);\n\t\t}\n\n\t\tfor (size_t i = 0; i < tempJointList.size(); ++i)\n\t\t{\n\t\t\tj = tempJointList[i];\n\t\t\tgetDownstreamWS()->onEdgeRemoving(j);\n\t\t\tJointStage::onEdgeAdded(j);\n\t\t}"
+  ],
+  [
+   "\tvoid JointStage::onEdgeAdded(Edge* e)",
+   "\t__declspec(noinline) void JointStage::onEdgeAdded(Edge* e)"
   ]
  ],
  "App/include/v8world/JointStage.h": [
@@ -2103,6 +2239,10 @@
   [
    "RotateJoint::putInKernel(Kernel* _kernel)\n\t{\n\t\tMultiJoint::putInKernel(_kernel);\n\n\t\tBody* b0 = getAxlePrim()->getBody();\n\t\tBody* b1 = getHolePrim()->getBody();\n\n\t\tG3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;\n\n\t\tG3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);\n\t\tG3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);\n\n\t\tfor (int i = 0; i < 2; i++)\n\t\t{\n\t\t\tfloat multiplier = i == 0 ? -1.0f : 1.0f;\n\n\t\t\tG3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;\n\t\t\tG3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;\n\n\t\t\tPoint* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);\n\t\t\tPoint* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);\n\n\t\t\tPointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());\n\t\t\taddToMultiJoint(pAxleWorld, pHoleWorld, connector);\n\t\t}\n\n\t\tif (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)\n\t\t{\n\t\t\tG3D::Vector3 center0 = cAxleWorld.translation;\n\t\t\tG3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);\n\t\t\tG3D::Vector3 marker0 = perp * 10.0f + center0;\n\n\t\t\tPoint* pMarker0 = getKernel()->newPoint(b0, marker0);\n\t\t\tPoint* pMarker1 = getKernel()->newPoint(b1, marker0);\n\n\t\t\tRBXASSERT(!rotateConnector);\n\t\t\tRotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());\n\t\t\trotateConnector = connector;\n\t\t\taddToMultiJoint(pMarker0, pMarker1, connector);\n\t\t}\n\t}",
    "RotateJoint::putInKernel(Kernel* _kernel)\n\t{\n\t\tMultiJoint::putInKernel(_kernel);\n\n\t\tBody* b0 = getAxlePrim()->getBody();\n\t\tBody* b1 = getHolePrim()->getBody();\n\n\t\tG3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;\n\n\t\tG3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);\n\t\tG3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);\n\n\t\tfor (int i = 0; i < 2; i++)\n\t\t{\n\t\t\tfloat multiplier = i == 0 ? -1.0f : 1.0f;\n\n\t\t\tG3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;\n\t\t\tG3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;\n\n\t\t\tPoint* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);\n\t\t\tPoint* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);\n\n\t\t\tPointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());\n\t\t\taddToMultiJoint(pAxleWorld, pHoleWorld, connector);\n\t\t}\n\n\t\tif (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)\n\t\t{\n\t\t\tG3D::Vector3 center0 = cAxleWorld.translation;\n\t\t\tG3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);\n\t\t\tG3D::Vector3 marker0 = perp * 10.0f + center0;\n\n\t\t\tPoint* pMarker0 = getKernel()->newPoint(b0, marker0);\n\t\t\tPoint* pMarker1 = getKernel()->newPoint(b1, marker0);\n\n\t\t\t                           ;\n\t\t\tRotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());\n\t\t\trotateConnector = connector;\n\t\t\taddToMultiJoint(pMarker0, pMarker1, connector);\n\t\t}\n\t}"
+  ],
+  [
+   "RotateJoint::removeFromKernel()\n\t{\n\t\tRBXASSERT(getKernel());\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}",
+   "RotateJoint::removeFromKernel()\n\t{\n\t\t                      ;\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}"
   ]
  ],
  "App/v8datamodel/custommesh.cpp": [
@@ -2125,8 +2265,20 @@
  ],
  "App/gui/Widget.cpp": [
   [
+   "",
+   "\n\nnamespace RBX\n{\n\tvoid VerbWidget::onClick(const GuiEvent& event)\n\t{\n\t\tif (verb && verb->isEnabled())\n\t\t\tverb->doIt(event.iDataState);\n\t}\n\n\tbool VerbWidget::isEnabled()\n\t{\n\t\treturn Widget::isEnabled() && verb && verb->isEnabled();\n\t}\n}\n"
+  ],
+  [
    "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
    "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+  ],
+  [
+   "#include \"gui/Widget.h\"\n",
+   "#include \"gui/Widget.h\"\n#include \"gui/Button.h\"\n"
+  ],
+  [
+   "",
+   "\n\nnamespace RBX\n{\n\tvoid ImageWidget::render2d(Adorn* adorn)\n\t{\n\t\tif (isVisible())\n\t\t\tguiImageDraw.render2d(adorn, isEnabled(), getMyRect(), Widget::NOTHING);\n\t}\n}\n"
   ]
  ],
  "App/include/v8xml/SerializerV2.h": [
@@ -2209,6 +2361,64 @@
   [
    "\tpublic:\n\t\tvirtual G3D::Vector2 getSize() = 0;",
    "\tpublic:\n\t\t// Native 00551c70 / 00551c90 / 00551cb0 / 00551cd0 fill vtable slots 1-4.\n\t\t// value28 is named for its proven native offset; no original spelling evidence exists.\n\t\tvirtual void setValue28(unsigned value) { value28 = value; }\n\t\tvirtual unsigned getValue28() const { return value28; }\n\t\tvirtual void setScale(float value) { scale = value; }\n\t\tvirtual float getScale() const { return scale; }\n\n\t\tvirtual G3D::Vector2 getSize() = 0;\n\t\tvirtual G3D::ReferenceCountedPointer<G3D::Texture> resolve(G3D::RenderDevice* rd) = 0;\n\t\tvirtual G3D::ReferenceCountedPointer<Render::TextureProxy> shade(const G3D::Color3& baseColor,\n\t\t\tconst G3D::ReferenceCountedPointer<Render::TextureProxy>& baseTex) = 0;"
+  ]
+ ],
+ "App/v8world/Ball.cpp": [
+  [
+   "#include \"v8world/Ball.h\"",
+   "#pragma float_control(precise, off, push)\n#include \"v8world/Ball.h\""
+  ],
+  [
+   "#include \"v8world/Ball.h\"",
+   "#pragma float_control(precise, off)\n#include \"v8world/Ball.h\""
+  ]
+ ],
+ "App/v8world/ClumpStage.cpp": [
+  [
+   "ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)\n\t{\n\t\tRBXASSERT(upToDate());\n\t\tprocess();\n\n\t\tAssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());\n\t\tassemblyStage->stepWorld(worldStepId, uiStepId, throttling);\n\t}",
+   "ClumpStage::stepWorld(int worldStepId, int uiStepId, bool throttling)\n\t{\n\t\t                     ;\n\t\tprocess();\n\n\t\tAssemblyStage* assemblyStage = rbx_static_cast<AssemblyStage*>(getDownstreamWS());\n\t\tassemblyStage->stepWorld(worldStepId, uiStepId, throttling);\n\t}"
+  ]
+ ],
+ "App/util/Extents.cpp": [
+  [
+   "#include \"util/Extents.h\"\n",
+   "#pragma float_control(precise, off)\n#include \"util/Extents.h\"\n"
+  ],
+  [
+   "\t\tRBXASSERT(i >= 0);\n\t\tRBXASSERT(i <= 7);\n\n\t\treturn G3D::Vector3(\n\t\t\tthis->low[0 + 3 * (i / 4)],\n\t\t\tthis->low[1 + 3 * (i / 2 % 2)],\n\t\t\tthis->low[2 + 3 * (i % 2)]\n\t\t);",
+   "\t\treturn G3D::Vector3(\n\t\t\tthis->low[0 + 3 * (i / 4)],\n\t\t\tthis->low[1 + 3 * (i / 2 % 2)],\n\t\t\tthis->low[2 + 3 * (i % 2)]\n\t\t);"
+  ]
+ ],
+ "App/v8world/IWorldStage.cpp": [
+  [
+   "IWorldStage::onEdgeAdded(Edge* e)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\te->putInPipeline(this);\n\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t}",
+   "IWorldStage::onEdgeAdded(Edge* e)\n\t{\n\t\t                            ;\n\t\te->putInPipeline(this);\n\t\tgetDownstreamWS()->onEdgeAdded(e);\n\t}"
+  ],
+  [
+   "IWorldStage::onEdgeRemoving(Edge* e)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\te->removeFromStage(this);\n\t}",
+   "IWorldStage::onEdgeRemoving(Edge* e)\n\t{\n\t\t                            ;\n\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\te->removeFromStage(this);\n\t}"
+  ],
+  [
+   "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\tRBXASSERT(getDownstreamWS());\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}",
+   "IWorldStage::getMetric(MetricType metricType)\n\t{\n\t\t                            ;\n\t\treturn getDownstreamWS()->getMetric(metricType);\n\t}"
+  ]
+ ],
+ "App/include/v8datamodel/JointsService.h": [
+  [
+   "\t\tJointsService()\n\t\t\t: world(NULL)\n\t\t{\n\t\t\tsetName(\"JointsService\");\n\t\t}\n",
+   "\t\tJointsService()\n\t\t\t: world(NULL)\n\t\t{\n\t\t\tsetName(\"JointsService\");\n\t\t}\n\t\tvirtual ~JointsService();\n"
+  ]
+ ],
+ "App/tool/NullTool.cpp": [
+  [
+   "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n}",
+   "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n\n\tconst char* sNullTool = \"NullTool\";\n\n\tNullTool::NullTool(Workspace* workspace)\n\t\t: Base(workspace)\n\t{\n\t}\n\n\tNullTool::~NullTool() {}\n\n\tconst std::string NullTool::getCursorName() const\n\t{\n\t\treturn \"ArrowFarCursor\";\n\t}\n\n\tMouseCommand* NullTool::isSticky() const\n\t{\n\t\treturn new NullTool(workspace);\n\t}\n\n\tMouseCommand* NullTool::onMouseUp(const UIEvent& uiEvent)\n\t{\n\t\treleaseCapture();\n\t\treturn this;\n\t}\n}"
+  ]
+ ],
+ "App/v8datamodel/Filters.cpp": [
+  [
+   "",
+   "\n\nnamespace RBX\n{\n\tHitTestFilter::Result UnlockedPartByLocalCharacter::filterResult(const Primitive* testMe) const\n\t{\n\t\tHitTestFilter::Result result = HitTestFilter::INCLUDE_PRIM;\n\t\tif (character && head)\n\t\t{\n\t\t\tconst PartInstance* p = PartInstance::fromPrimitiveConst(testMe);\n\t\t\tif (p->isDescendentOf(character.get()))\n\t\t\t\tresult = head->getIsTransparent() ? HitTestFilter::IGNORE_PRIM : HitTestFilter::STOP_TEST;\n\t\t}\n\t\tif (result == HitTestFilter::INCLUDE_PRIM)\n\t\t\tresult = Unlocked::unlocked(testMe) ? HitTestFilter::INCLUDE_PRIM : HitTestFilter::STOP_TEST;\n\t\treturn result;\n\t}\n}\n"
   ]
  ]
 }

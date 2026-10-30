@@ -1,44 +1,47 @@
-// from server: 0% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/CharacterAppearance.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/CharacterAppearance.h"
 
-namespace RBX {
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
 
-const char sSkin[] = "Skin";
+struct Object {
+    virtual ~Object();
+};
 
-const char sBodyColors[] = "BodyColors";
+struct Deleter { void operator()(Object*) const; };
 
-const char sShirt[] = "Shirt";
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
 
-const char sShirtGraphic[] = "ShirtGraphic";
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
 
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::BodyColors, RBX::CharacterAppearance, RBX::sBodyColors>;
-template class RBX::Reflection::Described<
-	RBX::BodyColors,
-	RBX::sBodyColors,
-	RBX::FactoryProduct<RBX::BodyColors, RBX::CharacterAppearance, RBX::sBodyColors> >;
-template class RBX::DescribedCreatable<RBX::BodyColors, RBX::CharacterAppearance, RBX::sBodyColors>;
-
-template class RBX::FactoryProduct<RBX::ShirtGraphic, RBX::CharacterAppearance, RBX::sShirtGraphic>;
-template class RBX::Reflection::Described<
-	RBX::ShirtGraphic,
-	RBX::sShirtGraphic,
-	RBX::FactoryProduct<RBX::ShirtGraphic, RBX::CharacterAppearance, RBX::sShirtGraphic> >;
-template class RBX::DescribedCreatable<RBX::ShirtGraphic, RBX::CharacterAppearance, RBX::sShirtGraphic>;
-
-template class RBX::FactoryProduct<RBX::Skin, RBX::CharacterAppearance, RBX::sSkin>;
-template class RBX::Reflection::
-	Described<RBX::Skin, RBX::sSkin, RBX::FactoryProduct<RBX::Skin, RBX::CharacterAppearance, RBX::sSkin> >;
-template class RBX::DescribedCreatable<RBX::Skin, RBX::CharacterAppearance, RBX::sSkin>;
-
-template class RBX::FactoryProduct<RBX::Shirt, RBX::ShirtGraphic, RBX::sShirt>;
-template class RBX::Reflection::
-	Described<RBX::Shirt, RBX::sShirt, RBX::FactoryProduct<RBX::Shirt, RBX::ShirtGraphic, RBX::sShirt> >;
-template class RBX::DescribedCreatable<RBX::Shirt, RBX::ShirtGraphic, RBX::sShirt>;
+S::S(Object* object, Deleter deleter) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
+    }
+}

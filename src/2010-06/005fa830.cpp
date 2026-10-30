@@ -1,108 +1,114 @@
-// from server: 37% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_abuseworkerimplicit11e5489400ca45c4.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+// from server: 89% by colin
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-boost::mutex& moo2()
+#include <string>
+typedef std::string String;
+
+struct Storage {
+    unsigned char data[40];
+    Storage();
+    ~Storage();
+};
+
+struct Control {
+    void* vtable;
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Count {
+    Control* pointer;
+    Count(Storage*);
+    ~Count();
+};
+
+void __cdecl func_0047d410(Count*, Storage*, Storage*) throw();
+
+struct Shared {
+    Storage* pointer;
+    Count count;
+    Shared(Storage*);
+    Shared(const Shared&);
+};
+
+Shared::Shared(Storage* p) : pointer(p), count(p)
 {
-	static boost::mutex mutex2;
-	return mutex2;
+    func_0047d410(&count, p, p);
 }
 
-void initMoo()
+Shared::Shared(const Shared& other)
+    : pointer(other.pointer), count(other.count)
 {
-	moo2();
+    if (count.pointer) {
+        volatile long* counter = &count.pointer->strong;
+        _InterlockedExchangeAdd(counter, 1);
+    }
 }
 
-namespace RBX
+typedef void (__cdecl *Callback)(Shared, String);
+void __cdecl callback(Shared, String);
+
+struct Bound {
+    Callback callback;
+    Shared object;
+    String text;
+    void operator()() const;
+};
+
+Bound __cdecl bind(Callback, Shared, String);
+
+#include <boost/function.hpp>
+typedef boost::function0<void> Function;
+struct Thread {
+    unsigned char data[20];
+    Thread(const Function&, const char*);
+    ~Thread();
+};
+
+extern const char threadName[];
+
+struct ThreadOwner {
+    Thread* pointer;
+    ThreadOwner();
+    ~ThreadOwner();
+    void reset(Thread*);
+};
+
+ThreadOwner::ThreadOwner() : pointer(0)
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
+}
 
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
+ThreadOwner::~ThreadOwner()
+{
+    delete pointer;
+}
 
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
+void ThreadOwner::reset(Thread* p)
+{
+    Thread* old = pointer;
+    pointer = p;
+    delete old;
+}
 
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
+struct S {
+    Shared object;
+    ThreadOwner thread;
+    S(String);
+};
 
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
+S::S(String text) : object(new Storage), thread()
+{
+    thread.reset(new Thread(
+        bind(callback, object, text),
+        "rbx_abusereporter"));
 }

@@ -1,15 +1,15 @@
-// from server: 69% by atomic.potato
-struct LocalBuffer
-{
-    char data[40];
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-extern "C" void __cdecl sub_859a30(LocalBuffer *);
-extern "C" void __cdecl sub_983144(LocalBuffer *, const void *);
-
-void sub_859bf0()
-{
-    LocalBuffer buffer;
-    sub_859a30(&buffer);
-    sub_983144(&buffer, reinterpret_cast<const void *>(0x00d21de0));
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

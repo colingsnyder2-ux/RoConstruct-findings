@@ -1,787 +1,855 @@
-// from server: 76% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreTangentSpaceCalc.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreProfiler.cpp
 
 // Candidate translation unit (score above; library headers required).
 /*
 -----------------------------------------------------------------------------
 This source file is part of OGRE
-(Object-oriented Graphics Rendering Engine)
+    (Object-oriented Graphics Rendering Engine)
 For the latest info, see http://www.ogre3d.org/
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
 -----------------------------------------------------------------------------
 */
 #include "OgreStableHeaders.h"
-#include "OgreTangentSpaceCalc.h"
-#include "OgreHardwareBufferManager.h"
+/*
+
+    Although the code is original, many of the ideas for the profiler were borrowed from 
+"Real-Time In-Game Profiling" by Steve Rabin which can be found in Game Programming
+Gems 1.
+
+    This code can easily be adapted to your own non-Ogre project. The only code that is 
+Ogre-dependent is in the visualization/logging routines and the use of the Timer class.
+
+    Enjoy!
+
+*/
+
+#include "OgreProfiler.h"
+#include "OgreTimer.h"
 #include "OgreLogManager.h"
-#include "OgreException.h"
+#include "OgreStringConverter.h"
+#include "OgreOverlayManager.h"
+#include "OgreOverlayElement.h"
+#include "OgreOverlayContainer.h"
 
-namespace Ogre
-{
-	//---------------------------------------------------------------------
-	TangentSpaceCalc::TangentSpaceCalc()
-		: mVData(0)
-		, mSplitMirrored(false)
-		, mSplitRotated(false)
-		, mStoreParityInW(false)
-	{
-	}
-	//---------------------------------------------------------------------
-	TangentSpaceCalc::~TangentSpaceCalc()
-	{
+namespace Ogre {
+    //-----------------------------------------------------------------------
+    // PROFILE DEFINITIONS
+    //-----------------------------------------------------------------------
+    template<> Profiler* Singleton<Profiler>::ms_Singleton = 0;
+    Profiler* Profiler::getSingletonPtr(void)
+    {
+        return ms_Singleton;
+    }
+    Profiler& Profiler::getSingleton(void)
+    {  
+        assert( ms_Singleton );  return ( *ms_Singleton );  
+    }
+    //-----------------------------------------------------------------------
+    Profile::Profile(const String& profileName) {
 
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::clear()
-	{
-		mIDataList.clear();
-		mOpTypes.clear();
-		mVData = 0;
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::setVertexData(VertexData* v_in)
-	{
-		mVData = v_in;
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::addIndexData(IndexData* i_in, RenderOperation::OperationType op)
-	{
-		if (op != RenderOperation::OT_TRIANGLE_FAN && 
-			op != RenderOperation::OT_TRIANGLE_LIST && 
-			op != RenderOperation::OT_TRIANGLE_STRIP)
-		{
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
-				"Only indexed triangle (list, strip, fan) render operations are supported.",
-				"TangentSpaceCalc::addIndexData");
+        mName = profileName;
+
+        Ogre::Profiler::getSingleton().beginProfile(profileName);
+
+    }
+    //-----------------------------------------------------------------------
+    Profile::~Profile() {
+
+        Ogre::Profiler::getSingleton().endProfile(mName);
+
+    }
+    //-----------------------------------------------------------------------
+
+
+    //-----------------------------------------------------------------------
+    // PROFILER DEFINITIONS
+    //-----------------------------------------------------------------------
+    Profiler::Profiler() {
+
+        // init some variables
+        mTimer = 0;
+        mTotalFrameTime = 0;
+        mUpdateDisplayFrequency = 0;
+        mCurrentFrame = 0;
+        mEnabled = mNewEnableState = false; // the profiler starts out as disabled
+        mEnableStateChangePending = false;
+        mInitialized = false;
+        maxProfiles = 50;
+
+        // by default the display will be updated every 10 frames
+        mUpdateDisplayFrequency = 10;
+
+    }
+    //-----------------------------------------------------------------------
+    Profiler::~Profiler() {
+
+        if (!mProfileHistory.empty()) {
+            // log the results of our profiling before we quit
+            logResults();
+        }
+
+        // clear all our lists
+        mProfiles.clear();
+        mProfileFrame.clear();
+        mProfileHistoryMap.clear();
+        mProfileHistory.clear();
+        mDisabledProfiles.clear();
+        mProfileBars.clear();
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::initialize() {
+
+        // init some gui characteristics
+        mBarHeight = 10; //0.02;
+        mGuiBorderWidth = 10; //0.02;
+        mGuiHeight = 25; //0.05;
+        mGuiWidth = 250; //0.15;
+        mBarIndent = mGuiWidth;
+        mBarLineWidth = 2;
+
+        // create a new overlay to hold our Profiler display
+        mOverlay = OverlayManager::getSingleton().create("Profiler");
+        mOverlay->setZOrder(500);
+
+        // this panel will be the main container for our profile bars
+        mProfileGui = createContainer();
+
+        OverlayElement* element;
+
+        // we create the little "ticks" above the profiles
+        for (uint k = 1; k < 10; ++k) { // we don't want a tick at 0% or 100%
+
+            if (k != 5) { // we don't want a tick at 50%
+                element = createTextArea("ProfileKeyLine" + StringConverter::toString(k), 20, 10, 2, mGuiWidth * (1 + k * .1), 9, "|");
+                mProfileGui->addChild(element);
+            }
+
+        }
+
+        // we create a 0% marker
+        element = createTextArea("ProfileKey0", 50, 10, 2, mGuiWidth * 0.99, 9, "0%");
+        mProfileGui->addChild(element);
+
+        // we create a 50% marker
+        element = createTextArea("ProfileyKey50", 50, 10, 2, mGuiWidth * 1.48, 9, "50%");
+        mProfileGui->addChild(element);
+
+        // we create a 100% marker
+        element = createTextArea("ProfileKey100", 50, 10, 2, mGuiWidth * 1.98, 9, "100%");
+        mProfileGui->addChild(element);
+
+        // we create an initial pool of 50 profile bars
+        for (uint i = 0; i < maxProfiles; ++i) {
+
+            // this is for the profile name and the number of times it was called in a frame
+            element = createTextArea("profileText" + StringConverter::toString(i), 90, mBarHeight, mGuiBorderWidth + (mBarHeight * 2) * i, 0, 14, "", false);
+            mProfileGui->addChild(element);
+            mProfileBars.push_back(element);
+
+            // this indicates the current frame time
+            element = createPanel("currBar" + StringConverter::toString(i), 0, mBarHeight, mGuiBorderWidth + (mBarHeight * 2) * i, mBarIndent, "Core/ProfilerCurrent", false);
+            mProfileGui->addChild(element);
+            mProfileBars.push_back(element);
+
+            // this indicates the minimum frame time
+            element = createPanel("minBar" + StringConverter::toString(i), mBarLineWidth, mBarHeight, mGuiBorderWidth + (mBarHeight * 2) * i, 0, "Core/ProfilerMin", false);
+            mProfileGui->addChild(element);
+            mProfileBars.push_back(element);
+
+            // this indicates the maximum frame time
+            element = createPanel("maxBar" + StringConverter::toString(i), mBarLineWidth, mBarHeight, mGuiBorderWidth + (mBarHeight * 2) * i, 0, "Core/ProfilerMax", false);
+            mProfileGui->addChild(element);
+            mProfileBars.push_back(element);
+
+            // this indicates the average frame time
+            element = createPanel("avgBar" + StringConverter::toString(i), mBarLineWidth, mBarHeight, mGuiBorderWidth + (mBarHeight * 2) * i, 0, "Core/ProfilerAvg", false);
+            mProfileGui->addChild(element);
+            mProfileBars.push_back(element);
+
+        }
+
+        // throw everything all the GUI stuff into the overlay and display it
+        mOverlay->add2D(mProfileGui);
+        mOverlay->show();
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::setTimer(Timer* t) {
+
+        mTimer = t;
+
+    }
+    //-----------------------------------------------------------------------
+    Timer* Profiler::getTimer() {
+
+        assert(mTimer && "Timer not set!");
+        return mTimer;
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::setEnabled(bool enabled) {
+
+        if (!mInitialized && enabled) {
+
+            // the user wants to enable the Profiler for the first time
+            // so we initialize the GUI stuff
+            initialize();
+            mInitialized = true;
+            mEnabled = true;
+
+        }
+        else {
+            // We store this enable/disable request until the frame ends
+            // (don't want to screw up any open profiles!)
+            mEnableStateChangePending = true;
+            mNewEnableState = enabled;
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    bool Profiler::getEnabled() const {
+
+        return mEnabled;
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::disableProfile(const String& profileName) {
+
+        // make sure the profile isn't already disabled
+        DisabledProfileMap::iterator iter;
+        iter = mDisabledProfiles.find(profileName);
+
+        // make sure you don't disable a profile in the middle of that profile
+        ProfileStack::iterator pIter;
+        for (pIter = mProfiles.begin(); pIter != mProfiles.end(); ++pIter) {
+
+            if (profileName == (*pIter).name)
+                break;
+
+        }
+
+        // if those two conditions are met, disable the profile
+        if ( (iter == mDisabledProfiles.end()) && (pIter == mProfiles.end()) ) {
+
+            mDisabledProfiles.insert(std::pair<String, bool>(profileName, true));
+
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::enableProfile(const String& profileName) {
+
+        // make sure the profile is actually disabled
+        DisabledProfileMap::iterator iter;
+        iter = mDisabledProfiles.find(profileName);
+
+        // make sure you don't enable a profile in the middle of that profile
+        ProfileStack::iterator pIter;
+        for (pIter = mProfiles.begin(); pIter != mProfiles.end(); ++pIter) {
+
+            if (profileName == (*pIter).name)
+                break;
+
+        }
+
+        // if those two conditions are met, enable the profile by removing it from
+        // the disabled list
+        if ( (iter != mDisabledProfiles.end()) && (pIter == mProfiles.end()) ) {
+
+            mDisabledProfiles.erase(iter);
+
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::beginProfile(const String& profileName) {
+
+        // if the profiler is enabled
+        if (!mEnabled) {
+
+            return;
+
+        }
+
+        // empty string is reserved for the root
+        assert ((profileName != "") && ("Profile name can't be an empty string"));
+
+        ProfileStack::iterator iter;
+        for (iter = mProfiles.begin(); iter != mProfiles.end(); ++iter) {
+
+            if ((*iter).name == profileName) {
+
+                break;
+
+            }
+
+        }
+
+        // make sure this profile isn't being used more than once
+        assert ((iter == mProfiles.end()) && ("This profile name is already being used"));
+
+        // we only process this profile if isn't disabled
+        DisabledProfileMap::iterator dIter;
+        dIter = mDisabledProfiles.find(profileName);
+        if ( dIter != mDisabledProfiles.end() ) {
+
+            return;
+
+        }
+
+        ProfileInstance p;
+		p.hierarchicalLvl = static_cast<uint>(mProfiles.size());
+
+        // this is the root, it has no parent
+        if (mProfiles.empty()) {
+
+            p.parent = "";
+
+        }
+        // otherwise peek at the stack and use the top as the parent
+        else {
+
+            ProfileInstance parent = mProfiles.back();
+            p.parent = parent.name;
+
+        }
+
+        // need a timer to profile!
+        assert (mTimer && "Timer not set!");
+
+        ProfileFrameList::iterator fIter;
+        ProfileHistoryList::iterator hIter;
+
+        // we check to see if this profile has been called in the frame before
+        for (fIter = mProfileFrame.begin(); fIter != mProfileFrame.end(); ++fIter) {
+
+            if ((*fIter).name == profileName)
+                break;
+
+        }
+        // if it hasn't been called before, set its position in the stack
+        if (fIter == mProfileFrame.end()) {
+
+            ProfileFrame f;
+            f.name = profileName;
+            f.frameTime = 0;
+            f.calls = 0;
+            f.hierarchicalLvl = (uint) mProfiles.size();
+            mProfileFrame.push_back(f);
+
+        }
+
+        // we check to see if this profile has been called in the app before
+        ProfileHistoryMap::iterator histMapIter;
+        histMapIter = mProfileHistoryMap.find(profileName);
+
+        // if not we add a profile with just the name into the history
+        if (histMapIter == mProfileHistoryMap.end()) {
+
+            ProfileHistory h;
+            h.name = profileName;
+            h.numCallsThisFrame = 0;
+            h.totalTime = 0;
+            h.totalCalls = 0;
+            h.maxTime = 0;
+            h.minTime = 1;
+            h.hierarchicalLvl = p.hierarchicalLvl;
+            h.currentTime = 0;
+
+            // we add this to the history
+            hIter = mProfileHistory.insert(mProfileHistory.end(), h);
+
+            // for quick look-ups, we'll add it to the history map as well
+            mProfileHistoryMap.insert(std::pair<String, ProfileHistoryList::iterator>(profileName, hIter));
+
+        }
+
+        // add the stats to this profile and push it on the stack
+        // we do this at the very end of the function to get the most
+        // accurate timing results
+        p.name = profileName;
+        p.currTime = mTimer->getMicroseconds();
+        p.accum = 0;
+        mProfiles.push_back(p);
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::endProfile(const String& profileName) {
+
+		// if the profiler received a request to be enabled or disabled
+		// we reached the end of the frame so we can safely do this
+		if (mEnableStateChangePending) {
+
+			changeEnableState();
 
 		}
-		mIDataList.push_back(i_in);
-		mOpTypes.push_back(op);
-	}
-	//---------------------------------------------------------------------
-	TangentSpaceCalc::Result TangentSpaceCalc::build(
-		VertexElementSemantic targetSemantic,
-		unsigned short sourceTexCoordSet, unsigned short index)
-	{
-		Result res;
 
-		// Pull out all the vertex components we'll need
-		populateVertexArray(sourceTexCoordSet);
+     // if the profiler is enabled
+        if(!mEnabled) {
 
-		// Now process the faces and calculate / add their contributions
-		processFaces(res);
+            return;
 
-		// Now normalise & orthogonalise
-		normaliseVertices();
+        }
 
-		// Create new final geometry
-		// First extend existing buffers to cope with new vertices
-		extendBuffers(res.vertexSplits);
+        // need a timer to profile!
+        assert (mTimer && "Timer not set!");
 
-		// Alter indexes
-		remapIndexes(res);
+        // get the end time of this profile
+        // we do this as close the beginning of this function as possible
+        // to get more accurate timing results
+        ulong endTime = mTimer->getMicroseconds();
 
-		// Create / identify target & write tangents
-		insertTangents(res, targetSemantic, sourceTexCoordSet, index);
+        // empty string is reserved for designating an empty parent
+        assert ((profileName != "") && ("Profile name can't be an empty string"));
 
-		return res;
+        // we only process this profile if isn't disabled
+        DisabledProfileMap::iterator dIter;
+        dIter = mDisabledProfiles.find(profileName);
+        if ( dIter != mDisabledProfiles.end() ) {
 
+            return;
 
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::extendBuffers(VertexSplits& vertexSplits)
-	{
-		if (!vertexSplits.empty())
-		{
-			// ok, need to increase the vertex buffer size, and alter some indexes
+        }
 
-			// vertex buffers first
-			VertexBufferBinding* newBindings = HardwareBufferManager::getSingleton().createVertexBufferBinding();
-			const VertexBufferBinding::VertexBufferBindingMap& bindmap = 
-				mVData->vertexBufferBinding->getBindings();
-			for (VertexBufferBinding::VertexBufferBindingMap::const_iterator i = 
-				bindmap.begin(); i != bindmap.end(); ++i)
+        // stack shouldnt be empty
+        assert (!mProfiles.empty());
+
+        // get the start of this profile
+        ProfileInstance bProfile;
+        bProfile = mProfiles.back();
+        mProfiles.pop_back();
+
+        // calculate the elapsed time of this profile
+        ulong timeElapsed = endTime - bProfile.currTime;
+
+        // update parent's accumalator if it isn't the root
+        if (bProfile.parent != "") {
+
+            // find the parent
+            ProfileStack::iterator iter;
+            for(iter = mProfiles.begin(); iter != mProfiles.end(); ++iter) {
+
+                if ((*iter).name == bProfile.parent)
+                    break;
+
+            }
+
+            // the parent should be found 
+            assert(iter != mProfiles.end());
+
+            // add this profile's time to the parent's accumlator
+            (*iter).accum += timeElapsed;
+
+        }
+
+        // we find the profile in this frame
+        ProfileFrameList::iterator iter;
+        for (iter = mProfileFrame.begin(); iter != mProfileFrame.end(); ++iter) {
+
+            if ((*iter).name == bProfile.name)
+                break;
+
+        }
+
+        // we subtract the time the children profiles took from this profile
+        (*iter).frameTime += timeElapsed - bProfile.accum;
+        (*iter).calls++;
+
+        // the stack is empty and all the profiles have been completed
+        // we have reached the end of the frame so process the frame statistics
+        if (mProfiles.empty()) {
+
+            // we know that the time elapsed of the main loop is the total time the frame took
+            mTotalFrameTime = timeElapsed;
+
+            // we got all the information we need, so process the profiles
+            // for this frame
+            processFrameStats();
+
+            // clear the frame stats for next frame
+            mProfileFrame.clear();
+
+            // we display everything to the screen
+            displayResults();
+
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::processFrameStats() {
+
+        ProfileFrameList::iterator frameIter;
+        ProfileHistoryList::iterator historyIter;
+
+        // we set the number of times each profile was called per frame to 0
+        // because not all profiles are called every frame
+        for (historyIter = mProfileHistory.begin(); historyIter != mProfileHistory.end(); ++historyIter) {
+
+            (*historyIter).numCallsThisFrame = 0;
+
+        }
+
+        // iterate through each of the profiles processed during this frame
+        for (frameIter = mProfileFrame.begin(); frameIter != mProfileFrame.end(); ++frameIter) {
+
+            String s = (*frameIter).name;
+
+            // use our map to find the appropriate profile in the history
+            historyIter = (*mProfileHistoryMap.find(s)).second;
+
+            // extract the frame stats
+            ulong frameTime = (*frameIter).frameTime;
+            uint calls = (*frameIter).calls;
+            uint lvl = (*frameIter).hierarchicalLvl;
+
+            // calculate what percentage of frame time this profile took
+            Real framePercentage = (Real) frameTime / (Real) mTotalFrameTime;
+
+            // update the profile stats
+            (*historyIter).currentTime = framePercentage;
+            (*historyIter).totalTime += framePercentage;
+            (*historyIter).totalCalls++;
+            (*historyIter).numCallsThisFrame = calls;
+            (*historyIter).hierarchicalLvl = lvl;
+
+            // if we find a new minimum for this profile, update it
+            if ((framePercentage) < ((*historyIter).minTime)) {
+
+                (*historyIter).minTime = framePercentage;
+
+            }
+
+            // if we find a new maximum for this profile, update it
+            if ((framePercentage) > ((*historyIter).maxTime)) {
+
+                (*historyIter).maxTime = framePercentage;
+
+            }
+
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::displayResults() {
+
+        if (!mEnabled) {
+
+            return;
+
+        }
+
+        // if its time to update the display
+        if (mCurrentFrame >= mUpdateDisplayFrequency) {
+
+            mCurrentFrame = 0;
+
+            ProfileHistoryList::iterator iter;
+            ProfileBarList::iterator bIter;
+
+            OverlayElement* g;
+
+            Real newGuiHeight = mGuiHeight;
+
+            int temp = 0; // dummy variable for weird Ogre issue
+
+            // go through each profile and display it
+            for (iter = mProfileHistory.begin(), bIter = mProfileBars.begin(); 
+				iter != mProfileHistory.end() && bIter != mProfileBars.end(); 
+				++iter, ++bIter) 
 			{
-				HardwareVertexBufferSharedPtr srcbuf = i->second;
-				// Derive vertex count from buffer not vertex data, in case using
-				// the vertexStart option in vertex data
-				size_t newVertexCount = srcbuf->getNumVertices() + vertexSplits.size();
-				// Create new buffer & bind
-				HardwareVertexBufferSharedPtr newBuf = 
-					HardwareBufferManager::getSingleton().createVertexBuffer(
-					srcbuf->getVertexSize(), newVertexCount, srcbuf->getUsage(), 
-					srcbuf->hasShadowBuffer());
-				newBindings->setBinding(i->first, newBuf);
-
-				// Copy existing contents (again, entire buffer, not just elements referenced)
-				newBuf->copyData(*(srcbuf.get()), 0, 0, srcbuf->getNumVertices() * srcbuf->getVertexSize(), true);
-
-				// Split vertices, read / write from new buffer
-				char* pBase = static_cast<char*>(newBuf->lock(HardwareBuffer::HBL_NORMAL));
-				for (VertexSplits::iterator spliti = vertexSplits.begin(); 
-					spliti != vertexSplits.end(); ++spliti)
-				{
-					const char* pSrcBase = pBase + spliti->first * newBuf->getVertexSize();
-					char* pDstBase = pBase + spliti->second * newBuf->getVertexSize();
-					memcpy(pDstBase, pSrcBase, newBuf->getVertexSize());
-				}
-				newBuf->unlock();
-
-			}
-
-			// Update vertex data
-			// Increase vertex count according to num splits
-			mVData->vertexCount += vertexSplits.size();
-			// Flip bindings over to new buffers (old buffers released)
-			HardwareBufferManager::getSingleton().destroyVertexBufferBinding(mVData->vertexBufferBinding);
-			mVData->vertexBufferBinding = newBindings;
-
-			// If vertex size requires 32bit index buffer
-			if (mVData->vertexCount > 65536)
-			{
-				for (size_t i = 0; i < mIDataList.size(); ++i)
-				{
-					// check index size
-					IndexData* idata = mIDataList[i];
-					HardwareIndexBufferSharedPtr srcbuf = idata->indexBuffer;
-					if (srcbuf->getType() == HardwareIndexBuffer::IT_16BIT)
-					{
-						size_t indexCount = srcbuf->getNumIndexes();
-
-						// convert index buffer to 32bit.
-						HardwareIndexBufferSharedPtr newBuf =
-							HardwareBufferManager::getSingleton().createIndexBuffer(
-							HardwareIndexBuffer::IT_32BIT, indexCount,
-							srcbuf->getUsage(), srcbuf->hasShadowBuffer());
-
-						uint16* pSrcBase = static_cast<uint16*>(srcbuf->lock(HardwareBuffer::HBL_NORMAL));
-						uint32* pBase = static_cast<uint32*>(newBuf->lock(HardwareBuffer::HBL_NORMAL));
-
-						size_t j = 0;
-						while (j < indexCount)
-						{
-							*pBase++ = *pSrcBase++;
-							++j;
-						}
-
-						srcbuf->unlock();
-						newBuf->unlock();
-
-						// assign new index buffer.
-						idata->indexBuffer = newBuf;
-					}
-				}
-			}
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::remapIndexes(Result& res)
-	{
-		for (size_t i = 0; i < mIDataList.size(); ++i)
-		{
-
-			IndexData* idata = mIDataList[i];
-			// Now do index data
-			// no new buffer required, same size but some triangles remapped
-			uint16* p16 = 0;
-			uint32* p32 = 0;
-			if (idata->indexBuffer->getType() == HardwareIndexBuffer::IT_32BIT)
-			{
-				p32 = static_cast<uint32*>(idata->indexBuffer->lock(HardwareBuffer::HBL_NORMAL));
-				remapIndexes(p32, i, res);
-			}
-			else
-			{
-				p16 = static_cast<uint16*>(idata->indexBuffer->lock(HardwareBuffer::HBL_NORMAL));
-				remapIndexes(p16, i, res);
-			}
-			idata->indexBuffer->unlock();
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::normaliseVertices()
-	{
-		// Just run through our complete (possibly augmented) list of vertices
-		// Normalise the tangents & binormals
-		for (VertexInfoArray::iterator i = mVertexArray.begin(); i != mVertexArray.end(); ++i)
-		{
-			VertexInfo& v = *i;
-
-			v.tangent.normalise();
-			v.binormal.normalise();
-
-			// Orthogonalise with the vertex normal since it's currently
-			// orthogonal with the face normals, but will be close to ortho
-			// Apply Gram-Schmidt orthogonalise
-			Vector3 temp = v.tangent;
-			v.tangent = temp - (v.norm * v.norm.dotProduct(temp));
-
-			temp = v.binormal;
-			v.binormal = temp - (v.norm * v.norm.dotProduct(temp));
-
-			// renormalize 
-			v.tangent.normalise();
-			v.binormal.normalise();
-
-		}
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::processFaces(Result& result)
-	{
-		// Quick pre-check for triangle strips / fans
-		for (OpTypeList::iterator ot = mOpTypes.begin(); ot != mOpTypes.end(); ++ot)
-		{
-			if (*ot != RenderOperation::OT_TRIANGLE_LIST)
-			{
-				// Can't split strips / fans
-				setSplitMirrored(false);
-				setSplitRotated(false);
-			}
-		}
-
-		for (size_t i = 0; i < mIDataList.size(); ++i)
-		{
-			IndexData* i_in = mIDataList[i];
-			RenderOperation::OperationType opType = mOpTypes[i];
-
-			// Read data from buffers
-			uint16 *p16 = 0;
-			uint32 *p32 = 0;
-
-			HardwareIndexBufferSharedPtr ibuf = i_in->indexBuffer;
-			if (ibuf->getType() == HardwareIndexBuffer::IT_32BIT)
-			{
-				p32 = static_cast<uint32*>(
-					ibuf->lock(HardwareBuffer::HBL_READ_ONLY));
-				// offset by index start
-				p32 += i_in->indexStart;
-			}
-			else
-			{
-				p16 = static_cast<uint16*>(
-					ibuf->lock(HardwareBuffer::HBL_READ_ONLY));
-				// offset by index start
-				p16 += i_in->indexStart;
-			}
-			// current triangle
-			size_t vertInd[3] = { 0, 0, 0 };
-			// loop through all faces to calculate the tangents and normals
-			size_t faceCount = opType == RenderOperation::OT_TRIANGLE_LIST ? 
-				i_in->indexCount / 3 : i_in->indexCount - 2;
-			for (size_t f = 0; f < faceCount; ++f)
-			{
-				bool invertOrdering = false;
-				// Read 1 or 3 indexes depending on type
-				if (f == 0 || opType == RenderOperation::OT_TRIANGLE_LIST)
-				{
-					vertInd[0] = p32? *p32++ : *p16++;
-					vertInd[1] = p32? *p32++ : *p16++;
-					vertInd[2] = p32? *p32++ : *p16++;
-				}
-				else if (opType == RenderOperation::OT_TRIANGLE_FAN)
-				{
-					// Element 0 always remains the same
-					// Element 2 becomes element 1
-					vertInd[1] = vertInd[2];
-					// read new into element 2
-					vertInd[2] = p32? *p32++ : *p16++;
-				}
-				else if (opType == RenderOperation::OT_TRIANGLE_STRIP)
-				{
-					// Shunt everything down one, but also invert the ordering on 
-					// odd numbered triangles (== even numbered i's)
-					// we interpret front as anticlockwise all the time but strips alternate
-					if (f & 0x1)
-					{
-						// odd tris (index starts at 3, 5, 7)
-						invertOrdering = true;
-					}
-					vertInd[0] = vertInd[1];
-					vertInd[1] = vertInd[2];			
-					vertInd[2] = p32? *p32++ : *p16++;
-				}
-
-				// deal with strip inversion of winding
-				size_t localVertInd[3];
-				localVertInd[0] = vertInd[0];
-				if (invertOrdering)
-				{
-					localVertInd[1] = vertInd[2];
-					localVertInd[2] = vertInd[1];
-				}
-				else
-				{
-					localVertInd[1] = vertInd[1];
-					localVertInd[2] = vertInd[2];
-				}
-
-
-				// For each triangle
-				//   Calculate tangent & binormal per triangle
-				//   Note these are not normalised, are weighted by UV area
-				Vector3 faceTsU, faceTsV, faceNorm;
-				calculateFaceTangentSpace(localVertInd, faceTsU, faceTsV, faceNorm);
-
-				// Skip invalid UV space triangles
-				if (faceTsU.isZeroLength() || faceTsV.isZeroLength())
-					continue;
-
-				addFaceTangentSpaceToVertices(i, f, localVertInd, faceTsU, faceTsV, faceNorm, result);
-
-			}
-
-
-			ibuf->unlock();
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::addFaceTangentSpaceToVertices(
-		size_t indexSet, size_t faceIndex, size_t *localVertInd, 
-		const Vector3& faceTsU, const Vector3& faceTsV, const Vector3& faceNorm, 
-		Result& result)
-	{
-		// Calculate parity for this triangle
-		int faceParity = calculateParity(faceTsU, faceTsV, faceNorm);
-		// Now add these to each vertex referenced by the face
-		for (int v = 0; v < 3; ++v)
-		{
-			// index 0 is vertex we're calculating, 1 and 2 are the others
-
-			// We want to re-weight these by the angle the face makes with the vertex
-			// in order to obtain tesselation-independent results
-			Real angleWeight = calculateAngleWeight(localVertInd[v], 
-				localVertInd[(v+1)%3], localVertInd[(v+2)%3]);
-
-
-			VertexInfo* vertex = &(mVertexArray[localVertInd[v]]);
-
-			// check parity (0 means not set)
-			// Locate parity-version of vertex index, or create if doesn't exist
-			// If parity-version of vertex index was different, record alteration
-			// in triangle remap
-			// in vertex split list
-			bool splitVertex = false;
-			size_t reusedOppositeParity = 0;
-			bool splitBecauseOfParity = false;
-			bool newVertex = false;
-			if (!vertex->parity)
-			{
-				// init
-				vertex->parity = faceParity;
-				newVertex = true;
-			}
-			if (mSplitMirrored)
-			{
-				if (!newVertex && faceParity != calculateParity(vertex->tangent, vertex->binormal, vertex->norm))//vertex->parity != faceParity)
-				{
-					// Check for existing alternative parity
-					if (vertex->oppositeParityIndex)
-					{
-						// Ok, have already split this vertex because of parity
-						// Use the same one again
-						reusedOppositeParity = vertex->oppositeParityIndex;
-						vertex = &(mVertexArray[reusedOppositeParity]);
-					}
-					else
-					{
-						splitVertex = true;
-						splitBecauseOfParity = true;
-
-						LogManager::getSingleton().stream(LML_TRIVIAL)
-							<< "TSC parity split - Vpar: " << vertex->parity 
-							<< " Fpar: " << faceParity
-							<< " faceTsU: " << faceTsU
-							<< " faceTsV: " << faceTsV
-							<< " faceNorm: " << faceNorm
-							<< " vertTsU:" << vertex->tangent
-							<< " vertTsV:" << vertex->binormal
-							<< " vertNorm:" << vertex->norm;
-
-					}
-				}
-			}
-
-			if (mSplitRotated)
-			{
-
-				// deal with excessive tangent space rotations as well as mirroring
-				// same kind of split behaviour appropriate
-				if (!newVertex && !splitVertex)
-				{
-					// If more than 90 degrees, split
-					Vector3 uvCurrent = vertex->tangent + vertex->binormal;
-
-					// project down to the plane (plane normal = face normal)
-					Vector3 vRotHalf = uvCurrent - faceNorm;
-					vRotHalf *= faceNorm.dotProduct(uvCurrent);
-
-					if ((faceTsU + faceTsV).dotProduct(vRotHalf) < 0.0f)
-					{
-						splitVertex = true;
-					}
-				}
-			}
-
-			if (splitVertex)
-			{
-				size_t newVertexIndex = mVertexArray.size();
-				VertexSplit splitInfo(localVertInd[v], newVertexIndex);
-				result.vertexSplits.push_back(splitInfo);
-				// re-point opposite parity
-				if (splitBecauseOfParity)
-				{
-					vertex->oppositeParityIndex = newVertexIndex;
-				}
-				// copy old values but reset tangent space
-				VertexInfo newVertex = *vertex;
-				newVertex.tangent = Vector3::ZERO;
-				newVertex.binormal = Vector3::ZERO;
-				newVertex.parity = faceParity;
-				mVertexArray.push_back(newVertex);
-				result.indexesRemapped.push_back(IndexRemap(indexSet, faceIndex, splitInfo));
-
-				vertex = &(mVertexArray[newVertexIndex]);
-
-			}
-			else if (reusedOppositeParity)
-			{
-				// didn't split again, but we do need to record the re-used remapping
-				VertexSplit splitInfo(localVertInd[v], reusedOppositeParity);
-				result.indexesRemapped.push_back(IndexRemap(indexSet, faceIndex, splitInfo));
-
-			}
-
-			// Add weighted tangent & binormal
-			vertex->tangent += (faceTsU * angleWeight);
-			vertex->binormal += (faceTsV * angleWeight);
-
-
-		}
-
-	}
-	//---------------------------------------------------------------------
-	int TangentSpaceCalc::calculateParity(const Vector3& u, const Vector3& v, const Vector3& n)
-	{
-		// Note that this parity is the reverse of what you'd expect - this is
-		// because the 'V' texture coordinate is actually left handed
-		if (u.crossProduct(v).dotProduct(n) >= 0.0f)
-			return -1;
-		else
-			return 1;
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::calculateFaceTangentSpace(const size_t* vertInd, 
-		Vector3& tsU, Vector3& tsV, Vector3& tsN)
-	{
-		const VertexInfo& v0 = mVertexArray[vertInd[0]];
-		const VertexInfo& v1 = mVertexArray[vertInd[1]];
-		const VertexInfo& v2 = mVertexArray[vertInd[2]];
-		Vector2 deltaUV1 = v1.uv - v0.uv;
-		Vector2 deltaUV2 = v2.uv - v0.uv;
-		Vector3 deltaPos1 = v1.pos - v0.pos;
-		Vector3 deltaPos2 = v2.pos - v0.pos;
-
-		// face normal
-		tsN = deltaPos1.crossProduct(deltaPos2);
-		tsN.normalise();
-
-
-		Real uvarea = deltaUV1.crossProduct(deltaUV2) * 0.5f;
-		if (Math::RealEqual(uvarea, 0.0f))
-		{
-			// no tangent, null uv area
-			tsU = tsV = Vector3::ZERO;
-		}
-		else
-		{
-
-			// Normalise by uvarea
-			Real a = deltaUV2.y / uvarea;
-			Real b = -deltaUV1.y / uvarea;
-			Real c = -deltaUV2.x / uvarea;
-			Real d = deltaUV1.x / uvarea;
-
-			tsU = (deltaPos1 * a) + (deltaPos2 * b);
-			tsU.normalise();
-
-			tsV = (deltaPos1 * c) + (deltaPos2 * d);
-			tsV.normalise();
-
-			Real abs_uvarea = Math::Abs(uvarea);
-			tsU *= abs_uvarea;
-			tsV *= abs_uvarea;
-
-			// tangent (tsU) and binormal (tsV) are now weighted by uv area
-
-
-		}
-
-	}
-	//---------------------------------------------------------------------
-	Real TangentSpaceCalc::calculateAngleWeight(size_t vidx0, size_t vidx1, size_t vidx2)
-	{
-		const VertexInfo& v0 = mVertexArray[vidx0];
-		const VertexInfo& v1 = mVertexArray[vidx1];
-		const VertexInfo& v2 = mVertexArray[vidx2];
-
-		Vector3 diff0 = v1.pos - v0.pos;
-		Vector3 diff1 = v2.pos - v1.pos;
-
-		// Weight is just the angle - larger == better
-		return diff0.angleBetween(diff1).valueRadians();
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::populateVertexArray(unsigned short sourceTexCoordSet)
-	{
-		// Just pull data out into more friendly structures
-		VertexDeclaration *dcl = mVData->vertexDeclaration;
-		VertexBufferBinding *bind = mVData->vertexBufferBinding;
-
-		// Get the incoming UV element
-		const VertexElement* uvElem = dcl->findElementBySemantic(
-			VES_TEXTURE_COORDINATES, sourceTexCoordSet);
-
-		if (!uvElem || uvElem->getType() != VET_FLOAT2)
-		{
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
-				"No 2D texture coordinates with selected index, cannot calculate tangents.",
-				"TangentSpaceCalc::build");
-		}
-
-		HardwareVertexBufferSharedPtr uvBuf, posBuf, normBuf;
-		unsigned char *pUvBase, *pPosBase, *pNormBase;
-		size_t uvInc, posInc, normInc;
-
-		uvBuf = bind->getBuffer(uvElem->getSource());
-		pUvBase = static_cast<unsigned char*>(
-			uvBuf->lock(HardwareBuffer::HBL_READ_ONLY));
-		uvInc = uvBuf->getVertexSize();
-		// offset for vertex start
-		pUvBase += mVData->vertexStart * uvInc;
-
-		// find position
-		const VertexElement *posElem = dcl->findElementBySemantic(VES_POSITION);
-		if (posElem->getSource() == uvElem->getSource())
-		{
-			pPosBase = pUvBase;
-			posInc = uvInc;
-		}
-		else
-		{
-			// A different buffer
-			posBuf = bind->getBuffer(posElem->getSource());
-			pPosBase = static_cast<unsigned char*>(
-				posBuf->lock(HardwareBuffer::HBL_READ_ONLY));
-			posInc = posBuf->getVertexSize();
-			// offset for vertex start
-			pPosBase += mVData->vertexStart * posInc;
-		}
-		// find a normal buffer
-		const VertexElement *normElem = dcl->findElementBySemantic(VES_NORMAL);
-		if (!normElem)
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-			"No vertex normals found", 
-			"TangentSpaceCalc::build");
-
-		if (normElem->getSource() == uvElem->getSource())
-		{
-			pNormBase = pUvBase;
-			normInc = uvInc;
-		}
-		else if (normElem->getSource() == posElem->getSource())
-		{
-			// normals are in the same buffer as position
-			// this condition arises when an animated(skeleton) mesh is not built with 
-			// an edge list buffer ie no shadows being used.
-			pNormBase = pPosBase;
-			normInc = posInc;
-		}
-		else
-		{
-			// A different buffer
-			normBuf = bind->getBuffer(normElem->getSource());
-			pNormBase = static_cast<unsigned char*>(
-				normBuf->lock(HardwareBuffer::HBL_READ_ONLY));
-			normInc = normBuf->getVertexSize();
-			// offset for vertex start
-			pNormBase += mVData->vertexStart * normInc;
-		}
-
-		// Preinitialise vertex info
-		mVertexArray.clear();
-		mVertexArray.resize(mVData->vertexCount);
-
-		float* pFloat;
-		VertexInfo* vInfo = &(mVertexArray[0]);
-		for (size_t v = 0; v < mVData->vertexCount; ++v, ++vInfo)
-		{
-			posElem->baseVertexPointerToElement(pPosBase, &pFloat);
-			vInfo->pos.x = *pFloat++;
-			vInfo->pos.y = *pFloat++;
-			vInfo->pos.z = *pFloat++;
-			pPosBase += posInc;
-
-			normElem->baseVertexPointerToElement(pNormBase, &pFloat);
-			vInfo->norm.x = *pFloat++;
-			vInfo->norm.y = *pFloat++;
-			vInfo->norm.z = *pFloat++;
-			pNormBase += normInc;
-
-			uvElem->baseVertexPointerToElement(pUvBase, &pFloat);
-			vInfo->uv.x = *pFloat++;
-			vInfo->uv.y = *pFloat++;
-			pUvBase += uvInc;
-
-
-		}
-
-		// unlock buffers
-		uvBuf->unlock();
-		if (!posBuf.isNull())
-		{
-			posBuf->unlock();
-		}
-		if (!normBuf.isNull())
-		{
-			normBuf->unlock();
-		}
-
-	}
-	//---------------------------------------------------------------------
-	void TangentSpaceCalc::insertTangents(Result& res,
-		VertexElementSemantic targetSemantic, unsigned short sourceTexCoordSet, 
-		unsigned short index)
-	{
-		// Make a new tangents semantic or find an existing one
-		VertexDeclaration *vDecl = mVData->vertexDeclaration ;
-		VertexBufferBinding *vBind = mVData->vertexBufferBinding ;
-
-		const VertexElement *tangentsElem = vDecl->findElementBySemantic(targetSemantic, index);
-		bool needsToBeCreated = false;
-		VertexElementType tangentsType = mStoreParityInW ? VET_FLOAT4 : VET_FLOAT3;
-
-		if (!tangentsElem)
-		{ // no tex coords with index 1
-			needsToBeCreated = true ;
-		}
-		else if (tangentsElem->getType() != tangentsType)
-		{
-			//  buffer exists, but not 3D
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS,
-				"Target semantic set already exists but is not of the right size, therefore "
-				"cannot contain tangents. You should delete this existing entry first. ",
-				"TangentSpaceCalc::insertTangents");
-		}
-
-		HardwareVertexBufferSharedPtr targetBuffer, origBuffer;
-		unsigned char* pSrc = NULL;
-
-		if (needsToBeCreated)
-		{
-			// To be most efficient with our vertex streams,
-			// tack the new tangents onto the same buffer as the
-			// source texture coord set
-			const VertexElement* prevTexCoordElem =
-				mVData->vertexDeclaration->findElementBySemantic(
-				VES_TEXTURE_COORDINATES, sourceTexCoordSet);
-			if (!prevTexCoordElem)
-			{
-				OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND,
-					"Cannot locate the first texture coordinate element to "
-					"which to append the new tangents.", 
-					"Mesh::orgagniseTangentsBuffer");
-			}
-			// Find the buffer associated with  this element
-			origBuffer = mVData->vertexBufferBinding->getBuffer(
-				prevTexCoordElem->getSource());
-			// Now create a new buffer, which includes the previous contents
-			// plus extra space for the 3D coords
-			targetBuffer = HardwareBufferManager::getSingleton().createVertexBuffer(
-				origBuffer->getVertexSize() + VertexElement::getTypeSize(tangentsType),
-				origBuffer->getNumVertices(),
-				origBuffer->getUsage(),
-				origBuffer->hasShadowBuffer() );
-			// Add the new element
-			tangentsElem = &(vDecl->addElement(
-				prevTexCoordElem->getSource(),
-				origBuffer->getVertexSize(),
-				tangentsType,
-				targetSemantic,
-				index));
-			// Set up the source pointer
-			pSrc = static_cast<unsigned char*>(
-				origBuffer->lock(HardwareBuffer::HBL_READ_ONLY));
-			// Rebind the new buffer
-			vBind->setBinding(prevTexCoordElem->getSource(), targetBuffer);
-		}
-		else
-		{
-			// space already there
-			origBuffer = mVData->vertexBufferBinding->getBuffer(
-				tangentsElem->getSource());
-			targetBuffer = origBuffer;
-		}
-
-
-		unsigned char* pDest = static_cast<unsigned char*>(
-			targetBuffer->lock(HardwareBuffer::HBL_DISCARD));
-		size_t origVertSize = origBuffer->getVertexSize();
-		size_t newVertSize = targetBuffer->getVertexSize();
-		for (size_t v = 0; v < origBuffer->getNumVertices(); ++v)
-		{
-			if (needsToBeCreated)
-			{
-				// Copy original vertex data as well 
-				memcpy(pDest, pSrc, origVertSize);
-				pSrc += origVertSize;
-			}
-			// Write in the tangent
-			float* pTangent;
-			tangentsElem->baseVertexPointerToElement(pDest, &pTangent);
-			VertexInfo& vertInfo = mVertexArray[v];
-			*pTangent++ = vertInfo.tangent.x;
-			*pTangent++ = vertInfo.tangent.y;
-			*pTangent++ = vertInfo.tangent.z;
-			if (mStoreParityInW)
-				*pTangent++ = (float)vertInfo.parity;
-
-			// Next target vertex
-			pDest += newVertSize;
-
-		}
-		targetBuffer->unlock();
-
-		if (needsToBeCreated)
-		{
-			origBuffer->unlock();
-		}
-	}
+
+                // display the profile's name and the number of times it was called in a frame
+                g = *bIter;
+                g->show();
+                g->setCaption(String((*iter).name + " (" + StringConverter::toString((*iter).numCallsThisFrame) + ")"));
+                g->setLeft(10 + (*iter).hierarchicalLvl * 15);
+
+                // display the main bar that show the percentage of the frame time that this
+                // profile has taken
+                bIter++;
+                g = *bIter;
+                g->show();
+                // most of this junk has been set before, but we do this to get around a weird
+                // Ogre gui issue (bug?)
+                g->setMetricsMode(GMM_PIXELS);
+                g->setHeight(mBarHeight);
+                g->setWidth(((*iter).currentTime) * mGuiWidth);
+                g->setLeft(mGuiWidth);
+                g->setTop(mGuiBorderWidth + temp * mBarHeight * 2);
+
+                // display line to indicate the minimum frame time for this profile
+                bIter++;
+                g = *bIter;
+                g->show();
+                g->setLeft(mBarIndent + (*iter).minTime * mGuiWidth);
+
+                // display line to indicate the maximum frame time for this profile
+                bIter++;
+                g = *bIter;
+                g->show();
+                g->setLeft(mBarIndent + (*iter).maxTime * mGuiWidth);
+
+                // display line to indicate the average frame time for this profile
+                bIter++;
+                g = *bIter;
+                g->show();
+                if ((*iter).totalCalls != 0)
+                    g->setLeft(mBarIndent + ((*iter).totalTime / (*iter).totalCalls) * mGuiWidth);
+                else
+                    g->setLeft(mBarIndent);
+                // we set the height of the display with respect to the number of profiles displayed
+                newGuiHeight += mBarHeight * 2;
+
+                temp++;
+
+            }
+
+            // set the main display dimensions
+            mProfileGui->setMetricsMode(GMM_PIXELS);
+            mProfileGui->setHeight(newGuiHeight);
+            mProfileGui->setWidth(mGuiWidth * 2 + 15);
+            mProfileGui->setTop(5);
+            mProfileGui->setLeft(5);
+
+            // we hide all the remaining pre-created bars
+            for (; bIter != mProfileBars.end(); ++bIter) {
+
+                (*bIter)->hide();
+
+            }
+
+        }
+
+        // not time to update the display yet
+        else {
+
+            mCurrentFrame++;
+
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    bool Profiler::watchForMax(const String& profileName) {
+
+        ProfileHistoryMap::iterator mapIter;
+        ProfileHistoryList::iterator iter;
+
+        mapIter = mProfileHistoryMap.find(profileName);
+
+        // if we don't find the profile, return false
+        if (mapIter == mProfileHistoryMap.end())
+            return false;
+
+        iter = (*mapIter).second;
+
+        return ((*iter).currentTime == (*iter).maxTime);
+
+    }
+    //-----------------------------------------------------------------------
+    bool Profiler::watchForMin(const String& profileName) {
+
+        ProfileHistoryMap::iterator mapIter;
+        ProfileHistoryList::iterator iter;
+
+        mapIter = mProfileHistoryMap.find(profileName);
+
+        // if we don't find the profile, return false
+        if (mapIter == mProfileHistoryMap.end())
+            return false;
+
+        iter = (*mapIter).second;
+
+        return ((*iter).currentTime == (*iter).minTime);
+
+    }
+    //-----------------------------------------------------------------------
+    bool Profiler::watchForLimit(const String& profileName, Real limit, bool greaterThan) {
+
+        ProfileHistoryMap::iterator mapIter;
+        ProfileHistoryList::iterator iter;
+
+        mapIter = mProfileHistoryMap.find(profileName);
+
+        // if we don't find the profile, return false
+        if (mapIter == mProfileHistoryMap.end())
+            return false;
+
+        iter = (*mapIter).second;
+
+        if (greaterThan)
+            return ((*iter).currentTime > limit);
+        else
+            return ((*iter).currentTime < limit);
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::logResults() {
+
+        ProfileHistoryList::iterator iter;
+
+        LogManager::getSingleton().logMessage("----------------------Profiler Results----------------------");
+
+        for (iter = mProfileHistory.begin(); iter != mProfileHistory.end(); ++iter) {
+
+            // create an indent that represents the hierarchical order of the profile
+            String indent = "";
+            for (uint i = 0; i < (*iter).hierarchicalLvl; ++i) {
+
+                indent = indent + "   ";
+
+            }
+
+            LogManager::getSingleton().logMessage(indent + "Name " + (*iter).name + " | Min " + StringConverter::toString((*iter).minTime) + " | Max " + StringConverter::toString((*iter).maxTime) + " | Avg "+ StringConverter::toString((*iter).totalTime / (*iter).totalCalls));
+
+        }
+
+        LogManager::getSingleton().logMessage("------------------------------------------------------------");
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::reset() {
+
+        ProfileHistoryList::iterator iter;
+        for (iter = mProfileHistory.begin(); iter != mProfileHistory.end(); ++iter) {
+        
+            (*iter).currentTime = (*iter).maxTime = (*iter).totalTime = 0;
+            (*iter).numCallsThisFrame = (*iter).totalCalls = 0;
+
+            (*iter).minTime = 1;
+
+        }
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::setUpdateDisplayFrequency(uint freq) {
+
+        mUpdateDisplayFrequency = freq;
+
+    }
+    //-----------------------------------------------------------------------
+    uint Profiler::getUpdateDisplayFrequency() const {
+
+        return mUpdateDisplayFrequency;
+
+    }
+    //-----------------------------------------------------------------------
+    void Profiler::changeEnableState() {
+
+        if (mNewEnableState) {
+
+            mOverlay->show();
+
+        }
+        else {
+
+            mOverlay->hide();
+
+        }
+        mEnabled = mNewEnableState;
+        mEnableStateChangePending = false;
+
+    }
+    //-----------------------------------------------------------------------
+    OverlayContainer* Profiler::createContainer() {
+
+        OverlayContainer* container = (OverlayContainer*) 
+			OverlayManager::getSingleton().createOverlayElement(
+				"BorderPanel", "profiler");
+        container->setMetricsMode(GMM_PIXELS);
+        container->setMaterialName("Core/StatsBlockCenter");
+        container->setHeight(mGuiHeight);
+        container->setWidth(mGuiWidth * 2 + 15);
+        container->setParameter("border_size", "1 1 1 1");
+        container->setParameter("border_material", "Core/StatsBlockBorder");
+        container->setParameter("border_topleft_uv", "0.0000 1.0000 0.0039 0.9961");
+        container->setParameter("border_top_uv", "0.0039 1.0000 0.9961 0.9961");
+        container->setParameter("border_topright_uv", "0.9961 1.0000 1.0000 0.9961");
+        container->setParameter("border_left_uv","0.0000 0.9961 0.0039 0.0039");
+        container->setParameter("border_right_uv","0.9961 0.9961 1.0000 0.0039");
+        container->setParameter("border_bottomleft_uv","0.0000 0.0039 0.0039 0.0000");
+        container->setParameter("border_bottom_uv","0.0039 0.0039 0.9961 0.0000");
+        container->setParameter("border_bottomright_uv","0.9961 0.0039 1.0000 0.0000");
+        container->setLeft(5);
+        container->setTop(5);
+
+        return container;
+
+    }
+    //-----------------------------------------------------------------------
+    OverlayElement* Profiler::createTextArea(const String& name, Real width, Real height, Real top, Real left, 
+                                         uint fontSize, const String& caption, bool show) {
+
+
+        OverlayElement* textArea = 
+			OverlayManager::getSingleton().createOverlayElement("TextArea", name);
+        textArea->setMetricsMode(GMM_PIXELS);
+        textArea->setWidth(width);
+        textArea->setHeight(height);
+        textArea->setTop(top);
+        textArea->setLeft(left);
+        textArea->setParameter("font_name", "BlueHighway");
+        textArea->setParameter("char_height", StringConverter::toString(fontSize));
+        textArea->setCaption(caption);
+        textArea->setParameter("colour_top", "1 1 1");
+        textArea->setParameter("colour_bottom", "1 1 1");
+
+        if (show) {
+            textArea->show();
+        }
+        else {
+            textArea->hide();
+        }
+
+        return textArea;
+
+    }
+    //-----------------------------------------------------------------------
+    OverlayElement* Profiler::createPanel(const String& name, Real width, Real height, Real top, Real left, 
+                                      const String& materialName, bool show) {
+
+        OverlayElement* panel = 
+			OverlayManager::getSingleton().createOverlayElement("Panel", name);
+        panel->setMetricsMode(GMM_PIXELS);
+        panel->setWidth(width);
+        panel->setHeight(height);
+        panel->setTop(top);
+        panel->setLeft(left);
+        panel->setMaterialName(materialName);
+
+        if (show) {
+            panel->show();
+        }
+        else {
+            panel->hide();
+        }
+
+        return panel;
+		
+    }
+    //-----------------------------------------------------------------------
 
 }

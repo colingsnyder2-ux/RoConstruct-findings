@@ -1,423 +1,464 @@
-// from server: 63% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-raknet StringCompressor.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-/// \file
-///
-/// This file is part of RakNet Copyright 2003 Kevin Jenkins.
-///
-/// Usage of RakNet is subject to the appropriate license agreement.
-/// Creative Commons Licensees are subject to the
-/// license found at
-/// http://creativecommons.org/licenses/by-nc/2.5/
-/// Single application licensees are subject to the license found at
-/// http://www.rakkarsoft.com/SingleApplicationLicense.html
-/// Custom license users are subject to the terms therein.
-/// GPL license users are subject to the GNU General Public
-/// License as published by the Free
-/// Software Foundation; either version 2 of the License, or (at your
-/// option) any later version.
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-#include "StringCompressor.h"
-#include "DS_HuffmanEncodingTree.h"
-#include "BitStream.h"
-#include <assert.h>
-#include <string.h>
-#include <memory.h>
-
-StringCompressor* StringCompressor::instance=0;
-int StringCompressor::referenceCount=0;
-
-void StringCompressor::AddReference(void)
+namespace RBX
 {
-	if (++referenceCount==1)
+	const char* sInstance = "Instance";
+
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		instance = new StringCompressor;
 	}
-}
-void StringCompressor::RemoveReference(void)
-{
-	assert(referenceCount > 0);
 
-	if (referenceCount > 0)
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
-		if (--referenceCount==0)
+	}
+
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
+
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
+
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			delete instance;
-			instance=0;
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
-}
 
-StringCompressor* StringCompressor::Instance(void)
-{
-	return instance;
-}
-
-unsigned int englishCharacterFrequencies[ 256 ] =
-{
-	0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		722,
-		0,
-		0,
-		2,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		11084,
-		58,
-		63,
-		1,
-		0,
-		31,
-		0,
-		317,
-		64,
-		64,
-		44,
-		0,
-		695,
-		62,
-		980,
-		266,
-		69,
-		67,
-		56,
-		7,
-		73,
-		3,
-		14,
-		2,
-		69,
-		1,
-		167,
-		9,
-		1,
-		2,
-		25,
-		94,
-		0,
-		195,
-		139,
-		34,
-		96,
-		48,
-		103,
-		56,
-		125,
-		653,
-		21,
-		5,
-		23,
-		64,
-		85,
-		44,
-		34,
-		7,
-		92,
-		76,
-		147,
-		12,
-		14,
-		57,
-		15,
-		39,
-		15,
-		1,
-		1,
-		1,
-		2,
-		3,
-		0,
-		3611,
-		845,
-		1077,
-		1884,
-		5870,
-		841,
-		1057,
-		2501,
-		3212,
-		164,
-		531,
-		2019,
-		1330,
-		3056,
-		4037,
-		848,
-		47,
-		2586,
-		2919,
-		4771,
-		1707,
-		535,
-		1106,
-		152,
-		1243,
-		100,
-		0,
-		2,
-		0,
-		10,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0
-};
-
-StringCompressor::StringCompressor()
-{
-	DataStructures::Map<int, HuffmanEncodingTree *>::IMPLEMENT_DEFAULT_COMPARISON();
-
-	// Make a default tree immediately, since this is used for RPC possibly from multiple threads at the same time
-	HuffmanEncodingTree *huffmanEncodingTree = new HuffmanEncodingTree;
-	huffmanEncodingTree->GenerateFromFrequencyTable( englishCharacterFrequencies );
-
-	huffmanEncodingTrees.Set(0, huffmanEncodingTree);
-}
-void StringCompressor::GenerateTreeFromStrings( unsigned char *input, unsigned inputLength, int languageID )
-{
-	HuffmanEncodingTree *huffmanEncodingTree;
-	if (huffmanEncodingTrees.Has(languageID))
+	void Instance::onDescendentAdded(Instance* instance)
 	{
-		huffmanEncodingTree = huffmanEncodingTrees.Get(languageID);
-		delete huffmanEncodingTree;
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
 	}
 
-	unsigned index;
-	unsigned int frequencyTable[ 256 ];
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
 
-	if ( inputLength == 0 )
-		return ;
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
 
-	// Zero out the frequency table
-	memset( frequencyTable, 0, sizeof( frequencyTable ) );
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
+		{
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
 
-	// Generate the frequency table from the strings
-	for ( index = 0; index < inputLength; index++ )
-		frequencyTable[ input[ index ] ] ++;
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
 
-	// Build the tree
-	huffmanEncodingTree = new HuffmanEncodingTree;
-	huffmanEncodingTree->GenerateFromFrequencyTable( frequencyTable );
-	huffmanEncodingTrees.Set(languageID, huffmanEncodingTree);
-}
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
+			}
+		}
+	}
 
-StringCompressor::~StringCompressor()
-{
-	for (unsigned i=0; i < huffmanEncodingTrees.Size(); i++)
-		delete huffmanEncodingTrees[i];
-}
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
 
-void StringCompressor::EncodeString( const char *input, int maxCharsToWrite, RakNet::BitStream *output, int languageID )
-{
-	HuffmanEncodingTree *huffmanEncodingTree;
-	if (huffmanEncodingTrees.Has(languageID)==false)
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
+
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
+
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
+
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
+
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
+
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
 		return;
-	huffmanEncodingTree=huffmanEncodingTrees.Get(languageID);
-
-	if ( input == 0 )
-	{
-		output->WriteCompressed( (unsigned int) 0 );
-		return ;
 	}
 
-	RakNet::BitStream encodedBitStream;
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
 
-	unsigned int stringBitLength;
-
-	int charsToWrite;
-
-	if ( maxCharsToWrite<=0 || ( int ) strlen( input ) < maxCharsToWrite )
-		charsToWrite = ( int ) strlen( input );
-	else
-		charsToWrite = maxCharsToWrite - 1;
-
-	huffmanEncodingTree->EncodeArray( ( unsigned char* ) input, charsToWrite, &encodedBitStream );
-
-	stringBitLength = encodedBitStream.GetNumberOfBitsUsed();
-
-	output->WriteCompressed( stringBitLength );
-
-	output->WriteBits( encodedBitStream.GetData(), stringBitLength );
-}
-
-bool StringCompressor::DecodeString( char *output, int maxCharsToWrite, RakNet::BitStream *input, int languageID )
-{
-	HuffmanEncodingTree *huffmanEncodingTree;
-	if (huffmanEncodingTrees.Has(languageID)==false)
 		return false;
-	huffmanEncodingTree=huffmanEncodingTrees.Get(languageID);
+	}
 
-	unsigned int stringBitLength;
-	int bytesInStream;
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
 
-	output[ 0 ] = 0;
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
 
-	if ( input->ReadCompressed( stringBitLength ) == false )
-		return false;
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-	if ( (unsigned) input->GetNumberOfUnreadBits() < stringBitLength )
-		return false;
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
 
-	bytesInStream = huffmanEncodingTree->DecodeArray( input, stringBitLength, maxCharsToWrite, ( unsigned char* ) output );
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-	if ( bytesInStream < maxCharsToWrite )
-		output[ bytesInStream ] = 0;
-	else
-		output[ maxCharsToWrite - 1 ] = 0;
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
 
-	return true;
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
+
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
+
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
+
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
+
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
+
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
+
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
+
+				return element;
+			}
+		}
+
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
+
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
+
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
+
+			oldParent->onChildRemoving(this);
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
+
+			if (c->empty())
+				oldParent->children.reset();
+
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }

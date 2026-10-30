@@ -1,8 +1,7 @@
-// from server: 40% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/RunDragger.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll tool/RunDragger.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "tool/RunDragger.h"

@@ -1,48 +1,19 @@
-// from server: 12% by colin
-struct RBXName {
-    static const RBXName& declare(const char*);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_8e8c9161a3ac75f9.cpp
 
-struct ICreator {
-    virtual ~ICreator();
-    virtual void* create() const;
-};
-
-struct Creator : public ICreator {
-    void* field4;
-    void* field8;
-    Creator(const RBXName&);
-    ~Creator();
-};
-
-struct FactoryProduct {
-    void* field0;
-    void* field4;
-    void* field8;
-    FactoryProduct();
-};
-
-extern "C" int __cdecl sub_4879D0(void*);
-extern "C" void* __cdecl sub_62FEF6(unsigned int);
-extern "C" void __cdecl sub_5594F0(void*, void*);
-
-const RBXName* g_name_559800;
-const RBXName* g_name_559C90;
-
-FactoryProduct::FactoryProduct()
-{
-    char local = 0;
-    if (!sub_4879D0(&local)) {
-        this->field8 = (void*)0x559800;
-        this->field0 = (void*)0x559C90;
-        Creator* c = (Creator*)sub_62FEF6(0x18);
-        if (c) {
-            sub_5594F0(c, &local);
-        }
-        this->field4 = c;
-    }
-    if (local) {
-        void* p = *(void**)&local;
-        ((void (__stdcall*)(void*, int))p)(p, 1);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/DataModel.cpp"

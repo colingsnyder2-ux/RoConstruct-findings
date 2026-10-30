@@ -1,39 +1,17 @@
-// from server: 38% by colin
-struct VPlayersSignalDesc {
-    void* vtable0;
-    void* vtable4;
-    int field8;
-    int fieldC;
-    void* vtable10;
-    void* vtable14;
-    char pad18[0x14];
-    void* vtable2C;
-    char pad30[0x14];
-    void* vtable44;
-    char pad48[0x14];
-    void* vtable5C;
-    char pad60[0x14];
-    void* vtable74;
-    char pad78[0x14];
-    void* vtable8C;
-    void construct();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-extern "C" void __stdcall sub_4916C0();
-extern "C" void* __stdcall sub_494E80();
-
-void VPlayersSignalDesc::construct()
-{
-    sub_4916C0();
-    fieldC = 0;
-    vtable0 = (void*)0x79ba5c;
-    vtable4 = (void*)0x79ba54;
-    vtable10 = (void*)0x79ba4c;
-    vtable14 = (void*)0x79ba3c;
-    vtable2C = (void*)0x79ba2c;
-    vtable44 = (void*)0x79ba1c;
-    vtable5C = (void*)0x79ba0c;
-    vtable74 = (void*)0x79b9fc;
-    vtable8C = (void*)0x79b9ec;
-    field8 = (int)sub_494E80();
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

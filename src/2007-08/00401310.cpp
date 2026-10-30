@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/dlgdhtml.cpp
+// roc-lib: mfc-9.0 atlmfc/src/mfc/roc_click_7d73bb003aafb5be.cpp
 
 // Candidate translation unit (score above; library headers required).
 // This is a part of the Microsoft Foundation Classes C++ library.
@@ -965,7 +965,7 @@ BOOL CDHtmlDialog::OnInitDialog()
 }
 
 BEGIN_DHTML_EVENT_MAP_INLINE(CDHtmlDialog)
-	DHTML_EVENT(DISPID_EVMETH_ONREADYSTATECHANGE, NULL, OnDocumentReadyStateChange)
+	DHTML_EVENT(DISPID_EVMETH_ONCLICK, NULL, OnDocumentReadyStateChange)
 END_DHTML_EVENT_MAP_INLINE()
 
 void CDHtmlDialog::Initialize()

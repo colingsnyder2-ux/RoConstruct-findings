@@ -1,97 +1,89 @@
-// from server: 21% by colin
-struct Level {
-    char pad0[4];
-    void* field4;
-    void* field8;
-    int f(int a, int b, int c, int d);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-view roc_espclaude_ccb4c01f44e452a8.cpp
 
-extern "C" void __stdcall sub_4DD410(void* self, int a, int b, void* c, void* d);
-extern "C" int __stdcall sub_4D9580(void* self, void* a, void* b);
-extern "C" void __stdcall sub_4DE100(void* self, void* a, void* b);
-extern "C" void __stdcall sub_61DA50(void* self);
-extern "C" void __stdcall sub_587AE0(void* self);
-extern "C" int __stdcall sub_466AB0(void* self, void* a);
-extern "C" void __stdcall sub_77E6D8();
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include "BrickMesh.h"
+#include "ViewBase.h"
 
-int Level::f(int a, int b, int c, int d) {
-    if (field8 == 0) {
-        sub_4DD410(this, a, 1, field4, (void*)d);
-        return a;
-    }
-    void* edi = *(void**)field4;
-    void* ebp = (void*)b;
-    if (ebp != 0 && ebp != this) {
-        sub_77E6D8();
-    }
-    void* ebx = (void*)c;
-    if (ebx == edi) {
-        if (!sub_4D9580(this, (void*)d, (char*)ebx + 0xc)) {
-            goto fail;
-        }
-        sub_4DD410(this, a, 1, ebx, (void*)d);
-        return a;
-    }
-    if (ebp != 0 && ebp != this) {
-        sub_77E6D8();
-    }
-    edi = *(void**)field4;
-    if (ebx == edi) {
-        void* tmp = *((void**)((char*)field4 + 8));
-        if (!sub_4D9580(this, (void*)d, (char*)tmp + 0xc)) {
-            goto fail;
-        }
-        sub_4DD410(this, a, 0, tmp, (void*)d);
-        return a;
-    }
-    if (sub_4D9580(this, (void*)d, (char*)ebx + 0xc)) {
-        void* local24 = ebp;
-        void* local28 = ebx;
-        sub_61DA50(&local24);
-        void* p = local28;
-        if (sub_4D9580(this, (void*)d, (char*)p + 0xc)) {
-            void* q = local28;
-            void* r = *((void**)((char*)q + 8));
-            if (*((char*)r + 0x35) != 0) {
-                sub_4DD410(this, a, 0, q, (void*)d);
-                return a;
-            } else {
-                sub_4DD410(this, a, 1, ebx, (void*)d);
-                return a;
-            }
-        }
-    }
-    if (!sub_4D9580(this, (void*)d, (char*)ebx + 0xc)) {
-        goto fail;
-    }
-    {
-        void* local24 = ebp;
-        void* local28 = ebx;
-        void* local14 = *(void**)field4;
-        void* local10 = this;
-        sub_587AE0(&local24);
-        if (!sub_466AB0(&local10, &local24)) {
-            void* p = local24;
-            if (!sub_4D9580(this, (void*)d, (char*)p + 0xc)) {
-                goto fail;
-            }
-        }
-        void* r = *((void**)((char*)ebx + 8));
-        if (*((char*)r + 0x35) != 0) {
-            sub_4DD410(this, a, 0, ebx, (void*)d);
-            return a;
-        } else {
-            void* p = local24;
-            sub_4DD410(this, a, 1, p, (void*)d);
-            return a;
-        }
-    }
-fail:
-    {
-        char tmp[8];
-        sub_4DE100(this, tmp, (void*)d);
-        *(void**)a = *(void**)tmp;
-        *(void**)((char*)a + 4) = *(void**)(tmp + 4);
-        return a;
-    }
+static std::map<Lookup, Variations> cache;
+
+static __declspec(noinline) int __fastcall orderedCompare(const G3D::Vector3& a, const G3D::Vector3& b)
+{
+	if (a.x < b.x)
+		return -1;
+	if (a.x > b.x)
+		return 1;
+	
+	if (a.y < b.y)
+		return -1;
+	if (a.y > b.y)
+		return 1;
+
+	if (a.z < b.z)
+		return -1;
+	if (a.z > b.z)
+		return 1;
+
+	return 0;
+}
+
+inline Variations::Variations()
+	: count(0)
+{
+}
+
+inline bool Lookup::operator<(const Lookup& other) const
+{
+	int c = orderedCompare(size, other.size);
+	if (c < 0)
+		return true;
+	if (c > 0)
+		return false;
+	if (surfaceTypes.data < other.surfaceTypes.data)
+		return true;
+	if (surfaceTypes.data > other.surfaceTypes.data)
+		return false;
+	if (color.number < other.color.number)
+		return true;
+	return false;
+}
+
+static void appendTriangles(G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level, int a, int b, int c, int d);
+
+namespace RBX
+{
+	namespace View
+	{
+		const float BrickMesh::widthInset = 0.0f;
+		const float BrickMesh::normalPerturbation = 0.05f;
+		const float BrickMesh::bevel = 0.0f;
+
+		void BrickMesh::flushCache()
+		{
+			cache.clear();
+		}
+
+		G3D::ReferenceCountedPointer<Render::Mesh> BrickMesh::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes, BrickColor color)
+		{
+			Lookup lookup = {size, surfaceTypes, color};
+
+			Variations& variation = cache[lookup];
+			
+			size_t mesh = variation.count == 4 ? G3D::iRandom(0, 3) : G3D::min(3, G3D::iRandom(0, 8));
+
+			G3D::ReferenceCountedPointer<Render::Mesh> thisMesh = variation.meshes[mesh];
+
+			if (thisMesh.isNull())
+			{
+				thisMesh = new BrickMesh(size, surfaceTypes, color);
+				variation.meshes[mesh] = thisMesh;
+				variation.count++;
+			}
+
+			return thisMesh;
+		}
+	}
 }

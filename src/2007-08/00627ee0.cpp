@@ -1,62 +1,33 @@
-// from server: 74% by colin
-// roc 2007-08 00627ee0  unit: RBX::AssemblyStage  size: 60 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00627ee0
-//
-// 00627ee0  83ec0c               sub esp, 0xc
-// 00627ee3  56                   push esi
-// 00627ee4  8b742414             mov esi, dword ptr [esp + 0x14]
-// 00627ee8  57                   push edi
-// 00627ee9  56                   push esi
-// 00627eea  8bf9                 mov edi, ecx
-// 00627eec  e8aff2ffff           call 0x6271a0
-// 00627ef1  8b06                 mov eax, dword ptr [esi]
-// 00627ef3  8b500c               mov edx, dword ptr [eax + 0xc]
-// 00627ef6  8bce                 mov ecx, esi
-// 00627ef8  ffd2                 call edx
-// 00627efa  85c0                 test eax, eax
-// 00627efc  7516                 jne 0x627f14
-// 00627efe  8d442418             lea eax, [esp + 0x18]
-// 00627f02  50                   push eax
-// 00627f03  8d4c240c             lea ecx, [esp + 0xc]
-// 00627f07  51                   push ecx
-// 00627f08  8d4f1c               lea ecx, [edi + 0x1c]
-// 00627f0b  89742420             mov dword ptr [esp + 0x20], esi
-// 00627f0f  e89caafbff           call 0x5e29b0
-// 00627f14  5f                   pop edi
-// 00627f15  5e                   pop esi
-// 00627f16  83c40c               add esp, 0xc
-// 00627f19  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_world_ba5da9afd6251ffb.cpp
 
-struct AssemblyStage {
-    void onFixedAssemblyRootAdded(void* a);
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-struct IStage {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual int v3();
-};
-
-struct EdgeBuffer {
-    char pad[0x1c];
-    void addEdge(void* a, void* b);
-};
-
-struct AssemblyStageFull : EdgeBuffer {
-    void onFixedAssemblyRootAdded(void* a);
-};
-
-extern "C" void __stdcall func_006271a0(void* a);
-
-void AssemblyStageFull::onFixedAssemblyRootAdded(void* a)
-{
-    func_006271a0(a);
-    IStage* s = (IStage*)a;
-    if (s->v3() == 0) {
-        void* tmp1;
-        void* tmp2;
-        tmp2 = a;
-        addEdge(&tmp1, &tmp2);
-    }
-}
+#include "v8world/AssemblyStage.cpp"

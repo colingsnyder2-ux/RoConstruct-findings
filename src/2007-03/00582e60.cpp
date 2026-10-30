@@ -1,8 +1,7 @@
-// from server: 33% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/BrickColor.cpp
+// roc-lib: rbxgs-dll roc_espclaude_40c6454e751b9c89.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/BrickColor.h"
@@ -322,5 +321,34 @@ namespace RBX
 	G3D::Color3 BrickColor::color3() const
 	{
 		return G3D::Color3(color4());
+	}
+}
+
+namespace RBX
+{
+	BrickColor BrickColor::closest(G3D::Color4uint8 color)
+	{
+		Number number = lego_194;
+		int closestDistance = 10000;
+
+		std::map<enum Number, G3D::Color4uint8>::iterator iter = BrickMap::singleton().map1.begin();
+		std::map<enum Number, G3D::Color4uint8>::iterator end = BrickMap::singleton().map1.end();
+
+		for (; iter != end; iter++)
+		{
+			int distance = abs(iter->second.r - color.r);
+			distance += abs(iter->second.g - color.g);
+			distance += abs(iter->second.b - color.b);
+
+			if (distance < closestDistance)
+			{
+				number = iter->first;
+				if (distance == 0)
+					break;
+				closestDistance = distance;
+			}
+		}
+
+		return BrickColor(number);
 	}
 }

@@ -1,108 +1,250 @@
-// from server: 47% by colin
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: rbxgs-dll v8datamodel/Hopper.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Backpack.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Mouse.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ScriptMouseCommand.h"
 
 namespace RBX
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
+	static Reflection::PropDescriptor<BackpackItem, TextureId> desc_TextureId("TextureId", "Data", &BackpackItem::getTextureId, &BackpackItem::setTextureId, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyCommand("Command", "Data", NULL, &HopperBin::setLegacyCommand, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyTextureName("TextureName", "Data", NULL, &HopperBin::setLegacyTextureName, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<HopperBin, HopperBin::BinType> desc_BinType("BinType", "Data", &HopperBin::getBinType, &HopperBin::setBinType, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::SignalDesc<HopperBin, void(void)> desc_Deselected("Deselected");
+	static Reflection::SignalDesc<HopperBin, void(boost::shared_ptr<Instance>)> desc_Selected("Selected", "mouse");
+
+	Hopper::Hopper()
 	{
-		boost::call_once(initMoo, flag);
-		return moo2();
+		yLocation = Rect::BOTTOM;
 	}
 
-	std::map<int, Name*>& Name::dictionary()
+	bool Hopper::askAddChild(const Instance* instance) const
 	{
-		static std::map<int, Name*> d;
-		return d;
+		return dynamic_cast<const BackpackItem*>(instance) != NULL;
 	}
 
-	Name::NamMap& Name::namMap()
+	bool Hopper::askSetParent(const Instance* instance) const
 	{
-		static NamMap n;
-		return n;
+		return true;
 	}
 
-	const Name& Name::getNullName()
+	bool BackpackItem::askSetParent(const Instance* instance) const
 	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
+		return true;
 	}
 
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
+	bool BackpackItem::askAddChild(const Instance* instance) const
 	{
-		if (!sName)
+		return true;
+	}
+
+	const TextureId BackpackItem::getTextureId() const
+	{
+		return textureId;
+	}
+
+	bool BackpackItem::isEnabled()
+	{
+		return getParent() && dynamic_cast<Backpack*>(getParent()) != NULL;
+	}
+
+	void BackpackItem::setTextureId(const TextureId& value)
+	{
+		if (value != textureId)
 		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
+			textureId = value;
+
+			std::string filename;
+			ContentProvider::singleton().requestContentFile(value, filename);
+
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->raiseDrawChanged();
+
+			raisePropertyChanged(desc_TextureId);
 		}
+	}
 
-		boost::mutex::scoped_lock scoped_lock(mutex());
+	G3D::Vector2 BackpackItem::getSize() const
+	{
+		float width = GuiRoot::toPixelSize(G3D::Vector2(10.0f, 10.0f)).x;
+		return G3D::Vector2(width, width);
+	}
 
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
+	HopperBin::HopperBin()
+		: binType(SCRIPT_BIN),
+		  active(false)
+	{
+		setName("HopperBin");
+	}
+
+	void HopperBin::setBinType(const HopperBin::BinType value)
+	{
+		if (value != binType)
 		{
-			if (dictionaryIndex != -1)
+			binType = value;
+			raisePropertyChanged(desc_BinType);
+
+			if (binType != SCRIPT_BIN)
 			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
+				std::string textureName = Reflection::EnumDesc<BinType>::singleton().convertToString(binType);
+				setLegacyTextureName(textureName);
 			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
 		}
 	}
 
-	const Name& Name::lookup(const std::string& sName)
+	void HopperBin::setLegacyTextureName(const std::string& value)
 	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
+		TextureId textureId = ContentId::fromAssets("Textures\\" + value + ".png");
+		setTextureId(textureId);
+	}
 
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
+	void HopperBin::setLegacyCommand(const std::string& text)
+	{
+		BinType newBinType;
+		
+		if (!Reflection::EnumDesc<BinType>::singleton().convertToValue(text, newBinType))
 		{
-			return *iter->second;
+			newBinType = SCRIPT_BIN;
+		}
+		
+		setBinType(newBinType);
+	}
+
+	void HopperBin::onLocalClicked()
+	{
+		RBXASSERT(isEnabled());
+
+		if (!active)
+		{
+			active = true;
+
+			if (binType == SCRIPT_BIN)
+			{
+				onSelectScript();
+			}
+			else
+			{
+				onSelectCommand();
+			}
 		}
 		else
 		{
-			return getNullName();
+			onLocalOtherClicked();
 		}
 	}
 
-	const Name& Name::lookup(const char* sName)
+	void HopperBin::onLocalOtherClicked()
 	{
-		if (!sName)
+		if (active)
 		{
-			return getNullName();
-		}
+			if (binType == SCRIPT_BIN)
+				desc_Deselected.fire(this);
 
-		return lookup(std::string(sName));
+			active = false;
+
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->setDefaultMouseCommand();
+		}
+	}
+
+	void HopperBin::onSelectScript()
+	{
+		Workspace* workspace = ServiceProvider::find<Workspace>(this);
+		if (workspace)
+		{
+			ScriptMouseCommand* command = new ScriptMouseCommand(workspace);
+			workspace->setMouseCommand(command);
+			desc_Selected.fire(this, command->getMouse());
+		}
+	}
+
+	void HopperBin::onSelectCommand()
+	{
+		RBXASSERT(binType != SCRIPT_BIN);
+
+		DataModel* root = rbx_static_cast<DataModel*>(getRootAncestor());
+
+		std::string command = Reflection::EnumDesc<BinType>::singleton().convertToString(binType) + "Tool";
+
+		Verb* verb = root->getVerb(command);
+		RBXASSERT(verb);
+
+		if (verb->isEnabled())
+		{
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				verb->doIt(&workspace->getDataState());
+			else
+				RBXASSERT(0);
+		}
+	}
+
+	StarterPackService::StarterPackService()
+	{
+		setName("StarterPack");
+	}
+
+	//97.87% match
+	//le EPIC TROLL
+	void StarterPackService::render2d(Adorn* adorn)
+	{
+		TopMenuBar::render2d(adorn);
+
+		if (findFirstChildOfType<BackpackItem>())
+		{
+			G3D::Rect2D viewPort = adorn->getViewport();
+			int fontSize = GuiRoot::normalizedFontSize(12);
+			G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
+
+			adorn->drawFont2D(
+				"StarterPack - these items will be given to each new player", 
+				pos2d, 
+				fontSize, 
+				G3D::Color3::white(), 
+				G3D::Color4::clear(), 
+				Adorn::XALIGN_LEFT, 
+				Adorn::YALIGN_BOTTOM,
+				Adorn::PROPORTIONAL_SPACING
+			);
+		}
+	}
+
+	LegacyHopperService::LegacyHopperService()
+	{
+		setName("Hopper");
+	}
+
+	LegacyHopperService::~LegacyHopperService()
+	{
+		RBXASSERT(numChildren() == 0);
+	}
+
+	void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (newProvider)
+		{
+			StarterPackService* starterPack = newProvider->find<StarterPackService>();
+			RBXASSERT(starterPack);
+
+			while (numChildren() > 0)
+			{
+				getChild(0)->setParent(starterPack);
+			}
+
+			setParent(NULL);
+		}
 	}
 }

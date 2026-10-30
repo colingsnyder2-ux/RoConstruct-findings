@@ -1,15 +1,11 @@
-// from server: 44% by atomic.potato
-struct UString_sink_stream_buffer
-{
-    UString_sink_stream_buffer();
-};
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-extern "C" void __cdecl f7224f0(void *);
-extern "C" void __cdecl f7f4878(void *, const void *);
-
-UString_sink_stream_buffer::UString_sink_stream_buffer()
-{
-    char buffer[40];
-    f7224f0(buffer);
-    f7f4878(buffer, (const void *)0x00ac7ce8);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

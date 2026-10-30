@@ -1,529 +1,464 @@
-// from server: 68% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/BinaryInput.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file BinaryInput.cpp
- 
- @author Morgan McGuire, graphics3d.com
- 
- @created 2001-08-09
- @edited  2005-02-24
-
-
-  <PRE>
-    {    
-    BinaryOutput b("c:/tmp/test.b", BinaryOutput::LITTLE_ENDIAN);
-
-    float f = 3.1415926;
-    int i = 1027221;
-    std::string s = "Hello World!";
-
-    b.writeFloat32(f);
-    b.writeInt32(i);
-    b.writeString(s);
-    b.commit();
-    
-
-    BinaryInput in("c:/tmp/test.b", BinaryInput::LITTLE_ENDIAN);
-
-    debugAssert(f == in.readFloat32());
-    int ii = in.readInt32();
-    debugAssert(i == ii);
-    debugAssert(s == in.readString());
-    }
-  </PRE>
- */
-
-#include "G3D/platform.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/Array.h"
-#include "G3D/fileutils.h"
-#ifdef G3D_WIN32
-  #include "../zlib/zlib.h"
-#else
-  #include <zlib.h>
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
 #endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-namespace G3D {
+namespace RBX
+{
+	const char* sInstance = "Instance";
 
-void BinaryInput::readBool8(std::vector<bool>& out, int n) {
-    out.resize(n);
-    // std::vector optimizes bool in a way that prevents fast reading
-    for (int i = 0; i < n ; ++i) {
-        out[i] = readBool8();
-    }
-}
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
 
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
 
-void BinaryInput::readBool8(Array<bool>& out, int n) {
-    out.resize(n);
-    readBool8(out.begin(), n);
-}
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
 
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
+	{
+	}
 
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(std::vector<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(&out[0], n);\
-}\
-\
-\
-void BinaryInput::read##ucase(Array<lcase>& out, int n) {\
-    out.resize(n);\
-    read##ucase(out.begin(), n);\
-}
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
+	{
+	}
 
+	Instance::~Instance()
+	{
+		RBXASSERT(!parent);
+	}
 
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
+	bool Instance::askAddChild(const Instance* instance) const
+	{
+		return false;
+	}
 
-#undef IMPLEMENT_READER
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
 
-// Data structures that are one byte per element can be 
-// directly copied, regardles of endian-ness.
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (sizeof(lcase) == 1) {\
-        readBytes(out, n);\
-    } else {\
-        for (int i = 0; i < n ; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    }\
-}
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
+		{
+			name = value;
+			raisePropertyChanged(desc_Name);
+		}
+	}
 
-IMPLEMENT_READER(Bool8,   bool)
-IMPLEMENT_READER(UInt8,   uint8)
-IMPLEMENT_READER(Int8,    int8)
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
 
-#undef IMPLEMENT_READER
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
 
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
 
-#define IMPLEMENT_READER(ucase, lcase)\
-void BinaryInput::read##ucase(lcase* out, int n) {\
-    if (swapBytes) {\
-        for (int i = 0; i < n; ++i) {\
-            out[i] = read##ucase();\
-        }\
-    } else {\
-        readBytes(out, sizeof(lcase) * n);\
-    }\
-}
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
 
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
+		{
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
 
-IMPLEMENT_READER(UInt16,  uint16)
-IMPLEMENT_READER(Int16,   int16)
-IMPLEMENT_READER(UInt32,  uint32)
-IMPLEMENT_READER(Int32,   int32)
-IMPLEMENT_READER(UInt64,  uint64)
-IMPLEMENT_READER(Int64,   int64)
-IMPLEMENT_READER(Float32, float32)
-IMPLEMENT_READER(Float64, float64)    
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
 
-#undef IMPLEMENT_READER
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
+			}
+		}
+	}
 
-void BinaryInput::loadIntoMemory(int startPosition, int minLength) {
-    // Load the next section of the file
-    debugAssertM(filename != "<memory>", "Read past end of file.");
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
 
-    int absPos = alreadyRead + pos;
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
 
-    if (bufferLength < minLength) {
-        // The current buffer isn't big enough to hold the chunk we want to read.
-        // This happens if there was little memory available during the initial constructor
-        // read but more memory has since been freed.
-        bufferLength = minLength;
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::realloc(buffer, bufferLength);
-        if (buffer == NULL) {
-            throw "Tried to read a larger memory chunk than could fit in memory. (2)";
-        }
-    }
+		if (p)
+			p->onChildChanged(instance, event);
+	}
 
-    alreadyRead = startPosition;
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
 
-    FILE* file = fopen(filename.c_str(), "rb");
-    debugAssert(file);
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
 
-    int ret = fseek(file, alreadyRead, SEEK_SET);
-    debugAssert(ret == 0);
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
 
-    int toRead = iMin(bufferLength, length - alreadyRead);
-    ret = fread(buffer, 1, toRead, file);
-    debugAssert(ret == toRead);
-    fclose(file);
-    file = NULL;
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
 
-    pos = absPos - alreadyRead;
-    debugAssert(pos >= 0);
-}
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
 
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
+		}
+		else
+			readProperty(element, binder);
+	}
 
+	void Instance::predelete(Instance* instance)
+	{
+		instance->predelete();
+	}
 
-const bool BinaryInput::NO_COPY = false;
-    
-static bool needSwapBytes(G3DEndian fileEndian) {
-    return (fileEndian != System::machineEndian());
-}
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
 
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
 
-/** Helper used by the constructors for decompression */
-static uint32 readUInt32(const uint8* data, bool swapBytes) {
-    if (swapBytes) {
-        uint8 out[4];
-        out[0] = data[3];
-        out[1] = data[2];
-        out[2] = data[1];
-        out[3] = data[0];
-        return *((uint32*)out);
-    } else {
-        return *((uint32*)data);
-    }
-}
+			for (Iterator it = r->begin(); it != r->end(); it++)
+			{
+				(*it)->onAncestorChanged(event);
+			}
+		}
 
-BinaryInput::BinaryInput(
-    const uint8*        data,
-    int                 dataLen,
-    G3DEndian           dataEndian,
-    bool                compressed,
-    bool                copyMemory) {
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
+	}
 
-    debugAssert(! (compressed && !copyMemory));
-    beginEndBits = 0;
-    bitPos = 0;
-    alreadyRead = 0;
-    bufferLength = 0;
-
-    freeBuffer = copyMemory || compressed;
-
-    this->fileEndian = dataEndian;
-    this->filename = "<memory>";
-	pos = 0;
-    swapBytes = needSwapBytes(fileEndian);
-
-    if (compressed) {
-        // Read the decompressed size from the first 4 bytes
-        length = G3D::readUInt32(data, swapBytes);
-
-		debugAssert(freeBuffer);
-        buffer = (uint8*)System::malloc(length);
-
-        uint32 L = length;
-        // Decompress with zlib
-        int result = uncompress(buffer, (unsigned long*)&L, data + 4, dataLen - 4);
-        length = L;
-        bufferLength = L;
-        debugAssert(result == Z_OK); (void)result;
-
-    } else {
-	    length = dataLen;
-        bufferLength = length;
-        if (! copyMemory) {
- 			debugAssert(!freeBuffer);
-            buffer = const_cast<uint8*>(data);
-        } else {
-			debugAssert(freeBuffer);
-            buffer = (uint8*)System::malloc(length);
-            memcpy(buffer, data, dataLen);
-        }
-    }
-}
-
-
-BinaryInput::BinaryInput(
-    const std::string&  filename,
-    G3DEndian           fileEndian,
-    bool                compressed) {
-
-    alreadyRead = 0;
-    freeBuffer = true;
-    this->fileEndian = fileEndian;
-    this->filename = filename;
-	buffer = NULL;
-    bufferLength = 0;
-	length = 0;
-	pos = 0;
-    beginEndBits = 0;
-    bitPos = 0;
-
-    // Update global file tracker
-    _internal::currentFilesUsed.append(filename);
-    
-    swapBytes = needSwapBytes(fileEndian);
-
-    // Figure out how big the file is and verify that it exists.
-    length = fileLength(filename);
-
-    // Read the file into memory
-    FILE* file = fopen(filename.c_str(), "rb");
-
-	if (! file || (length == -1)) {
-        throw format("File not found: \"%s\"", filename.c_str());
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
 		return;
 	}
 
-    if (! compressed && (length > INITIAL_BUFFER_LENGTH)) {
-        // Read only a subset of the file so we don't consume
-        // all available memory.
-        bufferLength = INITIAL_BUFFER_LENGTH;
-    } else {
-        // Either the length is fine or the file is compressed
-        // and requires us to read the whole thing for zlib.
-        bufferLength = length;
-    }
+	bool Instance::contains(const Instance* child) const
+	{
+		for (; child != NULL; child = child->parent)
+		{
+			if (child == this)
+				return true;
+		}
 
-	debugAssert(freeBuffer);
-    buffer = (uint8*)System::malloc(bufferLength);
-    if (buffer == NULL) {
-        if (compressed) {
-            throw "Not enough memory to load compressed file. (1)";
-        }
+		return false;
+	}
 
-        // Try to allocate a small array; not much memory is available.
-        // Give up if we can't allocate even 1k.
-        while ((buffer == NULL) && (bufferLength > 1024)) {
-            bufferLength /= 2;
-            buffer = (uint8*)System::malloc(bufferLength);
-        }
-    }
-    debugAssert(buffer);
-    
-    fread(buffer, bufferLength, sizeof(int8), file);
-    fclose(file);
-    file = NULL;
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
+	{
+		return AbstractFactoryProduct::create(className);
+	}
 
-    pos = 0;
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
 
-    if (compressed) {
-        if (bufferLength != length) {
-            throw "Not enough memory to load compressed file. (2)";
-        }
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-        // Decompress
-        // Use the existing buffer as the source, allocate
-        // a new buffer to use as the destination.
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
 
-        int tempLength = length;
-        length = G3D::readUInt32(buffer, swapBytes);
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
+		{
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-        uint8* tempBuffer = buffer;
-        buffer = (uint8*)System::malloc(length);
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
+			{
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
+			}
+		}
+	}
 
-        debugAssert(buffer);
-        debugAssert(isValidHeapPointer(tempBuffer));
-        debugAssert(isValidHeapPointer(buffer));
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
 
-        unsigned long L = length;
-        int result = uncompress(buffer, &L, tempBuffer + 4, tempLength - 4);
-        length = L;
-        bufferLength = length;
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-        debugAssert(result == Z_OK); (void)result;
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
 
-        System::free(tempBuffer);
-    }
-}
+		return NULL;
+	}
 
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
 
-BinaryInput::~BinaryInput() {
+		if (!children)
+			return NULL;
 
-    if (freeBuffer) {
-        System::free(buffer);
-    }
-    buffer = NULL;
-}
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
 
-void BinaryInput::readBytes(int n, void* bytes) {
-    prepareToRead(n);
-    debugAssert(isValidPointer(bytes));
+		return NULL;
+	}
 
-    memcpy(bytes, buffer + pos, n);
-    pos += n;
-}
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
 
+			parent->onDescendentAdded(instance);
+		}
 
-uint64 BinaryInput::readUInt64() {
-    prepareToRead(8);
-    uint8 out[8];
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
 
-    if (swapBytes) {
-        out[0] = buffer[pos + 7];
-        out[1] = buffer[pos + 6];
-        out[2] = buffer[pos + 5];
-        out[3] = buffer[pos + 4];
-        out[4] = buffer[pos + 3];
-        out[5] = buffer[pos + 2];
-        out[6] = buffer[pos + 1];
-        out[7] = buffer[pos + 0];
-    } else {
-        *(uint64*)out = *(uint64*)(buffer + pos);
-    }
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
+			}
+		}
+	}
 
-    pos += 8;
-    return *(uint64*)out;
-}
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
 
+			parent->onDescendentRemoving(instance);
+		}
 
-std::string BinaryInput::readString(int n) {
-    prepareToRead(n);
-    debugAssertM((pos + n) <= length, "Read past end of file");
-    
-    char *s = (char*)System::malloc(n + 1);
-    assert(s != NULL);
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
 
-    memcpy(s, buffer + pos, n);
-    // There may not be a null, so make sure
-    // we add one.
-    s[n] = '\0';
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
+	}
 
-    std::string out = s;
-    System::free(s);
-    s = NULL;
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
 
-    pos += n;
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
 
-    return out;
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
 
-}
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
 
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
 
-std::string BinaryInput::readString() {
-    int n = 0;
+				return element;
+			}
+		}
 
-    if ((int)pos + (int)alreadyRead + n < (int)length - 1) {
-        prepareToRead(1);
-    }
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
 
-    if (((int)pos + (int)alreadyRead + (int)n < length - 1) && (buffer[pos + n] != '\0')) {
-        ++n;
-        while (((int)pos + (int)alreadyRead + n < (int)length - 1) && (buffer[pos + n] != '\0')) {
-            prepareToRead(1);
-            ++n;
-        }
-    }
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
 
-    // Consume NULL
-    ++n;
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
 
-    return readString(n);
-}
+			oldParent->onChildRemoving(this);
 
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
 
-std::string BinaryInput::readStringEven() {
-    std::string x = readString();
-    if (hasMore() && (G3D::isOdd(x.length() + 1))) {
-        skip(1);
-    }
-    return x;
-}
+			if (c->empty())
+				oldParent->children.reset();
 
+			parent = NULL;
 
-std::string BinaryInput::readString32() {
-    int len = readUInt32();
-    return readString(len);
-}
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
 
+			oldParent->onChildRemoved(this);
 
-Vector4 BinaryInput::readVector4() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    double w = readFloat32();
-    return Vector4(x, y, z, w);
-}
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
 
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
 
-Vector3 BinaryInput::readVector3() {
-    double x = readFloat32();
-    double y = readFloat32();
-    double z = readFloat32();
-    return Vector3(x, y, z);
-}
+		parent = newParent;
 
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
 
-Vector2 BinaryInput::readVector2() {
-    double x = readFloat32();
-    double y = readFloat32();
-    return Vector2(x, y);
-}
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
 
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
 
-Color4 BinaryInput::readColor4() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    double a = readFloat32();
-    return Color4(r, g, b, a);
-}
-
-
-Color3 BinaryInput::readColor3() {
-    double r = readFloat32();
-    double g = readFloat32();
-    double b = readFloat32();
-    return Color3(r, g, b);
-}
-
-
-void BinaryInput::beginBits() {
-    debugAssert(beginEndBits == 0);
-    beginEndBits = 1;
-    bitPos = 0;
-
-    debugAssertM(hasMore(), "Can't call beginBits when at the end of a file");
-    bitString = readUInt8();
-}
-
-
-uint32 BinaryInput::readBits(int numBits) {
-    debugAssert(beginEndBits == 1);
-
-    uint32 out = 0;
-
-    const int total = numBits;
-    while (numBits > 0) {
-        if (bitPos > 7) {
-            // Consume a new byte for reading.  We do this at the beginning
-            // of the loop so that we don't try to read past the end of the file.
-            bitPos = 0;
-            bitString = readUInt8();
-        }
-
-        // Slide the lowest bit of the bitString into
-        // the correct position.
-        out |= (bitString & 1) << (total - numBits);
-
-        // Shift over to the next bit
-        bitString = bitString >> 1;
-        ++bitPos;
-        --numBits;
-    }
-
-    return out;
-}
-
-
-void BinaryInput::endBits() {
-    debugAssert(beginEndBits == 1);
-    if (bitPos == 0) {
-        // Put back the last byte we read
-        --pos;
-    }
-    beginEndBits = 0;
-    bitPos = 0;
-}
-
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }

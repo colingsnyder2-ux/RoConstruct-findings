@@ -1,58 +1,159 @@
-// from server: 53% by colin
-struct Vec3 {
-    float x, y, z;
-};
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll v8datamodel/ICharacterSubject.cpp
 
-struct RbxRay {
-    Vec3 origin;
-    Vec3 direction;
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/ICharacterSubject.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/UserController.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/ContactManager.h"
+#include "v8world/Primitive.h"
 
-struct InputObject;
-
-struct MouseCommand {
-    char pad[0x24];
-    Vec3 hitWorld;
-};
-
-extern float g_float_7a32e8;
-
-extern "C" void __cdecl sub_00601630(RbxRay* out, InputObject* inputObject, void* workspace);
-extern "C" void* __cdecl sub_00509640(void* a, void* b);
-extern "C" void* __cdecl sub_0050a500();
-
-struct Helper {
-    void sub_005095d0(void* arg);
-};
-
-RbxRay* sub_00601670(MouseCommand* self, InputObject* inputObject, void* workspace, int a4)
+namespace RBX
 {
-    RbxRay unitRay;
-    Vec3 scaled;
-    Vec3 result;
+	ICharacterSubject::ICharacterSubject()
+		: lastOffset(G3D::Vector3::ZERO),
+		  cursorLocked(false),
+		  wasOccluded(false),
+		  hasGoalInFocus(false)
+	{
+	}
 
-    sub_00601630(&unitRay, inputObject, workspace);
+	G3D::CoordinateFrame ICharacterSubject::getFocusLookingAtGoal(const G3D::CoordinateFrame& cameraFocus, const G3D::CoordinateFrame& cameraGoal)
+	{
+		G3D::CoordinateFrame temp = cameraFocus;
+		temp.lookAt(cameraGoal.translation);
 
-    float f = g_float_7a32e8;
-    float f2 = f;
+		return temp;
+	}
 
-    void* p = sub_00509640(&f2, &f);
-    float* pf = (float*)p;
+	G3D::CoordinateFrame ICharacterSubject::goalFromDistance(const G3D::CoordinateFrame& cameraFocus, const G3D::CoordinateFrame& cameraGoal, const float distance)
+	{
+		G3D::CoordinateFrame manLookCamera = getFocusLookingAtGoal(cameraFocus, cameraGoal);
+		G3D::Vector3 newCameraPt = manLookCamera.lookVector() * distance + manLookCamera.translation;
 
-    scaled.x = pf[0] * f;
-    scaled.y = pf[1] * f;
-    scaled.z = pf[2] * f;
+		return G3D::CoordinateFrame(G3D::Matrix3::identity(), newCameraPt);
+	}
 
-    result.x = scaled.x + unitRay.origin.x;
-    result.y = scaled.y + unitRay.origin.y;
-    result.z = scaled.z + unitRay.origin.z;
+	bool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)
+	{
+		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
 
-    void* q = sub_0050a500();
-    ((Helper*)self)->sub_005095d0(q);
+		float currentDistance = focusToGoal.magnitude();
+		float newDistance = Camera::getNewZoomDistance(currentDistance, in);
 
-    self->hitWorld.x = result.x;
-    self->hitWorld.y = result.y;
-    self->hitWorld.z = result.z;
+		newDistance = G3D::min(400.0f, newDistance);
 
-    return (RbxRay*)self;
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0f;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+
+		return true;
+	}
+
+	//98.58% match
+	bool ICharacterSubject::testOcclusion(const G3D::CoordinateFrame& cameraFocus, const G3D::CoordinateFrame& cameraGoal, float& distance)
+	{
+		ContactManager* contactManager = getContactManager();
+		if (contactManager)
+		{
+			std::vector<const Primitive*> ignorePrims;
+			getIgnorePrims(ignorePrims);
+
+			G3D::CoordinateFrame manLookCamera = getFocusLookingAtGoal(cameraFocus, cameraGoal);
+			G3D::Vector3 pointOnMan = manLookCamera.leftVector();
+
+			int hits = 0;
+			float originalDistance = (cameraGoal.translation - cameraFocus.translation).magnitude();
+			distance = originalDistance;
+
+			for (int x = -2; x <= 2; x += 2)
+			{
+				G3D::Vector3 r = manLookCamera.translation + pointOnMan * (float)x;
+				G3D::Ray manToCamera = G3D::Ray::fromOriginAndDirection(r, cameraGoal.translation - r);
+
+				G3D::Vector3 hitPoint;
+				if (contactManager->getHit(manToCamera, &ignorePrims, NULL, hitPoint))
+				{
+					hits++;
+					float thisDistance = (hitPoint - r).magnitude();
+					distance = G3D::min(distance, thisDistance);
+				}
+			}
+
+			if (hits > 1)
+			{
+				distance -= 1.0f;
+				distance = G3D::max(distance, 0.5f);
+				distance = G3D::min(distance, 1000.0f);
+				return true;
+			}
+			else
+			{
+				distance = originalDistance;
+				return false;
+			}
+		}
+
+		return false;
+	}
+
+	void ICharacterSubject::onHeartBeat(G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)
+	{
+		if ((cameraGoal.translation - cameraFocus.translation).magnitude() < 2.75f)
+		{
+			Instance* thisInstance = dynamic_cast<Instance*>(this);
+			if (ControllerService* controllerService = ServiceProvider::find<ControllerService>(thisInstance))
+			{
+				if (Workspace* workspace = ServiceProvider::find<Workspace>(thisInstance))
+				{
+					UserInputBase* device = controllerService->getHardwareDevice();
+					if (device)
+					{
+						device->centerCursor();
+						device->setWrapMode(UserInputBase::WRAP_CENTER);
+						cursorLocked = true;
+					}
+				}
+			}
+		}
+		else
+		{
+			Instance* thisInstance = dynamic_cast<Instance*>(this);
+			if (ControllerService* controllerService = ServiceProvider::find<ControllerService>(thisInstance))
+			{
+				if (Workspace* workspace = ServiceProvider::find<Workspace>(thisInstance))
+				{
+					UserInputBase* device = controllerService->getHardwareDevice();
+					if (device && cursorLocked)
+					{
+						if (!workspace->getInMouselookMode())
+							device->setWrapMode(UserInputBase::WRAP_AUTO);
+
+						cursorLocked = false;
+					}
+				}
+			}
+		}
+
+		float angle = 0.0f;
+
+		if (cursorLocked)
+		{
+			G3D::Vector3 v = cameraFocus.translation - cameraGoal.translation;
+			v.y = 0.0f;
+			v = v.direction();
+
+			angle = Math::angleToE0(G3D::Vector2(v.z, v.x));
+		}
+
+		cameraSetWalkOrientation(angle, !cursorLocked);
+	}
 }

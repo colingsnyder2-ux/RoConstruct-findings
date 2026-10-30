@@ -1,51 +1,17 @@
-// from server: 21% by colin
-struct SoundChannel {
-    void func_00588bd0(int* a, int* b);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_soundsharedstatsc127ce5793e59fd7.cpp
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-extern "C" void __cdecl func_00587ae0();
-
-void SoundChannel::func_00588bd0(int* a, int* b)
-{
-    int* ebx;
-    int* esi;
-    int* edi;
-
-    esi = *(int**)((char*)this + 4);
-    ebx = *(int**)esi;
-
-    while (1) {
-        if (esi != 0 && esi != (int*)this) {
-            _invalid_parameter_noinfo();
-        }
-
-        edi = *(int**)((char*)this + 4);
-        if (ebx == edi) {
-            break;
-        }
-
-        (*a)++;
-
-        if (esi == 0) {
-            _invalid_parameter_noinfo();
-        }
-
-        if (ebx == *(int**)((char*)esi + 4)) {
-            _invalid_parameter_noinfo();
-        }
-
-        {
-            int* ecx = *(int**)((char*)ebx + 0x2c);
-            if (*(int**)((char*)ecx + 8) == 0) {
-                (*b)++;
-            }
-        }
-
-        func_00587ae0();
-
-        ebx = *(int**)((char*)esi);
-        esi = *(int**)((char*)this + 4);
-    }
+// Candidate translation unit (score above; library headers required).
+#include <map>
+#include <string>
+#include "util/ContentProvider.h"
+struct Value { char padding[8]; int count; };
+typedef std::map<RBX::ContentId,boost::shared_ptr<Value> > Container;
+void func(const Container* container,int* total,int* empty) {
+ for(Container::const_iterator it=container->begin();it!=container->end();++it) {
+  ++*total;
+  if(it->second->count==0) ++*empty;
+ }
 }

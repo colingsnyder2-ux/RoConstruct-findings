@@ -1,98 +1,11 @@
-// from server: 42% by Viper
-struct S {
-    void __cdecl f(int* a, int* b, int* c);
-};
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: rbxgs-render roc_g3d_array_debug_89494c2c4f78369c.cpp
 
-void S::f(int* a, int* b, int* c)
-{
-    int* p = a;
-    int* q = b;
-    int* r = c;
-
-    int n = (int)(q - p);
-    if (n > 0x28) {
-        int m = (n + 1) / 8;
-        int* e = p + m * 8;
-        int* f = p + m * 2;
-
-        if (*f < *p) {
-            int t = *f;
-            *f = *p;
-            *p = t;
-        }
-        if (*e < *f) {
-            int t = *e;
-            *e = *f;
-            *f = t;
-        }
-        if (*f < *p) {
-            int t = *f;
-            *f = *p;
-            *p = t;
-        }
-
-        if (*r < *f) {
-            int t = *r;
-            *r = *f;
-            *f = t;
-        }
-        if (*e < *r) {
-            int t = *e;
-            *e = *r;
-            *r = t;
-        }
-        if (*r < *f) {
-            int t = *r;
-            *r = *f;
-            *f = t;
-        }
-
-        if (*f < *e) {
-            int t = *f;
-            *f = *e;
-            *e = t;
-        }
-        if (*r < *f) {
-            int t = *r;
-            *r = *f;
-            *f = t;
-        }
-        if (*f < *e) {
-            int t = *f;
-            *f = *e;
-            *e = t;
-        }
-
-        if (*e < *p) {
-            int t = *e;
-            *e = *p;
-            *p = t;
-        }
-        if (*f < *e) {
-            int t = *f;
-            *f = *e;
-            *e = t;
-        }
-        if (*e < *p) {
-            int t = *e;
-            *e = *p;
-            *p = t;
-        }
-    } else {
-        if (*q < *p) {
-            int t = *q;
-            *q = *p;
-            *p = t;
-        }
-        if (*r < *q) {
-            int t = *r;
-            *r = *q;
-            *q = t;
-        }
-        if (*q < *p) {
-            int t = *q;
-            *q = *p;
-            *p = t;
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <GLG3D/Texture.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/Array.h>
+template class G3D::Array<G3D::Texture*>;
+void use_array(G3D::Array<G3D::ReferenceCountedPointer<G3D::Texture> >& a,const G3D::ReferenceCountedPointer<G3D::Texture>& v,int size) { a.append(v); a.resize(size); a.clear(); }

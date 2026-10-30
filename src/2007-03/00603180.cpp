@@ -1,197 +1,187 @@
-// from server: 53% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_boost133_family_70a0c3edfba9fbed.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/LuaInstanceBridge.h"
+// Boost.Function library
 
-#include "lua/LuaBridge.h"
-#include "lua/lua.h"
-#include "reflection/object.h"
-#include "reflection/property.h"
-#include "script/ThreadRef.h"
-#include "util/Name.h"
-#include "util/Sound.h"
-#include "util/TextureId.h"
-#include "util/object.h"
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
+#endif
+#include "reflection/signal.h"
 #include "v8datamodel/BrickColor.h"
-#include "v8datamodel/Decal.h"
-#include "v8tree/Instance.h"
+#include "G3D/CoordinateFrame.h"
+#include "G3D/Color3.h"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
 
-#include <G3D/Color3.h>
-#include <G3D/CoordinateFrame.h>
-#include <G3D/Vector3.h>
-#include <G3D/format.h>
-#include <lua.h>
-#include <stdexcept>
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
 
-namespace RBX {
-namespace Lua {
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
 
-// FUNCTION: WEBSERVICE 0x100aaf70
-void newweaktable(lua_State* L, const char* mode)
-{
-	lua_newtable(L);
-	lua_pushvalue(L, -1);
-	lua_setmetatable(L, -2);
-	lua_pushliteral(L, "__mode");
-	lua_pushstring(L, mode);
-	lua_settable(L, -3);
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
+
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
+
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
+
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
+#else
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
+
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
+
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
+
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
+
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
+
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
+
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
+
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
+
+
 }
 
-// STUB: WEBSERVICE 0x100ac300
-boost::shared_ptr<Instance> ObjectBridge::getInstance(lua_State* L, unsigned int index)
-{
-	boost::shared_ptr<Reflection::DescribedBase> object = SharedPtrBridge<Reflection::DescribedBase>::getPtr(L, index);
-
-	Instance* instance;
-
-	if (object.get() != NULL) {
-		instance = dynamic_cast<Instance*>(object.get());
-
-		if (instance == NULL) {
-			throw std::runtime_error(
-				G3D::format(
-					"Object %s is not an Instance",
-					Reflection::ClassDescriptor::rootDescriptor().name.name.c_str()
-				)
-			);
-		}
-	}
-	else {
-		instance = NULL;
-	}
-
-	return shared_from(instance);
-}
-
-static void assignLuaValue(Reflection::Property p, lua_State* L, int index)
-{
-	const Reflection::PropertyDescriptor& descriptor = p.getDescriptor();
-
-	if (&descriptor.type == &Reflection::Type::singleton<int>()) {
-		p.setValue<int>(lua_tointeger(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<bool>()) {
-		p.setValue<bool>(lua_toboolean(L, index) != 0);
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<float>()) {
-		p.setValue<float>(lua_tofloat(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<std::string>()) {
-		p.setValue<std::string>(lua_tostring(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<FunctionRef>()) {
-		p.setValue<FunctionRef>(FunctionRef(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<boost::shared_ptr<Instance> >()) {
-		p.setValue<boost::shared_ptr<Instance> >(ObjectBridge::getInstance(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<boost::shared_ptr<Reflection::DescribedBase> >()) {
-		p.setValue<boost::shared_ptr<Reflection::DescribedBase> >(
-			SharedPtrBridge<Reflection::DescribedBase>::getPtr(L, index)
-		);
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<G3D::Vector3>()) {
-		p.setValue<G3D::Vector3>(Bridge<G3D::Vector3, 1>::getObject(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<G3D::CoordinateFrame>()) {
-		p.setValue<G3D::CoordinateFrame>(Bridge<G3D::CoordinateFrame, 1>::getObject(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<G3D::Color3>()) {
-		p.setValue<G3D::Color3>(Bridge<G3D::Color3, 1>::getObject(L, index));
-		return;
-	}
-
-	if (&descriptor.type == &Reflection::Type::singleton<BrickColor>()) {
-		p.setValue<BrickColor>(Bridge<BrickColor, 1>::getObject(L, index));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::TypedPropertyDescriptor<Soundscape::SoundId>*>(&descriptor) != NULL) {
-		p.setValue<Soundscape::SoundId>(Soundscape::SoundId(ContentId(lua_tostring(L, index))));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::TypedPropertyDescriptor<TextureId>*>(&descriptor) != NULL) {
-		p.setValue<TextureId>(TextureId(ContentId(lua_tostring(L, index))));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::EnumPropertyDescriptor*>(&descriptor) != NULL) {
-		p.setValue<int>(lua_tointeger(L, index));
-		return;
-	}
-
-	if (dynamic_cast<const Reflection::RefPropertyDescriptor*>(&descriptor) != NULL) {
-		p.setValue<boost::shared_ptr<Instance> >(ObjectBridge::getInstance(L, index));
-		return;
-	}
-
-	throw std::runtime_error(
-		G3D::format(
-			"Unable to set property %s, type %s",
-			descriptor.name.name.c_str(),
-			descriptor.type.name.name.c_str()
-		)
-	);
-}
-
-} // namespace Lua
-} // namespace RBX
-
-template bool RBX::Lua::Bridge<boost::shared_ptr<RBX::Reflection::DescribedBase>, 0>::getValue<
-	boost::shared_ptr<RBX::Reflection::DescribedBase> >(
-	lua_State* L,
-	unsigned int index,
-	boost::shared_ptr<RBX::Reflection::DescribedBase>& value
-);
-
-template boost::shared_ptr<RBX::Reflection::DescribedBase> RBX::Lua::SharedPtrBridge<
-	RBX::Reflection::DescribedBase>::getPtr(lua_State* L, unsigned int index);
-
-template const RBX::Name& RBX::Name::doDeclare<RBX::sDecal>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::sTexture>();
-template void RBX::Name::callDoDeclare<RBX::sDecal>();
-template void RBX::Name::callDoDeclare<RBX::sTexture>();
-
-template bool RBX::Reflection::ConstProperty::getValue<bool>() const;
-template float RBX::Reflection::ConstProperty::getValue<float>() const;
-template int RBX::Reflection::ConstProperty::getValue<int>() const;
-template double RBX::Reflection::ConstProperty::getValue<double>() const;
-template G3D::Vector3 RBX::Reflection::ConstProperty::getValue<G3D::Vector3>() const;
-template G3D::CoordinateFrame RBX::Reflection::ConstProperty::getValue<G3D::CoordinateFrame>() const;
-template G3D::Color3 RBX::Reflection::ConstProperty::getValue<G3D::Color3>() const;
-template RBX::BrickColor RBX::Reflection::ConstProperty::getValue<RBX::BrickColor>() const;
-
-template void RBX::Reflection::Property::setValue<bool>(const bool& value);
-template void RBX::Reflection::Property::setValue<float>(const float& value);
-template void RBX::Reflection::Property::setValue<int>(const int& value);
-template void RBX::Reflection::Property::setValue<G3D::Vector3>(const G3D::Vector3& value);
-template void RBX::Reflection::Property::setValue<G3D::CoordinateFrame>(const G3D::CoordinateFrame& value);
-template void RBX::Reflection::Property::setValue<G3D::Color3>(const G3D::Color3& value);
-template void RBX::Reflection::Property::setValue<RBX::BrickColor>(const RBX::BrickColor& value);
-
-template void RBX::Reflection::Property::setValue<RBX::TextureId>(const RBX::TextureId& value);
-
-template void RBX::Reflection::Property::setValue<RBX::Soundscape::SoundId>(const RBX::Soundscape::SoundId& value);
+namespace RBX { class Instance; namespace Reflection { class PropertyDescriptor; } }
+template<int N, class Signature> struct SignalAdapterAccess : RBX::Reflection::SignalDescImpl<N,Signature> { typedef typename RBX::Reflection::SignalDescImpl<N,Signature>::GenericSlotAdapter type; };
+typedef SignalAdapterAccess<1,void(std::string)>::type NativeAdapter0;
+template struct recovered_boost133::functor_manager<NativeAdapter0,std::allocator<void> >;
+typedef SignalAdapterAccess<2,void(std::string,boost::shared_ptr<RBX::Instance>)>::type NativeAdapter1;
+template struct recovered_boost133::functor_manager<NativeAdapter1,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(float)>::type NativeAdapter2;
+template struct recovered_boost133::functor_manager<NativeAdapter2,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(boost::shared_ptr<RBX::Instance>)>::type NativeAdapter3;
+template struct recovered_boost133::functor_manager<NativeAdapter3,std::allocator<void> >;
+typedef SignalAdapterAccess<2,void(std::string,int)>::type NativeAdapter4;
+template struct recovered_boost133::functor_manager<NativeAdapter4,std::allocator<void> >;
+typedef SignalAdapterAccess<0,void()>::type NativeAdapter5;
+template struct recovered_boost133::functor_manager<NativeAdapter5,std::allocator<void> >;
+typedef SignalAdapterAccess<2,void(std::string,bool)>::type NativeAdapter6;
+template struct recovered_boost133::functor_manager<NativeAdapter6,std::allocator<void> >;
+typedef SignalAdapterAccess<2,void(float,float)>::type NativeAdapter7;
+template struct recovered_boost133::functor_manager<NativeAdapter7,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(const RBX::Reflection::PropertyDescriptor*)>::type NativeAdapter8;
+template struct recovered_boost133::functor_manager<NativeAdapter8,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(bool)>::type NativeAdapter9;
+template struct recovered_boost133::functor_manager<NativeAdapter9,std::allocator<void> >;
+typedef SignalAdapterAccess<2,void(boost::shared_ptr<RBX::Instance>,float)>::type NativeAdapter10;
+template struct recovered_boost133::functor_manager<NativeAdapter10,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(int)>::type NativeAdapter11;
+template struct recovered_boost133::functor_manager<NativeAdapter11,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(G3D::Vector3)>::type NativeAdapter12;
+template struct recovered_boost133::functor_manager<NativeAdapter12,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(G3D::CoordinateFrame)>::type NativeAdapter13;
+template struct recovered_boost133::functor_manager<NativeAdapter13,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(G3D::Color3)>::type NativeAdapter14;
+template struct recovered_boost133::functor_manager<NativeAdapter14,std::allocator<void> >;
+typedef SignalAdapterAccess<1,void(RBX::BrickColor)>::type NativeAdapter15;
+template struct recovered_boost133::functor_manager<NativeAdapter15,std::allocator<void> >;

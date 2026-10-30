@@ -1,4 +1,3 @@
-// from server: 86% by colin
 // roc 2007-08 004142f0  unit: std::D::DU?$char_traits::V?$basic_string::?$holder  size: 73 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004142f0
 //
@@ -25,41 +24,64 @@
 // 0041432f  c70008727800         mov dword ptr [eax], 0x787208
 // 00414335  895020               mov dword ptr [eax + 0x20], edx
 // 00414338  c3                   ret 
+// copied from an identical function in another client (function ??0S@@QAE@XZ)
 
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
-struct DU {
-    void* vptr;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    void* field20;
-    DU* init();
+struct Counter {
+    volatile long value;
+    __forceinline void retain();
 };
 
-extern void* g_8c23f8;
-extern void* g_8c23fc;
+__forceinline void Counter::retain()
+{
+    volatile long* p = &value;
+    _ReadWriteBarrier();
+    _InterlockedExchangeAdd(p, 1);
+}
 
-DU* DU::init() {
-    DU* self = this;
-    self->vptr = (void*)0x787200;
-    self->field4 = g_8c23f8;
-    void* p = g_8c23fc;
-    self->field8 = p;
-    if (p != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p + 4), 1);
-    }
-    self->fieldC = 0;
-    self->field10 = 0;
-    self->field14 = 0;
-    self->field18 = 0;
-    self->field1C = 0;
-    self->vptr = (void*)0x787208;
-    self->field20 = 0;
-    return self;
+struct Ref {
+    long reserved;
+    Counter count;
+    __forceinline void retain();
+};
+
+__forceinline void Ref::retain()
+{
+    count.retain();
+}
+
+extern unsigned char initialTable[];
+extern unsigned char finalTable[];
+extern void* globalObject;
+extern Ref* globalReference;
+
+struct S {
+    unsigned long tag;
+    void* object;
+    Ref* reference;
+    unsigned long a, b, c, d, e, f;
+
+    S();
+};
+
+S::S()
+{
+    tag = reinterpret_cast<unsigned long>(initialTable);
+    object = globalObject;
+    reference = globalReference;
+    if (reference)
+        reference->retain();
+    a = 0;
+    b = 0;
+    c = 0;
+    d = 0;
+    e = 0;
+    tag = reinterpret_cast<unsigned long>(finalTable);
+    f = 0;
 }

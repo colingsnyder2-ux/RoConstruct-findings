@@ -1,31 +1,47 @@
-// from server: 0% by atomic.potato
-extern "C" void* __cdecl sub_98211a(unsigned int size);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
-struct VBodyAngularVelocity {
-    void* vtable;
-    void* field_4;
-    void* field_8;
-    void* field_c;
+// Candidate translation unit (score above; library headers required).
+
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-struct Creator {
-    void* field_0;
-    VBodyAngularVelocity* __thiscall create(int a, int b);
+struct Deleter { void operator()(Object*) const; };
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
 
-VBodyAngularVelocity* __thiscall Creator::create(int a, int b)
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    VBodyAngularVelocity* p;
-    this->field_0 = 0;
-    p = (VBodyAngularVelocity*)sub_98211a(0x14);
-    if (p != 0) {
-        p->field_4 = (void*)1;
-        p->field_8 = (void*)1;
-        p->field_c = (void*)a;
-        p->vtable = (void*)0xbafd04;
-    } else {
-        p = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
     }
-    this->field_0 = p;
-    return p;
 }

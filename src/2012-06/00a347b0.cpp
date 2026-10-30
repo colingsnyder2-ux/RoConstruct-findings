@@ -1,14 +1,13 @@
-// from server: 37% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarCaptionBarControl.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneAutoHidePanel.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarCaptionBarControl.cpp : implementation file
+// XTPDockingPaneAutoHidePanel.cpp : implementation of the CXTPDockingPaneAutoHidePanel class.
 //
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,30 +25,21 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "Common/Resource.h"
 
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPResourceImage.h"
+#include "Common/XTPVC80Helpers.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPColorManager.h"
-#include "Common/XTPNotifyConnection.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPResourceManager.h"
+#include "TabManager/XTPTabManager.h"
 
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-#include "XTPCalendarNotifications.h"
-#include "XTPCalendarPtrCollectionT.h"
-#include "XTPCalendarViewPart.h"
-#include "XTPCalendarView.h"
-#include "XTPCalendarTimeLineView.h"
-#include "XTPCalendarControl.h"
-#include "XTPCalendarMonthView.h"
-
-#include "XTPCalendarCaptionBarControl.h"
-
+#include "XTPDockingPane.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneTabbedContainer.h"
+#include "XTPDockingPaneAutoHidePanel.h"
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPaneSplitterContainer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,2260 +47,1249 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-IMPLEMENT_DYNAMIC(CXTPCalendarCaptionBarControl, CWnd)
-IMPLEMENT_DYNAMIC(CXTPCalendarCaptionBarThemePart, CXTPCalendarWMHandler)
-IMPLEMENT_DYNCREATE(CXTPCalendarCaptionBarTheme, CXTPCalendarWMHandler)
+#define TID_CHECKACTIVE 1
+#define TID_CLOSE 4
+#define TID_SLIDEIN 2
+#define TID_SLIDEOUT 3
 
-CXTPCalendarCaptionBarControl::CXTPCalendarCaptionBarControl()
+double CXTPDockingPaneAutoHideWnd::m_dAnimationDelay = -1;
+int CXTPDockingPaneAutoHideWnd::m_nAnimationInterval = 16;                 // smother animation
+int CXTPDockingPaneAutoHideWnd::m_nAnimationDuration = 128;                // fast slide completion
+BOOL CXTPDockingPaneAutoHidePanel::m_bCloseActiveWindow = TRUE;
+DWORD CXTPDockingPaneAutoHideWnd::m_nMouseHoverDelay = HOVER_DEFAULT;
+UINT CXTPDockingPaneAutoHideWnd::m_nInactiveCollapseDelay = 100;
+
+void CXTPDockingPaneAutoHideWnd::GetMinMaxInfo (LPMINMAXINFO pMinMaxInfo, BOOL bIncludeSplitter /*= TRUE*/) const
 {
-	RegisterWindowClass();
+	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
+	pMinMaxInfo->ptMaxTrackSize = CPoint(32000, 32000);
 
-	m_Borders.SetRect(0, 1, 0, 0);
+	if (!m_pPane || !m_pPane->m_pSelectedPane)
+		return;
 
+	m_pPane->m_pSelectedPane->GetMinMaxInfo(pMinMaxInfo);
+	m_pPane->AdjustMinMaxInfoClientRect(pMinMaxInfo, TRUE);
 
-	m_pTheme = NULL;
-	SetTheme(new CXTPCalendarCaptionBarTheme());
-}
+	if (!bIncludeSplitter)
+		return;
 
-CXTPCalendarCaptionBarControl::~CXTPCalendarCaptionBarControl()
-{
-	CMDTARGET_RELEASE(m_pTheme);
-}
-
-BOOL CXTPCalendarCaptionBarControl::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
-{
-	return XTPDrawHelpers()->RegisterWndClass(hInstance,
-			XTPCALENDARCAPTIONBAR_CLASSNAME, /*CS_DBLCLKS |*/ CS_HREDRAW | CS_VREDRAW);
-}
-
-BOOL CXTPCalendarCaptionBarControl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
-{
-	if (!CWnd::Create(XTPCALENDARCAPTIONBAR_CLASSNAME, NULL, dwStyle, rect, pParentWnd, nID))
-		return FALSE;
-
-	AdjustLayout(NULL);
-
-	if (m_pTheme)
+	if (m_direction == xtpPaneDockLeft || m_direction == xtpPaneDockRight)
 	{
-		CDC* pDC = GetDC();
-		if (pDC)
+		pMinMaxInfo->ptMinTrackSize.x += 4;
+		pMinMaxInfo->ptMaxTrackSize.x += 4;
+	}
+	else
+	{
+		pMinMaxInfo->ptMinTrackSize.y += 4;
+		pMinMaxInfo->ptMaxTrackSize.y += 4;
+	}
+}
+
+CXTPDockingPaneAutoHideWnd::CXTPDockingPaneAutoHideWnd(CXTPDockingPaneAutoHidePanel* pPanel, CXTPDockingPaneTabbedContainer* pPane)
+	: m_pPanel(pPanel), m_pPane(pPane)
+{
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	ASSERT(pPane->m_pSelectedPane);
+	if (!pPane->m_pSelectedPane)
+		return;
+
+	m_bTracking = FALSE;
+
+	m_direction = m_pPanel->GetDirection();
+	m_bHoriz = (m_direction == xtpPaneDockTop || m_direction == xtpPaneDockBottom);
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+
+	CWnd* pSite = pManager->GetSite();
+	CXTPDockingPaneBase* pTopPane = pManager->GetTopPane();
+
+	CRect rcClient = pTopPane->GetPaneWindowRect();
+
+	MINMAXINFO mmInfo;
+	GetMinMaxInfo(&mmInfo);
+
+	CSize szDocking = CSize(
+		max(mmInfo.ptMinTrackSize.x, min(mmInfo.ptMaxTrackSize.x, pPane->m_pSelectedPane->m_szDocking.cx + 4)),
+		max(mmInfo.ptMinTrackSize.y, min(mmInfo.ptMaxTrackSize.y, pPane->m_pSelectedPane->m_szDocking.cy + 4)));
+
+
+	switch (pManager->GetRTLDirection(m_direction))
+	{
+		case xtpPaneDockLeft:
+			rcClient.right = rcClient.left + szDocking.cx;
+			break;
+
+		case xtpPaneDockRight:
+			rcClient.left = rcClient.right - szDocking.cx;
+			break;
+
+		case xtpPaneDockTop:
+			rcClient.bottom = rcClient.top + szDocking.cy;
+			break;
+
+		case xtpPaneDockBottom:
+			rcClient.top = rcClient.bottom - szDocking.cy;
+			break;
+	}
+
+	pSite->ScreenToClient(&rcClient);
+
+	CRect rcAvail, rc;
+	BOOL bResizable = GetAvailableRect(rcAvail, rc);
+
+	HCURSOR hCursor = !bResizable || pManager->IsSplittersLocked() ? AfxGetApp()->LoadStandardCursor(IDC_ARROW) :
+		XTPResourceManager()->LoadCursor(!m_bHoriz ? XTP_IDC_HSPLITBAR :  XTP_IDC_VSPLITBAR);
+	m_rcWindow = rcClient;
+
+	//pSite->UpdateWindow();
+	//pSite->SetRedraw(FALSE);
+
+	CreateEx(pSite->GetExStyle() & WS_EX_LAYOUTRTL, AfxRegisterWndClass(0, hCursor), _T(""),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, rcClient, pSite, 0);
+
+	//pSite->SetRedraw(TRUE);
+
+
+	m_nSlideStep = 0;
+	m_nStepsCount = 1;
+
+	if (m_dAnimationDelay != .0 && m_nAnimationInterval != 0)
+	{
+		if (m_dAnimationDelay > 0)
 		{
-			m_pTheme->m_dScale = pDC->GetDeviceCaps(LOGPIXELSY) / 96.0;
-			ReleaseDC(pDC);
+			// keep the animation delay behaviour relative to 50 ms frame interval as per original
+			// implementation
+			m_nStepsCount = int((m_bHoriz ? m_rcWindow.Width() : m_rcWindow.Height()) * m_dAnimationDelay * 50 / m_nAnimationInterval);
+		}
+		else
+		{
+			m_nStepsCount = m_nAnimationDuration/m_nAnimationInterval;
 		}
 	}
-	return TRUE;
+	if (m_nStepsCount < 1) m_nStepsCount = 1;
+
+
+	m_bSlideOut = FALSE;
+	if (m_nStepsCount > 1)
+		SetTimer(TID_SLIDEIN, m_nAnimationInterval, NULL);
+	DoSlideStep();
+	m_pPane->ShowWindow(SW_SHOW);
+
+	SetTimer(TID_CHECKACTIVE, m_nInactiveCollapseDelay, NULL);
+
+	m_nDeactivationCount = 6;
+
 }
 
-BEGIN_MESSAGE_MAP(CXTPCalendarCaptionBarControl, CWnd)
-//{{AFX_MSG_MAP(CXTPCalendarCaptionBarControl)
-	ON_WM_NCCALCSIZE()
-	ON_WM_NCPAINT()
+CXTPDockingPaneManager* CXTPDockingPaneAutoHideWnd::GetDockingPaneManager() const
+{
+	ASSERT(m_pPanel);
+	return m_pPanel ? m_pPanel->GetDockingPaneManager() : NULL;
+}
+
+
+void CXTPDockingPaneAutoHideWnd::DoSlideStep()
+{
+	CRect rc(m_rcWindow);
+
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			rc.right = rc.left + (m_nSlideStep + 1) * m_rcWindow.Width() / m_nStepsCount;
+			break;
+
+		case xtpPaneDockRight:
+			rc.left = rc.right - (m_nSlideStep + 1) * m_rcWindow.Width() / m_nStepsCount;
+			break;
+
+		case xtpPaneDockTop:
+			rc.bottom = rc.top + (m_nSlideStep + 1) * m_rcWindow.Height() / m_nStepsCount;
+			break;
+
+		case xtpPaneDockBottom:
+			rc.top = rc.bottom - (m_nSlideStep + 1) * m_rcWindow.Height() / m_nStepsCount;
+			break;
+	}
+	SetWindowPos(&CWnd::wndTop, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+	Invalidate(FALSE);
+}
+
+void CXTPDockingPaneAutoHideWnd::RecalcLayout(BOOL /*bNotify*/)
+{
+	if (!m_pPane || !m_pPane->GetSafeHwnd())
+		return;
+
+	AFX_SIZEPARENTPARAMS layout;
+	layout.bStretch = TRUE;
+	GetClientRect(&layout.rect);
+	CRect rcClient(layout.rect);
+	layout.hDWP = ::BeginDeferWindowPos(8); // reasonable guess
+
+	CRect rcPane(CPoint(0, 0), m_rcWindow.Size());
+
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			rcPane.OffsetRect(- m_rcWindow.Width() + rcClient.Width(), 0);
+			rcPane.right -= 4;
+			break;
+
+		case xtpPaneDockTop:
+			rcPane.OffsetRect(0, - m_rcWindow.Height() + rcClient.Height());
+			rcPane.bottom -= 4;
+			break;
+
+		case xtpPaneDockRight:
+			rcPane.left += 4;
+			break;
+
+		case xtpPaneDockBottom:
+			rcPane.top += 4;
+			break;
+	}
+
+	m_pPane->OnSizeParent(this, rcPane, &layout);
+
+	if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
+		TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
+}
+
+IMPLEMENT_DYNAMIC(CXTPDockingPaneAutoHideWnd, CMiniFrameWnd)
+
+BEGIN_MESSAGE_MAP(CXTPDockingPaneAutoHideWnd, CMiniFrameWnd)
 	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_SIZE()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
-	ON_WM_KEYDOWN()
-	ON_WM_KEYUP()
-	ON_WM_KILLFOCUS()
-	ON_WM_DESTROY()
-	ON_WM_ENABLE()
 	ON_WM_TIMER()
-//}}AFX_MSG_MAP
+	ON_WM_CLOSE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 
-void CXTPCalendarCaptionBarControl::SetButtonText(int iButtonNumber, CString sButtonText)
+void CXTPDockingPaneAutoHideWnd::CloseWindow()
 {
-	if (!GetTheme())
-		return;
-	//0 CSwitchViewButtonPart* m_pButtonViewDay;
-	//1 CSwitchViewButtonPart* m_pButtonViewWeek;
-	//2 CSwitchViewButtonPart* m_pButtonViewMonth;
-	//3 CCheckboxButtonPart* m_pShowTimeline;
-	//4 CRadioButtonPart* m_pShowWorkWeek;
-	//5 CRadioButtonPart* m_pShowFullWeek;
-	//6 CRadioButtonPart* m_pShowMcWeek;
-
-	BOOL bShow = !sButtonText.IsEmpty();
-
-	if (iButtonNumber == 0)
-	{
-		if (GetTheme()->m_pButtonViewDay)
-		{
-			GetTheme()->m_pButtonViewDay->SetText(sButtonText);
-			GetTheme()->m_pButtonViewDay->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 1)
-	{
-		if (GetTheme()->m_pButtonViewWeek)
-		{
-			GetTheme()->m_pButtonViewWeek->SetText(sButtonText);
-			GetTheme()->m_pButtonViewWeek->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 2)
-	{
-		if (GetTheme()->m_pButtonViewMonth)
-		{
-			GetTheme()->m_pButtonViewMonth->SetText(sButtonText);
-			GetTheme()->m_pButtonViewMonth->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 3)
-	{
-		if (GetTheme()->m_pShowTimeline)
-		{
-			GetTheme()->m_pShowTimeline->SetText(sButtonText);
-			GetTheme()->m_pShowTimeline->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 4)
-	{
-		if (GetTheme()->m_pShowWorkWeek)
-		{
-			GetTheme()->m_pShowWorkWeek->SetText(sButtonText);
-			GetTheme()->m_pShowWorkWeek->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 5)
-	{
-		if (GetTheme()->m_pShowFullWeek)
-		{
-			GetTheme()->m_pShowFullWeek->SetText(sButtonText);
-			GetTheme()->m_pShowFullWeek->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 6)
-	{
-		if (GetTheme()->m_pShowMcWeek)
-		{
-			GetTheme()->m_pShowMcWeek->SetText(sButtonText);
-			GetTheme()->m_pShowMcWeek->SetVisible(bShow);
-		}
-	}
-}
-
-void CXTPCalendarCaptionBarControl::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp)
-{
-	UNREFERENCED_PARAMETER(bCalcValidRects);
-
-	if (!GetTheme())
+	if (!IsWindow(m_hWnd))
 		return;
 
-	RECT* pClient = &lpncsp->rgrc[0];
+	ShowWindow(SW_HIDE);
 
-	pClient->left += m_Borders.left;
-	pClient->top += m_Borders.top;
-
-	pClient->right = max(pClient->left, pClient->right - m_Borders.right);
-	pClient->bottom = max(pClient->top, pClient->bottom - m_Borders.bottom);
-}
-
-void CXTPCalendarCaptionBarControl::OnNcPaint()
-{
-	CXTPWindowRect rc(this);
-	rc.OffsetRect(-rc.TopLeft());
-
-	CWindowDC dc(this);
-
-	if (GetTheme())
-		GetTheme()->DrawBorders(&dc, rc, m_Borders);
-}
-
-void CXTPCalendarCaptionBarControl::UpdateBorders()
-{
-	if (!GetSafeHwnd())
-		return;
-
-	::SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0,
-		SWP_DRAWFRAME | SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
-
-	Invalidate(NULL);
-}
-
-void CXTPCalendarCaptionBarControl::SetBorders(int nLeft, int nTop, int nRight, int nBottom)
-{
-	m_Borders.SetRect(nLeft, nTop, nRight, nBottom);
-	UpdateBorders();
-}
-
-CRect CXTPCalendarCaptionBarControl::CalcMinRect(BOOL bExactSize)
-{
-	if (!m_pTheme)
-		return CRect(0, 0, 0, 0);
-
-	CRect rcMin = m_pTheme->CalcMinRect(NULL, bExactSize);
-	if (rcMin.Height() > 0)
+	if (m_pPane && m_pPane->GetSafeHwnd() && m_pPane->GetParent() == this)
 	{
-		CRect rcBorders = GetBorders();
-
-		rcMin.left += rcBorders.left + rcBorders.right;
-		rcMin.bottom += rcBorders.top + rcBorders.bottom;
+		m_pPane->ShowWindow(SW_HIDE);
+		m_pPane->SetDockingSite(GetDockingPaneManager()->GetSite());
 	}
+	m_pPane = 0;
 
-	return rcMin;
+	if (m_pPanel && m_pPanel->m_pActiveWnd == this)
+		m_pPanel->m_pActiveWnd = 0;
+
+	PostMessage(WM_CLOSE);
 }
 
-
-void CXTPCalendarCaptionBarControl::SetTheme(CXTPCalendarCaptionBarTheme* pTheme)
+void CXTPDockingPaneAutoHideWnd::PostNcDestroy()
 {
-	ASSERT(pTheme);
-	if (pTheme)
+	if (m_pPanel && m_pPanel->m_pActiveWnd == this)
+		m_pPanel->m_pActiveWnd = 0;
+
+	if (m_dwRef <= 1)
 	{
-		CMDTARGET_RELEASE(m_pTheme);
-		m_pTheme = pTheme;
-		m_pTheme->SetOwner(this);
-		m_pTheme->RefreshMetrics();
+		delete this;
+	}
+	else
+	{
+		InternalRelease();
 	}
 }
 
-void CXTPCalendarCaptionBarControl::AdjustLayout(CDC* pDC, const CRect* prcWnd)
+void CXTPDockingPaneAutoHideWnd::OnTimer(UINT_PTR nIDEvent)
 {
-	CXTPClientRect rcClient(this);
+	if (nIDEvent == TID_CLOSE)
+	{
+		CloseWindow();
+		return;
+	}
 
-	if (prcWnd)
-		((CRect&)rcClient) = *prcWnd;
-
-	if (m_pTheme)
-		m_pTheme->AdjustLayout(pDC, rcClient);
-}
-
-void CXTPCalendarCaptionBarControl::OnPaint()
-{
-	CXTPClientRect rc(this);
-
-	if (rc.IsRectEmpty())
+	if (!m_pPane)
 		return;
 
-	CPaintDC dc(this); // device context for painting
+	if (m_pPanel && m_pPanel->m_pActiveWnd != this)
+		return;
 
-	CXTPBufferDC memDC(dc.GetSafeHdc(), rc);
+	if (nIDEvent == TID_CHECKACTIVE)
+	{
+		if (m_bTracking)
+			return;
 
-	if (m_pTheme)
-		m_pTheme->Draw(&memDC);
+		CPoint pt;
+		GetCursorPos(&pt);
+		if (!m_pPane->IsActive() && !CXTPWindowRect(this).PtInRect(pt) && !CXTPWindowRect(m_pPanel).PtInRect(pt))
+		{
+			if (!m_bSlideOut)
+			{
+				if (--m_nDeactivationCount <= 0)
+				{
+					m_nDeactivationCount = 0;
+
+					InternalAddRef();
+
+					if (!CXTPDockingPaneAutoHidePanel::m_bCloseActiveWindow || GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsing, m_pPane->GetSelected()))
+					{
+						m_nDeactivationCount = 6;
+					}
+					else
+					{
+						m_bSlideOut = TRUE;
+						if (m_hWnd) SetTimer(TID_SLIDEOUT, m_nAnimationInterval, NULL);
+					}
+
+					InternalRelease();
+				}
+			}
+		}
+		else
+		{
+			m_nDeactivationCount = 6;
+			if (m_bSlideOut)
+			{
+				m_bSlideOut = FALSE;
+				KillTimer(TID_SLIDEOUT);
+				SetTimer(TID_SLIDEIN, m_nAnimationInterval, NULL);
+			}
+		}
+		return;
+	}
+
+	if (nIDEvent == TID_SLIDEOUT && m_bSlideOut)
+	{
+		m_nSlideStep--;
+		if (m_nSlideStep > -1) DoSlideStep();
+		else
+		{
+			m_bSlideOut = FALSE;
+			KillTimer(TID_SLIDEOUT);
+
+			InternalAddRef();
+
+			GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsed, m_pPane->GetSelected());
+			CloseWindow();
+
+			InternalRelease();
+		}
+		return;
+	}
+
+	if (nIDEvent == TID_SLIDEIN && !m_bSlideOut)
+	{
+		m_nSlideStep++;
+		if (m_nSlideStep < m_nStepsCount) DoSlideStep();
+		else
+		{
+			m_nSlideStep = m_nStepsCount - 1;
+			KillTimer(TID_SLIDEIN);
+
+			GetDockingPaneManager()->_OnAction(xtpPaneActionExpanded, m_pPane->GetSelected());
+		}
+		return;
+	}
 }
 
-BOOL CXTPCalendarCaptionBarControl::OnEraseBkgnd(CDC* /*pDC*/)
+
+void CXTPDockingPaneAutoHideWnd::OnMouseMove(UINT nFlags, CPoint point)
+{
+	if (m_bSlideOut)
+	{
+		OnTimer(TID_CHECKACTIVE);
+		return;
+	}
+
+	CMiniFrameWnd::OnMouseMove(nFlags, point);
+}
+
+
+void CXTPDockingPaneAutoHideWnd::OnClose()
+{
+	CMiniFrameWnd::OnClose();
+}
+
+BOOL CXTPDockingPaneAutoHideWnd::OnEraseBkgnd(CDC* /*pDC*/)
 {
 	return TRUE;
 }
 
-void CXTPCalendarCaptionBarControl::OnSize(UINT nType, int cx, int cy)
+void CXTPDockingPaneAutoHideWnd::OnPaint()
 {
-	CWnd::OnSize(nType, cx, cy);
+	CPaintDC dc(this);
 
-	if (!GetSafeHwnd())
+	if (!m_pPane)
 		return;
 
-	CRect rcRect(0, 0, cx, cy);
-	if (m_pTheme)
-		m_pTheme->AdjustLayout(NULL, rcRect);
+	CXTPDockingPanePaintManager* pPaintManager = m_pPane->CXTPDockingPaneBase::GetPaintManager();
 
+	CXTPClientRect rc(this);
+	dc.FillSolidRect(rc, pPaintManager->GetXtremeColor(XPCOLOR_3DFACE));
+
+
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			dc.Draw3dRect(rc.right - 1, rc.top, 1, rc.Height(), pPaintManager->GetXtremeColor(COLOR_BTNTEXT), pPaintManager->GetXtremeColor(COLOR_BTNTEXT));
+			dc.Draw3dRect(rc.right - 2, rc.top, 1, rc.Height(), pPaintManager->GetXtremeColor(COLOR_3DSHADOW), pPaintManager->GetXtremeColor(COLOR_3DSHADOW));
+			break;
+
+		case xtpPaneDockTop:
+			dc.Draw3dRect(rc.left, rc.bottom - 1, rc.Width(), 1, pPaintManager->GetXtremeColor(COLOR_BTNTEXT), pPaintManager->GetXtremeColor(COLOR_BTNTEXT));
+			dc.Draw3dRect(rc.left, rc.bottom - 2, rc.Width(), 1, pPaintManager->GetXtremeColor(COLOR_3DSHADOW), pPaintManager->GetXtremeColor(COLOR_3DSHADOW));
+			break;
+
+		case xtpPaneDockRight:
+			dc.Draw3dRect(rc.left + 1, rc.top, 1, rc.Height(), pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT), pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT));
+			break;
+
+		case xtpPaneDockBottom:
+			dc.Draw3dRect(rc.left, rc.top + 1, rc.Width(), 1, pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT), pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT));
+			break;
+	}
 }
 
-void CXTPCalendarCaptionBarControl::OnLButtonDown(UINT nFlags, CPoint point)
+void CXTPDockingPaneAutoHideWnd::Reposition(CRect rc, CRect rcClient)
 {
-	if (m_pTheme)
-		m_pTheme->OnLButtonDown(nFlags, point);
+	CWnd* pSite = GetDockingPaneManager()->GetSite();
 
-	if (GetCapture() != this)
+	switch (GetDockingPaneManager()->GetRTLDirection(m_direction))
+	{
+	case xtpPaneDockLeft:  rc.left = rcClient.left; break;
+	case xtpPaneDockRight: rc.right = rcClient.right; break;
+	case xtpPaneDockTop: rc.top = rcClient.top; break;
+	case xtpPaneDockBottom: rc.bottom = rcClient.bottom; break;
+	}
+	if (!m_bHoriz) m_pPane->m_pSelectedPane->m_szDocking.cx = rc.Width();
+	else m_pPane->m_pSelectedPane->m_szDocking.cy = rc.Height();
+
+	pSite->ScreenToClient(&rc);
+	m_rcWindow = rc;
+	MoveWindow(m_rcWindow);
+	Invalidate(FALSE);
+}
+
+BOOL CXTPDockingPaneAutoHideWnd::GetAvailableRect(CRect& rcAvail, CRect& rc) const
+{
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	if (!pManager)
+		return FALSE;
+
+	CRect rcClient = pManager->GetTopPane()->GetPaneWindowRect();
+
+	int nGap = pManager->m_nSplitterGap + 4;
+
+	rcAvail = rcClient;
+
+	MINMAXINFO mmInfo;
+	GetMinMaxInfo(&mmInfo, m_direction == xtpPaneDockRight || m_direction == xtpPaneDockBottom);
+
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			rcAvail.DeflateRect(max(mmInfo.ptMinTrackSize.x, nGap), 0, nGap, 0);
+
+			if (rcAvail.right - rcClient.left > mmInfo.ptMaxTrackSize.x)
+				rcAvail.right = mmInfo.ptMaxTrackSize.x + rcClient.left;
+
+			if (rcAvail.left >= rcAvail.right)
+				return FALSE;
+
+			rc.left = rc.right - 4;
+			break;
+
+		case xtpPaneDockRight:
+			rcAvail.DeflateRect(nGap, 0, max(mmInfo.ptMinTrackSize.x, nGap), 0);
+
+			if (rcClient.right - rcAvail.left > mmInfo.ptMaxTrackSize.x)
+				rcAvail.left = rcClient.right - mmInfo.ptMaxTrackSize.x;
+
+			if (rcAvail.left >= rcAvail.right)
+				return FALSE;
+
+			rc.right = rc.left + 4;
+			break;
+
+		case xtpPaneDockTop:
+			rcAvail.DeflateRect(0, max(mmInfo.ptMinTrackSize.y, nGap), 0, nGap);
+
+			if (rcAvail.bottom - rcClient.top > mmInfo.ptMaxTrackSize.y)
+				rcAvail.bottom = mmInfo.ptMaxTrackSize.y + rcClient.top;
+
+			if (rcAvail.top >= rcAvail.bottom)
+				return FALSE;
+
+			rc.top = rc.bottom - 4;
+			break;
+
+		case xtpPaneDockBottom:
+			rcAvail.DeflateRect(0, nGap, 0, max(mmInfo.ptMinTrackSize.y, nGap));
+
+			if (rcClient.bottom - rcAvail.top > mmInfo.ptMaxTrackSize.y)
+				rcAvail.top = rcClient.bottom - mmInfo.ptMaxTrackSize.y;
+
+			if (rcAvail.top >= rcAvail.bottom)
+				return FALSE;
+
+			rc.bottom = rc.top + 4;
+			break;
+	}
+	return TRUE;
+}
+
+void CXTPDockingPaneAutoHideWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+
+	if (!pManager || pManager->IsSplittersLocked())
+		return;
+
+	if (!m_pPane)
+		return;
+
+	CXTPWindowRect rc(this);
+	CRect rcClient = pManager->GetTopPane()->GetPaneWindowRect();
+
+	CRect rcAvail;
+	if (!GetAvailableRect(rcAvail, rc))
+		return;
+
+	m_bTracking = TRUE;
+
+	if (pManager->IsSplitterTrackerUsed())
+	{
+		if (GetExStyle() & WS_EX_LAYOUTRTL)
+			point = rc.TopLeft();
+		else ClientToScreen(&point);
+
+
+		CXTPSplitterTracker tracker;
+
+		if (tracker.Track(this, rcAvail, rc, point, !m_bHoriz))
+		{
+			Reposition(rc, rcClient);
+		}
+	}
+	else
+	{
 		SetCapture();
-}
 
-void CXTPCalendarCaptionBarControl::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if (m_pTheme)
-		m_pTheme->OnLButtonUp(nFlags, point);
-
-	if (GetCapture() == this)
-		ReleaseCapture();
-}
-
-void CXTPCalendarCaptionBarControl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_pTheme)
-		m_pTheme->OnMouseMove(nFlags, point);
-}
-
-void CXTPCalendarCaptionBarControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_pTheme)
-		m_pTheme->OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPCalendarCaptionBarControl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_pTheme)
-		m_pTheme->OnKeyUp(nChar, nRepCnt, nFlags);
-}
-
-void CXTPCalendarCaptionBarControl::OnTimer(UINT_PTR uTimerID)
-{
-	if (m_pTheme)
-		m_pTheme->OnTimer(uTimerID);
-}
-
-void CXTPCalendarCaptionBarControl::OnDestroy()
-{
-	if (m_pTheme)
-		m_pTheme->OnBeforeDestroy();
-}
-
-void CXTPCalendarCaptionBarControl::OnKillFocus (CWnd* pNewWnd)
-{
-	if (m_pTheme)
-		m_pTheme->OnKillFocus(pNewWnd);
-}
-
-void CXTPCalendarCaptionBarControl::EnableTimeline(BOOL bEnable)
-{
-	if (m_pTheme)
-		m_pTheme->m_bTimelineEnable = bEnable;
-}
-
-BOOL CXTPCalendarCaptionBarControl::IsTimelineEnable()
-{
-	if (m_pTheme)
-		return m_pTheme->m_bTimelineEnable;
-	else
-		return FALSE;
-}
-
-void CXTPCalendarCaptionBarControl::EnableMulticolumns(BOOL bEnable)
-{
-	if (m_pTheme)
-		m_pTheme->m_bMulticolumnsEnable = bEnable;
-}
-
-BOOL CXTPCalendarCaptionBarControl::IsMulticolumnsEnable()
-{
-	if (m_pTheme)
-		return m_pTheme->m_bMulticolumnsEnable;
-	else
-		return FALSE;
-}
-
-BOOL CXTPCalendarCaptionBarControl::IsUseOneLine()
-{
-	if (GetTheme())
-		return GetTheme()->m_bIsOneLine;
-	else
-		return FALSE;
-}
-
-#include "XTPCalendarControlView.h"
-
-void CXTPCalendarCaptionBarControl::UseOneLine(BOOL bSet)
-{
-	if (GetTheme())
-	{
-		GetTheme()->m_bIsOneLine = bSet;
-
-		GetTheme()->RefreshMetrics();
-
-		CXTPCalendarControlView* pView = DYNAMIC_DOWNCAST(CXTPCalendarControlView, GetParent());
-		if (pView)
-			pView->_ResizeControls();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-CXTPCalendarCaptionBarTheme::CXTPCalendarCaptionBarTheme()
-{
-	m_pSink = new CXTPNotifySink();
-
-	m_themeButton = new CXTPWinThemeWrapper();
-
-
-	m_pCaptionBar   = NULL;
-	m_pCalendar     = NULL;
-	m_nCheckHotStateTimerID = 0;
-
-	m_bIsSwitchViewButtons = TRUE;
-	m_bIsScrollDateButtons = TRUE;
-	m_bIsDateLabel = TRUE;
-	m_bTimelineEnable = TRUE;
-	m_bMulticolumnsEnable = TRUE;
-	m_bIsExpandButton = FALSE;
-	m_bIsOneLine = FALSE; //Old Layout - default
-	m_pConnection = NULL;
-	m_dScale = 1.0;
-
-	// Init Theme Parts
-	m_pButtonViewDay = new CSwitchViewButtonPart(this, xtpCalendarCaptionBar_ButtonViewDay);
-	m_pButtonViewWeek = new CSwitchViewButtonPart(this, xtpCalendarCaptionBar_ButtonViewWeek);
-	m_pButtonViewMonth = new CSwitchViewButtonPart(this, xtpCalendarCaptionBar_ButtonViewMonth);
-
-	m_pButtonViewDay->SetText(XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_DAY));
-	m_pButtonViewWeek->SetText(XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_WEEK));
-	m_pButtonViewMonth->SetText(XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_MONTH));
-
-	m_pShowWorkWeek = new CRadioButtonPart(this, xtpCalendarCaptionBar_ShowWorkWeek);
-	m_pShowFullWeek = new CRadioButtonPart(this, xtpCalendarCaptionBar_ShowFullWeek);
-
-	CString s = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_SHOWWORKWEK);
-	s.Replace(_T("Show w"), _T("W"));
-	m_pShowWorkWeek->SetText(s);
-	m_pShowWorkWeek->SetCheck(0);
-
-	s = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_SHOWFULLKWEK);
-	s.Replace(_T("Show f"), _T("F"));
-	m_pShowFullWeek->SetText(s);
-	m_pShowFullWeek->SetCheck(0);
-
-	m_pShowTimeline = new CCheckboxButtonPart(this, xtpCalendarCaptionBar_ShowTimeline);
-	m_pShowTimeline->SetText(_T("TimeLine mode"));
-	m_pShowTimeline->SetCheck(0);
-
-	m_pShowMcWeek = new CCheckboxButtonPart(this, xtpCalendarCaptionBar_MultiColumnsWeek);
-	//m_pShowMcWeek = new CRadioButtonPart(this, xtpCalendarCaptionBar_MultiColumnsWeek);
-	m_pShowMcWeek->SetText(_T("MultiColumn mode"));
-	m_pShowMcWeek->SetCheck(0);
-
-	m_pScrollPrevDate = new CScrollDateButtonPart(this, xtpCalendarCaptionBar_ScrollPrevDate);
-	m_pScrollNextDate = new CScrollDateButtonPart(this, xtpCalendarCaptionBar_ScrollNextDate);
-
-	m_pDateLabel = new CDateLabelPart(this, xtpCalendarCaptionBar_DateLabel);
-
-	m_pExpandButton = new CExpandButtonPart(this, xtpCalendarCaptionBar_ButtonExpand);
-
-	m_nPaintTheme = xtpCalendarThemeResource;
-
-	RefreshMetrics();
-}
-
-CXTPCalendarCaptionBarTheme::~CXTPCalendarCaptionBarTheme()
-{
-	m_pSink->Delete();
-
-	CMDTARGET_RELEASE(m_pConnection);
-
-	CMDTARGET_RELEASE(m_pButtonViewDay);
-	CMDTARGET_RELEASE(m_pButtonViewWeek);
-	CMDTARGET_RELEASE(m_pButtonViewMonth);
-
-	CMDTARGET_RELEASE(m_pShowWorkWeek);
-	CMDTARGET_RELEASE(m_pShowFullWeek);
-
-	CMDTARGET_RELEASE(m_pShowTimeline);
-	CMDTARGET_RELEASE(m_pShowMcWeek);
-
-	CMDTARGET_RELEASE(m_pScrollPrevDate);
-	CMDTARGET_RELEASE(m_pScrollNextDate);
-
-	CMDTARGET_RELEASE(m_pDateLabel);
-	CMDTARGET_RELEASE(m_pExpandButton);
-
-	CMDTARGET_RELEASE(m_pCalendar);
-
-	SAFE_DELETE(m_themeButton);
-}
-
-void CXTPCalendarCaptionBarTheme::OnBeforeDestroy()
-{
-	m_pSink->UnadviseAll();
-	CMDTARGET_RELEASE(m_pCalendar);
-}
-
-void CXTPCalendarCaptionBarTheme::SetOwner(CXTPCalendarCaptionBarControl* pCaptionBar)
-{
-	ASSERT(pCaptionBar);
-	if (pCaptionBar)
-	{
-		m_pCaptionBar = pCaptionBar;
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::AttachCalendar(CXTPCalendarControl* pCalendar)
-{
-	m_pSink->UnadviseAll();
-	CMDTARGET_RELEASE(m_pCalendar);
-
-	m_pCalendar = pCalendar;
-	CMDTARGET_ADDREF(m_pCalendar);
-
-	if (m_pCalendar && m_pCalendar->GetConnection())
-	{
-		CXTPNotifyConnection* pConnection = m_pCalendar->GetConnection();
-
-		m_pSink->Advise(pConnection, XTP_NC_CALENDARVIEWWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarCaptionBarTheme::OnEvent_Calendar));
-		m_pSink->Advise(pConnection, XTP_NC_CALENDAR_THEME_CHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarCaptionBarTheme::OnEvent_Calendar));
-
-		UpdateControlsState();
-
-		if (XTPResourceImages() && XTPResourceImages()->GetConnection())
+		while (CWnd::GetCapture() == this)
 		{
-			m_pSink->Advise(XTPResourceImages()->GetConnection(), XTP_NC_COMMON_RESOURCEIMAGES_CHANGED,
-				CreateNotfySinkClassDelegate(this, &CXTPCalendarCaptionBarTheme::OnEvent_ResourceImagesChanged));
-		}
+			MSG msg;
 
-		SetPaintTheme(GetCalendarCtrl()->GetPaintTheme());
-	}
-}
-
-CXTPNotifyConnection* CXTPCalendarCaptionBarTheme::GetConnection()
-{
-	if (!m_pConnection)
-		m_pConnection = new CXTPNotifyConnection();
-
-	return m_pConnection;
-}
-
-int CXTPCalendarCaptionBarTheme::GetChildHandlersCount() const
-{
-	return m_arMembers.GetCount();
-}
-
-CXTPCalendarWMHandler* CXTPCalendarCaptionBarTheme::GetChildHandlerAt(int nIndex) const
-{
-	return m_arMembers.GetAt(nIndex);
-}
-
-void CXTPCalendarCaptionBarTheme::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CXTPCalendarWMHandler::OnMouseMove(nFlags, point);
-
-	if (GetOwnerWnd() && m_nCheckHotStateTimerID == 0)
-	{
-		m_nCheckHotStateTimerID = GetOwnerWnd()->SetTimer(1, 100, NULL);
-	}
-}
-
-BOOL CXTPCalendarCaptionBarTheme::OnTimer(UINT_PTR uTimerID)
-{
-	if (uTimerID == m_nCheckHotStateTimerID && GetOwnerWnd() &&
-		::GetCapture() != GetOwnerWnd()->GetSafeHwnd())
-	{
-		BOOL bMouseLeave;
-		BOOL bChanged = _UpdateControlsHotState(&bMouseLeave);
-
-		if (bMouseLeave)
-		{
-			GetOwnerWnd()->KillTimer(1);
-			m_nCheckHotStateTimerID = 0;
-		}
-
-		if (bChanged)
-			Redraw();
-
-		return TRUE;
-	}
-	return FALSE;
-}
-
-CRect CXTPCalendarCaptionBarTheme::CalcMinRect(CDC* /*pDC*/, BOOL bExactSize)
-{
-	if (!IsSwitchViewButtons()
-		&& !IsScrollDateButtons()
-		&& !IsDateLabel()
-		&& !IsExpandButton())
-		return CRect(0, 0, 0, 0);
-
-	int nHeight = 0;
-	if (m_bIsOneLine)
-	{
-		nHeight += 27;
-	}
-	else
-	{
-		if (IsSwitchViewButtons())
-			nHeight += 27;
-
-		int nH1 = (IsScrollDateButtons() || IsDateLabel()) ? 32 : 0;
-		int nH2 = IsExpandButton() ? 30 : 0;
-
-		nHeight += max(nH2, nH1);
-
-		if (!bExactSize)
-			nHeight += 11;
-	}
-	return CRect(0, 0, 525, nHeight);
-};
-
-void CXTPCalendarCaptionBarTheme::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	if (!pDC && GetOwnerWnd() && GetOwnerWnd()->m_hWnd)
-	{
-		CClientDC dc(GetOwnerWnd());
-		AdjustLayout(&dc, rcRect);
-		return;
-	}
-
-	if (rcRect.IsRectNull() || rcRect.IsRectEmpty())
-		return;
-
-	m_rcRect = rcRect;
-	CRect rc00(rcRect.left, rcRect.top, rcRect.left, rcRect.top);
-	CRect rcClient = m_rcRect;
-
-	CRect rc = rcClient;
-
-	int nNextY = rc.top;
-	BOOL bSwitchViewButtons = IsSwitchViewButtons();
-	BOOL bScrollDateButtons = IsScrollDateButtons();
-	BOOL bShowExpandButton = IsExpandButton();
-	BOOL bShowDateLabel = IsDateLabel();
-
-	m_pButtonViewDay->SetVisible(bSwitchViewButtons && !m_pButtonViewDay->GetText().IsEmpty());
-	m_pButtonViewWeek->SetVisible(bSwitchViewButtons && !m_pButtonViewWeek->GetText().IsEmpty());
-	m_pButtonViewMonth->SetVisible(bSwitchViewButtons && !m_pButtonViewMonth->GetText().IsEmpty());
-
-	int iWid1 = 83;
-	int iWid2 = 20;
-	int iWid3 = 5;
-
-	if (!m_bIsOneLine) //TWO LINE MODE
-	{
-		if (bSwitchViewButtons)
-		{
-			rc.bottom = rc.top + 26;
-
-			if (!m_pButtonViewDay->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewDay->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewDay->GetRect().right;
-			if (!m_pButtonViewWeek->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewWeek->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewWeek->GetRect().right;
-			if (!m_pButtonViewMonth->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewMonth->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewMonth->GetRect().right + 21;
-			rc.right = rc.left + iWid3;
-
-			if (m_bTimelineEnable && !m_pShowTimeline->GetText().IsEmpty())
+			while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
 			{
-				m_pShowTimeline->AdjustLayout(pDC, rc);
-
-				rc.left = m_pShowTimeline->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
+				if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+					return;
+				DispatchMessage(&msg);
 			}
 
-			if (!m_pShowWorkWeek->GetText().IsEmpty())
+			if (!GetMessage(&msg, NULL, 0, 0))
+				break;
+
+			if (msg.message == WM_MOUSEMOVE)
 			{
-				m_pShowWorkWeek->AdjustLayout(pDC, rc);
+				point = CPoint(msg.lParam);
+				ClientToScreen(&point);
 
-				rc.left = m_pShowWorkWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
+				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
+				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
 
-			if (!m_pShowFullWeek->GetText().IsEmpty())
-			{
-				m_pShowFullWeek->AdjustLayout(pDC, rc);
-				rc.left = m_pShowFullWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowMcWeek->GetText().IsEmpty())
-				m_pShowMcWeek->AdjustLayout(pDC, rc);
-
-			rc = m_pButtonViewDay->GetRect();
-
-			nNextY = rc.bottom + 1;
-		}
-		else
-		{
-			m_pButtonViewDay->AdjustLayout(pDC, rc00);
-			m_pButtonViewWeek->AdjustLayout(pDC, rc00);
-			m_pButtonViewMonth->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->AdjustLayout(pDC, rc00);
-			m_pShowFullWeek->AdjustLayout(pDC, rc00);
-			m_pShowTimeline->AdjustLayout(pDC, rc00);
-			m_pShowMcWeek->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->SetVisible(FALSE);
-			m_pShowFullWeek->SetVisible(FALSE);
-			m_pShowTimeline->SetVisible(FALSE);
-			m_pShowMcWeek->SetVisible(FALSE);
-
-			nNextY = rc.top;
-		}
-
-		int nNextX = rc.left;
-
-		m_pScrollPrevDate->SetVisible(bScrollDateButtons);
-		m_pScrollNextDate->SetVisible(bScrollDateButtons);
-
-		if (bScrollDateButtons)
-		{
-			rc.top = nNextY + 12;
-			if (rc.top + 20 + 3 > rcClient.bottom)
-				rc.top = max(nNextY + 3, rcClient.bottom - 23);
-
-			rc.bottom = rc.top + 20;
-
-			rc.left += m_nScrollDateButtonsMargin;
-
-			rc.right = rc.left + iWid2;
-
-			m_pScrollPrevDate->AdjustLayout(pDC, rc);
-
-			rc.left = m_pScrollPrevDate->GetRect().right + 9;
-			rc.right = rc.left + iWid2;
-
-			m_pScrollNextDate->AdjustLayout(pDC, rc);
-
-			nNextX = rc.right;
-		}
-		else
-		{
-			m_pScrollPrevDate->AdjustLayout(pDC, rc00);
-			m_pScrollNextDate->AdjustLayout(pDC, rc00);
-		}
-
-		m_pExpandButton->SetVisible(bShowExpandButton);
-
-		int nRightX = rcClient.right;
-		if (bShowExpandButton)
-		{
-			int nDelta = (bScrollDateButtons || bShowDateLabel) ? 5 : 3;
-			rc.top = nNextY + 13;
-			if (rc.top + 18 + nDelta > rcClient.bottom)
-				rc.top = max(nNextY + 1, rcClient.bottom - 18 - nDelta);
-
-			rc.bottom = rc.top + 18;
-			rc.right = rcClient.right - 2;
-			rc.left = rc.right - 18;
-
-			m_pExpandButton->AdjustLayout(pDC, rc);
-
-			nRightX = m_pExpandButton->GetRect().left;
-		}
-		else
-		{
-			m_pExpandButton->AdjustLayout(pDC, rc00);
-		}
-
-		m_pDateLabel->SetVisible(bShowDateLabel);
-
-		if (bShowDateLabel)
-		{
-			int nDelta = 3;
-			rc.top = nNextY + 12;
-			if (rc.top + 20 + nDelta > rcClient.bottom)
-				rc.top = max(nNextY + 3, rcClient.bottom - 20 - nDelta);
-
-			rc.bottom = rc.top + 22;
-			rc.left = nNextX + 11;
-			rc.right = nRightX - 2;
-
-			m_pDateLabel->AdjustLayout(pDC, rc);
-		}
-		else
-		{
-			m_pDateLabel->AdjustLayout(pDC, rc00);
-		}
-	}
-	else //ONE LINE MODE
-	{
-		int nNextX(0);
-		if (bSwitchViewButtons)
-		{
-			if (!m_pButtonViewDay->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewDay->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewDay->GetRect().right;
-			if (!m_pButtonViewWeek->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewWeek->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewWeek->GetRect().right;
-			if (!m_pButtonViewMonth->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewMonth->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewMonth->GetRect().right + 21;
-			rc.right = rc.left + iWid3;
-
-			if (m_bTimelineEnable && !m_pShowTimeline->GetText().IsEmpty())
-			{
-				m_pShowTimeline->AdjustLayout(pDC, rc);
-
-				rc.left = m_pShowTimeline->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowWorkWeek->GetText().IsEmpty())
-			{
-				m_pShowWorkWeek->AdjustLayout(pDC, rc);
-				rc.left = m_pShowWorkWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowFullWeek->GetText().IsEmpty())
-			{
-				m_pShowFullWeek->AdjustLayout(pDC, rc);
-				rc.left = m_pShowFullWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowMcWeek->GetText().IsEmpty())
-				m_pShowMcWeek->AdjustLayout(pDC, rc);
-
-			nNextX = m_pShowMcWeek->GetRect().right + 11;
-		}
-		else
-		{
-			m_pButtonViewDay->AdjustLayout(pDC, rc00);
-			m_pButtonViewWeek->AdjustLayout(pDC, rc00);
-			m_pButtonViewMonth->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->AdjustLayout(pDC, rc00);
-			m_pShowFullWeek->AdjustLayout(pDC, rc00);
-			m_pShowTimeline->AdjustLayout(pDC, rc00);
-			m_pShowMcWeek->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->SetVisible(FALSE);
-			m_pShowFullWeek->SetVisible(FALSE);
-			m_pShowTimeline->SetVisible(FALSE);
-			m_pShowMcWeek->SetVisible(FALSE);
-		}
-
-		m_pScrollPrevDate->SetVisible(bScrollDateButtons);
-		m_pScrollNextDate->SetVisible(bScrollDateButtons);
-
-		if (bScrollDateButtons)
-		{
-			rc.left = nNextX + 20;
-			rc.right = rc.left + iWid2;
-
-			m_pScrollPrevDate->AdjustLayout(pDC, rc);
-
-			rc.left = m_pScrollPrevDate->GetRect().right + 9;
-			rc.right = rc.left + iWid2;
-
-			m_pScrollNextDate->AdjustLayout(pDC, rc);
-
-			nNextX = rc.right;
-		}
-		else
-		{
-			m_pScrollPrevDate->AdjustLayout(pDC, rc00);
-			m_pScrollNextDate->AdjustLayout(pDC, rc00);
-		}
-
-		m_pExpandButton->SetVisible(bShowExpandButton);
-
-		int nRightX = rcClient.right;
-		if (bShowExpandButton)
-		{
-			rc.right = rcClient.right - 2;
-			rc.left = rc.right - 18;
-
-			m_pExpandButton->AdjustLayout(pDC, rc);
-
-			nRightX = m_pExpandButton->GetRect().left;
-		}
-		else
-		{
-			m_pExpandButton->AdjustLayout(pDC, rc00);
-		}
-		m_pDateLabel->SetVisible(bShowDateLabel);
-
-		if (bShowDateLabel)
-		{
-			rc.left = nNextX + 20;
-			rc.right = nRightX - 2;
-
-			m_pDateLabel->AdjustLayout(pDC, rc);
-		}
-		else
-		{
-			m_pDateLabel->AdjustLayout(pDC, rc00);
-		}
-	}
-}
-
-COLORREF CXTPCalendarCaptionBarTheme::GetColor2(LPCTSTR pcszColorName, COLORREF clrDefault)
-{
-	COLORREF clrColor = COLORREF_NULL;
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	if (pImages->IsValid())
-	{
-		clrColor = pImages->GetImageColor(_T("CalendarControl"), pcszColorName);
-	}
-
-	if (clrColor == COLORREF_NULL)
-	{
-		clrColor = clrDefault;
-	}
-
-	return clrColor;
-}
-
-void CXTPCalendarCaptionBarTheme::RefreshMetrics()
-{
-	m_themeButton->OpenTheme(0, L"BUTTON");
-
-	LOGFONT lfBaseFont;
-	::ZeroMemory(&lfBaseFont, sizeof(lfBaseFont));
-	BOOL bUseFont2007 = FALSE;
-
-	m_nScrollDateButtonsMargin = 20;
-
-	if (GetPaintTheme() >= xtpCalendarThemeResource)
-	{
-		m_clrSwitchViewBarBk.SetStandardValue(GetColor2(_T("CaptionBarSwitchViewBarBk"), RGB(173, 209, 255)));
-		m_clrScrollDateBarBk.SetStandardValue(GetColor2(_T("CaptionBarDateBarBk"), RGB(227, 239, 255)));
-
-		m_clrBorders.SetStandardValue(GetColor2(_T("CaptionBarBorders"), RGB(101, 147, 201)));
-		m_clrTextColor.SetStandardValue(GetColor2(_T("CaptionBarTextColor"), RGB(0, 0, 0)));
-
-		// Try to set default Office 2007 font,
-		// otherwise icon font used.
-		bUseFont2007 = XTPDrawHelpers()->FontExists(XTP_CALENDAR_OFFICE2007_FONT_NAME);
-
-		if (XTPResourceImages()->GetImageInt(_T("CalendarControl"), _T("FlatStyle"), 0))
-		{
-			m_nScrollDateButtonsMargin = 4;
-		}
-	}
-	else
-	{
-		//m_clrSwitchViewBarBk.SetStandardValue(RGB(192, 192, 192));
-		m_clrSwitchViewBarBk.SetStandardValue(GetSysColor(COLOR_BTNFACE));
-
-		if (GetPaintTheme() == xtpCalendarThemeOffice2000)
-			m_clrScrollDateBarBk.SetStandardValue(RGB(146, 146, 146));
-		else
-			m_clrScrollDateBarBk.SetStandardValue(RGB(130, 130, 130));
-
-		m_clrBorders.SetStandardValue(RGB(130, 130, 130));
-		m_clrTextColor.SetStandardValue(RGB(255, 255, 255));
-	}
-
-	if (bUseFont2007)
-	{
-		STRCPY_S(lfBaseFont.lfFaceName, LF_FACESIZE, XTP_CALENDAR_OFFICE2007_FONT_NAME);
-		lfBaseFont.lfCharSet = XTPResourceManager()->GetFontCharset();
-		lfBaseFont.lfHeight = -11;
-		//lfBaseFont.lfHeight = -10;
-		lfBaseFont.lfWeight = FW_NORMAL;
-
-		if (XTPSystemVersion()->IsClearTypeTextQualitySupported())
-			lfBaseFont.lfQuality = 5;
-	}
-	else
-	{
-		VERIFY(CXTPDrawHelpers::GetIconLogFont(&lfBaseFont));
-	}
-
-	m_fntTextFont.SetStandardValue(&lfBaseFont);
-
-	int nCount = m_arMembers.GetCount();
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarCaptionBarThemePart* pPart = m_arMembers.GetAt(i);
-		ASSERT(pPart);
-		if (pPart)
-			pPart->RefreshMetrics();
-	}
-
-	AdjustLayout(NULL, GetRect());
-}
-
-void CXTPCalendarCaptionBarTheme::Draw(CDC* pDC)
-{
-
-#ifdef _DEBUG
-	pDC->FillSolidRect(GetRect(), RGB(255, 0, 0));
-#endif
-
-	CRect rcTopPart = m_pButtonViewDay->GetRect();
-
-	if (IsSwitchViewButtons())
-	{
-		// Fill SwitchViewBar
-		rcTopPart.right = m_rcRect.right;
-		pDC->FillSolidRect(rcTopPart, m_clrSwitchViewBarBk);
-
-		rcTopPart.top = rcTopPart.bottom;
-		rcTopPart.bottom++;
-
-		pDC->FillSolidRect(rcTopPart, m_clrBorders);
-	}
-
-	// Fill ScrollDateBar
-	CRect rcBottomPart = m_rcRect;
-	rcBottomPart.top = rcTopPart.bottom;
-	pDC->FillSolidRect(rcBottomPart, m_clrScrollDateBarBk);
-
-	//DrawBorders(pDC, m_rcRect, m_rcRect);
-
-	// Draw members
-	int nCount = m_arMembers.GetCount();
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarCaptionBarThemePart* pPart = m_arMembers.GetAt(i);
-		ASSERT(pPart);
-		if (pPart)
-			pPart->Draw(pDC);
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::DrawBorders(CDC* pDC, const CRect& rcRect, const CRect& Borders)
-{
-	// Draw borders
-	CRect rc;
-	if (Borders.top)
-	{
-		rc = rcRect;
-		rc.bottom = rc.top + Borders.top;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
-
-	if (Borders.bottom)
-	{
-		rc = rcRect;
-		rc.top = rc.bottom - Borders.bottom;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
-
-	if (Borders.left)
-	{
-		rc = rcRect;
-		rc.right = rc.left + Borders.left;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
-
-	if (Borders.right)
-	{
-		rc = rcRect;
-		rc.left = rc.right - Borders.right;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-CXTPCalendarCaptionBarThemePart::CXTPCalendarCaptionBarThemePart(CXTPCalendarCaptionBarTheme* pTheme, int nPartID)
-{
-	ASSERT(pTheme);
-	m_pTheme = pTheme;
-	m_nPartID = nPartID;
-	m_nState = xtpBtnStateNormal;
-	m_bVisible = TRUE;
-
-	if (m_pTheme)
-		m_pTheme->m_arMembers.Add(this, TRUE);
-}
-
-CXTPCalendarCaptionBarThemePart::~CXTPCalendarCaptionBarThemePart()
-{
-
-}
-
-void CXTPCalendarCaptionBarThemePart::AdjustLayout(CDC* /*pDC*/, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-}
-
-COLORREF CXTPCalendarCaptionBarThemePart::GetTextColor()
-{
-	if (m_clrTextColor.IsDefaultValue() && m_pTheme)
-		return (COLORREF)m_pTheme->m_clrTextColor;
-
-	return (COLORREF)m_clrTextColor;
-}
-
-void CXTPCalendarCaptionBarThemePart::Draw(CDC* /*pDC*/)
-{
-};
-
-BOOL CXTPCalendarCaptionBarThemePart::HitTest(const CPoint& pt) const
-{
-	return IsVisible() && m_rcRect.PtInRect(pt);
-};
-
-void CXTPCalendarCaptionBarThemePart::Redraw(BOOL bUpdateNow)
-{
-	if (m_pTheme)
-		m_pTheme->Redraw(bUpdateNow);
-}
-
-void CXTPCalendarCaptionBarTheme::Redraw(BOOL bUpdateNow)
-{
-	if (GetOwnerWnd() && GetOwnerWnd()->GetSafeHwnd())
-	{
-		GetOwnerWnd()->Invalidate(FALSE);
-
-		if (bUpdateNow)
-			GetOwnerWnd()->UpdateWindow();
-	}
-}
-
-void CXTPCalendarCaptionBarThemePart::OnMouseMove(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	int nStatePrev = m_nState;
-
-	if (HitTest(point))
-		m_nState = m_nState | xtpBtnStateMouseOver;
-	else
-		m_nState = m_nState & (~(xtpBtnStateMouseOver));
-
-	if (nStatePrev != m_nState)
-		Redraw();
-}
-
-BOOL CXTPCalendarCaptionBarThemePart::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	int nStatePrev = m_nState;
-
-	BOOL bHitTest = HitTest(point);
-	if (bHitTest)
-	{
-		m_nState = m_nState | xtpBtnStatePressed | xtpBtnStateFocused;
-	}
-	else
-		m_nState = m_nState & (~(xtpBtnStatePressed | xtpBtnStateFocused));
-
-	if (nStatePrev != m_nState)
-		Redraw();
-
-	return FALSE; // to allow receive this notification for all other parts (to clear state)
-}
-
-BOOL CXTPCalendarCaptionBarThemePart::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	int nStatePrev = m_nState;
-	BOOL bHitTest = HitTest(point);
-
-	if (bHitTest && (m_nState & (xtpBtnStatePressed | xtpBtnStateFocused)))
-	{
-		m_nState = m_nState & (~xtpBtnStatePressed);
-
-		if (m_pTheme && IsVisible())
-			m_pTheme->OnPartClick(m_nPartID);
-	}
-
-	m_nState = m_nState & (~xtpBtnStatePressed);
-
-	if (nStatePrev != m_nState)
-		Redraw();
-
-	return FALSE; // to allow receive this notification for all other parts (to clear state)
-}
-
-void CXTPCalendarCaptionBarTheme::OnEvent_Calendar(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(wParam); UNREFERENCED_PARAMETER(lParam);
-
-
-	if (Event == XTP_NC_CALENDARVIEWWASCHANGED)
-	{
-		UpdateControlsState();
-	}
-	else if (Event == XTP_NC_CALENDAR_THEME_CHANGED)
-	{
-		SetPaintTheme(GetCalendarCtrl()->GetPaintTheme());
-	}
-	else {
-		ASSERT(FALSE);
-		return;
-	}
-
-	Redraw();
-}
-
-void CXTPCalendarCaptionBarTheme::OnEvent_ResourceImagesChanged(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(wParam); UNREFERENCED_PARAMETER(lParam);
-
-	if (Event == XTP_NC_COMMON_RESOURCEIMAGES_CHANGED)
-	{
-		RefreshMetrics();
-
-		Redraw();
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::UpdateControlsState()
-{
-	if (!GetCalendarCtrl() || !GetCalendarCtrl()->GetActiveView())
-		return;
-
-	m_pShowWorkWeek->SetVisible(FALSE);
-	m_pShowFullWeek->SetVisible(FALSE);
-	m_pShowMcWeek->SetVisible(FALSE);
-
-	m_pButtonViewDay->SetCheck(0);
-	m_pButtonViewWeek->SetCheck(0);
-	m_pButtonViewMonth->SetCheck(0);
-
-	m_pShowTimeline->SetVisible(m_bTimelineEnable);
-
-	int iScale = GetCalendarCtrl()->GetTimeLineScale();
-	int nViewType = GetCalendarCtrl()->GetActiveView()->GetViewType();
-
-	//BOOL bTimelineMode = m_pShowTimeline->GetCheck();
-
-	BOOL bTimelineMode = GetCalendarCtrl()->m_bTimelineMode;
-	m_pShowTimeline->SetCheck(bTimelineMode);
-
-	if (nViewType == xtpCalendarDayView ||
-		(bTimelineMode && iScale == xtpTSPID_Day))
-	{
-		m_pButtonViewDay->SetCheck(1);
-	}
-	else if (nViewType == xtpCalendarMonthView ||
-		(bTimelineMode && iScale == xtpTSPID_Month))
-	{
-		m_pButtonViewMonth->SetCheck(1);
-	}
-	else
-	{
-		if (bTimelineMode &&
-			(iScale == xtpTSPID_Week || iScale == xtpTSPID_WorkWeek))
-			m_pButtonViewWeek->SetCheck(1);
-
-		if (IsSwitchViewButtons())
-		{
-			m_pShowWorkWeek->SetVisible(!m_pShowWorkWeek->GetText().IsEmpty());
-			m_pShowFullWeek->SetVisible(!m_pShowFullWeek->GetText().IsEmpty());
-			m_pShowMcWeek->SetVisible(m_bMulticolumnsEnable && !m_pShowMcWeek->GetText().IsEmpty());
-			m_pShowMcWeek->SetCheck(GetCalendarCtrl()->m_bMultiColumnWeekMode);
-		}
-		if (nViewType == xtpCalendarWorkWeekView)
-		{
-			m_pShowWorkWeek->SetCheck(1);
-			m_pShowFullWeek->SetCheck(0);
-			m_pButtonViewWeek->SetCheck(1);
-		}
-		else if (nViewType == xtpCalendarFullWeekView)
-		{
-			m_pShowWorkWeek->SetCheck(0);
-			m_pShowFullWeek->SetCheck(1);
-			m_pButtonViewWeek->SetCheck(1);
-		}
-		else if (nViewType == xtpCalendarWeekView)
-		{
-			m_pShowWorkWeek->SetCheck(0);
-			m_pShowFullWeek->SetCheck(1);
-			m_pButtonViewWeek->SetCheck(1);
-		}
-		else if (nViewType == xtpCalendarTimeLineView)
-		{
-			m_pShowTimeline->SetCheck(1);
-		}
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::OnPartClick(int nPartID)
-{
-	BOOL bCancel = FALSE;
-	if (m_pConnection)
-		m_pConnection->SendEvent(XTP_NC_CALENDAR_CAPTIONBARPART_BEFORE_CLICK, (WPARAM)nPartID, (LPARAM)&bCancel);
-
-	if (GetCalendarCtrl() && !bCancel)
-		GetCalendarCtrl()->SendNotification(XTP_NC_CALENDAR_CAPTIONBARPART_BEFORE_CLICK, (WPARAM)nPartID, (LPARAM)&bCancel);
-
-	if (bCancel)
-		return;
-
-	if (nPartID == xtpCalendarCaptionBar_ButtonExpand)
-	{
-		m_pExpandButton->SetCheck(m_pExpandButton->GetCheck() ? 0 : 1);
-
-		Redraw();
-	}
-
-	if (GetCalendarCtrl() && GetCalendarCtrl()->GetActiveView())
-	{
-		BOOL bUpdate = TRUE;
-		BOOL bTimelineMode = m_pShowTimeline->GetCheck();
-
-		if (nPartID == xtpCalendarCaptionBar_ButtonViewDay)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarDayView);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ButtonViewWeek)
-		{
-			BOOL bMultiColumnWeekMode = GetCalendarCtrl()->m_bMultiColumnWeekMode;
-			if (bMultiColumnWeekMode)
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarWorkWeekView);
-			else
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ButtonViewMonth)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarMonthView);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ShowWorkWeek)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarWorkWeekView);
-			m_pShowWorkWeek->SetCheck(1);
-			m_pShowFullWeek->SetCheck(0);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ShowFullWeek)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-			m_pShowWorkWeek->SetCheck(0);
-			m_pShowFullWeek->SetCheck(1);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ShowTimeline)
-		{
-			m_pShowTimeline->SetCheck(!bTimelineMode);
-			GetCalendarCtrl()->OnCalendarTimeline();
-		}
-		else if (nPartID == xtpCalendarCaptionBar_MultiColumnsWeek)
-		{
-			GetCalendarCtrl()->m_bMultiColumnWeekMode = !GetCalendarCtrl()->m_bMultiColumnWeekMode;
-			int nViewType = GetCalendarCtrl()->GetActiveView()->GetViewType();
-			if (nViewType == xtpCalendarWeekView)
-			{
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-				m_pShowWorkWeek->SetCheck(0);
-				m_pShowFullWeek->SetCheck(1);
-			}
-			else if (nViewType == xtpCalendarWorkWeekView)
-			{
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarWorkWeekView);
-				m_pShowWorkWeek->SetCheck(1);
-				m_pShowFullWeek->SetCheck(0);
-			}
-			else if (nViewType == xtpCalendarFullWeekView)
-			{
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-				m_pShowWorkWeek->SetCheck(0);
-				m_pShowFullWeek->SetCheck(1);
-			}
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ScrollPrevDate ||
-				nPartID == xtpCalendarCaptionBar_ScrollNextDate)
-		{
-			BOOL bNext = nPartID == xtpCalendarCaptionBar_ScrollNextDate;
-			COleDateTime dtSelStart, dtSelEnd, dtFirst;
-			CXTPCalendarView* pActiveView = GetCalendarCtrl()->GetActiveView();
-			int nViewType = pActiveView->GetViewType();
-
-			if (nViewType == xtpCalendarTimeLineView)
-			{
-				CXTPCalendarTimeLineView* pTimeLineView = (CXTPCalendarTimeLineView*) pActiveView;
-				int iTimeScaleID = pTimeLineView->GetTimeScaleID();
-				dtSelStart = pTimeLineView->GetStartViewDate();
-				if (iTimeScaleID == xtpTSPID_Month)
+				if (!m_bHoriz)
 				{
-					int nSelDay = dtSelStart.GetDay();
-					CXTPCalendarUtils::ShiftDate_Month(dtSelStart, bNext ? 1 : -1, 1);
-					CXTPCalendarUtils::UpdateMonthDay(dtSelStart, nSelDay);
-				}
-				else if (iTimeScaleID == xtpTSPID_Week)
-				{
-					dtSelStart += COleDateTimeSpan(bNext ? 7 : -7);
-				}
-				else if (iTimeScaleID == xtpTSPID_Day)
-				{
-					dtSelStart += COleDateTimeSpan(bNext ? 1 : -1);
-				}
-				pTimeLineView->SetStartViewDate(dtSelStart);
-				SCROLLINFO SI;
-				int nScrollStep;
-				if (pTimeLineView->GetScrollBarInfoH(&SI, &nScrollStep))
-				{
-					int newPos = SI.nPos - SI.nPage;
-					if (bNext)
-						newPos = SI.nPos + SI.nPage;
-					pTimeLineView->ScrollH(newPos, newPos);
-				}
-			}
-			else
-			{
-				int nGroupIndex = 0;
-				BOOL bAllDay = TRUE;
-				dtFirst = pActiveView->GetViewDayDate(0);
-				if (!pActiveView->GetSelection(&dtSelStart, &dtSelEnd, &bAllDay, &nGroupIndex))
-				{
-					dtSelStart = dtFirst;
-					dtSelEnd = dtFirst + COleDateTimeSpan(1);
-				}
-
-				if (nViewType == xtpCalendarDayView)
-				{
-					int nDays = pActiveView->GetViewDayCount();
-					dtSelStart += COleDateTimeSpan(bNext ? nDays : -nDays);
-					dtSelEnd += COleDateTimeSpan(bNext ? nDays : -nDays);
-				}
-				else if (nViewType == xtpCalendarWorkWeekView ||
-						nViewType == xtpCalendarFullWeekView ||
-						nViewType == xtpCalendarWeekView)
-				{
-					dtSelStart += COleDateTimeSpan(bNext ? 7 : -7);
-					dtSelEnd += COleDateTimeSpan(bNext ? 7 : -7);
-				}
-				else if (nViewType == xtpCalendarMonthView)
-				{
-					int nSelDay = dtSelStart.GetDay();
-					CXTPCalendarUtils::ShiftDate_Month(dtSelStart, bNext ? 1 : -1, 1);
-					CXTPCalendarUtils::UpdateMonthDay(dtSelStart, nSelDay);
-
-					dtSelEnd = dtSelStart;// + COleDateTimeSpan(1);
-
-					CXTPCalendarMonthView* pMView = (CXTPCalendarMonthView*)pActiveView;
-					pMView->SetMDayViewLightColorBaseDate(dtSelStart);
+					if (rc.left == point.x)
+						continue;
+					rc.OffsetRect(point.x - rc.left, 0);
 				}
 				else
 				{
-					ASSERT(FALSE);
+					if (rc.top == point.y)
+						continue;
+					rc.OffsetRect(0, point.y - rc.top);
 				}
 
-				pActiveView->UnselectAllEvents();
-				pActiveView->SetSelection(dtSelStart, dtSelEnd, bAllDay, nGroupIndex);
-
-				GetCalendarCtrl()->SwitchActiveView((XTPCalendarViewType)nViewType);
+				Reposition(rc, rcClient);
 			}
-		}
-		else
-		{
-			bUpdate = FALSE;
+			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+			else if (msg.message == WM_LBUTTONUP) break;
+			else ::DispatchMessage(&msg);
 		}
 
-		if (bUpdate)
-		{
-			UpdateControlsState();
-			Redraw();
-		}
+		if (CWnd::GetCapture() == this) ReleaseCapture();
 	}
 
-	if (m_pConnection)
-		m_pConnection->SendEvent(XTP_NC_CALENDAR_CAPTIONBARPART_CLICK, (WPARAM)nPartID, 0);
-
-	if (GetCalendarCtrl())
-		GetCalendarCtrl()->SendNotification(XTP_NC_CALENDAR_CAPTIONBARPART_CLICK, (WPARAM)nPartID, 0);
+	m_bTracking = FALSE;
 }
 
-BOOL CXTPCalendarCaptionBarTheme::_UpdateControlsHotState(BOOL* pbMouseLeave)
+
+//////////////////////////////////////////////////////////////////////////
+// CPanelDropTarget
+
+class CXTPDockingPaneAutoHidePanel::CPanelDropTarget : public COleDropTarget
 {
-	if (pbMouseLeave)
-		*pbMouseLeave = FALSE;
-
-	CPoint ptMouse(0, 0);
-
-	if (GetCursorPos(&ptMouse) && GetOwnerWnd())
-		GetOwnerWnd()->ScreenToClient(&ptMouse);
-	else
-		return FALSE;
-
-	BOOL bMouseLeave = !m_rcRect.PtInRect(ptMouse);
-
-	if (pbMouseLeave)
-		*pbMouseLeave = bMouseLeave;
-
-	if (!bMouseLeave)
-		return FALSE;
-
-	BOOL bResetFocused = CWnd::GetFocus() != GetOwnerWnd();
-	BOOL bChanged = FALSE;
-
-	int nCount = m_arMembers.GetCount();
-	for (int i = 0; i < nCount; i++)
+	virtual DROPEFFECT OnDragOver(CWnd* pWnd, COleDataObject* /*pDataObject*/, DWORD /*dwKeyState*/, CPoint point)
 	{
-		CXTPCalendarCaptionBarThemePart* pPart = m_arMembers.GetAt(i);
-		ASSERT(pPart);
-		if (pPart)
-		{
-			int nNewState = pPart->GetState() & (~(CXTPCalendarCaptionBarThemePart::xtpBtnStateMouseOver |
-					CXTPCalendarCaptionBarThemePart::xtpBtnStatePressed));
-			if (bResetFocused)
-				nNewState = nNewState & (~CXTPCalendarCaptionBarThemePart::xtpBtnStateFocused);
+		CXTPDockingPaneAutoHidePanel* pPanel = (CXTPDockingPaneAutoHidePanel*)pWnd;
+		ASSERT_VALID(pPanel);
 
-			if (nNewState != pPart->GetState())
+		if (!pPanel->GetPaintManager()->GetPanelPaintManager()->m_bSelectOnDragOver)
+			return DROPEFFECT_NONE;
+
+		CXTPDockingPane* pPane = pPanel->HitTest(point);
+		if (pPane)
+		{
+			if (!(pPanel->m_pActiveWnd && pPanel->m_pActiveWnd->GetPane()->GetSelected() == pPane))
 			{
-				pPart->SetState(nNewState);
-				bChanged = TRUE;
+				pPanel->ShowPane(pPane, FALSE);
+			}
+		}
+
+		return DROPEFFECT_NONE;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CAutoHidePanelTabManager
+
+class CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager : public CXTPTabManager
+{
+public:
+	CAutoHidePanelTabManager()
+	{
+		FindNavigateButton(xtpTabNavigateButtonLeft)->SetFlags(xtpTabNavigateButtonNone);
+		FindNavigateButton(xtpTabNavigateButtonRight)->SetFlags(xtpTabNavigateButtonNone);
+	}
+
+	virtual void Reposition()
+	{
+
+	}
+	virtual BOOL DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
+	{
+		if (!pItem)
+			return TRUE;
+
+		if (GetPanel()->GetPaintManager()->GetPanelPaintManager()->m_bShowIcons == FALSE)
+			return FALSE;
+
+
+		CXTPImageManagerIcon* pImage = ((CXTPDockingPane*)pItem->GetData())->GetIcon(szIcon.cx);
+
+		if (!pImage)
+			return FALSE;
+
+		if (!bDraw)
+		{
+			return TRUE;
+		}
+
+		pItem->DrawImage(pDC, CRect(pt, szIcon), pImage);
+
+		return TRUE;
+
+	}
+
+	virtual void RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
+	{
+		if (GetPanel()->m_hWnd) GetPanel()->InvalidateRect(lpRect, FALSE);
+	}
+
+	virtual CXTPTabPaintManager* GetPaintManager() const
+	{
+		return GetPanel()->GetPaintManager()->GetPanelPaintManager();
+
+	}
+
+	CXTPTabManagerItem* Add()
+	{
+		return AddItem(GetItemCount());
+	}
+
+	XTPTabPosition GetPosition() const
+	{
+		switch (GetPanel()->GetDirection())
+		{
+			case xtpPaneDockLeft: return xtpTabPositionRight;
+			case xtpPaneDockRight: return xtpTabPositionLeft;
+			case xtpPaneDockTop: return xtpTabPositionBottom;
+			case xtpPaneDockBottom: return xtpTabPositionTop;
+		}
+		return xtpTabPositionTop;
+	}
+
+	void PerformMouseMove(HWND hwnd, CPoint pt)
+	{
+		CXTPTabManager::PerformMouseMove(hwnd, pt);
+	}
+
+	CXTPDockingPaneAutoHidePanel* GetPanel() const;
+
+public:
+	CAutoHidePanelTabManagersArray* m_pArray;
+	CRect m_rcManager;
+};
+
+class CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManagersArray : public CArray<CAutoHidePanelTabManager*, CAutoHidePanelTabManager*>
+{
+public:
+
+	~CAutoHidePanelTabManagersArray()
+	{
+		FreeAll();
+	}
+
+	void FreeAll()
+	{
+		for (int i = 0; i < GetSize(); i++)
+		{
+			delete GetAt(i);
+		}
+		RemoveAll();
+	}
+	CAutoHidePanelTabManager* AddManager()
+	{
+		CAutoHidePanelTabManager* pManager = new CAutoHidePanelTabManager();
+		Add(pManager);
+		pManager->m_pArray = this;
+		return pManager;
+	}
+
+	void Draw(CDC* pDC)
+	{
+		CRect rcClipBox;
+		pDC->GetClipBox(rcClipBox);
+
+		CXTPTabPaintManager* pPaintManager = m_pAutoHidePanel->GetPaintManager()->GetPanelPaintManager();
+		for (int i = 0; i < GetSize(); i++)
+		{
+			CAutoHidePanelTabManager* pManager = GetAt(i);
+
+			if (CRect().IntersectRect(rcClipBox, pManager->m_rcManager))
+				pPaintManager->DrawTabControl(pManager, pDC, pManager->m_rcManager);
+		}
+	}
+
+
+
+public:
+	CXTPDockingPaneAutoHidePanel* m_pAutoHidePanel;
+};
+
+
+
+CXTPDockingPaneAutoHidePanel* CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager::GetPanel() const
+{
+	return m_pArray->m_pAutoHidePanel;
+}
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneAutoHidePanel
+
+int CXTPDockingPaneAutoHidePanel::GetPanelHeight() const
+{
+	CXTPTabPaintManager::CAppearanceSet* pAppearanceSet = GetPaintManager()->GetPanelPaintManager()->GetAppearanceSet();
+
+	return pAppearanceSet->GetButtonHeight(NULL) +
+		pAppearanceSet->m_rcHeaderMargin.bottom + pAppearanceSet->m_rcHeaderMargin.top;
+}
+
+void CXTPDockingPaneAutoHidePanel::RefreshManagersArray(CDC* pDC, CRect rcClient)
+{
+	BOOL bIndent = (m_direction == xtpPaneDockLeft || m_direction == xtpPaneDockRight)
+		&& (m_pLayout->m_wndPanels[xtpPaneDockTop] != NULL && !m_pLayout->m_wndPanels[xtpPaneDockTop]->IsEmpty());
+
+	if (bIndent)
+	{
+		rcClient.top += GetPanelHeight();
+	}
+
+	m_pTabManagers->FreeAll();
+
+	CRect rcMargins = GetPaintManager()->GetPanelPaintManager()->GetAppearanceSet()->GetHeaderMargin();
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)GetNext(pos);
+		if (pContainer->IsEmpty())
+			continue;
+
+		CAutoHidePanelTabManager* pManager = m_pTabManagers->AddManager();
+
+		POSITION posPane = pContainer->GetHeadPosition();
+		while (posPane)
+		{
+			CXTPDockingPane* pPane = (CXTPDockingPane*)pContainer->GetNext(posPane);
+
+			CXTPTabManagerItem* pItem = pManager->Add();
+
+			pItem->SetData((DWORD_PTR)pPane);
+			if (pContainer->GetSelected() == pPane) pManager->SetSelectedItem(pItem);
+
+			pItem->SetCaption(pPane->GetShortTitle());
+			pItem->SetColor(pPane->GetItemColor());
+			pItem->SetEnabled(pPane->GetEnabled() & xtpPaneEnableClient);
+		}
+		pManager->GetPaintManager()->RepositionTabControl(pManager, pDC, rcClient);
+		pManager->m_rcManager = rcClient;
+
+		if (m_direction == xtpPaneDockLeft || m_direction == xtpPaneDockRight)
+		{
+			rcClient.top += pManager->GetItemsLength() + rcMargins.left + rcMargins.right + 8;
+		}
+		else
+		{
+			rcClient.left += pManager->GetItemsLength() + rcMargins.left + rcMargins.right + 8;
+
+		}
+	}
+}
+
+CXTPDockingPaneAutoHidePanel::CXTPDockingPaneAutoHidePanel(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBaseContainer(xtpPaneTypeAutoHidePanel, pLayout)
+{
+	m_direction = xtpPaneDockLeft;
+	m_pActiveWnd = 0;
+	m_pTabManagers = new CAutoHidePanelTabManagersArray();
+	m_pTabManagers->m_pAutoHidePanel = this;
+
+	m_pDropTarget = new CPanelDropTarget();
+	m_rcFrameRect.SetRectEmpty();
+
+}
+
+CXTPDockingPaneAutoHidePanel::~CXTPDockingPaneAutoHidePanel()
+{
+	if (m_pActiveWnd)
+	{
+		m_pActiveWnd->m_pPane = 0;
+		m_pActiveWnd->m_pPanel = 0;
+		CloseActiveWindow();
+	}
+
+	if (m_hWnd)
+		DestroyWindow();
+
+	delete m_pTabManagers;
+	delete m_pDropTarget;
+}
+
+void CXTPDockingPaneAutoHidePanel::_InsertPane(CXTPDockingPaneBase* pPane)
+{
+	m_lstPanes.AddTail(pPane);
+
+	pPane->SetParentContainer(this);
+	pPane->SetDockingSite(m_pDockingSite);
+
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	pPane->OnParentContainerChanged(this);
+
+	if (pPane->GetType() == xtpPaneTypeTabbedContainer)
+	{
+		CWnd* pFocus = GetFocus();
+		if (((CXTPDockingPaneTabbedContainer*)pPane)->GetSafeHwnd() && pFocus->GetSafeHwnd() && (pFocus == ((CXTPDockingPaneTabbedContainer*)pPane) || ((CXTPDockingPaneTabbedContainer*)pPane)->IsChild(pFocus)))
+			GetDockingPaneManager()->GetSite()->SetFocus();
+	}
+
+	if (m_hWnd) Invalidate(FALSE);
+}
+
+void CXTPDockingPaneAutoHidePanel::RemovePane(CXTPDockingPaneBase* pPane)
+{
+	POSITION pos = m_lstPanes.Find(pPane);
+	ASSERT(pos);
+
+	m_lstPanes.RemoveAt(pos);
+	if (m_hWnd) Invalidate(FALSE);
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	if (m_lstPanes.IsEmpty())
+	{
+		if (m_hWnd) DestroyWindow();
+	}
+
+	pPane->m_pParentContainer = NULL;
+}
+
+void CXTPDockingPaneAutoHidePanel::Create(CWnd* pParent)
+{
+	CWnd::Create(_T("XTPDockingPaneAutoHidePanel"), NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CXTPEmptyRect(), pParent, 0);
+	m_pDropTarget->Register(this);
+}
+
+void CXTPDockingPaneAutoHidePanel::OnSizeParentEx(CWnd* pParent, CRect& rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	if (IsEmpty())
+	{
+		if (m_hWnd) DestroyWindow();
+		return;
+	}
+
+	if (!m_hWnd)
+		Create(pParent);
+
+	if (m_rcFrameRect != rect)
+	{
+		CloseActiveWindow();
+		m_rcFrameRect = rect;
+	}
+
+	int nHeight = GetPanelHeight();
+
+	CRect rcClient(rect);
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			rcClient.right = rect.left = rect.left + nHeight;
+			break;
+
+		case xtpPaneDockRight:
+			rcClient.left = rect.right = rect.right - nHeight;
+			break;
+
+		case xtpPaneDockTop:
+			rcClient.bottom = rect.top = rect.top + nHeight;
+			break;
+
+		case xtpPaneDockBottom:
+			rcClient.top = rect.bottom = rect.bottom - nHeight;
+			break;
+	}
+
+	CClientDC dc(this);
+	CRect rcPanel(rcClient);
+	rcPanel.OffsetRect(-rcPanel.TopLeft());
+	RefreshManagersArray(&dc, rcPanel);
+
+	if (lpLayout->hDWP != NULL)
+	{
+		MoveWindow(rcClient);
+		Invalidate(FALSE);
+	}
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPDockingPaneAutoHidePanel, CWnd)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE(WM_MOUSEHOVER, OnMouseHover)
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+END_MESSAGE_MAP()
+
+LRESULT CXTPDockingPaneAutoHidePanel::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		OnDraw(pDC);
+	}
+
+	return TRUE;
+}
+
+void CXTPDockingPaneAutoHidePanel::OnPaint()
+{
+	CPaintDC dcPaint(this);
+	CXTPBufferDC dc(dcPaint);
+	OnDraw(&dc);
+}
+
+void CXTPDockingPaneAutoHidePanel::OnDraw(CDC* pDC)
+{
+	CXTPClientRect rc(this);
+
+	CXTPPaintManagerColorGradient& clr = GetPaintManager()->GetPanelPaintManager()->GetColorSet()->m_clrAutoHideFace;
+
+	if (clr.clrDark == clr.clrLight)
+	{
+		pDC->FillSolidRect(rc, clr.clrDark);
+	}
+	else
+	{
+		CRect rcFill(rc);
+
+		if (m_direction == xtpPaneDockRight)
+		{
+			rcFill.left -= CXTPClientRect(GetParent()).Width() - rcFill.Width();
+		}
+
+		rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, clr.clrLight, clr.clrDark, TRUE, rc);
+	}
+
+	m_pTabManagers->Draw(pDC);
+}
+
+CXTPTabManagerItem* CXTPDockingPaneAutoHidePanel::GetPaneTab(CXTPDockingPane* pPane) const
+{
+	for (int i = 0; i < m_pTabManagers->GetSize(); i++)
+	{
+		CAutoHidePanelTabManager* pTabManager = m_pTabManagers->GetAt(i);
+
+		for (int j = 0; j < pTabManager->GetItemCount(); j++)
+		{
+			CXTPTabManagerItem* pItem = pTabManager->GetItem(j);
+
+			if ((CXTPDockingPane*)pItem->GetData() == pPane)
+			{
+				return pItem;
 			}
 		}
 	}
-
-	return bChanged;
+	return NULL;
 }
 
-void CXTPCalendarCaptionBarTheme::OnKillFocus (CWnd* pNewWnd)
+CXTPDockingPane* CXTPDockingPaneAutoHidePanel::HitTest(CPoint point) const
 {
-	UNREFERENCED_PARAMETER(pNewWnd);
-
-	BOOL bChanged = _UpdateControlsHotState();
-
-	if (bChanged)
-		Redraw();
-}
-
-void CXTPCalendarCaptionBarTheme::CSwitchViewButtonPart::RefreshMetrics()
-{
-	if (GetPaintTheme() <= xtpCalendarThemeOffice2003)
-		m_clrTextColor.SetStandardValue(RGB(0, 0, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CSwitchViewButtonPart::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	if (pDC)
+	for (int i = 0; i < m_pTabManagers->GetSize(); i++)
 	{
-		CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont);
-
-		CSize szText = pDC->GetTextExtent(GetText());
-
-		if (szText.cx + 8 > m_rcRect.Width())
-			m_rcRect.right = m_rcRect.left + szText.cx + 8;
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CSwitchViewButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("CALENDARCAPTIONBARSWITCHVIEWBUTTON"));
-	CRect rcRect = GetRect();
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-	{
-		pDC->FillSolidRect(rcRect , RGB(155, 0, 0));
-		return;
-	}
-
-
-	if (GetPaintTheme() >= xtpCalendarThemeResource)
-	{
-		int nImagePart = (m_nState & xtpBtnStateChecked) ? 3 : 0;
-
-		if (m_nState & xtpBtnStatePressed)
+		CXTPTabManagerItem* pItem = m_pTabManagers->GetAt(i)->HitTest(point);
+		if (pItem)
 		{
-			nImagePart += 2;
-		}
-		else if (m_nState & xtpBtnStateMouseOver)
-		{
-			nImagePart += 1;
+			return (CXTPDockingPane*)pItem->GetData();
 		}
 
-		pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 6), CRect(0, 0, 0, 0));
-
-		rcRect.left = rcRect.right - 1;
-		pDC->FillSolidRect(&rcRect, GetTheme()->m_clrBorders);
 	}
-	else
+	return NULL;
+}
+
+void CXTPDockingPaneAutoHidePanel::CloseActiveWindows()
+{
+	for (int i = 0; i < 4; i++)
 	{
-		if (GetTheme()->m_themeButton->IsAppThemed() &&
-			GetPaintTheme() == xtpCalendarThemeOffice2003)
+		SAFE_CALLPTR(m_pLayout->m_wndPanels[i], CloseActiveWindow());
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::CloseActiveWindow(BOOL bDelayed)
+{
+	if (!m_bCloseActiveWindow)
+		return;
+
+	if (m_pActiveWnd)
+	{
+		if (m_pActiveWnd->m_pPane)
 		{
-			int nState = (m_nState & xtpBtnStatePressed) ? PBS_PRESSED :
-					(m_nState & xtpBtnStateMouseOver) ? PBS_HOT: PBS_NORMAL;
+			if (GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsing, m_pActiveWnd->m_pPane->GetSelected()))
+				return;
 
-			if (m_nState & xtpBtnStateChecked)
-				nState = PBS_PRESSED;
+			GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsed,
+				m_pActiveWnd->m_pPane->GetSelected());
+		}
 
-			GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_PUSHBUTTON, nState, rcRect, NULL);
+		if (bDelayed)
+		{
+			// let the window close itself
+			if (m_pActiveWnd->m_pPane)
+			{
+				m_pActiveWnd->m_pPane->ShowWindow(SW_HIDE);
+				m_pActiveWnd->m_pPane->SetDockingSite(GetDockingPaneManager()->GetSite());
+				m_pActiveWnd->m_pPane = 0;
+			}
+			m_pActiveWnd->SetTimer(TID_CLOSE, 50, NULL);
+		}
+		else
+		{
+			m_pActiveWnd->CloseWindow();
+		}
+
+		m_pActiveWnd = 0;
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::ShowPane(CXTPDockingPane* pPane, BOOL bSetFocus)
+{
+	if (m_pActiveWnd && m_pActiveWnd->m_pPane && m_pActiveWnd->m_pPane->GetSelected() == pPane)
+	{
+		if (bSetFocus) m_pActiveWnd->m_pPane->SelectPane(pPane, TRUE, FALSE);
+
+		if (m_pActiveWnd->m_bSlideOut)
+		{
+			m_pActiveWnd->OnTimer(TID_CHECKACTIVE);
+		}
+		return;
+	}
+
+	CloseActiveWindows();
+
+	if (GetDockingPaneManager()->_OnAction(xtpPaneActionExpanding, pPane))
+		return;
+
+	CXTPDockingPaneTabbedContainer* pContainer = ((CXTPDockingPaneTabbedContainer*)pPane->m_pParentContainer);
+
+	ASSERT(pContainer);
+	if (!pContainer)
+		return;
+	ASSERT(pContainer->GetType() == xtpPaneTypeTabbedContainer);
+
+	pContainer->SelectPane(pPane, FALSE, TRUE);
+	CXTPDockingPaneAutoHideWnd* pActiveWnd = new CXTPDockingPaneAutoHideWnd(this, pContainer);
+
+	if (bSetFocus) pContainer->SelectPane(pPane, TRUE, FALSE);
+
+	if (m_hWnd) Invalidate(FALSE);
+	GetDockingPaneManager()->RecalcFrameLayout(this);
+
+	m_pActiveWnd = pActiveWnd;
+}
+
+void CXTPDockingPaneAutoHidePanel::OnLButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		if (m_pActiveWnd && m_pActiveWnd->m_pPane->GetSelected() == pPane)
+		{
+			pPane->SetFocus();
 
 		}
 		else
 		{
-			UINT uFlags = DFCS_BUTTONPUSH |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-			::DrawFrameControl(pDC->GetSafeHdc(), rcRect, DFC_BUTTON, uFlags);
+			ShowPane(pPane);
 		}
 	}
+}
 
-
-	// drawText
-	CFont fntTmp;
-	CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont, GetTextColor());
-
-	if ((m_nState & xtpBtnStateChecked) && GetPaintTheme() <= xtpCalendarThemeOffice2003)
+void CXTPDockingPaneAutoHidePanel::OnRButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
 	{
-		LOGFONT lf;
-		if (GetTheme()->m_fntTextFont->GetLogFont(&lf))
-		{
-			lf.lfWeight = FW_BOLD;
+		GetDockingPaneManager()->NotifyOwner(XTP_DPN_RCLICK, (LPARAM)(CXTPDockingPaneBase*)pPane);
+	}
+}
 
-			if (fntTmp.CreateFontIndirect(&lf))
-				autoFont.SetFont(&fntTmp);
+void CXTPDockingPaneAutoHidePanel::OnMouseMove(UINT nFlags, CPoint point)
+{
+	for (int i = 0; i < m_pTabManagers->GetSize(); i++)
+	{
+		m_pTabManagers->GetAt(i)->PerformMouseMove(m_hWnd, point);
+	}
+
+
+
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		TRACKMOUSEEVENT tme =
+		{
+			sizeof(TRACKMOUSEEVENT), TME_HOVER | TME_LEAVE, m_hWnd, CXTPDockingPaneAutoHideWnd::m_nMouseHoverDelay
+		};
+		_TrackMouseEvent(&tme);
+
+	}
+	CWnd::OnMouseMove(nFlags, point);
+}
+
+void CXTPDockingPaneAutoHidePanel::OnMouseLeave()
+{
+	OnMouseMove(0, CPoint(-1, -1));
+}
+
+LRESULT CXTPDockingPaneAutoHidePanel::OnMouseHover(WPARAM, LPARAM lParam)
+{
+	CPoint point(lParam);
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		if (!CXTPDrawHelpers::IsTopParentActive(m_hWnd) || (m_pActiveWnd && m_pActiveWnd->m_pPane->GetSelected() == pPane))
+			return 1;
+
+		ShowPane(pPane, FALSE);
+	}
+
+	return 1;
+}
+
+
+void CXTPDockingPaneAutoHidePanel::Copy(CXTPDockingPaneAutoHidePanel* pClone, CXTPPaneToPaneMap* pMap)
+{
+	ASSERT(pClone);
+	if (!pClone)
+		return;
+
+	m_direction = pClone->m_direction;
+	m_pDockingSite = GetDockingPaneManager()->GetSite();
+
+	POSITION pos = pClone->GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)pClone->GetNext(pos);
+		if (!pPane->IsEmpty() || pMap)
+		{
+			_InsertPane(pPane->Clone(m_pLayout, pMap));
 		}
 	}
-
-	CRect rcText = GetRect();
-	rcText.DeflateRect(1, 1, 1, 1);
-
-	pDC->SetBkMode(TRANSPARENT);
-	pDC->DrawText(GetText(), rcText, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 }
 
-LPCTSTR CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::_GetImageName()
+CXTPDockingPaneBase* CXTPDockingPaneAutoHidePanel::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
 {
-	if (m_nPartID == xtpCalendarCaptionBar_ScrollNextDate)
-		return _T("CALENDARCAPTIONBARNEXTDATEBUTTON");
+	CXTPDockingPaneAutoHidePanel* pPane = (CXTPDockingPaneAutoHidePanel*)GetDockingPaneManager()->
+		OnCreatePane(GetType(), pLayout);
 
-	return _T("CALENDARCAPTIONBARPREVDATEBUTTON");
+	pPane->Copy(this, pMap);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
 }
 
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::AdjustLayout(CDC* /*pDC*/, const CRect& rcRect)
+void CXTPDockingPaneAutoHidePanel::InvalidatePane(BOOL /*bSelectionChanged*/)
 {
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
+	if (!m_hWnd)
 		return;
 
-	CXTPResourceImages* pImages = XTPResourceImages();
+	CClientDC dc(this);
+	CXTPClientRect rcPanel(this);
 
-	CXTPResourceImage* pImage =pImages->LoadFile(_GetImageName());
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-		return;
-
-	CRect rcImage = pImage->GetSource(0, 4);
-
-	m_rcRect.right = m_rcRect.left + rcImage.Width();
-
-	int C = (m_rcRect.top + m_rcRect.bottom) / 2;
-	int H = rcImage.Height() / 2;
-	m_rcRect.top = C - H;
-	m_rcRect.bottom = C + H;
-
-	//m_rcRect.bottom = m_rcRect.top + rcImage.Height();
+	RefreshManagersArray(&dc, rcPanel);
+	Invalidate(FALSE);
 }
 
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::Draw(CDC* pDC)
+
+void CXTPDockingPaneAutoHidePanel::OnChildContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
 {
-	if (!IsVisible())
-		return;
-
-	CRect rcRect = GetRect();
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_GetImageName());
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
+	if (m_pActiveWnd)
 	{
-		pDC->FillSolidRect(rcRect, RGB(155, 0, 0));
-		return;
-	}
-
-	if (GetPaintTheme() == xtpCalendarThemeResource)
-	{
-		int nImagePart = (m_nState & xtpBtnStatePressed) ? 2 : (m_nState & xtpBtnStateMouseOver) ? 1 : 0;
-
-		if (pImage->IsAlphaImage())
-			pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 4));
-		else
-			pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 4), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-
-		if (m_nState & xtpBtnStateFocused)
+		if (!m_bCloseActiveWindow)
 		{
-			if (pImage->IsAlphaImage())
-				pImage->DrawImage(pDC, GetRect(), pImage->GetSource(3, 4), CRect(1, 1, 1, 1));
-			else
-				pImage->DrawImage(pDC, GetRect(), pImage->GetSource(3, 4), CRect(1, 1, 1, 1), RGB(255, 0, 255));
-		}
-	}
-	else
-	{
-		if (GetTheme()->m_themeButton->IsAppThemed() &&
-			GetPaintTheme() == xtpCalendarThemeOffice2003)
-		{
-			int nState = (m_nState & xtpBtnStatePressed) ? PBS_PRESSED :
-					(m_nState & xtpBtnStateMouseOver) ? PBS_HOT: PBS_NORMAL;
+			GetDockingPaneManager()->RecalcFrameLayout(this);
 
-			GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_PUSHBUTTON, nState, rcRect, NULL);
-		}
-		else
-		{
-			UINT uFlags = DFCS_BUTTONPUSH |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0); // | (bEnabled ? 0 : DFCS_INACTIVE)
-
-			::DrawFrameControl(pDC->GetSafeHdc(), rcRect, DFC_BUTTON, uFlags);
-		}
-
-		BOOL bLeftDirection = GetPartID() == xtpCalendarCaptionBar_ScrollPrevDate;
-		DrawScrollTriangle(pDC, rcRect, bLeftDirection, RGB(0, 0, 0));
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::_DrawTriangle(CDC* pDC, CPoint pt0, CPoint pt1, CPoint pt2, COLORREF clrColor)
-{
-	CXTPPenDC pen (*pDC, clrColor);
-	CXTPBrushDC brush (*pDC, clrColor);
-
-	CPoint pts[3];
-	pts[0] = pt0;
-	pts[1] = pt1;
-	pts[2] = pt2;
-	pDC->Polygon(pts, 3);
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::DrawScrollTriangle(CDC* pDC, CRect rcRect, BOOL bLeftDirection, COLORREF clrColor)
-{
-	CPoint ptCenter(rcRect.CenterPoint());
-	ptCenter.y--;
-
-	if (bLeftDirection)
-	{
-		ptCenter.x -= 3;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x + 4, ptCenter.y - 4),
-				CPoint(ptCenter.x + 4, ptCenter.y + 4), clrColor);
-	}
-	else
-	{
-		ptCenter.x += 2;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x - 4, ptCenter.y - 4),
-			CPoint(ptCenter.x - 4, ptCenter.y + 4), clrColor);
-	}
-}
-
-
-BOOL CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CXTPCalendarCaptionBarThemePart::OnLButtonDown(nFlags, point);
-
-	if (GetTheme() && GetTheme()->GetOwnerWnd() && HitTest(point) &&
-		CWnd::GetFocus() != GetTheme()->GetOwnerWnd() )
-	{
-		GetTheme()->GetOwnerWnd()->SetFocus();
-	}
-
-	return FALSE;
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	UNREFERENCED_PARAMETER(nRepCnt);  UNREFERENCED_PARAMETER(nFlags);
-
-	if (!IsVisible())
-		return;
-
-	if ((m_nState & xtpBtnStateFocused) && (m_nState & xtpBtnStatePressed) == 0 &&
-		nChar == VK_SPACE)
-	{
-		m_nState |= xtpBtnStatePressed;
-
-		Redraw();
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	UNREFERENCED_PARAMETER(nRepCnt);  UNREFERENCED_PARAMETER(nFlags);
-
-	if (!IsVisible())
-		return;
-
-	int nMask = xtpBtnStateFocused | xtpBtnStatePressed;
-
-	if ((m_nState & nMask) == nMask && nChar == VK_SPACE && GetTheme())
-	{
-		GetTheme()->OnPartClick(GetPartID());
-	}
-
-	if (nChar == VK_SPACE)
-	{
-		m_nState = m_nState & (~xtpBtnStatePressed);
-
-		Redraw();
-	}
-}
-//------------------------------------------------------------------
-void CXTPCalendarCaptionBarTheme::CRadioButtonPart::RefreshMetrics()
-{
-	if (GetPaintTheme() <= xtpCalendarThemeOffice2003)
-		m_clrTextColor.SetStandardValue(RGB(0, 0, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CRadioButtonPart::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	if (GetTheme() && GetTheme()->m_themeButton->IsAppThemed())
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_RADIOBUTTON, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	if (pDC)
-	{
-		CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont);
-		CSize szText = pDC->GetTextExtent(GetText());
-
-		if (szRadio.cx + 9 + szText.cx + 8 > m_rcRect.Width())
-			m_rcRect.right = m_rcRect.left + szRadio.cx + 9 + szText.cx + 8;
-
-		szRadio.cy = max(szRadio.cy, szText.cy);
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CRadioButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	BOOL bThemed = GetTheme() && GetTheme()->m_themeButton->IsAppThemed() &&
-					GetPaintTheme() >= xtpCalendarThemeOffice2003;
-	if (bThemed)
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_RADIOBUTTON, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	rcRadio.right = rcRadio.left + szRadio.cx;
-
-	if (bThemed)
-	{
-		int md = rcRadio.CenterPoint().y;
-		int ht = (int) (rcRadio.Height() / (2 * GetTheme()->m_dScale));
-		rcRadio.top = md - ht;
-		rcRadio.bottom = md + ht;
-
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_RADIOBUTTON, 1, &rcRadio, TS_DRAW, &szRadio);
-
-		int nState = (m_nState & xtpBtnStatePressed) ? RBS_UNCHECKEDPRESSED :
-				(m_nState & xtpBtnStateMouseOver) ? RBS_UNCHECKEDHOT : RBS_UNCHECKEDNORMAL;
-
-		if (m_nState & xtpBtnStateChecked)
-			nState += 4;
-
-		GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_RADIOBUTTON, nState, rcRadio, NULL);
-
-	}
-	else
-	{
-		UINT uFlags = DFCS_BUTTONRADIO |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-		if (GetPaintTheme() > xtpCalendarThemeOffice2000)
-			uFlags |= DFCS_FLAT;
-
-		::DrawFrameControl(pDC->GetSafeHdc(), rcRadio, DFC_BUTTON, uFlags);
-	}
-
-	// drawText
-	CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont, GetTextColor());
-	pDC->SetBkMode(TRANSPARENT);
-
-	CRect rcText = GetRect();
-	rcText.left = rcRadio.right + 9;
-
-	pDC->DrawText(GetText(), rcText, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
-
-	rcText.left--;
-	rcText.right++;
-
-	if (m_nState & xtpBtnStatePressed)
-		pDC->DrawFocusRect(rcText);
-}
-//------------------------------------------------------------------
-void CXTPCalendarCaptionBarTheme::CCheckboxButtonPart::RefreshMetrics()
-{
-	if (GetPaintTheme() <= xtpCalendarThemeOffice2003)
-		m_clrTextColor.SetStandardValue(RGB(0, 0, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CCheckboxButtonPart::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	if (GetTheme() && GetTheme()->m_themeButton->IsAppThemed())
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_CHECKBOX, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	if (pDC)
-	{
-		CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont);
-		CSize szText = pDC->GetTextExtent(GetText());
-
-		if (szRadio.cx + 9 + szText.cx + 8 > m_rcRect.Width())
-			m_rcRect.right = m_rcRect.left + szRadio.cx + 9 + szText.cx + 8;
-
-		szRadio.cy = max(szRadio.cy, szText.cy);
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CCheckboxButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	BOOL bThemed = GetTheme() && GetTheme()->m_themeButton->IsAppThemed() &&
-					GetPaintTheme() >= xtpCalendarThemeOffice2003;
-	if (bThemed)
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_CHECKBOX, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	rcRadio.right = rcRadio.left + szRadio.cx;
-
-	if (bThemed)
-	{
-		int md = rcRadio.CenterPoint().y;
-		int ht = (int) (rcRadio.Height() / (2 * GetTheme()->m_dScale));
-		rcRadio.top = md - ht;
-		rcRadio.bottom = md + ht;
-
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_CHECKBOX, 1, &rcRadio, TS_DRAW, &szRadio);
-
-		int nState = (m_nState & xtpBtnStatePressed) ? RBS_UNCHECKEDPRESSED :
-				(m_nState & xtpBtnStateMouseOver) ? RBS_UNCHECKEDHOT: RBS_UNCHECKEDNORMAL;
-
-		if (m_nState & xtpBtnStateChecked)
-			nState += 4;
-
-		GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_CHECKBOX, nState, rcRadio, NULL);
-
-	}
-	else
-	{
-		UINT uFlags = DFCS_BUTTONCHECK |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-		if (GetPaintTheme() > xtpCalendarThemeOffice2000)
-			uFlags |= DFCS_FLAT;
-
-		::DrawFrameControl(pDC->GetSafeHdc(), rcRadio, DFC_BUTTON, uFlags);
-	}
-
-	// drawText
-	CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont, GetTextColor());
-	pDC->SetBkMode(TRANSPARENT);
-
-	CRect rcText = GetRect();
-	rcText.left = rcRadio.right + 9;
-
-	pDC->DrawText(GetText(), rcText, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
-
-	rcText.left--;
-	rcText.right++;
-
-	if (m_nState & xtpBtnStatePressed)
-		pDC->DrawFocusRect(rcText);
-}
-//------------------------------------------------------------------
-void CXTPCalendarCaptionBarTheme::CDateLabelPart::RefreshMetrics()
-{
-	if (!GetTheme())
-		return;
-
-	m_clrTextColor.SetStandardValue(GetTheme()->m_clrTextColor);
-
-	LOGFONT lfBaseFont;
-	::ZeroMemory(&lfBaseFont, sizeof(lfBaseFont));
-
-	GetTheme()->m_fntTextFont->GetLogFont(&lfBaseFont);
-
-	if (GetTheme()->IsOneLine())
-	{
-		if (XTPSystemVersion()->IsWinVistaOrGreater())
-			lfBaseFont.lfHeight = -14;
-		else
-			lfBaseFont.lfHeight = -18;
-	}
-	else
-		lfBaseFont.lfHeight = -20;
-
-	m_fntTextFont.SetStandardValue(&lfBaseFont);
-}
-
-void CXTPCalendarCaptionBarTheme::CDateLabelPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CXTPFontDC autoFont(pDC, m_fntTextFont, m_clrTextColor);
-	pDC->SetBkMode(TRANSPARENT);
-
-	CXTPCalendarView* pCalView = XTP_SAFE_GET2(GetTheme(), GetCalendarCtrl(), GetActiveView(), NULL);
-
-	if (pCalView)
-	{
-		BOOL bShowMonthDay = pCalView->GetViewType() != xtpCalendarMonthView;
-		COleDateTime dtDay1 = pCalView->GetViewDayDate(0);
-		COleDateTime dtDay2 = pCalView->GetViewDayDate(max(0, pCalView->GetViewDayCount() - 1));
-
-		m_strText = _FormatDate(dtDay1, dtDay2, bShowMonthDay);
-	}
-
-	if (m_strText.IsEmpty())
-		return;
-
-	CRect rcText = GetRect();
-	rcText.top -= 6;
-
-	UINT uFlags = DT_VCENTER | DT_SINGLELINE;
-	if (GetTheme() && !GetTheme()->IsScrollDateButtons()
-		&& GetPaintTheme() < xtpCalendarThemeResource)
-	{
-		uFlags |= DT_CENTER;
-		rcText.right = max(rcText.left, rcText.right - 9);
-	}
-
-	pDC->DrawText(GetText(), rcText, uFlags);
-}
-
-CString CXTPCalendarCaptionBarTheme::CDateLabelPart::_FormatDate(COleDateTime dtDay1, COleDateTime dtDay2, BOOL bShowMonthDay)
-{
-	//LOCALE_IDATE  -  short date format ordering
-	// 0 Month-Day-Year
-	// 1 Day-Month-Year
-	// 2 Year-Month-Day
-	int nDateOrdering = CXTPCalendarUtils::GetLocaleLong(LOCALE_ILDATE);
-
-	CString strFormat1 = CXTPCalendarUtils::GetLocaleString(LOCALE_SLONGDATE, 256);
-	CString strFormat2 = CXTPCalendarUtils::GetLocaleString(LOCALE_SLONGDATE, 256);
-
-	strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T('g'));
-	strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T("ddd"));
-	strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T("dddd"));
-
-	strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T('g'));
-	strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T("ddd"));
-	strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T("dddd"));
-
-	if (!bShowMonthDay)
-	{
-		strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T('d'));
-		strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T('d'));
-	}
-	CString strCaption;
-
-	if (!CXTPCalendarUtils::IsEqual(dtDay1, dtDay2))
-	{
-		//CString strFormat2(strFormat1);
-
-		if (dtDay1.GetMonth() == dtDay2.GetMonth())
-		{
-			if (nDateOrdering == 1)
-				strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1,  _T('M'));
-			else
-				strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2,  _T('M'));
-		}
-
-		if (dtDay1.GetYear() == dtDay2.GetYear())
-		{
-			if (nDateOrdering == 2)
-				strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2,  _T('y'));
-			else
-				strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1,  _T('y'));
-		}
-
-		if (!strFormat1.IsEmpty())
-			strCaption = CXTPCalendarUtils::GetDateFormat(dtDay1, strFormat1);
-
-		if (!strFormat1.IsEmpty() && !strFormat2.IsEmpty())
-			strCaption += _T(" - ");
-
-		if (!strFormat2.IsEmpty())
-			strCaption += CXTPCalendarUtils::GetDateFormat(dtDay2, strFormat2);
-	}
-	else
-	{
-		strCaption = CXTPCalendarUtils::GetDateFormat(dtDay1, strFormat1);
-	}
-
-	UserAction_FormatCaptionBarLabel(strCaption, dtDay1);	
-	return strCaption;
-}
-
-void CXTPCalendarCaptionBarTheme::CDateLabelPart::UserAction_FormatCaptionBarLabel(CString& strCaption, COleDateTime dtDay1)
-{
-	DWORD dwFlags = XTP_SAFE_GET2(GetTheme(), GetCalendarCtrl(), GetAskItemTextFlags(), 0);
-	CXTPCalendarView* pActiveView = XTP_SAFE_GET2(GetTheme(), GetCalendarCtrl(), GetActiveView(), NULL);
-	if(pActiveView == NULL)
-		return;
-
-	XTPCalendarViewType activeViewType = pActiveView->GetViewType();
-	
-	XTP_CALENDAR_GETITEMTEXT_PARAMS objRequest;
-	::ZeroMemory(&objRequest, sizeof(objRequest));
-	objRequest.pstrText = &strCaption;
-	objRequest.nWeekNum = CXTPCalendarUtils::GetWeekOfYear(dtDay1);
-
-	if ((dwFlags & xtpCalendarItemText_CaptionBarDayViewDateLabel) && activeViewType == xtpCalendarDayView)
-		objRequest.nItem = (int)xtpCalendarItemText_CaptionBarDayViewDateLabel;
-
-	if ((dwFlags & xtpCalendarItemText_CaptionBarWeekViewDateLabel) 
-		 && (activeViewType == xtpCalendarWeekView || activeViewType == xtpCalendarFullWeekView || activeViewType == xtpCalendarWorkWeekView))
-		objRequest.nItem = (int)xtpCalendarItemText_CaptionBarWeekViewDateLabel;
-
-	if ((dwFlags & xtpCalendarItemText_CaptionBarMonthViewDateLabel) && activeViewType == xtpCalendarMonthView)
-		objRequest.nItem = (int)xtpCalendarItemText_CaptionBarMonthViewDateLabel;		
-
-	if(objRequest.nItem != 0)
-		XTP_SAFE_CALL2(GetTheme(), GetCalendarCtrl(), SendNotificationAlways(XTP_NC_CALENDAR_GETITEMTEXT, (WPARAM)&objRequest, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CExpandButtonPart::AdjustLayout(CDC* /*pDC*/, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("CALENDARCAPTIONBAREXPANDBUTTON"));
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-		return;
-
-	CRect rcImage = pImage->GetSource(0, 6);
-
-	m_rcRect.left = m_rcRect.right - rcImage.Width();
-	m_rcRect.top = m_rcRect.top + m_rcRect.Height() / 2 - rcImage.Height() / 2;
-	m_rcRect.bottom = m_rcRect.top + rcImage.Height();
-}
-
-void CXTPCalendarCaptionBarTheme::CExpandButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CRect rcRect = GetRect();
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("CALENDARCAPTIONBAREXPANDBUTTON"));
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-	{
-		pDC->FillSolidRect(rcRect, RGB(155, 0, 0));
-		return;
-	}
-
-	if (GetPaintTheme() == xtpCalendarThemeResource)
-	{
-		int nImagePart = (m_nState & xtpBtnStateChecked) ? 3 : 0;
-		if (m_nState & xtpBtnStatePressed)
-			nImagePart += 2;
-		else if (m_nState & xtpBtnStateMouseOver)
-			nImagePart += 1;
-
-		pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 6), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-		//pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 6));
-	}
-	else
-	{
-		if (GetTheme()->m_themeButton->IsAppThemed() &&
-			GetPaintTheme() == xtpCalendarThemeOffice2003)
-		{
-			int nState = (m_nState & xtpBtnStatePressed) ? PBS_PRESSED :
-				(m_nState & xtpBtnStateMouseOver) ? PBS_HOT: PBS_NORMAL;
-
-			GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_PUSHBUTTON, nState, rcRect, NULL);
+			m_pActiveWnd->RecalcLayout(TRUE);
 		}
 		else
 		{
-			UINT uFlags = DFCS_BUTTONPUSH |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-			::DrawFrameControl(pDC->GetSafeHdc(), rcRect, DFC_BUTTON, uFlags);
+			CloseActiveWindow(GetDockingPaneManager()->m_bAttachingPane);
 		}
-
-		BOOL bDownDirection = (m_nState & xtpBtnStateChecked) == 0;
-		DrawExpandTriangle(pDC, rcRect, bDownDirection, RGB(0, 0, 0));
 	}
 }
 
-void CXTPCalendarCaptionBarTheme::CExpandButtonPart::DrawExpandTriangle(CDC* pDC, CRect rcRect, BOOL bDownDirection, COLORREF clrColor)
+void CXTPDockingPaneAutoHidePanel::DeletePane()
 {
-	CPoint ptCenter(rcRect.CenterPoint());
-	if (bDownDirection)
-	{
-		ptCenter.y += 2;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x + 4, ptCenter.y - 4),
-			CPoint(ptCenter.x - 4, ptCenter.y - 4), clrColor);
-	}
-	else
-	{
-		ptCenter.y -= 2;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x + 4, ptCenter.y + 4),
-			CPoint(ptCenter.x - 4, ptCenter.y + 4), clrColor);
-	}
+	InternalRelease();
 }
+
+void CXTPDockingPaneAutoHidePanel::OnFinalRelease()
+{
+	if (m_hWnd != NULL)
+		DestroyWindow();
+
+	CCmdTarget::OnFinalRelease();
+}
+

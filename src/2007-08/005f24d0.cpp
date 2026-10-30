@@ -1,61 +1,21 @@
-// from server: 26% by colin
-// roc 2007-08 005f24d0  unit: std::X::ZV?$allocator::$$A6AX_N::V?$function::?$holder  size: 104 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005f24d0
-//
-// 005f24d0  6aff                 push -1
-// 005f24d2  68f8b57500           push 0x75b5f8
-// 005f24d7  64a100000000         mov eax, dword ptr fs:[0]
-// 005f24dd  50                   push eax
-// 005f24de  64892500000000       mov dword ptr fs:[0], esp
-// 005f24e5  51                   push ecx
-// 005f24e6  56                   push esi
-// 005f24e7  8bf1                 mov esi, ecx
-// 005f24e9  89742404             mov dword ptr [esp + 4], esi
-// 005f24ed  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005f24f1  33c9                 xor ecx, ecx
-// 005f24f3  c7060c087c00         mov dword ptr [esi], 0x7c080c
-// 005f24f9  894e04               mov dword ptr [esi + 4], ecx
-// 005f24fc  894e08               mov dword ptr [esi + 8], ecx
-// 005f24ff  894e0c               mov dword ptr [esi + 0xc], ecx
-// 005f2502  3908                 cmp dword ptr [eax], ecx
-// 005f2504  894c2410             mov dword ptr [esp + 0x10], ecx
-// 005f2508  741a                 je 0x5f2524
-// 005f250a  8b5008               mov edx, dword ptr [eax + 8]
-// 005f250d  89560c               mov dword ptr [esi + 0xc], edx
-// 005f2510  8b10                 mov edx, dword ptr [eax]
-// 005f2512  895604               mov dword ptr [esi + 4], edx
-// 005f2515  8b10                 mov edx, dword ptr [eax]
-// 005f2517  51                   push ecx
-// 005f2518  8b4804               mov ecx, dword ptr [eax + 4]
-// 005f251b  51                   push ecx
-// 005f251c  ffd2                 call edx
-// 005f251e  83c408               add esp, 8
-// 005f2521  894608               mov dword ptr [esi + 8], eax
-// 005f2524  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005f2528  8bc6                 mov eax, esi
-// 005f252a  5e                   pop esi
-// 005f252b  64890d00000000       mov dword ptr fs:[0], ecx
-// 005f2532  83c410               add esp, 0x10
-// 005f2535  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp
 
-struct S {
-    void* vfptr;
-    int field4;
-    int field8;
-    int fieldC;
-    S* construct(int* src);
-};
-
-S* S::construct(int* src) {
-    this->vfptr = (void*)0x7c080c;
-    this->field4 = 0;
-    this->field8 = 0;
-    this->fieldC = 0;
-    if (*src != 0) {
-        this->fieldC = src[2];
-        this->field4 = src[0];
-        int (*fn)(int, int) = (int (*)(int, int))src[0];
-        this->field8 = fn(0, src[1]);
-    }
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/Tool.cpp"

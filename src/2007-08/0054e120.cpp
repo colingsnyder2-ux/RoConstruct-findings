@@ -1,32 +1,16 @@
-// from server: 60% by colin
-struct StreamBuffer {
-    char pad[0x28];
-    int field_28;
-    int field_2c;
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-struct String {
-    char pad[0x1c];
-    String(const char*);
-    ~String();
-};
-
-extern "C" void __stdcall sub_412dc0(void*, String*);
-
-struct Decompressor {
-    StreamBuffer* field_0;
-    char pad[0x24];
-    int field_28;
-    int field_2c;
-    void construct(StreamBuffer*);
-};
-
-void Decompressor::construct(StreamBuffer* other) {
-    String str("gzip error");
-    sub_412dc0(this, &str);
-    field_0 = (StreamBuffer*)0x7a783c;
-    str.~String();
-    field_0 = (StreamBuffer*)0x7a7af4;
-    field_28 = 1;
-    field_2c = other->field_28;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

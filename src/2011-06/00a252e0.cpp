@@ -1,379 +1,853 @@
-// from server: 68% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreOptimisedUtilGeneral.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_unit_9dc8eed6b8f2db5a.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Assembly.h"
+#include "v8world/Controller.h"
+#include "v8world/World.h"
+#include "AppDraw/Draw.h"
+#include "AppDraw/DrawAdorn.h"
+#include "AppDraw/HitTest.h"
+#include "tool/Dragger.h"
+#include <G3D/CoordinateFrame.h>
+#include "reflection/type.h"
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
+namespace RBX
+{
+	const char* category_Part = "Part";
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_unjoin(&PartInstance::destroyJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<PartInstance, void(void), 0> desc_join(&PartInstance::join, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<PartInstance, float(void), 0> desc_getMass(&PartInstance::getMass, "GetMass", Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+	static Reflection::EnumPropDescriptor<PartInstance, Part::PartType> prop_shapeUi("Shape", category_Part, &PartInstance::getPartType, &PartInstance::setPartTypeUi, Reflection::PropertyDescriptor::UI);
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_PositionUi("Position", "Data", &PartInstance::getTranslationUi, &PartInstance::setTranslationUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_Velocity("Velocity", "Data", &PartInstance::getLinearVelocity, &PartInstance::setLinearVelocity, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_RotVelocity("RotVelocity", "Data", &PartInstance::getRotationalVelocity, &PartInstance::setRotationalVelocity, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_SizeUi("Size", category_Part, &PartInstance::getPartSizeUi, &PartInstance::setPartSizeUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, bool> prop_Dragging("DraggingV1", "Behavior", &PartInstance::getDragging, &PartInstance::setDragging, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactorUi("formFactor", category_Part, &PartInstance::getFormFactor, &PartInstance::setFormFactorUi, Reflection::PropertyDescriptor::UI);
+	static Reflection::PropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactor("FormFactor", category_Part, &PartInstance::getFormFactor, &PartInstance::setFormFactorXml, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<PartInstance, float> prop_Friction("Friction", category_Part, &PartInstance::getFriction, &PartInstance::setFriction, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<PartInstance, float> prop_Elasticity("Elasticity", category_Part, &PartInstance::getElasticity, &PartInstance::setElasticity, Reflection::PropertyDescriptor::STANDARD);
 
-#include "OgreOptimisedUtil.h"
+	namespace Reflection
+	{
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<G3D::CoordinateFrame>()
+		{
+			static Type type("CoordinateFrame", typeid(G3D::CoordinateFrame));
+			return type;
+		}
+	}
 
-#include "OgreVector3.h"
-#include "OgreMatrix4.h"
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	PartInstance::PartInstance()
+		: Base("Part"),
+		  partType(Part::BLOCK_PART),
+		  formFactor(BRICK),
+		  color(BrickColor::defaultColor()),
+		  transparency(0.0f),
+		  reflectance(0.0f),
+		  locked(false),
+		  surfaces(this),
+		  renderImportance(0.0f),
+		  primitive(new Primitive(Geometry::GEOMETRY_BLOCK)),
+		  alphaModifier(1.0f),
+		  myWorld(NULL),
+		  PersistentPart(this, &PartInstance::computePersistentPart),
+		  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)
+	{
+		primitive->setSurfaceType(NORM_Y, STUDS);
+		primitive->setSurfaceType(NORM_Y_NEG, INLET);
+		primitive->setGridSize(G3D::Vector3(4.0f, 1.2f, 2.0f));
+		primitive->setFriction(0.3f);
+		primitive->setElasticity(0.5f);
+		primitive->setAnchor(false);
+		primitive->setCanCollide(true);
+		primitive->setOwner(this);
 
-namespace Ogre {
+		onGuidChanged();
+	}
+#pragma warning (pop)
 
-//-------------------------------------------------------------------------
-// Local classes
-//-------------------------------------------------------------------------
+	PartInstance::~PartInstance()
+	{
+		RBXASSERT(!primitive->getClump());
+		RBXASSERT(!myWorld);
+	}
 
-    /** General implementation of OptimisedUtil.
-    @note
-        Don't use this class directly, use OptimisedUtil instead.
-    */
-    class _OgrePrivate OptimisedUtilGeneral : public OptimisedUtil
-    {
-    public:
-        /// @copydoc OptimisedUtil::softwareVertexSkinning
-        virtual void softwareVertexSkinning(
-            const float *srcPosPtr, float *destPosPtr,
-            const float *srcNormPtr, float *destNormPtr,
-            const float *blendWeightPtr, const unsigned char* blendIndexPtr,
-            const Matrix4* const* blendMatrices,
-            size_t srcPosStride, size_t destPosStride,
-            size_t srcNormStride, size_t destNormStride,
-            size_t blendWeightStride, size_t blendIndexStride,
-            size_t numWeightsPerVertex,
-            size_t numVertices);
+	Surfaces& PartInstance::getSurfaces()
+	{
+		return surfaces;
+	}
 
-        /// @copydoc OptimisedUtil::softwareVertexMorph
-        virtual void softwareVertexMorph(
-            Real t,
-            const float *srcPos1, const float *srcPos2,
-            float *dstPos,
-            size_t numVertices);
+	const Surfaces& PartInstance::getSurfaces() const
+	{
+		return surfaces;
+	}
 
-        /// @copydoc OptimisedUtil::concatenateAffineMatrices
-        virtual void concatenateAffineMatrices(
-            const Matrix4& baseMatrix,
-            const Matrix4* srcMatrices,
-            Matrix4* dstMatrices,
-            size_t numMatrices);
+	void PartInstance::onGuidChanged()
+	{
+		RBXASSERT(!myWorld);
+		primitive->setGuid(getGuid());
+	}
 
-        /// @copydoc OptimisedUtil::calculateFaceNormals
-        virtual void calculateFaceNormals(
-            const float *positions,
-            const EdgeData::Triangle *triangles,
-            Vector4 *faceNormals,
-            size_t numTriangles);
+	bool PartInstance::nonNullInWorkspace(boost::shared_ptr<PartInstance> part)
+	{
+		bool null = part.get() && part->myWorld;
+		RBXASSERT(!null || part->primitive->inPipeline());
+		return null;
+	}
 
-        /// @copydoc OptimisedUtil::calculateLightFacing
-        virtual void calculateLightFacing(
-            const Vector4& lightPos,
-            const Vector4* faceNormals,
-            char* lightFacings,
-            size_t numFaces);
+	void PartInstance::destroyJoints()
+	{
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world)
+			world->destroyJoints(primitive.get());
+	}
 
-        /// @copydoc OptimisedUtil::extrudeVertices
-        virtual void extrudeVertices(
-            const Vector4& lightPos,
-            Real extrudeDist,
-            const float* srcPositions,
-            float* destPositions,
-            size_t numVertices);
-    };
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::softwareVertexSkinning(
-        const float *pSrcPos, float *pDestPos,
-        const float *pSrcNorm, float *pDestNorm,
-        const float *pBlendWeight, const unsigned char* pBlendIndex,
-        const Matrix4* const* blendMatrices,
-        size_t srcPosStride, size_t destPosStride,
-        size_t srcNormStride, size_t destNormStride,
-        size_t blendWeightStride, size_t blendIndexStride,
-        size_t numWeightsPerVertex,
-        size_t numVertices)
-    {
-        // Source vectors
-        Vector3 sourceVec = Vector3::ZERO, sourceNorm = Vector3::ZERO;
-        // Accumulation vectors
-        Vector3 accumVecPos, accumVecNorm;
+	void PartInstance::join()
+	{
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world)
+			world->createJoints(primitive.get());
+	}
 
-        // Loop per vertex
-        for (size_t vertIdx = 0; vertIdx < numVertices; ++vertIdx)
-        {
-            // Load source vertex elements
-            sourceVec.x = pSrcPos[0];
-            sourceVec.y = pSrcPos[1];
-            sourceVec.z = pSrcPos[2];
+	bool PartInstance::computeSurfacesNeedAdorn() const
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			Surface& current = surfaces[(NormalId)i];
+			if (current.getSurfaceType() == ROTATE || current.getSurfaceType() == ROTATE_P || current.getSurfaceType() == ROTATE_V)
+				return true;
+		}
+		return false;
+	}
 
-            if (pSrcNorm)
-            {
-                sourceNorm.x = pSrcNorm[0];
-                sourceNorm.y = pSrcNorm[1];
-                sourceNorm.z = pSrcNorm[2];
-            }
+	void PartInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
+	{
+		RBXASSERT(legacyOffset.get());
 
-            // Load accumulators
-            accumVecPos = Vector3::ZERO;
-            accumVecNorm = Vector3::ZERO;
+		G3D::CoordinateFrame myState = parentState * *legacyOffset;
+		primitive->setGridCorner(myState);
+	}
 
-            // Loop per blend weight
-            //
-            // Note: Don't change "unsigned short" here!!! If use "size_t" instead,
-            // VC7.1 unroll this loop to four blend weights pre-iteration, and then
-            // loss performance 10% in this function. Ok, this give a hint that we
-            // should unroll this loop manually for better performance, will do that
-            // later.
-            //
-            for (unsigned short blendIdx = 0; blendIdx < numWeightsPerVertex; ++blendIdx)
-            {
-                // Blend by multiplying source by blend matrix and scaling by weight
-                // Add to accumulator
-                // NB weights must be normalised!!
-                Real weight = pBlendWeight[blendIdx];
-                if (weight)
-                {
-                    // Blend position, use 3x4 matrix
-                    const Matrix4& mat = *blendMatrices[pBlendIndex[blendIdx]];
-                    accumVecPos.x +=
-                        (mat[0][0] * sourceVec.x +
-                         mat[0][1] * sourceVec.y +
-                         mat[0][2] * sourceVec.z +
-                         mat[0][3])
-                         * weight;
-                    accumVecPos.y +=
-                        (mat[1][0] * sourceVec.x +
-                         mat[1][1] * sourceVec.y +
-                         mat[1][2] * sourceVec.z +
-                         mat[1][3])
-                         * weight;
-                    accumVecPos.z +=
-                        (mat[2][0] * sourceVec.x +
-                         mat[2][1] * sourceVec.y +
-                         mat[2][2] * sourceVec.z +
-                         mat[2][3])
-                         * weight;
-                    if (pSrcNorm)
-                    {
-                        // Blend normal
-                        // We should blend by inverse transpose here, but because we're assuming the 3x3
-                        // aspect of the matrix is orthogonal (no non-uniform scaling), the inverse transpose
-                        // is equal to the main 3x3 matrix
-                        // Note because it's a normal we just extract the rotational part, saves us renormalising here
-                        accumVecNorm.x +=
-                            (mat[0][0] * sourceNorm.x +
-                             mat[0][1] * sourceNorm.y +
-                             mat[0][2] * sourceNorm.z)
-                             * weight;
-                        accumVecNorm.y +=
-                            (mat[1][0] * sourceNorm.x +
-                             mat[1][1] * sourceNorm.y +
-                             mat[1][2] * sourceNorm.z)
-                            * weight;
-                        accumVecNorm.z +=
-                            (mat[2][0] * sourceNorm.x +
-                             mat[2][1] * sourceNorm.y +
-                             mat[2][2] * sourceNorm.z)
-                            * weight;
-                    }
-                }
-            }
+	bool PartInstance::isControllable() const
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			Surface& current = surfaces[(NormalId)i];
+			if ((current.getSurfaceType() == ROTATE_P || current.getSurfaceType() == ROTATE_V) && current.isControllable())
+				return true;
+		}
+		return false;
+	}
 
-            // Stored blended vertex in hardware buffer
-            pDestPos[0] = accumVecPos.x;
-            pDestPos[1] = accumVecPos.y;
-            pDestPos[2] = accumVecPos.z;
+	void PartInstance::onSurfaceChanged(RBX::NormalId surfId)
+	{
+		PersistentPart.setDirty();
+		IsControllable.setDirty();
+		SurfacesNeedAdorn.setDirty();
+		shouldRenderSetDirty();
+	}
 
-            // Stored blended vertex in temp buffer
-            if (pSrcNorm)
-            {
-                // Normalise
-                accumVecNorm.normalise();
-                pDestNorm[0] = accumVecNorm.x;
-                pDestNorm[1] = accumVecNorm.y;
-                pDestNorm[2] = accumVecNorm.z;
-                // Advance pointers
-                advanceRawPointer(pSrcNorm, srcNormStride);
-                advanceRawPointer(pDestNorm, destNormStride);
-            }
+	void PartInstance::setPhysics(const G3D::CoordinateFrame& value)
+	{
+		if (value != getCoordinateFrame())
+		{
+			RBXASSERT(Math::isOrthonormal(value.rotation));
+			primitive->setCoordinateFrame(value);
+			PersistentPart.setDirty();
+			onExtentsChanged();
+		}
+	}
 
-            // Advance pointers
-            advanceRawPointer(pSrcPos, srcPosStride);
-            advanceRawPointer(pDestPos, destPosStride);
-            advanceRawPointer(pBlendWeight, blendWeightStride);
-            advanceRawPointer(pBlendIndex, blendIndexStride);
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::concatenateAffineMatrices(
-        const Matrix4& baseMatrix,
-        const Matrix4* pSrcMat,
-        Matrix4* pDstMat,
-        size_t numMatrices)
-    {
-        const Matrix4& m = baseMatrix;
+	void PartInstance::setPhysics(const G3D::CoordinateFrame& cf, const Velocity& vel)
+	{
+		primitive->getBody()->setVelocity(vel);
+		setPhysics(cf);
+	}
 
-        for (size_t i = 0; i < numMatrices; ++i)
-        {
-            const Matrix4& s = *pSrcMat;
-            Matrix4& d = *pDstMat;
+	const G3D::CoordinateFrame& PartInstance::getCoordinateFrame() const
+	{
+		return primitive->getCoordinateFrame();
+	}
 
-            // TODO: Promote following code to Matrix4 class.
+	const G3D::Vector3& PartInstance::getTranslationUi() const
+	{
+		return primitive->getBody()->getCoordinateFrame().translation;
+	}
 
-            d[0][0] = m[0][0] * s[0][0] + m[0][1] * s[1][0] + m[0][2] * s[2][0];
-            d[0][1] = m[0][0] * s[0][1] + m[0][1] * s[1][1] + m[0][2] * s[2][1];
-            d[0][2] = m[0][0] * s[0][2] + m[0][1] * s[1][2] + m[0][2] * s[2][2];
-            d[0][3] = m[0][0] * s[0][3] + m[0][1] * s[1][3] + m[0][2] * s[2][3] + m[0][3];
+	float PartInstance::getMass()
+	{
+		return primitive->getBody()->getMass();
+	}
 
-            d[1][0] = m[1][0] * s[0][0] + m[1][1] * s[1][0] + m[1][2] * s[2][0];
-            d[1][1] = m[1][0] * s[0][1] + m[1][1] * s[1][1] + m[1][2] * s[2][1];
-            d[1][2] = m[1][0] * s[0][2] + m[1][1] * s[1][2] + m[1][2] * s[2][2];
-            d[1][3] = m[1][0] * s[0][3] + m[1][1] * s[1][3] + m[1][2] * s[2][3] + m[1][3];
+	const Velocity& PartInstance::getVelocity() const
+	{
+		return primitive->getBody()->getVelocity();
+	}
 
-            d[2][0] = m[2][0] * s[0][0] + m[2][1] * s[1][0] + m[2][2] * s[2][0];
-            d[2][1] = m[2][0] * s[0][1] + m[2][1] * s[1][1] + m[2][2] * s[2][1];
-            d[2][2] = m[2][0] * s[0][2] + m[2][1] * s[1][2] + m[2][2] * s[2][2];
-            d[2][3] = m[2][0] * s[0][3] + m[2][1] * s[1][3] + m[2][2] * s[2][3] + m[2][3];
+	const G3D::Vector3& PartInstance::getLinearVelocity() const
+	{
+		return getVelocity().linear;
+	}
 
-            d[3][0] = 0;
-            d[3][1] = 0;
-            d[3][2] = 0;
-            d[3][3] = 1;
+	const G3D::Vector3& PartInstance::getRotationalVelocity() const
+	{
+		return getVelocity().rotational;
+	}
 
-            ++pSrcMat;
-            ++pDstMat;
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::softwareVertexMorph(
-        Real t,
-        const float *pSrc1, const float *pSrc2,
-        float *pDst,
-        size_t numVertices)
-    {
-        for (size_t i = 0; i < numVertices; ++i)
-        {
-            // x
-            *pDst++ = *pSrc1 + t * (*pSrc2 - *pSrc1) ;
-            ++pSrc1; ++pSrc2;
-            // y
-            *pDst++ = *pSrc1 + t * (*pSrc2 - *pSrc1) ;
-            ++pSrc1; ++pSrc2;
-            // z
-            *pDst++ = *pSrc1 + t * (*pSrc2 - *pSrc1) ;
-            ++pSrc1; ++pSrc2;
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::calculateFaceNormals(
-        const float *positions,
-        const EdgeData::Triangle *triangles,
-        Vector4 *faceNormals,
-        size_t numTriangles)
-    {
-        for ( ; numTriangles; --numTriangles)
-        {
-            const EdgeData::Triangle& t = *triangles++;
-            size_t offset;
+	const G3D::Vector3& PartInstance::getPartSizeXml() const
+	{
+		return primitive->getGeometry()->getGridSize();
+	}
 
-            offset = t.vertIndex[0] * 3;
-            Vector3 v1(positions[offset+0], positions[offset+1], positions[offset+2]);
+	G3D::Vector3 PartInstance::getPartSizeUi() const
+	{
+		return getPartSizeXml();
+	}
 
-            offset = t.vertIndex[1] * 3;
-            Vector3 v2(positions[offset+0], positions[offset+1], positions[offset+2]);
+	bool PartInstance::getDragging() const
+	{
+		return primitive->getDragging();
+	}
 
-            offset = t.vertIndex[2] * 3;
-            Vector3 v3(positions[offset+0], positions[offset+1], positions[offset+2]);
+	bool PartInstance::getCanCollide() const
+	{
+		return !primitive->getDragging() && primitive->getCanCollide() ? true : false;
+	}
 
-            *faceNormals++ = Math::calculateFaceNormalWithoutNormalize(v1, v2, v3);
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::calculateLightFacing(
-        const Vector4& lightPos,
-        const Vector4* faceNormals,
-        char* lightFacings,
-        size_t numFaces)
-    {
-        for (size_t i = 0; i < numFaces; ++i)
-        {
-            *lightFacings++ = (lightPos.dotProduct(*faceNormals++) > 0);
-        }
-    }
-    //---------------------------------------------------------------------
-    void OptimisedUtilGeneral::extrudeVertices(
-        const Vector4& lightPos,
-        Real extrudeDist,
-        const float* pSrcPos,
-        float* pDestPos,
-        size_t numVertices)
-    {
-        if (lightPos.w == 0.0f)
-        {
-            // Directional light, extrusion is along light direction
+	bool PartInstance::getAnchored() const
+	{
+		return primitive->getAnchor();
+	}
 
-            Vector3 extrusionDir(
-                -lightPos.x,
-                -lightPos.y,
-                -lightPos.z);
-            extrusionDir.normalise();
-            extrusionDir *= extrudeDist;
+	float PartInstance::getFriction() const
+	{
+		return primitive->getFriction();
+	}
 
-            for (size_t vert = 0; vert < numVertices; ++vert)
-            {
-                *pDestPos++ = *pSrcPos++ + extrusionDir.x;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.y;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.z;
-            }
-        }
-        else
-        {
-            // Point light, calculate extrusionDir for every vertex
-            assert(lightPos.w == 1.0f);
+	float PartInstance::getElasticity() const
+	{
+		return primitive->getElasticity();
+	}
 
-            for (size_t vert = 0; vert < numVertices; ++vert)
-            {
-                Vector3 extrusionDir(
-                    pSrcPos[0] - lightPos.x,
-                    pSrcPos[1] - lightPos.y,
-                    pSrcPos[2] - lightPos.z);
-                extrusionDir.normalise();
-                extrusionDir *= extrudeDist;
+	Extents PartInstance::getExtentsWorld() const
+	{
+		return primitive->getExtentsWorld();
+	}
 
-                *pDestPos++ = *pSrcPos++ + extrusionDir.x;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.y;
-                *pDestPos++ = *pSrcPos++ + extrusionDir.z;
-            }
-        }
-    }
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    //---------------------------------------------------------------------
-    extern OptimisedUtil* _getOptimisedUtilGeneral(void)
-    {
-        static OptimisedUtilGeneral msOptimisedUtilGeneral;
-        return &msOptimisedUtilGeneral;
-    }
+	Extents PartInstance::getExtentsLocal() const
+	{
+		return primitive->getExtentsLocal();
+	}
 
+	G3D::CoordinateFrame PartInstance::worldSnapLocation() const
+	{
+		G3D::Vector3 halfSize = getPartSizeXml() * 0.5f;
+
+		G3D::Vector3 snapInPart;
+		snapInPart.y = -halfSize.y;
+		snapInPart.x = halfSize.x - G3D::iRound(floorf(halfSize.x));
+		snapInPart.z = halfSize.z - G3D::iRound(floorf(halfSize.z));
+
+		G3D::CoordinateFrame localSnapLocation(snapInPart);
+		return primitive->getCoordinateFrame() * localSnapLocation;
+	}
+
+	bool PartInstance::aligned() const
+	{
+		G3D::CoordinateFrame myCoord = worldSnapLocation();
+		G3D::CoordinateFrame myCoordSnapped = Math::snapToGrid(myCoord, Dragger::dragSnap());
+
+		return Math::fuzzyEq(myCoord, myCoordSnapped, 0.00001, 0.00001);
+	}
+
+
+	G3D::Vector3 PartInstance::uiToXmlSize(const G3D::Vector3& uiSize) const
+	{
+		G3D::Vector3 gridUiSize = Math::iRoundVector3(uiSize.max(G3D::Vector3(1.0f, 1.0f, 1.0f)));
+		G3D::Vector3 xmlSize = gridUiSize;
+		
+		switch (formFactor)
+		{
+		case BRICK:
+			xmlSize.y *= 1.2f;
+			break;
+		case PLATE:
+			xmlSize.y *= 0.4f;
+			break;
+		}
+
+		return xmlSize;
+	}
+
+	const Part& PartInstance::getPart() const
+	{
+		const Part& part = PersistentPart.getValueRef();
+		part.coordinateFrame = primitive->getCoordinateFrame();
+		return part;
+	}
+
+	Part PartInstance::computePersistentPart() const
+	{
+		const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+		float transparency = 1.0f - alpha();
+
+		return Part(partType, getPartSizeXml(), G3D::Color4(getColor3(), transparency), surfaces.surf6(), cframe);
+	}
+
+	const RBX::PartInstance* PartInstance::fromPrimitiveConst(const Primitive* p)
+	{
+		RBXASSERT(!p || dynamic_cast<PartInstance*>(p->getOwner()));
+
+		if (p)
+			return rbx_static_cast<PartInstance*>(p->getOwner());
+		else
+			return NULL;
+	}
+
+	PartInstance* PartInstance::fromPrimitive(Primitive* p)
+	{
+		return const_cast<PartInstance*>(fromPrimitiveConst(p));
+	}
+
+	bool PartInstance::shouldRender3dAdorn() const
+	{
+		return partType == Part::CYLINDER_PART ||
+			   SurfacesNeedAdorn || 
+			   highlightSleepParts || 
+			   highlightAwakeParts || 
+			   showPartCoord || 
+			   showAnchoredParts ||
+			   showUnalignedParts ||
+			   showSpanningTree;
+	}
+
+	bool PartInstance::getLocked(Instance* instance)
+	{
+		PartInstance* thisPart = dynamic_cast<PartInstance*>(instance);
+
+		if (thisPart)
+		{
+			return thisPart->locked;
+		}
+		else
+		{
+			for (size_t i = 0; i < instance->numChildren(); i++)
+			{
+				if (getLocked(instance->getChild(i)))
+					return true;
+			}
+			return false;
+		}
+	}
+
+	void PartInstance::onParentControllerChanged()
+	{
+		PVInstance::onParentControllerChanged();
+		PersistentPart.setDirty();
+		primitive->setController(getTopPVController());
+	}
+
+	void PartInstance::onCanAggregateChanged(bool canAggregate)
+	{
+		RBXASSERT(canAggregate == getCanAggregate());
+		Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
+		shouldRenderSetDirty();
+	}
+
+	void PartInstance::onAncestorChanged(const AncestorChanged& event)
+	{
+		Instance::onAncestorChanged(event);
+		RBXASSERT(primitive.get());
+
+		World* world = Workspace::getWorldIfInWorkspace(this);
+		if (world != myWorld)
+		{
+			RBXASSERT(myWorld || !primitive->getClump());
+
+			if (myWorld)
+			{
+				setMovingManager(NULL);
+				myWorld->removePrimitive(primitive.get());
+			}
+
+			myWorld = world;
+
+			if (world)
+			{
+				world->insertPrimitive(primitive.get());
+				setMovingManager(Workspace::getMyWorkspaceFast(this));
+				primitive->setController(getTopPVController());
+			}
+		}
+	}
+
+	void PartInstance::onTouchThisStep(boost::shared_ptr<PartInstance> other)
+	{
+		event_Touched.fire(this, other);
+	}
+
+	void PartInstance::onChildAdded(Instance* child)
+	{
+		PVInstance::onChildAdded(child);
+	}
+
+	void PartInstance::onCameraNear(float distance)
+	{
+		if (distance < 3.0f)
+			setAlphaModifier(0.0f);
+		else if (distance < 6.0f)
+			setAlphaModifier(0.5f);
+		else
+			setAlphaModifier(1.0f);
+	}
+
+	void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+	{
+		Draw::selectionBox(getPart(), adorn, selectState);
+	}
+
+	void PartInstance::render3dAdorn(Adorn* adorn)
+	{
+		if (partType == Part::CYLINDER_PART || SurfacesNeedAdorn)
+			Draw::partAdorn(getPart(), adorn, Controller::controllerTypeToColor(getTopPVController()->getControllerType()));
+
+		if (highlightSleepParts && primitive->getAssembly())
+		{
+			Sim::AssemblyState sleepStatus = primitive->getAssembly()->getRootClump()->getSleepStatus();
+
+			if (sleepStatus != Sim::ANCHORED && sleepStatus != Sim::AWAKE)
+			{
+				G3D::Color3 sleepColor;
+
+				switch (sleepStatus)
+				{
+				case Sim::RECURSIVE_WAKE_PENDING:
+				case Sim::WAKE_PENDING:
+					sleepColor = G3D::Color3::purple();
+					break;
+				case Sim::SLEEPING_CHECKING:
+					sleepColor = G3D::Color3::orange();
+					break;
+				case Sim::SLEEPING_DEEPLY:
+					sleepColor = G3D::Color3::yellow();
+					break;
+				default:
+					RBXASSERT(0);
+					sleepColor = sleepColor;
+					break;
+				}
+				
+				Draw::selectionBox(getPart(), adorn, sleepColor);
+			}
+		}
+
+		if (highlightAwakeParts && primitive->getAssembly())
+		{
+			Sim::AssemblyState sleepStatus = primitive->getAssembly()->getRootClump()->getSleepStatus();
+
+			if (sleepStatus != Sim::ANCHORED && sleepStatus != Sim::SLEEPING_DEEPLY)
+			{
+				G3D::Color3 wakeColor;
+
+				switch (sleepStatus)
+				{
+				case Sim::SLEEPING_CHECKING:
+					wakeColor = G3D::Color3::red();
+					break;
+				case Sim::AWAKE:
+					wakeColor = G3D::Color3::orange();
+					break;					
+				case Sim::RECURSIVE_WAKE_PENDING:
+				case Sim::WAKE_PENDING:
+					wakeColor = G3D::Color3::purple();
+					break;
+				default:
+					RBXASSERT(0);
+					wakeColor = wakeColor;
+					break;
+				}
+				
+				Draw::selectionBox(getPart(), adorn, wakeColor);
+			}
+		}
+
+		if (showPartCoord)
+			renderCoordinateFrame(adorn);
+
+		if (showAnchoredParts && primitive->getAnchor())
+		{
+			float transparency = 1.0f - alpha();
+			G3D::Color4 color(G3D::Color3::gray(), transparency);
+			const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+
+			DrawAdorn::partSurface(getPart(), Math::getClosestObjectNormalId(G3D::Vector3(0.0f, -1.0f, 0.0f), cframe.rotation), adorn, color);
+		}
+
+		if (showUnalignedParts && !aligned())
+			Draw::selectionBox(getPart(), adorn, G3D::Color3::yellow());
+
+		if (showSpanningTree)
+		{
+			setAlphaModifier(0.3f);
+
+			Assembly* assembly = primitive->getAssembly();
+			if (assembly && primitive.get() == assembly->getMainPrimitive())
+			{
+				adorn->setObjectToWorldMatrix(G3D::CoordinateFrame(primitive->getCoordinateFrame().translation));
+
+				if (primitive->getAnchor())
+				{
+					adorn->sphere(G3D::Sphere(G3D::Vector3::zero(), 0.5f), G3D::Color3::green(), G3D::Color4::clear());
+				}
+				else
+				{
+					G3D::Vector3 boxSize = G3D::Vector3::one() * 0.25f;
+					adorn->box(G3D::AABox(-boxSize, boxSize), G3D::Color3::green(), G3D::Color4::clear());
+				}
+			}
+		}
+	}
+
+	bool PartInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
+	{
+		const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame();
+		G3D::Ray rayInPartCoords = cframe.toObjectSpace(worldRay);
+		G3D::Vector3 hitPointInPartCoords;
+
+		if (HitTest::hitTest(getPart(), rayInPartCoords, hitPointInPartCoords, 1.0f))
+		{
+			const G3D::CoordinateFrame& cframe = primitive->getCoordinateFrame(); // roblox be like: lets do it again why not
+			worldHitPoint = cframe.pointToWorldSpace(hitPointInPartCoords);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void PartInstance::safeMove()
+	{
+		RBXASSERT(primitive.get());
+
+		if (World* world = Workspace::getWorldIfInWorkspace(this))
+		{
+			G3D::Array<Primitive*> temp;
+			temp.append(primitive.get());
+			
+			Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), world->getContactManager());
+		}
+	}
+
+	void PartInstance::primitivesToParts(const G3D::Array<Primitive*>& primitives, G3D::Array<boost::shared_ptr<PartInstance>>& parts)
+	{
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			PartInstance* part = fromPrimitive(primitives[i]);
+			parts.push_back(shared_from(part));
+		}
+	}
+
+	void PartInstance::findParts(Instance* instance, std::vector<boost::weak_ptr<RBX::PartInstance>>& parts)
+	{
+		if (PartInstance* part = dynamic_cast<PartInstance*>(instance))
+			parts.push_back(shared_from(part));
+
+		for (size_t i = 0; i < instance->numChildren(); i++)
+		{
+			findParts(instance->getChild(i), parts);
+		}
+	}
+
+	void PartInstance::setCoordinateFrame(const G3D::CoordinateFrame& value)
+	{
+		if (value != getCoordinateFrame())
+		{
+			G3D::CoordinateFrame newValue = value;
+			Math::orthonormalizeIfNecessary(newValue.rotation);
+			setPhysics(newValue);
+
+			raisePropertyChanged(prop_CFrame);
+			raisePropertyChanged(prop_PositionUi);
+		}
+	}
+
+	void PartInstance::setPartSizeXml(const G3D::Vector3& rbxSize)
+	{
+		if (rbxSize != getPartSizeXml())
+		{
+			G3D::Vector3 newRbxSize = partType == Part::BLOCK_PART ? rbxSize : rbxSize.xxx();
+			RBXASSERT(newRbxSize.max(G3D::Vector3(1.0f, 0.4f, 1.0f)) == newRbxSize);
+
+			if (legacyOffset.get())
+			{
+				G3D::CoordinateFrame oldCorner = primitive->getGridCorner();
+				primitive->setGridSize(newRbxSize);
+				primitive->setGridCorner(oldCorner);
+			}
+			else
+			{
+				primitive->setGridSize(newRbxSize);
+			}
+
+			raisePropertyChanged(prop_Size);
+			raisePropertyChanged(prop_SizeUi);
+			PersistentPart.setDirty();
+			onExtentsChanged();
+		}
+	}
+
+	//93.96% match
+	//not matching for the same reason as PartInstance::setFormFactorUi
+	void PartInstance::setPartSizeUi(const G3D::Vector3& uiSize)
+	{
+		destroyJoints();
+
+		G3D::Vector3 adjustedUiSize = uiSize;
+
+		switch (formFactor)
+		{
+		case BRICK:
+			adjustedUiSize.y = uiSize.y * 5.0f/6.0f;
+			break;
+		case PLATE:
+			adjustedUiSize.y = uiSize.y * 2.5f;
+			break;
+		}
+
+		setPartSizeXml(uiToXmlSize(adjustedUiSize));
+		safeMove();
+		join();
+	}
+
+	void PartInstance::setTranslationUi(const G3D::Vector3& set)
+	{
+		G3D::CoordinateFrame current = primitive->getCoordinateFrame();
+
+		if (current.translation != set)
+		{
+			current.translation = set;
+
+			destroyJoints();
+			
+			setCoordinateFrame(current);
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setDragging(bool value)
+	{
+		if (value != getDragging())
+		{
+			primitive->setDragging(value);
+			raisePropertyChanged(prop_Dragging);
+		}
+	}
+
+	void PartInstance::setRenderImportance(float value)
+	{
+		if (value != getRenderImportance())
+		{
+			renderImportance = value;
+			raisePropertyChanged(prop_RenderImportance);
+		}
+	}
+
+	void PartInstance::setCanCollide(bool value)
+	{
+		if (value != getCanCollide())
+		{
+			primitive->setCanCollide(value);
+			raisePropertyChanged(prop_CanCollide);
+		}
+	}
+
+	void PartInstance::setAnchored(bool value)
+	{
+		if (value != getAnchored())
+		{
+			primitive->setAnchor(value);
+			raisePropertyChanged(prop_Anchored);
+		}
+	}
+
+	void PartInstance::setPartLocked(bool value)
+	{
+		if (value != getPartLocked())
+		{
+			locked = value;
+			raisePropertyChanged(prop_Locked);
+		}
+	}
+
+	void PartInstance::setTransparency(float value)
+	{
+		if (value != getTransparencyXml())
+		{
+			transparency = value;
+			raisePropertyChanged(prop_Transparency);
+		}
+	}
+
+	void PartInstance::setAlphaModifier(float value)
+	{
+		if (value != alphaModifier)
+		{
+			alphaModifier = value;
+			raisePropertyChanged(prop_Transparency);
+		}
+	}
+
+	void PartInstance::setReflectance(float value)
+	{
+		if (value != getReflectance())
+		{
+			reflectance = value;
+			raisePropertyChanged(prop_Reflectance);
+		}
+	}
+
+	void PartInstance::setColor(BrickColor value)
+	{
+		if (value != color)
+		{
+			color = value;
+			raisePropertyChanged(prop_BrickColor);
+			raisePropertyChanged(prop_Color);
+		}
+	}
+
+	void PartInstance::setFormFactorXml(FormFactor value)
+	{
+		if (value != getFormFactor())
+		{
+			formFactor = value;
+			raisePropertyChanged(prop_formFactor);
+		}
+	}
+
+	//94.32% match
+	//there is a way to match it 100% but it is Not Clean. try to find a cleaner way.
+	void PartInstance::setFormFactorUi(FormFactor value)
+	{
+		if (partType != Part::BLOCK_PART)
+			value = SYMETRIC;
+
+		if (value != getFormFactor())
+		{
+			destroyJoints();
+
+			setFormFactorXml(value);
+
+			G3D::Vector3 uiSize = getPartSizeUi();
+			uiSize.y = G3D::max<float>(1.0, G3D::iRound(uiSize.y));
+
+			G3D::Vector3 xmlSize = uiToXmlSize(uiSize);
+			setPartSizeXml(xmlSize);
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setFriction(float friction)
+	{
+		float newFriction = G3D::clamp(friction, 0.0f, 2.0f);
+		if (newFriction != getFriction())
+		{
+			primitive->setFriction(newFriction);
+			raisePropertyChanged(prop_Friction);
+		}
+	}
+
+	void PartInstance::setElasticity(float elasticity)
+	{
+		float newElasticity = G3D::clamp(elasticity, 0.0f, 1.0f);
+		if (newElasticity != getElasticity())
+		{
+			primitive->setElasticity(newElasticity);
+			raisePropertyChanged(prop_Elasticity);
+		}
+	}
+
+	void PartInstance::setPartTypeXml(Part::PartType _type)
+	{
+		if (getPartType() != _type)
+		{
+			partType = _type;
+			primitive->setPrimitiveType(_type == Part::BLOCK_PART ? Geometry::GEOMETRY_BLOCK : Geometry::GEOMETRY_BALL);
+
+			if (partType != Part::BLOCK_PART)
+				setFormFactorXml(SYMETRIC);
+
+			raisePropertyChanged(prop_shapeXml);
+			raisePropertyChanged(prop_shapeUi);
+
+			PersistentPart.setDirty();
+			shouldRenderSetDirty();
+			onExtentsChanged();
+		}
+	}
+
+	void PartInstance::setPartTypeUi(Part::PartType _type)
+	{
+		if (partType != Part::BLOCK_PART)
+			RBXASSERT(formFactor == SYMETRIC);
+
+		if (getPartType() != _type)
+		{
+			destroyJoints();
+
+			setPartTypeXml(_type);
+
+			if (_type != Part::BLOCK_PART)
+			{
+				G3D::Vector3 xmlSize = uiToXmlSize(getPartSizeUi());
+				setPartSizeXml(xmlSize);
+				safeMove();
+			}
+
+			safeMove();
+			join();
+		}
+	}
+
+	void PartInstance::setLinearVelocity(const G3D::Vector3& set)
+	{
+		Velocity vel = getVelocity();
+		if (vel.linear != set)
+		{
+			vel.linear = set;
+			primitive->getBody()->setVelocity(vel);
+			raisePropertyChanged(prop_RotVelocity);
+		}
+	}
+
+	void PartInstance::setRotationalVelocity(const G3D::Vector3& set)
+	{
+		Velocity vel = getVelocity();
+		if (vel.rotational != set)
+		{
+			vel.rotational = set;
+			primitive->getBody()->setVelocity(vel);
+			raisePropertyChanged(prop_RotVelocity);
+		}
+	}
+
+	bool PartInstance::reportTouches() const
+	{
+		return !event_Touched.empty(this);
+	}
 }

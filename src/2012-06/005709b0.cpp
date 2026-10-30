@@ -1,433 +1,196 @@
-// from server: 62% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/EnumProperty.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_espclaude_2746ccdb51e44a7f.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
-#include <g3d/color3.h>
-#include <g3d/vector3.h>
-#include <boost/shared_ptr.hpp>
-#include "v8tree/Instance.h"
-#include "v8datamodel/BrickColor.h"
+// Native0045a4a0 full1915B. Binary-backed codegen analogue.
+#define _AFXDLL
+#include "roc_doc_native_afx_h_e1e961746d00a41c.cpp"
+#include <afxwin.h>
+#include <atlbase.h>
+#include <boost/scoped_ptr.hpp>
+#include "v8datamodel/DataModel.h"
+#include <exception>
+using namespace RBX;
 
-namespace RBX
-{
-	namespace Reflection
-	{
-		// TODO: check if type singletons are matching
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
-		{
-			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
-			return type;
-		}
+template<class T> static inline T& viewField(void* p,unsigned offset) {
+    return *reinterpret_cast<T*>(static_cast<char*>(p)+offset);
+}
+class CRobloxViewNative;
+class NativeWorkspace : public IUnknown {
+public:
+    boost::shared_ptr<DataModel> getDataModel(); //0046a940
+};
+class NativeRenderBinding {
+public:
+    void setWorkspace(NativeWorkspace*); //0045f7b0
+    void activate(); //0045ead0
+};
+class NativeBaseService {
+public:
+    void initializeBase(); //0058c5e0
+};
+class NativeDataModelServices {
+public:
+    NativeBaseService* ensureBaseService(); //00452a00
+};
+void __cdecl reportViewException(const std::exception&); //0044aa70
+static __forceinline VerbContainer* viewDataVerbs(DataModel* dm) {
+    return dm ? reinterpret_cast<VerbContainer*>(reinterpret_cast<char*>(dm)+0x1c8) : 0;
+}
+static __forceinline VerbContainer* viewWorkspaceVerbs(DataModel* dm) {
+    Workspace* ws=viewField<Workspace*>(dm,0x204);
+    return ws ? reinterpret_cast<VerbContainer*>(reinterpret_cast<char*>(ws)+0x2ec) : 0;
+}
+// Native binding paths dereference the workspace receiver; no nullable base cast.
+struct NativeWorkspacePad { virtual ~NativeWorkspacePad(); char pad[0x2e8]; };
+struct NativeWorkspaceVerbsView : NativeWorkspacePad, VerbContainer {};
+typedef char NativeWsVerbsOff[sizeof(NativeWorkspacePad)==0x2ec?1:-1];
+static __forceinline NativeWorkspaceVerbsView* viewWorkspaceVerbReceiver(DataModel* dm) {
+    return viewField<NativeWorkspaceVerbsView*>(dm,0x204);
+}
+// Genuine getter body within original class scope: native Verb::name at4.
+// Genuine getter body within original class scope: native Verb::name at4.
+inline const Name& Verb::getName() const { return name; }
+class InsertModelFromRobloxVerb : public Verb {
+    CRobloxViewNative* view;
+    DataModel* dataModel;
+    double lastAction;
+public:
+    InsertModelFromRobloxVerb(CRobloxViewNative*,DataModel*);
+    virtual bool isEnabled() const;
+    virtual void doIt(IDataState*);
+};
+class HelpCommand : public Verb {
+    CRobloxViewNative* view;
+public:
+    __forceinline HelpCommand(CRobloxViewNative* v,VerbContainer* verbs):Verb(verbs,"Help"),view(v) {}
+    virtual bool isEnabled() const;
+    virtual void doIt(IDataState*);
+};
+class ToggleFullscreenVerb : public Verb {
+public:
+    __forceinline ToggleFullscreenVerb(VerbContainer* verbs):Verb(verbs,"ToggleFullScreen") {}
+    virtual bool isEnabled() const;
+    virtual bool isChecked() const;
+    virtual void doIt(IDataState*);
+};
+class ToggleIDEModeVerb : public Verb {
+    double lastAction;
+public:
+    ToggleIDEModeVerb(VerbContainer*);
+    virtual bool isEnabled() const;
+    virtual bool isChecked() const;
+    virtual void doIt(IDataState*);
+};
+class LockPlayModeVerb : public Verb {
+public:
+    __forceinline LockPlayModeVerb(VerbContainer* verbs):Verb(verbs,"LockPlayMode") {}
+    virtual bool isEnabled() const;
+    virtual bool isChecked() const;
+    virtual void doIt(IDataState*);
+};
+struct NativeDocView { char pad[0x94]; NativeWorkspace& workspaceRef; };
+class CRobloxViewNative : public CView {
+public:
+    std::map<unsigned,const Name*> commands;
+    char pad58[0xb0-0x58-sizeof(std::map<unsigned,const Name*>)];
+    NativeRenderBinding renderBinding;
+    char padb1[0x170-0xb1];
+    boost::shared_ptr<DataModel> dataModel;
+    char pad178[0x1d8-0x178];
+    void* x1d8;
+    boost::scoped_ptr<Verb> helpVerb;
+    boost::scoped_ptr<Verb> insertModelVerb;
+    boost::scoped_ptr<Verb> fullscreenVerb;
+    boost::scoped_ptr<Verb> ideVerb;
+    boost::scoped_ptr<Verb> lockVerb;
+    __forceinline void setCommand(unsigned id,const Name& name) { commands[id]=&name; }
+    void detachDataModel(); //0045a2f0
+    virtual void OnInitialUpdate();
+    NativeWorkspace* workspace() { return &reinterpret_cast<NativeDocView*>(GetDocument())->workspaceRef; }
+};
+typedef char NativeCViewSize[sizeof(CView)==0x58?1:-1];
+typedef char NativeDataModelLockSize[sizeof(DataModel::Lock)==12?1:-1];
+typedef char NativeInsertModelVerbSize[sizeof(InsertModelFromRobloxVerb)==32?1:-1];
+typedef char NativeHelpVerbSize[sizeof(HelpCommand)==16?1:-1];
+typedef char NativeFullScreenVerbSize[sizeof(ToggleFullscreenVerb)==12?1:-1];
+typedef char NativeToggleIDEVerbSize[sizeof(ToggleIDEModeVerb)==24?1:-1];
+typedef char NativeLockPlayModeVerbSize[sizeof(LockPlayModeVerb)==12?1:-1];
 
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instance>>()
-		{
-			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instances>>()
-		{
-			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<int>()
-		{
-			static Type type("int", typeid(int));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<bool>()
-		{
-			static Type type("bool", typeid(bool));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<float>()
-		{
-			static Type type("float", typeid(float));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<double>()
-		{
-			static Type type("double", typeid(double));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<ContentId>()
-		{
-			static Type type("ContentId", typeid(ContentId));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<std::string>()
-		{
-			static Type type("string", typeid(std::string));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<G3D::Vector3>()
-		{
-			static Type type("Vector3", typeid(G3D::Vector3));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<G3D::Color3>()
-		{
-			static Type type("Color3", typeid(G3D::Color3));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<std::vector<Value>>()
-		{
-			static Type type("Table", typeid(std::vector<Value>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<BrickColor>()
-		{
-			static Type type("BrickColor", typeid(BrickColor));
-			return type;
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
-		{
-			return getValue(instance);
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<bool>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<float>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<int>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<ContentId>::convertToString(getValue(instance));
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			setValue(instance, text);
-			return true;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			bool value;
-			if (StringConverter<bool>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			float value;
-			if (StringConverter<float>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			int value;
-			if (StringConverter<int>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			G3D::Vector3 value;
-			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			G3D::Color3 value;
-			if (StringConverter<G3D::Color3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			ContentId value;
-			if (StringConverter<ContentId>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				float value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			float value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				bool value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			bool value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, BrickColor(value));
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance).asInt());
-		}
-
-		template<>
-		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-		
-		template<>
-		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			int value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				ContentId value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(ContentId(getValue(instance)));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				std::string value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
-				{
-					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
-					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
-
-					G3D::Vector3 value;
-
-					X->getValue(value.x);
-					Y->getValue(value.y);
-					Z->getValue(value.z);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			const Name* xName = &tag_X;
-			XmlElement* xElement = new XmlElement(*xName);
-			element->pushBackChild(xElement);
-
-			const Name* yName = &tag_Y;
-			XmlElement* yElement = new XmlElement(*yName);
-			element->pushBackChild(yElement);
-
-			const Name* zName = &tag_Z;
-			XmlElement* zElement = new XmlElement(*zName);
-			element->pushBackChild(zElement);
-
-			G3D::Vector3 value = getValue(instance);
-
-			xElement->setValue(value.x);
-			yElement->setValue(value.y);
-			zElement->setValue(value.z);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				unsigned int colorValue;
-				if (element->getValue(colorValue))
-				{
-					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
-					setValue(instance, color);	
-				}
-				else
-				{
-					const XmlElement* R = element->findFirstChildByTag(tag_R);
-					const XmlElement* G = element->findFirstChildByTag(tag_G);
-					const XmlElement* B = element->findFirstChildByTag(tag_B);
-
-					G3D::Color3 value;
-
-					R->getValue(value.r);
-					G->getValue(value.g);
-					B->getValue(value.b);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
-			element->setValue(value.asUInt32());
-		}
-	}
+void CRobloxViewNative::OnInitialUpdate() {
+    try {
+        detachDataModel();
+        renderBinding.setWorkspace(0);
+        dataModel.reset();
+        CView::OnInitialUpdate();
+        renderBinding.setWorkspace(workspace());
+        dataModel=reinterpret_cast<NativeDocView*>(GetDocument())->workspaceRef.getDataModel();
+        DataModel::Lock lock(dataModel);
+        if(x1d8)
+            viewField<ATL::CComPtr<IUnknown> >(x1d8,0xfc)=workspace();
+        {
+            Listener<Instance,DescendentAdded>* l=reinterpret_cast<Listener<Instance,DescendentAdded>*>(reinterpret_cast<char*>(this)+0xa0);
+            DataModel* dm=dataModel.get();
+            if(dm) reinterpret_cast<Notifier<Instance,DescendentAdded>*>(reinterpret_cast<char*>(dm)+0x150)->addListener(l);
+        }
+        {
+            Listener<Instance,DescendentRemoving>* l=reinterpret_cast<Listener<Instance,DescendentRemoving>*>(reinterpret_cast<char*>(this)+0xa4);
+            DataModel* dm=dataModel.get();
+            if(dm) reinterpret_cast<Notifier<Instance,DescendentRemoving>*>(reinterpret_cast<char*>(dm)+0x170)->addListener(l);
+        }
+        viewField<VerbContainer>(this,0x78).setVerbParent(viewWorkspaceVerbs(dataModel.get()));
+        insertModelVerb.reset(new InsertModelFromRobloxVerb(this,dataModel.get()));
+        helpVerb.reset(new HelpCommand(this,viewDataVerbs(dataModel.get())));
+        fullscreenVerb.reset(new ToggleFullscreenVerb(viewDataVerbs(dataModel.get())));
+        ideVerb.reset(new ToggleIDEModeVerb(viewDataVerbs(dataModel.get())));
+        lockVerb.reset(new LockPlayModeVerb(viewDataVerbs(dataModel.get())));
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraPanLeft");
+            if(verb) setCommand(0x8027,verb->getName()); else setCommand(0x8027,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraPanRight");
+            if(verb) setCommand(0x8028,verb->getName()); else setCommand(0x8028,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraTiltUp");
+            if(verb) setCommand(0x8029,verb->getName()); else setCommand(0x8029,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraTiltDown");
+            if(verb) setCommand(0x802a,verb->getName()); else setCommand(0x802a,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraZoomIn");
+            if(verb) setCommand(0x802b,verb->getName()); else setCommand(0x802b,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraZoomOut");
+            if(verb) setCommand(0x802c,verb->getName()); else setCommand(0x802c,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraCenter");
+            if(verb) setCommand(0x80a6,verb->getName()); else setCommand(0x80a6,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraZoomExtents");
+            if(verb) setCommand(0x802d,verb->getName()); else setCommand(0x802d,Name::getNullName());
+        }
+        {
+            Verb* verb=viewWorkspaceVerbReceiver(dataModel.get())->getVerb("CameraModelView");
+            if(verb) setCommand(0x80d7,verb->getName()); else setCommand(0x80d7,Name::getNullName());
+        }
+        setCommand(0x802f,Name::lookup("FixedCamera"));
+        setCommand(0x8030,Name::lookup("AttachCamera"));
+        setCommand(0x80a3,Name::lookup("TrackCamera"));
+        setCommand(0x8032,Name::lookup("FollowCamera"));
+        setCommand(0x80a2,Name::lookup("WatchCamera"));
+        setCommand(0x8043,Name::lookup("SelectionRotate"));
+        setCommand(0x8044,Name::lookup("SelectionTilt"));
+        renderBinding.activate();
+        NativeBaseService* service=reinterpret_cast<NativeDataModelServices*>(dataModel.get())->ensureBaseService();
+        if(service) service->initializeBase();
+    } catch(const std::exception& e) { reportViewException(e); }
 }

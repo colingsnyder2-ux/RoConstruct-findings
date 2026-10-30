@@ -1,22 +1,51 @@
-// from server: 0% by colin
-struct PropDescriptor {
-    void* ptr;
-    PropDescriptor(void* g, void* s);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-PropDescriptor::PropDescriptor(void* g, void* s)
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-    this->ptr = 0;
-    void* mem = operator_new(0x10);
-    if (mem) {
-        *(int*)((char*)mem + 4) = 1;
-        *(int*)((char*)mem + 8) = 1;
-        *(void**)mem = (void*)0x7a5e3c;
-        *(void**)((char*)mem + 0xc) = g;
-    } else {
-        mem = 0;
+    try {
+        count = new Count(p);
     }
-    this->ptr = mem;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

@@ -1,121 +1,97 @@
-// from server: 29% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client RbxView/PBBMesh.cpp
+// roc-lib: rbxgs-dll roc_espclaude_11ccee7d629bca29.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "PBBMesh.h"
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
 
-#include "QuadVolume.h"
-
-#include <G3D/Vector3int16.h>
-
-// SIZE 0x28
-class PBBBuilder : public RBX::View::LevelBuilder
+namespace RBX { namespace View {
+class RenderSurfaceTypes
 {
-private:
-	G3D::Vector3int16 strips; // 0x20
-
 public:
-	PBBBuilder(
-		G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-		G3D::Vector3 size,
-		RBX::View::RenderSurfaceTypes surfaceTypes
-	);
-
-protected:
-	virtual void buildTop(Purpose purpose);    // vtable+0x04
-	virtual void buildBottom(Purpose purpose); // vtable+0x08
-	virtual void buildLeft(Purpose purpose);   // vtable+0x0c
-	virtual void buildRight(Purpose purpose);  // vtable+0x10
-	virtual void buildFront(Purpose purpose);  // vtable+0x14
-	virtual void buildBack(Purpose purpose);   // vtable+0x18
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
 };
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
 
-DECOMP_SIZE_ASSERT(PBBBuilder, 0x28)
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
+#include <G3D/g3dmath.h>
 
-// STUB: WEBSERVICE 0x1017abc0
-PBBBuilder::PBBBuilder(
-	G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
-	G3D::Vector3 size,
-	RBX::View::RenderSurfaceTypes surfaceTypes
-)
-	: RBX::View::LevelBuilder(level, size, surfaceTypes), strips(0, 0, 0)
-{
-	strips.x = G3D::max(1, (int) (size.x / 6.0));
-	strips.y = G3D::max(1, (int) (size.y / 6.0));
-	strips.z = G3D::max(1, (int) (size.z / 6.0));
-
-	strips.x = G3D::min(4, (int) strips.x);
-	strips.y = G3D::min(4, (int) strips.y);
-	strips.z = G3D::min(4, (int) strips.z);
-}
-
-// STUB: WEBSERVICE 0x1017d7c0
-void PBBBuilder::buildTop(Purpose)
-{
-	STUB(0x1017d7c0);
-}
-
-// STUB: WEBSERVICE 0x1017d820
-void PBBBuilder::buildBottom(Purpose)
-{
-	STUB(0x1017d820);
-}
-
-// STUB: WEBSERVICE 0x1017d880
-void PBBBuilder::buildLeft(Purpose)
-{
-	STUB(0x1017d880);
-}
-
-// STUB: WEBSERVICE 0x1017d8e0
-void PBBBuilder::buildRight(Purpose)
-{
-	STUB(0x1017d8e0);
-}
-
-// STUB: WEBSERVICE 0x1017d940
-void PBBBuilder::buildFront(Purpose)
-{
-	STUB(0x1017d940);
-}
-
-// STUB: WEBSERVICE 0x1017d9a0
-void PBBBuilder::buildBack(Purpose)
-{
-	STUB(0x1017d9a0);
-}
+void flushUnusedMeshCache();
 
 namespace RBX {
 namespace View {
 
-// STUB: WEBSERVICE 0x1017da00
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId decalFace)
+class PBBMesh : public Render::Mesh
 {
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+public:
+    PBBMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+    char pad[0x8c - sizeof(Render::Mesh)];
+};
 
-	levels.append(level);
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<int, int> decalCache;
+        std::map<int, int> textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static Mesh* create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+};
 
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
+template<class Mesh, size_t numMeshes>
+Mesh* MeshFactory<Mesh, numMeshes>::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
 
-	builder.buildFace(decalFace, LevelBuilder::Decal);
+    if (!c->cache1.containsKey(surfaceTypes))
+        c->cache1.set(surfaceTypes, G3D::Table<G3D::Vector3, Variations>());
+
+    G3D::Table<G3D::Vector3, Variations>& sizeCache = c->cache1.get(surfaceTypes);
+
+    if (!sizeCache.containsKey(size))
+        sizeCache.set(size, Variations());
+
+    Variations& variation = sizeCache.get(size);
+
+    int index = G3D::iRandom(0, numMeshes - 1);
+    G3D::ReferenceCountedPointer<Render::Mesh>& ref = variation.meshes[index];
+    Mesh* mesh = static_cast<Mesh*>(ref.getPointer());
+    if (!mesh)
+    {
+        mesh = new Mesh(size, surfaceTypes);
+        ref = mesh;
+        if (++c->count % 100 == 0)
+        {
+            G3D::ReferenceCountedPointer<Render::Mesh> keep = ref;
+            flushUnusedMeshCache();
+        }
+    }
+    return mesh;
 }
 
-// STUB: WEBSERVICE 0x1017db60
-PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId, const G3D::Vector2&)
-{
-	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
-
-	levels.append(level);
-
-	PBBBuilder builder(level, size, RenderSurfaceTypes());
+template class MeshFactory<PBBMesh, 4>;
 }
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createDecal(const G3D::Vector3&, NormalId);
-
-template PBBMesh* MeshFactory<PBBMesh, 4>::createTexture(const G3D::Vector3&, NormalId, const G3D::Vector2&);
-
-} // namespace View
-} // namespace RBX
+}

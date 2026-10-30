@@ -1,48 +1,21 @@
-// from server: 72% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_fullstack_kernel_2057750c8bacc7d1.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/Script.h"
-
-#include "network/Player.h"
-#include "util/ContentProvider.h"
-#include "util/Name.h"
-#include "v8datamodel/Team.h"
-
-namespace RBX {
-
-char sScript[] = "Script";
-
-char sLocalScript[] = "LocalScript";
-
-// FUNCTION: WEBSERVICE 0x10068d50
-boost::shared_ptr<const std::string> Script::requestCode()
-{
-	if (scriptId.isNull()) {
-		return embeddedSource;
-	}
-
-	return ContentProvider::singleton().requestContentString(scriptId);
-}
-
-} // namespace RBX
-
-template const RBX::Name& RBX::Name::doDeclare<RBX::sTeam>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::Network::sPlayer>();
-template void RBX::Name::callDoDeclare<RBX::sTeam>();
-template void RBX::Name::callDoDeclare<RBX::Network::sPlayer>();
-
-template class RBX::FactoryProduct<RBX::Script, RBX::Instance, RBX::sScript>;
-template class RBX::Reflection::
-	Described<RBX::Script, RBX::sScript, RBX::FactoryProduct<RBX::Script, RBX::Instance, RBX::sScript> >;
-template class RBX::DescribedCreatable<RBX::Script, RBX::Instance, RBX::sScript>;
-
-template class RBX::FactoryProduct<RBX::LocalScript, RBX::Script, RBX::sLocalScript>;
-template class RBX::Reflection::Described<
-	RBX::LocalScript,
-	RBX::sLocalScript,
-	RBX::FactoryProduct<RBX::LocalScript, RBX::Script, RBX::sLocalScript> >;
-template class RBX::DescribedCreatable<RBX::LocalScript, RBX::Script, RBX::sLocalScript>;
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/PVInstance.cpp"

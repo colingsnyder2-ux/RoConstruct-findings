@@ -1,236 +1,433 @@
-// from server: 59% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreConfigFile.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
+#include "util/ContentProvider.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/FileSystem.h"
+#include "v8xml/SerializerV2.h"
+#include <atlutil.h>
+#include <G3D/format.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/copy.hpp>
 
-Copyright (c) 2000-2009 Torus Knot Software Ltd
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-#include "OgreConfigFile.h"
-#include "OgreResourceGroupManager.h"
-
-#include "OgreException.h"
-
-#include <iostream>
-
-namespace Ogre {
-
-    //-----------------------------------------------------------------------
-    ConfigFile::ConfigFile()
-    {
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::~ConfigFile()
-    {
-        SettingsBySection::iterator seci, secend;
-        secend = mSettings.end();
-        for (seci = mSettings.begin(); seci != secend; ++seci)
-        {
-            OGRE_DELETE_T(seci->second, SettingsMultiMap, MEMCATEGORY_GENERAL);
-        }
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::clear(void)
-    {
-        for (SettingsBySection::iterator seci = mSettings.begin(); 
-            seci != mSettings.end(); ++seci)
-        {
-             OGRE_DELETE_T(seci->second, SettingsMultiMap, MEMCATEGORY_GENERAL);
-        }
-        mSettings.clear();
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const String& filename, const String& separators, bool trimWhitespace)
-    {
-        loadDirect(filename, separators, trimWhitespace);
-    }
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const String& filename, const String& resourceGroup, 
-        const String& separators, bool trimWhitespace)
-    {
-		loadFromResourceSystem(filename, resourceGroup, separators, trimWhitespace);
-    }
-	//-----------------------------------------------------------------------
-	void ConfigFile::loadDirect(const String& filename, const String& separators, 
-		bool trimWhitespace)
+namespace RBX
+{
+	// TODO: check match
+	bool operator<(const ContentId& a, const ContentId& b)
 	{
-		/* Open the configuration file */
-		std::ifstream fp;
-        // Always open in binary mode
-		fp.open(filename.c_str(), std::ios::in | std::ios::binary);
-		if(!fp)
-			OGRE_EXCEPT(
-			Exception::ERR_FILE_NOT_FOUND, "'" + filename + "' file not found!", "ConfigFile::load" );
-
-		// Wrap as a stream
-		DataStreamPtr stream(OGRE_NEW FileStreamDataStream(filename, &fp, false));
-
-#if OGRE_PLATFORM == OGRE_PLATFORM_SYMBIAN
-		// seems readLine doesn't work correctly in SYMBIAN with files
-		DataStreamPtr memoryStream(OGRE_NEW MemoryDataStream(stream));
-		stream = memoryStream;
-#endif
-
-		load(stream, separators, trimWhitespace);
-
+		return a.toString() < b.toString();
 	}
-	//-----------------------------------------------------------------------
-	void ConfigFile::loadFromResourceSystem(const String& filename, 
-		const String& resourceGroup, const String& separators, bool trimWhitespace)
+
+	bool operator!=(const ContentId& a, const ContentId& b)
 	{
-		DataStreamPtr stream = 
-			ResourceGroupManager::getSingleton().openResource(filename, resourceGroup);
-		load(stream, separators, trimWhitespace);
+		return a.toString() != b.toString();
 	}
-    //-----------------------------------------------------------------------
-    void ConfigFile::load(const DataStreamPtr& stream, const String& separators, 
-        bool trimWhitespace)
-    {
-        /* Clear current settings map */
-        clear();
 
-        String currentSection = StringUtil::BLANK;
-        SettingsMultiMap* currentSettings = OGRE_NEW_T(SettingsMultiMap, MEMCATEGORY_GENERAL)();
-        mSettings[currentSection] = currentSettings;
+	ContentId ContentId::fromAssets(const std::string& filePath)
+	{
+		std::string header = "rbxasset://";
+		return ContentId(header + filePath);
+	}
 
+	ContentProvider::ContentProvider()
+	{
+		char path[MAX_PATH];
+		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
+		{
+			this->singleton().setAssetFolder(path);
+		}
+		else
+		{
+			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
+		}
 
-        /* Process the file line for line */
-        String line, optName, optVal;
-        while (!stream->eof())
-        {
-            line = stream->getLine();
-            /* Ignore comments & blanks */
-            if (line.length() > 0 && line.at(0) != '#' && line.at(0) != '@')
-            {
-                if (line.at(0) == '[' && line.at(line.length()-1) == ']')
-                {
-                    // Section
-                    currentSection = line.substr(1, line.length() - 2);
-					SettingsBySection::const_iterator seci = mSettings.find(currentSection);
-					if (seci == mSettings.end())
-					{
-						currentSettings = OGRE_NEW_T(SettingsMultiMap, MEMCATEGORY_GENERAL)();
-						mSettings[currentSection] = currentSettings;
-					}
-					else
-					{
-						currentSettings = seci->second;
-					} 
-                }
-                else
-                {
-                    /* Find the first seperator character and split the string there */
-					Ogre::String::size_type separator_pos = line.find_first_of(separators, 0);
-                    if (separator_pos != Ogre::String::npos)
-                    {
-                        optName = line.substr(0, separator_pos);
-                        /* Find the first non-seperator character following the name */
-                        Ogre::String::size_type nonseparator_pos = line.find_first_not_of(separators, separator_pos);
-                        /* ... and extract the value */
-                        /* Make sure we don't crash on an empty setting (it might be a valid value) */
-                        optVal = (nonseparator_pos == Ogre::String::npos) ? "" : line.substr(nonseparator_pos);
-                        if (trimWhitespace)
-                        {
-                            StringUtil::trim(optVal);
-                            StringUtil::trim(optName);
-                        }
-                        currentSettings->insert(SettingsMultiMap::value_type(optName, optVal));
-                    }
-                }
-            }
-        }
-    }
-    //-----------------------------------------------------------------------
-    String ConfigFile::getSetting(const String& key, const String& section, const String& defaultValue) const
-    {
-        
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci == mSettings.end())
-        {
-            return defaultValue;
-        }
-        else
-        {
-            SettingsMultiMap::const_iterator i = seci->second->find(key);
-            if (i == seci->second->end())
-            {
-                return defaultValue;
-            }
-            else
-            {
-                return i->second;
-            }
-        }
-    }
-    //-----------------------------------------------------------------------
-    StringVector ConfigFile::getMultiSetting(const String& key, const String& section) const
-    {
-        StringVector ret;
+		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
+	}
 
+	ContentProvider::~ContentProvider()
+	{
+		requestProcessor->join();
+	}
 
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci != mSettings.end())
-        {
-            SettingsMultiMap::const_iterator i;
+	bool ContentProvider::isHttpUrl(const std::string& s)
+	{
+		if (s.find("http://") == 0)
+			return true;
 
-            i = seci->second->find(key);
-            // Iterate over matches
-            while (i != seci->second->end() && i->first == key)
-            {
-                ret.push_back(i->second);
-                ++i;
-            }
-        }
-        return ret;
+		if (s.find("https://") == 0)
+			return true;
 
+		return false;
+	}
 
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::SettingsIterator ConfigFile::getSettingsIterator(const String& section)
-    {
-        SettingsBySection::const_iterator seci = mSettings.find(section);
-        if (seci == mSettings.end())
-        {
-            OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-                "Cannot find section " + section, 
-                "ConfigFile::getSettingsIterator");
-        }
-        else
-        {
-            return SettingsIterator(seci->second->begin(), seci->second->end());
-        }
-    }
-    //-----------------------------------------------------------------------
-    ConfigFile::SectionIterator ConfigFile::getSectionIterator(void)
-    {
-        return SectionIterator(mSettings.begin(), mSettings.end());
-    }
+	std::string ContentProvider::assetFolder() const
+	{
+		return assetFolderPath;
+	}
 
+	bool ContentProvider::isRequestQueueEmpty()
+	{
+		boost::mutex::scoped_lock lock(requestSync);
+		return requestQueue.empty();
+	}
+
+	bool ContentProvider::isUrlBad(const char* url)
+	{
+		boost::mutex::scoped_lock lock(requestSync);
+
+		std::list<FailedUrl>::iterator iter = failedUrls.begin();
+		std::list<FailedUrl>::iterator end = failedUrls.end();
+
+		for (; iter != end; iter++)
+		{
+			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
+			{
+				failedUrls.erase(iter, end);
+				return false;
+			}
+			else if (iter->url == url)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void ContentProvider::clearContentCache()
+	{
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+		contentCache.clear();
+	}
+
+	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
+	{
+		boost::scoped_ptr<std::istream> stream(getContent(id));
+		
+		TextXmlParser machine(stream->rdbuf());
+		boost::scoped_ptr<XmlElement> root(machine.parse());
+
+		SerializerV2().loadInstances(root.get(), instances);
+	}
+
+	bool ContentProvider::hasContent(ContentId id)
+	{
+		return loadContent(id, NoHttpRequest) != NULL;
+	}
+
+	std::string ContentProvider::getAssetFile(const std::string& filePath)
+	{
+		return getFile(ContentId::fromAssets(filePath));
+	}
+
+	std::string ContentProvider::getFile(ContentId ticket)
+	{
+		CachedContent* content = loadContent(ticket, SyncHttpRequest);
+		if (content && registerFile(content))
+		{
+			return *content->filename;
+		}
+
+		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+	}
+
+	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return false;
+
+		if (!registerFile(content))
+			return false;
+
+		filename = *content->filename;
+		return true;
+	}
+
+	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return boost::shared_ptr<const std::string>();
+
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+
+		if (!content->data)
+		{
+			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
+			std::ostringstream data;
+
+			boost::iostreams::copy(stream, data);
+
+			content->data.reset(new std::string(data.str()));
+		}
+
+		return content->data;
+	}
+
+	std::string ContentProvider::findAsset(ContentId contentId)
+	{
+		RBXASSERT(contentId.isAsset());
+
+		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	std::string ContentProvider::findFile(ContentId contentId)
+	{
+		RBXASSERT(contentId.isFile());
+
+		const char* file = contentId.c_str();
+		file += 7;
+
+		ATL::CPath filePath(file);
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	static ATL::CPath getLocalCachePath(bool createPath)
+	{
+		ATL::CPath path;
+
+		if (createPath)
+		{
+			static std::string s = FileSystem::getCacheDirectory(true);
+			path.m_strPath.SetString(s.c_str());
+		}
+		else
+		{
+			static std::string s = FileSystem::getCacheDirectory(false);
+			path.m_strPath.SetString(s.c_str());
+		}
+
+		return path;
+	}
+
+	std::string ContentProvider::findHashFile(ContentId contentId)
+	{
+		ATL::CPath cachePath = getLocalCachePath(true);
+
+		ATL::CPath filePath = cachePath;
+		filePath.Append(contentId.c_str());
+
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	void ContentProvider::setAssetFolder(const char* sPath)
+	{
+		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
+
+		ATL::CPath path(sPath);
+
+		if (path.IsRelative())
+			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
+
+		if (!path.IsDirectory())
+			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
+
+		path.AddBackslash();
+		assetFolderPath = path;
+	}
+
+	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	{
+		ContentId id;
+
+		{
+			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
+			hasher->addData(content);
+			id = ContentId(hasher->toString(), mimeType);
+		}
+
+		ATL::CPath filePath = getLocalCachePath(true);
+		filePath.Append(id.c_str());
+
+		if (!filePath.FileExists())
+		{
+			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
+			content.clear();
+			content.seekg(0, std::ios::beg);
+
+			do
+			{
+				char buffer[1024];
+				content.read(buffer, sizeof(buffer));
+				outStream.write(buffer, content.gcount());
+			}
+			while (content.gcount() > 0);
+		}
+
+		return id;
+	}
+
+	bool ContentProvider::registerFile(CachedContent* item)
+	{
+		CachedContent temp;
+
+		{
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			temp = *item;
+		}
+
+		if (!temp.filename)
+		{
+			std::istringstream ss(*temp.data);
+			ContentId hash = registerContent(ss, Name::getNullName());
+
+			std::string filename = findHashFile(hash);
+			if (filename.empty())
+				return false;
+
+			temp.filename.reset(new std::string(filename));
+
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			*item = temp;
+		}
+
+		return true;
+	}
+
+	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
+	{
+		ContentId contentId(id);
+
+		if (hasContent(contentId))
+		{
+			stream.clear();
+			stream.seekg(dataLength, std::ios::cur);
+		}
+		else
+		{
+			ATL::CPath filePath = getLocalCachePath(true);
+			filePath.Append(contentId.c_str());
+
+			std::ofstream content;
+			content.open(filePath, std::ios::binary | std::ios::out);
+
+			char data;
+
+			for (unsigned long i = 0; i < dataLength; i++)
+			{
+				RBXASSERT(content.good());
+				stream.get(data);
+				content << data;
+			}
+		}
+
+		return contentId;
+	}
+
+	ContentProvider::FailedUrl::FailedUrl(const char* url)
+		: url(url),
+		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
+	{
+	}
+
+	class MD5HasherImpl : public MD5Hasher
+	{
+	private:
+		HCRYPTPROV hProv;
+		HCRYPTHASH hHash;
+		std::string result;
+
+	public:
+		MD5HasherImpl()
+			: hProv(NULL),
+			  hHash(NULL),
+			  result()
+		{
+			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
+			}
+
+			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
+			}
+		}
+		~MD5HasherImpl()
+		{
+		}
+
+	public:
+		virtual void addData(const char* data, size_t nBytes)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(const std::string& data)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(std::istream& data)
+		{
+			data.clear();
+			data.seekg(0, std::ios_base::beg);
+
+			char buffer[1024];
+			do
+			{
+				data.read(buffer, sizeof(buffer));
+				addData(buffer, data.gcount());
+			}
+			while (data.gcount() > 0);
+		}
+		virtual std::string toString()
+		{
+			c_str();
+			return result;
+		}
+		virtual const char* c_str()
+		{
+			if (result.empty())
+			{
+				DWORD hashSize;
+				DWORD hashSizeLen = sizeof(DWORD);
+				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				char* hashValue = new char[hashSize];
+				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				for (int i = 0; i < (int)hashSize; ++i)
+				{
+					ATL::CString temp;
+					temp.Format("%x", hashValue[i]);
+					result += temp.GetString();
+				}
+
+				delete[] hashValue;
+			}
+
+			return result.c_str();
+		}
+	};
+
+	MD5Hasher* MD5Hasher::create()
+	{
+		return new MD5HasherImpl();
+	}
 }

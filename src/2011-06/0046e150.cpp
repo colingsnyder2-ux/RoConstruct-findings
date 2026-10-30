@@ -1,28 +1,11 @@
-// from server: 39% by atomic.potato
-struct CRobloxControlMaterialSelector
-{
-    char padding[8];
-    int field0;
-    int field1;
-    char padding2[4];
-    void f();
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared-rtm roc_espeon_colorentrynativevector160b2e39d0f8f701.cpp
 
-extern "C" void __stdcall G1_func_00a42564(void *);
-
-void CRobloxControlMaterialSelector::f()
-{
-    CRobloxControlMaterialSelector *dst = this;
-    CRobloxControlMaterialSelector *end = *(CRobloxControlMaterialSelector **)((char *)this + 4);
-    if (dst != end)
-    {
-        CRobloxControlMaterialSelector *src = *(CRobloxControlMaterialSelector **)((char *)this + 8);
-        do
-        {
-            dst->field0 = src->field0;
-            dst->field1 = src->field1;
-            G1_func_00a42564((char *)dst + 8);
-            dst = (CRobloxControlMaterialSelector *)((char *)dst + 12);
-        } while (dst != end);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <afxwin.h>
+#include <vector>
+struct ColorEntry { unsigned int first; unsigned int second; CString name; };
+typedef char verifyColorEntry[(sizeof(ColorEntry)==12)?1:-1];
+template class std::vector<ColorEntry>;

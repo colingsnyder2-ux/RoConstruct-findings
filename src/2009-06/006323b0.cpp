@@ -1,101 +1,140 @@
-// from server: 56% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/ScriptContext.cpp
+// roc-lib: rbxgs-atl90-dll roc_filesystem_nested_78e80a56ef829311.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/ScriptContext.h"
+#include <atlpath.h>
+#include "util/FileSystem.h"
 
-#include "reflection/signal.h"
-#include "script/LuaAtomicClasses.h"
-#include "util/Name.h"
-#include "v8datamodel/DebugSettings.h"
-#include "v8datamodel/Stats.h"
+namespace RBX
+{
+	VistaAPIs::~VistaAPIs()
+	{
+		if (gShell32DLLInst)
+			FreeLibrary(gShell32DLLInst);
+	}
+
+	HRESULT VistaAPIs::GetIntegrity(PUCHAR pVal)
+	{
+		*pVal = 0;
+
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD));
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
+		GetVersionExA(&osvi);
+		
+		if (osvi.dwMajorVersion < 6) // anything earlier than Windows Vista
+			return S_OK;
+
+		HANDLE hToken;
+		HANDLE hProcess = GetCurrentProcess();
+		if (!OpenProcessToken(hProcess, TOKEN_QUERY | TOKEN_QUERY_SOURCE, &hToken))
+			return S_OK;
+
+		DWORD dwLengthNeeded;
+		if (!GetTokenInformation(hToken, TokenIntegrityLevel, NULL, 0L, &dwLengthNeeded))
+		{
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				PTOKEN_MANDATORY_LABEL pTIL;
+				pTIL = (PTOKEN_MANDATORY_LABEL)LocalAlloc(LMEM_FIXED, dwLengthNeeded);
+
+				if (pTIL)
+				{
+					if (GetTokenInformation(hToken, TokenIntegrityLevel, pTIL, dwLengthNeeded, &dwLengthNeeded))
+					{
+						DWORD dwIntegrityLevel = *GetSidSubAuthority(pTIL->Label.Sid, (DWORD)(UCHAR)(*GetSidSubAuthorityCount(pTIL->Label.Sid) - 1));
+
+						if (dwIntegrityLevel < SECURITY_MANDATORY_MEDIUM_RID)
+							*pVal = 1;
+						else if (dwIntegrityLevel < SECURITY_MANDATORY_HIGH_RID)
+							*pVal = 2;
+						else
+							*pVal = 3;
+					}
+
+					LocalFree(pTIL);
+				}
+			}
+		}
+
+		CloseHandle(hToken);
+		return S_OK;
+	}
+}
+
 
 namespace RBX {
-
-char sScriptContext[] = "ScriptContext";
-
-namespace Lua {
-
-template <>
-const char* Bridge<boost::shared_ptr<Reflection::DescribedBase>, 0>::className = "Object";
-
-} // namespace Lua
-
-// FUNCTION: WEBSERVICE 0x1005eb00
-ScriptContext& ScriptContext::getContext(lua_State* L)
-{
-	lua_pushlightuserdata(L, (void*) 0x43);
-	lua_gettable(L, LUA_GLOBALSINDEX);
-
-	ScriptContext* context = static_cast<ScriptContext*>(lua_touserdata(L, -1));
-
-	lua_settop(L, -2);
-
-	return *context;
+VistaAPIs::VistaAPIs() : getKnownFolderPath(NULL) {
+ gShell32DLLInst = LoadLibraryA("Shell32.dll");
+ if(gShell32DLLInst) getKnownFolderPath = (GetKnownFolderPathPtr)GetProcAddress(gShell32DLLInst,"SHGetKnownFolderPath");
+}
+HRESULT VistaAPIs::SHGetKnownFolderPath(REFKNOWNFOLDERID folder, DWORD flags, HANDLE token, PWSTR* path) {
+ if(getKnownFolderPath==NULL) return E_NOTIMPL;
+ return getKnownFolderPath(folder,flags,token,path);
+}
+std::string FileSystem::getCacheDirectory(bool create) {
+ VistaAPIs apis;
+ UCHAR integrity;
+ apis.GetIntegrity(&integrity);
+ if(integrity == 1) {
+  GUID internetCache;
+  CLSIDFromString(L"{352481E8-33BE-4251-BA85-6007CAEDCF9D",&internetCache);
+  PWSTR knownPath = NULL;
+  if(apis.SHGetKnownFolderPath(internetCache,0x8000,NULL,&knownPath)!=E_NOTIMPL) {
+   ATL::CStringA path(knownPath);
+   CoTaskMemFree(knownPath);
+   path += "\\Roblox\\";
+   if(create && !CreateDirectoryA(path,NULL) && GetLastError()!=ERROR_ALREADY_EXISTS) return "";
+   ATL::CPath cache(path);
+   cache.AddBackslash();
+   return (LPCSTR)cache;
+  }
+ }
+ char path[MAX_PATH];
+ HRESULT result=SHGetFolderPathAndSubDirA(NULL,CSIDL_COMMON_APPDATA | (create ? CSIDL_FLAG_CREATE : 0),NULL,SHGFP_TYPE_CURRENT,"Roblox\\Cache",path);
+ if(result==S_OK) return path;
+ else return "";
+}
 }
 
-// STUB: WEBSERVICE 0x1005eb60
-void ScriptContext::onEvent(const RunService* source, RunTransition event)
-{
-	STUB(0x1005eb60);
+namespace RBX {
+std::string FileSystem::getUserAppDataDirectory(bool create, const char* subDirectory) {
+ VistaAPIs apis;
+ UCHAR integrity;
+ apis.GetIntegrity(&integrity);
+ if(integrity>0) {
+  GUID folder;
+  if(integrity==1) CLSIDFromString(L"{A520A1A4-1780-4FF6-BD18-167343C5AF16}",&folder);
+  else CLSIDFromString(L"{F1B32785-6FBA-4FCF-9D55-7B8E7F157091}",&folder);
+  PWSTR knownPath=NULL;
+  if(apis.SHGetKnownFolderPath(folder,create?0x8000:0,NULL,&knownPath)!=E_NOTIMPL) {
+   ATL::CStringA path(knownPath);
+   CoTaskMemFree(knownPath);
+   path += "\\Roblox\\";
+   if(create) { if(!CreateDirectoryA(path,NULL)) { if(GetLastError()!=ERROR_ALREADY_EXISTS) return ""; } }
+   if(subDirectory) {
+    path += subDirectory;
+    if(create) { if(!CreateDirectoryA(path,NULL)) { if(GetLastError()!=ERROR_ALREADY_EXISTS) return ""; } }
+   }
+   ATL::CPath directory(path);
+   directory.AddBackslash();
+   return (LPCSTR)directory;
+  }
+ }
+ int flags=create?CSIDL_FLAG_CREATE:0;
+ std::string subPath("Roblox\\");
+ if(subDirectory) subPath += subDirectory;
+ ATL::CPath path;
+ HRESULT result=SHGetFolderPathAndSubDirA(NULL,CSIDL_APPDATA|flags,NULL,SHGFP_TYPE_CURRENT,subPath.c_str(),path.m_strPath.GetBuffer(MAX_PATH));
+ if(result!=S_OK) result=SHGetFolderPathAndSubDirA(NULL,CSIDL_COMMON_APPDATA|flags,NULL,SHGFP_TYPE_CURRENT,subPath.c_str(),path.m_strPath.GetBuffer(MAX_PATH));
+ if(result==S_OK) {
+  path.m_strPath.ReleaseBuffer();
+  path.AddBackslash();
+  return (LPCSTR)path;
+ }
+ else return "";
 }
-
-// FUNCTION: WEBSERVICE 0x1005f880
-void Lua::CoordinateFrameBridge::pushCoordinateFrame(lua_State* L, G3D::CoordinateFrame value)
-{
-	pushNewObject(L, value);
 }
-
-// FUNCTION: WEBSERVICE 0x1005f8c0
-void Lua::Vector3Bridge::pushVector3(lua_State* L, G3D::Vector3 value)
-{
-	pushNewObject(L, value);
-}
-
-// FUNCTION: WEBSERVICE 0x1005f910
-void Lua::Color3Bridge::pushColor3(lua_State* L, G3D::Color3 value)
-{
-	pushNewObject(L, value);
-}
-
-// STUB: WEBSERVICE 0x100673d0
-ScriptContext::Result ScriptContext::resume(lua_State* L, int nargs)
-{
-	STUB(0x100673d0);
-	return Success;
-}
-
-// STUB: WEBSERVICE 0x10068880
-void ScriptContext::onEvent(const RunService* source, Heartbeat event)
-{
-	STUB(0x10068880);
-}
-
-} // namespace RBX
-
-template void RBX::Lua::SharedPtrBridge<RBX::Reflection::DescribedBase>::push(
-	lua_State* L,
-	boost::shared_ptr<RBX::Reflection::DescribedBase> instance
-);
-
-template void RBX::Lua::SharedPtrBridge<RBX::Reflection::SignalInstance>::push(
-	lua_State* L,
-	boost::shared_ptr<RBX::Reflection::SignalInstance> instance
-);
-
-template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStatsItem>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStats>();
-template const RBX::Name& RBX::Name::doDeclare<RBX::sDebugSettings>();
-template void RBX::Name::callDoDeclare<RBX::Stats::sStatsItem>();
-template void RBX::Name::callDoDeclare<RBX::Stats::sStats>();
-template void RBX::Name::callDoDeclare<RBX::sDebugSettings>();
-
-template class RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;
-template class RBX::Reflection::Described<
-	RBX::ScriptContext,
-	RBX::sScriptContext,
-	RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext> >;
-template class RBX::DescribedCreatable<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;

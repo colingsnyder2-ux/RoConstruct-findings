@@ -1,24 +1,24 @@
-// from server: 98% by colin
-extern "C" int __stdcall sub_004018d0(int);
-extern "C" void __cdecl sub_00630d23(void*);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_atl_module_term_aa49747d7f898d5b.cpp
 
-extern int G_008bae44;
-extern int G_008bbd54;
-extern int G_008bbd58;
-extern char G_008bbe98;
-extern char G_008bbd64;
+// Candidate translation unit (score above; library headers required).
+#define _ATL_APARTMENT_THREADED
+#include <atlbase.h>
 
-void sub_0076d2e0()
+class RocAtlModule : public ATL::CAtlModule
 {
-    G_008bae44 = (int)&G_008bbd54;
-    if (sub_004018d0((int)&G_008bbd64) < 0)
+public:
+    virtual HRESULT AddCommonRGSReplacements(IRegistrarBase*) throw()
     {
-        G_008bbe98 = 1;
+        return S_OK;
     }
-    else
-    {
-        G_008bbd58 = 0x24;
-    }
-    G_008bbd54 = 0x790778;
-    sub_00630d23((void*)0x777d60);
+};
+
+static RocAtlModule roc_atl_module;
+
+void roc_atl_module_term()
+{
+    roc_atl_module.Term();
 }

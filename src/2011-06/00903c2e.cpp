@@ -1,18 +1,5 @@
-// from server: 39% by atomic.potato
-extern "C" void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
-
-struct CXTIconHandle
-{
-    short* data;
-    int count;
-    short* f(int);
-};
-
-short* CXTIconHandle::f(int index)
-{
-    if (index < 0 || index >= count)
-    {
-        RaiseException(0xc000008cUL, 1UL, 0UL, 0);
-    }
-    return data + index;
-}
+// from server: 40% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlwinmodule.obj

@@ -1,3404 +1,4262 @@
-// from server: 43% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/RenderDevice.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Common/XTPImageManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file RenderDevice.cpp
- 
- @maintainer Morgan McGuire, morgan@graphics3d.com
- 
- @created 2001-07-08
- @edited  2006-01-30
- */
+// XTPImageManager.cpp : implementation of the CXTPImageManager class.
+//
+// This file is a part of the XTREME TOOLKIT PRO MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-#include "G3D/platform.h"
-#include "G3D/Log.h"
-#include "G3D/GCamera.h"
-#include "GLG3D/glcalls.h"
-#include "GLG3D/RenderDevice.h"
-#include "GLG3D/Texture.h"
-#include "GLG3D/getOpenGLState.h"
-#include "GLG3D/VARArea.h"
-#include "GLG3D/VAR.h"
-#include "GLG3D/Framebuffer.h"
-#include "G3D/fileutils.h"
-#include <time.h>
-#ifdef G3D_WIN32
-    #include "GLG3D/Win32Window.h"
+#include "stdafx.h"
+#include <math.h>
+
+#include "XTPVC80Helpers.h"
+#include "XTPColorManager.h"
+#include "XTPDrawHelpers.h"
+#include "XTPSystemHelpers.h"
+#include "XTPMacros.h"
+#include "XTPPropExchange.h"
+#include "XTPImageManager.h"
+#include "XTPResourceManager.h"
+
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+#include "GraphicLibrary/XTPGraphicBitmapPng.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#define DESTROYICON(hIcon) if (hIcon) { ::DestroyIcon(hIcon); hIcon = 0; }
+#define FREE(hHandle) if (hHandle) { free(hHandle); hHandle = 0; }
+
+double CXTPImageManager::m_dDisabledAlphaFactor = 1.0;
+double CXTPImageManager::m_dDisabledBrightnessFactor = 0.5;
+BOOL CXTPImageManager::m_bAutoResample = FALSE;
+CLIPFORMAT CXTPImageManager::m_nImageClipFormat = (CLIPFORMAT)RegisterClipboardFormat(_T("Xtreme ToolBar Image"));
+CLIPFORMAT CXTPImageManager::m_nAlphaClipFormat = (CLIPFORMAT)RegisterClipboardFormat(_T("Alpha Bitmap Image"));
+
+#ifndef NOMIRRORBITMAP
+#define NOMIRRORBITMAP      (DWORD)0x80000000 /* Do not Mirror the bitmap in this call */
+#endif
+
+//---------------------------------------------------------------------------
+//    Should be a prime number:
+// 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001, 32003, 48017, 64007
+#define XTP_IMAGEMAN_HASH_TABLE_SIZE 127
+
+//////////////////////////////////////////////////////////////////////////
+// Common
+
+BOOL CXTPImageManager::BitmapsCompatible(LPBITMAP lpbm1, LPBITMAP lpbm2) const
+{
+	if (lpbm1->bmBitsPixel != lpbm2->bmBitsPixel)
+		return FALSE;
+
+	if (lpbm1->bmPlanes != lpbm2->bmPlanes)
+		return FALSE;
+
+	if (lpbm1->bmWidth != lpbm2->bmWidth)
+		return FALSE;
+
+	if (lpbm1->bmHeight != lpbm2->bmHeight)
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL CXTPImageManager::McTransparentBlt(HDC hdcDest, int nXOriginDest, int nYOriginDest,
+	int nWidthDest, int nHeightDest, HDC hdcSrc,
+	int nXOriginSrc, int nYOriginSrc, int nWidthSrc,
+	int nHeightSrc, UINT crTransparent) const
+{
+
+	BOOL bResult = FALSE;
+
+	if (!hdcDest || !hdcSrc)
+		return FALSE;
+
+	HDC hdcMask = NULL;
+	HDC hdcTmpSrc = NULL;
+	HBITMAP hbmTransMask = NULL;
+	HBITMAP oldhbmTransMask = NULL;
+	HBITMAP hbmTmpSrc = NULL;
+	HBITMAP oldhbmTmpSrc = NULL;
+
+
+	COLORREF OldBkColor = ::SetBkColor(hdcDest, RGB(255, 255, 255));
+	COLORREF OldTextColor = ::SetTextColor(hdcDest, RGB(0, 0, 0));
+
+	if ((hdcMask = ::CreateCompatibleDC(hdcDest)) == NULL)
+	{
+		goto ClearUp;
+	}
+
+	if ((hdcTmpSrc = ::CreateCompatibleDC(hdcSrc))==NULL)
+	{
+		goto ClearUp;
+	}
+
+	if ((hbmTmpSrc = ::CreateCompatibleBitmap(hdcDest,nWidthSrc,nHeightSrc))==NULL)
+	{
+		goto ClearUp;
+	}
+
+	oldhbmTmpSrc = (HBITMAP)::SelectObject(hdcTmpSrc,hbmTmpSrc);
+
+	if (!::BitBlt(hdcTmpSrc, 0, 0, nWidthSrc, nHeightSrc, hdcSrc, nXOriginSrc, nYOriginSrc, SRCCOPY))
+	{
+		goto ClearUp;
+	}
+
+	if ((hbmTransMask = ::CreateBitmap(nWidthSrc, nHeightSrc, 1, 1, NULL)) == NULL)
+	{
+		goto ClearUp;
+	}
+
+	oldhbmTransMask = (HBITMAP)::SelectObject(hdcMask,hbmTransMask);
+
+	::SetBkColor(hdcTmpSrc,crTransparent);
+	if (!::BitBlt(hdcMask, 0, 0, nWidthSrc, nHeightSrc, hdcTmpSrc, 0, 0, SRCCOPY))
+	{
+		goto ClearUp;
+	}
+
+	if (crTransparent != RGB(0, 0, 0))
+	{
+		::SetBkColor(hdcTmpSrc, RGB(0, 0, 0));
+		::SetTextColor(hdcTmpSrc, RGB(255, 255, 255));
+
+		if (!::BitBlt(hdcTmpSrc, 0, 0, nWidthSrc, nHeightSrc, hdcMask, 0, 0, SRCAND))
+		{
+			goto ClearUp;
+		}
+	}
+
+	if ((nWidthDest == nWidthSrc) && (nHeightDest == nHeightSrc))
+	{
+		if (!::BitBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthSrc, nHeightSrc, hdcMask, 0, 0, SRCAND))
+		{
+			goto ClearUp;
+		}
+		if (!::BitBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthSrc, nHeightSrc, hdcTmpSrc, 0, 0, SRCPAINT))
+		{
+			goto ClearUp;
+		}
+	}
+	else
+	{
+		if (!::StretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, hdcMask, 0, 0, nWidthSrc, nHeightSrc,SRCAND))
+		{
+			goto ClearUp;
+		}
+		if (!::StretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, hdcTmpSrc, 0, 0,  nWidthSrc, nHeightSrc,SRCPAINT))
+		{
+			goto ClearUp;
+		}
+	}
+	bResult = TRUE;
+
+ClearUp:
+	if (hdcMask)
+	{
+		if (oldhbmTransMask)
+			::SelectObject(hdcMask,oldhbmTransMask);
+		::DeleteDC(hdcMask);
+	}
+
+	if (hbmTmpSrc)
+	{
+		if (oldhbmTmpSrc)
+			::SelectObject(hdcTmpSrc,oldhbmTmpSrc);
+		::DeleteObject(hbmTmpSrc);
+	}
+
+	if (hdcTmpSrc)
+		::DeleteDC(hdcTmpSrc);
+
+	if (hbmTransMask)
+		::DeleteObject(hbmTransMask);
+
+	::SetBkColor(hdcDest, OldBkColor);
+	::SetTextColor(hdcDest,OldTextColor);
+
+	return bResult;
+}
+
+BOOL CXTPImageManager::IsWindow2000() const
+{
+	return XTPSystemVersion()->IsWin2KOrGreater();
+}
+
+BOOL CXTPImageManager::TransparentBlt(HDC hdcDest, const CRect& rcDest,HDC hdcSrc,
+	const CRect& rcSrc, UINT crTransparent) const
+{
+	if (IsWindow2000() && XTPDrawHelpers()->m_pfnTransparentBlt)
+	{
+		return XTPDrawHelpers()->m_pfnTransparentBlt(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), crTransparent);
+	}
+
+	return McTransparentBlt(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), crTransparent);
+}
+
+BOOL CXTPImageManager::BlendImages(HBITMAP hbmSrc1, BOOL bRTL1, HBITMAP hbmSrc2, BOOL bRTL2, HBITMAP hbmDst) const
+{
+	BITMAP bmSrc1, bmSrc2, bmDst;
+	RGBQUAD *lprgbSrc1, *lprgbSrc2, *lprgbDst;
+	DWORD dwWidthBytes;
+	int x, y;
+
+	// Get weighting value for second source image.
+
+	// Get information about the surfaces you were passed.
+	if (!GetObject(hbmSrc1, sizeof(BITMAP), &bmSrc1)) return FALSE;
+	if (!GetObject(hbmSrc2, sizeof(BITMAP), &bmSrc2)) return FALSE;
+	if (!GetObject(hbmDst,  sizeof(BITMAP), &bmDst))  return FALSE;
+
+	// Make sure you have data that meets your requirements.
+	if (!BitmapsCompatible(&bmSrc1, &bmSrc2)) return FALSE;
+	if (!BitmapsCompatible(&bmSrc1, &bmDst))  return FALSE;
+	if (bmSrc1.bmBitsPixel != 32) return FALSE;
+	if (bmSrc1.bmPlanes != 1) return FALSE;
+	if (!bmSrc1.bmBits || !bmSrc2.bmBits || !bmDst.bmBits) return FALSE;
+
+	dwWidthBytes = bmDst.bmWidthBytes;
+
+	// Initialize the surface pointers.
+	lprgbSrc1 = (RGBQUAD*)bmSrc1.bmBits;
+	lprgbSrc2 = (RGBQUAD*)bmSrc2.bmBits;
+	lprgbDst  = (RGBQUAD*)bmDst.bmBits;
+
+	#define F(a)  BYTE(gbSrc1.##a + (255 - gbSrc1.rgbReserved) * gbSrc2.##a / 255)
+
+	for (y = 0; y < bmDst.bmHeight; y++)
+	{
+		for (x = 0; x < bmDst.bmWidth; x++)
+		{
+			RGBQUAD& gbSrc1 = bRTL1 ? lprgbSrc1[bmDst.bmWidth - 1 - x] : lprgbSrc1[x];
+			RGBQUAD& gbSrc2 = bRTL2 ? lprgbSrc2[bmDst.bmWidth - 1 - x] : lprgbSrc2[x];
+
+			lprgbDst[x].rgbRed   = F(rgbRed);
+			lprgbDst[x].rgbGreen = F(rgbGreen);
+			lprgbDst[x].rgbBlue  = F(rgbBlue);
+		}
+
+		// Move to next scan line.
+		lprgbSrc1 = (RGBQUAD *)((LPBYTE)lprgbSrc1 + dwWidthBytes);
+		lprgbSrc2 = (RGBQUAD *)((LPBYTE)lprgbSrc2 + dwWidthBytes);
+		lprgbDst  = (RGBQUAD *)((LPBYTE)lprgbDst  + dwWidthBytes);
+	}
+
+	return TRUE;
+}
+
+HBITMAP AFX_CDECL CXTPImageManager::Create32BPPDIBSection(HDC hDC, int iWidth, int iHeight, LPBYTE* lpBits)
+{
+	BITMAPINFO bmi;
+	HBITMAP hbm;
+	LPBYTE pBits;
+
+	// Initialize header to 0s.
+	ZeroMemory(&bmi, sizeof(bmi));
+
+	// Fill out the fields you care about.
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = iWidth;
+	bmi.bmiHeader.biHeight = iHeight;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	// Create the surface.
+	hbm = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS, (LPVOID*)&pBits, NULL, 0);
+
+	if (lpBits)
+	{
+		*lpBits = pBits;
+	}
+
+	return(hbm);
+}
+
+BOOL CXTPImageManager::DoAlphaBlend(HDC hdcDest,                 // Handle to destination DC.
+	int nXOriginDest,            // X-coord of upper-left corner.
+	int nYOriginDest,            // Y-coord of upper-left corner.
+	int nWidthDest,              // Destination width.
+	int nHeightDest,             // Destination height.
+	HDC hdcSrc,                  // Handle to source DC.
+	int nXOriginSrc,             // X-coord of upper-left corner.
+	int nYOriginSrc,             // Y-coord of upper-left corner.
+	int nWidthSrc,               // Source width.
+	int nHeightSrc              // Source height.
+) const
+{
+	HDC      hdcSrc1 = NULL;
+	HDC      hdcSrc2 = NULL;
+	HBITMAP  hbmSrc1 = NULL, hbmOldSrc1 = NULL;
+	HBITMAP  hbmSrc2 = NULL, hbmOldSrc2 = NULL;
+	HBITMAP  hbmDst  = NULL;
+	BOOL     bReturn = FALSE;
+	BOOL     bRTLSrc    = XTPDrawHelpers()->IsContextRTL(hdcSrc);
+	BOOL     bRTLDest   = XTPDrawHelpers()->IsContextRTL(hdcDest);
+
+	// Create surfaces for sources and destination images.
+	hbmSrc1 = CXTPImageManager::Create32BPPDIBSection(hdcDest, nWidthDest,nHeightDest);
+	if (!hbmSrc1) goto HANDLEERROR;
+
+	hbmSrc2 = CXTPImageManager::Create32BPPDIBSection(hdcDest, nWidthDest,nHeightDest);
+	if (!hbmSrc2) goto HANDLEERROR;
+
+	hbmDst  = CXTPImageManager::Create32BPPDIBSection(hdcDest, nWidthDest,nHeightDest);
+	if (!hbmDst) goto HANDLEERROR;
+
+	// Create HDCs to hold our surfaces.
+	hdcSrc1 = CreateCompatibleDC(hdcSrc);
+	if (!hdcSrc1) goto HANDLEERROR;
+
+	hdcSrc2 = CreateCompatibleDC(hdcSrc);
+	if (!hdcSrc2) goto HANDLEERROR;
+
+	XTPDrawHelpers()->SetContextRTL(hdcSrc2, FALSE);
+	XTPDrawHelpers()->SetContextRTL(hdcSrc1, FALSE);
+
+	// Prepare the surfaces for drawing.
+	hbmOldSrc1 = (HBITMAP)SelectObject(hdcSrc1, hbmSrc1);
+	hbmOldSrc2 = (HBITMAP)SelectObject(hdcSrc2, hbmSrc2);
+	SetStretchBltMode(hdcSrc1, COLORONCOLOR);
+	SetStretchBltMode(hdcSrc2, COLORONCOLOR);
+
+
+	// Capture a copy of the source area.
+	if (!StretchBlt(hdcSrc1, 0,0,nWidthDest,nHeightDest,
+		hdcSrc,  nXOriginSrc, nYOriginSrc, nWidthSrc, nHeightSrc,
+		SRCCOPY))
+		goto HANDLEERROR;
+
+
+	// Capture a copy of the destination area.
+	if (!BitBlt(hdcSrc2, 0, 0, nWidthDest, nHeightDest,
+		hdcDest, nXOriginDest, nYOriginDest, SRCCOPY))
+		goto HANDLEERROR;
+
+
+
+	SelectObject(hdcSrc1, hbmOldSrc1); hbmOldSrc1 = NULL;
+	SelectObject(hdcSrc2, hbmOldSrc2); hbmOldSrc2 = NULL;
+
+	// Blend the two source areas to create the destination image.
+	bReturn = BlendImages(hbmSrc1, bRTLSrc, hbmSrc2, bRTLDest, hbmDst);
+
+
+	// Display the blended (destination) image to the target HDC.
+	if (bReturn)
+	{
+		hbmOldSrc1 = (HBITMAP)SelectObject(hdcSrc1, hbmDst);
+
+		BitBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest,
+			hdcSrc1, 0,0, SRCCOPY | (bRTLDest ? NOMIRRORBITMAP : 0));
+
+		SelectObject(hdcSrc1, hbmOldSrc1);
+		hbmOldSrc1 = NULL;
+	}
+
+	// Clean up the rest of the objects you created.
+
+HANDLEERROR:
+
+	if (hbmOldSrc1) SelectObject(hdcSrc1, hbmOldSrc1);
+	if (hbmOldSrc2) SelectObject(hdcSrc2, hbmOldSrc2);
+	if (hdcSrc1) DeleteDC(hdcSrc1);
+	if (hdcSrc2) DeleteDC(hdcSrc2);
+	if (hbmSrc1) DeleteObject(hbmSrc1);
+	if (hbmSrc2) DeleteObject(hbmSrc2);
+	if (hbmDst) DeleteObject(hbmDst);
+
+	return bReturn;
+}
+
+
+BOOL CXTPImageManager::AlphaBlend(HDC hdcDest, const CRect& rcDest, HDC hdcSrc, const CRect& rcSrc) const
+{
+	if (XTPDrawHelpers()->IsContextRTL(hdcDest) && XTPSystemVersion()->IsWin9x())
+	{
+		return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+	}
+
+	if (XTPDrawHelpers()->m_pfnAlphaBlend && (IsWindow2000() || (rcSrc.top == 0 && rcSrc.left == 0)))
+	{
+		BLENDFUNCTION bf;
+		ZeroMemory(&bf, sizeof(BLENDFUNCTION));
+
+		bf.AlphaFormat  = 0x01;
+		bf.SourceConstantAlpha = 255;
+		bf.BlendOp = AC_SRC_OVER;
+
+		return XTPDrawHelpers()->m_pfnAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), bf);
+
+	}
+	return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+}
+
+BOOL CXTPImageManager::AlphaBlend2(HDC hdcDest, const CRect& rcDest, HDC hdcSrc, const CRect& rcSrc, BYTE Transparency) const
+{
+	if (XTPDrawHelpers()->IsContextRTL(hdcDest) && XTPSystemVersion()->IsWin9x())
+	{
+		return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+	}
+
+	if (XTPDrawHelpers()->m_pfnAlphaBlend && (IsWindow2000() || (rcSrc.top == 0 && rcSrc.left == 0)))
+	{
+		BLENDFUNCTION bf;
+		ZeroMemory(&bf, sizeof(BLENDFUNCTION));
+
+		bf.AlphaFormat  = 0;
+		bf.SourceConstantAlpha = Transparency;
+		bf.BlendOp = AC_SRC_OVER;
+
+		return XTPDrawHelpers()->m_pfnAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), bf);
+
+	}
+	return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerImageList
+
+CXTPImageManagerImageList::CXTPImageManagerImageList()
+{
+	m_hImageList = NULL;
+	m_bDestroyImageList = FALSE;
+	m_nBaseCommand = 0;
+	m_pImageManager = NULL;
+}
+
+CXTPImageManagerImageList::~CXTPImageManagerImageList()
+{
+	if (m_hImageList && m_bDestroyImageList)
+	{
+		ImageList_Destroy(m_hImageList);
+	}
+
+	RemoveAll();
+}
+
+void CXTPImageManagerImageList::RemoveAll()
+{
+	UINT nCommand;
+	CXTPImageManagerIcon* pIcon;
+
+	POSITION pos = m_mapIcons.GetStartPosition();
+	while (pos)
+	{
+		m_mapIcons.GetNextAssoc(pos, nCommand, pIcon);
+		pIcon->InternalRelease();
+	}
+
+	m_mapIcons.RemoveAll();
+}
+
+BOOL CXTPImageManagerImageList::Lookup(UINT nCommand)
+{
+	return ((nCommand >= m_nBaseCommand) &&
+		(nCommand < m_nBaseCommand + ImageList_GetImageCount(m_hImageList)));
+}
+
+CSize CXTPImageManagerImageList::GetIconSize() const
+{
+	int nWidth = 0, nHeight = 0;
+	VERIFY(ImageList_GetIconSize(m_hImageList, &nWidth, &nHeight));
+
+	return CSize(nWidth, nHeight);
+}
+
+CXTPImageManagerIcon* CXTPImageManagerImageList::GetIcon(UINT nCommand)
+{
+	CXTPImageManagerIcon* pImage = NULL;
+
+	if (m_mapIcons.Lookup(nCommand, pImage))
+	{
+		return pImage;
+	}
+
+	CSize sz = GetIconSize();
+
+	pImage = new CXTPImageManagerIcon(nCommand, sz.cx, sz.cy, this);
+	m_mapIcons.SetAt(nCommand, pImage);
+
+	return pImage;
+}
+
+void CXTPImageManagerImageList::Draw(CDC* pDC, CPoint pt, CXTPImageManagerIcon* pIcon, CSize szIcon)
+{
+	ImageList_DrawEx(m_hImageList, pIcon->GetID() - m_nBaseCommand, pDC->GetSafeHdc(),
+		pt.x, pt.y, szIcon.cx, szIcon.cy, CLR_NONE, CLR_NONE, ILD_TRANSPARENT | ILD_NORMAL);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIcon
+
+
+struct CXTPImageManagerIcon::ICONIMAGE
+{
+	BITMAPINFOHEADER    icHeader;   // DIB header
+	RGBQUAD             icColors[1];// Color table
+	BYTE                icXOR[1];   // DIB bits for XOR mask
+	BYTE                icAND[1];   // DIB bits for AND mask
+};
+
+#pragma pack(push, 2)
+// resources are WORD-aligned
+
+struct CXTPImageManagerIcon::ICONDIRENTRY
+{
+	BYTE        bWidth;             // Width, in pixels, of the image
+	BYTE        bHeight;            // Height, in pixels, of the image
+	BYTE        bColorCount;        // Number of colors in image (0 if >= 8bpp)
+	BYTE        bReserved;          // Reserved (must be 0)
+	WORD        wPlanes;            // Color Planes
+	WORD        wBitCount;          // Bits per pixel
+	DWORD       dwBytesInRes;       // How many bytes in this resource ?
+	DWORD       dwImageOffset;      // Where in the file is this image ?
+};
+
+struct CXTPImageManagerIcon::ICONDIRHEADER
+{
+	WORD            idReserved;     // Reserved (must be 0)
+	WORD            idType;         // Resource Type (1 for icons)
+	WORD            idCount;        // How many images ?
+};
+
+struct CXTPImageManagerIcon::GRPICONDIRENTRY
+{
+	BYTE   bWidth;                  // Width, in pixels, of the image
+	BYTE   bHeight;                 // Height, in pixels, of the image
+	BYTE   bColorCount;             // Number of colors in image (0 if >= 8bpp)
+	BYTE   bReserved;               // Reserved
+	WORD   wPlanes;                 // Color Planes
+	WORD   wBitCount;               // Bits per pixel
+	DWORD  dwBytesInRes;            // how many bytes in this resource ?
+	WORD   nID;                     // the ID
+};
+
+struct CXTPImageManagerIcon::GRPICONDIR
+{
+	WORD              idReserved;   // Reserved (must be 0)
+	WORD              idType;       // Resource type (1 for icons)
+	WORD              idCount;      // How many images ?
+	GRPICONDIRENTRY   idEntries[1]; // The entries for each image
+};
+
+#pragma pack(pop)
+
+BOOL CXTPImageManagerIcon::IsAlphaBitmapFile(LPCTSTR pszFileName)
+{
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, 0, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return FALSE;
+	}
+
+	DWORD dwBytesRead;
+
+	BITMAPFILEHEADER fileHeader;
+
+	if (!ReadFile(hFile, &fileHeader, sizeof(BITMAPFILEHEADER), &dwBytesRead, 0) || dwBytesRead != sizeof(BITMAPFILEHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BITMAPINFOHEADER infoHeader;
+
+	if (!ReadFile(hFile, &infoHeader, sizeof(BITMAPINFOHEADER), &dwBytesRead, 0) || dwBytesRead != sizeof(BITMAPINFOHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BOOL bResult = infoHeader.biBitCount == 32;
+
+	CloseHandle(hFile);
+
+	return bResult;
+}
+
+BOOL CXTPImageManagerIcon::IsPngBitmapFile(LPCTSTR pszFileName)
+{
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, 0, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return FALSE;
+	}
+
+	DWORD dwBytesRead;
+
+	BYTE fileHeader[4];
+	BYTE png_signature[4] = {137, 80, 78, 71};
+
+	if (!ReadFile(hFile, &fileHeader, sizeof(fileHeader), &dwBytesRead, 0) || dwBytesRead != sizeof(fileHeader))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BOOL bResult = memcmp(&fileHeader, &png_signature, 4) == 0;
+
+	CloseHandle(hFile);
+
+	return bResult;
+}
+
+
+HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromFile(LPCTSTR lpszFileName, BOOL* lbAlphaBitmap)
+{
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+	BOOL bPngBitmap = CXTPImageManagerIcon::IsPngBitmapFile(lpszFileName);
+
+	if (bPngBitmap)
+	{
+		CXTPGraphicBitmapPng bmp;
+		if (!bmp.LoadFromFile(lpszFileName))
+			return NULL;
+
+		if (lbAlphaBitmap)
+		{
+			*lbAlphaBitmap = bmp.IsAlpha();
+		}
+		return (HBITMAP)bmp.Detach();
+	}
+#endif
+
+	BOOL bAlphaBitmap = CXTPImageManagerIcon::IsAlphaBitmapFile(lpszFileName);
+
+	HBITMAP hBmp = (HBITMAP)LoadImage(0, lpszFileName,
+		IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | (bAlphaBitmap ? LR_CREATEDIBSECTION : 0) | LR_LOADFROMFILE);
+
+	if (lbAlphaBitmap)
+	{
+		*lbAlphaBitmap = bAlphaBitmap;
+	}
+
+	return hBmp;
+}
+
+
+BOOL AFX_CDECL CXTPImageManagerIcon::IsPngBitmapResource(HMODULE hModule, LPCTSTR lpBitmapName)
+{
+	BYTE png_signature[4] = {137, 80, 78, 71};
+
+	HRSRC hResource = ::FindResource(hModule, lpBitmapName, _T("PNG"));
+
+	if (hResource == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	LPBYTE pBitmapInfoHeader = (LPBYTE)::LockResource(hGlobal);
+	BOOL bPngBitmap = memcmp(pBitmapInfoHeader, &png_signature, 4) == 0;
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return (bPngBitmap);
+}
+
+BOOL AFX_CDECL CXTPImageManagerIcon::IsAlphaBitmapResource(HMODULE hModule, LPCTSTR lpBitmapName)
+{
+	HRSRC hResource = ::FindResource(hModule, lpBitmapName, RT_BITMAP);
+
+	if (hResource == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	LPBITMAPINFOHEADER pBitmapInfoHeader = (LPBITMAPINFOHEADER)::LockResource(hGlobal);
+	ASSERT(pBitmapInfoHeader != NULL);
+	if (!pBitmapInfoHeader)
+		return FALSE;
+
+	BOOL bAlpahBitmap = pBitmapInfoHeader->biBitCount == 32;
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return (bAlpahBitmap);
+}
+
+HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromResource(LPCTSTR lpszResource, BOOL* lbAlphaBitmap)
+{
+	HMODULE hModule;
+
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+	hModule = AfxFindResourceHandle(lpszResource, _T("PNG"));
+
+	BOOL bPngBitmap = IsPngBitmapResource(hModule, lpszResource);
+	if (bPngBitmap)
+	{
+		CXTPGraphicBitmapPng bmpIcons;
+
+		HRSRC hResource = ::FindResource(hModule, lpszResource, _T("PNG"));
+
+		if (!bmpIcons.LoadFromResource(hModule, hResource))
+			return NULL;
+
+		if (lbAlphaBitmap)
+		{
+			*lbAlphaBitmap = bmpIcons.IsAlpha();
+		}
+
+		return (HBITMAP)bmpIcons.Detach();
+	}
+#endif
+
+	hModule = AfxFindResourceHandle(lpszResource, RT_BITMAP);
+
+	CBitmap bmpIcons;
+	BOOL bAlphaBitmap = IsAlphaBitmapResource(hModule, lpszResource);
+
+	if (lbAlphaBitmap)
+	{
+		*lbAlphaBitmap = bAlphaBitmap;
+	}
+
+	if (bAlphaBitmap)
+	{
+		return LoadAlphaBitmap(hModule, lpszResource);
+	}
+
+	return (HBITMAP)LoadImage(hModule, lpszResource, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE);
+}
+
+HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromResource(HMODULE hModule, LPCTSTR lpszResource, BOOL* lbAlphaBitmap)
+{
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+
+	BOOL bPngBitmap = IsPngBitmapResource(hModule, lpszResource);
+	if (bPngBitmap)
+	{
+		CXTPGraphicBitmapPng bmpIcons;
+
+		HRSRC hResource = ::FindResource(hModule, lpszResource, _T("PNG"));
+
+		if (!bmpIcons.LoadFromResource(hModule, hResource))
+			return NULL;
+
+		if (lbAlphaBitmap)
+		{
+			*lbAlphaBitmap = bmpIcons.IsAlpha();
+		}
+
+		return (HBITMAP)bmpIcons.Detach();
+	}
+#endif
+
+	CBitmap bmpIcons;
+	BOOL bAlphaBitmap = IsAlphaBitmapResource(hModule, lpszResource);
+
+	if (lbAlphaBitmap)
+	{
+		*lbAlphaBitmap = bAlphaBitmap;
+	}
+
+	if (bAlphaBitmap)
+	{
+		return LoadAlphaBitmap(hModule, lpszResource);
+	}
+
+	return (HBITMAP)LoadImage(hModule, lpszResource, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE);
+}
+
+HBITMAP CXTPImageManagerIcon::LoadAlphaBitmap(UINT nIDResource)
+{
+	return LoadAlphaBitmap(AfxFindResourceHandle(MAKEINTRESOURCE(nIDResource), RT_BITMAP),
+		MAKEINTRESOURCE(nIDResource));
+}
+
+HBITMAP CXTPImageManagerIcon::LoadAlphaBitmap(HMODULE hModule, LPCTSTR lpszResource)
+{
+	HRSRC hResource = ::FindResource(hModule, lpszResource, RT_BITMAP);
+	if (hResource == NULL)
+		return NULL;
+
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
+	if (hGlobal == NULL)
+		return NULL;
+
+	LPBITMAPINFO pResourceInfo = (LPBITMAPINFO)::LockResource(hGlobal);
+	ASSERT(pResourceInfo != NULL);
+	if (!pResourceInfo)
+		return NULL;
+
+	int biSizeImage = pResourceInfo->bmiHeader.biHeight * pResourceInfo->bmiHeader.biWidth * 4;
+
+	HBITMAP hbmResult = NULL;
+
+	if (pResourceInfo->bmiHeader.biBitCount == 32 &&
+		SizeofResource(hModule, hResource) >= int(biSizeImage + sizeof(BITMAPINFOHEADER)))
+	{
+		CDC dcSrc;
+		dcSrc.CreateCompatibleDC(NULL);
+
+		PBITMAPINFO pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + sizeof(COLORREF) * 3);
+		ASSERT(pBitmapInfo != NULL);
+		if (!pBitmapInfo)
+			return NULL;
+
+		MEMCPY_S(pBitmapInfo, &pResourceInfo->bmiHeader, sizeof(BITMAPINFOHEADER));
+		pBitmapInfo->bmiHeader.biSizeImage = biSizeImage;
+
+		BYTE* pDestBits = NULL;
+		HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDestBits, NULL, 0);
+
+		if (hBmp && pDestBits)
+		{
+			MEMCPY_S(pDestBits, &pResourceInfo->bmiColors, biSizeImage);
+			hbmResult = hBmp;
+		}
+		FREE(pBitmapInfo);
+	}
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return hbmResult;
+
+}
+
+
+
+HBITMAP CXTPImageManagerIcon::LoadAlphaIcon(LPCTSTR pszFileName, int nWidth)
+{
+
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, 0, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return NULL;
+	}
+
+	ICONDIRHEADER idh;
+
+	DWORD dwBytesRead = 0;
+	if (!ReadFile(hFile, &idh, sizeof(ICONDIRHEADER) , &dwBytesRead, NULL) || dwBytesRead != sizeof(ICONDIRHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (idh.idType != 1 || idh.idCount == 0)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+
+	ICONDIRENTRY* pEntries = (ICONDIRENTRY*)malloc(sizeof(ICONDIRENTRY) * idh.idCount);
+
+	if (pEntries == NULL)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (!ReadFile(hFile, pEntries, idh.idCount * sizeof(ICONDIRENTRY), &dwBytesRead, NULL)
+		|| dwBytesRead != idh.idCount * sizeof(ICONDIRENTRY))
+	{
+		free(pEntries);
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	HBITMAP hBitmap = 0;
+
+	for (int i = 0; i < idh.idCount; i++)
+	{
+		if (pEntries[i].wBitCount == 32 && (((int)pEntries[i].bWidth == nWidth) || (nWidth == 0)))
+		{
+			if (!SetFilePointer(hFile, pEntries[i].dwImageOffset,
+				NULL, FILE_BEGIN))
+				continue;
+
+			ICONIMAGE* pIconImage = (ICONIMAGE*)malloc(pEntries[i].dwBytesInRes);
+			if (pIconImage == NULL)
+				continue;
+
+			dwBytesRead = 0;
+			BOOL bResult = ReadFile(hFile, pIconImage, pEntries[i].dwBytesInRes,
+				&dwBytesRead, NULL);
+
+			if (!bResult || (dwBytesRead != pEntries[i].dwBytesInRes) || (pIconImage->icHeader.biBitCount != 32))
+			{
+				free(pIconImage);
+				continue;
+			}
+
+			CDC dcSrc;
+			dcSrc.CreateCompatibleDC(NULL);
+
+			pIconImage->icHeader.biHeight /= 2;
+			pIconImage->icHeader.biSizeImage = pIconImage->icHeader.biHeight * pIconImage->icHeader.biWidth * 4;
+
+			BYTE* pDest = NULL;
+			HBITMAP hBmp = CreateDIBSection(dcSrc, (BITMAPINFO*)&pIconImage->icHeader, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+
+			if (pDest != NULL && hBmp != NULL)
+			{
+				MEMCPY_S(pDest, &pIconImage->icColors, pIconImage->icHeader.biSizeImage);
+				hBitmap = hBmp;
+
+				free(pIconImage);
+				break;
+			}
+
+			free(pIconImage);
+		}
+	}
+	free(pEntries);
+	CloseHandle(hFile);
+
+	return hBitmap;
+
+}
+
+BOOL CXTPImageManager::SetIconFromIcoFile(LPCTSTR pszFileName, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, 0, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return FALSE;
+	}
+
+	CXTPImageManagerIcon::ICONDIRHEADER idh;
+
+	DWORD dwBytesRead = 0;
+	if (!ReadFile(hFile, &idh, sizeof(CXTPImageManagerIcon::ICONDIRHEADER) , &dwBytesRead, NULL) || dwBytesRead != sizeof(CXTPImageManagerIcon::ICONDIRHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (idh.idType != 1 || idh.idCount == 0)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+
+	CXTPImageManagerIcon::ICONDIRENTRY* pEntries = (CXTPImageManagerIcon::ICONDIRENTRY*)malloc(sizeof(CXTPImageManagerIcon::ICONDIRENTRY) * idh.idCount);
+
+	if (pEntries == NULL)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (!ReadFile(hFile, pEntries, idh.idCount * sizeof(CXTPImageManagerIcon::ICONDIRENTRY), &dwBytesRead, NULL)
+		|| dwBytesRead != idh.idCount * sizeof(CXTPImageManagerIcon::ICONDIRENTRY))
+	{
+		free(pEntries);
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BOOL bResult = FALSE;
+
+	for (int i = 0; i < idh.idCount; i++)
+	{
+		CSize szResourceIcon((int)pEntries[i].bWidth, (int)pEntries[i].bHeight);
+		CXTPImageManagerIconHandle hIcon;
+
+		if ((szIcon == szResourceIcon) || (szIcon == CSize(0, 0)))
+		{
+			if (!SetFilePointer(hFile, pEntries[i].dwImageOffset,
+				NULL, FILE_BEGIN))
+				continue;
+
+			CXTPImageManagerIcon::ICONIMAGE* pIconImage = (CXTPImageManagerIcon::ICONIMAGE*)malloc(pEntries[i].dwBytesInRes);
+			if (pIconImage == NULL)
+				continue;
+
+			dwBytesRead = 0;
+			BOOL bReadFile = ReadFile(hFile, pIconImage, pEntries[i].dwBytesInRes,
+				&dwBytesRead, NULL);
+
+			if (!bReadFile || (dwBytesRead != pEntries[i].dwBytesInRes))
+			{
+				free(pIconImage);
+				continue;
+			}
+
+			if (pIconImage->icHeader.biBitCount == 32)
+			{
+
+				CDC dcSrc;
+				dcSrc.CreateCompatibleDC(NULL);
+
+				pIconImage->icHeader.biHeight /= 2;
+				pIconImage->icHeader.biSizeImage = pIconImage->icHeader.biHeight * pIconImage->icHeader.biWidth * 4;
+
+				BYTE* pDest = NULL;
+				HBITMAP hBitmap = CreateDIBSection(dcSrc, (BITMAPINFO*)&pIconImage->icHeader, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+
+				if (pDest != NULL && hBitmap != NULL)
+				{
+					MEMCPY_S(pDest, &pIconImage->icColors, pIconImage->icHeader.biSizeImage);
+
+					hIcon = hBitmap;
+				}
+			}
+			else
+			{
+				hIcon = CreateIconFromResourceEx((PBYTE)pIconImage, pEntries[i].dwBytesInRes, TRUE,
+					0x00030000, szResourceIcon.cx, szResourceIcon.cy, LR_DEFAULTCOLOR);
+			}
+
+			if (!hIcon.IsEmpty())
+			{
+				SetIcon(hIcon, nIDCommand, szResourceIcon, imageState);
+				bResult = TRUE;
+			}
+
+			free(pIconImage);
+		}
+	}
+	free(pEntries);
+	CloseHandle(hFile);
+
+	return bResult;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerResource
+
+CXTPImageManagerResource::CXTPImageManagerResource(CXTPImageManager* pImageManager, CSize szIcon)
+{
+	m_pImageManager = pImageManager;
+	m_szIcon = szIcon;
+	m_pBits = NULL;
+	m_nAllocWidth = 0;
+
+	m_hbmpImage = 0;
+	m_hbmpMask = 0;
+
+	HDC hdcScreen = ::GetDC(HWND_DESKTOP);
+	m_dc.Attach(::CreateCompatibleDC(hdcScreen));
+	ReleaseDC(HWND_DESKTOP, hdcScreen);
+
+	::InitializeCriticalSection(&m_cs);
+}
+
+CXTPImageManagerResource::~CXTPImageManagerResource()
+{
+	RemoveAll();
+
+	::DeleteCriticalSection(&m_cs);
+}
+
+void CXTPImageManagerResource::RemoveAll()
+{
+	int i;
+	for (i = 0; i < (int)m_arrIcons.GetSize(); i++)
+	{
+		delete m_arrIcons[i];
+	}
+	m_arrIcons.RemoveAll();
+
+	for (i = 0; i < (int)m_arrAlloc.GetSize(); i++)
+	{
+		delete m_arrAlloc[i];
+	}
+	m_arrAlloc.RemoveAll();
+
+
+	if (m_hbmpImage)
+	{
+		DeleteObject(m_hbmpImage);
+		m_hbmpImage = NULL;
+	}
+	if (m_hbmpMask)
+	{
+		DeleteObject(m_hbmpMask);
+		m_hbmpMask = NULL;
+	}
+
+	m_nAllocWidth = 0;
+	m_pBits = NULL;
+}
+
+
+CXTPImageManagerResource* CXTPImageManager::GetResource(CSize szIcon)
+{
+	DWORD dwSize = MAKELONG(szIcon.cx, szIcon.cy);
+
+	CXTPImageManagerResource* pResource = NULL;
+	if (m_mapResources.Lookup(dwSize, pResource))
+		return pResource;
+
+	pResource = new CXTPImageManagerResource(this, szIcon);
+	m_mapResources.SetAt(dwSize, pResource);
+
+	return pResource;
+}
+
+XTP_IMAGERESOURCE_INFO* CXTPImageManagerResource::AllocBitmap()
+{
+	if (m_arrAlloc.GetSize() > 0)
+	{
+		XTP_IMAGERESOURCE_INFO* pRInfo = m_arrAlloc[m_arrAlloc.GetSize() - 1];
+		m_arrAlloc.RemoveAt(m_arrAlloc.GetSize() - 1);
+		m_arrIcons.Add(pRInfo);
+		return pRInfo;
+	}
+
+	if (!m_hbmpImage && !m_hbmpMask)
+	{
+		m_hbmpImage = CXTPImageManager::Create32BPPDIBSection(NULL, m_szIcon.cx, m_szIcon.cy, &m_pBits);
+		m_hbmpMask = CreateBitmap(m_szIcon.cx, m_szIcon.cy, 1, 1, NULL);
+
+		m_nAllocWidth = m_szIcon.cx;
+
+		if (!m_hbmpImage || !m_hbmpMask)
+			return NULL;
+
+		XTP_IMAGERESOURCE_INFO* pRInfo = new XTP_IMAGERESOURCE_INFO();
+		pRInfo->pResource = this;
+		pRInfo->bAlpha = FALSE;
+		pRInfo->rc = CRect(0, 0, m_szIcon.cx, m_szIcon.cy);
+
+		m_arrIcons.Add(pRInfo);
+		return pRInfo;
+	}
+
+	LPBYTE pBits = NULL;
+	HBITMAP hbmpImage = CXTPImageManager::Create32BPPDIBSection(NULL, m_szIcon.cx + m_nAllocWidth, m_szIcon.cy, &pBits);
+	HBITMAP hbmpMask = CreateBitmap(m_szIcon.cx + m_nAllocWidth, m_szIcon.cy, 1, 1, NULL);
+
+	if (hbmpImage && pBits)
+	{
+		LPBYTE pBitsI = pBits;
+
+		for (int y = 0; y < m_szIcon.cy; y++)
+		{
+			memcpy(pBitsI, m_pBits, m_nAllocWidth * 4);
+			m_pBits += m_nAllocWidth * 4;
+			pBitsI += (m_szIcon.cx + m_nAllocWidth) * 4;
+		}
+	}
+	else
+	{
+		return NULL;
+	}
+
+	if (hbmpMask)
+	{
+		m_dc.SetBitmap(hbmpMask);
+		m_dc.DrawState(CPoint(0, 0), CSize(0, 0), m_hbmpMask, 0, 0);
+		m_dc.SetBitmap(NULL);
+	}
+	else
+	{
+		return NULL;
+	}
+
+	DeleteObject(m_hbmpImage);
+	DeleteObject(m_hbmpMask);
+
+	m_hbmpImage = hbmpImage;
+	m_hbmpMask = hbmpMask;
+	m_pBits = pBits;
+
+	XTP_IMAGERESOURCE_INFO* pRInfo = new XTP_IMAGERESOURCE_INFO();
+	pRInfo->pResource = this;
+	pRInfo->bAlpha = FALSE;
+	pRInfo->rc = CRect(m_nAllocWidth, 0, m_nAllocWidth + m_szIcon.cx, m_szIcon.cy);
+	m_arrIcons.Add(pRInfo);
+
+	m_nAllocWidth += m_szIcon.cx;
+
+	return pRInfo;
+}
+
+void CXTPImageManagerResource::Clear(XTP_IMAGERESOURCE_INFO* pRInfo)
+{
+	CXTPLockGuard lock(m_cs);
+
+	for (int i = 0; i < (int)m_arrIcons.GetSize(); i++)
+	{
+		if (m_arrIcons[i] == pRInfo)
+		{
+			m_arrIcons.RemoveAt(i);
+			m_arrAlloc.Add(pRInfo);
+
+			if (m_arrAlloc.GetSize() * m_szIcon.cx == m_nAllocWidth)
+			{
+				ASSERT(m_arrIcons.GetSize() == 0);
+				RemoveAll();
+			}
+			return;
+		}
+	}
+}
+
+XTP_IMAGERESOURCE_INFO* CXTPImageManagerResource::Add(CXTPImageManagerIconHandle& hHandle)
+{
+	CXTPLockGuard lock(m_cs);
+
+	ASSERT(hHandle.m_pRInfo == NULL);
+	ASSERT(!hHandle.IsEmpty());
+	if (hHandle.IsEmpty())
+		return NULL;
+
+	if (hHandle.GetExtent() != GetExtent())
+		return NULL;
+
+	if (!hHandle.m_hIcon && !hHandle.m_hBitmap)
+		return NULL;
+
+	XTP_IMAGERESOURCE_INFO* pRInfo = AllocBitmap();
+	if (pRInfo == NULL)
+		return NULL;
+
+	if (hHandle.m_hIcon)
+	{
+		ICONINFO iconInfo;
+		if (GetIconInfo(hHandle.m_hIcon, &iconInfo))
+		{
+			LPBYTE pBitsI = NULL;
+			BOOL bAlpha = -1;
+			HBITMAP hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap(iconInfo.hbmColor, &bAlpha, &pBitsI);
+
+			DeleteObject(iconInfo.hbmColor);
+			DeleteObject(iconInfo.hbmMask);
+
+			if (bAlpha == TRUE && pBitsI)
+			{
+				for (int y = 0; y < m_szIcon.cy; y++)
+				{
+					LPBYTE pBitsRow = m_pBits + ((y * m_nAllocWidth + pRInfo->rc.left) * 4);
+					memcpy(pBitsRow, pBitsI, m_szIcon.cx * 4);
+					pBitsI += m_szIcon.cx * 4;
+				}
+
+				pRInfo->bAlpha = TRUE;
+
+				DeleteObject(hBitmap);
+				return pRInfo;
+			}
+
+			if (hBitmap) DeleteObject(hBitmap);
+		}
+
+		if (m_hbmpImage)
+		{
+			m_dc.SetBitmap(m_hbmpImage);
+			m_dc.FillSolidRect(pRInfo->rc, 0);
+			DrawIconEx(m_dc, pRInfo->rc.left, pRInfo->rc.top, hHandle.m_hIcon, 0, 0, 0, NULL, DI_NORMAL);
+			m_dc.SetBitmap(NULL);
+		}
+
+		if (m_hbmpMask)
+		{
+			m_dc.SetBitmap(m_hbmpMask);
+			m_dc.FillSolidRect(pRInfo->rc, 0);
+			DrawIconEx(m_dc, pRInfo->rc.left, pRInfo->rc.top, hHandle.m_hIcon, 0, 0, 0, NULL, DI_MASK);
+			m_dc.SetBitmap(NULL);
+		}
+
+		pRInfo->bAlpha = FALSE;
+	}
+	else
+	{
+		LPBYTE pBitsI = hHandle.PreMultiply();
+		if (!pBitsI)
+			return NULL;
+
+		for (int y = 0; y < m_szIcon.cy; y++)
+		{
+			LPBYTE pBitsRow = m_pBits + ((y * m_nAllocWidth + pRInfo->rc.left) * 4);
+			memcpy(pBitsRow, pBitsI, m_szIcon.cx * 4);
+			pBitsI += m_szIcon.cx * 4;
+		}
+
+		pRInfo->bAlpha = TRUE;
+	}
+
+	return pRInfo;
+}
+
+BOOL CXTPImageManager::IsDrawReverted(CDC* pDC) const
+{
+	if (m_bDrawReverted == 1)
+		return TRUE;
+	if (m_bDrawReverted == 2)
+		return CXTPDrawHelpers::IsContextRTL(pDC);
+	return FALSE;
+}
+
+void CXTPImageManagerResource::CreateIcon(CXTPImageManagerIconHandle& hHandle, XTP_IMAGERESOURCE_INFO* pRInfo)
+{
+	CXTPLockGuard lock(m_cs);
+
+	hHandle.Clear();
+
+	HBITMAP hBitmap = 0;
+	LPBYTE pBits = 0;
+
+
+	{
+		hBitmap = CXTPImageManager::Create32BPPDIBSection(NULL, m_szIcon.cx, m_szIcon.cy, &pBits);
+		if (!hBitmap || !pBits)
+			return;
+
+		LPBYTE pBitsI = pBits;
+
+		for (int y = 0; y < m_szIcon.cy; y++)
+		{
+			LPBYTE pBitsRow = m_pBits + ((y * m_nAllocWidth + pRInfo->rc.left) * 4);
+			memcpy(pBitsI, pBitsRow, m_szIcon.cx * 4);
+			pBitsI += m_szIcon.cx * 4;
+		}
+	}
+
+	if (pRInfo->bAlpha)
+	{
+		hHandle.m_hBitmap = hBitmap;
+		hHandle.m_pBits = pBits;
+	}
+	else
+	{
+		HBITMAP hbmpMask = CreateBitmap(m_szIcon.cx, m_szIcon.cy, 1, 1, NULL);
+		{
+			CXTPCompatibleDC dc(0, hbmpMask);
+			m_dc.SetBitmap(m_hbmpMask);
+			dc.BitBlt(0, 0, m_szIcon.cx, m_szIcon.cy, &m_dc, pRInfo->rc.left, 0, SRCCOPY);
+			m_dc.SetBitmap(NULL);
+		}
+
+		ICONINFO ii;
+		ii.fIcon    = TRUE;
+		ii.xHotspot = 0;
+		ii.yHotspot = 0;
+		ii.hbmColor = hBitmap;
+		ii.hbmMask  = hbmpMask;
+		hHandle.m_hIcon = CreateIconIndirect(&ii);
+
+		DeleteObject(hBitmap);
+		DeleteObject(hbmpMask);
+	}
+
+	hHandle.m_bClearHandles = TRUE;
+}
+
+
+void CXTPImageManagerResource::DrawIconComposited(CDC* pDC, XTP_IMAGERESOURCE_INFO* pRInfo, CPoint pt, CSize szIcon)
+{
+	CBitmap bmp;
+	LPDWORD lpBits = 0;
+	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), szIcon.cx, szIcon.cy, (LPBYTE*)&lpBits));
+	if (!lpBits)
+		return;
+
+	CXTPCompatibleDC dc(&m_dc, &bmp);
+
+	dc.SetBkColor(0xFFFFFF);
+	dc.SetTextColor(0);
+
+	if (m_hbmpMask)
+	{
+		m_dc.SetBitmap(m_hbmpMask);
+		StretchBlt(dc, 0, 0, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left, 0, m_szIcon.cx, m_szIcon.cy, SRCCOPY);
+		m_dc.SetBitmap(NULL);
+	}
+
+	for (int i = 0; i < szIcon.cx * szIcon.cy; i++)
+	{
+		*lpBits =  (*lpBits == 0) ? 0xFF000000 : 0;
+		lpBits++;
+	}
+
+	if (m_hbmpImage)
+	{
+		m_dc.SetBitmap(m_hbmpImage);
+		StretchBlt(dc, 0, 0, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left, 0, m_szIcon.cx, m_szIcon.cy, SRCINVERT);
+		m_dc.SetBitmap(NULL);
+	}
+
+	XTPImageManager()->AlphaBlend(*pDC, CRect(pt, szIcon), dc, CRect(0, 0, szIcon.cx, szIcon.cy));
+}
+
+
+void CXTPImageManagerResource::Draw(CDC* pDC, XTP_IMAGERESOURCE_INFO* pRInfo, CPoint pt, CSize szIcon, BOOL bDrawComposited)
+{
+	CXTPLockGuard lock(m_cs);
+
+	if (!pRInfo->bAlpha)
+	{
+		if (bDrawComposited)
+		{
+			DrawIconComposited(pDC, pRInfo, pt, szIcon);
+			return;
+		}
+
+		if (m_pImageManager->IsDrawReverted(pDC))
+		{
+			pt.x += szIcon.cx;
+			szIcon.cx = -szIcon.cx;
+		}
+
+		if (m_hbmpMask)
+		{
+			m_dc.SetBitmap(m_hbmpMask);
+			m_dc.SetTextColor(0);
+			m_dc.SetBkColor(0xFFFFFF);
+
+			COLORREF clrOldText = pDC->SetTextColor(0);
+			COLORREF clrOldBk = pDC->SetBkColor(0xFFFFFF);
+
+			StretchBlt(pDC->GetSafeHdc(), pt.x, pt.y, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left,  0,  m_szIcon.cx, m_szIcon.cy, SRCAND);
+
+			pDC->SetBkColor(clrOldBk);
+			pDC->SetTextColor(clrOldText);
+			m_dc.SetBitmap(NULL);
+		}
+
+		if (m_hbmpImage)
+		{
+			m_dc.SetBitmap(m_hbmpImage);
+			StretchBlt(pDC->GetSafeHdc(), pt.x, pt.y, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left,  0,  m_szIcon.cx, m_szIcon.cy, SRCINVERT);
+			m_dc.SetBitmap(NULL);
+		}
+	}
+	else
+	{
+		m_dc.SetBitmap(m_hbmpImage);
+		XTPImageManager()->AlphaBlend(pDC->GetSafeHdc(), CRect(pt, szIcon),
+			m_dc, CRect(pRInfo->rc.TopLeft(), m_szIcon));
+		m_dc.SetBitmap(NULL);
+	}
+}
+
+CSize CXTPImageManagerResource::GetExtent() const
+{
+	return m_szIcon;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIconHandle
+
+void CXTPImageManagerIconHandle::Init()
+{
+	m_hIcon = NULL;
+	m_hBitmap = NULL;
+	m_pBits = NULL;
+	m_bClearHandles = FALSE;
+	m_pImageManager = NULL;
+	m_pRInfo = NULL;
+	m_szIcon = CSize(0, 0);
+	m_bUseResources = TRUE;
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle()
+{
+	Init();
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle(HICON hIcon, BOOL bUseResources)
+{
+	Init();
+
+	m_hIcon = hIcon;
+	m_bClearHandles = FALSE;
+	m_szIcon = _GetExtent();
+	m_bUseResources = bUseResources;
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle(HBITMAP hBitmap)
+{
+	Init();
+
+	m_hBitmap = hBitmap;
+	m_bClearHandles = FALSE;
+	m_szIcon = _GetExtent();
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle(const CXTPImageManagerIconHandle& hHandle)
+{
+	Init();
+
+	m_hIcon = hHandle.m_hIcon;
+	m_hBitmap = hHandle.m_hBitmap;
+	m_pBits = hHandle.m_pBits;
+	m_pRInfo = hHandle.m_pRInfo;
+	m_pImageManager = hHandle.m_pImageManager;
+	m_bUseResources = hHandle.m_bUseResources;
+
+	m_bClearHandles = FALSE;
+	m_szIcon = hHandle.GetExtent();
+}
+
+
+void CXTPImageManagerIconHandle::CopyHandle(HBITMAP hBitmap)
+{
+	Clear();
+	m_hBitmap = CXTPImageManagerIcon::CopyAlphaBitmap(hBitmap);
+
+	m_szIcon = _GetExtent();
+	m_bClearHandles = TRUE;
+}
+
+void CXTPImageManagerIconHandle::CopyHandle(CXTPImageManagerIconHandle& hHandle)
+{
+	Clear();
+
+	if (m_pImageManager && !hHandle.IsEmpty() && m_pImageManager->m_bUseResources && hHandle.m_bUseResources)
+	{
+		CXTPImageManagerResource* pResource = m_pImageManager->GetResource(hHandle.GetExtent());
+
+		if (hHandle.m_pRInfo == NULL)
+		{
+			m_pRInfo = pResource->Add(hHandle);
+		}
+		else
+		{
+			CXTPImageManagerIconHandle iconClear;
+			iconClear.CopyHandle(hHandle);
+			m_pRInfo = pResource->Add(iconClear);
+		}
+	}
+	else
+	{
+		if (hHandle.m_hIcon) m_hIcon = CopyIcon(hHandle.m_hIcon);
+		if (hHandle.m_hBitmap) m_hBitmap = CXTPImageManagerIcon::CopyAlphaBitmap(hHandle.m_hBitmap, hHandle.m_pBits ? &m_pBits : NULL);
+		if (hHandle.m_pRInfo)
+		{
+			hHandle.m_pRInfo->pResource->CreateIcon(*this, hHandle.m_pRInfo);
+		}
+	}
+	m_bUseResources = hHandle.m_bUseResources;
+
+	m_bClearHandles = TRUE;
+	m_szIcon = hHandle.GetExtent();
+}
+
+const CXTPImageManagerIconHandle& CXTPImageManagerIconHandle::operator=(const HICON hIcon)
+{
+	Clear();
+	m_hIcon = hIcon;
+	m_bClearHandles = TRUE;
+	m_szIcon = _GetExtent();
+
+	return *this;
+}
+const CXTPImageManagerIconHandle& CXTPImageManagerIconHandle::operator=(const HBITMAP hBitmap)
+{
+	Clear();
+
+	m_hBitmap = hBitmap;
+	m_bClearHandles = TRUE;
+	m_szIcon = _GetExtent();
+
+	return *this;
+}
+
+CXTPImageManagerIconHandle::~CXTPImageManagerIconHandle()
+{
+	Clear();
+}
+
+BOOL CXTPImageManagerIconHandle::IsEmpty() const
+{
+	return (m_hIcon == 0 && m_hBitmap == 0 && m_pRInfo == NULL) || (m_szIcon == CSize(0, 0));
+}
+
+BOOL CXTPImageManagerIconHandle::IsAlpha() const
+{
+	return m_hBitmap != 0 || (m_pRInfo && m_pRInfo->bAlpha);
+}
+
+HBITMAP CXTPImageManagerIconHandle::GetBitmap() const
+{
+	ASSERT(IsAlpha());
+	return m_hBitmap;
+}
+
+HICON CXTPImageManagerIconHandle::GetIcon() const
+{
+	return m_hIcon;
+}
+
+void CXTPImageManagerIconHandle::Clear()
+{
+	if (m_bClearHandles)
+	{
+		if (m_hIcon)
+		{
+			DestroyIcon(m_hIcon);
+		}
+
+		if (m_hBitmap)
+		{
+			DeleteObject(m_hBitmap);
+		}
+
+		if (m_pRInfo)
+		{
+			m_pRInfo->pResource->Clear(m_pRInfo);
+			m_pRInfo = NULL;
+		}
+	}
+
+	m_hIcon = 0;
+	m_hBitmap = 0;
+	m_pBits = 0;
+	m_pRInfo = NULL;
+	m_bClearHandles = FALSE;
+}
+
+CSize CXTPImageManagerIconHandle::GetExtent() const
+{
+	return m_szIcon;
+}
+
+CSize CXTPImageManagerIconHandle::_GetExtent() const
+{
+	if (m_pRInfo != NULL)
+		return m_pRInfo->pResource->GetExtent();
+
+	if (m_hIcon)
+		return CXTPImageManagerIcon::GetExtent(m_hIcon);
+
+	if (m_hBitmap)
+	{
+		BITMAP bmpinfo;
+		if (::GetObject(m_hBitmap, sizeof(bmpinfo), &bmpinfo))
+		{
+			return CSize((int)bmpinfo.bmWidth, (int)bmpinfo.bmHeight);
+		}
+	}
+	return 0;
+}
+
+
+
+void CXTPImageManagerIconHandle::Draw(CDC* pDC, CPoint pt, CSize szIcon, BOOL bDrawComposited)
+{
+	if (IsEmpty())
+		return;
+
+	if (m_pRInfo)
+	{
+		m_pRInfo->pResource->Draw(pDC, m_pRInfo, pt, szIcon, bDrawComposited);
+	}
+	else if (!IsAlpha())
+	{
+		CXTPImageManager* pImageManager = m_pImageManager ? m_pImageManager : XTPImageManager();
+
+		if (pImageManager->IsDrawReverted(pDC))
+		{
+			pt.x += szIcon.cx;
+			szIcon.cx = -szIcon.cx;
+		}
+
+		if (!bDrawComposited)
+		{
+			DrawIconEx(pDC->GetSafeHdc(), pt.x, pt.y, GetIcon(), szIcon.cx, szIcon.cy, 0, 0, DI_NORMAL);
+		}
+		else
+		{
+			CXTPImageManagerIcon::DrawIconComposited(pDC, pt, szIcon, GetIcon());
+		}
+	}
+	else if (PreMultiply())
+	{
+		if (pt.y < 0 && (szIcon.cy == (int)m_szIcon.cy))
+		{
+			if (pt.y + m_szIcon.cy > 0)
+			{
+				CXTPImageManagerIcon::DrawAlphaBitmap(pDC, m_hBitmap, CPoint(pt.x, 0),
+					CSize(szIcon.cx, m_szIcon.cy + pt.y), CPoint(0, -pt.y), CSize(m_szIcon.cx, m_szIcon.cy + pt.y));
+			}
+		}
+		else
+		{
+			CXTPImageManagerIcon::DrawAlphaBitmap(pDC, m_hBitmap, pt, szIcon, CPoint(0, 0), m_szIcon);
+		}
+	}
+}
+
+BOOL CXTPImageManagerIconHandle::CreateIconFromResource(LPCTSTR lpszResourceName, CSize szIcon, BOOL bGroupResource)
+{
+	if (bGroupResource)
+	{
+		HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_GROUP_ICON);
+		if (hInst)
+			return CreateIconFromResource(hInst, lpszResourceName, szIcon, TRUE);
+	}
+
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_ICON);
+	if (hInst)
+		return CreateIconFromResource(hInst, lpszResourceName, szIcon, FALSE);
+
+	return FALSE;
+
+}
+
+BOOL CXTPImageManagerIconHandle::CreateIconFromResource(HINSTANCE hInst, LPCTSTR lpszResourceName, CSize szIcon, BOOL bGroupResource)
+{
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_GROUP_ICON);
+
+	if (hRsrc != NULL && bGroupResource)
+	{
+		// Load and Lock to get a pointer to a GRPICONDIR
+		HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+		if (!hGlobal)
+			return FALSE;
+
+		CXTPImageManagerIcon::GRPICONDIR* lpGrpIconDir = (CXTPImageManagerIcon::GRPICONDIR*)LockResource(hGlobal);
+		if (!lpGrpIconDir)
+			return FALSE;
+
+		for (int i = (int)lpGrpIconDir->idCount - 1; i >= 0; i--)
+		{
+			if (lpGrpIconDir->idEntries[i].bWidth == szIcon.cx && lpGrpIconDir->idEntries[i].bHeight == szIcon.cy)
+			{
+				if (CreateIconFromResource(hInst, MAKEINTRESOURCE(lpGrpIconDir->idEntries[i].nID), szIcon, FALSE))
+					return TRUE;
+			}
+		}
+
+		return FALSE;
+	}
+
+	hRsrc = ::FindResource(hInst, lpszResourceName, RT_ICON);
+
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (!hGlobal)
+		return FALSE;
+	CXTPImageManagerIcon::ICONIMAGE* lpIconImage = (CXTPImageManagerIcon::ICONIMAGE*)LockResource(hGlobal);
+
+	if (lpIconImage == NULL)
+		return FALSE;
+
+	DWORD dwResourceSize = SizeofResource(hInst, hRsrc);
+
+	if (lpIconImage->icHeader.biBitCount == 32)
+	{
+		CDC dcSrc;
+		dcSrc.CreateCompatibleDC(0);
+
+		BITMAPINFOHEADER* pBitmapInfo = (BITMAPINFOHEADER*)malloc(sizeof(BITMAPINFOHEADER) + sizeof(COLORREF) * 3);
+		if (!pBitmapInfo)
+			return FALSE;
+
+		*pBitmapInfo = lpIconImage->icHeader;
+
+		pBitmapInfo->biHeight /= 2;
+		pBitmapInfo->biSizeImage = pBitmapInfo->biHeight * pBitmapInfo->biWidth * 4;
+
+		BYTE* pDest = NULL;
+		HBITMAP hBitmap = CreateDIBSection(dcSrc, (BITMAPINFO*)pBitmapInfo, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+
+		if (pDest == NULL || hBitmap == NULL)
+		{
+			free(pBitmapInfo);
+			return FALSE;
+		}
+
+		ASSERT(pBitmapInfo->biSizeImage <= dwResourceSize - sizeof(BITMAPINFOHEADER));
+
+		MEMCPY_S(pDest, &lpIconImage->icColors, pBitmapInfo->biSizeImage);
+
+		*this = hBitmap; // NOTE: it call DeleteObejct in destructor
+		free(pBitmapInfo);
+	}
+	else
+	{
+		*this = CreateIconFromResourceEx((PBYTE)lpIconImage, dwResourceSize, TRUE,
+			0x00030000, szIcon.cx, szIcon.cy, LR_DEFAULTCOLOR);
+	}
+
+	return !IsEmpty();
+}
+
+
+LPBYTE CXTPImageManagerIconHandle::PreMultiply()
+{
+	if (m_pBits != NULL)
+		return m_pBits;
+
+	if (m_hBitmap == 0)
+		return NULL;
+
+	LPBYTE pBits = NULL;
+
+	HBITMAP hBitmapAlpha =  CXTPImageManagerIcon::PreMultiplyAlphaBitmap(m_hBitmap, NULL, &pBits);
+	if (!hBitmapAlpha || (pBits == NULL))
+		return NULL;
+
+	Clear();
+
+	m_hBitmap = hBitmapAlpha;
+	m_pBits = pBits;
+	m_bClearHandles = TRUE;
+	m_szIcon = _GetExtent();
+
+	return m_pBits;
+}
+
+BOOL CXTPImageManagerIcon::IsAlpha() const
+{
+	return m_hIcon.IsAlpha();
+}
+
+HBITMAP CXTPImageManagerIcon::InvertAlphaBitmap(HBITMAP hBitmap)
+{
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	DWORD* pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+
+	HBITMAP hBitmapAlpha = 0;
+
+	TRY
+	{
+		UINT nSize;
+		if (!GetBitmapBits(dcSrc, hBitmap, pBitmapInfo, (LPVOID&)pBits, nSize))
+			return 0;
+
+		DWORD* pDest = NULL;
+
+		hBitmapAlpha = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+		if (pDest == NULL || hBitmapAlpha == NULL)
+			AfxThrowMemoryException();
+
+		int cy = pBitmapInfo->bmiHeader.biHeight;
+		int cx = pBitmapInfo->bmiHeader.biWidth;
+
+		for (int y = 0; y < cy; y++)
+		{
+			DWORD* pBitsRow = &pBits[y * cx + cx - 1];
+
+			for (int x = 0; x < cx; x++)
+			{
+				*pDest++ = *pBitsRow--;
+			}
+		}
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+	}
+	END_CATCH
+
+	FREE(pBits);
+	FREE(pBitmapInfo);
+
+	return hBitmapAlpha;
+}
+
+HBITMAP CXTPImageManagerIcon::PreMultiplyAlphaBitmap(HBITMAP hBitmap, BOOL* pbAlpha, LPBYTE* lpBits)
+{
+	if (lpBits) *lpBits = NULL;
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PBYTE pBitsSrc = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+
+	HBITMAP hBitmapAlpha = 0;
+
+	TRY
+	{
+		UINT nSize;
+		if (!GetBitmapBits(dcSrc, hBitmap, pBitmapInfo, (LPVOID&)pBitsSrc, nSize))
+			return 0;
+
+		BYTE* pBitsDest = NULL;
+
+		hBitmapAlpha = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pBitsDest, NULL, 0);
+		if (pBitsDest == NULL || hBitmapAlpha == NULL)
+			AfxThrowMemoryException();
+
+		MEMCPY_S(pBitsDest, pBitsSrc, nSize);
+
+		BOOL bAlpha0Found = FALSE;
+
+		BYTE* pBitsI = pBitsDest;
+		UINT nCount = nSize / 4;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBitsI[3];
+			pBitsI[0] = BYTE(pBitsI[0] * nAlpha / 255);
+			pBitsI[1] = BYTE(pBitsI[1] * nAlpha / 255);
+			pBitsI[2] = BYTE(pBitsI[2] * nAlpha / 255);
+
+			if (pbAlpha)
+			{
+				if (nAlpha == 0)
+					bAlpha0Found = TRUE;
+
+				if ((nAlpha != 255 && nAlpha != 0) || (nAlpha == 255 && bAlpha0Found) || (nAlpha == 255 && *pbAlpha == -1))
+					*pbAlpha = TRUE;
+			}
+			pBitsI += 4;
+		}
+
+		if (pbAlpha && (*pbAlpha == FALSE))
+		{
+			MEMCPY_S(pBitsDest, pBitsSrc, nSize);
+		}
+
+		if (lpBits)
+		{
+			*lpBits = pBitsDest;
+		}
+
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+	}
+	END_CATCH
+
+	FREE(pBitsSrc);
+	FREE(pBitmapInfo);
+
+	return hBitmapAlpha;
+}
+
+BOOL CXTPImageManagerIcon::GetBitmapBits(CDC& dcSrc, HBITMAP hBitmap, PBITMAPINFO& pBitmapInfo, LPVOID& pBits, UINT& nSize)
+{
+	if (hBitmap == 0)
+		return FALSE;
+
+	BITMAPINFO  bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+
+
+	if (GetDIBits(dcSrc, hBitmap, 0, 0, NULL, (BITMAPINFO*)&bmi, DIB_RGB_COLORS) == 0)
+		return FALSE;
+
+	if (bmi.bmiHeader.biBitCount != 32)
+		return FALSE;
+
+	nSize = bmi.bmiHeader.biHeight * bmi.bmiHeader.biWidth * 4;
+	pBits = (PBYTE)malloc(nSize);
+	if (pBits == NULL)
+		return FALSE;
+
+	if ((pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + 3 * sizeof(COLORREF))) == NULL)
+	{
+		FREE(pBits);
+		return FALSE;
+	}
+
+	MEMCPY_S(pBitmapInfo, &bmi, sizeof(BITMAPINFOHEADER));
+
+	if (GetDIBits(dcSrc, hBitmap, 0, bmi.bmiHeader.biHeight, pBits, pBitmapInfo, DIB_RGB_COLORS) == NULL)
+	{
+		FREE(pBits);
+		FREE(pBitmapInfo);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+HBITMAP CXTPImageManagerIcon::CopyAlphaBitmap(HBITMAP hBitmap, LPBYTE* lpBits)
+{
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PBYTE pBitsSrc = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+	UINT nSize;
+
+	if (!GetBitmapBits(dcSrc, hBitmap, pBitmapInfo, (LPVOID&)pBitsSrc, nSize))
+		return 0;
+
+	BYTE* pBitsDest = NULL;
+	HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pBitsDest, NULL, 0);
+
+	if (pBitsDest != NULL && hBmp != NULL)
+	{
+		MEMCPY_S(pBitsDest, pBitsSrc, nSize);
+	}
+
+	FREE(pBitsSrc);
+	FREE(pBitmapInfo);
+
+	if (lpBits)
+	{
+		*lpBits = pBitsDest;
+	}
+
+	return hBmp;
+
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIcon
+CXTPImageManagerIcon::CXTPImageManagerIcon(UINT nID, int nWidth, int nHeight, CXTPImageManagerIconSet* pIconSet)
+	: m_nID(nID)
+	, m_nWidth(nWidth)
+	, m_nHeight(nHeight)
+	, m_pIconSet(pIconSet)
+	, m_pImageList(NULL)
+{
+	m_bDrawComposited = FALSE;
+
+	if (m_pIconSet)
+	{
+		m_hIcon.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hFaded.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hShadow.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hHot.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hChecked.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hPressed.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hDisabled.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hDisabledAuto.m_pImageManager = m_pIconSet->m_pImageManager;
+	}
+
+}
+
+CXTPImageManagerIcon::CXTPImageManagerIcon(UINT nID, int nWidth, int nHeight, CXTPImageManagerImageList* pImageList)
+	: m_nID(nID)
+	, m_nWidth(nWidth)
+	, m_nHeight(nHeight)
+	, m_pIconSet(NULL)
+	, m_pImageList(pImageList)
+{
+}
+
+
+CXTPImageManagerIcon::~CXTPImageManagerIcon()
+{
+	Clear(TRUE);
+}
+
+UINT CXTPImageManagerIcon::GetID() const
+{
+	return m_nID;
+}
+
+int CXTPImageManagerIcon::GetHeight() const
+{
+	return m_nHeight;
+}
+
+int CXTPImageManagerIcon::GetWidth() const
+{
+	return m_nWidth;
+}
+
+void CXTPImageManagerIcon::Clear(BOOL bIcon /* = FALSE */)
+{
+	if (bIcon)
+	{
+		m_hIcon.Clear();
+	}
+	m_hFaded.Clear();
+	m_hShadow.Clear();
+	m_hHot.Clear();
+	m_hChecked.Clear();
+	m_hPressed.Clear();
+	m_hDisabled.Clear();
+	m_hDisabledAuto.Clear();
+}
+
+void CXTPImageManagerIcon::Refresh()
+{
+	m_hFaded.Clear();
+	m_hShadow.Clear();
+	m_hDisabledAuto.Clear();
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetIcon()
+{
+	return m_hIcon;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetIcon(XTPImageState imageState)
+{
+	return imageState == xtpImageDisabled ? GetDisabledIcon() : imageState == xtpImageHot? GetHotIcon() :
+		imageState == xtpImageChecked? GetCheckedIcon() : imageState == xtpImagePressed? GetPressedIcon() : GetIcon();
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetFadedIcon()
+{
+	if (m_hFaded.IsEmpty())
+	{
+		CreateFadedIcon();
+	}
+	return m_hFaded.IsEmpty() ? m_hIcon : m_hFaded;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetShadowIcon()
+{
+	if (m_hShadow.IsEmpty())
+	{
+		CreateShadowIcon();
+	}
+	return m_hShadow;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetHotIcon()
+{
+	return !m_hHot.IsEmpty() ? m_hHot : m_hIcon;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetCheckedIcon()
+{
+	return !m_hChecked.IsEmpty() ? m_hChecked : GetHotIcon();
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetPressedIcon()
+{
+	return !m_hPressed.IsEmpty() ? m_hPressed : GetHotIcon();
+}
+
+BOOL CXTPImageManagerIcon::HasDisabledIcon() const
+{
+	if (!m_hDisabled.IsEmpty())
+		return TRUE;
+
+	if (!m_hDisabledAuto.IsEmpty())
+		return TRUE;
+
+	return FALSE;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetDisabledIcon(BOOL bCreateIfNotExists /*= TRUE*/)
+{
+	if (!m_hDisabled.IsEmpty())
+		return m_hDisabled;
+
+	if (!m_hDisabledAuto.IsEmpty())
+		return m_hDisabledAuto;
+
+	if (bCreateIfNotExists)
+	{
+		CreateDisabledIcon();
+	}
+
+	return m_hDisabledAuto;
+}
+
+BOOL CXTPImageManagerIcon::SetIcon(CXTPImageManagerIconHandle iconHandle, XTPImageState imageState)
+{
+	switch(imageState)
+	{
+		case xtpImageNormal:
+			SetNormalIcon(iconHandle);
+			break;
+		case xtpImageHot:
+			SetHotIcon(iconHandle);
+			break;
+		case xtpImageChecked:
+			SetCheckedIcon(iconHandle);
+			break;
+		case xtpImageDisabled:
+			SetDisabledIcon(iconHandle);
+			break;
+		case xtpImagePressed:
+			SetPressedIcon(iconHandle);
+			break;
+		default:
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+BOOL CXTPImageManagerIcon::SetIcon(CXTPImageManagerIconHandle hIcon)
+{
+	ASSERT(!hIcon.IsEmpty());
+	Clear(TRUE);
+	m_hIcon.CopyHandle(hIcon);
+	CSize sz = GetExtent();
+
+	m_nHeight = sz.cy;
+	m_nWidth = sz.cx;
+
+	if (m_pIconSet)
+		m_pIconSet->RefreshAll();
+
+	return TRUE;
+}
+
+BOOL CXTPImageManagerIcon::SetIcon(UINT nIDResourceIcon, int nWidth, int nHeight)
+{
+	Clear(TRUE);
+
+	ASSERT(nWidth != 0 && nHeight != 0);
+
+	if (!m_hIcon.CreateIconFromResource(MAKEINTRESOURCE(nIDResourceIcon), CSize(nWidth, nHeight)))
+		return FALSE;
+
+	m_nHeight = nHeight;
+	m_nWidth = nWidth;
+
+	return TRUE;
+}
+
+void CXTPImageManagerIcon::SetNormalIcon(CXTPImageManagerIconHandle hIcon)
+{
+	ASSERT(!hIcon.IsEmpty());
+
+	Refresh();
+	m_hIcon.CopyHandle(hIcon);
+
+
+#ifdef _DEBUG
+	CSize sz = GetExtent();
+
+	ASSERT((int)m_nHeight == sz.cy);
+	ASSERT((int)m_nWidth == sz.cx);
+
+#endif
+}
+
+void CXTPImageManagerIcon::SetHotIcon(CXTPImageManagerIconHandle hIcon)
+{
+	Refresh();
+	m_hHot.CopyHandle(hIcon);
+}
+
+void CXTPImageManagerIcon::SetCheckedIcon(CXTPImageManagerIconHandle hIcon)
+{
+	Refresh();
+	m_hChecked.CopyHandle(hIcon);
+}
+
+void CXTPImageManagerIcon::SetPressedIcon(CXTPImageManagerIconHandle hIcon)
+{
+	Refresh();
+	m_hPressed.CopyHandle(hIcon);
+}
+
+void CXTPImageManagerIcon::SetDisabledIcon(CXTPImageManagerIconHandle hIcon)
+{
+	Refresh();
+	m_hDisabled.CopyHandle(hIcon);
+}
+
+
+COLORREF CXTPImageManagerIcon::LightenColor(COLORREF clr, double factor)
+{
+	return RGB(
+		factor * 255 + (1.0 - factor) * GetRValue(clr),
+		factor * 255 + (1.0 - factor) * GetGValue(clr),
+		factor * 255 + (1.0 - factor) * GetBValue(clr)) ;
+}
+
+void CXTPImageManagerIcon::CreateFadedIcon()
+{
+	ASSERT(m_hFaded.IsEmpty());
+
+	if (!m_hIcon.m_bUseResources)
+		return;
+
+	CXTPImageManagerIconHandle hFaded;
+	hFaded.CopyHandle(m_hIcon);
+
+	if (!hFaded.IsAlpha())
+	{
+		ICONINFO info;
+		if (GetIconInfo(hFaded.GetIcon(), &info))
+		{
+			if (!CXTPDrawHelpers::IsLowResolution())
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+
+				for (int i = 0; i < bmp.bmWidth; i++)
+				for (int j = 0; j < bmp.bmHeight; j++)
+				{
+					COLORREF clr = dc.GetPixel(i, j);
+					COLORREF clrMask = dcMask.GetPixel(i, j);
+					if (clrMask == 0)
+						dc.SetPixel(i, j, LightenColor(clr, .3));
+				}
+			}
+
+			hFaded = CreateIconIndirect(&info);
+
+			::DeleteObject(info.hbmColor);
+			::DeleteObject(info.hbmMask);
+		}
+	}
+	else if (hFaded.PreMultiply())
+	{
+		PBYTE pBits = hFaded.PreMultiply();
+		CSize szIcon = hFaded.GetExtent();
+
+		UINT nCount = szIcon.cx * szIcon.cy;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBits[3];
+			if (nAlpha != 0)
+			{
+				pBits[0] = BYTE(.3 * nAlpha + (1.0 - .3) * pBits[0]);
+				pBits[1] = BYTE(.3 * nAlpha + (1.0 - .3) * pBits[1]);
+				pBits[2] = BYTE(.3 * nAlpha + (1.0 - .3) * pBits[2]);
+			}
+			pBits += 4;
+		}
+	}
+
+	m_hFaded.CopyHandle(hFaded);
+}
+
+void CXTPImageManagerIcon::CreateShadowIcon()
+{
+	ASSERT(m_hShadow.IsEmpty());
+
+	if (!m_hIcon.m_bUseResources)
+		return;
+
+	COLORREF clrBackground = GetXtremeColor(XPCOLOR_HIGHLIGHT);
+	COLORREF clrShadow = RGB(GetRValue(clrBackground) * .75, GetGValue(clrBackground) * .75, GetBValue(clrBackground) * .75);
+
+	CXTPImageManagerIconHandle hShadow;
+	hShadow.CopyHandle(GetHotIcon());
+
+	if (!hShadow.IsAlpha())
+	{
+		ICONINFO info;
+		if (GetIconInfo(hShadow.GetIcon(), &info))
+		{
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+
+				for (int i = 0; i < bmp.bmWidth; i++)
+				for (int j = 0; j < bmp.bmHeight; j++)
+				{
+					COLORREF clrMask = dcMask.GetPixel(i, j);
+					if (clrMask == 0)
+						dc.SetPixel(i, j, clrShadow);
+				}
+			}
+
+			hShadow = CreateIconIndirect(&info);
+
+			::DeleteObject(info.hbmMask);
+			::DeleteObject(info.hbmColor);
+		}
+	}
+	else if (hShadow.PreMultiply())
+	{
+		PBYTE pBits = hShadow.PreMultiply();
+		CSize szIcon = hShadow.GetExtent();
+
+		UINT nCount = szIcon.cx * szIcon.cy;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBits[3];
+			pBits[0] = BYTE(GetRValue(clrShadow) * nAlpha / 255);
+			pBits[1] = BYTE(GetGValue(clrShadow) * nAlpha / 255);
+			pBits[2] = BYTE(GetBValue(clrShadow) * nAlpha / 255);
+			pBits += 4;
+		}
+	}
+
+	m_hShadow.CopyHandle(hShadow);
+}
+
+void CXTPImageManagerIcon::CreateDisabledIcon(COLORREF clrDisabledLight /*= (COLORREF)-1*/, COLORREF clrDisabledDark /*= (COLORREF)-1*/)
+{
+	if (!m_hDisabledAuto.IsEmpty())
+		return;
+
+	BOOL bOfficeDisabledIcons = clrDisabledLight != (COLORREF)-1 && clrDisabledDark != (COLORREF)-1;
+
+	CXTPImageManagerIconHandle hDisabled;
+	hDisabled.CopyHandle(m_hIcon);
+
+	if (!hDisabled.IsAlpha())
+	{
+		ICONINFO info;
+		if (GetIconInfo(hDisabled.GetIcon(), &info))
+		{
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+
+				for (int i = 0; i < bmp.bmWidth; i++)
+				for (int j = 0; j < bmp.bmHeight; j++)
+				{
+					COLORREF clrMask = dcMask.GetPixel(i, j);
+					COLORREF clr = dc.GetPixel(i, j);
+
+					if (clrMask == 0)
+					{
+						if (bOfficeDisabledIcons)
+						{
+							double dGray = (GetRValue(clr) * 0.299 + GetGValue(clr) * 0.587 + GetBValue(clr) * 0.114)/255;
+							double dLight = 1.0 - dGray;
+
+							clr = RGB(dLight * GetRValue(clrDisabledDark) + dGray * GetRValue(clrDisabledLight),
+								dLight * GetGValue(clrDisabledDark) + dGray * GetGValue(clrDisabledLight),
+								dLight * GetBValue(clrDisabledDark) + dGray * GetBValue(clrDisabledLight));
+
+							dc.SetPixel(i, j, clr);
+						}
+						else
+						{
+							double dGray = GetRValue(clr) * 0.299 + GetGValue(clr) * 0.587 + GetBValue(clr) * 0.114;
+							int nGray = (BYTE)(pow(dGray / 255.0, CXTPImageManager::m_dDisabledBrightnessFactor) * 255.0);
+
+							dc.SetPixel(i, j, RGB(nGray, nGray, nGray));
+						}
+					}
+				}
+			}
+
+			hDisabled = CreateIconIndirect(&info);
+			::DeleteObject(info.hbmMask);
+			::DeleteObject(info.hbmColor);
+
+		}
+	}
+	else if (hDisabled.PreMultiply())
+	{
+		PBYTE pBits = hDisabled.PreMultiply();
+		CSize szIcon = hDisabled.GetExtent();
+
+		UINT nCount = szIcon.cx * szIcon.cy;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBits[3];
+			if (nAlpha != 0)
+			{
+				int R = pBits[0] * 255 / nAlpha;
+				int G = pBits[1] * 255 / nAlpha;
+				int B = pBits[2] * 255 / nAlpha;
+
+				if (bOfficeDisabledIcons)
+				{
+					double dGray = (R * 0.114 + G * 0.587 + B * 0.299)/255.0;
+					double dLight = 1.0 - dGray;
+
+					R = BYTE(dLight * GetBValue(clrDisabledDark) + dGray * GetBValue(clrDisabledLight));
+					G = BYTE(dLight * GetGValue(clrDisabledDark) + dGray * GetGValue(clrDisabledLight));
+					B = BYTE(dLight * GetRValue(clrDisabledDark) + dGray * GetRValue(clrDisabledLight));
+				}
+				else
+				{
+					double dGray = R * 0.114 + G * 0.587 + B * 0.299;
+					R = G = B = (BYTE)(pow(dGray / 255.0, CXTPImageManager::m_dDisabledBrightnessFactor) * 255.0);
+					nAlpha = BYTE(nAlpha / CXTPImageManager::m_dDisabledAlphaFactor);
+				}
+
+				pBits[0] = BYTE(R * nAlpha / 255);
+				pBits[1] = BYTE(G * nAlpha / 255);
+				pBits[2] = BYTE(B * nAlpha / 255);
+			}
+
+			pBits += 4;
+		}
+	}
+
+	m_hDisabledAuto.CopyHandle(hDisabled);
+}
+
+CSize CXTPImageManagerIcon::GetExtent() const
+{
+	return m_hIcon.GetExtent();
+}
+
+CSize CXTPImageManagerIcon::GetExtent(HICON hIcon)
+{
+	ASSERT(hIcon);
+
+	CSize extent(0);
+	if (hIcon)
+	{
+		ICONINFO iconinfo;
+		if (::GetIconInfo(hIcon, &iconinfo))
+		{
+			BITMAP bmpinfo;
+			if (::GetObject(iconinfo.hbmMask, sizeof(bmpinfo), &bmpinfo))
+			{
+				extent.cx = (int)bmpinfo.bmWidth;
+				extent.cy = (int)bmpinfo.bmHeight;
+				if (!iconinfo.hbmColor)
+				{
+					// b/w icons have double size for XOR and AND masks
+					extent.cy /= 2;
+				}
+			}
+			// cleanup GDI
+			if (iconinfo.hbmMask) ::DeleteObject(iconinfo.hbmMask);
+			if (iconinfo.hbmColor) ::DeleteObject(iconinfo.hbmColor);
+		}
+	}
+	return extent;
+}
+
+
+HICON CXTPImageManagerIcon::ScaleToFit(HICON hIcon, CSize szExtent, int nWidth)
+{
+	if (nWidth == 0 || szExtent == CSize(0))
+	{
+		// invalid arg
+		return NULL;
+	}
+	if (nWidth == szExtent.cx)
+		return ::CopyIcon(hIcon);
+
+	CSize szDesiredExtent(nWidth, MulDiv(szExtent.cy, nWidth, szExtent.cx));
+
+	// scale the icon
+	CImageList images;
+	VERIFY(images.Create(szDesiredExtent.cx, szDesiredExtent.cy, ILC_COLOR32 | ILC_MASK, 1, 1));
+	images.Add(hIcon);
+	return images.ExtractIcon(0);
+}
+
+BOOL CXTPImageManagerIcon::GetDIBBitmap(HBITMAP hBitmap, PBYTE& pBits, UINT& nBitsSize, PBITMAPINFO& pBitmapInfo, UINT& nBitmapInfoSize)
+{
+	pBits = 0;
+	pBitmapInfo = 0;
+
+	BITMAPINFO  bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	TRY
+	{
+		if (GetDIBits(dcSrc, hBitmap, 0, 0, NULL, (BITMAPINFO*)&bmi, DIB_RGB_COLORS) == 0)
+			AfxThrowMemoryException();
+
+		nBitsSize = bmi.bmiHeader.biSizeImage != 0? bmi.bmiHeader.biSizeImage :
+			bmi.bmiHeader.biHeight * bmi.bmiHeader.biWidth * 4;
+
+		pBits = (PBYTE)malloc(nBitsSize);
+		if (pBits == NULL)
+			AfxThrowMemoryException();
+
+		int nColorTableSize = bmi.bmiHeader.biBitCount == 4 ? 16 : bmi.bmiHeader.biBitCount == 8 ? 256 : 3;
+
+		nBitmapInfoSize = sizeof(BITMAPINFOHEADER) + nColorTableSize * sizeof(COLORREF);
+		if ((pBitmapInfo = (PBITMAPINFO)malloc(nBitmapInfoSize)) == NULL)
+			AfxThrowMemoryException();
+
+		MEMCPY_S(pBitmapInfo, &bmi, sizeof(BITMAPINFOHEADER));
+
+		if (GetDIBits(dcSrc, hBitmap, 0, bmi.bmiHeader.biHeight, pBits, pBitmapInfo, DIB_RGB_COLORS) == NULL)
+			AfxThrowMemoryException();
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+		return FALSE;
+	}
+	END_CATCH
+
+	return TRUE;
+}
+
+HBITMAP CXTPImageManagerIcon::ReadDIBBitmap(CArchive& ar, LPBYTE* lpBits)
+{
+	PBITMAPINFO pBitmapInfo = 0;
+	PBYTE pBitsSrc = 0;
+
+	DWORD dwCount = (DWORD) ar.ReadCount();
+	DWORD dwBitsCount = 0;
+
+	if (dwCount > 0)
+	{
+		pBitmapInfo = (PBITMAPINFO)malloc(dwCount);
+		ar.Read(pBitmapInfo, dwCount);
+
+		dwBitsCount = (DWORD) ar.ReadCount();
+		pBitsSrc = (PBYTE)malloc(dwBitsCount);
+		ar.Read(pBitsSrc, dwBitsCount);
+	}
+	else
+	{
+		return NULL;
+	}
+
+	if (!pBitmapInfo || dwBitsCount == 0)
+	{
+		FREE(pBitsSrc);
+		FREE(pBitmapInfo);
+		return NULL;
+	}
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	if (pBitmapInfo->bmiHeader.biSizeImage == 0)
+	{
+		pBitmapInfo->bmiHeader.biSizeImage = dwBitsCount;
+	}
+
+	BYTE* pBitsDest = NULL;
+	HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pBitsDest, NULL, 0);
+
+	if (!pBitsDest || !hBmp)
+	{
+		FREE(pBitsSrc);
+		FREE(pBitmapInfo);
+		return NULL;
+	}
+
+	MEMCPY_S(pBitsDest, pBitsSrc, min(dwBitsCount, pBitmapInfo->bmiHeader.biSizeImage));
+
+	FREE(pBitsSrc);
+	FREE(pBitmapInfo);
+
+	if (lpBits)
+	{
+		*lpBits = pBitsDest;
+	}
+
+	return hBmp;
+}
+
+void CXTPImageManagerIcon::WriteDIBBitmap(CArchive& ar, HBITMAP hBitmap)
+{
+	PBYTE pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+	UINT nBitsSize;
+	UINT nBitmapInfoSize;
+
+	if (GetDIBBitmap(hBitmap, pBits, nBitsSize, pBitmapInfo, nBitmapInfoSize))
+	{
+		ar.WriteCount(nBitmapInfoSize);
+		ar.Write(pBitmapInfo, nBitmapInfoSize);
+		ar.WriteCount(nBitsSize);
+		ar.Write(pBits, nBitsSize);
+	}
+	else
+	{
+		ar.WriteCount(0);
+	}
+	FREE(pBits);
+	FREE(pBitmapInfo);
+}
+
+void CXTPImageManagerIcon::SerializeIcon(CXTPImageManagerIconHandle& hIcon, CArchive& ar, long nSchema)
+{
+	if (ar.IsStoring())
+	{
+		CXTPImageManagerIconHandle hHandle;
+		hHandle.CopyHandle(hIcon);
+		hHandle.PreMultiply();
+
+		ICONINFO info;
+
+		if (!hHandle.IsEmpty())
+		{
+			if (hHandle.IsAlpha())
+			{
+				WriteDIBBitmap(ar, hHandle.GetBitmap());
+				ar.WriteCount(0);
+			}
+			else if (GetIconInfo(hHandle.GetIcon(), &info))
+			{
+				WriteDIBBitmap(ar, info.hbmColor);
+				WriteDIBBitmap(ar, info.hbmMask);
+
+				::DeleteObject(info.hbmColor);
+				::DeleteObject(info.hbmMask);
+
+			}
+			else
+			{
+				ar.WriteCount(0);
+				ar.WriteCount(0);
+			}
+		}
+		else
+		{
+			ar.WriteCount(0);
+			ar.WriteCount(0);
+		}
+	}
+	else
+	{
+		CXTPImageManagerIconHandle hHandle;
+
+		LPBYTE lpBits = NULL;
+		HBITMAP hbmColor = ReadDIBBitmap(ar, &lpBits);
+		HBITMAP hbmMask = ReadDIBBitmap(ar, NULL);
+
+		if (hbmColor)
+		{
+			if (hbmMask == 0)
+			{
+				hHandle = hbmColor;
+
+				if (nSchema > _XTP_SCHEMA_112)
+				{
+					hHandle.m_pBits = lpBits;
+				}
+				hbmColor = 0;
+			}
+			else
+			{
+				BITMAP bmp;
+				::GetObject(hbmColor, sizeof(BITMAP), &bmp);
+
+				CImageList il;
+				il.Create(bmp.bmWidth, bmp.bmHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
+				il.Add(CBitmap::FromHandle(hbmColor), hbmMask == 0 ? (CBitmap*)NULL : CBitmap::FromHandle(hbmMask));
+				hHandle = il.ExtractIcon(0);
+			}
+
+			if (hbmColor) ::DeleteObject(hbmColor);
+			if (hbmMask) ::DeleteObject(hbmMask);
+		}
+
+		hIcon.CopyHandle(hHandle);
+	}
+
+}
+
+void CXTPImageManagerIcon::Serialize(CArchive& ar)
+{
+	long nSchema = _XTP_SCHEMA_CURRENT;
+
+	if (ar.IsStoring())
+	{
+		ar << m_nHeight;
+		ar << nSchema;
+
+	}
+	else
+	{
+		ar >> m_nHeight;
+		ar >> nSchema;
+	}
+	SerializeIcon(m_hIcon, ar, nSchema);
+	SerializeIcon(m_hDisabled, ar, nSchema);
+	SerializeIcon(m_hHot, ar, nSchema);
+
+	if (nSchema > _XTP_SCHEMA_875)
+	{
+		SerializeIcon(m_hChecked, ar, nSchema);
+	}
+	if (nSchema > _XTP_SCHEMA_98)
+	{
+		SerializeIcon(m_hPressed, ar, nSchema);
+	}
+}
+
+void CXTPImageManagerIcon::DrawAlphaBitmap(CDC* pDC, HBITMAP hBitmap, CPoint ptDest, CSize szDest, CPoint ptSrc, CSize szSrc)
+{
+	if (szSrc == CSize(0))
+		szSrc = szDest;
+
+	CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(hBitmap));
+
+	XTPImageManager()->AlphaBlend(pDC->GetSafeHdc(), CRect(ptDest, szDest),
+		dc, CRect(ptSrc, szSrc));
+
+}
+CXTPImageManager* CXTPImageManagerIcon::GetImageManager() const
+{
+	if (m_pIconSet)
+	{
+		ASSERT(m_pIconSet->m_pImageManager);
+		return m_pIconSet->m_pImageManager;
+	}
+
+	return XTPImageManager();
+}
+
+void CXTPImageManagerIcon::DrawMono(CDC* pDC, CPoint pt, CXTPImageManagerIconHandle& hIcon, CSize szIcon, COLORREF clrBrush)
+{
+	if (hIcon.IsAlpha())
+		return;
+
+	if (szIcon.cx == 0)
+		szIcon.cx = m_nWidth;
+
+	if (szIcon.cy == 0)
+		szIcon.cy = m_nHeight * szIcon.cx / m_nWidth;
+
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, szIcon.cx, szIcon.cy);
+	{
+		CXTPCompatibleDC dc(pDC, &bmp);
+		dc.FillSolidRect(0, 0, szIcon.cx, szIcon.cy, 0xFFFFFF);
+
+		Draw(&dc, CPoint(0, 0), hIcon, szIcon);
+	}
+	pDC->DrawState(pt, szIcon, bmp, (UINT)DSS_MONO, CBrush(clrBrush));
+}
+
+void CXTPImageManagerIcon::Draw(CDC* pDC, CPoint pt, CSize szIcon)
+{
+	Draw(pDC, pt, GetIcon(), szIcon);
+}
+
+void CXTPImageManagerIcon::Draw(CDC* pDC, CPoint pt)
+{
+	Draw(pDC, pt, GetIcon());
+}
+
+void CXTPImageManagerIcon::DrawIconComposited(CDC* pDC, CPoint pt, CSize szIcon, HICON hIcon)
+{
+	CRect rcDest;
+	if (szIcon.cx < 0)
+	{
+		rcDest.SetRect(pt.x + szIcon.cx, pt.y, pt.x, pt.y + szIcon.cy);
+	}
+	else
+	{
+		rcDest.SetRect(pt.x, pt.y, pt.x + szIcon.cx, pt.y + szIcon.cy);
+	}
+
+	CSize sz(rcDest.Width(), rcDest.Height());
+	CBitmap bmp;
+	LPDWORD lpBits;
+	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
+
+	CXTPCompatibleDC dc(pDC, &bmp);
+
+	CRect rcDestOrig(0, 0, sz.cx, sz.cy);
+
+	dc.FillSolidRect(rcDestOrig, 0xFF00FF);
+	DrawIconEx(dc, szIcon.cx > 0 ? 0 : -szIcon.cx, 0, hIcon, szIcon.cx, szIcon.cy, 0, 0, DI_NORMAL);
+
+	for (int i = 0; i < sz.cx * sz.cy; i++)
+	{
+		if (lpBits[0] == 0xFF00FF)
+		{
+			lpBits[0] = 0;
+		}
+		else
+		{
+			lpBits[0] |= 0xFF000000;
+		}
+		lpBits++;
+	}
+
+	XTPImageManager()->AlphaBlend(*pDC, rcDest, dc, rcDestOrig);
+}
+
+void CXTPImageManagerIcon::Draw(CDC* pDC, CPoint pt, CXTPImageManagerIconHandle& hIcon, CSize szIcon /*= 0*/)
+{
+	if (szIcon.cx == 0)
+		szIcon.cx = m_nWidth;
+
+	if (szIcon.cy == 0)
+		szIcon.cy = m_nHeight * szIcon.cx / m_nWidth;
+
+	if (m_pImageList)
+	{
+		m_pImageList->Draw(pDC, pt, this, szIcon);
+		return;
+	}
+
+	hIcon.Draw(pDC, pt, szIcon, m_bDrawComposited);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIconSet
+
+CXTPImageManagerIconSet::CXTPImageManagerIconSet(UINT nID, CXTPImageManager* pImageManager)
+	: m_nID(nID)
+{
+	ASSERT(pImageManager);
+	m_pImageManager = pImageManager;
+
+	EnableAutomation();
+}
+
+CXTPImageManagerIconSet::~CXTPImageManagerIconSet()
+{
+	RemoveAll();
+}
+
+void CXTPImageManagerIconSet::RemoveAll()
+{
+	UINT nWidth;
+	CXTPImageManagerIcon* pIcon;
+
+	POSITION pos = m_mapIcons.GetStartPosition();
+	while (pos)
+	{
+		m_mapIcons.GetNextAssoc(pos, nWidth, pIcon);
+		pIcon->Clear(TRUE);
+		pIcon->InternalRelease();
+	}
+	m_mapIcons.RemoveAll();
+}
+
+CXTPImageManagerIcon* CXTPImageManagerIconSet::CreateIcon(UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = 0;
+	if (m_mapIcons.Lookup(nWidth, pIcon))
+	{
+		ASSERT(pIcon->m_nID == m_nID);
+		ASSERT(pIcon->m_nWidth == nWidth);
+	}
+	else
+	{
+		pIcon = new CXTPImageManagerIcon(m_nID, nWidth, 15, this);
+		m_mapIcons.SetAt(nWidth, pIcon);
+	}
+
+	ASSERT(pIcon);
+
+	return pIcon;
+}
+
+void CXTPImageManagerIconSet::SetIcon(CXTPImageManagerIconHandle hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetDisabledIcon(CXTPImageManagerIconHandle hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetDisabledIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetHotIcon(CXTPImageManagerIconHandle hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetHotIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetCheckedIcon(CXTPImageManagerIconHandle hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetCheckedIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetPressedIcon(CXTPImageManagerIconHandle hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetPressedIcon(hIcon);
+}
+
+CXTPImageManagerIcon* CXTPImageManagerIconSet::GetIcon(UINT nWidth, BOOL bScaled)
+{
+	ASSERT(m_mapIcons.GetCount() > 0);
+
+	CXTPImageManagerIcon* pIcon = NULL;
+	BOOL bSpecial = (nWidth == ICON_BIG) || (nWidth == ICON_SMALL);
+
+	if (!bSpecial)
+	{
+		if (m_mapIcons.Lookup(nWidth, pIcon))
+		{
+			return pIcon;
+		}
+		if (!bScaled)
+			return NULL;
+	}
+
+	UINT nDelta = 0;
+
+	POSITION pos = m_mapIcons.GetStartPosition();
+	while (pos)
+	{
+		UINT nWidthScale;
+		CXTPImageManagerIcon* pIconScale;
+
+		m_mapIcons.GetNextAssoc(pos, nWidthScale, pIconScale);
+
+		if (bSpecial)
+		{
+			if (((nDelta == 0) || ((nWidth == ICON_SMALL && nWidthScale < nDelta)
+				|| (nWidth == ICON_BIG && nWidthScale > nDelta))))
+			{
+				pIcon = pIconScale;
+				nDelta = nWidthScale;
+			}
+		}
+		else if (nDelta == 0 || (UINT)abs(int(nWidthScale - nWidth)) < nDelta)
+		{
+			pIcon = pIconScale;
+			nDelta = (UINT)abs(int(nWidthScale - nWidth));
+		}
+	}
+
+	ASSERT(pIcon != 0);
+	if (!pIcon)
+		return NULL;
+
+	return pIcon;
+}
+
+
+void CXTPImageManagerIconSet::RefreshAll()
+{
+	POSITION pos = m_mapIcons.GetStartPosition();
+	UINT nWidth;
+	CXTPImageManagerIcon* pIcon;
+
+	while (pos)
+	{
+		m_mapIcons.GetNextAssoc(pos, nWidth, pIcon);
+
+		pIcon->Refresh();
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManager
+
+CXTPImageManager::CXTPImageManager()
+{
+	m_clrMask = (COLORREF)-1;
+
+	m_nCustomID = 0x10AAA;
+
+	m_mapImages.InitHashTable(XTP_IMAGEMAN_HASH_TABLE_SIZE, FALSE);
+
+	m_bDrawReverted = 2;
+
+	m_bUseResources = TRUE;
+
+
+}
+
+CXTPImageManager* AFX_CDECL XTPImageManager()
+{
+	static CXTPImageManager s_managerInstance;
+	return &s_managerInstance;
+}
+
+CXTPImageManager::~CXTPImageManager()
+{
+	RemoveAll();
+}
+
+BOOL CXTPImageManager::LoadToolbar(UINT nIDResourceToolBar, UINT*& pItems, int& nCount, CSize& szIcon) const
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResourceToolBar);
+
+	struct CToolBarData
+	{
+		WORD wVersion;
+		WORD wWidth;
+		WORD wHeight;
+		WORD wItemCount;
+
+		WORD* items()
+		{
+			return (WORD*)(this + 1);
+		}
+	};
+
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return FALSE;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+
+	ASSERT(pData->wVersion == 1);
+
+	pItems = new UINT[pData->wItemCount];
+
+	nCount = 0;
+	for (int i = 0; i < pData->wItemCount; i++)
+		if (pData->items()[i]) pItems[nCount++] = pData->items()[i];
+
+	szIcon = CSize(pData->wWidth, pData->wHeight);
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+	return TRUE;
+}
+
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, CBitmap& bmpIcons, XTPImageState imageState)
+{
+	UINT* pItems = NULL;
+	CSize szIcon(0);
+	int nCount = 0;
+	BOOL bResult = LoadToolbar(nIDResourceToolBar, pItems, nCount, szIcon);
+
+	if (bResult && !SetIcons(bmpIcons, pItems, nCount, szIcon, imageState))
+		bResult = FALSE;
+
+	if (pItems)
+	{
+		delete[] pItems;
+	}
+
+	return bResult;
+}
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, UINT nIDResourceBitmap, XTPImageState imageState)
+{
+	UINT* pItems = NULL;
+	CSize szIcon(0);
+	int nCount = 0;
+	BOOL bResult = LoadToolbar(nIDResourceToolBar, pItems, nCount, szIcon);
+
+	if (bResult && !SetIcons(nIDResourceBitmap, pItems, nCount, CSize(0, 0), imageState))
+		bResult = FALSE;
+
+	if (pItems)
+	{
+		delete[] pItems;
+	}
+
+	return bResult;
+
+}
+
+
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, XTPImageState imageState)
+{
+	return SetIcons(nIDResourceToolBar, nIDResourceToolBar, imageState);
+}
+
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, CImageList& imlIcons, XTPImageState imageState)
+{
+	UINT* pItems = NULL;
+	CSize szIcon(0);
+	int nCount = 0;
+	BOOL bResult = LoadToolbar(nIDResourceToolBar, pItems, nCount, szIcon);
+
+	if (bResult && !SetIcons(imlIcons, pItems, nCount, szIcon, imageState))
+		bResult = FALSE;
+
+	if (pItems)
+	{
+		delete[] pItems;
+	}
+
+	return bResult;
+
+}
+
+
+
+BOOL CXTPImageManager::SetIcon(CXTPImageManagerIconHandle hIcon, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	if (hIcon.IsEmpty())
+		return FALSE;
+
+	if (szIcon == CSize(0))
+	{
+		szIcon = hIcon.GetExtent();
+	}
+	if (szIcon == CSize(0))
+		return FALSE;
+
+
+	CXTPImageManagerIconSet* pIconSet;
+	if (m_mapImages.Lookup(nIDCommand, pIconSet))
+	{
+		if (imageState == xtpImageNormal) pIconSet->SetIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImageDisabled) pIconSet->SetDisabledIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImageHot) pIconSet->SetHotIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImageChecked) pIconSet->SetCheckedIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImagePressed) pIconSet->SetPressedIcon(hIcon, szIcon.cx);
+	}
+	else if (imageState == xtpImageNormal)
+	{
+		pIconSet = new CXTPImageManagerIconSet(nIDCommand, this);
+		pIconSet->SetIcon(hIcon, szIcon.cx);
+		m_mapImages.SetAt(nIDCommand, pIconSet);
+	}
+	else return FALSE;
+
+	return TRUE;
+}
+
+BOOL CXTPImageManager::SetIcon(UINT nIDResourceIcon, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResourceIcon);
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_GROUP_ICON);
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_GROUP_ICON);
+	if (hRsrc != NULL)
+	{
+		// Load and Lock to get a pointer to a GRPICONDIR
+		HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+		if (!hGlobal)
+			return FALSE;
+
+		CXTPImageManagerIcon::GRPICONDIR* lpGrpIconDir = (CXTPImageManagerIcon::GRPICONDIR*)
+			LockResource(hGlobal);
+		if (!lpGrpIconDir)
+			return FALSE;
+
+		for (WORD i = 0; i < lpGrpIconDir->idCount; i++)
+		{
+			CXTPImageManagerIconHandle hIcon;
+			CSize szResourceIcon(lpGrpIconDir->idEntries[i].bWidth, lpGrpIconDir->idEntries[i].bHeight);
+
+			if ((szIcon == szResourceIcon) || (szIcon == CSize(0, 0)))
+			{
+				if (!hIcon.CreateIconFromResource(hInst, MAKEINTRESOURCE(lpGrpIconDir->idEntries[i].nID),
+					szResourceIcon, FALSE))
+				{
+					return FALSE;
+				}
+
+				if (!SetIcon(hIcon, nIDCommand, szResourceIcon, imageState))
+				{
+					return FALSE;
+				}
+			}
+		}
+	}
+	else
+	{
+		CXTPImageManagerIconHandle hIcon;
+
+		if (!hIcon.CreateIconFromResource(lpszResourceName, szIcon, FALSE))
+		{
+			return FALSE;
+		}
+
+		return SetIcon(hIcon, nIDCommand, szIcon, imageState);
+	}
+	return TRUE;
+}
+
+
+BOOL CXTPImageManager::SetIcons(CImageList& imlIcons, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState)
+{
+	if (!imlIcons.GetSafeHandle())
+		return FALSE;
+
+	if ((nCount == 0) && (pCommands == 0))
+	{
+		nCount = imlIcons.GetImageCount();
+	}
+
+	if (szIcon == CSize(0) && nCount > 0)
+	{
+		IMAGEINFO imageInfo;
+		imlIcons.GetImageInfo(0, &imageInfo);
+		szIcon = CRect(imageInfo.rcImage).Size();
+	}
+
+	BOOL bIncludeAll = imlIcons.GetImageCount() == nCount;
+	int j = 0;
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if ((pCommands == NULL) || bIncludeAll || (pCommands[i] != 0))
+		{
+			HICON hIcon = imlIcons.ExtractIcon(j);
+			if (hIcon)
+			{
+				SetIcon(hIcon, pCommands ? pCommands[i]: i, szIcon, imageState);
+				DestroyIcon(hIcon);
+			}
+			else
+			{
+				return FALSE;
+			}
+			j++;
+		}
+	}
+	return TRUE;
+}
+
+
+BOOL CXTPImageManager::SplitBitmap(HBITMAP hbmSource, int nCount, HBITMAP* pDest) const
+{
+	ASSERT(pDest != NULL);
+	ASSERT(sizeof(int) == 4);
+
+	if (!pDest)
+		return FALSE;
+
+	BITMAPINFO  bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PINT pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+
+	BOOL bResult = TRUE;
+	int i;
+
+	TRY
+	{
+		if (GetDIBits(dcSrc, hbmSource, 0, 0, NULL, (BITMAPINFO*)&bmi, DIB_RGB_COLORS) == 0)
+			AfxThrowMemoryException();
+
+		UINT nSize = bmi.bmiHeader.biHeight * bmi.bmiHeader.biWidth * 4;
+		pBits = (PINT)malloc(nSize);
+		if (pBits == NULL)
+			AfxThrowMemoryException();
+
+		if ((pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + 3 * sizeof(COLORREF))) == NULL)
+			AfxThrowMemoryException();
+
+		MEMCPY_S(pBitmapInfo, &bmi, sizeof(BITMAPINFOHEADER));
+
+		if (GetDIBits(dcSrc, hbmSource, 0, bmi.bmiHeader.biHeight, pBits, pBitmapInfo, DIB_RGB_COLORS) == NULL)
+			AfxThrowMemoryException();
+
+		ASSERT(pBitmapInfo->bmiHeader.biWidth % nCount == 0);
+
+		pBitmapInfo->bmiHeader.biWidth /= nCount;
+		pBitmapInfo->bmiHeader.biSizeImage /= nCount;
+
+		PINT* pDestBits = new PINT[nCount];
+		for (i = 0; i < nCount; i++)
+		{
+			pDest[i] = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDestBits[i], NULL, 0);
+			if (!pDest[i])
+			{
+				for (int j = 0; j < i; j++)
+					DeleteObject(pDest[j]);
+
+				delete[] pDestBits;
+
+				AfxThrowMemoryException();
+			}
+		}
+
+		PINT pBitsIter = pBits;
+
+		for (int y = 0; y < pBitmapInfo->bmiHeader.biHeight; y++)
+		{
+			for (i = 0; i < nCount; i++)
+			{
+				for (int x = 0; x < pBitmapInfo->bmiHeader.biWidth; x++)
+				{
+					*pDestBits[i]++ = *pBitsIter++;
+				}
+			}
+		}
+		delete[] pDestBits;
+
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+		bResult = FALSE;
+	}
+	END_CATCH
+
+	FREE(pBits);
+	FREE(pBitmapInfo);
+
+	return bResult;
+
+}
+
+COLORREF CXTPImageManager::GetBitmapMaskColor(CBitmap& bmpIcons, CPoint pt)
+{
+	CXTPCompatibleDC dc(NULL, &bmpIcons);
+	return dc.GetPixel(pt);
+}
+
+COLORREF CXTPImageManager::GetBitmapMaskColor(UINT nIDBitmap, CPoint pt)
+{
+	CBitmap bmp;
+	VERIFY(bmp.LoadBitmap(nIDBitmap));
+	return GetBitmapMaskColor(bmp, pt);
+}
+
+
+HBITMAP CXTPImageManager::ResampleAlphaLayer(UINT nIDBitmap, COLORREF clrMask)
+{
+	HBITMAP hbmAlpha = CXTPImageManagerIcon::LoadAlphaBitmap(nIDBitmap);
+	if (!hbmAlpha)
+		return 0;
+
+	CBitmap bmp;
+	bmp.Attach(hbmAlpha);
+
+	return CXTPImageManager::ResampleAlphaLayer(bmp, clrMask);
+}
+
+HBITMAP CXTPImageManager::ResampleAlphaLayer(HBITMAP bmpAlpha, COLORREF clrMask)
+{
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PBYTE pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+	UINT nSize;
+
+	if (!CXTPImageManagerIcon::GetBitmapBits(dcSrc, bmpAlpha, pBitmapInfo, (LPVOID&)pBits, nSize))
+		return 0;
+
+	PBYTE pTarget = NULL;
+	PBYTE pSource = pBits;
+	pBitmapInfo->bmiHeader.biBitCount = 24;
+	pBitmapInfo->bmiHeader.biSizeImage = 0;
+	pBitmapInfo->bmiHeader.biCompression = BI_RGB;
+
+	HBITMAP hBitmapResult = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pTarget, NULL, 0);
+
+	if (pTarget && pSource && hBitmapResult)
+	{
+		BYTE byMaskRed = GetRValue(clrMask);
+		BYTE byMaskGreen = GetGValue(clrMask);
+		BYTE byMaskBlue = GetBValue(clrMask);
+
+		int nCount = pBitmapInfo->bmiHeader.biHeight * pBitmapInfo->bmiHeader.biWidth;
+
+		for (; nCount--;)
+		{
+			int iAlpha = pSource[3];
+
+			if (iAlpha < 120)
+			{
+				pTarget[0] = byMaskRed;
+				pTarget[1] = byMaskGreen;
+				pTarget[2] = byMaskBlue;
+			}
+			else
+			{
+				pTarget[0] = (BYTE)((pSource[0] * (255 - iAlpha) + pSource[0] * iAlpha) >> 8);
+				pTarget[1] = (BYTE)((pSource[1] * (255 - iAlpha) + pSource[1] * iAlpha) >> 8);
+				pTarget[2] = (BYTE)((pSource[2] * (255 - iAlpha) + pSource[2] * iAlpha) >> 8);
+			}
+			pTarget += 3;
+			pSource += 4;
+		}
+	}
+
+	FREE(pBits);
+	FREE(pBitmapInfo);
+
+	return hBitmapResult;
+}
+
+BOOL CXTPImageManager::SetIcons(CBitmap& bmpIcons, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState, BOOL bAlpha)
+{
+	if (szIcon == CSize(0) && nCount > 0)
+	{
+		BITMAP bmpInfo;
+		bmpIcons.GetBitmap(&bmpInfo);
+		szIcon = CSize(bmpInfo.bmWidth / nCount, bmpInfo.bmHeight);
+	}
+
+	if (nCount == 0 && szIcon.cx > 0)
+	{
+		BITMAP bmpInfo;
+		bmpIcons.GetBitmap(&bmpInfo);
+		nCount = bmpInfo.bmWidth / szIcon.cx;
+	}
+
+	if (szIcon.cx == 0)
+		return FALSE;
+
+	if (bAlpha && !IsAlphaIconsSupported() && m_bAutoResample)
+	{
+		HBITMAP hBitmap = ResampleAlphaLayer(bmpIcons, m_clrMask == COLORREF(-1) ? RGB(0, 0xFF, 0) : m_clrMask);
+		if (!hBitmap)
+			return FALSE;
+
+		CBitmap bmpResample;
+		bmpResample.Attach(hBitmap);
+		return SetIcons(bmpResample, pCommands, nCount, szIcon, imageState, FALSE);
+	}
+
+	if (bAlpha)
+	{
+		BITMAP bmpInfo;
+		bmpIcons.GetBitmap(&bmpInfo);
+		if (bmpInfo.bmWidth % szIcon.cx != 0)
+			return FALSE;
+
+		int nIconCount = bmpInfo.bmWidth / szIcon.cx;
+
+		HBITMAP* pDestBitmap = new HBITMAP[nIconCount];
+
+		if (!SplitBitmap(bmpIcons, nIconCount, pDestBitmap))
+		{
+			delete[] pDestBitmap;
+			return FALSE;
+		}
+		BOOL bIgnoreNulls = (nIconCount == nCount);
+
+		int j = 0;
+
+		for (int i = 0; i < nCount; i++)
+		{
+			if ((!pCommands || bIgnoreNulls || pCommands[i]) && j < nIconCount)
+			{
+
+				SetIcon(pDestBitmap[j], pCommands ? pCommands[i]: i, szIcon, imageState);
+				j++;
+			}
+		}
+
+		for (j = 0; j < nIconCount; j++)
+		{
+			DeleteObject(pDestBitmap[j]);
+		}
+
+		delete[] pDestBitmap;
+
+
+		return TRUE;
+
+	}
+	else
+	{
+		CImageList imgList;
+
+
+		if (!imgList.Create(szIcon.cx, szIcon.cy, ILC_COLOR24 | ILC_MASK, 0, 1))
+			return FALSE;
+
+		COLORREF clrMask = m_clrMask != (COLORREF)-1 ? m_clrMask : GetBitmapMaskColor(bmpIcons);
+		imgList.Add(&bmpIcons, clrMask);
+
+		return SetIcons(imgList, pCommands, nCount, szIcon, imageState);
+	}
+
+}
+
+
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceBitmap, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState)
+{
+	return SetIcons(MAKEINTRESOURCE(nIDResourceBitmap), pCommands, nCount, szIcon, imageState);
+}
+
+BOOL CXTPImageManager::SetIcons(LPCTSTR lpszResourceBitmap, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState)
+{
+	BOOL bAlphaBitmap = FALSE;
+	CBitmap bmpIcons;
+
+	HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromResource(lpszResourceBitmap, &bAlphaBitmap);
+
+	if (!hBmp)
+		return FALSE;
+
+	bmpIcons.Attach(hBmp);
+
+	return SetIcons(bmpIcons, pCommands, nCount, szIcon, imageState, bAlphaBitmap);
+}
+
+
+BOOL CXTPImageManager::SetImageList(HIMAGELIST hImageList, int nBaseCommand, BOOL bDestoryImageList)
+{
+	if (!hImageList)
+		return FALSE;
+
+	CXTPImageManagerImageList* pImageList = new CXTPImageManagerImageList;
+	pImageList->m_bDestroyImageList = bDestoryImageList;
+	pImageList->m_hImageList = hImageList;
+	pImageList->m_nBaseCommand = nBaseCommand;
+	pImageList->m_pImageManager = this;
+
+	m_arrImageList.Add(pImageList);
+	return TRUE;
+}
+
+BOOL CXTPImageManager::SetImageList(UINT nBitmap, int cx, int nBaseCommand, COLORREF clrMask)
+{
+	BOOL bAlpha = FALSE;
+	HBITMAP hBitmap = CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nBitmap), &bAlpha);
+	if (!hBitmap)
+		return FALSE;
+
+	BITMAP bmpInfo;
+	if (!::GetObject(hBitmap, sizeof(BITMAP), &bmpInfo))
+		return FALSE;
+
+	if (cx == 0) cx = bmpInfo.bmWidth;
+
+	if (((bmpInfo.bmWidth % cx) != 0))
+		return FALSE;
+
+	HIMAGELIST hImageList = ImageList_Create(cx, bmpInfo.bmHeight, (bAlpha ? ILC_COLOR32 : ILC_COLOR24) |
+		(clrMask == COLORREF_NULL ? 0 : ILC_MASK), 0, 1);
+
+	if (!hImageList)
+		return FALSE;
+
+	if (bAlpha || (clrMask == COLORREF_NULL))
+	{
+		ImageList_Add(hImageList, hBitmap, NULL);
+	}
+	else
+	{
+		ImageList_AddMasked(hImageList, hBitmap, clrMask);
+	}
+
+	DeleteObject(hBitmap);
+
+	return SetImageList(hImageList, nBaseCommand, TRUE);
+}
+
+
+
+
+BOOL CXTPImageManager::IsPngBitmapResource(UINT nIDResourceBitmap)
+{
+	return CXTPImageManagerIcon::IsPngBitmapResource(AfxFindResourceHandle(MAKEINTRESOURCE(nIDResourceBitmap), _T("PNG")),
+		MAKEINTRESOURCE(nIDResourceBitmap));
+}
+
+
+
+BOOL CXTPImageManager::IsAlphaBitmapResource(UINT nIDResourceBitmap)
+{
+	return CXTPImageManagerIcon::IsAlphaBitmapResource(AfxFindResourceHandle(MAKEINTRESOURCE(nIDResourceBitmap), RT_BITMAP),
+		MAKEINTRESOURCE(nIDResourceBitmap));
+}
+
+UINT CXTPImageManager::AddCustomIcon(CXTPImageManagerIconHandle hIcon)
+{
+	CSize szIcon = hIcon.GetExtent();
+	m_nCustomID++;
+
+	CXTPImageManagerIconSet* pIconSet = new CXTPImageManagerIconSet(m_nCustomID, this);
+	pIconSet->SetIcon(hIcon, szIcon.cx);
+	m_mapImages.SetAt(m_nCustomID, pIconSet);
+
+	return m_nCustomID;
+}
+
+void CXTPImageManager::CopyImage(UINT nCommand)
+{
+	CMemFile memFile;
+	CArchive ar (&memFile, CArchive::store);
+
+	Serialize(nCommand, ar);
+	ar.Flush();
+
+	DWORD dwCount = (DWORD)memFile.GetPosition();
+	BYTE* pControls = memFile.Detach();
+
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwCount);
+	if (hGlobal != NULL)
+	{
+		LPVOID lpData = GlobalLock(hGlobal);
+
+		MEMCPY_S(lpData, pControls, dwCount);
+
+		GlobalUnlock(hGlobal);
+		SetClipboardData(m_nImageClipFormat, hGlobal);
+	}
+
+	ar.Close();
+	memFile.Close();
+	free(pControls);
+}
+
+
+
+UINT CXTPImageManager::PasteCustomImage(COleDataObject& data)
+{
+#ifdef __AFXOLE_H__
+	HGLOBAL hGlobal = data.GetGlobalData (m_nImageClipFormat);
+
+	if (hGlobal == NULL) return 0;
+
+	try
+	{
+		CSharedFile globFile;
+		globFile.SetHandle(hGlobal, FALSE);
+		CArchive ar (&globFile, CArchive::load);
+
+		m_nCustomID++;
+		Serialize(m_nCustomID, ar);
+
+		ar.Close();
+
+	}
+	catch (COleException* pEx)
+	{
+		pEx->Delete ();
+		return 0;
+	}
+	catch (CArchiveException* pEx)
+	{
+		pEx->Delete ();
+		return 0;
+	}
+	return m_nCustomID;
 #else
-    #include "GLG3D/SDLWindow.h"    
+	return 0;
 #endif
-#include "GLG3D/GLCaps.h"
-
-namespace G3D {
-
-const GWindow* GWindow::m_current = NULL;
-
-
-RenderDevice* RenderDevice::lastRenderDeviceCreated = NULL;
-
-
-GLenum BufferToGL[MAX_BUFFER_SIZE] = {GL_NONE,
-                                      GL_FRONT_LEFT,
-                                      GL_FRONT_RIGHT,
-                                      GL_BACK_LEFT,
-                                      GL_BACK_RIGHT,
-                                      GL_FRONT,
-                                      GL_BACK,
-                                      GL_LEFT,
-                                      GL_RIGHT,
-                                      GL_FRONT_AND_BACK,
-                                      0xFFFF,                   //BUFFER_CURRENT
-                                      GL_COLOR_ATTACHMENT0_EXT,
-                                      GL_COLOR_ATTACHMENT1_EXT,
-                                      GL_COLOR_ATTACHMENT2_EXT,
-                                      GL_COLOR_ATTACHMENT3_EXT,
-                                      GL_COLOR_ATTACHMENT4_EXT,
-                                      GL_COLOR_ATTACHMENT5_EXT,
-                                      GL_COLOR_ATTACHMENT6_EXT,
-                                      GL_COLOR_ATTACHMENT7_EXT,
-                                      GL_COLOR_ATTACHMENT8_EXT,
-                                      GL_COLOR_ATTACHMENT9_EXT,
-                                      GL_COLOR_ATTACHMENT10_EXT,
-                                      GL_COLOR_ATTACHMENT11_EXT,
-                                      GL_COLOR_ATTACHMENT12_EXT,
-                                      GL_COLOR_ATTACHMENT13_EXT,
-                                      GL_COLOR_ATTACHMENT14_EXT,
-                                      GL_COLOR_ATTACHMENT15_EXT};
-
-static GLint toGLBlendFunc(RenderDevice::BlendFunc b) {
-    switch (b) {
-    case RenderDevice::BLEND_SRC_ALPHA:
-        return GL_SRC_ALPHA;
-        
-    case RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA:
-        return GL_ONE_MINUS_SRC_ALPHA;
-
-    case RenderDevice::BLEND_ONE:
-        return GL_ONE;
-        
-    case RenderDevice::BLEND_ZERO:
-        return GL_ZERO;
-
-    case RenderDevice::BLEND_SRC_COLOR:
-        return GL_SRC_COLOR;
-
-    case RenderDevice::BLEND_DST_COLOR:
-        return GL_DST_COLOR;
-
-    case RenderDevice::BLEND_ONE_MINUS_SRC_COLOR:
-        return GL_ONE_MINUS_SRC_COLOR;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_ZERO;
-    }
 }
 
-static void _glViewport(double a, double b, double c, double d) {
-    glViewport(iRound(a), iRound(b), 
-	       iRound(a + c) - iRound(a), iRound(b + d) - iRound(b));
+BOOL CXTPImageManager::IsPrimaryImageExists(UINT nCommand, int nWidth) const
+{
+	CXTPImageManagerIconSet* pIconSet = GetIconSet(nCommand);
+
+	if (pIconSet)
+	{
+		CXTPImageManagerIcon* pIcon = pIconSet->GetIcon(nWidth, FALSE);
+		if (pIcon)
+			return TRUE;
+	}
+
+	CXTPImageManagerImageList* pImageList = GetImageList(nCommand);
+	if (pImageList)
+	{
+		return nWidth == 0 || pImageList->GetIconSize().cx == nWidth;
+	}
+
+	return FALSE;
 }
 
-static GLenum primitiveToGLenum(RenderDevice::Primitive primitive) {
-	switch (primitive) {
-    case RenderDevice::LINES:
-		return GL_LINES;
+CXTPImageManagerIcon* CXTPImageManager::GetImage(UINT nCommand, int nWidth) const
+{
+	CXTPImageManagerIconSet* pIconSet = GetIconSet(nCommand);
 
-    case RenderDevice::LINE_STRIP:
-		return GL_LINE_STRIP;
+	if (pIconSet)
+	{
+		return pIconSet->GetIcon(nWidth);
+	}
 
-    case RenderDevice::TRIANGLES:
-		return GL_TRIANGLES;
+	CXTPImageManagerImageList* pImageList = GetImageList(nCommand);
+	if (pImageList)
+	{
+		return pImageList->GetIcon(nCommand);
+	}
 
-    case RenderDevice::TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-
-    case RenderDevice::TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-
-    case RenderDevice::QUADS:
-		return GL_QUADS;
-
-    case RenderDevice::QUAD_STRIP:
-		return GL_QUAD_STRIP;
-
-    case RenderDevice::POINTS:
-        return GL_POINTS;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return 0;
-    }
+	return NULL;
 }
 
-
-std::string RenderDevice::getCardDescription() const {
-    return cardDescription;
+BOOL CXTPImageManager::Lookup(UINT nCommand) const
+{
+	return (GetIconSet(nCommand) != NULL) || (GetImageList(nCommand) != NULL);
 }
 
+CXTPImageManagerIconSet* CXTPImageManager::GetIconSet(UINT nCommand) const
+{
+	CXTPImageManagerIconSet* pIconSet;
+	if (m_mapImages.Lookup(nCommand, pIconSet))
+	{
+		return pIconSet;
 
-RenderDevice::RenderDevice() : _window(NULL), deleteWindow(false) {
-
-    _initialized = false;
-    cleanedup = false;
-    inPrimitive = false;
-    inShader = false;
-    _numTextureUnits = 0;
-    _numTextures = 0;
-    _numTextureCoords = 0;
-    emwaFrameRate = 0;
-    lastTime = System::getTick();
-
-    for (int i = 0; i < GLCaps::G3D_MAX_TEXTURE_UNITS; ++i) {
-        currentlyBoundTexture[i] = 0;
-    }
-
-    lastRenderDeviceCreated = this;
+	}
+	return NULL;
 }
 
+CXTPImageManagerImageList* CXTPImageManager::GetImageList(UINT nCommand) const
+{
+	for (int i = 0; i < (int)m_arrImageList.GetSize(); i++)
+	{
+		CXTPImageManagerImageList* pImageList = m_arrImageList[i];
 
-void RenderDevice::setVARAreaMilestone() {
-    currentVARArea->renderDevice = this;
-
-    if (VARArea::mode == VARArea::VBO_MEMORY) {
-        // We don't need milestones when using VBO; the spec guarantees
-        // correct synchronization.
-        return;
-    }
-
-    MilestoneRef milestone = createMilestone("VAR Milestone");
-    setMilestone(milestone);
-
-    debugAssert(currentVARArea.notNull());
-
-    // Overwrite any preexisting milestone
-    currentVARArea->milestone = milestone;
+		if (pImageList->Lookup(nCommand))
+			return pImageList;
+	}
+	return NULL;
 }
 
-
-RenderDevice::~RenderDevice() {
-    debugAssertM(cleanedup, "You deleted a RenderDevice without calling RenderDevice::cleanup()");
+void CXTPImageManager::RemoveIcon(UINT nIDCommand)
+{
+	CXTPImageManagerIconSet* pIconSet;
+	if (m_mapImages.Lookup(nIDCommand, pIconSet))
+	{
+		m_mapImages.RemoveKey(nIDCommand);
+		pIconSet->RemoveAll();
+		pIconSet->InternalRelease();
+	}
 }
 
-/**
- Used by RenderDevice::init.
- */
-static const char* isOk(bool x) {
-    return x ? "ok" : "UNSUPPORTED";
+void CXTPImageManager::RemoveAll()
+{
+	POSITION pos = m_mapImages.GetStartPosition();
+	UINT nID;
+	CXTPImageManagerIconSet* pIconSet;
+	while (pos)
+	{
+		m_mapImages.GetNextAssoc(pos, nID, pIconSet);
+		pIconSet->RemoveAll();
+		pIconSet->InternalRelease();
+	}
+	m_mapImages.RemoveAll();
+
+	pos = m_mapResources.GetStartPosition();
+	DWORD dwSize;
+	CXTPImageManagerResource* pResource;
+	while (pos)
+	{
+		m_mapResources.GetNextAssoc(pos, dwSize, pResource);
+		delete pResource;
+	}
+	m_mapResources.RemoveAll();
+
+
+	for (int i = 0; i < (int)m_arrImageList.GetSize(); i++)
+	{
+		delete m_arrImageList[i];
+	}
+	m_arrImageList.RemoveAll();
+
 }
 
-/**
- Used by RenderDevice::init.
- */
-static const char* isOk(void* x) {
-    // GCC incorrectly claims this function is not called.
-    return isOk(x != NULL);
+void CXTPImageManager::RefreshAll()
+{
+	POSITION pos = m_mapImages.GetStartPosition();
+	UINT nID;
+	CXTPImageManagerIconSet* pIconSet;
+
+	while (pos)
+	{
+		m_mapImages.GetNextAssoc(pos, nID, pIconSet);
+		pIconSet->RefreshAll();
+	}
+
+	for (int i = 0; i < (int)m_arrImageList.GetSize(); i++)
+	{
+		m_arrImageList[i]->RemoveAll();
+	}
 }
 
-
-bool RenderDevice::supportsOpenGLExtension(
-    const std::string& extension) const {
-
-    return GLCaps::supports(extension);
+COLORREF CXTPImageManager::SetMaskColor(COLORREF clrMask)
+{
+	COLORREF clrReturn = m_clrMask;
+	m_clrMask = clrMask;
+	return clrReturn;
+}
+COLORREF CXTPImageManager::GetMaskColor() const
+{
+	return m_clrMask;
 }
 
+BOOL CXTPImageManager::IsAlphaIconsSupported() const
+{
+	return TRUE;
 
-bool RenderDevice::init(
-    const GWindowSettings&      _settings,
-    Log*                        log) {
-
-    deleteWindow = true;
-    #ifdef G3D_WIN32
-        return init(Win32Window::create(_settings), log);
-    #else
-        return init(new SDLWindow(_settings), log);
-    #endif
 }
 
-
-GWindow* RenderDevice::window() const {
-    return _window;
+BOOL CXTPImageManager::IsAlphaIconsImageListSupported()
+{
+	DWORD dwComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
+	return HIWORD(dwComCtlVersion) > 5;
 }
 
+void CXTPImageManager::DoPropExchange(UINT nCommand, CXTPPropExchange* pPX)
+{
+	if (nCommand > m_nCustomID) m_nCustomID = nCommand;
 
-bool RenderDevice::init(GWindow* window, Log* log) {
-    debugAssert(! initialized());
-    debugAssert(window);
+	const LPCTSTR lpszCheck = _T("CXTPImageManagerIcons");
+	CString strCheck = lpszCheck;
 
-    _swapBuffersAutomatically = true;
-    swapGLBuffersPending = false;
-    _window = window;
+	if (pPX->IsStoring())
+	{
+		PX_String(pPX, _T("CheckSum"), strCheck, lpszCheck);
 
-    GWindowSettings settings;
-    window->getSettings(settings);
-    
-    // Load the OpenGL extensions if they have not already been loaded.
-    GLCaps::loadExtensions(log);
+		ASSERT(nCommand > 0);
 
-    debugLog = log;
+		CXTPImageManagerIconSet* pIconSet = GetIconSet(nCommand);
+		ASSERT(pIconSet);
 
-    beginEndFrame = 0;
-    if (debugLog) {debugLog->section("Initialization");}
-
-    debugAssert((settings.lightSaturation >= 0.5) && 
-                (settings.lightSaturation <= 2.0));
-
-    // Under Windows, reset the last error so that our debug box
-    // gives the correct results
-    #ifdef G3D_WIN32
-        SetLastError(0);
-    #endif
-
-	const int minimumDepthBits    = iMin(16, settings.depthBits);
-	const int desiredDepthBits    = settings.depthBits;
-
-	const int minimumStencilBits  = settings.stencilBits;
-	const int desiredStencilBits  = settings.stencilBits;
-
-    // Don't use more texture units than allowed at compile time.
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        _numTextureUnits = iMin(GLCaps::G3D_MAX_TEXTURE_UNITS, 
-                                glGetInteger(GL_MAX_TEXTURE_UNITS_ARB));
-    } else {
-        _numTextureUnits = 1;
-    }
-
-    // NVIDIA cards with GL_NV_fragment_program have different 
-    // numbers of texture coords, units, and textures
-    if (GLCaps::supports("GL_NV_fragment_program")) {
-        glGetIntegerv(GL_MAX_TEXTURE_COORDS_NV, &_numTextureCoords);
-        _numTextureCoords = iClamp(_numTextureCoords,
-                                   _numTextureUnits,
-                                   GLCaps::G3D_MAX_TEXTURE_UNITS);
-
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_NV, &_numTextures);
-        _numTextures = iClamp(_numTextures,
-                              _numTextureUnits, 
-                              GLCaps::G3D_MAX_TEXTURE_UNITS);
-    } else {
-        _numTextureCoords = _numTextureUnits;
-        _numTextures      = _numTextureUnits;
-    }
-
-    if (! GLCaps::supports_GL_ARB_multitexture()) {
-        // No multitexture
-        if (debugLog) {
-            debugLog->println("No GL_ARB_multitexture support: "
-                              "forcing number of texture units "
-                              "to no more than 1");
-        }
-        _numTextureCoords = iMax(1, _numTextureCoords);
-        _numTextures      = iMax(1, _numTextures);
-        _numTextureUnits  = iMax(1, _numTextureUnits);
-    }
-    debugAssertGLOk();
-
-    if (debugLog) {
-		int t = 0;
-       
-        int t0 = 0;
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            t = t0 = glGetInteger(GL_MAX_TEXTURE_UNITS_ARB);
-        }
-
-		if (GLCaps::supports_GL_ARB_fragment_program()) {
-			t = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS_ARB);
+		if (!pIconSet)
+		{
+			CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Icon")));
+			pEnumerator->GetPosition(0);
+			return;
 		}
 
-        debugLog->printf("numTextureCoords                      = %d\n"
-                         "numTextures                           = %d\n"
-                         "numTextureUnits                       = %d\n"
-                         "glGet(GL_MAX_TEXTURE_UNITS_ARB)       = %d\n"
-                         "glGet(GL_MAX_TEXTURE_IMAGE_UNITS_ARB) = %d\n",
-                         _numTextureCoords, _numTextures, _numTextureUnits,
-                         t0,
-						 t);
-    }
+		UINT nWidth;
+		CXTPImageManagerIcon* pIcon;
+		DWORD dwCount =(DWORD)pIconSet->m_mapIcons.GetCount();
 
-    if (debugLog) {debugLog->println("Setting video mode");}
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Icon")));
+		POSITION posEnum = pEnumerator->GetPosition(dwCount);
 
-    setVideoMode();
+		POSITION pos = pIconSet->m_mapIcons.GetStartPosition();
+		while (pos)
+		{
+			pIconSet->m_mapIcons.GetNextAssoc(pos, nWidth, pIcon);
 
-    if (!strcmp((char*)glGetString(GL_RENDERER), "GDI Generic") && debugLog) {
-        debugLog->printf(
-         "\n*********************************************************\n"
-           "* WARNING: This computer does not have correctly        *\n"
-           "*          installed graphics drivers and is using      *\n"
-           "*          the default Microsoft OpenGL implementation. *\n"
-           "*          Most graphics capabilities are disabled.  To *\n"
-           "*          correct this problem, download and install   *\n"
-           "*          the latest drivers for the graphics card.    *\n"
-           "*********************************************************\n\n");
-    }
+			CXTPPropExchangeSection secIcon(pEnumerator->GetNext(posEnum));
 
-	glViewport(0, 0, getWidth(), getHeight());
-
-    int depthBits, stencilBits, redBits, greenBits, blueBits, alphaBits;
-    depthBits       = glGetInteger(GL_DEPTH_BITS);
-    stencilBits     = glGetInteger(GL_STENCIL_BITS);
-    redBits         = glGetInteger(GL_RED_BITS);
-    greenBits       = glGetInteger(GL_GREEN_BITS);
-    blueBits        = glGetInteger(GL_BLUE_BITS);
-    alphaBits       = glGetInteger(GL_ALPHA_BITS);
-    debugAssertGLOk();
-
-    bool depthOk   = depthBits >= minimumDepthBits;
-    bool stencilOk = stencilBits >= minimumStencilBits;
-
-    if (debugLog) {
-        debugLog->printf("Operating System: %s\n",
-                         System::operatingSystem().c_str());
-
-        debugLog->printf("Processor Architecture: %s\n\n", 
-                         System::cpuArchitecture().c_str());
-
-        debugLog->printf("GL Vendor:      %s\n", GLCaps::vendor().c_str());
-
-        debugLog->printf("GL Renderer:    %s\n", GLCaps::renderer().c_str());
-
-        debugLog->printf("GL Version:     %s\n", GLCaps::glVersion().c_str());
-
-        debugLog->printf("Driver version: %s\n\n", GLCaps::driverVersion().c_str());
-
-		std::string extStringCopy = (char*)glGetString(GL_EXTENSIONS);
-
-        debugLog->printf(
-            "GL extensions: \"%s\"\n\n",
-            extStringCopy.c_str());
-    }
- 
-
-    cardDescription = GLCaps::renderer() + " " + GLCaps::driverVersion();
-
-    if (debugLog) {
-    debugLog->section("Video Status");
-
-    GWindowSettings actualSettings;
-    window->getSettings(actualSettings);
-
-    // This call is here to make GCC realize that isOk is used.
-    (void)isOk(false);
-    (void)isOk((void*)NULL);
-
-    debugLog->printf(
-             "Capability    Minimum   Desired   Received  Ok?\n"
-             "-------------------------------------------------\n"
-             "* RENDER DEVICE \n"
-             "Depth       %4d bits %4d bits %4d bits   %s\n"
-             "Stencil     %4d bits %4d bits %4d bits   %s\n"
-             "Alpha                           %4d bits   %s\n"
-             "Red                             %4d bits   %s\n"
-             "Green                           %4d bits   %s\n"
-             "Blue                            %4d bits   %s\n"
-             "FSAA                      %2d    %2d    %s\n"
-
-             "Width             %8d pixels           %s\n"
-             "Height            %8d pixels           %s\n"
-             "Mode                 %10s             %s\n\n",
-
-             minimumDepthBits, desiredDepthBits, depthBits, isOk(depthOk),
-             minimumStencilBits, desiredStencilBits, stencilBits, isOk(stencilOk),
-
-             alphaBits, "ok",
-             redBits, "ok", 
-             greenBits, "ok", 
-             blueBits, "ok", 
-
-             settings.fsaaSamples, actualSettings.fsaaSamples,
-             isOk(settings.fsaaSamples == actualSettings.fsaaSamples),
-
-             settings.width, "ok",
-             settings.height, "ok",
-             (settings.fullScreen ? "Fullscreen" : "Windowed"), "ok"
-             );
-    }
-
-
-
-	inPrimitive        = false;
-	inIndexedPrimitive = false;
-
-    if (debugLog) debugLog->println("Done initializing RenderDevice.\n");
-
-    _initialized = true;
-
-    if (alphaBits != 0) {
-        enableAlphaWrite();
-    }
-
-    setCaption("3D");
-    
-    _window->m_renderDevice = this;
-
-    return true;
-}
-
-
-bool RenderDevice::initialized() const {
-    return _initialized;
-}
-
-
-#ifdef G3D_WIN32
-
-HDC RenderDevice::getWindowHDC() const {
-    return wglGetCurrentDC();
-}
-
-#endif
-
-void RenderDevice::setGamma(
-    double              brightness,
-    double              gamma) {
-    
-    Array<uint16> gammaRamp(256);
-
-    for (int i = 0; i < 256; ++i) {
-        gammaRamp[i] =
-            (uint16)min(65535, 
-                      max(0, 
-                      (int)(pow((brightness * (i + 1)) / 256.0, gamma) * 65535 + 0.5)));
+			PX_Long(&secIcon, _T("Width"), (long&)nWidth);
+			PX_Serialize(&secIcon, _T("Data"), pIcon);
+		}
 	}
-    
-    _window->setGammaRamp(gammaRamp);
-}
+	else
+	{
+		PX_String(pPX, _T("CheckSum"), strCheck, lpszCheck);
+
+		if (strCheck != lpszCheck)
+			AfxThrowArchiveException(CArchiveException::badClass);
 
 
-void RenderDevice::notifyResize(int w, int h) {
-    _window->notifyResize(w, h);
-}
+		CXTPImageManagerIconSet* pIconSet;
+		if (m_mapImages.Lookup(nCommand, pIconSet))
+		{
+			pIconSet->RemoveAll();
+		}
+		else
+		{
+			pIconSet = new CXTPImageManagerIconSet(nCommand, this);
+			m_mapImages.SetAt(nCommand, pIconSet);
+		}
 
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Icon")));
+		POSITION posEnum = pEnumerator->GetPosition();
 
-void RenderDevice::setVideoMode() {
+		while (posEnum)
+		{
+			CXTPPropExchangeSection secIcon(pEnumerator->GetNext(posEnum));
 
-    debugAssertM(stateStack.size() == 0, 
-                 "Cannot call setVideoMode between pushState and popState");
-    debugAssertM(beginEndFrame == 0, 
-                 "Cannot call setVideoMode between beginFrame and endFrame");
+			UINT nWidth = 16;
+			PX_Long(&secIcon, _T("Width"), (long&)nWidth);
 
-    // Reset all state
+			CXTPImageManagerIcon* pIcon = new CXTPImageManagerIcon(nCommand, nWidth, 15, pIconSet);
+			PX_Serialize(&secIcon, _T("Data"), pIcon);
 
-    GWindowSettings settings;
-    _window->getSettings(settings);
-
-    // Set the refresh rate
-    #ifdef G3D_WIN32
-        if (wglSwapIntervalEXT != NULL) {
-            if (debugLog) {
-                if (settings.asychronous) {
-                    debugLog->printf("wglSwapIntervalEXT(0);\n");
-                } else {
-                    debugLog->printf("wglSwapIntervalEXT(1);\n");
-                }
-            }
-            wglSwapIntervalEXT(settings.asychronous ? 0 : 1);
-        }
-    #endif
-
-    {
-        if (debugLog) {
-            debugLog->printf("Setting brightness to %g\n", 
-                                        settings.lightSaturation);
-        }
-        // Adjust the gamma so that changing the 
-        // light intensities won't affect the actual screen
-        // brightness.  This method due to John Carmack.
-        lightSaturation = settings.lightSaturation;
-        brightScale = 1.0 / lightSaturation;
-        setGamma(lightSaturation, 1.0);
-        if (debugLog) debugLog->println("Brightness set.");
-    }
-
-    // Enable proper specular lighting
-    if (GLCaps::supports("GL_EXT_separate_specular_color")) {
-        if (debugLog) {
-            debugLog->println("Enabling separate specular lighting.\n");
-        }
-        glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL_EXT, 
-                      GL_SEPARATE_SPECULAR_COLOR_EXT);
-        debugAssertGLOk();
-    } else if (debugLog) {
-        debugLog->println("Cannot enable separate specular lighting, extension not supported.\n");
-    }
-
-
-    // Make sure we use good interpolation.
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-    // Smoothing by default on NVIDIA cards.  On ATI cards
-    // there is a bug that causes shaders to generate incorrect
-    // results and run at 0 fps, so we can't enable this.
-    if (! beginsWith(GLCaps::vendor(), "ATI")) {
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_POINT_SMOOTH);
-    }
-    
-
-    // glHint(GL_GENERATE_MIPMAP_HINT_EXT, GL_NICEST);
-    if (GLCaps::supports("GL_ARB_multisample")) {
-        glEnable(GL_MULTISAMPLE_ARB);
-    }
-
-    debugAssertGLOk();
-    if (GLCaps::supports("GL_NV_multisample_filter_hint")) {
-        glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-    }
-
-    resetState();
-
-    if (debugLog) debugLog->printf("Done setting initial state.\n");
-}
-
-
-void RenderDevice::setCaption(const std::string& caption) {
-    _window->setCaption(caption);
-}
-
-
-int RenderDevice::getWidth() const {
-	return width();
-}
-
-
-int RenderDevice::getHeight() const {
-	return height();
-}
-
-
-int RenderDevice::width() const {
-	if (state.framebuffer.isNull()) {
-	    return _window->width();
-	} else {
-		return state.framebuffer->width();
+			pIconSet->m_mapIcons.SetAt(nWidth, pIcon);
+		}
 	}
 }
 
+void CXTPImageManager::Serialize(UINT nCommand, CArchive& ar)
+{
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(nCommand, &px);
+}
 
-int RenderDevice::height() const {
-	if (state.framebuffer.isNull()) {
-	    return _window->height();
-	} else {
-		return state.framebuffer->height();
+
+
+void CXTPImageManager::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CMap<UINT, UINT, CXTPImageManagerIconSet*, CXTPImageManagerIconSet*>* pIcons = GetImages();
+
+	CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("IconSet")));
+	POSITION posEnum = pEnumerator->GetPosition((DWORD)pIcons->GetCount());
+
+	if (pPX->IsStoring())
+	{
+		UINT nIDCommand;
+		CXTPImageManagerIconSet* pIconSet;
+
+		POSITION pos = pIcons->GetStartPosition();
+
+		while (pos)
+		{
+			pIcons->GetNextAssoc(pos, nIDCommand, pIconSet);
+			CXTPPropExchangeSection secIconSet(pEnumerator->GetNext(posEnum));
+
+			PX_Long(&secIconSet, _T("Id"), (long&)nIDCommand);
+			DoPropExchange(nIDCommand, &secIconSet);
+		}
 	}
-}
+	else
+	{
+		RemoveAll();
 
-//////////////////////////////////////////////////////////////////////////////////////////
+		while (posEnum)
+		{
+			CXTPPropExchangeSection secIconSet(pEnumerator->GetNext(posEnum));
 
+			UINT nIDCommand = 0;
+			PX_Long(&secIconSet, _T("Id"), (long&)nIDCommand);
 
-Vector4 RenderDevice::project(const Vector3& v) const {
-    return project(Vector4(v, 1));
-}
-
-
-Vector4 RenderDevice::project(const Vector4& v) const {
-    return glToScreen(v);
-}
-
-
-void RenderDevice::cleanup() {
-    debugAssert(initialized());
-
-    if (debugLog) {debugLog->println("Shutting down RenderDevice.");}
-
-    if (debugLog) {debugLog->println("Restoring gamma.");}
-    setGamma(1, 1);
-
-    if (debugLog) {debugLog->println("Freeing all VAR memory");}
-
-    if (deleteWindow) {
-        if (debugLog) {debugLog->println("Deleting window.");}
-        VARArea::cleanupAllVARAreas();
-        delete _window;
-    }
-
-    cleanedup = true;
-}
-
-
-void RenderDevice::push2D() {
-    push2D(getViewport());
-}
-
-void RenderDevice::push2D(const Rect2D& viewport) {
-	push2D(NULL, viewport);
-}
-
-void RenderDevice::push2D(const FramebufferRef& fb) {
-	const Rect2D& viewport = fb.notNull() ? fb->rect2DBounds() : Rect2D::xywh(0, 0, _window->width(), _window->height());
-	push2D(fb, viewport);
-}
-
-void RenderDevice::push2D(const FramebufferRef& fb, const Rect2D& viewport) {
-    pushState();
-
-	setFramebuffer(fb);
-    setDepthTest(DEPTH_ALWAYS_PASS);
-    disableLighting();
-    setCullFace(CULL_NONE);
-    disableDepthWrite();
-    setViewport(viewport);
-	setObjectToWorldMatrix(CoordinateFrame());
-
-    // 0.375 is a float-to-int adjustment.  See: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/opengl/apptips_7wqb.asp
-    //setCameraToWorldMatrix(CoordinateFrame(Matrix3::identity(), Vector3(-0.375, -0.375, 0.0)));
-
-    setCameraToWorldMatrix(CoordinateFrame());
-
-    setProjectionMatrix(Matrix4::orthogonalProjection(viewport.x0(), viewport.x0() + viewport.width(), viewport.y0() + viewport.height(), viewport.y0(), -1, 1));
-}
-
-
-void RenderDevice::pop2D() {
-    popState();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-RenderDevice::RenderState::RenderState(int width, int height, int htutc) :
-
-    // WARNING: this must be kept in sync with the initialization code
-    // in init();
-    viewport(Rect2D::xywh(0, 0, width, height)),
-
-    useClip2D(false),
-
-    depthWrite(true),
-    colorWrite(true),
-    alphaWrite(false),
-
-    depthTest(DEPTH_LEQUAL),
-    alphaTest(ALPHA_ALWAYS_PASS),
-    alphaReference(0.0) {
-
-	framebuffer = NULL;
-
-    lights.twoSidedLighting =    false;
-
-
-    srcBlendFunc                = BLEND_ONE;
-    dstBlendFunc                = BLEND_ZERO;
-    blendEq                     = BLENDEQ_ADD;
-
-    drawBuffer                  = BUFFER_BACK;
-
-    stencil.stencilTest         = STENCIL_ALWAYS_PASS;
-    stencil.stencilReference    = 0;
-    stencil.frontStencilFail    = STENCIL_KEEP;
-    stencil.frontStencilZFail   = STENCIL_KEEP;
-    stencil.frontStencilZPass   = STENCIL_KEEP;
-    stencil.backStencilFail     = STENCIL_KEEP;
-    stencil.backStencilZFail    = STENCIL_KEEP;
-    stencil.backStencilZPass    = STENCIL_KEEP;
-
-    polygonOffset               = 0;
-    lineWidth                   = 1;
-    pointSize                   = 1;
-
-    renderMode                  = RenderDevice::RENDER_SOLID;
-
-    shininess                   = 15;
-    specular                    = Color3::white() * 0.8f;
-
-    lights.ambient              = Color4(0.25f, 0.25f, 0.25f, 1.0f);
-
-    lights.lighting             = false;
-    color                       = Color4(1,1,1,1);
-    normal                      = Vector3(0,0,0);
-
-    // Note: texture units and lights initialize themselves
-
-    matrices.objectToWorldMatrix         = CoordinateFrame();
-    matrices.cameraToWorldMatrix         = CoordinateFrame();
-    matrices.cameraToWorldMatrixInverse  = CoordinateFrame();
-
-    stencil.stencilClear        = 0;
-    depthClear                  = 1;
-    colorClear                  = Color4(0,0,0,1);
-
-    shadeMode                   = SHADE_FLAT;
-
-    vertexAndPixelShader        = NULL;
-	objectShader				= NULL;
-    shader                      = NULL;
-    vertexProgram               = NULL;
-    pixelProgram                = NULL;
-
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        lights.lightEnabled[i] = false;
-    }
-
-    // Set projection matrix
-    double aspect;
-    aspect = (double)viewport.width() / viewport.height();
-
-    matrices.projectionMatrix = Matrix4::perspectiveProjection(-aspect, aspect, -1, 1, 0.1f, 100.0f);
-
-    cullFace                    = CULL_BACK;
-
-    lowDepthRange               = 0;
-    highDepthRange              = 1;
-
-
-    highestTextureUnitThatChanged = htutc;
-}
-
-
-RenderDevice::RenderState::TextureUnit::TextureUnit() : texture(NULL), LODBias(0) {
-    texCoord        = Vector4(0,0,0,1);
-    combineMode     = TEX_MODULATE;
-
-    // Identity texture matrix
-    memset(textureMatrix, 0, sizeof(float) * 16);
-    for (int i = 0; i < 4; ++i) {
-        textureMatrix[i + i * 4] = (float)1.0;
-    }
-}
-
-
-void RenderDevice::resetState() {
-    state = RenderState(getWidth(), getHeight());
-
-	glClearDepth(1.0);
-
-    glEnable(GL_NORMALIZE);
-
-    debugAssertGLOk();
-    if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-        glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
-    }
-
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
-
-    // Compute specular term correctly
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    debugAssertGLOk();
-
-    if (debugLog) debugLog->println("Setting initial rendering state.\n");
-    glDisable(GL_LIGHT0);
-    debugAssertGLOk();
-    {
-        // WARNING: this must be kept in sync with the 
-        // RenderState constructor
-        state = RenderState(getWidth(), getHeight(), iMax(_numTextures, _numTextureCoords) - 1);
-
-        _glViewport(state.viewport.x0(), state.viewport.y0(), state.viewport.width(), state.viewport.height());
-        glDepthMask(GL_TRUE);
-        glColorMask(1,1,1,0);
-
-        if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-            glActiveStencilFaceEXT(GL_BACK);
-        }
-        for (int i = 0; i < 2; ++i) {
-            glStencilMask((GLuint)~0);
-            glDisable(GL_STENCIL_TEST);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-            glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-            glDisable(GL_ALPHA_TEST);
-            if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-                glActiveStencilFaceEXT(GL_FRONT);
-            }
-        }
-
-        glDepthFunc(GL_LEQUAL);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_SCISSOR_TEST);
-
-        glDisable(GL_BLEND);
-        glDisable(GL_POLYGON_OFFSET_FILL);
-        glLineWidth(1);
-        glPointSize(1);
-
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, state.lights.ambient);
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, state.lights.twoSidedLighting);
-
-        glDisable(GL_LIGHTING);
-
-        glDrawBuffer(GL_BACK);
-
-        for (int i = 0; i < MAX_LIGHTS; ++i) {
-            setLight(i, NULL, true);
-        }
-        glColor4d(1, 1, 1, 1);
-        glNormal3d(0, 0, 0);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        setShininess(state.shininess);
-        setSpecularCoefficient(state.specular);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        glShadeModel(GL_FLAT);
-
-        glClearStencil(0);
-        glClearDepth(1);
-        glClearColor(0,0,0,1);
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(state.matrices.projectionMatrix);
-        glMatrixMode(GL_MODELVIEW);
-
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-
-        glDepthRange(0, 1);
-
-        // Set up the texture units.
-        if (glMultiTexCoord4fvARB != NULL) {
-            for (int t = _numTextureCoords - 1; t >= 0; --t) {
-                float f[] = {0,0,0,1};
-                glMultiTexCoord4fvARB(GL_TEXTURE0_ARB + t, f);
-            }
-        } else if (_numTextureCoords > 0) {
-            glTexCoord(Vector4(0,0,0,1));
-        }
-
-        if (glActiveTextureARB != NULL) {
-            glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    debugAssertGLOk();
-
-}
-
-
-bool RenderDevice::RenderState::Lights::operator==(const Lights& other) const {
-    for (int L = 0; L < MAX_LIGHTS; ++L) {
-        if ((lightEnabled[L] != other.lightEnabled[L]) ||
-            (lightEnabled[L] && (light[L] != other.light[L]))) {
-            return false;
-        }
-    }
-
-    debugAssertM(changed == false,
-        "Should never enter lighting comparison "
-        "when lighting has not changed.");
-
-    return 
-        (lighting == other.lighting) && 
-        (ambient == other.ambient) &&
-        (twoSidedLighting == other.twoSidedLighting);
-}
-
-
-bool RenderDevice::RenderState::Stencil::operator==(const Stencil& other) const {
-    return 
-        (stencilTest == other.stencilTest) &&
-        (stencilReference == other.stencilReference) &&
-        (stencilClear == other.stencilClear) &&
-        (frontStencilFail == other.frontStencilFail) &&
-        (frontStencilZFail == other.frontStencilZFail) &&
-        (frontStencilZPass == other.frontStencilZPass) &&
-        (backStencilFail == other.backStencilFail) &&
-        (backStencilZFail == other.backStencilZFail) &&
-        (backStencilZPass == other.backStencilZPass);
-}
-
-
-bool RenderDevice::RenderState::Matrices::operator==(const Matrices& other) const {
-    return
-        (objectToWorldMatrix == other.objectToWorldMatrix) &&
-        (cameraToWorldMatrix == other.cameraToWorldMatrix) &&
-        (projectionMatrix == other.projectionMatrix);
-}
-
-
-void RenderDevice::setState(
-    const RenderState&          newState) {
-
-    // The state change checks inside the individual
-    // methods will (for the most part) minimize
-    // the state changes so we can set all of the
-    // new state explicitly.
-    
-	// Set framebuffer first, since it can affect the viewport
-	if (state.framebuffer != newState.framebuffer) {
-		setFramebuffer(newState.framebuffer);
-
-		// Intentionally corrupt the viewport, forcing renderdevice to reset it
-		state.viewport = Rect2D::xywh(-1,-1,-1,-1);
-	}
-
-    setViewport(newState.viewport);
-    debugAssertGLOk();
-
-    if (newState.useClip2D) {
-        enableClip2D(newState.clip2D);
-    } else {
-        disableClip2D();
-    }
-    
-    if (newState.depthWrite) {
-        enableDepthWrite();
-    } else {
-        disableDepthWrite();
-    }
-
-    if (newState.colorWrite) {
-        enableColorWrite();
-    } else {
-        disableColorWrite();
-    }
-
-    if (newState.alphaWrite) {
-        enableAlphaWrite();
-    } else {
-        disableAlphaWrite();
-    }
-    debugAssertGLOk();
-
-    setDrawBuffer(newState.drawBuffer);
-
-    setShadeMode(newState.shadeMode);
-    setDepthTest(newState.depthTest);
-    debugAssertGLOk();
-
-    if (newState.stencil != state.stencil) {
-        setStencilConstant(newState.stencil.stencilReference);
-
-		debugAssertGLOk();
-        setStencilTest(newState.stencil.stencilTest);
-
-        setStencilOp(
-            newState.stencil.frontStencilFail, newState.stencil.frontStencilZFail, newState.stencil.frontStencilZPass,
-            newState.stencil.backStencilFail, newState.stencil.backStencilZFail, newState.stencil.backStencilZPass);
-
-        setStencilClearValue(newState.stencil.stencilClear);
-    }
-
-    setDepthClearValue(newState.depthClear);
-
-    setColorClearValue(newState.colorClear);
-
-    setAlphaTest(newState.alphaTest, newState.alphaReference);
-
-    setBlendFunc(newState.srcBlendFunc, newState.dstBlendFunc, newState.blendEq);
-
-    setRenderMode(newState.renderMode);
-    setPolygonOffset(newState.polygonOffset);
-    setLineWidth(newState.lineWidth);
-    setPointSize(newState.pointSize);
-
-    setSpecularCoefficient(newState.specular);
-    setShininess(newState.shininess);
-
-    if (state.lights.changed) {//(newState.lights != state.lights) {
-        if (newState.lights.lighting) {
-            enableLighting();
-        } else {
-            disableLighting();
-        }
-
-        if (newState.lights.twoSidedLighting) {
-            enableTwoSidedLighting();
-        } else {
-            disableTwoSidedLighting();
-        }
-
-        setAmbientLightColor(newState.lights.ambient);
-
-        for (int i = 0; i < MAX_LIGHTS; ++i) {
-            if (newState.lights.lightEnabled[i]) {
-                setLight(i, newState.lights.light[i]);
-            } else {
-                setLight(i, NULL);
-            }
-        }
-    }
-
-    setColor(newState.color);
-    setNormal(newState.normal);
-
-    for (int u = state.highestTextureUnitThatChanged; u >= 0; --u) {
-        if (newState.textureUnit[u] != state.textureUnit[u]) {
-
-            if (u < (int)numTextures()) {
-                setTexture(u, newState.textureUnit[u].texture);
-
-                if (u < (int)numTextureUnits()) {
-                    setTextureCombineMode(u, newState.textureUnit[u].combineMode);
-                    setTextureMatrix(u, newState.textureUnit[u].textureMatrix);
-
-                    setTextureLODBias(u, newState.textureUnit[u].LODBias);
-                }
-            }
-            setTexCoord(u, newState.textureUnit[u].texCoord);            
-        }
-    }
-
-    setCullFace(newState.cullFace);
-
-    setDepthRange(newState.lowDepthRange, newState.highDepthRange);
-
-    if (state.matrices.changed) { //(newState.matrices != state.matrices) { 
-        if (newState.matrices.cameraToWorldMatrix != state.matrices.cameraToWorldMatrix) {
-            setCameraToWorldMatrix(newState.matrices.cameraToWorldMatrix);
-        }
-
-        if (newState.matrices.objectToWorldMatrix != state.matrices.objectToWorldMatrix) {
-            setObjectToWorldMatrix(newState.matrices.objectToWorldMatrix);
-        }
-
-        setProjectionMatrix(newState.matrices.projectionMatrix);
-    }
-
-    setVertexAndPixelShader(newState.vertexAndPixelShader);
-	setObjectShader(newState.objectShader);
-    setShader(newState.shader);
-
-    if (supportsVertexProgram()) {
-        setVertexProgram(newState.vertexProgram);
-    }
-
-    if (supportsPixelProgram()) {
-        setPixelProgram(newState.pixelProgram);
-    }
-    
-    // Adopt the popped state's deltas relative the state that it replaced.
-    state.highestTextureUnitThatChanged = newState.highestTextureUnitThatChanged;
-    state.matrices.changed = newState.matrices.changed;
-    state.lights.changed = newState.lights.changed;
-}
-
-
-void RenderDevice::enableTwoSidedLighting() {
-    minStateChange();
-    if (! state.lights.twoSidedLighting) {
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-        state.lights.twoSidedLighting = true;
-        state.lights.changed = true;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::disableTwoSidedLighting() {
-    minStateChange();
-    if (state.lights.twoSidedLighting) {
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
-        state.lights.twoSidedLighting = false;
-        state.lights.changed = true;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::beforePrimitive() {
-	if (! state.shader.isNull()) {
-        debugAssert(! inShader);
-        inShader = true;
-		state.shader->beforePrimitive(this);
-        inShader = false;
-	}
-
-    // If a Shader was bound, it will force this.  Otherwise we need to do so.
-    forceVertexAndPixelShaderBind();
-}
-
-
-void RenderDevice::afterPrimitive() {
-	if (! state.shader.isNull()) {
-        debugAssert(! inShader);
-		inShader = true;
-        state.shader->afterPrimitive(this);
-        inShader = false;
-	}
-}
-
-
-void RenderDevice::setSpecularCoefficient(const Color3& c) {
-    minStateChange();
-    if (state.specular != c) {
-        state.specular = c;
-
-        static float spec[4];
-        spec[0] = c[0];
-        spec[1] = c[1];
-        spec[2] = c[2];
-        spec[3] = 1.0f;
-
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::setSpecularCoefficient(float s) {
-    setSpecularCoefficient(s * Color3::white());
-}
-
-
-void RenderDevice::setShininess(float s) {
-    minStateChange();
-    if (state.shininess != s) {
-        state.shininess = s;
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, s);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::setRenderMode(RenderMode m) {
-    minStateChange();
-
-    if (m == RENDER_CURRENT) {
-        return;
-    }
-
-    if (state.renderMode != m) {
-        minGLStateChange();
-        state.renderMode = m;
-        switch (m) {
-        case RENDER_SOLID:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            break;
-
-        case RENDER_WIREFRAME:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            break;
-
-        case RENDER_POINTS:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-            break;
-
-        case RENDER_CURRENT:
-            return;
-            break;
-        }
-    }
-}
-
-
-RenderDevice::RenderMode RenderDevice::renderMode() const {
-    return state.renderMode;
-}
-
-
-void RenderDevice::setDrawBuffer(Buffer b) {
-    minStateChange();
-
-    if (b == BUFFER_CURRENT) return;
-
-    if (state.framebuffer.isNull()) {
-        alwaysAssertM((b >= BUFFER_NONE) && (b <= BUFFER_CURRENT), 
-                  "Drawing to a color buffer is only supported by application-created framebuffers!");
-    } else {
-        alwaysAssertM((b >= BUFFER_CURRENT) && (b <= BUFFER_COLOR15), 
-                  "Visible buffers cannot be specified for application-created framebuffers!");
-    }
-
-    if (b != state.drawBuffer) {
-        minGLStateChange();
-        state.drawBuffer = b;
-        glDrawBuffer (BufferToGL[state.drawBuffer]);
-    }
-}
-
-
-void RenderDevice::setCullFace(CullFace f) {
-    minStateChange();
-    if (f != state.cullFace) {
-        minGLStateChange();
-        switch (f) {
-        case CULL_FRONT:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
-            break;
-
-        case CULL_BACK:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-            break;
-
-        case CULL_NONE:
-            glDisable(GL_CULL_FACE);
-            break;
-
-        default:
-            debugAssertM(false, "Fell through switch");
-        }
-
-        state.cullFace = f;
-    }
-}
-
-
-
-void RenderDevice::pushState() {
-    debugAssert(! inPrimitive);
-
-    stateStack.push(state);
-
-    // Record that that the lights and matrices are unchanged since the previous state.
-    // This allows popState to restore the lighting environment efficiently.
-
-    state.lights.changed = false;
-    state.matrices.changed = false;
-    state.highestTextureUnitThatChanged = -1;
-
-    mDebugPushStateCalls += 1;
-}
-
-
-void RenderDevice::popState() {
-    debugAssert(! inPrimitive);
-    debugAssertM(stateStack.size() > 0, "More calls to RenderDevice::pushState() than RenderDevice::popState().");
-    setState(stateStack.last());
-    stateStack.popDiscard();
-}
-
-
-void RenderDevice::clear(bool clearColor, bool clearDepth, bool clearStencil) {
-    debugAssert(! inPrimitive);
-#   ifdef G3D_DEBUG
-    std::string why;
-    debugAssertM(currentFramebufferComplete(why), why);
-#   endif
-    majStateChange();
-    majGLStateChange();
-
-    GLint mask = 0;
-
-    // TODO: do we need to enable write to clear these buffers?
-    pushState();
-    if (clearColor) {
-        mask |= GL_COLOR_BUFFER_BIT;
-        enableColorWrite();
-    }
-
-    if (clearDepth) {
-        mask |= GL_DEPTH_BUFFER_BIT;
-        enableDepthWrite();
-    }
-
-    int oldMask;
-    glGetIntegerv(GL_STENCIL_WRITEMASK, &oldMask);
-
-    if (clearStencil) {
-        mask |= GL_STENCIL_BUFFER_BIT;
-        glStencilMask((GLuint)~0);
-        minGLStateChange();
-        minStateChange();
-    }
-
-    glClear(mask);
-    glStencilMask(oldMask);
-    minGLStateChange();
-    minStateChange();
-    popState();
-}
-
-
-uint RenderDevice::numTextureUnits() const {
-    return _numTextureUnits;
-}
-
-
-uint RenderDevice::numTextures() const {
-    return _numTextures;
-}
-
-
-uint RenderDevice::numTextureCoords() const {
-    return _numTextureCoords;
-}
-
-
-void RenderDevice::beginFrame() {
-    if (swapGLBuffersPending) {
-        _window->swapGLBuffers();
-        swapGLBuffersPending = false;
-    }
-
-    mDebugNumMajorOpenGLStateChanges = 0;
-    mDebugNumMinorOpenGLStateChanges = 0;
-    mDebugNumMajorStateChanges = 0;
-    mDebugNumMinorStateChanges = 0;
-    mDebugPushStateCalls = 0;
-
-    ++beginEndFrame;
-    triangleCount = 0;
-    debugAssertM(beginEndFrame == 1, "Mismatched calls to beginFrame/endFrame");
-    pushState();
-}
-
-
-void RenderDevice::setSwapBuffersAutomatically(bool b) {
-    if (b == _swapBuffersAutomatically) {
-        // Setting to current state; nothing to do.
-        return;
-    }
-
-    if (swapGLBuffersPending) {
-        // Process the pending swap buffers call
-        _window->swapGLBuffers();
-        swapGLBuffersPending = false;
-    }
-
-    _swapBuffersAutomatically = b;
-}
-
-
-void RenderDevice::endFrame() {
-    --beginEndFrame;
-    debugAssertM(beginEndFrame == 0, "Mismatched calls to beginFrame/endFrame");
-
-    popState();
-
-    // Schedule a swap buffer iff we are handling them automatically.
-    swapGLBuffersPending = _swapBuffersAutomatically;
-
-    debugAssertM(stateStack.size() == 0, "Missing RenderDevice::popState or RenderDevice::pop2D.");
-
-    double now = System::getTick();
-    double dt = now - lastTime;
-    if (dt == 0) {
-        dt = 0.0001;
-    }
-
-    {
-        // high frame rate: A (interpolation parameter) is small
-        // low frame rate: A is big
-        const double A = clamp(dt, .07, 1);
-    
-        emwaFrameRate     = lerp(emwaFrameRate, 1 / dt, A);
-        emwaTriangleRate  = lerp(emwaTriangleRate, triangleCount / dt, A);
-        emwaTriangleCount = lerp(emwaTriangleCount, triangleCount, A);
-    }
-
-    if ((emwaFrameRate == inf()) || (isNaN(emwaFrameRate))) {
-        emwaFrameRate = 1000000;
-    } else if (emwaFrameRate < 0) {
-        emwaFrameRate = 0;
-    }
-
-    if ((emwaTriangleRate == inf()) || isNaN(emwaTriangleRate)) {
-        emwaTriangleRate = 1e20;
-    } else if (emwaTriangleRate < 0) {
-        emwaTriangleRate = 0;
-    }
-
-    if ((emwaTriangleCount == inf()) || isNaN(emwaTriangleCount)) {
-        emwaTriangleRate = 1e20;
-    } else if (emwaTriangleCount < 0) {
-        emwaTriangleCount = 0;
-    }
-
-    lastTime = now;
-}
-
-
-bool RenderDevice::alphaWrite() const {
-    return state.alphaWrite;
-}
-
-
-bool RenderDevice::depthWrite() const {
-    return state.depthWrite;
-}
-
-
-bool RenderDevice::colorWrite() const {
-    return state.colorWrite;
-}
-
-
-void RenderDevice::setStencilClearValue(int s) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.stencil.stencilClear != s) {
-        minGLStateChange();
-        glClearStencil(s);
-        state.stencil.stencilClear = s;
-    }
-}
-
-
-void RenderDevice::setDepthClearValue(double d) {
-    minStateChange();
-    debugAssert(! inPrimitive);
-    if (state.depthClear != d) {
-        minGLStateChange();
-        glClearDepth(d);
-        state.depthClear = d;
-    }
-}
-
-
-void RenderDevice::setColorClearValue(const Color4& c) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.colorClear != c) {
-        minGLStateChange();
-        glClearColor(c.r, c.g, c.b, c.a);
-        state.colorClear = c;
-    }
-}
-
-
-void RenderDevice::setViewport(const Rect2D& v) {
-    minStateChange();
-    if (state.viewport != v) {
-        // Flip to OpenGL y-axis
-		float h = height();
-        _glViewport(v.x0(), h - v.y1(), v.width(), v.height());
-        state.viewport = v;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::enableClip2D(const Rect2D& clip) {
-    minStateChange();
-    minGLStateChange();
-    state.clip2D = clip;
-
-	int clipX0 = iFloor(clip.x0());
-	int clipY0 = iFloor(clip.y0());
-	int clipX1 = iCeil(clip.x1());
-	int clipY1 = iCeil(clip.y1());
-
-	glScissor(clipX0, getHeight() - clipY1, clipX1 - clipX0, clipY1 - clipY0);
-
-    if (! state.useClip2D) {
-        glEnable(GL_SCISSOR_TEST);
-        minStateChange();
-        minGLStateChange();
-    }
-    state.useClip2D = true;
-}
-
-
-void RenderDevice::disableClip2D() {
-    minStateChange();
-    if (state.useClip2D) {
-        minGLStateChange();
-        glDisable(GL_SCISSOR_TEST);
-    }
-    state.useClip2D = false;
-}
-
-
-void RenderDevice::setProjectionAndCameraMatrix(const GCamera& camera) {
-    double pixelAspect = state.viewport.width() / state.viewport.height();
-
-    // Half extents of viewport
-    double y = -camera.getNearPlaneZ() * tan(camera.getFieldOfView() / 2.0);
-    double x = y * pixelAspect;
-
-    double r, l, t, b, n, f;
-    n = -camera.getNearPlaneZ();
-    f = -camera.getFarPlaneZ();
-    r = x;
-    l = -x;
-    t = y;
-    b = -y;
-
-    setProjectionMatrix(Matrix4::perspectiveProjection(l, r, b, t, n, f));
-	setCameraToWorldMatrix(camera.getCoordinateFrame());
-}
-
-
-Rect2D RenderDevice::getViewport() const {
-    return state.viewport;
-}
-
-
-void RenderDevice::setFramebuffer(const FramebufferRef &fbo) {
-    // Check for extension
-    majStateChange();
-    if (fbo != state.framebuffer) {
-        majGLStateChange();
-        // Set Framebuffer
-        if (fbo.isNull()) {
-            state.drawBuffer = BUFFER_BACK;
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-        } else {
-            state.drawBuffer = BUFFER_COLOR0;
-            debugAssertM(GLCaps::supports_GL_EXT_framebuffer_object(), 
-                "Framebuffer Object not supported!");
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->openGLID());
-        }
-        state.framebuffer = fbo;
-    }
-}
-
-
-void RenderDevice::setDepthTest(DepthTest test) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-	if (test == DEPTH_CURRENT) {
-		return;
-	}
-
-    if (state.depthTest != test) {
-        minGLStateChange();
-        if (test == DEPTH_ALWAYS_PASS) {
-            glDisable(GL_DEPTH_TEST);
-        } else {
-            minStateChange();
-            minGLStateChange();
-            glEnable(GL_DEPTH_TEST);
-            switch (test) {
-            case DEPTH_LESS:
-                glDepthFunc(GL_LESS);
-                break;
-
-            case DEPTH_LEQUAL:
-                glDepthFunc(GL_LEQUAL);
-                break;
-
-            case DEPTH_GREATER:
-                glDepthFunc(GL_GREATER);
-                break;
-
-            case DEPTH_GEQUAL:
-                glDepthFunc(GL_GEQUAL);
-                break;
-
-            case DEPTH_EQUAL:
-                glDepthFunc(GL_EQUAL);
-                break;
-
-            case DEPTH_NOTEQUAL:
-                glDepthFunc(GL_NOTEQUAL);
-                break;
-
-            case DEPTH_NEVER_PASS:
-                glDepthFunc(GL_NEVER);
-                break;
-
-            default:
-                debugAssertM(false, "Fell through switch");
-            }
-        }
-
-        state.depthTest = test;
-
-    }
-}
-
-static GLenum toGLEnum(RenderDevice::StencilTest t) {
-
-    switch (t) {
-    case RenderDevice::STENCIL_CURRENT:
-        return 0;
-
-    case RenderDevice::STENCIL_ALWAYS_PASS:
-        return GL_ALWAYS;
-
-    case RenderDevice::STENCIL_LESS:
-        return GL_LESS;
-
-    case RenderDevice::STENCIL_LEQUAL:
-        return GL_LEQUAL;
-
-    case RenderDevice::STENCIL_GREATER:
-        return GL_GREATER;
-
-    case RenderDevice::STENCIL_GEQUAL:
-        return GL_GEQUAL;
-
-    case RenderDevice::STENCIL_EQUAL:
-        return GL_EQUAL;
-
-    case RenderDevice::STENCIL_NOTEQUAL:
-        return GL_NOTEQUAL;
-
-    case RenderDevice::STENCIL_NEVER_PASS:
-        return GL_NEVER;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_NONE;
-    }
-}
-
-
-void RenderDevice::_setStencilTest(RenderDevice::StencilTest test, int reference) {
-
-	if (test == RenderDevice::STENCIL_CURRENT) {
-		return;
-	}
-
-    const GLenum t = toGLEnum(test);
-
-    if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-        // NVIDIA/EXT
-        glActiveStencilFaceEXT(GL_BACK);
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        glActiveStencilFaceEXT(GL_FRONT);
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        minGLStateChange(4);
-    } else if (GLCaps::supports_GL_ATI_separate_stencil()) {
-        // ATI
-        glStencilFuncSeparateATI(t, t, reference, 0xFFFFFFFF);
-        minGLStateChange(1);
-    } else {
-        // Default OpenGL
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        minGLStateChange(1);
-    }
-}
-
-
-void RenderDevice::setStencilConstant(int reference) {
-    minStateChange();
-
-    debugAssert(! inPrimitive);
-    if (state.stencil.stencilReference != reference) {
-
-        state.stencil.stencilReference = reference;
-        _setStencilTest(state.stencil.stencilTest, reference);
-        minStateChange();
-
-    }
-}
-
-
-void RenderDevice::setStencilTest(StencilTest test) {
-    minStateChange();
-
-	if (test == STENCIL_CURRENT) {
-		return;
-	}
-
-    debugAssert(! inPrimitive);
-
-    if (state.stencil.stencilTest != test) {
-        glEnable(GL_STENCIL_TEST);
-
-        if (test == STENCIL_ALWAYS_PASS) {
-
-            // Can't actually disable if the stencil op is using the test as well
-            // due to an OpenGL limitation.
-            if ((state.stencil.frontStencilFail   == STENCIL_KEEP) &&
-                (state.stencil.frontStencilZFail  == STENCIL_KEEP) &&
-                (state.stencil.frontStencilZPass  == STENCIL_KEEP) &&
-                (! GLCaps::supports_GL_EXT_stencil_two_side() ||
-                 ((state.stencil.backStencilFail  == STENCIL_KEEP) &&
-                  (state.stencil.backStencilZFail == STENCIL_KEEP) &&
-                  (state.stencil.backStencilZPass == STENCIL_KEEP)))) {
-                minGLStateChange();
-                glDisable(GL_STENCIL_TEST);
-            }
-
-        } else {
-
-            _setStencilTest(test, state.stencil.stencilReference);
-        }
-
-        state.stencil.stencilTest = test;
-
-    }
-}
-
-
-RenderDevice::AlphaTest RenderDevice::alphaTest() const {
-    return state.alphaTest;
-}
-
-
-double RenderDevice::alphaTestReference() const {
-    return state.alphaReference;
-}
-
-
-void RenderDevice::setAlphaTest(AlphaTest test, double reference) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-	if (test == ALPHA_CURRENT) {
-		return;
-	}
-
-    if ((state.alphaTest != test) || (state.alphaReference != reference)) {
-        minGLStateChange();
-        if (test == ALPHA_ALWAYS_PASS) {
-            
-            glDisable(GL_ALPHA_TEST);
-
-        } else {
-
-            glEnable(GL_ALPHA_TEST);
-            switch (test) {
-            case ALPHA_LESS:
-                glAlphaFunc(GL_LESS, reference);
-                break;
-
-            case ALPHA_LEQUAL:
-                glAlphaFunc(GL_LEQUAL, reference);
-                break;
-
-            case ALPHA_GREATER:
-                glAlphaFunc(GL_GREATER, reference);
-                break;
-
-            case ALPHA_GEQUAL:
-                glAlphaFunc(GL_GEQUAL, reference);
-                break;
-
-            case ALPHA_EQUAL:
-                glAlphaFunc(GL_EQUAL, reference);
-                break;
-
-            case ALPHA_NOTEQUAL:
-                glAlphaFunc(GL_NOTEQUAL, reference);
-                break;
-
-            case ALPHA_NEVER_PASS:
-                glAlphaFunc(GL_NEVER, reference);
-                break;
-
-            default:
-                debugAssertM(false, "Fell through switch");
-            }
-        }
-
-        state.alphaTest = test;
-        state.alphaReference = reference;
-    }
-}
-
-
-
-
-GLint RenderDevice::toGLStencilOp(RenderDevice::StencilOp op) const {
-
-    switch (op) {
-    case RenderDevice::STENCIL_KEEP:
-        return GL_KEEP;
-
-    case RenderDevice::STENCIL_ZERO:
-        return GL_ZERO;
-
-    case RenderDevice::STENCIL_REPLACE:
-        return GL_REPLACE;
-
-    case RenderDevice::STENCIL_INVERT:
-        return GL_INVERT;
-
-    case RenderDevice::STENCIL_INCR_WRAP:
-        if (GLCaps::supports_GL_EXT_stencil_wrap()) {
-            return GL_INCR_WRAP_EXT;
-        }
-        // Intentionally fall through
-
-    case RenderDevice::STENCIL_INCR:
-        return GL_INCR;
-
-
-    case RenderDevice::STENCIL_DECR_WRAP:
-        if (GLCaps::supports_GL_EXT_stencil_wrap()) {
-            return GL_DECR_WRAP_EXT;
-        }
-        // Intentionally fall through
-
-    case RenderDevice::STENCIL_DECR:
-        return GL_DECR;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_KEEP;
-    }
-}
-
-
-void RenderDevice::setShader(const ShaderRef& s) {
-    majStateChange();
-
-	if (s != state.shader) {
-        debugAssertM(! inShader, "Cannot set the Shader from within a Shader!");
-		state.shader = s;
-	}
-}
-
-
-void RenderDevice::setObjectShader(const ObjectShaderRef& s) {
-	if (s != state.objectShader) {
-		state.objectShader = s;
-	}
-}
-
-
-void RenderDevice::forceVertexAndPixelShaderBind() {
-    // Only change the vertex shader if it does not match the one used last time.
-    if (lastVertexAndPixelShader != state.vertexAndPixelShader) {
-
-        majGLStateChange();
-        if (state.vertexAndPixelShader.isNull()) {
-            // Disables the programmable pipeline
-            glUseProgramObjectARB(0);
-        } else {
-            glUseProgramObjectARB(state.vertexAndPixelShader->glProgramObject());
-        }
-        debugAssertGLOk();
-
-        lastVertexAndPixelShader = state.vertexAndPixelShader;
-    }
-}
-
-
-void RenderDevice::setVertexAndPixelShader(const VertexAndPixelShaderRef& s) {
-    majStateChange();
-
-    if (s != state.vertexAndPixelShader) {
-
-        state.vertexAndPixelShader = s;
-
-        if (s.notNull()) {
-            alwaysAssertM(s->ok(), s->messages());
-        }
-
-        // The actual shader will change in beforePrimitive or when the arg list is bound.
-    }
-}
-
-
-void RenderDevice::setVertexAndPixelShader(
-    const VertexAndPixelShaderRef&          s,
-    const VertexAndPixelShader::ArgList&    args) {
-
-    setVertexAndPixelShader(s);
-
-    if (s.notNull()) {
-        s->bindArgList(this, args);
-    }
-}
-
-
-void RenderDevice::setVertexProgram(const VertexProgramRef& vp) {
-    majStateChange();
-    if (vp != state.vertexProgram) {
-        if (state.vertexProgram != (VertexProgramRef)NULL) {
-            state.vertexProgram->disable();
-        }
-
-        majGLStateChange();
-        if (vp != (VertexProgramRef)NULL) {
-            debugAssert(supportsVertexProgram());
-            vp->bind();
-        }
-
-        state.vertexProgram = vp;
-    }
-}
-
-
-void RenderDevice::setVertexProgram(
-    const VertexProgramRef& vp,
-    const GPUProgram::ArgList& args) {
-
-    setVertexProgram(vp);
-    
-    vp->setArgs(this, args);
-}
-
-
-void RenderDevice::setPixelProgram(const PixelProgramRef& pp) {
-    majStateChange();
-    if (pp != state.pixelProgram) {
-        if (state.pixelProgram != (PixelProgramRef)NULL) {
-            state.pixelProgram->disable();
-        }
-        if (pp != (PixelProgramRef)NULL) {
-            debugAssert(supportsPixelProgram());
-            pp->bind();
-        }
-        majGLStateChange();
-        state.pixelProgram = pp;
-    }
-}
-
-
-void RenderDevice::setPixelProgram(
-    const PixelProgramRef& pp,
-    const GPUProgram::ArgList& args) {
-
-    setPixelProgram(pp);
-    
-    pp->setArgs(this, args);
-}
-
-
-void RenderDevice::setStencilOp(
-    StencilOp                       frontStencilFail,
-    StencilOp                       frontZFail,
-    StencilOp                       frontZPass,
-    StencilOp                       backStencilFail,
-    StencilOp                       backZFail,
-    StencilOp                       backZPass) {
-
-    minStateChange();
-
-	if (frontStencilFail == STENCILOP_CURRENT) {
-		frontStencilFail = state.stencil.frontStencilFail;
-	}
-	
-	if (frontZFail == STENCILOP_CURRENT) {
-		frontZFail = state.stencil.frontStencilZFail;
-	}
-	
-	if (frontZPass == STENCILOP_CURRENT) {
-		frontZPass = state.stencil.frontStencilZPass;
-	}
-
-	if (backStencilFail == STENCILOP_CURRENT) {
-		backStencilFail = state.stencil.backStencilFail;
-	}
-	
-	if (backZFail == STENCILOP_CURRENT) {
-		backZFail = state.stencil.backStencilZFail;
-	}
-	
-	if (backZPass == STENCILOP_CURRENT) {
-		backZPass = state.stencil.backStencilZPass;
-	}
-    
-	if ((frontStencilFail  != state.stencil.frontStencilFail) ||
-        (frontZFail        != state.stencil.frontStencilZFail) ||
-        (frontZPass        != state.stencil.frontStencilZPass) || 
-        (GLCaps::supports_two_sided_stencil() && 
-        ((backStencilFail  != state.stencil.backStencilFail) ||
-         (backZFail        != state.stencil.backStencilZFail) ||
-         (backZPass        != state.stencil.backStencilZPass)))) { 
-
-        if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-            // NVIDIA
-
-            // Set back face operation
-            glActiveStencilFaceEXT(GL_BACK);
-            glStencilOp(
-                toGLStencilOp(backStencilFail),
-                toGLStencilOp(backZFail),
-                toGLStencilOp(backZPass));
-            
-            // Set front face operation
-            glActiveStencilFaceEXT(GL_FRONT);
-            glStencilOp(
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            minGLStateChange(4);
-
-        } else if (GLCaps::supports_GL_ATI_separate_stencil()) {
-            // ATI
-            minGLStateChange(2);
-            glStencilOpSeparateATI(GL_FRONT, 
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            glStencilOpSeparateATI(GL_BACK, 
-                toGLStencilOp(backStencilFail),
-                toGLStencilOp(backZFail),
-                toGLStencilOp(backZPass));
-
-        } else {
-            // Generic OpenGL
-
-            // Set front face operation
-            glStencilOp(
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            minGLStateChange(1);
-        }
-
-
-        // Need to manage the mask as well
-
-        if ((frontStencilFail  == STENCIL_KEEP) &&
-            (frontZPass        == STENCIL_KEEP) && 
-            (frontZFail        == STENCIL_KEEP) &&
-            (! GLCaps::supports_two_sided_stencil() ||
-            ((backStencilFail  == STENCIL_KEEP) &&
-             (backZPass        == STENCIL_KEEP) &&
-             (backZFail        == STENCIL_KEEP)))) {
-
-            // Turn off writing.  May need to turn off the stencil test.
-            if (state.stencil.stencilTest == STENCIL_ALWAYS_PASS) {
-                // Test doesn't need to be on
-                glDisable(GL_STENCIL_TEST);
-            }
-
-        } else {
-
-            debugAssertM(glGetInteger(GL_STENCIL_BITS) > 0,
-                "Allocate stencil bits from RenderDevice::init before using the stencil buffer.");
-
-            // Turn on writing.  We also need to turn on the
-            // stencil test in this case.
-
-            if (state.stencil.stencilTest == STENCIL_ALWAYS_PASS) {
-                // Test is not already on
-                glEnable(GL_STENCIL_TEST);
-                _setStencilTest(state.stencil.stencilTest, state.stencil.stencilReference);
-            }
-        }
-
-        state.stencil.frontStencilFail  = frontStencilFail;
-        state.stencil.frontStencilZFail = frontZFail;
-        state.stencil.frontStencilZPass = frontZPass;
-        state.stencil.backStencilFail   = backStencilFail;
-        state.stencil.backStencilZFail  = backZFail;
-        state.stencil.backStencilZPass  = backZPass;
-    }
-}
-
-
-void RenderDevice::setStencilOp(
-    StencilOp           fail,
-    StencilOp           zfail,
-    StencilOp           zpass) {
-    debugAssert(! inPrimitive);
-
-    setStencilOp(fail, zfail, zpass, fail, zfail, zpass);
-}
-
-
-static GLenum toGLBlendEq(RenderDevice::BlendEq e) {
-    switch (e) {
-    case RenderDevice::BLENDEQ_MIN:
-        debugAssert(GLCaps::supports("GL_EXT_blend_minmax"));
-        return GL_MIN;
-
-    case RenderDevice::BLENDEQ_MAX:
-        debugAssert(GLCaps::supports("GL_EXT_blend_minmax"));
-        return GL_MAX;
-
-    case RenderDevice::BLENDEQ_ADD:
-        return GL_FUNC_ADD;
-
-    case RenderDevice::BLENDEQ_SUBTRACT:
-        debugAssert(GLCaps::supports("GL_EXT_blend_subtract"));
-        return GL_FUNC_SUBTRACT;
-
-    case RenderDevice::BLENDEQ_REVERSE_SUBTRACT:
-        debugAssert(GLCaps::supports("GL_EXT_blend_subtract"));
-        return GL_FUNC_REVERSE_SUBTRACT;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_ZERO;
-    }
-}
-
-
-void RenderDevice::setBlendFunc(
-    BlendFunc src,
-    BlendFunc dst,
-    BlendEq   eq) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-	if (src == BLEND_CURRENT) {
-		src = state.srcBlendFunc;
-	}
-
-	if (dst == BLEND_CURRENT) {
-		dst = state.dstBlendFunc;
-	}
-
-    if (eq == BLENDEQ_CURRENT) {
-        eq = state.blendEq;
-    }
-
-    if ((state.dstBlendFunc != dst) ||
-        (state.srcBlendFunc != src) ||
-        (state.blendEq != eq)) {
-
-        minGLStateChange();
-
-        if ((dst == BLEND_ZERO) && (src == BLEND_ONE) && ((eq == BLENDEQ_ADD) || (eq == BLENDEQ_SUBTRACT))) {
-            glDisable(GL_BLEND);
-        } else {
-            glEnable(GL_BLEND);
-            glBlendFunc(toGLBlendFunc(src), toGLBlendFunc(dst));
-
-            debugAssert(eq == BLENDEQ_ADD ||
-                GLCaps::supports("GL_EXT_blend_minmax") ||
-                GLCaps::supports("GL_EXT_blend_subtract"));
-
-            static bool supportsBlendEq = GLCaps::supports("GL_EXT_blend_minmax");
-
-            if (supportsBlendEq && (glBlendEquationEXT != 0)) {
-                glBlendEquationEXT(toGLBlendEq(eq));
-            }
-        }
-        state.dstBlendFunc = dst;
-        state.srcBlendFunc = src;
-        state.blendEq = eq;
-    }
-}
-
-
-void RenderDevice::setLineWidth(
-    double               width) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.lineWidth != width) {
-        glLineWidth(width);
-        minGLStateChange();
-        state.lineWidth = width;
-    }
-}
-
-
-void RenderDevice::setPointSize(
-    double               width) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.pointSize != width) {
-        glPointSize(width);
-        minGLStateChange();
-        state.pointSize = width;
-    }
-}
-
-
-void RenderDevice::setAmbientLightColor(
-    const Color4&        color) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-    if (color != state.lights.ambient) {
-        float c[] =
-            {color.r / lightSaturation,
-             color.g / lightSaturation,
-             color.b / lightSaturation,
-             1.0f};
-    
-        state.lights.changed = true;
-        minGLStateChange();
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
-        state.lights.ambient = color;
-    }
-}
-
-
-void RenderDevice::setAmbientLightColor(
-    const Color3&        color) {
-    setAmbientLightColor(Color4(color, 1.0));
-}
-
-
-void RenderDevice::enableLighting() {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (! state.lights.lighting) {
-        glEnable(GL_LIGHTING);
-        minGLStateChange();
-        state.lights.lighting = true;
-        state.lights.changed = true;
-    }
-}
-
-
-void RenderDevice::disableLighting() {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.lights.lighting) {
-        glDisable(GL_LIGHTING);
-        minGLStateChange();
-        state.lights.lighting = false;
-        state.lights.changed = true;
-    }
-}
-
-
-void RenderDevice::setObjectToWorldMatrix(
-    const CoordinateFrame& cFrame) {
-    
-    minStateChange();
-    debugAssert(! inPrimitive);
-
-    // No test to see if it is already equal; this is called frequently and is
-    // usually different.
-    state.matrices.changed = true;
-    state.matrices.objectToWorldMatrix = cFrame;
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse * state.matrices.objectToWorldMatrix);
-    minGLStateChange();
-}
-
-
-const CoordinateFrame& RenderDevice::getObjectToWorldMatrix() const {
-    return state.matrices.objectToWorldMatrix;
-}
-
-
-void RenderDevice::setCameraToWorldMatrix(
-    const CoordinateFrame& cFrame) {
-
-    debugAssert(! inPrimitive);
-    majStateChange();
-    majGLStateChange();
-    
-    state.matrices.changed = true;
-    state.matrices.cameraToWorldMatrix = cFrame;
-    state.matrices.cameraToWorldMatrixInverse = cFrame.inverse();
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse * state.matrices.objectToWorldMatrix);
-
-    // Reload lights since the camera matrix changed.  We must do this even for lights
-    // that are not enabled since those lights will not be re-set at the GL level if they
-    // are enabled without being otherwise changed.  Of course, we must follow up by disabling
-    // those lights again.
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        bool wasEnabled = state.lights.lightEnabled[i];
-        setLight(i, &state.lights.light[i], true);
-        if (! wasEnabled) {
-            setLight(i, NULL);
-        }
-    }
-}
-
-
-const CoordinateFrame& RenderDevice::getCameraToWorldMatrix() const {
-    return state.matrices.cameraToWorldMatrix;
-}
-
-
-Matrix4 RenderDevice::getProjectionMatrix() const {
-    return state.matrices.projectionMatrix;
-}
-
-
-CoordinateFrame RenderDevice::getModelViewMatrix() const {
-    return state.matrices.cameraToWorldMatrixInverse * getObjectToWorldMatrix();
-}
-
-
-Matrix4 RenderDevice::getModelViewProjectionMatrix() const {
-    return getProjectionMatrix() * getModelViewMatrix();
-}
-
-
-void RenderDevice::setProjectionMatrix(const Matrix4& P) {
-    minStateChange();
-    if (state.matrices.projectionMatrix != P) {
-        state.matrices.projectionMatrix = P;
-        state.matrices.changed = true;
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(P);
-        glMatrixMode(GL_MODELVIEW);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::forceSetTextureMatrix(int unit, const double* m) {
-    float f[16];
-    for (int i = 0; i < 16; ++i) {
-        f[i] = m[i];
-    }
-
-    forceSetTextureMatrix(unit, f);
-}
-
-
-void RenderDevice::forceSetTextureMatrix(int unit, const float* m) {
-    minStateChange();
-    minGLStateChange();
-
-    state.touchedTextureUnit(unit);
-    memcpy(state.textureUnit[unit].textureMatrix, m, sizeof(float)*16);
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    // Transpose the texture matrix
-    float tt[16];
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            tt[i + j * 4] = m[j + i * 4];
-        }
-    }
-    glMatrixMode(GL_TEXTURE);
-    glLoadMatrixf(tt);
-
-    TextureRef texture = state.textureUnit[unit].texture;
-
-    // invert y
-    if ((texture != NULL) && texture->invertY) {
-
-        float ymax = 1.0;
-    
-        if (texture->getDimension() == Texture::DIM_2D_RECT) {
-            ymax = texture->getTexelHeight();
-        }
-
-        float m[16] = 
-        { 1,  0,  0,  0,
-          0, -1,  0,  0,
-          0,  0,  1,  0,
-          0,  ymax,  0,  1};
-
-        glMultMatrixf(m);
-    }
-
-}
-
-
-Matrix4 RenderDevice::getTextureMatrix(uint unit) {
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    const float* M = state.textureUnit[unit].textureMatrix;
-
-    return Matrix4(M[0], M[4], M[8],  M[12],
-                   M[1], M[5], M[9],  M[13],
-                   M[2], M[6], M[10], M[14],
-                   M[3], M[7], M[11], M[15]);
-}
-
-
-
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-	const Matrix4&	     m) {
-
-	float f[16];
-	for (int r = 0; r < 4; ++r) {
-		for (int c = 0; c < 4; ++c) {
-			f[r * 4 + c] = m[r][c];
+			DoPropExchange(nIDCommand, &secIconSet);
 		}
 	}
 
-	setTextureMatrix(unit, f);
+}
+void CXTPImageManager::Serialize(CArchive& ar)
+{
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(&px);
 }
 
 
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-    const double*        m) {
-
-    debugAssert(! inPrimitive);
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    forceSetTextureMatrix(unit, m);
-}
-
-
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-    const float*        m) {
-
-    debugAssert(! inPrimitive);
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    if (memcmp(m, state.textureUnit[unit].textureMatrix, sizeof(float)*16)) {
-        forceSetTextureMatrix(unit, m);
-    }
-}
-
-
-void RenderDevice::setTextureMatrix(
-    uint                    unit,
-    const CoordinateFrame&  c) {
-
-    float m[16] = 
-    {c.rotation[0][0], c.rotation[0][1], c.rotation[0][2], c.translation.x,
-     c.rotation[1][0], c.rotation[1][1], c.rotation[1][2], c.translation.y,
-     c.rotation[2][0], c.rotation[2][1], c.rotation[2][2], c.translation.z,
-                    0,                0,                0,               1};
-
-    setTextureMatrix(unit, m);
-}
-
-
-void RenderDevice::setTextureLODBias(
-    uint                    unit,
-    float                   bias) {
-
-    minStateChange();
-    if (state.textureUnit[unit].LODBias != bias) {
-        state.touchedTextureUnit(unit);
-
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-        }
-
-        state.textureUnit[unit].LODBias = bias;
-
-        minGLStateChange();
-        glTexEnvf(GL_TEXTURE_FILTER_CONTROL_EXT, GL_TEXTURE_LOD_BIAS_EXT, bias);
-    }
-}
-
-
-void RenderDevice::setTextureCombineMode(
-    uint                    unit,
-    const CombineMode       mode) {
-
-    minStateChange();
-	if (mode == TEX_CURRENT) {
+void CXTPImageManager::AddIcons(CXTPImageManager* pImageManager)
+{
+	if (pImageManager == 0)
 		return;
+
+
+	POSITION pos = pImageManager->m_mapImages.GetStartPosition();
+	UINT nID;
+	CXTPImageManagerIconSet* pIconSet;
+
+	while (pos)
+	{
+		pImageManager->m_mapImages.GetNextAssoc(pos, nID, pIconSet);
+
+		if (!Lookup(nID))
+		{
+			m_mapImages.SetAt(nID, pIconSet);
+			pIconSet->InternalAddRef();
+		}
 	}
 
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    if ((state.textureUnit[unit].combineMode != mode)) {
-        minGLStateChange();
-        state.touchedTextureUnit(unit);
-
-        state.textureUnit[unit].combineMode = mode;
-
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-        }
-
-        static const bool hasAdd = GLCaps::supports("GL_EXT_texture_env_add");
-        static const bool hasCombine = GLCaps::supports("GL_ARB_texture_env_combine");
-        static const bool hasDot3 = GLCaps::supports("GL_ARB_texture_env_dot3");
-
-        switch (mode) {
-        case TEX_REPLACE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-            break;
-
-        case TEX_BLEND:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-            break;
-
-        case TEX_MODULATE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            break;
-
-        case TEX_INTERPOLATE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-            break;
-
-        case TEX_ADD:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasCombine ? GL_ADD : GL_BLEND);
-            break;
-
-        case TEX_SUBTRACT:
-            // (add and subtract are in the same extension)
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasAdd ? GL_SUBTRACT_ARB : GL_BLEND);
-            break;
-
-        case TEX_ADD_SIGNED:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasAdd ? GL_ADD_SIGNED_ARB : GL_BLEND);
-            break;
-            
-        case TEX_DOT3_RGB:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasDot3 ? GL_DOT3_RGB_ARB : GL_BLEND);
-            break;
-             
-        case TEX_DOT3_RGBA:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasDot3 ? GL_DOT3_RGBA_ARB : GL_BLEND);
-            break;
-
-        default:
-            debugAssertM(false, "Unrecognized texture combine mode");
-        }
-    }
 }
 
-
-void RenderDevice::resetTextureUnit(
-    uint                    unit) {
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    RenderState newState(state);
-    state.textureUnit[unit] = RenderState::TextureUnit();
-    state.touchedTextureUnit(unit);
-    setState(newState);
-}
-
-
-void RenderDevice::setPolygonOffset(
-    double              offset) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-    if (state.polygonOffset != offset) {
-        minGLStateChange();
-        if (offset != 0) {
-            glEnable(GL_POLYGON_OFFSET_FILL);
-            glEnable(GL_POLYGON_OFFSET_LINE);
-            glEnable(GL_POLYGON_OFFSET_POINT);
-            glPolygonOffset(offset, sign(offset));
-        } else {
-            glDisable(GL_POLYGON_OFFSET_POINT);
-            glDisable(GL_POLYGON_OFFSET_FILL);
-            glDisable(GL_POLYGON_OFFSET_LINE);
-        }
-        state.polygonOffset = offset;
-    }
-}
-
-
-void RenderDevice::setNormal(const Vector3& normal) {
-    state.normal = normal;
-    glNormal3fv(normal);
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector4& texCoord) {
-    debugAssertM((int)unit < _numTextureCoords,
-        format("Attempted to access texture coordinate %d on a device with %d coordinates.",
-        unit, _numTextureCoords));
-
-    state.textureUnit[unit].texCoord = texCoord;
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glMultiTexCoord(GL_TEXTURE0_ARB + unit, texCoord);
-    } else {
-        debugAssertM(unit == 0, "This machine has only one texture unit");
-        glTexCoord(texCoord);
-    }
-    state.touchedTextureUnit(unit);
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector3& texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector3int16& texCoord) {
-    setTexCoord(unit, Vector4(texCoord.x, texCoord.y, texCoord.z, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector2& texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 0, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, const Vector2int16& texCoord) {
-    setTexCoord(unit, Vector4(texCoord.x, texCoord.y, 0, 1));
-}
-
-
-void RenderDevice::setTexCoord(uint unit, double texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 0, 0, 1));
-}
-
-
-void RenderDevice::sendVertex(const Vector2& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex2fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
-
-
-void RenderDevice::sendVertex(const Vector3& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex3fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
-
-
-void RenderDevice::sendVertex(const Vector4& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex4fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
-
-
-void RenderDevice::beginPrimitive(Primitive p) {
-    debugAssertM(! inPrimitive, "Already inside a primitive");
-    debugAssertM( currentFramebufferComplete(), "Bound Framebuffer Incomplete!");
-
-    beforePrimitive();
-	runObjectShader();
-    
-    inPrimitive = true;
-    currentPrimitiveVertexCount = 0;
-    currentPrimitive = p;
-
-    debugAssertGLOk();
-
-    glBegin(primitiveToGLenum(p));
-}
-
-
-void RenderDevice::endPrimitive() {
-    debugAssertM(inPrimitive, "Call to endPrimitive() without matching beginPrimitive()");
-
-    mDebugNumMinorStateChanges += currentPrimitiveVertexCount;
-    mDebugNumMinorOpenGLStateChanges += currentPrimitiveVertexCount;
-	countTriangles(currentPrimitive, currentPrimitiveVertexCount);
-
-    glEnd();
-    inPrimitive = false;
-
-    afterPrimitive();
-}
-
-
-void RenderDevice::countTriangles(RenderDevice::Primitive primitive, int numVertices) {
-	switch (primitive) {
-    case LINES:
-        triangleCount += (numVertices / 2);
-        break;
-
-    case LINE_STRIP:
-        triangleCount += (numVertices - 1);
-        break;
-
-    case TRIANGLES:
-        triangleCount += (numVertices / 3);
-        break;
-
-    case TRIANGLE_STRIP:
-    case TRIANGLE_FAN:
-        triangleCount += (numVertices - 2);
-        break;
-
-    case QUADS:
-        triangleCount += ((numVertices / 4) * 2);
-        break;
-
-    case QUAD_STRIP:
-        triangleCount += (((numVertices / 2) - 1) * 2);
-        break;
-
-    case POINTS:
-        triangleCount += numVertices;
-        break;
-    }
-}
-
-
-void RenderDevice::setTexture(
-    uint                unit,
-    TextureRef          texture) {
-
-    // NVIDIA cards have more textures than texture units.
-    // "fixedFunction" textures have an associated unit 
-    // and must be glEnabled.  Programmable units *cannot*
-    // be enabled.
-    bool fixedFunction = ((int)unit < _numTextureUnits);
-
-    debugAssertM(! inPrimitive, 
-                 "Can't change textures while rendering a primitive.");
-
-    debugAssertM((int)unit < _numTextures,
-        format("Attempted to access texture %d"
-               " on a device with %d textures.",
-               unit, _numTextures));
-
-    TextureRef oldTexture = state.textureUnit[unit].texture;
-    majStateChange();
-
-    if (oldTexture == texture) {
-        return;
-    }
-
-    majGLStateChange();
-
-    state.textureUnit[unit].texture = texture;
-    state.touchedTextureUnit(unit);
-
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    // Turn off whatever was on previously if this is a fixed function unit
-    if (fixedFunction) {
-        glDisableAllTextures();
-    }
-
-    if (texture.notNull()) {
-        GLint id = texture->getOpenGLID();
-        GLint u = texture->getOpenGLTextureTarget();
-
-        if ((GLint)currentlyBoundTexture[unit] != id) {
-            glBindTexture(u, id);
-            currentlyBoundTexture[unit] = id;
-        }
-
-        if (fixedFunction) {
-            glEnable(u);
-        }
-    } else {
-        // Disabled texture unit
-        currentlyBoundTexture[unit] = 0;
-    }
-
-    // Force a reload of the texture matrix if invertY != old invertY.
-    // This will take care of flipping the texture when necessary.
-    if (oldTexture.isNull() ||
-        texture.isNull() ||
-        (oldTexture->invertY != texture->invertY)) {
-
-        if (fixedFunction) {
-            // We can only set the matrix for some units
-            forceSetTextureMatrix(unit, state.textureUnit[unit].textureMatrix);
-        }
-    }
-
-}
-
-
-double RenderDevice::getDepthBufferValue(
-    int                     x,
-    int                     y) const {
-
-    GLfloat depth;
-
-    glReadPixels(x,
-		         (getHeight() - 1) - y,
-                 1, 1,
-                 GL_DEPTH_COMPONENT,
-		         GL_FLOAT,
-		         &depth);
-
-    return depth;
-}
-
-
-/**
- Returns the current date as a string in the form YYYY-MM-DD
- */
-static std::string currentDateString() {
-    time_t t1;
-    time(&t1);
-    tm* t = localtime(&t1);
-    return format("%d-%02d-%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday); 
-}
-
-
-void RenderDevice::screenshotPic(GImage& dest, bool useBackBuffer, bool getAlpha) const {
-    if (useBackBuffer) {
-        glReadBuffer(GL_BACK);
-    } else {
-        glReadBuffer(GL_FRONT);
-    }
-    
-    int ch = getAlpha ? 4 : 3;
-
-    if ((dest.channels != ch) ||
-        (dest.width != getWidth()) ||
-        (dest.height != getHeight())) {
-        // Only resize if the current size is not correct
-        dest.resize(getWidth(), getHeight(), ch);
-    }
-
-    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, getWidth(), getHeight(), 
-        getAlpha ? GL_RGBA : GL_RGB,
-        GL_UNSIGNED_BYTE, dest.byte());    
-
-    glPopClientAttrib();
-
-    // Flip right side up
-    if (getAlpha) {
-        flipRGBAVertical(dest.byte(), dest.byte(), getWidth(), getHeight());
-    } else {
-        flipRGBVertical(dest.byte(), dest.byte(), getWidth(), getHeight());
-    }
-
-    // Restore the read buffer to the back
-    glReadBuffer(GL_BACK);
-
-    int i;
-    double s = getLightSaturation();
-
-    if (s != 1.0) {
-        // Adjust the coloring for gamma correction
-        // Lookup table for mapping v -> v * lightSaturation;
-        uint8 L[255];
-        uint8 *data = dest.byte();
-        
-        for (i = 255; i >= 0; --i) {
-            L[i] = iMin(255, iRound((double)i * s));
-        }
-
-        // skip the alpha channel if there is one
-        int sz = dest.width * dest.height * dest.channels;
-        for (i = 0; i < sz; i += ch) {
-            for (int c = 0; c < 3; ++c) {
-                data[i + c] = L[data[i + c]];
-            }
-        }
-    }
-
-}
-
-
-std::string RenderDevice::screenshot(const std::string& filepath) const {
-    GImage screen;
-    int i;
-
-    screenshotPic(screen);
-
-    // Save the file
-    std::string basename = currentDateString();
-    std::string filename;
-    i = 0;
-    do {
-        filename = filepath + basename + "_" + format("%03d", i) + ".jpg";
-        ++i;
-    } while (fileExists(filename));   
-
-    screen.save(filename);
-
-    return filename;
-}
-
-
-bool RenderDevice::supportsTextureFormat(const TextureFormat* fmt) {
-    debugAssertM(! inPrimitive, 
-        "Cannot call supportsTextureFormat between beginPrimitive and endPrimitive.");
-    return GLCaps::supports(fmt);
-}
-
-
-double RenderDevice::getFrameRate() const {
-    return emwaFrameRate;
-}
-
-
-double RenderDevice::getTriangleRate() const {
-    return emwaTriangleRate;
-}
-
-
-double RenderDevice::getTrianglesPerFrame() const {
-    return emwaTriangleCount;
-}
-
-
-void RenderDevice::beginIndexedPrimitives() {
-	debugAssert(! inPrimitive);
-	debugAssert(! inIndexedPrimitive);
-
-    // TODO: can we avoid this push?
-	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT); 
-
-	inIndexedPrimitive = true;
-}
-
-
-void RenderDevice::endIndexedPrimitives() {
-	debugAssert(! inPrimitive);
-	debugAssert(inIndexedPrimitive);
-
-
-  if (GLCaps::supports_GL_ARB_vertex_buffer_object()) {
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-  }
-
-
-	glPopClientAttrib();
-	inIndexedPrimitive = false;
-    currentVARArea = NULL;
-}
-
-
-void RenderDevice::setVARAreaFromVAR(const class VAR& v) {
-	debugAssert(inIndexedPrimitive);
-	debugAssert(! inPrimitive);
-    alwaysAssertM(currentVARArea.isNull() || (v.area == currentVARArea), 
-        "All vertex arrays used within a single begin/endIndexedPrimitive"
-        " block must share the same VARArea.");
-
-    majStateChange();
-
-    if (v.area != currentVARArea) {
-        currentVARArea = const_cast<VAR&>(v).area;
-
-        if (VARArea::mode == VARArea::VBO_MEMORY) {
-            // Bind the buffer (for MAIN_MEMORY, we need do nothing)
-            glBindBufferARB(GL_ARRAY_BUFFER_ARB, currentVARArea->glbuffer);
-            majGLStateChange();
-        }
-    }
-
-}
-
-
-void RenderDevice::setVertexArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.vertexPointer();
-}
-
-
-void RenderDevice::setVertexAttribArray(unsigned int attribNum, const class VAR& v, bool normalize) {
-    setVARAreaFromVAR(v);
-	v.vertexAttribPointer(attribNum, normalize);
-}
-
-
-void RenderDevice::setNormalArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.normalPointer();
-}
-
-
-void RenderDevice::setColorArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.colorPointer();
-}
-
-
-void RenderDevice::setTexCoordArray(unsigned int unit, const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.texCoordPointer(unit);
-}
-
-
-MilestoneRef RenderDevice::createMilestone(const std::string& name) {
-    return new Milestone(name);
-}
-
-
-void RenderDevice::setMilestone(const MilestoneRef& m) {
-    minStateChange();
-    minGLStateChange();
-    m->set();
-}
-
-
-void RenderDevice::waitForMilestone(const MilestoneRef& m) {
-    minStateChange();
-    minGLStateChange();
-    m->wait();
-}
-
-
-void RenderDevice::setLight(int i, const GLight& light) {
-    
-    setLight(i, &light, false);
-}
-
-
-void RenderDevice::setLight(int i, void* x) {
-    debugAssert(x == NULL); (void)x;
-    setLight(i, NULL, false);
-}
-
-
-void RenderDevice::setLight(int i, const GLight* _light, bool force) {
-    debugAssert(i >= 0);
-    debugAssert(i < MAX_LIGHTS);
-    int gi = GL_LIGHT0 + i;
-
-    const GLight& light = *_light;
-
-
-    minStateChange();
-
-    if (_light == NULL) {
-
-        if (state.lights.lightEnabled[i] || force) {
-            // Don't bother copying this light over
-            state.lights.lightEnabled[i] = false;
-            state.lights.changed = true;
-            glDisable(gi);
-        }
-
-        minGLStateChange();
-    
-    } else {
-
-        for (int j = 0; j < 3; ++j) {
-            debugAssert(light.attenuation[j] >= 0);
-        }
-
-    
-        if (! state.lights.lightEnabled[i] || force) {
-            glEnable(gi);
-            state.lights.lightEnabled[i] = true;
-            state.lights.changed = true;
-        }
-
-    
-        if ((state.lights.light[i] != light) || force) {
-            state.lights.changed = true;
-            state.lights.light[i] = light;
-
-            minGLStateChange();
-
-            Color4 zero(0, 0, 0, 1);
-            Color4 brightness(light.color / lightSaturation, 1);
-
-            int mm = glGetInteger(GL_MATRIX_MODE);
-            glMatrixMode(GL_MODELVIEW);
-            glPushMatrix();
-                glLoadIdentity();
-                glLoadMatrix(state.matrices.cameraToWorldMatrixInverse);
-                glLightfv(gi, GL_POSITION,              light.position);
-                glLightfv(gi, GL_SPOT_DIRECTION,        light.spotDirection);
-                glLightf (gi, GL_SPOT_CUTOFF,           light.spotCutoff);
-                glLightfv(gi, GL_AMBIENT,               zero);
-                if (light.diffuse) {
-                    glLightfv(gi, GL_DIFFUSE,               brightness);
-                } else {
-                    glLightfv(gi, GL_DIFFUSE,               zero);
-                }
-                if (light.specular) {
-                    glLightfv(gi, GL_SPECULAR,              brightness);
-                } else {
-                    glLightfv(gi, GL_SPECULAR,              zero);
-                }
-                glLightf (gi, GL_CONSTANT_ATTENUATION,  light.attenuation[0]);
-                glLightf (gi, GL_LINEAR_ATTENUATION,    light.attenuation[1]);
-                glLightf (gi, GL_QUADRATIC_ATTENUATION, light.attenuation[2]);
-            glPopMatrix();
-            glMatrixMode(mm);
-        }    
-    }
-    
-}
-
-
-void RenderDevice::configureShadowMap(
-    uint                unit,
-    const Matrix4&      lightMVP,
-    const TextureRef&   shadowMap) {
-
-    minStateChange();
-    minGLStateChange();
-
-    // http://www.nvidia.com/dev_content/nvopenglspecs/GL_ARB_shadow.txt
-
-    debugAssertM(shadowMap->getFormat()->OpenGLBaseFormat == GL_DEPTH_COMPONENT,
-        "Can only configure shadow maps from depth textures");
-
-    debugAssertM(shadowMap->depthReadMode() != Texture::DEPTH_NORMAL,
-        "Shadow maps must be configured for either Texture::DEPTH_LEQUAL"
-        " or Texture::DEPTH_GEQUAL comparisions.");
-
-    debugAssertM(GLCaps::supports_GL_ARB_shadow(),
-        "The device does not support shadow maps");
-
-
-    // Texture coordinate generation will use the current MV matrix
-    // to determine OpenGL "eye" space.  We want OpenGL "eye" space to
-    // be our world space, so set the object to world matrix to be the
-    // identity.
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse);
-
-    setTexture(unit, shadowMap);
-    
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    static const Matrix4 bias(
-        0.5f, 0.0f, 0.0f, 0.5f,
-        0.0f, 0.5f, 0.0f, 0.5f,
-        0.0f, 0.0f, 0.5f, 0.5f - .000001f,
-        0.0f, 0.0f, 0.0f, 1.0f);
-    
-    Matrix4 textureMatrix = glGetMatrix(GL_TEXTURE_MATRIX);
-
-	Matrix4 textureProjectionMatrix2D =
-        textureMatrix * bias * lightMVP;
-
-	// Set up tex coord generation - all 4 coordinates required
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_S, GL_EYE_PLANE, textureProjectionMatrix2D[0]);
-	glEnable(GL_TEXTURE_GEN_S);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_T, GL_EYE_PLANE, textureProjectionMatrix2D[1]);
-	glEnable(GL_TEXTURE_GEN_T);
-	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_R, GL_EYE_PLANE, textureProjectionMatrix2D[2]);
-	glEnable(GL_TEXTURE_GEN_R);
-	glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_Q, GL_EYE_PLANE, textureProjectionMatrix2D[3]);
-	glEnable(GL_TEXTURE_GEN_Q);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-
-void RenderDevice::configureReflectionMap(
-    uint                textureUnit,
-    TextureRef          reflectionTexture) {
-
-    debugAssert(reflectionTexture->getDimension() == Texture::DIM_CUBE_MAP);
-
-    // Texture coordinates will be generated in object space.
-    // Set the texture matrix to transform them into camera space.
-    CoordinateFrame cframe = getCameraToWorldMatrix();
-
-    // The environment map assumes we are always in the center,
-    // so zero the translation.
-    cframe.translation = Vector3::zero();
-
-    // The environment map is in world space.  The reflection vector
-    // will automatically be multiplied by the object->camera space 
-    // transformation by hardware (just like any other vector) so we 
-    // take it back from camera space to world space for the correct
-    // vector.
-    setTexture(textureUnit, reflectionTexture);
-
-    setTextureMatrix(textureUnit, cframe);
-
-    minStateChange();
-    minGLStateChange();
-    glActiveTextureARB(GL_TEXTURE0_ARB + textureUnit);
-    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glEnable(GL_TEXTURE_GEN_S);
-    glEnable(GL_TEXTURE_GEN_T);
-    glEnable(GL_TEXTURE_GEN_R);
-}
-
-
-void RenderDevice::sendSequentialIndices(RenderDevice::Primitive primitive, int numVertices) {
-
-    beforePrimitive();
-	runObjectShader();
-
-    glDrawArrays(primitiveToGLenum(primitive), 0, numVertices);
-    // Mark all active arrays as busy.
-    setVARAreaMilestone();
-
-	countTriangles(primitive, numVertices);
-    afterPrimitive();
-
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::internalSendIndices(
-    RenderDevice::Primitive primitive,
-    size_t                  indexSize, 
-    int                     numIndices, 
-    const void*             index) {
-
-    beforePrimitive();
-	runObjectShader();
-
-	GLenum i;
-
-	switch (indexSize) {
-	case sizeof(uint32):
-		i = GL_UNSIGNED_INT;
-		break;
-
-	case sizeof(uint16):
-		i = GL_UNSIGNED_SHORT;
-		break;
-
-	case sizeof(uint8):
-		i = GL_UNSIGNED_BYTE;
-		break;
-
-	default:
-		debugAssertM(false, "Indices must be either 8, 16, or 32-bytes each.");
-        i = 0;
+BOOL CXTPImageManager::DoDisableBitmap(HBITMAP hBmp, COLORREF clrDisabledLight, COLORREF clrDisabledDark,
+									   int nBlackAndWhiteContrast)
+{
+	ASSERT(nBlackAndWhiteContrast == -1 ||
+		   (nBlackAndWhiteContrast >= 0 && nBlackAndWhiteContrast <= 255));
+
+	BOOL bOfficeDisabledIcons = clrDisabledLight != (COLORREF)-1 && clrDisabledDark != (COLORREF)-1;
+
+	BITMAP bmBitmap;
+
+	// Get information about the surfaces you were passed.
+	if (!GetObject(hBmp,  sizeof(BITMAP), &bmBitmap))  return FALSE;
+
+	// Make sure you have data that meets your requirements.
+	if (bmBitmap.bmBitsPixel != 32)
+		return FALSE;
+
+	if (bmBitmap.bmPlanes != 1)
+		return FALSE;
+
+	if (!bmBitmap.bmBits)
+		return FALSE;
+
+	DWORD dwWidthBytes = bmBitmap.bmWidthBytes;
+
+	// Initialize the surface pointers.
+	RGBQUAD *lprgbBitmap = (RGBQUAD*)bmBitmap.bmBits;
+
+	//************************************************
+	int x, y;
+	for (y = 0; y < bmBitmap.bmHeight; y++)
+	{
+		for (x = 0; x < bmBitmap.bmWidth; x++)
+		{
+			if (bOfficeDisabledIcons)
+			{
+				double dGray = (lprgbBitmap[x].rgbBlue * 0.114 + lprgbBitmap[x].rgbGreen * 0.587 + lprgbBitmap[x].rgbRed * 0.299)/255.0;
+				double dLight = 1.0 - dGray;
+
+				lprgbBitmap[x].rgbBlue  = BYTE(dLight * GetBValue(clrDisabledDark) + dGray * GetBValue(clrDisabledLight));
+				lprgbBitmap[x].rgbGreen = BYTE(dLight * GetGValue(clrDisabledDark) + dGray * GetGValue(clrDisabledLight));
+				lprgbBitmap[x].rgbRed   = BYTE(dLight * GetRValue(clrDisabledDark) + dGray * GetRValue(clrDisabledLight));
+			}
+			else if (nBlackAndWhiteContrast != -1)
+			{
+				int nGray = (lprgbBitmap[x].rgbBlue * 114 + lprgbBitmap[x].rgbGreen * 587 + lprgbBitmap[x].rgbRed * 299) / 1000;
+				nGray = nGray + (255 - nGray) * nBlackAndWhiteContrast / 255;
+				nGray = min(nGray, 255);
+
+				lprgbBitmap[x].rgbBlue = BYTE(nGray);
+				lprgbBitmap[x].rgbGreen = BYTE(nGray);
+				lprgbBitmap[x].rgbRed = BYTE(nGray);
+
+				lprgbBitmap[x].rgbReserved = BYTE(lprgbBitmap[x].rgbReserved / CXTPImageManager::m_dDisabledAlphaFactor);
+			}
+			else
+			{
+				double dGray = (lprgbBitmap[x].rgbBlue * 0.114 + lprgbBitmap[x].rgbGreen * 0.587 + lprgbBitmap[x].rgbRed * 0.299)/255.0;
+
+				lprgbBitmap[x].rgbBlue = (BYTE)(pow(dGray, CXTPImageManager::m_dDisabledBrightnessFactor) * 255.0);
+				lprgbBitmap[x].rgbGreen = lprgbBitmap[x].rgbBlue;
+				lprgbBitmap[x].rgbRed = lprgbBitmap[x].rgbBlue;
+
+				lprgbBitmap[x].rgbReserved = BYTE(lprgbBitmap[x].rgbReserved / CXTPImageManager::m_dDisabledAlphaFactor);
+			}
+		}
+
+		// Move to next scan line.
+		lprgbBitmap = (RGBQUAD *)((LPBYTE)lprgbBitmap + dwWidthBytes);
 	}
 
-    GLenum p = primitiveToGLenum(primitive);
-
-	glDrawElements(p, numIndices, i, index);
-
-    afterPrimitive();
+	return TRUE;
 }
 
+BOOL CXTPImageManager::DisableBitmap(HDC hDC, const CRect& rcRect, COLORREF clrDisabledLight, COLORREF clrDisabledDark)
+{
+	HDC      hdcDst  = NULL;
+	HBITMAP  hbmDst  = NULL;
+	HBITMAP  hbmpOld = NULL;
 
-bool RenderDevice::supportsTwoSidedStencil() const {
-    return GLCaps::supports_GL_EXT_stencil_two_side();
+	BOOL    bReturn = FALSE;
+	// Create surfaces for new image.
+	hbmDst  = CXTPImageManager::Create32BPPDIBSection(hDC, rcRect.Width(), rcRect.Height());
+	if (!hbmDst) goto HANDLEERROR;
+
+	// Create HDCs to hold our surfaces.
+	hdcDst  = CreateCompatibleDC(hDC);
+	if (!hdcDst) goto HANDLEERROR;
+
+	// Prepare the surfaces for drawing.
+	hbmpOld = (HBITMAP)SelectObject(hdcDst,  hbmDst);
+
+	// Capture a copy of the source area.
+	if (!BitBlt(hdcDst, 0, 0, rcRect.Width(), rcRect.Height(),
+		 hDC, rcRect.left, rcRect.top, SRCCOPY) )
+		goto HANDLEERROR;
+
+	// Modify sourcepixels to create the destination image.
+	bReturn = DoDisableBitmap(hbmDst, clrDisabledLight, clrDisabledDark);
+
+	// Display the disabled image to the target HDC.
+	if (bReturn)
+	{
+		BitBlt(hDC, rcRect.left, rcRect.top, rcRect.Width(), rcRect.Height(),
+			hdcDst, 0,0, SRCCOPY);
+	}
+
+HANDLEERROR:
+
+	// Clean up the rest of the objects you created.
+	if (hbmpOld) SelectObject(hdcDst, hbmpOld);
+	if (hdcDst) DeleteDC(hdcDst);
+	if (hbmDst) DeleteObject(hbmDst);
+
+	return bReturn;
 }
 
+BOOL CXTPImageManager::BlackWhiteBitmap(HDC hDC, const CRect& rcRect, int nBlackAndWhiteContrast)
+{
+	HDC      hdcDst  = NULL;
+	HBITMAP  hbmDst  = NULL;
+	HBITMAP  hbmpOld = NULL;
 
-bool RenderDevice::supportsTextureRectangle() const {
-    return GLCaps::supports_GL_EXT_texture_rectangle();
+	BOOL    bReturn = FALSE;
+	// Create surfaces for new image.
+	hbmDst  = CXTPImageManager::Create32BPPDIBSection(hDC, rcRect.Width(), rcRect.Height());
+	if (!hbmDst) goto HANDLEERROR;
+
+	// Create HDCs to hold our surfaces.
+	hdcDst  = CreateCompatibleDC(hDC);
+	if (!hdcDst) goto HANDLEERROR;
+
+	// Prepare the surfaces for drawing.
+	hbmpOld = (HBITMAP)SelectObject(hdcDst,  hbmDst);
+
+	// Capture a copy of the source area.
+	if (!BitBlt(hdcDst, 0, 0, rcRect.Width(), rcRect.Height(),
+		 hDC, rcRect.left, rcRect.top, SRCCOPY) )
+		goto HANDLEERROR;
+
+	// Modify sourcepixels to create the destination image.
+	bReturn = DoDisableBitmap(hbmDst, (COLORREF)-1, (COLORREF)-1, nBlackAndWhiteContrast);
+
+	// Display the disabled image to the target HDC.
+	if (bReturn)
+	{
+		BitBlt(hDC, rcRect.left, rcRect.top, rcRect.Width(), rcRect.Height(),
+			hdcDst, 0,0, SRCCOPY);
+	}
+
+HANDLEERROR:
+
+	// Clean up the rest of the objects you created.
+	if (hbmpOld) SelectObject(hdcDst, hbmpOld);
+	if (hdcDst) DeleteDC(hdcDst);
+	if (hbmDst) DeleteObject(hbmDst);
+
+	return bReturn;
 }
 
+BOOL CXTPImageManager::GetBitmapPixel(HBITMAP hBmp, const CPoint& pt, COLORREF& rclrPixel)
+{
+	BITMAP bmBitmap;
 
-bool RenderDevice::supportsVertexProgramNV2() const {
-    return GLCaps::supports_GL_NV_vertex_program2();
+	// Get information about the surfaces you were passed.
+	if (!GetObject(hBmp,  sizeof(BITMAP), &bmBitmap))
+		return FALSE;
+
+	// Make sure you have data that meets your requirements.
+	if (bmBitmap.bmBitsPixel != 32)
+		return FALSE;
+
+	if (bmBitmap.bmPlanes != 1)
+		return FALSE;
+
+	if (!bmBitmap.bmBits)
+		return FALSE;
+
+	if (pt.x < 0 || pt.x >= bmBitmap.bmWidth ||
+		pt.y < 0 || pt.y >= bmBitmap.bmHeight)
+		return FALSE;
+
+	// Initialize the surface pointers.
+	DWORD *lprgbBitmap = (DWORD*)((BYTE*)bmBitmap.bmBits + bmBitmap.bmWidthBytes * pt.y);
+	rclrPixel = lprgbBitmap[pt.x];
+
+	return TRUE;
 }
-
-
-bool RenderDevice::supportsVertexBufferObject() const { 
-    return GLCaps::supports_GL_ARB_vertex_buffer_object();
-}
-
-
-uint32 RenderDevice::debugNumMajorOpenGLStateChanges() const {
-    return mDebugNumMajorOpenGLStateChanges;
-}
-
-
-uint32 RenderDevice::debugNumPushStateCalls() const {
-    return mDebugPushStateCalls;
-}
-
-
-uint32 RenderDevice::debugNumMinorOpenGLStateChanges() const {
-    return mDebugNumMinorOpenGLStateChanges;
-}
-
-
-uint32 RenderDevice::debugNumMajorStateChanges() const {
-    return mDebugNumMajorStateChanges;
-}
-
-
-uint32 RenderDevice::debugNumMinorStateChanges() const {
-    return mDebugNumMinorStateChanges;
-}
-
-std::string RenderDevice::dummyString;
-bool RenderDevice::checkFramebuffer(std::string& whyNot) const {
-    GLenum status;
-    status = (GLenum)glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-
-    switch(status) {
-    case GL_FRAMEBUFFER_COMPLETE_EXT:
-        return true;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENTS_EXT:
-        whyNot = "Framebuffer Incomplete: Incomplete Attachment.";
-		break;
-
-    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        whyNot = "Unsupported framebuffer format.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-        whyNot = "Framebuffer Incomplete: Missing attachment.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-        whyNot = "Framebuffer Incomplete: Attached images must have same dimensions.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-        whyNot = "Framebuffer Incomplete: Attached images must have same format.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-        whyNot = "Framebuffer Incomplete: Missing draw buffer.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-        whyNot = "Framebuffer Incomplete: Missing read buffer.";
-		break;
-
-    default:
-        whyNot = "Framebuffer Incomplete: Unknown error.";
-    }
-
-    return false;    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-static void var(TextOutput& t, const std::string& name, const std::string& val) {
-    t.writeSymbols(name,"=");
-    t.writeString(val);
-    t.writeNewline();
-}
-
-
-static void var(TextOutput& t, const std::string& name, const bool val) {
-    t.writeSymbols(name, "=", val ? "Yes" : "No");
-    t.writeNewline();
-}
-
-
-static void var(TextOutput& t, const std::string& name, const int val) {
-    t.writeSymbols(name,"=");
-    t.writeNumber(val);
-    t.writeNewline();
-}
-
-
-void RenderDevice::describeSystem(
-    TextOutput& t) {
-
-    t.writeSymbols("GPU", "{");
-    t.writeNewline();
-    t.pushIndent();
-        var(t, "Chipset", GLCaps::renderer());
-        var(t, "Vendor", GLCaps::vendor());
-        var(t, "Driver", GLCaps::driverVersion());
-        var(t, "OpenGL version", GLCaps::glVersion());
-        var(t, "Textures", GLCaps::numTextures());
-        var(t, "Texture coordinates", GLCaps::numTextureCoords());
-        var(t, "Texture units", GLCaps::numTextureUnits());
-    t.popIndent();
-    t.writeSymbols("}");
-    t.writeNewline();
-    t.writeNewline();
-
-    GWindow* w = window();
-    GWindowSettings settings;
-    w->getSettings(settings);
-
-    t.writeSymbols("Window", "{");
-    t.writeNewline();
-    t.pushIndent();
-        var(t, "API", w->getAPIName());
-        var(t, "Version", w->getAPIVersion());
-        t.writeNewline();
-
-        var(t, "In focus", w->hasFocus());
-        var(t, "Centered", settings.center);
-        var(t, "Framed", settings.framed);
-        var(t, "Visible", settings.visible);
-        var(t, "Resizable", settings.resizable);
-        var(t, "Full screen", settings.fullScreen);
-        var(t, "Top", settings.y);
-        var(t, "Left", settings.x);
-        var(t, "Width", settings.width);
-        var(t, "Height", settings.height);
-        var(t, "Refresh rate", settings.refreshRate);
-        t.writeNewline();
-
-        var(t, "Alpha bits", settings.alphaBits);
-        var(t, "Red bits", settings.rgbBits);
-        var(t, "Green bits", settings.rgbBits);
-        var(t, "Blue bits", settings.rgbBits);
-        var(t, "Depth bits", settings.depthBits);
-        var(t, "Stencil bits", settings.stencilBits);
-        var(t, "Asynchronous", settings.asychronous);
-        var(t, "Stereo", settings.stereo);
-        var(t, "FSAA samples", settings.fsaaSamples);
-
-    t.popIndent();
-    t.writeSymbols("}");
-    t.writeNewline();
-    t.writeNewline();
-}
-
-} // namespace
 

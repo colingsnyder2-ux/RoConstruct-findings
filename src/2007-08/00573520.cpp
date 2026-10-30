@@ -1,26 +1,17 @@
-// from server: 42% by TrollStein
-struct Decal {
-    char pad0[0x0c];
-    int field_0c;
-    char pad10[0x80];
-    int field_8c;
-    void* construct();
-    int helper();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-void* Decal::construct() {
-    helper();
-    field_0c = 0;
-    *(int*)((char*)this + 0x00) = 0x7aa68c;
-    *(int*)((char*)this + 0x04) = 0x7aa684;
-    *(int*)((char*)this + 0x10) = 0x7aa67c;
-    *(int*)((char*)this + 0x14) = 0x7aa66c;
-    *(int*)((char*)this + 0x2c) = 0x7aa65c;
-    *(int*)((char*)this + 0x44) = 0x7aa64c;
-    *(int*)((char*)this + 0x5c) = 0x7aa63c;
-    *(int*)((char*)this + 0x74) = 0x7aa62c;
-    *(int*)((char*)this + 0x8c) = 0x7aa61c;
-    field_0c = helper();
-
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

@@ -1,527 +1,668 @@
-// from server: 54% by colin
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lang: cpp
+// roc-lib: rbxgs util/Math.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Camera.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/ICharacterSubject.h"
 #include "util/Math.h"
+#include "util/Debug.h"
+#include <boost/functional/hash/hash.hpp>
+#include <limits>
+#include <cmath>
+
+#define LODWORD(x) (*(DWORD*)(&x))
 
 namespace RBX
 {
-	const char* sCamera = "Camera";
-
-	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
-	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
-	
-	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
-		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	const G3D::Matrix3& Math::matrixRotateY()
 	{
-		addPair(Camera::FIXED_CAMERA, "Fixed");
-		addPair(Camera::WATCH_CAMERA, "Watch");
-		addPair(Camera::ATTACH_CAMERA, "Attach");
-		addPair(Camera::TRACK_CAMERA, "Track");
-		addPair(Camera::FOLLOW_CAMERA, "Follow");
-		addPair(Camera::CUSTOM_CAMERA, "Custom");
+		static G3D::Matrix3 rotateY(0, 0, 1, 0, 1, 0, -1, 0, 0);
+		return rotateY;
 	}
 
-	Camera::Camera()
-		: Base(),
-		  cameraFocus(G3D::Vector3(0, 0, -5)),
-		  cameraType(FIXED_CAMERA),
-		  animationType(AUTO),
-		  cameraExternallyAdjusted(false)
+	const G3D::Matrix3& Math::matrixTiltZ()
 	{
-		setName("Camera");
-		gCamera.setNearPlaneZ(1.25);
-		gCamera.setFarPlaneZ(5000);
-		gCamera.setFieldOfView(G3D::toRadians(60));
-
-		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
-		cameraCoord.lookAt(G3D::Vector3::zero());
-
-		setGCameraCoordinateFrame(cameraCoord);
+		static G3D::Matrix3 tiltZ(0, 1, 0, -1, 0, 0, 0, 0, 1);
+		return tiltZ;
 	}
 
-	Camera::~Camera()
+	bool Math::isDenormal(float f)
 	{
+		return (LODWORD(f) & 0x7F800000) == 0 && (LODWORD(f) & 0x7FFFFF) != 0;
 	}
 
-	void Camera::tellCameraMoved()
+	bool Math::isNanInfDenorm(float f)
 	{
-		if (ICameraOwner* owner = getCameraOwner())
+		return f == std::numeric_limits<float>::infinity()
+			|| f == -std::numeric_limits<float>::infinity()
+			|| f == std::numeric_limits<float>::quiet_NaN()
+			|| f == std::numeric_limits<float>::signaling_NaN()
+			|| Math::isDenormal(f);
+	}
+
+	bool Math::isNanInfDenormVector3(const G3D::Vector3& v)
+	{
+		return Math::isNanInfDenorm(v.x)
+			|| Math::isNanInfDenorm(v.y)
+			|| Math::isNanInfDenorm(v.z);
+	}
+
+	bool Math::fixDenorm(G3D::Vector3& v)
+	{
+		bool fixed = false;
+
+		float x = v.x;
+		if (Math::isDenormal(x))
 		{
-			owner->cameraMoved();
-		}
-	}
-
-	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
-	{
-		if (Math::legalCameraCoord(coord))
-		{
-			gCamera.setCoordinateFrame(coord);
-		}
-		else
-		{
-			RBXASSERT(false);
-		}
-	}
-
-	bool Camera::askSetParent(const Instance* instance) const
-	{
-		return dynamic_cast<const Workspace*>(instance) != NULL;
-	}
-
-	ICameraOwner* Camera::getCameraOwner()
-	{
-		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
-		{
-			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
-			if (cameraOwner)
-				return cameraOwner;
+			v.x = 0;
+			fixed = true;
 		}
 
-		return NULL;
+		float y = v.y; 
+		if (Math::isDenormal(y))
+		{
+			v.y = 0;
+			fixed = true;
+		}
+
+		float z = v.z;
+		if (Math::isDenormal(z))
+		{
+			v.z = 0;
+			fixed = true;
+		}
+
+		return fixed;
 	}
 
-	void Camera::lookAt(const G3D::Vector3& point)
+	float Math::radWrap(float rad)
 	{
-		cameraFocus.translation = point;
-		cameraGoal.lookAt(point);
+		if (rad >= -pi() && rad < pi())
+			return rad;
+
+		float rot = 1/twoPi();
+		float f = floor((rad + pi()) * rot);
+		return rad - Math::iRound(f) * twoPi();
 	}
 
-	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	G3D::Vector3 Math::sortVector3(const G3D::Vector3& v)
 	{
-		Math::getHeadingElevation(cameraGoal, heading, elevation);
-		distance = goalToFocusDistance();
+		G3D::Vector3 result = v;
+
+		if ( result.z < result.y)
+		{
+			std::swap(result.z, result.y);
+		}
+
+		if ( result.y < result.x  )
+		{
+			std::swap(result.y, result.x);
+		}
+
+		if ( result.z < result.y  )
+		{
+			std::swap(result.z, result.y);
+		}
+
+		return result;
 	}
 
-	bool Camera::setDistanceFromTarget(float newDistance)
+	G3D::Matrix3 Math::momentToObjectSpace(const G3D::Matrix3& iWorld, const G3D::Matrix3& bodyRotation)
 	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
-		float currentDistance = lookVector.magnitude();
+		return bodyRotation.transpose() * iWorld * bodyRotation;
+	}
 
-		const float min = distanceMin();
-		const float max = distanceMax();
+	G3D::Matrix3 Math::momentToWorldSpace(const G3D::Matrix3& iBody, const G3D::Matrix3& bodyRotation)
+	{
+		return (bodyRotation * iBody) * bodyRotation.transpose();
+	}
 
-		if (newDistance < min && currentDistance == min)
-			return false;
-		
-		if (newDistance > max && currentDistance == max)
-			return false;
+	G3D::Vector3 Math::toDiagonal(const G3D::Matrix3& m)
+	{
+		return G3D::Vector3(m[0][0],m[1][1],m[2][2]);
+	}
 
-		newDistance = G3D::min(max, G3D::max(min, newDistance));
-		
-		lookVector *= newDistance;
-		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
+	G3D::Matrix3 Math::fromDiagonal(const G3D::Vector3& v)
+	{
+		return G3D::Matrix3(v.x, 0, 0, 0, v.y, 0, 0, 0, v.z);
+	}
 
-		tellCameraMoved();
+	bool Math::lessThan(const G3D::Vector3& min, const G3D::Vector3& max)
+	{
+		return min.x < max.x && min.y < max.y && min.z < max.z;
+	}
+
+	bool Math::isAxisAligned(const G3D::Matrix3& matrix)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int j = 0; j < 3; ++j)
+			{
+				float f = matrix[i][j];
+				if (f != 0 && f != 1 && f != -1)
+					return false;
+			}
+		}
 
 		return true;
 	}
 
-	void Camera::alwaysMode()
+	G3D::Matrix3 Math::rotateAboutZ(const G3D::Matrix3& matrix, float radians)
 	{
-		animationType = ALWAYS;
+		G3D::Matrix3 m(G3D::Matrix3::identity());
+		float sinR = sin(radians);
+		float cosR = cos(radians);
+
+		m.setColumn(0, G3D::Vector3(cosR, sinR, 0));
+		m.setColumn(1, G3D::Vector3(-sinR, cosR, 0));
+
+		return matrix * m;
 	}
 
-	bool Camera::nonCharacterZoom(float in)
+	void Math::rotateMatrixAboutY90(G3D::Matrix3& matrix, int times)
 	{
-		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		static G3D::Matrix3 y90(0, 0, 1, 0, 1, 0, -1, 0, 0);
 
-		float currentDistance = lookVector.magnitude();
-		float newZoomDistance = getNewZoomDistance(currentDistance, in);
-
-		if (newZoomDistance == currentDistance)
-			return false;
-
-		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
-
-		tellCameraMoved();
-
-		return true;
-	}
-
-	bool Camera::characterZoom(float in)
-	{
-		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
-
-		float currentDistance = focusToGoal.magnitude();
-
-		float maxDistance = distanceMaxCharacter();
-		float newDistance = getNewZoomDistance(currentDistance, in);
-		newDistance = G3D::min(newDistance, maxDistance);
-
-		if (newDistance == currentDistance)
-			return false;
-
-		focusToGoal.y = 0.0;
-		focusToGoal.unitize();
-		focusToGoal.y = newDistance * 0.03f;
-
-		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
-
-		return true;
-	}
-
-	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
-	{
-		Math::setHeadingElevation(cameraGoal, heading, elevation);
-		cameraFocus.rotation = cameraGoal.rotation;
-
-		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
-		cameraExternallyAdjusted = true;
-	}
-
-	void Camera::panRadians(float angle)
-	{
-		RBXASSERT(angle > -100);
-		RBXASSERT(angle < 100);
-
-		if (angle != 0)
+		for (int i = 0; i < times; ++i)
 		{
-			float heading, elevation, distance;
-
-			getHeadingElevationDistance(heading, elevation, distance);
-			heading = Math::radWrap(heading + angle);
-			setHeadingElevationDistance(heading, elevation, distance);
-
-			tellCameraMoved();
+			matrix = y90 * matrix;
 		}
 	}
 
-	bool Camera::tiltRadians(float angle)
+	float Math::getHeading(const G3D::Vector3& look)
 	{
-		if (angle != 0)
-		{
-			float heading, elevation, distance;
-			getHeadingElevationDistance(heading, elevation, distance);
-
-			static float rad = G3D::toRadians(81);
-			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
-
-			if (elevation != newElevation)
-			{
-				setHeadingElevationDistance(heading, newElevation, distance);
-				tellCameraMoved();
-				return true;
-			}
-		}
-
-		return false;
+		return atan2(-look.x, -look.z);
 	}
 
-	void Camera::updateFocus()
+	float Math::getElevation(const G3D::Vector3& look)
 	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			cameraFocus = subject->getLocation();
-		}
+		return asin(look.y);
 	}
 
-	//96.11% matching.
-	void Camera::updateGoal()
+	void Math::getHeadingElevation(const G3D::CoordinateFrame& c, float& heading, float& elevation)
 	{
-		switch (cameraType)
-		{
-			case WATCH_CAMERA:
-			{
-				updateFocus();
-				break;
-			}
-			case ATTACH_CAMERA: 
-			{
-				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
-				float distance = delta.xz().length();
+		G3D::Vector3 lookVector = c.getLookVector();
 
-				updateFocus();
-
-				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
-				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case TRACK_CAMERA:
-			{
-				G3D::Vector3 oldFocusPt = cameraFocus.translation;
-				updateFocus();
-
-				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
-				break;
-			}
-			case FOLLOW_CAMERA:
-			{
-				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
-				float distance = delta.xz().length();
-
-				updateFocus();
-			
-				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
-				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
-
-				break;
-			}
-			case CUSTOM_CAMERA:
-			{
-				if (ICameraSubject* cameraSubject = getCameraSubject())
-					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
-
-				cameraExternallyAdjusted = false;
-				break;
-			}
-		}
-
-		cameraGoal.lookAt(cameraFocus.translation);
+		heading = Math::getHeading(lookVector);
+		elevation = Math::getElevation(lookVector);
 	}
 
-	bool Camera::zoom(float in)
+	void Math::setHeadingElevation(G3D::CoordinateFrame& c, float heading, float elevation)
 	{
-		if (cameraType == CUSTOM_CAMERA)
-		{
-			ICameraSubject* cameraSubject = getCameraSubject();
-			if (cameraSubject)
-				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
-		}
-		else if (getCameraSubjectInstance() && 
-				 (cameraType == FOLLOW_CAMERA || 
-				  cameraType == ATTACH_CAMERA || 
-				  cameraType == TRACK_CAMERA))
-		{
-			return characterZoom(in);
-		}
-		else
-		{
-			return nonCharacterZoom(in);
-		}
-
-		return false;
+		float Y = sin(elevation);
+		float unk = sqrtf(1 - Y * Y);
+		float X = -(sin(heading) * unk);
+		float Z = -(unk * cos(heading));
+		c.lookAt(c.translation + G3D::Vector3(X, Y, Z).direction());
 	}
 
-	void Camera::onHeartbeat()
+	G3D::CoordinateFrame Math::getFocusSpace(const G3D::CoordinateFrame& focus)
 	{
-		updateGoal();
-		G3D::CoordinateFrame adjustedGoal = cameraGoal;
-		ICameraSubject* cameraSubject = getCameraSubject();
-		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
+		G3D::Vector3 look = focus.lookVector();
+		float heading = Math::getHeading(look);
 
-		if (characterSubject)
-			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
+		G3D::CoordinateFrame cf(focus.rotation);
+		cf.translation = focus.translation;
+		Math::setHeadingElevation(cf, heading, 0);
+		return cf;
+	}
 
-		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
-		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
+	const G3D::Matrix3& Math::getAxisRotationMatrix(int face)
+	{
+		static G3D::Matrix3 y = G3D::Matrix3::fromEulerAnglesXYZ(0, 0, G3D::halfPi());
+		static G3D::Matrix3 z = G3D::Matrix3::fromEulerAnglesXYZ(0, G3D::halfPi(), 0);
+		static G3D::Matrix3 y_neg = G3D::Matrix3(y);
+		static G3D::Matrix3 z_neg = G3D::Matrix3(z);
 
-		setGCameraCoordinateFrame(LerpFrame);
-
-		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
+		switch (face)
 		{
-			tellCameraMoved();
+		case 1:
+			return y;
+		case 2:
+			return z;
+		case 4:
+			return y_neg;
+		case 5:
+			return z_neg;
+		default:
+			return G3D::Matrix3::identity();
 		}
 	}
 
-	Instance* Camera::getCameraSubjectInstance() const
+	G3D::Vector3 Math::vector3Abs(const G3D::Vector3& v)
 	{
-		return cameraSubject.get();
+		return G3D::Vector3(fabs(v.x), fabs(v.y), fabs(v.z));
 	}
 
-	ICameraSubject* Camera::getCameraSubject() const
+	bool Math::isOrthonormal(const G3D::Matrix3& m)
 	{
-		Instance* instance = getCameraSubjectInstance();
-		if (instance)
-		{
-			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
-			RBXASSERT(subject);
-			return subject;
-		}
-		return NULL;
+		return m.isOrthonormal();
 	}
 
-	void Camera::autoMode()
+	bool Math::orthonormalizeIfNecessary(G3D::Matrix3& m)
 	{
-		if (animationType != AUTO)
+		if (!Math::isOrthonormal(m))
 		{
-			animationType = AUTO;
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraType(CameraType type)
-	{
-		if (cameraType != type)
-		{
-			cameraType = type;
-			raisePropertyChanged(desc_cameraType);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::setCameraSubject(Instance* newSubject)
-	{
-		if (newSubject != getCameraSubjectInstance())
-		{
-			if (dynamic_cast<ICameraSubject*>(newSubject))
-			{
-				cameraSubject = shared_from((ModelInstance*) newSubject);
-				raisePropertyChanged(cameraSubjectProp);
-
-				tellCameraMoved();
-			}
-		}
-	}
-
-	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
-	{
-		if (value != cameraFocus)
-		{
-			cameraFocus = value;
-			raisePropertyChanged(desc_Focus);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::goalToCamera()
-	{
-		if (gCamera.getCoordinateFrame() != cameraGoal)
-		{
-			cameraExternallyAdjusted = true;
-			setGCameraCoordinateFrame(cameraGoal);
-			raisePropertyChanged(desc_CoordFrame);
-
-			tellCameraMoved();
-		}
-	}
-
-	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
-	{
-		RBXASSERT(current >= low);
-		RBXASSERT(current <= high);
-
-		if (high - low < 0.1)
-			return;
-
-		setDistanceFromTarget(current);
-		updateGoal();
-		goalToCamera();
-
-		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
-		{
-			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
-		}
-		else
-		{
-			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
-		}
-	}
-
-	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
-	{
-		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
-		extents.expand(0.1f);
-
-		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
-		{
-			if (cameraType == FIXED_CAMERA)
-			{
-				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
-
-				cameraFocus.translation += scaler;
-				cameraGoal.translation += scaler;
-			}
-
-			float low;
-
-			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
-				low = goalToFocusDistance();
-			else
-				low = distanceMin();
-
-			float current = goalToFocusDistance();
-
-			RBXASSERT(G3D::isFinite(current));
-
-			if (zoomType == ZOOM_CHAR_PART_DRAG)
-				extents.scale(1.1f);
-
-			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
-				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
-
-			cameraGoal = gCamera.getCoordinateFrame();
-			setGCameraCoordinateFrame(currentCoord);
-			tellCameraMoved();
-		}
-	}
-
-	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
-	{
-		if (ICameraOwner* owner = getCameraOwner())
-		{
-			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			m.orthonormalize();
 			return true;
 		}
+
 		return false;
 	}
 
-	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
+	size_t Math::hash(const G3D::Vector3& v)
 	{
-		cameraGoal = value;
-		goalToCamera();
+		const int magic = 1640531527;
+		size_t h;
+
+		h = (boost::hash_value(v.x) - magic);
+		h = (boost::hash_value(v.y) - magic + (h >> 2) + (h << 6)) ^ h;
+		h = (boost::hash_value(v.z) - magic + (h >> 2) + (h << 6)) ^ h;
+		return h;
 	}
 
-	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
+	float Math::angle(const G3D::Vector3& v0, const G3D::Vector3& v1)
 	{
-		G3D::Vector3 look = modelCoord.lookVector();
-
-		bool noTilt = (fabs(look.y) > 0.95);
-		if (noTilt)
-		{
-			look = -G3D::Vector3::unitZ();
-		}
-		else
-		{
-			look.y = 0;
-			look = look.direction();
-		}
-
-		G3D::CoordinateFrame lookCoord;
-
-		lookCoord.lookAt(look);
-		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
-
-		look = lookCoord.lookVector();
-		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
-
-		lookCoord.lookAt(modelCoord.translation);
-
-		setCameraType(FIXED_CAMERA);
-		setCameraFocus(modelCoord.translation);
-		setCameraCoordinateFrameNoLerp(lookCoord);
-		zoomExtents(viewPort);
-		goalToCamera();
+		float f = v0.z * v1.z + v0.y * v1.y + v0.x * v1.x;
+		if (f >= 1)
+			return 0;
+		if (f <= -1)
+			return pi();
+		return acos(f);
 	}
 
-	float Camera::getNewZoomDistance(float currentDistance, float in)
+	float Math::angleToE0(const G3D::Vector2& v)
 	{
-		float const ZOOM_FACTOR = 0.25f;
+		G3D::Vector2 copy(v);
+		copy.unitize();
 
-		if (in > 0.0f)
+		float f = acos(copy.x);
+		if (copy.y < 0)
+			return twoPi() - f;
+		return f;
+	}
+
+	G3D::Vector3 Math::iRoundVector3(const G3D::Vector3& point)
+	{
+		return G3D::Vector3(Math::iRound(point.x), Math::iRound(point.y), Math::iRound(point.z));
+	}
+
+	const float& segSizeRadians()
+	{
+		// - 0.00001f is necessary to get the same value as the compiled binary
+		static float ssr = (Math::pi() - 0.00001f) / 128;
+		return ssr;
+	}
+
+	G3D::uint8 rotationToByteBase(float angle)
+	{
+		RBXASSERT(angle <= Math::pi());
+		RBXASSERT(angle >= -Math::pi());
+
+		float result = (angle + Math::pi()) / segSizeRadians();
+		int resInt = G3D::iRound(result);
+		
+		RBXASSERT(resInt >= -1);
+		RBXASSERT(resInt <= 256);
+
+		resInt = std::max(0, resInt);
+		resInt = std::min(255, resInt);
+
+		G3D::uint8 byte = (G3D::uint8)resInt;
+
+		RBXASSERT(byte <= 255);
+
+		return byte;
+	}
+
+	G3D::uint8 Math::rotationToByte(float angle)
+	{
+		return rotationToByteBase(angle);
+	}
+
+	float Math::rotationFromByte(unsigned char byteAngle)
+	{
+		float byteAngleFloat = byteAngle;
+		return byteAngleFloat * segSizeRadians() - pi();
+	}
+
+	G3D::Vector3 Math::toGrid(const G3D::Vector3& v, float grid)
+	{
+		return Math::toGrid(v, G3D::Vector3(grid, grid, grid));
+	}
+
+	G3D::Vector3 Math::toGrid(const G3D::Vector3& v, const G3D::Vector3& grid)
+	{
+		G3D::Vector3 units = v / grid;
+		return grid * Math::iRoundVector3(units);
+	}
+
+	G3D::Matrix3 Math::getIWorldAtPoint(const G3D::Vector3& cofmPos, const G3D::Vector3& worldPos, const G3D::Matrix3& iWorldAtCofm, float mass)
+	{
+		G3D::Vector3 delta = worldPos - cofmPos;
+		float deltaXSquared = delta.x * delta.x;
+		float deltaYSquared = delta.y * delta.y;
+		float deltaZSquared = delta.z * delta.z;
+		float deltaYX = delta.y * delta.x;
+		float deltaZX = delta.z * delta.x;
+		float deltaZY = delta.z * delta.y;
+
+		return iWorldAtCofm + mass * G3D::Matrix3(
+				deltaZSquared + deltaYSquared,
+				-deltaYX,
+				-deltaZX,
+				-deltaYX,
+				deltaZSquared + deltaXSquared,
+				-deltaZY,
+				-deltaZX,
+				-deltaZY,
+				deltaYSquared + deltaXSquared
+				);
+	}
+
+	bool Math::intersectRayPlane(const G3D::Ray& ray, const G3D::Plane& plane, G3D::Vector3& hit)
+	{
+		float dotProd = ray.direction.dot(plane.normal());
+		if (plane.halfSpaceContains(ray.origin))
 		{
-			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
-		} 	
-		else if (in < 0.0f)
+			if (!(dotProd < 0.0f))
+			{
+				hit = G3D::Vector3::inf();
+				return false;
+			}
+		}
+		else if (!(dotProd > 0.0f))
 		{
-			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+			hit = G3D::Vector3::inf();
+			return false;
+		}
+		G3D::Line myLine = G3D::Line::fromPointAndDirection(ray.origin, ray.direction);
+		hit = myLine.intersection(plane);
+		return true;
+	}
+
+	int Math::getOrientId(const G3D::Matrix3& matrix)
+	{
+		NormalId ColumnNormId = Vector3ToNormalId(matrix.getColumn(0));
+		return Vector3ToNormalId(matrix.getColumn(1)) + 6 * ColumnNormId;
+	}
+
+	float Math::maxAxisLength(const G3D::Vector3& v)
+	{
+		G3D::Vector3 vAbs = G3D::Vector3(fabs(v.x), fabs(v.y), fabs(v.z));
+		return std::max(vAbs.x, std::max(vAbs.y, vAbs.z));
+	}
+
+	NormalId Math::getClosestObjectNormalId(const G3D::Vector3& worldV, const G3D::Matrix3& objectR)
+	{
+		G3D::Vector3 worldObjMul = worldV * objectR;
+		float absX = fabs(worldObjMul.x);
+		float absY = fabs(worldObjMul.y);
+		float absZ = fabs(worldObjMul.z);
+		if (absX > absY)
+		{
+			if (absX > absZ)
+			{
+				return worldObjMul.x > 0 ? NORM_X : NORM_X_NEG;
+			}
+			else
+			{
+				return worldObjMul.z > 0 ? NORM_Z : NORM_Z_NEG;
+			}
+		}
+		else if (absY > absZ)
+		{
+			return worldObjMul.y > 0 ? NORM_Y : NORM_Y_NEG;
+		}
+		return worldObjMul.z > 0 ? NORM_Z : NORM_Z_NEG;
+	}
+
+	bool Math::fuzzyAxisAligned(const G3D::Matrix3& m0, const G3D::Matrix3& m1, float radTolerance)
+	{
+		G3D::Vector3 vectors[3] = {G3D::Vector3(), G3D::Vector3(), G3D::Vector3()};
+
+		for (int i = 0; i < 3; i++)
+		{
+			vectors[i] = m1.getColumn(i);
 		}
 
-		return currentDistance;
+		for (int i = 0; i < 3; i++)
+		{
+			G3D::Vector3 m0Column = m0.getColumn(i);
+			G3D::Vector3* vector = vectors; 
+			int count = 0;
+			while (count < 3)
+			{
+				if (m0Column.cross(*vector).magnitude() < radTolerance)
+					break;
+				count++;
+				vector++;
+				if (count >= 3)
+					return false;
+			}
+		}
+		return true;
+	}
+
+	void Math::idToMatrix3(int orientId, G3D::Matrix3& matrix)
+	{
+		NormalId norm1 = intToNormalId(orientId / 6);
+		NormalId norm2 = intToNormalId(orientId % 6);
+		G3D::Vector3 norm1Vec3 = normalIdToVector3(norm1);
+		G3D::Vector3 norm2Vec3 = normalIdToVector3(norm2);
+		G3D::Vector3 cross = norm1Vec3.cross(norm2Vec3);
+		matrix.setColumn(0, norm1Vec3);
+		matrix.setColumn(1, norm2Vec3);
+		matrix.setColumn(2, cross);
+	}
+
+	bool Math::legalCameraCoord(const G3D::CoordinateFrame& c)
+	{
+		int i = 0;
+		const float* transMatArr = (const float*)c.translation;
+		const float* rotMatArr = (const float*)c.rotation;
+		for (; i < 3; i++, transMatArr++, rotMatArr += 4)
+		{
+			float rotValue = *rotMatArr;
+			for (int j = 0; j < 3; j++)
+			{
+				if (!(rotValue > -1.2f && rotValue < 1.2f))
+					return false;
+			}
+			float transValue = *transMatArr;
+			if (!(transValue > -1000000.0f && transValue < 1000000.0f))
+				return false;
+		}
+		return true;
+	}
+
+	G3D::Matrix3 Math::snapToAxes(const G3D::Matrix3& align)
+	{
+		G3D::Matrix3 unkMat;
+		float aBest = 0.0f;
+		int second = -1;
+		int bestV = -1;
+		
+		for (int i = 0; i < 3; i++)
+		{
+			G3D::Vector3 loopColumn = align.getColumn(i);
+			for (int j = 0; j < 3; j++)
+			{
+				float dotProd = G3D::Matrix3::identity().getColumn(j).dot(loopColumn);
+				unkMat[i][j] = dotProd;
+				if (fabs(dotProd) > fabs(aBest))
+				{
+					bestV = i;
+					second = j;
+					aBest = dotProd;
+				}
+			}
+		}
+		
+		G3D::Vector3 myColumn = G3D::Matrix3::identity().getColumn(second);
+		if (aBest < 0.0f)
+		{
+			myColumn *= -1.0f;
+		}
+
+		int v10 = -1;
+		int v11 = -1;
+		float v9 = 0.0f;
+		
+		for (int i = 0; i < 3; i++)
+		{
+			if (i != bestV)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					if (j != second)
+					{
+						if (fabs(unkMat[i][j]) > fabs(v9))
+						{
+							v9 = unkMat[i][j];
+							v10 = i;
+							v11 = j;
+						}
+					}
+				}
+			}
+		}
+
+		G3D::Vector3 myColumn2 = G3D::Matrix3::identity().getColumn(v11);
+		if (v9 < 0.0f)
+		{
+			myColumn2 *= -1.0f;
+		}
+
+		int v15 = 3 - v10 - bestV;
+		int calcColmTemp = 3 - v11 - second;
+		G3D::Vector3 myColumn3 = G3D::Matrix3::identity().getColumn(calcColmTemp);
+		if (unkMat[v15][v11] < 0.0f)
+		{
+			myColumn3 *= -1.0f;
+		}
+
+		G3D::Matrix3 result;
+		result.setColumn(bestV, myColumn);
+		result.setColumn(v10, myColumn2);
+		result.setColumn(v15, myColumn3);
+		return result;
+	}
+
+	bool Math::fuzzyEq(float f0, float f1, float epsilon)
+	{
+		float num1 = fabs(f0) + 1;
+		float num2 = fabs(f0 - f1);
+
+		return (f0 == f1 || num2 <= num1 * epsilon);
+	}
+
+	bool Math::fuzzyEq(const G3D::Vector3& v0, const G3D::Vector3& v1, float epsilon)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (!Math::fuzzyEq(v0[i], v1[i], epsilon))
+				return false;
+		}
+
+		return true;
+	}
+
+	bool Math::fuzzyEq(const G3D::Matrix3& m0, const G3D::Matrix3& m1, float epsilon)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++)
+			{
+				if (!Math::fuzzyEq(m0[i][j], m1[i][j], epsilon))
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool Math::fuzzyEq(const G3D::CoordinateFrame& c0, const G3D::CoordinateFrame& c1, float epsT, float epsR)
+	{
+		bool tRes = Math::fuzzyEq(c0.translation, c1.translation, epsT);
+		if (!tRes)
+			return false;
+
+		bool rRes = Math::fuzzyEq(c0.rotation, c1.rotation, epsR);
+		return rRes ? true : false;
+	}
+
+	G3D::CoordinateFrame Math::snapToGrid(const G3D::CoordinateFrame& snap, const G3D::Vector3& grid)
+	{
+		return G3D::CoordinateFrame(Math::snapToAxes(snap.rotation), Math::toGrid(snap.translation, grid));
+	}
+
+	G3D::CoordinateFrame Math::snapToGrid(const G3D::CoordinateFrame& snap, float grid)
+	{
+		return G3D::CoordinateFrame(Math::snapToAxes(snap.rotation), Math::toGrid(snap.translation, grid));
+	}
+
+	G3D::Matrix3 Math::alignAxesClosest(const G3D::Matrix3& align, const G3D::Matrix3& target)
+	{
+		float dots[3][3];
+		int maxI = -1, maxJ = -1;
+		float maxDot = 0.0f;
+
+		for (int i = 0; i < 3; i++)
+		{
+			G3D::Vector3 aAxis = align.getColumn(i);
+			for (int j = 0; j < 3; j++)
+			{
+				G3D::Vector3 tAxis = target.getColumn(j);
+				float atDot = aAxis.dot(tAxis);
+				dots[i][j] = atDot;
+
+				if (fabs(atDot) > fabs(maxDot))
+				{
+					maxI = i;
+					maxJ = j;
+					maxDot = atDot;
+				}
+			}
+		}
+
+		float mult = (maxDot >= 0.0f) ? 1.0f : -1.0f;
+		G3D::Vector3 bestV = align.getColumn(maxI) * mult;
+
+		float maxDot1 = 0.0f;
+		int maxI1 = -1, maxJ1 = -1;
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (i != maxI)
+				for (int j = 0; j < 3; j++)
+				{
+					if (j != maxJ && fabs(dots[i][j]) > fabs(maxDot1))
+					{
+						maxDot1 = dots[i][j];
+						maxI1 = i;
+						maxJ1 = j;
+					}
+				}
+		}
+		
+		float mult1 = (maxDot1 >= 0.0f) ? 1.0f : -1.0f;
+		G3D::Vector3 secondV = align.getColumn(maxI1) * mult1;
+
+		int maxI2 = (3 - maxI1) - maxI;
+		int maxJ2 = (3 - maxJ1) - maxJ;
+
+		float maxDot2 = dots[maxI2][maxJ2];
+		float mult2 = (maxDot2 >= 0.0f) ? 1.0f : -1.0f;
+
+		G3D::Vector3 thirdV = align.getColumn(maxI2) * mult2;
+
+		G3D::Matrix3 result;
+		result.setColumn(maxJ, bestV);
+		result.setColumn(maxJ1, secondV);
+		result.setColumn(maxJ2, thirdV);
+
+		return result;
 	}
 }

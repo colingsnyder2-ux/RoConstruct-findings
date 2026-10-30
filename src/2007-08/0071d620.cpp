@@ -1,4 +1,4 @@
-// from server: 97% by atomic.potato
+// from server: 100% by tajop
 extern "C" {
     __declspec(dllimport) unsigned int __stdcall KillTimer(void*, unsigned int);
     __declspec(dllimport) int __stdcall ReleaseCapture();
@@ -45,10 +45,7 @@ void CXTPScrollBase::func(int arg) {
             }
             v5(4, p[9]);
             v6();
-            v5(8, 0);
-            return;
-        }
-        if (p[6]) {
+        } else if (p[6]) {
             KillTimer((void*)p[11], p[6]);
             p[6] = 0;
         }

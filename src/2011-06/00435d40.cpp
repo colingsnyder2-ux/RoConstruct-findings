@@ -1,39 +1,47 @@
-// from server: 0% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// roc-lib: rbxgs roc_codex_eh_count20_9b609f40750eb959.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
 
-#define BOOST_REGEX_SOURCE
+struct Object {
+    virtual ~Object();
+};
 
-#include <boost/regex/config.hpp>
+struct Deleter { void operator()(Object*) const; };
 
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
 
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
 
-#include <boost/regex.hpp>
-
-#endif
+S::S(Object* object, Deleter deleter) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        deleter(object);
+        throw;
+    }
+}

@@ -1,8 +1,7 @@
-// from server: 89% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Hopper.cpp
+// roc-lib: rbxgs-dll v8datamodel/Hopper.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8datamodel/Hopper.h"

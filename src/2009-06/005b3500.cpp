@@ -1,51 +1,11 @@
-// from server: 58% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GF /GS- /EHsc /MD /Ob1 /Oy-
-// roc-lib: rbxgs-render TextureProxy.cpp
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lib: g3d-6.09 roc_g3d_vector_strong_b0beb8bf4f1ef12a.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/TextureProxy.h"
-
-namespace RBX
-{
-	namespace Render
-	{
-		G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
-		{
-			return texture;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::alphaOnlyVersion()
-		{
-			return new TextureProxy(this);
-		}
-
-		G3D::Vector2 TextureProxy::getSize()
-		{
-			G3D::ReferenceCountedPointer<G3D::Texture> t = getIfResolved();
-			G3D::Vector2 out;
-			if (t.notNull())
-			{
-				out.x = t->texelWidth();
-				out.y = t->texelHeight();
-			}
-			else
-			{
-				out.y = 0.0f;
-				out.x = 0.0f;
-			}
-			return out;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::shade(const G3D::Color3& baseColor, const G3D::ReferenceCountedPointer<TextureProxy>& baseTex)
-		{
-			TextureProxy* newTex = new TextureProxy(baseTex);
-			newTex->textureManager = textureManager;
-			newTex->root = baseTex;
-			newTex->shadeColor = baseColor;
-			newTex->shadeTexture = this;
-			return newTex;
-		}
-	}
-}
+#include <G3D/ReferenceCount.h>
+#include <vector>
+typedef G3D::ReferenceCountedPointer<G3D::ReferenceCountedObject> NativeStrongRef;
+typedef char StrongRefSize[sizeof(NativeStrongRef)==4?1:-1];
+template class std::vector<NativeStrongRef>;

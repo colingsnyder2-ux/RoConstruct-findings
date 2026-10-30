@@ -1,4 +1,3 @@
-// from server: 61% by colin
 // roc 2007-08 0055fd80  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fd80
 //
@@ -17,16 +16,12 @@
 // 0055fda9  8bc6                 mov eax, esi
 // 0055fdab  5e                   pop esi
 // 0055fdac  c20400               ret 4
+// copied from an identical function in another client (function ??0CutVerb@@QAE@H@Z)
 
-struct FilteredSelection {
-    FilteredSelection(const char*);
-};
-
-extern "C" void __stdcall std_string_ctor(void*, const char*);
-extern void __stdcall base_ctor();
-
-FilteredSelection::FilteredSelection(const char* name) {
-    std_string_ctor(this, name);
-    base_ctor();
-    *(int*)this = 0x7a93f4;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("UnGroup",p){}

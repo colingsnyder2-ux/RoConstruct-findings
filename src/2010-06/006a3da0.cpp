@@ -1,16 +1,15 @@
-// from server: 67% by atomic.potato
-struct StreamBuf
-{
-    int sputn(const char* s, int n);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-int write_all(StreamBuf* sb, const char* data, int len)
-{
-    int total = 0;
-    while (total < 1)
-    {
-        int n = sb->sputn(data + total, 1 - total);
-        total += n;
-    }
-    return total == 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

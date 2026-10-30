@@ -1,526 +1,464 @@
-// from server: 52% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: atl-8.0 atl.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_instance_basecall_ad6080b748d5398f.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Active Template Library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Active Template Library Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the	
-// Active Template Library product.
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#ifndef _DLL
+#define _DLL
+#endif
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8tree/Instance.h"
+#include "reflection/function.h"
+#include "reflection/property.h"
+#include <algorithm>
 
-// atl.cpp : Implementation of DLL Exports.
-
-#include "stdafx.h"
-#include "resource.h"
-#include "RegObj.h"
-#include "AtlAssem.h"
-#include <io.h>
-
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_Registrar, CDLLRegObject)
-	OBJECT_ENTRY_NON_CREATEABLE(CAxHostWindow)
-END_OBJECT_MAP()
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle);  /* local function */
-
-/////////////////////////////////////////////////////////////////////////////
-// DLL Entry Point
-
-extern "C"
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
+namespace RBX
 {
-	if (dwReason == DLL_PROCESS_ATTACH)
+	const char* sInstance = "Instance";
+
+	Reflection::BoundProp<bool, 1> Instance::propArchivable("archivable", "Behavior", &Instance::archivable, Reflection::PropertyDescriptor::STANDARD); // L14
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(std::string, bool), 2> findFirstChild(&Instance::findFirstChildByName2, "FindFirstChild", "name", "recursive", false, Reflection::FunctionDescriptor::AnyCaller); // L15
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<Instance>(), 0> func_clone(&Instance::clone, "Clone", Reflection::FunctionDescriptor::AnyCaller); // L16
+	static Reflection::BoundFuncDesc<Instance, void(), 0> func_Remove(&Instance::remove, "Remove", Reflection::FunctionDescriptor::AnyCaller); // L17
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_childrenOld(&Instance::getChildren2, "children", Reflection::FunctionDescriptor::AnyCaller); // L18
+	static Reflection::BoundFuncDesc<Instance, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(), 0> func_children(&Instance::getChildren2, "GetChildren", Reflection::FunctionDescriptor::AnyCaller); // L19
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isDescendentOf(&Instance::isDescendentOf2, "IsDescendentOf", "ancestor", Reflection::FunctionDescriptor::AnyCaller); // L20
+	static Reflection::BoundFuncDesc<Instance, bool(boost::shared_ptr<Instance>), 1> func_isAncestorOf(&Instance::isAncestorOf2, "IsAncestorOf", "descendent", Reflection::FunctionDescriptor::AnyCaller); // L21
+	static Reflection::PropDescriptor<Instance, std::string> prop_className("className", "Data", &Instance::getClassNameStr, NULL, Reflection::PropertyDescriptor::UI); // L22
+
+	const Reflection::PropDescriptor<Instance, std::string> Instance::desc_Name("Name", "Data", &Instance::getName, &Instance::setName, Reflection::PropertyDescriptor::STANDARD); // L24
+	const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent("Parent", "Data", &Instance::getParent, &Instance::setParent, Reflection::PropertyDescriptor::UI); // L25
+
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child"); // L27
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child"); // L28
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentAdded("DescendentAdded", "descendent"); // L29
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_descendentRemoving("DescendentRemoving", "descendent"); // L30
+	Reflection::SignalDesc<Instance, void(boost::shared_ptr<Instance>)> Instance::event_ancestryChanged("AncestryChanged", "child"); // L31
+	Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged("Changed", "property"); // L32 
+
+	Instance::Instance(const char* name)
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name(name),
+		  archivable(true)
 	{
-		bAtlAxWinInitialized = false;
-		OSVERSIONINFOA info;
-		info.dwOSVersionInfoSize = sizeof(info);
-		if (GetVersionExA(&info))
-		{
-#ifdef _UNICODE
-			if (info.dwPlatformId != VER_PLATFORM_WIN32_NT)
-			{
-				MessageBoxA(NULL, "Can not run Unicode version of ATL80.DLL on Windows 95, Windows98 or Windows Me.\nPlease install the ANSI version.", "ATL", MB_ICONSTOP|MB_OK);
-				return FALSE;
-			}
-#else
-			if (info.dwPlatformId == VER_PLATFORM_WIN32_NT)
-			{
-				OutputDebugString(_T("Slight Performace loss due to running ANSI version of ATL80.DLL on Windows NT, Windows 2000, Windows XP or Windows Server 2003 \nPlease install the Unicode version.\n"));
-			}
-#endif
-		}
-#ifdef _DEBUG
-		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF);
-		int n = 0;
-		_CrtSetBreakAlloc(n);
-#endif
-		_Module.Init(ObjectMap, hInstance, &LIBID_ATLLib);
-#ifdef _ATL_DEBUG_INTERFACES
-		int ni = 0;
-		_Module.m_nIndexBreakAt = ni;
-#endif // _ATL_DEBUG_INTERFACES
-
-#if defined(_ATL_CHECK_MANIFEST)
-#define _ATL_ABSENT_MANIFEST_ERROR_MSG	"R6034\n" \
-										"An application has made an attempt to load ATL80.DLL incorrectly.\n" \
-										"Please contact the application's support team for more information.\n"
-#define _ATL_ABSENT_MANIFEST_ERROR_DBGMSG	"R6034\n" \
-											"An application has made an attempt to load ATL80.DLL without using a manifest.\n" \
-											"This is an unsupported way to load Visual C++ DLLs. You need to modify your application to build with a manifest.\n" \
-											"For more information, see the \"Visual C++ Libraries as Shared Side-by-Side Assemblies\" topic in the product documentation.\n"
-
-		if (!_atl_check_manifest(hInstance))
-		{
-			__try
-			{
-				MessageBoxA(NULL, _ATL_ABSENT_MANIFEST_ERROR_MSG, "Microsoft Visual C++ Runtime Library", MB_ICONSTOP|MB_OK);
-			}
-			__except( EXCEPTION_EXECUTE_HANDLER )
-			{
-				OutputDebugStringA(_ATL_ABSENT_MANIFEST_ERROR_DBGMSG);
-				DebugBreak();
-			}
-			return FALSE;
-		}
-#endif
-
-		DisableThreadLibraryCalls(hInstance);
 	}
-	else if (dwReason == DLL_PROCESS_DETACH)
+
+	Instance::Instance()
+		: assoc(),
+		  parent(NULL),
+		  children(),
+		  name("Instance"),
+		  archivable(true)
 	{
-#ifdef _DEBUG
-		::OutputDebugString(_T("ATL80.DLL exiting.\n"));
-#endif
-		_Module.Term();
-		if (bAtlAxWinInitialized)
-			AtlAxWinTerm();
-#ifdef _DEBUG
-		if (_CrtDumpMemoryLeaks())
-			::MessageBeep(MB_ICONEXCLAMATION);
-#endif
 	}
-	return TRUE;    // ok
-}
 
-namespace ATL
-{
-STDAPI AtlCreateRegistrar(IRegistrar** ppReg)
-{
-	if (ppReg == NULL)
-		return E_POINTER;
-	*ppReg = NULL;
-
-	return( CDLLRegObject::_CreatorClass::CreateInstance(NULL, IID_IRegistrar, (void**)ppReg) );
-}
-
-STDAPI AtlUpdateRegistryFromResourceD(HINSTANCE hInst, LPCOLESTR lpszRes,
-	BOOL bRegister, struct _ATL_REGMAP_ENTRY* pMapEntries, IRegistrar* pReg)
-{
-	ATLASSERT(hInst != NULL);
-	if (hInst == NULL)
-		return E_INVALIDARG;
-
-	HRESULT hRes = S_OK;
-	CComPtr<IRegistrar> p;
-
-	if (pReg != NULL)
-		p = pReg;
-	else
+	Instance::~Instance()
 	{
-		hRes = AtlCreateRegistrar(&p);
+		RBXASSERT(!parent);
 	}
-	if (NULL != pMapEntries)
+
+	bool Instance::askAddChild(const Instance* instance) const
 	{
-		while (NULL != pMapEntries->szKey)
+		return false;
+	}
+
+	bool Instance::askSetParent(const Instance* instance) const
+	{
+		return false;
+	}
+
+	void Instance::setName(const std::string& value)
+	{
+		if (name != value)
 		{
-			ATLASSERT(NULL != pMapEntries->szData);
-			p->AddReplacement(pMapEntries->szKey, pMapEntries->szData);
-			pMapEntries++;
+			name = value;
+			raisePropertyChanged(desc_Name);
 		}
 	}
-	if (SUCCEEDED(hRes))
-	{
-		TCHAR szModule[_MAX_PATH];
-		int nRet = GetModuleFileName(hInst, szModule, _MAX_PATH);
-		if(nRet == _MAX_PATH)
-			return AtlHresultFromWin32(ERROR_BUFFER_OVERFLOW);
-		
-		if(nRet == 0)
-			return AtlHresultFromLastError();
 
-		USES_CONVERSION_EX;
-		LPOLESTR pszModule = T2OLE_EX(szModule, _ATL_SAFE_ALLOCA_DEF_THRESHOLD);
-#ifndef _UNICODE
-		if(pszModule == NULL) 
-			return E_OUTOFMEMORY;
-#endif
-		
-		// Buffer Size is Multiplied by 2 because we are calling ReplaceSingleQuote
-		OLECHAR pszModuleUnquoted[_MAX_PATH * 2];
-		CAtlModule::EscapeSingleQuote(pszModuleUnquoted, _countof(pszModuleUnquoted), pszModule);
-		if (hInst == GetModuleHandle(NULL)) // register as EXE
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent));
+
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+
+	void Instance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		event_descendentRemoving.fire(this, instance);
+
+		if (Notifier<Instance, DescendentRemoving>::hasListeners())
+			Notifier<Instance, DescendentRemoving>::raise(DescendentRemoving(instance, shared_from(instance->parent)));
+	}
+
+	class RaiseDescendentAdded2
+	{
+	private:
+		const Instance* notifier;
+		Listener<Instance, DescendentAdded>* listener;
+	  
+	public:
+		RaiseDescendentAdded2(const Instance* notifier, Listener<Instance, DescendentAdded>* listener)
+			: notifier(notifier),
+			  listener(listener)
 		{
-			// If Registering as an EXE, then we quote the resultant path.
-			// We don't do it for a DLL, because LoadLibrary fails if the path is
-			// quoted
-			OLECHAR pszModuleQuote[(_MAX_PATH + _ATL_QUOTES_SPACE)*2];
-			pszModuleQuote[0] = OLESTR('\"');			
-#if _SECURE_ATL
-			if(!ocscpy_s(pszModuleQuote + 1, ((_MAX_PATH + _ATL_QUOTES_SPACE)*2)-1, pszModuleUnquoted))
+		}
+	public:
+		void operator()(Instance* instance)
+		{
+			notifier->Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->parent), listener);
+			instance->for_eachChild(*this);
+		}
+	};
+
+	void Instance::onAddListener(Listener<Instance, DescendentAdded>* listener) const
+	{
+		for_eachChild(RaiseDescendentAdded2(this, listener));
+	}
+
+	void Instance::onAddListener(Listener<Instance, ChildAdded>* listener) const
+	{
+		if (children)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = children.read();
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				return E_FAIL;
+				Notifier<Instance, ChildAdded>::raise(ChildAdded((*iter).get()), listener);
 			}
-			size_t nLen = ocslen(pszModuleQuote);
-#else
-			ocscpy(pszModuleQuote + 1, pszModuleUnquoted);
-			int nLen = ocslen(pszModuleQuote);
-#endif
-			pszModuleQuote[nLen] = OLESTR('\"');
-			pszModuleQuote[nLen + 1] = 0;
-			
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleQuote);			
+		}
+	}
+
+	void Instance::removeAllChildren()
+	{
+		while (children)
+		{
+			children->back()->setParent(NULL);
+		}
+	}
+
+	void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance* p = parent;
+
+		if (p)
+			p->onChildChanged(instance, event);
+	}
+
+	void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+	{
+		for (const XmlElement* i = container->firstChild(); i != NULL; i = i->nextSibling())
+			readProperty(i, binder);
+	}
+
+	void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+	{
+		const Name* className = NULL;
+		const XmlAttribute* classAttrib = childElement->findAttribute(tag_class);
+
+		if (classAttrib)
+		{
+			if (classAttrib->getValue(className))
+			{
+				boost::shared_ptr<Instance> childInstance = createChild(*className);
+				if (childInstance)
+				{
+					childInstance->read(childElement, binder);
+					if (childInstance)
+						childInstance->setParent(this);
+				}
+				else
+				{
+					const XmlAttribute* nameRef = childElement->findAttribute(name_referent);
+					if (nameRef)
+						binder.announceID(nameRef, NULL);
+				}
+			}
+		}
+	}
+
+	void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+	{
+		if (element)
+		{
+			for (const XmlElement* current = element->findFirstChildByTag(tag_Item); current != NULL; current = element->findNextChildWithSameTag(current))
+			{
+				readChild(current, binder);
+			}
+		}
+	}
+
+	void Instance::read(const XmlElement* element, IReferenceBinder& binder)
+	{
+		const XmlAttribute* nameRef = element->findAttribute(name_referent);
+		if (nameRef)
+		{
+			binder.announceID(nameRef, this);
+		}
+
+		if (element->getTag() == tag_Item)
+		{
+			const XmlElement* properties = element->findFirstChildByTag(tag_Properties);
+			if (properties)
+			{
+				readProperties(properties, binder);
+			}
+			readChildren(element, binder);
 		}
 		else
-		{
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleUnquoted);
-		}
-		
-		if(FAILED(hRes))
-			return hRes;
-	
-		hRes = p->AddReplacement(OLESTR("Module_Raw"), pszModuleUnquoted);
-		if(FAILED(hRes))
-			return hRes;
-	
-		LPCOLESTR szType = OLESTR("REGISTRY");
-		if (IS_INTRESOURCE(lpszRes))
-		{
-			if (bRegister)
-				hRes = p->ResourceRegister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
-			else
-				hRes = p->ResourceUnregister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
-		}
-		else
-		{
-			if (bRegister)
-				hRes = p->ResourceRegisterSz(pszModule, lpszRes, szType);
-			else
-				hRes = p->ResourceUnregisterSz(pszModule, lpszRes, szType);
-		}
-
-	}
-	return hRes;
-}
-
-// Cannot pull these in from the static lib. The functions they reference are decorated
-// with C++ calling convention. The functions are exported from the DLL with the 
-// C calling convention
-#ifdef _DEBUG
-//CAtlWinModule _AtlWinModule;
-CAtlComModule _AtlComModule;
-#endif
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-/* used in _ATL_CHECK_MANIFEST */
-#define _PATH_LEN 8000
-#define _WINSXS_FOLDER _T("WinSxS\\")
-
-#ifdef _UNICODE
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringW"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryW"
-#define _TCSRCHR wcsrchr
-#define _TCSNCAT_S wcsncat_s
-#else
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringA"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryA"
-#define _TCSRCHR strrchr
-#define _TCSNCAT_S strncat_s
-#endif
-
-#define _MANIFEST_FILENAME _T(__LIBRARIES_ASSEMBLY_NAME_PREFIX)_T(".ATL.manifest")
-#define _ATL_DLL_FILENAME _T("atl80.dll")
-
-typedef BOOL (WINAPI * PFN_FINDAC)(DWORD dwFlags, const GUID *lpExtensionGuid,ULONG ulSectionId,LPCTSTR lpStringToFind,PACTCTX_SECTION_KEYED_DATA ReturnedData);
-typedef UINT (WINAPI * PFN_GETSYSTEMWINDOWSDIRECTORY)(LPTSTR lpBuffer,  UINT uSize);
-
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle)
-{
-	/* We check that the dll is loaded through a manifest.
-	 *
-	 * We check several conditions and exceptions:
-	 *
-	 * (1)  if (pre-fusion OS)
-	 *         return TRUE; [no need to check]
-	 *
-	 * (2)  if (dll is loaded from system32)
-	 *          return FALSE;
-	 *
-	 * (3)  if (!(loaded through a manifest))
-	 *          return FALSE;
-	 *
-	 * (4)  if (loaded from %SystemRoot%\WinSxS)
-	 *          return TRUE; [loaded from the WinSxS cache]
-	 *
-	 * (5)  if (manifest is in the same folder as the dll)
-	 *          return TRUE;
-	 *
-	 * (6)  return FALSE; [loaded with another manifest]
-	 *
-	 * In general, when we encounter an error condition or something
-	 * which blocks us from checking if the dll is loaded through a
-	 * manifest, we do not return an error, but we let the dll to be
-	 * loaded. Notice that this is not a security feature: it's an helper
-	 * which will try (as much as possible) to discourage the practice
-	 * of not using a manifest to load the ATL dll.
-	 */
-
-	TCHAR moduleFilePath[_PATH_LEN];
-	TCHAR systemRoot[MAX_PATH];
-	size_t moduleFilePathLen = 0;
-	size_t systemRootLen = 0;
-
-	PFN_FINDAC pfnFindActCtxSectionString =NULL;
-	/* check condition (1) */
-	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
-
-		pfnFindActCtxSectionString = (PFN_FINDAC) GetProcAddress(hKernel32, _FINDACTCTXSECTIONSTRING);
-
-		if (pfnFindActCtxSectionString == NULL) 
-		{
-			/* pre-fusion OS, so no more checking.*/
-			return TRUE;
-		}
+			readProperty(element, binder);
 	}
 
-	///* retrieve moduleFilePath and systemRoot */
+	void Instance::predelete(Instance* instance)
 	{
-		TCHAR tempPath[_PATH_LEN];
-		TCHAR *myTestModuleName = NULL;
-		DWORD ret = GetModuleFileName(hDllHandle, tempPath, _countof(tempPath));
-		if (ret == 0 || ret >= _countof(tempPath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		ret = GetLongPathName(tempPath, moduleFilePath, _countof(moduleFilePath));
-		if (ret == 0 || ret >= _countof(moduleFilePath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	  * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
+		instance->predelete();
+	}
 
-		myTestModuleName = const_cast<TCHAR*>(_TCSRCHR(moduleFilePath, L'\\'));
+	void Instance::onAncestorChanged(const AncestorChanged& event)
+	{
+		typedef std::vector<boost::shared_ptr<Instance>>::const_iterator Iterator;
 
-		if (myTestModuleName == NULL)
+		if (children)
 		{
-			/* error: we could not find a backslash in moduleFilePath */
-			return TRUE;
-		}
-		myTestModuleName++;
-		*myTestModuleName = 0;
-		/* moduleFilePath now contains only the path of the module ending with a backslash */
-		moduleFilePathLen = _tcsnlen(moduleFilePath, _countof(moduleFilePath));
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> r = children.read();
 
-		ret = GetSystemDirectory(systemRoot, _countof(systemRoot));
-		if (ret == 0 || ret >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		systemRootLen = ret;
-		if (systemRoot[systemRootLen - 1] != _T('\\'))
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\"), _TRUNCATE) != 0)
+			for (Iterator it = r->begin(); it != r->end(); it++)
 			{
-				/* error or not enough space */
-				return TRUE;
+				(*it)->onAncestorChanged(event);
 			}
 		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
+
+		event_ancestryChanged.fire(this, shared_from(event.child));
+		Notifier<Instance, AncestorChanged>::raise(event);
 	}
 
-	/* check condition (2) */
-	if (moduleFilePathLen == systemRootLen)
+	void Instance::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 	{
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)moduleFilePathLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			return FALSE; /* dll loaded from system32 */
-		}
+		return;
 	}
 
-	/* check condition (3) */
+	bool Instance::contains(const Instance* child) const
 	{
-		ACTCTX_SECTION_KEYED_DATA askd = { sizeof(askd) };
-		if (!(*pfnFindActCtxSectionString)(0, NULL, ACTIVATION_CONTEXT_SECTION_DLL_REDIRECTION, _ATL_DLL_FILENAME, &askd))
+		for (; child != NULL; child = child->parent)
 		{
-			/* no activation context used to load ATL DLL, means no manifest present in the process */
-			return FALSE;
+			if (child == this)
+				return true;
 		}
+
+		return false;
 	}
 
-	/* check condition (4) */
+	boost::shared_ptr<Instance> Instance::createChild(const Name& className)
 	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		PFN_GETSYSTEMWINDOWSDIRECTORY pfnGetSystemWindowsDirectory = NULL;
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
+		return AbstractFactoryProduct::create(className);
+	}
 
-		pfnGetSystemWindowsDirectory = (PFN_GETSYSTEMWINDOWSDIRECTORY) GetProcAddress(hKernel32, _GETSYSTEMWINDOWSDIRECTORY);
+	int Instance::findChildIndex(const Instance* instance) const
+	{
+		RBXASSERT(children);
 
-		if (pfnGetSystemWindowsDirectory == NULL) 
-		{
-			/* pre-win2k OS, so no more checking. We shouldn't get to here because we checked OS version earlier */
-			return TRUE;
-		}
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
 
-		/* retrieves the windows folder */
-		systemRootLen = pfnGetSystemWindowsDirectory(systemRoot, _countof(systemRoot));
-		if (systemRootLen == 0 || systemRootLen >= _countof(systemRoot))
+		std::vector<boost::shared_ptr<Instance>>::const_iterator found = std::find(c.begin(), c.end(), instance->shared_from_this());
+		return (int)std::distance(c.begin(), found);
+	}
+
+	void Instance::writeChildren(XmlElement* container)
+	{
+		if (children)
 		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		if (systemRoot[systemRootLen - 1] != L'\\')
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\") _WINSXS_FOLDER, _TRUNCATE) != 0)
+			const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c.begin(); it != c.end(); it++)
 			{
-				/* error or not enough space */
-				return TRUE;
+				XmlElement* element = (*it)->write();
+				if (element)
+					container->pushBackChild(element);
 			}
 		}
-		else
+	}
+
+	Instance* Instance::findFirstChildByName(const std::string& findName) const
+	{
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
 		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _WINSXS_FOLDER, _TRUNCATE) != 0)
+			if (c[i]->name == findName)
+				return c[i].get();
+		}
+
+		return NULL;
+	}
+
+	Instance* Instance::findFirstChildByNameRecursive(const std::string& findName) const
+	{
+		Instance* foundChild = findFirstChildByName(findName);
+		if (foundChild)
+			return foundChild;
+
+		if (!children)
+			return NULL;
+
+		const std::vector<boost::shared_ptr<Instance>>& c = *children;
+
+		for (size_t i = 0; i < c.size(); i++)
+		{
+			Instance* child = c[i]->findFirstChildByNameRecursive(findName);
+			if (child)
+				return child;
+		}
+
+		return NULL;
+	}
+
+	void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+	{
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
+		{
+			if (parent == oldParent || parent->isAncestorOf(oldParent))
+				break;
+
+			parent->onDescendentAdded(instance);
+		}
+
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
+		{
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
 			{
-				/* error or not enough space */
-				return TRUE;
+				signalDescendentAdded((*iter).get(), beginParent, oldParent);
 			}
 		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
-
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)systemRootLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			/* moduleFileName begins with %SYSTEMROOT%\WinSxS\ */
-			return TRUE; /* dll has been loaded from the WinSxS cache */
-		}
 	}
 
-	/* check condition (5) */
+	void Instance::signalDescendentRemoving(const boost::shared_ptr<Instance>& instance, Instance* beginParent, Instance* newParent)
 	{
-		WIN32_FIND_DATA findData = { 0 };
-		HANDLE hFind = INVALID_HANDLE_VALUE;
-
-		if (_TCSNCAT_S(moduleFilePath, _countof(moduleFilePath), _MANIFEST_FILENAME, _TRUNCATE) != 0)
+		for (Instance* parent = beginParent; parent != NULL; parent = parent->getParent())
 		{
-			/* error or truncation */
-			return TRUE;
+			if (parent == newParent || parent->isAncestorOf(newParent))
+				break;
+
+			parent->onDescendentRemoving(instance);
 		}
 
-		hFind = FindFirstFile(moduleFilePath, &findData);
-		if (hFind != INVALID_HANDLE_VALUE) 
+		boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = instance->children.read();
+
+		if (c)
 		{
-			FindClose(hFind);
-			return TRUE; /* manifest is in the same folder as the dll */
-		} 
-		/* we could not find the manifest in the same folder as the dll */
-		moduleFilePath[moduleFilePathLen] = 0;
-		/* restore moduleFilePath so that it contains only the path of the module with final backslash */
+			for (std::vector<boost::shared_ptr<Instance>>::const_iterator iter = c->begin(); iter != c->end(); iter++)
+			{
+				signalDescendentRemoving((*iter), beginParent, newParent);
+			}
+		}
 	}
 
-	/* case (6): loaded with another manifest */
-	return FALSE;
-}
+	//96.19% matching.
+	void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		const Name* value = NULL;
 
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
+		if (const XmlAttribute* attribute = propertyElement->findAttribute(name_name))
+		{
+			if (attribute->getValue(value))
+			{
+				Reflection::PropertyIterator iter = findProperty(*value);
 
-/*
-STDAPI DllCanUnloadNow(void)
-{
-	return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
+				if (iter != properties_end())
+				{
+					(*iter).read(propertyElement, binder);
+				}
+			}
+		}
+	}
 
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
+	XmlElement* Instance::write()
+	{
+		if (archivable)
+		{
+			if (getClassName() != Name::getNullName())
+			{
+				XmlElement* element = new XmlElement(tag_Item);
+				element->addAttribute(tag_class, &getClassName());
+				element->addAttribute(name_referent, InstanceHandle(this));
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-	return _Module.GetClassObject(rclsid, riid, ppv);
-}
+				writeProperties(element->addChild(tag_Properties));
+				writeChildren(element);
 
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
+				return element;
+			}
+		}
 
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	return _Module.RegisterServer(TRUE);
-}
+		return new XmlElement(tag_External, InstanceHandle(this));
+	}
+  
+	void Instance::setParent(Instance* newParent)
+	{
+		if (newParent == parent)
+			return;
 
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
+		boost::shared_ptr<Instance> oldParent = shared_from(parent);
+		boost::shared_ptr<Instance> self = this->shared_from_this();
 
-STDAPI DllUnregisterServer(void)
-{
-	//No need to unregister typelib since ATL is a system component.
-	return S_OK;
-}
-*/
+		if (oldParent)
+		{
+			if (!oldParent->contains(newParent))
+				signalDescendentRemoving(self, oldParent.get(), newParent);
 
-#include <delayimp.h>
+			oldParent->onChildRemoving(this);
 
-extern "C"
-{
-FARPROC
-WINAPI
-Downlevel_DelayLoadFailureHook(
-	UINT unReason,
-	PDelayLoadInfo pDelayInfo
-	);
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& c = oldParent->children.write();
+			c->erase(std::find(c->begin(), c->end(), self));
 
-PfnDliHook __pfnDliFailureHook2 = Downlevel_DelayLoadFailureHook;
+			if (c->empty())
+				oldParent->children.reset();
 
+			parent = NULL;
+
+			event_childRemoved.fire(oldParent.get(), self);
+			oldParent->Notifier<Instance, ChildRemoved>::raise(ChildRemoved(this));
+
+			oldParent->onChildRemoved(this);
+
+			if (oldParent->numChildren() == 0)
+				oldParent->onLastChildRemoved();
+		}
+
+		if (newParent)
+		{
+			newParent->children.write()->push_back(self);
+		}
+
+		parent = newParent;
+
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
+
+			if (!newParent->contains(oldParent.get()))
+				signalDescendentAdded(this, newParent, oldParent.get());
+
+			newParent->Notifier<Instance, ChildAdded>::raise(ChildAdded(this));
+			event_childAdded.fire(newParent, self);
+		}
+
+		onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+		raisePropertyChanged(propParent);
+	}
 }

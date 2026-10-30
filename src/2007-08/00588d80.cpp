@@ -1,26 +1,51 @@
-// from server: 0% by colin
-struct SoundChannel {
-    SoundChannel* construct(int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl func_0062fef6(unsigned int);
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-extern char G_007ae9ec;
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
 
-SoundChannel* SoundChannel::construct(int a)
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-    SoundChannel* result;
-    *(void**)this = 0;
-    void* p = func_0062fef6(0x10);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)p = &G_007ae9ec;
-        *(int*)((char*)p + 0xc) = a;
-        result = (SoundChannel*)p;
-    } else {
-        result = 0;
+    try {
+        count = new Count(p);
     }
-    *(void**)this = result;
-    return (SoundChannel*)this;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

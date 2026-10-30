@@ -1,8 +1,8 @@
-// from server: 77% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/Common/XTPRichRender.cpp
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/Common/XTPRichRender.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRichRender.cpp: implementation of the CXTPRichRender class.

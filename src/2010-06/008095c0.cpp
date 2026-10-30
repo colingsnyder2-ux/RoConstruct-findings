@@ -1,14 +1,13 @@
-// from server: 77% by colin
-// roc-lang: cpp
 // roc-cl: 30729
+// roc-lang: cpp
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTResize.cpp
+// roc-lib: xtp-11.2.2-vc8 Source/Calendar/XTPCalendarController.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTResize.cpp: implementation of the CXTResize class.
+// XTPCalendarController.cpp : implementation file
 //
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME CALENDAR MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -27,542 +26,1013 @@
 
 #include "stdafx.h"
 
-#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPVC50Helpers.h"
+#include "Common/XTPMacros.h"
 
-#include "XTResizeRect.h"
-#include "XTResizePoint.h"
-#include "XTResize.h"
-#include "XTResizeGroupBox.h"
+#include "Common/XTPNotifyConnection.h"
+
+#include "XTPCalendarControl.h"
+#include "XTPCalendarView.h"
+#include "XTPCalendarWeekView.h"
+#include "XTPCalendarMonthView.h"
+#include "XTPCalendarDayView.h"
+#include "XTPCalendarData.h"
+#include "XTPCalendarResource.h"
+#include "XTPCalendarNotifications.h"
+
+#include "XTPDatePickerItemMonth.h"
+#include "XTPDatePickerItemDay.h"
+#include "XTPDatePickerControl.h"
+#include "XTPDatePickerPaintManager.h"
+#include "XTPDatePickerNotifications.h"
+
+#include "XTPCalendarController.h"
 
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
 #endif
 
-#ifndef OBM_SIZE
-#define OBM_SIZE 32766
-#endif
+// DBG
+#define DBG_TRACE_DP_NF
+#define DBG_TRACE_DP_TIMER
 
-#define ENTRY_WINDOWPLACEMENT _T("WindowPlacement")
+//#define DBG_TRACE_DP_NF  TRACE
+//#define DBG_TRACE_DP_TIMER     TRACE
+// DBG
 
-#define IDC_SIZEICON 0x7FFF
+/////////////////////////////////////////////////////////////////////////////
+#define XTP_CC_DONT_SCROLL_DP 1234567890
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+#define XTP_CC_REFRESH_DAYS_STEP_TIMER_MS 120
+#define XTP_CC_REFRESH_DAYS_STEP_DAYS     3
 
-CXTResize::CXTResize(CWnd* pWnd, const UINT nFlags) :
-	m_pWnd(pWnd),
-	m_nFlagsXX(nFlags),
-	m_szMin(0, 0),
-	m_szMax(0, 0),
-	m_szWindow(0, 0),
-	m_szInitWindow(0, 0),
-	m_strSection(_T(""))
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCalendarController
+
+const int nXTPMaxDayViewDays = 6;
+
+////////////////////////////////////////////////////////////////////////////
+CXTPCalendarController::CXTPDayInfoCache::CXTPMapTimers CXTPCalendarController::CXTPDayInfoCache::m_mapTimers;
+
+IMPLEMENT_DYNCREATE(CXTPCalendarController, CCmdTarget)
+//////////////////////////////////////////////////////////////////////////
+CXTPCalendarController::CXTPDayInfoCache::CXTPDayInfoCache()
 {
+	// 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001
+	m_mapDaysInfo.InitHashTable(503, FALSE);
+	m_mapDaysToRefresh.InitHashTable(503, FALSE);
 
+	m_pOwner = NULL;
+
+	m_uTimerID = 0;
+	m_dwLastRedrawTime = 0;
+	m_dwLastSelfClearTime = 0;
+	m_dwWaitingDataTime = 0;
+
+	m_uActivePriority = 1;
 }
 
-CXTResize::~CXTResize()
+CXTPCalendarController::CXTPDayInfoCache::~CXTPDayInfoCache()
 {
-	RemoveAllControls();
+	KillTimer();
 }
 
-//////////////////////////////////////////////////////////////////////
-
-BOOL CXTResize::RemoveResize(const UINT nID)
+void CXTPCalendarController::CXTPDayInfoCache::KillTimer()
 {
-	// search for an item with the given id
-	int iItem;
-	for (iItem = (int)m_arrItems.GetSize(); iItem--;)
+	if (m_uTimerID)
 	{
-		CWnd* pWnd = m_arrItems[iItem]->m_pWnd;
-		ASSERT_VALID(pWnd);
+		::KillTimer(NULL, m_uTimerID);
+		m_mapTimers.RemoveKey(m_uTimerID);
+		m_uTimerID = 0;
+	}
+}
 
-		if (pWnd->GetDlgCtrlID() == (int) nID)
+BOOL CXTPCalendarController::CXTPDayInfoCache::HasEvents(DATE dtDay)
+{
+	XTPDayInfo tmpDI;
+	if (m_mapDaysInfo.Lookup((long)dtDay, tmpDI))
+	{
+		UpdateDayInfo(dtDay, tmpDI.bHasEvents);
+		return tmpDI.bHasEvents;
+	}
+	else
+	{
+		_RequestToRefreshDays(dtDay, dtDay, m_uActivePriority);
+	}
+	return FALSE;
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::Init(CXTPCalendarController* pOwner)
+{
+	ASSERT(pOwner);
+	m_pOwner = pOwner;
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::Clear()
+{
+	m_mapDaysInfo.RemoveAll();
+	m_mapDaysToRefresh.RemoveAll();
+	m_uActivePriority = 1;
+
+	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - CLEAR \n"));
+}
+
+UINT CXTPCalendarController::CXTPDayInfoCache::UpActivePriority()
+{
+	return ++m_uActivePriority;
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::UpdateDayInfo(DATE dtDay, BOOL bHasEvents)
+{
+	XTPDayInfo tmpDI = {bHasEvents, (DATE)CXTPCalendarUtils::GetCurrentTime()};
+	m_mapDaysInfo[(long)dtDay] = tmpDI;
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::ClearDays(COleDateTime dtDayFrom, COleDateTime dtDayTo)
+{
+	long nDay = min((long)dtDayFrom, (long)dtDayTo);
+	long nDay2 = max((long)dtDayFrom, (long)dtDayTo);
+	for (; nDay <= nDay2; nDay++)
+	{
+		m_mapDaysInfo.RemoveKey(nDay);
+	}
+
+	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - Clear days (%s - %s) \n"), (LPCTSTR)dtDayFrom.Format(), (LPCTSTR)dtDayTo.Format());
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::RequestToRefreshDays(COleDateTime dtDayFrom, COleDateTime dtDayTo)
+{
+	m_uActivePriority++;
+
+	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - RequestToRefreshDays (%s - %s). ActivePriority = %d \n"),
+					   (LPCTSTR)dtDayFrom.Format(), (LPCTSTR)dtDayTo.Format(), m_uActivePriority);
+
+	_RequestToRefreshDays(dtDayFrom, dtDayTo, m_uActivePriority);
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::_RequestToRefreshDays(COleDateTime dtDayFrom, COleDateTime dtDayTo, UINT uPriority)
+{
+	ASSERT(m_pOwner);
+	if (!m_pOwner)
+	{
+		return;
+	}
+
+	long nDay = min((long)dtDayFrom, (long)dtDayTo);
+	long nDay2 = max((long)dtDayFrom, (long)dtDayTo);
+
+	// WARNING! - Ooo... The days range is too large!
+	ASSERT(nDay2 - nDay < 10*1000);
+
+	for (; nDay <= nDay2; nDay++)
+	{
+		m_mapDaysToRefresh[nDay] = uPriority;
+	}
+
+	if (m_mapDaysToRefresh.GetCount() && m_uTimerID == 0)
+	{
+		UINT uTimeOut = (UINT)m_pOwner->m_nBoldDaysIdleStepTime_ms;
+
+		m_uTimerID = ::SetTimer(NULL, 0, uTimeOut, OnTimerCallback);
+		m_mapTimers[m_uTimerID] = this;
+
+		DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - _RequestToRefreshDays, SetTimer (ID = %d) \n"), m_uTimerID);
+	}
+}
+
+void CXTPCalendarController::CXTPDayInfoCache::OnRefreshDays(int nDaysCountToRefresh)
+{
+	ASSERT(m_pOwner);
+
+	if (!XTP_SAFE_GET1(m_pOwner, m_pResourcesNf, NULL))
+	{
+		if (!m_dwWaitingDataTime)
 		{
-			CXTResizeItem* pItem = m_arrItems[iItem];
-			if (pItem != NULL)
+			m_dwWaitingDataTime = GetTickCount();
+			DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, Start Wait for data\n"));
+		}
+
+		if (abs((long)(GetTickCount() - m_dwWaitingDataTime)) >= 5000)
+		{
+			m_dwWaitingDataTime = 0;
+
+			if (m_uTimerID)
 			{
-				m_arrItems.RemoveAt(iItem);
-				SAFE_DELETE(pItem);
-				return TRUE;
+				DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, KillTimer (ID = %d) \n"), m_uTimerID);
+				DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, end Wait for data\n"));
+
+				KillTimer();
+
+				OnSelfClearOld();
 			}
+		}
+		return;
+	}
+	else
+	{
+		if (m_dwWaitingDataTime)
+		{
+			DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, end Wait for data\n"));
+		}
+		m_dwWaitingDataTime = 0;
+	}
+
+	//***************************************************
+	for (int i = 0; i < nDaysCountToRefresh; i++)
+	{
+		long nDay_min = LONG_MAX;
+		UINT uPriority_max = 0;
+
+		POSITION pos = m_mapDaysToRefresh.GetStartPosition();
+		while (pos)
+		{
+			long nDay = 0;
+			UINT uPriority = 0;
+			m_mapDaysToRefresh.GetNextAssoc(pos, nDay, uPriority);
+
+			if (uPriority == uPriority_max && nDay < nDay_min ||
+				uPriority > uPriority_max)
+			{
+				uPriority_max = uPriority;
+				nDay_min = nDay;
+			}
+		}
+
+		if (nDay_min < LONG_MAX)
+		{
+			m_mapDaysToRefresh.RemoveKey(nDay_min);
+
+			COleDateTime dtDay((DATE)nDay_min);
+			BOOL bHasEvents = XTP_SAFE_GET1(m_pOwner, _HasEvents(dtDay), FALSE);
+
+			UpdateDayInfo(dtDay, bHasEvents);
+		}
+	}
+	//***************************************************
+
+	if (m_mapDaysToRefresh.GetCount() == 0 && m_uTimerID)
+	{
+		DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnRefreshDays, KillTimer (ID = %d) \n"), m_uTimerID);
+		DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - Days In Cache %d \n"), m_mapDaysInfo.GetCount());
+
+		KillTimer();
+
+		OnSelfClearOld();
+	}
+
+	if (abs((long)(GetTickCount() - m_dwLastRedrawTime)) >= 500 || m_uTimerID == 0)
+	{
+		XTP_SAFE_CALL2(m_pOwner, m_pDatePickerCtrl, RedrawControl());
+		m_dwLastRedrawTime = GetTickCount();
+	}
+}
+void CXTPCalendarController::CXTPDayInfoCache::OnSelfClearOld()
+{
+
+#ifdef _DEBUG
+	int nUpdateTime_ms = 20 * 1000;
+	COleDateTimeSpan spCachePeriod(0, 0, 1, 0); // 1 min
+#else
+	int nUpdateTime_ms = 5 * 60 * 1000; // 5 min
+	COleDateTimeSpan spCachePeriod(0, 1, 0, 0); // 1 hour
+#endif
+
+	if (abs((long)(GetTickCount() - m_dwLastSelfClearTime)) < nUpdateTime_ms)
+	{
+		return;
+	}
+	m_dwLastSelfClearTime = ::GetTickCount();
+
+	COleDateTime dtOldTime = CXTPCalendarUtils::GetCurrentTime();
+	dtOldTime -= spCachePeriod;
+
+	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnSelfClear, Start. Days In Cache %d \n"), m_mapDaysInfo.GetCount());
+
+	POSITION pos = m_mapDaysInfo.GetStartPosition();
+	while (pos)
+	{
+		long nDay = 0;
+		XTPDayInfo tmpDI;
+
+		m_mapDaysInfo.GetNextAssoc(pos, nDay, tmpDI);
+		if (tmpDI.dtLastAccessTime < dtOldTime)
+		{
+			m_mapDaysInfo.RemoveKey(nDay);
+		}
+	}
+
+	DBG_TRACE_DP_TIMER(_T("XTPCalendarController::DayInfoCache - OnSelfClear, End. Days In Cache %d \n"), m_mapDaysInfo.GetCount());
+}
+
+VOID CALLBACK CXTPCalendarController::CXTPDayInfoCache::OnTimerCallback(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	UNREFERENCED_PARAMETER(hwnd);
+	UNREFERENCED_PARAMETER(uMsg);
+	UNREFERENCED_PARAMETER(dwTime);
+
+	 CXTPDayInfoCache* pThis = m_mapTimers[idEvent];
+	 ASSERT(pThis && pThis->m_pOwner);
+
+	 if (pThis && pThis->m_pOwner)
+	 {
+		//***********************
+		SAFE_MANAGE_STATE(pThis->m_pOwner->m_pModuleState);
+		//***********************
+
+		 pThis->OnRefreshDays(pThis->m_pOwner->m_nBoldDaysPerIdleStep);
+	 }
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+CXTPCalendarController::CXTPCalendarController()
+{
+	m_pCalendarCtrl = NULL;
+	m_pDatePickerCtrl = NULL;
+	m_bAdjustingView = FALSE;
+
+	m_bBoldDaysWithEvents = TRUE;
+
+	m_bBoldDaysOnIdle = TRUE;
+	m_nBoldDaysPerIdleStep = XTP_CC_REFRESH_DAYS_STEP_DAYS;
+	m_nBoldDaysIdleStepTime_ms = XTP_CC_REFRESH_DAYS_STEP_TIMER_MS;
+
+	m_bUseActiveViewResoucesForBold = FALSE;
+
+	m_pResourcesNf = NULL;
+	m_eLastActiveView = -1;
+
+	m_cnidEventAdded = 0;
+	m_cnidEventChanged = 0;
+	m_cnidEventDeleted = 0;
+
+	m_DayInfoCache.Init(this);
+}
+
+CXTPCalendarController::~CXTPCalendarController()
+{
+	CMDTARGET_RELEASE(m_pCalendarCtrl);
+	CMDTARGET_RELEASE(m_pDatePickerCtrl);
+	CMDTARGET_RELEASE(m_pResourcesNf);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPCalendarController message handlers
+
+void CXTPCalendarController::AdviseToNotifications()
+{
+	m_Sink.UnadviseAll();
+
+	m_cnidEventAdded = 0;
+	m_cnidEventChanged = 0;
+	m_cnidEventDeleted = 0;
+
+	CMDTARGET_RELEASE(m_pResourcesNf);
+
+	// Advise to Calendar notifications
+	if (m_pCalendarCtrl)
+	{
+		CXTPNotifyConnection* ptrDPConn = m_pCalendarCtrl ? m_pCalendarCtrl->GetConnection() : NULL;
+		ASSERT(ptrDPConn);
+
+		if (!ptrDPConn)
+		{
+			return;
+		}
+
+		m_Sink.Advise(ptrDPConn, XTP_NC_CALENDARVIEWWASCHANGED, &CXTPCalendarController::OnEvent_CalendarView);
+		m_Sink.Advise(ptrDPConn, XTP_NC_CALENDAROPTIONSWASCHANGED, &CXTPCalendarController::OnEvent_CalendarOptionsChanged);
+		m_Sink.Advise(ptrDPConn, XTP_NC_CALENDAR_RESOURCES_WHERE_CHANGED, &CXTPCalendarController::OnEvent_CalendarResourcesChanged);
+	}
+
+	// Advise to Date Picker notifications
+	if (m_pDatePickerCtrl)
+	{
+		CXTPNotifyConnection* ptrDPConn = m_pDatePickerCtrl ? m_pDatePickerCtrl->GetConnection() : NULL;
+		ASSERT(ptrDPConn);
+
+		if (!ptrDPConn)
+		{
+			return;
+		}
+
+		m_Sink.Advise(ptrDPConn, XTP_NC_DATEPICKERBUTTONCLICKED, &CXTPCalendarController::OnEvent_DatePicker);
+		m_Sink.Advise(ptrDPConn, XTP_NC_DATEPICKERSELECTIONCHANGED, &CXTPCalendarController::OnEvent_DatePicker);
+		m_Sink.Advise(ptrDPConn, XTP_NC_DATEPICKERBEFOREGOMODAL, &CXTPCalendarController::OnEvent_DatePicker);
+		m_Sink.Advise(ptrDPConn, XTP_NC_DATEPICKERMONTHCHANGED, &CXTPCalendarController::OnEvent_DatePicker);
+		m_Sink.Advise(ptrDPConn, XTP_NC_DATEPICKERGETDAYMETRICS, &CXTPCalendarController::OnEvent_DtPickGetItemMetrics);
+	}
+}
+
+void CXTPCalendarController::_AdviseToDataChanged()
+{
+	ASSERT(m_pResourcesNf);
+	if (!m_pResourcesNf)
+	{
+		return;
+	}
+
+	CXTPNotifyConnection* ptrDPConn = m_pResourcesNf->GetConnection();
+	ASSERT(ptrDPConn);
+
+	if (!ptrDPConn)
+	{
+		return;
+	}
+
+	m_cnidEventAdded = m_Sink.Advise(ptrDPConn, XTP_NC_CALENDAREVENTWASADDED, &CXTPCalendarController::OnEvent_CalendarDataChanged);
+	m_cnidEventChanged = m_Sink.Advise(ptrDPConn, XTP_NC_CALENDAREVENTWASCHANGED, &CXTPCalendarController::OnEvent_CalendarDataChanged);
+	m_cnidEventDeleted = m_Sink.Advise(ptrDPConn, XTP_NC_CALENDAREVENTWASDELETED, &CXTPCalendarController::OnEvent_CalendarDataChanged);
+}
+
+void CXTPCalendarController::_UnadviseFromDataChanged()
+{
+	if (m_cnidEventAdded)
+	{
+		m_Sink.Unadvise(m_cnidEventAdded);
+	}
+
+	if (m_cnidEventChanged)
+	{
+		m_Sink.Unadvise(m_cnidEventChanged);
+	}
+
+	if (m_cnidEventDeleted)
+	{
+		m_Sink.Unadvise(m_cnidEventDeleted);
+	}
+
+	m_cnidEventAdded = 0;
+	m_cnidEventChanged = 0;
+	m_cnidEventDeleted = 0;
+}
+
+BOOL CXTPCalendarController::IsFirstDayOfWeekShifted_FromSun2Mon()
+{
+	if (!m_pCalendarCtrl || !m_pCalendarCtrl->GetActiveView())
+	{
+		return FALSE;
+	}
+
+	int nViewType = m_pCalendarCtrl->GetActiveView()->GetViewType();
+	if (nViewType == xtpCalendarMonthView || nViewType == xtpCalendarWeekView)
+	{
+		int nFirstDayOfWeekIndex = m_pCalendarCtrl->GetFirstDayOfWeek();
+
+		int bCompress = (nViewType == xtpCalendarWeekView) ||
+			m_pCalendarCtrl->MonthView_IsCompressWeekendDays();
+
+		if (bCompress && nFirstDayOfWeekIndex == 1)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+void CXTPCalendarController::OnEvent_CalendarView(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM lParam)
+{
+	if (!XTP_NC_CALENDARVIEWWASCHANGED == Event)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+	if (m_bAdjustingView)
+	{
+		return;
+	}
+
+	if (m_pDatePickerCtrl && m_pCalendarCtrl)
+	{
+		CXTPCalendarView* pView = m_pCalendarCtrl->GetActiveView();
+		if (!pView)
+			return;
+
+		//--------------------------------------------------------
+		int nViewTypeX = pView->GetViewType();
+		if (nViewTypeX == xtpCalendarWorkWeekView)
+		{
+			nViewTypeX = xtpCalendarDayView;
+		}
+
+		if (m_eLastActiveView != nViewTypeX)
+		{
+			m_eLastActiveView = nViewTypeX;
+			CMDTARGET_RELEASE(m_pResourcesNf);
+			_UnadviseFromDataChanged();
+
+			if (m_bBoldDaysOnIdle)
+			{
+				COleDateTime dtFirstVisibleDay, dtLastVisibleDay;
+				if (m_pDatePickerCtrl->GetVisibleRange(dtFirstVisibleDay, dtLastVisibleDay))
+				{
+					m_DayInfoCache.RequestToRefreshDays(dtFirstVisibleDay, dtLastVisibleDay);
+				}
+			}
+		}
+
+		//--------------------------------------------------------
+		COleDateTimeSpan spCompressCorrector(0 , 0, 0, 0);
+		if (IsFirstDayOfWeekShifted_FromSun2Mon())
+		{
+			spCompressCorrector.SetDateTimeSpan(-1, 0, 0, 0);
+		}
+
+		int nCount = pView->GetViewDayCount();
+		if (nCount > 0)
+		{
+			COleDateTime dtDay = m_pCalendarCtrl->GetActiveView()->GetViewDayDate(0);
+			dtDay += spCompressCorrector;
+
+			m_pDatePickerCtrl->SetSelRange(dtDay, dtDay);
+		}
+
+		for (int i = 1; i < nCount; i++)
+		{
+			COleDateTime dtDay = m_pCalendarCtrl->GetActiveView()->GetViewDayDate(i);
+			dtDay += spCompressCorrector;
+			m_pDatePickerCtrl->Select(dtDay);
+		}
+
+		if (lParam != XTP_CC_DONT_SCROLL_DP)
+			m_pDatePickerCtrl->EnsureVisibleSelection();
+
+		if (::IsWindow(m_pDatePickerCtrl->GetSafeHwnd()))
+		{
+			m_pDatePickerCtrl->RedrawControl();
+			m_pDatePickerCtrl->UpdateWindow();
+		}
+	}
+}
+
+void CXTPCalendarController::OnEvent_DatePicker(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM /*lParam*/)
+{
+	wParam;
+
+	switch (Event)
+	{
+	case XTP_NC_DATEPICKERBEFOREGOMODAL:
+		if (m_pDatePickerCtrl && m_pCalendarCtrl)
+		{
+			OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
+		}
+		break;
+	case XTP_NC_DATEPICKERBUTTONCLICKED:
+		DBG_TRACE_DP_NF(_T("OnEvent: DatePickerButtonClicked - ID = %u.     {CalendarController}. \n"), wParam);
+		break;
+	case XTP_NC_DATEPICKERMONTHCHANGED:
+		m_DayInfoCache.UpActivePriority();
+		break;
+	case XTP_NC_DATEPICKERSELECTIONCHANGED:
+		DBG_TRACE_DP_NF(_T("OnEvent: XTP_NC_DATEPICKERSELECTIONCHANGED.     {CalendarController}. \n"));
+		if (m_pDatePickerCtrl && m_pCalendarCtrl && m_pCalendarCtrl->GetActiveView())
+		{
+			BOOL bChanged = FALSE;
+
+			COleDateTime dtFrom;
+			COleDateTime dtTo;
+			if (m_pDatePickerCtrl->GetSelRange(dtFrom, dtTo))
+			{
+				int nFirstDayOfWeekIndex = m_pDatePickerCtrl->GetFirstDayOfWeek();
+
+				CXTPCalendarControl::CUpdateContext updateContext(m_pCalendarCtrl);
+
+				int nSelRangeDays = GETTOTAL_DAYS_DTS(dtTo - dtFrom)+1;
+				// count selected days
+				int nSelDays = 0;
+				COleDateTimeSpan spDay(1, 0, 0, 0);
+				for (COleDateTime dtDay = dtFrom; dtDay <= dtTo; dtDay += spDay)
+				{
+					if (m_pDatePickerCtrl->IsSelected(dtDay))
+					{
+						nSelDays++;
+					}
+				}
+
+				// Day view
+				if (nSelRangeDays <= nXTPMaxDayViewDays || nSelRangeDays != nSelDays ||
+					dtFrom.GetDayOfWeek() != nFirstDayOfWeekIndex && nSelRangeDays <= 8
+				 )
+				{
+					m_bAdjustingView = TRUE;
+
+					// to save WorkWeek view mode
+					int eViewMode = XTP_SAFE_GET2(m_pCalendarCtrl, GetActiveView(), GetViewType(), xtpCalendarDayView);
+
+					if (eViewMode != xtpCalendarWorkWeekView || nSelDays != 1)
+					{
+						eViewMode = xtpCalendarDayView;
+					}
+
+					// WorkWeekView - set visible days
+					if (eViewMode == xtpCalendarWorkWeekView)
+					{
+						CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, m_pCalendarCtrl->GetActiveView());
+						if (pDayView)
+						{
+							pDayView->UnselectAllEvents();
+
+							COleDateTime dtWWStart;
+							m_pCalendarCtrl->GetWorkDayStartTime(dtWWStart);
+							dtWWStart = CXTPCalendarUtils::UpdateDate(dtWWStart, dtFrom);
+
+							pDayView->SetSelection(dtWWStart, dtWWStart + pDayView->GetCellDuration());
+						}
+					}
+
+					//*** switch calendar view
+					m_pCalendarCtrl->SwitchActiveView((XTPCalendarViewType)eViewMode);
+					//***
+
+					CXTPCalendarDayView* pDayView = DYNAMIC_DOWNCAST(CXTPCalendarDayView, m_pCalendarCtrl->GetActiveView());
+
+					// DayView - set visible days
+					if (pDayView && eViewMode == xtpCalendarDayView)
+					{
+						COleDateTime dtSelStart, dtSelEnd;
+						BOOL bAllDay = FALSE;
+						BOOL bSel = pDayView->GetSelection(&dtSelStart, &dtSelEnd, &bAllDay);
+						if (bSel)
+						{
+							COleDateTimeSpan spSel = dtSelEnd - dtSelStart;
+							COleDateTimeSpan spSelMin = pDayView->GetCellDuration();
+							if (spSel < spSelMin)
+							{
+								bSel = FALSE;
+							}
+						}
+						if (!bSel)
+						{
+							m_pCalendarCtrl->GetWorkDayStartTime(dtSelStart);
+							dtSelEnd = dtSelStart + pDayView->GetCellDuration();
+							bAllDay = FALSE;
+						}
+						dtSelStart = CXTPCalendarUtils::UpdateDate(dtSelStart, dtFrom);
+						dtSelEnd = CXTPCalendarUtils::UpdateDate(dtSelEnd, dtFrom);
+
+						pDayView->ShowDay(dtFrom);
+
+						pDayView->SetSelection(dtSelStart, dtSelEnd, bAllDay);
+
+						// add other selected days to calendar view
+						for (COleDateTime dtDay(dtFrom + spDay); dtDay <= dtTo; dtDay += spDay)
+						{
+							if (m_pDatePickerCtrl->IsSelected(dtDay))
+							{
+								// add it to Calendar View
+								pDayView->AddDay(dtDay);
+							}
+						}
+						m_pCalendarCtrl->Populate();
+					}
+
+					m_bAdjustingView = FALSE;
+
+					bChanged = TRUE;
+				}
+				// Week view
+				else if (nSelRangeDays == 7 && nSelRangeDays == nSelDays)
+				{
+					COleDateTime dtBegin = dtFrom;
+					if (IsFirstDayOfWeekShifted_FromSun2Mon())
+					{
+						dtBegin += spDay;
+					}
+
+					m_bAdjustingView = TRUE;
+
+					m_pCalendarCtrl->SwitchActiveView(xtpCalendarWeekView);
+					CXTPCalendarWeekView* pWeekView = DYNAMIC_DOWNCAST(CXTPCalendarWeekView, m_pCalendarCtrl->GetActiveView());
+					if (pWeekView)
+					{
+						pWeekView->SetBeginDate(dtBegin);
+
+						m_pCalendarCtrl->Populate();
+					}
+
+					m_bAdjustingView = FALSE;
+
+					bChanged = TRUE;
+				}
+				// Month view
+				else
+				{
+					ASSERT(nSelRangeDays == nSelDays && nSelRangeDays > 7);
+
+					m_bAdjustingView = TRUE;
+
+					m_pCalendarCtrl->SwitchActiveView(xtpCalendarMonthView);
+					CXTPCalendarMonthView* pMonthView = DYNAMIC_DOWNCAST(CXTPCalendarMonthView, m_pCalendarCtrl->GetActiveView());
+					if (pMonthView)
+					{
+						CXTPCalendarControl::CViewChangedContext viewChanged(m_pCalendarCtrl, xtpCalendarViewChangedLock);
+
+						COleDateTime dtBegin = dtFrom;
+						if (IsFirstDayOfWeekShifted_FromSun2Mon())
+						{
+							dtBegin += spDay;
+						}
+
+						// Calculate weeks count
+						COleDateTime dtWeekFromBegin = pMonthView->GetGrid()->ShiftDateToCell_00(dtFrom);
+						COleDateTime dtWeekToEnd = pMonthView->GetGrid()->ShiftDateToCell_00(dtTo);
+						dtWeekToEnd += COleDateTimeSpan(7, 0, 0, 0);
+						int nSelectedWeeksRange = GETTOTAL_DAYS_DTS(dtWeekToEnd - dtWeekFromBegin);
+
+						int nWeeks = nSelectedWeeksRange / 7;
+						nWeeks = max(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MIN, nWeeks);
+						nWeeks = min(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MAX, nWeeks);
+
+						pMonthView->GetGrid()->SetBeginDate(dtBegin);
+						pMonthView->GetGrid()->SetWeeksCount(nWeeks);
+
+						m_pCalendarCtrl->Populate();
+					}
+
+					m_bAdjustingView = FALSE;
+
+					bChanged = TRUE;
+				}
+
+				if (bChanged)
+				{
+					OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, XTP_CC_DONT_SCROLL_DP);
+
+					if (m_pDatePickerCtrl->IsModal())
+					{
+						m_pCalendarCtrl->Invalidate(FALSE);
+						m_pCalendarCtrl->RedrawControl();
+					}
+				}
+			}
+		}
+		break;
+	default:
+		ASSERT(FALSE);
+	}
+}
+
+
+void CXTPCalendarController::OnEvent_CalendarOptionsChanged(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (Event != XTP_NC_CALENDAROPTIONSWASCHANGED)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	if ((int)wParam < 0)
+	{
+		SetFirstDayOfWeekToDatePicker();
+	}
+}
+
+void CXTPCalendarController::OnEvent_CalendarResourcesChanged(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	if (Event != XTP_NC_CALENDARDATAPROVIDERWASCHANGED)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	CMDTARGET_RELEASE(m_pResourcesNf);
+	_UnadviseFromDataChanged();
+
+	m_DayInfoCache.Clear();
+}
+
+void CXTPCalendarController::OnEvent_CalendarDataChanged(XTP_NOTIFY_CODE Event, WPARAM /*wParam*/, LPARAM lParam)
+{
+	if (!m_pDatePickerCtrl)
+	{
+		return;
+	}
+
+	if (Event != XTP_NC_CALENDAREVENTWASADDED &&
+		Event != XTP_NC_CALENDAREVENTWASCHANGED&&
+		Event != XTP_NC_CALENDAREVENTWASDELETED)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	//-------------------------------------
+	COleDateTime dtFirstVisibleDay, dtLastVisibleDay;
+
+	BOOL bRes = m_pDatePickerCtrl->GetVisibleRange(dtFirstVisibleDay, dtLastVisibleDay);
+	if (!bRes)
+	{
+		return;
+	}
+
+	CXTPCalendarEvent* pEvent = (CXTPCalendarEvent*)lParam;
+	if (!pEvent)
+	{
+		return;
+	}
+
+	if (Event == XTP_NC_CALENDAREVENTWASADDED ||
+		Event == XTP_NC_CALENDAREVENTWASDELETED)
+	{
+		if (CXTPCalendarUtils::ResetTime(pEvent->GetStartTime()) > dtLastVisibleDay ||
+			CXTPCalendarUtils::ResetTime(pEvent->GetEndTime()) < dtFirstVisibleDay )
+		{
+			return; // xtpCalendar_Skip;
+		}
+
+		if (m_bBoldDaysOnIdle)
+		{
+			m_DayInfoCache.ClearDays(pEvent->GetStartTime(), pEvent->GetEndTime());
+		}
+	}
+	else
+	{
+		if (m_bBoldDaysOnIdle)
+		{
+			m_DayInfoCache.RequestToRefreshDays(dtFirstVisibleDay, dtLastVisibleDay);
+
+			COleDateTime dtFom = max(dtFirstVisibleDay, pEvent->GetStartTime());
+			COleDateTime dtTo = min(dtLastVisibleDay, pEvent->GetEndTime());
+			m_DayInfoCache.RequestToRefreshDays(dtFom, dtTo);
+		}
+	}
+
+	m_pDatePickerCtrl->_RedrawControl(FALSE);
+}
+
+void CXTPCalendarController::SetFirstDayOfWeekToDatePicker()
+{
+	if (m_pDatePickerCtrl && m_pCalendarCtrl)
+	{
+		int nFirstDayOfWeekIndex = m_pCalendarCtrl->GetFirstDayOfWeek();
+
+		m_pDatePickerCtrl->SetFirstDayOfWeek(nFirstDayOfWeekIndex);
+	}
+}
+
+void CXTPCalendarController::OnEvent_DtPickGetItemMetrics(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM lParam)
+{
+	if (Event != XTP_NC_DATEPICKERGETDAYMETRICS)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+	if (!m_bBoldDaysWithEvents)
+	{
+		return;
+	}
+
+	const COleDateTime dtDay = (DATE)(XTP_DATE_VALUE)wParam;
+	XTP_DAYITEM_METRICS* pDayItemMetrics = (XTP_DAYITEM_METRICS*)lParam;
+	ASSERT(pDayItemMetrics);
+
+	if (!pDayItemMetrics || !m_pCalendarCtrl || !m_pDatePickerCtrl)
+	{
+		return;
+	}
+	//--------------------------------------------------------------------
+	if (!m_pResourcesNf)
+	{
+		m_pResourcesNf = new CXTPCalendarResourcesNf();
+		if (!m_pResourcesNf)
+		{
+			return;
+		}
+		CXTPCalendarResources* pRC0 = m_pCalendarCtrl->GetResources();
+		if (m_bUseActiveViewResoucesForBold)
+		{
+			pRC0 = m_pCalendarCtrl->GetActiveView()->GetResources();
+		}
+
+		m_pResourcesNf->Append(pRC0);
+
+		_AdviseToDataChanged();
+
+		m_pResourcesNf->ReBuildInternalData();
+	}
+
+	//--------------------------------------------------------------------
+	BOOL bHasEvents = FALSE;
+
+	if (m_bBoldDaysOnIdle)
+	{
+		bHasEvents = m_DayInfoCache.HasEvents(dtDay);
+	}
+	else
+	{
+		// check whether specified day has events
+		bHasEvents = _HasEvents(dtDay);
+	}
+
+	// make the day with events as bold
+	if (bHasEvents)
+	{
+		// set bold to day metrics
+		pDayItemMetrics->SetFont(m_pDatePickerCtrl->GetPaintManager()->GetDayTextFontBold());
+	}
+}
+BOOL CXTPCalendarController::_HasEvents(COleDateTime dtDay)
+{
+	ASSERT(m_pResourcesNf);
+	if (!m_pResourcesNf)
+	{
+		return FALSE;
+	}
+
+	CXTPCalendarResources* pRCx = m_pResourcesNf->GetResourcesGroupedByDP();
+	int nRCCount = pRCx ? pRCx->GetCount() : 0;
+
+	for (int i = 0; i < nRCCount; i++)
+	{
+		CXTPCalendarResource* pRC = pRCx->GetAt(i);
+		ASSERT(pRC);
+		CXTPCalendarEventsPtr ptrEvents = pRC ? pRC->RetrieveDayEvents(dtDay) : NULL;
+		if (ptrEvents && ptrEvents->GetCount() > 0)
+		{
+			return TRUE;
 		}
 	}
 
 	return FALSE;
 }
 
-void CXTResize::RemoveAllControls()
+
+void CXTPCalendarController::SetCalendar(CXTPCalendarControl* pCalendarCtrl)
 {
-	// free allocated memory
-	int iIndex;
-	for (iIndex = 0; iIndex < m_arrItems.GetSize(); ++iIndex)
+	m_Sink.UnadviseAll();
+
+	if (m_pCalendarCtrl)
 	{
-		CXTResizeItem* pItem = m_arrItems.GetAt(iIndex);
-		SAFE_DELETE(pItem);
+		m_pCalendarCtrl->InternalRelease();
+	}
+	m_pCalendarCtrl = pCalendarCtrl;
+	if (m_pCalendarCtrl)
+	{
+		m_pCalendarCtrl->InternalAddRef();
+
+		AdviseToNotifications();
+
+		SetFirstDayOfWeekToDatePicker();
 	}
 
-	// empty array
-	m_arrItems.RemoveAll();
-}
-
-void CXTResize::SetResize(const UINT nID, const HWND hWnd, const XT_RESIZERECT& rrcSizing)
-{
-	CXTResizeItem* pItem = 0;
-
-	// search for an item with the given id
-	int i;
-	for (i = (int)m_arrItems.GetSize(); i--;)
+	if (m_pCalendarCtrl && m_pDatePickerCtrl)
 	{
-		CWnd* pWnd = m_arrItems[i]->m_pWnd;
-		if (pWnd && ::IsWindow(pWnd->m_hWnd) && (pWnd->GetDlgCtrlID() == (int)nID))
-		{
-			pItem = m_arrItems[i];
-		}
-	}
-
-	// if we didn't find it then create one
-	if (pItem == 0)
-	{
-		HWND hWndChild = hWnd;
-		if (hWndChild == NULL)
-		{
-			CWnd* pWnd = m_pWnd->GetDlgItem(nID);
-			if (pWnd && ::IsWindow(pWnd->m_hWnd))
-			{
-				hWndChild = pWnd->m_hWnd;
-			}
-		}
-
-		bool bDelete = false;
-
-		CWnd* pWnd = m_pWnd->FromHandlePermanent(hWndChild);
-		if (pWnd == NULL)
-		{
-			// there is no permanent window, create one
-			pWnd = new CWnd; // CXTResizeItem handles the delete
-			pWnd->Attach(hWndChild);
-
-			bDelete = true;
-		}
-
-		CRect rcWindow;
-		pWnd->GetWindowRect(rcWindow);
-		m_pWnd->ScreenToClient(rcWindow);
-
-		pItem = new CXTResizeItem(pWnd, rrcSizing, rcWindow, bDelete);
-		pItem->MakeTransparent(this);
-
-		m_arrItems.Add(pItem);
-	}
-	else
-	{
-		// the item already exists, just add the new sizing option
-		pItem->m_rrcSizing += rrcSizing;
-	}
-	// we should only allow sizing within the rect {0, 0, 1, 1}
-	ASSERT((CXTResizeRect(0, 0, 1, 1) & pItem->m_rrcSizing) == pItem->m_rrcSizing);
-}
-
-void CXTResize::Init()
-{
-	if (m_pWnd == NULL)
-		return;
-
-	// clear the control list when initializing.  The reason for this is we may have a
-	// static window that calls Init() multiple times for example CDialog::DoModal().
-	RemoveAllControls();
-
-	// get the dialog size
-	CRect rcWindow;
-	m_pWnd->GetClientRect(rcWindow);
-	m_szWindow = m_szInitWindow = rcWindow.Size();
-
-	if (!HasFlag(xtResizeNoMinsize))
-	{
-		// set minimum size to current window size
-		m_szMin = m_szWindow;
-	}
-
-	// set the clip children style to prevent flickering
-	if (!HasFlag(xtResizeNoClipChildren))
-	{
-		m_pWnd->ModifyStyle(0, WS_CLIPCHILDREN);
-	}
-
-	// add the size icon
-	if (!HasFlag(xtResizeNoSizeIcon))
-	{
-		// Create the size icon if it already doesn't exist.
-		if (!::IsWindow(m_scSizeIcon.m_hWnd))
-		{
-			int cxGrip = GetSystemMetrics(SM_CXVSCROLL);
-			int cyGrip = GetSystemMetrics(SM_CYHSCROLL);
-
-			CRect rcIcon(rcWindow);
-			rcIcon.OffsetRect(-1, -1);
-			rcIcon.left = rcIcon.right - cxGrip;
-			rcIcon.top = rcIcon.bottom - cyGrip;
-
-			m_scSizeIcon.Create(WS_CHILD | WS_VISIBLE | SBS_SIZEGRIP,
-				rcIcon, m_pWnd, IDC_SIZEICON);
-		}
-
-		m_scSizeIcon.SetWindowPos(&CWnd::wndTop, 0, 0, 0, 0,
-			SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
-
-		SetResize(IDC_SIZEICON, SZ_REPOS(1));
+		m_eLastActiveView = -1; // to ensure update
+		OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
 	}
 }
 
-void CXTResize::Offset(CPoint ptOffset)
+void CXTPCalendarController::SetDatePicker(CXTPDatePickerControl* pDatePickerCtrl)
 {
-	if (m_arrItems.GetSize() > 0)
+	m_Sink.UnadviseAll();
+
+	if (m_pDatePickerCtrl)
 	{
+		m_pDatePickerCtrl->InternalRelease();
+	}
+	m_pDatePickerCtrl = pDatePickerCtrl;
+	if (m_pDatePickerCtrl)
+	{
+		m_pDatePickerCtrl->InternalAddRef();
 
-		HDWP hDWP = ::BeginDeferWindowPos((int)m_arrItems.GetSize());
+		m_pDatePickerCtrl->SetMaxSelCount(XTP_CALENDAR_MONTHVIEW_SHOW_WEEKS_MAX * 7);
 
-		int i;
-		for (i = 0; i < (int)m_arrItems.GetSize(); i++)
-		{
-			CXTResizeRect rrcSizing = m_arrItems[i]->m_rrcSizing;
-			m_arrItems[i]->m_rrcSizing = CRect(ptOffset.x, ptOffset.y, ptOffset.x, ptOffset.y);
-			m_arrItems[i]->m_bInitialSize = TRUE;
+		AdviseToNotifications();
 
-			Defer(hDWP, m_arrItems[i], 1, 1);
+		SetFirstDayOfWeekToDatePicker();
+	}
 
-			m_arrItems[i]->m_rrcSizing = rrcSizing;
-		}
-
-		::EndDeferWindowPos(hDWP);
-
-		// refresh group box items.
-		for (i = 0; i < m_arrItems.GetSize(); i++)
-		{
-			if (m_arrItems[i]->m_bIsGroupBox)
-				m_arrItems[i]->m_pWnd->Invalidate();
-		}
+	if (m_pCalendarCtrl && m_pDatePickerCtrl)
+	{
+		m_eLastActiveView = -1; // to ensure update
+		OnEvent_CalendarView(XTP_NC_CALENDARVIEWWASCHANGED, 0, 0);
 	}
 }
 
-void CXTResize::AdjustResizeRect(CSize&)
+CXTPCalendarControl* CXTPCalendarController::GetCalendar() const
 {
+	return m_pCalendarCtrl;
 }
 
-void CXTResize::Size()
+CXTPDatePickerControl* CXTPCalendarController::GetDatePicker() const
 {
-	if (m_arrItems.GetSize() > 0)
+	return m_pDatePickerCtrl;
+}
+
+void CXTPCalendarController::SetBoldDaysWithEvents(BOOL bBold)
+{
+	m_bBoldDaysWithEvents = bBold;
+
+	if (m_pResourcesNf && !m_bBoldDaysWithEvents)
 	{
-		CSize szWindow = CXTPClientRect(m_pWnd).Size();
-		if (szWindow.cx == 0 || szWindow.cy == 0)
-			return;
+		CMDTARGET_RELEASE(m_pResourcesNf);
+		m_eLastActiveView = -1;
+		_UnadviseFromDataChanged();
 
-		AdjustResizeRect(szWindow);
-
-		CSize szDelta = szWindow - m_szWindow;
-
-		HDWP hDWP = ::BeginDeferWindowPos((int)m_arrItems.GetSize());
-
-		int i;
-		for (i = 0; i < (int)m_arrItems.GetSize(); i++)
-		{
-			Defer(hDWP, m_arrItems[i], szDelta.cx, szDelta.cy);
-		}
-
-		::EndDeferWindowPos(hDWP);
-
-		// refresh group box items.
-		for (i = 0; i < m_arrItems.GetSize(); i++)
-		{
-			if (m_arrItems[i]->m_bIsGroupBox)
-				m_arrItems[i]->m_pWnd->Invalidate();
-		}
-
-		m_szWindow = szWindow;
+		m_DayInfoCache.Clear();
 	}
-}
-
-void CXTResize::Reset()
-{
-	int iSize = (int)m_arrItems.GetSize();
-	int i;
-	for (i = 0; i < iSize; i++)
-	{
-		CXTResizeItem* pItem = m_arrItems[i];
-		pItem->m_bInitialSize = FALSE;
-		pItem->m_rrcWindow = pItem->m_rrcInitWindow;
-	}
-}
-
-BOOL CXTResize::Defer(HDWP& hDWP, CXTResizeItem* pItem, int dx, int dy)
-{
-	HWND hWnd = pItem->m_pWnd->m_hWnd;
-	if (::IsWindow(hWnd))
-	{
-		if (!pItem->m_bInitialSize)
-		{
-			CSize szWindow = CXTPClientRect(m_pWnd).Size();
-			
-			AdjustResizeRect(szWindow);
-
-			dx = szWindow.cx - m_szInitWindow.cx;
-			dy = szWindow.cy - m_szInitWindow.cy;
-
-			pItem->m_bInitialSize = TRUE;
-		}
-
-		CXTResizeRect rrcItem = pItem->m_rrcWindow;
-
-		rrcItem.left += dx * pItem->m_rrcSizing.left;
-		rrcItem.top += dy * pItem->m_rrcSizing.top;
-		rrcItem.right += dx * pItem->m_rrcSizing.right;
-		rrcItem.bottom += dy * pItem->m_rrcSizing.bottom;
-
-		if (rrcItem != pItem->m_rrcWindow)
-		{
-			int x = (int) rrcItem.left;
-			int y = (int) rrcItem.top;
-			int cx = (int) rrcItem.Width();
-			int cy = (int) rrcItem.Height();
-
-			// Set positioning flags
-			UINT uFlags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER;
-
-			CRect rOld;
-			CRect rNew = rrcItem;
-
-			// get the size of the dialog item in client coordinates.
-			pItem->m_pWnd->GetWindowRect(&rOld);
-			m_pWnd->ScreenToClient(&rOld);
-
-			// if the x-y coordinates have not changed, there is no reason
-			// to move the dialog item.
-			if (rNew.TopLeft() == rOld.TopLeft())
-				uFlags |= SWP_NOMOVE;
-
-			// if the cx-cy size has not changed, there is no reason to
-			// size the dialog item.  If size has changed, don't
-			// copy bits of the client area (i.e. have them invalidated/redrawn)
-			if (rNew.Size() == rOld.Size())
-				uFlags |= SWP_NOSIZE;
-			else
-				uFlags |= SWP_NOCOPYBITS;
-
-			hDWP = ::DeferWindowPos(hDWP, hWnd, 0, x, y, cx, cy, uFlags);
-			if (hDWP == NULL)
-			{
-				TRACE(_T("DeferWindowPos failed for ID %i\n"), GetDlgCtrlID(hWnd));
-				return FALSE;
-			}
-			pItem->m_rrcWindow = rrcItem;
-		}
-	}
-	return TRUE;
-}
-
-
-
-void CXTResize::GetMinMaxInfo(MINMAXINFO* pMMI)
-{
-	CXTPClientRect rcClient(m_pWnd);
-	CXTPWindowRect rcWindow(m_pWnd);
-	if (rcClient.IsRectEmpty())
-		return;
-
-	CSize szBorder(rcWindow.Width() - rcClient.Width(), rcWindow.Height() - rcClient.Height());
-
-	if (m_szWindow != CSize(0, 0))
-	{
-		if (HasFlag(xtResizeNoHorizontal))
-		{
-			pMMI->ptMaxTrackSize.x = pMMI->ptMaxSize.x = m_szWindow.cx + szBorder.cx;
-		}
-		if (HasFlag(xtResizeNoVertical))
-		{
-			pMMI->ptMaxTrackSize.y = pMMI->ptMaxSize.y = m_szWindow.cy + szBorder.cy;
-		}
-	}
-	if (m_szMin.cx != 0) pMMI->ptMinTrackSize.x = m_szMin.cx + szBorder.cx;
-	if (m_szMin.cy != 0) pMMI->ptMinTrackSize.y = m_szMin.cy + szBorder.cy;
-	if (m_szMax.cx != 0) pMMI->ptMaxTrackSize.x = m_szMax.cx + szBorder.cx;
-	if (m_szMax.cy != 0) pMMI->ptMaxTrackSize.y = m_szMax.cy + szBorder.cy;
-}
-
-BOOL CXTResize::AutoLoadPlacement(LPCTSTR pszSection)
-{
-	m_strSection = pszSection;
-	ASSERT(!m_strSection.IsEmpty());
-	return LoadPlacement(m_strSection);
-}
-
-BOOL CXTResize::LoadPlacement(LPCTSTR pszSection)
-{
-	BOOL bResult = FALSE;
-	UINT nBytes = 0;
-	BYTE* pBytes = 0;
-	AfxGetApp()->GetProfileBinary(pszSection, ENTRY_WINDOWPLACEMENT, &pBytes, &nBytes);
-	if (nBytes == sizeof(WINDOWPLACEMENT))
-	{
-		bResult = m_pWnd->SetWindowPlacement((WINDOWPLACEMENT*) pBytes);
-	}
-	if (pBytes && nBytes) delete[] pBytes;
-
-	return bResult;
-}
-
-BOOL CXTResize::SavePlacement(LPCTSTR pszSection)
-{
-	WINDOWPLACEMENT wp;
-	if (!m_pWnd->GetWindowPlacement(&wp))
-		return FALSE;
-
-	AfxGetApp()->WriteProfileBinary(pszSection, ENTRY_WINDOWPLACEMENT, (BYTE*) &wp, sizeof(wp));
-	return TRUE;
-}
-
-void CXTResize::SetFlag(XTResize eFlag)
-{
-	m_nFlagsXX &= (eFlag^0xFFFFFFFF);
-	m_nFlagsXX |= eFlag;
-}
-
-void CXTResize::SetResize(CWnd* pWnd, const CXTResizeRect& rrcSizing, CRect rcWindow)
-{
-	CXTResizeItem *pItem = new CXTResizeItem(pWnd, rrcSizing, rcWindow, FALSE);
-	m_arrItems.Add(pItem);
-}
-
-void CXTResize::UpdateControlRect(CWnd* pWnd)
-{
-	if (!pWnd)
-		return;
-
-	for (int i = (int)m_arrItems.GetSize(); i--;)
-	{
-		if (m_arrItems[i]->m_pWnd->m_hWnd == pWnd->m_hWnd)
-		{
-			CRect rect;
-			pWnd->GetWindowRect(&rect);
-			m_pWnd->ScreenToClient(&rect);
-			m_arrItems[i]->m_rrcWindow = rect;
-			break;
-		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////
-// CXTResizeItem
-//////////////////////////////////////////////////////////////////////
-
-CXTResizeItem::CXTResizeItem(CWnd* pWnd, const CXTResizeRect& rrcSizing, CRect& rcWindow, BOOL bAutoDelete)
-: m_pWnd(pWnd)
-, m_rrcSizing(rrcSizing)
-, m_rrcWindow(rcWindow)
-, m_rrcInitWindow(rcWindow)
-, m_bAutoDelete(bAutoDelete)
-, m_bInitialSize(FALSE)
-, m_bIsGroupBox(FALSE)
-{
-
-}
-
-CXTResizeItem::~CXTResizeItem()
-{
-	if (m_bAutoDelete)
-	{
-		m_pWnd->Detach();
-		SAFE_DELETE(m_pWnd);
-	}
-}
-
-bool CXTResizeItem::MakeTransparent(CXTResize* pXTResize)
-{
-	if (pXTResize->HasFlag(xtResizeNoTransparentGroup))
-	{
-		return false;
-	}
-
-	if (m_pWnd && ::IsWindow(m_pWnd->m_hWnd))
-	{
-		TCHAR szClassName[8];
-		::GetClassName(m_pWnd->m_hWnd, szClassName, 8);
-
-		// not a CButton derived class.
-		if (_tcsicmp(szClassName, _T("Button")) != 0)
-		{
-			return false;
-		}
-
-		// get the window style if not a group box, return.
-		DWORD dwStyle = ::GetWindowLong(m_pWnd->m_hWnd, GWL_STYLE);
-		if ((dwStyle & (BS_GROUPBOX | WS_TABSTOP)) == BS_GROUPBOX)
-		{
-			// we don't want CXTResizeGroupBox transparent.
-			if (m_pWnd->IsKindOf(RUNTIME_CLASS(CXTResizeGroupBox)))
-			{
-				return false;
-			}
-
-			// Get the extended style for the group box.
-			DWORD dwStyleEx = ::GetWindowLong(m_pWnd->m_hWnd, GWL_EXSTYLE);
-
-			// add the WS_EX_TRANSPARENT flag to the group box.
-			::SetWindowLong(m_pWnd->m_hWnd, GWL_EXSTYLE,
-				dwStyleEx | WS_EX_TRANSPARENT);
-
-			// apply the style for the window.
-			::SetWindowPos(m_pWnd->m_hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
-				SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
-			m_bIsGroupBox = TRUE;
-
-			return true;
-		}
-	}
-
-	return false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// CXTSizeIcon
-//////////////////////////////////////////////////////////////////////
-
-CXTSizeIcon::CXTSizeIcon()
-{
-	// Load the size cursor
-	m_hCursor = AfxGetApp()->LoadStandardCursor(IDC_SIZENWSE);
-}
-
-CXTSizeIcon::~CXTSizeIcon()
-{
-}
-
-BEGIN_MESSAGE_MAP(CXTSizeIcon, CScrollBar)
-	//{{AFX_MSG_MAP(CXTSizeIcon)
-	ON_WM_SETCURSOR()
-	ON_WM_SETFOCUS()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTSizeIcon message handlers
-
-void CXTSizeIcon::OnSetFocus(CWnd* /*pOldWnd*/)
-{
-
-}
-
-BOOL CXTSizeIcon::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	// Set the cursor to the size cursor.
-	if (nHitTest == HTCLIENT && m_hCursor != NULL)
-	{
-		::SetCursor(m_hCursor);
-		return TRUE;
-	}
-
-	return CScrollBar::OnSetCursor(pWnd, nHitTest, message);
 }

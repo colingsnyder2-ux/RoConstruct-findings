@@ -1,77 +1,37 @@
-// from server: 49% by colin
-// roc 2007-08 0056df10  unit: RBX::VContentId::?$holder  size: 272 bytes
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_unit_36f3876ce376584e.cpp
 
-extern "C" {
-    int __stdcall sub_4116F0(void*);
-    void* __stdcall sub_411770(void*);
-    void* __stdcall sub_412DC0(void*, void*);
-    void* __stdcall sub_49A1F0(void*, void*);
-    void* __stdcall sub_5017C0(void*, void*, void*, void*);
-    void* __stdcall sub_56D7D0(void);
-    int __stdcall sub_580B80(void*, void*);
-    void* __stdcall sub_630B9E(void*, void*);
+// Candidate translation unit (score above; library headers required).
+#include "reflection/type.h"
+#include "util/Utilities.h"
+#include "G3D/format.h"
+#include "G3D/Vector3.h"
+#include "G3D/Color3.h"
+#include "G3D/CoordinateFrame.h"
+#include "v8datamodel/BrickColor.h"
+#include <stdexcept>
+namespace RBX { namespace Reflection {
+template<class T> T& Value::genericConvert() {
+    T* id = boost::any_cast<T>(&value);
+    if (id) return *id;
+    if (isType<std::string>()) {
+        T v;
+        if (StringConverter<T>::convertToValue(*boost::any_cast<std::string>(&value),v)) {
+            value = v;
+            _type = &Type::singleton<T>();
+            return *boost::any_cast<T>(&value);
+        }
+    }
+    throw std::runtime_error(G3D::format("Unable to cast %s to %s", _type->tag.c_str(), Type::singleton<T>().tag.c_str()));
 }
-
-struct S {
-    void* field0;
-    void* field4;
-    void f();
-};
-
-void S::f()
-{
-    void* ebx = *(void**)0x77e708;
-    void* esi = (char*)this + 4;
-    void* eax;
-    if (esi != 0) {
-        void* ecx = *(void**)esi;
-        if (ecx != 0) {
-            void* v = *(void**)ecx;
-            eax = ((void* (__thiscall*)(void*))*(void**)((char*)v + 4))(ecx);
-        } else {
-            eax = (void*)0x8827c8;
-        }
-        if (((bool (__thiscall*)(void*, void*))ebx)(eax, (void*)0x8827d4)) {
-            eax = *(void**)esi;
-            eax = (char*)eax + 4;
-            if (eax != 0) {
-                return;
-            }
-        }
-    }
-    eax = *(void**)this;
-    eax = *(void**)((char*)eax + 8);
-    if (((bool (__thiscall*)(void*, void*))ebx)((void*)0x8827f8, eax)) {
-        char buf[12];
-        void* p = sub_411770(buf);
-        if (sub_580B80(p, esi)) {
-            sub_49A1F0(esi, buf);
-            void* r = sub_56D7D0();
-            *(void**)this = r;
-            sub_4116F0(esi);
-        }
-        return;
-    }
-    void* r = sub_56D7D0();
-    void* v1 = *(void**)((char*)r + 0xc);
-    void* ecx;
-    if (*(unsigned*)((char*)v1 + 0x1c) < 0x10) {
-        ecx = (char*)v1 + 8;
-    } else {
-        ecx = *(void**)((char*)v1 + 8);
-    }
-    eax = *(void**)this;
-    eax = *(void**)((char*)eax + 0xc);
-    eax = (char*)eax + 4;
-    void* edx;
-    if (*(unsigned*)((char*)eax + 0x18) < 0x10) {
-        edx = (char*)eax + 4;
-    } else {
-        edx = *(void**)((char*)eax + 4);
-    }
-    char buf2[12];
-    void* p = sub_5017C0(buf2, (void*)0x7aa03c, edx, ecx);
-    char buf3[24];
-    sub_412DC0(buf3, p);
-    sub_630B9E((void*)0x8410c0, buf3);
-}
+template int& Value::genericConvert<int>();
+template bool& Value::genericConvert<bool>();
+template float& Value::genericConvert<float>();
+template double& Value::genericConvert<double>();
+template G3D::Vector3& Value::genericConvert<G3D::Vector3>();
+template G3D::Color3& Value::genericConvert<G3D::Color3>();
+template G3D::CoordinateFrame& Value::genericConvert<G3D::CoordinateFrame>();
+template RBX::BrickColor& Value::genericConvert<RBX::BrickColor>();
+}}

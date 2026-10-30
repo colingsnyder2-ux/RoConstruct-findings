@@ -1,75 +1,77 @@
-// from server: 38% by colin
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_finish_0c14e773d5c0ba02.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <typeinfo>
+#include <boost/shared_ptr.hpp>
+namespace RBX { class Instance; }
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void* __stdcall sub_77E708(void*, void*);
-extern "C" void* __stdcall sub_77E710(void*, void*);
-extern "C" void __cdecl sub_411850(void*);
 
-struct type_info;
-
-struct bad_cast {
-    bad_cast(const char*);
+struct bad_any_cast : std::bad_cast {
+    bad_any_cast();
 };
 
-struct Vconnection {
-    void* vfptr;
-    void* ptr;
+bad_any_cast::bad_any_cast() : std::bad_cast("bad cast") {}
+
+__declspec(noreturn) void __cdecl raise_bad_cast(const void*);
+
+struct Counted {
+    void* vtable;
+    volatile long references;
 };
 
-struct sp_counted_impl_p {
-    void* vfptr;
-    void* px;
-    long refcount;
+struct Shared {
+    void* volatile object;
+    Counted* count;
+
+    Shared(const Shared&);
+    ~Shared();
 };
 
-struct shared_ptr_Instance {
-    void* px;
-    void* pn;
-};
-
-struct type_info_holder {
-    void* vfptr;
-};
-
-extern type_info_holder type_info_std_basic_string;
-extern type_info_holder type_info_boost_shared_ptr_Instance;
-
-void __stdcall func(Vconnection* conn, shared_ptr_Instance* out);
-
-void __stdcall func(Vconnection* conn, shared_ptr_Instance* out)
+Shared::Shared(const Shared& other)
+    : object(other.object), count(other.count)
 {
-    if (conn != 0) {
-        void* p = conn->vfptr;
-        if (p != 0) {
-            void** vtbl = *(void***)p;
-            void* (*fn)(void*) = (void* (*)(void*))vtbl[1];
-            p = fn(p);
-        } else {
-            p = &type_info_std_basic_string;
-        }
-        if (sub_77E708(p, &type_info_boost_shared_ptr_Instance)) {
-            void* q = conn->vfptr;
-            q = (char*)q + 4;
-            if (q != 0) {
-                goto found;
-            }
-        }
+    if (count)
+        _InterlockedIncrement(&count->references);
+}
+
+struct Placeholder {
+    virtual ~Placeholder();
+    virtual const type_info& type() const = 0;
+};
+
+struct Holder : Placeholder {
+    Shared value;
+};
+
+struct Any {
+    Placeholder* content;
+};
+
+Shared __cdecl cast_shared(const Any* source)
+{
+    Shared* result = 0;
+
+    if (source) {
+        const type_info& type =
+            source->content ? source->content->type() : typeid(void);
+
+        if (type == typeid(boost::shared_ptr<RBX::Instance>))
+            result = &static_cast<Holder*>(source->content)->value;
     }
-    {
-        bad_cast bc("bad cast");
-        sub_411850(&bc);
+
+    if (!result) {
+        bad_any_cast error;
+        raise_bad_cast(&error);
     }
-found:
-    {
-        void* q = conn->vfptr;
-        q = (char*)q + 4;
-        void* px = *(void**)q;
-        out->px = px;
-        void* pn = *(void**)((char*)q + 4);
-        out->pn = pn;
-        if (pn != 0) {
-            _InterlockedExchangeAdd((volatile long*)((char*)pn + 4), 1);
-        }
-    }
+
+    return *result;
 }

@@ -1,8 +1,7 @@
-// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPControls.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControls.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPControls.cpp : implementation of the CXTPControls class.

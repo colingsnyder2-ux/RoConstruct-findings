@@ -1,51 +1,30 @@
-// from server: 41% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll roc_ogre_resume_b2126d94dfadd044.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/TextureProxy.h"
-
-namespace RBX
-{
-	namespace Render
-	{
-		G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
-		{
-			return texture;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::alphaOnlyVersion()
-		{
-			return new TextureProxy(this);
-		}
-
-		G3D::Vector2 TextureProxy::getSize()
-		{
-			G3D::ReferenceCountedPointer<G3D::Texture> t = getIfResolved();
-			G3D::Vector2 out;
-			if (t.notNull())
-			{
-				out.x = t->texelWidth();
-				out.y = t->texelHeight();
-			}
-			else
-			{
-				out.y = 0.0f;
-				out.x = 0.0f;
-			}
-			return out;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::shade(const G3D::Color3& baseColor, const G3D::ReferenceCountedPointer<TextureProxy>& baseTex)
-		{
-			TextureProxy* newTex = new TextureProxy(baseTex);
-			newTex->textureManager = textureManager;
-			newTex->root = baseTex;
-			newTex->shadeColor = baseColor;
-			newTex->shadeTexture = this;
-			return newTex;
-		}
-	}
+#undef OGRE_NONCLIENT_BUILD
+#include <Ogre.h>
+#include <OgreEdgeListBuilder.h>
+namespace Ogre {
+class RbxSubMesh : public SubMesh {
+public:
+    bool prepared;
+    EdgeData* edges;
+    AxisAlignedBox bounds;
+    ~RbxSubMesh();
+    void prepareEdges();
+};
+RbxSubMesh::~RbxSubMesh() { delete edges; }
+void RbxSubMesh::prepareEdges() {
+    if (prepared) return;
+    vertexData->prepareForShadowVolume();
+    prepared = true;
+    EdgeListBuilder builder;
+    builder.addVertexData(vertexData);
+    builder.addIndexData(indexData, 0, operationType);
+    edges = builder.build();
+}
 }

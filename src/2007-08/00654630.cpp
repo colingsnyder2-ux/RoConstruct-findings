@@ -1,5768 +1,1054 @@
-// from server: 43% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/daocore.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportRecordItem.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPReportRecordItem.cpp : implementation of the CXTPReportRecordItem class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <wchar.h>
-#include "sal.h"
+#include "Common/XTPDrawHelpers.h"
 
+#include "XTPReportRow.h"
+#include "XTPReportRecords.h"
+#include "XTPReportColumns.h"
+#include "XTPReportColumn.h"
+#include "XTPReportControl.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportHyperlink.h"
+#include "XTPReportRecord.h"
+#include "XTPReportRecordItem.h"
+#include "XTPReportInplaceControls.h"
 
+#include "Common/XTPPropExchange.h"
 
-#pragma comment(lib, "ole32.lib")
-
-
+#ifdef _DEBUG
 #define new DEBUG_NEW
-
-
-/////////////////////////////////////////////////////////////////////////////
-// Maintain DAODBEngine object
-
-_AFX_DAO_STATE::_AFX_DAO_STATE()
-{
-	m_pDAODBEngine = NULL;
-	m_bOleInitialized = FALSE;
-}
-
-_AFX_DAO_STATE::~_AFX_DAO_STATE()
-{
-	// these ASSERTs can trip when:
-	// ... there any outstanding workspsace objects
-	ASSERT(m_mapWorkspaces.IsEmpty());
-
-	// ... you've not shut down with a call AfxDaoTerm()
-	ASSERT(m_pDAODBEngine == NULL);
-
-	// ... OLE wasn't correctly shut down
-	ASSERT(!m_bOleInitialized);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Helpers
-
-// Index function return value
-#define AFX_DAO_DATA_NOT_FOUND                  (-1L)
-
-#define AFX_DAO_FETCH_PRIMARY_PROPERTIES \
-	(AFX_DAO_PRIMARY_INFO | AFX_DAO_SECONDARY_INFO | AFX_DAO_ALL_INFO)
-#define AFX_DAO_FETCH_SECONDARY_PROPERTIES \
-	(AFX_DAO_SECONDARY_INFO | AFX_DAO_ALL_INFO)
-#define AFX_DAO_FETCH_ALL_PROPERTIES \
-	AFX_DAO_ALL_INFO
-
-// Info helpers
-void AFX_CDECL AfxGetFieldInfo(DAOField* pDAOField, CDaoFieldInfo& fieldinfo,
-	DWORD dwInfoOptions = AFX_DAO_PRIMARY_INFO);
-void AFX_CDECL AfxSetFieldInfo(DAOField* pDAOField, CDaoFieldInfo& fieldinfo);
-void AFX_CDECL AfxGetIndexInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo,
-	DWORD dwInfoOptions = AFX_DAO_PRIMARY_INFO);
-void AFX_CDECL AfxSetIndexInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo);
-void AFX_CDECL AfxGetIndexFields(DAOIndex* pDAOIndex,
-	DAOIndexFields** ppDAOIndexFields);
-void AFX_CDECL AfxGetIndexFieldInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo);
-void AFX_CDECL AfxSetIndexFieldInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo);
-void AFX_CDECL AfxGetDefaultValue(DAOField* pDAOField, CString& strDefaultValue);
-void AFX_CDECL AfxSetDefaultValue(DAOField* pDAOField, CString& strDefaultValue);
-
-// GetRows helper
-void AFX_CDECL ThrowGetRowsDaoException(SCODE scode);
-
-// _AFX_DAO_STATE helper
-_AFX_DAO_STATE* AFX_CDECL AfxGetDaoState();
-
-//////////////////////////////////////////////////////////////////////////
-// Global data
-
-AFX_STATIC_DATA const TCHAR _afxParameters2[] = _T("PARAMETERS ");
-AFX_STATIC_DATA const TCHAR _afxSelect2[] = _T("SELECT ");
-AFX_STATIC_DATA const TCHAR _afxFrom2[] = _T(" FROM ");
-AFX_STATIC_DATA const TCHAR _afxWhere2[] = _T(" WHERE ");
-AFX_STATIC_DATA const TCHAR _afxOrderBy2[] = _T(" ORDER BY ");
-AFX_STATIC_DATA const TCHAR _afxTransform2[] = _T("TRANSFORM ");
-AFX_STATIC_DATA const TCHAR _afxTable2[] = _T("TABLE ");
-
-// Need a static VARIANT for optional DAO parameters
-AFX_STATIC_DATA VARIANT _afxOptionalVariant = { VT_ERROR, 0, 0, 0, (ULONG)DISP_E_PARAMNOTFOUND };
-
-// Need a static VARIANT for NULL DAO parameters
-AFX_STATIC_DATA VARIANT _afxNullVariant = { VT_NULL, 0, 0, 0, 0 };
-
-//////////////////////////////////////////////////////////////////////////
-// Logging helpers
-
-void AFXAPI AfxDaoCheck(SCODE scode, LPCSTR lpszDaoCall,
-	LPCSTR lpszFile, int nLine, int nError, BOOL bMemOnly)
-{
-	UNUSED(lpszDaoCall);
-	UNUSED(lpszFile);
-	UNUSED(nLine);
-
-	if (FAILED(scode))
-	{
-		TRACE(traceDatabase, 0, _T("\nDAO Call Failed."));
-		TRACE(traceDatabase, 0, _T("\n\t%hs"), lpszDaoCall);
-		TRACE(traceDatabase, 0, _T("\n\tIn file %hs on line %d"), lpszFile, nLine);
-		TRACE(traceDatabase, 0, _T("\n\tscode = %X\n"), scode);
-
-		if (scode == E_OUTOFMEMORY)
-			AfxThrowMemoryException();
-		else if (!bMemOnly)
-			AfxThrowDaoException(nError, scode);
-	}
-}
-
-#ifdef _DEBUG
-void AFXAPI AfxDaoTrace(SCODE scode, LPCSTR lpszDaoCall,
-	LPCSTR lpszFile, int nLine)
-{
-	if (FAILED(scode))
-	{
-		TRACE(traceDatabase, 0, _T("\nDAO Call Failed.\n\t"));
-		TRACE(traceDatabase, 0, _T("\n%hs"), lpszDaoCall);
-		TRACE(traceDatabase, 0, _T("\nIn file %hs on line %d\n"), lpszFile, nLine);
-		TRACE(traceDatabase, 0, _T("scode = %X\n"), scode);
-	}
-}
-#endif // _DEBUG
-
-//////////////////////////////////////////////////////////////////////////
-// Info structure diagnostics
-
-#ifdef _DEBUG
-void CDaoErrorInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T("a CDaoErrorInfo at ") << (void*)this;
-
-	dc << _T("\nm_lErrorCode = ") << m_lErrorCode;
-	dc << _T("\nm_strSource = ") << m_strSource;
-	dc << _T("\nm_strDescription = ") << m_strDescription;
-	dc << _T("\nm_strHelpFile = ") << m_strHelpFile;
-	dc << _T("\nm_lHelpContext = ") << m_lHelpContext;
-
-	dc << _T("\n");
-}
-#endif // _DEBUG
-
-#ifdef _DEBUG
-void CDaoWorkspaceInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T("a CDaoWorkspaceInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_strUserName = ") << m_strUserName;
-	dc << _T("\nb = m_bIsolateODBCTrans") << m_bIsolateODBCTrans;
-
-	dc << _T("\n");
-}
-#endif // _DEBUG
-
-#ifdef _DEBUG
-void CDaoDatabaseInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T("a CDaoDatabaseInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_bUpdatable = ") << m_bUpdatable;
-	dc << _T("\nm_bTransactions = ") << m_bTransactions;
-	dc << _T("\nm_strVersion = ") << m_strVersion;
-	dc << _T("\nm_lCollatingOrder = ") << m_lCollatingOrder;
-	dc << _T("\nm_nQueryTimeout = ") << m_nQueryTimeout;
-	dc << _T("\nm_strConnect = ") << m_strConnect;
-
-	dc << _T("\n");
-}
-#endif // _DEBUG
-
-#ifdef _DEBUG
-void CDaoTableDefInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T("a CDaoTableDefInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_bUpdatable = ") << m_bUpdatable;
-	dc << _T("\nm_lAttributes = ") << m_lAttributes;
-	dc << _T("\nm_dateDateCreated = ") << m_dateCreated;
-	dc << _T("\nm_dateLastUpdated = ") << m_dateLastUpdated;
-	dc << _T("\nm_strSrcTableName = ") << m_strSrcTableName;
-	dc << _T("\nm_strConnect = ") << m_strConnect;
-	dc << _T("\nm_strValidationRule = ") << m_strValidationRule;
-	dc << _T("\nm_strValidationText = ") << m_strValidationText;
-	dc << _T("\nm_lRecordCount = ") << m_lRecordCount;
-
-	dc << _T("\n");
-}
-#endif // _DEBUG
-
-#ifdef _DEBUG
-void CDaoFieldInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T("a CDaoFieldInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_nType = ") << m_nType;
-	dc << _T("\nm_lSize = ") << m_lSize;
-	dc << _T("\nm_lAttributes = ") << m_lAttributes;
-	dc << _T("\nm_nOrdinalPosition = ") << m_nOrdinalPosition;
-	dc << _T("\nm_bRequired = ") << m_bRequired;
-	dc << _T("\nm_bAllowZeroLength = ") << m_bAllowZeroLength;
-	dc << _T("\nm_lCollatingOrder = ") << m_lCollatingOrder;
-	dc << _T("\nm_strForeignName = ") << m_strForeignName;
-	dc << _T("\nm_strSourceField = ") << m_strSourceField;
-	dc << _T("\nm_strSourceTable = ") << m_strSourceTable;
-	dc << _T("\nm_strValidationRule = ") << m_strValidationRule;
-	dc << _T("\nm_strValidationText = ") << m_strValidationText;
-	dc << _T("\nm_strDefaultValue = ") << m_strDefaultValue;
-
-	dc << _T("\n");
-}
-#endif // _DEBUG
-
-#ifdef _DEBUG
-void CDaoIndexFieldInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T(" a CDaoIndexFieldInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_bDescending = ") << m_bDescending;
-}
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-CDaoIndexInfo::CDaoIndexInfo()
-{
-	m_pFieldInfos = NULL;
-	m_nFields = 0;
-	m_bCleanupFieldInfo = FALSE;
-}
-
-CDaoIndexInfo::~CDaoIndexInfo()
-{
-	if (m_bCleanupFieldInfo && m_pFieldInfos != NULL)
-	{
-		delete[] m_pFieldInfos;
-		m_pFieldInfos = NULL;
-	}
-}
-
-#ifdef _DEBUG
-void CDaoIndexInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T("a CDaoIndexInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_nFields = ") << m_nFields;
-
-	for (int nIndex = 0; nIndex < m_nFields; nIndex++)
-		m_pFieldInfos[nIndex].Dump(dc);
-
-	dc << _T("\nm_bPrimary = ") << m_bPrimary;
-	dc << _T("\nm_bUnique = ") << m_bUnique;
-	dc << _T("\nm_bClustered = ") << m_bClustered;
-	dc << _T("\nm_bIgnoreNulls = ") << m_bIgnoreNulls;
-	dc << _T("\nm_bRequired = ") << m_bRequired;
-	dc << _T("\nm_bForeign = ") << m_bForeign;
-	dc << _T("\nm_lDistinctCount = ") << m_lDistinctCount;
-
-	dc << _T("\n");
-}
-#endif // _DEBUG
-
-#ifdef _DEBUG
-void CDaoRelationFieldInfo::Dump(CDumpContext& dc) const
-{
-	dc << _T(" a CDaoRelationFieldInfo at ") << (void*)this;
-
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_strForeignName = ") << m_strForeignName;
-}
+#ifndef IDC_HAND
+#define IDC_HAND MAKEINTRESOURCE(32649)
 #endif
 
-CDaoRelationInfo::CDaoRelationInfo()
+//////////////////////////////////////////////////////////////////////////
+// XTP_REPORTRECORDITEM_ARGS
+
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS()
 {
-	m_pFieldInfos = NULL;
-	m_nFields = 0;
-	m_bCleanupFieldInfo = FALSE;
+	pControl = NULL;
+	pRow = NULL;
+	pColumn = NULL;
+	pItem = NULL;
+	rcItem.SetRectEmpty();
 }
 
-CDaoRelationInfo::~CDaoRelationInfo()
+XTP_REPORTRECORDITEM_ARGS::XTP_REPORTRECORDITEM_ARGS(CXTPReportControl* pControl, CXTPReportRow* pRow, CXTPReportColumn* pColumn)
 {
-	if (m_bCleanupFieldInfo && m_pFieldInfos != NULL)
-	{
-		delete[] m_pFieldInfos;
-		m_pFieldInfos = NULL;
-	}
+	ASSERT(pControl && pRow && pColumn);
+
+	this->pControl = pControl;
+	this->pRow = pRow;
+	this->pColumn = pColumn;
+	this->pItem = pRow->GetRecord()->GetItem(pColumn);
+	this->rcItem = pRow->GetItemRect(pItem);
+}
+XTP_REPORTRECORDITEM_ARGS::~XTP_REPORTRECORDITEM_ARGS()
+{
+
 }
 
-#ifdef _DEBUG
-void CDaoRelationInfo::Dump(CDumpContext& dc) const
+void XTP_REPORTRECORDITEM_ARGS::AddRef()
 {
-	dc << _T("a CDaoRelationInfo at ") << (void*)this;
+	CMDTARGET_ADDREF(pRow);
+	CMDTARGET_ADDREF(pColumn);
+	CMDTARGET_ADDREF(pItem);
 
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_strTable = ") << m_strTable;
-	dc << _T("\nm_strForeignTable = ") << m_strForeignTable;
-	dc << _T("\nm_lAttributes = ") << m_lAttributes;
-	dc << _T("\nm_nFields = ") << m_nFields;
-
-	for (int nIndex = 0; nIndex < m_nFields; nIndex++)
-		m_pFieldInfos[nIndex].Dump(dc);
-
-	dc << _T("\n");
 }
-#endif // _DEBUG
 
-#ifdef _DEBUG
-void CDaoQueryDefInfo::Dump(CDumpContext& dc) const
+void XTP_REPORTRECORDITEM_ARGS::Release()
 {
-	dc << _T("a CDaoQueryDefInfo at ") << (void*)this;
+	if (pRow)
+		pRow->InternalRelease();
 
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_nType = ") << m_nType;
-	dc << _T("\nm_dateCreated = ") << m_dateCreated;
-	dc << _T("\nm_dateLastUpdated = ") << m_dateLastUpdated;
-	dc << _T("\nm_bUpdatable = ") << m_bUpdatable;
-	dc << _T("\nm_bReturnsRecords = ") << m_bReturnsRecords;
-	dc << _T("\nm_strSQL = ") << m_strSQL;
-	dc << _T("\nm_strConnect = ") << m_strConnect;
-	dc << _T("\nm_nODBCTimeout = ") << m_nODBCTimeout;
+	if (pColumn)
+		pColumn->InternalRelease();
 
-	dc << _T("\n");
+	if (pItem)
+		pItem->InternalRelease();
 }
-#endif // _DEBUG
 
-#ifdef _DEBUG
-void CDaoParameterInfo::Dump(CDumpContext& dc) const
+const XTP_REPORTRECORDITEM_ARGS& XTP_REPORTRECORDITEM_ARGS::operator=(const XTP_REPORTRECORDITEM_ARGS& src)
 {
-	dc << _T("a CDaoParameterInfo at ") << (void*)this;
+	pControl = src.pControl;
+	pRow     = src.pRow;
+	pColumn  = src.pColumn;
+	pItem    = src.pItem;
+	rcItem   = src.rcItem;
 
-	dc << _T("\nm_strName = ") << m_strName;
-	dc << _T("\nm_nType = ") << m_nType;
-	dc << _T("\nm_varValue = ") << m_varValue;
-
-	dc << _T("\n");
+	return *this;
 }
-#endif // _DEBUG
+
+CXTPReportInplaceButtons::CXTPReportInplaceButtons()
+{
+
+}
 
 //////////////////////////////////////////////////////////////////////////
-// CDaoException
-IMPLEMENT_DYNAMIC(CDaoException, CException)
+// CXTPReportRecordItemConstraint
 
-CDaoException::CDaoException()
+CXTPReportRecordItemConstraint::CXTPReportRecordItemConstraint()
 {
-	m_pDAOError = NULL;
-	m_pDAOErrors = NULL;
-	m_pErrorInfo = NULL;
+
+	m_dwData = 0;
+	m_nIndex = 0;
 }
 
-CDaoException::~CDaoException()
+int CXTPReportRecordItemConstraint::GetIndex() const
 {
-	delete m_pErrorInfo;
-	m_pErrorInfo = NULL;
-
-	if (m_pDAOErrors != NULL)
-	{
-		m_pDAOErrors->Release();
-		m_pDAOErrors = NULL;
-	}
-
-	if (m_pDAOError != NULL)
-	{
-		m_pDAOError->Release();
-		m_pDAOError = NULL;
-	}
+	return m_nIndex;
 }
-
-// Operations
-short CDaoException::GetErrorCount()
-{
-	short nErrors = 1;
-
-	if (m_pDAOErrors == NULL)
-		InitErrorsCollection();
-
-	if (m_nAfxDaoError != AFX_DAO_ERROR_ENGINE_INITIALIZATION)
-		DAO_CHECK_MEM(m_pDAOErrors->get_Count(&nErrors));
-
-	return nErrors;
-}
-
-void CDaoException::GetErrorInfo(int nIndex)
-{
-	ASSERT(m_pDAOError == NULL);
-
-	if (m_pDAOErrors == NULL)
-		InitErrorsCollection();
-
-	if (m_nAfxDaoError != AFX_DAO_ERROR_ENGINE_INITIALIZATION)
-	{
-		// Get DAOError object and fill in error info struct
-		DAO_CHECK_MEM(m_pDAOErrors->get_Item(
-			COleVariant((long)nIndex), &m_pDAOError));
-
-		FillErrorInfo();
-
-		// Clean up
-		m_pDAOError->Release();
-		m_pDAOError = NULL;
-	}
-}
-
-BOOL CDaoException::GetErrorMessage(__out_ecount(nMaxError) LPTSTR lpszError, UINT nMaxError,
-	PUINT pnHelpContext) const
-{
-	ASSERT(lpszError != NULL && AfxIsValidString(lpszError, nMaxError));
-
-	BOOL bRetCode = FALSE;
-
-	if (m_pErrorInfo != NULL)
-	{
-		// DAO help context is not a UINT!
-		//  According to DAO it is positive and should be less 10,000,000
-		if (pnHelpContext != NULL)
-			*pnHelpContext = (UINT) m_pErrorInfo->m_lHelpContext;
-
-		Checked::tcsncpy_s(lpszError, nMaxError, m_pErrorInfo->m_strDescription, _TRUNCATE);
-		bRetCode = TRUE;
-	}
-	else
-	{
-		// Must be MFC DAO class internal error, get error string
-		CString strError;
-		if (strError.LoadString(
-			AFX_IDP_DAO_FIRST + (m_nAfxDaoError - AFX_DAO_ERROR_MIN)))
-		{
-			Checked::tcsncpy_s(lpszError, nMaxError, strError, _TRUNCATE);
-			bRetCode = TRUE;
-		}
-		else
-			ASSERT(FALSE);  // Couldn't get resource.
-	}
-	return bRetCode;
-}
-
-// Implementation
-void CDaoException::InitErrorsCollection()
-{
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-
-	// Engine not initialized!
-	if (pDaoState->m_pDAODBEngine == NULL)
-		m_nAfxDaoError = AFX_DAO_ERROR_ENGINE_INITIALIZATION;
-	else
-		DAO_CHECK_MEM(pDaoState->m_pDAODBEngine->get_Errors(
-			&m_pDAOErrors));
-}
-
-void CDaoException::FillErrorInfo()
-{
-	ASSERT(m_pDAOError != NULL);
-	// Allocate the error info structure if necessary
-	if (m_pErrorInfo == NULL)
-		m_pErrorInfo = new CDaoErrorInfo;
-
-	COleVariant var;
-
-	DAO_CHECK_MEM(m_pDAOError->get_Number(
-		&m_pErrorInfo->m_lErrorCode));
-
-	DAO_CHECK_MEM(m_pDAOError->get_Source(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	m_pErrorInfo->m_strSource = V_BSTRT(&var);
-	var.Clear();
-
-	DAO_CHECK_MEM(m_pDAOError->get_Description(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	m_pErrorInfo->m_strDescription = V_BSTRT(&var);
-	var.Clear();
-
-	DAO_CHECK_MEM(m_pDAOError->get_HelpFile(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	m_pErrorInfo->m_strHelpFile = V_BSTRT(&var);
-
-	DAO_CHECK_MEM(m_pDAOError->get_HelpContext(
-		&m_pErrorInfo->m_lHelpContext));
-}
-
-void AFXAPI AfxThrowDaoException(int nAfxDaoError, SCODE scode)
-{
-	CDaoException* pException;
-	pException = new CDaoException;
-
-	pException->m_scode = scode;
-
-	if (nAfxDaoError == NO_AFX_DAO_ERROR)
-	{
-		TRY
-		{
-			int nErrors = pException->GetErrorCount();
-			for (int nIndex = 0; nIndex < nErrors; nIndex++)
-			{
-				pException->GetErrorInfo(nIndex);
-
-				TRACE(traceDatabase, 0, _T("\nError Code = %d\n"),
-					pException->m_pErrorInfo->m_lErrorCode);
-				TRACE(traceDatabase, 0, _T("Source = %s\n"),
-					(LPCTSTR)pException->m_pErrorInfo->m_strSource);
-				TRACE(traceDatabase, 0, _T("Description = %s\n"),
-					(LPCTSTR)pException->m_pErrorInfo->m_strDescription);
-			}
-		}
-		CATCH_ALL(e)
-		{
-			// No DAO error info
-			e->Delete();
-		}
-		END_CATCH_ALL
-	}
-	else
-		pException->m_nAfxDaoError = nAfxDaoError;
-
-	THROW(pException);
-}
-
 
 //////////////////////////////////////////////////////////////////////////
-// CDaoWorkspace
-IMPLEMENT_DYNAMIC(CDaoWorkspace, CObject)
+// CXTPReportRecordItemConstraints
 
-CDaoWorkspace::CDaoWorkspace()
+CXTPReportRecordItemConstraints::CXTPReportRecordItemConstraints()
 {
-	m_pDAOWorkspaces = NULL;
-	m_pDAOWorkspace = NULL;
-	m_pDAODatabases = NULL;
-
-	m_bOpen = FALSE;
-	m_bNew = FALSE;
-	m_nStatus = 0;
 }
-
-CDaoWorkspace::~CDaoWorkspace()
+CXTPReportRecordItemConstraints::~CXTPReportRecordItemConstraints()
 {
-	if (IsOpen())
-	{
-		m_nStatus |= AFX_DAO_IMPLICIT_CLOSE;
-		Close();
-	}
-	else if (m_bNew)
-	{
-		// Remove the workspace from the AFX_DAO_STATE's map
-		_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-		pDaoState->m_mapWorkspaces.RemoveKey(this);
-	}
-}
-
-void CDaoWorkspace::Create(LPCTSTR lpszName, LPCTSTR lpszUserName,
-	LPCTSTR lpszPassword)
-{
-	ASSERT_VALID(this);
-	ASSERT(!IsOpen());
-	ASSERT(lpszUserName != NULL);
-	ASSERT(lpszPassword != NULL);
-
-	// Get the DAODBEngine interface and initialize if necessary
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	COleVariant varName(lpszName, VT_BSTRT);
-	COleVariant varUserName(lpszUserName, VT_BSTRT);
-	COleVariant varPassword(lpszPassword, VT_BSTRT);
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->_30_CreateWorkspace(
-		V_BSTR(&varName), V_BSTR(&varUserName),
-		V_BSTR(&varPassword), &m_pDAOWorkspace));
-
-	m_bNew = TRUE;
-
-	// Add the workspace to map of Open/New CDaoWorkspaces
-	pDaoState->m_mapWorkspaces.SetAt(this, this);
-}
-
-void CDaoWorkspace::Append()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_bNew);
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	DAOWorkspaces* pDAOWorkspaces;
-
-	// Get the DAODBEngine interface and initialize if necessary
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->get_Workspaces(&pDAOWorkspaces));
-
-	TRY
-	{
-		DAO_CHECK(pDAOWorkspaces->Append(m_pDAOWorkspace));
-	}
-	CATCH_ALL(e)
-	{
-		pDAOWorkspaces->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOWorkspaces->Release();
-
-	m_bNew = FALSE;
-	m_bOpen = TRUE;
-}
-
-void CDaoWorkspace::Open(LPCTSTR lpszWorkspaceName)
-{
-	ASSERT_VALID(this);
-	ASSERT(m_pDAOWorkspaces == NULL);
-	ASSERT(m_pDAOWorkspace == NULL);
-
-	// Re-Opening is invalid.
-	if (IsOpen())
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	// Set the workspace name (or use 0 if opening default)
-	COleVariant var(lpszWorkspaceName, VT_BSTRT);
-	if (lpszWorkspaceName == NULL)
-	{
-		var = 0L;
-
-		// Set status to prevent DAO Workspace Close call
-		m_nStatus |= AFX_DAO_DEFAULT_WS;
-	}
-
-	// Get the DAODBEngine interface and initialize if necessary
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	// Get the workspace from the workspaces collection
-	DAO_CHECK(pDaoState->m_pDAODBEngine->get_Workspaces(
-		&m_pDAOWorkspaces));
-	DAO_CHECK(m_pDAOWorkspaces->get_Item(var, &m_pDAOWorkspace));
-
-	m_bOpen = TRUE;
-	m_pDAOWorkspaces->Release();
-	m_pDAOWorkspaces = NULL;
-
-	// Add the workspace to map of Open/New CDaoWorkspaces
-	pDaoState->m_mapWorkspaces.SetAt(this, this);
-}
-
-void CDaoWorkspace::Close()
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAODatabases != NULL)
-	{
-		m_pDAODatabases->Release();
-		m_pDAODatabases = NULL;
-	}
-
-	// Close any Open CDaoDatabases
-	void* pvKey;
-	void* pvObject;
-	POSITION pos = m_mapDatabases.GetStartPosition();
-	while (pos != NULL)
-	{
-		m_mapDatabases.GetNextAssoc(pos, pvKey, pvObject);
-		((CDaoDatabase*)pvObject)->Close();
-	}
-	m_mapDatabases.RemoveAll();
-
-	if (m_pDAOWorkspace != NULL)
-	{
-		// If implicit workspace or close, don't call DAO close.
-		// It will be automatically closed when ref count 0.
-		if (!(m_nStatus & (AFX_DAO_IMPLICIT_WS | AFX_DAO_IMPLICIT_CLOSE |
-			AFX_DAO_DEFAULT_WS)))
-		{
-			DAO_TRACE(m_pDAOWorkspace->Close());
-		}
-
-		m_pDAOWorkspace->Release();
-		m_pDAOWorkspace = NULL;
-	}
-
-	if (m_pDAOWorkspaces != NULL)
-	{
-		m_pDAOWorkspaces->Release();
-		m_pDAOWorkspaces = NULL;
-	}
-
-	m_bOpen = FALSE;
-	m_bNew = FALSE;
-	m_nStatus &= ~AFX_DAO_DEFAULT_WS;
-
-	// Remove the workspace from the AFX_DAO_STATE's map
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	pDaoState->m_mapWorkspaces.RemoveKey(this);
-}
-
-CString PASCAL CDaoWorkspace::GetVersion()
-{
-	COleVariant var;
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->get_Version(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-CString PASCAL CDaoWorkspace::GetIniPath()
-{
-	COleVariant var;
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->get_IniPath(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void PASCAL CDaoWorkspace::SetIniPath(LPCTSTR lpszRegistrySubKey)
-{
-	COleVariant var(lpszRegistrySubKey, VT_BSTRT);
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->put_IniPath(V_BSTR(&var)));
-}
-
-void PASCAL CDaoWorkspace::SetDefaultUser(LPCTSTR lpszDefaultUser)
-{
-	COleVariant var(lpszDefaultUser, VT_BSTRT);
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->put_DefaultUser(V_BSTR(&var)));
-}
-
-void PASCAL CDaoWorkspace::SetDefaultPassword(LPCTSTR lpszPassword)
-{
-	COleVariant var(lpszPassword, VT_BSTRT);
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->put_DefaultPassword(
-		V_BSTR(&var)));
-}
-
-short PASCAL CDaoWorkspace::GetLoginTimeout()
-{
-	short nSeconds;
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->get_LoginTimeout(&nSeconds));
-	return nSeconds;
-}
-
-void PASCAL CDaoWorkspace::SetLoginTimeout(short nSeconds)
-{
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->put_LoginTimeout(nSeconds));
+	RemoveAll();
 }
 
 
-CString CDaoWorkspace::GetName()
+int CXTPReportRecordItemConstraints::GetCount() const
 {
-	ASSERT_VALID(this);
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOWorkspace->get_Name(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
+	return (int)m_arrConstraints.GetSize();
 }
 
-CString CDaoWorkspace::GetUserName()
+CXTPReportRecordItemConstraint* CXTPReportRecordItemConstraints::GetAt(int nIndex) const
 {
-	ASSERT_VALID(this);
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOWorkspace->get_UserName(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
+	return m_arrConstraints.GetAt(nIndex);
 }
 
-void CDaoWorkspace::SetIsolateODBCTrans(BOOL bIsolateODBCTrans)
+void CXTPReportRecordItemConstraints::RemoveAll()
 {
-	ASSERT_VALID(this);
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	DAO_CHECK(m_pDAOWorkspace->put_IsolateODBCTrans(
-		(short)(bIsolateODBCTrans ? AFX_DAO_TRUE : AFX_DAO_FALSE)));
+	for (int i = 0; i < GetCount(); i++)
+		m_arrConstraints[i]->InternalRelease();
+	m_arrConstraints.RemoveAll();
 }
-
-BOOL CDaoWorkspace::GetIsolateODBCTrans()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	short nIsolateODBCTrans;
-	DAO_CHECK(m_pDAOWorkspace->get_IsolateODBCTrans(&nIsolateODBCTrans));
-	return nIsolateODBCTrans == AFX_DAO_TRUE;
-}
-
-void PASCAL CDaoWorkspace::CompactDatabase(LPCTSTR lpszSrcName,
-	LPCTSTR lpszDestName, LPCTSTR lpszLocale, int nOptions,
-	LPCTSTR lpszPassword)
-{
-	COleVariant varSrcName(lpszSrcName, VT_BSTRT);
-	COleVariant varDestName(lpszDestName, VT_BSTRT);
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->CompactDatabase(
-		V_BSTR(&varSrcName), V_BSTR(&varDestName),
-		COleVariant(lpszLocale, VT_BSTRT), COleVariant((long)nOptions),
-		lpszPassword != NULL ? (VARIANT)COleVariant(lpszPassword, VT_BSTRT) :
-		_afxOptionalVariant));
-}
-
-void PASCAL CDaoWorkspace::CompactDatabase(LPCTSTR lpszSrcName,
-	LPCTSTR lpszDestName, LPCTSTR lpszLocale, int nOptions)
-{
-	CompactDatabase(lpszSrcName, lpszDestName, lpszLocale, nOptions, NULL);
-}
-
-void PASCAL CDaoWorkspace::RepairDatabase(LPCTSTR lpszName)
-{
-	COleVariant varName(lpszName, VT_BSTRT);
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->RepairDatabase(
-		V_BSTR(&varName)));
-}
-
-void PASCAL CDaoWorkspace::Idle(int nAction)
-{
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->Idle(
-		COleVariant((long)nAction)));
-}
-
-short CDaoWorkspace::GetWorkspaceCount()
-{
-	ASSERT_VALID(this);
-
-	short nFields;
-
-	if (m_pDAOWorkspaces == NULL)
-		InitWorkspacesCollection();
-
-	DAO_CHECK(m_pDAOWorkspaces->get_Count(&nFields));
-	return nFields;
-}
-
-void CDaoWorkspace::GetWorkspaceInfo(int nIndex,
-	CDaoWorkspaceInfo& wsinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOWorkspaces == NULL)
-		InitWorkspacesCollection();
-
-	// Get DAOWorkspace object and fill in workspace info struct
-	DAOWorkspace* pDAOWorkspace;
-	DAO_CHECK(m_pDAOWorkspaces->get_Item(
-		COleVariant((long)nIndex), &pDAOWorkspace));
-	FillWorkspaceInfo(pDAOWorkspace, wsinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOWorkspace->Release();
-}
-
-void CDaoWorkspace::GetWorkspaceInfo(
-	LPCTSTR lpszName, CDaoWorkspaceInfo& wsinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOWorkspaces == NULL)
-		InitWorkspacesCollection();
-
-	// Get DAOWorkspace object and fill in workspace info struct
-	DAOWorkspace* pDAOWorkspace;
-	DAO_CHECK(m_pDAOWorkspaces->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOWorkspace));
-	FillWorkspaceInfo(pDAOWorkspace, wsinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOWorkspace->Release();
-}
-
-short CDaoWorkspace::GetDatabaseCount()
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAODatabases == NULL)
-		InitDatabasesCollection();
-
-	short nFields;
-	DAO_CHECK(m_pDAODatabases->get_Count(&nFields));
-	return nFields;
-}
-
-void CDaoWorkspace::GetDatabaseInfo(int nIndex, CDaoDatabaseInfo& dbinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAODatabases == NULL)
-		InitDatabasesCollection();
-
-	// Get DAODatabase object and fill in database info struct
-	DAODatabase* pDAODatabase;
-	DAO_CHECK(m_pDAODatabases->get_Item(
-		COleVariant((long)nIndex), &pDAODatabase));
-	FillDatabaseInfo(pDAODatabase, dbinfo, dwInfoOptions);
-
-	// Clean up
-	pDAODatabase->Release();
-}
-
-void CDaoWorkspace::GetDatabaseInfo(LPCTSTR lpszName,
-	CDaoDatabaseInfo& dbinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAODatabases == NULL)
-		InitDatabasesCollection();
-
-	// Get DAODatabase object and fill in database info struct
-	DAODatabase* pDAODatabase;
-	DAO_CHECK(m_pDAODatabases->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAODatabase));
-	FillDatabaseInfo(pDAODatabase, dbinfo, dwInfoOptions);
-
-	// Clean up
-	pDAODatabase->Release();
-}
-
-void CDaoWorkspace::BeginTrans()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	DAO_CHECK(m_pDAOWorkspace->BeginTrans());
-}
-
-// Determine whether to use DAO 3.6, 3.5, or 3.0
-// Use DAO 3.0 if DLL build and not built with MFC 4.21 or later
-// Use DAO 3.6 if MFC 6.01 or later
-// otherwise, DAO 3.5
-
-#ifndef _AFXDLL
-#if _MFC_VER >= 0x0601
-#define _AfxDetermineDaoVersion()   (36)
-#else
-#define _AfxDetermineDaoVersion()   (35)
-#endif
-#else // dynamically because of DLL
-static inline BYTE _AfxDetermineDaoVersion()
-{
-	BYTE bReturn = 35;
-
-#ifdef _AFXDLL
-	AFX_MODULE_STATE* pModuleState = AfxGetModuleState();
-	if (pModuleState->m_dwVersion < 0x421)
-		bReturn = 30;
-	else if (pModuleState->m_dwVersion >= 0x0601)
-		bReturn = 36;
-#endif // _AFXDLL
-
-	return bReturn;
-}
-#endif
-
-void CDaoWorkspace::CommitTrans()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	// Call DAO 3.5 or 3.6 method with no option set.
-	// CommitTrans option parameter not yet supported.
-	DAO_CHECK(m_pDAOWorkspace->CommitTrans(0));
-}
-
-void CDaoWorkspace::Rollback()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOWorkspace != NULL);
-
-	DAO_CHECK(m_pDAOWorkspace->Rollback());
-}
-
-//Implementation
-void AFX_CDECL CDaoWorkspace::InitializeEngine()
-{
-	AfxDaoInit();
-}
-
-void CDaoWorkspace::InitWorkspacesCollection()
-{
-	ASSERT_VALID(this);
-
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-	if (pDaoState->m_pDAODBEngine == NULL)
-		InitializeEngine();
-
-	DAO_CHECK(pDaoState->m_pDAODBEngine->get_Workspaces(
-		&m_pDAOWorkspaces));
-}
-
-void CDaoWorkspace::FillWorkspaceInfo(DAOWorkspace* pDAOWorkspace,
-	CDaoWorkspaceInfo& wsinfo, DWORD dwOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(pDAOWorkspace != NULL);
-	ASSERT(dwOptions != 0);
-
-	COleVariant var;
-	short nBool;
-
-	if (dwOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOWorkspace->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		wsinfo.m_strName = V_BSTRT(&var);
-		var.Clear();
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOWorkspace->get_UserName(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		wsinfo.m_strUserName = V_BSTRT(&var);
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_ALL_PROPERTIES)
-	{
-		DAO_CHECK(pDAOWorkspace->get_IsolateODBCTrans(&nBool));
-		wsinfo.m_bIsolateODBCTrans = nBool == AFX_DAO_TRUE;
-	}
-}
-
-void CDaoWorkspace::InitDatabasesCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAOWorkspace->get_Databases(&m_pDAODatabases));
-}
-
-void CDaoWorkspace::FillDatabaseInfo(DAODatabase* pDAODatabase,
-	CDaoDatabaseInfo& dbinfo, DWORD dwOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(pDAODatabase != NULL);
-	ASSERT(dwOptions != 0);
-
-	COleVariant var;
-	short nBool;
-
-	if (dwOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAODatabase->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		dbinfo.m_strName = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAODatabase->get_Updatable(&nBool));
-		dbinfo.m_bUpdatable = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAODatabase->get_Transactions(&nBool));
-		dbinfo.m_bTransactions = nBool == AFX_DAO_TRUE;
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAODatabase->get_Version(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		dbinfo.m_strVersion = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAODatabase->get_CollatingOrder(
-			&dbinfo.m_lCollatingOrder));
-
-		DAO_CHECK(pDAODatabase->get_QueryTimeout(
-			&dbinfo.m_nQueryTimeout));
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_ALL_PROPERTIES)
-	{
-		DAO_CHECK(pDAODatabase->get_Connect(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		dbinfo.m_strConnect = V_BSTRT(&var);
-	}
-}
-
-void CDaoWorkspace::ThrowDaoException(int nAfxDaoError)
-{
-	ASSERT_VALID(this);
-
-	AfxThrowDaoException(nAfxDaoError);
-}
-
-#ifdef _DEBUG
-void CDaoWorkspace::AssertValid() const
-{
-	CObject::AssertValid();
-}
-
-void CDaoWorkspace::Dump(CDumpContext& dc) const
-{
-	ASSERT_VALID(this);
-
-	CObject::Dump(dc);
-
-	dc << _T("m_bOpen = ") << m_bOpen;
-	dc << _T("\nm_bNew = ") << m_bNew;
-	dc << _T("\nm_nStatus = ") << m_nStatus;
-
-	dc << _T("\n");
-}
-#endif //_DEBUG
 
 //////////////////////////////////////////////////////////////////////////
-// CDaoDatabase
-IMPLEMENT_DYNAMIC(CDaoDatabase, CObject)
+// CXTPReportRecordItemEditOptions
 
-CDaoDatabase::CDaoDatabase(CDaoWorkspace* pWorkspace)
+CXTPReportRecordItemEditOptions::CXTPReportRecordItemEditOptions()
 {
-	m_bOpen = FALSE;
+	m_bAllowEdit = TRUE;
+	m_bConstraintEdit = FALSE;
+	m_pConstraints = new CXTPReportRecordItemConstraints();
+	m_bSelectTextOnEdit = FALSE;
+	m_dwEditStyle = ES_AUTOHSCROLL;
+	m_nMaxLength = 0;
 
-	m_pDAODatabase = NULL;
 
-	m_pDAOTableDefs = NULL;
-	m_pDAORelations = NULL;
-	m_pDAOQueryDefs = NULL;
-	m_pDAORecordsets = NULL;
-
-	m_pWorkspace = pWorkspace;
-	m_nStatus = 0;
 }
 
-CDaoDatabase::~CDaoDatabase()
+CXTPReportRecordItemEditOptions::~CXTPReportRecordItemEditOptions()
 {
-	if (IsOpen())
-		Close();
+	RemoveButtons();
 
-	// Clean up workspace if necessary
-	if (m_pWorkspace != NULL && (m_nStatus & AFX_DAO_IMPLICIT_WS))
+	CMDTARGET_RELEASE(m_pConstraints);
+}
+
+void CXTPReportRecordItemEditOptions::RemoveButtons()
+{
+	for (int j = 0; j < arrInplaceButtons.GetSize(); j++)
+		arrInplaceButtons[j]->InternalRelease();
+
+	arrInplaceButtons.RemoveAll();
+}
+
+void CXTPReportRecordItemEditOptions::AddComboButton()
+{
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_COMBOBUTTON));
+}
+
+void CXTPReportRecordItemEditOptions::AddExpandButton()
+{
+	arrInplaceButtons.Add(new CXTPReportInplaceButton(XTP_ID_REPORT_EXPANDBUTTON));
+}
+
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(DWORD_PTR dwData)
+{
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
 	{
-		m_pWorkspace->Close();
-		delete m_pWorkspace;
-		m_pWorkspace = NULL;
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_dwData == dwData)
+			return pConstaint;
 	}
+	return NULL;
 }
 
-void CDaoDatabase::Create(LPCTSTR lpszName, LPCTSTR lpszLocale,
-	int nOptions)
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::FindConstraint(LPCTSTR lpszConstraint)
 {
-	ASSERT_VALID(this);
-	ASSERT(!IsOpen());
-
-	// Allocate and maintain workspace if necessary
-	InitWorkspace();
-
-	COleVariant varName(lpszName, VT_BSTRT);
-	COleVariant varLocale(lpszLocale, VT_BSTRT);
-
-	DAO_CHECK(m_pWorkspace->m_pDAOWorkspace->CreateDatabase(V_BSTR(&varName),
-		V_BSTR(&varLocale), COleVariant((long)nOptions),
-		&m_pDAODatabase));
-
-	m_bOpen = TRUE;
-
-	// Add the database to map of Open CDaoDatabases
-	m_pWorkspace->m_mapDatabases.SetAt(this, this);
-}
-
-void CDaoDatabase::Open(LPCTSTR lpszName, BOOL bExclusive,
-	BOOL bReadOnly, LPCTSTR lpszConnect)
-{
-	ASSERT_VALID(this);
-
-	// Re-Opening is invalid.
-	if (IsOpen())
+	for (int i = 0; i < m_pConstraints->GetCount(); i++)
 	{
-		ASSERT(FALSE);
-		return;
+		CXTPReportRecordItemConstraint* pConstaint = m_pConstraints->GetAt(i);
+		if (pConstaint->m_strConstraint == lpszConstraint)
+			return pConstaint;
 	}
-
-	// Allocate, maintain and/or open workspace if necessary
-	InitWorkspace();
-
-	COleVariant var(lpszName, VT_BSTRT);
-
-	DAO_CHECK(m_pWorkspace->m_pDAOWorkspace->OpenDatabase(
-		V_BSTR(&var),
-		COleVariant((long)bExclusive, VT_BOOL),
-		COleVariant((long)bReadOnly, VT_BOOL),
-		COleVariant(lpszConnect, VT_BSTRT),
-		&m_pDAODatabase));
-
-	m_bOpen = TRUE;
-
-	// Add the database to map of Open CDaoDatabases
-	m_pWorkspace->m_mapDatabases.SetAt(this, this);
+	return NULL;
 }
 
-// Disconnect connection
-void CDaoDatabase::Close()
+CXTPReportRecordItemConstraint* CXTPReportRecordItemEditOptions::AddConstraint(LPCTSTR lpszConstraint, DWORD_PTR dwData /*= 0*/)
 {
-	ASSERT_VALID(this);
+	CXTPReportRecordItemConstraint* pConstaint = new CXTPReportRecordItemConstraint();
 
-	if (m_pDAORecordsets != NULL)
-	{
-		m_pDAORecordsets->Release();
-		m_pDAORecordsets = NULL;
-	}
+	pConstaint->m_strConstraint = lpszConstraint;
+	pConstaint->m_dwData = dwData;
+	pConstaint->m_nIndex = (int)m_pConstraints->m_arrConstraints.Add(pConstaint);
 
-	if (m_pDAOQueryDefs != NULL)
-	{
-		m_pDAOQueryDefs->Release();
-		m_pDAOQueryDefs = NULL;
-	}
-
-	if (m_pDAORelations != NULL)
-	{
-		m_pDAORelations->Release();
-		m_pDAORelations = NULL;
-	}
-
-	if (m_pDAOTableDefs != NULL)
-	{
-		m_pDAOTableDefs->Release();
-		m_pDAOTableDefs = NULL;
-	}
-
-	// Close any Open CDaoRecordsets
-	void* pvKey;
-	void* pvObject;
-	POSITION pos = m_mapRecordsets.GetStartPosition();
-	while (pos != NULL)
-	{
-		m_mapRecordsets.GetNextAssoc(pos, pvKey, pvObject);
-		((CDaoRecordset*)pvObject)->Close();
-	}
-	m_mapRecordsets.RemoveAll();
-
-	// Close any Open CDaoQueryDefs
-	pos = m_mapQueryDefs.GetStartPosition();
-	while (pos != NULL)
-	{
-		m_mapQueryDefs.GetNextAssoc(pos, pvKey, pvObject);
-		((CDaoQueryDef*)pvObject)->Close();
-	}
-	m_mapQueryDefs.RemoveAll();
-
-	// Close any Open CDaoTableDefs
-	pos = m_mapTableDefs.GetStartPosition();
-	while (pos != NULL)
-	{
-		m_mapTableDefs.GetNextAssoc(pos, pvKey, pvObject);
-		((CDaoTableDef*)pvObject)->Close();
-	}
-	m_mapTableDefs.RemoveAll();
-
-	if (m_pDAODatabase != NULL)
-	{
-		// If implicit database, don't close.
-		// It will be automatically closed when ref count 0.
-		if (!(m_nStatus & AFX_DAO_IMPLICIT_DB))
-			DAO_TRACE(m_pDAODatabase->Close());
-
-		m_pDAODatabase->Release();
-		m_pDAODatabase = NULL;
-	}
-
-	m_bOpen = FALSE;
-
-	// Remove the CDaoDatabase from the CDaoWorkspace's map
-	m_pWorkspace->m_mapDatabases.RemoveKey(this);
+	return pConstaint;
 }
-
-BOOL CDaoDatabase::CanUpdate()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	short nUpdatable;
-	DAO_CHECK(m_pDAODatabase->get_Updatable(&nUpdatable));
-	return nUpdatable == AFX_DAO_TRUE;
-}
-
-BOOL CDaoDatabase::CanTransact()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	short nTransactable;
-	DAO_CHECK(m_pDAODatabase->get_Transactions(&nTransactable));
-	return nTransactable == AFX_DAO_TRUE;
-}
-
-CString CDaoDatabase::GetName()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAODatabase->get_Name(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-CString CDaoDatabase::GetConnect()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAODatabase->get_Connect(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-CString CDaoDatabase::GetVersion()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAODatabase->get_Version(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-short CDaoDatabase::GetQueryTimeout()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	short nQueryTimeout;
-	DAO_CHECK(m_pDAODatabase->get_QueryTimeout(&nQueryTimeout));
-	return nQueryTimeout;
-}
-
-void CDaoDatabase::SetQueryTimeout(short nSeconds)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	DAO_CHECK(m_pDAODatabase->put_QueryTimeout(nSeconds));
-}
-
-long CDaoDatabase::GetRecordsAffected()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAODatabase != NULL);
-
-	long lRecordsAffected;
-	DAO_CHECK(m_pDAODatabase->get_RecordsAffected(&lRecordsAffected));
-	return lRecordsAffected;
-}
-
-void CDaoDatabase::DeleteTableDef(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	if (m_pDAOTableDefs == NULL)
-		InitTableDefsCollection();
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAOTableDefs->Delete(V_BSTR(&var)));
-}
-
-void CDaoDatabase::DeleteQueryDef(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	if (m_pDAOQueryDefs == NULL)
-		InitQueryDefsCollection();
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAOQueryDefs->Delete(V_BSTR(&var)));
-}
-
-void CDaoDatabase::CreateRelation(LPCTSTR lpszName, LPCTSTR lpszTable,
-	LPCTSTR lpszForeignTable, long lAttributes, LPCTSTR lpszField,
-	LPCTSTR lpszForeignField)
-{
-	ASSERT_VALID(this);
-
-	CDaoRelationInfo relinfo;
-	CDaoRelationFieldInfo fieldinfo;
-
-	relinfo.m_strName = lpszName;
-	relinfo.m_strTable = lpszTable;
-	relinfo.m_strForeignTable = lpszForeignTable;
-	relinfo.m_lAttributes = lAttributes;
-	relinfo.m_nFields = 1;
-
-	relinfo.m_pFieldInfos = &fieldinfo;
-	relinfo.m_pFieldInfos->m_strName = lpszField;
-	relinfo.m_pFieldInfos->m_strForeignName = lpszForeignField;
-
-	CreateRelation(relinfo);
-}
-
-void CDaoDatabase::CreateRelation(CDaoRelationInfo& relinfo)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(relinfo.m_nFields > 0);
-
-	// Initialize relations collection so that relation can be appended later
-	if (m_pDAORelations == NULL)
-		InitRelationsCollection();
-
-	DAORelation* pDAORelation = NULL;
-	DAOFields* pDAOFields = NULL;
-	DAOField* pDAOField = NULL;
-
-	// Create the relation
-	DAO_CHECK(m_pDAODatabase->CreateRelation(
-		COleVariant(relinfo.m_strName, VT_BSTRT),
-		COleVariant(relinfo.m_strTable, VT_BSTRT),
-		COleVariant(relinfo.m_strForeignTable, VT_BSTRT),
-		COleVariant(relinfo.m_lAttributes), &pDAORelation));
-
-	TRY
-	{
-		// Get the fields collection for later append of created field
-		DAO_CHECK(pDAORelation->get_Fields(&pDAOFields));
-
-		// Create field(s) and set the name and foreign name
-		for (int nIndex = 0; nIndex < relinfo.m_nFields; nIndex++)
-		{
-			DAO_CHECK(pDAORelation->CreateField(
-				COleVariant(relinfo.m_pFieldInfos[nIndex].m_strName, VT_BSTRT),
-				_afxOptionalVariant, _afxOptionalVariant, &pDAOField));
-
-			COleVariant var(relinfo.m_pFieldInfos[nIndex].m_strForeignName, VT_BSTRT);
-			DAO_CHECK(pDAOField->put_ForeignName(V_BSTR(&var)));
-
-			// Append the field to relation fields collection and release
-			DAO_CHECK(pDAOFields->Append(pDAOField));
-			pDAOField->Release();
-			pDAOField = NULL;
-		}
-
-		DAO_CHECK(m_pDAORelations->Append(pDAORelation));
-	}
-	CATCH_ALL(e)
-	{
-		// Clean up before throw
-		if (pDAOField != NULL)
-			pDAOField->Release();
-
-		if (pDAOFields != NULL)
-			pDAOFields->Release();
-
-		pDAORelation->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	// Clean up
-	if (pDAOField != NULL)
-		pDAOField->Release();
-
-	pDAOFields->Release();
-	pDAORelation->Release();
-}
-
-void CDaoDatabase::DeleteRelation(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	if (m_pDAORelations == NULL)
-		InitRelationsCollection();
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAORelations->Delete(V_BSTR(&var)));
-}
-
-void CDaoDatabase::Execute(LPCTSTR lpszSQL, int nOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(m_pDAODatabase != NULL);
-
-	COleVariant var(lpszSQL, VT_BSTRT);
-	DAO_CHECK(m_pDAODatabase->Execute(
-		V_BSTR(&var), COleVariant((long)nOptions)));
-}
-
-short CDaoDatabase::GetTableDefCount()
-{
-	ASSERT_VALID(this);
-
-	short nTables;
-
-	if (m_pDAOTableDefs == NULL)
-		InitTableDefsCollection();
-
-	DAO_CHECK(m_pDAOTableDefs->get_Count(&nTables));
-	return nTables;
-}
-
-void CDaoDatabase::GetTableDefInfo(int nIndex, CDaoTableDefInfo& tabledefinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOTableDefs == NULL)
-		InitTableDefsCollection();
-
-	// Get DAOTableDef object and fill in table info struct
-	DAOTableDef* pDAOTableDef;
-	DAO_CHECK(m_pDAOTableDefs->get_Item(
-		COleVariant((long)nIndex), &pDAOTableDef));
-	FillTableDefInfo(pDAOTableDef, tabledefinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOTableDef->Release();
-}
-
-void CDaoDatabase::GetTableDefInfo(LPCTSTR lpszName,
-	CDaoTableDefInfo&  tabledefinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOTableDefs == NULL)
-		InitTableDefsCollection();
-
-	// Get DAOTableDef object and fill in table info struct
-	DAOTableDef* pDAOTableDef;
-	DAO_CHECK(m_pDAOTableDefs->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOTableDef));
-	FillTableDefInfo(pDAOTableDef, tabledefinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOTableDef->Release();
-}
-
-short CDaoDatabase::GetRelationCount()
-{
-	ASSERT_VALID(this);
-
-	short nRelations;
-
-	if (m_pDAORelations == NULL)
-		InitRelationsCollection();
-
-	DAO_CHECK(m_pDAORelations->get_Count(&nRelations));
-	return nRelations;
-}
-
-void CDaoDatabase::GetRelationInfo(int nIndex, CDaoRelationInfo& relinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAORelations == NULL)
-		InitRelationsCollection();
-
-	// Get DAORelation object and fill in relation info struct
-	DAORelation* pDAORelation;
-	DAO_CHECK(m_pDAORelations->get_Item(
-		COleVariant((long)nIndex), &pDAORelation));
-	FillRelationInfo(pDAORelation, relinfo, dwInfoOptions);
-
-	// Clean up
-	pDAORelation->Release();
-}
-
-void CDaoDatabase::GetRelationInfo(LPCTSTR lpszName,
-	CDaoRelationInfo& relinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAORelations == NULL)
-		InitRelationsCollection();
-
-	// Get DAORelation object and fill in relation info struct
-	DAORelation* pDAORelation;
-	DAO_CHECK(m_pDAORelations->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAORelation));
-	FillRelationInfo(pDAORelation, relinfo, dwInfoOptions);
-
-	// Clean up
-	pDAORelation->Release();
-}
-
-short CDaoDatabase::GetQueryDefCount()
-{
-	ASSERT_VALID(this);
-
-	short nQueryDefs;
-
-	if (m_pDAOQueryDefs == NULL)
-		InitQueryDefsCollection();
-
-	DAO_CHECK(m_pDAOQueryDefs->get_Count(&nQueryDefs));
-	return nQueryDefs;
-}
-
-void CDaoDatabase::GetQueryDefInfo(int nIndex, CDaoQueryDefInfo& querydefinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOQueryDefs == NULL)
-		InitQueryDefsCollection();
-
-	// Get DAOQueryDef object and fill in query info struct
-	DAOQueryDef* pDAOQueryDef;
-	DAO_CHECK(m_pDAOQueryDefs->get_Item(
-		COleVariant((long)nIndex), &pDAOQueryDef));
-	FillQueryDefInfo(pDAOQueryDef, querydefinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOQueryDef->Release();
-}
-
-void CDaoDatabase::GetQueryDefInfo(LPCTSTR lpszName,
-	CDaoQueryDefInfo& querydefinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOQueryDefs == NULL)
-		InitQueryDefsCollection();
-
-	// Get DAOQueryDef object and fill in query info struct
-	DAOQueryDef* pDAOQueryDef;
-	DAO_CHECK(m_pDAOQueryDefs->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOQueryDef));
-	FillQueryDefInfo(pDAOQueryDef, querydefinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOQueryDef->Release();
-}
-
-// Implementation
-void CDaoDatabase::InitWorkspace()
-{
-	ASSERT_VALID(this);
-
-	if (m_pWorkspace == NULL)
-	{
-		// Allocate workspace and mark as implicit
-		m_pWorkspace = new CDaoWorkspace;
-		m_pWorkspace->m_nStatus |= AFX_DAO_IMPLICIT_WS;
-		m_nStatus |= AFX_DAO_IMPLICIT_WS;
-	}
-
-	// Open workspace if not open and not new (unappended)
-	if (!m_pWorkspace->IsOpen() && !m_pWorkspace->IsNew())
-	{
-		// Open the default workspace
-		m_pWorkspace->Open();
-	}
-}
-
-void CDaoDatabase::InitTableDefsCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAODatabase->get_TableDefs(&m_pDAOTableDefs));
-}
-
-void CDaoDatabase::FillTableDefInfo(DAOTableDef* pDAOTableDef,
-	CDaoTableDefInfo& tabledefinfo, DWORD dwOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(pDAOTableDef != NULL);
-	ASSERT(dwOptions != 0);
-
-	COleVariant var;
-	short nBool;
-
-	if (dwOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOTableDef->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		tabledefinfo.m_strName = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOTableDef->get_Updatable(&nBool));
-		tabledefinfo.m_bUpdatable = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOTableDef->get_Attributes(
-			&tabledefinfo.m_lAttributes));
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOTableDef->get_DateCreated(&var));
-		tabledefinfo.m_dateCreated = var;
-
-		DAO_CHECK(pDAOTableDef->get_LastUpdated(&var));
-		tabledefinfo.m_dateLastUpdated = var;
-
-		DAO_CHECK(pDAOTableDef->get_SourceTableName(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		tabledefinfo.m_strSrcTableName = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOTableDef->get_Connect(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		tabledefinfo.m_strConnect = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOTableDef->get_ValidationRule(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		tabledefinfo.m_strValidationRule = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOTableDef->get_ValidationText(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		tabledefinfo.m_strValidationText = V_BSTRT(&var);
-	}
-
-	// This may be expensive, so only get it if absolutely necessary
-	if (dwOptions & AFX_DAO_FETCH_ALL_PROPERTIES)
-	{
-		DAO_CHECK(pDAOTableDef->get_RecordCount(
-			&tabledefinfo.m_lRecordCount));
-	}
-}
-
-void CDaoDatabase::InitRelationsCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAODatabase->get_Relations(&m_pDAORelations));
-}
-
-void CDaoDatabase::FillRelationInfo(DAORelation* pDAORelation,
-	CDaoRelationInfo& relinfo, DWORD dwOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(pDAORelation != NULL);
-	ASSERT(dwOptions != 0);
-
-	COleVariant var;
-
-	if (dwOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		// All the relation info is primary
-		DAO_CHECK(pDAORelation->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		relinfo.m_strName = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAORelation->get_Table(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		relinfo.m_strTable = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAORelation->get_ForeignTable(
-			&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		relinfo.m_strForeignTable = V_BSTRT(&var);
-		var.Clear();
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAOFields* pDAOFields = NULL;
-		DAOField* pDAOField = NULL;
-
-		DAO_CHECK(pDAORelation->get_Attributes(
-			&relinfo.m_lAttributes));
-
-		// Get the fields collection
-		DAO_CHECK(pDAORelation->get_Fields(&pDAOFields));
-
-		TRY
-		{
-			// Get the number of fields in the relation
-			short nCount;
-			DAO_CHECK(pDAOFields->get_Count(&nCount));
-
-			// Allocate or reallocate memory for array if necessary
-			if (nCount != relinfo.m_nFields)
-			{
-				if (relinfo.m_nFields != 0)
-				{
-					// Check that allocation is correct.
-					ASSERT(relinfo.m_nFields == 0 ||
-						relinfo.m_bCleanupFieldInfo);
-
-					delete[] relinfo.m_pFieldInfos;
-					relinfo.m_pFieldInfos = NULL;
-				}
-
-				// Now allocate required memory
-				relinfo.m_pFieldInfos = new CDaoRelationFieldInfo[nCount];
-				relinfo.m_bCleanupFieldInfo = TRUE;
-				relinfo.m_nFields = nCount;
-			}
-
-			// Now get field info for each field
-			for (int nIndex = 0; nIndex < relinfo.m_nFields; nIndex++)
-			{
-				// Get the field item
-				DAO_CHECK(pDAOFields->get_Item(
-					COleVariant((long)nIndex), &pDAOField));
-
-				// Get the field name
-				DAO_CHECK(pDAOField->get_Name(&V_BSTR(&var)));
-				var.vt = VT_BSTR;
-				relinfo.m_pFieldInfos[nIndex].m_strName =
-					V_BSTRT(&var);
-				var.Clear();
-
-				// Get the foreign field name
-				DAO_CHECK(pDAOField->get_ForeignName(&V_BSTR(&var)));
-				var.vt = VT_BSTR;
-				relinfo.m_pFieldInfos[nIndex].m_strForeignName =
-					V_BSTRT(&var);
-				var.Clear();
-
-				// Release and reset the field object
-				pDAOField->Release();
-				pDAOField = NULL;
-			}
-		}
-		CATCH_ALL(e)
-		{
-			if (pDAOField != NULL)
-				pDAOField->Release();
-
-			pDAOFields->Release();
-			THROW_LAST();
-		}
-		END_CATCH_ALL
-
-		// Release the objects
-		pDAOFields->Release();
-	}
-}
-
-void CDaoDatabase::InitQueryDefsCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAODatabase->get_QueryDefs(&m_pDAOQueryDefs));
-}
-
-void CDaoDatabase::FillQueryDefInfo(DAOQueryDef* pDAOQueryDef,
-	CDaoQueryDefInfo& querydefinfo, DWORD dwOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(pDAOQueryDef != NULL);
-	ASSERT(dwOptions != 0);
-
-	COleVariant var;
-	short nBool;
-
-	if (dwOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOQueryDef->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		querydefinfo.m_strName = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOQueryDef->get_Type(&querydefinfo.m_nType));
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOQueryDef->get_Updatable(&nBool));
-		querydefinfo.m_bUpdatable = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOQueryDef->get_DateCreated(&var));
-		querydefinfo.m_dateCreated = var;
-
-		DAO_CHECK(pDAOQueryDef->get_LastUpdated(&var));
-		querydefinfo.m_dateLastUpdated = var;
-
-		DAO_CHECK(pDAOQueryDef->get_ReturnsRecords(&nBool));
-		querydefinfo.m_bReturnsRecords = nBool == AFX_DAO_TRUE;
-	}
-
-	if (dwOptions & AFX_DAO_FETCH_ALL_PROPERTIES)
-	{
-		DAO_CHECK(pDAOQueryDef->get_SQL(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		querydefinfo.m_strSQL = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOQueryDef->get_Connect(&V_BSTR(
-			(LPVARIANT)var)));
-		var.vt = VT_BSTR;
-		querydefinfo.m_strConnect = V_BSTRT(&var);
-
-		// DAO will display ODBC connect dialog
-		// if data source no longer exists. This must
-		// be avoided during bulk info retrieval.
-		// Call CDaoQueryDef::GetODBCTimeout directly.
-		//  DAO_CHECK(pDAOQueryDef->get_ODBCTimeout(
-		//      &querydefinfo.m_nODBCTimeout));
-
-		// Set the m_nODBCTimeout variable to invalid value.
-		querydefinfo.m_nODBCTimeout = -1;
-	}
-}
-
-void CDaoDatabase::ThrowDaoException(int nAfxDaoError)
-{
-	ASSERT_VALID(this);
-
-	AfxThrowDaoException(nAfxDaoError);
-}
-
-#ifdef _DEBUG
-void CDaoDatabase::AssertValid() const
-{
-	CObject::AssertValid();
-}
-
-void CDaoDatabase::Dump(CDumpContext& dc) const
-{
-	ASSERT_VALID(this);
-
-	CObject::Dump(dc);
-
-	dc << _T("m_bOpen = ") << m_bOpen;
-	dc << _T("\nm_nStatus = ") << m_nStatus;
-
-	dc << _T("\n");
-}
-#endif //_DEBUG
 
 //////////////////////////////////////////////////////////////////////////
-// CDaoTableDef
-IMPLEMENT_DYNAMIC(CDaoTableDef, CObject)
+// CXTPReportRecordItem
 
-CDaoTableDef::CDaoTableDef(CDaoDatabase* pDatabase)
+IMPLEMENT_SERIAL(CXTPReportRecordItem, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+
+CXTPReportRecordItem::CXTPReportRecordItem()
 {
-	m_bOpen = FALSE;
-	m_bNew = FALSE;
+	static const CString g_strFormatStringDef = _T("%s");
 
-	m_pDatabase = pDatabase;
-	m_pDAOTableDef = NULL;
-	m_pDAOFields = NULL;
-	m_pDAOIndexes = NULL;
+	m_strFormatString = g_strFormatStringDef;
+	m_bEditable = TRUE;
+	m_pFontCaption = NULL;
+	m_bBoldText = FALSE;
+	m_clrText = XTP_REPORT_COLOR_DEFAULT;
+	m_clrBackground = XTP_REPORT_COLOR_DEFAULT;
+
+	m_nIconIndex = XTP_REPORT_NOICON;
+
+	m_pRecord = 0;
+	m_dwData = 0;
+
+	m_nSortPriority = -1;
+	m_nGroupPriority = -1;
+
+	m_bChecked = FALSE;
+	m_bHasCheckbox = FALSE;
+	m_pEditOptions = NULL;
+
+	m_bFocusable = TRUE;
+
+	m_pHyperlinks = NULL;
+
+
 }
 
-CDaoTableDef::~CDaoTableDef()
+
+CXTPReportRecordItem::~CXTPReportRecordItem()
 {
-	if (IsOpen())
-		Close();
-	else if (m_bNew)
-	{
-		// Remove the tabledef from the CDaoDatabase's map
-		m_pDatabase->m_mapTableDefs.RemoveKey(this);
-	}
+	CMDTARGET_RELEASE(m_pEditOptions);
+	CMDTARGET_RELEASE(m_pHyperlinks);
 }
 
-void CDaoTableDef::Create(LPCTSTR lpszName, long lAttributes,
-	LPCTSTR lpszSrcTable, LPCTSTR lpszConnect)
+void CXTPReportRecordItem::DoMouseButtonClick()
 {
-	ASSERT_VALID(this);
-	ASSERT(!IsOpen());
-
-	DAO_CHECK(m_pDatabase->m_pDAODatabase->CreateTableDef(
-		COleVariant(lpszName, VT_BSTRT), COleVariant(lAttributes),
-		COleVariant(lpszSrcTable, VT_BSTRT),
-		COleVariant(lpszConnect, VT_BSTRT), &m_pDAOTableDef));
-
-	m_bNew = TRUE;
-
-	// Add the tabledef to map of Open/New CDaoTableDefs
-	m_pDatabase->m_mapTableDefs.SetAt(this, this);
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+	mouse_event(GetSystemMetrics(SM_SWAPBUTTON) ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 }
 
-void CDaoTableDef::Append()
+void CXTPReportRecordItem::GetCaptionRect(XTP_REPORTRECORDITEM_ARGS* pDrawArgs, CRect& rcItem)
 {
-	ASSERT_VALID(this);
-	ASSERT(m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	DAOTableDefs* pDAOTableDefs;
-	DAO_CHECK(m_pDatabase->m_pDAODatabase->get_TableDefs(
-		&pDAOTableDefs));
-
-	TRY
-	{
-		DAO_CHECK(pDAOTableDefs->Append(m_pDAOTableDef));
-	}
-	CATCH_ALL(e)
-	{
-		pDAOTableDefs->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOTableDefs->Release();
-
-	m_bNew = FALSE;
-	m_bOpen = TRUE;
-}
-
-void CDaoTableDef::Open(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(lpszName != NULL);
-
-	// Re-open is invalid
-	if (IsOpen())
-	{
-		ASSERT(FALSE);
+	ASSERT(pDrawArgs->pControl);
+	if (!pDrawArgs->pControl)
 		return;
-	}
 
-	DAOTableDefs* pDAOTableDefs = NULL;
+	if (GetIconIndex() != XTP_REPORT_NOICON)
+		rcItem.left += pDrawArgs->pControl->GetPaintManager()->DrawBitmap(NULL, pDrawArgs->pControl, rcItem, GetIconIndex());
 
-	TRY
-	{
-		DAO_CHECK(m_pDatabase->m_pDAODatabase->get_TableDefs(
-			&pDAOTableDefs));
-		DAO_CHECK(pDAOTableDefs->get_Item(
-			COleVariant(lpszName, VT_BSTRT),&m_pDAOTableDef));
-	}
-	CATCH_ALL(e)
-	{
-		if (pDAOTableDefs != NULL)
-			pDAOTableDefs->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOTableDefs->Release();
-
-	m_bOpen = TRUE;
-
-	// Add the tabledef to map of Open/New CDaoTableDefs
-	m_pDatabase->m_mapTableDefs.SetAt(this, this);
-}
-
-void CDaoTableDef::Close()
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOIndexes != NULL)
-	{
-		m_pDAOIndexes->Release();
-		m_pDAOIndexes = NULL;
-	}
-
-	if (m_pDAOFields != NULL)
-	{
-		m_pDAOFields->Release();
-		m_pDAOFields = NULL;
-	}
-
-	if (m_pDAOTableDef != NULL)
-	{
-		m_pDAOTableDef->Release();
-		m_pDAOTableDef = NULL;
-	}
-
-	m_bOpen = FALSE;
-	m_bNew = FALSE;
-
-	// Remove the tabledef from the CDaoDatabase's map
-	m_pDatabase->m_mapTableDefs.RemoveKey(this);
-}
-
-BOOL CDaoTableDef::CanUpdate()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	short nUpdatable;
-	DAO_CHECK(m_pDAOTableDef->get_Updatable(&nUpdatable));
-	return nUpdatable == AFX_DAO_TRUE;
-}
-
-void CDaoTableDef::SetName(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAOTableDef->put_Name(V_BSTR(&var)));
-}
-
-CString CDaoTableDef::GetName()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOTableDef->get_Name(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoTableDef::SetSourceTableName(LPCTSTR lpszSrcTableName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var(lpszSrcTableName, VT_BSTRT);
-	DAO_CHECK(m_pDAOTableDef->put_SourceTableName(
-		V_BSTR(&var)));
-}
-
-CString CDaoTableDef::GetSourceTableName()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOTableDef->get_SourceTableName(
-		&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoTableDef::SetConnect(LPCTSTR lpszConnect)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var(lpszConnect, VT_BSTRT);
-	DAO_CHECK(m_pDAOTableDef->put_Connect(V_BSTR(&var)));
-}
-
-CString CDaoTableDef::GetConnect()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOTableDef->get_Connect(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoTableDef::SetAttributes(long lAttributes)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	DAO_CHECK(m_pDAOTableDef->put_Attributes(lAttributes));
-}
-
-long CDaoTableDef::GetAttributes()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	long lAttributes;
-	DAO_CHECK(m_pDAOTableDef->get_Attributes(&lAttributes));
-	return lAttributes;
-}
-
-COleDateTime CDaoTableDef::GetDateCreated()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant varDate;
-	DAO_CHECK(m_pDAOTableDef->get_DateCreated(&varDate));
-	return varDate.date;
-}
-
-COleDateTime CDaoTableDef::GetDateLastUpdated()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant varDate;
-	DAO_CHECK(m_pDAOTableDef->get_LastUpdated(&varDate));
-	return varDate.date;
-}
-
-void CDaoTableDef::SetValidationRule(
-	LPCTSTR lpszValidationRule)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var(lpszValidationRule, VT_BSTRT);
-	DAO_CHECK(m_pDAOTableDef->put_ValidationRule(
-		V_BSTR(&var)));
-}
-
-CString CDaoTableDef::GetValidationRule()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOTableDef->get_ValidationRule(
-		&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoTableDef::SetValidationText(
-	LPCTSTR lpszValidationText)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var(lpszValidationText, VT_BSTRT);
-	DAO_CHECK(m_pDAOTableDef->put_ValidationText(
-		V_BSTR(&var)));
-}
-
-CString CDaoTableDef::GetValidationText()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOTableDef->get_ValidationText(
-		&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-long CDaoTableDef::GetRecordCount()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	long lRecordCount;
-	DAO_CHECK(m_pDAOTableDef->get_RecordCount(&lRecordCount));
-	return lRecordCount;
-}
-
-void CDaoTableDef::CreateField(LPCTSTR lpszName, short nType, long lSize,
-	long lAttributes)
-{
-	ASSERT_VALID(this);
-
-	CDaoFieldInfo fieldinfo;
-
-	// Initialize everything so only correct properties will be set
-	fieldinfo.m_strName = lpszName;
-	fieldinfo.m_nType = nType;
-	fieldinfo.m_lSize = lSize;
-	fieldinfo.m_lAttributes = lAttributes;
-	fieldinfo.m_nOrdinalPosition = 0;
-	fieldinfo.m_bRequired = FALSE;
-	fieldinfo.m_bAllowZeroLength = FALSE;
-	fieldinfo.m_lCollatingOrder = 0;
-
-	CreateField(fieldinfo);
-}
-
-void CDaoTableDef::CreateField(CDaoFieldInfo& fieldinfo)
-{
-	ASSERT_VALID(this);
-
-	DAOField* pDAOField;
-
-	// Create the DAO field object (setting basic properties)
-	DAO_CHECK(m_pDAOTableDef->CreateField(
-		COleVariant(fieldinfo.m_strName, VT_BSTRT),
-		COleVariant(fieldinfo.m_nType),
-		COleVariant(fieldinfo.m_lSize), &pDAOField));
-
-	TRY
-	{
-		// Basic properties already set, so set the rest
-		AfxSetFieldInfo(pDAOField, fieldinfo);
-
-		// Append the field object to the fields collection
-		if (m_pDAOFields == NULL)
-			InitFieldsCollection();
-		DAO_CHECK(m_pDAOFields->Append(pDAOField));
-	}
-	CATCH_ALL(e)
-	{
-		pDAOField->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOField->Release();
-}
-
-void CDaoTableDef::DeleteField(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-
-	ASSERT(lpszName != NULL);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAOFields->Delete(V_BSTR(&var)));
-}
-
-void CDaoTableDef::DeleteField(int nIndex)
-{
-	ASSERT_VALID(this);
-
-	CDaoFieldInfo fieldinfo;
-	GetFieldInfo(nIndex, fieldinfo, AFX_DAO_PRIMARY_INFO);
-	DeleteField((LPCTSTR)fieldinfo.m_strName);
-}
-
-void CDaoTableDef::CreateIndex(CDaoIndexInfo& indexinfo)
-{
-	ASSERT_VALID(this);
-
-	DAOIndex* pDAOIndex;
-
-	DAO_CHECK(m_pDAOTableDef->CreateIndex(
-		COleVariant(indexinfo.m_strName, VT_BSTRT), &pDAOIndex));
-
-	TRY
-	{
-		// Set the index info
-		AfxSetIndexInfo(pDAOIndex, indexinfo);
-
-		// Append the field object to the fields collection
-		if (m_pDAOIndexes == NULL)
-			InitIndexesCollection();
-		DAO_CHECK(m_pDAOIndexes->Append(pDAOIndex));
-	}
-	CATCH_ALL(e)
-	{
-		pDAOIndex->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOIndex->Release();
-}
-
-void CDaoTableDef::DeleteIndex(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(lpszName != NULL);
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAOIndexes->Delete(V_BSTR(&var)));
-}
-
-void CDaoTableDef::DeleteIndex(int nIndex)
-{
-	ASSERT_VALID(this);
-
-	CDaoIndexInfo indexinfo;
-	GetIndexInfo(nIndex, indexinfo, AFX_DAO_PRIMARY_INFO);
-	DeleteIndex((LPCTSTR)indexinfo.m_strName);
-}
-
-short CDaoTableDef::GetFieldCount()
-{
-	ASSERT_VALID(this);
-
-	short nFields;
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	DAO_CHECK(m_pDAOFields->get_Count(&nFields));
-	return nFields;
-}
-
-void CDaoTableDef::GetFieldInfo(int nIndex, CDaoFieldInfo& fieldinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOField* pDAOField;
-	DAO_CHECK(m_pDAOFields->get_Item(
-		COleVariant((long)nIndex), &pDAOField));
-	AfxGetFieldInfo(pDAOField, fieldinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOField->Release();
-}
-
-void CDaoTableDef::GetFieldInfo(LPCTSTR lpszName,
-	CDaoFieldInfo& fieldinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOField* pDAOField;
-	DAO_CHECK(m_pDAOFields->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOField));
-	AfxGetFieldInfo(pDAOField, fieldinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOField->Release();
-}
-
-short CDaoTableDef::GetIndexCount()
-{
-	ASSERT_VALID(this);
-
-	short nIndexes;
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	DAO_CHECK(m_pDAOIndexes->get_Count(&nIndexes));
-	return nIndexes;
-}
-
-void CDaoTableDef::GetIndexInfo(int nIndex, CDaoIndexInfo& indexinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOIndex* pDAOIndex;
-	DAO_CHECK(m_pDAOIndexes->get_Item(
-		COleVariant((long)nIndex), &pDAOIndex));
-	AfxGetIndexInfo(pDAOIndex, indexinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOIndex->Release();
-}
-
-void CDaoTableDef::GetIndexInfo(LPCTSTR lpszName,
-	CDaoIndexInfo& indexinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOIndex* pDAOIndex;
-	DAO_CHECK(m_pDAOIndexes->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOIndex));
-	AfxGetIndexInfo(pDAOIndex, indexinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOIndex->Release();
-}
-
-void CDaoTableDef::RefreshLink()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOTableDef != NULL);
-
-	DAO_CHECK(m_pDAOTableDef->RefreshLink());
-}
-
-//Implementation functions
-void CDaoTableDef::InitFieldsCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAOTableDef->get_Fields(&m_pDAOFields));
-}
-
-void CDaoTableDef::InitIndexesCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAOTableDef->get_Indexes(&m_pDAOIndexes));
-}
-
-void CDaoTableDef::ThrowDaoException(int nAfxDaoError)
-{
-	ASSERT_VALID(this);
-
-	AfxThrowDaoException(nAfxDaoError);
-}
-
-#ifdef _DEBUG
-void CDaoTableDef::AssertValid() const
-{
-	CObject::AssertValid();
-}
-
-void CDaoTableDef::Dump(CDumpContext& dc) const
-{
-	ASSERT_VALID(this);
-
-	CObject::Dump(dc);
-
-	dc << _T("m_bOpen = ") << m_bOpen;
-	dc << _T("\nm_bNew = ") << m_bNew;
-
-	dc << _T("\n");
-}
-#endif //_DEBUG
-
-//////////////////////////////////////////////////////////////////////////
-// CDaoQueryDef
-IMPLEMENT_DYNAMIC(CDaoQueryDef, CObject)
-
-CDaoQueryDef::CDaoQueryDef(CDaoDatabase* pDatabase)
-{
-	m_bOpen = FALSE;
-	m_bNew = FALSE;
-
-	m_pDatabase = pDatabase;
-	m_pDAOQueryDef = NULL;
-	m_pDAOParameters = NULL;
-	m_pDAOFields = NULL;
-}
-
-CDaoQueryDef::~CDaoQueryDef()
-{
-	if (IsOpen())
-		Close();
-	else if (m_bNew)
-	{
-		// Remove the querydef from the CDaoDatabase's map
-		m_pDatabase->m_mapQueryDefs.RemoveKey(this);
-	}
-}
-
-void CDaoQueryDef::Create(LPCTSTR lpszName, LPCTSTR lpszSQL)
-{
-	ASSERT_VALID(this);
-	ASSERT(!IsOpen());
-
-	// Create a temp querydef if lpszName is NULL or empty string
-	if (lpszName == NULL || *lpszName == '\0')
-	{
-		DAO_CHECK(m_pDatabase->m_pDAODatabase->CreateQueryDef(
-			COleVariant(_T(""), VT_BSTRT),
-			COleVariant(lpszSQL, VT_BSTRT),
-			&m_pDAOQueryDef));
-		m_bOpen = TRUE;
-	}
-	else
-	{
-		// Create a template querydef
-		// (preventing automatic append to QueryDefs collection)
-		DAO_CHECK(m_pDatabase->m_pDAODatabase->CreateQueryDef(
-			_afxOptionalVariant, _afxOptionalVariant, &m_pDAOQueryDef));
-		m_bNew = TRUE;
-
-		// Now set the name and SQL if necessary
-		SetName(lpszName);
-		if (lpszSQL != NULL)
-			SetSQL(lpszSQL);
-	}
-
-	// Add the querydef to map of Open/New CDaoQueryDefs
-	m_pDatabase->m_mapQueryDefs.SetAt(this, this);
-}
-
-void CDaoQueryDef::Append()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_bNew);
-	ASSERT(m_pDAOQueryDef != NULL);
-
-	DAOQueryDefs* pDAOQueryDefs;
-	DAO_CHECK(m_pDatabase->m_pDAODatabase->get_QueryDefs(
-		&pDAOQueryDefs));
-
-	TRY
-	{
-		DAO_CHECK(pDAOQueryDefs->Append(m_pDAOQueryDef));
-	}
-	CATCH_ALL(e)
-	{
-		pDAOQueryDefs->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOQueryDefs->Release();
-
-	m_bNew = FALSE;
-	m_bOpen = TRUE;
-}
-
-// Open a pre-defined query or create a temp query
-void CDaoQueryDef::Open(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(!m_bNew);
-
-	// Re-open is not allowed
-	if (IsOpen())
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	// Null lpszName implies create a temp query
-	if (lpszName == NULL)
-	{
-		DAO_CHECK(m_pDatabase->m_pDAODatabase->CreateQueryDef(
-			COleVariant(_T(""), VT_BSTRT), _afxOptionalVariant, &m_pDAOQueryDef));
-	}
-	else
-	{
-		COleVariant varName(lpszName, VT_BSTRT);
-		DAO_CHECK(m_pDatabase->m_pDAODatabase->OpenQueryDef(
-			V_BSTR(&varName), &m_pDAOQueryDef));
-	}
-
-	m_bOpen = TRUE;
-
-	// Add the querydef to map of Open/New CDaoQueryDefs
-	m_pDatabase->m_mapQueryDefs.SetAt(this, this);
-}
-
-void CDaoQueryDef::Close()
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOParameters != NULL)
-	{
-		m_pDAOParameters->Release();
-		m_pDAOParameters = NULL;
-	}
-
-	if (m_pDAOFields != NULL)
-	{
-		m_pDAOFields->Release();
-		m_pDAOFields = NULL;
-	}
-
-	if (m_pDAOQueryDef != NULL)
-	{
-		// DAO Close is a no op, but call it anyway
-		DAO_TRACE(m_pDAOQueryDef->Close());
-		m_pDAOQueryDef->Release();
-		m_pDAOQueryDef = NULL;
-	}
-
-	m_bOpen = FALSE;
-	m_bNew = FALSE;
-
-	// Remove the querydef from the CDaoDatabase's map
-	m_pDatabase->m_mapQueryDefs.RemoveKey(this);
-}
-
-BOOL CDaoQueryDef::CanUpdate()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nUpdatable;
-	DAO_CHECK(m_pDAOQueryDef->get_Updatable(&nUpdatable));
-	return nUpdatable == AFX_DAO_TRUE;
-}
-
-CString CDaoQueryDef::GetName()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOQueryDef->get_Name(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoQueryDef::SetName(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAOQueryDef->put_Name(V_BSTR(&var)));
-}
-
-CString CDaoQueryDef::GetSQL()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOQueryDef->get_SQL(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoQueryDef::SetSQL(LPCTSTR lpszSQL)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-
-	COleVariant var(lpszSQL, VT_BSTRT);
-	DAO_CHECK(m_pDAOQueryDef->put_SQL(V_BSTR(&var)));
-}
-
-short CDaoQueryDef::GetType()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nType;
-	DAO_CHECK(m_pDAOQueryDef->get_Type(&nType));
-	return nType;
-}
-
-COleDateTime CDaoQueryDef::GetDateCreated()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	COleVariant varDate;
-	DAO_CHECK(m_pDAOQueryDef->get_DateCreated(&varDate));
-	return varDate.date;
-}
-
-COleDateTime CDaoQueryDef::GetDateLastUpdated()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	COleVariant varDate;
-	DAO_CHECK(m_pDAOQueryDef->get_LastUpdated(&varDate));
-	return varDate.date;
-}
-
-CString CDaoQueryDef::GetConnect()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	COleVariant var;
-	DAO_CHECK(m_pDAOQueryDef->get_Connect(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoQueryDef::SetConnect(LPCTSTR lpszConnect)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-
-	COleVariant var(lpszConnect, VT_BSTRT);
-	DAO_CHECK(m_pDAOQueryDef->put_Connect(V_BSTR(&var)));
-}
-
-short CDaoQueryDef::GetODBCTimeout()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nTimeout;
-	DAO_CHECK(m_pDAOQueryDef->get_ODBCTimeout(&nTimeout));
-	return nTimeout;
-}
-
-void CDaoQueryDef::SetODBCTimeout(short nODBCTimeout)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-
-	DAO_CHECK(m_pDAOQueryDef->put_ODBCTimeout(nODBCTimeout));
-}
-
-BOOL CDaoQueryDef::GetReturnsRecords()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nReturnsRecords;
-	DAO_CHECK(m_pDAOQueryDef->get_ReturnsRecords(&nReturnsRecords));
-	return nReturnsRecords == AFX_DAO_TRUE;
-}
-
-void CDaoQueryDef::SetReturnsRecords(BOOL bReturnsRecords)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-
-	DAO_CHECK(m_pDAOQueryDef->put_ReturnsRecords(
-		(short)(bReturnsRecords ? AFX_DAO_TRUE : AFX_DAO_FALSE)));
-}
-
-long CDaoQueryDef::GetRecordsAffected()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	long lRecordsAffected;
-	DAO_CHECK(m_pDAOQueryDef->get_RecordsAffected(&lRecordsAffected));
-	return lRecordsAffected;
-}
-
-void CDaoQueryDef::Execute(int nOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(m_pDAOQueryDef != NULL);
-
-	DAO_CHECK(m_pDAOQueryDef->Execute(COleVariant((long)nOptions)));
-}
-
-COleVariant CDaoQueryDef::GetParamValue(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOQueryDef != NULL);
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	DAOParameter* pDAOParameter = NULL;
-	COleVariant var;
-
-	TRY
-	{
-		DAO_CHECK(m_pDAOParameters->get_Item(
-			COleVariant(lpszName, VT_BSTRT), &pDAOParameter));
-		DAO_CHECK(pDAOParameter->get_Value(&var));
-	}
-	CATCH_ALL(e)
-	{
-		if (pDAOParameter != NULL)
-			pDAOParameter->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOParameter->Release();
-	return var;
-}
-
-COleVariant CDaoQueryDef::GetParamValue(int nIndex)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAOQueryDef != NULL);
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	DAOParameter* pDAOParameter = NULL;
-	COleVariant var;
-
-	TRY
-	{
-		DAO_CHECK(m_pDAOParameters->get_Item(
-			COleVariant((long)nIndex), &pDAOParameter));
-		DAO_CHECK(pDAOParameter->get_Value(&var));
-	}
-	CATCH_ALL(e)
-	{
-		if (pDAOParameter != NULL)
-			pDAOParameter->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOParameter->Release();
-	return var;
-}
-
-void CDaoQueryDef::SetParamValue(LPCTSTR lpszName,
-	const COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOQueryDef != NULL);
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	DAOParameter* pDAOParameter = NULL;
-
-	TRY
-	{
-		DAO_CHECK(m_pDAOParameters->get_Item(
-			COleVariant(lpszName, VT_BSTRT), &pDAOParameter));
-		DAO_CHECK(pDAOParameter->put_Value(varValue));
-	}
-	CATCH_ALL(e)
-	{
-		if (pDAOParameter != NULL)
-			pDAOParameter->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOParameter->Release();
-}
-
-void CDaoQueryDef::SetParamValue(int nIndex,
-	const COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen() || m_bNew);
-	ASSERT(m_pDAOQueryDef != NULL);
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	DAOParameter* pDAOParameter = NULL;
-
-	TRY
-	{
-		DAO_CHECK(m_pDAOParameters->get_Item(
-			COleVariant((long)nIndex), &pDAOParameter));
-		DAO_CHECK(pDAOParameter->put_Value(varValue));
-	}
-	CATCH_ALL(e)
-	{
-		if (pDAOParameter != NULL)
-			pDAOParameter->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pDAOParameter->Release();
-}
-
-void CDaoQueryDef::SetParamValueNull(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-
-	SetParamValue(lpszName, _afxNullVariant);
-}
-
-void CDaoQueryDef::SetParamValueNull(int nIndex)
-{
-	ASSERT_VALID(this);
-
-	SetParamValue(nIndex, _afxNullVariant);
-}
-
-short CDaoQueryDef::GetFieldCount()
-{
-	ASSERT_VALID(this);
-
-	short nFields;
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	DAO_CHECK(m_pDAOFields->get_Count(&nFields));
-	return nFields;
-}
-
-void CDaoQueryDef::GetFieldInfo(int nIndex, CDaoFieldInfo& fieldinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOField* pDAOField;
-	DAO_CHECK(m_pDAOFields->get_Item(
-		COleVariant((long)nIndex), &pDAOField));
-	AfxGetFieldInfo(pDAOField, fieldinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOField->Release();
-}
-
-void CDaoQueryDef::GetFieldInfo(LPCTSTR lpszName,
-	CDaoFieldInfo& fieldinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOField* pDAOField;
-	DAO_CHECK(m_pDAOFields->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOField));
-	AfxGetFieldInfo(pDAOField, fieldinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOField->Release();
-}
-
-short CDaoQueryDef::GetParameterCount()
-{
-	ASSERT_VALID(this);
-
-	short nParameters;
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	DAO_CHECK(m_pDAOParameters->get_Count(&nParameters));
-	return nParameters;
-}
-
-void CDaoQueryDef::GetParameterInfo(int nIndex,
-	CDaoParameterInfo& paraminfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	// Get DAOParameter object and fill in parameter info struct
-	DAOParameter* pDAOParameter;
-	DAO_CHECK(m_pDAOParameters->get_Item(
-		COleVariant((long)nIndex), &pDAOParameter));
-	FillParameterInfo(pDAOParameter, paraminfo, dwInfoOptions);
-
-	// Clean up
-	pDAOParameter->Release();
-}
-
-void CDaoQueryDef::GetParameterInfo(LPCTSTR lpszName,
-	CDaoParameterInfo& paraminfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOParameters == NULL)
-		InitParametersCollection();
-
-	// Get DAOParameter object and fill in parameter info struct
-	DAOParameter* pDAOParameter;
-	DAO_CHECK(m_pDAOParameters->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOParameter));
-	FillParameterInfo(pDAOParameter, paraminfo, dwInfoOptions);
-
-	// Clean up
-	pDAOParameter->Release();
-}
-
-//Implementation functions
-void CDaoQueryDef::InitFieldsCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAOQueryDef->get_Fields(&m_pDAOFields));
-}
-
-void CDaoQueryDef::InitParametersCollection()
-{
-	ASSERT_VALID(this);
-
-	DAO_CHECK(m_pDAOQueryDef->get_Parameters(&m_pDAOParameters));
-}
-
-void CDaoQueryDef::FillParameterInfo(DAOParameter* pDAOParameter,
-	CDaoParameterInfo& paraminfo, DWORD dwOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(pDAOParameter != NULL);
-	ASSERT(dwOptions != NULL);
-
-	COleVariant var;
-
-	if (dwOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		// All parameter info is basic info
-		DAO_CHECK(pDAOParameter->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		paraminfo.m_strName = V_BSTRT(&var);
-
-		TCHAR* pch = paraminfo.m_strName.GetBuffer(0);
-		int nLength = lstrlen(pch);
-		if (nLength > 0 && *pch == '[' && *(pch + nLength -1) == ']')
-		{
-			*(pch + nLength - 1) = 0;  // remove last bracket.
-			Checked::memmove_s(pch, nLength * sizeof(TCHAR), 
-				pch + 1, (nLength - 1) * sizeof(TCHAR));
-		}
-
-		paraminfo.m_strName.ReleaseBuffer(-1);
-
-		DAO_CHECK(pDAOParameter->get_Type(
-			&paraminfo.m_nType));
-
-		DAO_CHECK(pDAOParameter->get_Value(
-			&paraminfo.m_varValue));
-	}
-}
-
-void CDaoQueryDef::ThrowDaoException(int nAfxDaoError)
-{
-	ASSERT_VALID(this);
-
-	AfxThrowDaoException(nAfxDaoError);
-}
-
-#ifdef _DEBUG
-void CDaoQueryDef::AssertValid() const
-{
-	CObject::AssertValid();
-}
-
-void CDaoQueryDef::Dump(CDumpContext& dc) const
-{
-	ASSERT_VALID(this);
-
-	CObject::Dump(dc);
-
-	dc << _T("m_bOpen = ") << m_bOpen;
-	dc << _T("\nm_bNew = ") << m_bNew;
-
-	dc << _T("\n");
-}
-#endif //_DEBUG
-
-//////////////////////////////////////////////////////////////////////////
-// CDaoRecordset
-IMPLEMENT_DYNAMIC(CDaoRecordset, CObject )
-
-CDaoRecordset::CDaoRecordset(CDaoDatabase* pDatabase)
-{
-	m_bOpen = FALSE;
-
-	m_pMapFieldCache = NULL;
-	m_pMapFieldIndex = NULL;
-	m_bCheckCacheForDirtyFields = TRUE;
-
-	m_prgDaoColBindInfo = NULL;
-	m_pulColumnLengths = NULL;
-	m_pbFieldFlags = NULL;
-	m_pbParamFlags = NULL;
-
-	m_pDAORecordset = NULL;
-	m_pICDAORecordsetGetRows = NULL;
-	m_pQueryDef = NULL;
-	m_pTableDef = NULL;
-	m_pDAOFields = NULL;
-	m_pDAOIndexes = NULL;
-
-	m_pDatabase = pDatabase;
-
-	m_nDefaultType = dbOpenDynaset;
-	m_nStatus = 0;
-	m_nFields = 0;
-	m_nParams = 0;
-}
-
-CDaoRecordset::~CDaoRecordset()
-{
-	if (IsOpen())
-		Close();
-
-	// Clean up database if necessary
-	if (m_pDatabase != NULL && (m_nStatus & AFX_DAO_IMPLICIT_DB))
-	{
-		m_pDatabase->Close();
-		delete m_pDatabase;
-		m_pDatabase = NULL;
-	}
-}
-
-void CDaoRecordset::Open(int nOpenType, LPCTSTR lpszSQL, int nOptions)
-{
-	ASSERT_VALID(this);
-	ASSERT(nOpenType == AFX_DAO_USE_DEFAULT_TYPE ||
-		nOpenType == dbOpenDynaset || nOpenType == dbOpenSnapshot ||
-		nOpenType == dbOpenTable);
-
-	// Re-Opening is invalid.
-	if (IsOpen())
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (nOpenType == AFX_DAO_USE_DEFAULT_TYPE)
-		m_nOpenType = m_nDefaultType;
-	else
-		m_nOpenType = nOpenType;
-
-	// Snapshots readOnly in DAO model.
-	if (m_nOpenType == dbOpenSnapshot)
-		nOptions |= dbReadOnly;
-
-	// Cache parameters and initialize
-	m_nOptions = nOptions;
-	m_cbFixedLengthFields = 0;
-
-	// Cache information for use in Requery
-	m_strRequerySQL = lpszSQL;
-	m_strRequeryFilter = m_strFilter;
-	m_strRequerySort = m_strSort;
-
-	AllocDatabase();
-
-	m_strSQL = lpszSQL;
-	if (m_strSQL.IsEmpty())
-		m_strSQL = GetDefaultSQL();
-
-	// Open table directly if option specified
-	if (m_nOpenType == dbOpenTable)
-	{
-		m_pTableDef = new CDaoTableDef(m_pDatabase);
-		m_nStatus |= AFX_DAO_IMPLICIT_TD;
-
-		TRY
-		{
-			// Must remove the bracket from the name
-			StripBrackets(m_strSQL, m_strSQL.GetBuffer(0));
-			m_strSQL.ReleaseBuffer();
-
-			m_pTableDef->Open(m_strSQL);
-
-			// Open the DAO recordset (implicit MoveFirst)
-			DAO_CHECK(m_pTableDef->m_pDAOTableDef->OpenRecordset(
-				COleVariant((long)m_nOpenType), COleVariant((long)m_nOptions),
-				&m_pDAORecordset));
-		}
-		CATCH_ALL(e)
-		{
-			// Once recordset marked as open, Close handles this
-			if (m_pTableDef->IsOpen())
-				m_pTableDef->Close();
-			delete m_pTableDef;
-			THROW_LAST();
-		}
-		END_CATCH_ALL
-	}
-	else
-	{
-		m_pQueryDef = new CDaoQueryDef(m_pDatabase);
-		m_nStatus |= AFX_DAO_IMPLICIT_QD;
-
-		TRY
-		{
-			// If initial clause includes potential start of row returning
-			// query, then SQL passed to Open must be valid
-			// (Note: TABLE is valid for UNION-type queries)
-			if ((_tcsnicmp(m_strSQL, _afxSelect2, _countof(_afxSelect2)-1) != 0) &&
-				(_tcsnicmp(m_strSQL, _afxParameters2, _countof(_afxParameters2)-1) != 0) &&
-				(_tcsnicmp(m_strSQL, _afxTransform2, _countof(_afxTransform2)-1) != 0) &&
-				(_tcsnicmp(m_strSQL, _afxTable2, _countof(_afxTable2)-1) != 0))
-			{
-				BuildSQL();
-			}
-			else
-			{
-				// Add the filter and sort
-				if (!m_strFilter.IsEmpty())
-					m_strSQL += _afxWhere2 + m_strFilter;
-
-				if (!m_strSort.IsEmpty())
-					m_strSQL += _afxOrderBy2 + m_strSort;
-			}
-
-			// Create and define temp query
-			m_pQueryDef->Open();
-			m_pQueryDef->SetSQL(m_strSQL);
-
-			BindParameters();
-			// Open the DAO recordset (implicit MoveFirst)
-			DAO_CHECK(m_pQueryDef->m_pDAOQueryDef->_30_OpenRecordset(
-				COleVariant((long)m_nOpenType), COleVariant((long)m_nOptions),
-				&m_pDAORecordset));
-		}
-		CATCH_ALL(e)
-		{
-			// Once recordset marked as open, Close handles this
-			if (m_pQueryDef->IsOpen())
-				m_pQueryDef->Close();
-			delete m_pQueryDef;
-			THROW_LAST();
-		}
-		END_CATCH_ALL
-	}
-
-	m_bOpen = TRUE;
-
-	// Add the recordset to map of Open CDaoRecordsets
-	m_pDatabase->m_mapRecordsets.SetAt(this, this);
-
-	TRY
-	{
-		BindFields();
-		GetDataAndFixupNulls();
-		SetCursorAttributes();
-	}
-	CATCH_ALL(e)
-	{
-		Close();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-}
-
-void CDaoRecordset::Open(CDaoQueryDef* pQueryDef, int nOpenType,
-	int nOptions)
-{
-	ASSERT_VALID(this);
-	// Must pass valid, open QueryDef
-	ASSERT(pQueryDef != NULL);
-	if (!pQueryDef->IsOpen())
-		ThrowDaoException(AFX_DAO_ERROR_OBJECT_NOT_OPEN);
-
-	// Re-Opening is invalid.
-	if (IsOpen())
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (nOpenType == AFX_DAO_USE_DEFAULT_TYPE)
-		m_nOpenType = m_nDefaultType;
-	else
-		m_nOpenType = nOpenType;
-
-	// Can't open table type recordsets with QueryDef
-	ASSERT(m_nOpenType == dbOpenDynaset || m_nOpenType == dbOpenSnapshot);
-
-	// Snapshots readOnly in DAO model.
-	if (m_nOpenType == dbOpenSnapshot)
-		nOptions |= dbReadOnly;
-
-	// Cache parameters and initialize
-	m_nOptions = nOptions;
-	m_cbFixedLengthFields = 0;
-
-	// Use pre-defined query
-	m_pQueryDef = pQueryDef;
-
-	// Share the same database object
-	m_pDatabase = m_pQueryDef->m_pDatabase;
-
-	BindParameters();
-
-	// Open the DAO recordset (implicit MoveFirst)
-	DAO_CHECK(m_pQueryDef->m_pDAOQueryDef->_30_OpenRecordset(
-		COleVariant((long)m_nOpenType), COleVariant((long)m_nOptions),
-		&m_pDAORecordset));
-
-	m_bOpen = TRUE;
-
-	// Add the recordset to map of Open CDaoRecordsets
-	m_pDatabase->m_mapRecordsets.SetAt(this, this);
-
-	TRY
-	{
-		BindFields();
-		GetDataAndFixupNulls();
-		SetCursorAttributes();
-	}
-	CATCH_ALL(e)
-	{
-		Close();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-}
-
-void CDaoRecordset::Open(CDaoTableDef* pTableDef, int nOpenType,
-	int nOptions)
-{
-	ASSERT_VALID(this);
-	// Must pass valid, open TableDef
-	ASSERT(pTableDef != NULL);
-	if (!pTableDef->IsOpen())
-		ThrowDaoException(AFX_DAO_ERROR_OBJECT_NOT_OPEN);
-	m_pTableDef = pTableDef;
-
-	// Re-Opening is invalid.
-	if (IsOpen())
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (nOpenType == AFX_DAO_USE_DEFAULT_TYPE)
-		m_nOpenType = m_nDefaultType;
-	else
-		m_nOpenType = nOpenType;
-
-	// Cache parameters and initialize
-	m_nOptions = nOptions;
-	m_cbFixedLengthFields = 0;
-
-	// Share the same database object
-	m_pDatabase = m_pTableDef->m_pDatabase;
-
-	// Open the DAO recordset (implicit MoveFirst)
-	DAO_CHECK(m_pTableDef->m_pDAOTableDef->OpenRecordset(
-		COleVariant((long)m_nOpenType), COleVariant((long)m_nOptions),
-		&m_pDAORecordset));
-
-	m_bOpen = TRUE;
-
-	// Add the recordset to map of Open CDaoRecordsets
-	m_pDatabase->m_mapRecordsets.SetAt(this, this);
-
-	TRY
-	{
-		BindFields();
-		GetDataAndFixupNulls();
-		SetCursorAttributes();
-	}
-	CATCH_ALL(e)
-	{
-		Close();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-}
-
-void CDaoRecordset::Close()
-{
-	ASSERT_VALID(this);
-
-	if (IsOpen())
-		FreeCache();
-
-	// Clean up name strings in ColBindInfo struct
-	if (m_prgDaoColBindInfo != NULL)
-	{
-		for (int nIndex = 0; nIndex < m_nFields; nIndex++)
-		{
-#ifndef _UNICODE
-			delete[] (LPTSTR)m_prgDaoColBindInfo[nIndex].columnID.lpstr;
-			m_prgDaoColBindInfo[nIndex].columnID.lpstr = NULL;
-#else
-			delete[] (LPTSTR)m_prgDaoColBindInfo[nIndex].columnID.lpwstr;
-			m_prgDaoColBindInfo[nIndex].columnID.lpwstr = NULL;
-#endif
-		}
-	}
-
-	delete[] m_prgDaoColBindInfo;
-	m_prgDaoColBindInfo = NULL;
-
-	delete[] m_pulColumnLengths;
-	m_pulColumnLengths = NULL;
-
-	delete[] m_pbFieldFlags;
-	m_pbFieldFlags = NULL;
-
-	if (m_pMapFieldIndex != NULL)
-	{
-		delete m_pMapFieldIndex;
-		m_pMapFieldIndex = NULL;
-	}
-
-	if (m_pDAOIndexes != NULL)
-	{
-		m_pDAOIndexes->Release();
-		m_pDAOIndexes = NULL;
-	}
-
-	if (m_pDAOFields != NULL)
-	{
-		m_pDAOFields->Release();
-		m_pDAOFields = NULL;
-	}
-
-	if (m_pICDAORecordsetGetRows != NULL)
-	{
-		m_pICDAORecordsetGetRows->Release();
-		m_pICDAORecordsetGetRows = NULL;
-	}
-
-	if (m_pDAORecordset != NULL)
-	{
-		DAO_TRACE(m_pDAORecordset->Close());
-		m_pDAORecordset->Release();
-		m_pDAORecordset = NULL;
-	}
-
-	// Cleanup TableDef if not user supplied
-	if (m_pTableDef != NULL && m_nStatus & AFX_DAO_IMPLICIT_TD)
-	{
-		m_pTableDef->Close();
-		delete m_pTableDef;
-		m_pTableDef = NULL;
-	}
-
-	// Cleanup QueryDef if not user supplied
-	if (m_pQueryDef != NULL && m_nStatus & AFX_DAO_IMPLICIT_QD)
-	{
-		m_pQueryDef->Close();
-		delete m_pQueryDef;
-		m_pQueryDef = NULL;
-	}
-
-	m_nStatus &= ~AFX_DAO_IMPLICIT_QD;
-	m_nStatus &= ~AFX_DAO_IMPLICIT_TD;
-	m_pQueryDef = NULL;
-	m_pTableDef = NULL;
-
-	m_bOpen = FALSE;
-
-	// Remove the recordset from the CDaoDatabase's map
-	m_pDatabase->m_mapRecordsets.RemoveKey(this);
-}
-
-void CDaoRecordset::Requery()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(CanRestart());
-
-	// If filter or sort strings changed, must Close and Open
-	// This is only effective if m_strFilter/m_strSort used
-	if ((m_pQueryDef != NULL &&
-		(m_nStatus & AFX_DAO_IMPLICIT_QD)) &&
-		((m_strRequeryFilter != m_strFilter) ||
-		(m_strRequerySort != m_strSort)))
-	{
-		Close();
-		Open(m_nOpenType, m_strRequerySQL, m_nOptions);
-	}
-	else
-	{
-		// Rebind parameters in case values have changed
-		BindParameters();
-
-		if (m_pQueryDef != NULL)
-		{
-			COleVariant varDisp;
-			varDisp.pdispVal = m_pQueryDef->m_pDAOQueryDef;
-			varDisp.vt = VT_DISPATCH;
-
-			TRY
-			{
-				DAO_CHECK(m_pDAORecordset->Requery(varDisp));
-			}
-			CATCH_ALL(e)
-			{
-				// Reset vt to prevent release of DAOQueryDef
-				varDisp.vt = VT_EMPTY;
-				THROW_LAST();
-			}
-			END_CATCH_ALL
-
-			// Reset vt to prevent release of DAOQueryDef
-			varDisp.vt = VT_EMPTY;
-		}
-		else
-			// Must be a table type recordset (this will fail!)
-			DAO_CHECK(m_pDAORecordset->Requery(_afxOptionalVariant));
-
-		GetDataAndFixupNulls();
-	}
-}
-
-CString CDaoRecordset::GetDefaultDBName()
-{
-	ASSERT_VALID(this);
-
-	// Override and add UNC path to .MDB file
-	return _T("");
-}
-
-CString CDaoRecordset::GetDefaultSQL()
-{
-	ASSERT_VALID(this);
-
-	// Override and add table name or entire SQL SELECT statement
-	return _T("");
-}
-
-void CDaoRecordset::DoFieldExchange(CDaoFieldExchange* /* pFX */)
-{
-	ASSERT_VALID(this);
-
-	// Do nothing if dynamic binding, otherwise override and add DFX calls
-}
-
-BOOL CDaoRecordset::IsBOF() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nBOF;
-	DAO_CHECK(m_pDAORecordset->get_BOF(&nBOF));
-	return nBOF == AFX_DAO_TRUE;
-}
-
-BOOL CDaoRecordset::IsEOF() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nEOF;
-	DAO_CHECK(m_pDAORecordset->get_EOF(&nEOF));
-	return nEOF == AFX_DAO_TRUE;
-}
-
-BOOL CDaoRecordset::IsDeleted() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	return m_bDeleted;
-}
-
-BOOL CDaoRecordset::CanScroll() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	return m_bScrollable;
-}
-
-BOOL CDaoRecordset::CanUpdate() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nUpdatable;
-	DAO_CHECK(m_pDAORecordset->get_Updatable(&nUpdatable));
-	return nUpdatable == AFX_DAO_TRUE;
-}
-
-BOOL CDaoRecordset::CanAppend() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	return m_bAppendable;
-}
-
-BOOL CDaoRecordset::CanRestart()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	short nRestartable;
-	DAO_CHECK(m_pDAORecordset->get_Restartable(&nRestartable));
-	return nRestartable == AFX_DAO_TRUE;
-}
-
-BOOL CDaoRecordset::CanTransact()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nTransactions;
-	DAO_CHECK(m_pDAORecordset->get_Transactions(&nTransactions));
-	return nTransactions == AFX_DAO_TRUE;
-}
-
-BOOL CDaoRecordset::CanBookmark()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nBookmarkable;
-	DAO_CHECK(m_pDAORecordset->get_Bookmarkable(&nBookmarkable));
-	return nBookmarkable == AFX_DAO_TRUE;
-}
-
-CString CDaoRecordset::GetName()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_Name(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-short CDaoRecordset::GetType()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	short nType;
-	DAO_CHECK(m_pDAORecordset->get_Type(&nType));
-	return nType;
-}
-
-short CDaoRecordset::GetEditMode()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	short nEditMode;
-	DAO_CHECK(m_pDAORecordset->get_EditMode(&nEditMode));
-	return nEditMode;
-}
-
-CString CDaoRecordset::GetSQL() const
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	return m_strSQL;
-}
-
-COleDateTime CDaoRecordset::GetDateCreated()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant varDate;
-	DAO_CHECK(m_pDAORecordset->get_DateCreated(&varDate));
-	return varDate.date;
-}
-
-COleDateTime CDaoRecordset::GetDateLastUpdated()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant varDate;
-	DAO_CHECK(m_pDAORecordset->get_LastUpdated(&varDate));
-	return varDate.date;
-}
-
-COleVariant CDaoRecordset::GetLastModifiedBookmark()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_LastModified(&var.parray));
-	var.vt = VT_ARRAY | VT_UI1;
-
-	return var;
-}
-
-CString CDaoRecordset::GetValidationRule()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_ValidationRule(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-CString CDaoRecordset::GetValidationText()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_ValidationText(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-CString CDaoRecordset::GetCurrentIndex()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_Index(&V_BSTR(&var)));
-	var.vt = VT_BSTR;
-	return V_BSTRT(&var);
-}
-
-void CDaoRecordset::SetCurrentIndex(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var(lpszName, VT_BSTRT);
-	DAO_CHECK(m_pDAORecordset->put_Index(V_BSTR(&var)));
-
-	// Refetch the data
-	GetDataAndFixupNulls();
-}
-
-long CDaoRecordset::GetRecordCount()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	long lRecordCount;
-	DAO_CHECK(m_pDAORecordset->get_RecordCount(&lRecordCount));
-	return lRecordCount;
-}
-
-void CDaoRecordset::SetFieldDirty(void* pv, BOOL bDirty)
-{
-	ASSERT_VALID(this);
-
-	if (m_nFields <= 0)
-	{
-		// Can't set fields dirty if no bound fields
-		ASSERT(FALSE);
-		return;
-	}
-
-	int nIndex = 0, nIndexEnd;
-
-	if (pv == NULL)
-		nIndexEnd = m_nFields - 1;
-	else
-	{
-		nIndex = nIndexEnd = GetFieldIndex(pv);
-		ASSERT(nIndex != AFX_DAO_DATA_NOT_FOUND);
-	}
-
-	while (nIndex <= nIndexEnd)
-	{
-		if (bDirty)
-			SetDirtyFieldStatus(nIndex);
-		else
-			ClearDirtyFieldStatus(nIndex);
-		nIndex++;
-	}
-}
-
-BOOL CDaoRecordset::IsFieldDirty(void* pv)
-{
-	ASSERT_VALID(this);
-
-	short nEditMode = GetEditMode();
-
-	// Fields can't be dirty if not in edit/addnew mode or no fields bound
-	if (nEditMode == dbEditNone || m_nFields <= 0)
-		return FALSE;
-
-	// Check if cache field values have changed and mark as dirty
-	if (m_bCheckCacheForDirtyFields)
-	{
-		if (nEditMode == dbEditInProgress)
-			MarkForEdit();
-		else
-			MarkForAddNew();
-	}
-
-	int nIndex = 0, nIndexEnd;
-
-	if (pv == NULL)
-		nIndexEnd = m_nFields - 1;
-	else
-	{
-		// Get the field index to use status array
-		nIndex = nIndexEnd = GetFieldIndex(pv);
-		ASSERT(nIndex != AFX_DAO_DATA_NOT_FOUND);
-	}
-
-	BOOL bDirty = FALSE;
-
-	while (nIndex <= nIndexEnd && !bDirty)
-		bDirty = IsFieldStatusDirty(nIndex++);
-
-	return bDirty;
-}
-
-void CDaoRecordset::SetFieldNull(void* pv, BOOL bNull)
-{
-	ASSERT_VALID(this);
-
-	if (m_nFields <= 0)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (bNull)
-	{
-		// Need field exchange to set value to PSEUDO NULL.
-		CDaoFieldExchange fx(CDaoFieldExchange::SetFieldNull, this, pv);
-		fx.m_nFieldFound = 0;
-		DoFieldExchange(&fx);
-
-		// If no field found, index will still be zero
-		ASSERT(fx.m_nFieldFound != 0);
-	}
-	else
-	{
-		// Set status array not NULL. Don't need field exchange mechanism.
-		int nIndex = 0, nIndexEnd;
-
-		if (pv == NULL)
-			nIndexEnd = m_nFields - 1;
-		else
-		{
-			nIndex = nIndexEnd = GetFieldIndex(pv);
-			ASSERT(nIndex != AFX_DAO_DATA_NOT_FOUND);
-		}
-
-		while (nIndex <= nIndexEnd)
-		{
-			ClearNullFieldStatus(nIndex);
-			nIndex++;
-		}
-	}
-}
-
-BOOL CDaoRecordset::IsFieldNull(void* pv)
-{
-	ASSERT_VALID(this);
-
-	if (m_nFields <= 0)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	int nIndex = 0, nIndexEnd;
-
-	if (pv == NULL)
-		nIndexEnd = m_nFields - 1;
-	else
-	{
-		// Get the field index to use status array
-		nIndex = nIndexEnd = GetFieldIndex(pv);
-		ASSERT(nIndex != AFX_DAO_DATA_NOT_FOUND);
-	}
-
-	BOOL bNull = FALSE;
-
-	while (nIndex <= nIndexEnd && !bNull)
-		bNull = IsFieldStatusNull(nIndex++);
-
-	return bNull;
-}
-
-BOOL CDaoRecordset::IsFieldNullable(void* pv)
-{
-	ASSERT_VALID(this);
-
-	if (m_nFields <= 0)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	int nIndex = 0, nIndexEnd;
-
-	if (pv == NULL)
-		nIndexEnd = m_nFields - 1;
-	else
-	{
-		// Get the field index to use status array
-		nIndex = nIndexEnd = GetFieldIndex(pv);
-		ASSERT(nIndex != AFX_DAO_DATA_NOT_FOUND);
-	}
-
-	BOOL bNullable = FALSE;
-
-	while (nIndex <= nIndexEnd && !bNullable)
-	{
-		if (!IsFieldStatusNullableKnown(nIndex))
-		{
-			CDaoFieldInfo fieldinfo;
-			GetFieldInfo(nIndex, fieldinfo, AFX_DAO_SECONDARY_INFO);
-			bNullable = !fieldinfo.m_bRequired;
-			if (bNullable)
-				SetNullableFieldStatus(nIndex);
-			SetNullableKnownFieldStatus(nIndex);
-		}
-		else
-			bNullable = IsFieldStatusNullable(nIndex);
-
-		nIndex++;
-	}
-
-	return bNullable;
-}
-
-short CDaoRecordset::GetFieldCount()
-{
-	ASSERT_VALID(this);
-
-	short nFields;
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	DAO_CHECK(m_pDAOFields->get_Count(&nFields));
-	return nFields;
-}
-
-void CDaoRecordset::GetFieldInfo(int nIndex, CDaoFieldInfo& fieldinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOField* pDAOField;
-	DAO_CHECK(m_pDAOFields->get_Item(
-		COleVariant((long)nIndex), &pDAOField));
-	AfxGetFieldInfo(pDAOField, fieldinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOField->Release();
-}
-
-void CDaoRecordset::GetFieldInfo(LPCTSTR lpszName,
-	CDaoFieldInfo& fieldinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOField* pDAOField;
-	DAO_CHECK(m_pDAOFields->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOField));
-	AfxGetFieldInfo(pDAOField, fieldinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOField->Release();
-}
-
-short CDaoRecordset::GetIndexCount()
-{
-	ASSERT_VALID(this);
-
-	short nIndexes;
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	DAO_CHECK(m_pDAOIndexes->get_Count(&nIndexes));
-	return nIndexes;
-}
-
-void CDaoRecordset::GetIndexInfo(int nIndex, CDaoIndexInfo& indexinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOIndex* pDAOIndex;
-	DAO_CHECK(m_pDAOIndexes->get_Item(
-		COleVariant((long)nIndex), &pDAOIndex));
-	AfxGetIndexInfo(pDAOIndex, indexinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOIndex->Release();
-}
-
-void CDaoRecordset::GetIndexInfo(LPCTSTR lpszName,
-	CDaoIndexInfo& indexinfo, DWORD dwInfoOptions)
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOIndexes == NULL)
-		InitIndexesCollection();
-
-	// Get DAOField object and fill in field info struct
-	DAOIndex* pDAOIndex;
-	DAO_CHECK(m_pDAOIndexes->get_Item(
-		COleVariant(lpszName, VT_BSTRT), &pDAOIndex));
-	AfxGetIndexInfo(pDAOIndex, indexinfo, dwInfoOptions);
-
-	// Clean up
-	pDAOIndex->Release();
-}
-
-COleVariant CDaoRecordset::GetBookmark()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_Bookmark(&var.parray));
-	var.vt = VT_ARRAY | VT_UI1;
-
-	return var;
-}
-
-void CDaoRecordset::SetBookmark(COleVariant varBookmark)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->put_Bookmark(&varBookmark.parray));
-
-	GetDataAndFixupNulls();
-}
-
-long CDaoRecordset::GetAbsolutePosition()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	long lPosition;
-	DAO_CHECK(m_pDAORecordset->get_AbsolutePosition(&lPosition));
-	return lPosition;
-}
-
-void CDaoRecordset::SetAbsolutePosition(long lPosition)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->put_AbsolutePosition(lPosition));
-
-	GetDataAndFixupNulls();
-}
-
-float CDaoRecordset::GetPercentPosition()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	float fPosition;
-	DAO_CHECK(m_pDAORecordset->get_PercentPosition(&fPosition));
-	return fPosition;
+	if (m_bHasCheckbox)
+		rcItem.left += 15;
 }
 
-void CDaoRecordset::SetPercentPosition(float fPosition)
+void CXTPReportRecordItem::DrawCheckBox(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem)
 {
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
+	BOOL bEditable = IsEditable() && (pDrawArgs->pColumn == NULL || pDrawArgs->pColumn->IsEditable());
 
-	DAO_CHECK(m_pDAORecordset->put_PercentPosition(fPosition));
+	CDC* pDC = pDrawArgs->pDC;
+	int eState = (bEditable ? 0: 2) + (IsChecked() ? 1 : 0);
 
-	GetDataAndFixupNulls();
-}
-
-void CDaoRecordset::MoveNext()
-{
-	ASSERT_VALID(this);
-
-	Move(AFX_DAO_NEXT);
-}
-
-void CDaoRecordset::MovePrev()
-{
-	ASSERT_VALID(this);
-
-	Move(AFX_DAO_PREV);
-}
-
-void CDaoRecordset::MoveFirst()
-{
-	ASSERT_VALID(this);
-
-	Move(AFX_DAO_FIRST);
-}
-
-void CDaoRecordset::MoveLast()
-{
-	ASSERT_VALID(this);
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
 
-	Move(AFX_DAO_LAST);
-}
+	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
 
-void CDaoRecordset::Move(long lRows)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
+	m_rcGlyph = rcItem;
+	CSize sizeGlyph = pPaintManager->DrawGlyph(NULL, m_rcGlyph, eState + 2);
 
-	switch(lRows)
+	CRect rcGlyph(m_rcGlyph);
+	// horizontal alignment
+	switch(nIconAlign)
 	{
-	case AFX_DAO_NEXT:
-		DAO_CHECK(m_pDAORecordset->MoveNext());
+	case xtpColumnIconRight:
+		rcGlyph.left = rcItem.right - sizeGlyph.cx - 2;
+		// shift text box to the left
+		rcItem.right -= (2 + sizeGlyph.cx);
 		break;
-
-	case AFX_DAO_PREV:
-		DAO_CHECK(m_pDAORecordset->MovePrevious());
-		break;
-
-	case AFX_DAO_FIRST:
-		DAO_CHECK(m_pDAORecordset->MoveFirst());
-		break;
-
-	case AFX_DAO_LAST:
-		DAO_CHECK(m_pDAORecordset->_30_MoveLast());
-		break;
-
-	// General case
+	case xtpColumnIconCenter:
+		rcGlyph.left = rcItem.CenterPoint().x - sizeGlyph.cx / 2 - 1;
+		rcGlyph.right = rcGlyph.left + sizeGlyph.cx;
+		break; // left text box as is - draw on image...
+	case xtpColumnIconLeft:
 	default:
-		// Call Move without getting Bookmark (using unitialized variant).
-		DAO_CHECK(m_pDAORecordset->Move(lRows, COleVariant()));
-
-	}
-
-	GetDataAndFixupNulls();
-}
-
-BOOL CDaoRecordset::FindNext(LPCTSTR lpszFilter)
-{
-	ASSERT_VALID(this);
-
-	return Find(AFX_DAO_NEXT, lpszFilter);
-}
-
-BOOL CDaoRecordset::FindPrev(LPCTSTR lpszFilter)
-{
-	ASSERT_VALID(this);
-
-	return Find(AFX_DAO_PREV, lpszFilter);
-}
-
-BOOL CDaoRecordset::FindFirst(LPCTSTR lpszFilter)
-{
-	ASSERT_VALID(this);
-
-	return Find(AFX_DAO_FIRST, lpszFilter);
-}
-
-BOOL CDaoRecordset::FindLast(LPCTSTR lpszFilter)
-{
-	ASSERT_VALID(this);
-
-	return Find(AFX_DAO_LAST, lpszFilter);
-}
-
-BOOL CDaoRecordset::Find(long lType, LPCTSTR lpszFilter)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var(lpszFilter, VT_BSTRT);
-
-	switch(lType)
-	{
-	default:
-		// Invalid Find type!
-		ASSERT(FALSE);
-
-		// fall through to FindNext case
-
-	case AFX_DAO_NEXT:
-		DAO_CHECK(m_pDAORecordset->FindNext(V_BSTR(&var)));
-		break;
-
-	case AFX_DAO_PREV:
-		DAO_CHECK(m_pDAORecordset->FindPrevious(V_BSTR(&var)));
-		break;
-
-	case AFX_DAO_FIRST:
-		DAO_CHECK(m_pDAORecordset->FindFirst(V_BSTR(&var)));
-		break;
-
-	case AFX_DAO_LAST:
-		DAO_CHECK(m_pDAORecordset->FindLast(V_BSTR(&var)));
+		rcGlyph.left += 2;
+		// shift text box to the right
+		rcItem.left += 2 + sizeGlyph.cx;
+		rcGlyph.right = rcItem.left - 1;
 		break;
 	}
-
-	BOOL bMatch = IsMatch();
-	if (bMatch)
-		GetDataAndFixupNulls();
-
-	return bMatch;
-}
-
-BOOL CDaoRecordset::Seek(LPCTSTR lpszComparison, COleVariant* pKey1,
-	COleVariant* pKey2, COleVariant* pKey3)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-	ASSERT(m_nOpenType == dbOpenTable);
-
-	// Must have at least one key
-	ASSERT(pKey1 != NULL);
-
-	COleVariant varComparison(lpszComparison, VT_BSTRT);
-
-	DAO_CHECK(m_pDAORecordset->Seek(V_BSTR(&varComparison),
-		pKey1 != NULL ? (VARIANT)*pKey1 : _afxOptionalVariant,
-		pKey2 != NULL ? (VARIANT)*pKey2 : _afxOptionalVariant,
-		pKey3 != NULL ? (VARIANT)*pKey3 : _afxOptionalVariant,
-		_afxOptionalVariant, _afxOptionalVariant, _afxOptionalVariant,
-		_afxOptionalVariant, _afxOptionalVariant, _afxOptionalVariant,
-		_afxOptionalVariant, _afxOptionalVariant, _afxOptionalVariant,
-		_afxOptionalVariant));
-
-	BOOL bMatch = IsMatch();
-	if (bMatch)
-		GetDataAndFixupNulls();
-
-	return bMatch;
-}
-
-BOOL CDaoRecordset::Seek(LPCTSTR lpszComparison, COleVariant* pKeyArray,
-	WORD nKeys)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-	ASSERT(m_nOpenType == dbOpenTable);
-
-	// Must have at least one key and no more than 13
-	ASSERT(nKeys > 0);
-	ASSERT(nKeys < 14);
-
-	COleVariant varComparison(lpszComparison, VT_BSTRT);
-	LPVARIANT pVarArray[13];
-
-	WORD nIndex;
-	for (nIndex = 0; nIndex < nKeys; nIndex++)
-		pVarArray[nIndex] = &pKeyArray[nIndex];
-
-	for (;nIndex < 13; nIndex++)
-		pVarArray[nIndex] = &_afxOptionalVariant;
-
-	DAO_CHECK(m_pDAORecordset->Seek(V_BSTR(&varComparison),
-		*pVarArray[0], *pVarArray[1], *pVarArray[2], *pVarArray[3],
-		*pVarArray[4], *pVarArray[5], *pVarArray[6], *pVarArray[7],
-		*pVarArray[8], *pVarArray[9], *pVarArray[10], *pVarArray[11],
-		*pVarArray[12]));
-
-	BOOL bMatch = IsMatch();
-	if (bMatch)
-		GetDataAndFixupNulls();
-
-	return bMatch;
-}
-
-void CDaoRecordset::CancelUpdate()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->_30_CancelUpdate());
-
-	// Restore cache if necessary
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0)
-		LoadFields();
-}
-
-void CDaoRecordset::SetLockingMode(BOOL bPessimistic)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->put_LockEdits(
-		(short)(bPessimistic ? AFX_DAO_TRUE : AFX_DAO_FALSE)));
-}
-
-BOOL CDaoRecordset::GetLockingMode()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	short nLockEdits;
-	DAO_CHECK(m_pDAORecordset->get_LockEdits(&nLockEdits));
-	return nLockEdits == AFX_DAO_TRUE;
-}
-
-void CDaoRecordset::SetCacheStart(COleVariant varBookmark)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->put_CacheStart(&varBookmark.parray));
-}
-
-COleVariant CDaoRecordset::GetCacheStart()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	COleVariant var;
-	DAO_CHECK(m_pDAORecordset->get_CacheStart(&var.parray));
-	var.vt = VT_ARRAY | VT_UI1;
-
-	return var;
-}
-
-void CDaoRecordset::SetCacheSize(long lSize)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->put_CacheSize(lSize));
-}
-
-long CDaoRecordset::GetCacheSize()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	long lSize;
-	DAO_CHECK(m_pDAORecordset->get_CacheSize(&lSize));
-	return lSize;
-}
-
-void CDaoRecordset::FillCache(long* pSize, COleVariant* pBookmark)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->FillCache(
-		pSize != NULL ? (VARIANT)COleVariant(*pSize) : _afxOptionalVariant,
-		pBookmark != NULL ? (VARIANT)*pBookmark : _afxOptionalVariant));
-}
-
-void CDaoRecordset::AddNew()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0)
+	// vertical alignment
+	switch(nIconAlign)
 	{
-		short nEditMode = GetEditMode();
-		if (nEditMode != dbEditAdd)
+	case xtpColumnIconTop:
+		rcGlyph.bottom = rcItem.top + sizeGlyph.cy + 2;
+		break;
+	case xtpColumnIconBottom:
+		rcGlyph.top = rcItem.bottom - sizeGlyph.cy - 2;
+		break;
+	}
+	// draw the glyph
+	pPaintManager->DrawGlyph(pDC, rcGlyph, eState + 2);
+}
+
+void CXTPReportRecordItem::OnDrawCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
+{
+	ASSERT(pDrawArgs->pItem == this);
+	pDrawArgs->pControl->GetPaintManager()->DrawItemCaption(pDrawArgs, pMetrics);
+}
+
+
+int CXTPReportRecordItem::Draw(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs)
+{
+	CDC* pDC = pDrawArgs->pDC;
+	CRect& rcItem = pDrawArgs->rcItem;
+	CXTPReportPaintManager* pPaintManager = pDrawArgs->pControl->GetPaintManager();
+
+	CRgn rgn;
+	rgn.CreateRectRgn(rcItem.left, rcItem.top - 1, rcItem.right, rcItem.bottom);
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(&rgn);
+
+	XTP_REPORTRECORDITEM_METRICS* pMetrics = new XTP_REPORTRECORDITEM_METRICS();
+	pMetrics->strText = GetCaption(pDrawArgs->pColumn);
+	pDrawArgs->pRow->GetItemMetrics(pDrawArgs, pMetrics);
+
+	ASSERT(pMetrics->pFont);
+	ASSERT(pMetrics->clrForeground != XTP_REPORT_COLOR_DEFAULT);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->FillSolidRect(rcItem, pMetrics->clrBackground);
+
+	int nItemGlyphs = rcItem.left;
+
+	// draw tree inside item rect (see also HitTest function)
+	if (pDrawArgs->pColumn && pDrawArgs->pColumn->IsTreeColumn())
+	{
+		int nTreeDepth = pDrawArgs->pRow->GetTreeDepth() - pDrawArgs->pRow->GetGroupLevel();
+		if (nTreeDepth > 0)
+			nTreeDepth++;
+		rcItem.left += pDrawArgs->pControl->GetIndent(nTreeDepth);
+
+		BOOL bHasChildren = pDrawArgs->pRow->HasChildren();
+
+		CRect rcBitmap(rcItem);
+		CSize sizeBitmap = pPaintManager->DrawCollapsedBitmap(NULL, pDrawArgs->pRow, rcBitmap);
+
+		pPaintManager->DrawTreeStructure(pDrawArgs, pMetrics, rcItem, sizeBitmap);
+
+		int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
+		// horizontal alignment
+		switch(nIconAlign)
 		{
-			// Store fields if necessary (fields already stored if edit mode)
-			if (nEditMode != dbEditInProgress)
-			{
-				AllocCache();
-				StoreFields();
-			}
+		case xtpColumnIconRight:
+			rcBitmap.left = rcBitmap.right - sizeBitmap.cx - 2;
+			break;
+		case xtpColumnIconLeft:
+			rcBitmap.right = rcBitmap.left + sizeBitmap.cx + 2;
+			break;
+		}
+		// vertical alignment
+		switch(nIconAlign)
+		{
+		case xtpColumnIconTop:
+			rcBitmap.bottom = rcBitmap.top + sizeBitmap.cy + 2;
+			break;
+		case xtpColumnIconBottom:
+			rcBitmap.top = rcBitmap.bottom - sizeBitmap.cy - 2;
+			break;
+		}
+		sizeBitmap = pPaintManager->DrawCollapsedBitmap(bHasChildren ? pDC : NULL, pDrawArgs->pRow, rcBitmap);
 
-			// Set all fields NULL and not dirty
-			SetFieldNull(NULL);
-			SetFieldDirty(NULL, FALSE);
+		if (!pDC->IsPrinting() && bHasChildren)
+			pDrawArgs->pRow->SetCollapseRect(rcBitmap);
+
+		rcItem.left += sizeBitmap.cx + 2;
+	}
+
+	pDC->SetTextColor(pMetrics->clrForeground);
+
+	CFont* pOldFont = (CFont*)pDC->SelectObject(pMetrics->pFont);
+
+	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pDC->SetBkColor(pMetrics->clrBackground);
+	else
+		pDC->SetBkColor(pPaintManager->m_clrControlBack);
+
+	if (m_bHasCheckbox)
+		DrawCheckBox(pDrawArgs, rcItem);
+
+	// Do the draw bitmap pDC, rcItem, GetIconIndex()
+	if (pMetrics->nItemIcon != XTP_REPORT_NOICON || GetIconIndex() != XTP_REPORT_NOICON)
+	{
+		pPaintManager->DrawItemBitmap(pDrawArgs, rcItem, pMetrics->nItemIcon != XTP_REPORT_NOICON ? pMetrics->nItemIcon : GetIconIndex());
+	}
+
+	nItemGlyphs = (rcItem.left - nItemGlyphs);
+
+	OnDrawCaption(pDrawArgs, pMetrics);
+
+	int nItemTextWidth = nItemGlyphs + pDC->GetTextExtent(pMetrics->strText).cx + 4;
+
+	pDC->SelectObject(pOldFont);
+
+	pMetrics->InternalRelease();
+
+	if (!pDC->IsPrinting())
+		pDC->SelectClipRgn(NULL);
+
+	return nItemTextWidth;
+}
+
+
+void CXTPReportRecordItem::OnClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	if (!pClickArgs || !pClickArgs->pControl)
+		return;
+
+	InternalAddRef();
+	CMDTARGET_ADDREF(pClickArgs->pColumn);
+	CMDTARGET_ADDREF(pClickArgs->pControl);
+
+	CXTPReportRow* pRow = pClickArgs->pRow;
+	CMDTARGET_ADDREF(pRow);
+
+	BOOL bCheckBoxClicked = FALSE;
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsEditable() && m_bHasCheckbox && (pClickArgs->pColumn == NULL || pClickArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pClickArgs))
+	{
+		// adjust vertical coordinates if virtual mode
+		if (pControl->IsVirtualMode())
+		{
+			m_rcGlyph.top = pClickArgs->rcItem.top;
+			m_rcGlyph.bottom = pClickArgs->rcItem.bottom;
+		}
+		// check whether we're clicking glyph area
+		if (m_rcGlyph.PtInRect(pClickArgs->ptClient))
+		{
+			if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+			pControl->RedrawControl();
+
+			pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_CHECKED, &pClickArgs->ptClient);
+			bCheckBoxClicked = TRUE;
 		}
 	}
 
-	DAO_CHECK(m_pDAORecordset->AddNew());
-}
-
-void CDaoRecordset::Edit()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0)
+	if (!bCheckBoxClicked && IsAllowEdit(pClickArgs) && pControl->IsEditOnClick())
 	{
-		short nEditMode = GetEditMode();
-		if (nEditMode != dbEditInProgress)
+		pControl->EditItem(pClickArgs);
+
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
+
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
 		{
-			if (nEditMode == dbEditNone)
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
+
+			if (pEditOptions->m_bSelectTextOnEdit)
 			{
-				// Save fields for restore/dirty checking later
-				AllocCache();
-				StoreFields();
-				SetFieldDirty(NULL, FALSE);
+				pEdit->SetSel(0, -1);
 			}
 			else
-				// Load in fields cached on AddNew call prior to Edit
-				LoadFields();
+			{
+				DoMouseButtonClick();
+			}
 		}
 	}
 
-	DAO_CHECK(m_pDAORecordset->Edit());
+	pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_CLICK, &pClickArgs->ptClient);
+
+	// Determine Hyperlink Click
+	int nHyperlink = HitTestHyperlink(pClickArgs->ptClient);
+	if (nHyperlink >= 0)
+	{
+		pClickArgs->pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, XTP_NM_REPORT_HYPERLINK, &pClickArgs->ptClient, nHyperlink);
+	}
+
+	CMDTARGET_RELEASE(pRow);
+	CMDTARGET_RELEASE(pClickArgs->pColumn);
+	CMDTARGET_RELEASE(pClickArgs->pControl);
+	InternalRelease();
 }
 
-void CDaoRecordset::Update()
+int CXTPReportRecordItem::HitTestHyperlink(CPoint ptClick)
 {
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	int nMode = 0;
-
-	// If caching, compare cache to current values and save state
-	if (m_nFields > 0)
+	int nHyperlinks = GetHyperlinksCount();
+	CXTPReportHyperlink* pHyperlink;
+	for (int nHyperlink = 0; nHyperlink < nHyperlinks; nHyperlink++)
 	{
-		if (m_bCheckCacheForDirtyFields)
+		pHyperlink = GetHyperlinkAt(nHyperlink);
+		ASSERT(pHyperlink);
+		if (pHyperlink && pHyperlink->m_rcHyperSpot.PtInRect(ptClick))
+			return nHyperlink;
+	}
+	return -1;
+}
+
+void CXTPReportRecordItem::OnDblClick(XTP_REPORTRECORDITEM_CLICKARGS* pClickArgs)
+{
+	CXTPReportControl* pControl = pClickArgs->pControl;
+
+	if (IsAllowEdit(pClickArgs) && !pControl->IsEditOnClick() && pControl->GetInplaceEdit()->GetItem() != this)
+	{
+		pControl->EditItem(pClickArgs);
+
+		CPoint pt(pClickArgs->ptClient);
+		pControl->ClientToScreen(&pt);
+
+		CXTPReportInplaceEdit* pEdit = DYNAMIC_DOWNCAST(CXTPReportInplaceEdit, CWnd::FromHandle(WindowFromPoint(pt)));
+		if (pEdit && pEdit->GetItem() == this)
 		{
-			IsFieldDirty(NULL);
-			nMode = GetEditMode();
+			CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pClickArgs->pColumn);
+
+			if (pEditOptions->m_bSelectTextOnEdit)
+			{
+				pEdit->SetSel(0, -1);
+			}
+			else
+			{
+				DoMouseButtonClick();
+			}
+		}
+	}
+
+	pControl->SendMessageToParent(pClickArgs->pRow, this, pClickArgs->pColumn, NM_DBLCLK, &pClickArgs->ptClient, -1);
+}
+
+void CXTPReportRecordItem::OnMouseMove(UINT /*nFlags*/, CPoint point)
+{
+	int nHyperlink = HitTestHyperlink(point);
+	if (nHyperlink >= 0)
+	{
+		SetCursor(AfxGetApp()->LoadStandardCursor(IDC_HAND));
+	}
+}
+
+void CXTPReportRecordItem::SetFont(CFont* pFont)
+{
+	m_pFontCaption = pFont;
+}
+
+void CXTPReportRecordItem::SetBold(BOOL bBold)
+{
+	m_bBoldText = bBold;
+}
+
+void CXTPReportRecordItem::SetTextColor(COLORREF clrText)
+{
+	m_clrText = clrText;
+}
+
+void CXTPReportRecordItem::SetBackgroundColor(COLORREF clrBackground)
+{
+	m_clrBackground = clrBackground;
+}
+
+int CXTPReportRecordItem::Compare(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (!pItem)
+		return 0;
+
+	if (m_nSortPriority != -1 || pItem->m_nSortPriority != -1)
+		return m_nSortPriority - pItem->m_nSortPriority;
+
+	return m_pRecord->GetRecords()->Compare(GetCaption(pColumn), pItem->GetCaption(pColumn));
+}
+
+CFont* CXTPReportRecordItem::GetFont()
+{
+	return m_pFontCaption;
+}
+
+CString CXTPReportRecordItem::GetGroupCaption(CXTPReportColumn* pColumn)
+{
+	if (!m_strGroupCaption.IsEmpty())
+		return m_strGroupCaption;
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+	{
+		CString str;
+		if (str.LoadString(nID))
+		{
+			return str;
+		}
+	}
+
+	return pColumn->GetCaption() + _T(": ") + GetCaption(pColumn);
+}
+
+int CXTPReportRecordItem::CompareGroupCaption(CXTPReportColumn* pColumn, CXTPReportRecordItem* pItem)
+{
+	if (m_nGroupPriority != -1)
+		return m_nGroupPriority - pItem->m_nGroupPriority;
+
+	if (!m_strGroupCaption.IsEmpty())
+		return m_pRecord->GetRecords()->Compare(m_strGroupCaption, pItem->m_strGroupCaption);
+
+	int nID = GetGroupCaptionID(pColumn);
+
+	if (nID > 0)
+		return nID - pItem->GetGroupCaptionID(pColumn);
+
+	return Compare(pColumn, pItem);
+}
+
+int CXTPReportRecordItem::GetGroupCaptionID(CXTPReportColumn* /*pColumn*/)
+{
+	return m_nGroupPriority;
+}
+
+
+void CXTPReportRecordItem::GetItemMetrics(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pItemMetrics)
+{
+	if (m_clrBackground != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrBackground = m_clrBackground;
+
+	if (m_clrText != XTP_REPORT_COLOR_DEFAULT)
+		pItemMetrics->clrForeground = m_clrText;
+
+	if (m_pFontCaption != NULL)
+		pItemMetrics->pFont = m_pFontCaption;
+	else if (m_bBoldText)
+		pItemMetrics->pFont = &pDrawArgs->pControl->GetPaintManager()->m_fontBoldText;
+
+}
+
+int CXTPReportRecordItem::GetIndex() const
+{
+	return m_pRecord ? m_pRecord->IndexOf(this) : -1;
+}
+
+BOOL CXTPReportRecordItem::IsEditable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	ASSERT(m_pRecord);
+	return m_pRecord ? m_pRecord->m_bEditable && m_bEditable && IsFocusable() : FALSE;
+}
+
+
+BOOL CXTPReportRecordItem::IsFocusable() const
+{
+	if (this == NULL)
+		return FALSE;
+
+	return m_bFocusable;
+}
+
+void CXTPReportRecordItem::OnBeginEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (IsEditable() && OnRequestEdit(pItemArgs))
+	{
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(pItemArgs->pColumn);
+		ASSERT(pEditOptions);
+
+		CXTPReportInplaceButtons* pInpaceButtons = &pEditOptions->arrInplaceButtons;
+
+		CRect rcButtons(pItemArgs->rcItem);
+		CXTPClientRect rcControl(pItemArgs->pControl);
+
+		int i;
+		// calculate buttons widths
+		int nButtonsWidthIn = 0, nButtonsWidthOut = 0;
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
+		{
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			if (pButton->IsInsideCellButton())
+				nButtonsWidthIn += pButton->GetWidth();
+			else
+				nButtonsWidthOut += pButton->GetWidth();
 		}
 
-		// Set all field values of all fields marked dirty
-		SetDirtyFields();
-	}
+		// adjust buttons rect
+		if (rcButtons.right + nButtonsWidthOut > rcControl.right)
+			rcButtons.right = rcControl.right - nButtonsWidthOut;
 
-	DAO_CHECK(m_pDAORecordset->_30_Update());
+		int nLeftMin = max(rcControl.left, pItemArgs->rcItem.left);
+		if (rcButtons.right - nButtonsWidthIn < nLeftMin)
+			rcButtons.right = nLeftMin + nButtonsWidthIn;
 
-	// Restore data if data cached and were in add mode
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0 &&
-		nMode == dbEditAdd)
-	{
-		LoadFields();
-	}
-}
+		// create buttons
+		rcButtons.left = rcButtons.right;
 
-void CDaoRecordset::Delete()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	DAO_CHECK(m_pDAORecordset->Delete());
-
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0)
-	{
-		SetFieldNull(NULL);
-		SetFieldDirty(NULL, FALSE);
-	}
-
-	m_bDeleted = TRUE;
-}
-
-COleVariant CDaoRecordset::GetFieldValue(LPCTSTR lpszName)
-{
-	COleVariant var;
-	GetFieldValue(lpszName, var);
-	return var;
-}
-
-COleVariant CDaoRecordset::GetFieldValue(int nIndex)
-{
-	COleVariant var;
-	GetFieldValue(nIndex, var);
-	return var;
-}
-
-void CDaoRecordset::GetFieldValue(LPCTSTR lpszName, COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	// Clear out variant
-	varValue.Clear();
-
-	// Use DAO optimization. get_Collect will get the field object from
-	// the fields collection and fetch the value
-	DAO_CHECK(m_pDAORecordset->get_Collect(
-		COleVariant(lpszName, VT_BSTRT), &varValue));
-}
-
-void CDaoRecordset::GetFieldValue(int nIndex, COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	// Clear out variant
-	varValue.Clear();
-
-	// Use DAO optimization. get_Collect will get the field object from
-	// the fields collection and fetch the value
-	DAO_CHECK(m_pDAORecordset->get_Collect(
-		COleVariant((long)nIndex), &varValue));
-}
-
-void CDaoRecordset::SetFieldValue(LPCTSTR lpszName,
-	const COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	// Use DAO optimization. get_Collect will get the field object from
-	// the fields collection and fetch the value
-	DAO_CHECK(m_pDAORecordset->put_Collect(
-		COleVariant(lpszName, VT_BSTRT), varValue));
-}
-
-void CDaoRecordset::SetFieldValue(int nIndex,
-	const COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pDAORecordset != NULL);
-
-	// Use DAO optimization. put_Collect will get the field object from
-	// the fields collection and write the value
-	DAO_CHECK(m_pDAORecordset->put_Collect(
-		COleVariant((long)nIndex), varValue));
-}
-
-void CDaoRecordset::SetFieldValue(int nIndex,
-	LPCTSTR lpszValue)
-{
-	COleVariant varValue(lpszValue, VT_BSTRT);
-	SetFieldValue(nIndex, varValue);
-}
-
-void CDaoRecordset::SetFieldValue(LPCTSTR lpszName,
-	LPCTSTR lpszValue)
-{
-	COleVariant varValue(lpszValue, VT_BSTRT);
-	SetFieldValue(lpszName, varValue);
-}
-
-void CDaoRecordset::SetFieldValueNull(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-
-	SetFieldValue(lpszName, _afxNullVariant);
-}
-
-void CDaoRecordset::SetFieldValueNull(int nIndex)
-{
-	ASSERT_VALID(this);
-
-	SetFieldValue(nIndex, _afxNullVariant);
-}
-
-COleVariant CDaoRecordset::GetParamValue(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pQueryDef != NULL);
-
-	return m_pQueryDef->GetParamValue(lpszName);
-}
-
-COleVariant CDaoRecordset::GetParamValue(int nIndex)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pQueryDef != NULL);
-
-	return m_pQueryDef->GetParamValue(nIndex);
-}
-
-void CDaoRecordset::SetParamValue(LPCTSTR lpszName,
-	const COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pQueryDef != NULL);
-
-	m_pQueryDef->SetParamValue(lpszName, varValue);
-}
-
-void CDaoRecordset::SetParamValue(int nIndex,
-	const COleVariant& varValue)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-	ASSERT(m_pQueryDef != NULL);
-
-	m_pQueryDef->SetParamValue(nIndex, varValue);
-}
-
-void CDaoRecordset::SetParamValueNull(LPCTSTR lpszName)
-{
-	ASSERT_VALID(this);
-
-	SetParamValue(lpszName, _afxNullVariant);
-}
-
-void CDaoRecordset::SetParamValueNull(int nIndex)
-{
-	ASSERT_VALID(this);
-
-	SetParamValue(nIndex, _afxNullVariant);
-}
-
-//Implementation functions
-DWORD CDaoRecordset::GetFieldLength(int nFieldIndex)
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	return m_pulColumnLengths[nFieldIndex];
-}
-
-void CDaoRecordset::InitFieldsCollection()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	DAO_CHECK(m_pDAORecordset->get_Fields(&m_pDAOFields));
-}
-
-void CDaoRecordset::InitIndexesCollection()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	DAO_CHECK(m_pTableDef->m_pDAOTableDef->get_Indexes(&m_pDAOIndexes));
-}
-
-// "PARAMETERS <parameter list>;"
-// "SELECT <select list> FROM <table list>"
-// " WHERE <m_strFilter> ORDER BY <m_strSort>"
-void CDaoRecordset::BuildSQL()
-{
-	ASSERT_VALID(this);
-
-	// Assumes m_strSQL represents table list
-	CString strTableName = m_strSQL;
-	m_strSQL.Empty();
-
-	if (m_nParams > 0)
-		BuildParameterList();
-	BuildSelectList();
-	m_strSQL += _afxFrom2 + strTableName;
-
-	if (!m_strFilter.IsEmpty())
-	{
-		m_strSQL += _afxWhere2;
-		m_strSQL += m_strFilter;
-	}
-
-	if (!m_strSort.IsEmpty())
-	{
-		m_strSQL += _afxOrderBy2;
-		m_strSQL += m_strSort;
-	}
-}
-
-void CDaoRecordset::AllocDatabase()
-{
-	ASSERT_VALID(this);
-
-	// Allocate and maintain database if necessary
-	if (m_pDatabase == NULL)
-	{
-		m_pDatabase = new CDaoDatabase;
-		m_pDatabase->m_nStatus |= AFX_DAO_IMPLICIT_DB;
-		m_nStatus |= AFX_DAO_IMPLICIT_DB;
-	}
-
-	// Open Database if necessary
-	if (!m_pDatabase->IsOpen())
-		m_pDatabase->Open((LPCTSTR)GetDefaultDBName(), FALSE, FALSE, NULL);
-}
-
-void CDaoRecordset::BuildSelectList()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_nFields > 0);
-
-	m_strSQL += _afxSelect2;
-
-	CDaoFieldExchange fx(CDaoFieldExchange::AddToSelectList, this);
-	DoFieldExchange(&fx);
-}
-
-void CDaoRecordset::BuildParameterList()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_nParams > 0);
-
-	m_strSQL += _afxParameters2;
-
-	CDaoFieldExchange fx(CDaoFieldExchange::AddToParameterList, this);
-	DoFieldExchange(&fx);
-
-	if (fx.m_nParam != 0)
-		m_strSQL += _T(";");
-	else
-		m_strSQL.Empty();
-}
-
-void CDaoRecordset::BindFields()
-{
-	ASSERT_VALID(this);
-
-	if (m_nFields > 0)
-	{
-		// Setup the DAO binding struct
-		ASSERT(m_prgDaoColBindInfo == NULL);
-		m_prgDaoColBindInfo = new DAOCOLUMNBINDING[m_nFields];
-		memset(m_prgDaoColBindInfo, 0, sizeof(DAOCOLUMNBINDING) * m_nFields);
-		m_pulColumnLengths = new DWORD[m_nFields];
-		memset(m_pulColumnLengths, 0, sizeof(DWORD) * m_nFields);
-
-		m_pbFieldFlags = new BYTE[m_nFields];
-		memset(m_pbFieldFlags, 0, m_nFields);
-
-		m_DaoFetchRows.cRowsRequested = 1;
-		m_DaoFetchRows.dwFlags = DAOROWFETCH_BINDABSOLUTE;
-		m_DaoFetchRows.pData = NULL;
-
-		// Allocate the index map
-		ASSERT(m_pMapFieldIndex == NULL);
-		m_pMapFieldIndex = new CMapPtrToPtr;
-
-		CDaoFieldExchange fx(CDaoFieldExchange::BindField, this);
-		DoFieldExchange(&fx);
-	}
-}
-
-void CDaoRecordset::BindParameters()
-{
-	ASSERT_VALID(this);
-
-	if (m_nParams > 0)
-	{
-		// Since Jet treats non-bindable names as implicit parameters
-		// this should catch some SQL syntax errors that would otherwise
-		// appear to be uninitialized parameters.
-		ASSERT(m_pQueryDef->GetParameterCount() == m_nParams);
-
-		CDaoFieldExchange fx(CDaoFieldExchange::BindParam, this);
-		DoFieldExchange(&fx);
-	}
-}
-
-void CDaoRecordset::Fixup()
-{
-	ASSERT_VALID(this);
-
-	CDaoFieldExchange fx(CDaoFieldExchange::Fixup, this);
-	DoFieldExchange(&fx);
-}
-
-void CDaoRecordset::AllocCache()
-{
-	ASSERT_VALID(this);
-
-	// Do nothing if caching disabled by master switch
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0 &&
-		m_pMapFieldCache == NULL)
-	{
-		m_pMapFieldCache = new CMapPtrToPtr;
-
-		CDaoFieldExchange fx(CDaoFieldExchange::AllocCache, this);
-		DoFieldExchange(&fx);
-	}
-}
-
-void CDaoRecordset::StoreFields()
-{
-	ASSERT_VALID(this);
-
-	// Do nothing if caching disabled by master switch
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0)
-	{
-		ASSERT(m_pMapFieldCache != NULL);
-		CDaoFieldExchange fx(CDaoFieldExchange::StoreField, this);
-		DoFieldExchange(&fx);
-	}
-}
-
-void CDaoRecordset::LoadFields()
-{
-	ASSERT_VALID(this);
-
-	// Do nothing if caching disabled by master switch
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0)
-	{
-		CDaoFieldExchange fx(CDaoFieldExchange::LoadField, this);
-		DoFieldExchange(&fx);
-
-		// Clear the dirty status flags
-		SetFieldDirty(NULL, FALSE);
-	}
-}
-
-void CDaoRecordset::FreeCache()
-{
-	ASSERT_VALID(this);
-
-	// Do nothing if caching disabled by master switch
-	if (m_bCheckCacheForDirtyFields && m_nFields > 0 &&
-		m_pMapFieldCache != NULL)
-	{
-		// Free up dynamically allocated mem in cache
-		CDaoFieldExchange fx(CDaoFieldExchange::FreeCache, this);
-
-		// Delete any cached data
-		void* pvKey;
-		void* pvObject;
-		POSITION pos = m_pMapFieldCache->GetStartPosition();
-		while (pos != NULL)
+		for (i = 0; i < pInpaceButtons->GetSize(); i++)
 		{
-			m_pMapFieldCache->GetNextAssoc(pos, pvKey, pvObject);
-	
-			ENSURE(pvObject);
-			fx.DeleteCacheValue((CDaoFieldCache*)pvObject, ((CDaoFieldCache*)pvObject)->m_nDataType);
+			CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+			pButton->Create(pItemArgs, rcButtons);
+
+			pControl->GetInplaceButtons()->Add(pButton);
 		}
-		m_pMapFieldCache->RemoveAll();
 
-		delete m_pMapFieldCache;
-		m_pMapFieldCache = NULL;
+		// adjust item rect
+		pItemArgs->rcItem.right = rcButtons.left + 1;
+
+		if (pEditOptions->m_bAllowEdit)
+		{
+			pEdit->Create(pItemArgs);
+		}
+		else if (pInpaceButtons->GetSize() > 0)
+		{
+			OnInplaceButtonDown(pInpaceButtons->GetAt(0));
+		}
+
+		//----------------------------------------------------
+		XTP_NM_REPORTRECORDITEM nm;
+		::ZeroMemory(&nm, sizeof(nm));
+
+		nm.pItem = this;
+		nm.pRow = pItemArgs->pRow;
+		nm.pColumn = pItemArgs->pColumn;
+
+		pControl->SendNotifyMessage(XTP_NM_REPORT_BEGINEDIT, (NMHDR*)&nm);
 	}
 }
 
-void CDaoRecordset::MarkForAddNew()
+void CXTPReportRecordItem::OnCancelEdit(CXTPReportControl* pControl, BOOL bApply)
 {
-	ASSERT_VALID(this);
+	CXTPReportInplaceButtons* pInpaceButtons = pControl->GetInplaceButtons();
 
-	CDaoFieldExchange fx(CDaoFieldExchange::MarkForAddNew, this);
-	DoFieldExchange(&fx);
-}
-
-void CDaoRecordset::MarkForEdit()
-{
-	ASSERT_VALID(this);
-
-	CDaoFieldExchange fx(CDaoFieldExchange::MarkForEdit, this);
-	DoFieldExchange(&fx);
-}
-
-int CDaoRecordset::GetFieldIndex(void* pv)
-{
-	ASSERT_VALID(this);
-	ASSERT(m_pMapFieldIndex != NULL);
-
-	void* pvIndex;
-
-	if (!m_pMapFieldIndex->Lookup(pv, pvIndex))
-		return AFX_DAO_DATA_NOT_FOUND;
-	else
-		// Index was stored rather than ptr, make it 0-based
-		return ((int)(INT_PTR)pvIndex) - 1;
-}
-
-void CDaoRecordset::SetDirtyFields()
-{
-	ASSERT_VALID(this);
-
-	if (m_pDAOFields == NULL)
-		InitFieldsCollection();
-
-	CDaoFieldExchange fx(CDaoFieldExchange::SetDirtyField, this);
-	DoFieldExchange(&fx);
-}
-
-void CDaoRecordset::SetCursorAttributes()
-{
-	ASSERT_VALID(this);
-
-	m_bScrollable = !(m_nOptions & dbForwardOnly);
-	m_bAppendable = CanUpdate() ||
-		(!(m_nOptions & dbReadOnly) && (m_nOptions & dbAppendOnly));
-}
-
-void CDaoRecordset::GetDataAndFixupNulls()
-{
-	ASSERT_VALID(this);
-
-	// Don't need to do anything if no fields bound
-	if (m_nFields > 0)
+	for (int i = 0; i < pInpaceButtons->GetSize(); i++)
 	{
-		if (IsEOF() || IsBOF())
+		CXTPReportInplaceButton* pButton = pInpaceButtons->GetAt(i);
+		pButton->DestroyWindow();
+		pButton->SetItemArgs(0);
+	}
+	pInpaceButtons->RemoveAll();
+
+	CXTPReportInplaceList* pInpaceList = pControl->GetInplaceList();
+	if (pInpaceList->GetSafeHwnd())
+	{
+		pInpaceList->DestroyWindow();
+	}
+
+
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+	if (bApply && pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		OnValidateEdit((XTP_REPORTRECORDITEM_ARGS*)pEdit);
+	}
+
+	pEdit->HideWindow();
+	pEdit->SetItemArgs(0);
+	pEdit->DestroyWindow(); // pControl->SetFocus();
+
+
+}
+
+void CXTPReportRecordItem::OnConstraintChanged(XTP_REPORTRECORDITEM_ARGS* pItemArgs, CXTPReportRecordItemConstraint* pConstraint)
+{
+	OnEditChanged(pItemArgs, pConstraint->m_strConstraint);
+}
+
+void CXTPReportRecordItem::OnValidateEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	ASSERT(pItemArgs);
+	if (!pItemArgs)
+		return;
+
+	CXTPReportControl* pControl = pItemArgs->pControl;
+	CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+	XTP_REPORTRECORDITEM_ARGS args = *pItemArgs;
+
+	if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
+	{
+		args.AddRef();
+
+		BOOL bRedraw = FALSE;
+		CMDTARGET_RELEASE(pEdit->pItem); //pEdit->pItem = NULL;
+
+		if (GetEditOptions(args.pColumn)->m_bConstraintEdit)
 		{
-			// If no current record, simple mark fields NULL
-			if (m_nFields > 0)
-				SetFieldNull(NULL);
+			if (pEdit->m_pSelectedConstraint)
+			{
+				OnConstraintChanged(&args, pEdit->m_pSelectedConstraint);
+				bRedraw = TRUE;
+			}
 		}
 		else
 		{
-			if (m_pICDAORecordsetGetRows == NULL)
+			CString strValue;
+			pEdit->GetWindowText(strValue);
+
+			if (GetCaption(args.pColumn) != strValue)
 			{
-				DAO_CHECK(m_pDAORecordset->QueryInterface(
-					IID_ICDAORecordset, (void**)&m_pICDAORecordsetGetRows));
-			}
-
-			// Call GetRows to fill in the bound data
-			SCODE scode = m_pICDAORecordsetGetRows->GetRows(
-				0, m_nFields, m_prgDaoColBindInfo,
-				m_cbFixedLengthFields, &m_DaoFetchRows);
-
-			// Check for GetRows specific errors
-			//  This is necessary as ICDAORecordset::GetRows
-			//  errors are not appended to DAO errors collection
-			if (FAILED(scode))
-				ThrowGetRowsDaoException(scode);
-
-			// Check to see if row deleted as it is just warning
-			m_bDeleted = scode == S_RECORDDELETED;
-
-			// Reset the status array
-			ClearFieldStatusFlags();
-
-			// Fixup Null fields
-			Fixup();
-		}
-	}
-}
-
-BOOL CDaoRecordset::IsFieldStatusDirty(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	return ((m_pbFieldFlags[nField] & AFX_DAO_FIELD_FLAG_DIRTY) ==
-		AFX_DAO_FIELD_FLAG_DIRTY);
-}
-
-void CDaoRecordset::SetDirtyFieldStatus(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	m_pbFieldFlags[nField] |= AFX_DAO_FIELD_FLAG_DIRTY;
-}
-
-void CDaoRecordset::ClearDirtyFieldStatus(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	m_pbFieldFlags[nField] &= ~AFX_DAO_FIELD_FLAG_DIRTY;
-}
-
-BOOL CDaoRecordset::IsFieldStatusNull(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	return ((m_pbFieldFlags[nField] & AFX_DAO_FIELD_FLAG_NULL) ==
-		AFX_DAO_FIELD_FLAG_NULL);
-}
-
-void CDaoRecordset::SetNullFieldStatus(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	m_pbFieldFlags[nField] |= AFX_DAO_FIELD_FLAG_NULL;
-}
-
-void CDaoRecordset::ClearNullFieldStatus(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	m_pbFieldFlags[nField] &= ~AFX_DAO_FIELD_FLAG_NULL;
-}
-
-BOOL CDaoRecordset::IsFieldStatusNullable(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	return ((m_pbFieldFlags[nField] & AFX_DAO_FIELD_FLAG_NULLABLE) ==
-		AFX_DAO_FIELD_FLAG_NULLABLE);
-}
-
-void CDaoRecordset::SetNullableFieldStatus(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	m_pbFieldFlags[nField] |= AFX_DAO_FIELD_FLAG_NULLABLE;
-}
-
-BOOL CDaoRecordset::IsFieldStatusNullableKnown(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	return ((m_pbFieldFlags[nField] & AFX_DAO_FIELD_FLAG_NULLABLE_KNOWN)
-		== AFX_DAO_FIELD_FLAG_NULLABLE_KNOWN);
-}
-
-void CDaoRecordset::SetNullableKnownFieldStatus(UINT nField)
-{
-	ASSERT_VALID(this);
-
-	m_pbFieldFlags[nField] |= AFX_DAO_FIELD_FLAG_NULLABLE_KNOWN;
-}
-
-void CDaoRecordset::ClearFieldStatusFlags()
-{
-	ASSERT_VALID(this);
-
-	memset(m_pbFieldFlags, 0, m_nFields);
-}
-
-BOOL CDaoRecordset::IsMatch()
-{
-	ASSERT_VALID(this);
-	ASSERT(IsOpen());
-
-	short nNoMatch;
-
-	DAO_CHECK(m_pDAORecordset->get_NoMatch(&nNoMatch));
-
-	// Return TRUE if NoMatch is FALSE
-	return nNoMatch == AFX_DAO_FALSE;
-}
-
-void AFX_CDECL CDaoRecordset::StripBrackets(LPCTSTR lpszSrc, __out LPTSTR lpszDest)
-{
-	while (*lpszSrc != '\0')
-	{
-		// Ignore all brackets
-		while (*lpszSrc == '[' || *lpszSrc == ']')
-			lpszSrc = _tcsinc(lpszSrc);
-
-		// Quit if at the end of the string
-		if (*lpszSrc == '\0')
-			break;
-
-		// Copy the data and increment the buffers
-		if (_istlead(*lpszSrc))
-			*lpszDest++ = *lpszSrc++;
-		*lpszDest++ = *lpszSrc++;
-	}
-
-	// Add the trailing '\0'
-	*lpszDest = '\0';
-}
-
-void CDaoRecordset::ThrowDaoException(int nAfxDaoError)
-{
-	ASSERT_VALID(this);
-
-	AfxThrowDaoException(nAfxDaoError);
-}
-
-#ifdef _DEBUG
-void CDaoRecordset::AssertValid() const
-{
-	CObject::AssertValid();
-}
-
-void CDaoRecordset::Dump(CDumpContext& dc) const
-{
-	ASSERT_VALID(this);
-
-	CObject::Dump(dc);
-
-	dc << _T("\nm_bOpen = ") << m_bOpen;
-	dc << _T("\nm_bAppendable = ") << m_bAppendable;
-	dc << _T("\nm_bScrollable = ") << m_bScrollable;
-	dc << _T("\nm_bDeleted = ") << m_bDeleted;
-
-	dc << _T("\nm_nOpenType = ") << m_nOpenType;
-	dc << _T("\nm_nDefaultType = ") << m_nDefaultType;
-	dc << _T("\nm_nOptions = ") << m_nOptions;
-
-	dc << _T("\nm_strSQL = ") << m_strSQL;
-	dc << _T("\nm_strFilter = ") << m_strFilter;
-	dc << _T("\nm_strSort = ") << m_strSort;
-	dc << _T("\nm_strRequerySQL = ") << m_strRequerySQL;
-	dc << _T("\nm_strRequeryFilter = ") << m_strRequeryFilter;
-	dc << _T("\nm_strRequerySort = ") << m_strRequerySort;
-
-	dc << _T("\nm_nFields = ") << m_nFields;
-	dc << _T("\nm_nParams = ") << m_nParams;
-
-	dc << _T("\nm_bCheckCacheForDirtyFields = ") << m_bCheckCacheForDirtyFields;
-	dc << _T("\nm_nStatus = ") << m_nStatus;
-
-	dc << _T("\n");
-}
-#endif //_DEBUG
-
-//////////////////////////////////////////////////////////////////////////
-// Helpers - implementation
-void AFX_CDECL AfxGetFieldInfo(DAOField* pDAOField, CDaoFieldInfo& fieldinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT(pDAOField != NULL);
-	ASSERT(dwInfoOptions != 0);
-
-	COleVariant var;
-	short nBool;
-
-	// Always fetch the Primary properties
-	if (dwInfoOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOField->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		fieldinfo.m_strName = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOField->get_Type(&fieldinfo.m_nType));
-
-		DAO_CHECK(pDAOField->get_Size(&fieldinfo.m_lSize));
-
-		DAO_CHECK(pDAOField->get_Attributes(&fieldinfo.m_lAttributes));
-	}
-
-	if (dwInfoOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOField->get_OrdinalPosition(
-			&fieldinfo.m_nOrdinalPosition));
-
-		DAO_CHECK(pDAOField->get_Required(&nBool));
-		fieldinfo.m_bRequired = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOField->get_AllowZeroLength(&nBool));
-		fieldinfo.m_bAllowZeroLength = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOField->get_CollatingOrder(
-			&fieldinfo.m_lCollatingOrder));
-
-		DAO_CHECK(pDAOField->get_SourceField(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		fieldinfo.m_strSourceField = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOField->get_SourceTable(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		fieldinfo.m_strSourceTable = V_BSTRT(&var);
-		var.Clear();
-
-		TRY
-		{
-			DAO_CHECK(pDAOField->get_ForeignName(&V_BSTR(&var)));
-			var.vt = VT_BSTR;
-			fieldinfo.m_strForeignName = V_BSTRT(&var);
-			var.Clear();
-		}
-		CATCH(CDaoException, e)
-		{
-			// If this property not appropriate, set foreign name empty
-			if (e->m_scode != E_DAO_IllegalOperation)
-				THROW_LAST();
-			else
-			{
-				fieldinfo.m_strForeignName.Empty();
-				e->Delete();
+				OnEditChanged(&args, strValue);
+				bRedraw = TRUE;
 			}
 		}
-		END_CATCH
-	}
-
-	if (dwInfoOptions & AFX_DAO_FETCH_ALL_PROPERTIES)
-	{
-		AfxGetDefaultValue(pDAOField, fieldinfo.m_strDefaultValue);
-
-		DAO_CHECK(pDAOField->get_ValidationRule(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		fieldinfo.m_strValidationRule = V_BSTRT(&var);
-		var.Clear();
-
-		DAO_CHECK(pDAOField->get_ValidationText(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		fieldinfo.m_strValidationText = V_BSTRT(&var);
-	}
-}
-
-void AFX_CDECL AfxSetFieldInfo(DAOField* pDAOField, CDaoFieldInfo& fieldinfo)
-{
-	// Assumes name, type and size set on direct DAO CreateField call
-	ASSERT(pDAOField != NULL);
-
-	if (fieldinfo.m_lAttributes != 0)
-		DAO_CHECK(pDAOField->put_Attributes(fieldinfo.m_lAttributes));
-
-	if (fieldinfo.m_nOrdinalPosition != 0)
-	{
-		DAO_CHECK(pDAOField->put_OrdinalPosition(
-			fieldinfo.m_nOrdinalPosition));
-	}
-
-	if (fieldinfo.m_bRequired)
-		DAO_CHECK(pDAOField->put_Required(AFX_DAO_TRUE));
-
-	if (fieldinfo.m_bAllowZeroLength)
-		DAO_CHECK(pDAOField->put_AllowZeroLength(AFX_DAO_TRUE));
-
-	if (!fieldinfo.m_strForeignName.IsEmpty())
-	{
-		COleVariant var(fieldinfo.m_strForeignName, VT_BSTRT);
-		DAO_CHECK(pDAOField->put_ForeignName(V_BSTR(&var)));
-	}
-
-	if (!fieldinfo.m_strValidationRule.IsEmpty())
-	{
-		COleVariant var(fieldinfo.m_strValidationRule, VT_BSTRT);
-		DAO_CHECK(pDAOField->put_ValidationRule(V_BSTR(&var)));
-	}
-
-	if (!fieldinfo.m_strValidationText.IsEmpty())
-	{
-		COleVariant var(fieldinfo.m_strValidationText, VT_BSTRT);
-		DAO_CHECK(pDAOField->put_ValidationText(V_BSTR(&var)));
-	}
-
-	if (!fieldinfo.m_strDefaultValue.IsEmpty())
-	{
-		AfxSetDefaultValue(pDAOField, fieldinfo.m_strDefaultValue);
-	}
-}
-
-void AFX_CDECL AfxGetDefaultValue(DAOField* pDAOField, CString& strDefaultValue)
-{
-	COleVariant var;
-	DAO_CHECK(pDAOField->get_DefaultValue(&var));
-	strDefaultValue = V_BSTRT(&var);
-}
-
-void AFX_CDECL AfxSetDefaultValue(DAOField* pDAOField, CString& strDefaultValue)
-{
-	COleVariant var(strDefaultValue, VT_BSTRT);
-	DAO_CHECK(pDAOField->put_DefaultValue(var));
-}
-
-void AFX_CDECL AfxGetIndexInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo,
-	DWORD dwInfoOptions)
-{
-	ASSERT(pDAOIndex != NULL);
-	ASSERT(dwInfoOptions != 0);
-
-	COleVariant var;
-	short nBool;
-
-	if (dwInfoOptions & AFX_DAO_FETCH_PRIMARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOIndex->get_Name(&V_BSTR(&var)));
-		var.vt = VT_BSTR;
-		indexinfo.m_strName = V_BSTRT(&var);
-
-		AfxGetIndexFieldInfo(pDAOIndex, indexinfo);
-	}
-
-	if (dwInfoOptions & AFX_DAO_FETCH_SECONDARY_PROPERTIES)
-	{
-		DAO_CHECK(pDAOIndex->get_Primary(&nBool));
-		indexinfo.m_bPrimary = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOIndex->get_Unique(&nBool));
-		indexinfo.m_bUnique = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOIndex->get_Clustered(&nBool));
-		indexinfo.m_bClustered = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOIndex->get_IgnoreNulls(&nBool));
-		indexinfo.m_bIgnoreNulls = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOIndex->get_Required(&nBool));
-		indexinfo.m_bRequired = nBool == AFX_DAO_TRUE;
-
-		DAO_CHECK(pDAOIndex->get_Foreign(&nBool));
-		indexinfo.m_bForeign = nBool == AFX_DAO_TRUE;
-	}
-
-	if (dwInfoOptions & AFX_DAO_FETCH_ALL_PROPERTIES)
-	{
-		DAO_CHECK(pDAOIndex->get_DistinctCount(
-			&indexinfo.m_lDistinctCount));
-	}
-}
-
-void AFX_CDECL AfxSetIndexInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo)
-{
-	// Assumes name,set on direct DAO CreateIndex call
-	ASSERT(pDAOIndex != NULL);
-
-	AfxSetIndexFieldInfo(pDAOIndex, indexinfo);
-
-	if (indexinfo.m_bPrimary)
-		DAO_CHECK(pDAOIndex->put_Primary(AFX_DAO_TRUE));
-
-	if (indexinfo.m_bUnique)
-		DAO_CHECK(pDAOIndex->put_Unique(AFX_DAO_TRUE));
-
-	if (indexinfo.m_bClustered)
-		DAO_CHECK(pDAOIndex->put_Clustered(AFX_DAO_TRUE));
-
-	if (indexinfo.m_bIgnoreNulls)
-		DAO_CHECK(pDAOIndex->put_IgnoreNulls(AFX_DAO_TRUE));
-
-	if (indexinfo.m_bRequired)
-		DAO_CHECK(pDAOIndex->put_Required(AFX_DAO_TRUE));
-}
-
-void AFX_CDECL AfxGetIndexFields(DAOIndex* pDAOIndex,
-	DAOIndexFields** ppDAOIndexFields)
-{
-	COleVariant var;
-
-	// Set the desired interface
-#ifdef _UNICODE
-	const GUID& guidIndexFields = IID_IDAOIndexFieldsW;
-#else
-	const GUID& guidIndexFields = IID_IDAOIndexFields;
-#endif
-
-	// Get dispatch pointer to fields collection
-	DAO_CHECK(pDAOIndex->get_Fields(&var));
-	DAO_CHECK(var.pdispVal->QueryInterface(
-		guidIndexFields, (void**)ppDAOIndexFields));
-}
-
-void AFX_CDECL AfxGetIndexFieldInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo)
-{
-	COleVariant var;
-
-	DAOIndexFields* pDAOIndexFields = NULL;
-	DAOField* pDAOField = NULL;
-
-	// Get the index fields collection
-	AfxGetIndexFields(pDAOIndex, &pDAOIndexFields);
-
-	TRY
-	{
-		// Get the number of fields in the index
-		short nCount;
-		DAO_CHECK(pDAOIndexFields->get_Count(&nCount));
-
-		// Allocate or reallocate memory for array if necessary
-		if (nCount != indexinfo.m_nFields)
+		if (bRedraw)
 		{
-			if (indexinfo.m_nFields != 0)
+			pControl->RedrawControl();
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_VALUECHANGED, 0);
+		}
+		else
+		{
+			OnEditCanceled(pItemArgs);
+			pControl->SendMessageToParent(args.pRow, this, args.pColumn, XTP_NM_REPORT_EDIT_CANCELED, 0);
+		}
+
+		pEdit->SetItemArgs(0);
+
+		args.Release();
+	}
+}
+
+BOOL CXTPReportRecordItem::IsAllowEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	BOOL bIsAllowEdit = pItemArgs->pControl->IsAllowEdit();
+
+	if (m_pRecord)
+	{
+		// is header record
+		if (m_pRecord->m_pRecords == pItemArgs->pControl->GetHeaderRecords())
+		{
+			bIsAllowEdit = pItemArgs->pControl->IsHeaderRowsAllowEdit();
+		}
+		else
+			// is footer record
+			if (m_pRecord->m_pRecords == pItemArgs->pControl->GetFooterRecords())
 			{
-				// Check that allocation is correct.
-				ASSERT(indexinfo.m_nFields == 0 ||
-					indexinfo.m_bCleanupFieldInfo);
-
-				delete[] indexinfo.m_pFieldInfos;
-				indexinfo.m_pFieldInfos = NULL;
+				bIsAllowEdit = pItemArgs->pControl->IsFooterRowsAllowEdit();
 			}
+	}
 
-			// Now allocate required memory
-			indexinfo.m_pFieldInfos = new CDaoIndexFieldInfo[nCount];
-			indexinfo.m_bCleanupFieldInfo = TRUE;
-			indexinfo.m_nFields = nCount;
-		}
+	return bIsAllowEdit && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));
 
-		// Now get field info for each field
-		long lAttributes;
-		for (short nIndex = 0; nIndex < indexinfo.m_nFields; nIndex++)
+/*  return pItemArgs->pControl->IsAllowEdit() && IsEditable() &&
+		((pItemArgs->pColumn && pItemArgs->pColumn->IsEditable()) || (!pItemArgs->pColumn && m_pEditOptions &&
+		m_pEditOptions->m_bAllowEdit));*/
+}
+
+BOOL CXTPReportRecordItem::OnRequestEdit(XTP_REPORTRECORDITEM_ARGS* pItemArgs)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	XTP_NM_REPORTREQUESTEDIT nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.bCancel = FALSE;
+	nm.pItem = this;
+	nm.pRow = pItemArgs->pRow;
+	nm.pColumn = pItemArgs->pColumn;
+
+	pControl->SendNotifyMessage(XTP_NM_REPORT_REQUESTEDIT, (NMHDR*)&nm);
+
+	return !nm.bCancel;
+}
+
+BOOL CXTPReportRecordItem::OnChar(XTP_REPORTRECORDITEM_ARGS* pItemArgs, UINT nChar)
+{
+	CXTPReportControl* pControl = pItemArgs->pControl;
+
+	if ((nChar == VK_SPACE) && IsEditable() && m_bHasCheckbox && (pItemArgs->pColumn == NULL || pItemArgs->pColumn->IsEditable())
+		&& OnRequestEdit(pItemArgs))
+	{
+		if (pControl->IsAutoCheckItems()) SetChecked(!IsChecked());
+		pControl->RedrawControl();
+
+		pControl->SendMessageToParent(pItemArgs->pRow, this, pItemArgs->pColumn, XTP_NM_REPORT_CHECKED, NULL);
+		return TRUE;
+	}
+
+	if (IsAllowEdit(pItemArgs))
+	{
+		pControl->EditItem(pItemArgs);
+
+		CXTPReportInplaceEdit* pEdit = pControl->GetInplaceEdit();
+
+		if (pEdit->GetSafeHwnd() && pEdit->GetItem() == this)
 		{
-			// Set the desired interface
-#ifdef _UNICODE
-		   const GUID& guidField = IID_IDAOFieldW;
-#else
-		   const GUID& guidField = IID_IDAOField;
-#endif
-
-			// Get the field item
-			DAO_CHECK(pDAOIndexFields->get_Item(COleVariant(nIndex), &var));
-			DAO_CHECK(var.pdispVal->QueryInterface(
-				guidField, (void**)&pDAOField));
-			var.Clear();
-
-			// Get the field name
-			DAO_CHECK(pDAOField->get_Name(&V_BSTR(&var)));
-			var.vt = VT_BSTR;
-			indexinfo.m_pFieldInfos[nIndex].m_strName = V_BSTRT(&var);
-
-			// Get the field attributes
-			DAO_CHECK(pDAOField->get_Attributes(&lAttributes));
-			indexinfo.m_pFieldInfos[nIndex].m_bDescending =
-				(lAttributes & dbDescending);
-
-			// Release and reset the field object
-			pDAOField->Release();
-			pDAOField = NULL;
+			pEdit->SetFocus();
+			pEdit->SetSel(0, -1);
+			if (nChar != VK_TAB) pEdit->SendMessage(WM_CHAR, nChar);
 		}
+		return TRUE;
 
-		// Release the index fields object
-		pDAOIndexFields->Release();
 	}
-	CATCH_ALL(e)
-	{
-		// Release the field object if necessary
-		if (pDAOField != NULL)
-			pDAOField->Release();
-
-		// Must always release index fields collection
-		pDAOIndexFields->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
+	return FALSE;
 }
 
-void AFX_CDECL AfxSetIndexFieldInfo(DAOIndex* pDAOIndex, CDaoIndexInfo& indexinfo)
+CXTPReportRecordItemEditOptions* CXTPReportRecordItem::GetEditOptions(CXTPReportColumn* pColumn)
 {
-	COleVariant var;
-	long lAttributes;
+	if (m_pEditOptions)
+		return m_pEditOptions;
 
-	DAOIndexFields* pDAOIndexFields = NULL;
-	DAOField* pDAOField = NULL;
+	if (pColumn)
+		return pColumn->GetEditOptions();
 
-	// Get the index fields collection
-	AfxGetIndexFields(pDAOIndex, &pDAOIndexFields);
+	return m_pEditOptions = new CXTPReportRecordItemEditOptions();
+}
 
-	TRY
+void CXTPReportRecordItem::OnInplaceButtonDown(CXTPReportInplaceButton* pButton)
+{
+	CXTPReportControl* pControl = pButton->pControl;
+
+	XTP_NM_REPORTINPLACEBUTTON nm;
+	::ZeroMemory(&nm, sizeof(nm));
+
+	nm.pButton = pButton;
+	nm.pItem = this;
+
+	if (pControl->SendNotifyMessage(XTP_NM_REPORT_INPLACEBUTTONDOWN, (NMHDR*)&nm) == TRUE)
+		return;
+
+	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
 	{
-		for (int nIndex = 0; nIndex < indexinfo.m_nFields; nIndex++)
+		CXTPReportInplaceList* pList = pControl->GetInplaceList();
+
+		XTP_REPORTRECORDITEM_ARGS itemArgs = *pButton;
+		if (!itemArgs.pColumn && !itemArgs.pControl && !itemArgs.pItem && !itemArgs.pRow)
 		{
-			// Create the field and set the name
-			DAO_CHECK(pDAOIndex->CreateField(
-				COleVariant(indexinfo.m_pFieldInfos[nIndex].m_strName, VT_BSTRT),
-				_afxOptionalVariant, _afxOptionalVariant, &pDAOField));
-
-			// Set the descending property
-			if (indexinfo.m_pFieldInfos[nIndex].m_bDescending)
-				lAttributes = dbDescending;
-			else
-				lAttributes = 0;
-			DAO_CHECK(pDAOField->put_Attributes(lAttributes));
-
-			// Append field to collection, release and reset
-			pDAOIndexFields->Append(pDAOField);
-			pDAOField->Release();
-			pDAOField = NULL;
+			return;
 		}
+		ASSERT(itemArgs.pItem == this);
 
-		// Always release the index fields object
-		pDAOIndexFields->Release();
-	}
-	CATCH_ALL(e)
-	{
-		if (pDAOField != NULL)
-			pDAOField->Release();
+		CXTPWindowRect rcButton(pButton);
+		pControl->ScreenToClient(&rcButton);
+		itemArgs.rcItem.right = rcButton.right;
+		itemArgs.rcItem.bottom  = rcButton.bottom;
 
-		pDAOIndexFields->Release();
-		THROW_LAST();
+		CXTPReportRecordItemEditOptions* pEditOptions = GetEditOptions(itemArgs.pColumn);
+
+		if (pEditOptions->GetConstraints()->GetCount() > 0)
+		{
+			pList->Create(&itemArgs, pEditOptions->GetConstraints());
+		}
 	}
-	END_CATCH_ALL
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// GetRows helper
-void AFX_CDECL ThrowGetRowsDaoException(SCODE scode)
+CXTPReportHyperlinks* CXTPReportRecordItem::GetHyperlinks()
 {
-	switch (scode)
-	{
-		case E_OUTOFMEMORY:
-			AfxThrowMemoryException();
+	if (!m_pHyperlinks)
+		m_pHyperlinks = new CXTPReportHyperlinks();
 
-		default:
-			AfxThrowDaoException(NO_AFX_DAO_ERROR, scode);
-
-		// These are only (known) DAO 3.0 GetRows errors
-		case E_ROWTOOSHORT:
-		case E_BADBINDINFO:
-		case E_COLUMNUNAVAILABLE:
-			break;
-	}
-
-	CDaoException* pException;
-	pException = new CDaoException;
-	pException->m_pErrorInfo = new CDaoErrorInfo;
-
-	// Fill out the DAO error info struct
-	pException->m_scode = scode;
-	pException->m_pErrorInfo->m_strSource = _T("ICDAORecordset.GetRows");
-	pException->m_pErrorInfo->m_lErrorCode = LOWORD(scode);
-
-	// There is no help context or help file
-	pException->m_pErrorInfo->m_lHelpContext = 0;
-
-	int nID = 0;
-
-	if (scode == E_ROWTOOSHORT)
-		nID = AFX_IDP_DAO_ROWTOOSHORT;
-	else if (scode == E_BADBINDINFO)
-		nID = AFX_IDP_DAO_BADBINDINFO;
-	else
-		nID = AFX_IDP_DAO_COLUMNUNAVAILABLE;
-
-	VERIFY(pException->m_pErrorInfo->m_strDescription.LoadString(nID));
-
-	TRACE(traceDatabase, 0, _T("\nError Code = %d\n"),
-		pException->m_pErrorInfo->m_lErrorCode);
-	TRACE(traceDatabase, 0, _T("Source = %s\n"),
-		(LPCTSTR)pException->m_pErrorInfo->m_strSource);
-	TRACE(traceDatabase, 0, _T("Description = %s\n"),
-		(LPCTSTR)pException->m_pErrorInfo->m_strDescription);
-
-	THROW(pException);
+	return m_pHyperlinks;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// _AFX_DAO_STATE helper
-_AFX_DAO_STATE* AFX_CDECL AfxGetDaoState()
+void CXTPReportRecordItem::DoPropExchange(CXTPPropExchange* pPX)
 {
-	// The DAO state is store in the module state
-	AFX_MODULE_STATE* pModuleState = AfxGetModuleState();
-	_AFX_DAO_STATE* pDaoState = pModuleState->m_pDaoState;
+	PX_DWord(pPX, _T("TextColor"), (DWORD&)m_clrText, XTP_REPORT_COLOR_DEFAULT);
+	PX_DWord(pPX, _T("BackgroundColor"), (DWORD&)m_clrBackground, XTP_REPORT_COLOR_DEFAULT);
 
-	// Allocate a new DAO state if necessary
-	if (pDaoState == NULL)
+	PX_Bool(pPX, _T("BoldText"), m_bBoldText, FALSE);
+
+	PX_String(pPX, _T("Format"), m_strFormatString, _T("%s"));
+
+	PX_Bool(pPX, _T("Editable"), m_bEditable, TRUE);
+
+	PX_Int(pPX, _T("IconIndex"), m_nIconIndex, XTP_REPORT_NOICON);
+
+	PX_Int(pPX, _T("SortPriority"), m_nSortPriority, -1);
+	PX_Int(pPX, _T("GroupPriority"), m_nGroupPriority, -1);
+
+	PX_String(pPX, _T("GroupCaption"), m_strGroupCaption, _T(""));
+
+	PX_Bool(pPX, _T("Focusable"), m_bFocusable, TRUE);
+
+	PX_Bool(pPX, _T("Checked"), m_bChecked, FALSE);
+	PX_Bool(pPX, _T("HasCheckbox"), m_bHasCheckbox, FALSE);
+
+	ULONGLONG ullData = m_dwData;
+	PX_UI8(pPX, _T("Data"), ullData, 0);
+	m_dwData = (DWORD_PTR)ullData;
+
+	PX_String(pPX, _T("Tooltip"), m_strTooltip, _T(""));
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_98)
 	{
-		pDaoState = new _AFX_DAO_STATE;
-		pModuleState->m_pDaoState = pDaoState;
+		PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
 	}
-	return pDaoState;
+
+
+	// Hyperlinks
+	CXTPPropExchangeSection secHyperlinks(pPX->GetSection(_T("Hyperlinks")));
+
+	CXTPReportHyperlinks arHyperlinks;
+
+	if (pPX->IsStoring() && m_pHyperlinks)
+	{
+		arHyperlinks.CopyFrom(m_pHyperlinks);
+	}
+
+	arHyperlinks.DoPropExchange(&secHyperlinks);
+
+	if (pPX->IsLoading())
+	{
+		if (arHyperlinks.GetSize())
+		{
+			if (GetHyperlinks())
+				GetHyperlinks()->CopyFrom(&arHyperlinks);
+		}
+		else if (m_pHyperlinks)
+		{
+			m_pHyperlinks->RemoveAll();
+		}
+	}
 }
 
-
-//////////////////////////////////////////////////////////////////////////////
-// DAODBEngine helpers
-void AFXAPI AfxDaoInit()
-{
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-
-	// Attempt to initialize OLE component objects
-	//  (use default IMalloc allocator)
-	DAO_CHECK_ERROR(::CoInitialize(NULL),
-		AFX_DAO_ERROR_ENGINE_INITIALIZATION);
-	pDaoState->m_bOleInitialized = TRUE;
-
-	// Hook AfxDaoTerm to CWinApp, otherwise explicit AfxDaoTerm call req'd
-	CWinApp* pApp = AfxGetApp();
-	if (pApp != NULL)
-		pApp->m_lpfnDaoTerm = AfxDaoTerm;
-
-	// Set the interface type
-#ifdef _UNICODE
-	const GUID& guidEngine = IID_IDAODBEngineW;
-#else
-	const GUID& guidEngine = IID_IDAODBEngine;
-#endif
-
-	// DAO 3.5 and 3.6 runtime key
-	COleVariant varKey = _T("mbmabptebkjcdlgtjmskjwtsdhjbmkmwtrak");
-
-	LPCLASSFACTORY2 pCF2;
-	DAO_CHECK_ERROR(::CoGetClassObject(CLSID_CDAODBEngine,
-		CLSCTX_INPROC_SERVER, NULL, IID_IClassFactory2, (LPVOID*)&pCF2),
-		AFX_DAO_ERROR_ENGINE_INITIALIZATION);
-
-	TRY
-	{
-		DAO_CHECK_ERROR(pCF2->CreateInstanceLic( NULL, NULL, guidEngine,
-			V_BSTR(&varKey), (LPVOID*)&pDaoState->m_pDAODBEngine),
-			AFX_DAO_ERROR_ENGINE_INITIALIZATION);
-	}
-	CATCH_ALL(e)
-	{
-		pCF2->Release();
-		THROW_LAST();
-	}
-	END_CATCH_ALL
-
-	pCF2->Release();
-}
-
-DAODBEngine* AFXAPI AfxDaoGetEngine()
-{
-	// Return DAODBEngine object for direct access
-	return AfxGetDaoState()->m_pDAODBEngine;
-}
-
-void AFXAPI AfxDaoTerm()
-{
-	_AFX_DAO_STATE* pDaoState = AfxGetDaoState();
-
-	// Close any CDaoWorkspaces left around
-	void* pvKey;
-	void* pvObject;
-	POSITION pos = pDaoState->m_mapWorkspaces.GetStartPosition();
-	while (pos != NULL)
-	{
-		pDaoState->m_mapWorkspaces.GetNextAssoc(pos, pvKey, pvObject);
-		((CDaoWorkspace*)pvObject)->Close();
-	}
-	pDaoState->m_mapWorkspaces.RemoveAll();
-
-	// Clean up engine object if necessary
-	if (pDaoState->m_pDAODBEngine != NULL)
-	{
-		pDaoState->m_pDAODBEngine->Release();
-		pDaoState->m_pDAODBEngine = NULL;
-	}
-
-	// Shutdown OLE component objects if necessary
-	if (pDaoState->m_bOleInitialized)
-	{
-		::CoUninitialize();
-		pDaoState->m_bOleInitialized = FALSE;
-	}
-
-	// If hooked up to CWinApp, make sure to unhook
-	CWinApp* pApp = AfxGetApp();
-	if (pApp != NULL)
-		pApp->m_lpfnDaoTerm = NULL;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// Inline function declarations expanded out-of-line
-
-#ifndef _AFX_ENABLE_INLINES
-
-#define _AFXDAOCORE_INLINE
-#include "afxdao.inl"
-
-#endif
-
-
-#pragma warning(disable: 4074)
-#pragma init_seg(lib)
-
-/////////////////////////////////////////////////////////////////////////////

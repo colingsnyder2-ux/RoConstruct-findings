@@ -1,24 +1,17 @@
-// from server: 83% by colin
-struct RbxTextureCompositorSceneManager {
-    char pad[0x10];
-    int* field10;
-    unsigned int field14;
-    unsigned int field18;
-    int field1c;
-    void method48d220(int);
-    void func48e730();
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_eventdequecomplete_a69694a1f98b5af2.cpp
 
-void RbxTextureCompositorSceneManager::func48e730() {
-    if (field1c != 0) {
-        method48d220(field10[field18]);
-        field18++;
-        if (field14 > field18)
-            ;
-        else
-            field18 = 0;
-        field1c--;
-        if (field1c == 0)
-            field18 = 0;
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <list>
+#include <deque>
+struct Record { unsigned value; std::string first,second; };
+struct Element { unsigned first,second; std::string name; std::list<Record> values; };
+bool operator==(const Record&,const Record&);
+bool operator<(const Record&,const Record&);
+bool operator==(const Element&,const Element&);
+bool operator<(const Element&,const Element&);
+template class std::list<Record>;
+template class std::deque<Element>;

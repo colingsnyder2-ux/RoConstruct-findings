@@ -1,34 +1,9 @@
-// from server: 87% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sound_cache_map_native_boundary_8de67e25f930852a.cpp
 
-struct SoundChannel
-{
-    void* construct(int a, int b, int c, const void* src, char flag);
-};
-
-void* SoundChannel::construct(int a, int b, int c, const void* src, char flag)
-{
-    *(int*)((char*)this + 0) = a;
-    *(int*)((char*)this + 4) = b;
-    *(int*)((char*)this + 8) = c;
-
-    void* dst = (char*)this + 0xc;
-    extern void __stdcall string_ctor(void*, const void*);
-    string_ctor(dst, src);
-
-    *(int*)((char*)dst + 0x1c) = *(int*)((char*)src + 0x1c);
-    *(int*)((char*)dst + 0x20) = *(int*)((char*)src + 0x20);
-
-    int* ref = *(int**)((char*)src + 0x24);
-    *(int**)((char*)dst + 0x24) = ref;
-    if (ref)
-    {
-        _InterlockedExchangeAdd((volatile long*)((char*)ref + 4), 1);
-    }
-
-    *(char*)((char*)this + 0x34) = flag;
-    *(char*)((char*)this + 0x35) = 0;
-
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#include "util/Sound.h"
+template class std::map<RBX::Soundscape::SoundId, boost::shared_ptr<RBX::Soundscape::Sound> >;

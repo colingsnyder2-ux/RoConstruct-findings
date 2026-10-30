@@ -1,567 +1,389 @@
-// from server: 93% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreAnimationState.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
-//
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
 
-#include "WmlConvexHull2.h"
-using namespace Wml;
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-#include <algorithm>
-#include <set>
-using namespace std;
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull2<Real>::ConvexHull2 (int iVQuantity, const Vector2<Real>* akVertex,
-    bool bIncremental)
-{
-    m_iVQuantity = iVQuantity;
-    m_akVertex = akVertex;
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 
-    if ( bIncremental )
-        ByIncremental();
-    else
-        ByDivideAndConquer();
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
 
-    if ( m_iHQuantity >= 3 )
-        RemoveCollinear();
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull2<Real>::~ConvexHull2 ()
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#include "OgreStableHeaders.h"
+
+#include "OgreAnimationState.h"
+#include "OgreException.h"
+
+namespace Ogre 
 {
-    delete[] m_aiHIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull2<Real>::GetQuantity () const
-{
-    return m_iHQuantity;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-const int* ConvexHull2<Real>::GetIndices () const
-{
-    return m_aiHIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexHull2<Real>::ContainsPoint (const Vector2<Real>& rkP) const
-{
-    for (int i1 = 0, i0 = m_iHQuantity-1; i1 < m_iHQuantity; i0 = i1++)
+
+	//---------------------------------------------------------------------
+	AnimationState::AnimationState(AnimationStateSet* parent, const AnimationState &rhs)
+        : mAnimationName(rhs.mAnimationName)
+        , mParent(parent)
+        , mTimePos(rhs.mTimePos)
+        , mLength(rhs.mLength)
+        , mWeight(rhs.mWeight)
+        , mEnabled(rhs.mEnabled)
+        , mLoop(rhs.mLoop)
+	{
+		mParent->_notifyDirty();
+	}
+	//---------------------------------------------------------------------
+	AnimationState::~AnimationState()
+	{
+	}
+    //---------------------------------------------------------------------
+    AnimationState::AnimationState(const String& animName, 
+		AnimationStateSet *parent, Real timePos, Real length, Real weight, 
+		bool enabled)
+        : mAnimationName(animName)
+        , mParent(parent)
+        , mTimePos(timePos)
+        , mLength(length)
+        , mWeight(weight)
+        , mEnabled(enabled)
+        , mLoop(true)
     {
-        const Vector2<Real>& rkV0 = m_akVertex[m_aiHIndex[i0]];
-        const Vector2<Real>& rkV1 = m_akVertex[m_aiHIndex[i1]];
-        Vector2<Real> kDir = rkV1 - rkV0;
-        Vector2<Real> kNormal = kDir.Perp();  // outer normal
-        if ( kNormal.Dot(rkP-rkV0) > (Real)0.0 )
+		mParent->_notifyDirty();
+    }
+    //---------------------------------------------------------------------
+    const String& AnimationState::getAnimationName() const
+    {
+        return mAnimationName;
+    }
+    //---------------------------------------------------------------------
+    Real AnimationState::getTimePosition(void) const
+    {
+        return mTimePos;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setTimePosition(Real timePos)
+    {
+		if (timePos != mTimePos)
+		{
+			mTimePos = timePos;
+			if (mLoop)
+			{
+				// Wrap
+				mTimePos = fmod(mTimePos, mLength);
+				if(mTimePos < 0)
+					mTimePos += mLength;     
+			}
+			else
+			{
+				// Clamp
+				if(mTimePos < 0)
+					mTimePos = 0;
+				else if (mTimePos > mLength)
+					mTimePos = mLength;
+			}
+
+            if (mEnabled)
+                mParent->_notifyDirty();
+        }
+
+    }
+    //---------------------------------------------------------------------
+    Real AnimationState::getLength() const
+    {
+        return mLength;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setLength(Real len)
+    {
+        mLength = len;
+    }
+    //---------------------------------------------------------------------
+    Real AnimationState::getWeight(void) const
+    {
+        return mWeight;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setWeight(Real weight)
+    {
+        mWeight = weight;
+
+        if (mEnabled)
+            mParent->_notifyDirty();
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::addTime(Real offset)
+    {
+        setTimePosition(mTimePos + offset);
+    }
+    //---------------------------------------------------------------------
+	bool AnimationState::hasEnded(void) const
+	{
+		return (mTimePos == mLength && !mLoop);
+	}
+    //---------------------------------------------------------------------
+    bool AnimationState::getEnabled(void) const
+    {
+        return mEnabled;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setEnabled(bool enabled)
+    {
+        mEnabled = enabled;
+        mParent->_notifyAnimationStateEnabled(this, enabled);
+    }
+    //---------------------------------------------------------------------
+    bool AnimationState::operator==(const AnimationState& rhs) const
+    {
+        if (mAnimationName == rhs.mAnimationName &&
+            mEnabled == rhs.mEnabled &&
+            mTimePos == rhs.mTimePos &&
+            mWeight == rhs.mWeight &&
+            mLength == rhs.mLength && 
+            mLoop == rhs.mLoop)
+        {
+            return true;
+        }
+        else
+        {
             return false;
-    }
-
-    return true;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull2<Real>::CollinearTest (const Vector2<Real>& rkP,
-    const Vector2<Real>& rkQ0, const Vector2<Real>& rkQ1) const
-{
-    Vector2<Real> kD = rkQ1 - rkQ0;
-    Vector2<Real> kA = rkP - rkQ0;
-    Real fDdD = kD.Dot(kD);
-    Real fAdA = kA.Dot(kA);
-    Real fDet = kD.Kross(kA);
-    Real fRelative = fDet*fDet - COLLINEAR_EPSILON*fDdD*fAdA;
-
-    if ( fRelative > (Real)0.0 )
-    {
-        if ( fDet > (Real)0.0 )
-        {
-            // points form counterclockwise triangle <P,Q0,Q1>
-            return ORDER_POSITIVE;
-        }
-        else if ( fDet < (Real)0.0 )
-        {
-            // points form clockwise triangle <P,Q1,Q0>
-            return ORDER_NEGATIVE;
         }
     }
-
-    // P is on line of <Q0,Q1>
-    Real fDdA = kD.Dot(kA);
-    if ( fDdA < (Real)0.0 )
+    //---------------------------------------------------------------------
+    bool AnimationState::operator!=(const AnimationState& rhs) const
     {
-        // order is <P,Q0,Q1>
-        return ORDER_COLLINEAR_LEFT;
+        return !(*this == rhs);
     }
-
-    if ( fDdA > fDdD )
+    //---------------------------------------------------------------------
+    void AnimationState::copyStateFrom(const AnimationState& animState)
     {
-        // order is <Q0,Q1,P>
-        return ORDER_COLLINEAR_RIGHT;
+        mTimePos = animState.mTimePos;
+        mLength = animState.mLength;
+        mWeight = animState.mWeight;
+        mEnabled = animState.mEnabled;
+        mLoop = animState.mLoop;
+		mParent->_notifyDirty();
+
     }
+	//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	AnimationStateSet::AnimationStateSet()
+		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
+	{
+	}
+	//---------------------------------------------------------------------
+	AnimationStateSet::AnimationStateSet(const AnimationStateSet& rhs)
+		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
+	{
+		// lock rhs
+		OGRE_LOCK_MUTEX(rhs.OGRE_AUTO_MUTEX_NAME)
 
-    // order is <Q0,P,Q1>
-    return ORDER_COLLINEAR_CONTAIN;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::RemoveCollinear ()
-{
-    if ( m_iHQuantity <= 2 )
-        return;
+		for (AnimationStateMap::const_iterator i = rhs.mAnimationStates.begin();
+			i != rhs.mAnimationStates.end(); ++i)
+		{
+			AnimationState* src = i->second;
+			mAnimationStates[src->getAnimationName()] = 
+				new AnimationState(this, *src);
+		}
 
-    vector<int> kHull;
-    kHull.reserve(m_iHQuantity);
-    for (int i0 = m_iHQuantity-1, i1 = 0, i2 = 1; i1 < m_iHQuantity; /**/)
-    {
-        int iCT = CollinearTest(m_akVertex[m_aiHIndex[i0]],
-            m_akVertex[m_aiHIndex[i1]],m_akVertex[m_aiHIndex[i2]]);
-
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_NEGATIVE )
+        // Clone enabled animation state list
+        for (EnabledAnimationStateList::const_iterator it = rhs.mEnabledAnimationStates.begin();
+            it != rhs.mEnabledAnimationStates.end(); ++it)
         {
-            // points are not collinear
-            kHull.push_back(m_aiHIndex[i1]);
+            const AnimationState* src = *it;
+            mEnabledAnimationStates.push_back(getAnimationState(src->getAnimationName()));
         }
+	}
+	//---------------------------------------------------------------------
+	AnimationStateSet::~AnimationStateSet()
+	{
+		// Destroy
+		removeAllAnimationStates();
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateSet::removeAnimationState(const String& name)
+	{
+		OGRE_LOCK_AUTO_MUTEX
 
-        i0 = i1++;
-        if ( ++i2 == m_iHQuantity )
-            i2 = 0;
-    }
+		AnimationStateMap::iterator i = mAnimationStates.find(name);
+		if (i != mAnimationStates.end())
+		{
+            mEnabledAnimationStates.remove(i->second);
 
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)kHull.size();
-    delete[] m_aiHIndex;
-    m_aiHIndex = new int[m_iHQuantity];
-    memcpy(m_aiHIndex,&kHull.front(),m_iHQuantity*sizeof(int));
-}
-//----------------------------------------------------------------------------
+			delete i->second;
+			mAnimationStates.erase(i);
+		}
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateSet::removeAllAnimationStates(void)
+	{
+		OGRE_LOCK_AUTO_MUTEX
 
-//----------------------------------------------------------------------------
-// divide-and-conquer hull
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::ByDivideAndConquer ()
-{
-    // Sort by x-component and store in contiguous array.  The sort is
-    // O(N log N).
-    SVArray kSVArray(m_iVQuantity);
-    int i;
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        kSVArray[i].m_kV = m_akVertex[i];
-        kSVArray[i].m_iIndex = i;
-    }
-    sort(kSVArray.begin(),kSVArray.end());
+		for (AnimationStateMap::iterator i = mAnimationStates.begin();
+			i != mAnimationStates.end(); ++i)
+		{
+			delete i->second;
+		}
+		mAnimationStates.clear();
+        mEnabledAnimationStates.clear();
 
-    // remove duplicate points
-    typename SVArray::iterator pkEnd =
-        unique(kSVArray.begin(),kSVArray.end());
-    kSVArray.erase(pkEnd,kSVArray.end());
+	}
+	//---------------------------------------------------------------------
+	AnimationState* AnimationStateSet::createAnimationState(const String& name,  
+		Real timePos, Real length, Real weight, bool enabled)
+	{
+		OGRE_LOCK_AUTO_MUTEX
 
-    // compute convex hull using divide-and-conquer
-    SVArray kHull;
-    kHull.reserve(kSVArray.size());
-    m_iHullType = HULL_POINT;
-    GetHull(0,(int)kSVArray.size()-1,kSVArray,kHull);
+		AnimationStateMap::iterator i = mAnimationStates.find(name);
+		if (i != mAnimationStates.end())
+		{
+			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
+				"State for animation named '" + name + "' already exists.", 
+				"AnimationStateSet::createAnimationState");
+		}
 
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)kHull.size();
-    m_aiHIndex = new int[m_iHQuantity];
-    for (i = 0; i < m_iHQuantity; i++)
-        m_aiHIndex[i] = kHull[i].m_iIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::GetHull (int i0, int i1, const SVArray& rkSVArray,
-    SVArray& rkHull)
-{
-    int iQuantity = i1 - i0 + 1;
-    if ( iQuantity > 1 )
-    {
-        // middle index of input range
-        int iMid = (i0+i1)/2;
+		AnimationState* newState = new AnimationState(name, this, timePos, 
+			length, weight, enabled);
+		mAnimationStates[name] = newState;
 
-        // find hull of subsets (iMid-i0+1 >= i1-iMid)
-        SVArray kLHull, kRHull;
-        kLHull.reserve(iMid-i0+1);
-        kRHull.reserve(i1-iMid);
+		return newState;
 
-        GetHull(i0,iMid,rkSVArray,kLHull);
-        GetHull(iMid+1,i1,rkSVArray,kRHull);
+	}
+	//---------------------------------------------------------------------
+	AnimationState* AnimationStateSet::getAnimationState(const String& name) const
+	{
+		OGRE_LOCK_AUTO_MUTEX
 
-        // merge the convex hulls into a single convex hull
-        Merge(kLHull,kRHull,rkHull);
-    }
-    else
-    {
-        // convex hull is a single point
-        rkHull.push_back(rkSVArray[i0]);
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::Merge (SVArray& rkLHull, SVArray& rkRHull,
-    SVArray& rkHull)
-{
-    // merge small sets, handle cases when sets are collinear
-    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
-    if ( iLSize == 1 )
-    {
-        if ( iRSize == 1 )
-        {
-            rkHull.push_back(rkLHull[0]);
-            rkHull.push_back(rkRHull[0]);
-            if ( m_iHullType != HULL_PLANAR )
-                m_iHullType = HULL_LINEAR;
-            return;
-        }
-        else if ( iRSize == 2 )
-        {
-            MergeLinear(rkLHull[0],rkRHull);
-            rkHull = rkRHull;
-            return;
-        }
-    }
-    else if ( iLSize == 2 )
-    {
-        if ( iRSize == 1 )
-        {
-            MergeLinear(rkRHull[0],rkLHull);
-            rkHull = rkLHull;
-            return;
-        }
-        else if ( iRSize == 2 )
-        {
-            MergeLinear(rkRHull[1],rkLHull);
+		AnimationStateMap::const_iterator i = mAnimationStates.find(name);
+		if (i == mAnimationStates.end())
+		{
+			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
+				"No state found for animation named '" + name + "'", 
+				"AnimationStateSet::getAnimationState");
+		}
+		return i->second;
+	}
+	//---------------------------------------------------------------------
+	bool AnimationStateSet::hasAnimationState(const String& name) const
+	{
+		OGRE_LOCK_AUTO_MUTEX
 
-            if ( rkLHull.size() == 2 )
-            {
-                MergeLinear(rkRHull[0],rkLHull);
-                rkHull = rkLHull;
-                return;
+		return mAnimationStates.find(name) != mAnimationStates.end();
+	}
+	//---------------------------------------------------------------------
+	AnimationStateIterator AnimationStateSet::getAnimationStateIterator(void)
+	{
+		OGRE_LOCK_AUTO_MUTEX
+		// returned iterator not threadsafe, noted in header
+		return AnimationStateIterator(
+			mAnimationStates.begin(), mAnimationStates.end());
+	}
+	//---------------------------------------------------------------------
+	ConstAnimationStateIterator AnimationStateSet::getAnimationStateIterator(void) const
+	{
+		OGRE_LOCK_AUTO_MUTEX
+		// returned iterator not threadsafe, noted in header
+		return ConstAnimationStateIterator(
+			mAnimationStates.begin(), mAnimationStates.end());
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateSet::copyMatchingState(AnimationStateSet* target) const
+	{
+		// lock target
+		OGRE_LOCK_MUTEX(target->OGRE_AUTO_MUTEX_NAME)
+		// lock source
+		OGRE_LOCK_AUTO_MUTEX
+
+		AnimationStateMap::iterator i, iend;
+        iend = target->mAnimationStates.end();
+        for (i = target->mAnimationStates.begin(); i != iend; ++i) {
+            AnimationStateMap::const_iterator iother = mAnimationStates.find(i->first);
+            if (iother == mAnimationStates.end()) {
+                OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "No animation entry found named " + i->first, 
+                    "AnimationStateSet::copyMatchingState");
+            } else {
+                i->second->copyStateFrom(*(iother->second));
             }
-
-            // fall-through, LHull is a triangle, RHull is a point
-            iLSize = 3;
-            iRSize = 1;
-            rkRHull.pop_back();
         }
-    }
 
-    // find rightmost point of left hull
-    Real fMax = rkLHull[0].m_kV.X();
-    int i, iLMax = 0;
-    for (i = 1; i < iLSize; i++)
-    {
-        if ( rkLHull[i].m_kV.X() > fMax )
+        // Copy matching enabled animation state list
+        target->mEnabledAnimationStates.clear();
+
+        EnabledAnimationStateList::const_iterator it, itend;
+        itend = mEnabledAnimationStates.end();
+        for (it = mEnabledAnimationStates.begin(); it != itend; ++it)
         {
-            fMax = rkLHull[i].m_kV.X();
-            iLMax = i;
+            const AnimationState* src = *it;
+            AnimationStateMap::const_iterator itarget = target->mAnimationStates.find(src->getAnimationName());
+            if (itarget != target->mAnimationStates.end())
+            {
+                target->mEnabledAnimationStates.push_back(itarget->second);
+            }
         }
-    }
 
-    // find leftmost point of right hull
-    Real fMin = rkRHull[0].m_kV.X();
-    int iRMin = 0;
-    for (i = 1; i < iRSize; i++)
+        target->mDirtyFrameNumber = mDirtyFrameNumber;
+    }
+    //---------------------------------------------------------------------
+    void AnimationStateSet::_notifyDirty(void)
     {
-        if ( rkRHull[i].m_kV.X() < fMin )
+		OGRE_LOCK_AUTO_MUTEX
+        ++mDirtyFrameNumber;
+    }
+    //---------------------------------------------------------------------
+    void AnimationStateSet::_notifyAnimationStateEnabled(AnimationState* target, bool enabled)
+    {
+		OGRE_LOCK_AUTO_MUTEX
+		// Remove from enabled animation state list first
+        mEnabledAnimationStates.remove(target);
+
+        // Add to enabled animation state list if need
+        if (enabled)
         {
-            fMin = rkRHull[i].m_kV.X();
-            iRMin = i;
-        }
-    }
-
-    // get lower tangent to hulls (LL = lower left, LR = lower right)
-    int iLLIndex = iLMax, iLRIndex = iRMin;
-    GetTangent(rkLHull,rkRHull,iLLIndex,iLRIndex);
-
-    // get upper tangent to hulls (UL = upper left, UR = upper right)
-    int iULIndex = iLMax, iURIndex = iRMin;
-    GetTangent(rkRHull,rkLHull,iURIndex,iULIndex);
-
-    // Construct the counterclockwise-ordered merged-hull vertices.
-    // TO DO.  If the hull is stored using linked lists, this block can be
-    // improved by an O(1) detach, attach, and delete of the appropriate
-    // sublists.
-    i = iLRIndex;
-    while ( true )
-    {
-        rkHull.push_back(rkRHull[i]);
-        if ( i == iURIndex )
-            break;
-
-        if ( ++i == iRSize )
-            i = 0;
-    }
-
-    i = iULIndex;
-    while ( true )
-    {
-        rkHull.push_back(rkLHull[i]);
-        if ( i == iLLIndex )
-            break;
-
-        if ( ++i == iLSize )
-            i = 0;
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP, SVArray& rkHull)
-{
-    // hull = <Q0,Q1>
-
-    switch ( CollinearTest(rkP.m_kV,rkHull[0].m_kV,rkHull[1].m_kV) )
-    {
-    case ORDER_POSITIVE:
-        // merged hull is triangle <Q0,Q1,P>
-        m_iHullType = HULL_PLANAR;
-        rkHull.push_back(rkP);
-        break;
-    case ORDER_NEGATIVE:
-    {
-        // merged hull is triangle <Q1,Q0,P>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kSave = rkHull[0];
-        rkHull[0] = rkHull[1];
-        rkHull[1] = kSave;
-        rkHull.push_back(rkP);
-        break;
-    }
-    case ORDER_COLLINEAR_LEFT:
-        // collinear order is <P,Q0,Q1>, merged hull is <P,Q1>
-        rkHull[0] = rkP;
-        break;
-    case ORDER_COLLINEAR_RIGHT:
-        // collinear order is <Q0,Q1,P>, merged hull is <Q0,P>
-        rkHull[1] = rkP;
-        break;
-    //case ORDER_COLLINEAR_CONTAIN:
-        // collinear order is <Q0,P,Q1>, merged hull is <Q0,Q1> (no change)
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::GetTangent (const SVArray& rkLHull,
-    const SVArray& rkRHull, int& riL, int& riR)
-{
-    // In theory the loop terminates in a finite number of steps, but the
-    // upper bound for the loop variable is used to trap problems caused by
-    // floating point round-off errors that might lead to an infinite loop.
-
-    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
-    int iLSizeM1 = iLSize-1, iRSizeM1 = iRSize-1;
-    int i;
-    for (i = 0; i < iLSize+iRSize; i++)
-    {
-        // end points of potential tangent
-        const Vector2<Real>& rkL1 = rkLHull[riL].m_kV;
-        const Vector2<Real>& rkR0 = rkRHull[riR].m_kV;
-
-        // walk along left hull to find tangency
-        int iLm1 = ( riL > 0 ? riL-1 : iLSizeM1 );
-        const Vector2<Real>& rkL0 = rkLHull[iLm1].m_kV;
-        int iCT = CollinearTest(rkR0,rkL0,rkL1);
-        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_LEFT )
-        {
-            riL = iLm1;
-            continue;
+            mEnabledAnimationStates.push_back(target);
         }
 
-        // walk along right hull to find tangency
-        int iRp1 = ( riR < iRSizeM1 ? riR+1 : 0 );
-        const Vector2<Real>& rkR1 = rkRHull[iRp1].m_kV;
-        iCT = CollinearTest(rkL1,rkR0,rkR1);
-        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_RIGHT )
-        {
-            riR = iRp1;
-            continue;
-        }
-
-        // tangent segment has been found
-        break;
+        // Set the dirty frame number
+        _notifyDirty();
     }
+    //---------------------------------------------------------------------
+    ConstEnabledAnimationStateIterator AnimationStateSet::getEnabledAnimationStateIterator(void) const
+    {
+		OGRE_LOCK_AUTO_MUTEX
+		// returned iterator not threadsafe, noted in header
+        return ConstEnabledAnimationStateIterator(
+            mEnabledAnimationStates.begin(), mEnabledAnimationStates.end());
+    }
+	//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	Real AnimationStateControllerValue::getValue(void) const
+	{
+		return mTargetAnimationState->getTimePosition() / mTargetAnimationState->getLength();
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateControllerValue::setValue(Real value)
+	{
+		mTargetAnimationState->setTimePosition(value * mTargetAnimationState->getLength());
+	}
 
-    // detect "infinite loop" caused by floating point round-off errors
-    assert( i < iLSize+iRSize );
+
 }
-//----------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------
-// incremental hull
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::ByIncremental ()
-{
-    // Sort by x-component and store in contiguous array.  The sort is
-    // O(N log N).
-    SVArray kSVArray(m_iVQuantity);
-    int i;
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        kSVArray[i].m_kV = m_akVertex[i];
-        kSVArray[i].m_iIndex = i;
-    }
-    sort(kSVArray.begin(),kSVArray.end());
-
-    // remove duplicate points
-    typename SVArray::iterator pkEnd =
-        unique(kSVArray.begin(),kSVArray.end());
-    kSVArray.erase(pkEnd,kSVArray.end());
-
-    // Compute convex hull incrementally.  The first and second vertices in
-    // the hull are managed separately until at least one triangle is formed.
-    // At that time an array is used to store the hull in counterclockwise
-    // order.
-    m_iHullType = HULL_POINT;
-    m_kHull.push_back(kSVArray[0]);
-    for (i = 1; i < (int)kSVArray.size(); i++)
-    {
-        switch ( m_iHullType )
-        {
-        case HULL_POINT:
-            m_iHullType = HULL_LINEAR;
-            m_kHull.push_back(kSVArray[i]);
-            break;
-        case HULL_LINEAR:
-            MergeLinear(kSVArray[i]);
-            break;
-        case HULL_PLANAR:
-            MergePlanar(kSVArray[i]);
-            break;
-        }
-    }
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)m_kHull.size();
-    m_aiHIndex = new int[m_iHQuantity];
-    for (i = 0; i < m_iHQuantity; i++)
-        m_aiHIndex[i] = m_kHull[i].m_iIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP)
-{
-    switch ( CollinearTest(rkP.m_kV,m_kHull[0].m_kV,m_kHull[1].m_kV) )
-    {
-    case ORDER_POSITIVE:
-    {
-        // merged hull is <P,Q0,Q1>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kCopy = m_kHull[1];
-        m_kHull.push_back(kCopy);
-        m_kHull[1] = m_kHull[0];
-        m_kHull[0] = rkP;
-        break;
-    }
-    case ORDER_NEGATIVE:
-    {
-        // merged hull is <P,Q1,Q0>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kCopy = m_kHull[0];
-        m_kHull.push_back(kCopy);
-        m_kHull[0] = rkP;
-        break;
-    }
-    case ORDER_COLLINEAR_LEFT:
-        // linear order is <P,Q0,Q1>, merged hull is <P,Q1>
-        m_kHull[0] = rkP;
-        break;
-    case ORDER_COLLINEAR_RIGHT:
-        // linear order is <Q0,Q1,P>, merged hull is <Q0,P>
-        m_kHull[1] = rkP;
-        break;
-    // case ORDER_COLLINEAR_CONTAIN:  linear order is <Q0,P,Q1>, no change
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergePlanar (const SortedVertex& rkP)
-{
-    int iSize = (int)m_kHull.size();
-    int i, iU, iL, iCT;
-
-    // search counterclockwise for last visible vertex
-    for (iU = 0, i = 1; iU < iSize; iU = i++)
-    {
-        if ( i == iSize )
-            i = 0;
-
-        iCT = CollinearTest(rkP.m_kV,m_kHull[iU].m_kV,m_kHull[i].m_kV);
-        if ( iCT == ORDER_NEGATIVE )
-            continue;
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_LEFT )
-            break;
-
-        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_RIGHT
-        return;
-    }
-    assert( iU < iSize );
-
-    // search clockwise for last visible vertex
-    for (iL = 0, i = iSize-1; i >= 0; iL = i--)
-    {
-        iCT = CollinearTest(rkP.m_kV,m_kHull[i].m_kV,m_kHull[iL].m_kV);
-        if ( iCT == ORDER_NEGATIVE )
-            continue;
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_RIGHT )
-            break;
-
-        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_LEFT
-        return;
-    }
-    assert( i >= 0 );
-
-    if ( iU == iL )
-    {
-        // This probably occurs when CollinearTest should report collinearity,
-        // but does not.  If it does occur, and you care about this code
-        // block not occurring, try increasing the size of the collinear
-        // epsilon.  When this block does occur, the conclusion is that the
-        // input point is collinear with an edge of the hull, so just return.
-        return;
-    }
-
-    // construct the counterclockwise-ordered merged-hull vertices
-    SVArray kTmpHull;
-    kTmpHull.push_back(rkP);
-    while ( true )
-    {
-        kTmpHull.push_back(m_kHull[iU]);
-        if ( iU == iL )
-            break;
-
-        if ( ++iU == iSize )
-            iU = 0;
-    }
-    assert( kTmpHull.size() > 2 );
-
-    m_kHull = kTmpHull;
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
-{
-template class WML_ITEM ConvexHull2<float>;
-float ConvexHull2f::COLLINEAR_EPSILON = 1e-06f;
-
-template class WML_ITEM ConvexHull2<double>;
-double ConvexHull2d::COLLINEAR_EPSILON = 1e-06;
-}
-//----------------------------------------------------------------------------

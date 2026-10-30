@@ -1,2316 +1,1704 @@
-// from server: 66% by intel
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarCaptionBarControl.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: scintilla-mfc-1.20-shared ScintillaDocView.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPCalendarCaptionBarControl.cpp : implementation file
-//
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
+/*
+Module : ScintillaDocView.CPP
+Purpose: Defines the implementation for MFC CView and CDocument derived wrapper classes for the Scintilla 
+         edit control (www.scintilla.org).
+Created: PJN / 19-03-2004
+History: PJN / 12-08-2004 1. Made all the remaining non virtual functions related to Find and Replace virtual.
+                          2. TextNotFound function is now passed the parameters used for the search. Thanks 
+                          to Dmitry Naumov for this update.
+                          3. Removed the OnTextNotFound function as all the work for it is achieved using the
+                          TextNotFound function.
+                          4. Creation of the find / replace dialog now takes place in a new virtual function
+                          "CreateFindReplaceDialog". Again thanks to Dmitry Naumov for this update. 
+         PJN / 04-03-2005 1. Fix in CScintillaView::PrintPage which now sorts out the issue of print preview
+                          not working in the MFC doc / view wrappers for scintilla. Thanks to Frank Kiesel
+                          for reporting this fix.
+         PJN / 10-07-2005 1. Addition of a virtual function namely OnAutoCSelection which handles the
+                          SCN_AUTOCSELECTION notification message which was introduced in Scintilla v1.63.
+                          Thanks to Dan Petitt for suggesting this update.
+                          2. A new boolean variable called "m_bUseROFileAttributeDuringLoading" has been added 
+                          to CScintillaView. If this value is set then the code will check the read only file
+                          attribute of the file being loaded and if it is set, then the document is marked as 
+                          read only by Scintilla. By doing this any attempts to modify the document will cause 
+                          the OnModifyAttemptRO virtual function to be called. This allows you to prompt to 
+                          make the file read write or to check out the file from a version control system. 
+                          Thanks to Dan Petitt for suggesting this update.
+                          3. Demo app now demonstrates how to use the SCN_MODIFYATTEMPTRO notification.
+                          4. Fixed a number of warnings when the code is compiled using Visual Studio .NET 2003.
+                          5. SetSavePoint and SetReadOnly calls are now made in CScintillaDoc::OnSaveDocument
+                          instead of CScintillaView::Serialize. This ensures that the control is only reset
+                          upon a successful save.
+         PJN / 03-01-2006 1. Fixed a bug where the separator line in the header was not being drawn due to 
+                          issues in the code which calculates the coordinates. 
+                          2. Added two member variables which decide whether printer headers and footers should
+                          be printed (CScintillaView::m_bPrintHeader and CScintillaView::m_bPrintFooter). You
+                          could of course achieve the same result by deriving a class from CScintillaView and 
+                          implementing empty PrintHeader and PrinterFooter methods!!!. Thanks to Jason Elliott
+                          for suggesting this update.
+                          3. Optimized the construction of member variables in CScintillaView::CScintillaView
+                          and in CScintillaFindReplaceDlg::CScintillaFindReplaceDlg
+                          4. CScintillaView::OnReplaceAll sets the selection to 0,0 before doing text replacement. 
+                          This ensures that all text in a document is replaced. Also this function now does not 
+                          bother calling TextNotFound at the end of the function if replacements took place. 
+                          Thanks to Jason Elliott for this nice update. 
+                          5. A parameter which indicates whether text is being replaced or found is now sent to
+                          CScintillaView::TextNotFound.
+         PJN / 06-01-2006 1. Removed some unnecessary code from CScintillaView::OnEndPrinting. Thanks to 
+                          Greg Smith for spotting this issue.
+         PJN / 08-01-2006 1. Find / Replace dialog and associated state is now maintained outside of CScintillaView.
+                          This means that if you have multiple CScintillaView's in your app, that they share the
+                          one find / replace dialog which is the standard type of UI you would normally expect for 
+                          this. Thanks to Greg Smith for reporting this issue.
+                          2. Find / replace dialog is now closed when the last CScintillaView is destroyed. Thanks
+                          to Greg Smith for reporting this issue.
+         PJN / 16-01-2006 1. Removed an unused "rSetup" variable in CScintillaView::PrintPage
+                          2. Optimized code in CScintillaView::PrintPage and CScintillaView::OnFilePageSetup which
+                          determines if metric or imperial measurements are being used. Now a boolean member variable
+                          of CScintillaView called m_bUsingMetric which by default picks up the control panel
+                          preference is provided. This allows client code to change this value to customize how
+                          measurements are specified. Thanks to Greg Smith for reporting this issue.
+                          3. Fixed a small typo in CScintillaView::PrintHeader and PrintFooter. Also explicitly uses
+                          the TA_TOP flag in combination with TA_LEFT when setting alignment settings for header
+                          and footer text. Again thanks to Greg Smith for reporting this.
+                          4. Scintilla find / replace state is now stored in a standard global variable instead of
+                          using the CProcessLocal template which it was using previously. This is no longer required
+                          since it was used to provide Win32s support for MFC on older versions of MFC. Since Win32s
+                          is no longer supported by MFC, there is no need to use this mechanism any more.
+         PJN / 02-02-2006 1. Minor update to CScintillaView to allow deletion of text when there is nothing selected. 
+                          Thanks to Alexander Kirillov for reporting this bug. 
+         PJN / 14-03-2006 1. Updated the internal function CScintillaView::SameAsSelected to support regular 
+                          expressions. Thanks to Greg Smith for this update.
+         PJN / 22-05-2006 1. Fixed a flicker issue when the view is resized. Thanks to Michael Gunlock for reporting 
+                          this issue.
+         PJN / 29-06-2005 1. Code now uses new C++ style casts rather than old style C casts where necessary. 
+                          2. Code now supports persisting margin settings. Thanks to Krasimir Stoychev for this update
+                          3. Updated the code to clean compile in VC 2005
+         PJN / 17-09-2006 1. Updated OnReplaceSel and OnReplaceAll implementations to use TargetFromSelection and 
+                          ReplaceTargetRE/ReplaceTarget. Thanks to Matt Spear for reporting this issue.
+         PJN / 11-06-2007 1. Addition of a SCINTILLADOCVIEW_EXT_CLASS preprocessor macro to allow the classes to be 
+                          more easily used in an extension DLL.
+         PJN / 19-03-2008 1. Fixed a copy and paste bug in CScintillaView::PrintPage where the incorrect margin value
+                          was being used in the calculation of "rfPrint.rc.left". Thanks to Steve Arnold for reporting
+                          this bug.
+
+Copyright (c) 2004 - 2008 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+
+All rights reserved.
+
+Copyright / Usage Details:
+
+You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
+when your product is released in binary form. You are allowed to modify the source code in any way you want 
+except you cannot modify the copyright details at the top of each module. If you want to distribute source 
+code with your application, then you are only allowed to distribute versions released by the author. This is 
+to maintain a single distribution point for the source code. 
+
+*/
+
+
+/////////////////////////////////  Includes  //////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
+#include "ScintillaDocView.h"
+#ifndef __AFXDISP_H__
+#pragma message("To avoid this message, please put afxdisp.h in your pre compiled header (normally stdafx.h)")
+#include <afxdisp.h>
+#endif
+#include "resource.h"
 
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPResourceImage.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPNotifyConnection.h"
-#include "Common/XTPSmartPtrInternalT.h"
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPVC80Helpers.h"
 
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-#include "XTPCalendarNotifications.h"
-#include "XTPCalendarPtrCollectionT.h"
-#include "XTPCalendarViewPart.h"
-#include "XTPCalendarView.h"
-#include "XTPCalendarTimeLineView.h"
-#include "XTPCalendarControl.h"
-#include "XTPCalendarMonthView.h"
 
-#include "XTPCalendarCaptionBarControl.h"
 
+//////////////////////////////// Statics / Macros /////////////////////////////
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-IMPLEMENT_DYNAMIC(CXTPCalendarCaptionBarControl, CWnd)
-IMPLEMENT_DYNAMIC(CXTPCalendarCaptionBarThemePart, CXTPCalendarWMHandler)
-IMPLEMENT_DYNCREATE(CXTPCalendarCaptionBarTheme, CXTPCalendarWMHandler)
 
-CXTPCalendarCaptionBarControl::CXTPCalendarCaptionBarControl()
+////////////////////////////////// Implementation /////////////////////////////
+
+class _SCINTILLA_EDIT_STATE
 {
-	RegisterWindowClass();
+public:
+//Constructors / Destructors
+	_SCINTILLA_EDIT_STATE();
 
-	m_Borders.SetRect(0, 1, 0, 0);
+//Member variables
+	CScintillaFindReplaceDlg* pFindReplaceDlg;    //find or replace dialog
+	BOOL                      bFindOnly;          //Is pFindReplace the find or replace?
+	CString                   strFind;            //last find string
+	CString                   strReplace;         //last replace string
+	BOOL                      bCase;              //TRUE==case sensitive, FALSE==not
+	int                       bNext;              //TRUE==search down, FALSE== search up
+	BOOL                      bWord;              //TRUE==match whole word, FALSE==not
+  BOOL                      bRegularExpression; //TRUE==regular expression search, FALSE==not
+};
 
-
-	m_pTheme = NULL;
-	SetTheme(new CXTPCalendarCaptionBarTheme());
+_SCINTILLA_EDIT_STATE::_SCINTILLA_EDIT_STATE() : bRegularExpression(FALSE),
+                                                 pFindReplaceDlg(NULL),
+               	                                 bWord(FALSE),
+                                                 bFindOnly(TRUE),
+	                                               bCase(FALSE),
+	                                               bNext(TRUE)
+{
 }
 
-CXTPCalendarCaptionBarControl::~CXTPCalendarCaptionBarControl()
+_SCINTILLA_EDIT_STATE _scintillaEditState;
+
+CScintillaFindReplaceDlg* CScintillaFindReplaceDlg::GetFindReplaceDlg()
 {
-	CMDTARGET_RELEASE(m_pTheme);
+	return _scintillaEditState.pFindReplaceDlg;
 }
 
-BOOL CXTPCalendarCaptionBarControl::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
-{
-	return XTPDrawHelpers()->RegisterWndClass(hInstance,
-			XTPCALENDARCAPTIONBAR_CLASSNAME, /*CS_DBLCLKS |*/ CS_HREDRAW | CS_VREDRAW);
-}
-
-BOOL CXTPCalendarCaptionBarControl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
-{
-	if (!CWnd::Create(XTPCALENDARCAPTIONBAR_CLASSNAME, NULL, dwStyle, rect, pParentWnd, nID))
-		return FALSE;
-
-	AdjustLayout(NULL);
-
-	if (m_pTheme)
-	{
-		CDC* pDC = GetDC();
-		if (pDC)
-		{
-			m_pTheme->m_dScale = pDC->GetDeviceCaps(LOGPIXELSY) / 96.0;
-			ReleaseDC(pDC);
-		}
-	}
-	return TRUE;
-}
-
-BEGIN_MESSAGE_MAP(CXTPCalendarCaptionBarControl, CWnd)
-//{{AFX_MSG_MAP(CXTPCalendarCaptionBarControl)
-	ON_WM_NCCALCSIZE()
-	ON_WM_NCPAINT()
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_SIZE()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
-	ON_WM_KEYDOWN()
-	ON_WM_KEYUP()
-	ON_WM_KILLFOCUS()
-	ON_WM_DESTROY()
-	ON_WM_ENABLE()
-	ON_WM_TIMER()
-//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog)
+  ON_BN_CLICKED(IDC_REGULAR_EXPRESSION, OnRegularExpression)
 END_MESSAGE_MAP()
 
 
-void CXTPCalendarCaptionBarControl::SetButtonText(int iButtonNumber, CString sButtonText)
+CScintillaFindReplaceDlg::CScintillaFindReplaceDlg(): m_bRegularExpression(FALSE)
 {
-	if (!GetTheme())
+}
+
+BOOL CScintillaFindReplaceDlg::Create(BOOL bFindDialogOnly,	LPCTSTR lpszFindWhat, LPCTSTR lpszReplaceWith, DWORD dwFlags, CWnd* pParentWnd)
+{
+  //Tell Windows to use our dialog instead of the standard one
+  m_fr.hInstance = AfxGetResourceHandle();
+  m_fr.Flags |= FR_ENABLETEMPLATE;
+  if (bFindDialogOnly)
+    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_FINDDLGORD);
+  else
+    m_fr.lpTemplateName = MAKEINTRESOURCE(IDD_SCINTILLA_REPLACEDLGORD);
+
+  //Let the base class do its thing
+  return CFindReplaceDialog::Create(bFindDialogOnly,	lpszFindWhat, lpszReplaceWith, dwFlags, pParentWnd);
+}
+
+BOOL CScintillaFindReplaceDlg::OnInitDialog() 
+{
+  //let the base class do its thing
+	BOOL bReturn = CFindReplaceDialog::OnInitDialog();
+
+  //Should we check the regular expression check box
+  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  AFXASSUME(pCtrl);
+  pCtrl->SetCheck(m_bRegularExpression);
+	
+	return bReturn;
+}
+
+void CScintillaFindReplaceDlg::OnRegularExpression() 
+{
+  //Save the state of the Regular expression checkbox into a member variable
+  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  AFXASSUME(pCtrl);
+	m_bRegularExpression = (pCtrl->GetCheck() == 1);
+}
+
+
+IMPLEMENT_DYNCREATE(CScintillaView, CView)
+
+const UINT _ScintillaMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
+
+BEGIN_MESSAGE_MAP(CScintillaView, CView)
+	ON_WM_PAINT()
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateNeedSel)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateNeedPaste)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND, OnUpdateNeedText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REPEAT, OnUpdateNeedFind)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO, OnUpdateEditUndo)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_REDO, OnUpdateEditRedo)
+	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
+	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
+	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
+	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
+	ON_COMMAND(ID_EDIT_UNDO, OnEditUndo)
+  ON_COMMAND(ID_EDIT_REDO, OnEditRedo)
+	ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
+	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
+	ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
+	ON_COMMAND(ID_EDIT_REPEAT, OnEditRepeat)
+	ON_WM_SETFOCUS()
+	ON_WM_SIZE()
+	ON_WM_ERASEBKGND()
+	ON_WM_CREATE()
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateNeedSel)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CLEAR, OnUpdateNeedTextAndFollowingText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_SELECT_ALL, OnUpdateNeedText)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REPLACE, OnUpdateNeedText)
+	ON_COMMAND(ID_FILE_PAGE_SETUP, OnFilePageSetup)
+	ON_WM_DESTROY()
+	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
+ 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
+	ON_REGISTERED_MESSAGE(_ScintillaMsgFindReplace, OnFindReplaceCmd)
+END_MESSAGE_MAP()
+
+CScintillaView::CScintillaView() : m_rMargin(0, 0, 0, 0), 
+                                   m_bFirstSearch(TRUE),
+                                   m_bUseROFileAttributeDuringLoading(TRUE),
+                                   m_bPrintHeader(TRUE), 
+                                   m_bPrintFooter(TRUE),
+                                   m_bPersistMarginSettings(TRUE),
+                                   m_bUsingMetric(UserWantsMetric())
+{
+}
+
+CScintillaCtrl& CScintillaView::GetCtrl()
+{ 
+  CScintillaCtrl& ctrl = m_Edit;
+
+  return ctrl; 
+}
+
+void CScintillaView::LoadMarginSettings(const CString& sSection)
+{
+  //Get the margin values 
+  CWinApp* pApp = AfxGetApp();
+  AFXASSUME(pApp);
+	m_rMargin.left = pApp->GetProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
+	m_rMargin.right = pApp->GetProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
+	m_rMargin.top = pApp->GetProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
+	m_rMargin.bottom = pApp->GetProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
+}
+
+void CScintillaView::SaveMarginSettings(const CString& sSection)
+{
+  //Write out the margin values 
+  CWinApp* pApp = AfxGetApp();
+  AFXASSUME(pApp);
+	pApp->WriteProfileInt(sSection, _T("LeftMargin"), m_rMargin.left);
+	pApp->WriteProfileInt(sSection, _T("RightMargin"), m_rMargin.right);
+	pApp->WriteProfileInt(sSection, _T("TopMargin"), m_rMargin.top);
+	pApp->WriteProfileInt(sSection, _T("BottomMargin"), m_rMargin.bottom);
+}
+
+void CScintillaView::OnDestroy()
+{
+  //Close Find/Replace dialog if this is the last CScintillaView
+	if (_scintillaEditState.pFindReplaceDlg)
+	{
+		CWinApp* pApp = AfxGetApp();
+
+    //Count up the number of CScintillaView's we have (excluding this one)
+    int nScintillaViews = 0;
+
+		//no doc manager - no templates
+		if (pApp->m_pDocManager)
+		{
+			//walk all templates
+			CDocTemplate* pTemplate;
+			POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+			while (pos && (nScintillaViews == 0))
+			{
+				pTemplate = pApp->m_pDocManager->GetNextDocTemplate(pos);
+				AFXASSUME(pTemplate);
+
+				//walk all documents in the template
+				POSITION pos2 = pTemplate->GetFirstDocPosition();
+				while (pos2 && (nScintillaViews == 0))
+				{
+					CDocument* pDoc = pTemplate->GetNextDoc(pos2);
+					ASSERT(pDoc);
+
+					//walk all views in the document
+					POSITION pos3 = pDoc->GetFirstViewPosition();
+					while (pos3 && (nScintillaViews == 0))
+					{
+						CView* pView = pDoc->GetNextView(pos3);
+						ASSERT(pView);
+						
+						//if we find another CScintillaView, skip code that closes find dialog
+						if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)) && (pView != this) && ::IsWindow(pView->GetSafeHwnd()))
+							++nScintillaViews;
+					}
+				}
+			}
+		}
+
+    //Close down the find/replace dialog if we are the last CScintillaView
+		if (nScintillaViews == 0)
+    {
+      if (::IsWindow(_scintillaEditState.pFindReplaceDlg->m_hWnd))
+			  _scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
+		  _scintillaEditState.pFindReplaceDlg = NULL;
+    }
+	}
+
+  //Let the base class do its thing
+  CView::OnDestroy();
+}
+
+void CScintillaView::DeleteContents()
+{
+	ASSERT_VALID(this);
+	ASSERT(m_hWnd != NULL);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+	rCtrl.ClearAll();
+  rCtrl.EmptyUndoBuffer();
+}
+
+void CScintillaView::OnDraw(CDC*)
+{
+	ASSERT(FALSE);
+}
+
+void CScintillaView::OnPaint()
+{
+	//this is done to avoid CView::OnPaint
+	Default();
+}
+
+BOOL CScintillaView::OnPreparePrinting(CPrintInfo* pInfo)
+{
+  //Determine if we should allow selection printing
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+  long nStartChar = rCtrl.GetSelectionStart();
+  long nEndChar = rCtrl.GetSelectionEnd();
+  if (nStartChar != nEndChar)
+  {
+    // Enable the Selection button
+    pInfo->m_pPD->m_pd.Flags &= ~PD_NOSELECTION;
+
+    // Check the Selection button
+    pInfo->m_pPD->m_pd.Flags |= PD_SELECTION;
+  }
+
+  //Let the base class do its thing
+  return DoPreparePrinting(pInfo);
+}
+
+void CScintillaView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	//initialize page start vector
+	ASSERT(m_aPageStart.GetSize() == 0);
+  if (pInfo->m_pPD->PrintSelection())
+    m_aPageStart.Add(rCtrl.GetSelectionStart());
+  else
+	  m_aPageStart.Add(0);
+	ASSERT(m_aPageStart.GetSize() > 0);
+
+	ASSERT_VALID(this);
+}
+
+BOOL CScintillaView::PaginateTo(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+  CRect rectSave = pInfo->m_rectDraw;
+	UINT nPageSave = pInfo->m_nCurPage;
+	ASSERT(nPageSave > 1);
+	ASSERT(nPageSave >= static_cast<UINT>(m_aPageStart.GetSize()));
+	VERIFY(pDC->SaveDC() != 0);
+	pDC->IntersectClipRect(0, 0, 0, 0);
+	pInfo->m_nCurPage = m_aPageStart.GetSize();
+	while (pInfo->m_nCurPage < nPageSave)
+	{
+		ASSERT(pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()));
+		OnPrepareDC(pDC, pInfo);
+		ASSERT(pInfo->m_bContinuePrinting);
+		pInfo->m_rectDraw.SetRect(0, 0,	pDC->GetDeviceCaps(HORZRES), pDC->GetDeviceCaps(VERTRES));
+		OnPrint(pDC, pInfo);
+		if (pInfo->m_nCurPage == static_cast<UINT>(m_aPageStart.GetSize()))
+			break;
+		++pInfo->m_nCurPage;
+	}
+	BOOL bResult = pInfo->m_nCurPage == nPageSave;
+	pDC->RestoreDC(-1);
+	pInfo->m_nCurPage = nPageSave;
+  pInfo->m_rectDraw = rectSave;
+	ASSERT_VALID(this);
+	return bResult;
+}
+
+void CScintillaView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	AFXASSUME(pInfo != NULL);
+
+  if (pInfo->m_nCurPage <= pInfo->GetMaxPage())
+  {
+	  if ((pInfo->m_nCurPage > static_cast<UINT>(m_aPageStart.GetSize())) &&	!PaginateTo(pDC, pInfo))
+	  {
+		  //can't paginate to that page, thus cannot print it.
+		  pInfo->m_bContinuePrinting = FALSE;
+	  }
+	  ASSERT_VALID(this);
+  }
+  else
+  {
+		//Reached the max page to print
+		pInfo->m_bContinuePrinting = FALSE;
+  }
+}
+
+void CScintillaView::PrintHeader(CDC* pDC, CPrintInfo* /*pInfo*/, RangeToFormat& frPrint)
+{
+  //By Default we print "Document Name - Printed on Date" as well as a line separator below the text
+  //Derived classes are of course free to implement their own version of PrintHeader
+  CString sHeader;
+  AfxFormatString2(sHeader, IDS_SCINTILLA_DEFAULT_PRINT_HEADER, GetDocument()->GetTitle(), COleDateTime::GetCurrentTime().Format());
+
+  //Setup the DC
+  pDC->SetTextColor(RGB(0, 0, 0));
+  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+
+  //Draw the header
+  CSize sizeText = pDC->GetTextExtent(sHeader);
+  int nHeaderDepth = 2*sizeText.cy;
+	CRect rLine(frPrint.rcPage.left, frPrint.rcPage.top, frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth);
+  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth/3, 0, &rLine, sHeader, NULL);
+
+  //Draw a line underneath the text
+  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.top + nHeaderDepth - 5);
+  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.top + nHeaderDepth - 5);
+
+  //Restore the DC
+  pDC->SetTextAlign(nAlign);
+
+  //Adjust the place where scintilla will draw the text
+  if (frPrint.rc.top < (frPrint.rcPage.top + nHeaderDepth))
+    frPrint.rc.top = frPrint.rcPage.top + nHeaderDepth;
+}
+
+void CScintillaView::PrintFooter(CDC* pDC, CPrintInfo* pInfo, RangeToFormat& frPrint)
+{
+  //By Default we print "Page X" as well as a line separator above the text
+  //Derived classes are of course free to implement their own version of PrintFooter
+  CString sPage;
+  sPage.Format(_T("%d"), pInfo->m_nCurPage);
+  CString sFooter;
+  AfxFormatString1(sFooter, IDS_SCINTILLA_DEFAULT_PRINT_FOOTER, sPage);
+
+  //Setup the DC
+  pDC->SetTextColor(RGB(0, 0, 0));
+  UINT nAlign = pDC->SetTextAlign(TA_LEFT | TA_TOP);
+  
+  //Draw the header
+  CSize sizeText = pDC->GetTextExtent(sFooter);
+  int nFooterDepth = 2*sizeText.cy;
+  CRect rLine(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth, frPrint.rcPage.right, frPrint.rcPage.bottom);
+  pDC->ExtTextOut(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth*2/3, 0, &rLine, sFooter, NULL);
+
+  //Draw a line above the text
+  pDC->MoveTo(frPrint.rcPage.left, frPrint.rcPage.bottom - nFooterDepth + 5);
+  pDC->LineTo(frPrint.rcPage.right, frPrint.rcPage.bottom - nFooterDepth + 5);
+
+  //Restore the DC
+  pDC->SetTextAlign(nAlign);
+
+  //Adjust the place where scintilla will draw the text
+  if (frPrint.rc.bottom > (frPrint.rcPage.bottom - nFooterDepth))
+    frPrint.rc.bottom = frPrint.rcPage.bottom - nFooterDepth;
+}
+
+BOOL CScintillaView::UserWantsMetric()
+{
+  TCHAR localeInfo[3];
+  localeInfo[0] = _T('\0');
+  GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, localeInfo, 3);
+  return (localeInfo[0] == _T('0')) ;
+}
+
+long CScintillaView::PrintPage(CDC* pDC, CPrintInfo* pInfo, long nIndexStart, long nIndexStop)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+
+	RangeToFormat rfPrint;
+	rfPrint.hdc = pDC->m_hDC;
+	rfPrint.hdcTarget = pDC->m_hAttribDC;
+
+	//Take into account the specified margins
+  CRect rMargins;
+	if ((m_rMargin.left) != 0 || (m_rMargin.right) != 0 || (m_rMargin.top) != 0 || (m_rMargin.bottom != 0)) 
+  {
+    //Get printer resolution
+    CPoint pDpi;
+    pDpi.x = pDC->GetDeviceCaps(LOGPIXELSX);  //DPI in X direction
+    pDpi.y = pDC->GetDeviceCaps(LOGPIXELSY);  //DPI in Y direction
+
+		//Convert the hundredths of millimeters or thousandths of inches margin values
+		//from the Page Setup dialog to device units.
+		int iScale = m_bUsingMetric ? 2540 : 1000;    //scale factor for margin scaling;
+		rMargins.left   = MulDiv(m_rMargin.left, pDpi.x, iScale);
+		rMargins.top    = MulDiv(m_rMargin.top, pDpi.y, iScale);
+		rMargins.right	= MulDiv(m_rMargin.right, pDpi.x, iScale);
+		rMargins.bottom	= MulDiv(m_rMargin.bottom, pDpi.y, iScale);
+	} 
+  else 
+		rMargins = m_rMargin;
+
+  //We take the page size from the pInfo member variable (decrement the right and
+  //bottom values by 1 to suit Scintilla)
+	rfPrint.rcPage.left = pInfo->m_rectDraw.left;
+	rfPrint.rcPage.top = pInfo->m_rectDraw.top;
+	rfPrint.rcPage.right = pInfo->m_rectDraw.right - 1;
+	rfPrint.rcPage.bottom = pInfo->m_rectDraw.bottom - 1;
+
+  //Fill in the area to print
+  rfPrint.rc.left = rfPrint.rcPage.left + rMargins.left;
+  rfPrint.rc.top = rfPrint.rcPage.top + rMargins.top;
+  rfPrint.rc.right = rfPrint.rcPage.right - rMargins.right;
+  rfPrint.rc.bottom = rfPrint.rcPage.bottom - rMargins.bottom;
+
+  //Fill in the text to print
+	rfPrint.chrg.cpMin = nIndexStart;
+	rfPrint.chrg.cpMax = nIndexStop;
+
+  //Print the header (if requested to)
+  if (m_bPrintHeader)
+    PrintHeader(pDC, pInfo, rfPrint);
+
+  //Print the footer (if requested to)
+  if (m_bPrintFooter)
+    PrintFooter(pDC, pInfo, rfPrint);
+
+  //Finally ask the control to print the text
+  return GetCtrl().FormatRange(TRUE, &rfPrint);
+}
+
+void CScintillaView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	ASSERT_VALID(pDC);
+	AFXASSUME(pInfo != NULL);
+	ASSERT(pInfo->m_bContinuePrinting);
+
+	UINT nPage = pInfo->m_nCurPage;
+	ASSERT(nPage <= (UINT) m_aPageStart.GetSize());
+	int nIndex = m_aPageStart[nPage-1];
+
+  //Determine where we should end the printing
+  int nEndPrint = 0;
+  if (pInfo->m_pPD->PrintSelection())
+    nEndPrint = GetCtrl().GetSelectionEnd();
+  else
+    nEndPrint = GetCtrl().GetTextLength();
+
+	//print as much as possible in the current page.
+	nIndex = PrintPage(pDC, pInfo, nIndex, nEndPrint);
+	if (nIndex >= nEndPrint)
+	{
+		TRACE0("End of Document\n");
+		pInfo->SetMaxPage(nPage);
+	}
+
+	//update pagination information for page just printed
+	if (nPage == (UINT) m_aPageStart.GetSize())
+	{
+		if (nIndex < nEndPrint)
+			m_aPageStart.Add(nIndex);
+	}
+	else
+	{
+		ASSERT(nPage+1 <= static_cast<UINT>(m_aPageStart.GetSize()));
+		ASSERT(nIndex == m_aPageStart[nPage+1-1]);
+	}
+}
+
+void CScintillaView::OnEndPrinting(CDC*, CPrintInfo*)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	m_aPageStart.RemoveAll();
+}
+
+void CScintillaView::OnUpdateNeedPaste(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanPaste());
+}
+
+void CScintillaView::OnUpdateNeedText(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().GetTextLength() != 0);
+}
+
+void CScintillaView::OnUpdateNeedTextAndFollowingText(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nLength = rCtrl.GetTextLength();
+  long nStartChar = rCtrl.GetSelectionStart();
+
+	pCmdUI->Enable(nLength && (nStartChar != nLength));
+}
+
+void CScintillaView::OnUpdateNeedFind(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().GetLength() != 0 && !_scintillaEditState.strFind.IsEmpty());
+}
+
+void CScintillaView::OnUpdateEditUndo(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanUndo());
+}
+
+void CScintillaView::OnUpdateEditRedo(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	pCmdUI->Enable(GetCtrl().CanRedo());
+}
+
+void CScintillaView::OnUpdateNeedSel(CCmdUI* pCmdUI)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+  long nStartChar = rCtrl.GetSelectionStart();
+  long nEndChar = rCtrl.GetSelectionEnd();
+	pCmdUI->Enable(nStartChar != nEndChar);
+}
+
+void CScintillaView::OnEditCut()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Cut();
+}
+
+void CScintillaView::OnEditCopy()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Copy();
+}
+
+void CScintillaView::OnEditPaste()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Paste();
+}
+
+void CScintillaView::OnEditClear()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Clear();
+}
+
+void CScintillaView::OnEditUndo()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Undo();
+}
+
+void CScintillaView::OnEditRedo()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().Redo();
+}
+
+void CScintillaView::OnEditSelectAll()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	GetCtrl().SelectAll();
+}
+
+void CScintillaView::OnEditFind()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	OnEditFindReplace(TRUE);
+}
+
+void CScintillaView::OnEditReplace()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	OnEditFindReplace(FALSE);
+}
+
+void CScintillaView::OnEditRepeat()
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	if (!FindText(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, _scintillaEditState.bCase, _scintillaEditState.bWord, _scintillaEditState.bRegularExpression, FALSE);
+}
+
+void CScintillaView::AdjustFindDialogPosition()
+{
+  //Validate our parameters
+	AFXASSUME(_scintillaEditState.pFindReplaceDlg);
+	
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nStart = rCtrl.GetSelectionStart();
+	CPoint point;
+  point.x = rCtrl.PointXFromPosition(nStart);
+  point.y = rCtrl.PointYFromPosition(nStart);
+	ClientToScreen(&point);
+	CRect rectDlg;
+	_scintillaEditState.pFindReplaceDlg->GetWindowRect(&rectDlg);
+	if (rectDlg.PtInRect(point))
+	{
+		if (point.y > rectDlg.Height())
+			rectDlg.OffsetRect(0, point.y - rectDlg.bottom - 20);
+		else
+		{
+			int nVertExt = GetSystemMetrics(SM_CYSCREEN);
+			if (point.y + rectDlg.Height() < nVertExt)
+				rectDlg.OffsetRect(0, 40 + point.y - rectDlg.top);
+		}
+		_scintillaEditState.pFindReplaceDlg->MoveWindow(&rectDlg);
+	}
+}
+
+CScintillaFindReplaceDlg* CScintillaView::CreateFindReplaceDialog()
+{
+  return new CScintillaFindReplaceDlg;
+}
+
+void CScintillaView::OnEditFindReplace(BOOL bFindOnly)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+	m_bFirstSearch = TRUE;
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+	{
+		if (_scintillaEditState.bFindOnly == bFindOnly)
+		{
+			_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
+			_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
+			return;
+		}
+		else
+		{
+			ASSERT(_scintillaEditState.bFindOnly != bFindOnly);
+			_scintillaEditState.pFindReplaceDlg->SendMessage(WM_CLOSE);
+			ASSERT(_scintillaEditState.pFindReplaceDlg == NULL);
+			ASSERT_VALID(this);
+		}
+	}
+  CScintillaCtrl& rCtrl = GetCtrl();
+	CString strFind(rCtrl.GetSelText());
+	//if selection is empty or spans multiple lines use old find text
+	if (strFind.IsEmpty() || (strFind.FindOneOf(_T("\n\r")) != -1))
+		strFind = _scintillaEditState.strFind;
+
+	CString strReplace(_scintillaEditState.strReplace);
+	_scintillaEditState.pFindReplaceDlg = CreateFindReplaceDialog();
+	AFXASSUME(_scintillaEditState.pFindReplaceDlg != NULL);
+	DWORD dwFlags = NULL;
+	if (_scintillaEditState.bNext)
+		dwFlags |= FR_DOWN;
+	if (_scintillaEditState.bCase)
+		dwFlags |= FR_MATCHCASE;
+	if (_scintillaEditState.bWord)
+		dwFlags |= FR_WHOLEWORD;
+  if (_scintillaEditState.bRegularExpression)
+    _scintillaEditState.pFindReplaceDlg->SetRegularExpression(TRUE);
+
+	if (!_scintillaEditState.pFindReplaceDlg->Create(bFindOnly, strFind, strReplace, dwFlags, this))
+	{
+		_scintillaEditState.pFindReplaceDlg = NULL;
+		ASSERT_VALID(this);
 		return;
-	//0 CSwitchViewButtonPart* m_pButtonViewDay;
-	//1 CSwitchViewButtonPart* m_pButtonViewWeek;
-	//2 CSwitchViewButtonPart* m_pButtonViewMonth;
-	//3 CCheckboxButtonPart* m_pShowTimeline;
-	//4 CRadioButtonPart* m_pShowWorkWeek;
-	//5 CRadioButtonPart* m_pShowFullWeek;
-	//6 CRadioButtonPart* m_pShowMcWeek;
-
-	BOOL bShow = !sButtonText.IsEmpty();
-
-	if (iButtonNumber == 0)
-	{
-		if (GetTheme()->m_pButtonViewDay)
-		{
-			GetTheme()->m_pButtonViewDay->SetText(sButtonText);
-			GetTheme()->m_pButtonViewDay->SetVisible(bShow);
-		}
 	}
-	else if (iButtonNumber == 1)
-	{
-		if (GetTheme()->m_pButtonViewWeek)
-		{
-			GetTheme()->m_pButtonViewWeek->SetText(sButtonText);
-			GetTheme()->m_pButtonViewWeek->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 2)
-	{
-		if (GetTheme()->m_pButtonViewMonth)
-		{
-			GetTheme()->m_pButtonViewMonth->SetText(sButtonText);
-			GetTheme()->m_pButtonViewMonth->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 3)
-	{
-		if (GetTheme()->m_pShowTimeline)
-		{
-			GetTheme()->m_pShowTimeline->SetText(sButtonText);
-			GetTheme()->m_pShowTimeline->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 4)
-	{
-		if (GetTheme()->m_pShowWorkWeek)
-		{
-			GetTheme()->m_pShowWorkWeek->SetText(sButtonText);
-			GetTheme()->m_pShowWorkWeek->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 5)
-	{
-		if (GetTheme()->m_pShowFullWeek)
-		{
-			GetTheme()->m_pShowFullWeek->SetText(sButtonText);
-			GetTheme()->m_pShowFullWeek->SetVisible(bShow);
-		}
-	}
-	else if (iButtonNumber == 6)
-	{
-		if (GetTheme()->m_pShowMcWeek)
-		{
-			GetTheme()->m_pShowMcWeek->SetText(sButtonText);
-			GetTheme()->m_pShowMcWeek->SetVisible(bShow);
-		}
-	}
+	ASSERT(_scintillaEditState.pFindReplaceDlg != NULL);
+	_scintillaEditState.bFindOnly = bFindOnly;
+	_scintillaEditState.pFindReplaceDlg->SetActiveWindow();
+	_scintillaEditState.pFindReplaceDlg->ShowWindow(SW_SHOW);
+	ASSERT_VALID(this);
 }
 
-void CXTPCalendarCaptionBarControl::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp)
+void CScintillaView::OnFindNext(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
 {
-	UNREFERENCED_PARAMETER(bCalcValidRects);
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = bNext;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
 
-	if (!GetTheme())
+	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, FALSE);
+	else
+		AdjustFindDialogPosition();
+	ASSERT_VALID(this);
+}
+
+void CScintillaView::OnReplaceSel(LPCTSTR lpszFind, BOOL bNext, BOOL bCase,	BOOL bWord, BOOL bRegularExpression, LPCTSTR lpszReplace)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.strReplace = lpszReplace;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = bNext;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	if (!SameAsSelected(_scintillaEditState.strFind, bCase, bWord, bRegularExpression))
+	{
+		if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+			TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
+		else
+			AdjustFindDialogPosition();
 		return;
-
-	RECT* pClient = &lpncsp->rgrc[0];
-
-	pClient->left += m_Borders.left;
-	pClient->top += m_Borders.top;
-
-	pClient->right = max(pClient->left, pClient->right - m_Borders.right);
-	pClient->bottom = max(pClient->top, pClient->bottom - m_Borders.bottom);
-}
-
-void CXTPCalendarCaptionBarControl::OnNcPaint()
-{
-	CXTPWindowRect rc(this);
-	rc.OffsetRect(-rc.TopLeft());
-
-	CWindowDC dc(this);
-
-	if (GetTheme())
-		GetTheme()->DrawBorders(&dc, rc, m_Borders);
-}
-
-void CXTPCalendarCaptionBarControl::UpdateBorders()
-{
-	if (!GetSafeHwnd())
-		return;
-
-	::SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0,
-		SWP_DRAWFRAME | SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
-
-	Invalidate(NULL);
-}
-
-void CXTPCalendarCaptionBarControl::SetBorders(int nLeft, int nTop, int nRight, int nBottom)
-{
-	m_Borders.SetRect(nLeft, nTop, nRight, nBottom);
-	UpdateBorders();
-}
-
-CRect CXTPCalendarCaptionBarControl::CalcMinRect(BOOL bExactSize)
-{
-	if (!m_pTheme)
-		return CRect(0, 0, 0, 0);
-
-	CRect rcMin = m_pTheme->CalcMinRect(NULL, bExactSize);
-	if (rcMin.Height() > 0)
-	{
-		CRect rcBorders = GetBorders();
-
-		rcMin.left += rcBorders.left + rcBorders.right;
-		rcMin.bottom += rcBorders.top + rcBorders.bottom;
 	}
 
-	return rcMin;
+  if (bRegularExpression)
+  {
+    rCtrl.TargetFromSelection();
+    rCtrl.ReplaceTargetRE(_scintillaEditState.strReplace.GetLength(), _scintillaEditState.strReplace);    
+  }
+  else
+  	GetCtrl().ReplaceSel(_scintillaEditState.strReplace);
+	if (!FindText(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
+		TextNotFound(_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
+	else
+		AdjustFindDialogPosition();
+	ASSERT_VALID(this);
 }
 
-
-void CXTPCalendarCaptionBarControl::SetTheme(CXTPCalendarCaptionBarTheme* pTheme)
+void CScintillaView::OnReplaceAll(LPCTSTR lpszFind, LPCTSTR lpszReplace, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
 {
-	ASSERT(pTheme);
-	if (pTheme)
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	_scintillaEditState.strFind = lpszFind;
+	_scintillaEditState.strReplace = lpszReplace;
+	_scintillaEditState.bCase = bCase;
+	_scintillaEditState.bWord = bWord;
+	_scintillaEditState.bNext = TRUE;
+  _scintillaEditState.bRegularExpression = bRegularExpression;
+
+	CWaitCursor wait;
+
+  //Set the selection to the begining of the document to ensure all text is replaced in the document
+  long start_pos, end_pos;
+  GetReplaceAllTarget(start_pos,end_pos);
+
+  CScintillaCtrl& c = GetCtrl();
+  bool has_selection = c.GetSelectionStart() != c.GetSelectionEnd();
+
+  int flags = 0;
+
+  if (bCase)
+	  flags |= SCFIND_MATCHCASE;
+
+  if (bRegularExpression)
+	  flags |= SCFIND_REGEXP;
+
+  if (bWord)
+	  flags |= SCFIND_WHOLEWORD;
+
+  c.SetSearchFlags(flags);
+  c.BeginUndoAction();
+
+  c.SetTargetStart(start_pos);
+  c.SetTargetEnd(end_pos);
+
+  long find_pos;
+  bool bFoundSomething = false;
+
+  while ((find_pos = c.SearchInTarget(_scintillaEditState.strFind.GetLength(),_scintillaEditState.strFind)) != -1)
+  {
+	  c.ReplaceTarget(_scintillaEditState.strReplace.GetLength(),_scintillaEditState.strReplace);
+	  c.SetTargetStart(c.GetTargetEnd() + 1);
+	  c.SetTargetEnd(end_pos); // Still end position
+
+	  if (!bFoundSomething)
+		  bFoundSomething = true;
+  }
+
+  c.EndUndoAction();
+
+  if (has_selection) // Was the text previously selected?
+	  c.SetSel(start_pos,c.GetTargetEnd());
+
+  //Inform the user if we could not find anything
+  if (!bFoundSomething)
+    TextNotFound(_scintillaEditState.strFind, _scintillaEditState.bNext, bCase, bWord, bRegularExpression, TRUE);
+
+	ASSERT_VALID(this);
+}
+
+LRESULT CScintillaView::OnFindReplaceCmd(WPARAM /*wParam*/, LPARAM lParam)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+
+	CScintillaFindReplaceDlg* pDialog = static_cast<CScintillaFindReplaceDlg*>(CFindReplaceDialog::GetNotifier(lParam));
+	AFXASSUME(pDialog != NULL);
+	ASSERT(pDialog == _scintillaEditState.pFindReplaceDlg);
+
+	if (pDialog->IsTerminating())
+		_scintillaEditState.pFindReplaceDlg = NULL;
+	else if (pDialog->FindNext())
+		OnFindNext(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
+	else if (pDialog->ReplaceCurrent())
 	{
-		CMDTARGET_RELEASE(m_pTheme);
-		m_pTheme = pTheme;
-		m_pTheme->SetOwner(this);
-		m_pTheme->RefreshMetrics();
+		ASSERT(!_scintillaEditState.bFindOnly);
+		OnReplaceSel(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression(), pDialog->GetReplaceString());
 	}
+	else if (pDialog->ReplaceAll())
+	{
+		ASSERT(!_scintillaEditState.bFindOnly);
+		OnReplaceAll(pDialog->GetFindString(), pDialog->GetReplaceString(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
+	}
+	ASSERT_VALID(this);
+
+	return 0;
 }
 
-void CXTPCalendarCaptionBarControl::AdjustLayout(CDC* pDC, const CRect* prcWnd)
+BOOL CScintillaView::SameAsSelected(LPCTSTR lpszCompare, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
 {
-	CXTPClientRect rcClient(this);
+  CScintillaCtrl& rCtrl = GetCtrl();
 
-	if (prcWnd)
-		((CRect&)rcClient) = *prcWnd;
+  //check length first
+	int nStartChar = rCtrl.GetSelectionStart();                           //get the selection size    
+  int nEndChar = rCtrl.GetSelectionEnd();
+  size_t nLen = lstrlen(lpszCompare);                                   //get the #chars to search for
+  if (!bRegularExpression && (nLen != (size_t)(nEndChar - nStartChar))) //if not a regular expression...
+    return FALSE;                                                       //...sizes must match,
 
-	if (m_pTheme)
-		m_pTheme->AdjustLayout(pDC, rcClient);
+  //Now use the advanced search functionality of scintilla to determine the result
+  int iFlags = bCase ? SCFIND_MATCHCASE : 0;
+  iFlags |= bWord ? SCFIND_WHOLEWORD : 0;
+  iFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
+  rCtrl.SetSearchFlags(iFlags);
+  rCtrl.TargetFromSelection();                     //set target
+  if (rCtrl.SearchInTarget(static_cast<int>(nLen), lpszCompare) < 0) //see what we got
+    return FALSE;                                  //no match
+
+  //If we got a match, the target is set to the found text
+  return (rCtrl.GetTargetStart() == nStartChar) && (rCtrl.GetTargetEnd() == nEndChar);
 }
 
-void CXTPCalendarCaptionBarControl::OnPaint()
+BOOL CScintillaView::FindText(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
 {
-	CXTPClientRect rc(this);
-
-	if (rc.IsRectEmpty())
-		return;
-
-	CPaintDC dc(this); // device context for painting
-
-	CXTPBufferDC memDC(dc.GetSafeHdc(), rc);
-
-	if (m_pTheme)
-		m_pTheme->Draw(&memDC);
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	CWaitCursor wait;
+	return FindTextSimple(lpszFind, bNext, bCase, bWord, bRegularExpression);
 }
 
-BOOL CXTPCalendarCaptionBarControl::OnEraseBkgnd(CDC* /*pDC*/)
+BOOL CScintillaView::FindTextSimple(LPCTSTR lpszFind, BOOL bNext, BOOL bCase, BOOL bWord, BOOL bRegularExpression)
 {
+  //Validate our parameters
+	ASSERT(lpszFind != NULL);
+
+  CScintillaCtrl& rCtrl = GetCtrl();
+
+	TextToFind ft;
+  ft.chrg.cpMin = rCtrl.GetSelectionStart();
+  ft.chrg.cpMax = rCtrl.GetSelectionEnd();
+	if (m_bFirstSearch)
+		m_bFirstSearch = FALSE;
+
+#ifdef _UNICODE
+	CScintillaCtrl::W2UTF8(lpszFind, -1, ft.lpstrText);
+#else
+	ft.lpstrText = T2A(const_cast<LPTSTR>(lpszFind));
+#endif
+	if (ft.chrg.cpMin != ft.chrg.cpMax) // i.e. there is a selection
+	{
+#ifndef _UNICODE
+		// If byte at beginning of selection is a DBCS lead byte,
+		// increment by one extra byte.
+		TEXTRANGE textRange;
+		TCHAR ch[2];
+		textRange.chrg.cpMin = ft.chrg.cpMin;
+		textRange.chrg.cpMax = ft.chrg.cpMin + 1;
+		textRange.lpstrText = ch;
+		rCtrl.SendMessage(EM_GETTEXTRANGE, 0, (LPARAM)&textRange);
+		if (_istlead(ch[0]))
+		{
+			ASSERT(ft.chrg.cpMax - ft.chrg.cpMin >= 2);
+
+      if (bNext)
+  			ft.chrg.cpMin++;
+      else
+        ft.chrg.cpMax = ft.chrg.cpMin - 1;
+		}
+#endif
+
+    if (bNext)  
+		  ft.chrg.cpMin++;
+    else
+      ft.chrg.cpMax = ft.chrg.cpMin - 1;
+	}
+
+  int nLength = rCtrl.GetLength();
+  if (bNext)
+    ft.chrg.cpMax = nLength;
+	else
+ 	  ft.chrg.cpMin = 0;
+
+	DWORD dwFlags = bCase ? SCFIND_MATCHCASE : 0;
+	dwFlags |= bWord ? SCFIND_WHOLEWORD : 0;
+  dwFlags |= bRegularExpression ? SCFIND_REGEXP : 0;
+
+  if (!bNext)
+  {
+    //Swap the start and end positions which Scintilla uses to flag backward searches
+    int ncpMinTemp = ft.chrg.cpMin;
+    ft.chrg.cpMin = ft.chrg.cpMax;
+    ft.chrg.cpMax = ncpMinTemp;
+  }
+
+	//if we find the text return TRUE
+	BOOL bFound = (FindAndSelect(dwFlags, ft) != -1);
+
+#ifdef _UNICODE
+  //Tidy up the heap memory before we return
+  delete [] ft.lpstrText;
+#endif
+
+  return bFound;
+}
+
+long CScintillaView::FindAndSelect(DWORD dwFlags, TextToFind& ft)
+{
+  CScintillaCtrl& rCtrl = GetCtrl();
+	long index = rCtrl.FindText(dwFlags, &ft);
+	if (index != -1) // i.e. we found something
+    rCtrl.SetSel(ft.chrgText.cpMin, ft.chrgText.cpMax);
+	return index;
+}
+
+void CScintillaView::TextNotFound(LPCTSTR /*lpszFind*/, BOOL /*bNext*/, BOOL /*bCase*/, BOOL /*bWord*/, BOOL /*bRegularExpression*/, BOOL /*bReplaced*/)
+{
+  //Validate our parameters
+	ASSERT_VALID(this);
+	
+	m_bFirstSearch = TRUE;
+  MessageBeep(MB_ICONHAND);
+}
+
+void CScintillaView::OnSetFocus(CWnd* /*pOldWnd*/) 
+{
+  //Give the focus to the child control
+	m_Edit.SetFocus();
+}
+
+void CScintillaView::OnSize(UINT nType, int cx, int cy) 
+{
+  //Let the base class do its thing
+	CView::OnSize(nType, cx, cy);
+
+  //Resize the edit control to be the size of the client area
+  CRect r;
+  GetClientRect(&r);
+  m_Edit.MoveWindow(&r);	
+}
+
+BOOL CScintillaView::OnEraseBkgnd(CDC* /*pDC*/) 
+{
+  //We do nothing here, because the scintilla control takes up the entire 
+  //client area of our view;
 	return TRUE;
 }
 
-void CXTPCalendarCaptionBarControl::OnSize(UINT nType, int cx, int cy)
+void CScintillaView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
 {
-	CWnd::OnSize(nType, cx, cy);
+	//need to set owner of Find/Replace dialog
+	if (_scintillaEditState.pFindReplaceDlg && pActivateView == this)
+		_scintillaEditState.pFindReplaceDlg->m_fr.hwndOwner = m_hWnd;
 
-	if (!GetSafeHwnd())
-		return;
-
-	CRect rcRect(0, 0, cx, cy);
-	if (m_pTheme)
-		m_pTheme->AdjustLayout(NULL, rcRect);
-
+  //let the base class do its thing
+	CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
 
-void CXTPCalendarCaptionBarControl::OnLButtonDown(UINT nFlags, CPoint point)
+int CScintillaView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (m_pTheme)
-		m_pTheme->OnLButtonDown(nFlags, point);
-
-	if (GetCapture() != this)
-		SetCapture();
+  //let the base class do its thing
+	if (CView::OnCreate(lpCreateStruct) == -1)
+		return -1;
+	
+  //Create the scintilla edit control  
+  CRect r;
+  if (!m_Edit.Create(WS_CHILD|WS_VISIBLE|WS_TABSTOP, r, this, 0))
+    return -1;
+	
+	return 0;
 }
-
-void CXTPCalendarCaptionBarControl::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if (m_pTheme)
-		m_pTheme->OnLButtonUp(nFlags, point);
-
-	if (GetCapture() == this)
-		ReleaseCapture();
-}
-
-void CXTPCalendarCaptionBarControl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_pTheme)
-		m_pTheme->OnMouseMove(nFlags, point);
-}
-
-void CXTPCalendarCaptionBarControl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_pTheme)
-		m_pTheme->OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPCalendarCaptionBarControl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_pTheme)
-		m_pTheme->OnKeyUp(nChar, nRepCnt, nFlags);
-}
-
-void CXTPCalendarCaptionBarControl::OnTimer(UINT_PTR uTimerID)
-{
-	if (m_pTheme)
-		m_pTheme->OnTimer(uTimerID);
-}
-
-void CXTPCalendarCaptionBarControl::OnDestroy()
-{
-	if (m_pTheme)
-		m_pTheme->OnBeforeDestroy();
-}
-
-void CXTPCalendarCaptionBarControl::OnKillFocus (CWnd* pNewWnd)
-{
-	if (m_pTheme)
-		m_pTheme->OnKillFocus(pNewWnd);
-}
-
-void CXTPCalendarCaptionBarControl::EnableTimeline(BOOL bEnable)
-{
-	if (m_pTheme)
-		m_pTheme->m_bTimelineEnable = bEnable;
-}
-
-BOOL CXTPCalendarCaptionBarControl::IsTimelineEnable()
-{
-	if (m_pTheme)
-		return m_pTheme->m_bTimelineEnable;
-	else
-		return FALSE;
-}
-
-void CXTPCalendarCaptionBarControl::EnableMulticolumns(BOOL bEnable)
-{
-	if (m_pTheme)
-		m_pTheme->m_bMulticolumnsEnable = bEnable;
-}
-
-BOOL CXTPCalendarCaptionBarControl::IsMulticolumnsEnable()
-{
-	if (m_pTheme)
-		return m_pTheme->m_bMulticolumnsEnable;
-	else
-		return FALSE;
-}
-
-BOOL CXTPCalendarCaptionBarControl::IsUseOneLine()
-{
-	if (GetTheme())
-		return GetTheme()->m_bIsOneLine;
-	else
-		return FALSE;
-}
-
-#include "XTPCalendarControlView.h"
-
-void CXTPCalendarCaptionBarControl::UseOneLine(BOOL bSet)
-{
-	if (GetTheme())
-	{
-		GetTheme()->m_bIsOneLine = bSet;
-
-		GetTheme()->RefreshMetrics();
-
-		CXTPCalendarControlView* pView = DYNAMIC_DOWNCAST(CXTPCalendarControlView, GetParent());
-		if (pView)
-			pView->_ResizeControls();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-CXTPCalendarCaptionBarTheme::CXTPCalendarCaptionBarTheme()
-{
-	m_pSink = new CXTPNotifySink();
-
-	m_themeButton = new CXTPWinThemeWrapper();
-
-
-	m_pCaptionBar   = NULL;
-	m_pCalendar     = NULL;
-	m_nCheckHotStateTimerID = 0;
-
-	m_bIsSwitchViewButtons = TRUE;
-	m_bIsScrollDateButtons = TRUE;
-	m_bIsDateLabel = TRUE;
-	m_bTimelineEnable = TRUE;
-	m_bMulticolumnsEnable = TRUE;
-	m_bIsExpandButton = FALSE;
-	m_bIsOneLine = FALSE; //Old Layout - default
-	m_pConnection = NULL;
-	m_dScale = 1.0;
-
-	// Init Theme Parts
-	m_pButtonViewDay = new CSwitchViewButtonPart(this, xtpCalendarCaptionBar_ButtonViewDay);
-	m_pButtonViewWeek = new CSwitchViewButtonPart(this, xtpCalendarCaptionBar_ButtonViewWeek);
-	m_pButtonViewMonth = new CSwitchViewButtonPart(this, xtpCalendarCaptionBar_ButtonViewMonth);
-
-	m_pButtonViewDay->SetText(XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_DAY));
-	m_pButtonViewWeek->SetText(XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_WEEK));
-	m_pButtonViewMonth->SetText(XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_MONTH));
-
-	m_pShowWorkWeek = new CRadioButtonPart(this, xtpCalendarCaptionBar_ShowWorkWeek);
-	m_pShowFullWeek = new CRadioButtonPart(this, xtpCalendarCaptionBar_ShowFullWeek);
-
-	CString s = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_SHOWWORKWEK);
-	s.Replace(_T("Show w"), _T("W"));
-	m_pShowWorkWeek->SetText(s);
-	m_pShowWorkWeek->SetCheck(0);
-
-	s = XTPResourceManager()->LoadString(XTP_IDS_CALENDAR_SHOWFULLKWEK);
-	s.Replace(_T("Show f"), _T("F"));
-	m_pShowFullWeek->SetText(s);
-	m_pShowFullWeek->SetCheck(0);
-
-	m_pShowTimeline = new CCheckboxButtonPart(this, xtpCalendarCaptionBar_ShowTimeline);
-	m_pShowTimeline->SetText(_T("TimeLine mode"));
-	m_pShowTimeline->SetCheck(0);
-
-	m_pShowMcWeek = new CCheckboxButtonPart(this, xtpCalendarCaptionBar_MultiColumnsWeek);
-	//m_pShowMcWeek = new CRadioButtonPart(this, xtpCalendarCaptionBar_MultiColumnsWeek);
-	m_pShowMcWeek->SetText(_T("MultiColumn mode"));
-	m_pShowMcWeek->SetCheck(0);
-
-	m_pScrollPrevDate = new CScrollDateButtonPart(this, xtpCalendarCaptionBar_ScrollPrevDate);
-	m_pScrollNextDate = new CScrollDateButtonPart(this, xtpCalendarCaptionBar_ScrollNextDate);
-
-	m_pDateLabel = new CDateLabelPart(this, xtpCalendarCaptionBar_DateLabel);
-
-	m_pExpandButton = new CExpandButtonPart(this, xtpCalendarCaptionBar_ButtonExpand);
-
-	m_nPaintTheme = xtpCalendarThemeResource;
-
-	RefreshMetrics();
-}
-
-CXTPCalendarCaptionBarTheme::~CXTPCalendarCaptionBarTheme()
-{
-	m_pSink->Delete();
-
-	CMDTARGET_RELEASE(m_pConnection);
-
-	CMDTARGET_RELEASE(m_pButtonViewDay);
-	CMDTARGET_RELEASE(m_pButtonViewWeek);
-	CMDTARGET_RELEASE(m_pButtonViewMonth);
-
-	CMDTARGET_RELEASE(m_pShowWorkWeek);
-	CMDTARGET_RELEASE(m_pShowFullWeek);
-
-	CMDTARGET_RELEASE(m_pShowTimeline);
-	CMDTARGET_RELEASE(m_pShowMcWeek);
-
-	CMDTARGET_RELEASE(m_pScrollPrevDate);
-	CMDTARGET_RELEASE(m_pScrollNextDate);
-
-	CMDTARGET_RELEASE(m_pDateLabel);
-	CMDTARGET_RELEASE(m_pExpandButton);
-
-	CMDTARGET_RELEASE(m_pCalendar);
-
-	SAFE_DELETE(m_themeButton);
-}
-
-void CXTPCalendarCaptionBarTheme::OnBeforeDestroy()
-{
-	m_pSink->UnadviseAll();
-	CMDTARGET_RELEASE(m_pCalendar);
-}
-
-void CXTPCalendarCaptionBarTheme::SetOwner(CXTPCalendarCaptionBarControl* pCaptionBar)
-{
-	ASSERT(pCaptionBar);
-	if (pCaptionBar)
-	{
-		m_pCaptionBar = pCaptionBar;
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::AttachCalendar(CXTPCalendarControl* pCalendar)
-{
-	m_pSink->UnadviseAll();
-	CMDTARGET_RELEASE(m_pCalendar);
-
-	m_pCalendar = pCalendar;
-	CMDTARGET_ADDREF(m_pCalendar);
-
-	if (m_pCalendar && m_pCalendar->GetConnection())
-	{
-		CXTPNotifyConnection* pConnection = m_pCalendar->GetConnection();
-
-		m_pSink->Advise(pConnection, XTP_NC_CALENDARVIEWWASCHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarCaptionBarTheme::OnEvent_Calendar));
-		m_pSink->Advise(pConnection, XTP_NC_CALENDAR_THEME_CHANGED, CreateNotfySinkClassDelegate(this, &CXTPCalendarCaptionBarTheme::OnEvent_Calendar));
-
-		UpdateControlsState();
-
-		if (XTPResourceImages() && XTPResourceImages()->GetConnection())
-		{
-			m_pSink->Advise(XTPResourceImages()->GetConnection(), XTP_NC_COMMON_RESOURCEIMAGES_CHANGED,
-				CreateNotfySinkClassDelegate(this, &CXTPCalendarCaptionBarTheme::OnEvent_ResourceImagesChanged));
-		}
-
-		SetPaintTheme(GetCalendarCtrl()->GetPaintTheme());
-	}
-}
-
-CXTPNotifyConnection* CXTPCalendarCaptionBarTheme::GetConnection()
-{
-	if (!m_pConnection)
-		m_pConnection = new CXTPNotifyConnection();
-
-	return m_pConnection;
-}
-
-int CXTPCalendarCaptionBarTheme::GetChildHandlersCount() const
-{
-	return m_arMembers.GetCount();
-}
-
-CXTPCalendarWMHandler* CXTPCalendarCaptionBarTheme::GetChildHandlerAt(int nIndex) const
-{
-	return m_arMembers.GetAt(nIndex);
-}
-
-void CXTPCalendarCaptionBarTheme::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CXTPCalendarWMHandler::OnMouseMove(nFlags, point);
-
-	if (GetOwnerWnd() && m_nCheckHotStateTimerID == 0)
-	{
-		m_nCheckHotStateTimerID = GetOwnerWnd()->SetTimer(1, 100, NULL);
-	}
-}
-
-BOOL CXTPCalendarCaptionBarTheme::OnTimer(UINT_PTR uTimerID)
-{
-	if (uTimerID == m_nCheckHotStateTimerID && GetOwnerWnd() &&
-		::GetCapture() != GetOwnerWnd()->GetSafeHwnd())
-	{
-		BOOL bMouseLeave;
-		BOOL bChanged = _UpdateControlsHotState(&bMouseLeave);
-
-		if (bMouseLeave)
-		{
-			GetOwnerWnd()->KillTimer(1);
-			m_nCheckHotStateTimerID = 0;
-		}
-
-		if (bChanged)
-			Redraw();
-
-		return TRUE;
-	}
-	return FALSE;
-}
-
-CRect CXTPCalendarCaptionBarTheme::CalcMinRect(CDC* /*pDC*/, BOOL bExactSize)
-{
-	if (!IsSwitchViewButtons()
-		&& !IsScrollDateButtons()
-		&& !IsDateLabel()
-		&& !IsExpandButton())
-		return CRect(0, 0, 0, 0);
-
-	int nHeight = 0;
-	if (m_bIsOneLine)
-	{
-		nHeight += 27;
-	}
-	else
-	{
-		if (IsSwitchViewButtons())
-			nHeight += 27;
-
-		int nH1 = (IsScrollDateButtons() || IsDateLabel()) ? 32 : 0;
-		int nH2 = IsExpandButton() ? 30 : 0;
-
-		nHeight += max(nH2, nH1);
-
-		if (!bExactSize)
-			nHeight += 11;
-	}
-	return CRect(0, 0, 525, nHeight);
-};
-
-void CXTPCalendarCaptionBarTheme::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	if (!pDC && GetOwnerWnd() && GetOwnerWnd()->m_hWnd)
-	{
-		CClientDC dc(GetOwnerWnd());
-		AdjustLayout(&dc, rcRect);
-		return;
-	}
-
-	if (rcRect.IsRectNull() || rcRect.IsRectEmpty())
-		return;
-
-	m_rcRect = rcRect;
-	CRect rc00(rcRect.left, rcRect.top, rcRect.left, rcRect.top);
-	CRect rcClient = m_rcRect;
-
-	CRect rc = rcClient;
-
-	int nNextY = rc.top;
-	BOOL bSwitchViewButtons = IsSwitchViewButtons();
-	BOOL bScrollDateButtons = IsScrollDateButtons();
-	BOOL bShowExpandButton = IsExpandButton();
-	BOOL bShowDateLabel = IsDateLabel();
-
-	m_pButtonViewDay->SetVisible(bSwitchViewButtons && !m_pButtonViewDay->GetText().IsEmpty());
-	m_pButtonViewWeek->SetVisible(bSwitchViewButtons && !m_pButtonViewWeek->GetText().IsEmpty());
-	m_pButtonViewMonth->SetVisible(bSwitchViewButtons && !m_pButtonViewMonth->GetText().IsEmpty());
-
-	int iWid1 = 83;
-	int iWid2 = 20;
-	int iWid3 = 5;
-
-	if (!m_bIsOneLine) //TWO LINE MODE
-	{
-		if (bSwitchViewButtons)
-		{
-			rc.bottom = rc.top + 26;
-
-			if (!m_pButtonViewDay->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewDay->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewDay->GetRect().right;
-			if (!m_pButtonViewWeek->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewWeek->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewWeek->GetRect().right;
-			if (!m_pButtonViewMonth->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewMonth->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewMonth->GetRect().right + 21;
-			rc.right = rc.left + iWid3;
-
-			if (m_bTimelineEnable && !m_pShowTimeline->GetText().IsEmpty())
-			{
-				m_pShowTimeline->AdjustLayout(pDC, rc);
-
-				rc.left = m_pShowTimeline->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowWorkWeek->GetText().IsEmpty())
-			{
-				m_pShowWorkWeek->AdjustLayout(pDC, rc);
-
-				rc.left = m_pShowWorkWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowFullWeek->GetText().IsEmpty())
-			{
-				m_pShowFullWeek->AdjustLayout(pDC, rc);
-				rc.left = m_pShowFullWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowMcWeek->GetText().IsEmpty())
-				m_pShowMcWeek->AdjustLayout(pDC, rc);
-
-			rc = m_pButtonViewDay->GetRect();
-
-			nNextY = rc.bottom + 1;
-		}
-		else
-		{
-			m_pButtonViewDay->AdjustLayout(pDC, rc00);
-			m_pButtonViewWeek->AdjustLayout(pDC, rc00);
-			m_pButtonViewMonth->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->AdjustLayout(pDC, rc00);
-			m_pShowFullWeek->AdjustLayout(pDC, rc00);
-			m_pShowTimeline->AdjustLayout(pDC, rc00);
-			m_pShowMcWeek->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->SetVisible(FALSE);
-			m_pShowFullWeek->SetVisible(FALSE);
-			m_pShowTimeline->SetVisible(FALSE);
-			m_pShowMcWeek->SetVisible(FALSE);
-
-			nNextY = rc.top;
-		}
-
-		int nNextX = rc.left;
-
-		m_pScrollPrevDate->SetVisible(bScrollDateButtons);
-		m_pScrollNextDate->SetVisible(bScrollDateButtons);
-
-		if (bScrollDateButtons)
-		{
-			rc.top = nNextY + 12;
-			if (rc.top + 20 + 3 > rcClient.bottom)
-				rc.top = max(nNextY + 3, rcClient.bottom - 23);
-
-			rc.bottom = rc.top + 20;
-
-			rc.left += m_nScrollDateButtonsMargin;
-
-			rc.right = rc.left + iWid2;
-
-			m_pScrollPrevDate->AdjustLayout(pDC, rc);
-
-			rc.left = m_pScrollPrevDate->GetRect().right + 9;
-			rc.right = rc.left + iWid2;
-
-			m_pScrollNextDate->AdjustLayout(pDC, rc);
-
-			nNextX = rc.right;
-		}
-		else
-		{
-			m_pScrollPrevDate->AdjustLayout(pDC, rc00);
-			m_pScrollNextDate->AdjustLayout(pDC, rc00);
-		}
-
-		m_pExpandButton->SetVisible(bShowExpandButton);
-
-		int nRightX = rcClient.right;
-		if (bShowExpandButton)
-		{
-			int nDelta = (bScrollDateButtons || bShowDateLabel) ? 5 : 3;
-			rc.top = nNextY + 13;
-			if (rc.top + 18 + nDelta > rcClient.bottom)
-				rc.top = max(nNextY + 1, rcClient.bottom - 18 - nDelta);
-
-			rc.bottom = rc.top + 18;
-			rc.right = rcClient.right - 2;
-			rc.left = rc.right - 18;
-
-			m_pExpandButton->AdjustLayout(pDC, rc);
-
-			nRightX = m_pExpandButton->GetRect().left;
-		}
-		else
-		{
-			m_pExpandButton->AdjustLayout(pDC, rc00);
-		}
-
-		m_pDateLabel->SetVisible(bShowDateLabel);
-
-		if (bShowDateLabel)
-		{
-			int nDelta = 3;
-			rc.top = nNextY + 12;
-			if (rc.top + 20 + nDelta > rcClient.bottom)
-				rc.top = max(nNextY + 3, rcClient.bottom - 20 - nDelta);
-
-			rc.bottom = rc.top + 22;
-			rc.left = nNextX + 11;
-			rc.right = nRightX - 2;
-
-			m_pDateLabel->AdjustLayout(pDC, rc);
-		}
-		else
-		{
-			m_pDateLabel->AdjustLayout(pDC, rc00);
-		}
-	}
-	else //ONE LINE MODE
-	{
-		int nNextX(0);
-		if (bSwitchViewButtons)
-		{
-			if (!m_pButtonViewDay->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewDay->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewDay->GetRect().right;
-			if (!m_pButtonViewWeek->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewWeek->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewWeek->GetRect().right;
-			if (!m_pButtonViewMonth->GetText().IsEmpty())
-				rc.right = rc.left + iWid1;
-			else
-				rc.right = rc.left;
-			m_pButtonViewMonth->AdjustLayout(pDC, rc);
-
-			rc.left = m_pButtonViewMonth->GetRect().right + 21;
-			rc.right = rc.left + iWid3;
-
-			if (m_bTimelineEnable && !m_pShowTimeline->GetText().IsEmpty())
-			{
-				m_pShowTimeline->AdjustLayout(pDC, rc);
-
-				rc.left = m_pShowTimeline->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowWorkWeek->GetText().IsEmpty())
-			{
-				m_pShowWorkWeek->AdjustLayout(pDC, rc);
-				rc.left = m_pShowWorkWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowFullWeek->GetText().IsEmpty())
-			{
-				m_pShowFullWeek->AdjustLayout(pDC, rc);
-				rc.left = m_pShowFullWeek->GetRect().right + 11;
-				rc.right = rc.left + iWid3;
-			}
-
-			if (!m_pShowMcWeek->GetText().IsEmpty())
-				m_pShowMcWeek->AdjustLayout(pDC, rc);
-
-			nNextX = m_pShowMcWeek->GetRect().right + 11;
-		}
-		else
-		{
-			m_pButtonViewDay->AdjustLayout(pDC, rc00);
-			m_pButtonViewWeek->AdjustLayout(pDC, rc00);
-			m_pButtonViewMonth->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->AdjustLayout(pDC, rc00);
-			m_pShowFullWeek->AdjustLayout(pDC, rc00);
-			m_pShowTimeline->AdjustLayout(pDC, rc00);
-			m_pShowMcWeek->AdjustLayout(pDC, rc00);
-
-			m_pShowWorkWeek->SetVisible(FALSE);
-			m_pShowFullWeek->SetVisible(FALSE);
-			m_pShowTimeline->SetVisible(FALSE);
-			m_pShowMcWeek->SetVisible(FALSE);
-		}
-
-		m_pScrollPrevDate->SetVisible(bScrollDateButtons);
-		m_pScrollNextDate->SetVisible(bScrollDateButtons);
-
-		if (bScrollDateButtons)
-		{
-			rc.left = nNextX + 20;
-			rc.right = rc.left + iWid2;
-
-			m_pScrollPrevDate->AdjustLayout(pDC, rc);
-
-			rc.left = m_pScrollPrevDate->GetRect().right + 9;
-			rc.right = rc.left + iWid2;
-
-			m_pScrollNextDate->AdjustLayout(pDC, rc);
-
-			nNextX = rc.right;
-		}
-		else
-		{
-			m_pScrollPrevDate->AdjustLayout(pDC, rc00);
-			m_pScrollNextDate->AdjustLayout(pDC, rc00);
-		}
-
-		m_pExpandButton->SetVisible(bShowExpandButton);
-
-		int nRightX = rcClient.right;
-		if (bShowExpandButton)
-		{
-			rc.right = rcClient.right - 2;
-			rc.left = rc.right - 18;
-
-			m_pExpandButton->AdjustLayout(pDC, rc);
-
-			nRightX = m_pExpandButton->GetRect().left;
-		}
-		else
-		{
-			m_pExpandButton->AdjustLayout(pDC, rc00);
-		}
-		m_pDateLabel->SetVisible(bShowDateLabel);
-
-		if (bShowDateLabel)
-		{
-			rc.left = nNextX + 20;
-			rc.right = nRightX - 2;
-
-			m_pDateLabel->AdjustLayout(pDC, rc);
-		}
-		else
-		{
-			m_pDateLabel->AdjustLayout(pDC, rc00);
-		}
-	}
-}
-
-COLORREF CXTPCalendarCaptionBarTheme::GetColor2(LPCTSTR pcszColorName, COLORREF clrDefault)
-{
-	COLORREF clrColor = COLORREF_NULL;
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	if (pImages->IsValid())
-	{
-		clrColor = pImages->GetImageColor(_T("CalendarControl"), pcszColorName);
-	}
-
-	if (clrColor == COLORREF_NULL)
-	{
-		clrColor = clrDefault;
-	}
-
-	return clrColor;
-}
-
-void CXTPCalendarCaptionBarTheme::RefreshMetrics()
-{
-	m_themeButton->OpenTheme(0, L"BUTTON");
-
-	LOGFONT lfBaseFont;
-	::ZeroMemory(&lfBaseFont, sizeof(lfBaseFont));
-	BOOL bUseFont2007 = FALSE;
-
-	m_nScrollDateButtonsMargin = 20;
-
-	if (GetPaintTheme() >= xtpCalendarThemeResource)
-	{
-		m_clrSwitchViewBarBk.SetStandardValue(GetColor2(_T("CaptionBarSwitchViewBarBk"), RGB(173, 209, 255)));
-		m_clrScrollDateBarBk.SetStandardValue(GetColor2(_T("CaptionBarDateBarBk"), RGB(227, 239, 255)));
-
-		m_clrBorders.SetStandardValue(GetColor2(_T("CaptionBarBorders"), RGB(101, 147, 201)));
-		m_clrTextColor.SetStandardValue(GetColor2(_T("CaptionBarTextColor"), RGB(0, 0, 0)));
-
-		// Try to set default Office 2007 font,
-		// otherwise icon font used.
-		bUseFont2007 = XTPDrawHelpers()->FontExists(XTP_CALENDAR_OFFICE2007_FONT_NAME);
-
-		if (XTPResourceImages()->GetImageInt(_T("CalendarControl"), _T("FlatStyle"), 0))
-		{
-			m_nScrollDateButtonsMargin = 4;
-		}
-	}
-	else
-	{
-		//m_clrSwitchViewBarBk.SetStandardValue(RGB(192, 192, 192));
-		m_clrSwitchViewBarBk.SetStandardValue(GetSysColor(COLOR_BTNFACE));
-
-		if (GetPaintTheme() == xtpCalendarThemeOffice2000)
-			m_clrScrollDateBarBk.SetStandardValue(RGB(146, 146, 146));
-		else
-			m_clrScrollDateBarBk.SetStandardValue(RGB(130, 130, 130));
-
-		m_clrBorders.SetStandardValue(RGB(130, 130, 130));
-		m_clrTextColor.SetStandardValue(RGB(255, 255, 255));
-	}
-
-	if (bUseFont2007)
-	{
-		STRCPY_S(lfBaseFont.lfFaceName, LF_FACESIZE, XTP_CALENDAR_OFFICE2007_FONT_NAME);
-		lfBaseFont.lfCharSet = XTPResourceManager()->GetFontCharset();
-		lfBaseFont.lfHeight = -11;
-		//lfBaseFont.lfHeight = -10;
-		lfBaseFont.lfWeight = FW_NORMAL;
-
-		if (XTPSystemVersion()->IsClearTypeTextQualitySupported())
-			lfBaseFont.lfQuality = 5;
-	}
-	else
-	{
-		VERIFY(CXTPDrawHelpers::GetIconLogFont(&lfBaseFont));
-	}
-
-	m_fntTextFont.SetStandardValue(&lfBaseFont);
-
-	int nCount = m_arMembers.GetCount();
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarCaptionBarThemePart* pPart = m_arMembers.GetAt(i);
-		ASSERT(pPart);
-		if (pPart)
-			pPart->RefreshMetrics();
-	}
-
-	AdjustLayout(NULL, GetRect());
-}
-
-void CXTPCalendarCaptionBarTheme::Draw(CDC* pDC)
-{
 
 #ifdef _DEBUG
-	pDC->FillSolidRect(GetRect(), RGB(255, 0, 0));
-#endif
+void CScintillaView::AssertValid() const
+{
+  //Let the base class do its thing
+	CView::AssertValid();
 
-	CRect rcTopPart = m_pButtonViewDay->GetRect();
+  //Validate our parameters
+	ASSERT_VALID(&m_aPageStart);
 
-	if (IsSwitchViewButtons())
-	{
-		// Fill SwitchViewBar
-		rcTopPart.right = m_rcRect.right;
-		pDC->FillSolidRect(rcTopPart, m_clrSwitchViewBarBk);
-
-		rcTopPart.top = rcTopPart.bottom;
-		rcTopPart.bottom++;
-
-		pDC->FillSolidRect(rcTopPart, m_clrBorders);
-	}
-
-	// Fill ScrollDateBar
-	CRect rcBottomPart = m_rcRect;
-	rcBottomPart.top = rcTopPart.bottom;
-	pDC->FillSolidRect(rcBottomPart, m_clrScrollDateBarBk);
-
-	//DrawBorders(pDC, m_rcRect, m_rcRect);
-
-	// Draw members
-	int nCount = m_arMembers.GetCount();
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarCaptionBarThemePart* pPart = m_arMembers.GetAt(i);
-		ASSERT(pPart);
-		if (pPart)
-			pPart->Draw(pDC);
-	}
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
+		ASSERT_VALID(_scintillaEditState.pFindReplaceDlg);
 }
 
-void CXTPCalendarCaptionBarTheme::DrawBorders(CDC* pDC, const CRect& rcRect, const CRect& Borders)
+void CScintillaView::Dump(CDumpContext& dc) const
 {
-	// Draw borders
-	CRect rc;
-	if (Borders.top)
-	{
-		rc = rcRect;
-		rc.bottom = rc.top + Borders.top;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
+  //Let the base class do its thing
+	CView::Dump(dc);
 
-	if (Borders.bottom)
-	{
-		rc = rcRect;
-		rc.top = rc.bottom - Borders.bottom;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
+	dc << _T("\nm_aPageStart ") << &m_aPageStart;
+  dc << _T("\nbUseROFileAttributeDuringLoading = ") << m_bUseROFileAttributeDuringLoading;
 
-	if (Borders.left)
+	dc << _T("\n Static Member Data:");
+	if (_scintillaEditState.pFindReplaceDlg != NULL)
 	{
-		rc = rcRect;
-		rc.right = rc.left + Borders.left;
-		pDC->FillSolidRect(rc, m_clrBorders);
+		dc << _T("\npFindReplaceDlg = ") <<	static_cast<void*>(_scintillaEditState.pFindReplaceDlg);
+		dc << _T("\nbFindOnly = ") << _scintillaEditState.bFindOnly;
 	}
-
-	if (Borders.right)
-	{
-		rc = rcRect;
-		rc.left = rc.right - Borders.right;
-		pDC->FillSolidRect(rc, m_clrBorders);
-	}
+	dc << _T("\nstrFind = ") << _scintillaEditState.strFind;
+	dc << _T("\nstrReplace = ") << _scintillaEditState.strReplace;
+	dc << _T("\nbCase = ") << _scintillaEditState.bCase;
+	dc << _T("\nbWord = ") << _scintillaEditState.bWord;
+	dc << _T("\nbNext = ") << _scintillaEditState.bNext;
+  dc << _T("\nbRegularExpression = ") << _scintillaEditState.bRegularExpression;
 }
+#endif //_DEBUG
 
-
-//////////////////////////////////////////////////////////////////////////
-CXTPCalendarCaptionBarThemePart::CXTPCalendarCaptionBarThemePart(CXTPCalendarCaptionBarTheme* pTheme, int nPartID)
+void CScintillaView::Serialize(CArchive& ar)
 {
-	ASSERT(pTheme);
-	m_pTheme = pTheme;
-	m_nPartID = nPartID;
-	m_nState = xtpBtnStateNormal;
-	m_bVisible = TRUE;
-
-	if (m_pTheme)
-		m_pTheme->m_arMembers.Add(this, TRUE);
-}
-
-CXTPCalendarCaptionBarThemePart::~CXTPCalendarCaptionBarThemePart()
-{
-
-}
-
-void CXTPCalendarCaptionBarThemePart::AdjustLayout(CDC* /*pDC*/, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-}
-
-COLORREF CXTPCalendarCaptionBarThemePart::GetTextColor()
-{
-	if (m_clrTextColor.IsDefaultValue() && m_pTheme)
-		return (COLORREF)m_pTheme->m_clrTextColor;
-
-	return (COLORREF)m_clrTextColor;
-}
-
-void CXTPCalendarCaptionBarThemePart::Draw(CDC* /*pDC*/)
-{
-};
-
-BOOL CXTPCalendarCaptionBarThemePart::HitTest(const CPoint& pt) const
-{
-	return IsVisible() && m_rcRect.PtInRect(pt);
-};
-
-void CXTPCalendarCaptionBarThemePart::Redraw(BOOL bUpdateNow)
-{
-	if (m_pTheme)
-		m_pTheme->Redraw(bUpdateNow);
-}
-
-void CXTPCalendarCaptionBarTheme::Redraw(BOOL bUpdateNow)
-{
-	if (GetOwnerWnd() && GetOwnerWnd()->GetSafeHwnd())
-	{
-		GetOwnerWnd()->Invalidate(FALSE);
-
-		if (bUpdateNow)
-			GetOwnerWnd()->UpdateWindow();
-	}
-}
-
-void CXTPCalendarCaptionBarThemePart::OnMouseMove(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	int nStatePrev = m_nState;
-
-	if (HitTest(point))
-		m_nState = m_nState | xtpBtnStateMouseOver;
-	else
-		m_nState = m_nState & (~(xtpBtnStateMouseOver));
-
-	if (nStatePrev != m_nState)
-		Redraw();
-}
-
-BOOL CXTPCalendarCaptionBarThemePart::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	int nStatePrev = m_nState;
-
-	BOOL bHitTest = HitTest(point);
-	if (bHitTest)
-	{
-		m_nState = m_nState | xtpBtnStatePressed | xtpBtnStateFocused;
-	}
-	else
-		m_nState = m_nState & (~(xtpBtnStatePressed | xtpBtnStateFocused));
-
-	if (nStatePrev != m_nState)
-		Redraw();
-
-	return FALSE; // to allow receive this notification for all other parts (to clear state)
-}
-
-BOOL CXTPCalendarCaptionBarThemePart::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	UNREFERENCED_PARAMETER(nFlags);
-
-	int nStatePrev = m_nState;
-	BOOL bHitTest = HitTest(point);
-
-	if (bHitTest && (m_nState & (xtpBtnStatePressed | xtpBtnStateFocused)))
-	{
-		m_nState = m_nState & (~xtpBtnStatePressed);
-
-		if (m_pTheme && IsVisible())
-			m_pTheme->OnPartClick(m_nPartID);
-	}
-
-	m_nState = m_nState & (~xtpBtnStatePressed);
-
-	if (nStatePrev != m_nState)
-		Redraw();
-
-	return FALSE; // to allow receive this notification for all other parts (to clear state)
-}
-
-void CXTPCalendarCaptionBarTheme::OnEvent_Calendar(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(wParam); UNREFERENCED_PARAMETER(lParam);
-
-
-	if (Event == XTP_NC_CALENDARVIEWWASCHANGED)
-	{
-		UpdateControlsState();
-	}
-	else if (Event == XTP_NC_CALENDAR_THEME_CHANGED)
-	{
-		SetPaintTheme(GetCalendarCtrl()->GetPaintTheme());
-	}
-	else {
-		ASSERT(FALSE);
-		return;
-	}
-
-	Redraw();
-}
-
-void CXTPCalendarCaptionBarTheme::OnEvent_ResourceImagesChanged(XTP_NOTIFY_CODE Event, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(wParam); UNREFERENCED_PARAMETER(lParam);
-
-	if (Event == XTP_NC_COMMON_RESOURCEIMAGES_CHANGED)
-	{
-		RefreshMetrics();
-
-		Redraw();
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::UpdateControlsState()
-{
-	if (!GetCalendarCtrl() || !GetCalendarCtrl()->GetActiveView())
-		return;
-
-	m_pShowWorkWeek->SetVisible(FALSE);
-	m_pShowFullWeek->SetVisible(FALSE);
-	m_pShowMcWeek->SetVisible(FALSE);
-
-	m_pButtonViewDay->SetCheck(0);
-	m_pButtonViewWeek->SetCheck(0);
-	m_pButtonViewMonth->SetCheck(0);
-
-	m_pShowTimeline->SetVisible(m_bTimelineEnable);
-
-	int iScale = GetCalendarCtrl()->GetTimeLineScale();
-	int nViewType = GetCalendarCtrl()->GetActiveView()->GetViewType();
-
-	//BOOL bTimelineMode = m_pShowTimeline->GetCheck();
-
-	BOOL bTimelineMode = GetCalendarCtrl()->m_bTimelineMode;
-	m_pShowTimeline->SetCheck(bTimelineMode);
-
-	if (nViewType == xtpCalendarDayView ||
-		(bTimelineMode && iScale == xtpTSPID_Day))
-	{
-		m_pButtonViewDay->SetCheck(1);
-	}
-	else if (nViewType == xtpCalendarMonthView ||
-		(bTimelineMode && iScale == xtpTSPID_Month))
-	{
-		m_pButtonViewMonth->SetCheck(1);
-	}
-	else
-	{
-		if (bTimelineMode &&
-			(iScale == xtpTSPID_Week || iScale == xtpTSPID_WorkWeek))
-			m_pButtonViewWeek->SetCheck(1);
-
-		if (IsSwitchViewButtons())
-		{
-			m_pShowWorkWeek->SetVisible(!m_pShowWorkWeek->GetText().IsEmpty());
-			m_pShowFullWeek->SetVisible(!m_pShowFullWeek->GetText().IsEmpty());
-			m_pShowMcWeek->SetVisible(m_bMulticolumnsEnable && !m_pShowMcWeek->GetText().IsEmpty());
-			m_pShowMcWeek->SetCheck(GetCalendarCtrl()->m_bMultiColumnWeekMode);
-		}
-		if (nViewType == xtpCalendarWorkWeekView)
-		{
-			m_pShowWorkWeek->SetCheck(1);
-			m_pShowFullWeek->SetCheck(0);
-			m_pButtonViewWeek->SetCheck(1);
-		}
-		else if (nViewType == xtpCalendarFullWeekView)
-		{
-			m_pShowWorkWeek->SetCheck(0);
-			m_pShowFullWeek->SetCheck(1);
-			m_pButtonViewWeek->SetCheck(1);
-		}
-		else if (nViewType == xtpCalendarWeekView)
-		{
-			m_pShowWorkWeek->SetCheck(0);
-			m_pShowFullWeek->SetCheck(1);
-			m_pButtonViewWeek->SetCheck(1);
-		}
-		else if (nViewType == xtpCalendarTimeLineView)
-		{
-			m_pShowTimeline->SetCheck(1);
-		}
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::OnPartClick(int nPartID)
-{
-	BOOL bCancel = FALSE;
-	if (m_pConnection)
-		m_pConnection->SendEvent(XTP_NC_CALENDAR_CAPTIONBARPART_BEFORE_CLICK, (WPARAM)nPartID, (LPARAM)&bCancel);
-
-	if (GetCalendarCtrl() && !bCancel)
-		GetCalendarCtrl()->SendNotification(XTP_NC_CALENDAR_CAPTIONBARPART_BEFORE_CLICK, (WPARAM)nPartID, (LPARAM)&bCancel);
-
-	if (bCancel)
-		return;
-
-	if (nPartID == xtpCalendarCaptionBar_ButtonExpand)
-	{
-		m_pExpandButton->SetCheck(m_pExpandButton->GetCheck() ? 0 : 1);
-
-		Redraw();
-	}
-
-	if (GetCalendarCtrl() && GetCalendarCtrl()->GetActiveView())
-	{
-		BOOL bUpdate = TRUE;
-		BOOL bTimelineMode = m_pShowTimeline->GetCheck();
-
-		if (nPartID == xtpCalendarCaptionBar_ButtonViewDay)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarDayView);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ButtonViewWeek)
-		{
-			BOOL bMultiColumnWeekMode = GetCalendarCtrl()->m_bMultiColumnWeekMode;
-			if (bMultiColumnWeekMode)
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarWorkWeekView);
-			else
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ButtonViewMonth)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarMonthView);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ShowWorkWeek)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarWorkWeekView);
-			m_pShowWorkWeek->SetCheck(1);
-			m_pShowFullWeek->SetCheck(0);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ShowFullWeek)
-		{
-			GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-			m_pShowWorkWeek->SetCheck(0);
-			m_pShowFullWeek->SetCheck(1);
-			GetCalendarCtrl()->SetFocus();
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ShowTimeline)
-		{
-			m_pShowTimeline->SetCheck(!bTimelineMode);
-			GetCalendarCtrl()->OnCalendarTimeline();
-		}
-		else if (nPartID == xtpCalendarCaptionBar_MultiColumnsWeek)
-		{
-			GetCalendarCtrl()->m_bMultiColumnWeekMode = !GetCalendarCtrl()->m_bMultiColumnWeekMode;
-			int nViewType = GetCalendarCtrl()->GetActiveView()->GetViewType();
-			if (nViewType == xtpCalendarWeekView)
-			{
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-				m_pShowWorkWeek->SetCheck(0);
-				m_pShowFullWeek->SetCheck(1);
-			}
-			else if (nViewType == xtpCalendarWorkWeekView)
-			{
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarWorkWeekView);
-				m_pShowWorkWeek->SetCheck(1);
-				m_pShowFullWeek->SetCheck(0);
-			}
-			else if (nViewType == xtpCalendarFullWeekView)
-			{
-				GetCalendarCtrl()->SwitchActiveView(xtpCalendarFullWeekView);
-				m_pShowWorkWeek->SetCheck(0);
-				m_pShowFullWeek->SetCheck(1);
-			}
-			if (bTimelineMode)
-			{
-				GetCalendarCtrl()->m_bTimelineMode = !GetCalendarCtrl()->m_bTimelineMode;
-				GetCalendarCtrl()->OnCalendarTimeline();
-			}
-		}
-		else if (nPartID == xtpCalendarCaptionBar_ScrollPrevDate ||
-				nPartID == xtpCalendarCaptionBar_ScrollNextDate)
-		{
-			BOOL bNext = nPartID == xtpCalendarCaptionBar_ScrollNextDate;
-			COleDateTime dtSelStart, dtSelEnd, dtFirst;
-			CXTPCalendarView* pActiveView = GetCalendarCtrl()->GetActiveView();
-			int nViewType = pActiveView->GetViewType();
-
-			if (nViewType == xtpCalendarTimeLineView)
-			{
-				CXTPCalendarTimeLineView* pTimeLineView = (CXTPCalendarTimeLineView*) pActiveView;
-				int iTimeScaleID = pTimeLineView->GetTimeScaleID();
-				dtSelStart = pTimeLineView->GetStartViewDate();
-				if (iTimeScaleID == xtpTSPID_Month)
-				{
-					int nSelDay = dtSelStart.GetDay();
-					CXTPCalendarUtils::ShiftDate_Month(dtSelStart, bNext ? 1 : -1, 1);
-					CXTPCalendarUtils::UpdateMonthDay(dtSelStart, nSelDay);
-				}
-				else if (iTimeScaleID == xtpTSPID_Week)
-				{
-					dtSelStart += COleDateTimeSpan(bNext ? 7 : -7);
-				}
-				else if (iTimeScaleID == xtpTSPID_Day)
-				{
-					dtSelStart += COleDateTimeSpan(bNext ? 1 : -1);
-				}
-				pTimeLineView->SetStartViewDate(dtSelStart);
-				SCROLLINFO SI;
-				int nScrollStep;
-				if (pTimeLineView->GetScrollBarInfoH(&SI, &nScrollStep))
-				{
-					int newPos = SI.nPos - SI.nPage;
-					if (bNext)
-						newPos = SI.nPos + SI.nPage;
-					pTimeLineView->ScrollH(newPos, newPos);
-				}
-			}
-			else
-			{
-				int nGroupIndex = 0;
-				BOOL bAllDay = TRUE;
-				dtFirst = pActiveView->GetViewDayDate(0);
-				if (!pActiveView->GetSelection(&dtSelStart, &dtSelEnd, &bAllDay, &nGroupIndex))
-				{
-					dtSelStart = dtFirst;
-					dtSelEnd = dtFirst + COleDateTimeSpan(1);
-				}
-
-				if (nViewType == xtpCalendarDayView)
-				{
-					int nDays = pActiveView->GetViewDayCount();
-					dtSelStart += COleDateTimeSpan(bNext ? nDays : -nDays);
-					dtSelEnd += COleDateTimeSpan(bNext ? nDays : -nDays);
-				}
-				else if (nViewType == xtpCalendarWorkWeekView ||
-						nViewType == xtpCalendarFullWeekView ||
-						nViewType == xtpCalendarWeekView)
-				{
-					dtSelStart += COleDateTimeSpan(bNext ? 7 : -7);
-					dtSelEnd += COleDateTimeSpan(bNext ? 7 : -7);
-				}
-				else if (nViewType == xtpCalendarMonthView)
-				{
-					int nSelDay = dtSelStart.GetDay();
-					CXTPCalendarUtils::ShiftDate_Month(dtSelStart, bNext ? 1 : -1, 1);
-					CXTPCalendarUtils::UpdateMonthDay(dtSelStart, nSelDay);
-
-					dtSelEnd = dtSelStart;// + COleDateTimeSpan(1);
-
-					CXTPCalendarMonthView* pMView = (CXTPCalendarMonthView*)pActiveView;
-					pMView->SetMDayViewLightColorBaseDate(dtSelStart);
-				}
-				else
-				{
-					ASSERT(FALSE);
-				}
-
-				pActiveView->UnselectAllEvents();
-				pActiveView->SetSelection(dtSelStart, dtSelEnd, bAllDay, nGroupIndex);
-
-				GetCalendarCtrl()->SwitchActiveView((XTPCalendarViewType)nViewType);
-			}
-		}
-		else
-		{
-			bUpdate = FALSE;
-		}
-
-		if (bUpdate)
-		{
-			UpdateControlsState();
-			Redraw();
-		}
-	}
-
-	if (m_pConnection)
-		m_pConnection->SendEvent(XTP_NC_CALENDAR_CAPTIONBARPART_CLICK, (WPARAM)nPartID, 0);
-
-	if (GetCalendarCtrl())
-		GetCalendarCtrl()->SendNotification(XTP_NC_CALENDAR_CAPTIONBARPART_CLICK, (WPARAM)nPartID, 0);
-}
-
-BOOL CXTPCalendarCaptionBarTheme::_UpdateControlsHotState(BOOL* pbMouseLeave)
-{
-	if (pbMouseLeave)
-		*pbMouseLeave = FALSE;
-
-	CPoint ptMouse(0, 0);
-
-	if (GetCursorPos(&ptMouse) && GetOwnerWnd())
-		GetOwnerWnd()->ScreenToClient(&ptMouse);
-	else
-		return FALSE;
-
-	BOOL bMouseLeave = !m_rcRect.PtInRect(ptMouse);
-
-	if (pbMouseLeave)
-		*pbMouseLeave = bMouseLeave;
-
-	if (!bMouseLeave)
-		return FALSE;
-
-	BOOL bResetFocused = CWnd::GetFocus() != GetOwnerWnd();
-	BOOL bChanged = FALSE;
-
-	int nCount = m_arMembers.GetCount();
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarCaptionBarThemePart* pPart = m_arMembers.GetAt(i);
-		ASSERT(pPart);
-		if (pPart)
-		{
-			int nNewState = pPart->GetState() & (~(CXTPCalendarCaptionBarThemePart::xtpBtnStateMouseOver |
-					CXTPCalendarCaptionBarThemePart::xtpBtnStatePressed));
-			if (bResetFocused)
-				nNewState = nNewState & (~CXTPCalendarCaptionBarThemePart::xtpBtnStateFocused);
-
-			if (nNewState != pPart->GetState())
-			{
-				pPart->SetState(nNewState);
-				bChanged = TRUE;
-			}
-		}
-	}
-
-	return bChanged;
-}
-
-void CXTPCalendarCaptionBarTheme::OnKillFocus (CWnd* pNewWnd)
-{
-	UNREFERENCED_PARAMETER(pNewWnd);
-
-	BOOL bChanged = _UpdateControlsHotState();
-
-	if (bChanged)
-		Redraw();
-}
-
-void CXTPCalendarCaptionBarTheme::CSwitchViewButtonPart::RefreshMetrics()
-{
-	if (GetPaintTheme() <= xtpCalendarThemeOffice2003)
-		m_clrTextColor.SetStandardValue(RGB(0, 0, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CSwitchViewButtonPart::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	if (pDC)
-	{
-		CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont);
-
-		CSize szText = pDC->GetTextExtent(GetText());
-
-		if (szText.cx + 8 > m_rcRect.Width())
-			m_rcRect.right = m_rcRect.left + szText.cx + 8;
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CSwitchViewButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("CALENDARCAPTIONBARSWITCHVIEWBUTTON"));
-	CRect rcRect = GetRect();
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-	{
-		pDC->FillSolidRect(rcRect , RGB(155, 0, 0));
-		return;
-	}
-
-
-	if (GetPaintTheme() >= xtpCalendarThemeResource)
-	{
-		int nImagePart = (m_nState & xtpBtnStateChecked) ? 3 : 0;
-
-		if (m_nState & xtpBtnStatePressed)
-		{
-			nImagePart += 2;
-		}
-		else if (m_nState & xtpBtnStateMouseOver)
-		{
-			nImagePart += 1;
-		}
-
-		pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 6), CRect(0, 0, 0, 0));
-
-		rcRect.left = rcRect.right - 1;
-		pDC->FillSolidRect(&rcRect, GetTheme()->m_clrBorders);
-	}
-	else
-	{
-		if (GetTheme()->m_themeButton->IsAppThemed() &&
-			GetPaintTheme() == xtpCalendarThemeOffice2003)
-		{
-			int nState = (m_nState & xtpBtnStatePressed) ? PBS_PRESSED :
-					(m_nState & xtpBtnStateMouseOver) ? PBS_HOT: PBS_NORMAL;
-
-			if (m_nState & xtpBtnStateChecked)
-				nState = PBS_PRESSED;
-
-			GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_PUSHBUTTON, nState, rcRect, NULL);
-
-		}
-		else
-		{
-			UINT uFlags = DFCS_BUTTONPUSH |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-			::DrawFrameControl(pDC->GetSafeHdc(), rcRect, DFC_BUTTON, uFlags);
-		}
-	}
-
-
-	// drawText
-	CFont fntTmp;
-	CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont, GetTextColor());
-
-	if ((m_nState & xtpBtnStateChecked) && GetPaintTheme() <= xtpCalendarThemeOffice2003)
-	{
-		LOGFONT lf;
-		if (GetTheme()->m_fntTextFont->GetLogFont(&lf))
-		{
-			lf.lfWeight = FW_BOLD;
-
-			if (fntTmp.CreateFontIndirect(&lf))
-				autoFont.SetFont(&fntTmp);
-		}
-	}
-
-	CRect rcText = GetRect();
-	rcText.DeflateRect(1, 1, 1, 1);
-
-	pDC->SetBkMode(TRANSPARENT);
-	pDC->DrawText(GetText(), rcText, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
-}
-
-LPCTSTR CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::_GetImageName()
-{
-	if (m_nPartID == xtpCalendarCaptionBar_ScrollNextDate)
-		return _T("CALENDARCAPTIONBARNEXTDATEBUTTON");
-
-	return _T("CALENDARCAPTIONBARPREVDATEBUTTON");
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::AdjustLayout(CDC* /*pDC*/, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage =pImages->LoadFile(_GetImageName());
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-		return;
-
-	CRect rcImage = pImage->GetSource(0, 4);
-
-	m_rcRect.right = m_rcRect.left + rcImage.Width();
-
-	int C = (m_rcRect.top + m_rcRect.bottom) / 2;
-	int H = rcImage.Height() / 2;
-	m_rcRect.top = C - H;
-	m_rcRect.bottom = C + H;
-
-	//m_rcRect.bottom = m_rcRect.top + rcImage.Height();
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CRect rcRect = GetRect();
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_GetImageName());
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-	{
-		pDC->FillSolidRect(rcRect, RGB(155, 0, 0));
-		return;
-	}
-
-	if (GetPaintTheme() == xtpCalendarThemeResource)
-	{
-		int nImagePart = (m_nState & xtpBtnStatePressed) ? 2 : (m_nState & xtpBtnStateMouseOver) ? 1 : 0;
-
-		if (pImage->IsAlphaImage())
-			pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 4));
-		else
-			pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 4), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-
-		if (m_nState & xtpBtnStateFocused)
-		{
-			if (pImage->IsAlphaImage())
-				pImage->DrawImage(pDC, GetRect(), pImage->GetSource(3, 4), CRect(1, 1, 1, 1));
-			else
-				pImage->DrawImage(pDC, GetRect(), pImage->GetSource(3, 4), CRect(1, 1, 1, 1), RGB(255, 0, 255));
-		}
-	}
-	else
-	{
-		if (GetTheme()->m_themeButton->IsAppThemed() &&
-			GetPaintTheme() == xtpCalendarThemeOffice2003)
-		{
-			int nState = (m_nState & xtpBtnStatePressed) ? PBS_PRESSED :
-					(m_nState & xtpBtnStateMouseOver) ? PBS_HOT: PBS_NORMAL;
-
-			GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_PUSHBUTTON, nState, rcRect, NULL);
-		}
-		else
-		{
-			UINT uFlags = DFCS_BUTTONPUSH |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0); // | (bEnabled ? 0 : DFCS_INACTIVE)
-
-			::DrawFrameControl(pDC->GetSafeHdc(), rcRect, DFC_BUTTON, uFlags);
-		}
-
-		BOOL bLeftDirection = GetPartID() == xtpCalendarCaptionBar_ScrollPrevDate;
-		DrawScrollTriangle(pDC, rcRect, bLeftDirection, RGB(0, 0, 0));
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::_DrawTriangle(CDC* pDC, CPoint pt0, CPoint pt1, CPoint pt2, COLORREF clrColor)
-{
-	CXTPPenDC pen (*pDC, clrColor);
-	CXTPBrushDC brush (*pDC, clrColor);
-
-	CPoint pts[3];
-	pts[0] = pt0;
-	pts[1] = pt1;
-	pts[2] = pt2;
-	pDC->Polygon(pts, 3);
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::DrawScrollTriangle(CDC* pDC, CRect rcRect, BOOL bLeftDirection, COLORREF clrColor)
-{
-	CPoint ptCenter(rcRect.CenterPoint());
-	ptCenter.y--;
-
-	if (bLeftDirection)
-	{
-		ptCenter.x -= 3;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x + 4, ptCenter.y - 4),
-				CPoint(ptCenter.x + 4, ptCenter.y + 4), clrColor);
-	}
-	else
-	{
-		ptCenter.x += 2;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x - 4, ptCenter.y - 4),
-			CPoint(ptCenter.x - 4, ptCenter.y + 4), clrColor);
-	}
-}
-
-
-BOOL CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CXTPCalendarCaptionBarThemePart::OnLButtonDown(nFlags, point);
-
-	if (GetTheme() && GetTheme()->GetOwnerWnd() && HitTest(point) &&
-		CWnd::GetFocus() != GetTheme()->GetOwnerWnd() )
-	{
-		GetTheme()->GetOwnerWnd()->SetFocus();
-	}
-
-	return FALSE;
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	UNREFERENCED_PARAMETER(nRepCnt);  UNREFERENCED_PARAMETER(nFlags);
-
-	if (!IsVisible())
-		return;
-
-	if ((m_nState & xtpBtnStateFocused) && (m_nState & xtpBtnStatePressed) == 0 &&
-		nChar == VK_SPACE)
-	{
-		m_nState |= xtpBtnStatePressed;
-
-		Redraw();
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CScrollDateButtonPart::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	UNREFERENCED_PARAMETER(nRepCnt);  UNREFERENCED_PARAMETER(nFlags);
-
-	if (!IsVisible())
-		return;
-
-	int nMask = xtpBtnStateFocused | xtpBtnStatePressed;
-
-	if ((m_nState & nMask) == nMask && nChar == VK_SPACE && GetTheme())
-	{
-		GetTheme()->OnPartClick(GetPartID());
-	}
-
-	if (nChar == VK_SPACE)
-	{
-		m_nState = m_nState & (~xtpBtnStatePressed);
-
-		Redraw();
-	}
-}
-//------------------------------------------------------------------
-void CXTPCalendarCaptionBarTheme::CRadioButtonPart::RefreshMetrics()
-{
-	if (GetPaintTheme() <= xtpCalendarThemeOffice2003)
-		m_clrTextColor.SetStandardValue(RGB(0, 0, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CRadioButtonPart::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	if (GetTheme() && GetTheme()->m_themeButton->IsAppThemed())
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_RADIOBUTTON, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	if (pDC)
-	{
-		CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont);
-		CSize szText = pDC->GetTextExtent(GetText());
-
-		if (szRadio.cx + 9 + szText.cx + 8 > m_rcRect.Width())
-			m_rcRect.right = m_rcRect.left + szRadio.cx + 9 + szText.cx + 8;
-
-		szRadio.cy = max(szRadio.cy, szText.cy);
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CRadioButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	BOOL bThemed = GetTheme() && GetTheme()->m_themeButton->IsAppThemed() &&
-					GetPaintTheme() >= xtpCalendarThemeOffice2003;
-	if (bThemed)
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_RADIOBUTTON, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	rcRadio.right = rcRadio.left + szRadio.cx;
-
-	if (bThemed)
-	{
-		int md = rcRadio.CenterPoint().y;
-		int ht = (int) (rcRadio.Height() / (2 * GetTheme()->m_dScale));
-		rcRadio.top = md - ht;
-		rcRadio.bottom = md + ht;
-
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_RADIOBUTTON, 1, &rcRadio, TS_DRAW, &szRadio);
-
-		int nState = (m_nState & xtpBtnStatePressed) ? RBS_UNCHECKEDPRESSED :
-				(m_nState & xtpBtnStateMouseOver) ? RBS_UNCHECKEDHOT : RBS_UNCHECKEDNORMAL;
-
-		if (m_nState & xtpBtnStateChecked)
-			nState += 4;
-
-		GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_RADIOBUTTON, nState, rcRadio, NULL);
-
-	}
-	else
-	{
-		UINT uFlags = DFCS_BUTTONRADIO |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-		if (GetPaintTheme() > xtpCalendarThemeOffice2000)
-			uFlags |= DFCS_FLAT;
-
-		::DrawFrameControl(pDC->GetSafeHdc(), rcRadio, DFC_BUTTON, uFlags);
-	}
-
-	// drawText
-	CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont, GetTextColor());
-	pDC->SetBkMode(TRANSPARENT);
-
-	CRect rcText = GetRect();
-	rcText.left = rcRadio.right + 9;
-
-	pDC->DrawText(GetText(), rcText, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
-
-	rcText.left--;
-	rcText.right++;
-
-	if (m_nState & xtpBtnStatePressed)
-		pDC->DrawFocusRect(rcText);
-}
-//------------------------------------------------------------------
-void CXTPCalendarCaptionBarTheme::CCheckboxButtonPart::RefreshMetrics()
-{
-	if (GetPaintTheme() <= xtpCalendarThemeOffice2003)
-		m_clrTextColor.SetStandardValue(RGB(0, 0, 0));
-}
-
-void CXTPCalendarCaptionBarTheme::CCheckboxButtonPart::AdjustLayout(CDC* pDC, const CRect& rcRect)
-{
-	m_rcRect = rcRect;
-
-	if (m_rcRect.IsRectEmpty())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	if (GetTheme() && GetTheme()->m_themeButton->IsAppThemed())
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_CHECKBOX, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	if (pDC)
-	{
-		CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont);
-		CSize szText = pDC->GetTextExtent(GetText());
-
-		if (szRadio.cx + 9 + szText.cx + 8 > m_rcRect.Width())
-			m_rcRect.right = m_rcRect.left + szRadio.cx + 9 + szText.cx + 8;
-
-		szRadio.cy = max(szRadio.cy, szText.cy);
-	}
-}
-
-void CXTPCalendarCaptionBarTheme::CCheckboxButtonPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CSize szRadio(13, 13);
-	CRect rcRadio = GetRect();
-
-	BOOL bThemed = GetTheme() && GetTheme()->m_themeButton->IsAppThemed() &&
-					GetPaintTheme() >= xtpCalendarThemeOffice2003;
-	if (bThemed)
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_CHECKBOX, 1, &rcRadio, TS_DRAW, &szRadio);
-
-	rcRadio.right = rcRadio.left + szRadio.cx;
-
-	if (bThemed)
-	{
-		int md = rcRadio.CenterPoint().y;
-		int ht = (int) (rcRadio.Height() / (2 * GetTheme()->m_dScale));
-		rcRadio.top = md - ht;
-		rcRadio.bottom = md + ht;
-
-		GetTheme()->m_themeButton->GetThemePartSize(NULL, BP_CHECKBOX, 1, &rcRadio, TS_DRAW, &szRadio);
-
-		int nState = (m_nState & xtpBtnStatePressed) ? RBS_UNCHECKEDPRESSED :
-				(m_nState & xtpBtnStateMouseOver) ? RBS_UNCHECKEDHOT: RBS_UNCHECKEDNORMAL;
-
-		if (m_nState & xtpBtnStateChecked)
-			nState += 4;
-
-		GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_CHECKBOX, nState, rcRadio, NULL);
-
-	}
-	else
-	{
-		UINT uFlags = DFCS_BUTTONCHECK |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-		if (GetPaintTheme() > xtpCalendarThemeOffice2000)
-			uFlags |= DFCS_FLAT;
-
-		::DrawFrameControl(pDC->GetSafeHdc(), rcRadio, DFC_BUTTON, uFlags);
-	}
-
-	// drawText
-	CXTPFontDC autoFont(pDC, GetTheme()->m_fntTextFont, GetTextColor());
-	pDC->SetBkMode(TRANSPARENT);
-
-	CRect rcText = GetRect();
-	rcText.left = rcRadio.right + 9;
-
-	pDC->DrawText(GetText(), rcText, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
-
-	rcText.left--;
-	rcText.right++;
-
-	if (m_nState & xtpBtnStatePressed)
-		pDC->DrawFocusRect(rcText);
-}
-//------------------------------------------------------------------
-void CXTPCalendarCaptionBarTheme::CDateLabelPart::RefreshMetrics()
-{
-	if (!GetTheme())
-		return;
-
-	m_clrTextColor.SetStandardValue(GetTheme()->m_clrTextColor);
-
-	LOGFONT lfBaseFont;
-	::ZeroMemory(&lfBaseFont, sizeof(lfBaseFont));
-
-	GetTheme()->m_fntTextFont->GetLogFont(&lfBaseFont);
-
-	if (GetTheme()->IsOneLine())
-	{
-		if (XTPSystemVersion()->IsWinVistaOrGreater())
-			lfBaseFont.lfHeight = -14;
-		else
-			lfBaseFont.lfHeight = -18;
-	}
-	else
-		lfBaseFont.lfHeight = -20;
-
-	m_fntTextFont.SetStandardValue(&lfBaseFont);
-}
-
-void CXTPCalendarCaptionBarTheme::CDateLabelPart::Draw(CDC* pDC)
-{
-	if (!IsVisible())
-		return;
-
-	CXTPFontDC autoFont(pDC, m_fntTextFont, m_clrTextColor);
-	pDC->SetBkMode(TRANSPARENT);
-
-	CXTPCalendarView* pCalView = XTP_SAFE_GET2(GetTheme(), GetCalendarCtrl(), GetActiveView(), NULL);
-
-	if (pCalView)
-	{
-		BOOL bShowMonthDay = pCalView->GetViewType() != xtpCalendarMonthView;
-		COleDateTime dtDay1 = pCalView->GetViewDayDate(0);
-		COleDateTime dtDay2 = pCalView->GetViewDayDate(max(0, pCalView->GetViewDayCount() - 1));
-
-		m_strText = _FormatDate(dtDay1, dtDay2, bShowMonthDay);
-	}
-
-	if (m_strText.IsEmpty())
-		return;
-
-	CRect rcText = GetRect();
-	rcText.top -= 6;
-
-	UINT uFlags = DT_VCENTER | DT_SINGLELINE;
-	if (GetTheme() && !GetTheme()->IsScrollDateButtons()
-		&& GetPaintTheme() < xtpCalendarThemeResource)
-	{
-		uFlags |= DT_CENTER;
-		rcText.right = max(rcText.left, rcText.right - 9);
-	}
-
-	pDC->DrawText(GetText(), rcText, uFlags);
-}
-
-CString CXTPCalendarCaptionBarTheme::CDateLabelPart::_FormatDate(COleDateTime dtDay1, COleDateTime dtDay2, BOOL bShowMonthDay)
-{
-	//LOCALE_IDATE  -  short date format ordering
-	// 0 Month-Day-Year
-	// 1 Day-Month-Year
-	// 2 Year-Month-Day
-	int nDateOrdering = CXTPCalendarUtils::GetLocaleLong(LOCALE_ILDATE);
-
-	CString strFormat1 = CXTPCalendarUtils::GetLocaleString(LOCALE_SLONGDATE, 256);
-	CString strFormat2 = CXTPCalendarUtils::GetLocaleString(LOCALE_SLONGDATE, 256);
-
-	strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T('g'));
-	strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T("ddd"));
-	strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T("dddd"));
-
-	strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T('g'));
-	strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T("ddd"));
-	strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T("dddd"));
-
-	if (!bShowMonthDay)
-	{
-		strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1, _T('d'));
-		strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2, _T('d'));
-	}
-	CString strCaption;
-
-	if (!CXTPCalendarUtils::IsEqual(dtDay1, dtDay2))
-	{
-		//CString strFormat2(strFormat1);
-
-		if (dtDay1.GetMonth() == dtDay2.GetMonth())
-		{
-			if (nDateOrdering == 1)
-				strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1,  _T('M'));
-			else
-				strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2,  _T('M'));
-		}
-
-		if (dtDay1.GetYear() == dtDay2.GetYear())
-		{
-			if (nDateOrdering == 2)
-				strFormat2 = CXTPCalendarUtils::RemoveFormatPart(strFormat2,  _T('y'));
-			else
-				strFormat1 = CXTPCalendarUtils::RemoveFormatPart(strFormat1,  _T('y'));
-		}
-
-		if (!strFormat1.IsEmpty())
-			strCaption = CXTPCalendarUtils::GetDateFormat(dtDay1, strFormat1);
-
-		if (!strFormat1.IsEmpty() && !strFormat2.IsEmpty())
-			strCaption += _T(" - ");
-
-		if (!strFormat2.IsEmpty())
-			strCaption += CXTPCalendarUtils::GetDateFormat(dtDay2, strFormat2);
-	}
-	else
-	{
-		strCaption = CXTPCalendarUtils::GetDateFormat(dtDay1, strFormat1);
-	}
-
-	UserAction_FormatCaptionBarLabel(strCaption, dtDay1);	
-	return strCaption;
-}
-
-void CXTPCalendarCaptionBarTheme::CDateLabelPart::UserAction_FormatCaptionBarLabel(CString& strCaption, COleDateTime dtDay1)
-{
-	DWORD dwFlags = XTP_SAFE_GET2(GetTheme(), GetCalendarCtrl(), GetAskItemTextFlags(), 0);
-	CXTPCalendarView* pActiveView = XTP_SAFE_GET2(GetTheme(), GetCalendarCtrl(), GetActiveView(), NULL);
-	if(pActiveView == NULL)
-		return;
-
-	XTPCalendarViewType activeViewType = pActiveView->GetViewType();
+  //Validate our parameters
+	ASSERT_VALID(this);
 	
-	XTP_CALENDAR_GETITEMTEXT_PARAMS objRequest;
-	::ZeroMemory(&objRequest, sizeof(objRequest));
-	objRequest.pstrText = &strCaption;
-	objRequest.nWeekNum = CXTPCalendarUtils::GetWeekOfYear(dtDay1);
+  CScintillaCtrl& rCtrl = GetCtrl();
 
-	if ((dwFlags & xtpCalendarItemText_CaptionBarDayViewDateLabel) && activeViewType == xtpCalendarDayView)
-		objRequest.nItem = (int)xtpCalendarItemText_CaptionBarDayViewDateLabel;
+  if (ar.IsLoading())
+  {
+    //Tell the control not to maintain any undo info while we stream the data 
+    rCtrl.Cancel();
+    rCtrl.SetUndoCollection(FALSE);
 
-	if ((dwFlags & xtpCalendarItemText_CaptionBarWeekViewDateLabel) 
-		 && (activeViewType == xtpCalendarWeekView || activeViewType == xtpCalendarFullWeekView || activeViewType == xtpCalendarWorkWeekView))
-		objRequest.nItem = (int)xtpCalendarItemText_CaptionBarWeekViewDateLabel;
+    //Read the data in from the file in blocks
+    CFile* pFile = ar.GetFile();
+    char Buffer[4096];
+    int nBytesRead = 0;
+    do
+    {
+      nBytesRead = pFile->Read(Buffer, 4096);
+      if (nBytesRead)
+        rCtrl.AddText(nBytesRead, Buffer);
+    }
+    while (nBytesRead);
 
-	if ((dwFlags & xtpCalendarItemText_CaptionBarMonthViewDateLabel) && activeViewType == xtpCalendarMonthView)
-		objRequest.nItem = (int)xtpCalendarItemText_CaptionBarMonthViewDateLabel;		
+    //Set the read only state if required
+    if (m_bUseROFileAttributeDuringLoading && ((GetFileAttributes(pFile->GetFilePath()) & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
+      rCtrl.SetReadOnly(TRUE);
+    else
+      rCtrl.SetReadOnly(FALSE);
 
-	if(objRequest.nItem != 0)
-		XTP_SAFE_CALL2(GetTheme(), GetCalendarCtrl(), SendNotificationAlways(XTP_NC_CALENDAR_GETITEMTEXT, (WPARAM)&objRequest, 0));
+    //Reinitialize the control settings
+    rCtrl.SetUndoCollection(TRUE);
+    rCtrl.EmptyUndoBuffer();
+    rCtrl.SetSavePoint();
+    rCtrl.GotoPos(0);
+  }
+  else
+  {
+    //Get the length of the document
+    int nDocLength = rCtrl.GetLength();
+
+    //Write the data in blocks to disk
+    CFile* pFile = ar.GetFile();
+    for (int i=0; i<nDocLength; i += 4095) //4095 because data will be returned NULL terminated
+    {
+      int nGrabSize = nDocLength - i;
+      if (nGrabSize > 4095)
+        nGrabSize = 4095;
+
+      //Get the data from the control
+	    TextRange tr;
+	    tr.chrg.cpMin = i;
+	    tr.chrg.cpMax = i + nGrabSize;
+      char Buffer[4096];
+	    tr.lpstrText = Buffer;
+	    rCtrl.GetTextRange(&tr);
+
+      //Write it to disk
+      pFile->Write(Buffer, nGrabSize);
+    }
+  }
 }
 
-void CXTPCalendarCaptionBarTheme::CExpandButtonPart::AdjustLayout(CDC* /*pDC*/, const CRect& rcRect)
+void CScintillaView::OnFilePageSetup() 
 {
-	m_rcRect = rcRect;
+  //Display a standard page setup dialog
+	CPageSetupDialog dlg;
 
-	if (m_rcRect.IsRectEmpty())
-		return;
+  //Allow the margin settings to be tweaked
+  dlg.m_psd.Flags |= PSD_MARGINS;
 
-	CXTPResourceImages* pImages = XTPResourceImages();
+  //Are we using the metric or imperial system	
+  if (m_bUsingMetric)
+    dlg.m_psd.Flags |= PSD_INHUNDREDTHSOFMILLIMETERS;
+  else
+    dlg.m_psd.Flags |= PSD_INTHOUSANDTHSOFINCHES;
 
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("CALENDARCAPTIONBAREXPANDBUTTON"));
+  if (m_bPersistMarginSettings)
+    LoadMarginSettings();
 
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-		return;
+  //Set the current margin settings to the current value from m_rectMargin 
+  dlg.m_psd.rtMargin = m_rMargin;
 
-	CRect rcImage = pImage->GetSource(0, 6);
+	//get the current device from the app
+	PRINTDLG pd;
+	pd.hDevNames = NULL;
+	pd.hDevMode = NULL;
+  CWinApp* pApp = AfxGetApp();
+	pApp->GetPrinterDeviceDefaults(&pd);
+	dlg.m_psd.hDevNames = pd.hDevNames;
+	dlg.m_psd.hDevMode = pd.hDevMode;
 
-	m_rcRect.left = m_rcRect.right - rcImage.Width();
-	m_rcRect.top = m_rcRect.top + m_rcRect.Height() / 2 - rcImage.Height() / 2;
-	m_rcRect.bottom = m_rcRect.top + rcImage.Height();
+	if (dlg.DoModal() == IDOK)
+	{
+    //Save the new margin value in to the member variable
+    m_rMargin = dlg.m_psd.rtMargin;
+
+    if (m_bPersistMarginSettings)
+      SaveMarginSettings();
+
+    //Update the printer settings
+		pApp->SelectPrinter(dlg.m_psd.hDevNames, dlg.m_psd.hDevMode);
+	}
 }
 
-void CXTPCalendarCaptionBarTheme::CExpandButtonPart::Draw(CDC* pDC)
+void CScintillaView::OnStyleNeeded(SCNotification* /*pSCNotification*/)
 {
-	if (!IsVisible())
-		return;
-
-	CRect rcRect = GetRect();
-
-	CXTPResourceImages* pImages = XTPResourceImages();
-
-	CXTPResourceImage* pImage = pImages->LoadFile(_T("CALENDARCAPTIONBAREXPANDBUTTON"));
-
-	ASSERT(pImage);
-	if (!pImage || !GetTheme())
-	{
-		pDC->FillSolidRect(rcRect, RGB(155, 0, 0));
-		return;
-	}
-
-	if (GetPaintTheme() == xtpCalendarThemeResource)
-	{
-		int nImagePart = (m_nState & xtpBtnStateChecked) ? 3 : 0;
-		if (m_nState & xtpBtnStatePressed)
-			nImagePart += 2;
-		else if (m_nState & xtpBtnStateMouseOver)
-			nImagePart += 1;
-
-		pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 6), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-		//pImage->DrawImage(pDC, rcRect, pImage->GetSource(nImagePart, 6));
-	}
-	else
-	{
-		if (GetTheme()->m_themeButton->IsAppThemed() &&
-			GetPaintTheme() == xtpCalendarThemeOffice2003)
-		{
-			int nState = (m_nState & xtpBtnStatePressed) ? PBS_PRESSED :
-				(m_nState & xtpBtnStateMouseOver) ? PBS_HOT: PBS_NORMAL;
-
-			GetTheme()->m_themeButton->DrawThemeBackground(pDC->GetSafeHdc(), BP_PUSHBUTTON, nState, rcRect, NULL);
-		}
-		else
-		{
-			UINT uFlags = DFCS_BUTTONPUSH |
-			((m_nState & xtpBtnStateChecked) ? DFCS_CHECKED : 0) |
-			((m_nState & xtpBtnStatePressed) ? DFCS_PUSHED : 0);
-
-			::DrawFrameControl(pDC->GetSafeHdc(), rcRect, DFC_BUTTON, uFlags);
-		}
-
-		BOOL bDownDirection = (m_nState & xtpBtnStateChecked) == 0;
-		DrawExpandTriangle(pDC, rcRect, bDownDirection, RGB(0, 0, 0));
-	}
+  //By default do nothing, derived classes may want to do something
 }
 
-void CXTPCalendarCaptionBarTheme::CExpandButtonPart::DrawExpandTriangle(CDC* pDC, CRect rcRect, BOOL bDownDirection, COLORREF clrColor)
+void CScintillaView::OnCharAdded(SCNotification* /*pSCNotification*/)
 {
-	CPoint ptCenter(rcRect.CenterPoint());
-	if (bDownDirection)
-	{
-		ptCenter.y += 2;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x + 4, ptCenter.y - 4),
-			CPoint(ptCenter.x - 4, ptCenter.y - 4), clrColor);
-	}
-	else
-	{
-		ptCenter.y -= 2;
-		GetTheme()->_DrawTriangle(pDC, ptCenter, CPoint(ptCenter.x + 4, ptCenter.y + 4),
-			CPoint(ptCenter.x - 4, ptCenter.y + 4), clrColor);
-	}
+  //By default do nothing, derived classes may want to do something
 }
+
+void CScintillaView::OnSavePointReached(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnSavePointLeft(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnModifyAttemptRO(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDoubleClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnUpdateUI(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnModified(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnMacroRecord(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnMarginClick(SCNotification* pSCNotification)
+{
+  //By default get the line where the click occured and toggle its fold state
+  CScintillaCtrl& rCtrl = GetCtrl();
+  int nLine = rCtrl.LineFromPosition(pSCNotification->position);
+  rCtrl.ToggleFold(nLine);
+}
+
+void CScintillaView::OnNeedShown(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnPainted(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnUserListSelection(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDwellStart(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnDwellEnd(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnZoom(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnHotSpotClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnHotSpotDoubleClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnCallTipClick(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnAutoCSelection(SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnChange()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnSetFocus()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+void CScintillaView::OnKillFocus()
+{
+  //By default do nothing, derived classes may want to do something
+}
+
+BOOL CScintillaView::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+  HWND hWndControl = reinterpret_cast<HWND>(lParam);
+  
+  if (hWndControl == GetCtrl().GetSafeHwnd())
+  {
+    WORD wNotification = HIWORD(wParam);
+    switch (wNotification)
+    {
+      case SCEN_CHANGE:
+      {
+        OnChange();
+        break;
+      }
+      case SCEN_SETFOCUS:
+      {
+        OnSetFocus();
+        break;
+      }
+      case SCEN_KILLFOCUS:
+      {
+        OnKillFocus();
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+
+    return TRUE;
+  }
+
+  //let the base class do its thing
+  return CView::OnCommand(wParam, lParam);
+}
+
+BOOL CScintillaView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+  NMHDR* pNMHdr = reinterpret_cast<NMHDR*>(lParam);
+  AFXASSUME(pNMHdr);
+
+  //Is it a notification from the embedded control
+  CScintillaCtrl& rCtrl = GetCtrl();
+  if (pNMHdr->hwndFrom == rCtrl.GetSafeHwnd())
+  {
+    SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(lParam);
+    switch (pNMHdr->code)
+    {
+      case SCN_STYLENEEDED:
+      {
+        OnStyleNeeded(pSCNotification);
+        break;
+      }
+      case SCN_CHARADDED:
+      {
+        OnCharAdded(pSCNotification);
+        break;
+      }
+      case SCN_SAVEPOINTREACHED:
+      {
+        OnSavePointReached(pSCNotification);
+        break;
+      }
+      case SCN_SAVEPOINTLEFT:
+      {
+        OnSavePointLeft(pSCNotification);
+        break;
+      }
+      case SCN_MODIFYATTEMPTRO:
+      {
+        OnModifyAttemptRO(pSCNotification);
+        break;
+      }
+      case SCN_DOUBLECLICK:
+      {
+        OnDoubleClick(pSCNotification);
+        break;
+      }
+      case SCN_UPDATEUI:
+      {
+        OnUpdateUI(pSCNotification);
+        break;
+      }
+      case SCN_MODIFIED:
+      {
+        OnModified(pSCNotification);
+        break;
+      }
+      case SCN_MACRORECORD:
+      {
+        OnMacroRecord(pSCNotification);
+        break;
+      }
+      case SCN_MARGINCLICK:
+      {
+        OnMarginClick(pSCNotification);
+        break;
+      }
+      case SCN_NEEDSHOWN:
+      {
+        OnNeedShown(pSCNotification);
+        break;
+      }
+      case SCN_PAINTED:
+      {
+        OnPainted(pSCNotification);
+        break;
+      }
+      case SCN_USERLISTSELECTION:
+      {
+        OnUserListSelection(pSCNotification);
+        break;
+      }
+      case SCN_DWELLSTART:
+      {
+        OnDwellStart(pSCNotification);
+        break;
+      }
+      case SCN_DWELLEND:
+      {
+        OnDwellEnd(pSCNotification);
+        break;
+      }
+      case SCN_ZOOM:
+      {
+        OnZoom(pSCNotification);
+        break;
+      }
+      case SCN_HOTSPOTCLICK:
+      {
+        OnHotSpotClick(pSCNotification);
+        break;
+      }
+      case SCN_HOTSPOTDOUBLECLICK:
+      {
+        OnHotSpotDoubleClick(pSCNotification);
+        break;
+      }
+      case SCN_CALLTIPCLICK:
+      {
+        OnCallTipClick(pSCNotification);
+        break;
+      }
+      case SCN_AUTOCSELECTION:
+      {
+        OnAutoCSelection(pSCNotification);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+    }
+    return TRUE; // we processed the message
+  }
+  else
+  {
+    //let the base class do its thing
+    return CView::OnNotify(wParam, lParam, pResult);
+  }
+}
+
+void CScintillaView::GetReplaceAllTarget( long& s, long& e )
+{
+	s = 0; e = GetCtrl().GetLength();
+}
+
+IMPLEMENT_DYNAMIC(CScintillaDoc, CDocument)
+
+CScintillaDoc::CScintillaDoc()
+{
+	ASSERT_VALID(this);
+}
+
+CScintillaView* CScintillaDoc::GetView() const
+{
+	//find the first view - if there are no views
+	//we must return NULL
+	POSITION pos = GetFirstViewPosition();
+	if (pos == NULL)
+		return NULL;
+
+	//find the first view that is a CScintillaView
+	CView* pView;
+	while (pos != NULL)
+	{
+		pView = GetNextView(pos);
+		if (pView->IsKindOf(RUNTIME_CLASS(CScintillaView)))
+			return static_cast<CScintillaView*>(pView);
+	}
+
+	//can't find one--return NULL
+	return NULL;
+}
+
+void CScintillaDoc::SetModifiedFlag(BOOL bModified)
+{
+  CScintillaView* pView = GetView();
+  AFXASSUME(pView);
+
+  if (bModified == FALSE)
+    pView->GetCtrl().SetSavePoint();
+
+  m_bModified = bModified;
+}
+
+BOOL CScintillaDoc::IsModified()
+{
+  CScintillaView* pView = GetView();
+  AFXASSUME(pView);
+
+	return m_bModified || pView->GetCtrl().GetModify();
+}
+
+void CScintillaDoc::DeleteContents()
+{
+  //let the base class do its thing
+	CDocument::DeleteContents();
+
+  //Ask our accompanying view to delete its contents
+	CWaitCursor wait;
+	CScintillaView* pView = GetView();
+  if (pView)
+    pView->DeleteContents();
+}
+
+void CScintillaDoc::Serialize(CArchive& ar)
+{
+	CScintillaView* pView = GetView();
+	AFXASSUME(pView);
+	
+	pView->Serialize(ar);
+}
+
+BOOL CScintillaDoc::OnSaveDocument(LPCTSTR lpszPathName)
+{
+  //Let the base class do its thing
+	BOOL bSuccess = CDocument::OnSaveDocument(lpszPathName);
+  if (bSuccess)
+  {
+		CScintillaView* pView = GetView();
+		AFXASSUME(pView);
+		
+		CScintillaCtrl& rCtrl = pView->GetCtrl();
+
+		//Tell the control that the document has now been saved
+		rCtrl.SetSavePoint();
+		rCtrl.SetReadOnly(FALSE);
+	}
+
+	return bSuccess;
+} 
+
+#ifdef _DEBUG
+void CScintillaDoc::AssertValid() const
+{
+  //Let the base class do its thing
+	CDocument::AssertValid();
+}
+
+void CScintillaDoc::Dump(CDumpContext& dc) const
+{
+  //let the base class do its thing
+	CDocument::Dump(dc);
+}
+#endif //_DEBUG
+

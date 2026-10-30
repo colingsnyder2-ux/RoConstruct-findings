@@ -1,137 +1,102 @@
-// from server: 14% by colin
-struct RBXName {
-    void* p;
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_sol_resume_native_guidraw_portable_54c5ec61f66fe480.cpp
 
-struct String {
-    char buf[16];
-    unsigned int len;
-    unsigned int cap;
-};
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("gui/GuiDraw.h", "roc_sol_resume_native_guidraw_authheader_001a245a00442d6d.cpp")
+#include "gui/GuiDraw.h"
+#include "AppDraw/Textures.h"
+extern RBX::ContentProvider* context;
 
-struct SharedCount {
-    long refs;
-};
-
-struct SharedPtr {
-    void* px;
-    SharedCount* pn;
-};
-
-struct GuiItem {
-    char pad[0x20];
-    SharedPtr* a20;
-    SharedPtr* a24;
-    SharedPtr* a28;
-    SharedPtr* a2c;
-    float f30;
-    float f34;
-};
-
-struct VWidget : GuiItem {
-    bool processMouse(const SharedPtr& event);
-};
-
-extern "C" {
-    long __stdcall InterlockedDecrement(long volatile*);
-    void* __stdcall GetCurrentThreadId();
-}
-
-extern "C" int __stdcall sub_544FC0(void*, void*);
-extern "C" void __stdcall sub_457DD0(void*);
-extern "C" void __stdcall sub_474F70(void*, void*);
-extern "C" void __stdcall sub_44CF10(void*, const char*);
-extern "C" void __stdcall sub_600B30(void*, const SharedPtr&);
-
-extern "C" void* __stdcall sub_77E690();
-extern "C" void* __stdcall sub_77E69C();
-extern "C" void* __stdcall sub_77E638();
-extern "C" void* __stdcall sub_77E644();
-extern "C" void* __stdcall sub_77E6AC();
-extern "C" void* __stdcall sub_77D2E8();
-
-extern "C" const char str_7C2A50[];
-extern "C" const char str_7C2A48[];
-extern "C" const char str_7C2A40[];
-
-bool VWidget::processMouse(const SharedPtr& event)
+namespace RBX
 {
-    if (!sub_544FC0(this, (void*)&event)) {
-        return false;
-    }
+	static G3D::ReferenceCountedPointer<TextureProxyBase> silentGetTextureProxyBase(Adorn* adorn, const ContentId& id)
+	{
+		if (context->hasContent(id))
+			return Textures::getTextureProxy(adorn, id);
+		else
+			return NULL;
+	}
 
-    sub_77E690();
+	void GuiDrawImage::render2d(Adorn* adorn, bool enabled, Rect& rect, Widget::WidgetState state)
+	{
+		if (!enabled)
+		{
+			draw(adorn, disable, rect, G3D::Color4::clear(), G3D::Color4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+		else if (state == Widget::NOTHING)
+		{
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+		}
+		else if (state != Widget::HOVER && state != Widget::DOWN_AWAY)
+		{
+			draw(adorn, down, rect, G3D::Color3::blue(), G3D::Color4::clear());
+		}
+		else
+		{
+			draw(adorn, hover, rect, G3D::Color3::yellow(), G3D::Color4::clear());
+		}
+	}
 
-    this->a20 = 0;
-    this->a28 = 0;
-    this->a2c = 0;
-    this->a24 = 0;
-    this->f30 = 0.0f;
-    this->f34 = 0.0f;
+	void GuiDrawImage::draw(Adorn* adorn, G3D::ReferenceCountedPointer<TextureProxyBase> texture, const Rect& rect, const G3D::Color4& behind, const G3D::Color4& inFront)
+	{
+		G3D::Rect2D rect2D = rect.toRect2D();
 
-    SharedPtr tmp;
-    sub_600B30(&tmp, event);
-    sub_474F70(&this->a20, tmp.px);
+		if (texture.notNull())
+		{
+			adorn->setTexture(0, texture);
+			adorn->rect2d(rect2D, G3D::Color4(1.0f, 1.0f, 1.0f, 1.0f));
+			adorn->setTexture(0, NULL);
+		}
+		else if (normal.notNull())
+		{
+			adorn->rect2d(rect2D, behind);
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+			adorn->rect2d(rect2D, inFront);
+		}
+	}
 
-    if (tmp.px) {
-        if (InterlockedDecrement((long*)tmp.px) == 0) {
-            sub_457DD0(tmp.px);
-        }
-        tmp.px = 0;
-    }
+	G3D::Vector2 GuiDrawImage::getImageSize() const
+	{
+		if (size.isZero() && normal.notNull())
+			size = normal->getSize();
 
-    if (this->a20 == 0) {
-        return false;
-    }
+		return size;
+	}
 
-    sub_77E69C();
-    sub_77E638();
-    sub_77E644();
-    sub_44CF10(&tmp, str_7C2A50);
-    sub_600B30(&tmp, event);
-    sub_474F70(&this->a28, tmp.px);
+	void GuiDrawImage::setImageFromName(Adorn* adorn, const std::string& name)
+	{
+		ContentId id = ContentId::fromAssets("Textures\\" + name + ".png");
+		setImage(adorn, id);
+	}
 
-    if (tmp.px) {
-        if (InterlockedDecrement((long*)tmp.px) == 0) {
-            sub_457DD0(tmp.px);
-        }
-        tmp.px = 0;
-    }
+	bool GuiDrawImage::setImage(Adorn* adorn, const TextureId& textureId)
+	{
+		if (textureId != currentTexture)
+		{
+			currentTexture = textureId;
 
-    sub_77E6AC();
-    sub_77E6AC();
+			normal = NULL;
+			hover = NULL;
+			down = NULL;
+			disable = NULL;
 
-    sub_77E644();
-    sub_44CF10(&tmp, str_7C2A48);
-    sub_600B30(&tmp, event);
-    sub_474F70(&this->a2c, tmp.px);
+			size = G3D::Vector2(0.0f, 0.0f);
 
-    if (tmp.px) {
-        if (InterlockedDecrement((long*)tmp.px) == 0) {
-            sub_457DD0(tmp.px);
-        }
-        tmp.px = 0;
-    }
+			normal = silentGetTextureProxyBase(adorn, currentTexture);
 
-    sub_77E6AC();
-    sub_77E6AC();
+			if (normal.notNull())
+			{
+				std::string id = textureId.toString();
+				std::string base = id.substr(0, id.size() - 4);
 
-    sub_77E644();
-    sub_44CF10(&tmp, str_7C2A40);
-    sub_600B30(&tmp, event);
-    sub_474F70(&this->a24, tmp.px);
+				hover = silentGetTextureProxyBase(adorn, ContentId(base + "_ovr.png"));
+				down = silentGetTextureProxyBase(adorn, ContentId(base + "_dn.png"));
+				disable = silentGetTextureProxyBase(adorn, ContentId(base + "_ds.png"));
+			}
+		}
 
-    if (tmp.px) {
-        if (InterlockedDecrement((long*)tmp.px) == 0) {
-            sub_457DD0(tmp.px);
-        }
-        tmp.px = 0;
-    }
-
-    sub_77E6AC();
-    sub_77E6AC();
-    sub_77E6AC();
-    sub_77E6AC();
-
-    return this->a20 != 0;
+		return normal.notNull();
+	}
 }

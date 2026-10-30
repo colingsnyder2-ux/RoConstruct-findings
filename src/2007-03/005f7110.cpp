@@ -1,10 +1,11 @@
-// from server: 78% by colin
+// roc-cl: 50727
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Face.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_unit_ff1252dc7e2205d5.cpp
 
 // Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("util/Face.h", "roc_unit_cb2f7321c0df2e4f.cpp")
 #include "util/Face.h"
 #include "util/Math.h"
 
@@ -20,14 +21,6 @@ namespace RBX
 		return ((G3D::Vector3*)this)[i];
 	}
 
-	void Face::snapToGrid(float grid)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			G3D::Vector3& v = (*this)[i];
-			v = Math::toGrid(v, grid);
-		}
-	}
 
 	bool Face::overlapWithinPlanes(const Face& f0, const Face& f1, float tolerance)
 	{
@@ -96,7 +89,7 @@ namespace RBX
 			float f1min, f1max;
 			f1.minMax(f0.c0, axis, f1min, f1max);
 
-			if ((f0min - byAtLeast) < f1min || (f0max + byAtLeast) > f1max)
+			if ((f1max - byAtLeast) < f0min || (f1min + byAtLeast) > f0max)
 				return false;
 		}
 		

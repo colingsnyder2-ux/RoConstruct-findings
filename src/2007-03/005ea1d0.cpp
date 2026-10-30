@@ -1,21 +1,68 @@
-// from server: 72% by colin
-// roc 2007-03 005ea1d0  unit: seg_005e0000  size: 10 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005ea1d0
-//
-// 005ea1d0  8b4104               mov eax, dword ptr [ecx + 4]
-// 005ea1d3  8b5004               mov edx, dword ptr [eax + 4]
-// 005ea1d6  895104               mov dword ptr [ecx + 4], edx
-// 005ea1d9  c3                   ret 
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8world/IPipelined.cpp
 
-struct S {
-    char pad0[4];
-    int m_x;
-    int f();
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8world/IPipelined.h"
 
-int S::f() {
-    int* ptr = *(int**)(this + 4);
-    int value = *(ptr + 1);
-    *(int*)(this + 4) = value;
-    return 0;
+#include "v8kernel/Kernel.h"
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1010b9b0
+IStage* IPipelined::getStage(IStage::StageType stageType) const
+{
+	IStage* stage = currentStage;
+
+	while (stage->getStageType() != stageType) {
+		stage = stage->getStageType() > stageType ? stage->getUpstream() : stage->getDownstream();
+	}
+
+	return stage;
 }
+
+// FUNCTION: WEBSERVICE 0x1010b9f0
+void IPipelined::removeFromPipeline(IStage* stage)
+{
+	currentStage = 0;
+}
+
+// FUNCTION: WEBSERVICE 0x1010ba00
+void IPipelined::removeFromStage(IStage* stage)
+{
+	currentStage = currentStage->getUpstream();
+}
+
+// FUNCTION: WEBSERVICE 0x1010ba10
+Kernel* IPipelined::getKernel() const
+{
+	return static_cast<Kernel*>(getStage(IStage::KERNEL_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x1010ba20
+void IPipelined::removeFromKernel()
+{
+	currentStage = currentStage->getUpstream();
+}
+
+// FUNCTION: WEBSERVICE 0x101ae590 FOLDED
+void IPipelined::putInPipeline(IStage* stage)
+{
+	currentStage = stage;
+}
+
+// FUNCTION: WEBSERVICE 0x101ae590 FOLDED
+void IPipelined::putInStage(IStage* stage)
+{
+	currentStage = stage;
+}
+
+// FUNCTION: WEBSERVICE 0x101ae590 FOLDED
+void IPipelined::putInKernel(Kernel* kernel)
+{
+	currentStage = kernel;
+}
+
+} // namespace RBX

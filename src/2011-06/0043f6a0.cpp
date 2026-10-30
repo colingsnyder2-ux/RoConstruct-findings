@@ -1,4 +1,3 @@
-// from server: 55% by atomic.potato
 // roc 2011-06 0043f6a0  unit: CDeclarationView  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2011-06 0043f6a0
 //
@@ -22,22 +21,22 @@
 // 0043f6d6  5f                   pop edi
 // 0043f6d7  5e                   pop esi
 // 0043f6d8  c3                   ret 
+// copied from an identical function in another client (function ?fn_ROCX000016_00435510@ns_ROCX000016@@YAXPAHPAUString@1@PAPAUEntry@1@@Z)
 
-extern "C" {
-    int __stdcall G1_func_00a404b0();
-    int __stdcall G1_func_00a404cc();
-}
-
-struct CDeclarationView {
+namespace ns_ROCX000016 {
+struct String {};
+extern String& (__thiscall *append)(String*, const char*);
+extern const char* (__thiscall *get_text)(const String*);
+struct Entry {
+    int value;
+    String text;
 };
-
-void __cdecl f(int* a, void* b, int* c)
+void fn_ROCX000016_00435510(int* count, String* output, Entry** entry)
 {
-    if (*a > 0) {
-        G1_func_00a404b0();
-    }
-    int v = *c;
-    G1_func_00a404cc();
-    G1_func_00a404b0();
-    ++*a;
+    if (*count > 0)
+        append(output, ", ");
+    Entry* e = *entry;
+    append(output, get_text(&e->text));
+    ++*count;
+}
 }

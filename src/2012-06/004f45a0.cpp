@@ -1,36 +1,51 @@
-// from server: 0% by Intel
-typedef int DWORD;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
-struct RBxMeshPartAdapter {
-    DWORD f0;
-    DWORD f1;
-    DWORD f2;
-    DWORD f3;
-    DWORD f4;
-    DWORD f5;
-    DWORD f6;
-    DWORD f7;
-    DWORD f8;
-    DWORD f9;
-    DWORD func(DWORD arg1);
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" DWORD __stdcall func_098811a(DWORD);
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-DWORD RBxMeshPartAdapter::func(DWORD arg1) {
-    RBxMeshPartAdapter* esi = this;
-    esi->f0 = 0;
-    DWORD local = 0;
-    DWORD eax = func_098811a(0xaa90a0);
-    if (eax != 0) {
-        esi->f1 = 1;
-        esi->f2 = 1;
-        *(DWORD*)eax = 0x00b6a7b0;
-        *(DWORD*)(eax + 0xC) = 1;
-        esi->f3 = 1;
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
     }
-    eax = 0;
-    eax = local;
-    esi->f0 = eax;
-    return eax;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

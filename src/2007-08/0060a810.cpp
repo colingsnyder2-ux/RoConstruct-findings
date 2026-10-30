@@ -1,66 +1,37 @@
-// from server: 70% by colin
-// roc 2007-08 0060a810  unit: RBX::WeldJoint  size: 67 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0060a810
-//
-// 0060a810  8b4108               mov eax, dword ptr [ecx + 8]
-// 0060a813  83ec30               sub esp, 0x30
-// 0060a816  39442438             cmp dword ptr [esp + 0x38], eax
-// 0060a81a  56                   push esi
-// 0060a81b  57                   push edi
-// 0060a81c  8d7928               lea edi, [ecx + 0x28]
-// 0060a81f  7403                 je 0x60a824
-// 0060a821  8d7958               lea edi, [ecx + 0x58]
-// 0060a824  39442444             cmp dword ptr [esp + 0x44], eax
-// 0060a828  7505                 jne 0x60a82f
-// 0060a82a  83c128               add ecx, 0x28
-// 0060a82d  eb03                 jmp 0x60a832
-// 0060a82f  83c158               add ecx, 0x58
-// 0060a832  8d442408             lea eax, [esp + 8]
-// 0060a836  50                   push eax
-// 0060a837  e874a8e6ff           call 0x4750b0
-// 0060a83c  8b74243c             mov esi, dword ptr [esp + 0x3c]
-// 0060a840  50                   push eax
-// 0060a841  56                   push esi
-// 0060a842  8bcf                 mov ecx, edi
-// 0060a844  e8b789e6ff           call 0x473200
-// 0060a849  5f                   pop edi
-// 0060a84a  8bc6                 mov eax, esi
-// 0060a84c  5e                   pop esi
-// 0060a84d  83c430               add esp, 0x30
-// 0060a850  c20c00               ret 0xc
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_joint_family_ab7818172c9bef13.cpp
 
-struct Vec3 {
-    int x, y, z;
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-extern "C" void __stdcall sub_4750B0(void* out, void* in);
-extern "C" void __stdcall sub_473200(void* self, void* a, void* b);
-
-struct WeldJoint {
-    char pad[8];
-    int field8;
-    char pad2[0x28 - 0xc];
-    int field28;
-    char pad3[0x58 - 0x2c];
-    int field58;
-    int method(int a, int b, int c);
-};
-
-int WeldJoint::method(int a, int b, int c) {
-    int* p;
-    if (a == field8) {
-        p = (int*)((char*)this + 0x28);
-    } else {
-        p = (int*)((char*)this + 0x58);
-    }
-    int* q;
-    if (b == field8) {
-        q = (int*)((char*)this + 0x28);
-    } else {
-        q = (int*)((char*)this + 0x58);
-    }
-    Vec3 v;
-    sub_4750B0(&v, q);
-    sub_473200(p, &v, (void*)c);
-    return c;
-}
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#include "v8world/RigidJoint.cpp"

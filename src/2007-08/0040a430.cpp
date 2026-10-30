@@ -1,23 +1,37 @@
-// from server: 75% by colin
-extern "C" int __stdcall sub_4022A0(int, int, int, int);
+// from server: 100% by tajop
+struct _GUID { unsigned long Data1; unsigned short Data2; unsigned short Data3; unsigned char Data4[8]; };
+struct _ATL_INTMAP_ENTRY;
 
-int __stdcall sub_40A430(int a1, int a2, int a3)
+extern "C" const _ATL_INTMAP_ENTRY _entries_7851e8[];
+long __stdcall AtlInternalQueryInterface(void* pThis, const _ATL_INTMAP_ENTRY* pEntries, const _GUID& iid, void** ppvObject);
+
+struct CComContainedObject_App {
+    char m_pad[4];
+};
+
+struct CComAggObject_App {
+    virtual long __stdcall QueryInterface(const _GUID& iid, void** ppvObject);
+    virtual unsigned long __stdcall AddRef();
+    virtual unsigned long __stdcall Release();
+    long m_dwRef;
+    CComContainedObject_App m_contained;
+};
+
+long __stdcall CComAggObject_App::QueryInterface(const _GUID& iid, void** ppvObject)
 {
-    int* p = (int*)a3;
-    if (p == 0)
-        return 0x80004003;
-
-    *p = 0;
-
-    int* q = (int*)a2;
-    if (q[0] == 0 && q[1] == 0 && q[2] == 0xc0 && q[3] == 0x46000000)
+    if (ppvObject == 0)
+        return 0x80004003L;
+    *ppvObject = 0;
+    long hRes = 0;
+    if (((unsigned long*)&iid)[0] == 0 &&
+        ((unsigned long*)&iid)[1] == 0 &&
+        ((unsigned long*)&iid)[2] == 0x000000C0 &&
+        ((unsigned long*)&iid)[3] == 0x46000000)
     {
-        *p = a2;
-        int v = *(int*)a2;
-        int (*fn)(int) = *(int (**)(int))(v + 4);
-        fn(a2);
-        return 0;
+        *ppvObject = (void*)this;
+        AddRef();
     }
-
-    return sub_4022A0(a1 + 8, 0x7851e8, a2, a3);
+    else
+        hRes = AtlInternalQueryInterface(&m_contained, _entries_7851e8, iid, ppvObject);
+    return hRes;
 }

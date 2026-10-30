@@ -1,492 +1,390 @@
-// from server: 92% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull3.cpp
+// roc-cl: 21022
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreAnimationState.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
-//
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
 
-#include "WmlConvexHull3.h"
-using namespace Wml;
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
 
-#include <algorithm>
-using namespace std;
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull3<Real>::ConvexHull3 (int iVQuantity, const Vector3<Real>* akVertex)
-    :
-    m_kHullS(NULL,CreateTriangle)
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#include "OgreStableHeaders.h"
+
+#include "OgreAnimationState.h"
+#include "OgreException.h"
+
+namespace Ogre 
 {
-    // uniformly scale and translate to [-1,1]^3 for numerical preconditioning
-    Real fMin = akVertex[0].X(), fMax = fMin;
-    int i;
-    for (i = 0; i < iVQuantity; i++)
+
+	//---------------------------------------------------------------------
+	AnimationState::AnimationState(AnimationStateSet* parent, const AnimationState &rhs)
+        : mAnimationName(rhs.mAnimationName)
+        , mParent(parent)
+        , mTimePos(rhs.mTimePos)
+        , mLength(rhs.mLength)
+        , mWeight(rhs.mWeight)
+        , mEnabled(rhs.mEnabled)
+        , mLoop(rhs.mLoop)
+	{
+		mParent->_notifyDirty();
+	}
+	//---------------------------------------------------------------------
+	AnimationState::~AnimationState()
+	{
+	}
+    //---------------------------------------------------------------------
+    AnimationState::AnimationState(const String& animName, 
+		AnimationStateSet *parent, Real timePos, Real length, Real weight, 
+		bool enabled)
+        : mAnimationName(animName)
+        , mParent(parent)
+        , mTimePos(timePos)
+        , mLength(length)
+        , mWeight(weight)
+        , mEnabled(enabled)
+        , mLoop(true)
     {
-        if ( akVertex[i].X() < fMin )
-            fMin = akVertex[i].X();
-        else if ( akVertex[i].X() > fMax )
-            fMax = akVertex[i].X();
-
-        if ( akVertex[i].Y() < fMin )
-            fMin = akVertex[i].Y();
-        else if ( akVertex[i].Y() > fMax )
-            fMax = akVertex[i].Y();
-
-        if ( akVertex[i].Z() < fMin )
-            fMin = akVertex[i].Z();
-        else if ( akVertex[i].Z() > fMax )
-            fMax = akVertex[i].Z();
+		mParent->_notifyDirty();
     }
-    Real fHalfRange = ((Real)0.5)*(fMax - fMin);
-    Real fInvHalfRange = ((Real)1.0)/fHalfRange;
-
-    m_iVQuantity = iVQuantity;
-    m_akVertex = new Vector3<Real>[m_iVQuantity];
-    for (i = 0; i < m_iVQuantity; i++)
+    //---------------------------------------------------------------------
+    const String& AnimationState::getAnimationName() const
     {
-        m_akVertex[i].X() = -(Real)1.0+fInvHalfRange*(akVertex[i].X()-fMin);
-        m_akVertex[i].Y() = -(Real)1.0+fInvHalfRange*(akVertex[i].Y()-fMin);
-        m_akVertex[i].Z() = -(Real)1.0+fInvHalfRange*(akVertex[i].Z()-fMin);
+        return mAnimationName;
     }
-
-    // Compute convex hull incrementally.  The first and second vertices in
-    // the hull are managed separately until at least one triangle is formed.
-    // At that point, a triangle mesh is used to store the hull.
-    m_iHullType = HULL_POINT;
-    m_kHullP.push_back(0);
-    for (i = 1; i < m_iVQuantity; i++)
+    //---------------------------------------------------------------------
+    Real AnimationState::getTimePosition(void) const
     {
-        switch ( m_iHullType )
-        {
-        case HULL_POINT:
-            MergePoint(i);
-            break;
-        case HULL_LINEAR:
-            MergeLinear(i);
-            break;
-        case HULL_PLANAR:
-            MergePlanar(i);
-            break;
-        case HULL_SPATIAL:
-            MergeSpatial(i);
-            break;
-        }
+        return mTimePos;
     }
-
-    // map convex hull indices back to original ordering
-    if ( m_iHullType == HULL_SPATIAL )
+    //---------------------------------------------------------------------
+    void AnimationState::setTimePosition(Real timePos)
     {
-        const ETManifoldMesh::TMap& rkTMap = m_kHullS.GetTriangles();
-        m_kHull.resize(3*rkTMap.size());
-        i = 0;
-        ETManifoldMesh::TMap::const_iterator pkTIter;
-        for (pkTIter = rkTMap.begin(); pkTIter != rkTMap.end(); pkTIter++)
-        {
-            const Triangle* pkTri = (const Triangle*)pkTIter->second;
-            for (int j = 0; j < 3; j++)
-                m_kHull[i++] = pkTri->V[j];
-        }
-    }
-    else
-    {
-        int iHQuantity = (int)m_kHullP.size();
-        m_kHull.resize(iHQuantity);
+		if (timePos != mTimePos)
+		{
+			mTimePos = timePos;
+			if (mLoop)
+			{
+				// Wrap
+				mTimePos = fmod(mTimePos, mLength);
+				if(mTimePos < 0)
+					mTimePos += mLength;     
+			}
+			else
+			{
+				// Clamp
+				if(mTimePos < 0)
+					mTimePos = 0;
+				else if (mTimePos > mLength)
+					mTimePos = mLength;
+			}
 
-        for (i = 0; i < iHQuantity; i++)
-            m_kHull[i] = m_kHullP[i];
-    }
-
-    m_kHullP.clear();
-    delete[] m_akVertex;
-    m_akVertex = NULL;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull3<Real>::~ConvexHull3 ()
-{
-    assert( m_akVertex == NULL );
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull3<Real>::GetType () const
-{
-    return m_iHullType;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-const vector<int>& ConvexHull3<Real>::GetConnectivity () const
-{
-    return m_kHull;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergePoint (int iP)
-{
-    // hull is {Q0}
-    Vector3<Real> kDiff = m_akVertex[m_kHullP[0]] - m_akVertex[iP];
-    if ( kDiff.Length() > Math<Real>::EPSILON )
-    {
-        m_iHullType = HULL_LINEAR;
-        m_kHullP.push_back(iP);
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergeLinear (int iP)
-{
-    // hull is {Q0,Q1}
-    const Vector3<Real>& rkQ0 = m_akVertex[m_kHullP[0]];
-    const Vector3<Real>& rkQ1 = m_akVertex[m_kHullP[1]];
-    const Vector3<Real>& rkP = m_akVertex[iP];
-
-    // assert:  Q0 and Q1 are not collocated
-    Vector3<Real> kEdge1 = rkQ1 - rkQ0;
-    Vector3<Real> kEdge2 = rkP - rkQ0;
-    m_kNormal = kEdge1.Cross(kEdge2);
-    Real fLength = m_kNormal.Normalize();
-
-    if ( fLength > Math<Real>::EPSILON )
-    {
-        // <Q0,Q1,P> is a triangle, updated hull is {Q0,Q1,P}
-        m_iHullType = HULL_PLANAR;
-        m_kHullP.push_back(iP);
-        m_kOrigin = rkQ0;
-        return;
-    }
-
-    // P is on line of <Q0,Q1>
-    Real fE1dE2 = kEdge1.Dot(kEdge2);
-    if ( fE1dE2 < 0.0f )
-    {
-        // order is <P,Q0,Q1>, updated hull is {P,Q1}
-        m_kHullP[0] = iP;
-        return;
-    }
-
-    Real fE1dE1 = kEdge1.SquaredLength();
-    if ( fE1dE2 > fE1dE1 )
-    {
-        // order is <Q0,Q1,P>, updated hull is {Q0,P}
-        m_kHullP[1] = iP;
-        return;
-    }
-
-    // order is <Q0,P,Q1>, hull does not change
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergePlanar (int iP)
-{
-    // hull is convex polygon in plane m_kNormal.Dot(X - m_kOrigin) = 0
-    const Vector3<Real>& rkP = m_akVertex[iP];
-    Real fOrder = m_kNormal.Dot(rkP - m_kOrigin);
-    int i;
-    if ( Math<Real>::FAbs(fOrder) <= Math<Real>::EPSILON )
-    {
-        // order essentially zero
-        Vector3<Real>* pkQ0;
-        Vector3<Real>* pkQ1;
-        Vector3<Real> kEdge1, kEdge2;
-
-        // find an edge visible to P
-        int iSize = (int)m_kHullP.size(), iSizeM1 = iSize-1;
-        int iL, iU;
-        for (iL = iSizeM1, iU = 0; iU < iSize; iL = iU++)
-        {
-            pkQ0 = &m_akVertex[m_kHullP[iL]];
-            pkQ1 = &m_akVertex[m_kHullP[iU]];
-            kEdge1 = *pkQ1 - *pkQ0;
-            kEdge2 = rkP - *pkQ0;
-            fOrder = m_kNormal.Dot(kEdge1.UnitCross(kEdge2));
-            if ( fOrder < (Real)0.0 )
-                break;
-        }
-        if ( iU == iSize )
-        {
-            // P is inside the current hull
-            return;
+            if (mEnabled)
+                mParent->_notifyDirty();
         }
 
-        // Edge <L,U> is visible to P.  Perform a breadth-first search to
-        // locate all remaining visible edges.
+    }
+    //---------------------------------------------------------------------
+    Real AnimationState::getLength() const
+    {
+        return mLength;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setLength(Real len)
+    {
+        mLength = len;
+    }
+    //---------------------------------------------------------------------
+    Real AnimationState::getWeight(void) const
+    {
+        return mWeight;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setWeight(Real weight)
+    {
+        mWeight = weight;
 
-        // find the upper index for visible edges
-        for (i = iU+1; i < iSize; iU = i++)
+        if (mEnabled)
+            mParent->_notifyDirty();
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::addTime(Real offset)
+    {
+        setTimePosition(mTimePos + offset);
+    }
+    //---------------------------------------------------------------------
+	bool AnimationState::hasEnded(void) const
+	{
+		return (mTimePos == mLength && !mLoop);
+	}
+    //---------------------------------------------------------------------
+    bool AnimationState::getEnabled(void) const
+    {
+        return mEnabled;
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::setEnabled(bool enabled)
+    {
+        mEnabled = enabled;
+        mParent->_notifyAnimationStateEnabled(this, enabled);
+    }
+    //---------------------------------------------------------------------
+    bool AnimationState::operator==(const AnimationState& rhs) const
+    {
+        if (mAnimationName == rhs.mAnimationName &&
+            mEnabled == rhs.mEnabled &&
+            mTimePos == rhs.mTimePos &&
+            mWeight == rhs.mWeight &&
+            mLength == rhs.mLength && 
+            mLoop == rhs.mLoop)
         {
-            pkQ0 = &m_akVertex[m_kHullP[iU]];
-            pkQ1 = &m_akVertex[m_kHullP[i]];
-            kEdge1 = *pkQ1 - *pkQ0;
-            kEdge2 = rkP - *pkQ0;
-            fOrder = m_kNormal.Dot(kEdge1.UnitCross(kEdge2));
-            if ( fOrder >= (Real)0.0 )
-                break;
+            return true;
         }
-
-        // If edge <size-1,0> was not visible, we had to search for the first
-        // visible edge in which case the lower index L is already correct.
-        // Thus, we only need to handle the case when L = size-1 and search
-        // for smaller indices to find the lower index.
-        if ( iL == iSizeM1 )
+        else
         {
-            for (i = iL-1; i >= 0; iL = i--)
-            {
-                pkQ0 = &m_akVertex[m_kHullP[i]];
-                pkQ1 = &m_akVertex[m_kHullP[iL]];
-                kEdge1 = *pkQ1 - *pkQ0;
-                kEdge2 = rkP - *pkQ0;
-                fOrder = m_kNormal.Dot(kEdge1.UnitCross(kEdge2));
-                if ( fOrder >= (Real)0.0 )
-                    break;
+            return false;
+        }
+    }
+    //---------------------------------------------------------------------
+    bool AnimationState::operator!=(const AnimationState& rhs) const
+    {
+        return !(*this == rhs);
+    }
+    //---------------------------------------------------------------------
+    void AnimationState::copyStateFrom(const AnimationState& animState)
+    {
+        mTimePos = animState.mTimePos;
+        mLength = animState.mLength;
+        mWeight = animState.mWeight;
+        mEnabled = animState.mEnabled;
+        mLoop = animState.mLoop;
+		mParent->_notifyDirty();
+
+    }
+	//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	AnimationStateSet::AnimationStateSet()
+		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
+	{
+	}
+	//---------------------------------------------------------------------
+	AnimationStateSet::AnimationStateSet(const AnimationStateSet& rhs)
+		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
+	{
+		// lock rhs
+		OGRE_LOCK_MUTEX(rhs.OGRE_AUTO_MUTEX_NAME)
+
+		for (AnimationStateMap::const_iterator i = rhs.mAnimationStates.begin();
+			i != rhs.mAnimationStates.end(); ++i)
+		{
+			AnimationState* src = i->second;
+			mAnimationStates[src->getAnimationName()] = 
+				new AnimationState(this, *src);
+		}
+
+        // Clone enabled animation state list
+        for (EnabledAnimationStateList::const_iterator it = rhs.mEnabledAnimationStates.begin();
+            it != rhs.mEnabledAnimationStates.end(); ++it)
+        {
+            const AnimationState* src = *it;
+            mEnabledAnimationStates.push_back(getAnimationState(src->getAnimationName()));
+        }
+	}
+	//---------------------------------------------------------------------
+	AnimationStateSet::~AnimationStateSet()
+	{
+		// Destroy
+		removeAllAnimationStates();
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateSet::removeAnimationState(const String& name)
+	{
+		OGRE_LOCK_AUTO_MUTEX
+
+		AnimationStateMap::iterator i = mAnimationStates.find(name);
+		if (i != mAnimationStates.end())
+		{
+            mEnabledAnimationStates.remove(i->second);
+
+			delete i->second;
+			mAnimationStates.erase(i);
+		}
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateSet::removeAllAnimationStates(void)
+	{
+		OGRE_LOCK_AUTO_MUTEX
+
+		for (AnimationStateMap::iterator i = mAnimationStates.begin();
+			i != mAnimationStates.end(); ++i)
+		{
+			delete i->second;
+		}
+		mAnimationStates.clear();
+        mEnabledAnimationStates.clear();
+
+	}
+	//---------------------------------------------------------------------
+	AnimationState* AnimationStateSet::createAnimationState(const String& name,  
+		Real timePos, Real length, Real weight, bool enabled)
+	{
+		OGRE_LOCK_AUTO_MUTEX
+
+		AnimationStateMap::iterator i = mAnimationStates.find(name);
+		if (i != mAnimationStates.end())
+		{
+			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
+				"State for animation named '" + name + "' already exists.", 
+				"AnimationStateSet::createAnimationState");
+		}
+
+		AnimationState* newState = new AnimationState(name, this, timePos, 
+			length, weight, enabled);
+		mAnimationStates[name] = newState;
+
+		return newState;
+
+	}
+	//---------------------------------------------------------------------
+	AnimationState* AnimationStateSet::getAnimationState(const String& name) const
+	{
+		OGRE_LOCK_AUTO_MUTEX
+
+		AnimationStateMap::const_iterator i = mAnimationStates.find(name);
+		if (i == mAnimationStates.end())
+		{
+			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
+				"No state found for animation named '" + name + "'", 
+				"AnimationStateSet::getAnimationState");
+		}
+		return i->second;
+	}
+	//---------------------------------------------------------------------
+	bool AnimationStateSet::hasAnimationState(const String& name) const
+	{
+		OGRE_LOCK_AUTO_MUTEX
+
+		return mAnimationStates.find(name) != mAnimationStates.end();
+	}
+	//---------------------------------------------------------------------
+	AnimationStateIterator AnimationStateSet::getAnimationStateIterator(void)
+	{
+		OGRE_LOCK_AUTO_MUTEX
+		// returned iterator not threadsafe, noted in header
+		return AnimationStateIterator(
+			mAnimationStates.begin(), mAnimationStates.end());
+	}
+	//---------------------------------------------------------------------
+	ConstAnimationStateIterator AnimationStateSet::getAnimationStateIterator(void) const
+	{
+		OGRE_LOCK_AUTO_MUTEX
+		// returned iterator not threadsafe, noted in header
+		return ConstAnimationStateIterator(
+			mAnimationStates.begin(), mAnimationStates.end());
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateSet::copyMatchingState(AnimationStateSet* target) const
+	{
+		// lock target
+		OGRE_LOCK_MUTEX(target->OGRE_AUTO_MUTEX_NAME)
+		// lock source
+		OGRE_LOCK_AUTO_MUTEX
+
+		AnimationStateMap::iterator i, iend;
+        iend = target->mAnimationStates.end();
+        for (i = target->mAnimationStates.begin(); i != iend; ++i) {
+            AnimationStateMap::const_iterator iother = mAnimationStates.find(i->first);
+            if (iother == mAnimationStates.end()) {
+                OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "No animation entry found named " + i->first, 
+                    "AnimationStateSet::copyMatchingState");
+            } else {
+                i->second->copyStateFrom(*(iother->second));
             }
         }
 
-        // assert( iU != iL );  the theory
-        if ( iU == iL )
+        // Copy matching enabled animation state list
+        target->mEnabledAnimationStates.clear();
+
+        EnabledAnimationStateList::const_iterator it, itend;
+        itend = mEnabledAnimationStates.end();
+        for (it = mEnabledAnimationStates.begin(); it != itend; ++it)
         {
-            // Numerical round-off error causes you to get here.  P is
-            // inside the hull, so just return.
-            return;
-        }
-
-        // construct the counterclockwise-ordered merged-hull vertices
-        vector<int> kTmpHull;
-        kTmpHull.push_back(iP);
-        while ( true )
-        {
-            kTmpHull.push_back(m_kHullP[iU]);
-            if ( iU == iL )
-                break;
-
-            if ( ++iU == iSize )
-                iU = 0;
-        }
-        assert( kTmpHull.size() > 2 );
-
-        m_kHullP = kTmpHull;
-        return;
-    }
-
-    // Hull is about to become spatial.  The current planar hull is a convex
-    // polygon that must be tri-fanned to initialize the triangle mesh that
-    // represents the final hull.  The triangle order is required to be
-    // counterclockwise when viewed from outside the hull.  If the current
-    // planar hull has N vertices, the triangle fan has N-2 triangles and
-    // P forms N triangles with the planar hull edges, a total of 2*N-2
-    // triangles in the initial spatial hull.
-    m_iHullType = HULL_SPATIAL;
-
-    int iSize = (int)m_kHullP.size();
-    int iQ0 = m_kHullP[0];
-    int iQ1 = m_kHullP[1];
-    int iQ2;
-
-    if ( fOrder > Math<Real>::EPSILON )
-    {
-        // insert <P,Q[0],Q[1]>
-        InsertTriangle(iP,iQ0,iQ1);
-
-        for (i = 2; i < iSize; iQ1 = iQ2, i++)
-        {
-            // insert <Q[0],Q[i+1],Q[i]> and <P,Q[i],Q[i+1]>
-            iQ2 = m_kHullP[i];
-            InsertTriangle(iQ0,iQ2,iQ1);
-            InsertTriangle(iP,iQ1,iQ2);
-        }
-
-        // insert <P,Q[n-1],Q[0]>
-        InsertTriangle(iP,iQ1,iQ0);
-    }
-    else  // fOrder < -ms_fEpsilon
-    {
-        // insert <P,Q[1],Q[0]>
-        InsertTriangle(iP,iQ1,iQ0);
-
-        for (i = 2; i < iSize; iQ1 = iQ2, i++)
-        {
-            // insert <Q[0],Q[i],Q[i+1]> and <P,Q[i+1],Q[i]>
-            iQ2 = m_kHullP[i];
-            InsertTriangle(iQ0,iQ1,iQ2);
-            InsertTriangle(iP,iQ2,iQ1);
-        }
-
-        // insert <P,Q[0],Q[n-1]>
-        InsertTriangle(iP,iQ0,iQ1);
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::MergeSpatial (int iP)
-{
-    // Find the triangle that is "most visible" to P.  Just finding the first
-    // visible triangle is not sufficient when floating point round-off errors
-    // are present.  The most visible triangle is used to start a
-    // breadth-first for the connected mesh of triangles that are visible
-    // to P.
-    Vector3<Real> kDiff;
-    Real fOrder, fMaxOrder = (Real)0.0;
-    const Triangle* pkTri;
-    const Triangle* pkMaxTri = NULL;
-    const ETManifoldMesh::TMap& rkTMap = m_kHullS.GetTriangles();
-    ETManifoldMesh::TMap::const_iterator pkTIter;
-    for (pkTIter = rkTMap.begin(); pkTIter != rkTMap.end(); pkTIter++)
-    {
-        pkTri = (const Triangle*)pkTIter->second;
-        kDiff = m_akVertex[iP] - m_akVertex[pkTri->V[0]];
-        kDiff.Normalize();
-        fOrder = pkTri->Normal.Dot(kDiff);
-        if ( fOrder > fMaxOrder )
-        {
-            // triangle is visible to P
-            fMaxOrder = fOrder;
-            pkMaxTri = pkTri;
-        }
-    }
-
-    if ( !pkMaxTri || fMaxOrder < Math<Real>::EPSILON )
-    {
-        // P is inside the current hull
-        return;
-    }
-
-    // Triangle pkMinTri is visible to P.  Perform a breadth-first search to
-    // locate all remaining visible triangles.
-    set<const Triangle*> kInterior, kBoundary;
-    kInterior.insert(pkMaxTri);
-    const Triangle* pkAdj;
-    int i;
-    for (i = 0; i < 3; i++)
-    {
-        pkAdj = (const Triangle*)pkMaxTri->T[i];
-        assert( pkAdj );
-        kBoundary.insert(pkAdj);
-    }
-
-    typename set<const Triangle*>::iterator pkIter;
-    while ( kBoundary.size() > 0 )
-    {
-        set<const Triangle*> kExterior;
-
-        // process boundary triangles
-        for (pkIter = kBoundary.begin(); pkIter != kBoundary.end(); pkIter++)
-        {
-            // current boundary triangle to process
-            pkTri = (const Triangle*)*pkIter;
-            kDiff = m_akVertex[iP] - m_akVertex[pkTri->V[0]];
-            kDiff.Normalize();
-            fOrder = pkTri->Normal.Dot(kDiff);
-            if ( fOrder > (Real)0.0 )
+            const AnimationState* src = *it;
+            AnimationStateMap::const_iterator itarget = target->mAnimationStates.find(src->getAnimationName());
+            if (itarget != target->mAnimationStates.end())
             {
-                // triangle is visible to P
-                kInterior.insert(pkTri);
-
-                // locate adjacent, exterior triangles for later processing
-                for (i = 0; i < 3; i++)
-                {
-                    pkAdj = (const Triangle*)pkTri->T[i];
-                    assert( pkAdj );
-                    if ( kInterior.find(pkAdj) == kInterior.end()
-                    &&   kBoundary.find(pkAdj) == kBoundary.end() )
-                    {
-                        kExterior.insert(pkAdj);
-                    }
-                }
+                target->mEnabledAnimationStates.push_back(itarget->second);
             }
         }
 
-        // exterior triangles are next in line to be processed
-        kBoundary = kExterior;
+        target->mDirtyFrameNumber = mDirtyFrameNumber;
     }
-
-    // locate the terminator edges
-    map<int,int> kTerminator;
-    int iV0, iV1;
-    for (pkIter = kInterior.begin(); pkIter != kInterior.end(); pkIter++)
+    //---------------------------------------------------------------------
+    void AnimationStateSet::_notifyDirty(void)
     {
-        // get a visible triangle
-        pkTri = (const Triangle*)*pkIter;
+		OGRE_LOCK_AUTO_MUTEX
+        ++mDirtyFrameNumber;
+    }
+    //---------------------------------------------------------------------
+    void AnimationStateSet::_notifyAnimationStateEnabled(AnimationState* target, bool enabled)
+    {
+		OGRE_LOCK_AUTO_MUTEX
+		// Remove from enabled animation state list first
+        mEnabledAnimationStates.remove(target);
 
-        // If an adjacent triangle is not visible, then the shared edge is a
-        // terminator edge.
-        for (i = 0; i < 3; i++)
+        // Add to enabled animation state list if need
+        if (enabled)
         {
-            pkAdj = (const Triangle*)pkTri->T[i];
-            assert( pkAdj );
-            if ( kInterior.find(pkAdj) == kInterior.end() )
-            {
-                // adjacent triangle is not visible
-                iV0 = pkTri->V[i];
-                iV1 = pkTri->V[(i+1)%3];
-                kTerminator[iV0] = iV1;
-            }
+            mEnabledAnimationStates.push_back(target);
         }
-    }
 
-    // remove the visible triangles
-    for (pkIter = kInterior.begin(); pkIter != kInterior.end(); pkIter++)
+        // Set the dirty frame number
+        _notifyDirty();
+    }
+    //---------------------------------------------------------------------
+    ConstEnabledAnimationStateIterator AnimationStateSet::getEnabledAnimationStateIterator(void) const
     {
-        pkTri = (const Triangle*)*pkIter;
-        bool bRemoved = m_kHullS.RemoveTriangle(pkTri->V[0],pkTri->V[1],
-            pkTri->V[2]);
-        assert( bRemoved );
+		OGRE_LOCK_AUTO_MUTEX
+		// returned iterator not threadsafe, noted in header
+        return ConstEnabledAnimationStateIterator(
+            mEnabledAnimationStates.begin(), mEnabledAnimationStates.end());
     }
+	//---------------------------------------------------------------------
+	//---------------------------------------------------------------------
+	Real AnimationStateControllerValue::getValue(void) const
+	{
+		return mTargetAnimationState->getTimePosition() / mTargetAnimationState->getLength();
+	}
+	//---------------------------------------------------------------------
+	void AnimationStateControllerValue::setValue(Real value)
+	{
+		mTargetAnimationState->setTimePosition(value * mTargetAnimationState->getLength());
+	}
 
-    // add new triangles formed by P and terminator edges
-    int iSize = (int)kTerminator.size();
-    assert( iSize >= 3 );
-    map<int,int>::iterator pkE = kTerminator.begin();
-    int iVStart = pkE->first;
-    iV0 = iVStart;
-    for (i = 0; i < iSize; i++)
-    {
-        iV1 = pkE->second;
 
-        // insert <P,V0,V1>
-        InsertTriangle(iP,iV0,iV1);
-
-        pkE = kTerminator.find(iV1);
-        assert( pkE != kTerminator.end() );
-        iV0 = iV1;
-    }
-    assert( iV0 == iVStart );
 }
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull3<Real>::InsertTriangle (int iV0, int iV1, int iV2)
-{
-    Triangle* pkTri = (Triangle*) m_kHullS.InsertTriangle(iV0,iV1,iV2);
-    assert( pkTri );
 
-    const Vector3<Real>& rkV0 = m_akVertex[iV0];
-    const Vector3<Real>& rkV1 = m_akVertex[iV1];
-    const Vector3<Real>& rkV2 = m_akVertex[iV2];
-    Vector3<Real> kE1 = rkV1 - rkV0, kE2 = rkV2 - rkV0;
-    pkTri->Normal = kE1.UnitCross(kE2);
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ETManifoldMesh::Triangle* ConvexHull3<Real>::CreateTriangle (int iV0, int iV1,
-    int iV2)
-{
-    return new Triangle(iV0,iV1,iV2);
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
-{
-template class WML_ITEM ConvexHull3<float>;
-template class WML_ITEM ConvexHull3<double>;
-}
-//----------------------------------------------------------------------------

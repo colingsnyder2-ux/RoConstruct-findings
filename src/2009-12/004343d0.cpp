@@ -1,39 +1,12 @@
-// from server: 36% by atomic.potato
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_foreachobjectcallback69c4346ded1fa021.cpp
 
-struct Node {
-    Node* next;
-    Node* prev;
-    char pad[0x10];
-    void* data;
-};
-
-struct Iter {
-    Node* node;
-    Node* tree;
-};
-
-struct S {
-};
-
-void __cdecl f(Iter* out, Node* first, Node* last, void* arg)
-{
-    Node* cur = first;
-    Node* end = last;
-    void (*fn)() = *(void (**)())0x98b760;
-    while (cur != end) {
-        if (cur == 0 || cur == end) {
-            fn();
-        }
-        if (cur == 0) {
-            fn();
-        }
-        if (cur->next == 0) {
-            fn();
-        }
-        ((void (__stdcall *)(void*))*(void**)&arg)(arg);
-        cur = cur->next;
-    }
-    out->node = cur;
-    out->tree = end;
-}
+// Candidate translation unit (score above; library headers required).
+#include <set>
+#include <algorithm>
+typedef void (__thiscall *Callback)(void*,void*);
+struct Functor {Functor();Callback callback;void* object;void operator()(void* value)const{callback(value,object);}};
+typedef std::set<void*> Set;
+Functor f(Set::iterator a,Set::iterator b,Functor fn){return std::for_each(a,b,fn);}

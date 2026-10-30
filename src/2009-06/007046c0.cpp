@@ -1,151 +1,148 @@
-// from server: 40% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-appdraw AdornG3D.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client Rendering/AppDraw/Draw.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "AppDraw/AdornG3D.h"
-#include "AppDraw/DrawPrimitives.h"
-#include "AppDraw/Fonts.h"
-#include "GLG3D/Draw.h"
-#include "GLG3D/Texture.h"
-#include "RenderLib/TextureProxy.h"
-#include "RbxGraphics/TextureProxyBase.h"
+#include "appdraw/Draw.h"
 
-namespace RBX
+#include "appdraw/Part.h"
+#include "decomp.h"
+#include "rbxgraphics/Adorn.h"
+#include "util/Math.h"
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x101ec600
+void Draw::spokes(float radius, float axis, Adorn* adorn)
 {
-    G3D::Rect2D AdornG3D::getViewport() const
-    {
-        return renderDevice->getViewport();
-    }
+	float halfAxis = axis * 0.51f;
+	float subRadius = radius * 0.7f;
 
-    int AdornG3D::getWidth() const
-    {
-        return renderDevice->getWidth();
-    }
+	for (int i = 0; i < 2; i++) {
+		float x = i == 0 ? halfAxis : -halfAxis;
+		float ccw = i == 0 ? 1.0f : -1.0f;
 
-    int AdornG3D::getHeight() const
-    {
-        return renderDevice->getHeight();
-    }
+		for (int j = 0; j < 2; j++) {
+			float y = j == 0 ? subRadius : 0.1f;
+			float z = j == 0 ? 0.1f : subRadius;
 
-    G3D::Rect2D AdornG3D::getTextureSize(TextureProxyBaseRef _texture) const
-    {
-        if (_texture.notNull())
-        {
-            Render::TextureProxy* textureProxy = static_cast<Render::TextureProxy*>(_texture.getPointer());
-            G3D::TextureRef texture = textureProxy->resolve(renderDevice);
-
-            if (texture.notNull())
-                return texture->rect2DBounds();
-        }
-
-        return G3D::Rect2D();
-    }
-
-    void AdornG3D::setTexture(int id, TextureProxyBaseRef _texture)
-    {
-        if (_texture.notNull())
-        {
-            Render::TextureProxy* textureProxy = static_cast<Render::TextureProxy*>(_texture.getPointer());
-            renderDevice->setTexture(id, textureProxy->resolve(renderDevice));
-        }
-        else
-        {
-            renderDevice->setTexture(id, NULL);
-        }
-    }
-
-    void AdornG3D::rect2d(const G3D::Rect2D& rect, const G3D::Color4& color) const
-    {
-        DrawPrimitives::rect2d(Rect(rect), renderDevice, color);
-    }
-
-    void AdornG3D::outlineRect2d(const G3D::Rect2D& rect, float thick, const G3D::Color4& color) const
-    {
-        DrawPrimitives::outlineRect2d(Rect(rect), thick, renderDevice, color);
-    }
-
-    void AdornG3D::line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, const G3D::Color4& color) const
-    {
-        DrawPrimitives::line2d(p0, p1, renderDevice, color);
-    }
-
-    G3D::Vector2 AdornG3D::get2DStringBounds(const std::string& s, double size, Adorn::Spacing spacing) const
-    {
-        G3D::GFontRef font = Fonts::getFont();
-        return font->get2DStringBounds(s, size, static_cast<G3D::GFont::Spacing>(spacing));
-    }
-
-    G3D::Vector2 AdornG3D::drawFont2D(const std::string& s, const G3D::Vector2& pos2d, double size, const G3D::Color4& color, const G3D::Color4& outline, Adorn::XAlign xalign, Adorn::YAlign yalign, Adorn::Spacing spacing) const
-    {
-        G3D::GFontRef font = Fonts::getFont();
-        return font->draw2D(renderDevice, s, pos2d, size, color, outline, static_cast<G3D::GFont::XAlign>(xalign), static_cast<G3D::GFont::YAlign>(yalign), static_cast<G3D::GFont::Spacing>(spacing));
-    }
-
-    void AdornG3D::setObjectToWorldMatrix(const G3D::CoordinateFrame& c)
-    {
-        renderDevice->setObjectToWorldMatrix(c);
-    }
-
-    void AdornG3D::box(const G3D::AABox& box, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
-    {
-        setColor(solidColor);
-        DrawPrimitives::rawBox(box, renderDevice);
-    }
-
-    void AdornG3D::sphere(const G3D::Sphere& sphere, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
-    {
-        setColor(solidColor);
-        DrawPrimitives::rawSphere(sphere.radius, renderDevice);
-    }
-
-    void AdornG3D::explosion(const G3D::Sphere& sph, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
-    {
-        sphere(sph, solidColor, wireColor);
-    }
-
-    void AdornG3D::cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
-    {
-        setColor(solidColor);
-        DrawPrimitives::rawCylinderAlongX(radius, length, renderDevice);
-    }
-
-    void AdornG3D::ray(const G3D::Ray& ray, const G3D::Color4& color, float scale)
-    {
-        G3D::Draw::ray(ray, renderDevice, color, scale);
-    }
-
-    void AdornG3D::lineSegment(const G3D::LineSegment& lineSegment, const G3D::Color4& color, float scale)
-    {
-        G3D::Draw::lineSegment(lineSegment, renderDevice, color, scale);
-    }
-
-    void AdornG3D::axes(const G3D::Color4& xColor, const G3D::Color4& yColor, const G3D::Color4& zColor, float scale)
-    {
-        G3D::Draw::axes(renderDevice, xColor, yColor, zColor, scale);
-    }
-
-    void AdornG3D::quad(const G3D::Vector3& v0, const G3D::Vector3& v1, const G3D::Vector3& v2, const G3D::Vector3& v3, const G3D::Color4& color)
-    {
-        setColor(color);
-        renderDevice->beginPrimitive(G3D::RenderDevice::QUADS);
-        renderDevice->sendVertex(v0);
-        renderDevice->sendVertex(v1);
-        renderDevice->sendVertex(v2);
-        renderDevice->sendVertex(v3);
-        renderDevice->endPrimitive();
-    }
-
-    TextureProxyBaseRef AdornG3D::createTextureProxy(const std::string& filename)
-    {
-        Render::TextureProxy* proxy = new Render::TextureProxy(textureManager, filename, false);
-        return TextureProxyBaseRef(proxy);
-    }
-
-    void AdornG3D::setColor(const G3D::Color4& color)
-    {
-        renderDevice->setColor(color);
-    }
+			adorn->quad(
+				G3D::Vector3(x, y * ccw, z),
+				G3D::Vector3(x, -y * ccw, z),
+				G3D::Vector3(x, -y * ccw, -z),
+				G3D::Vector3(x, y * ccw, -z),
+				G3D::Color4(0.5f, 0.5f, 0.5f, 1.0f)
+			);
+		}
+	}
 }
+
+// FUNCTION: WEBSERVICE 0x101ec780
+const G3D::Color3& Draw::selectColor()
+{
+	static const G3D::Color3 c(0.1f, 0.6f, 1);
+
+	return c;
+}
+
+// STUB: WEBSERVICE 0x101ec7c0
+void Draw::constraint(const Part& part, Adorn* adorn, int face, const G3D::Color3& controllerColor)
+{
+	SurfaceType surfaceType = part.surfaceType[face];
+
+	G3D::Vector3 halfSize = part.gridSize * 0.5f;
+
+	const G3D::Matrix3& rotation = Math::getAxisRotationMatrix(face);
+	G3D::Vector3 relativeTranslation(0, 0, 0);
+
+	int index = face % 3;
+	float posNeg = face > 2 ? -1.0f : 1.0f;
+
+	relativeTranslation[index] = halfSize[index] * posNeg;
+	G3D::CoordinateFrame translation(rotation, relativeTranslation);
+
+	G3D::CoordinateFrame newObject = part.coordinateFrame * translation;
+
+	adorn->setObjectToWorldMatrix(newObject);
+
+	adorn->cylinderAlongX(0.2f, 1.0f, G3D::Color4(G3D::Color3::yellow(), 1.0f), G3D::Color4::clear());
+
+	if (surfaceType == ROTATE_V || surfaceType == ROTATE_P) {
+		adorn->cylinderAlongX(0.4f, 0.25f, G3D::Color4(controllerColor, 1.0f), G3D::Color4::clear());
+	}
+}
+
+// STUB: WEBSERVICE 0x101ec940
+void Draw::selectionBox(const Part& part, Adorn* adorn, const G3D::Color4& selectColor)
+{
+	adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+	G3D::Vector3 halfSize = part.gridSize * 0.5f;
+
+	for (int axis = 0; axis < 3; axis++) {
+		int c2 = (axis + 1) % 3;
+		int c3 = (axis + 2) % 3;
+
+		for (int d2 = -1; d2 <= 1; d2 += 2) {
+			for (int d3 = -1; d3 <= 1; d3 += 2) {
+				G3D::Vector3 p0;
+				G3D::Vector3 p1;
+
+				p0[axis] = -halfSize[axis] - 0.15f;
+				p0[c2] = d2 * halfSize[c2] - 0.15f;
+				p0[c3] = d3 * halfSize[c3] - 0.15f;
+
+				p1[axis] = halfSize[axis] + 0.15f;
+				p1[c2] = d2 * halfSize[c2] + 0.15f;
+				p1[c3] = d3 * halfSize[c3] + 0.15f;
+
+				adorn->box(G3D::AABox(p0, p1), selectColor, G3D::Color4::clear());
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101ecb70
+void Draw::selectionBox(const Part& part, Adorn* adorn, SelectState selectState)
+{
+	selectionBox(
+		part,
+		adorn,
+		G3D::Color4(selectState == SELECT_NORMAL ? selectColor() : G3D::Color3(0.2f, 0.7f, 1.0f), 1.0f)
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x101ecc00
+void Draw::adornSurfaces(const Part& part, Adorn* adorn, const G3D::Color3& controllerColor)
+{
+	for (int f = 0; f < 6; f++) {
+		switch (part.surfaceType[f]) {
+		case ROTATE:
+		case ROTATE_V:
+		case ROTATE_P:
+
+			constraint(part, adorn, f, controllerColor);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101ecc40
+void Draw::partAdorn(const Part& part, Adorn* adorn, const G3D::Color3& controllerColor)
+{
+	adornSurfaces(part, adorn, controllerColor);
+
+	if (part.type == Part::CYLINDER_PART) {
+		adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+		G3D::Vector3 gridSize = part.gridSize;
+
+		spokes(gridSize.z * 0.5, gridSize.x, adorn);
+	}
+}
+
+} // namespace RBX

@@ -1,750 +1,347 @@
-// from server: 85% by TrollStein
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/PartInstance.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espeon_aug2007_body_trivial_5449b42182b29fed.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/PartInstance.h"
-
-#include "tool/Dragger.h"
-#include "util/standardout.h"
-#include "v8datamodel/ModelInstance.h"
-#include "v8datamodel/Workspace.h"
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
 #include "v8kernel/Body.h"
-#include "v8world/Geometry.h"
-#include "v8world/World.h"
+#include "v8kernel/SimBody.h"
+#include "util/Debug.h"
+using namespace RBX;
 
-namespace RBX {
-
-// GLOBAL: WEBSERVICE 0x102d4568
-const char* const category_Part = "Part";
-
-char sPart[] = "Part";
-
-bool PartInstance::highlightSleepParts;
-bool PartInstance::highlightAwakeParts;
-bool PartInstance::showAnchoredParts;
-bool PartInstance::showPartCoord;
-bool PartInstance::showUnalignedParts;
-bool PartInstance::showSpanningTree;
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_RenderImportance(
-	"RenderImportance",
-	"Behavior",
-	&RBX::PartInstance::getRenderImportance,
-	&RBX::PartInstance::setRenderImportance,
-	Reflection::PropertyDescriptor::LEGACY
-);
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_Transparency(
-	"Transparency",
-	"Appearance",
-	&RBX::PartInstance::getTransparencyXml,
-	&RBX::PartInstance::setTransparency
-);
-
-const Reflection::PropDescriptor<PartInstance, float> PartInstance::prop_Reflectance(
-	"Reflectance",
-	"Appearance",
-	&RBX::PartInstance::getReflectance,
-	&RBX::PartInstance::setReflectance
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_Locked(
-	"Locked",
-	"Behavior",
-	&RBX::PartInstance::getPartLocked,
-	&RBX::PartInstance::setPartLocked
-);
-
-const Reflection::PropDescriptor<PartInstance, G3D::Color3> PartInstance::prop_Color(
-	"Color",
-	"Appearance",
-	&RBX::PartInstance::getColor3,
-	&RBX::PartInstance::setColor3
-);
-
-const Reflection::PropDescriptor<PartInstance, BrickColor> PartInstance::prop_BrickColor(
-	"BrickColor",
-	"Appearance",
-	&RBX::PartInstance::getColor,
-	&RBX::PartInstance::setColor
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_CanCollide(
-	"CanCollide",
-	"Behavior",
-	&RBX::PartInstance::getCanCollide,
-	&RBX::PartInstance::setCanCollide
-);
-
-const Reflection::PropDescriptor<PartInstance, bool> PartInstance::prop_Anchored(
-	"Anchored",
-	"Behavior",
-	&RBX::PartInstance::getAnchored,
-	&RBX::PartInstance::setAnchored
-);
-
-const Reflection::EnumPropDescriptor<PartInstance, Part::PartType> PartInstance::prop_shapeXml(
-	"shape",
-	category_Part,
-	&RBX::PartInstance::getPartType,
-	&RBX::PartInstance::setPartTypeXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::EnumPropDescriptor<PartInstance, Part::PartType> prop_shapeUi(
-	"Shape",
-	category_Part,
-	&RBX::PartInstance::getPartType,
-	&RBX::PartInstance::setPartTypeUi,
-	Reflection::PropertyDescriptor::UI
-);
-
-static Reflection::PropDescriptor<PartInstance, G3D::Vector3> prop_SizeUi(
-	"Size",
-	category_Part,
-	&RBX::PartInstance::getPartSizeUi,
-	&RBX::PartInstance::setPartSizeUi,
-	Reflection::PropertyDescriptor::UI
-);
-
-const Reflection::PropDescriptor<PartInstance, G3D::Vector3> PartInstance::prop_Size(
-	"size",
-	category_Part,
-	&RBX::PartInstance::getPartSizeXml,
-	&RBX::PartInstance::setPartSizeXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::EnumPropDescriptor<PartInstance, PartInstance::FormFactor> prop_formFactor(
-	"FormFactor",
-	category_Part,
-	&RBX::PartInstance::getFormFactor,
-	&RBX::PartInstance::setFormFactorXml,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-static Reflection::PropDescriptor<PartInstance, bool> prop_Dragging(
-	"DraggingV1",
-	"Behavior",
-	&RBX::PartInstance::getDragging,
-	&RBX::PartInstance::setDragging,
-	Reflection::PropertyDescriptor::STREAMING
-);
-
-// FUNCTION: WEBSERVICE 0x10059c10
-bool PartInstance::askSetParent(const Instance* instance) const
+Body::Body()
+	:index(-1),
+	canThrottle(true),
+	cofm(NULL),
+	root(NULL),
+	parent(NULL),
+	simBody(NULL),
+	stateIndex(getNextStateIndex()),
+	moment(G3D::Matrix3::identity()),
+	mass(0.0f)
 {
-	return dynamic_cast<const ModelInstance*>(instance) != NULL;
+	root = this;
+	simBody = new SimBody(this);
 }
 
-// FUNCTION: WEBSERVICE 0x1009a8d0
-void PartInstance::onChildAdded(Instance* child)
+Body::~Body()
 {
-	PVInstance::onChildAdded(child);
+	RBXASSERT(numChildren() == 0);
+	if (parent)
+		setParent(NULL);
+	RBXASSERT(!parent);
+	RBXASSERT(index == -1);
+	RBXASSERT(simBody);
+	delete simBody;
+	simBody = NULL;
+	RBXASSERT(!cofm);
+	RBXASSERT(root == this);
 }
 
-// FUNCTION: WEBSERVICE 0x1009a8e0 FOLDED
-Surfaces& PartInstance::getSurfaces()
+void Body::updatePV() const
 {
-	return surfaces;
-}
+	RBXASSERT((parent != NULL) || (getRootConst() == this));
 
-// FUNCTION: WEBSERVICE 0x1009a8e0 FOLDED
-const Surfaces& PartInstance::getSurfaces() const
-{
-	return surfaces;
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae00
-void PartInstance::setName(const std::string& value)
-{
-	Instance::setName(value);
-
-	if (value == "Torso") {
-		getPrimitive()->setSizeMultiplier(5);
-	}
-	else {
-		getPrimitive()->setSizeMultiplier(1);
+	if (parent && this->stateIndex != getRootConst()->getStateIndex())
+	{
+		Body* tempParent = getParent();
+		tempParent->updatePV();
+		PV& tempPV = tempParent->pv;
+		this->pv = tempPV.pvAtLocalCoord(getMeInParent());
+		this->stateIndex = root->getStateIndex();
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009ae40
-bool PartInstance::nonNullInWorkspace(shared_ptr<PartInstance> part)
+void Body::resetRoot(RBX::Body* newRoot)
 {
-	return part.get() != NULL && part->myWorld != NULL;
+	RBXASSERT(newRoot == calcRoot());
+	root = newRoot;
+	for (int i = 0; i < children.size(); i++)
+	{
+		children[i]->resetRoot(newRoot);
+	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009ae90 FOLDED
-PartInstance* PartInstance::fromPrimitive(Primitive* primitive)
+float Body::kineticEnergy() const
 {
-	if (primitive != NULL) {
-		IMoving* owner = primitive->getOwner();
+	float calc = (pv.velocity.rotational.dot(getIWorld() * pv.velocity.rotational) + pv.velocity.linear.dot(pv.velocity.linear) * mass) / 2;
+	return calc;
 
-		if (owner != NULL) {
-			return static_cast<PartInstance*>(owner);
+}
+
+int Body::getNextStateIndex()
+{
+	static int p;
+	if (++p == INT_MAX)
+		p = 1;
+	return p;
+}
+
+void Body::advanceStateIndex()
+{
+	stateIndex = getNextStateIndex();
+}
+
+bool Body::validateParentCofmDirty()
+{
+	RBXASSERT(cofm);
+	RBXASSERT(cofm->getIsDirty());
+	if (getParent())
+		getParent()->validateParentCofmDirty();
+	return true;
+}
+
+void Body::makeCofmDirty()
+{
+	if (cofm && cofm->getIsDirty())
+	{
+		// TODO: this match is super fake, i dont know roblox managed to create this cursed assertion
+		#if defined(_DEBUG) || defined(_RELEASEASSERT)
+		if (Debugable::assertAction == Debugable::CrashOnAssert)
+		{
+			if (parent)
+				parent->validateParentCofmDirty();
+			RBXASSERT(getRootSimBody()->getDirty());
 		}
+		#endif
 	}
-
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009ae90 FOLDED
-const PartInstance* PartInstance::fromPrimitiveConst(const Primitive* primitive)
-{
-	if (primitive != NULL) {
-		IMoving* owner = primitive->getOwner();
-
-		if (owner != NULL) {
-			return static_cast<const PartInstance*>(owner);
+	else
+	{
+		if (getParent())
+		{
+			RBXASSERT(!simBody);
+			getParent()->makeCofmDirty();
 		}
-	}
-
-	return NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009aef0
-bool PartInstance::computeSurfacesNeedAdorn() const
-{
-	for (int i = 0; i < 6; i++) {
-		const Surface& surface = surfaces[(NormalId) i];
-
-		if (surface.getSurfaceType() == ROTATE || surface.getSurfaceType() == ROTATE_P ||
-			surface.getSurfaceType() == ROTATE_V) {
-			return true;
+		else
+		{
+			RBXASSERT(root == this);
+			if (simBody)
+				simBody->makeDirty();
 		}
-	}
-
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009af50
-void PartInstance::legacyTraverseState(const CoordinateFrame& parentState)
-{
-	CoordinateFrame gridCorner = parentState * *legacyOffset;
-
-	primitive->setGridCorner(gridCorner);
-}
-
-// FUNCTION: WEBSERVICE 0x1009af90
-bool PartInstance::isControllable() const
-{
-	for (int i = 0; i < 6; i++) {
-		const Surface& surface = surfaces[(NormalId) i];
-
-		if ((surface.getSurfaceType() == ROTATE_P || surface.getSurfaceType() == ROTATE_V) &&
-			surface.isControllable()) {
-			return true;
+		if (cofm)
+		{
+			cofm->makeDirty();
+			RBXASSERT(numChildren() > 0);
 		}
-	}
-
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009aff0
-void PartInstance::onSurfaceChanged(NormalId normalId)
-{
-	PersistentPart.setDirty();
-	IsControllable.setDirty();
-	SurfacesNeedAdorn.setDirty();
-	shouldRenderSetDirty();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b080
-const CoordinateFrame& PartInstance::getCoordinateFrame() const
-{
-	return primitive->getCoordinateFrame();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b0b0
-float PartInstance::getMass()
-{
-	return primitive->getBody()->getMass();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b100
-const Vector3& PartInstance::getPartSizeXml() const
-{
-	return primitive->getGeometry()->getGridSize();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b110
-Vector3 PartInstance::getPartSizeUi() const
-{
-	return primitive->getGeometry()->getGridSize();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b140
-bool PartInstance::getDragging() const
-{
-	return primitive->getDragging();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b150
-bool PartInstance::getCanCollide() const
-{
-	if (!primitive->getDragging() && primitive->getCanCollide()) {
-		return true;
-	}
-
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b170
-bool PartInstance::getAnchored() const
-{
-	return primitive->getAnchorObject() != NULL;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b190
-float PartInstance::getFriction() const
-{
-	return primitive->getFriction();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1a0
-float PartInstance::getElasticity() const
-{
-	return primitive->getElasticity();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1b0
-Extents PartInstance::getExtentsWorld() const
-{
-	return primitive->getExtentsWorld();
-}
-
-// FUNCTION: WEBSERVICE 0x1009b1d0
-Extents PartInstance::getExtentsLocal() const
-{
-	const Vector3 corner = primitive->getGeometry()->getGridSize() * 0.5f;
-
-	return Extents(-corner, corner);
-}
-
-Vector3 PartInstance::xmlToUiSize(const Vector3& size) const
-{
-	Vector3 uiSize = size;
-
-	switch (formFactor) {
-	case BRICK:
-		uiSize.y = size.y / 1.2f;
-		break;
-	case PLATE:
-		uiSize.y = size.y / 0.4f;
-		break;
-	}
-
-	return uiSize;
-}
-
-// FUNCTION: WEBSERVICE 0x1009b610
-Vector3 PartInstance::uiToXmlSize(const Vector3& uiSize) const
-{
-	Vector3 gridUiSize = Math::iRoundVector3(uiSize.max(Vector3(1, 1, 1)));
-
-	Vector3 xmlSize = gridUiSize;
-
-	switch (formFactor) {
-	case BRICK:
-		xmlSize.y *= 1.2f;
-		break;
-	case PLATE:
-		xmlSize.y *= 0.4f;
-		break;
-	}
-
-	return xmlSize;
-}
-
-// STUB: WEBSERVICE 0x1009b6e0
-Part PartInstance::computePersistentPart() const
-{
-	return Part(
-		partType,
-		getPartSizeXml(),
-		G3D::Color4(getColor3(), 1.0f - (1.0f - (1.0f - transparency) * alphaModifier)),
-		surfaces.surf6(),
-		getCoordinateFrame()
-	);
-}
-
-// FUNCTION: WEBSERVICE 0x1009b780
-bool PartInstance::shouldRender3dAdorn() const
-{
-	return partType == Part::CYLINDER_PART || SurfacesNeedAdorn || highlightSleepParts || highlightAwakeParts ||
-		   showPartCoord || showAnchoredParts || showUnalignedParts || showSpanningTree;
-}
-
-// STUB: WEBSERVICE 0x1009bf50
-bool PartInstance::reportTouches() const
-{
-	STUB(0x1009bf50);
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009bfa0
-const Part& PartInstance::getPart()
-{
-	Part& part = PersistentPart.getValueRef();
-
-	part.coordinateFrame = getPrimitive()->getCoordinateFrame();
-
-	return part;
-}
-
-// FUNCTION: WEBSERVICE 0x1009bff0
-void PartInstance::onAncestorChanged(const AncestorChanged& event)
-{
-	Instance::onAncestorChanged(event);
-
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != myWorld) {
-		if (myWorld != NULL) {
-			setMovingManager(NULL);
-
-			myWorld->removePrimitive(getPrimitive());
-		}
-
-		myWorld = world;
-
-		if (world != NULL) {
-			world->insertPrimitive(getPrimitive());
-
-			setMovingManager(Workspace::getMyWorkspaceFast(this));
-
-			getPrimitive()->setController(getTopPVController());
+		else
+		{
+			RBXASSERT(!numChildren());
 		}
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009c090
-void PartInstance::onParentControllerChanged()
+void Body::onChildAdded(RBX::Body* child)
 {
-	PVInstance::onParentControllerChanged();
-
-	PersistentPart.setDirty();
-
-	primitive->setController(getTopPVController());
-}
-
-// STUB: WEBSERVICE 0x1009c0c0
-void PartInstance::render3dSelect(Adorn* adorn, SelectState selectState)
-{
-	STUB(0x1009c0c0);
-}
-
-// STUB: WEBSERVICE 0x1009c0f0
-bool PartInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
-{
-	STUB(0x1009c0f0);
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x1009cc10
-void PartInstance::onCanAggregateChanged(bool canAggregate)
-{
-	Notifier<PartInstance, CanAggregateChanged>::raise(canAggregate);
-
-	shouldRenderSetDirty();
-}
-
-// FUNCTION: WEBSERVICE 0x1009cc30
-void PartInstance::safeMove()
-{
-	if (World* world = Workspace::getWorldIfInWorkspace(this)) {
-		G3D::Array<Primitive*> temp;
-
-		temp.append(primitive.get());
-
-		Dragger::safeMoveNoDrop(temp, Vector3::zero(), *world->getContactManager());
+	makeCofmDirty();
+	children.fastAppend(child);
+	if (!cofm)
+	{
+		RBXASSERT(numChildren() == 1);
+		cofm = new Cofm(this);
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009d150
-PartInstance::~PartInstance()
+void Body::onChildRemoved(RBX::Body* child)
 {
+	RBXASSERT(cofm);
+	children.fastRemove(child);
+	if (numChildren() == 0)
+	{
+		delete cofm;
+		cofm = NULL;
+	}
+	makeCofmDirty();
 }
 
-// FUNCTION: WEBSERVICE 0x1009d2e0
-PartInstance* PartInstance::getPrimaryPart()
+void Body::setMass(float _mass)
 {
-	return this;
+	if (mass != _mass)
+	{
+		makeCofmDirty();
+		mass = _mass;
+	}
 }
 
-const PartInstance* PartInstance::getPrimaryPartConst() const
+void Body::step(float dt, bool throttling)
 {
-	STUB(0x1009d2e1);
-	return NULL;
+	RBXASSERT(!getParent());
+	RBXASSERT(simBody);
+
+	if (throttling && canThrottle)
+	{
+		simBody->resetAccumulators();
+	}
+	else
+	{
+		simBody->step(dt);
+
+		pv = cofm == NULL ? simBody->pv : simBody->getOwnerPV();
+		advanceStateIndex();
+	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009d3b0
-const Primitive* PartInstance::getBiggestPrimitive() const
+void Body::setVelocity(const Velocity& worldVelocity)
 {
-	return primitive.get();
+	if (!getParent())
+	{
+		pv.velocity = worldVelocity;
+		advanceStateIndex();
+		if (simBody)
+			simBody->makeDirty();
+	}
 }
 
-// FUNCTION: WEBSERVICE 0x1009d3c0
-const CoordinateFrame PartInstance::getLocation() const
+void Body::setParent(Body* newParent)
 {
-	return primitive->getCoordinateFrame();
-}
+	RBXASSERT(!newParent || newParent->getParent() != this);
+	RBXASSERT(newParent != this);
 
-// FUNCTION: WEBSERVICE 0x1009d7d0
-void PartInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
-{
-	primitives.push_back(getPrimitive());
-}
+	if (parent != newParent)
+	{
 
-namespace Reflection {
-
-// FUNCTION: WEBSERVICE 0x1009daf0
-template <>
-EnumDesc<PartInstance::FormFactor>::EnumDesc() : EnumDescriptor("FormFactor", typeid(PartInstance::FormFactor))
-{
-	addPair(PartInstance::SYMETRIC, "Symmetric");
-	addPair(PartInstance::BRICK, "Brick");
-	addPair(PartInstance::PLATE, "Plate");
-
-	addLegacyName("Block", PartInstance::BRICK);
-}
-
-} // namespace Reflection
-
-// STUB: WEBSERVICE 0x1009f220
-PartInstance::PartInstance()
-	: DescribedCreatable<PartInstance, PVInstance, sPart>("Part"), surfaces(this),
-	  PersistentPart(this, &PartInstance::computePersistentPart),
-	  SurfacesNeedAdorn(this, &PartInstance::computeSurfacesNeedAdorn)
-{
-	STUB(0x1009f220);
-}
-
-// FUNCTION: WEBSERVICE 0x1009f910
-void PartInstance::setPartSizeXml(const Vector3& rbxSize)
-{
-	if (rbxSize != getPartSizeXml()) {
-		Vector3 newRbxSize = partType == Part::BLOCK_PART ? rbxSize : rbxSize.xxx();
-
-		if (legacyOffset) {
-			CoordinateFrame oldCorner = primitive->getGridCorner();
-
-			primitive->setGridSize(newRbxSize);
-			primitive->setGridCorner(oldCorner);
+		if (getParent())
+		{
+			RBXASSERT(root == getParent()->getRoot());
+			RBXASSERT(!simBody);
+			parent->onChildRemoved(this);
 		}
-		else {
-			primitive->setGridSize(newRbxSize);
+		else
+		{
+			RBXASSERT(root = this);
+			RBXASSERT(simBody);
+			delete simBody;
+			simBody = NULL;
 		}
 
-		raisePropertyChanged(prop_Size);
-		raisePropertyChanged(prop_SizeUi);
+		parent = newParent;
 
-		PersistentPart.setDirty();
-
-		onExtentsChanged();
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009f9f0
-void PartInstance::setPartSizeUi(const Vector3& uiSize)
-{
-	World* world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		world->destroyJoints(primitive.get());
-	}
-
-	setPartSizeXml(uiToXmlSize(xmlToUiSize(uiSize)));
-
-	safeMove();
-
-	world = Workspace::getWorldIfInWorkspace(this);
-
-	if (world != NULL) {
-		world->createJoints(primitive.get());
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009faa0
-void PartInstance::setDragging(bool value)
-{
-	if (value != primitive->getDragging()) {
-		primitive->setDragging(value);
-		raisePropertyChanged(prop_Dragging);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fad0
-void PartInstance::setRenderImportance(float value)
-{
-	if (value != renderImportance) {
-		renderImportance = value;
-		raisePropertyChanged(prop_RenderImportance);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb00
-void PartInstance::setCanCollide(bool value)
-{
-	if (value != getCanCollide()) {
-		primitive->setCanCollide(value);
-		raisePropertyChanged(prop_CanCollide);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb40
-void PartInstance::setAnchored(bool value)
-{
-	if (value != getAnchored()) {
-		primitive->setAnchor(value);
-		raisePropertyChanged(prop_Anchored);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fb80
-void PartInstance::setPartLocked(bool value)
-{
-	if (value != locked) {
-		locked = value;
-		raisePropertyChanged(prop_Locked);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fbb0
-void PartInstance::setTransparency(float value)
-{
-	if (value != transparency) {
-		transparency = value;
-		raisePropertyChanged(prop_Transparency);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fbe0
-void PartInstance::setAlphaModifier(float value)
-{
-	if (value != alphaModifier) {
-		alphaModifier = value;
-		raisePropertyChanged(prop_Transparency);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc10
-void PartInstance::setReflectance(float value)
-{
-	if (value != reflectance) {
-		reflectance = value;
-		raisePropertyChanged(prop_Reflectance);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc40
-void PartInstance::setColor(BrickColor value)
-{
-	if (value.number != color.number) {
-		color = value;
-		raisePropertyChanged(prop_BrickColor);
-		raisePropertyChanged(prop_Color);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1009fc70
-void PartInstance::setFormFactorXml(FormFactor value)
-{
-	if (value != formFactor) {
-		formFactor = value;
-		raisePropertyChanged(prop_formFactor);
-	}
-}
-// STUB: WEBSERVICE 0x1009fe60
-void PartInstance::setColor3(const G3D::Color3& value)
-{
-	BrickColor closest = BrickColor::closest(value);
-
-	if (closest != color) {
-		color = closest;
-
-		raisePropertyChanged(prop_Color);
-		raisePropertyChanged(prop_BrickColor);
-	}
-}
-
-// STUB: WEBSERVICE 0x1009fec0
-void PartInstance::onCameraNear(float distance)
-{
-	if (distance > 3.0f) {
-		if (distance > 6.0f) {
-			setAlphaModifier(1.0f);
+		if (newParent)
+		{
+			newParent->onChildAdded(this);
 		}
-		else {
-			setAlphaModifier(0.5f);
+		else
+		{
+			simBody = new SimBody(this);
 		}
-	}
-	else {
-		setAlphaModifier(0.0f);
+		Body* myRoot = getParent() ? getParent()->calcRoot() : this;
+		myRoot->advanceStateIndex();
+		resetRoot(myRoot);
 	}
 }
 
-// STUB: WEBSERVICE 0x1009ff60
-void PartInstance::render3dAdorn(Adorn* adorn)
+Body* Body::getWorldBody()
 {
-	STUB(0x1009ff60);
+	static Body b = Body();
+	return &b;
 }
 
-// FUNCTION: WEBSERVICE 0x100a0450
-void PartInstance::setPartTypeXml(Part::PartType _type)
+G3D::CoordinateFrame Body::getMeInDescendant(const Body* descendant) const
 {
-	if (partType != _type) {
-		partType = _type;
-		primitive->setPrimitiveType(partType == Part::BLOCK_PART ? Geometry::GEOMETRY_BLOCK : Geometry::GEOMETRY_BALL);
-
-		if (partType != Part::BLOCK_PART) {
-			if (formFactor != SYMETRIC) {
-				formFactor = SYMETRIC;
-
-				raisePropertyChanged(prop_formFactor);
-			}
-		}
-
-		raisePropertyChanged(prop_shapeXml);
-		raisePropertyChanged(prop_shapeUi);
-
-		PersistentPart.setDirty();
-		shouldRenderSetDirty();
-
-		onExtentsChanged();
+	if (descendant == this)
+	{
+		return G3D::CoordinateFrame();
+	}
+	else if (descendant == parent)
+	{
+		RBXASSERT(parent);
+		return meInParent;
+	}
+	else
+	{
+		RBXASSERT(parent);
+		return parent->getMeInDescendant(descendant) * meInParent;
 	}
 }
 
-// FUNCTION: WEBSERVICE 0x100a04e0
-void PartInstance::setPartTypeUi(Part::PartType _type)
+void Body::setPv(const PV& _pv)
 {
-	if (partType != _type) {
-		World* world = Workspace::getWorldIfInWorkspace(this);
+	if (parent)
+	{
+		RBXASSERT(0);
+	}
+	else
+	{
+		pv = _pv;
+		if (simBody)
+			simBody->makeDirty();
+		advanceStateIndex();
+	}
+	RBXASSERT(Math::longestVector3Component(pv.position.translation) < 1000000.0);
+	RBXASSERT(Math::isOrthonormal(pv.position.rotation));
+	RBXASSERT(!Math::isNanInfDenormVector3(pv.position.translation));
+	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.linear));
+	RBXASSERT(!Math::isNanInfDenormVector3(pv.velocity.rotational));
+}
 
-		if (world != NULL) {
-			world->destroyJoints(primitive.get());
-		}
+void Body::setCoordinateFrame(const G3D::CoordinateFrame& worldCord)
+{
+	updatePV();
+	setPv(PV::PV(worldCord, pv.velocity));
+}
 
-		setPartTypeXml(_type);
+void Body::setMeInParent(const G3D::CoordinateFrame& _meInParent)
+{
+	RBXASSERT(Math::longestVector3Component(_meInParent.translation) < 1000000.0);
 
-		if (_type != Part::BLOCK_PART) {
-			Vector3 xmlSize = uiToXmlSize(getPartSizeUi());
 
-			setPartSizeXml(xmlSize);
-			safeMove();
-		}
-
-		safeMove();
-
-		world = Workspace::getWorldIfInWorkspace(this);
-
-		if (world != NULL) {
-			world->createJoints(primitive.get());
-		}
+	if (getParent())
+	{
+		meInParent = _meInParent;
+		makeCofmDirty();
+		root->advanceStateIndex();
+	}
+	else
+	{
+		RBXASSERT(0);
 	}
 }
 
-} // namespace RBX
+G3D::Vector3 Body::getBranchCofmPos() const
+{
+	return cofm ? pv.position.pointToWorldSpace(getPos()) : getCoordinateFrame().translation;
+}
+
+G3D::CoordinateFrame Body::getBranchCofmCoordinateFrame() const
+{
+	return G3D::CoordinateFrame(getPV().position.rotation, getBranchCofmPos());
+}
+
+G3D::Matrix3 Body::getIWorldAtPoint(const G3D::Vector3& point) const
+{
+	float _mass = mass;
+	updatePV(); //supposed to be inlined probably
+	G3D::Matrix3 iBody = moment;
+	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(iBody, pv.position.rotation);
+	return Math::getIWorldAtPoint(getPV().position.translation, point, iWorldAtCofm, _mass);
+}
+
+G3D::Matrix3 Body::getBranchIWorldAtPoint(const G3D::Vector3& point) const
+{
+	float _mass = getBranchMass();
+	updatePV(); //more probably inlined updatePV calls
+	G3D::Matrix3 _moment = cofm ? cofm->getMoment() : moment;
+	G3D::Matrix3& iWorldAtCofm = Math::momentToWorldSpace(_moment, pv.position.rotation);
+	return Math::getIWorldAtPoint(getBranchCofmPos(), point, iWorldAtCofm, _mass);
+}
+
+void Body::matchDummy()
+{
+	accumulateForceAtBranchCofm(G3D::Vector3(1.3f,1.2f,1.7f));
+	accumulateTorque(G3D::Vector3(6.3f,4.2f,9.7f));
+	setMoment(G3D::Matrix3());
+	resetAccumulators();
+	mass = getBranchMass();
+	index = getBranchForce().z + getBranchTorque().y + getBranchIBodyV3().x;
+}

@@ -1,601 +1,132 @@
-// from server: 42% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// roc-lib: rbxgs-dll roc_espeon_documentlaunchcontext69f79462c7c050f4.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8xml/XmlSerializer.h"
-#include "util/Debug.h"
-#include "util/base64.hpp"
-#include "reflection/type.h"
-#include <G3D/format.h>
-#include <sstream>
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias(<afxwin.h>, <roc_espeon_mfcnativeheader280d8d01456bb571.cpp>)
+#pragma include_alias("afxwin.h", "roc_espeon_mfcnativeheader280d8d01456bb571.cpp")
+#pragma include_alias(<afx.h>, <roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp>)
+#pragma include_alias("afx.h", "roc_espeon_mfcnativeheaderf430fdc1f4655d18.cpp")
+#pragma include_alias(<afxver_.h>, <roc_espeon_mfcnativeheader88c03f249389dac1.cpp>)
+#pragma include_alias("afxver_.h", "roc_espeon_mfcnativeheader88c03f249389dac1.cpp")
+#pragma include_alias(<afxv_w32.h>, <roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp>)
+#pragma include_alias("afxv_w32.h", "roc_espeon_mfcnativeheader46f3ea44f9168d89.cpp")
+#pragma include_alias(<afxv_dll.h>, <roc_espeon_mfcnativeheader2f795edbf7702b59.cpp>)
+#pragma include_alias("afxv_dll.h", "roc_espeon_mfcnativeheader2f795edbf7702b59.cpp")
+#pragma include_alias(<mfcassem.h>, <roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp>)
+#pragma include_alias("mfcassem.h", "roc_espeon_mfcnativeheaderf10ba24e78aa8f94.cpp")
+#pragma include_alias(<afxstr.h>, <roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp>)
+#pragma include_alias("afxstr.h", "roc_espeon_mfcnativeheaderd098d85d4c8b2c2d.cpp")
+#pragma include_alias(<atlcore.h>, <roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp>)
+#pragma include_alias("atlcore.h", "roc_espeon_mfcnativeheader9fb5b03d046fee95.cpp")
+#pragma include_alias(<atldef.h>, <roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp>)
+#pragma include_alias("atldef.h", "roc_espeon_mfcnativeheadera08092bcf50e88d6.cpp")
+#pragma include_alias(<atlrc.h>, <roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp>)
+#pragma include_alias("atlrc.h", "roc_espeon_mfcnativeheadera42dcb38b6b51843.cpp")
+#pragma include_alias(<atlchecked.h>, <roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp>)
+#pragma include_alias("atlchecked.h", "roc_espeon_mfcnativeheaderdbfafe36d028a07b.cpp")
+#pragma include_alias(<atlexcept.h>, <roc_espeon_mfcnativeheader947daedc1cd6318a.cpp>)
+#pragma include_alias("atlexcept.h", "roc_espeon_mfcnativeheader947daedc1cd6318a.cpp")
+#pragma include_alias(<atltrace.h>, <roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp>)
+#pragma include_alias("atltrace.h", "roc_espeon_mfcnativeheaderbda27626c7bbc1b4.cpp")
+#pragma include_alias(<atlconv.h>, <roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp>)
+#pragma include_alias("atlconv.h", "roc_espeon_mfcnativeheaderbc0af37bb4222087.cpp")
+#pragma include_alias(<atlalloc.h>, <roc_espeon_mfcnativeheaderf3175658669c56f0.cpp>)
+#pragma include_alias("atlalloc.h", "roc_espeon_mfcnativeheaderf3175658669c56f0.cpp")
+#pragma include_alias(<atlsimpcoll.h>, <roc_espeon_mfcnativeheader6640c5c238e46169.cpp>)
+#pragma include_alias("atlsimpcoll.h", "roc_espeon_mfcnativeheader6640c5c238e46169.cpp")
+#pragma include_alias(<cstringt.h>, <roc_espeon_mfcnativeheader5de12a84109ce944.cpp>)
+#pragma include_alias("cstringt.h", "roc_espeon_mfcnativeheader5de12a84109ce944.cpp")
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp>)
+#pragma include_alias("atlsimpstr.h", "roc_espeon_mfcnativeheaderc2c617e2f7213494.cpp")
+#pragma include_alias(<atlmem.h>, <roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp>)
+#pragma include_alias("atlmem.h", "roc_espeon_mfcnativeheadere714cdcba4a1907e.cpp")
+#pragma include_alias(<atlcommem.h>, <roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp>)
+#pragma include_alias("atlcommem.h", "roc_espeon_mfcnativeheader78614a5d9b4ba718.cpp")
+#pragma include_alias(<atlcomcli.h>, <roc_espeon_mfcnativeheader49eb5239674d4c30.cpp>)
+#pragma include_alias("atlcomcli.h", "roc_espeon_mfcnativeheader49eb5239674d4c30.cpp")
+#pragma include_alias(<cstringt.inl>, <roc_espeon_mfcnativeheader8d9851f9814f5387.cpp>)
+#pragma include_alias("cstringt.inl", "roc_espeon_mfcnativeheader8d9851f9814f5387.cpp")
+#pragma include_alias(<atltime.h>, <roc_espeon_mfcnativeheader5c30e069f5c89414.cpp>)
+#pragma include_alias("atltime.h", "roc_espeon_mfcnativeheader5c30e069f5c89414.cpp")
+#pragma include_alias(<atltime.inl>, <roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp>)
+#pragma include_alias("atltime.inl", "roc_espeon_mfcnativeheaderf65a0552d9e46d8a.cpp")
+#pragma include_alias(<afxcoll.h>, <roc_espeon_mfcnativeheadere609fa036c4edafa.cpp>)
+#pragma include_alias("afxcoll.h", "roc_espeon_mfcnativeheadere609fa036c4edafa.cpp")
+#pragma include_alias(<afxstat_.h>, <roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp>)
+#pragma include_alias("afxstat_.h", "roc_espeon_mfcnativeheader2868ab515b93fc8c.cpp")
+#pragma include_alias(<atltypes.h>, <roc_espeon_mfcnativeheader3416078e90aad117.cpp>)
+#pragma include_alias("atltypes.h", "roc_espeon_mfcnativeheader3416078e90aad117.cpp")
+#pragma include_alias(<atltypes.inl>, <roc_espeon_mfcnativeheader656810e957b5a6aa.cpp>)
+#pragma include_alias("atltypes.inl", "roc_espeon_mfcnativeheader656810e957b5a6aa.cpp")
+#pragma include_alias(<afxtls_.h>, <roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp>)
+#pragma include_alias("afxtls_.h", "roc_espeon_mfcnativeheader5b29982cec2c5a31.cpp")
+#pragma include_alias(<afxcoll.inl>, <roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp>)
+#pragma include_alias("afxcoll.inl", "roc_espeon_mfcnativeheadere4694c4e7dceee5b.cpp")
+#pragma include_alias(<afx.inl>, <roc_espeon_mfcnativeheader62a88db7d8698e91.cpp>)
+#pragma include_alias("afx.inl", "roc_espeon_mfcnativeheader62a88db7d8698e91.cpp")
+#pragma include_alias(<afxres.h>, <roc_espeon_mfcnativeheadereab43ff852a77c61.cpp>)
+#pragma include_alias("afxres.h", "roc_espeon_mfcnativeheadereab43ff852a77c61.cpp")
+#pragma include_alias(<afxcomctl32.h>, <roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp>)
+#pragma include_alias("afxcomctl32.h", "roc_espeon_mfcnativeheadere96c3697e9ff2169.cpp")
+#pragma include_alias(<afxmsg_.h>, <roc_espeon_mfcnativeheader9062d77c1f27f861.cpp>)
+#pragma include_alias("afxmsg_.h", "roc_espeon_mfcnativeheader9062d77c1f27f861.cpp")
+#pragma include_alias(<afxdd_.h>, <roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp>)
+#pragma include_alias("afxdd_.h", "roc_espeon_mfcnativeheader93eaeb27d5d71f5f.cpp")
+#pragma include_alias(<afxdll_.h>, <roc_espeon_mfcnativeheader9a76b412854b2e98.cpp>)
+#pragma include_alias("afxdll_.h", "roc_espeon_mfcnativeheader9a76b412854b2e98.cpp")
+#pragma include_alias(<afxcomctl32.inl>, <roc_espeon_mfcnativeheader0881c31addcca98d.cpp>)
+#pragma include_alias("afxcomctl32.inl", "roc_espeon_mfcnativeheader0881c31addcca98d.cpp")
+#pragma include_alias(<afxwin1.inl>, <roc_espeon_mfcnativeheader49a53b5325f634fe.cpp>)
+#pragma include_alias("afxwin1.inl", "roc_espeon_mfcnativeheader49a53b5325f634fe.cpp")
+#pragma include_alias(<afxwin2.inl>, <roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp>)
+#pragma include_alias("afxwin2.inl", "roc_espeon_mfcnativeheaderca2d9dc95a113b42.cpp")
+#pragma include_alias(<afxwin3.inl>, <roc_espeon_mfcnativeheader60402c5e89630019.cpp>)
+#pragma include_alias("afxwin3.inl", "roc_espeon_mfcnativeheader60402c5e89630019.cpp")
+#pragma include_alias(<afxwin4.inl>, <roc_espeon_mfcnativeheader6353026942e4251d.cpp>)
+#pragma include_alias("afxwin4.inl", "roc_espeon_mfcnativeheader6353026942e4251d.cpp")
+#pragma include_alias(<afxdlgs.h>, <roc_espeon_mfcdialogheader4c9ed5579ab59d02.cpp>)
+#pragma include_alias("afxdlgs.h", "roc_espeon_mfcdialogheader4c9ed5579ab59d02.cpp")
+#pragma include_alias(<afxdlgs.inl>, <roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp>)
+#pragma include_alias("afxdlgs.inl", "roc_espeon_mfcdialogheader7566c5ad3dd249a3.cpp")
+#define _AFXDLL
+#pragma include_alias(<atlsimpstr.h>, <roc_espeon_editorcstringheaderfb14fe2507201232.cpp>)
+#pragma include_alias(<xstring>, <roc_dom_native_stdstring_cstr_boundary_header3da8e64d105bf835.cpp>)
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#include <afxwin.h>
+#include <afxdlgs.h>
 
-class Whitespaces
-{
-public:
-	char data[256];
-  
-public:
-	Whitespaces()
-	{
-		data[9] = true;
-		data[10] = true;
-		data[12] = true;
-		data[13] = true;
-		data[32] = true;
-	}
-};
-
-static Whitespaces whitespaces;
-
-XmlParser::XmlParser(std::streambuf* buffer)
-	: buffer(buffer)
-{
-	
+#include <shlobj.h>
+#include <stdexcept>
+void AFXAPI AfxGetModuleShortFileName(HINSTANCE,CString&);
+static __declspec(noinline) void launch(const char* first,const char* second) {
+ CString folder;
+ if(SHGetFolderPathA(NULL,CSIDL_COMMON_DOCUMENTS,NULL,0,folder.GetBuffer(MAX_PATH))!=S_OK)
+  throw std::runtime_error("Unable to get common document folder");
+ folder.ReleaseBuffer();
+ CString executable;
+ AfxGetModuleShortFileName(AfxGetApp()->m_hInstance,executable);
+ CString args;
+ if(first)args+=first;
+ if(second)args+=second;
+ CWnd* main=AfxGetMainWnd();
+ if((UINT_PTR)ShellExecuteA(main->m_hWnd,"open",executable,args,folder,SW_SHOW)<=32)
+  throw std::runtime_error("ShellExecute failed");
 }
-
-void TextXmlParser::skipWhitespace()
-{
-	while (whitespaces.data[(char)buffer->sgetc()])
-		buffer->sbumpc();
-}
-
-std::string TextXmlParser::readTag()
-{
-	skipWhitespace();
-
-	if ((char)buffer->sbumpc() != '<')
-		throw std::runtime_error("tag expected");
-
-	std::string tag;
-	tag += '<';
-
-	char lastChar;
-	do
-	{
-		lastChar = buffer->sbumpc();
-		tag += lastChar;
-	}
-	while (lastChar != '>');
-
-	return tag;
-}
-
-std::string TextXmlParser::readFirstTag()
-{
-	skipWhitespace();
-
-	std::string s;
-	char c = buffer->sbumpc();
-	if (c != '<')
-	{
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		c = buffer->sbumpc();
-		s += c;
-		if (c != '<')
-		{
-			for (int i = 0; i != 50; i++)
-			{
-				if (buffer->sgetc() == -1)
-					continue;
-				s += buffer->sbumpc();
-			}
-
-			std::string message = "tag expected after Byte-Order-Mark:";
-			message += s;
-			throw std::runtime_error(message);
-		}
-	}
-
-	std::string tag;
-	tag += c;
-
-	char lastChar;
-	do
-	{
-		lastChar = buffer->sbumpc();
-		tag += lastChar;
-	}
-	while (lastChar != '>');
-
-	return tag;
-}
-
-std::string decodeString(std::string source)
-{
-	std::string result;
-
-	size_t i = 0;
-	while (i < source.size())
-	{
-		char c = source[i++];
-		if (c == '&')
-		{
-			std::string entity;
-			while (i < source.size())
-			{
-				c = source[i++];
-				if (c == ';')
-					break;
-				entity += c;
-			}
-
-			if (entity == "lt")
-				result += '<';
-			else if (entity == "gt")
-				result += '>';
-			else if (entity == "amp")
-				result += '&';
-			else if (entity == "quot")
-				result += '"';
-			else if (entity == "apos")
-				result += '\'';
-			else if (entity[0] == '#')
-				result += atoi(entity.substr(1).c_str());
-			else
-				RBXASSERT(0);
-		}
-		else
-		{
-			result += c;
-		}
-	}
-
-	return result;
-}
-
-std::string TextXmlParser::readText(bool decode)
-{
-	skipWhitespace();
-
-	std::string text;
-	while ((char)buffer->sgetc() != '<')
-		text += buffer->sgetc();
-
-	if (decode)
-		text = decodeString(text);
-
-	return text;
-}
-
-std::string TextXmlParser::removeTag(const std::string& contents, int& index)
-{
-	size_t i = 0;
-	while (whitespaces.data[contents[i]] && i < contents.size())
-		i++;
-
-	size_t j = i;
-	while (!whitespaces.data[contents[j]] && j < contents.size())
-		j++;
-
-	std::string contentsNoTag = contents.substr(i, j - i);
-	index = (int)j + 1;
-
-	return contentsNoTag;
-}
-
-std::string TextXmlParser::findNextToken(const std::string& contents, int& index)
-{
-	size_t i;
-	for (i = index; i < contents.size(); i++)
-	{
-		if (!whitespaces.data[contents[i]])
-			break;
-	}
-
-	bool inQuotes = false;
-	size_t j = i;
-
-	for (; j < contents.size(); j++)
-	{
-		if (contents[j] == '"')
-		{
-			inQuotes = !inQuotes;
-		}
-		else if (!inQuotes && whitespaces.data[contents[j]])
-		{
-			break;
-		}
-	}
-
-	if (j != i)
-	{
-		std::string answer = contents.substr(i, j - i);
-		index = (int)j + 1;
-		return answer;
-	}
-
-	index = (int)contents.size();
-	return "";
-}
-
-XmlElement* TextXmlParser::parseAttributes(const std::string& currentTag)
-{
-	std::string tagGuts = currentTag.substr(1, currentTag.size() - 2);
-
-	int index = 0;
-	std::string tagName = removeTag(tagGuts, index);
-
-	XmlElement* element = new XmlElement(RBX::Name::lookup(tagName));
-
-	std::string attribute = findNextToken(tagGuts, index);
-	while (attribute.size() > 0)
-	{
-		size_t equalsSignIndex = attribute.find("=", 0, 1);
-		std::string attributeName = attribute.substr(0, equalsSignIndex);
-
-		size_t startQuoteMarkIndex = attribute.find('\"');
-		size_t endQuoteMarkIndex = attribute.rfind('\"');
-		std::string text = decodeString(attribute.substr(startQuoteMarkIndex + 1, endQuoteMarkIndex - startQuoteMarkIndex - 1));
-
-		element->addAttribute(RBX::Name::lookup(attributeName), text);
-
-		attribute = findNextToken(tagGuts, index);
-	}
-
-	return element;
-}
-
-bool isCloseTag(const std::string& test)
-{
-	if (test.size() >= 2)
-		return test.substr(0, 2) == "</";
-
-	return false;
-}
-
-bool endsWithClose(const std::string& test)
-{
-	if (test.size() >= 2)
-		return test.substr(test.size() - 2, 2) == "/>";
-
-	return false;
-}
-
-std::auto_ptr<XmlElement> TextXmlParser::parse()
-{
-	if (buffer->sgetc() == -1)
-		throw std::runtime_error("TextXmlParser::parse empty file");
-
-	bool firstTag = true;
-	while (true)
-	{
-		std::string currentTag;
-		if (firstTag)
-		{
-			firstTag = false;
-			currentTag = readFirstTag();
-			if (currentTag.substr(0, 2) == "<?")
-				continue;
-		}
-		else
-		{
-			currentTag = readTag();
-		}
-
-		XmlElement* currentElement = elements.empty() ? NULL : elements.top();
-		if (isCloseTag(currentTag))
-		{
-			if (!currentElement)
-				throw std::runtime_error(G3D::format("TextXmlParser::parse - Got close tag %s without open tag.", currentTag.c_str()));
-
-			elements.pop();
-			if (elements.empty())
-				return std::auto_ptr<XmlElement>(currentElement);
-		}
-		else
-		{
-			XmlElement* newElement = parseAttributes(currentTag);
-			elements.push(newElement);
-
-			if (newElement->getTag() == RBX::Reflection::Type::singleton<RBX::ContentId>().tag)
-			{
-				bool isXsiNil;
-				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
-				if (xsiNilAttribute && xsiNilAttribute->getValue(isXsiNil) && !isXsiNil)
-				{
-					if (readText(false) == "")
-					{
-						const RBX::Name* mimeType;
-						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
-						if (mimeTypeAttribute)
-							mimeTypeAttribute->getValue(mimeType);
-						else
-							mimeType = &RBX::Name::getNullName();
-
-						std::string contentChild = readTag();
-						std::string tagName = contentChild.substr(1, contentChild.size() - 2);
-
-						if (tagName.substr(0, 6) == "binary")
-						{
-							std::stringbuf encoded(readText(false), std::ios_base::in);
-							std::stringstream decoded;
-
-							int ioStatus = 0;
-							base64<char> decoder;
-							decoder.get(
-								std::istreambuf_iterator<char>(&encoded),
-								std::istreambuf_iterator<char>(),
-								std::ostreambuf_iterator<char>(decoded),
-								ioStatus);
-
-							decoded.flush();
-
-							RBX::ContentId contentId = RBX::ContentProvider::singleton().registerContent(decoded, *mimeType);
-							newElement->setValue(contentId);
-						}
-						else if (tag_hash == tagName)
-						{
-							std::string name = readText(false);
-							newElement->setValue(RBX::ContentId(name.c_str(), *mimeType));
-						}
-						else if (tagName.substr(0, 3) == "url")
-						{
-							std::string url = readText(true);
-							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
-						}
-						else if (tag_null == tagName)
-						{
-							newElement->setValue(RBX::ContentId());
-						}
-						else
-						{
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - Unknown tag '%s'.", tagName.substr(0, 32).c_str()));
-						}
-
-						std::string closingTag = readTag();
-						if (!isCloseTag(closingTag))
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
-					}
-				}
-			}
-			else
-			{
-				newElement->setValue(readText(true));
-			}
-
-			currentElement->pushBackChild(newElement);
-
-			if (endsWithClose(currentTag))
-				elements.pop();
-		}
-	}
-}
-
-XmlWriter::XmlWriter(std::ostream& stream)
-	: stream(stream)
-{
-}
-
-int XmlWriter::getHandleIndex(RBX::InstanceHandle h)
-{
-	std::map<RBX::InstanceHandle, int>::iterator iter = handles.find(h);
-	if (iter == handles.end())
-	{
-		int index = (int)handles.size();
-		handles[h] = index;
-		return index;
-	}
-	else
-	{
-		return iter->second;
-	}
-}
-
-void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
-{
-	for (int i = 0; i < depth; i++)
-		stream << '\t';
-
-	stream << '<' << element->getTag().name;
-
-	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL; attribute = attribute->nextSibling())
-	{
-		stream << ' ' << attribute->getTag().name << "=\"";
-		encodedWrite(stream, attribute->toString(this));
-		stream << '\"';
-	}
-
-	if (extraAttribute)
-	{
-		stream << ' ' << extraAttribute->getTag().name << "=\"";
-		encodedWrite(stream, extraAttribute->toString(this));
-		stream << '\"';
-	}
-
-	stream << '>';
-}
-
-void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
-{
-	for (int i = 0; i < depth; i++)
-		stream << '\t';
-
-	stream << "</" << element->getTag().name << '>';
-}
-
-void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode->isValueType<RBX::ContentId>())
-	{
-		writeOpenTag(xmlNode, depth, NULL);
-
-		RBX::ContentId contentId;
-		xmlNode->getValue(contentId);
-		if (contentId.isNull())
-		{
-			stream << "<null></null>";
-		}
-		else
-		{
-			stream << "<hash>";
-			stream << xmlNode->toString(this);
-			stream << "</hash>";
-		}
-	}
-	else
-	{
-		writeOpenTag(xmlNode, depth, NULL);
-		encodedWrite(stream, xmlNode->toString(this));
-	}
-}
-
-void TextXmlWriter::serialize(const XmlElement* xmlNode)
-{
-	serialize(xmlNode, 0);
-}
-
-void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode)
-	{
-		serializeNode(xmlNode, depth);
-		if (xmlNode->firstChild())
-		{
-			for (const XmlElement* child = xmlNode->firstChild(); child != NULL; child = child->nextSibling())
-			{
-				stream << '\n';
-				serialize(child, depth + 1);
-			}
-			stream << '\n';
-			writeCloseTag(xmlNode, depth);
-		}
-		else
-		{
-			writeCloseTag(xmlNode, 0);
-		}
-	}
-}
-
-void TextXmlWriter::encodedWrite(std::ostream& stream, const std::string& text)
-{
-	encodedWrite(stream, text.c_str());
-}
-
-void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
-{
-	size_t len = strlen(text);
-	for (size_t i = 0; i != len; ++i)
-	{
-		unsigned char c = *text++;
-		if (c == '<')
-		{
-			stream << "&lt;";
-		}
-		else if (c == '>')
-		{
-			stream << "&gt;";
-		}
-		else if (c == '&')
-		{
-			stream << "&amp;";
-		}
-		else if (c == '"')
-		{
-			stream << "&quot;";
-		}
-		else if (c == '\'')
-		{
-			stream << "&apos";
-		}
-		else if (c >= ' ' && c <= '~') // every other printable character
-		{
-			stream << c;
-		}
-		else
-		{
-			char buffer[8];
-			sprintf(buffer, "&#%d;", c);
-			stream << buffer;
-		}
-	}
-}
-
-void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
-{
-	if (xmlNode->isValueType<RBX::ContentId>())
-	{
-		RBX::ContentId contentId;
-		xmlNode->getValue(contentId);
-
-		if (contentId.mimeType() == RBX::Name::getNullName())
-		{
-			writeOpenTag(xmlNode, depth, NULL);
-		}
-		else
-		{
-			XmlAttribute mimeTypeAttribute(tag_mimeType, contentId.mimeType().c_str());
-			writeOpenTag(xmlNode, depth, &mimeTypeAttribute);
-		}
-
-		if (!xmlNode->findAttribute(name_xsinil))
-		{
-			if (contentId.isNull())
-			{
-				stream << "<null></null>";
-			}
-			else
-			{
-				if (contentId.isAsset() || contentId.isHttp())
-				{
-					stream << "<url>";
-					TextXmlWriter::encodedWrite(stream, contentId.toString());
-					stream << "</url>";
-				}
-				else if (embeddedContent.find(contentId) == embeddedContent.end())
-				{
-					embeddedContent.insert(contentId);
-
-					std::auto_ptr<std::istream> contentStream;
-
-					try
-					{
-						contentStream = RBX::ContentProvider::singleton().getContent(contentId);
-
-						if (contentId.mimeType() == RBX::Name::getNullName())
-						{
-							stream << "<binary>";
-						}
-						else
-						{
-							stream << "<binary xmime:contentType=\"" << contentId.mimeType().c_str() << "\">";
-						}
-
-						std::istreambuf_iterator<char> _From(contentStream->rdbuf());
-						std::istreambuf_iterator<char> _To;
-						std::ostreambuf_iterator<char> _Out(stream.rdbuf());
-						int _State;
-
-						base64<char> encoder;
-						encoder.put(_From, _To, _Out, _State, base64<>::crlf());
-
-						stream << "</binary>";
-					}
-					catch (std::exception&)
-					{
-						goto hash;
-					}
-				}
-				else
-				{
-hash:
-					embeddedContent.insert(contentId);
-
-					stream << "<hash>";
-					stream << xmlNode->toString(this);
-					stream << "</hash>";
-				}
-			}
-		}
-	}
-	else
-	{
-		TextXmlWriter::serializeNode(xmlNode, depth);
-	}
+CString baseUrl();
+CString prepend(const char*,const CString&);
+CString append(const CString&,const char*);
+CString documentUrl(void*,const char*);
+class DocumentLaunchRecovery {public:void visitGame();};
+void DocumentLaunchRecovery::visitGame(){
+ try {
+  launch(documentUrl(this,"Visit"),append(prepend(" -script \"loadfile('",baseUrl()),"/game/visit.ashx')()\""));
+ }catch(...){}
 }

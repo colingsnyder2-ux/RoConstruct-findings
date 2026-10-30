@@ -1,92 +1,97 @@
-// from server: 17% by atomic.potato
-struct Node {
-    int key;
-    int val;
-    char pad[16];
-    Node* next;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_11ccee7d629bca29.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
+
+namespace RBX { namespace View {
+class RenderSurfaceTypes
+{
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
+
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
+#include <G3D/g3dmath.h>
+
+void flushUnusedMeshCache();
+
+namespace RBX {
+namespace View {
+
+class PBBMesh : public Render::Mesh
+{
+public:
+    PBBMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+    char pad[0x8c - sizeof(Render::Mesh)];
 };
 
-struct Hash {
-    char pad0[4];
-    int count;
-    int* buckets;
-    int bucketCount;
-    void grow(int n);
-    Node* find(int k);
-    Node* insert(int k, int v);
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<int, int> decalCache;
+        std::map<int, int> textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static Mesh* create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl op_delete(void*);
+template<class Mesh, size_t numMeshes>
+Mesh* MeshFactory<Mesh, numMeshes>::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
 
-struct Pair {
-    void* vtbl;
-    int a;
-    int b;
-    int c;
-};
+    if (!c->cache1.containsKey(surfaceTypes))
+        c->cache1.set(surfaceTypes, G3D::Table<G3D::Vector3, Variations>());
 
-extern "C" void __stdcall Pair_ctor(Pair*, int, int);
-extern "C" void __stdcall Node_dtor(Node*);
-extern "C" void __stdcall Node_assign(Node*, Pair*);
-extern "C" Node* __stdcall Node_new(Pair*, int);
+    G3D::Table<G3D::Vector3, Variations>& sizeCache = c->cache1.get(surfaceTypes);
 
-void Hash::grow(int n) {
-    int* nb = (int*)operator_new(n * 4);
-    int i;
-    for (i = 0; i < n; i++) nb[i] = 0;
-    for (i = 0; i < bucketCount; i++) {
-        Node* p = (Node*)buckets[i];
-        while (p) {
-            Node* nx = p->next;
-            int idx = p->key % n;
-            p->next = (Node*)nb[idx];
-            nb[idx] = (int)p;
-            p = nx;
+    if (!sizeCache.containsKey(size))
+        sizeCache.set(size, Variations());
+
+    Variations& variation = sizeCache.get(size);
+
+    int index = G3D::iRandom(0, numMeshes - 1);
+    G3D::ReferenceCountedPointer<Render::Mesh>& ref = variation.meshes[index];
+    Mesh* mesh = static_cast<Mesh*>(ref.getPointer());
+    if (!mesh)
+    {
+        mesh = new Mesh(size, surfaceTypes);
+        ref = mesh;
+        if (++c->count % 100 == 0)
+        {
+            G3D::ReferenceCountedPointer<Render::Mesh> keep = ref;
+            flushUnusedMeshCache();
         }
     }
-    if (buckets) op_delete(buckets);
-    buckets = nb;
-    bucketCount = n;
+    return mesh;
 }
 
-Node* Hash::find(int k) {
-    Node* p = (Node*)buckets[k % bucketCount];
-    while (p) {
-        if (p->key == k) return p;
-        p = p->next;
-    }
-    return 0;
+template class MeshFactory<PBBMesh, 4>;
 }
-
-Node* Hash::insert(int k, int v) {
-    int idx = k % bucketCount;
-    Node* p = (Node*)buckets[idx];
-    int found = 0;
-    int depth = 1;
-    while (p) {
-        if (p->key == k) { found = 1; break; }
-        p = p->next;
-        depth++;
-    }
-    if (!found && depth > 5) {
-        int newSize = bucketCount * 2;
-        if (bucketCount < newSize) {
-            grow(bucketCount * 2 + 1);
-        }
-    }
-    idx = k % bucketCount;
-    Node* nn = (Node*)operator_new(0x1c);
-    if (nn) {
-        Pair pr;
-        pr.vtbl = (void*)0x8c9cc0;
-        Pair_ctor(&pr, k, v);
-        Node* existing = (Node*)buckets[idx];
-        Node_new(&pr, (int)existing);
-    } else {
-        nn = 0;
-    }
-    buckets[idx] = (int)nn;
-    count++;
-    return nn;
 }

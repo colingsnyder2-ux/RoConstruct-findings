@@ -62,8 +62,6 @@ namespace RBX
 
 	Tool::ToolState Tool::computeDesiredState()
 	{
-		RBXASSERT(Network::Players::backendProcessing(this, true));
-
 		if (!getHandleConst())
 			return NOTHING;
 
@@ -140,19 +138,17 @@ namespace RBX
 		}
 	}
 
+	void Tool::rebuildBackendState()
+	{
+		ToolState state = computeDesiredState();
+		setDesiredState(state, ServiceProvider::findServiceProvider(this));
+	}
+
 	void Tool::onEvent_AddedBackend(boost::shared_ptr<Instance> child)
 	{
 		if (child.get() != this)
 		{
-			RBXASSERT(ServiceProvider::findServiceProvider(this));
-			RBXASSERT(Network::Players::backendProcessing(this, true));
-
-			ToolState state = computeDesiredState();
-			const ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);
-
-			RBXASSERT(serviceProvider);
-
-			setDesiredState(state, serviceProvider);
+			rebuildBackendState();
 		}
 	}
 
@@ -160,20 +156,12 @@ namespace RBX
 	{
 		if (ServiceProvider::findServiceProvider(this) && child.get() != this)
 		{
-			RBXASSERT(Network::Players::backendProcessing(this, true));
-
 			if (child.get() == (Instance*)this->weld.get())
 			{
-				RBXASSERT(Tool::drawSelected());
 				setDesiredState(HAS_TORSO, ServiceProvider::findServiceProvider(this));
 			}
 
-			ToolState state = computeDesiredState();
-			const ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);
-
-			RBXASSERT(serviceProvider);
-
-			setDesiredState(state, serviceProvider);
+			rebuildBackendState();
 		}
 	}
 
@@ -282,13 +270,11 @@ namespace RBX
 		DragUtilities::unJoinFromOutsiders(parts);
 
 		Humanoid* humanoid = Humanoid::modelIsCharacter(getParent());
-		RBXASSERT(humanoid);
-
 		PartInstance* rightArm = humanoid->getRightArm();
-		RBXASSERT(rightArm);
 
 		PartInstance* handle = getHandle();
-		RBXASSERT(handle);
+		if (handle)
+			handle->setCanCollide(false);
 
 		buildWeld(rightArm, handle, humanoid->getRightArmGrip(), grip, "RightGrip");
 	}

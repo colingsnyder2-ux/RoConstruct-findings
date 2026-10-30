@@ -1,401 +1,253 @@
-// from server: 46% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_boost133_complete_6f0c53d55c3fae31.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/TimeState.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/JointsService.h"
-#include "v8datamodel/LocalBackpack.h"
+#define _MT 1
+// Boost.Function library
+
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
+#endif
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
 #include "script/ScriptContext.h"
-#include "gui/GUI.h"
-#include "util/Log.h"
-#include "util/IMetric.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/Sound.h"
+#include "util/RunStateOwner.h"
+#include "util/ContentProvider.h"
+#include "v8datamodel/Feature.h"
+#include "v8world/World.h"
+#include "Replicator.h"
+#include "util/boost.hpp"
+class ThreadLogManager;
+class DHTMLWindow;
+// 00415d00 clones a four-byte boost::_mfi::mf0<void,CLuaHtmlView>.
+// This proves the single-inheritance member-pointer representation; no object layout is modeled.
+class __single_inheritance CLuaHtmlView { public: class Binder; };
+namespace G3D { class Stopwatch; }
+namespace RBX { namespace View { class View; class PartChunk; class Decal; class Texture; }
+namespace Network { class Server; } }
 
-namespace RBX
-{
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
+#include "reflection/signal.h"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
 
-	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	
-	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
 
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
 
-	DataModel::DataModel()
-		: VerbContainer(NULL),
-		  workspace(Creatable::create<Workspace>(this)),
-		  guiRoot(Creatable::create<GuiRoot>()),
-		  guiHooks(Creatable::create<GuiRoot>()),
-		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
-		  guiTarget(NULL),
-		  forceArrowCursor(true),
-		  dirty(false),
-		  drawId(0)
-	{
-		setName("Level");
-	}
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
 
-#pragma warning (pop)
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
 
-	DataModel::~DataModel()
-	{
-		Notifier<RunService, RunTransition>::disconnect(runService, this);
-		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
-	}
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
 
-	bool DataModel::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
+#else
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
 
-	boost::shared_ptr<DataModel> DataModel::createDataModel()
-	{
-		ContentProvider::singleton().clearContentCache();
-		
-		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-		{
-			Lock lock(dataModel);
-			dataModel->initializeContents();
-		}
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-		return dataModel;
-	}
-	
-	void DataModel::onChildAdded(Instance* child)
-	{
-		ServiceProvider::onChildAdded(child);
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
 
-		if (child->getClassName() == "NetworkClient")
-		{
-			Verb* lockPlayMode = getVerb("LockPlayMode");
-			if (lockPlayMode)
-				lockPlayMode->doIt(NULL);
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-			workspace->setNullMouseCommand();
-		}
-	}
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
 
-	void DataModel::onEvent(const RunService* source, RunTransition event)
-	{
-		switch (event.newState)
-		{
-		case RS_NORMAL:
-			if (event.oldState == RS_RUNNING)
-				workspace->reset();
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-			timeState->clear();
-			break;
-		case RS_RUNNING:
-			workspace->start();
-			break;
-		case RS_PAUSED:
-			workspace->stop();
-			break;
-		}
-	}
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
 
-	std::string DataModel::doHttpGet(std::string url)
-	{
-		std::string result;
-		Http(url.c_str()).get(result);
 
-		return result;
-	}
-
-	std::string DataModel::doHttpPost(std::string url, std::string data)
-	{
-		std::string result;
-		Http(url).post(std::istringstream(data), true, result);
-
-		return result;
-	}
-
-	void DataModel::close()
-	{
-		Verb* exitVerb = getVerb("Exit");
-		if (!exitVerb)
-			throw std::runtime_error("Couldn\'t find Exit Verb");
-
-		exitVerb->doIt(NULL);
-	}
-
-	std::string DataModel::httpGet(std::string url, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpGet(url);
-		}
-		else
-		{
-			if (url.size() > 0)
-			{
-				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
-				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-				boost::thread(background_function(g, "rbx_httpGet"));
-			}
-
-			return "";
-		}
-	}
-
-	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpPost(url, data);
-		}
-		else
-		{
-			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
-			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-			boost::thread(background_function(g, "rbx_httpPost"));
-
-			return "";
-		}
-	}
-
-	void DataModel::clearContents()
-	{
-		workspace->setMouseCommand(NULL);
-		workspace->removeAllChildren();
-		workspace->setCamera(NULL);
-		
-		starterPackService->removeAllChildren();
-
-		Teams* teams = ServiceProvider::find<Teams>(this);
-		if (teams)
-			teams->removeAllChildren();
-
-		Lighting* lighting = ServiceProvider::find<Lighting>(this);
-		if (lighting)
-			lighting->removeAllChildren();
-
-		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
-		if (script)
-		{
-			script->closeState();
-			ScriptContext::propScriptsDisabled.setValue(script, false);
-		}
-	}
-
-	void DataModel::loadContent(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
-
-		SerializerV2 serializer;
-		serializer.load(*stream, this);
-
-		workspace->joinAllHack();
-	}
-
-	void DataModel::save(ContentId contentId)
-	{
-		std::stringstream stream;
-
-		{
-			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
-			writeChildren(root.get());
-
-			TextXmlWriterWithEmbeddedContent machine(stream);
-			machine.serialize(root.get());
-
-			stream.flush();
-		}
-		
-		std::string response;
-		Http(contentId.toString()).post(stream, true, response);
-	}
-
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root.get(), *result);
-
-		return result;
-	}
-
-	static std::string report(const G3D::Stopwatch& timer)
-	{
-		if (timer.smoothElapsedTime() > 0.0f)
-		{
-			std::string t = Log::formatTime(timer.smoothElapsedTime());
-			char buffer[256];
-			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
-
-			return std::string(buffer);
-		}
-		else
-		{
-			return Log::formatTime(timer.smoothElapsedTime());
-		}
-	}
-
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
-
-	void DataModel::Lock::doLock(const DataModel* dataModel)
-	{
-		if (dataModel)
-		{
-			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
-		}
-	}
-
-	DataModel::Lock::~Lock()
-	{
-		delete lock;
-	}
 }
+
+// 00415d00 target RTTI
+template struct recovered_boost133::functor_manager< boost::_mfi::mf0<void,CLuaHtmlView>, std::allocator<void> >;
+// 00416ae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,RBX::Lua::FunctionRef>,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<RBX::Lua::FunctionRef> > >, std::allocator<void> >;
+// 00416b70 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00417570 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf3<void,DHTMLWindow,boost::shared_ptr<RBX::Instance>,RBX::Reflection::PropertyDescriptor const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list4<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<boost::shared_ptr<RBX::Instance> >,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00427ed0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(ThreadLogManager *), std::allocator<void> >;
+// 0042b3a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool,boost::_mfi::mf0<bool,CLuaHtmlView::Binder>,boost::_bi::list1<boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042b460 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(RBX::Reflection::PropertyDescriptor const *,RBX::Reflection::PropertyDescriptor const &,CLuaHtmlView::Binder *),boost::_bi::list3<boost::arg<1>,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042c6f0 target RTTI
+template struct recovered_boost133::functor_manager< bool (__cdecl*)(void), std::allocator<void> >;
+// 004489e0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(RBX::Security::Context *), std::allocator<void> >;
+// 00459600 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<G3D::Stopwatch const &,G3D::Stopwatch const & (__cdecl*)(G3D::Stopwatch const *),boost::_bi::list1<boost::_bi::value<G3D::Stopwatch const *> > >, std::allocator<void> >;
+// 00459660 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int const &,int const & (__cdecl*)(int const *),boost::_bi::list1<boost::_bi::value<int const *> > >, std::allocator<void> >;
+// 00493b10 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::shared_ptr<RBX::Network::AbuseReporter::data>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::Network::AbuseReporter::data> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0049dbe0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::weak_ptr<RBX::Network::Server>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list4<boost::_bi::value<boost::weak_ptr<RBX::Network::Server> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int>,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 004a9140 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::Network::Replicator,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::Network::Replicator *>,boost::arg<1> > >, std::allocator<void> >;
+// 004a91a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool const &,bool const & (__cdecl*)(bool const *),boost::_bi::list1<boost::_bi::value<bool const *> > >, std::allocator<void> >;
+// 004cdae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,bool>,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004cdb40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2350 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d23b0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2410 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::View::PartChunk>,boost::_bi::list1<boost::_bi::value<RBX::View::PartChunk *> > >, std::allocator<void> >;
+// 004d2470 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d24d0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2530 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2590 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 0052e4a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::RunService,boost::shared_ptr<RBX::DataModel> >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::RunService> >,boost::_bi::value<boost::shared_ptr<RBX::DataModel> > > >, std::allocator<void> >;
+// 00537cc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,boost::_mfi::cmf0<unsigned int,RBX::ScriptContext>,boost::_bi::list1<boost::_bi::value<RBX::ScriptContext *> > >, std::allocator<void> >;
+// 00537d40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(lua_State *),boost::_bi::list1<boost::arg<1> > >, std::allocator<void> >;
+// 00537dc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(lua_State *,unsigned int),boost::_bi::list2<boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 00537e20 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const &,lua_State *),boost::_bi::list2<boost::reference_wrapper<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const >,boost::arg<1> > >, std::allocator<void> >;
+// 00537e80 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > &,lua_State *,unsigned int),boost::_bi::list3<boost::reference_wrapper<std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > >,boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 005463c0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,boost::_mfi::mf0<RBX::worker_thread::work_result,RBX::ContentProvider>,boost::_bi::list1<boost::_bi::value<RBX::ContentProvider *> > >, std::allocator<void> >;
+// 00559840 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00559990 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list1<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00570f20 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> > *), std::allocator<void> >;
+// 00571c60 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::function0<void,std::allocator<boost::function_base> > const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::function0<void,std::allocator<boost::function_base> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0057bb90 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<double,double (__cdecl*)(RBX::Profiling::CodeProfiler *),boost::_bi::list1<boost::_bi::value<RBX::Profiling::CodeProfiler *> > >, std::allocator<void> >;
+// 0057bbf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int,boost::_mfi::cmf0<int,RBX::World>,boost::_bi::list1<boost::_bi::value<RBX::World const *> > >, std::allocator<void> >;
+// 00588e30 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int const &,unsigned int const & (__cdecl*)(unsigned int const *),boost::_bi::list1<boost::_bi::value<unsigned int const *> > >, std::allocator<void> >;
+// 00592540 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int> > >, std::allocator<void> >;
+// 005dadf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::VelocityMotor>,boost::_bi::list1<boost::_bi::value<RBX::VelocityMotor *> > >, std::allocator<void> >;
+
+// Explicit instantiation may name the native private worker_thread::data type.
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::shared_ptr<RBX::worker_thread::data>,boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > const &),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::worker_thread::data> >,boost::_bi::value<boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > > > >, std::allocator<void> >;

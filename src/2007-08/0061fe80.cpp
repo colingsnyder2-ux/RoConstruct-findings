@@ -1,159 +1,117 @@
-// from server: 19% by colin
-struct Node {
-    Node* parent;
-    Node* left;
-    Node* right;
-    char color;
-    char isNil;
-    char pad[2];
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_scorehud_family_1346da7936040480.cpp
 
-struct Tree {
-    Node* header;
-    int count;
-};
-
-struct ScoreHud {
-    char pad0[4];
-    Tree* tree;
-    char pad8[0x10];
-    int field18;
-    char pad1c[0x10];
-    int field2c;
-    char pad30[0x38];
-    int field68;
-    int field6c;
-
-    void erase(Tree* t, Node* where);
-};
-
-extern "C" {
-    void __stdcall sub_77e698(void*);
-    void __stdcall sub_77e6f8(void*);
-    void __stdcall sub_77e69c(void*, void*);
+// Candidate translation unit (score above; library headers required).
+#include <gui/ScoreHud.h>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+// Opaque public API receivers keep older headers' private Instance/Gui/Players
+// layouts out of these calls. Signatures are the genuine public declarations.
+class InstanceApi { public: size_t numChildren() const; Instance* getChild(size_t); const std::string& getName() const; };
+class GuiItemApi { public: void setGuiSize(const G3D::Vector2&); };
+class PlayersApi { public: int numPlayers() const; };
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::create<Teams>(this);
+    if(!teams) return;
+    float scale=adorn->getViewport().width()/1024.0f;
+    float row=14.0f*scale;
+    unsigned teamCount=((InstanceApi*)teams)->numChildren();
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    unsigned playerCount=((PlayersApi*)nativePlayers)->numPlayers();
+    unsigned rows=mode==TEAM_DEATHMATCH ? playerCount+3*(teamCount+1) : playerCount+3*teamCount+2;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*(mode==TEAM_DEATHMATCH?320.0f:240.0f),rows*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                G3D::Vector2 position(rect.low.x,rect.low.y);
+                float width=rect.high.x-rect.low.x;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
 }
 
-void __cdecl sub_630b9e(void*, void*);
-void __cdecl sub_60cd80(void*);
-void __cdecl sub_61da30(Node*);
-void __cdecl sub_4ef2c0(Node*);
-void __cdecl sub_4ef690(Node*);
-void __cdecl sub_61d9d0(Node*);
-void __cdecl sub_543460(void*, void*, void*, void*, void*);
-void __cdecl sub_62fc62(void*);
-
-void ScoreHud::erase(Tree* t, Node* where)
-{
-    Node* y;
-    Node* x;
-    Node* z;
-    Node* header;
-    Node* nil;
-    char tmp;
-
-    if (where->isNil) {
-        return;
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
     }
-
-    if (where->left == 0 && where->right == 0) {
-        y = where;
-    } else {
-        y = where->right;
-        while (y->left != 0) {
-            y = y->left;
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
         }
     }
-
-    if (y->left != 0) {
-        x = y->left;
-    } else {
-        x = y->right;
-    }
-
-    if (x != 0) {
-        x->parent = y->parent;
-    }
-
-    header = t->header;
-    if (header->parent == y) {
-        header->parent = x;
-    } else if (y->parent->left == y) {
-        y->parent->left = x;
-    } else {
-        y->parent->right = x;
-    }
-
-    if (y != where) {
-        if (where->parent->left == where) {
-            where->parent->left = y;
-        } else {
-            where->parent->right = y;
-        }
-        y->left = where->left;
-        where->left->parent = y;
-        y->right = where->right;
-        where->right->parent = y;
-        y->parent = where->parent;
-        tmp = y->color;
-        y->color = where->color;
-        where->color = tmp;
-    }
-
-    if (y->color == 0) {
-        while (x != t->header->parent && x->color == 0) {
-            if (x == x->parent->left) {
-                z = x->parent->right;
-                if (z->color == 1) {
-                    z->color = 0;
-                    x->parent->color = 1;
-                    sub_4ef690(x->parent);
-                    z = x->parent->right;
-                }
-                if (z->left->color == 0 && z->right->color == 0) {
-                    z->color = 1;
-                    x = x->parent;
-                } else {
-                    if (z->right->color == 0) {
-                        z->left->color = 1;
-                        z->color = 0;
-                        sub_61d9d0(z);
-                        z = x->parent->right;
-                    }
-                    z->color = x->parent->color;
-                    x->parent->color = 1;
-                    z->right->color = 1;
-                    sub_4ef690(x->parent);
-                    x = t->header->parent;
-                }
-            } else {
-                z = x->parent->left;
-                if (z->color == 1) {
-                    z->color = 0;
-                    x->parent->color = 1;
-                    sub_61d9d0(x->parent);
-                    z = x->parent->left;
-                }
-                if (z->right->color == 0 && z->left->color == 0) {
-                    z->color = 1;
-                    x = x->parent;
-                } else {
-                    if (z->left->color == 0) {
-                        z->right->color = 1;
-                        z->color = 0;
-                        sub_4ef690(z);
-                        z = x->parent->left;
-                    }
-                    z->color = x->parent->color;
-                    x->parent->color = 1;
-                    z->left->color = 1;
-                    sub_61d9d0(x->parent);
-                    x = t->header->parent;
-                }
-            }
-        }
-        x->color = 1;
-    }
-
-    sub_62fc62(where);
-    t->count--;
+}
 }

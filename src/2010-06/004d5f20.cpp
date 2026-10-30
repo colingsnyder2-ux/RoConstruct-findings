@@ -1,170 +1,58 @@
-// from server: 35% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Client.cpp
+// roc 2010-06 004d5f20  unit: RBX::Network::Client  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 004d5f20
+//
+// 004d5f20  51                   push ecx
+// 004d5f21  56                   push esi
+// 004d5f22  c744240400000000     mov dword ptr [esp + 4], 0
+// 004d5f2a  e8a150feff           call 0x4bafd0
+// 004d5f2f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 004d5f33  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 004d5f37  83ec10               sub esp, 0x10
+// 004d5f3a  8bd4                 mov edx, esp
+// 004d5f3c  890a                 mov dword ptr [edx], ecx
+// 004d5f3e  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 004d5f42  894a04               mov dword ptr [edx + 4], ecx
+// 004d5f45  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 004d5f49  894a08               mov dword ptr [edx + 8], ecx
+// 004d5f4c  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 004d5f50  894a0c               mov dword ptr [edx + 0xc], ecx
+// 004d5f53  56                   push esi
+// 004d5f54  8bc8                 mov ecx, eax
+// 004d5f56  e895deffff           call 0x4d3df0
+// 004d5f5b  8bc6                 mov eax, esi
+// 004d5f5d  5e                   pop esi
+// 004d5f5e  59                   pop ecx
+// 004d5f5f  c21400               ret 0x14
+// copied from an identical function in another client (function ?f@S@ns_ROCX000000@@QAE?AURet@2@UArg@2@@Z)
 
-// Candidate translation unit (score above; library headers required).
-#include <RakNetTypes.h>
-#include <RakPeer.h>
-#include <MessageIdentifiers.h>
-#include "API.h"
-#include "Client.h"
-#include "util/standardout.h"
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(std::string, int, int, int), 4> f_connect(&RBX::Network::Client::connect, "Connect", "server", "serverPort", "clientPort", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(int), 1> f_disconnect(&RBX::Network::Client::disconnect, "Disconnect", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-class Exposer : protected PacketLogger
+namespace ns_ROCX000000 {
+struct Ret
 {
-public:
-	static const char* IDTOString(int id)
-	{
-		Exposer exposer;
-		return exposer.PacketLogger::IDTOString((unsigned char)id);
-	}
+    Ret(const Ret &);
+    ~Ret();
+    void *p;
 };
 
-namespace RBX
+struct Arg
 {
-	namespace Network
-	{
-		Client::Client()
-		{
-			setName("NetworkClient");
-			updateLogger();
-		}
+    int f0, f1, f2, f3;
+};
 
-		Client::~Client()
-		{
-			rakPeer->CloseConnection(serverId, true, 0);
-		}
+struct Impl
+{
+    Ret g(Arg arg);
+};
 
-		void Client::disconnect(int blockDuration)
-		{
-			removeAllChildren();
-			rakPeer->CloseConnection(serverId, true, 0);
-			rakPeer->Shutdown(blockDuration, 0);
-		}
+struct Getter { static Impl *get(); };
 
-		void Client::onEvent(const ServiceProvider* source, Closing event)
-		{
-			disconnect(3000);
-		}
+struct S
+{
+    Ret f(Arg arg);
+};
 
-		void Client::connect(std::string server, int serverPort, int clientPort, int threadSleepTime)
-		{
-			SocketDescriptor d(clientPort, "");
-			if (!rakPeer->Startup(1, threadSleepTime, &d, 1))
-				throw std::runtime_error("Failed to start network client");
-
-			if (!rakPeer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size()))
-				throw std::runtime_error("Failed to connect to server");
-
-			StandardOut::singleton()->print(MESSAGE_INFO, "Connecting to %s:%d", server.c_str(), serverPort);
-
-			updateNetworkSimulator();
-		}
-
-		void Client::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			Notifier<ServiceProvider, Closing>::disconnect(oldProvider, this);
-
-			if (oldProvider)
-			{
-				RunService* runService = oldProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = false;
-
-				disconnect(3000);
-
-				Players* p = oldProvider->find<Players>();
-				p->setConnection(NULL);
-			}
-
-			Instance::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider)
-			{
-				Players* p = newProvider->create<Players>();
-				p->setConnection(rakPeer.get());
-
-				RunService* runService = newProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = true;
-			}
-
-			Notifier<ServiceProvider, Closing>::connect(newProvider, this);
-		}
-
-		bool Client::clientIsPresent(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return ServiceProvider::find<Client>(sp) != NULL;
-		}
-
-		PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
-		{
-			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
-			if (result != RR_CONTINUE_PROCESSING)
-				return result;
-
-			switch(packet->data[0])
-			{
-			case ID_CONNECTION_REQUEST_ACCEPTED:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_INFO, "Connection accepted from %s\n", packet->systemAddress.ToString());
-					serverId = packet->systemAddress;
-					
-					boost::shared_ptr<Replicator> proxy = Creatable::create<Replicator>(packet->systemAddress, this->rakPeer.get());
-					proxy->setParent(this);
-					
-					event_ConnectionAccepted.fire(this, packet->systemAddress.ToString(), proxy);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-
-			case ID_CONNECTION_ATTEMPT_FAILED:
-			case ID_NO_FREE_INCOMING_CONNECTIONS:
-			case ID_CONNECTION_BANNED:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Failed to connect to %s. %s\n", packet->systemAddress.ToString(), Exposer::IDTOString(packet->data[0]));
-					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-			
-			case ID_INVALID_PASSWORD:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Invalid version from %s", packet->systemAddress.ToString());
-					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
-					event_ConnectionRejected.fire(this, packet->systemAddress.ToString());
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-
-			case ID_DISCONNECTION_NOTIFICATION:
-			case ID_CONNECTION_LOST:
-				RBXASSERT(packet->systemAddress == serverId);
-				serverId = UNASSIGNED_SYSTEM_ADDRESS;
-				break;
-			}
-
-			return RR_CONTINUE_PROCESSING;
-		}
-	}
+Ret S::f(Arg arg)
+{
+    Impl *impl = Getter::get();
+    return impl->g(arg);
+}
 }

@@ -1,14 +1,14 @@
-// from server: 92% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPToolBar.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPToolBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPToolBar.cpp : implementation of the CXTPToolBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -28,28 +28,24 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPVC50Helpers.h"
 #include "Common/XTPResourceManager.h"
 #include "Common/XTPImageManager.h"
 #include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
 #include "Common/XTPToolTipContext.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBars.h"
-#include "XTPCommandBar.h"
 #include "XTPToolBar.h"
-#include "XTPPopupBar.h"
-
+#include "XTPCommandBars.h"
+#include "XTPDockBar.h"
 #include "XTPControls.h"
 #include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlPopup.h"
-
 #include "XTPPaintManager.h"
 #include "XTPMouseManager.h"
+#include "XTPControlPopup.h"
+#include "XTPPopupBar.h"
+#include "XTPControlButton.h"
 #include "XTPDockContext.h"
 #include "XTPShortcutManager.h"
 
@@ -205,7 +201,7 @@ BOOL CXTPToolBar::CControlButtonExpand::OnSetPopup(BOOL bPopup)
 		m_pCommandBar->EnableCustomization(FALSE);
 
 		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
-		if (pCommandBars && ((CXTPToolBar*)m_pParent)->m_pDockContext)
+		if (pCommandBars)
 		{
 			pCommandBars->GetHiddenControls((CXTPToolBar*)m_pParent, m_pCommandBar);
 
@@ -216,8 +212,6 @@ BOOL CXTPToolBar::CControlButtonExpand::OnSetPopup(BOOL bPopup)
 
 				pControl->SetBeginGroup(m_pCommandBar->GetControlCount() > 1);
 				pCommandBars->GetAddOrRemovePopup((CXTPToolBar*)m_pParent, pControl->GetCommandBar());
-
-				XTPResourceManager()->AssertValid(!pControl->GetCaption().IsEmpty());
 			}
 		}
 		else
@@ -241,7 +235,6 @@ BOOL CXTPToolBar::CControlButtonExpand::OnSetPopup(BOOL bPopup)
 
 CXTPToolBar::CXTPToolBar()
 {
-	m_bVisible = TRUE;
 	m_pDockBar = 0;
 	m_pDockContext = 0;
 	m_bBuiltIn = TRUE;
@@ -596,16 +589,9 @@ INT_PTR CXTPCommandBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
 
 
 	CString strShortcut = pControl->m_strShortcutText;
-	if (pCommandBars && bToolBarAccelTips)
+	if (pCommandBars && bToolBarAccelTips && (!strShortcut.IsEmpty() || pCommandBars->GetShortcutManager()->FindDefaultAccelerator((UINT)pControl->GetID(), strShortcut)))
 	{
-		if (strShortcut.IsEmpty())
-		{
-			strShortcut = pControl->m_strShortcutTextAuto;
-			if (!pCommandBars->GetShortcutManager()->FindDefaultAccelerator((UINT)pControl->GetID(), strShortcut))
-				strShortcut.Empty();
-		}
-
-		if ((strShortcut.GetLength() > 0) && (strTip[0] != '<'))
+		if (strShortcut.GetLength() > 0)
 		{
 			strTip += _T(" (") + strShortcut +_T(")");
 		}
@@ -664,9 +650,6 @@ BOOL CXTPToolBar::Create(CWnd* pParentWnd, BOOL bFloat)
 		if (!CWnd::CreateEx(nLayoutRTL, _T("XTPToolBar"), m_strTitle, dwStyle, CRect(pt, CSize(0, 0)), pParentWnd, 0))
 			return FALSE;
 
-		SetDlgCtrlID(0);
-
-
 		ShowWindow(SW_SHOWNA);
 	}
 
@@ -679,11 +662,6 @@ BOOL CXTPToolBar::Create(CWnd* pParentWnd, BOOL bFloat)
 		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)0);
 		ModifyStyle(WS_CHILD, WS_POPUP | MFS_SYNCACTIVE);
 		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)pParentWnd->m_hWnd);
-
-		if (pParentWnd->GetExStyle() & WS_EX_TOPMOST)
-		{
-			SetWindowPos(&CWnd::wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
-		}
 	}
 
 	return TRUE;
@@ -838,7 +816,7 @@ CSize CXTPToolBar::CalcDynamicLayout(int nLength, DWORD nMode)
 	if (m_barType == xtpBarTypePopup)
 	{
 		UpdateShortcuts();
-		sz = m_pControls->CalcPopupSize(&dc, 0, 0, rcBorder);
+		sz = m_pControls->CalcPopupSize(&dc, 0, rcBorder);
 	}
 	else
 		sz = m_pControls->CalcDynamicSize(&dc, nLength, nMode, rcBorder);
@@ -1196,26 +1174,21 @@ CSize CXTPCommandBar::GetAutoIconSize(BOOL bLarge) const
 
 CSize CXTPCommandBar::GetIconSize() const
 {
-	if (m_szIcons != CSize(0))
-		return m_szIcons;
-
 	CXTPCommandBars* pCommandBars = GetCommandBars();
 
 	if (!pCommandBars)
-		return CSize(16, 16);
-
-	CXTPCommandBarsOptions* pOptions = pCommandBars->GetCommandBarsOptions();
+		return m_szIcons != CSize(0) ? m_szIcons : CSize(16, 16);
 
 	if (GetType() == xtpBarTypePopup)
 	{
-		return pOptions->szPopupIcons != CSize(0) ? pOptions->szPopupIcons : GetAutoIconSize(FALSE);
+		return m_szIcons != CSize(0) ? m_szIcons : pCommandBars->m_pOptions->szPopupIcons != CSize(0) ? pCommandBars->m_pOptions->szPopupIcons : GetAutoIconSize(FALSE);
 	}
 
-	CSize sz = pOptions->szIcons != CSize(0) ? pOptions->szIcons : GetAutoIconSize(FALSE);
+	CSize sz = m_szIcons != CSize(0) ? m_szIcons: (pCommandBars->m_pOptions->szIcons != CSize(0) ? pCommandBars->m_pOptions->szIcons : GetAutoIconSize(FALSE));
 
-	if (pOptions->bLargeIcons && m_szButtons == CSize(0))
+	if (pCommandBars->m_pOptions->bLargeIcons && m_szButtons == CSize(0))
 	{
-		sz = pOptions->szLargeIcons != CSize(0) ? pOptions->szLargeIcons : GetAutoIconSize(TRUE);
+		sz = pCommandBars->m_pOptions->szLargeIcons != CSize(0) ? pCommandBars->m_pOptions->szLargeIcons : GetAutoIconSize(TRUE);
 	}
 
 	return sz;
@@ -1243,8 +1216,7 @@ CSize CXTPCommandBar::GetLargeIconSize(BOOL bAutoSize) const
 
 CSize CXTPCommandBar::GetButtonSize() const
 {
-	if (m_szButtons != CSize(0))
-		return m_szButtons;
+	if (m_szButtons != CSize(0)) return m_szButtons;
 
 	CSize szIcon = GetIconSize();
 	return CSize(szIcon.cx + 6, szIcon.cy + 6);
@@ -1298,12 +1270,12 @@ void CXTPToolBar::Reset(BOOL bShowWarningMessage)
 		{
 			CString strMessage, strTitle = GetTitle(), strReset;
 
-			CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
+			VERIFY(XTPResourceManager()->LoadString(&strReset, XTP_IDS_CONFIRM_RESET));
 			strMessage.Format(strReset, (LPCTSTR)strTitle);
 
 			CXTPPushRoutingFrame push(GetFrameSite());
 
-			if (XTPResourceManager()->ShowMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
+			if (AfxMessageBox(strMessage, MB_ICONWARNING | MB_OKCANCEL) != IDOK)
 				return;
 		}
 
@@ -1331,11 +1303,6 @@ void CXTPToolBar::Reset(BOOL bShowWarningMessage)
 		OnInitialUpdate();
 		OnRecalcLayout();
 	}
-}
-
-void CXTPToolBar::BeforeCustomizeControlAdd(CXTPControl* /*pControl*/)
-{
-
 }
 
 void CXTPToolBar::BuildCustomizePopup(CXTPCommandBar* pExpandBar)
@@ -1407,8 +1374,6 @@ void CXTPToolBar::BuildCustomizePopup(CXTPCommandBar* pExpandBar)
 		}
 		if (pControl->GetAction() && !pControl->GetAction()->IsVisible())
 			continue;
-
-		BeforeCustomizeControlAdd(pControl);
 
 		if ((pControl->GetHideFlags() & (xtpHideGeneric | xtpHideDocTemplate | xtpHideRibbonTab)) != 0)
 		{

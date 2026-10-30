@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by tajop
 struct DxUserInput {
     unsigned char pad[0x1d];
     unsigned char field_1d;
@@ -23,10 +23,9 @@ int getFlags(DxUserInput* p) {
         result |= 0x40;
     if (p->field_9d & mask)
         result |= mask;
-    unsigned char c = p->field_38 & mask;
-    if (c)
+    if (p->field_38 & mask)
         result |= 0x100;
-    if (c & mask)
+    if (p->field_38 & mask)
         result |= 0x200;
     return result;
 }

@@ -1,14 +1,13 @@
-// from server: 39% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTColorPageStandard.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageStandard.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTColorPageStandard.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -1334,16 +1333,11 @@ void CXTColorHex::UpdateSelection(CPoint point)
 {
 	COLORREF clr = ColorFromPoint(point);
 
-	if ((m_clrColor != clr) && (clr != (COLORREF)-1))
+	if ((clr != (COLORREF)-1) && (m_clrColor != clr))
 	{
 		m_clrColor = clr;
-
-		CWnd* pWnd = GetOwner();
-		if (pWnd)
-		{
-			pWnd->SendMessage(XTWM_UPDATECOLOR,
-				(WPARAM)m_clrColor, (LPARAM)m_hWnd);
-		}
+		GetParent()->SendMessage(XTWM_UPDATECOLOR,
+			(WPARAM)(COLORREF)m_clrColor);
 
 		CRect rc;
 		GetClientRect(&rc);
@@ -1518,37 +1512,30 @@ void CXTColorHex::SetSelectedColor(int iIndex)
 		POSITION pos2 = m_arCells.FindIndex(iIndex);
 		ASSERT(pos2 != NULL);
 
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos2);
-		ASSERT(pCI != NULL);
+		HEXCOLOR_CELL* pClrCell = m_arCells.GetAt(pos2);
+		ASSERT(pClrCell != NULL);
 
-		if (pCI)
-		{
-			UpdateSelection(pCI->pPoint[0]);
-			return;
-		}
+		if (pClrCell)
+			UpdateSelection(pClrCell->pPoint[0]);
 	}
-
-	if (::IsWindow(m_hWnd))
-		RedrawWindow();
 }
 
 void CXTColorHex::SetSelectedColor(COLORREF clr)
 {
+	m_clrColor = clr;
+	int iIndex = -1;
+
 	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
+	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos), ++iIndex)
 	{
 		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
 		ASSERT(pCI != NULL);
 
-		if (pCI && pCI->clr == clr)
+		if (pCI && (clr == pCI->clr))
 		{
-			UpdateSelection(pCI->pPoint[0]);
-			return;
+			SetSelectedColor(iIndex);
 		}
 	}
-
-	if (::IsWindow(m_hWnd))
-		RedrawWindow();
 }
 
 BOOL CXTColorHex::PreTranslateMessage(MSG* pMsg)
@@ -1557,24 +1544,24 @@ BOOL CXTColorHex::PreTranslateMessage(MSG* pMsg)
 	{
 	case WM_KEYDOWN:
 		{
-			HEXCOLOR_CELL* pCI = GetColorCell(m_clrColor);
-			if (pCI == NULL)
-				pCI = GetColorCell(RGB(0x00, 0x00, 0x00));
+			HEXCOLOR_CELL* pClrCell = GetColorCell(m_clrColor);
+			if (pClrCell == NULL)
+				pClrCell = GetColorCell(RGB(0x00, 0x00, 0x00));
 
 			TCHAR vkey = (TCHAR)pMsg->wParam;
 			switch (vkey)
 			{
 			case VK_LEFT:
-				SetSelectedColor(pCI->direction[0]);
+				SetSelectedColor(pClrCell->direction[0]);
 				break;
 			case VK_UP:
-				SetSelectedColor(pCI->direction[1]);
+				SetSelectedColor(pClrCell->direction[1]);
 				break;
 			case VK_RIGHT:
-				SetSelectedColor(pCI->direction[2]);
+				SetSelectedColor(pClrCell->direction[2]);
 				break;
 			case VK_DOWN:
-				SetSelectedColor(pCI->direction[3]);
+				SetSelectedColor(pClrCell->direction[3]);
 				break;
 			case VK_RETURN:
 			case VK_SPACE:
@@ -1630,16 +1617,8 @@ void CXTColorPageStandard::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-LRESULT CXTColorPageStandard::OnUpdateColor(WPARAM wParam, LPARAM lParam)
+LRESULT CXTColorPageStandard::OnUpdateColor(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if ((HWND)lParam == m_colorHex.m_hWnd)
-	{
-		m_pParentSheet->SetNewColor((COLORREF)wParam, FALSE);
-	}
-	else
-	{
-		m_colorHex.SetSelectedColor((COLORREF)wParam);
-	}
-
+	m_pParentSheet->SetNewColor((COLORREF)wParam, FALSE);
 	return 0;
 }

@@ -1,8 +1,8 @@
-// from server: 72% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp
+// roc-flags: /Od /Ob0 /GS- /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Magic Software, Inc.
@@ -15,541 +15,596 @@
 // and may not be copied or disclosed except in accordance with the terms of
 // that agreement.
 
-#include "WmlConvexHull2.h"
+#include "WmlConvexClipper.h"
+#include "WmlConvexPolyhedron3.h"
 using namespace Wml;
 
 #include <algorithm>
-#include <set>
+#include <fstream>
+#include <map>
 using namespace std;
 
 //----------------------------------------------------------------------------
 template <class Real>
-ConvexHull2<Real>::ConvexHull2 (int iVQuantity, const Vector2<Real>* akVertex,
-    bool bIncremental)
+ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
+    Real fEpsilon)
 {
-    m_iVQuantity = iVQuantity;
-    m_akVertex = akVertex;
+    m_fEpsilon = fEpsilon;
 
-    if ( bIncremental )
-        ByIncremental();
-    else
-        ByDivideAndConquer();
+    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
+    int iVQuantity = rkPoly.GetVQuantity();
+    m_akVertex.resize(iVQuantity);
+    for (int iV = 0; iV < iVQuantity; iV++)
+        m_akVertex[iV].m_kPoint = rakPoint[iV];
 
-    if ( m_iHQuantity >= 3 )
-        RemoveCollinear();
-}
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexHull2<Real>::~ConvexHull2 ()
-{
-    delete[] m_aiHIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull2<Real>::GetQuantity () const
-{
-    return m_iHQuantity;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-const int* ConvexHull2<Real>::GetIndices () const
-{
-    return m_aiHIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexHull2<Real>::ContainsPoint (const Vector2<Real>& rkP) const
-{
-    for (int i1 = 0, i0 = m_iHQuantity-1; i1 < m_iHQuantity; i0 = i1++)
+    int iEQuantity = rkPoly.GetEQuantity();
+    m_akEdge.resize(iEQuantity);
+    for (int iE = 0; iE < iEQuantity; iE++)
     {
-        const Vector2<Real>& rkV0 = m_akVertex[m_aiHIndex[i0]];
-        const Vector2<Real>& rkV1 = m_akVertex[m_aiHIndex[i1]];
-        Vector2<Real> kDir = rkV1 - rkV0;
-        Vector2<Real> kNormal = kDir.Perp();  // outer normal
-        if ( kNormal.Dot(rkP-rkV0) > (Real)0.0 )
-            return false;
+        const MTEdge& rkE = rkPoly.GetEdge(iE);
+        for (int i = 0; i < 2; i++)
+        {
+            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
+            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
+        }
+    }
+
+    int iTQuantity = rkPoly.GetTQuantity();
+    m_akFace.resize(iTQuantity);
+    for (int iT = 0; iT < iTQuantity; iT++)
+    {
+        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
+
+        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
+        for (int i = 0; i < 3; i++)
+            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
+{
+    // compute signed distances from vertices to plane
+    int iPositive = 0, iNegative = 0;
+    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
+    {
+        Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
+        {
+            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
+            if ( rkV.m_fDistance >= m_fEpsilon )
+            {
+                iPositive++;
+            }
+            else if ( rkV.m_fDistance <= -m_fEpsilon )
+            {
+                iNegative++;
+                rkV.m_bVisible = false;
+            }
+            else
+            {
+                // The point is on the plane (within floating point
+                // tolerance).
+                rkV.m_fDistance = (Real)0.0;
+            }
+        }
+    }
+
+    if ( iPositive == 0 )
+    {
+        // mesh is in negative half-space, fully clipped
+        return Plane3<Real>::NEGATIVE_SIDE;
+    }
+
+    if ( iNegative == 0 )
+    {
+        // mesh is in positive half-space, fully visible
+        return Plane3<Real>::POSITIVE_SIDE;
+    }
+
+    // clip the visible edges
+    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
+    {
+        Edge& rkE = m_akEdge[iE];
+        if ( rkE.m_bVisible )
+        {
+            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
+            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
+            Face& rkF0 = m_akFace[iF0];
+            Face& rkF1 = m_akFace[iF1];
+            Real fD0 = m_akVertex[iV0].m_fDistance;
+            Real fD1 = m_akVertex[iV1].m_fDistance;
+
+            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
+            {
+                // The edge is culled.  If the edge is exactly on the clip
+                // plane, it is possible that a visible triangle shares it.
+                // The edge will be re-added during the face loop.
+                rkF0.m_akEdge.erase(iE);
+                if ( rkF0.m_akEdge.empty() )
+                    rkF0.m_bVisible = false;
+
+                rkF1.m_akEdge.erase(iE);
+                if ( rkF1.m_akEdge.empty() )
+                    rkF1.m_bVisible = false;
+
+                rkE.m_bVisible = false;
+                continue;
+            }
+
+            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
+            {
+                // face retains the edge
+                continue;
+            }
+
+            // The edge is split by the plane.  Compute the point of
+            // intersection.  If the old edge is <V0,V1> and I is the
+            // intersection point, the new edge is <V0,I> when d0 > 0 or
+            // <I,V1> when d1 > 0.
+            int iNV = (int)m_akVertex.size();
+            m_akVertex.push_back(Vertex());
+            Vertex& rkNV = m_akVertex[iNV];
+
+            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
+            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
+            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
+
+            if ( fD0 > (Real)0.0 )
+                rkE.m_aiVertex[1] = iNV;
+            else
+                rkE.m_aiVertex[0] = iNV;
+        }
+    }
+
+    // The mesh straddles the plane.  A new convex polygonal face will be
+    // generated.  Add it now and insert edges when they are visited.
+    int iNF = (int)m_akFace.size();
+    m_akFace.push_back(Face());
+    Face& rkNF = m_akFace[iNF];
+    rkNF.m_kPlane = rkPlane;
+
+    // process the faces
+    for (int iF = 0; iF < iNF; iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            // Determine if the face is on the negative side, the positive
+            // side, or split by the clipping plane.  The m_iOccurs members
+            // are set to zero to help find the end points of the polyline
+            // that results from clipping a face.
+            assert( rkF.m_akEdge.size() >= 2 );
+            set<int>::iterator pkIter = rkF.m_akEdge.begin();
+            while ( pkIter != rkF.m_akEdge.end() )
+            {
+                int iE = *pkIter++;
+                Edge& rkE = m_akEdge[iE];
+                assert( rkE.m_bVisible );
+                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
+                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
+            }
+
+            int iVStart, iVFinal;
+            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
+            {
+                // polyline is open, close it up
+                int iNE = (int)m_akEdge.size();
+                m_akEdge.push_back(Edge());
+                Edge& rkNE = m_akEdge[iNE];
+
+                rkNE.m_aiVertex[0] = iVStart;
+                rkNE.m_aiVertex[1] = iVFinal;
+                rkNE.m_aiFace[0] = iF;
+                rkNE.m_aiFace[1] = iNF;
+
+                // add new edge to polygons
+                rkF.m_akEdge.insert(iNE);
+                rkNF.m_akEdge.insert(iNE);
+            }
+        }
+    }
+
+    // Process face rkNF to make sure it is a simple polygon (theoretically
+    // convex, but numerically may be slightly not convex).  Floating point
+    // round-off errors can cause the new face from the last loop to be
+    // needle-like with a collapse of two edges into a single edge.  This
+    // block guarantees the invariant "face always a simple polygon".
+    PostProcess(iNF,rkNF);
+    int iESize = (int)rkNF.m_akEdge.size();
+    if ( iESize < 3 )
+    {
+        // face is completely degenerate, remove it from mesh
+        m_akFace.pop_back();
+    }
+
+    return Plane3<Real>::NO_SIDE;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
+{
+    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
+    vector<EdgePlus> kEdges(iEQuantity);
+    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
+    while ( pkIter != rkNF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
+    }
+    assert( i == iEQuantity );
+
+    sort(kEdges.begin(),kEdges.end());
+
+    // process duplicate edges
+    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
+    {
+        if ( kEdges[i0] == kEdges[i1] )
+        {
+            // found two equivalent edges (same vertex end points)
+#ifdef _DEBUG
+            int i2 = i1+1;
+            if ( i2 < iEQuantity )
+            {
+                // Make sure an edge occurs at most twice.  If not, then
+                // algorithm needs to be modified to handle it.
+                assert( kEdges[i1] != kEdges[i2] );
+            }
+#endif
+            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
+            // vertices V0, V1 and faces F1, NF.
+            int iE0 = kEdges[i0].m_iE;
+            int iE1 = kEdges[i1].m_iE;
+            Edge& rkE0 = m_akEdge[iE0];
+            Edge& rkE1 = m_akEdge[iE1];
+
+            // remove E0 and E1 from NF
+            rkNF.m_akEdge.erase(iE0);
+            rkNF.m_akEdge.erase(iE1);
+
+            // remove NF from E0
+            if ( rkE0.m_aiFace[0] == iNF )
+            {
+                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE0.m_aiFace[1] == iNF );
+            }
+            rkE0.m_aiFace[1] = -1;
+
+            // remove NF from E1
+            if ( rkE1.m_aiFace[0] == iNF )
+            {
+                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
+            }
+            else
+            {
+                assert( rkE1.m_aiFace[1] == iNF );
+            }
+            rkE1.m_aiFace[1] = -1;
+
+            // E2 is being booted from the system.  Update the face F1 that
+            // shares it.  Update E1 to share F1.
+            int iF1 = rkE1.m_aiFace[0];
+            Face& rkF1 = m_akFace[iF1];
+            rkF1.m_akEdge.erase(iE1);
+            rkF1.m_akEdge.insert(iE0);
+            rkE0.m_aiFace[1] = iF1;
+            rkE1.m_bVisible = false;
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
+    int& riVFinal)
+{
+    // count the number of occurrences of each vertex in the polyline
+    bool bOkay = true;
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        m_akVertex[iV0].m_iOccurs++;
+        if ( m_akVertex[iV0].m_iOccurs > 2 )
+            bOkay = false;
+
+        int iV1 = rkE.m_aiVertex[1];
+        m_akVertex[iV1].m_iOccurs++;
+        if ( m_akVertex[iV1].m_iOccurs > 2 )
+            bOkay = false;
+    }
+
+    if ( !bOkay )
+    {
+#ifdef _DEBUG
+        // If you reach this block, there is a good chance that floating
+        // point round-off error had caused this face to be needle-like and
+        // what was theoretically a narrow V-shaped portion (a vertex shared
+        // by two edges forming a small angle) has collapsed into a single
+        // line segment.
+        //
+        // NOTE.  Once I added PostProcess, I have not gotten to this block.
+        ofstream kOStr("error.txt");
+        pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            int iE = *pkIter++;
+            Edge& rkE = m_akEdge[iE];
+            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
+                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
+                  << rkE.m_aiFace[1] << "> ";
+            if ( rkE.m_bVisible )
+                kOStr << "T" << endl;
+            else
+                kOStr << "F" << endl;
+        }
+        kOStr.close();
+
+        assert( false );
+#else
+        return false;
+#endif
+    }
+
+    // determine if the polyline is open
+    pkIter = rkF.m_akEdge.begin();
+    riVStart = -1;
+    riVFinal = -1;
+    while ( pkIter != rkF.m_akEdge.end() )
+    {
+        int iE = *pkIter++;
+        Edge& rkE = m_akEdge[iE];
+
+        int iV0 = rkE.m_aiVertex[0];
+        if ( m_akVertex[iV0].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV0;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV0;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
+        }
+
+        int iV1 = rkE.m_aiVertex[1];
+        if ( m_akVertex[iV1].m_iOccurs == 1 )
+        {
+            if ( riVStart == -1 )
+            {
+                riVStart = iV1;
+            }
+            else if ( riVFinal == -1 )
+            {
+                riVFinal = iV1;
+            }
+            else
+            {
+                // If you reach this assert, there is a good chance that the
+                // polyhedron is not convex.  To check this, use the function
+                // ValidateHalfSpaceProperty() on your polyhedron right after
+                // you construct it.
+                assert( false );
+            }
+        }
+    }
+
+    assert( (riVStart == -1 && riVFinal == -1)
+        ||  (riVStart != -1 && riVFinal != -1) );
+
+    return riVStart != -1;
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
+{
+    // copy edge indices into contiguous memory
+    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
+    vector<int> aiEOrdered(iQuantity);
+    set<int>::iterator pkIter = rkF.m_akEdge.begin();
+    while ( pkIter != rkF.m_akEdge.end() )
+        aiEOrdered[i++] = *pkIter++;
+
+    // bubble sort (yes, it is...)
+    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
+    {
+        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
+        int j, iCurr = rkECurr.m_aiVertex[iChoice];
+        for (j = i1; j < iQuantity; j++)
+        {
+            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
+            int iSave;
+            if ( rkETemp.m_aiVertex[0] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 1;
+                break;
+            }
+            if ( rkETemp.m_aiVertex[1] == iCurr )
+            {
+                iSave = aiEOrdered[i1];
+                aiEOrdered[i1] = aiEOrdered[j];
+                aiEOrdered[j] = iSave;
+                iChoice = 0;
+                break;
+            }
+        }
+        assert( j < iQuantity );
+    }
+
+    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
+    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
+    for (i = 1; i < iQuantity; i++)
+    {
+        Edge& rkE = m_akEdge[aiEOrdered[i]];
+        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
+            aiVOrdered[i+1] = rkE.m_aiVertex[1];
+        else
+            aiVOrdered[i+1] = rkE.m_aiVertex[0];
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
+    vector<Plane3<Real> >& rakPlane)
+{
+    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
+    {
+        Face& rkF = m_akFace[iF];
+        if ( rkF.m_bVisible )
+        {
+            int iQuantity = (int)rkF.m_akEdge.size();
+            assert( iQuantity >= 3 );
+            vector<int> aiOrdered(iQuantity+1);
+            OrderVertices(rkF,aiOrdered);
+
+            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
+            int iV1 = aiOrdered[(iQuantity-1) >> 1];
+            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
+                m_akVertex[iV0].m_kPoint;
+            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
+            if ( fTSP > (Real)0.0 )
+            {
+                // clockwise, need to swap
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    raiConnect.push_back(aiOrdered[i]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+            else
+            {
+                // counterclockwise
+                for (int i = 1; i+1 < iQuantity; i++)
+                {
+                    raiConnect.push_back(iV0);
+                    raiConnect.push_back(aiOrdered[i]);
+                    raiConnect.push_back(aiOrdered[i+1]);
+                    rakPlane.push_back(rkF.m_kPlane);
+                }
+            }
+        }
+    }
+}
+//----------------------------------------------------------------------------
+template <class Real>
+void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
+{
+    // get visible vertices
+    int iVQuantity = (int)m_akVertex.size();
+    vector<Vector3<Real> > akPoint;
+    int* aiVMap = new int[iVQuantity];
+    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        if ( rkV.m_bVisible )
+        {
+            aiVMap[iV] = (int)akPoint.size();
+            akPoint.push_back(rkV.m_kPoint);
+        }
+    }
+
+    vector<int> aiConnect;
+    vector<Plane3<Real> > akPlane;
+    GetTriangles(aiConnect,akPlane);
+
+    // re-order
+    int iNewVQuantity = (int)akPoint.size();
+    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
+    {
+        int iOldC = aiConnect[iC];
+        assert( 0 <= iOldC && iOldC < iVQuantity );
+        int iNewC = aiVMap[iOldC];
+        assert( 0 <= iNewC && iNewC < iNewVQuantity );
+        aiConnect[iC] = iNewC;
+    }
+
+    delete[] aiVMap;
+
+    rkPoly.Create(akPoint,aiConnect,akPlane);
+}
+//----------------------------------------------------------------------------
+template <class Real>
+bool ConvexClipper<Real>::Print (const char* acFilename) const
+{
+    ofstream kOStr(acFilename);
+    if ( !kOStr )
+        return false;
+
+    int iVQuantity = (int)m_akVertex.size();
+    int iEQuantity = (int)m_akEdge.size();
+    int iFQuantity = (int)m_akFace.size();
+    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
+    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
+    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
+    char acMsg[1024];
+
+    kOStr << iVQuantity << " vertices" << endl;
+    for (int iV = 0; iV < iVQuantity; iV++)
+    {
+        const Vertex& rkV = m_akVertex[iV];
+        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
+            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
+            rkV.m_kPoint.X(),
+            rkV.m_kPoint.Y(),
+            rkV.m_kPoint.Z());
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iEQuantity << " edges" << endl;
+    for (int iE = 0; iE < iEQuantity; iE++)
+    {
+        const Edge& rkE = m_akEdge[iE];
+        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
+            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
+            iVDigits,rkE.m_aiVertex[0],
+            iVDigits,rkE.m_aiVertex[1],
+            iFDigits,rkE.m_aiFace[0],
+            iFDigits,rkE.m_aiFace[1]);
+        kOStr << acMsg << endl;
+    }
+    kOStr << endl;
+
+    kOStr << iFQuantity << " faces" << endl;
+    for (int iF = 0; iF < iFQuantity; iF++)
+    {
+        const Face& rkF = m_akFace[iF];
+        sprintf(acMsg,"t<%*d> %d: e = ",
+            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
+        kOStr << acMsg;
+
+        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
+        while ( pkIter != rkF.m_akEdge.end() )
+        {
+            kOStr << *pkIter << ' ';
+            pkIter++;
+        }
+        kOStr << endl;
     }
 
     return true;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexHull2<Real>::CollinearTest (const Vector2<Real>& rkP,
-    const Vector2<Real>& rkQ0, const Vector2<Real>& rkQ1) const
-{
-    Vector2<Real> kD = rkQ1 - rkQ0;
-    Vector2<Real> kA = rkP - rkQ0;
-    Real fDdD = kD.Dot(kD);
-    Real fAdA = kA.Dot(kA);
-    Real fDet = kD.Kross(kA);
-    Real fRelative = fDet*fDet - COLLINEAR_EPSILON*fDdD*fAdA;
-
-    if ( fRelative > (Real)0.0 )
-    {
-        if ( fDet > (Real)0.0 )
-        {
-            // points form counterclockwise triangle <P,Q0,Q1>
-            return ORDER_POSITIVE;
-        }
-        else if ( fDet < (Real)0.0 )
-        {
-            // points form clockwise triangle <P,Q1,Q0>
-            return ORDER_NEGATIVE;
-        }
-    }
-
-    // P is on line of <Q0,Q1>
-    Real fDdA = kD.Dot(kA);
-    if ( fDdA < (Real)0.0 )
-    {
-        // order is <P,Q0,Q1>
-        return ORDER_COLLINEAR_LEFT;
-    }
-
-    if ( fDdA > fDdD )
-    {
-        // order is <Q0,Q1,P>
-        return ORDER_COLLINEAR_RIGHT;
-    }
-
-    // order is <Q0,P,Q1>
-    return ORDER_COLLINEAR_CONTAIN;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::RemoveCollinear ()
-{
-    if ( m_iHQuantity <= 2 )
-        return;
-
-    vector<int> kHull;
-    kHull.reserve(m_iHQuantity);
-    for (int i0 = m_iHQuantity-1, i1 = 0, i2 = 1; i1 < m_iHQuantity; /**/)
-    {
-        int iCT = CollinearTest(m_akVertex[m_aiHIndex[i0]],
-            m_akVertex[m_aiHIndex[i1]],m_akVertex[m_aiHIndex[i2]]);
-
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_NEGATIVE )
-        {
-            // points are not collinear
-            kHull.push_back(m_aiHIndex[i1]);
-        }
-
-        i0 = i1++;
-        if ( ++i2 == m_iHQuantity )
-            i2 = 0;
-    }
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)kHull.size();
-    delete[] m_aiHIndex;
-    m_aiHIndex = new int[m_iHQuantity];
-    memcpy(m_aiHIndex,&kHull.front(),m_iHQuantity*sizeof(int));
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// divide-and-conquer hull
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::ByDivideAndConquer ()
-{
-    // Sort by x-component and store in contiguous array.  The sort is
-    // O(N log N).
-    SVArray kSVArray(m_iVQuantity);
-    int i;
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        kSVArray[i].m_kV = m_akVertex[i];
-        kSVArray[i].m_iIndex = i;
-    }
-    sort(kSVArray.begin(),kSVArray.end());
-
-    // remove duplicate points
-    typename SVArray::iterator pkEnd =
-        unique(kSVArray.begin(),kSVArray.end());
-    kSVArray.erase(pkEnd,kSVArray.end());
-
-    // compute convex hull using divide-and-conquer
-    SVArray kHull;
-    kHull.reserve(kSVArray.size());
-    m_iHullType = HULL_POINT;
-    GetHull(0,(int)kSVArray.size()-1,kSVArray,kHull);
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)kHull.size();
-    m_aiHIndex = new int[m_iHQuantity];
-    for (i = 0; i < m_iHQuantity; i++)
-        m_aiHIndex[i] = kHull[i].m_iIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::GetHull (int i0, int i1, const SVArray& rkSVArray,
-    SVArray& rkHull)
-{
-    int iQuantity = i1 - i0 + 1;
-    if ( iQuantity > 1 )
-    {
-        // middle index of input range
-        int iMid = (i0+i1)/2;
-
-        // find hull of subsets (iMid-i0+1 >= i1-iMid)
-        SVArray kLHull, kRHull;
-        kLHull.reserve(iMid-i0+1);
-        kRHull.reserve(i1-iMid);
-
-        GetHull(i0,iMid,rkSVArray,kLHull);
-        GetHull(iMid+1,i1,rkSVArray,kRHull);
-
-        // merge the convex hulls into a single convex hull
-        Merge(kLHull,kRHull,rkHull);
-    }
-    else
-    {
-        // convex hull is a single point
-        rkHull.push_back(rkSVArray[i0]);
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::Merge (SVArray& rkLHull, SVArray& rkRHull,
-    SVArray& rkHull)
-{
-    // merge small sets, handle cases when sets are collinear
-    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
-    if ( iLSize == 1 )
-    {
-        if ( iRSize == 1 )
-        {
-            rkHull.push_back(rkLHull[0]);
-            rkHull.push_back(rkRHull[0]);
-            if ( m_iHullType != HULL_PLANAR )
-                m_iHullType = HULL_LINEAR;
-            return;
-        }
-        else if ( iRSize == 2 )
-        {
-            MergeLinear(rkLHull[0],rkRHull);
-            rkHull = rkRHull;
-            return;
-        }
-    }
-    else if ( iLSize == 2 )
-    {
-        if ( iRSize == 1 )
-        {
-            MergeLinear(rkRHull[0],rkLHull);
-            rkHull = rkLHull;
-            return;
-        }
-        else if ( iRSize == 2 )
-        {
-            MergeLinear(rkRHull[1],rkLHull);
-
-            if ( rkLHull.size() == 2 )
-            {
-                MergeLinear(rkRHull[0],rkLHull);
-                rkHull = rkLHull;
-                return;
-            }
-
-            // fall-through, LHull is a triangle, RHull is a point
-            iLSize = 3;
-            iRSize = 1;
-            rkRHull.pop_back();
-        }
-    }
-
-    // find rightmost point of left hull
-    Real fMax = rkLHull[0].m_kV.X();
-    int i, iLMax = 0;
-    for (i = 1; i < iLSize; i++)
-    {
-        if ( rkLHull[i].m_kV.X() > fMax )
-        {
-            fMax = rkLHull[i].m_kV.X();
-            iLMax = i;
-        }
-    }
-
-    // find leftmost point of right hull
-    Real fMin = rkRHull[0].m_kV.X();
-    int iRMin = 0;
-    for (i = 1; i < iRSize; i++)
-    {
-        if ( rkRHull[i].m_kV.X() < fMin )
-        {
-            fMin = rkRHull[i].m_kV.X();
-            iRMin = i;
-        }
-    }
-
-    // get lower tangent to hulls (LL = lower left, LR = lower right)
-    int iLLIndex = iLMax, iLRIndex = iRMin;
-    GetTangent(rkLHull,rkRHull,iLLIndex,iLRIndex);
-
-    // get upper tangent to hulls (UL = upper left, UR = upper right)
-    int iULIndex = iLMax, iURIndex = iRMin;
-    GetTangent(rkRHull,rkLHull,iURIndex,iULIndex);
-
-    // Construct the counterclockwise-ordered merged-hull vertices.
-    // TO DO.  If the hull is stored using linked lists, this block can be
-    // improved by an O(1) detach, attach, and delete of the appropriate
-    // sublists.
-    i = iLRIndex;
-    while ( true )
-    {
-        rkHull.push_back(rkRHull[i]);
-        if ( i == iURIndex )
-            break;
-
-        if ( ++i == iRSize )
-            i = 0;
-    }
-
-    i = iULIndex;
-    while ( true )
-    {
-        rkHull.push_back(rkLHull[i]);
-        if ( i == iLLIndex )
-            break;
-
-        if ( ++i == iLSize )
-            i = 0;
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP, SVArray& rkHull)
-{
-    // hull = <Q0,Q1>
-
-    switch ( CollinearTest(rkP.m_kV,rkHull[0].m_kV,rkHull[1].m_kV) )
-    {
-    case ORDER_POSITIVE:
-        // merged hull is triangle <Q0,Q1,P>
-        m_iHullType = HULL_PLANAR;
-        rkHull.push_back(rkP);
-        break;
-    case ORDER_NEGATIVE:
-    {
-        // merged hull is triangle <Q1,Q0,P>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kSave = rkHull[0];
-        rkHull[0] = rkHull[1];
-        rkHull[1] = kSave;
-        rkHull.push_back(rkP);
-        break;
-    }
-    case ORDER_COLLINEAR_LEFT:
-        // collinear order is <P,Q0,Q1>, merged hull is <P,Q1>
-        rkHull[0] = rkP;
-        break;
-    case ORDER_COLLINEAR_RIGHT:
-        // collinear order is <Q0,Q1,P>, merged hull is <Q0,P>
-        rkHull[1] = rkP;
-        break;
-    //case ORDER_COLLINEAR_CONTAIN:
-        // collinear order is <Q0,P,Q1>, merged hull is <Q0,Q1> (no change)
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::GetTangent (const SVArray& rkLHull,
-    const SVArray& rkRHull, int& riL, int& riR)
-{
-    // In theory the loop terminates in a finite number of steps, but the
-    // upper bound for the loop variable is used to trap problems caused by
-    // floating point round-off errors that might lead to an infinite loop.
-
-    int iLSize = (int)rkLHull.size(), iRSize = (int)rkRHull.size();
-    int iLSizeM1 = iLSize-1, iRSizeM1 = iRSize-1;
-    int i;
-    for (i = 0; i < iLSize+iRSize; i++)
-    {
-        // end points of potential tangent
-        const Vector2<Real>& rkL1 = rkLHull[riL].m_kV;
-        const Vector2<Real>& rkR0 = rkRHull[riR].m_kV;
-
-        // walk along left hull to find tangency
-        int iLm1 = ( riL > 0 ? riL-1 : iLSizeM1 );
-        const Vector2<Real>& rkL0 = rkLHull[iLm1].m_kV;
-        int iCT = CollinearTest(rkR0,rkL0,rkL1);
-        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_LEFT )
-        {
-            riL = iLm1;
-            continue;
-        }
-
-        // walk along right hull to find tangency
-        int iRp1 = ( riR < iRSizeM1 ? riR+1 : 0 );
-        const Vector2<Real>& rkR1 = rkRHull[iRp1].m_kV;
-        iCT = CollinearTest(rkL1,rkR0,rkR1);
-        if ( iCT == ORDER_NEGATIVE || iCT == ORDER_COLLINEAR_RIGHT )
-        {
-            riR = iRp1;
-            continue;
-        }
-
-        // tangent segment has been found
-        break;
-    }
-
-    // detect "infinite loop" caused by floating point round-off errors
-    assert( i < iLSize+iRSize );
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// incremental hull
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::ByIncremental ()
-{
-    // Sort by x-component and store in contiguous array.  The sort is
-    // O(N log N).
-    SVArray kSVArray(m_iVQuantity);
-    int i;
-    for (i = 0; i < m_iVQuantity; i++)
-    {
-        kSVArray[i].m_kV = m_akVertex[i];
-        kSVArray[i].m_iIndex = i;
-    }
-    sort(kSVArray.begin(),kSVArray.end());
-
-    // remove duplicate points
-    typename SVArray::iterator pkEnd =
-        unique(kSVArray.begin(),kSVArray.end());
-    kSVArray.erase(pkEnd,kSVArray.end());
-
-    // Compute convex hull incrementally.  The first and second vertices in
-    // the hull are managed separately until at least one triangle is formed.
-    // At that time an array is used to store the hull in counterclockwise
-    // order.
-    m_iHullType = HULL_POINT;
-    m_kHull.push_back(kSVArray[0]);
-    for (i = 1; i < (int)kSVArray.size(); i++)
-    {
-        switch ( m_iHullType )
-        {
-        case HULL_POINT:
-            m_iHullType = HULL_LINEAR;
-            m_kHull.push_back(kSVArray[i]);
-            break;
-        case HULL_LINEAR:
-            MergeLinear(kSVArray[i]);
-            break;
-        case HULL_PLANAR:
-            MergePlanar(kSVArray[i]);
-            break;
-        }
-    }
-
-    // construct index array for ordered vertices of convex hull
-    m_iHQuantity = (int)m_kHull.size();
-    m_aiHIndex = new int[m_iHQuantity];
-    for (i = 0; i < m_iHQuantity; i++)
-        m_aiHIndex[i] = m_kHull[i].m_iIndex;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergeLinear (const SortedVertex& rkP)
-{
-    switch ( CollinearTest(rkP.m_kV,m_kHull[0].m_kV,m_kHull[1].m_kV) )
-    {
-    case ORDER_POSITIVE:
-    {
-        // merged hull is <P,Q0,Q1>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kCopy = m_kHull[1];
-        m_kHull.push_back(kCopy);
-        m_kHull[1] = m_kHull[0];
-        m_kHull[0] = rkP;
-        break;
-    }
-    case ORDER_NEGATIVE:
-    {
-        // merged hull is <P,Q1,Q0>
-        m_iHullType = HULL_PLANAR;
-        SortedVertex kCopy = m_kHull[0];
-        m_kHull.push_back(kCopy);
-        m_kHull[0] = rkP;
-        break;
-    }
-    case ORDER_COLLINEAR_LEFT:
-        // linear order is <P,Q0,Q1>, merged hull is <P,Q1>
-        m_kHull[0] = rkP;
-        break;
-    case ORDER_COLLINEAR_RIGHT:
-        // linear order is <Q0,Q1,P>, merged hull is <Q0,P>
-        m_kHull[1] = rkP;
-        break;
-    // case ORDER_COLLINEAR_CONTAIN:  linear order is <Q0,P,Q1>, no change
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexHull2<Real>::MergePlanar (const SortedVertex& rkP)
-{
-    int iSize = (int)m_kHull.size();
-    int i, iU, iL, iCT;
-
-    // search counterclockwise for last visible vertex
-    for (iU = 0, i = 1; iU < iSize; iU = i++)
-    {
-        if ( i == iSize )
-            i = 0;
-
-        iCT = CollinearTest(rkP.m_kV,m_kHull[iU].m_kV,m_kHull[i].m_kV);
-        if ( iCT == ORDER_NEGATIVE )
-            continue;
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_LEFT )
-            break;
-
-        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_RIGHT
-        return;
-    }
-    assert( iU < iSize );
-
-    // search clockwise for last visible vertex
-    for (iL = 0, i = iSize-1; i >= 0; iL = i--)
-    {
-        iCT = CollinearTest(rkP.m_kV,m_kHull[i].m_kV,m_kHull[iL].m_kV);
-        if ( iCT == ORDER_NEGATIVE )
-            continue;
-        if ( iCT == ORDER_POSITIVE || iCT == ORDER_COLLINEAR_RIGHT )
-            break;
-
-        // iCT == ORDER_COLLINEAR_CONTAIN || iCT == ORDER_COLLINEAR_LEFT
-        return;
-    }
-    assert( i >= 0 );
-
-    if ( iU == iL )
-    {
-        // This probably occurs when CollinearTest should report collinearity,
-        // but does not.  If it does occur, and you care about this code
-        // block not occurring, try increasing the size of the collinear
-        // epsilon.  When this block does occur, the conclusion is that the
-        // input point is collinear with an edge of the hull, so just return.
-        return;
-    }
-
-    // construct the counterclockwise-ordered merged-hull vertices
-    SVArray kTmpHull;
-    kTmpHull.push_back(rkP);
-    while ( true )
-    {
-        kTmpHull.push_back(m_kHull[iU]);
-        if ( iU == iL )
-            break;
-
-        if ( ++iU == iSize )
-            iU = 0;
-    }
-    assert( kTmpHull.size() > 2 );
-
-    m_kHull = kTmpHull;
 }
 //----------------------------------------------------------------------------
 
@@ -558,10 +613,7 @@ void ConvexHull2<Real>::MergePlanar (const SortedVertex& rkP)
 //----------------------------------------------------------------------------
 namespace Wml
 {
-template class WML_ITEM ConvexHull2<float>;
-float ConvexHull2f::COLLINEAR_EPSILON = 1e-06f;
-
-template class WML_ITEM ConvexHull2<double>;
-double ConvexHull2d::COLLINEAR_EPSILON = 1e-06;
+template class WML_ITEM ConvexClipper<float>;
+template class WML_ITEM ConvexClipper<double>;
 }
 //----------------------------------------------------------------------------

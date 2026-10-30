@@ -1,304 +1,526 @@
-// from server: 52% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8tree/Instance.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll v8datamodel/Camera.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8tree/Instance.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/ICharacterSubject.h"
+#include "util/Math.h"
 
-#include "decomp.h"
-
-#include <algorithm>
-#include <cstddef>
-
-namespace RBX {
-
-const char sInstance[] = "Instance";
-
-const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent(
-	"Parent",
-	"Data",
-	&Instance::getParent,
-	&Instance::setParent,
-	Reflection::PropertyDescriptor::UI
-);
-
-Reflection::SignalDesc<Instance, void(shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child");
-
-Reflection::SignalDesc<Instance, void(shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child");
-
-Reflection::SignalDesc<Instance, void(shared_ptr<Instance>)> Instance::event_ancestryChanged(
-	"AncestryChanged",
-	"child"
-);
-
-Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged(
-	"Changed",
-	"property"
-);
-
-ChildAdded::ChildAdded(Instance* child) : child(shared_from(child))
+namespace RBX
 {
-}
+	const char* sCamera = "Camera";
 
-ChildRemoved::ChildRemoved(Instance* child) : child(shared_from(child))
-{
-}
-
-// STUB: WEBSERVICE 0x10047af0
-void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
-{
-	if (parent != NULL) {
-		parent->onChildChanged(instance, event);
+	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
+	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
+	
+	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
+		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	{
+		addPair(Camera::FIXED_CAMERA, "Fixed");
+		addPair(Camera::WATCH_CAMERA, "Watch");
+		addPair(Camera::ATTACH_CAMERA, "Attach");
+		addPair(Camera::TRACK_CAMERA, "Track");
+		addPair(Camera::FOLLOW_CAMERA, "Follow");
+		addPair(Camera::CUSTOM_CAMERA, "Custom");
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x10047b20
-bool Instance::contains(const Instance* child) const
-{
-	while (child != 0) {
-		if (child == this) {
-			return true;
+	Camera::Camera()
+		: Base(),
+		  cameraFocus(G3D::Vector3(0, 0, -5)),
+		  cameraType(FIXED_CAMERA),
+		  animationType(AUTO),
+		  cameraExternallyAdjusted(false)
+	{
+		setName("Camera");
+		gCamera.setNearPlaneZ(1.25);
+		gCamera.setFarPlaneZ(5000);
+		gCamera.setFieldOfView(G3D::toRadians(60));
+
+		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
+		cameraCoord.lookAt(G3D::Vector3::zero());
+
+		setGCameraCoordinateFrame(cameraCoord);
+	}
+
+	Camera::~Camera()
+	{
+	}
+
+	void Camera::tellCameraMoved()
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			owner->cameraMoved();
+		}
+	}
+
+	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
+	{
+		if (Math::legalCameraCoord(coord))
+		{
+			gCamera.setCoordinateFrame(coord);
+		}
+		else
+		{
+			RBXASSERT(false);
+		}
+	}
+
+	bool Camera::askSetParent(const Instance* instance) const
+	{
+		return dynamic_cast<const Workspace*>(instance) != NULL;
+	}
+
+	ICameraOwner* Camera::getCameraOwner()
+	{
+		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
+		{
+			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
+			if (cameraOwner)
+				return cameraOwner;
 		}
 
-		child = child->parent;
+		return NULL;
 	}
 
-	return false;
-}
-
-// FUNCTION: WEBSERVICE 0x10048340
-void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
-{
-	for (XmlElement* child = container->firstChild(); child != NULL; child = child->nextSibling()) {
-		readProperty(child, binder);
+	void Camera::lookAt(const G3D::Vector3& point)
+	{
+		cameraFocus.translation = point;
+		cameraGoal.lookAt(point);
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x10048370
-void Instance::writeChildren(XmlElement* container)
-{
-	const std::vector<shared_ptr<Instance> >* kids = children.operator->();
+	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	{
+		Math::getHeadingElevation(cameraGoal, heading, elevation);
+		distance = goalToFocusDistance();
+	}
 
-	if (kids != NULL) {
-		for (std::vector<shared_ptr<Instance> >::const_iterator it = kids->begin(); it != kids->end(); ++it) {
-			XmlElement* child = (*it)->write();
+	bool Camera::setDistanceFromTarget(float newDistance)
+	{
+		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		float currentDistance = lookVector.magnitude();
 
-			if (child != NULL) {
-				container->addChild(child);
+		const float min = distanceMin();
+		const float max = distanceMax();
+
+		if (newDistance < min && currentDistance == min)
+			return false;
+		
+		if (newDistance > max && currentDistance == max)
+			return false;
+
+		newDistance = G3D::min(max, G3D::max(min, newDistance));
+		
+		lookVector *= newDistance;
+		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	void Camera::alwaysMode()
+	{
+		animationType = ALWAYS;
+	}
+
+	bool Camera::nonCharacterZoom(float in)
+	{
+		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+
+		float currentDistance = lookVector.magnitude();
+		float newZoomDistance = getNewZoomDistance(currentDistance, in);
+
+		if (newZoomDistance == currentDistance)
+			return false;
+
+		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::characterZoom(float in)
+	{
+		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
+
+		float currentDistance = focusToGoal.magnitude();
+
+		float maxDistance = distanceMaxCharacter();
+		float newDistance = getNewZoomDistance(currentDistance, in);
+		newDistance = G3D::min(newDistance, maxDistance);
+
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+
+		return true;
+	}
+
+	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
+	{
+		Math::setHeadingElevation(cameraGoal, heading, elevation);
+		cameraFocus.rotation = cameraGoal.rotation;
+
+		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
+		cameraExternallyAdjusted = true;
+	}
+
+	void Camera::panRadians(float angle)
+	{
+		RBXASSERT(angle > -100);
+		RBXASSERT(angle < 100);
+
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+
+			getHeadingElevationDistance(heading, elevation, distance);
+			heading = Math::radWrap(heading + angle);
+			setHeadingElevationDistance(heading, elevation, distance);
+
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::tiltRadians(float angle)
+	{
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+			getHeadingElevationDistance(heading, elevation, distance);
+
+			static float rad = G3D::toRadians(81);
+			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
+
+			if (elevation != newElevation)
+			{
+				setHeadingElevationDistance(heading, newElevation, distance);
+				tellCameraMoved();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Camera::updateFocus()
+	{
+		Instance* instance = getCameraSubjectInstance();
+		if (instance)
+		{
+			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
+			RBXASSERT(subject);
+			cameraFocus = subject->getLocation();
+		}
+	}
+
+	//96.11% matching.
+	void Camera::updateGoal()
+	{
+		switch (cameraType)
+		{
+			case WATCH_CAMERA:
+			{
+				updateFocus();
+				break;
+			}
+			case ATTACH_CAMERA: 
+			{
+				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
+				float distance = delta.xz().length();
+
+				updateFocus();
+
+				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
+				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
+
+				break;
+			}
+			case TRACK_CAMERA:
+			{
+				G3D::Vector3 oldFocusPt = cameraFocus.translation;
+				updateFocus();
+
+				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
+				break;
+			}
+			case FOLLOW_CAMERA:
+			{
+				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
+				float distance = delta.xz().length();
+
+				updateFocus();
+			
+				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
+				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
+
+				break;
+			}
+			case CUSTOM_CAMERA:
+			{
+				if (ICameraSubject* cameraSubject = getCameraSubject())
+					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
+
+				cameraExternallyAdjusted = false;
+				break;
+			}
+		}
+
+		cameraGoal.lookAt(cameraFocus.translation);
+	}
+
+	bool Camera::zoom(float in)
+	{
+		if (cameraType == CUSTOM_CAMERA)
+		{
+			ICameraSubject* cameraSubject = getCameraSubject();
+			if (cameraSubject)
+				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
+		}
+		else if (getCameraSubjectInstance() && 
+				 (cameraType == FOLLOW_CAMERA || 
+				  cameraType == ATTACH_CAMERA || 
+				  cameraType == TRACK_CAMERA))
+		{
+			return characterZoom(in);
+		}
+		else
+		{
+			return nonCharacterZoom(in);
+		}
+
+		return false;
+	}
+
+	void Camera::onHeartbeat()
+	{
+		updateGoal();
+		G3D::CoordinateFrame adjustedGoal = cameraGoal;
+		ICameraSubject* cameraSubject = getCameraSubject();
+		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
+
+		if (characterSubject)
+			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
+
+		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
+		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
+
+		setGCameraCoordinateFrame(LerpFrame);
+
+		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
+		{
+			tellCameraMoved();
+		}
+	}
+
+	Instance* Camera::getCameraSubjectInstance() const
+	{
+		return cameraSubject.get();
+	}
+
+	ICameraSubject* Camera::getCameraSubject() const
+	{
+		Instance* instance = getCameraSubjectInstance();
+		if (instance)
+		{
+			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
+			RBXASSERT(subject);
+			return subject;
+		}
+		return NULL;
+	}
+
+	void Camera::autoMode()
+	{
+		if (animationType != AUTO)
+		{
+			animationType = AUTO;
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::setCameraType(CameraType type)
+	{
+		if (cameraType != type)
+		{
+			cameraType = type;
+			raisePropertyChanged(desc_cameraType);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::setCameraSubject(Instance* newSubject)
+	{
+		if (newSubject != getCameraSubjectInstance())
+		{
+			if (dynamic_cast<ICameraSubject*>(newSubject))
+			{
+				cameraSubject = shared_from((ModelInstance*) newSubject);
+				raisePropertyChanged(cameraSubjectProp);
+
+				tellCameraMoved();
 			}
 		}
 	}
-}
 
-// STUB: WEBSERVICE 0x100483f0
-Instance* Instance::findFirstChildByName(const std::string& findName) const
-{
-	STUB(0x100483f0);
-	return NULL;
-}
+	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
+	{
+		if (value != cameraFocus)
+		{
+			cameraFocus = value;
+			raisePropertyChanged(desc_Focus);
 
-// FUNCTION: WEBSERVICE 0x10048fb0
-void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
-{
-	for (Instance* walk = beginParent; walk != NULL; walk = walk->parent) {
-		if (walk == oldParent) {
-			break;
-		}
-
-		if (walk->isAncestorOf(oldParent)) {
-			break;
-		}
-
-		walk->onDescendentAdded(instance);
-	}
-
-	boost::shared_ptr<const std::vector<shared_ptr<Instance> > > c = instance->children.read();
-
-	if (c) {
-		for (std::vector<shared_ptr<Instance> >::const_iterator it = c->begin(); it != c->end(); ++it) {
-			signalDescendentAdded(it->get(), beginParent, oldParent);
-		}
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x100490d0
-void Instance::signalDescendentRemoving(
-	const shared_ptr<Instance>& instance,
-	Instance* beginParent,
-	Instance* newParent
-)
-{
-	for (Instance* walk = beginParent; walk != NULL; walk = walk->parent) {
-		if (walk == newParent) {
-			break;
-		}
-
-		if (walk->isAncestorOf(newParent)) {
-			break;
-		}
-
-		walk->onDescendentRemoving(instance);
-	}
-
-	boost::shared_ptr<const std::vector<shared_ptr<Instance> > > c = instance->children.read();
-
-	if (c) {
-		for (std::vector<shared_ptr<Instance> >::const_iterator it = c->begin(); it != c->end(); ++it) {
-			signalDescendentRemoving(*it, beginParent, newParent);
-		}
-	}
-}
-
-// STUB: WEBSERVICE 0x10049d40
-XmlElement* Instance::write()
-{
-	STUB(0x10049d40);
-	return NULL;
-}
-
-// STUB: WEBSERVICE 0x1004a010
-void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
-{
-	STUB(0x1004a010);
-}
-
-// STUB: WEBSERVICE 0x1004cdf0
-shared_ptr<Instance> Instance::createChild(const Name& className)
-{
-	STUB(0x1004cdf0);
-	return shared_ptr<Instance>();
-}
-
-// STUB: WEBSERVICE 0x1004d0b0
-Instance::~Instance()
-{
-}
-
-// STUB: WEBSERVICE 0x1004da80
-void Instance::setParent(Instance* newParent)
-{
-	if (newParent == parent) {
-		return;
-	}
-
-	shared_ptr<Instance> oldParent = shared_from(parent);
-	shared_ptr<Instance> self = shared_from_this();
-
-	if (oldParent) {
-		if (!oldParent->contains(newParent)) {
-			signalDescendentRemoving(self, oldParent.get(), newParent);
-		}
-
-		oldParent->onChildRemoving(this);
-
-		shared_ptr<std::vector<shared_ptr<Instance> > >& children = oldParent->children.write();
-
-		children->erase(std::find(children->begin(), children->end(), self));
-
-		if (children->size() == 0) {
-			oldParent->children.reset();
-		}
-
-		parent = NULL;
-
-		event_childRemoved.fire(oldParent.get(), self);
-
-		oldParent->Notifier<Instance, ChildRemoved>::raise(this);
-		oldParent->onChildRemoved(this);
-
-		if (oldParent->numChildren() == 0) {
-			oldParent->onLastChildRemoved();
+			tellCameraMoved();
 		}
 	}
 
-	if (newParent != NULL) {
-		newParent->children.write()->push_back(self);
-	}
+	void Camera::goalToCamera()
+	{
+		if (gCamera.getCoordinateFrame() != cameraGoal)
+		{
+			cameraExternallyAdjusted = true;
+			setGCameraCoordinateFrame(cameraGoal);
+			raisePropertyChanged(desc_CoordFrame);
 
-	parent = newParent;
-
-	if (newParent != NULL) {
-		newParent->onChildAdded(this);
-
-		if (!newParent->contains(oldParent.get())) {
-			signalDescendentAdded(this, newParent, oldParent.get());
-		}
-
-		newParent->Notifier<Instance, ChildAdded>::raise(this);
-
-		event_childAdded.fire(newParent, self);
-	}
-
-	onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
-	raisePropertyChanged(propParent);
-}
-
-// STUB: WEBSERVICE 0x1004ddb0
-void Instance::onAncestorChanged(const AncestorChanged& event)
-{
-	STUB(0x1004ddb0);
-}
-
-// STUB: WEBSERVICE 0x1004dee0
-void Instance::onDescendentAdded(Instance* instance)
-{
-	STUB(0x1004dee0);
-}
-
-// STUB: WEBSERVICE 0x1004df50
-void Instance::onDescendentRemoving(const shared_ptr<Instance>& instance)
-{
-	STUB(0x1004df50);
-}
-
-// STUB: WEBSERVICE 0x1004e040
-void Instance::setName(const std::string& value)
-{
-	STUB(0x1004e040);
-}
-
-// STUB: WEBSERVICE 0x1004e0f0
-void Instance::predelete()
-{
-	STUB(0x1004e0f0);
-}
-
-// STUB: WEBSERVICE 0x1004e5e0
-void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
-{
-	STUB(0x1004e5e0);
-}
-
-// STUB: WEBSERVICE 0x1004e6e0
-void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
-{
-	if (element != NULL) {
-		const XmlElement* item = element->findFirstChildByTag(tag_Item);
-
-		while (item != NULL) {
-			readChild(item, binder);
-			item = element->findNextChildWithSameTag(item);
+			tellCameraMoved();
 		}
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x1004e7b0
-void Instance::predelete(Instance* instance)
-{
-	instance->predelete();
-}
+	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
+	{
+		RBXASSERT(current >= low);
+		RBXASSERT(current <= high);
 
-// STUB: WEBSERVICE 0x1004eb10
-Instance::Instance() : parent(0), archivable(true)
-{
-}
+		if (high - low < 0.1)
+			return;
 
-// STUB: WEBSERVICE 0x1004ec70
-Instance::Instance(const char* name) : name(name), parent(0), archivable(true)
-{
-	STUB(0x1004ec70);
-}
+		setDistanceFromTarget(current);
+		updateGoal();
+		goalToCamera();
 
-} // namespace RBX
+		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
+		{
+			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+		}
+		else
+		{
+			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+		}
+	}
+
+	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
+	{
+		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
+		extents.expand(0.1f);
+
+		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
+		{
+			if (cameraType == FIXED_CAMERA)
+			{
+				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
+
+				cameraFocus.translation += scaler;
+				cameraGoal.translation += scaler;
+			}
+
+			float low;
+
+			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
+				low = goalToFocusDistance();
+			else
+				low = distanceMin();
+
+			float current = goalToFocusDistance();
+
+			RBXASSERT(G3D::isFinite(current));
+
+			if (zoomType == ZOOM_CHAR_PART_DRAG)
+				extents.scale(1.1f);
+
+			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
+				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
+
+			cameraGoal = gCamera.getCoordinateFrame();
+			setGCameraCoordinateFrame(currentCoord);
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return true;
+		}
+		return false;
+	}
+
+	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
+	{
+		cameraGoal = value;
+		goalToCamera();
+	}
+
+	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
+	{
+		G3D::Vector3 look = modelCoord.lookVector();
+
+		bool noTilt = (fabs(look.y) > 0.95);
+		if (noTilt)
+		{
+			look = -G3D::Vector3::unitZ();
+		}
+		else
+		{
+			look.y = 0;
+			look = look.direction();
+		}
+
+		G3D::CoordinateFrame lookCoord;
+
+		lookCoord.lookAt(look);
+		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
+
+		look = lookCoord.lookVector();
+		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
+
+		lookCoord.lookAt(modelCoord.translation);
+
+		setCameraType(FIXED_CAMERA);
+		setCameraFocus(modelCoord.translation);
+		setCameraCoordinateFrameNoLerp(lookCoord);
+		zoomExtents(viewPort);
+		goalToCamera();
+	}
+
+	float Camera::getNewZoomDistance(float currentDistance, float in)
+	{
+		float const ZOOM_FACTOR = 0.25f;
+
+		if (in > 0.0f)
+		{
+			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
+		} 	
+		else if (in < 0.0f)
+		{
+			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+		}
+
+		return currentDistance;
+	}
+}

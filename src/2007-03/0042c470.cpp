@@ -1,218 +1,256 @@
-// from server: 46% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-net roc_espeon_aug2007_boost133_uiabi_34e8c2b89ccd18ad.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/Gui.h"
+#define _MT 1
+// Boost.Function library
 
-namespace RBX
-{
-	const G3D::Color4& GuiItem::disabledFill()
-	{
-		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
-		return c;
-	}
+//  Copyright Douglas Gregor 2001-2004. Use, modification and
+//  distribution is subject to the Boost Software License, Version
+//  1.0. (See accompanying file LICENSE_1_0.txt or copy at
+//  http://www.boost.org/LICENSE_1_0.txt)
 
-	const G3D::Color4& GuiItem::translucentBackdrop()
-	{
-		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
-		return c;
-	}
+// For more information, see http://www.boost.org
 
-	G3D::Vector2 GuiRoot::canvasSize;
-	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
-	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
 
-	GuiItem::GuiItem() 
-	{
-		setName("Unnamed GuiItem");
-	}
+// Authentic Boost 1.33.1 manager, isolated to coexist with newer native headers.
+// Source: https://raw.githubusercontent.com/boostorg/function/boost-1.33.1/include/boost/function/function_base.hpp
+#ifndef _DLL
+#define _DLL
+#endif
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.h"
+#include "util/RunStateOwner.h"
+#include "util/ContentProvider.h"
+#include "v8datamodel/Feature.h"
+#include "v8world/World.h"
+#include "Replicator.h"
+#include "util/boost.hpp"
+class ThreadLogManager;
+//00416b70 destroys its bound argument list at+8: eight-byte member-pointer model.
+//The actual enclosing class bases and fields are not reconstructed.
+class __multiple_inheritance DHTMLWindow;
+// 00415d00 clones a four-byte boost::_mfi::mf0<void,CLuaHtmlView>.
+// This proves the single-inheritance member-pointer representation; no object layout is modeled.
+//0042b3a0 clones16 bytes. Account for compiler alignment: multiple-inheritance mf0 plus the bound pointer yields16.
+//The virtual/general member-pointer models produce a larger object and failed the target comparison.
+class __single_inheritance CLuaHtmlView { public: class __multiple_inheritance Binder; };
+namespace G3D { class Stopwatch; }
+namespace RBX { namespace View { class View; class PartChunk; class Decal; class Texture; }
+namespace Network { class Server; } }
 
-	const GuiItem* GuiItem::getGuiItem(int index) const
-	{
-		return dynamic_cast<const GuiItem*>(getChild(index));
-	}
+#include "reflection/signal.h"
+#define BOOST_FUNCTION_COMPARE_TYPE_ID(X,Y) ((X)==(Y))
+namespace recovered_boost133 {
+using namespace boost::detail::function;
+      union any_pointer
+      {
+        void* obj_ptr;
+        const void* const_obj_ptr;
+        void (*func_ptr)();
+        char data[1];
+      };
 
-	GuiItem* GuiItem::getGuiItem(int index)
-	{
-		return dynamic_cast<GuiItem*>(getChild(index));
-	}
+      inline any_pointer make_any_pointer(void* o)
+      {
+        any_pointer p;
+        p.obj_ptr = o;
+        return p;
+      }
 
-	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
-	{
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			GuiItem* current = getGuiItem((int)i);
+      inline any_pointer make_any_pointer(const void* o)
+      {
+        any_pointer p;
+        p.const_obj_ptr = o;
+        return p;
+      }
 
-			if (current && current != focus.get())
-			{
-				GuiResponse itemResponse = current->process(event);
-				if (itemResponse.wasUsed())
-				{
-					this->loseFocus();
+      inline any_pointer make_any_pointer(void (*f)())
+      {
+        any_pointer p;
+        p.func_ptr = f;
+        return p;
+      }
 
-					focus = shared_from(current);
-					focus->loseFocus();
+      template<typename Functor, typename Allocator>
+      struct functor_manager
+      {
+      private:
+        typedef Functor functor_type;
 
-					return itemResponse;
-				}
-			}
-		}
+        // For function pointers, the manager is trivial
+        static inline any_pointer
+        manager(any_pointer function_ptr,
+                functor_manager_operation_type op,
+                function_ptr_tag)
+        {
+          if (op == clone_functor_tag)
+            return function_ptr;
+          else
+            return make_any_pointer(static_cast<void (*)()>(0));
+        }
 
-		return GuiResponse::notUsed();
-	}
+        // For function object pointers, we clone the pointer to each
+        // function has its own version.
+        static inline any_pointer
+        manager(any_pointer function_obj_ptr,
+                functor_manager_operation_type op,
+                function_obj_tag)
+        {
+#ifndef BOOST_NO_STD_ALLOCATOR
+        typedef typename Allocator::template rebind<functor_type>::other
+          allocator_type;
+        typedef typename allocator_type::pointer pointer_type;
+#else
+        typedef functor_type* pointer_type;
+#endif // BOOST_NO_STD_ALLOCATOR
 
-	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		if (instance == focus)
-			loseFocus();
+#  ifndef BOOST_NO_STD_ALLOCATOR
+          allocator_type allocator;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-		Instance::onDescendentRemoving(instance);
-	}
+          if (op == clone_functor_tag) {
+            functor_type* f =
+              static_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-	Rect GuiItem::getMyRect() const
-	{
-		G3D::Vector2 pos = getPosition();
-		return Rect(pos, pos + getSize());
-	}
+            // Clone the functor
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            pointer_type copy = allocator.allocate(1);
+            allocator.construct(copy, *f);
 
-	const GuiItem* GuiItem::getGuiParent() const
-	{
-		return dynamic_cast<const GuiItem*>(getParent());
-	}
-	
-	GuiResponse GuiItem::process(const GuiEvent& event)
-	{
-		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
-			return GuiResponse::notUsed();
+            // Get back to the original pointer type
+            functor_type* new_f = static_cast<functor_type*>(copy);
+#  else
+            functor_type* new_f = new functor_type(*f);
+#  endif // BOOST_NO_STD_ALLOCATOR
+            return make_any_pointer(static_cast<void*>(new_f));
+          }
+          else {
+            /* Cast from the void pointer to the functor pointer type */
+            functor_type* f =
+              reinterpret_cast<functor_type*>(function_obj_ptr.obj_ptr);
 
-		if (focus)
-		{
-			if (focus->canLoseFocus())
-			{
-				GuiResponse response = processNonFocus(event);
-				if (response.wasUsed())
-					return response;
-			}
+#  ifndef BOOST_NO_STD_ALLOCATOR
+            /* Cast from the functor pointer type to the allocator's pointer
+               type */
+            pointer_type victim = static_cast<pointer_type>(f);
 
-			GuiResponse focusResponse = focus->process(event);
-			if (focusResponse.wasUsed())
-				return focusResponse;
+            // Destroy and deallocate the functor
+            allocator.destroy(victim);
+            allocator.deallocate(victim, 1);
+#  else
+            delete f;
+#  endif // BOOST_NO_STD_ALLOCATOR
 
-			loseFocus();
-		}
+            return make_any_pointer(static_cast<void*>(0));
+          }
+        }
+      public:
+        /* Dispatch to an appropriate manager based on whether we have a
+           function pointer or a function object pointer. */
+        static any_pointer
+        manage(any_pointer functor_ptr, functor_manager_operation_type op)
+        {
+          if (op == check_functor_type_tag) {
+            std::type_info* type =
+              static_cast<std::type_info*>(functor_ptr.obj_ptr);
+            return (BOOST_FUNCTION_COMPARE_TYPE_ID(typeid(Functor), *type)?
+                    functor_ptr
+                    : make_any_pointer(reinterpret_cast<void*>(0)));
+          }
+          else {
+            typedef typename get_function_tag<functor_type>::type tag_type;
+            return manager(functor_ptr, op, tag_type());
+          }
+        }
+      };
 
-		RBXASSERT(!focus);
-		return processNonFocus(event);
-	}
 
-	void TopMenuBar::init()
-	{
-		layoutStyle = Layout::HORIZONTAL;
-		backdropColor = G3D::Color4::clear();
-		visible = true;
-	}
-
-	G3D::Vector2 TopMenuBar::getSize() const
-	{
-		G3D::Vector2 size(0.0f, 0.0f);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			const GuiItem* current = getGuiItem((int)i);
-
-			if (current)
-			{
-				G3D::Vector2 childSize = current->getSize();
-				switch (layoutStyle)
-				{
-				case Layout::VERTICAL:
-					size.x = G3D::max(size.x, childSize.x);
-					size.y += childSize.y;
-					break;
-				case Layout::HORIZONTAL:
-					size.x += childSize.x;
-					size.y = G3D::max(size.y, childSize.y);
-					break;
-				}
-			}
-		}
-
-		return size;
-	}
-
-	void TopMenuBar::render2d(Adorn* adorn)
-	{
-		if (isVisible())
-		{
-			if (backdropColor != G3D::Color4::clear())
-			{
-				adorn->rect2d(getMyRect2D(), backdropColor);
-			}
-
-			for (size_t i = 0; i < numChildren(); i++)
-			{
-				GuiItem* current = getGuiItem((int)i);
-				if (current)
-					current->render2d(adorn);
-			}
-		}
-	}
-
-	GuiResponse TopMenuBar::process(const GuiEvent& event)
-	{
-		if (isVisible())
-		{
-			GuiResponse response = GuiItem::process(event);
-			if (response.wasUsed())
-			{
-				return response;
-			}
-
-			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
-			{
-				return GuiResponse::used();
-			}
-		}
-
-		return GuiResponse::notUsed();
-	}
-
-	void RelativePanel::init(const Layout& layout)
-	{
-		setName("RelativePanel");
-		layoutStyle = layout.layoutStyle;
-		backdropColor = layout.backdropColor;
-		xLocation = layout.xLocation;
-		yLocation = layout.yLocation;
-		offset = layout.offset;
-	}
-
-	GuiRoot::GuiRoot() 
-	{
-		setName("GuiRoot");
-	}
-
-	int GuiRoot::normalizedFontSize(int fontSize)
-	{
-		static G3D::Vector2 percentSize(100.0f, 75.0f);
-		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
-	}
-
-	void GuiRoot::render2d(Adorn* adorn)
-	{
-		short height = static_cast<short>(adorn->getHeight());
-		short width = static_cast<short>(adorn->getWidth());
-
-		canvasSize = G3D::Vector2(width, height);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			GuiItem* current = getGuiItem((int)i);
-			if (current)
-				current->render2d(adorn);
-		}
-	}
 }
+
+// 00415d00 target RTTI
+template struct recovered_boost133::functor_manager< boost::_mfi::mf0<void,CLuaHtmlView>, std::allocator<void> >;
+// 00416ae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,RBX::Lua::FunctionRef>,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<RBX::Lua::FunctionRef> > >, std::allocator<void> >;
+// 00416b70 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,DHTMLWindow,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00417570 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf3<void,DHTMLWindow,boost::shared_ptr<RBX::Instance>,RBX::Reflection::PropertyDescriptor const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::list4<boost::_bi::value<boost::shared_ptr<DHTMLWindow> >,boost::_bi::value<boost::shared_ptr<RBX::Instance> >,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00427ed0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(ThreadLogManager *), std::allocator<void> >;
+// 0042b3a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool,boost::_mfi::mf0<bool,CLuaHtmlView::Binder>,boost::_bi::list1<boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042b460 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(RBX::Reflection::PropertyDescriptor const *,RBX::Reflection::PropertyDescriptor const &,CLuaHtmlView::Binder *),boost::_bi::list3<boost::arg<1>,boost::reference_wrapper<RBX::Reflection::PropertyDescriptor const >,boost::_bi::value<CLuaHtmlView::Binder *> > >, std::allocator<void> >;
+// 0042c6f0 target RTTI
+template struct recovered_boost133::functor_manager< bool (__cdecl*)(void), std::allocator<void> >;
+// 004489e0 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(RBX::Security::Context *), std::allocator<void> >;
+// 00459600 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<G3D::Stopwatch const &,G3D::Stopwatch const & (__cdecl*)(G3D::Stopwatch const *),boost::_bi::list1<boost::_bi::value<G3D::Stopwatch const *> > >, std::allocator<void> >;
+// 00459660 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int const &,int const & (__cdecl*)(int const *),boost::_bi::list1<boost::_bi::value<int const *> > >, std::allocator<void> >;
+// 00493b10 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::shared_ptr<RBX::Network::AbuseReporter::data>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::Network::AbuseReporter::data> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0049dbe0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(boost::weak_ptr<RBX::Network::Server>,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list4<boost::_bi::value<boost::weak_ptr<RBX::Network::Server> >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int>,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 004a9140 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::Network::Replicator,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::Network::Replicator *>,boost::arg<1> > >, std::allocator<void> >;
+// 004a91a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<bool const &,bool const & (__cdecl*)(bool const *),boost::_bi::list1<boost::_bi::value<bool const *> > >, std::allocator<void> >;
+// 004cdae0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,bool>,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004cdb40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::View,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::View *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2350 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d23b0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::PartChunk,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::PartChunk *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2410 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::View::PartChunk>,boost::_bi::list1<boost::_bi::value<RBX::View::PartChunk *> > >, std::allocator<void> >;
+// 004d2470 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d24d0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Decal,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Decal *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2530 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,boost::shared_ptr<RBX::Instance> >,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 004d2590 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::View::Texture,RBX::Reflection::PropertyDescriptor const *>,boost::_bi::list2<boost::_bi::value<RBX::View::Texture *>,boost::arg<1> > >, std::allocator<void> >;
+// 0052e4a0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf1<void,RBX::RunService,boost::shared_ptr<RBX::DataModel> >,boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::RunService> >,boost::_bi::value<boost::shared_ptr<RBX::DataModel> > > >, std::allocator<void> >;
+// 00537cc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,boost::_mfi::cmf0<unsigned int,RBX::ScriptContext>,boost::_bi::list1<boost::_bi::value<RBX::ScriptContext *> > >, std::allocator<void> >;
+// 00537d40 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(lua_State *),boost::_bi::list1<boost::arg<1> > >, std::allocator<void> >;
+// 00537dc0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(lua_State *,unsigned int),boost::_bi::list2<boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 00537e20 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int,unsigned int (__cdecl*)(std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const &,lua_State *),boost::_bi::list2<boost::reference_wrapper<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > const >,boost::arg<1> > >, std::allocator<void> >;
+// 00537e80 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > &,lua_State *,unsigned int),boost::_bi::list3<boost::reference_wrapper<std::auto_ptr<std::vector<RBX::Reflection::Value,std::allocator<RBX::Reflection::Value> > > >,boost::arg<1>,boost::arg<2> > >, std::allocator<void> >;
+// 005463c0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,boost::_mfi::mf0<RBX::worker_thread::work_result,RBX::ContentProvider>,boost::_bi::list1<boost::_bi::value<RBX::ContentProvider *> > >, std::allocator<void> >;
+// 00559840 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00559990 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<std::basic_string<char,std::char_traits<char>,std::allocator<char> >,std::basic_string<char,std::char_traits<char>,std::allocator<char> > (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list1<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 00570f20 target RTTI
+template struct recovered_boost133::functor_manager< void (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> > *), std::allocator<void> >;
+// 00571c60 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::function0<void,std::allocator<boost::function_base> > const &,std::basic_string<char,std::char_traits<char>,std::allocator<char> >),boost::_bi::list2<boost::_bi::value<boost::function0<void,std::allocator<boost::function_base> > >,boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > > > >, std::allocator<void> >;
+// 0057bb90 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<double,double (__cdecl*)(RBX::Profiling::CodeProfiler *),boost::_bi::list1<boost::_bi::value<RBX::Profiling::CodeProfiler *> > >, std::allocator<void> >;
+// 0057bbf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<int,boost::_mfi::cmf0<int,RBX::World>,boost::_bi::list1<boost::_bi::value<RBX::World const *> > >, std::allocator<void> >;
+// 00588e30 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<unsigned int const &,unsigned int const & (__cdecl*)(unsigned int const *),boost::_bi::list1<boost::_bi::value<unsigned int const *> > >, std::allocator<void> >;
+// 00592540 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<RBX::worker_thread::work_result,RBX::worker_thread::work_result (__cdecl*)(std::basic_string<char,std::char_traits<char>,std::allocator<char> >,int),boost::_bi::list2<boost::_bi::value<std::basic_string<char,std::char_traits<char>,std::allocator<char> > >,boost::_bi::value<int> > >, std::allocator<void> >;
+// 005dadf0 target RTTI
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,boost::_mfi::mf0<void,RBX::VelocityMotor>,boost::_bi::list1<boost::_bi::value<RBX::VelocityMotor *> > >, std::allocator<void> >;
+
+// Explicit instantiation may name the native private worker_thread::data type.
+template struct recovered_boost133::functor_manager< boost::_bi::bind_t<void,void (__cdecl*)(boost::shared_ptr<RBX::worker_thread::data>,boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > const &),boost::_bi::list2<boost::_bi::value<boost::shared_ptr<RBX::worker_thread::data> >,boost::_bi::value<boost::function0<RBX::worker_thread::work_result,std::allocator<boost::function_base> > > > >, std::allocator<void> >;

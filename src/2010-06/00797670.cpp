@@ -1,154 +1,58 @@
-// from server: 71% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/boost.cpp
+// roc-lib: rbxgs-dll roc_datamodel_http_priority_family_499d1a4013f08de7.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/boost.hpp"
+#pragma include_alias("util/boost.hpp", "../roc_native_background_priority_header_1eae1b6d71ad6ec5.cpp")
+#undef _RELEASEASSERT
+#include "v8datamodel/DataModel.h"
 #include "util/standardout.h"
-#include "util/Debug.h"
+#include "util/boost.hpp"
 #include <boost/bind.hpp>
-#include <windows.h>
-#include <boost/thread/tss.hpp>
-#include <boost/thread/once.hpp>
+namespace RBX {
 
-namespace RBX
-{
-	namespace boost_detail
+	std::string DataModel::httpGet(std::string url, bool synchronous)
 	{
-		boost::thread_specific_ptr<std::string>* foo;
-		
-		boost::once_flag once_init_foo = BOOST_ONCE_INIT;
-		void init_foo()
+		if (synchronous)
 		{
-			static boost::thread_specific_ptr<std::string> value;
-			foo = &value;
+			return doHttpGet(url);
 		}
-
-		void set_foo(std::string* value)
+		else
 		{
-			boost::call_once(&boost_detail::init_foo, boost_detail::once_init_foo);
-			boost_detail::foo->reset(value);
-		}
-	}
-
-	// Thread name stuff based on https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/xcb2z8hs(v=vs.90)
-	static bool nameThreads = true;
-
-	typedef struct tagTHREADNAME_INFO
-	{
-		DWORD dwType;
-		LPCSTR szName;
-		DWORD dwThreadID;
-		DWORD dwFlags;
-	} THREADNAME_INFO;
-
-	void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName)
-	{
-		THREADNAME_INFO info;
-		info.dwType = 0x1000;
-		info.szName = szThreadName;
-		info.dwThreadID = dwThreadID;
-		info.dwFlags = 0;
-
-		__try
-		{
-			if (nameThreads)
-				RaiseException(0x406D1388, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info);
-		}
-		__except (EXCEPTION_CONTINUE_EXECUTION)
-		{
-		}
-	}
-
-	void set_thread_name(const char* name)
-	{
-		boost_detail::set_foo(new std::string(name));
-		SetThreadName(GetCurrentThreadId(), name);
-	}
-
-	class ThreadPrioritySetter
-	{
-	private:
-		const int old;
-		bool success;
-	  
-	public:
-		ThreadPrioritySetter(int priority)
-			: old(GetThreadPriority(GetCurrentThread())),
-			  success(SetThreadPriority(GetCurrentThread(), priority) == TRUE)
-		{
-		}
-		~ThreadPrioritySetter()
-		{
-			if (success)
-				SetThreadPriority(GetCurrentThread(), old);
-		}
-	};
-
-	void run_in_background(const boost::function0<void>& threadfunc, std::string name)
-	{
-		try
-		{
-			set_thread_name(name.c_str());
-
+			if (url.size() > 0)
 			{
-				ThreadPrioritySetter set(THREAD_PRIORITY_BELOW_NORMAL);
-				threadfunc();
+				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
+				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+				boost::thread(background_function(g, "rbx_httpGet"));
 			}
+
+			return "";
 		}
-		catch (std::exception& ex)
+	}
+
+	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
+	{
+		if (synchronous)
 		{
-			StandardOut::singleton()->print(MESSAGE_ERROR, "Crashed via C++ exception in run_in_background:", ex.what());
-			RBXASSERT(false);
+			return doHttpPost(url, data);
 		}
-	}
-
-	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)
-	{
-		return boost::bind(&run_in_background, threadfunc, std::string(name));
-	}
-
-	worker_thread::worker_thread(const boost::function0<enum work_result>& work_function, const char* name)
-		: _data(new data()),
-		  thread(background_function(boost::bind(&threadProc, _data, work_function), name))
-	{
-	}
-
-	worker_thread::~worker_thread()
-	{
-		boost::mutex::scoped_lock scoped_lock(_data->sync);
-		_data->endRequest = true;
-		_data->wakeCondition.notify_all();
-	}
-
-	void worker_thread::join()
-	{
+		else
 		{
-			boost::mutex::scoped_lock scoped_lock(_data->sync);
-			_data->endRequest = true;
-			_data->wakeCondition.notify_all();
-		}
+			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
+			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
 
-		thread.join();
-	}
+			boost::thread(background_function(g, "rbx_httpPost"));
 
-	void worker_thread::wake()
-	{
-		boost::mutex::scoped_lock scoped_lock(_data->sync);
-		_data->wakeCondition.notify_all();
-	}
-
-	void worker_thread::threadProc(boost::shared_ptr<data> data, const boost::function0<enum work_result>& work_function)
-	{
-		while (!data->endRequest)
-		{
-			if (work_function() != more)
-			{
-				boost::mutex::scoped_lock scoped_lock(data->sync);
-				data->wakeCondition.wait(scoped_lock);	
-			}
+			return "";
 		}
 	}
+}
+
+namespace RBX {
+void run_in_background(const boost::function0<void>& threadfunc, std::string name, int priority);
+boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name, int priority) {
+ return boost::bind(&run_in_background, threadfunc, std::string(name), priority);
+}
 }

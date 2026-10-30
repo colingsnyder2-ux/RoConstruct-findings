@@ -1,45 +1,19 @@
-// from server: 42% by colin
-struct FactoryProductBase {
-    void construct(void* p);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_8e8c9161a3ac75f9.cpp
 
-struct Creator {
-    char pad[8];
-    void* fn;
-    void* obj;
-    void* result;
-    int arg16;
-    char arg20;
-};
-
-struct FactoryProduct : FactoryProductBase {
-    void FactoryProduct_ctor(void* a, void* b, int c, char d);
-};
-
-void FactoryProduct::FactoryProduct_ctor(void* a, void* b, int c, char d) {
-    Creator cr;
-    cr.pad[0] = 0;
-    cr.pad[1] = 0;
-    cr.pad[2] = 0;
-    cr.pad[3] = 0;
-    cr.pad[4] = 0;
-    cr.pad[5] = 0;
-    cr.pad[6] = 0;
-    cr.pad[7] = 0;
-    cr.fn = 0;
-    cr.obj = 0;
-    cr.result = 0;
-    cr.arg16 = 0;
-    cr.arg20 = 0;
-    if (b != 0) {
-        cr.obj = b;
-        cr.fn = a;
-        cr.result = ((void* (*)(void*, void*))a)(0, b);
-    }
-    cr.arg16 = c;
-    cr.arg20 = d;
-    this->construct(&cr);
-    if (b != 0) {
-        ((void (*)(void*, void*))a)(&cr, (void*)1);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "v8datamodel/DataModel.cpp"

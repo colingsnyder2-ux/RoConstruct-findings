@@ -1,23 +1,15 @@
-// from server: 53% by atomic.potato
-extern "C" int __cdecl sub_6a4a40(int, char*);
-extern "C" int __cdecl sub_6a4560(char*);
-extern "C" int __cdecl sub_7a89b2(char*, const char*);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-struct S
-{
-    void __cdecl f(char* arg);
-};
-
-void S::f(char* arg)
-{
-    char buf[0x34];
-    char c;
-    if (sub_6a4a40(1, &c) == 1)
-    {
-        unsigned char v = (unsigned char)c;
-        if (v != 0xff && v != 0xfe)
-            return;
-    }
-    sub_6a4560(buf);
-    sub_7a89b2(buf, (const char*)0xb37258);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

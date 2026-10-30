@@ -1,51 +1,29 @@
-// from server: 43% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_lifetime_007adbe0_b1839fb1d0deb8b6.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/TextureProxy.h"
+#include <string>
+#include <sstream>
+#include <stdexcept>
 
-namespace RBX
+struct Error : std::exception {
+    std::string text;
+    __forceinline Error(const std::string& s) : text(s) {}
+    virtual ~Error() throw() {}
+    virtual const char* what() const throw() { return text.c_str(); }
+};
+struct Failure : Error {
+    __forceinline Failure(const std::string& s) : Error(s) {}
+};
+
+std::string stringify(double value)
 {
-	namespace Render
-	{
-		G3D::ReferenceCountedPointer<G3D::Texture> TextureProxy::getIfResolved() const
-		{
-			return texture;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::alphaOnlyVersion()
-		{
-			return new TextureProxy(this);
-		}
-
-		G3D::Vector2 TextureProxy::getSize()
-		{
-			G3D::ReferenceCountedPointer<G3D::Texture> t = getIfResolved();
-			G3D::Vector2 out;
-			if (t.notNull())
-			{
-				out.x = t->texelWidth();
-				out.y = t->texelHeight();
-			}
-			else
-			{
-				out.y = 0.0f;
-				out.x = 0.0f;
-			}
-			return out;
-		}
-
-		G3D::ReferenceCountedPointer<TextureProxy> TextureProxy::shade(const G3D::Color3& baseColor, const G3D::ReferenceCountedPointer<TextureProxy>& baseTex)
-		{
-			TextureProxy* newTex = new TextureProxy(baseTex);
-			newTex->textureManager = textureManager;
-			newTex->root = baseTex;
-			newTex->shadeColor = baseColor;
-			newTex->shadeTexture = this;
-			return newTex;
-		}
-	}
+    std::ostringstream stream(std::ios::out);
+    if ((stream << value).fail()) {
+        std::string error("stringify(double)");
+        throw Failure(error);
+    }
+    return stream.str();
 }

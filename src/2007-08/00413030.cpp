@@ -1,497 +1,434 @@
-// from server: 98% by colin
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/afxstate.cpp
+// roc-lib: rbxgs-atl90-dll util/ContentProvider.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+#include "util/ContentProvider.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/FileSystem.h"
+#include "v8xml/SerializerV2.h"
+#include <atlutil.h>
+#include <G3D/format.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/copy.hpp>
 
-#include "stdafx.h"
-#include <stddef.h>
-
-
-
-#pragma warning(disable: 4074)
-#pragma init_seg(compiler)
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE push/pop implementation
-
-#ifdef _AFXDLL
-AFX_MODULE_STATE* AFXAPI AfxSetModuleState(AFX_MODULE_STATE* pNewState)
+namespace RBX
 {
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ASSERT(pState);
-	if(pState)
+	// TODO: check match
+	bool operator<(const ContentId& a, const ContentId& b)
 	{
-	AFX_MODULE_STATE* pPrevState = pState->m_pModuleState;
-	pState->m_pModuleState = pNewState;
-	return pPrevState;
-}
-	else
-	{
-		return NULL;
+		return a.toString() < b.toString();
 	}
-}
 
-AFX_MAINTAIN_STATE::~AFX_MAINTAIN_STATE()
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ASSERT(pState);
-	if(pState)
+	bool operator!=(const ContentId& a, const ContentId& b)
 	{
-	pState->m_pModuleState = m_pPrevModuleState;
-}
-}
-#endif //_AFXDLL
-
-AFX_MAINTAIN_STATE2::AFX_MAINTAIN_STATE2(AFX_MODULE_STATE* pNewState) throw()
-{
-#ifdef _AFXDLL
-	m_pThreadState = _afxThreadState;
-	ASSERT(m_pThreadState);
-	if(m_pThreadState)
-	{
-	m_pPrevModuleState = m_pThreadState->m_pModuleState;
-	m_pThreadState->m_pModuleState = pNewState;
+		return a.toString() != b.toString();
 	}
-	else
+
+	ContentId ContentId::fromAssets(const std::string& filePath)
 	{
-		// This is a very bad state; we have no good way to report the error at this moment
-		// since exceptions from here are not expected
-		m_pPrevModuleState=NULL;
-		m_pThreadState=NULL;
+		std::string header = "rbxasset://";
+		return ContentId(header + filePath);
 	}
-#endif
 
-	if (AfxGetAmbientActCtx() && 
-		pNewState->m_hActCtx != INVALID_HANDLE_VALUE)
+	ContentProvider::ContentProvider()
 	{
-		m_bValidActCtxCookie = AfxActivateActCtx(pNewState->m_hActCtx, &m_ulActCtxCookie);
+		char path[MAX_PATH];
+		if (SHGetFolderPathAndSubDirA(NULL, CSIDL_COMMON_APPDATA, NULL, SHGFP_TYPE_CURRENT, "Roblox\\content\\", (LPSTR)&path) == S_OK)
+		{
+			this->singleton().setAssetFolder(path);
+		}
+		else
+		{
+			StandardOut::singleton()->print(MESSAGE_WARNING, "Failed to get asset folder");
+		}
+
+		requestProcessor.reset(new worker_thread(boost::bind(&ContentProvider::processRequests, this), "rbx_content"));
 	}
-	else
+
+	ContentProvider::~ContentProvider()
 	{
-		m_bValidActCtxCookie = FALSE;
+		requestProcessor->join();
 	}
-}
 
-/////////////////////////////////////////////////////////////////////////////
-// _AFX_THREAD_STATE implementation
-
-_AFX_THREAD_STATE::_AFX_THREAD_STATE()
-{
-#ifdef _DEBUG
-	m_nDisablePumpCount = 0;
-#endif
-	m_msgCur.message = WM_NULL;
-	m_nMsgLast = WM_NULL;
-	//::GetCursorPos(&(m_ptCursorLast));
-	m_ptCursorLast = CPoint(0,0);
-}
-
-_AFX_THREAD_STATE::~_AFX_THREAD_STATE()
-{
-	// unhook windows hooks
-	if (m_hHookOldMsgFilter != NULL)
-		::UnhookWindowsHookEx(m_hHookOldMsgFilter);
-	if (m_hHookOldCbtFilter != NULL)
-		::UnhookWindowsHookEx(m_hHookOldCbtFilter);
-
-	// free safety pool buffer
-	if (m_pSafetyPoolBuffer != NULL)
-		free(m_pSafetyPoolBuffer);
-
-	// parking window must have already been cleaned up by now!
-	ASSERT(m_pWndPark == NULL);
-}
-
-_AFX_THREAD_STATE* AFXAPI AfxGetThreadState()
-{
-	_AFX_THREAD_STATE *pState =_afxThreadState.GetData();
-	ENSURE(pState != NULL); 
-	return pState;
-}
-
-THREAD_LOCAL(_AFX_THREAD_STATE, _afxThreadState)
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE implementation
-
-#ifdef _AFXDLL
-AFX_MODULE_STATE::AFX_MODULE_STATE(BOOL bDLL, WNDPROC pfnAfxWndProc,
-	DWORD dwVersion, BOOL bSystem)
-#else
-AFX_MODULE_STATE::AFX_MODULE_STATE(BOOL bDLL)
-#endif
-{
-#ifndef _AFX_NO_OLE_SUPPORT
-	m_factoryList.Construct(offsetof(COleObjectFactory, m_pNextFactory));
-#endif
-	m_classList.Construct(offsetof(CRuntimeClass, m_pNextClass));
-
-	m_fRegisteredClasses = 0;
-	m_bDLL = (BYTE)bDLL;
-#ifdef _AFXDLL
-	m_pfnAfxWndProc = pfnAfxWndProc;
-	m_dwVersion = dwVersion;
-	m_bSystem = (BYTE)bSystem;
-#endif
-	BOOL bEnable = TRUE;
-	TRY
+	bool ContentProvider::isHttpUrl(const std::string& s)
 	{
-		//Preallocate the registered classes string, but CRT memory leak report is
-		//called before the string frees memory, so need to disable tracking.
-		bEnable = AfxEnableMemoryTracking(FALSE);
-		m_strUnregisterList.Preallocate(4096);
-		AfxEnableMemoryTracking(bEnable);	
-	}		
-	CATCH(CMemoryException, e)
+		if (s.find("http://") == 0)
+			return true;
+
+		if (s.find("https://") == 0)
+			return true;
+
+		return false;
+	}
+
+	std::string ContentProvider::assetFolder() const
 	{
-		AfxEnableMemoryTracking(bEnable);	
-		DELETE_EXCEPTION(e);
+		return assetFolderPath;
 	}
-	END_CATCH
-	// app starts out in "user control"
-	m_bUserCtrl = TRUE;
 
-#ifndef _AFX_NO_OCC_SUPPORT
-	m_lockList.Construct(offsetof(COleControlLock, m_pNextLock));
-#endif
-#ifdef _AFXDLL
-	m_libraryList.Construct(offsetof(CDynLinkLibrary, m_pNextDLL));
-#endif
-	
-
-	bEnable = AfxEnableMemoryTracking(FALSE);		
-	//Fusion: allocate dll wrappers array.
-	m_pDllIsolationWrappers = new CDllIsolationWrapperBase*[2];
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	m_pDllIsolationWrappers[_AFX_COMCTL32_ISOLATION_WRAPPER_INDEX] = new CComCtlWrapper;
-#endif
-	m_pDllIsolationWrappers[_AFX_COMMDLG_ISOLATION_WRAPPER_INDEX] = new CCommDlgWrapper;
-	AfxEnableMemoryTracking(bEnable);
-	m_bSetAmbientActCtx = TRUE;
-	m_hActCtx = NULL;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Activation Context API wrappers
-
-#define AFX_ACTCTX_API_INIT_PROCPTR(hKernel,name) \
-	pfn##name = (PFN_##name) GetProcAddress(hKernel, #name)\
-	
-
-/////////////////////////////////////////////////////////////////////////////
-// Global function pointers for Context (WinSxS/Manifest) API, to be init during MFC global init.
-#define AFX_ACTCTX_API_PTR_DEFINE(name, type, params) \
-	typedef type (WINAPI* PFN_##name)params; \
-	PFN_##name pfn##name = NULL;
-
-AFX_ACTCTX_API_PTR_DEFINE(CreateActCtxW, HANDLE, (PCACTCTXW));
-AFX_ACTCTX_API_PTR_DEFINE(ReleaseActCtx, void, (HANDLE));
-AFX_ACTCTX_API_PTR_DEFINE(ActivateActCtx, BOOL, (HANDLE, ULONG_PTR*));
-AFX_ACTCTX_API_PTR_DEFINE(DeactivateActCtx, BOOL, (DWORD, ULONG_PTR));
-
-AFX_STATIC void AFXAPI _AfxInitContextAPI()
-{
-	static HMODULE hKernel = NULL;
-	if (hKernel == NULL)
+	bool ContentProvider::isRequestQueueEmpty()
 	{
-		hKernel = GetModuleHandle(_T("KERNEL32"));
-		ENSURE(hKernel != NULL);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,CreateActCtxW);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,ReleaseActCtx);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,ActivateActCtx);
-		AFX_ACTCTX_API_INIT_PROCPTR(hKernel,DeactivateActCtx);	
+		boost::mutex::scoped_lock lock(requestSync);
+		return requestQueue.empty();
 	}
-}
 
-#if (_WIN32_WINNT >= 0x0500) || (_WIN32_FUSION >= 0x0100)
-HANDLE AFXAPI AfxCreateActCtxW(PCACTCTXW pActCtx)
-{	
-	HANDLE hCtx = pfnCreateActCtxW != 0 ? pfnCreateActCtxW(pActCtx) : INVALID_HANDLE_VALUE;
-	return hCtx;
-}
-#else
-HANDLE AFXAPI AfxCreateActCtxW(void *pActCtx)
-{	
-	HANDLE hCtx = pfnCreateActCtxW != 0 ? pfnCreateActCtxW(pActCtx) : INVALID_HANDLE_VALUE;
-	return hCtx;
-}
-#endif
-
-void AFXAPI AfxReleaseActCtx(HANDLE hActCtx)
-{	
-	if (pfnReleaseActCtx != 0)
+	bool ContentProvider::isUrlBad(const char* url)
 	{
-		pfnReleaseActCtx(hActCtx);
+		boost::mutex::scoped_lock lock(requestSync);
+
+		std::list<FailedUrl>::iterator iter = failedUrls.begin();
+		std::list<FailedUrl>::iterator end = failedUrls.end();
+
+		for (; iter != end; iter++)
+		{
+			if (boost::posix_time::second_clock::local_time() >= iter->expiration)
+			{
+				failedUrls.erase(iter, end);
+				return false;
+			}
+			else if (iter->url == url)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
-}
 
-BOOL AFXAPI AfxActivateActCtx(HANDLE hActCtx, ULONG_PTR *lpCookie) 
-{	
-	BOOL rc = pfnActivateActCtx != 0 ? pfnActivateActCtx(hActCtx, lpCookie) : FALSE;	
-	return rc;
-}
-
-BOOL AFXAPI AfxDeactivateActCtx(DWORD dwFlags, ULONG_PTR ulCookie)
-{	
-	BOOL rc = pfnDeactivateActCtx != 0 ? pfnDeactivateActCtx(dwFlags, ulCookie) : FALSE;
-	return rc;
-}
-
-eActCtxResult AFXAPI AfxActivateActCtxWrapper(HANDLE hActCtx, ULONG_PTR *lpCookie)
-{
-	ENSURE_ARG(lpCookie!=NULL);
-	eActCtxResult eResult=ActCtxFailed;
-	if (pfnActivateActCtx != 0)
-	{ 
-		eResult=AfxActivateActCtx(hActCtx, lpCookie) ? ActCtxSucceeded : ActCtxFailed;
-	} else
-	{		
-		eResult=ActCtxNoFusion;
+	void ContentProvider::clearContentCache()
+	{
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+		contentCache.clear();
 	}
+
+	void ContentProvider::load(ContentId id, std::vector<boost::shared_ptr<Instance>>& instances)
+	{
+		boost::scoped_ptr<std::istream> stream(getContent(id));
 		
-	return eResult;	
-}
+		TextXmlParser machine(stream->rdbuf());
+		boost::scoped_ptr<XmlElement> root(machine.parse());
 
-void AFX_MODULE_STATE::CreateActivationContext()
-{
-	_AfxInitContextAPI();
-	HMODULE hModule = m_hCurrentInstanceHandle;
-
-	WCHAR rgchFullModulePath[MAX_PATH + 2];
-	rgchFullModulePath[_countof(rgchFullModulePath) - 1] = 0;
-	rgchFullModulePath[_countof(rgchFullModulePath) - 2] = 0;
-	DWORD dw = GetModuleFileNameW(hModule, rgchFullModulePath, _countof(rgchFullModulePath)-1);
-	if (dw == 0)
-	{
-		return;
+		SerializerV2().loadInstances(root.get(), instances);
 	}
-	if (rgchFullModulePath[_countof(rgchFullModulePath) - 2] != 0)
+
+	bool ContentProvider::hasContent(ContentId id)
 	{
-		SetLastError(ERROR_BUFFER_OVERFLOW);
-		return;
+		return loadContent(id, NoHttpRequest) != NULL;
 	}
-	//First try ID 2 and then ID 1 - this is to consider also a.dll.manifest file
-	//for dlls, which ID 2 ignores.
-	ACTCTXW actCtx;
-	actCtx.cbSize = sizeof(actCtx);
-	actCtx.dwFlags = ACTCTX_FLAG_RESOURCE_NAME_VALID | ACTCTX_FLAG_HMODULE_VALID;
-	actCtx.lpSource = rgchFullModulePath;
-	actCtx.lpResourceName =  MAKEINTRESOURCEW(ISOLATIONAWARE_MANIFEST_RESOURCE_ID);
-	actCtx.hModule = hModule;
-	m_hActCtx = AfxCreateActCtxW(&actCtx);
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{		
-		actCtx.lpResourceName =  MAKEINTRESOURCEW(ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID);
-		m_hActCtx = AfxCreateActCtxW(&actCtx);
-	}
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
-	{		
-		actCtx.lpResourceName =  MAKEINTRESOURCEW(CREATEPROCESS_MANIFEST_RESOURCE_ID);
-		m_hActCtx = AfxCreateActCtxW(&actCtx);
-	}
-	if (m_hActCtx == INVALID_HANDLE_VALUE)
+
+	std::string ContentProvider::getAssetFile(const std::string& filePath)
 	{
-		m_hActCtx = NULL;
-	}		
-}
-
-AFX_MODULE_STATE::~AFX_MODULE_STATE()
-{
-#ifndef _AFX_NO_DAO_SUPPORT
-	delete m_pDaoState;
-#endif
-
-	// clean up type lib cache map, if any
-	if (m_pTypeLibCacheMap != NULL)
-	{
-		m_pTypeLibCacheMap->RemoveAll(&m_typeLibCache);
-		delete m_pTypeLibCacheMap;
+		return getFile(ContentId::fromAssets(filePath));
 	}
-	//Fusion: delete each member of the array and the array itself
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-	delete m_pDllIsolationWrappers[_AFX_COMCTL32_ISOLATION_WRAPPER_INDEX];
-#endif
-	delete m_pDllIsolationWrappers[_AFX_COMMDLG_ISOLATION_WRAPPER_INDEX];
-	delete [] m_pDllIsolationWrappers;
-	if (m_hActCtx != NULL && m_hActCtx != INVALID_HANDLE_VALUE)
+
+	std::string ContentProvider::getFile(ContentId ticket)
 	{
-		AfxReleaseActCtx(m_hActCtx);
-		m_hActCtx = INVALID_HANDLE_VALUE;
-	}
-}
-
-void CTypeLibCacheMap::RemoveAll(void* pExcept)
-{
-	POSITION pos = GetStartPosition();
-	void* pTypeLibID;
-	CTypeLibCache* pCache;
-	while (pos != NULL)
-	{
-		GetNextAssoc(pos, pTypeLibID, (void*&)pCache);
-		if (pCache != pExcept)
-			delete pCache;
-	}
-}
-
-AFX_MODULE_THREAD_STATE::AFX_MODULE_THREAD_STATE()
-{
-	m_nLastHit = static_cast<INT_PTR>(-1);
-	m_nLastStatus = static_cast<INT_PTR>(-1);
-	m_pLastInfo = NULL;
-
-	m_frameList.Construct(offsetof(CFrameWnd, m_pNextFrameWnd));
-
-	// Note: it is only necessary to initialize non-zero data
-	m_pfnNewHandler = &AfxNewHandler;
-}
-
-AFX_MODULE_THREAD_STATE::~AFX_MODULE_THREAD_STATE()
-{
-	// cleanup thread local tooltip window
-	if (m_pToolTip != NULL)
-		m_pToolTip->DestroyToolTipCtrl();
-
-	delete m_pLastInfo;
-
-	// cleanup temp/permanent maps (just the maps themselves)
-	delete m_pmapHWND;
-	delete m_pmapHMENU;
-	delete m_pmapHDC;
-	delete m_pmapHGDIOBJ;
-	delete m_pmapHIMAGELIST;
-
-#ifndef _AFX_NO_SOCKET_SUPPORT
-	// cleanup socket notification list
-	if (m_plistSocketNotifications != NULL)
-		while (!m_plistSocketNotifications->IsEmpty())
-			delete m_plistSocketNotifications->RemoveHead();
-#ifndef _AFXDLL
-	// cleanup dynamically allocated socket maps
-	delete m_pmapSocketHandle;
-	delete m_pmapDeadSockets;
-	delete m_plistSocketNotifications;
-#endif
-#endif //!_AFX_NO_SOCKET_SUPPORT
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// AFX_MODULE_STATE for base application
-
-LRESULT CALLBACK AfxWndProcBase(HWND, UINT, WPARAM, LPARAM);
-
-class _AFX_BASE_MODULE_STATE : public AFX_MODULE_STATE
-{
-public:
-#ifdef _AFXDLL
-	_AFX_BASE_MODULE_STATE() : AFX_MODULE_STATE(TRUE, AfxWndProcBase, _MFC_VER)
-#else
-	_AFX_BASE_MODULE_STATE() : AFX_MODULE_STATE(TRUE)
-#endif
-		{ }
-};
-
-PROCESS_LOCAL(_AFX_BASE_MODULE_STATE, _afxBaseModuleState)
-
-#ifdef _AFXDLL
-
-#undef AfxWndProc
-LRESULT CALLBACK
-AfxWndProcBase(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
-{
-	AFX_MANAGE_STATE(_afxBaseModuleState.GetData());
-	return AfxWndProc(hWnd, nMsg, wParam, lParam);
-}
-
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// helper functions for module state
-
-AFX_MODULE_STATE* AFXAPI AfxGetAppModuleState()
-{
-	return _afxBaseModuleState.GetData();
-}
-
-AFX_MODULE_STATE* AFXAPI AfxGetModuleState()
-{
-	_AFX_THREAD_STATE* pState = _afxThreadState;
-	ENSURE(pState);
-	AFX_MODULE_STATE* pResult;
-	if (pState->m_pModuleState != NULL)
-	{
-		// thread state's module state serves as override
-		pResult = pState->m_pModuleState;
-	}
-	else
-	{
-		// otherwise, use global app state
-		pResult = _afxBaseModuleState.GetData();
-	}
-	ENSURE(pResult != NULL);
-	return pResult;
-}
-
-HINSTANCE AFXAPI AfxGetInstanceHandleHelper()
-{
-	return AfxGetModuleState()->m_hCurrentInstanceHandle;
-}
-
-BOOL AFXAPI AfxIsModuleDll()
-{
-	return AfxGetModuleState()->m_bDLL;
-}
-
-BOOL AFXAPI AfxInitCurrentStateApp()
-{
-	CWinApp* pApp = AfxGetModuleState()->m_pCurrentWinApp;
-	if (pApp != NULL && !pApp->InitInstance())
-	{
-		// Init Failed
-		pApp->ExitInstance();
-		AfxWinTerm();
-		return FALSE;
-	}
-	return TRUE;
-}
-
-AFX_MODULE_THREAD_STATE* AFXAPI AfxGetModuleThreadState()
-{
-	AFX_MODULE_THREAD_STATE* pResult=AfxGetModuleState()->m_thread.GetData();
-	ENSURE(pResult != NULL);
-	return pResult;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CTypeLibCache::Unlock
-// (Note: the rest of CTypeLibCache is implemented in oletyplb.cpp)
-
-void CTypeLibCache::Unlock()
-{
-	ASSERT(m_cRef > 0);
-
-	if (InterlockedDecrement(&m_cRef) == 0)
-	{
-		if (m_ptinfo != NULL)
+		CachedContent* content = loadContent(ticket, SyncHttpRequest);
+		if (content && registerFile(content))
 		{
-			m_ptinfo->Release();
-			m_ptinfo = NULL;
+			return *content->filename;
 		}
-		if (m_ptlib != NULL)
+
+		throw std::runtime_error(G3D::format("Unable to load %s", ticket.c_str()));
+	}
+
+	bool ContentProvider::requestContentFile(ContentId id, std::string& filename)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return false;
+
+		if (!registerFile(content))
+			return false;
+
+		filename = *content->filename;
+		return true;
+	}
+
+	boost::shared_ptr<const std::string> ContentProvider::requestContentString(ContentId id)
+	{
+		CachedContent* content = loadContent(id, AsyncHttpRequest);
+		if (!content)
+			return boost::shared_ptr<const std::string>();
+
+		boost::mutex::scoped_lock lock(contentCacheMutex);
+
+		if (!content->data)
 		{
-			m_ptlib->Release();
-			m_ptlib = NULL;
+			std::ifstream stream(content->filename->c_str(), std::ios::binary | std::ios::in);
+			std::ostringstream data;
+
+			boost::iostreams::copy(stream, data);
+
+			content->data.reset(new std::string(data.str()));
 		}
+
+		return content->data;
+	}
+
+	std::string ContentProvider::findAsset(ContentId contentId)
+	{
+		RBXASSERT(contentId.isAsset());
+
+		ATL::CPath filePath((assetFolderPath + (contentId.c_str() + 11)).c_str());
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	std::string ContentProvider::findFile(ContentId contentId)
+	{
+		RBXASSERT(contentId.isFile());
+
+		const char* file = contentId.c_str();
+		file += 7;
+
+		ATL::CPath filePath(file);
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	static ATL::CPath getLocalCachePath(bool createPath)
+	{
+		ATL::CPath path;
+
+		if (createPath)
+		{
+			static std::string s = FileSystem::getCacheDirectory(true);
+			path.m_strPath.SetString(s.c_str());
+		}
+		else
+		{
+			static std::string s = FileSystem::getCacheDirectory(false);
+			path.m_strPath.SetString(s.c_str());
+		}
+
+		return path;
+	}
+
+	std::string ContentProvider::findHashFile(ContentId contentId)
+	{
+		ATL::CPath cachePath = getLocalCachePath(true);
+
+		ATL::CPath filePath = cachePath;
+		filePath.Append(contentId.c_str());
+
+		if (!filePath.FileExists())
+			return "";
+
+		return std::string(filePath);
+	}
+
+	void ContentProvider::setAssetFolder(const char* sPath)
+	{
+		StandardOut::singleton()->print(MESSAGE_INFO, "setAssetFolder %s", sPath);
+
+		ATL::CPath path(sPath);
+
+		if (path.IsRelative())
+			throw std::runtime_error(G3D::format("The path \'%s\' is a relative path", path));
+
+		if (!path.IsDirectory())
+			throw std::runtime_error(G3D::format("The path \'%s\' does not exist", path));
+
+		path.AddBackslash();
+		assetFolderPath = path;
+	}
+
+	ContentId ContentProvider::registerContent(std::istream& content, const Name& mimeType)
+	{
+		ContentId id;
+
+		{
+			boost::scoped_ptr<MD5Hasher> hasher(MD5Hasher::create());
+			hasher->addData(content);
+			id = ContentId(hasher->toString(), mimeType);
+		}
+
+		ATL::CPath filePath = getLocalCachePath(true);
+		filePath.Append(id.c_str());
+
+		if (!filePath.FileExists())
+		{
+			std::ofstream outStream(filePath, std::ios::binary | std::ios::out);
+			content.clear();
+			content.seekg(0, std::ios::beg);
+
+			do
+			{
+				char buffer[1024];
+				content.read(buffer, sizeof(buffer));
+				outStream.write(buffer, content.gcount());
+			}
+			while (content.gcount() > 0);
+		}
+
+		return id;
+	}
+
+	bool ContentProvider::registerFile(CachedContent* item)
+	{
+		CachedContent temp;
+
+		{
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			temp = *item;
+		}
+
+		if (!temp.filename)
+		{
+			std::istringstream ss(*temp.data);
+			ContentId hash = registerContent(ss, Name::getNullName());
+
+			std::string filename = findHashFile(hash);
+			if (filename.empty())
+				return false;
+
+			temp.filename.reset(new std::string(filename));
+
+			boost::mutex::scoped_lock lock(contentCacheMutex);
+			*item = temp;
+		}
+
+		return true;
+	}
+
+	ContentId ContentProvider::readContent(const char* id, std::istream& stream, unsigned long dataLength)
+	{
+		ContentId contentId(id);
+
+		if (hasContent(contentId))
+		{
+			stream.clear();
+			stream.seekg(dataLength, std::ios::cur);
+		}
+		else
+		{
+			ATL::CPath filePath = getLocalCachePath(true);
+			filePath.Append(contentId.c_str());
+
+			std::ofstream content;
+			content.open(filePath, std::ios::binary | std::ios::out);
+
+			char data;
+
+			for (unsigned long i = 0; i < dataLength; i++)
+			{
+				RBXASSERT(content.good());
+				stream.get(data);
+				content << data;
+			}
+		}
+
+		return contentId;
+	}
+
+	ContentProvider::FailedUrl::FailedUrl(const char* url)
+		: url(url),
+		  expiration(boost::posix_time::second_clock::local_time() + boost::posix_time::minutes(5))
+	{
+	}
+
+	class MD5HasherImpl : public MD5Hasher
+	{
+	private:
+		HCRYPTPROV hProv;
+		HCRYPTHASH hHash;
+		std::string result;
+
+	public:
+		MD5HasherImpl()
+			: hProv(NULL),
+			  hHash(NULL),
+			  result()
+		{
+			if (!CryptAcquireContextA(&hProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptAcquireContext. GetLastError = %d", GetLastError());
+			}
+
+			if (!CryptCreateHash(hProv, CALG_MD5, NULL, NULL, &hHash))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptCreateHash. GetLastError = %d", GetLastError());
+			}
+		}
+		~MD5HasherImpl()
+		{
+		}
+
+	public:
+		virtual void addData(const char* data, size_t nBytes)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data, (DWORD)nBytes, 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(const std::string& data)
+		{
+			if (!CryptHashData(hHash, (const BYTE*)data.c_str(), (DWORD)data.length(), 0))
+			{
+				StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptHashData. GetLastError = %d", GetLastError());
+			}
+		}
+		virtual void addData(std::istream& data)
+		{
+			data.clear();
+			data.seekg(0, std::ios_base::beg);
+
+			char buffer[1024];
+			do
+			{
+				data.read(buffer, sizeof(buffer));
+				addData(buffer, data.gcount());
+			}
+			while (data.gcount() > 0);
+		}
+		virtual std::string toString()
+		{
+			c_str();
+			return result;
+		}
+		virtual const char* c_str()
+		{
+			if (result.empty())
+			{
+				DWORD hashSize;
+				DWORD hashSizeLen = sizeof(DWORD);
+				if (!CryptGetHashParam(hHash, HP_HASHSIZE, (BYTE*)&hashSize, &hashSizeLen, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				char* hashValue = new char[hashSize];
+				if (!CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)&hashValue, &hashSize, 0))
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Error during CryptGetHashParam. GetLastError = %d", GetLastError());
+				}
+
+				for (int i = 0; i < (int)hashSize; ++i)
+				{
+					ATL::CString temp;
+					temp.Format("%x", hashValue[i]);
+					result += temp.GetString();
+				}
+
+				delete[] hashValue;
+			}
+
+			return result.c_str();
+		}
+	};
+
+	MD5Hasher* MD5Hasher::create()
+	{
+		return new MD5HasherImpl();
 	}
 }

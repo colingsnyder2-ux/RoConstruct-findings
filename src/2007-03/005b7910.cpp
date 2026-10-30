@@ -1,486 +1,279 @@
-// from server: 63% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Surfaces.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll util/Extents.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Surfaces.h"
+#include "util/Extents.h"
+#include "util/Math.h"
+#include "util/Debug.h"
+#include "util/NormalId.h"
 
-#include "reflection/property.h"
-#include "v8datamodel/PartInstance.h"
-#include "v8world/Controller.h"
-
-#include <memory>
-
-namespace RBX {
-
-// SIZE 0x20
-template <int normalId, class T>
-class SurfaceEnumPropDescriptor : public Reflection::EnumPropertyDescriptor
+namespace RBX
 {
-public:
-	// SIZE 0x0c
-	template <class Getter, class Setter>
-	class GetSetImpl : public Reflection::TypedPropertyDescriptor<T>::GetSet
+	float Extents::areaXZ() const
 	{
-	public:
-		GetSetImpl(Getter getter, Setter setter) : getter(getter), setter(setter) {}
+		G3D::Vector3 delta = this->high - this->low;
+		return delta.x * delta.z;
+	}
 
-		virtual bool isReadOnly() const { return false; }
+	NormalId Extents::closestFace(const G3D::Vector3& point)
+	{
+		NormalId faceId = NORM_X;
 
-		virtual T getValue(const Reflection::DescribedBase* instance) const
+		// bruh
+		float hy = fabs(point.y - this->high.y);
+		float hz = fabs(point.z - this->high.z);
+		float lx = fabs(point.x - this->low.x);
+		float ly = fabs(point.y - this->low.y);
+		float lz = fabs(point.z - this->low.z);
+
+		float hx = fabs(point.x - this->high.x); 
+		if (hx > hy)
 		{
-			const Surfaces& surfaces = static_cast<const PartInstance*>(instance)->getSurfaces();
-
-			return (surfaces[static_cast<NormalId>(normalId)].*getter)();
+			faceId = NORM_Y;
+		}
+		else
+		{
+			hy = hx;
 		}
 
-		virtual void setValue(Reflection::DescribedBase* instance, const T& value) const
+		if (hz < hy)
 		{
-			Surfaces& surfaces = static_cast<PartInstance*>(instance)->getSurfaces();
-
-			(surfaces[static_cast<NormalId>(normalId)].*setter)(value);
+			hy = hz;
+			faceId = NORM_Z;
 		}
 
-	private:
-		Getter getter; // 0x04
-		Setter setter; // 0x08
-	};
-
-	template <class Getter, class Setter>
-	SurfaceEnumPropDescriptor(
-		const char* name,
-		const char* category,
-		Getter getter,
-		Setter setter,
-		Reflection::PropertyDescriptor::Functionality functionality = Reflection::PropertyDescriptor::STANDARD
-	)
-		: Reflection::EnumPropertyDescriptor(
-			  PartInstance::classDescriptor(),
-			  Reflection::EnumDesc<T>::singleton(),
-			  name,
-			  category,
-			  functionality
-		  ),
-		  getset(new GetSetImpl<Getter, Setter>(getter, setter))
-	{
-	}
-
-	virtual bool isReadOnly() const { return getset->isReadOnly(); }
-
-	T getValue(const Reflection::DescribedBase* instance) const { return getset->getValue(instance); }
-
-	void setValue(Reflection::DescribedBase* instance, const T& value) const { getset->setValue(instance, value); }
-
-	virtual bool equalValues(const Reflection::DescribedBase* a, const Reflection::DescribedBase* b) const
-	{
-		return getValue(a) == getValue(b);
-	}
-
-	virtual bool hasStringValue() const { return true; }
-
-	virtual std::string getStringValue(const Reflection::DescribedBase* instance) const
-	{
-		STUB(0x10102460);
-		return std::string();
-	}
-
-	virtual bool setStringValue(Reflection::DescribedBase* instance, const std::string& value) const
-	{
-		STUB(0x10102610);
-		return false;
-	}
-
-	virtual void readValue(
-		Reflection::DescribedBase* instance,
-		const XmlElement* element,
-		IReferenceBinder& binder
-	) const
-	{
-		STUB(0x101022f0);
-	}
-
-	virtual void writeValue(const Reflection::DescribedBase* instance, XmlElement* element) const { STUB(0x10102130); }
-
-private:
-	std::auto_ptr<typename Reflection::TypedPropertyDescriptor<T>::GetSet> getset; // 0x1c
-};
-
-// SIZE 0x1c
-template <int normalId, class T>
-class SurfacePropDescriptor : public Reflection::TypedPropertyDescriptor<T>
-{
-public:
-	// SIZE 0x0c
-	template <class Getter, class Setter>
-	class GetSetImpl : public Reflection::TypedPropertyDescriptor<T>::GetSet
-	{
-	public:
-		GetSetImpl(Getter getter, Setter setter) : getter(getter), setter(setter) {}
-
-		virtual bool isReadOnly() const { return false; }
-
-		virtual T getValue(const Reflection::DescribedBase* instance) const
+		if (lx < hy)
 		{
-			const Surfaces& surfaces = static_cast<const PartInstance*>(instance)->getSurfaces();
-
-			return (surfaces[static_cast<NormalId>(normalId)].*getter)();
+			hy = lx;
+			faceId = NORM_X_NEG;
 		}
 
-		virtual void setValue(Reflection::DescribedBase* instance, const T& value) const
+		if (ly < hy)
 		{
-			Surfaces& surfaces = static_cast<PartInstance*>(instance)->getSurfaces();
-
-			(surfaces[static_cast<NormalId>(normalId)].*setter)(value);
+			hy = ly;
+			faceId = NORM_Y_NEG;
 		}
 
-	private:
-		Getter getter; // 0x04
-		Setter setter; // 0x08
-	};
+		if (lz < hy)
+		{
+			faceId = NORM_Z_NEG;
+		}
 
-	template <class Getter, class Setter>
-	SurfacePropDescriptor(
-		const char* name,
-		const char* category,
-		Getter getter,
-		Setter setter,
-		Reflection::PropertyDescriptor::Functionality functionality = Reflection::PropertyDescriptor::STANDARD
-	)
-		: Reflection::TypedPropertyDescriptor<T>(
-			  PartInstance::classDescriptor(),
-			  name,
-			  category,
-			  std::auto_ptr<typename Reflection::TypedPropertyDescriptor<T>::GetSet>(
-				  new GetSetImpl<Getter, Setter>(getter, setter)
-			  ),
-			  functionality
-		  )
+		return faceId;
+	}
+
+	G3D::Vector3 Extents::getCorner(int i) const
 	{
+		RBXASSERT(i >= 0);
+		RBXASSERT(i <= 7);
+
+		return G3D::Vector3(
+			this->low[0 + 3 * (i / 4)],
+			this->low[1 + 3 * (i / 2 % 2)],
+			this->low[2 + 3 * (i % 2)]
+		);
 	}
-};
 
-static SurfaceEnumPropDescriptor<NORM_Y, SurfaceType> desc_TopType(
-	"TopSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
+	void Extents::getFaceCorners(NormalId faceId, G3D::Vector3& v0, G3D::Vector3& v1, G3D::Vector3& v2, G3D::Vector3& v3) const
+	{
+		switch (faceId)
+		{
+		case NORM_X:
+			v0 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			break;
+		case NORM_Y:
+			v0 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			break;
+		case NORM_Z:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			break;
+		case NORM_X_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			break;
+		case NORM_Y_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			break;
+		case NORM_Z_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			break;
+		default:
+			RBXASSERT(0);
+		}
+	}
 
-static SurfaceEnumPropDescriptor<NORM_Y, Controller::InputType> desc_TopSurfaceInput(
-	"TopSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
+	G3D::Vector3 Extents::faceCenter(NormalId faceId) const
+	{
+		G3D::Vector3 v = this->center();
 
-static SurfacePropDescriptor<NORM_Y, float> desc_TopParamA(
-	"TopParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
+		int i = faceId % 3;
+		if (faceId < NORM_X_NEG)
+		{
+			v[i] = this->high[i];
+		}
+		else
+		{
+			v[i] = this->low[i];
+		}
 
-static SurfacePropDescriptor<NORM_Y, float> desc_TopParamB(
-	"TopParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
+		return v;
+	}
 
-static SurfaceEnumPropDescriptor<NORM_Y_NEG, SurfaceType> desc_BottomType(
-	"BottomSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
+	bool Extents::containedByFrustum(const G3D::GCamera::Frustum& frustum) const
+	{
+		if (frustum.faceArray.size() > 0)
+		{
+			for (int i = 0; i < frustum.faceArray.size(); i++)
+			{
+				const G3D::Plane* plane = &frustum.faceArray[i].plane;
+				for (int j = 0; j < 8; j++)
+				{
+					G3D::Vector3 corner = getCorner(j);
+					if (!plane->halfSpaceContains(corner))
+					{
+						return false;
+					}
+				}
+			}
+		}
 
-static SurfaceEnumPropDescriptor<NORM_Y_NEG, Controller::InputType> desc_BottomSurfaceInput(
-	"BottomSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Y_NEG, float> desc_BottomParamA(
-	"BottomParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Y_NEG, float> desc_BottomParamB(
-	"BottomParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_X_NEG, SurfaceType> desc_LeftType(
-	"LeftSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_X_NEG, Controller::InputType> desc_LeftSurfaceInput(
-	"LeftSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_X_NEG, float> desc_LeftParamA(
-	"LeftParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_X_NEG, float> desc_LeftParamB(
-	"LeftParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_X, SurfaceType> desc_RightType(
-	"RightSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_X, Controller::InputType> desc_RightSurfaceInput(
-	"RightSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_X, float> desc_RightParamA(
-	"RightParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_X, float> desc_RightParamB(
-	"RightParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z_NEG, SurfaceType> desc_FrontType(
-	"FrontSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z_NEG, Controller::InputType> desc_FrontSurfaceInput(
-	"FrontSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Z_NEG, float> desc_FrontParamA(
-	"FrontParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Z_NEG, float> desc_FrontParamB(
-	"FrontParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z, SurfaceType> desc_BackType(
-	"BackSurface",
-	"Surface",
-	&Surface::getSurfaceType,
-	&Surface::setSurfaceType
-);
-
-static SurfaceEnumPropDescriptor<NORM_Z, Controller::InputType> desc_BackSurfaceInput(
-	"BackSurfaceInput",
-	"Surface Inputs",
-	&Surface::getInput,
-	&Surface::setSurfaceInput
-);
-
-static SurfacePropDescriptor<NORM_Z, float> desc_BackParamA(
-	"BackParamA",
-	"Surface Inputs",
-	&Surface::getParamA,
-	&Surface::setParamA
-);
-
-static SurfacePropDescriptor<NORM_Z, float> desc_BackParamB(
-	"BackParamB",
-	"Surface Inputs",
-	&Surface::getParamB,
-	&Surface::setParamB
-);
-
-// FUNCTION: WEBSERVICE 0x10100bd0
-const bool Surfaces::isSurfaceDescriptor(const Reflection::PropertyDescriptor& desc)
-{
-	if (&desc == &desc_TopType) {
 		return true;
 	}
 
-	if (&desc == &desc_BottomType) {
-		return true;
+	bool Extents::contains(const G3D::Vector3& point) const
+	{
+		return
+			point.x >= this->low.x &&
+			point.y >= this->low.y &&
+			point.z >= this->low.z &&
+			point.x <= this->high.x &&
+			point.y <= this->high.y &&
+			point.z <= this->high.z;
 	}
 
-	if (&desc == &desc_LeftType) {
-		return true;
+	bool Extents::fuzzyContains(const G3D::Vector3& point, float slop) const
+	{
+		return
+			point.x >= this->low.x - slop &&
+			point.y >= this->low.y - slop &&
+			point.z >= this->low.z - slop &&
+			point.x <= this->high.x + slop &&
+			point.y <= this->high.y + slop &&
+			point.z <= this->high.z + slop;
 	}
 
-	if (&desc == &desc_RightType) {
-		return true;
+	bool Extents::overlapsOrTouches(const Extents& other) const
+	{
+		return
+			!(this->low.x > other.high.x) &&
+			!(this->low.y > other.high.y) &&
+			!(this->low.z > other.high.z) &&
+			!(this->high.y < other.low.y) &&
+			!(this->high.x < other.low.x) &&
+			!(this->high.z < other.low.z);
 	}
 
-	if (&desc == &desc_FrontType) {
-		return true;
+	bool Extents::separatedByMoreThan(const Extents& other, float distance) const
+	{
+		RBXASSERT(distance > 0.0);
+
+		G3D::Vector3 dv(distance, distance, distance);
+
+		Extents thisExpanded(*this);
+		thisExpanded.low -= dv;
+		thisExpanded.high += dv;
+
+		return !thisExpanded.overlapsOrTouches(other);
 	}
 
-	return &desc == &desc_BackType;
-}
+	G3D::Plane Extents::getPlane(NormalId normalId) const
+	{
+		G3D::Vector3 point = faceCenter(normalId);
+		G3D::Vector3 normal = normalIdToVector3(normalId);
 
-// FUNCTION: WEBSERVICE 0x10100c10
-const Reflection::PropertyDescriptor& Surfaces::getSurfaceType(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopType;
-	case NORM_Y_NEG:
-		return desc_BottomType;
-	case NORM_Z:
-		return desc_BackType;
-	case NORM_Z_NEG:
-		return desc_FrontType;
-	case NORM_X:
-		return desc_RightType;
-	case NORM_X_NEG:
-		return desc_LeftType;
+		return G3D::Plane(normal, point);
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x10100c70
-const Reflection::PropertyDescriptor& Surfaces::getSurfaceInput(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopSurfaceInput;
-	case NORM_Y_NEG:
-		return desc_BottomSurfaceInput;
-	case NORM_Z:
-		return desc_BackSurfaceInput;
-	case NORM_Z_NEG:
-		return desc_FrontSurfaceInput;
-	case NORM_X:
-		return desc_RightSurfaceInput;
-	case NORM_X_NEG:
-		return desc_LeftSurfaceInput;
+	void Extents::unionWith(const Extents& other)
+	{
+		this->low = this->low.min(other.low);
+		this->high = this->high.max(other.high);
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x10100cd0
-const Reflection::PropertyDescriptor& Surfaces::getParamA(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopParamA;
-	case NORM_Y_NEG:
-		return desc_BottomParamA;
-	case NORM_Z:
-		return desc_BackParamA;
-	case NORM_Z_NEG:
-		return desc_FrontParamA;
-	case NORM_X:
-		return desc_RightParamA;
-	case NORM_X_NEG:
-		return desc_LeftParamA;
+	Extents Extents::toWorldSpace(const G3D::CoordinateFrame& localCoord)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 world = localCoord.pointToWorldSpace(corner);
+
+			minC = minC.min(world);
+			maxC = maxC.max(world);
+		}
+
+		return vv(minC, maxC);
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x10100d30
-const Reflection::PropertyDescriptor& Surfaces::getParamB(NormalId normalId) const
-{
-	switch (normalId) {
-	default:
-		return desc_TopParamB;
-	case NORM_Y_NEG:
-		return desc_BottomParamB;
-	case NORM_Z:
-		return desc_BackParamB;
-	case NORM_Z_NEG:
-		return desc_FrontParamB;
-	case NORM_X:
-		return desc_RightParamB;
-	case NORM_X_NEG:
-		return desc_LeftParamB;
+	Extents Extents::express(const G3D::CoordinateFrame& myFrame, const G3D::CoordinateFrame& expressInFrame)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 v1 = myFrame.pointToWorldSpace(corner) - expressInFrame.translation;
+			G3D::Vector3 inOther = v1 * expressInFrame.rotation;
+
+			minC = minC.min(inOther);
+			maxC = maxC.max(inOther);
+		}
+
+		return vv(minC, maxC);
 	}
-}
 
-// FUNCTION: WEBSERVICE 0x10100d90
-Surfaces::Surfaces(PartInstance* partInstance)
-	: Top(partInstance, NORM_Y), Bottom(partInstance, NORM_Y_NEG), Left(partInstance, NORM_X_NEG),
-	  Right(partInstance, NORM_X), Front(partInstance, NORM_Z_NEG), Back(partInstance, NORM_Z)
-{
-}
+	Extents Extents::vv(const G3D::Vector3& v0, const G3D::Vector3& v1)
+	{
+		Extents result;
 
-// FUNCTION: WEBSERVICE 0x10100de0
-const Surface& Surfaces::operator[](NormalId normalId) const
-{
-	switch (normalId) {
-	case NORM_Y_NEG:
-		return Bottom;
-	case NORM_Z:
-		return Back;
-	case NORM_Z_NEG:
-		return Front;
-	case NORM_X:
-		return Right;
-	case NORM_X_NEG:
-		return Left;
-	default:
-		return Top;
+		result.low = v0.min(v1);
+		result.high = v0.max(v1);
+
+		return result;
+	}
+
+	const Extents& Extents::zero()
+	{
+		static Extents e(G3D::Vector3::zero(), G3D::Vector3::zero());
+		return e;
+	}
+
+	const Extents& Extents::negativeInfiniteExtents()
+	{
+		// Extents default constructor sets high and low to inf
+		static Extents e;
+		return e;
 	}
 }
-
-Surface& Surfaces::operator[](NormalId normalId)
-{
-	switch (normalId) {
-	case NORM_Y_NEG:
-		return Bottom;
-	case NORM_Z:
-		return Back;
-	case NORM_Z_NEG:
-		return Front;
-	case NORM_X:
-		return Right;
-	case NORM_X_NEG:
-		return Left;
-	default:
-		return Top;
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10100e30
-const bool Surfaces::isStandardPart() const
-{
-	return Bottom.getSurfaceType() == INLET && Front.getSurfaceType() == NO_SURFACE &&
-		   Back.getSurfaceType() == NO_SURFACE && Left.getSurfaceType() == NO_SURFACE &&
-		   Right.getSurfaceType() == NO_SURFACE;
-}
-
-} // namespace RBX

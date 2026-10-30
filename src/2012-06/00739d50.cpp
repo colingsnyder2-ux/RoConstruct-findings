@@ -1,49 +1,17 @@
-// from server: 63% by atomic.potato
-struct StarterGuiService
+// from server: 100% by tajop
+struct S
 {
-    int* vtable;
-    int value4;
-    int value8;
-    int valueC;
-    int value10;
-    int value18;
-    int value1C;
-    int value20;
-    int value24;
-    int value28;
-    int value2C;
-    int value30;
-    int value34;
-    int value38;
-    int value3C;
-    int value40;
-    int value44;
-    int value48;
-    int value4C;
-    int value50;
-    int value54;
-    int value58;
-    int value5C;
-    int value60;
-    int value64;
-    int value68;
-    int value6C;
-    int value70;
-    int value74;
-    int value78;
-    int value7C;
-    int value80;
-    int value84;
-
     void f();
 };
 
-void StarterGuiService::f()
+void S::f()
 {
-    vtable = (int*)0x00ba8e7c;
-    value4 = 0x00ba8e70;
-    value18 = 0x00ba8e64;
-    value1C = 0x00ba8e58;
-    value80 = 0x00ba8e50;
-    value84 = 0x00ba8e48;
+    *(int *)this = 0xba77ac;
+    *(int *)((char *)this + 4) = 0xba77a4;
+    *(int *)((char *)this + 0x18) = 0xba7798;
+    *(int *)((char *)this + 0x1c) = 0xba778c;
+    *(int *)((char *)this + 0x80) = 0xba777c;
+    *(int *)((char *)this + 0x84) = 0xba7750;
+    extern void g();
+    g();
 }

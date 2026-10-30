@@ -1,14 +1,13 @@
-// from server: 37% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportPaintManager.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\ReportControl\XTPReportPaintManager.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPReportPaintManager.cpp : implementation of the CXTPReportPaintManager class.
 //
 // This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -33,8 +32,6 @@
 #include "Common/XTPImageManager.h"
 #include "Common/XTPVC80Helpers.h"
 #include "Common/XTPVC50Helpers.h"
-#include "Common/XTPOffice2007Image.h"
-#include "Common/XTPMarkupRender.h"
 
 #include "XTPReportPaintManager.h"
 #include "XTPReportRow.h"
@@ -43,7 +40,6 @@
 #include "XTPReportHeader.h"
 #include "XTPReportControl.h"
 #include "XTPReportInplaceControls.h"
-#include "XTPReportRecordItemControls.h"
 #include "XTPReportColumns.h"
 #include "XTPReportRecord.h"
 #include "XTPReportHyperlink.h"
@@ -129,20 +125,12 @@ void CXTPFormulaMulDivC::GetStandardValue(int& rnMul, int& rnDiv, int& rnC)
 
 CXTPReportPaintManager::CXTPReportPaintManager()
 {
-	m_pControl = NULL;
-	m_pMarkupUIElement_NoGroupBy = NULL;
-
 	m_pHeaderHeightFormula = new CXTPFormulaMulDivC;
 	m_pHeaderHeightFormula->SetStandardValue(11, 10, 8);
 
 	m_clrPreviewText.SetStandardValue(RGB(0, 0, 255));
 	//m_clrColumnOffice2007CustomTheme.SetStandardValue(RGB(196, 221, 255));
 	m_clrColumnOffice2007CustomTheme = COLORREF_NULL;
-	m_clrFormulaSum = RGB(255,0,0); // Color for Formula Sum fields
-	m_clrFormulaSubSum = RGB(0,0,255); // Color for Formula SubSum fields
-	m_clrAlternativeBackground = RGB(224,224,224); // Color for Alternative Row Background
-	m_bUseAlternativeBackground = FALSE;
-
 	m_nMaxPreviewLines = 3;
 	m_szGlyph = CSize(12, 12);
 
@@ -154,8 +142,6 @@ CXTPReportPaintManager::CXTPReportPaintManager()
 	m_bIsPreviewMode = FALSE;
 	m_bShadeGroupHeadings = FALSE;
 	m_bGroupRowTextBold = FALSE;
-	m_bUseGroupRowSelectionState = FALSE;
-	m_bPrintGroupRowIcon = TRUE;
 	m_bShadeSortColumn = TRUE;
 	m_columnStyle = xtpReportColumnShaded;
 
@@ -166,70 +152,43 @@ CXTPReportPaintManager::CXTPReportPaintManager()
 	m_verticalGridStyle = xtpReportGridNoLines;
 	m_horizontalGridStyle = xtpReportGridSolid;
 
-	m_nFixedColumnsIndent = 0;
-	m_bMoveScrollbarOnFixedColumnsIndent = FALSE;
-	m_bBaseTreeIndent = FALSE;
-
 	m_bRevertAlignment = FALSE;
 	m_bUseEditTextAlignment = TRUE;
 	m_bUseColumnTextAlignment = FALSE;
 	m_bHotTracking = TRUE;
 	m_bInvertColumnOnClick = TRUE;
-	m_bColumnPlusMinusSign = FALSE;
-	m_RecordNumberWidth = 20;
-	m_bShowLockIcon = FALSE;
-	m_bUseShellIcon = FALSE;
-	m_bShowNonActiveInPlaceButton = FALSE;
-	m_bForceShowTooltip = FALSE;
-	m_bCleanTooltip = FALSE;
-	m_bGrayIfDisable = TRUE;
-	m_bRecOrRowNum = TRUE;
-	m_iRecOrRowStart = 0;
 
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strNoItems, XTP_IDS_REPORT_NOITEMS));
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strNoGroupBy, XTP_IDS_REPORT_NOGROUPBY));
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadString(&m_strNoFieldsAvailable, XTP_IDS_REPORT_NOFIELDSAVAILABLE));
-
+	XTPResourceManager()->LoadString(&m_strNoItems, XTP_IDS_REPORT_NOITEMS);
+	XTPResourceManager()->LoadString(&m_strNoGroupBy, XTP_IDS_REPORT_NOGROUPBY);
+	XTPResourceManager()->LoadString(&m_strNoFieldsAvailable, XTP_IDS_REPORT_NOFIELDSAVAILABLE);
 	if (XTPResourceManager()->LoadString(&m_strSortBy, XTP_IDS_REPORT_SORTBY))
+	{
 		m_strSortBy += _T(" ");
-	else
-		m_strSortBy = _T("Sort By");
-
-	m_strExpand = _T("Expand");
-	m_strCollapse = _T("Collapse");
+	}
 
 	m_bHideSelection = FALSE;
+
 	m_rcPreviewIndent.SetRect(10, 0, 10, 2);
 
 	m_nTreeIndent = 20;
 	m_bDrawSortTriangleAlways = TRUE;
 
-	m_DrawSortTriangleStyle = xtpReportDrawSortTriangleDefault;
 
 	// get system parameters
 	LOGFONT lfIcon;
-	VERIFY(CXTPDrawHelpers::GetIconLogFont(&lfIcon));
+	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
 
 	VERIFY(m_fontPreview.CreateFontIndirect(&lfIcon));
 
 	SetCaptionFont(lfIcon);
 	SetTextFont(lfIcon);
 
+	VERIFY(m_ilGlyphs.Create(12, 12, ILC_COLOR24 | ILC_MASK, 0, 1));
 	CBitmap bmp;
-	CXTPResourceManager::AssertValid(XTPResourceManager()->LoadBitmap(&bmp, XTP_IDB_REPORT_GLYPHS));
-
-	m_pGlyphs = new CXTPImageManager();
-	CXTPTempColorMask mask(m_pGlyphs, RGB(255, 0, 255));
-	m_pGlyphs->SetIcons(bmp, 0, 11, CSize(0, 0)); //11
+	VERIFY(XTPResourceManager()->LoadBitmap(&bmp, XTP_IDB_REPORT_GLYPHS));
+	m_ilGlyphs.Add(&bmp, RGB(255, 0, 255));
 
 	m_bFixedRowHeight = TRUE;
-	m_bColumnWidthWYSIWYG = FALSE;
-	m_bLastColumnWidthWYSIWYG = FALSE;
-	m_bShowWYSIWYGMarkers = TRUE;
-	m_bPrintVirtualPageNumber = FALSE;
-	m_bPrintPageRectangle = TRUE;
-	m_bPrintWatermark = FALSE;
-	m_PrintPageWidth = 0;
 	m_bDrawGridForEmptySpace = FALSE;
 
 	m_bFixedInplaceButtonHeight = FALSE;
@@ -238,8 +197,6 @@ CXTPReportPaintManager::CXTPReportPaintManager()
 	m_FooterRowsDividerStyle = xtpReportFixedRowsDividerThin;
 
 	m_nTreeStructureStyle = 0;
-	m_bForceDynamicMarkupForCell = FALSE;
-	m_bForceShowDropMarker = FALSE;
 
 	RefreshMetrics();
 
@@ -248,10 +205,6 @@ CXTPReportPaintManager::CXTPReportPaintManager()
 CXTPReportPaintManager::~CXTPReportPaintManager()
 {
 	CMDTARGET_RELEASE(m_pHeaderHeightFormula);
-
-	CMDTARGET_RELEASE(m_pGlyphs);
-
-	XTPMarkupReleaseElement(m_pMarkupUIElement_NoGroupBy);
 }
 
 COLORREF CXTPReportPaintManager::GetControlBackColor(CXTPReportControl* /*pControl*/)
@@ -297,7 +250,6 @@ void CXTPReportPaintManager::RefreshMetrics()
 	m_themeWrapper.OpenThemeData(0, L"HEADER");
 	m_themeButton.OpenThemeData(0, L"BUTTON");
 	m_themeCombo.OpenThemeData(0, L"COMBOBOX");
-	m_themeSpin.OpenThemeData(0, L"SPIN");
 
 
 	if (!XTPColorManager()->IsLunaColorsDisabled())
@@ -337,6 +289,7 @@ void CXTPReportPaintManager::RefreshMetrics()
 
 	if (m_columnStyle == xtpReportColumnOffice2007)
 	{
+		//if (m_clrColumnOffice2007CustomTheme.IsCustomValue())
 		if (m_clrColumnOffice2007CustomTheme != COLORREF_NULL)
 		{
 			COLORREF clrHsl = XTPDrawHelpers()->RGBtoHSL(m_clrColumnOffice2007CustomTheme);
@@ -353,34 +306,46 @@ void CXTPReportPaintManager::RefreshMetrics()
 		}
 		else
 		{
-			if (XTPOffice2007Images()->IsValid())
+			switch (XTPColorManager()->GetCurrentSystemTheme())
 			{
-				m_grcGradientColumn.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("NormalColumnLight")),
-					XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("NormalColumnDark")));
-				m_grcGradientColumnPushed.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("PressedColumnLight")),
-					XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("PressedColumnDark")));
-
-				m_clrGradientColumnShadow.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("ColumnShadow")));
-				m_clrGradientColumnSeparator.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("ColumnSeparator")));
-				m_clrGroupBoxBack.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("GroupBoxBackground")));
-				m_crlNoGroupByText.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("GroupBoxTextColor")));
-				m_clrGroupShadeBack.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("GroupShadeBackground")));
-				m_clrGroupShadeBorder.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("GroupShadeBorder")));
-				m_clrIndentControl.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("GroupShadeIndent")));
-				m_clrHighlight.SetStandardValue(XTPOffice2007Images()->GetImageColor(_T("ReportControl"), _T("SelectionBackground")));
-				m_clrHighlightText.SetStandardValue(0);
-			}
-			else
-			{
-				m_grcGradientColumnPushed.SetStandardValue(RGB(196, 221, 255), RGB(252, 253, 255));
-				m_grcGradientColumn.SetStandardValue(RGB(252, 253,255), RGB(196, 221, 255));
-				m_clrGradientColumnShadow.SetStandardValue(RGB(101, 147, 207));
-				m_clrGradientColumnSeparator.SetStandardValue(RGB(154, 198, 255));
-				m_clrGroupBoxBack.SetStandardValue(RGB(227, 239, 255));
-				m_crlNoGroupByText.SetStandardValue(RGB(50, 75, 44));
-				m_clrGroupShadeBack.SetStandardValue(RGB(190, 218, 251));
-				m_clrGroupShadeBorder.SetStandardValue(RGB(111, 157, 217));
-				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
+				case xtpSystemThemeSilver:
+				{
+					m_grcGradientColumnPushed.SetStandardValue(RGB(221, 221, 221), RGB(253, 253, 253));
+					m_grcGradientColumn.SetStandardValue(RGB(253, 253,253), RGB(221, 221, 221));
+					m_clrGradientColumnShadow.SetStandardValue(RGB(147, 147, 147));
+					m_clrGradientColumnSeparator.SetStandardValue(RGB(198, 198, 198));
+					m_clrGroupBoxBack.SetStandardValue(RGB(239, 239, 239));
+					m_crlNoGroupByText.SetStandardValue(RGB(74, 74, 74));
+					m_clrGroupShadeBack.SetStandardValue(RGB(229, 229, 235));
+					break;
+				}
+				case xtpSystemThemeOlive:
+				{
+					m_grcGradientColumnPushed.SetStandardValue(RGB(165, 184, 114), RGB(253, 253, 253));
+					m_grcGradientColumn.SetStandardValue(RGB(253, 253,253), RGB(165, 184, 114));
+					m_clrGradientColumnShadow.SetStandardValue(RGB(96, 128, 88));
+					m_clrGradientColumnSeparator.SetStandardValue(RGB(120, 183, 104));
+					m_clrGroupBoxBack.SetStandardValue(RGB(216, 225, 187));
+					m_crlNoGroupByText.SetStandardValue(RGB(74, 74, 74));
+					m_clrGroupShadeBack.SetStandardValue(RGB(175, 186, 145));
+					break;
+				}
+				case xtpSystemThemeBlue:
+				case xtpSystemThemeRoyale:
+				case xtpSystemThemeAero:
+				//case xtpSystemThemeAuto:
+				//case xtpSystemThemeDefault:
+				default :
+				{
+					m_grcGradientColumnPushed.SetStandardValue(RGB(196, 221, 255), RGB(252, 253, 255));
+					m_grcGradientColumn.SetStandardValue(RGB(252, 253,255), RGB(196, 221, 255));
+					m_clrGradientColumnShadow.SetStandardValue(RGB(101, 147, 207));
+					m_clrGradientColumnSeparator.SetStandardValue(RGB(154, 198, 255));
+					m_clrGroupBoxBack.SetStandardValue(RGB(227, 239, 255));
+					m_crlNoGroupByText.SetStandardValue(RGB(50, 75, 44));
+					m_clrGroupShadeBack.SetStandardValue(RGB(190, 218, 251));
+					break;
+				}
 			}
 
 		}
@@ -440,13 +405,11 @@ void CXTPReportPaintManager::RefreshMetrics()
 }
 
 
-void CXTPReportPaintManager::FillRow(CDC* pDC, CXTPReportRow* pRow, CRect rcRow)
+void CXTPReportPaintManager::FillRow(CDC* /*pDC*/, CXTPReportRow* /*pRow*/, CRect /*rcRow*/)
 {
-	if (m_bUseAlternativeBackground && pRow->GetIndex() % 2 == 1)
-		pDC->FillSolidRect(rcRow, m_clrAlternativeBackground);
 }
 
-void CXTPReportPaintManager::DrawGridPat(CDC* pDC, CBrush* pBrush, CRect rc, CONST VOID* pPattern, COLORREF clr)
+void CXTPReportPaintManager::DrawGridPat(CDC* pDC, CBrush* pBrush, CRect rc, CONST VOID*pPattern, COLORREF clr)
 {
 	if (pBrush->GetSafeHandle() == 0)
 	{
@@ -484,28 +447,28 @@ void CXTPReportPaintManager::DrawGrid(CDC* pDC, BOOL bVertical, CRect rc)
 		switch (m_horizontalGridStyle)
 		{
 			case xtpReportGridSolid:
-			{
 				DrawHorizontalLine(pDC, rc.left, rc.bottom, rc.Width(), m_clrGridLine);
 				break;
-			}
 			case xtpReportGridSmallDots:
-			{
-				const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
-				DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
-				break;
-			}
+				{
+					const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
+					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
+					break;
+				}
 			case xtpReportGridLargeDots:
-			{
-				const unsigned short _cb[] = {0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33};
-				DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
-				break;
-			}
+				{
+					const unsigned short _cb[] = {0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33};
+					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
+					break;
+				}
 			case xtpReportGridDashes:
-			{
-				const unsigned short _cb[] = {0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0};
-				DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
-				break;
-			}
+				{
+					const unsigned short _cb[] = {0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0};
+					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
+					break;
+
+				}
+
 		}
 	}
 	else
@@ -514,73 +477,61 @@ void CXTPReportPaintManager::DrawGrid(CDC* pDC, BOOL bVertical, CRect rc)
 		switch (m_verticalGridStyle)
 		{
 			case xtpReportGridSolid:
-			{
 				DrawVerticalLine(pDC, nPos, rc.top, rc.Height(), m_clrGridLine);
 				break;
-			}
 			case xtpReportGridSmallDots:
-			{
-				const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
-				DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
-				break;
-			}
+				{
+					const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
+					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
+					break;
+				}
 			case xtpReportGridLargeDots:
-			{
-				const unsigned short _cb[] = {0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0x33, 0x33};
-				DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
-				break;
-			}
+				{
+					const unsigned short _cb[] = {0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0x33, 0x33};
+					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
+					break;
+				}
 			case xtpReportGridDashes:
-			{
-				const unsigned short _cb[] = {0xf0, 0xf0, 0xf0, 0xf0, 0xf, 0xf, 0xf, 0xf};
-				DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
-				break;
-			}
+				{
+					const unsigned short _cb[] = {0xf0, 0xf0, 0xf0, 0xf0, 0xf, 0xf, 0xf, 0xf};
+					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
+					break;
+
+				}
+
 		}
+
 	}
 }
 
 void CXTPReportPaintManager::DrawFreezeColsDivider(CDC* pDC, const CRect& rc, CXTPReportControl* pControl, CXTPReportRow* pRow)
 {
-	BOOL bShowAlways = !!(m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerShowAlways);
-
-	if ((!bShowAlways && pControl->GetReportHeader()->IsAutoColumnSizing()) ||
+	if (pControl->GetReportHeader()->IsAutoColumnSizing() ||
 		(m_nFreezeColsDividerStyle == 0))
-	{
-		m_nFixedColumnsIndent = 0;
 		return;
-	}
 
 	CRect rcDvX = rc;
 
 	if ((m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerShade) &&
 		pControl->GetScrollPos(SB_HORZ) && !pControl->IsFullColumnScrolling())
 	{
-		rcDvX.left = rcDvX.right - 1;
+		rcDvX.left = rcDvX.right-1;
 		rcDvX.right = rcDvX.left + 4;
 		XTPDrawHelpers()->GradientFill(pDC, rcDvX, m_clrFreezeColsDivider,
-			RGB(255, 255, 255), TRUE);
+									   RGB(255, 255, 255), TRUE);
 	}
 	else if (m_nFreezeColsDividerStyle & (xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerBold))
 	{
 		int nWidth = (m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerBold) ? 2 : 1;
-		rcDvX.left = rcDvX.right - nWidth;
+		rcDvX.left = rcDvX.right-nWidth;
 		pDC->FillSolidRect(&rcDvX, m_clrFreezeColsDivider);
 	}
+
 	int nMask = (xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerBold | xtpReportFreezeColsDividerShade);
 	if (pRow && pRow->IsSelected() && (m_nFreezeColsDividerStyle & nMask))
 	{
 		pDC->InvertRect(&rcDvX);
 	}
-	m_nFixedColumnsIndent = rcDvX.left;
-}
-
-void CXTPReportPaintManager::DrawVerticalTimeLineMarker(CDC* pDC, int xPos, CXTPReportControl* pControl)
-{
-	CRect rcClipBox = pControl->GetReportRectangle();
-	rcClipBox.left = xPos;
-	rcClipBox.right = xPos + 1;
-	pDC->FillSolidRect(&rcClipBox, RGB(255,0,0));
 }
 
 void CXTPReportPaintManager::FillGroupRowMetrics(CXTPReportGroupRow* pRow,
@@ -588,7 +539,9 @@ void CXTPReportPaintManager::FillGroupRowMetrics(CXTPReportGroupRow* pRow,
 {
 	ASSERT(pRow && pMetrics);
 	if (!pRow || !pRow->GetControl() || !pMetrics)
+	{
 		return;
+	}
 
 	BOOL bControlFocused = pRow->GetControl()->HasFocus();
 
@@ -606,39 +559,42 @@ void CXTPReportPaintManager::FillGroupRowMetrics(CXTPReportGroupRow* pRow,
 		pMetrics->clrBackground = m_clrGroupShadeBack;
 	}
 
+	//--------------------------------
 	pMetrics->pFont = m_bGroupRowTextBold ? &m_fontBoldText : &m_fontText;
 }
 
 void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CRect rcRow,
 	XTP_REPORTRECORDITEM_METRICS* pMetrics)
 {
-	CXTPReportControl* pControl = pRow->GetControl();
-	BOOL bControlFocused = pControl->HasFocus();
+	BOOL bControlFocused = pRow->GetControl()->HasFocus();
 
 	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
+	{
 		pDC->FillSolidRect(rcRow, pMetrics->clrBackground);
-
+	}
 	pDC->SetTextColor(pMetrics->clrForeground);
 
+	//--------------------------------
 	ASSERT(pMetrics->pFont);
 	CXTPFontDC font(pDC, pMetrics->pFont);
 
 	int nRowLevel = pRow->GetTreeDepth();
-	int nIndent = pControl->GetIndent(nRowLevel + 1);
+	int nIndent = pRow->GetControl()->GetIndent(nRowLevel + 1);
 
 	pDC->FillSolidRect(rcRow.left, rcRow.bottom - m_nGroupGridLineHeight, rcRow.Width(), m_nGroupGridLineHeight, m_clrGroupShadeBorder);
 
-	if (pRow->IsFocused()
-		&& bControlFocused
-		&& !pDC->IsPrinting()
-		&& pControl->IsRowFocusVisible())
+	if (pRow->IsFocused() && bControlFocused && !pDC->IsPrinting() && pRow->GetControl()->IsRowFocusVisible())
+	{
 		DrawFocusedRow(pDC, CRect(rcRow.left + nIndent, rcRow.top, rcRow.right, rcRow.bottom - 1));
+	}
 
 	if (nIndent > 0)
+	{
 		FillIndent(pDC, CRect(rcRow.left, rcRow.top, rcRow.left + nIndent, rcRow.bottom));
-
+	}
 	rcRow.left += nIndent;
 
+	//-----------------------------------------------------------------------
 	int nBitmapOffset = 0;
 	int nTextOffset = 0;
 	CSize szIcon(0, 0);
@@ -647,37 +603,45 @@ void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CR
 
 	// check and set defaults if need
 	if ((nGroupRowIconAlignment & xtpGroupRowIconHmask) == 0)
+	{
 		nGroupRowIconAlignment |= xtpGroupRowIconLeft;
-
+	}
 	if ((nGroupRowIconAlignment & xtpGroupRowIconVmask) == 0)
+	{
 		nGroupRowIconAlignment |= xtpGroupRowIconVCenter;
+	}
 
 	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON)
 	{
-		CXTPImageManagerIcon* pIcon =
-			pControl->GetImageManager()->GetImage(pMetrics->nGroupRowIcon, 0);
+		CXTPImageManagerIcon* pIcon = pRow->GetControl()->GetImageManager()->
+										GetImage(pMetrics->nGroupRowIcon, 0);
 		if (pIcon)
+		{
 			szIcon = CSize(pIcon->GetWidth(), pIcon->GetHeight());
+		}
 
 		if (nGroupRowIconAlignment & xtpGroupRowIconLeft)
+		{
 			nBitmapOffset = szIcon.cx + 5;
-
+		}
 		if (nGroupRowIconAlignment & xtpGroupRowIconBeforeText)
-			nTextOffset = szIcon.cx + 10;
+		{
+			nTextOffset = szIcon.cx + 5 + 5;
+		}
 	}
 
+	//-----------------------------------------------------------------------
 	CRect rcBitmap(rcRow);
 	rcBitmap.top = rcBitmap.bottom - m_nRowHeight - 12;
 	rcBitmap.top = rcBitmap.CenterPoint().y - m_szGlyph.cy / 2;
 	rcBitmap.left += nBitmapOffset;
 
-	int nBitmapWidth(0);
-	if (!pDC->IsPrinting() || m_bPrintGroupRowIcon)
-		nBitmapWidth = DrawCollapsedBitmap(pDC, pRow, rcBitmap).cx;
+	int nBitmapWidth = DrawCollapsedBitmap(pDC, pRow, rcBitmap).cx;
 
 	if (!pDC->IsPrinting())
 		pRow->SetCollapseRect(rcBitmap);
 
+	//-----------------------------------------------------------------------
 	CRect rcText(rcBitmap.left + nBitmapWidth + 5, rcRow.top, rcRow.right, rcRow.bottom);
 	rcText.top = rcText.bottom - m_nRowHeight - 6;
 	rcText.left += nTextOffset;
@@ -685,48 +649,15 @@ void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CR
 	int nRightMask = (xtpGroupRowIconAfterText | xtpGroupRowIconRight);
 	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON &&
 		(nGroupRowIconAlignment & nRightMask))
+	{
 		rcText.right -= szIcon.cx;
-
-	if (m_bUseGroupRowSelectionState && !pDC->IsPrinting())
-		rcText.left += (szIcon.cx + 10);
-
-	BOOL bDrawn = FALSE;
-	int nTextWidth = 0;
-
-	if (pMetrics->strText != pRow->GetCaption() && pControl->GetMarkupContext())
-	{
-		CXTPMarkupUIElement* pMarkupUIElement = XTPMarkupParseText(pControl->GetMarkupContext(), pMetrics->strText);
-		if (pMarkupUIElement)
-		{
-
-			XTPMarkupSetDefaultFont(XTPMarkupElementContext(pMarkupUIElement), (HFONT)pMetrics->pFont->GetSafeHandle(), pMetrics->clrForeground);
-
-			nTextWidth = XTPMarkupMeasureElement(pMarkupUIElement, rcText.Width(), INT_MAX).cx;
-			XTPMarkupRenderElement(pMarkupUIElement, pDC->GetSafeHdc(), &rcText);
-
-			XTPMarkupReleaseElement(pMarkupUIElement);
-			bDrawn = TRUE;
-		}
 	}
 
-	if (!bDrawn && pRow->m_pMarkupUIElement)
-	{
-		XTPMarkupSetDefaultFont(XTPMarkupElementContext(pRow->m_pMarkupUIElement), (HFONT)pMetrics->pFont->GetSafeHandle(), pMetrics->clrForeground);
+	UINT nFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
+	pDC->DrawText(pMetrics->strText, rcText, nFlags);
+	int nTextWidth = pDC->GetTextExtent(pMetrics->strText).cx;
 
-		nTextWidth = XTPMarkupMeasureElement(pRow->m_pMarkupUIElement, rcText.Width(), INT_MAX).cx;
-
-		XTPMarkupRenderElement(pRow->m_pMarkupUIElement, pDC->GetSafeHdc(), &rcText);
-
-		bDrawn = TRUE;
-	}
-
-	if (!bDrawn)
-	{
-		UINT nFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
-		pDC->DrawText(pMetrics->strText, &rcText, nFlags);
-		nTextWidth = pDC->GetTextExtent(pMetrics->strText).cx;
-	}
-
+	//-----------------------------------------------------------------------
 	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON)
 	{
 		CRect rcIcon(rcRow);
@@ -749,6 +680,7 @@ void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CR
 			// xtpGroupRowIconLeft
 		}
 
+		// ***
 		if (nGroupRowIconAlignment & xtpGroupRowIconVTop)
 		{
 			rcIcon.bottom = rcIcon.top + szIcon.cy + 1;
@@ -767,66 +699,15 @@ void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CR
 			// xtpGroupRowIconVCenter
 		}
 
+		//-------------------------------------------------------------------
 		COLORREF clrBk = pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT ?
-						pMetrics->clrBackground : RGB(255, 255, 255);
+							pMetrics->clrBackground : RGB(255, 255, 255);
 
 		COLORREF clrBkPrev = pDC->SetBkColor(clrBk);
 
-		DrawBitmap(pDC, pControl, rcIcon, pMetrics->nGroupRowIcon);
+		DrawBitmap(pDC, pRow->GetControl(), rcIcon, pMetrics->nGroupRowIcon);
 
 		pDC->SetBkColor(clrBkPrev);
-	}
-	else if (m_bUseGroupRowSelectionState && !pDC->IsPrinting())
-	{
-		CRect rcIcon(rcBitmap);
-		rcIcon.left += (m_szGlyph.cx + 2);
-
-		BOOL bY(FALSE);
-		BOOL bN(FALSE);
-		BOOL bOr(FALSE);
-		BOOL bR(FALSE);
-		if (pRow->GetChilds(FALSE))
-		{
-
-			for (int I = 0; I < pRow->GetChilds()->GetCount(); I++)
-			{
-				CXTPReportRow* pChRow = pRow->GetChilds()->GetAt(I);
-				if (pChRow)
-				{
-					bOr = FALSE;
-					CXTPReportRecord* pChRec = pChRow->GetRecord();
-					if (pChRec)
-					{
-						bOr = pChRec->m_bSelectedAsChildFlag;
-						bR = TRUE;
-					}
-					if (pChRow->IsSelected() || (bOr && !pRow->IsExpanded()))
-						bY = TRUE;
-					else
-						bN = TRUE;
-				}
-			}
-		}
-		if (bY && !bN)
-			DrawGlyph(pDC, rcIcon, 3);  //Checked
-		else if (bY && bN)
-			DrawGlyph(pDC, rcIcon, 5);  //MiddleState Checked
-		else if (bR)
-			DrawGlyph(pDC, rcIcon, 2);  //UnChecked
-		else if (pRow->m_bHasSelectedChilds)
-		{
-			DrawGlyph(pDC, rcIcon, 4);  //Disabled
-			pRow->m_bHasSelectedChilds = FALSE; //clean local flag
-		}
-		if (bY) //cascade up
-		{
-			CXTPReportRow* pParRow = pRow->GetParentRow();
-			while (pParRow && pParRow->IsGroupRow())
-			{
-				pParRow->m_bHasSelectedChilds = TRUE;
-				pParRow = pParRow->GetParentRow();
-			}
-		}
 	}
 }
 
@@ -836,9 +717,10 @@ CSize CXTPReportPaintManager::DrawCollapsedBitmap(CDC* pDC, const CXTPReportRow*
 
 	CSize sizeGlyph = DrawGlyph(pDC, rcBitmap, pRow->IsExpanded() ? 0 : 1);
 
-	if (sizeGlyph.cx != 0 && pDC != NULL)
+	if (sizeGlyph.cx != 0 && pDC)
+	{
 		rcBitmap.right = rcBitmap.left + sizeGlyph.cx;
-
+	}
 	return CSize(2 + sizeGlyph.cx, 2 + sizeGlyph.cy);
 }
 
@@ -854,7 +736,9 @@ void CXTPReportPaintManager::FillItemShade(CDC* pDC, CRect rcItem)
 		return;
 
 	if (pDC)
+	{
 		pDC->FillSolidRect(rcItem, m_clrItemShade);
+	}
 }
 
 void CXTPReportPaintManager::FillHeaderControl(CDC* pDC, CRect rcHeader)
@@ -864,39 +748,6 @@ void CXTPReportPaintManager::FillHeaderControl(CDC* pDC, CRect rcHeader)
 
 void CXTPReportPaintManager::DrawNoGroupByText(CDC* pDC, CRect rcItem)
 {
-	ASSERT(m_pControl);
-	if (!m_pControl)
-		return;
-
-	if (m_pControl->GetMarkupContext())
-	{
-		if (!m_pMarkupUIElement_NoGroupBy ||
-			m_strNoGroupBy != m_strMarkupUIElement_NoGroupBy)
-		{
-			XTPMarkupReleaseElement(m_pMarkupUIElement_NoGroupBy);
-			m_pMarkupUIElement_NoGroupBy = XTPMarkupParseText(m_pControl->GetMarkupContext(), m_strNoGroupBy);
-			m_strMarkupUIElement_NoGroupBy = m_strNoGroupBy;
-		}
-
-		if (m_pMarkupUIElement_NoGroupBy)
-		{
-			CRect rcGroupBy = m_pControl->GetElementRect(xtpReportElementRectGroupByArea);
-			rcGroupBy.left += 9;
-
-			XTPMarkupMeasureElement(m_pMarkupUIElement_NoGroupBy, rcGroupBy.Width(), INT_MAX);
-
-			XTPMarkupSetDefaultFont(m_pControl->GetMarkupContext(), (HFONT)m_fontCaption, m_crlNoGroupByText);
-			XTPMarkupRenderElement(m_pMarkupUIElement_NoGroupBy, pDC->GetSafeHdc(), &rcGroupBy);
-
-			return;
-		}
-	}
-	else
-	{
-		XTPMarkupReleaseElement(m_pMarkupUIElement_NoGroupBy);
-		m_strMarkupUIElement_NoGroupBy.Empty();
-	}
-
 	int nWidth = max(55, pDC->GetTextExtent(m_strNoGroupBy).cx + 8);
 	rcItem.right = rcItem.left + nWidth;
 
@@ -905,7 +756,7 @@ void CXTPReportPaintManager::DrawNoGroupByText(CDC* pDC, CRect rcItem)
 	if (m_columnStyle != xtpReportColumnOffice2007)
 		FillHeaderControl(pDC, rcItem);
 
-	pDC->DrawText(m_strNoGroupBy, &rcItem, DT_END_ELLIPSIS | DT_CENTER | DT_NOPREFIX);
+	pDC->DrawText(m_strNoGroupBy, rcItem, DT_END_ELLIPSIS | DT_CENTER | DT_NOPREFIX);
 
 }
 
@@ -961,18 +812,10 @@ void CXTPReportPaintManager::DrawVerticalLine(CDC* pDC, int x, int y, int cy, CO
 void CXTPReportPaintManager::DrawTriangle(CDC* pDC, CRect rcTriangle, BOOL bToDown)
 {
 	CRect rcTRect;
-	int iLastImage = 11; // last image in (m_pGlyphs->SetIcons(bmp, 0, 11, CSize(0, 0)) = 11
 
 	if (rcTriangle.Width() > 15)
 	{
 		CPoint pt(rcTriangle.left + 10, rcTriangle.CenterPoint().y);
-//get non-existed image placeholder and fill it with sorting arrows
-		CXTPImageManagerIcon* pImage = m_pGlyphs->GetImage(bToDown ? iLastImage : iLastImage + 1);
-		if (pImage)
-		{
-			pImage->Draw(pDC, CPoint(pt.x - pImage->GetWidth() /2, pt.y - pImage->GetHeight() / 2));
-			return;
-		}
 
 		if (m_columnStyle == xtpReportColumnOffice2007 || m_columnStyle == xtpReportColumnExplorer)
 		{
@@ -1076,13 +919,13 @@ void CXTPReportPaintManager::DrawItemBitmap(XTP_REPORTRECORDITEM_DRAWARGS* pDraw
 		}
 		else
 		{
-			pIcon->Draw(pDrawArgs->pDC, ptIcon, pIcon->GetIcon(), 0, pDrawArgs->pRow->IsSelected() ? GetXtremeColor(COLOR_HIGHLIGHT) : CLR_NONE, pDrawArgs->pRow->IsSelected() ? GetXtremeColor(COLOR_HIGHLIGHT) : CLR_NONE, pDrawArgs->pRow->IsSelected() ? ILD_SELECTED : 0);
+			pIcon->Draw(pDrawArgs->pDC, ptIcon, pIcon->GetIcon());
 		}
 	}
 }
 
 int CXTPReportPaintManager::DrawColumnIcon(CDC* pDC, CXTPReportColumn* pColumn,
-		CRect rcColumn, CRect rcIcon, int iIcon)
+										   CRect rcColumn, CRect rcIcon, int iIcon)
 {
 	if (!pColumn || !pColumn->GetControl())
 	{
@@ -1176,53 +1019,16 @@ int CXTPReportPaintManager::DrawBitmap(CDC* pDC, CXTPReportControl* pControl, CR
 	return 1 + szImage.cx;
 }
 
-CSize CXTPReportPaintManager::DrawShellIcon(CDC* pDC, CRect rcColumn, int iImage)
-{
-	HICON hIcon = NULL;
-	::ExtractIconEx(_T("SHELL32.DLL"), iImage, NULL, &hIcon, 1);
-
-	if (hIcon)
-		::DrawIconEx(pDC->GetSafeHdc(), rcColumn.left + 1, rcColumn.top + 1, hIcon, 16, 16, 0, NULL, DI_NORMAL);
-	else
-		DrawGlyph(pDC, rcColumn, 9); //need index of Lock Icon - now it is 9 and 10 (open lock)
-
-	return CSize(17, 17);
-}
-
 CSize CXTPReportPaintManager::DrawGlyph(CDC* pDC, CRect rcColumn, int iIcon)
 {
-	if (( (iIcon >= 2 && iIcon <= 5) || iIcon == 8 )
-		&& m_columnStyle == xtpReportColumnExplorer
-		&& m_themeButton.IsAppThemed())
-	{
-		CSize size;
-		m_themeButton.GetThemePartSize(NULL, BP_CHECKBOX, 0, NULL, TS_TRUE, &size);
+	CImageList* pImageList = &m_ilGlyphs;
 
-		if (pDC)
-		{
-			CRect rectCheckBox(CPoint(rcColumn.left + 1, (rcColumn.top + rcColumn.bottom - size.cy) /2), size);
+	IMAGEINFO imgInf;
 
-			if (iIcon == 2)
-				m_themeButton.DrawThemeBackground(pDC->m_hDC, BP_CHECKBOX, CBS_UNCHECKEDNORMAL, &rectCheckBox, NULL);
-			else if (iIcon == 3)
-				m_themeButton.DrawThemeBackground(pDC->m_hDC, BP_CHECKBOX, CBS_CHECKEDNORMAL, &rectCheckBox, NULL);
-			else if (iIcon == 4)
-				m_themeButton.DrawThemeBackground(pDC->m_hDC, BP_CHECKBOX, CBS_UNCHECKEDDISABLED, &rectCheckBox, NULL);
-			else if (iIcon == 5)
-				m_themeButton.DrawThemeBackground(pDC->m_hDC, BP_CHECKBOX, CBS_CHECKEDDISABLED, &rectCheckBox, NULL);
-			else if (iIcon == 8)
-				m_themeButton.DrawThemeBackground(pDC->m_hDC, BP_CHECKBOX, CBS_MIXEDNORMAL, &rectCheckBox, NULL);
-		}
-
-		return size;
-	}
-
-	CXTPImageManagerIcon* pImage = m_pGlyphs->GetImage(iIcon);
-
-	if (!pImage)
+	if (!pImageList->GetImageInfo(iIcon, &imgInf))
 		return CSize(0, 0);
 
-	CSize szImage(pImage->GetWidth(), pImage->GetHeight());
+	CSize szImage(imgInf.rcImage.right - imgInf.rcImage.left, imgInf.rcImage.bottom - imgInf.rcImage.top);
 	CSize szColumn(rcColumn.Size());
 
 	if (szImage.cy < szColumn.cy && pDC)
@@ -1231,7 +1037,28 @@ CSize CXTPReportPaintManager::DrawGlyph(CDC* pDC, CRect rcColumn, int iIcon)
 
 		ptIcon.x = rcColumn.left + 1;
 		ptIcon.y = rcColumn.top + (szColumn.cy - szImage.cy) /2;
-		pImage->Draw(pDC, ptIcon);
+
+		if (pDC->IsPrinting())
+		{
+			CBitmap bmp;
+			bmp.CreateCompatibleBitmap(pDC, szImage.cx, szImage.cy);
+			CXTPCompatibleDC dcMem(NULL, &bmp);
+			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDC->GetBkColor());
+
+			pImageList->Draw(&dcMem, iIcon, CPoint(0, 0), ILD_TRANSPARENT);
+			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
+
+		}
+		else if (CXTPDrawHelpers::IsContextRTL(pDC))  // Revert Icon
+		{
+			HICON hIcon = pImageList->ExtractIcon(iIcon);
+			DrawIconEx(pDC->GetSafeHdc(), ptIcon.x + szImage.cx, ptIcon.y, hIcon, -szImage.cx, szImage.cy, 0, 0, DI_NORMAL);
+			DestroyIcon(hIcon);
+		}
+		else
+		{
+			pImageList->Draw(pDC, iIcon, ptIcon, ILD_TRANSPARENT);
+		}
 	}
 
 	return CSize(1 + szImage.cx, 1 + szImage.cy);
@@ -1239,141 +1066,76 @@ CSize CXTPReportPaintManager::DrawGlyph(CDC* pDC, CRect rcColumn, int iIcon)
 
 int CXTPReportPaintManager::GetRowHeight(CDC* pDC, CXTPReportRow* pRow, int nTotalWidth)
 {
-	CXTPReportControl* pControl = DYNAMIC_DOWNCAST(CXTPReportControl, pRow->GetControl());
+	if (m_bFixedRowHeight || pRow->IsGroupRow() || !pRow->IsItemsVisible())
+		return GetRowHeight(pDC, pRow);
 
-	if (!pControl)
-		return 0;
+	CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
+	int nColumnCount = pColumns->GetCount();
 
-	if (!pControl->IsIconView())
+	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
+	drawArgs.pControl = pRow->GetControl();
+	drawArgs.pDC = pDC;
+	drawArgs.pRow = pRow;
+
+	XTP_REPORTRECORDITEM_METRICS* pItemMetrics = new XTP_REPORTRECORDITEM_METRICS;
+	int nHeight = 0;
+
+	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
 	{
-//<<TC>>
-		if (pControl->m_bFreeHeightMode)
+		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
+		if (pColumn && pColumn->IsVisible())
 		{
-			if (pRow->m_nFreeHeight == 0)
-				pRow->m_nFreeHeight = pControl->m_nDefaultRowFreeHeight;
+			CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(pColumn);
+			if (!pItem)
+				continue;
 
-			if (pRow->GetRecord())
+			drawArgs.pItem = pItem;
+			drawArgs.nTextAlign = pColumn->GetAlignment();
+
+			pItemMetrics->Reset();
+
+			pRow->GetItemMetrics(&drawArgs, pItemMetrics);
+
+			CXTPFontDC fnt(pDC, pItemMetrics->pFont);
+
+			int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
+
+			CRect rcItem(0, 0, nWidth - 4, 0);
+			pRow->ShiftTreeIndent(rcItem, pColumn);
+
+			pItem->GetCaptionRect(&drawArgs, rcItem);
+
+			BOOL bWordBreak = !!(pItemMetrics->nColumnAlignment & DT_WORDBREAK);
+			CString strText = pItem->GetCaption(pColumn);
+			ReplaceInHyperLinks(pItem, strText, XTP_HLINK_SPACE_X);
+			int nCalculatedHeight = CalculateRowHeight(pDC, strText, rcItem.Width(), bWordBreak);
+
+			nHeight = max(nHeight, nCalculatedHeight);
+
+			if (pItem->GetIconIndex() != -1)
 			{
-				if (pRow->GetRecord()->m_nFreeHeight > 0)
-					pRow->m_nFreeHeight = pRow->GetRecord()->m_nFreeHeight;
-				else
-					pRow->GetRecord()->m_nFreeHeight = pRow->m_nFreeHeight; 
-			}
+				CXTPImageManagerIcon* pIcon = pRow->GetControl()->
+					GetImageManager()->GetImage(pItem->GetIconIndex(), 0);
 
-			return pRow->m_nFreeHeight;
-		}
-//<<TC>>
-		if (m_bFixedRowHeight || pRow->IsGroupRow() || !pRow->IsItemsVisible())
-			return GetRowHeight(pDC, pRow);
-
-		CXTPReportColumns* pColumns = pControl->GetColumns();
-		int nColumnCount = pColumns->GetCount();
-
-		XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
-		drawArgs.pControl = pRow->GetControl();
-		drawArgs.pDC = pDC;
-		drawArgs.pRow = pRow;
-
-		XTP_REPORTRECORDITEM_METRICS* pItemMetrics = new XTP_REPORTRECORDITEM_METRICS;
-		int nHeight = 0;
-
-		for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
-		{
-			CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
-			if (pColumn && pColumn->IsVisible())
-			{
-				CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(pColumn);
-				if (!pItem)
-					continue;
-
-				drawArgs.pItem = pItem;
-				drawArgs.nTextAlign = pColumn->GetAlignment();
-				drawArgs.pColumn = pColumn; //to support MultiLine Mode
-
-				pItemMetrics->Reset();
-
-				pRow->GetItemMetrics(&drawArgs, pItemMetrics);
-
-				CXTPFontDC fnt(pDC, pItemMetrics->pFont);
-
-				int nWidth = (pDC->IsPrinting() && !m_bColumnWidthWYSIWYG) ?
-					pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
-
-				CRect rcItem(0, 0, nWidth - 4, 0);
-				pRow->ShiftTreeIndent(rcItem, pColumn);
-
-				pItem->GetCaptionRect(&drawArgs, rcItem);
-
-				int nIconW(0), nIconH(0),
-					nIconIndex(pItem->GetIconIndex()),
-					mIconIndex(pItemMetrics->nItemIcon);
-
-				if (nIconIndex != XTP_REPORT_NOICON)
+				if (pIcon)
 				{
-					CXTPImageManagerIcon* pIcon =
-						pControl->GetImageManager()->GetImage(nIconIndex, 0);
-
-					if (pIcon)
-					{
-						nIconW = pIcon->GetWidth();
-						nIconH = pIcon->GetHeight();
-					}
+					nHeight = max(nHeight, pIcon->GetHeight());
 				}
-				else if (mIconIndex != XTP_REPORT_NOICON)
-				{
-					CXTPImageManagerIcon* pIcon =
-						pControl->GetImageManager()->GetImage(mIconIndex, 0);
-
-					if (pIcon)
-					{
-						nIconW = pIcon->GetWidth();
-						nIconH = pIcon->GetHeight();
-					}
-				}
-				if (pItem->GetMarkupUIElement())
-				{
-					int nCalculatedHeight = XTPMarkupMeasureElement(pItem->GetMarkupUIElement(), rcItem.Width(), INT_MAX).cy;
-					nHeight = max(nHeight, nCalculatedHeight);
-				}
-				else
-				{
-					BOOL bWordBreak = !!(pItemMetrics->nColumnAlignment & DT_WORDBREAK);
-
-					CString strText;
-					if (pControl->IsVirtualMode())
-						strText = pItemMetrics->strText;
-					else
-						strText = pItem->GetCaption(pColumn);
-
-					ReplaceInHyperLinks(pItem, strText, XTP_HLINK_SPACE_X);
-
-					int iWid = rcItem.Width();
-					iWid -= nIconW;
-					iWid -= 3; //tolerance level
-					int nCalculatedHeight = CalculateRowHeight(pDC, strText, iWid, bWordBreak);
-					nHeight = max(nHeight, nCalculatedHeight);
-				}
-				nHeight = max(nHeight, nIconH);
 			}
 		}
+	}
 
-		CMDTARGET_RELEASE(pItemMetrics);
-		int iExtraPix = 5;
-		return max(nHeight + iExtraPix, m_nRowHeight) + (IsGridVisible(FALSE) ? 1 : 0);
-	}
-	else
-	{
-		if (pControl->GetRowsPerLine() && pRow->GetIndex() % pControl->GetRowsPerLine())
-			return 0;
-		else
-			return pControl->m_iIconHeightSpacing;
-	}
+	CMDTARGET_RELEASE(pItemMetrics);
+
+	return max(nHeight + 5, m_nRowHeight) + (IsGridVisible(FALSE) ? 1 : 0);
 }
 
 int CXTPReportPaintManager::GetRowHeight(CDC* /*pDC*/, CXTPReportRow* pRow)
 {
 	if (!pRow->IsGroupRow())
+	{
 		return m_nRowHeight + (IsGridVisible(FALSE) ? 1 : 0);
+	}
 
 	if (m_bShadeGroupHeadings)
 		return m_nRowHeight + 6;
@@ -1386,23 +1148,19 @@ BOOL CXTPReportPaintManager::IsColumHotTrackingEnabled() const
 	return m_bHotTracking && ((m_columnStyle == xtpReportColumnOffice2003) || ((m_columnStyle == xtpReportColumnExplorer) && m_themeWrapper.IsAppThemed()));
 }
 
-void CXTPReportPaintManager::DrawColumnBackground(CDC* pDC, CXTPReportColumn* pColumn, CRect rcColumn, BOOL& bColumnPressed, CXTPReportHeader* pHeader)
+void CXTPReportPaintManager::DrawColumnBackground(CDC* pDC, CXTPReportColumn* pColumn, CRect rcColumn, BOOL& bColumnPressed)
 {
-	CXTPReportColumn* pPrevColumn = pHeader ? pHeader->GetNextVisibleColumn(pColumn->GetIndex(), -1) : NULL;
-
 	if (m_columnStyle == xtpReportColumnShaded)
 	{
 		int nShadowWidth = 4;
 
-		if (pColumn->GetDrawHeaderDivider())
-			DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlDark);
+		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlDark);
 
 		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 3, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.25));
 		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 2, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.4));
 		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 1, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
 
-		if (!pPrevColumn || pPrevColumn->GetDrawHeaderDivider())
-			DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlLightLight);
+		DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlLightLight);
 	}
 	else if (m_columnStyle == xtpReportColumnOffice2003 || m_columnStyle == xtpReportColumnOffice2007)
 	{
@@ -1412,10 +1170,9 @@ void CXTPReportPaintManager::DrawColumnBackground(CDC* pDC, CXTPReportColumn* pC
 
 		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 1, rcColumn.Width(), m_clrGradientColumnShadow);
 
-		if (pColumn->GetDrawHeaderDivider())
-			DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - 4, m_clrGradientColumnSeparator);
+		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - 4, m_clrGradientColumnSeparator);
 
-		if (m_columnStyle == xtpReportColumnOffice2003 && (!pPrevColumn || pPrevColumn->GetDrawHeaderDivider()))
+		if (m_columnStyle == xtpReportColumnOffice2003)
 			DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 3, rcColumn.Height() - 2 - 4, m_clrControlLightLight);
 
 		if (pColumn->GetControl()->IsGroupByVisible())
@@ -1442,110 +1199,14 @@ void CXTPReportPaintManager::DrawColumnBackground(CDC* pDC, CXTPReportColumn* pC
 				pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrBtnText);
 				rcColumn.DeflateRect(1, 1);
 				pDC->Draw3dRect(rcColumn, m_clrHeaderControl, m_clrControlDark);
-				if (!pColumn->GetDrawHeaderDivider())
-				{
-					DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top, rcColumn.Height() - 1, m_clrHeaderControl);
-					DrawVerticalLine(pDC, rcColumn.right, rcColumn.top, rcColumn.Height() - 1, m_clrHeaderControl);
-					pDC->SetPixel(rcColumn.right, rcColumn.top - 1, m_clrControlLightLight);
-					pDC->SetPixel(rcColumn.right, rcColumn.bottom - 1, m_clrControlDark);
-				}
-				if (pPrevColumn && !pPrevColumn->GetDrawHeaderDivider())
-				{
-					DrawVerticalLine(pDC, rcColumn.left - 1, rcColumn.top, rcColumn.Height() - 1, m_clrHeaderControl);
-					pDC->SetPixel(rcColumn.left - 1, rcColumn.bottom - 1, m_clrControlDark);
-				}
 			}
 		}
 		bColumnPressed = FALSE;
 
 	}
 	else
-	{ // xtpReportColumnFlat
+	{
 		pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrControlDark);
-		if (!pColumn->GetDrawHeaderDivider())
-		{
-			DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 1, rcColumn.Height() - 2, m_clrHeaderControl);
-			pDC->SetPixel(rcColumn.right - 1, rcColumn.top, m_clrControlLightLight);
-		}
-		if (pPrevColumn && !pPrevColumn->GetDrawHeaderDivider())
-			DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 1, rcColumn.Height() - 2, m_clrHeaderControl);
-	}
-}
-
-void CXTPReportPaintManager::DrawRowNumber(CDC* pDC, CRect rcNumber, CXTPReportRow* pRow)
-{
-	if (!m_bRecOrRowNum) //Row # case
-	{
-		int indRow = pRow->GetIndex();
-		if (m_iRecOrRowStart > 0)
-			indRow += m_iRecOrRowStart;
-		CString sRec;
-		sRec.Format(_T(" %d "), indRow);
-
-		if (pRow->IsSelected())
-		{
-			if (pRow->GetControl()->HasFocus())
-				pDC->FillSolidRect(rcNumber, GetXtremeColor(COLOR_HIGHLIGHT));
-			else
-				pDC->FillSolidRect(rcNumber, GetXtremeColor(COLOR_BTNFACE));
-			
-			CXTPFontDC font(pDC, GetTextFont(), RGB(255,255,255));
-			//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_TOP | DT_RIGHT);
-			//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_VCENTER | DT_RIGHT);
-			//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
-			rcNumber.top++;
-			pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_RIGHT);
-		}
-		else
-		{
-			//pDC->FillSolidRect(rcNumber, RGB(224,224,224));
-			//if we want to indicate read-only mode of record's numbers
-			CXTPFontDC font(pDC, GetTextFont(), GetXtremeColor(COLOR_HIGHLIGHT));
-			//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_TOP | DT_RIGHT);
-			//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_VCENTER | DT_RIGHT);
-			//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
-			rcNumber.top++;
-			pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_RIGHT);
-		}
-	}
-	else //Record # case
-	{
-		CXTPReportRecord* pRec = pRow->GetRecord();
-		if (pRec)
-		{
-			int indRec = pRec->GetIndex();
-
-			if (m_iRecOrRowStart > 0)
-				indRec += m_iRecOrRowStart;
-
-			CString sRec;
-			sRec.Format(_T(" %d "), indRec);
-			if (pRow->IsSelected())
-			{
-				if (pRow->GetControl()->HasFocus())
-					pDC->FillSolidRect(rcNumber, GetXtremeColor(COLOR_HIGHLIGHT));
-				else
-					pDC->FillSolidRect(rcNumber, GetXtremeColor(COLOR_BTNFACE));
-
-				CXTPFontDC font(pDC, GetTextFont(), RGB(255,255,255));
-				//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_TOP | DT_RIGHT);
-				//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_VCENTER | DT_RIGHT);
-				//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
-				rcNumber.top++;
-				pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_RIGHT);
-			}
-			else
-			{
-				//pDC->FillSolidRect(rcNumber, RGB(224,224,224));
-				//if we want to indicate read-only mode of record's numbers
-				CXTPFontDC font(pDC, GetTextFont(), GetXtremeColor(COLOR_HIGHLIGHT));
-				//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_TOP | DT_RIGHT);
-				//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_VCENTER | DT_RIGHT);
-				//pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_BOTTOM | DT_RIGHT);
-				rcNumber.top++;
-				pDC->DrawText(sRec, &rcNumber, DT_SINGLELINE | DT_RIGHT);
-			}
-		}
 	}
 }
 
@@ -1584,11 +1245,11 @@ void CXTPReportPaintManager::DrawColumnFooter(CDC* pDC, CXTPReportColumn* pColum
 
 	if (!m_bFixedRowHeight && (pColumn->GetFooterAlignment() & DT_WORDBREAK))
 	{
-		uFlags |= DT_WORDBREAK | DT_WORD_ELLIPSIS;
+		uFlags |= DT_WORDBREAK;
 
 		// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
 		CRect rcTextReal = rcText;
-		pDC->DrawText(strCaption, &rcTextReal, uFlags | DT_CALCRECT);
+		pDC->DrawText(strCaption, rcTextReal, uFlags | DT_CALCRECT);
 
 		int nHeightDiff = rcText.Height() - rcTextReal.Height();
 		if (nHeightDiff > 1)
@@ -1603,7 +1264,7 @@ void CXTPReportPaintManager::DrawColumnFooter(CDC* pDC, CXTPReportColumn* pColum
 
 	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
 	{
-		pDC->DrawText(strCaption, &rcText, uFlags);
+		pDC->DrawText(strCaption, rcText, uFlags);
 	}
 }
 
@@ -1617,6 +1278,7 @@ void CXTPReportPaintManager::DrawColumn(CDC* pDC, CXTPReportColumn* pColumn, CXT
 
 	BOOL bPlainColumn = bDrawExternal && !bDraggingFromHeader;
 	BOOL bColumnPressed = pColumn->IsDragging() && !bDrawExternal && pHeader->IsDragHeader();
+
 
 	CRect rcColumn0 = rcColumn;
 	// draw
@@ -1636,113 +1298,64 @@ void CXTPReportPaintManager::DrawColumn(CDC* pDC, CXTPReportColumn* pColumn, CXT
 			pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrControlDark);
 			pDC->MoveTo(rcColumn.left, rcColumn.bottom);
 			pDC->LineTo(rcColumn.right, rcColumn.bottom);
-			pDC->LineTo(rcColumn.right, rcColumn.top - 1);
+			pDC->LineTo(rcColumn.right, rcColumn.top-1);
 		}
 	}
 	else
 	{
-		DrawColumnBackground(pDC, pColumn, rcColumn, bColumnPressed, pHeader);
+		DrawColumnBackground(pDC, pColumn, rcColumn, bColumnPressed);
 	}
 
 	pDC->SetBkColor(m_clrHeaderControl);
 
+
 	rcColumn.bottom = rcColumn.bottom - 1 - nShadowWidth;
 
 	CRect rcText(rcColumn);
+
 	if (!pColumn->IsAutoSize() && !bPlainColumn)
+	{
 		rcText.left += pColumn->GetIndent();
+	}
 
 	BOOL bHasSortTriangle = pColumn->HasSortTriangle() && !pDC->IsPrinting();
 
 	CXTPFontDC font(pDC, &m_fontCaption);
 	CSize sizeText = pDC->GetTextExtent(strCaption);
 
-	int nHeaderAlignment = pColumn->GetHeaderAlignment();
-	BOOL bTextRight = (nHeaderAlignment & DT_RIGHT) > 0;
-	BOOL bTextCenter = (nHeaderAlignment & DT_CENTER) > 0;
-	BOOL bTextLeft = !bTextRight && !bTextCenter;
-	BOOL bIconRight = (nHeaderAlignment & xtpColumnIconRight) > 0;
-	BOOL bIconCenter = (nHeaderAlignment & xtpColumnIconCenter) > 0;
-	if (strCaption.GetLength() > 0 && bIconCenter)
-	{
-		bIconCenter = FALSE;
-		bIconRight = TRUE;
-	}
-	int iIconWidth = DrawBitmap(NULL, pColumn->GetControl(), rcText, nIconID) + 2;
-
-	int iIconWidthExtra = 0;
-	if (pColumn->IsPlusMinus()
-		&& !pDC->IsPrinting()
-		&& pColumn->GetNextVisualBlock() != 0)
-		iIconWidthExtra = DrawGlyph(NULL, rcText, 1).cx;
-
-	if (!bTextLeft && !bPlainColumn)
+	if (pColumn->GetHeaderAlignment() != DT_LEFT && !bPlainColumn)
 	{
 		int nLength = 6 + sizeText.cx;
 
 		if (nIconID != XTP_REPORT_NOICON)
-			nLength += iIconWidth;
-
+		{
+			nLength += DrawBitmap(NULL, pColumn->GetControl(), rcText, nIconID) + 2;
+		}
 		if (bHasSortTriangle)
 			nLength += 27;
 
 		if (rcText.Width() > nLength)
 		{
-			if (bTextRight)
+			if (pColumn->GetHeaderAlignment() & DT_RIGHT)
 				rcText.left = rcText.right - nLength;
-			else if (bTextCenter)
+			if (pColumn->GetHeaderAlignment() & DT_CENTER)
 				rcText.left = (rcText.left + rcText.right - nLength) / 2;
+
 		}
+
 	}
 
 	if (nIconID != XTP_REPORT_NOICON && !bPlainColumn)
 	{
 		CRect rcIcon(rcText);
 		rcIcon.bottom += nShadowWidth;
-		if (bIconCenter)
-		{
-			int w = rcIcon.Width() - iIconWidth;
-			rcIcon.left += w / 2;
-			DrawColumnIcon(pDC, pColumn, rcColumn0, rcIcon, nIconID);
-		}
-		else if (bIconRight)
-		{
-			rcIcon.left = rcIcon.right - iIconWidth - iIconWidthExtra;
-			DrawColumnIcon(pDC, pColumn, rcColumn0, rcIcon, nIconID);
-		}
-		else
-		{
-			rcText.left += DrawColumnIcon(pDC, pColumn, rcColumn0, rcIcon, nIconID);
-			rcText.left += 2;
-		}
+		// shift column left by bitmap drawing place
 
-		if (iIconWidthExtra > 0)
-		{
-			rcIcon.left = rcIcon.right - iIconWidthExtra - 2;
-			if (m_bColumnPlusMinusSign) //[+/-] glyph
-				DrawGlyph(pDC, rcIcon, pColumn->IsExpanded() ? 1 : 0);
-			else //[</>] glyph
-			{
-				if (pColumn->GetNextVisualBlock() > 0)
-					DrawGlyph(pDC, rcIcon, pColumn->IsExpanded() ? 7 : 6);
-				else if (pColumn->GetNextVisualBlock() < 0)
-					DrawGlyph(pDC, rcIcon, pColumn->IsExpanded() ? 7 : 6);
-			}
-		}
-	}
-	else if (nIconID == XTP_REPORT_NOICON && !bPlainColumn && iIconWidthExtra > 0)
-	{
-		CRect rcIcon(rcText);
-		rcIcon.left = rcIcon.right - iIconWidthExtra - 2;
-		if (m_bColumnPlusMinusSign)
-			DrawGlyph(pDC, rcIcon, pColumn->IsExpanded() ? 1 : 0);
-		else
-		{
-			if (pColumn->GetNextVisualBlock() > 0)
-				DrawGlyph(pDC, rcIcon, pColumn->IsExpanded() ? 7 : 6);
-			else if (pColumn->GetNextVisualBlock() < 0)
-				DrawGlyph(pDC, rcIcon, pColumn->IsExpanded() ? 7 : 6);
-		}
+		//rcText.left += DrawBitmap(pDC, pColumn->GetControl(), rcIcon, nIconID);
+		rcText.left += DrawColumnIcon(pDC, pColumn, rcColumn0, rcIcon, nIconID);
+
+		// shift column left to the column right to disallow drawing text on Bitmap column headers
+		rcText.left += 2;
 	}
 
 	pDC->SetBkMode(TRANSPARENT);
@@ -1752,60 +1365,43 @@ void CXTPReportPaintManager::DrawColumn(CDC* pDC, CXTPReportColumn* pColumn, CXT
 
 	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
 	{
-		CXTPMarkupUIElement* pMarkupUIElement = pColumn->GetMarkupUIElement();
+		pDC->SetTextColor(m_clrCaptionText);
 
-		if (pMarkupUIElement)
+		if (m_bDrawSortTriangleAlways && bHasSortTriangle)
 		{
-			rcText.DeflateRect(0, 2, 0, 0);
-			sizeText = XTPMarkupMeasureElement(pMarkupUIElement, rcText.Width(), INT_MAX);
+			sizeText.cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
+			rcText.right = min(rcText.right, rcText.left + sizeText.cx + 8);
 		}
 
-		//if (m_bDrawSortTriangleAlways && bHasSortTriangle)
-		if (m_DrawSortTriangleStyle == xtpReportDrawSortTriangleAlways && bHasSortTriangle)
-		{
-			int cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
-			rcText.right = min(rcText.right, rcText.left + cx + 8);
-		}
+		UINT uFlags = DT_END_ELLIPSIS | DT_NOPREFIX;
 
-		if (pMarkupUIElement)
+		if (pColumn->GetHeaderAlignment() & DT_WORDBREAK)
 		{
-			XTPMarkupSetDefaultFont(XTPMarkupElementContext(pMarkupUIElement), (HFONT)m_fontCaption.GetSafeHandle(), m_clrCaptionText);
-			XTPMarkupRenderElement(pMarkupUIElement, pDC->GetSafeHdc(), &rcText);
+			uFlags |= DT_WORDBREAK;
+
+			// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
+			CRect rcTextReal = rcText;
+			pDC->DrawText(strCaption, rcTextReal, uFlags | DT_CALCRECT);
+
+			int nHeightDiff = rcText.Height() - rcTextReal.Height();
+			if (nHeightDiff > 1)
+			{
+				rcText.top += nHeightDiff/2;
+			}
 		}
 		else
 		{
-			pDC->SetTextColor(m_clrCaptionText);
-
-			UINT uFlags = DT_END_ELLIPSIS | DT_NOPREFIX;
-			if ((nHeaderAlignment & DT_WORDBREAK) > 0)
-			{
-				//uFlags |= DT_WORDBREAK;
-				uFlags |= DT_WORDBREAK | DT_WORD_ELLIPSIS;
-				if (nHeaderAlignment & DT_RIGHT)
-					uFlags |= DT_RIGHT;
-
-				// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
-				CRect rcTextReal = rcText;
-				pDC->DrawText(strCaption, &rcTextReal, uFlags | DT_CALCRECT);
-
-				int nHeightDiff = rcText.Height() - rcTextReal.Height();
-				if (nHeightDiff > 1)
-				{
-					rcText.top += nHeightDiff/2;
-				}
-			}
-			else
-			{
-				uFlags |= DT_SINGLELINE | DT_VCENTER;
-			}
-
-			pDC->DrawText(strCaption, &rcText, uFlags);
+			uFlags |= DT_SINGLELINE | DT_VCENTER;
 		}
+
+		pDC->DrawText(strCaption, rcText, uFlags);
+
 
 		rcTriangle.left += sizeText.cx;
 	}
 
-	if (m_DrawSortTriangleStyle != xtpReportDrawSortTriangleNever && bHasSortTriangle)
+
+	if (bHasSortTriangle)
 	{
 		rcTriangle.left += (bPlainColumn ? 17 : 10);
 		DrawTriangle(pDC, rcTriangle, pColumn->IsSortedDecreasing());
@@ -1824,9 +1420,7 @@ int CXTPReportPaintManager::CalcColumnHeight(CDC* pDC, CXTPReportColumn* pColumn
 	int nIconID = pColumn->GetIconID();
 	CString strCaption = pColumn->GetCaption();
 
-	int nWidth = (pDC->IsPrinting() && !m_bColumnWidthWYSIWYG) ?
-	//int nWidth = (pDC->IsPrinting()) ?
-		pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
+	int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
 	CRect rcColumn = pColumn->GetRect();
 	rcColumn.right = rcColumn.left + nWidth;
 
@@ -1854,20 +1448,17 @@ int CXTPReportPaintManager::CalcColumnHeight(CDC* pDC, CXTPReportColumn* pColumn
 
 	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
 	{
-		//if (m_bDrawSortTriangleAlways && bHasSortTriangle)
-		if (m_DrawSortTriangleStyle == xtpReportDrawSortTriangleAlways && bHasSortTriangle)
+		if (m_bDrawSortTriangleAlways && bHasSortTriangle)
 		{
-			int cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
-			rcText.right = min(rcText.right, rcText.left + cx + 8);
+			sizeText.cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
+			rcText.right = min(rcText.right, rcText.left + sizeText.cx + 8);
 		}
 
 		UINT uFlags = DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
-		uFlags |= (pColumn->GetHeaderAlignment() & DT_WORDBREAK) ?
-			//DT_WORDBREAK : DT_SINGLELINE;
-			DT_WORDBREAK | DT_WORD_ELLIPSIS : DT_SINGLELINE;
+		uFlags |= (pColumn->GetHeaderAlignment() & DT_WORDBREAK) ? DT_WORDBREAK : DT_SINGLELINE;
 		uFlags |= DT_CALCRECT;
 
-		pDC->DrawText(strCaption, &rcText, uFlags);
+		pDC->DrawText(strCaption, rcText, uFlags);
 
 		return m_pHeaderHeightFormula->Calculate(rcText.Height());
 	}
@@ -1889,15 +1480,13 @@ void CXTPReportPaintManager::DrawConnector(CDC* pDC, CPoint ptFrom, CPoint ptTo)
 
 void CXTPReportPaintManager::DrawFocusedRow(CDC* pDC, CRect rcRow)
 {
-	if (m_pControl && ((CXTPReportControl* ) m_pControl)->IsIconView())
-		rcRow.DeflateRect(1, 1);
-
 	COLORREF clrTextColor = pDC->SetTextColor(m_clrControlBack);
 	COLORREF clrBkColor = pDC->SetBkColor(m_clrWindowText);
 	pDC->DrawFocusRect(rcRow);
 	pDC->SetTextColor(clrTextColor);
 	pDC->SetBkColor(clrBkColor);
 }
+
 
 int CXTPReportPaintManager::GetPreviewLinesCount(CDC* pDC, CRect& rcText, const CString& strText)
 {
@@ -1908,11 +1497,12 @@ int CXTPReportPaintManager::GetPreviewLinesCount(CDC* pDC, CRect& rcText, const 
 		return m_nMaxPreviewLines;
 
 	CRect rcCalc(rcText.left, 0, rcText.right, 0);
-	pDC->DrawText(strText, &rcCalc, DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+	pDC->DrawText(strText, rcCalc, DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
 
 	return min(rcCalc.Height() / pDC->GetTextExtent(_T(" "), 1).cy, m_nMaxPreviewLines);
 
 }
+
 
 void CXTPReportPaintManager::SetTextFont(LOGFONT& lf)
 {
@@ -1968,21 +1558,18 @@ int CXTPReportPaintManager::GetFooterHeight(CXTPReportControl* pControl, CDC* pD
 		{
 			CString strCaption = pColumn->GetFooterText();
 
-			int nWidth = (pDC->IsPrinting() && !m_bColumnWidthWYSIWYG) ?
-			//int nWidth = (pDC->IsPrinting()) ?
-				pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
+			int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
 			CRect rcText(0, 0, nWidth, 22);
 			rcText.DeflateRect(3, 0, 3, 0);
 
 			UINT uFlags = DT_CALCRECT | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
 			if (!m_bFixedRowHeight && (pColumn->GetFooterAlignment() & DT_WORDBREAK))
-				//uFlags |= DT_WORDBREAK;
-				uFlags |= DT_WORDBREAK | DT_WORD_ELLIPSIS;
+				uFlags |= DT_WORDBREAK;
 			else
 				uFlags |= DT_SINGLELINE;
 
 			font.SetFont(pColumn->GetFooterFont());
-			pDC->DrawText(strCaption, &rcText, uFlags);
+			pDC->DrawText(strCaption, rcText, uFlags);
 
 			nHeight = max(nHeight, rcText.Height() + 8);
 		}
@@ -2020,11 +1607,13 @@ int CXTPReportPaintManager::GetHeaderHeight(CXTPReportControl* pControl,
 			int nIconID = pColumn->GetIconID();
 			if (nIconID != XTP_REPORT_NOICON)
 			{
-				CXTPImageManagerIcon* pIcon =
-					pColumn->GetControl()->GetImageManager()->GetImage(nIconID, 0);
+				CXTPImageManagerIcon* pIcon = pColumn->GetControl()->
+										GetImageManager()->GetImage(nIconID, 0);
 
 				if (pIcon)
+				{
 					nHeight = max(nHeight, pIcon->GetHeight() + 2);
+				}
 			}
 		}
 	}
@@ -2037,53 +1626,16 @@ void CXTPReportPaintManager::SetPreviewIndent(int nLeft, int nTop, int nRight, i
 	m_rcPreviewIndent.SetRect(nLeft, nTop, nRight, nBottom);
 }
 
-void CXTPReportPaintManager::DrawInplaceComboButton(CDC* pDC, CRect* pRc)
-{
-	if ((!pDC->IsPrinting() || m_bPrintGroupRowIcon)
-		&& m_bShowNonActiveInPlaceButton
-		&& m_bThemedInplaceButtons
-		&& m_themeCombo.IsAppThemed())
-		m_themeCombo.DrawThemeBackground(*pDC, CP_DROPDOWNBUTTON, CBXS_NORMAL, pRc, NULL);
-}
-
-void CXTPReportPaintManager::DrawInplaceExpandButton(CDC* pDC, CRect* pRc)
-{
-	if ((!pDC->IsPrinting() || m_bPrintGroupRowIcon)
-		&& m_bShowNonActiveInPlaceButton
-		&& m_bThemedInplaceButtons
-		&& m_themeButton.IsAppThemed())
-	{
-		pDC->FillSolidRect(pRc, GetXtremeColor(COLOR_3DFACE));
-		m_themeButton.DrawThemeBackground(*pDC, BP_PUSHBUTTON, PBS_NORMAL, pRc, NULL);
-	}
-}
-
-void CXTPReportPaintManager::DrawInplaceSpinButton(CDC* pDC, CRect* pRc)
-{
-	if ((!pDC->IsPrinting() || m_bPrintGroupRowIcon)
-		&& m_bShowNonActiveInPlaceButton
-		&& m_bThemedInplaceButtons
-		&& m_themeSpin.IsAppThemed())
-	{
-		int nHeight = pRc->Height() / 2;
-		pRc->bottom -= nHeight;
-		m_themeSpin.DrawThemeBackground(*pDC, SPNP_UP, UPS_NORMAL, pRc, NULL);
-		pRc->OffsetRect(0, nHeight);
-		m_themeSpin.DrawThemeBackground(*pDC, SPNP_DOWN, UPS_NORMAL, pRc, NULL);
-	}
-}
-
 void CXTPReportPaintManager::DrawInplaceButton(CDC* pDC, CXTPReportInplaceButton* pButton)
 {
 	CXTPClientRect rect((CWnd*)pButton);
-	BOOL bButtonIconDrawn = FALSE;
 
 	if (m_bThemedInplaceButtons)
 	{
 		if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON && m_themeCombo.IsAppThemed())
 		{
 			m_themeCombo.DrawThemeBackground(*pDC, CP_DROPDOWNBUTTON,
-				pButton->IsPressed() ? CBXS_PRESSED:  CBXS_NORMAL, rect, NULL);
+				pButton->IsPressed() ? CBXS_PRESSED:  CBXS_NORMAL, rect, 0);
 
 			return;
 		}
@@ -2095,60 +1647,14 @@ void CXTPReportPaintManager::DrawInplaceButton(CDC* pDC, CXTPReportInplaceButton
 			m_themeButton.DrawThemeBackground(*pDC, BP_PUSHBUTTON, pButton->IsPressed() ? PBS_PRESSED :
 				CWnd::GetFocus() == pButton ? PBS_DEFAULTED : PBS_NORMAL, rect, 0);
 
-			if (!DrawInplaceButtonIcon(pDC, pButton))
-			{
-				// draw dots
-				pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
-				pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
-				pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
-			}
-
-			return;
-		}
-
-		if (pButton->GetID() == XTP_ID_REPORT_SPINBUTTON && m_themeSpin.IsAppThemed())
-		{
-			int nHeight = rect.Height() / 2;
-			rect.bottom -= nHeight;
-			m_themeSpin.DrawThemeBackground(*pDC, SPNP_UP, pButton->GetState() == SPNP_UP ? UPS_PRESSED : UPS_NORMAL, rect, 0);
-			rect.OffsetRect(0, nHeight);
-			m_themeSpin.DrawThemeBackground(*pDC, SPNP_DOWN, pButton->GetState() == SPNP_DOWN ? UPS_PRESSED : UPS_NORMAL, rect, 0);
+			pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
+			pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
+			pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
 
 			return;
 		}
 	}
-	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
-	{
-		DrawInplaceButtonFrame(pDC, pButton);
-	}
-	else if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON)
-	{
-		DrawInplaceButtonFrame(pDC, pButton);
-		bButtonIconDrawn = DrawInplaceButtonIcon(pDC, pButton);
-	}
-	else if (pButton->GetID() == XTP_ID_REPORT_SPINBUTTON)
-	{
-		CXTPClientRect rect((CWnd*)pButton);
-		int nHeight = rect.Height() / 2;
-		rect.bottom -= nHeight;
-		for (int i = 0; i < 2; i++)
-		{
-			pDC->FillSolidRect(rect, GetXtremeColor(COLOR_3DFACE));
-
-			if (i == 0 && pButton->GetState() == SPNP_UP || i == 1 && pButton->GetState() == SPNP_DOWN)
-			{
-				pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_WINDOW));
-			}
-			else
-			{
-				pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
-				rect.DeflateRect(1, 1);
-				pDC->Draw3dRect(rect, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
-				rect.InflateRect(1, 1);
-			}
-			rect.OffsetRect(0, nHeight);
-		}
-	}
+	DrawInplaceButtonFrame(pDC, pButton);
 
 	CXTPPenDC pen (*pDC, GetXtremeColor(COLOR_BTNTEXT));
 	CXTPBrushDC brush (*pDC, GetXtremeColor(COLOR_BTNTEXT));
@@ -2164,30 +1670,13 @@ void CXTPReportPaintManager::DrawInplaceButton(CDC* pDC, CXTPReportInplaceButton
 		pDC->Polygon(pts, 3);
 	}
 
-	if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON && !bButtonIconDrawn)
+	if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON)
 	{
 		pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
 		pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
 		pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
 	}
 
-	if (pButton->GetID() == XTP_ID_REPORT_SPINBUTTON)
-	{
-		CPoint pt = rect.CenterPoint();
-		pt.y -= rect.Height() / 4;
-
-		CPoint pts[3];
-		pts[0] = CPoint(pt.x - 2, pt.y + 1);
-		pts[1] = CPoint(pt.x + 2, pt.y + 1);
-		pts[2] = CPoint(pt.x, pt.y - 1);
-		pDC->Polygon(pts, 3);
-
-		pt.y += rect.Height() / 2;
-		pts[0] = CPoint(pt.x - 2, pt.y - 1);
-		pts[1] = CPoint(pt.x + 2, pt.y - 1);
-		pts[2] = CPoint(pt.x, pt.y + 1);
-		pDC->Polygon(pts, 3);
-	}
 }
 
 void CXTPReportPaintManager::DrawInplaceButtonFrame(CDC* pDC, CXTPReportInplaceButton* pButton)
@@ -2206,28 +1695,6 @@ void CXTPReportPaintManager::DrawInplaceButtonFrame(CDC* pDC, CXTPReportInplaceB
 		rect.DeflateRect(1, 1);
 		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
 	}
-}
-
-BOOL CXTPReportPaintManager::DrawInplaceButtonIcon(CDC* pDC, CXTPReportInplaceButton* pButton)
-{
-	CXTPClientRect rect((CWnd*)pButton);
-
-	int nIconIndex = pButton->GetIconIndex();
-	if (nIconIndex == XTP_REPORT_NOICON)
-		return FALSE;
-
-	CXTPImageManagerIcon* pIcon = pButton->pControl->GetImageManager()->GetImage(nIconIndex, 0);
-	if (!pIcon)
-		return FALSE;
-
-	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
-	CPoint ptIcon(max(rect.left, rect.left + (rect.Width() - szImage.cx) / 2),
-					max(rect.top, rect.top + (rect.Height() - szImage.cy) / 2));
-	szImage.cx = min(szImage.cx, rect.Width());
-	szImage.cy = min(szImage.cy, rect.Height());
-	pIcon->Draw(pDC, ptIcon, pIcon->GetIcon(), szImage);
-
-	return TRUE;
 }
 
 void CXTPReportPaintManager::DrawTreeStructureLine(CDC* pDC, int x, int y, int cx, int cy, COLORREF clr)
@@ -2252,24 +1719,15 @@ void CXTPReportPaintManager::DrawTreeStructure(XTP_REPORTRECORDITEM_DRAWARGS* pD
 	CXTPReportRow* pRow = pDrawArgs->pRow;
 	COLORREF clrTreeStructure = pMetrics->clrForeground;
 
-	if (pDrawArgs->pControl->IsVirtualMode())
-	{
-		if (pMetrics->nVirtRowLevel == 0)
-			return;
-	}
-	else
-	{
-		if (pRow->IsGroupRow() || (m_nTreeStructureStyle == 0
-			&& (!pRow->GetParentRow() || pRow->GetParentRow()->IsGroupRow())))
-			return;
-	}
+	if (pRow->IsGroupRow() || (m_nTreeStructureStyle == 0 && (!pRow->GetParentRow() || pRow->GetParentRow()->IsGroupRow())))
+		return;
 
-	int nTreeIndent = m_nTreeIndent;
+	int nTreeIndent = pDrawArgs->pControl->GetPaintManager()->m_nTreeIndent;
 	int nHeight = rcItem.Height();
 
 	LONG lHorLineOffset = nHeight / 2;
 	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
-	switch (nIconAlign)
+	switch(nIconAlign)
 	{
 	case xtpColumnIconTop:
 		lHorLineOffset = sizeGlyph.cy / 2;
@@ -2279,56 +1737,34 @@ void CXTPReportPaintManager::DrawTreeStructure(XTP_REPORTRECORDITEM_DRAWARGS* pD
 		break;
 	}
 
-	if (m_nTreeStructureStyle > 0)
+	if(m_nTreeStructureStyle > 0)
 		rcItem.OffsetRect((sizeGlyph.cy + 1) / 2 + 2, 0);
-
-	if (pDrawArgs->pControl->IsVirtualMode())
+	if (!pRow->GetNextSiblingRow())
 	{
-		BOOL bLastChild = (pMetrics->nVirtRowFlags & xtpVirtRowLastChild) > 0;
-		rcItem.OffsetRect((sizeGlyph.cy + 1) / 2 + 2, 0); //extra shift
-		int nVirtIndent = rcItem.left;
-		int nLevel = pMetrics->nVirtRowLevel;
-		while (nLevel > 1)
-		{
-			nVirtIndent -= nTreeIndent;
-			if (nLevel % 2 == 1)
-			{
-				if (bLastChild)
-				{
-					DrawTreeStructureLine(pDC, nVirtIndent, rcItem.top - 1, 1, lHorLineOffset + 1, clrTreeStructure);
-					DrawTreeStructureLine(pDC, nVirtIndent, rcItem.top + lHorLineOffset, sizeGlyph.cx / 2 + 1, 1, clrTreeStructure);
-					bLastChild = FALSE;
-				}
-				else
-					DrawTreeStructureLine(pDC, nVirtIndent, rcItem.top - 1, 1, nHeight + 1, clrTreeStructure);
-			}
-			nLevel /= 2;
-		}
+		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, lHorLineOffset + 1, clrTreeStructure);
 	}
 	else
 	{
-		CXTPReportRow* pNextRow = pRow->GetNextSiblingRow();
-		if (pNextRow)
-			DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, nHeight + 1, clrTreeStructure);
-		else
-			DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, lHorLineOffset + 1, clrTreeStructure);
+		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, nHeight + 1, clrTreeStructure);
+	}
 
-		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top + lHorLineOffset, sizeGlyph.cx / 2 + 1, 1, clrTreeStructure);
-		for (;;)
+	DrawTreeStructureLine(pDC, rcItem.left, rcItem.top + lHorLineOffset, sizeGlyph.cx / 2 + 1, 1, clrTreeStructure);
+
+	for (;;)
+	{
+		pRow = pRow->GetParentRow();
+
+		if (pRow == NULL || pRow->IsGroupRow() || (m_nTreeStructureStyle == 0 && (pRow->GetParentRow() == 0 || pRow->GetParentRow()->IsGroupRow())))
+			break;
+
+		rcItem.OffsetRect(-nTreeIndent, 0);
+
+		if (pRow->GetNextSiblingRow())
 		{
-			pRow = pRow->GetParentRow();
-
-			if (pRow == NULL || pRow->IsGroupRow() ||
-				(m_nTreeStructureStyle == 0
-				&& (pRow->GetParentRow() == 0 || pRow->GetParentRow()->IsGroupRow())))
-				break;
-
-			rcItem.OffsetRect(-nTreeIndent, 0);
-
-			if (pRow->GetNextSiblingRow())
-				DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, rcItem.Height() + 1, clrTreeStructure);
+			DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, rcItem.Height() + 1, clrTreeStructure);
 		}
 	}
+
 }
 
 int CXTPReportPaintManager::DrawString(int* pnCurrDrawPos, CDC* pDC, const CString& strDraw, CRect rcDraw, UINT nFormat)
@@ -2347,7 +1783,7 @@ int CXTPReportPaintManager::DrawString(int* pnCurrDrawPos, CDC* pDC, const CStri
 			else
 				nCharCount = strDraw.GetLength();
 
-			pDC->DrawText(strDraw, &rcDraw, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+			pDC->DrawText(strDraw, rcDraw, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
 			break;
 		}
 		case DT_WORDBREAK:
@@ -2376,7 +1812,7 @@ int CXTPReportPaintManager::DrawString(int* pnCurrDrawPos, CDC* pDC, const CStri
 
 			nCharCount = strOut.GetLength();
 			*pnCurrDrawPos += GetTextExtentX(pDC,strOut);
-			pDC->DrawText(strOut, &rcDraw, DT_LEFT | DT_NOPREFIX);
+			pDC->DrawText(strOut, rcDraw, DT_LEFT | DT_NOPREFIX);
 			break;
 		}
 		case DT_LEFT:
@@ -2389,7 +1825,7 @@ int CXTPReportPaintManager::DrawString(int* pnCurrDrawPos, CDC* pDC, const CStri
 			else
 				nCharCount = strDraw.GetLength();
 
-			pDC->DrawText(strDraw, &rcDraw, nFormat  | DT_NOPREFIX);
+			pDC->DrawText(strDraw, rcDraw, nFormat  | DT_NOPREFIX);
 			break;
 		}
 
@@ -2404,121 +1840,111 @@ int CXTPReportPaintManager::DrawLink(int* pnCurrDrawPos, XTP_REPORTRECORDITEM_DR
 	return DrawLink2(pnCurrDrawPos, pDrawArgs, pHyperlink, strText, rcLink, nFlag);
 }
 
-void CXTPReportPaintManager::DrawTextLine(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs,
-	const CString& strText, CRect rcItem, int nFlag, int& nCharCounter, int& nHyperlikCounter)
+void CXTPReportPaintManager::DrawTextLine(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, const CString& strText,
+	CRect rcItem, int nFlag, int& nCharCounter, int& nHyperlikCounter)
 {
-	CXTPReportControl* pControl = DYNAMIC_DOWNCAST(CXTPReportControl, pDrawArgs->pRow->GetControl());
+	CDC* pDC = pDrawArgs->pDC;
+	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
+	UINT nAlingFlag = 0;
+	int nHyperlink = nHyperlikCounter; // Hyperlink index
+	int nCharCount = nCharCounter; // Number of actually printed chars
+	CXTPReportHyperlink* pHl = NULL;
+	int nHyperlinks = pItem->GetHyperlinksCount();
 
-	if (!pControl || !pControl->IsIconView())
+	int nCurrStrPos = nCharCount;
+	CRect rcText;
+	rcText.CopyRect(&rcItem);
+
+	if (nHyperlinks == 0)
 	{
-		CDC* pDC = pDrawArgs->pDC;
-		CXTPReportRecordItem* pItem = pDrawArgs->pItem;
-		UINT nAlingFlag = 0;
-		int nHyperlink = nHyperlikCounter; // Hyperlink index
-		int nCharCount = nCharCounter; // Number of actually printed chars
-		CXTPReportHyperlink* pHl = NULL;
-		int nHyperlinks = pItem->GetHyperlinksCount();
+		pDC->DrawText(strText, rcText, pDrawArgs->nTextAlign | nFlag | DT_NOPREFIX | DT_SINGLELINE);
+		return;
+	}
 
-		int nCurrStrPos = nCharCount;
-		CRect rcText;
-		rcText.CopyRect(&rcItem);
+	// calculate rect for drawing text for text alignment feature
+	pDC->DrawText(strText, rcText, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
 
-		if (nHyperlinks == 0)
+	if (rcText.Width() < rcItem.Width())
+	{
+		switch (pDrawArgs->nTextAlign & (DT_RIGHT|DT_CENTER))
 		{
-			pDC->DrawText(strText, &rcText, pDrawArgs->nTextAlign | nFlag | DT_NOPREFIX | DT_SINGLELINE);
-			return;
+			case DT_RIGHT :
+				rcText.left = rcItem.right - rcText.Width();
+				break;
+			case DT_CENTER :
+				rcText.left = rcItem.left + (rcItem.Width() - rcText.Width())/2;
+				break;
 		}
+	}
+	rcText.right = rcItem.right;
 
-		// calculate rect for drawing text for text alignment feature
-		pDC->DrawText(strText, &rcText, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
+	int nCurrDrawPos = rcText.left;
 
-		if (rcText.Width() < rcItem.Width())
+	while (strText.GetLength() > nCurrStrPos && nCurrDrawPos < rcText.right)
+	{
+		CString strOut;
+		if (nHyperlinks > nHyperlink)
 		{
-			switch (pDrawArgs->nTextAlign & (DT_RIGHT | DT_CENTER))
+			pHl = pItem->GetHyperlinkAt(nHyperlink);
+			strOut = strText.Mid(nCurrStrPos, pHl->m_nHyperTextBegin - nCurrStrPos);
+			if (strOut.GetLength() > 0) // print str
 			{
-				case DT_RIGHT :
-					rcText.left = rcItem.right - rcText.Width();
-					break;
-				case DT_CENTER :
-					rcText.left = rcItem.left + (rcItem.Width() - rcText.Width()) / 2;
-					break;
-			}
-		}
-		rcText.right = rcItem.right;
+				// replace LF, CR characters (if any)
+				REMOVE_S(strOut, _T('\n'));
+				REMOVE_S(strOut, _T('\r'));
 
-		int nCurrDrawPos = rcText.left;
-
-		while (strText.GetLength() > nCurrStrPos && nCurrDrawPos < rcText.right)
-		{
-			CString strOut;
-			if (nHyperlinks > nHyperlink)
-			{
-				pHl = pItem->GetHyperlinkAt(nHyperlink);
-				strOut = strText.Mid(nCurrStrPos, pHl->m_nHyperTextBegin - nCurrStrPos);
-				if (strOut.GetLength() > 0) // print str
-				{
-					// replace LF, CR characters (if any)
-					REMOVE_S(strOut, _T('\n'));
-					REMOVE_S(strOut, _T('\r'));
-
-					nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
-					rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
-
-					// if previous string was cut - stop draw
-					if (nCharCount < strOut.GetLength())
-					{
-						nCharCount += nCurrStrPos;
-						break;
-					}
-				}
-
-				// print link
-				nCharCount = DrawLink(&nCurrDrawPos, pDrawArgs, pHl, strText, rcText, nFlag);
+				nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
 				rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
 
-				// update current position in string
-				nCurrStrPos = pHl->m_nHyperTextBegin + pHl->m_nHyperTextLen;
-				nHyperlink++;
-
 				// if previous string was cut - stop draw
-				if (nCharCount < (pHl->m_nHyperTextLen))
+				if (nCharCount < strOut.GetLength())
 				{
 					nCharCount += nCurrStrPos;
 					break;
 				}
 			}
-			else
-			{
 
-				// print whole string without links or tail of string
-				strOut = strText.Mid(nCurrStrPos, strText.GetLength() - nCurrStrPos);
-				nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
+			// print link
+			nCharCount = DrawLink(&nCurrDrawPos, pDrawArgs, pHl, strText, rcText, nFlag);
+			rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
+
+			// update current position in string
+			nCurrStrPos = pHl->m_nHyperTextBegin + pHl->m_nHyperTextLen;
+			nHyperlink++;
+
+			// if previous string was cut - stop draw
+			if (nCharCount < (pHl->m_nHyperTextLen))
+			{
 				nCharCount += nCurrStrPos;
-				break; // all was drawn!
+				break;
 			}
 		}
+		else
+		{
 
-		pDC->SetTextAlign(nAlingFlag);
-		nCharCounter = nCharCount;
+			// print whole string without links or tail of string
+			strOut = strText.Mid(nCurrStrPos, strText.GetLength() - nCurrStrPos);
+			nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
+			nCharCount += nCurrStrPos;
+			break; // all was drawn!
+		}
+	}
 
-		return;
-	}
-	else
-	{
-		CXTPReportPaintManager::DrawMultiLineText(pDrawArgs, strText, rcItem);
-	}
+	pDC->SetTextAlign(nAlingFlag);
+	nCharCounter = nCharCount;
 }
 
 void CXTPReportPaintManager::DrawItemCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
 {
 	CString strText = pMetrics->strText;
+
 	CRect& rcItem = pDrawArgs->rcItem;
+
 	rcItem.DeflateRect(2, 1, 2, 0);
 
 	// draw item text
 	if (!strText.IsEmpty())
 	{
-		CXTPFontDC font(pDrawArgs->pDC, pMetrics->pFont);
 		if (!m_bFixedRowHeight)// && (pDrawArgs->nTextAlign & DT_WORDBREAK))
 		{
 			BOOL bWordBreak = !!(pDrawArgs->nTextAlign & DT_WORDBREAK);
@@ -2528,13 +1954,13 @@ void CXTPReportPaintManager::DrawItemCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDra
 				// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
 
 				ReplaceInHyperLinks(pDrawArgs->pItem, strText, XTP_HLINK_SPACE_X);
-
 				int nHeightRequired = CalculateRowHeight(pDrawArgs->pDC, strText, rcItem.Width(), bWordBreak);
-
 				int nHeightDiff = rcItem.Height() - nHeightRequired;
 
 				if (nHeightDiff >= 4)
+				{
 					rcItem.top += nHeightDiff/2 - 2;
+				}
 
 				strText = pMetrics->strText;
 			}
@@ -2545,133 +1971,7 @@ void CXTPReportPaintManager::DrawItemCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDra
 		{
 			int nCharCount = 0;
 			int nHyperlink = 0;
-			DrawTextLine(pDrawArgs, strText, &rcItem, DT_END_ELLIPSIS, nCharCount, nHyperlink);
-		}
-	}
-}
-
-void CXTPReportPaintManager::DrawItemControl(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CXTPReportRecordItemControl* pControl, CRect& rcItem)
-{
-	if (!pControl)
-		return;
-
-	CFont* pFont = pControl->GetFont();
-	if (!pFont || !pFont->GetSafeHandle())
-		pFont = &m_fontText;
-
-	CXTPFontDC dc(pDrawArgs->pDC, pControl->GetFont(), pControl->GetCaptionColor());
-	CRect rcControl = rcItem;
-	// calculate control's rectangle
-	// horizontal
-	int nControlWidth = pControl->GetSize().cx;
-	if (nControlWidth > 0)
-	{
-		if (pControl->GetAlignment() == xtpItemControlRight)
-		{
-			rcControl.left = rcControl.right - nControlWidth;
-			rcItem.right -= nControlWidth;
-		}
-		else
-		{
-			rcControl.right = rcControl.left + nControlWidth;
-			rcItem.left += nControlWidth;
-		}
-	}
-	else
-	{
-		//return;
-		if (pControl->GetAlignment() == xtpItemControlRight)
-		{
-			rcControl.left = rcControl.right;
-		}
-		else
-		{
-			rcControl.right = rcControl.left;
-		}
-	}
-
-	int nControlHeight = pControl->GetSize().cy;
-	if (nControlHeight > 0 && nControlHeight < rcItem.Height())
-	{
-		rcControl.top = rcItem.top + (rcItem.Height() - nControlHeight) / 2;
-		rcControl.bottom = rcControl.top + nControlHeight;
-	}
-
-	// handle alignment
-	// set control's rectangle
-	pControl->SetRect(rcControl);
-	switch (pControl->GetType())
-	{
-		case xtpItemControlTypeButton :
-		{
-			// draw button
-			CXTPReportRecordItemButton* pButton = DYNAMIC_DOWNCAST(CXTPReportRecordItemButton, pControl);
-			ASSERT(pButton);
-			pDrawArgs->pDC->FillSolidRect(rcControl, GetXtremeColor(COLOR_3DFACE));
-			int nState = pButton->GetEnable() ? pButton->GetState() : PBS_DISABLED;
-			if (pButton->GetThemed())
-			{
-				m_themeButton.DrawThemeBackground(*pDrawArgs->pDC, BP_PUSHBUTTON, nState, rcControl, 0);
-			}
-			else
-			{
-				if (nState == PBS_PRESSED)
-				{
-					pDrawArgs->pDC->Draw3dRect(rcControl, GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_WINDOW));
-				}
-				else
-				{
-					pDrawArgs->pDC->Draw3dRect(rcControl, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
-					rcControl.DeflateRect(1, 1);
-					pDrawArgs->pDC->Draw3dRect(rcControl, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
-				}
-			}
-			// calculate rectangle for drawing icon or caption
-			if (nState == PBS_PRESSED)
-				rcControl.DeflateRect(3, 3, 1, 1);
-			else
-				rcControl.DeflateRect(1, 1);
-			// draw button icon
-			int nIconIndex = pButton->GetIconIndex(nState);
-			if (nIconIndex != XTP_REPORT_NOICON)
-			{
-				CXTPImageManagerIcon* pIcon = pDrawArgs->pControl->GetImageManager()->GetImage(nIconIndex, 0);
-				if (pIcon)
-				{
-					CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
-					CPoint ptIcon(max(rcControl.left, rcControl.left + (rcControl.Width() - szImage.cx) / 2),
-									max(rcControl.top, rcControl.top + (rcControl.Height() - szImage.cy) / 2));
-					szImage.cx = min(szImage.cx, rcControl.Width());
-					szImage.cy = min(szImage.cy, rcControl.Height());
-					if (pDrawArgs->pDC->IsPrinting())
-					{
-						CBitmap bmp;
-						bmp.CreateCompatibleBitmap(pDrawArgs->pDC, szImage.cx, szImage.cy);
-						CXTPCompatibleDC dcMem(NULL, &bmp);
-						dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, GetXtremeColor(COLOR_3DFACE));
-						pIcon->Draw(&dcMem, CPoint(0, 0), pIcon->GetIcon());
-						pDrawArgs->pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
-					}
-					else
-						pIcon->Draw(pDrawArgs->pDC, ptIcon, pIcon->GetIcon(), szImage);
-				}
-			}
-			// draw button caption
-			if (!pButton->GetCaption().IsEmpty())
-			{
-				COLORREF clrPrev = pDrawArgs->pDC->SetTextColor(pButton->GetEnable() ? pButton->GetCaptionColor() : GetXtremeColor(XPCOLOR_GRAYTEXT));
-				// Issue 20355 - fix
-				int iAl = pButton->GetAlignment();
-				if (iAl == xtpItemControlLeft)
-					pDrawArgs->pDC->DrawText(pButton->GetCaption(), &rcControl, DT_LEFT | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
-				else if (iAl == xtpItemControlRight)
-					pDrawArgs->pDC->DrawText(pButton->GetCaption(), &rcControl, DT_RIGHT | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
-				else
-					pDrawArgs->pDC->DrawText(pButton->GetCaption(), &rcControl, DT_CENTER | DT_VCENTER | DT_NOPREFIX | DT_SINGLELINE);
-
-				pDrawArgs->pDC->SetTextColor(clrPrev);
-			}
-			break;
+			DrawTextLine(pDrawArgs, strText, rcItem, DT_END_ELLIPSIS, nCharCount, nHyperlink);
 		}
 	}
 }
@@ -2694,7 +1994,7 @@ void CXTPReportPaintManager::ReplaceInHyperLinks(CXTPReportRecordItem* pItem, CS
 		int nI1 = max(0, min(pHLink->m_nHyperTextBegin + pHLink->m_nHyperTextLen, rstrText.GetLength()));
 		for (int i = nI0; i < nI1; i++)
 		{
-			if (rstrText.GetAt(i) == _T(' '))
+			if(rstrText.GetAt(i) == _T(' '))
 			{
 				rstrText.SetAt(i, chReplace);
 			}
@@ -2717,10 +2017,7 @@ void CXTPReportPaintManager::DrawMultiLineText(XTP_REPORTRECORDITEM_DRAWARGS* pD
 	if (0 == pItem->GetHyperlinksCount())
 	{
 		// no hyperlinks
-		if (bWordBreak)
-			pDC->DrawText(strText, &rcText, DT_NOPREFIX | pDrawArgs->nTextAlign | DT_WORD_ELLIPSIS | DT_WORDBREAK);
-		else
-			pDC->DrawText(strText, &rcText, DT_NOPREFIX | pDrawArgs->nTextAlign | DT_WORD_ELLIPSIS);
+		pDC->DrawText(strText, rcText, DT_NOPREFIX | pDrawArgs->nTextAlign | DT_WORD_ELLIPSIS | (bWordBreak ?  DT_WORDBREAK : 0));
 		return;
 	}
 
@@ -2768,7 +2065,7 @@ void CXTPReportPaintManager::DrawMultiLineText(XTP_REPORTRECORDITEM_DRAWARGS* pD
 				// the word exceeds the cell's width
 				DrawSingleLineText(pDrawArgs, strSrc , rcText, nCurrStrPos - nWordLength -1, nCurrStrPos -1, nWordWidth);
 
-				if ((nCurrStrPos - nWordLength) != nCurrStrPos)
+				if((nCurrStrPos - nWordLength) != nCurrStrPos)
 				{
 					rcText.top += nLineHeight;
 					rcText.left = rcItem.left;
@@ -2868,7 +2165,7 @@ void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* p
 			if (bNeedsBlank)
 			{
 				// between words
-				pDC->DrawText(_T(" "), &rcText, DT_LEFT);
+				pDC->DrawText(_T(" "), rcText, DT_LEFT);
 				rcText.left += nBlankWidth;
 			}
 
@@ -2910,7 +2207,7 @@ void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* p
 								strPre = strWord.Mid(0,strWord.GetLength() - (nCurrStrPos - nBeginHyperlink - 1));
 								if (!strPre.IsEmpty())
 								{
-									pDC->DrawText(strPre, &rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+									pDC->DrawText(strPre, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
 									rcText.left += GetTextExtentX(pDC,strPre);
 								}
 
@@ -2926,7 +2223,7 @@ void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* p
 									strPost = strWord.Mid(n,strWord.GetLength() - n);
 									if (!strPost.IsEmpty())
 									{
-										pDC->DrawText(strPost, &rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+										pDC->DrawText(strPost, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
 										rcText.left += GetTextExtentX(pDC,strPost);
 									}
 								}
@@ -2941,7 +2238,7 @@ void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* p
 			} // the hyperlink validation
 
 			// non-hyperlink words
-			pDC->DrawText(strWord, &rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+			pDC->DrawText(strWord, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
 			rcText.left += GetTextExtentX(pDC,strWord);
 
 			strWord.Empty();
@@ -2953,13 +2250,17 @@ void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* p
 	}
 }
 
-int CXTPReportPaintManager::CalculateRowHeight(CDC* pDC, const CString& strText,
-							int nMaxWidth, BOOL bWordBreak)
+int CXTPReportPaintManager::CalculateRowHeight(CDC* pDC, const CString& strText, int nMaxWidth, BOOL bWordBreak)
 {
 	CString strWord, strBuff(strText);
 	strBuff += _T(" ");
 
-	int nLineHeight = pDC->GetTextExtent(_T(" "),1).cy;
+	int     nLineHeight = pDC->GetTextExtent(_T(" "),1).cy;
+	int     nRowHeight = 0;
+	int     nCurrXPos = 0;
+	int     nCurrStrPos = 0;
+	int     nBlanksWidth = 0;
+
 
 	// just calculate new line characters
 	if (!bWordBreak)
@@ -2971,29 +2272,84 @@ int CXTPReportPaintManager::CalculateRowHeight(CDC* pDC, const CString& strText,
 			nCount++;
 			nPos = FIND_S(strBuff, _T('\n'), nPos + 1);
 		}
-		while (nPos != -1);
+		while(nPos != -1);
 
 		return nLineHeight * nCount;
 	}
 
-	CRect rc(0, 0, nMaxWidth, nLineHeight);
-	//int h = pDC->DrawText(strBuff, &rc, DT_CALCRECT | DT_NOPREFIX | DT_WORDBREAK);
-	int h = pDC->DrawText(strBuff, &rc, DT_CALCRECT | DT_NOPREFIX | DT_WORDBREAK | DT_WORD_ELLIPSIS);
-	return max(nLineHeight, h);
-}
+	int     nWordLength = 0;
+	BOOL    bNeedsLine = TRUE;
+	int     nBlankWidth = GetTextExtentX(pDC, _T(" "), 1);
+	int     nTextLength = strBuff.GetLength();
 
-CRect CXTPReportPaintManager::CalculateMaxTextRect(CDC* pDC, const CString& strText,
-			const CRect& rcMaxRect, BOOL bWordBreak, BOOL bLimitSize, UINT uiFlags)
-{
-	CRect rc(rcMaxRect);
-	pDC->DrawText(strText, rc, DT_CALCRECT | DT_NOPREFIX | ((bWordBreak) ? DT_WORDBREAK : 0) | uiFlags);
+	TCHAR*  lpszBuff = strBuff.GetBuffer(nTextLength + 1);
+	TCHAR   cChar = lpszBuff[nCurrStrPos];
 
-	if (bLimitSize)
+	TCHAR*  lpszWord = strWord.GetBuffer(nTextLength + 1);
+
+	// breaking the text by words
+	while (_T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
 	{
-		rc.bottom = rc.top + min(rc.Height(), rcMaxRect.Height());
-		rc.right = rc.left + min(rc.Width(), rcMaxRect.Width());
+		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
+		{
+			nBlanksWidth += nBlankWidth;
+
+			if (lpszWord[0] == _T('\0') && cChar != _T('\n'))
+				continue;
+
+			int nWordWidth = GetTextExtentX(pDC, lpszWord, nWordLength);
+
+			if (nWordWidth >= nMaxWidth)
+			{
+				// the word exceeds the cell's width
+				nRowHeight += nLineHeight;
+
+				if (nCurrXPos > 0)
+					nRowHeight += nLineHeight; // for the preceding line (regardless of its size)
+
+				bNeedsLine = FALSE;
+				nCurrXPos = 0;
+				nBlanksWidth = 0;
+
+				lpszWord[0] = _T('\0');
+				nWordLength = 0;
+				continue;
+			}
+
+			if (nCurrXPos + nWordWidth >= nMaxWidth)
+			{
+				nCurrXPos = nWordWidth + nBlanksWidth;
+				nRowHeight += nLineHeight;
+			}
+			else
+			{
+				nCurrXPos += nWordWidth + nBlanksWidth;
+				bNeedsLine = TRUE;
+			}
+
+			if (cChar == _T('\n')) // a new line is forced
+			{
+				nRowHeight += nLineHeight;
+				nCurrXPos = 0;
+			}
+
+			nBlanksWidth = 0;
+			lpszWord[0] = _T('\0');
+			nWordLength = 0;
+			continue;
+		}
+
+		ASSERT(nWordLength <= nTextLength);
+		lpszWord[nWordLength] = cChar;
+		lpszWord[nWordLength+1] = _T('\0');
+
+		++nWordLength;
 	}
-	return rc;
+
+	if (bNeedsLine)
+		nRowHeight += nLineHeight;
+
+	return nRowHeight;
 }
 
 int CXTPReportPaintManager::DrawLink2(int* pnCurrDrawPos, XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CXTPReportHyperlink* pHyperlink,
@@ -3131,7 +2487,7 @@ int CXTPReportPaintManager::GetHeaderRowsDividerHeight()
 {
 	int nHeight = 0;
 
-	switch (m_HeaderRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
+	switch(m_HeaderRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
 	{
 		case xtpReportFixedRowsDividerNone:     nHeight = 0; break;
 		case xtpReportFixedRowsDividerThin:     nHeight = 1; break;
@@ -3146,7 +2502,7 @@ int CXTPReportPaintManager::GetFooterRowsDividerHeight()
 {
 	int nHeight = 0;
 
-	switch (m_FooterRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
+	switch(m_FooterRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
 	{
 		case xtpReportFixedRowsDividerNone:     nHeight = 0; break;
 		case xtpReportFixedRowsDividerThin:     nHeight = 1; break;

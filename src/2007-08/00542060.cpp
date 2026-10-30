@@ -1,10 +1,13 @@
-// from server: 99% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_instance_9081886f13e6738b.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
 #include "v8tree/Instance.h"
 #include "reflection/function.h"
 #include "reflection/property.h"
@@ -39,8 +42,7 @@ namespace RBX
 		  parent(NULL),
 		  children(),
 		  name(name),
-		  archivable(true),
-		  guid()
+		  archivable(true)
 	{
 	}
 
@@ -49,8 +51,7 @@ namespace RBX
 		  parent(NULL),
 		  children(),
 		  name("Instance"),
-		  archivable(true),
-		  guid()
+		  archivable(true)
 	{
 	}
 

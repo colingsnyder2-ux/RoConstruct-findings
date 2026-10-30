@@ -1,41 +1,51 @@
-// from server: 0% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net IdManager.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "IdManager.h"
-#include <boost/signal.hpp>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
 
-namespace RBX
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
+};
+
+struct CountBase {
+    long useCount;
+    long weakCount;
+
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-
-	void IdManager::addInstance(Instance* instance)
-	{
-		Guid::Data extractedData;
-		instance->getGuid().extract(extractedData);
-
-		RBXASSERT(getInstance(extractedData) == NULL || getInstance(extractedData) == instance);
-
-		items[extractedData] = instance;
-	}
-
-	void IdManager::removeInstance(boost::shared_ptr<Instance> instance)
-	{
-		Guid::Data extractedData;
-		instance->getGuid().extract(extractedData);
-
-		items.erase(extractedData);
-	}
-
-	void IdManager::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-	{
-		if (newProvider)
-		{
-			removeInstanceConnection = event_descendentRemoving.connect(getRootAncestor(), boost::bind(&IdManager::removeInstance, this, _1));
-		}
-	}
+    try {
+        count = new Count(p);
+    }
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

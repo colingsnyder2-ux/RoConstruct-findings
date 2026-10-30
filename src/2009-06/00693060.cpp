@@ -1,130 +1,202 @@
-// from server: 89% by colin
-// roc-lang: cpp
 // roc-cl: 30729
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/Script.cpp
+// roc-lib: rbxgs-dll roc_scriptcontext_genuine_singleton_enums17e79b7e49ea6c20.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "script/Script.h"
+#include "roc_genuine_lua_singleton_enum_headerf079742c7efc6c9f.cpp"
+#pragma include_alias("v8tree/Instance.h", "roc_instance_genuine_guiditem_headerf016862b4461fbce.cpp")
 #include "script/ScriptContext.h"
-#include "v8tree/Service.h"
-#include "boost/thread/once.hpp"
+#include "script/Script.h"
+#include "script/ScriptEvent.h"
+#include "script/LuaMemory.h"
+#include "script/LuaAtomicClasses.h"
+#include "script/LuaInstanceBridge.h"
+#include "script/LuaSignalBridge.h"
+#include "script/LuaArguments.h"
+#include "lua/lua.hpp"
+#include "lua/LuaBridge.h"
+// Workspace's genuine first base reaches Instance at offset zero.
+namespace RBX { class Workspace; template<> Workspace* ServiceProvider::find<Workspace>(const Instance*); }
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/Stats.h"
+#include "util/standardout.h"
+#include "util/Debug.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "lua.h"
+#include "lualib.h"
+#include "lstate.h"
+
+static int contextCount = 0;
+bool vvvvv;
 
 using namespace RBX;
+using namespace boost::posix_time;
 
-const Reflection::PropDescriptor<Script, std::string> Script::prop_EmbeddedSourceCode("Source", "Data", &Script::getEmbeddedCode, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::LEGACY);
-const Reflection::PropDescriptor<Script, ContentId> Script::prop_SourceCodeId("LinkedSource", "Data", &Script::getScriptId, &Script::setScriptId, Reflection::PropertyDescriptor::LEGACY);
-Reflection::BoundProp<bool, true> Script::prop_Disabled("Disabled", "Behavior", &Script::disabled, Reflection::PropertyDescriptor::STANDARD);
+// unidentified inlines
 
-static boost::shared_ptr<const std::string> helloWorld;
-static boost::once_flag flagInitScriptCpp = BOOST_ONCE_INIT;
-
-void initScriptCpp()
+static inline void _openLibInline(lua_State* L, lua_CFunction f, const char* name)
 {
-    helloWorld.reset(new std::string("print(\"Hello world!\")\r\n"));
+    lua_pushcfunction(L, f);
+    lua_pushstring(L, name);
+    lua_call(L, 1, 0);
 }
 
-const char* RBX::sScript = "Script";
+// end unidentified inlines
 
-Script::Script()
-    : DescribedCreatable("Script"),
-      disabled(false),
-      owner(NULL)
+Reflection::BoundProp<bool, true> ScriptContext::propScriptsDisabled("ScriptsDisabled", "State", &ScriptContext::scriptsDisabled, &ScriptContext::onChangedScriptEnabled, Reflection::PropertyDescriptor::LEGACY); 
+
+static int panic(lua_State* L)
 {
-    boost::call_once(&initScriptCpp, flagInitScriptCpp);
-    embeddedSource = helloWorld;
+    std::string message = lua_tostring(L, -1);
+    StandardOut::singleton()->print(MESSAGE_ERROR, "Unprotected error in call to Lua API (%s)\n", message.c_str());
+    RBXCRASH();
+    return 0;
 }
 
-const char* RBX::sLocalScript = "LocalScript";
+const char* RBX::sScriptContext = "ScriptContext";
 
-LocalScript::LocalScript()
-{
-    setName("LocalScript");
-}
+// Native2008 members on the opaque owner, proven by openState loads/stores.
+#define globalState (*reinterpret_cast<lua_State**>(reinterpret_cast<char*>(this)+0x138))
+#define allocator (*reinterpret_cast<boost::scoped_ptr<LuaAllocator>*>(reinterpret_cast<char*>(this)+0x1f0))
+#define yieldEvent (*reinterpret_cast<boost::scoped_ptr<Lua::YieldingThreads>*>(reinterpret_cast<char*>(this)+0x1a8))
+// Native Lua callbacks: lua_CFunction / lua_Hook contracts and observed calls.
+extern int luaTime(lua_State*);
+extern int luaVersion(lua_State*);
+extern int luaPrintIdentity(lua_State*);
+extern void luaInstructionHook(lua_State*, lua_Debug*);
 
-Script::~Script()
-{
-    RBXASSERT(owner == NULL);
-}
+namespace RBX { namespace Lua {
+template<> const char* Bridge<AllEnumDescriptorsPtr, false>::className = "Enums";
+template<> const char* Bridge<EnumDescriptorPtr, false>::className = "Enum";
+template<> const char* Bridge<EnumDescriptorItemPtr, false>::className = "EnumItem";
+} }
 
-void Script::setEmbeddedCode(const std::string& value)
+void ScriptContext::openState()
 {
-    if (getEmbeddedCode() != value)
+    if (!globalState)
     {
-        embeddedSource.reset(new std::string(value));
-        raisePropertyChanged(prop_EmbeddedSourceCode);
-    }
-}
-
-void Script::setScriptId(const ContentId& value)
-{
-    if (getScriptId() != value)
-    {
-        scriptId = value;
-        requestCode();
-        raisePropertyChanged(prop_SourceCodeId);
-    }
-}
-
-void Script::onAncestorChanged(const AncestorChanged& event)
-{
-    Instance::onAncestorChanged(event);
-
-    IScriptOwner* newOwner = NULL;
-    Instance* parent = this->getParent();
-
-    while (parent)
-    {
-        IScriptOwner* parentOwner = dynamic_cast<IScriptOwner*>(parent);
-
-        if (parentOwner)
+        // ???
+        if (vvvvv)
         {
-            newOwner = parentOwner->scriptShouldRun(this);
-
-            if (newOwner)
-                break;
+            lua_getstack(NULL, NULL, NULL);
+            lua_getinfo(NULL, NULL, NULL);
+            lua_getlocal(NULL, NULL, NULL);
+            lua_setlocal(NULL, NULL, NULL);
+            lua_getupvalue(NULL, NULL, NULL);
+            lua_setupvalue(NULL, NULL, NULL);
+            lua_sethook(NULL, NULL, NULL, NULL);
+            lua_gethook(NULL);
+            lua_gethookmask(NULL);
+            lua_gethookcount(NULL);
         }
 
-        parent = parent->getParent();
-    }
+        allocator.reset(new LuaAllocator());
+        lua_State* L = lua_newstate(LuaAllocator::alloc, allocator.get());
+        globalState = L;
 
-    if (newOwner != owner)
-    {
-        if (owner)
-            owner->releaseScript(this);
+        if (!globalState)
+            throw std::runtime_error("Failed to create Lua state");
 
-        owner = newOwner;
+        contextCount++;
 
-        ScriptContext* sc = ServiceProvider::find<ScriptContext>(this);
+        lua_atpanic(L, panic);
 
-        if (sc)
-        {
-            sc->removeScript(this);
+        lua_pushlightuserdata(globalState, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
+        lua_pushlightuserdata(globalState, this);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
 
-            if (owner)
-                owner->runScript(this, sc);
-        }
+        lua_pop(globalState, luaopen_base(globalState));
+
+        _openLibInline(globalState, luaopen_string, LUA_STRLIBNAME);
+        _openLibInline(globalState, luaopen_math, LUA_MATHLIBNAME);
+        _openLibInline(globalState, luaopen_table, LUA_TABLIBNAME);
+
+        Lua::Enums::registerClass(globalState);
+        Lua::Enum::registerClass(globalState);
+        Lua::EnumItem::registerClass(globalState);
+        Lua::ObjectBridge::registerClass(globalState);
+        Lua::SignalBridge::registerClass(globalState);
+        Lua::SignalConnectionBridge::registerClass(globalState);
+        Lua::CoordinateFrameBridge::registerClass(globalState);
+        Lua::Vector3Bridge::registerClass(globalState);
+        Lua::Color3Bridge::registerClass(globalState);
+        Lua::BrickColorBridge::registerClass(globalState);
+        Lua::ThreadRef::NodeBridge::registerClass(globalState);
+
+        Lua::Enums::registerClassLibrary(globalState);
+        Lua::Enum::registerClassLibrary(globalState);
+        Lua::EnumItem::registerClassLibrary(globalState);
+        Lua::CoordinateFrameBridge::registerClassLibrary(globalState);
+        Lua::Vector3Bridge::registerClassLibrary(globalState);
+        Lua::Color3Bridge::registerClassLibrary(globalState);
+        Lua::BrickColorBridge::registerClassLibrary(globalState);
+        Lua::ObjectBridge::registerClassLibrary(globalState);
+        Lua::ObjectBridge::registerInstanceClassLibrary(globalState);
+        Lua::SignalBridge::registerClassLibrary(globalState);
+
+        Lua::ThreadRef::Node::create(globalState);
+
+        lua_pushstring(globalState, "game");
+        Lua::ObjectBridge::push(globalState, getRootAncestor()->shared_from_this());
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "workspace");
+        Lua::ObjectBridge::push(globalState, reinterpret_cast<Instance*>(ServiceProvider::find<Workspace>(this))->shared_from_this());
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "shared");
+        lua_newtable(globalState);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "print");
+        lua_pushcfunction(globalState, ScriptContext::print);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "tick");
+        lua_pushcfunction(globalState, ScriptContext::tick);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "time");
+        lua_pushcfunction(globalState, luaTime);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "wait");
+        lua_pushcfunction(globalState, ScriptContext::wait);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "delay");
+        lua_pushcfunction(globalState, ScriptContext::delay);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "printidentity");
+        lua_pushcfunction(globalState, luaPrintIdentity);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "dofile");
+        lua_pushcfunction(globalState, ScriptContext::dofile);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "loadfile");
+        lua_pushcfunction(globalState, ScriptContext::loadfile);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "stats");
+        lua_pushcfunction(globalState, ScriptContext::stats);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "version");
+        lua_pushcfunction(globalState, luaVersion);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        Lua::Enums::declareAllEnums(globalState);
+        yieldEvent.reset(new Lua::YieldingThreads(this));
+        if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x1cc))
+            lua_sethook(globalState, luaInstructionHook, LUA_MASKCOUNT, 1000);
     }
 }
 
-void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-{
-	if (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))
-	{
-		sc->removeScript(this);
-	}
 
-	Instance::onServiceProvider(oldProvider, newProvider);
-}
-
-boost::shared_ptr<const std::string> Script::requestCode()
-{
-    if (scriptId.isNull())
-    {
-        return embeddedSource;
-    }
-    else 
-    {
-        return ContentProvider::singleton().requestContentString(scriptId);
-    }
-}
+#undef globalState
+#undef allocator
+#undef yieldEvent

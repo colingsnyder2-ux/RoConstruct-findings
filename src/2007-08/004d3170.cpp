@@ -1,30 +1,18 @@
-// from server: 46% by colin
-struct S_func_004d3170 {
-    int f(int a1, int a2, int a3, int a4, int a5, int a6, int a7);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_meshcachetemplatenodeadb12afc2a180987.cpp
 
-extern "C" void* __cdecl sub_00500060(int, int);
-extern "C" void __cdecl sub_00500580(void*, int, int);
-extern "C" void __fastcall sub_004cdf20(void*);
-extern "C" void __fastcall sub_004d2150(void*, void*);
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Table.h>
+#include <G3D/Vector3.h>
+#include <G3D/ReferenceCount.h>
+struct Mesh:G3D::ReferenceCountedObject {char storage[28];};
+struct Variations {G3D::ReferenceCountedPointer<Mesh> meshes[4];};
+typedef G3D::Table<G3D::Vector3,Variations> Table;
+struct SurfaceTypes {unsigned value;SurfaceTypes():value(0){}};
+template<class K,class V> struct Entry {K key;V value;};
+template<class K,class V> struct Node {unsigned hash;Entry<K,V> entry;Node* next;
+Node(K k,V v,unsigned h,Node* n){this->entry.key=k;this->entry.value=v;this->hash=h;this->next=n;}};
+template struct Node<SurfaceTypes,Table>;
 
-int S_func_004d3170::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
-{
-    int* self = (int*)this;
-    self[1] = 0;
-    self[2] = 0x79f050;
-    self[5] = 10;
-    self[3] = 0;
-    void* p = sub_00500060(0x28, 0x10);
-    self[4] = (int)p;
-    sub_00500580(p, 0, self[5] * 4);
-    self[1] = a1;
-    if ((char*)self + 8 != (char*)&a2) {
-        sub_004cdf20((char*)self + 8);
-        sub_004d2150((char*)self + 8, &a2);
-    }
-    self[0] = a3;
-    self[6] = a4;
-    sub_004cdf20(&a2);
-    return (int)self;
-}

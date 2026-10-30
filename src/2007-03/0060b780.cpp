@@ -1,401 +1,287 @@
-// from server: 37% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_codex_scorehud_color_order_21a493d6c6b3d438.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/TimeState.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Hopper.h"
-#include "v8datamodel/Teams.h"
-#include "v8datamodel/JointsService.h"
-#include "v8datamodel/LocalBackpack.h"
-#include "script/ScriptContext.h"
-#include "gui/GUI.h"
-#include "util/Log.h"
-#include "util/IMetric.h"
-#include "util/standardout.h"
-#include "util/Http.h"
-#include "util/Sound.h"
-
-namespace RBX
-{
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
-	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	
-	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
-
-#pragma warning (push)
-#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
-
-	DataModel::DataModel()
-		: VerbContainer(NULL),
-		  workspace(Creatable::create<Workspace>(this)),
-		  guiRoot(Creatable::create<GuiRoot>()),
-		  guiHooks(Creatable::create<GuiRoot>()),
-		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
-		  guiTarget(NULL),
-		  forceArrowCursor(true),
-		  dirty(false),
-		  drawId(0)
+#include "roc_espeon_scorehudportableheader11bfdf7c6129a99c.cpp"
+#include <typeinfo>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+	class BoardData
 	{
-		setName("Level");
-	}
+	public:
+		std::vector<std::vector<std::string>> data;
+		std::vector<std::string> fields;
 
-#pragma warning (pop)
+	public:
+		BoardData()
+		{
+		}
 
-	DataModel::~DataModel()
+		void SetSize(int dataSize, int fieldSize)
+		{
+			data.resize(dataSize);
+			for (int i = 0; i < dataSize; ++i)
+				data[i].resize(fieldSize);
+
+			fields.resize(fieldSize);
+		}
+
+		void AddField(std::string fieldName, int position)
+		{
+			fields[position] = fieldName;
+		}
+	};
+
+	class LeaderboardData
 	{
-		Notifier<RunService, RunTransition>::disconnect(runService, this);
-		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
-	}
+	public:
+		std::vector<std::string> statNamesList;
+		std::map<Team*, std::vector<std::string>> playersByTeamList;
+		std::map<std::string, std::map<std::string, int>> statMap;
+		std::map<Team*, std::map<std::string, int>> teamTotals;
+	private:
+		Instance* context;
 
-	bool DataModel::askAddChild(const Instance* instance) const
-	{
-		return dynamic_cast<const Service*>(instance) != NULL;
-	}
-
-	boost::shared_ptr<DataModel> DataModel::createDataModel()
-	{
-		ContentProvider::singleton().clearContentCache();
-		
-		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
-
+	public:
+		LeaderboardData(Instance* context)
+			: context(context)
 		{
-			Lock lock(dataModel);
-			dataModel->initializeContents();
 		}
 
-		return dataModel;
-	}
-	
-	void DataModel::onChildAdded(Instance* child)
-	{
-		ServiceProvider::onChildAdded(child);
+		void CompileData();
 
-		if (child->getClassName() == "NetworkClient")
-		{
-			Verb* lockPlayMode = getVerb("LockPlayMode");
-			if (lockPlayMode)
-				lockPlayMode->doIt(NULL);
 
-			workspace->setNullMouseCommand();
-		}
-	}
+	private:
+		void AddTuple(std::string playerName, Team* team, std::string statName, int statValue)
+		{
+			if (std::find(statNamesList.begin(), statNamesList.end(), statName) == statNamesList.end())
+				statNamesList.push_back(statName);
 
-	void DataModel::onEvent(const RunService* source, RunTransition event)
-	{
-		switch (event.newState)
-		{
-		case RS_NORMAL:
-			if (event.oldState == RS_RUNNING)
-				workspace->reset();
+			if (std::find(playersByTeamList[team].begin(), playersByTeamList[team].end(), playerName) == playersByTeamList[team].end())
+				playersByTeamList[team].push_back(playerName);
 
-			timeState->clear();
-			break;
-		case RS_RUNNING:
-			workspace->start();
-			break;
-		case RS_PAUSED:
-			workspace->stop();
-			break;
+			statMap[playerName][statName] = statValue;
 		}
-	}
+	};
 
-	std::string DataModel::doHttpGet(std::string url)
-	{
-		std::string result;
-		Http(url.c_str()).get(result);
 
-		return result;
-	}
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::find<Teams>(const Instance*);
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+template<> Network::Players* ServiceProvider::find<Network::Players>(const Instance*);
+// Genuine public accessor bodies on opaque native receivers. Public SDK controls
+// prove their old inline offsets differ (name100/childrenf8/size134 vs native
+// name110/children108/size13c). These methods model their own native fields;
+// no private declarations/access modifiers, padding or virtual slots are changed.
+class InstanceApi {
+public:
+    Instance* findFirstChildByName(const std::string&) const;
+    size_t numChildren() const {
+        const boost::shared_ptr<Instances>& children=*(const boost::shared_ptr<Instances>*)((const char*)this+0x108);
+        return children ? children->size() : 0;
+    }
+    Instance* getChild(size_t i) {
+        return (**(const boost::shared_ptr<Instances>*)((const char*)this+0x108))[i].get();
+    }
+    const std::string& getName() const {
+        return *(const std::string*)((const char*)this+0x110);
+    }
+};
+class GuiItemApi {
+public:
+    void setGuiSize(const G3D::Vector2& value) {
+        *(G3D::Vector2*)((char*)this+0x13c)=value;
+    }
+};
+class PlayersApi {
+public:
+    boost::shared_ptr<const Instances> getPlayers();
+    int numPlayers() const {
+        return (int)(*(const CopyOnWrite<std::vector<boost::shared_ptr<Instance>>>*)((const char*)this+0x198))->size();
+    }
+};
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::find<Teams>(this);
+    if(!teams) return;
+    G3D::Rect2D viewport=adorn->getViewport();
+    float scale=viewport.width()/1024.0f;
+    float row=14.0f*scale;
+    if(mode==TEAM_DEATHMATCH) {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*320.0f;
+        float leaderboardSizeY=playerCount+(teamCount+1)*3;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    } else {
+        size_t teamCount=((InstanceApi*)teams)->numChildren();
+        int playerCount=((PlayersApi*)(*(Network::Players**)((char*)this+0x150)))->numPlayers();
+        float leaderboardSizeX=scale*240.0f;
+        float leaderboardSizeY=playerCount+teamCount*3+2;
+        ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(leaderboardSizeX,leaderboardSizeY*row));
+    }
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            float width=rect.high.x-rect.low.x;
+            G3D::Vector2 position=rect.low;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            G3D::Color4 teamColor(team->getTeamColor().color3(),1);
+            adorn->drawFont2D(label,position,row,teamColor,G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                float width=rect.high.x-rect.low.x;
+                G3D::Vector2 position=rect.low;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                } else { position.x += 5.0f; }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
+}
 
-	std::string DataModel::doHttpPost(std::string url, std::string data)
-	{
-		std::string result;
-		Http(url).post(std::istringstream(data), true, result);
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+    }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+    }
+}
 
-		return result;
-	}
-
-	void DataModel::close()
-	{
-		Verb* exitVerb = getVerb("Exit");
-		if (!exitVerb)
-			throw std::runtime_error("Couldn\'t find Exit Verb");
-
-		exitVerb->doIt(NULL);
-	}
-
-	std::string DataModel::httpGet(std::string url, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpGet(url);
-		}
-		else
-		{
-			if (url.size() > 0)
-			{
-				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
-				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-				boost::thread(background_function(g, "rbx_httpGet"));
-			}
-
-			return "";
-		}
-	}
-
-	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
-	{
-		if (synchronous)
-		{
-			return doHttpPost(url, data);
-		}
-		else
-		{
-			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
-			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
-
-			boost::thread(background_function(g, "rbx_httpPost"));
-
-			return "";
-		}
-	}
-
-	void DataModel::clearContents()
-	{
-		workspace->setMouseCommand(NULL);
-		workspace->removeAllChildren();
-		workspace->setCamera(NULL);
-		
-		starterPackService->removeAllChildren();
-
-		Teams* teams = ServiceProvider::find<Teams>(this);
-		if (teams)
-			teams->removeAllChildren();
-
-		Lighting* lighting = ServiceProvider::find<Lighting>(this);
-		if (lighting)
-			lighting->removeAllChildren();
-
-		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
-		if (script)
-		{
-			script->closeState();
-			ScriptContext::propScriptsDisabled.setValue(script, false);
-		}
-	}
-
-	void DataModel::loadContent(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
-
-		SerializerV2 serializer;
-		serializer.load(*stream, this);
-
-		workspace->joinAllHack();
-	}
-
-	void DataModel::save(ContentId contentId)
-	{
-		std::stringstream stream;
-
-		{
-			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
-			writeChildren(root.get());
-
-			TextXmlWriterWithEmbeddedContent machine(stream);
-			machine.serialize(root.get());
-
-			stream.flush();
-		}
-		
-		std::string response;
-		Http(contentId.toString()).post(stream, true, response);
-	}
-
-	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
-	{
-		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
-
-		TextXmlParser machine(stream->rdbuf());
-		std::auto_ptr<XmlElement> root = machine.parse();
-
-		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
-
-		SerializerV2 serializer;
-		serializer.loadInstances(root.get(), *result);
-
-		return result;
-	}
-
-	static std::string report(const G3D::Stopwatch& timer)
-	{
-		if (timer.smoothElapsedTime() > 0.0f)
-		{
-			std::string t = Log::formatTime(timer.smoothElapsedTime());
-			char buffer[256];
-			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
-
-			return std::string(buffer);
-		}
-		else
-		{
-			return Log::formatTime(timer.smoothElapsedTime());
-		}
-	}
-
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
-
-	void DataModel::Lock::doLock(const DataModel* dataModel)
-	{
-		if (dataModel)
-		{
-			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
-		}
-	}
-
-	DataModel::Lock::~Lock()
-	{
-		delete lock;
-	}
+// Native RTTI object 00960f78 is Value<int,&sIntValue> with the older char*
+// non-type template argument. Use the actual CRT interface and external native
+// type_info object instead of substituting the newer SDK's differently named type.
+extern const type_info nativeIntValueType;
+extern "C" void* __cdecl __RTDynamicCast(void*,long,void*,void*,int);
+// Actual descriptor's GetSet pointer at0097d39c. Native getValue slot8 takes
+// const DescribedBase*, returns int (__thiscall). No synthetic virtual class.
+extern void* nativeIntValueGetter;
+static int readNativeIntValue(Instance* instance) {
+    typedef int (__thiscall *GetValue)(void*,const Reflection::DescribedBase*);
+    return ((GetValue)(*(void***)nativeIntValueGetter)[2])(
+        nativeIntValueGetter,instance?(const Reflection::DescribedBase*)((char*)instance+0x14):0);
+}
+class TeamsApi {
+public:
+    boost::shared_ptr<const Instances> getTeams();
+};
+void ScoreHud::BuildBoardData(BoardData& board) {
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    if(!nativePlayers) return;
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)nativePlayers)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            board.SetSize(roster->size(),((InstanceApi*)stats)->numChildren()+1);
+            board.AddField("Player",0);
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j)
+                board.AddField(((InstanceApi*)((InstanceApi*)stats)->getChild(j))->getName(),j+1);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                __RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                int value=readNativeIntValue(((InstanceApi*)stats)->getChild(j));
+                board.data[i][j+1]=StringConverter<int>::convertToString(value);
+            }
+        } else {
+            board.SetSize(roster->size(),1);
+            board.AddField("Player List",0);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+        }
+    }
+    for(unsigned i=0;i<roster->size();++i)
+        if(board.data[i][0].size()>16) board.data[i][0].resize(16);
+}
+void LeaderboardData::CompileData() {
+    Network::Players* players=ServiceProvider::find<Network::Players>(context);
+    Teams* teams=ServiceProvider::create<Teams>(context);
+    boost::shared_ptr<const Instances> teamList=((TeamsApi*)teams)->getTeams();
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)players)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        playersByTeamList[teams->getTeamFromPlayer((Network::Player*)player)].push_back(((InstanceApi*)player)->getName());
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                Instance* value=(Instance*)__RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                if(value) AddTuple(((InstanceApi*)player)->getName(),teams->getTeamFromPlayer((Network::Player*)player),((InstanceApi*)value)->getName(),readNativeIntValue(value));
+            }
+        }
+    }
+    if(!teams) return;
+    for(unsigned i=0;i<((InstanceApi*)teams)->numChildren();++i) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(i));
+        if(!team) continue;
+        for(unsigned j=0;j<statNamesList.size();++j) {
+            teamTotals[team][statNamesList[j]]=0;
+            for(unsigned k=0;k<playersByTeamList[team].size();++k)
+                teamTotals[team][statNamesList[j]]+=statMap[playersByTeamList[team][k]][statNamesList[j]];
+        }
+    }
+}
 }

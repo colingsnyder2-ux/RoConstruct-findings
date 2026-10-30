@@ -1,34 +1,16 @@
-// from server: 36% by atomic.potato
-extern "C" {
-    typedef void (__stdcall *fn0)(void*);
-    typedef void (__stdcall *fn1)(void*);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_01f403e5b5979552.cpp
 
-struct S {
-    char pad0[0x28];
-    int field28;
-    int field2c;
-    S(void*);
-};
-
-extern char g_str[];
-extern void* g_vtbl1;
-extern void* g_vtbl2;
-extern void* g_vtbl3;
-
-extern "C" void __stdcall sub_98b6f4(void*);
-extern "C" void __stdcall sub_98b6e4(void*);
-extern "C" void __stdcall sub_409390(void*, void*);
-
-S::S(void* arg)
-{
-    char buf[0x20];
-    void* p = g_str;
-    sub_98b6f4(buf);
-    sub_409390(this, buf);
-    *(void**)this = &g_vtbl1;
-    sub_98b6e4(buf);
-    *(void**)this = &g_vtbl2;
-    field28 = 1;
-    field2c = *(int*)((char*)arg + 0x28);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_decompressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

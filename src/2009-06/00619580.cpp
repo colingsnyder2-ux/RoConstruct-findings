@@ -1,108 +1,23 @@
-// from server: 48% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_historystartnativee7064b3c8f23925a.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
-
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
-}
+#include <list>
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/signals/slot.hpp>
+#include <boost/signals/connection.hpp>
+struct Service;struct Descriptor;
+struct Instance{template<class F>void visit(F);};
+struct Records{char data[64];Records(Service*);};
+typedef boost::shared_ptr<Instance> Shared;
+template<class F>struct Signal{boost::signals::connection connect(void*,const boost::slot<boost::function<F> >&,int);};
+extern Signal<void(Shared)>added,removed;extern Signal<void(Shared,const Descriptor*)>changed;
+struct A{virtual ~A();};struct B{virtual ~B();};
+struct Service:A,B{char prefix[0x128];Instance*context;Records*current;std::list<Records*>records;std::list<Records*>::iterator forward,backward;bool blocked,enabled;boost::signals::scoped_connection cAdded,cRemoved,cChanged;
+virtual void f1();virtual void f2();virtual void f3();virtual void f4();virtual void f5();virtual void f6();virtual void f7();virtual void f8();virtual void f9();virtual void f10();virtual void f11();virtual void f12();virtual void f13();virtual void f14();virtual void f15();
+virtual void onAdded(Shared);virtual void onRemoved(Shared);virtual void onChanged(Shared,const Descriptor*);void commit(const char*);void mergeFirst();void start();};
+void Service::start(){current=new Records(this);forward=records.end();backward=records.begin();context->visit(boost::bind(&Service::onAdded,this,_1));if(enabled){commit("base");while(records.size()>1)mergeFirst();}cAdded=added.connect(context?(char*)context+0x14:0,boost::bind(&Service::onAdded,this,_1),10);cRemoved=removed.connect(context?(char*)context+0x14:0,boost::bind(&Service::onRemoved,this,_1),10);cChanged=changed.connect(context?(char*)context+0x14:0,boost::bind(&Service::onChanged,this,_1,_2),10);}

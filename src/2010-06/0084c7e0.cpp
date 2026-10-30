@@ -1,14 +1,13 @@
-// from server: 48% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Ribbon/XTPRibbonBar.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Ribbon\XTPRibbonBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonBar.cpp : implementation file
 //
 // This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -43,10 +42,9 @@
 #include "CommandBars/XTPControlButton.h"
 #include "CommandBars/XTPOffice2007FrameHook.h"
 #include "CommandBars/XTPCustomizeTools.h"
-#include "CommandBars/XTPOffice2007Theme.h"
 
 #include "XTPRibbonTab.h"
-#include "XTPRibbonPaintManager.h"
+#include "XTPRibbonTheme.h"
 #include "XTPRibbonQuickAccessControls.h"
 #include "XTPRibbonGroups.h"
 #include "XTPRibbonGroup.h"
@@ -115,18 +113,13 @@ public:
 protected:
 	void Draw(CDC* pDC)
 	{
-		((CXTPRibbonBar*)GetParent())->GetPaintManager()->GetFramePaintManager()->
-			DrawFrameCaptionButton(pDC, GetRect(), GetID(), GetSelected(), GetPressed(), m_bEnabled && m_pFrame->IsFrameActive());
+		((CXTPRibbonBar*)GetParent())->GetRibbonPaintManager()->
+			DrawRibbonFrameCaptionButton(pDC, GetRect(), GetID(), GetSelected(), GetPressed(), m_bEnabled && m_pFrame->IsFrameActive());
 	}
 
 	void OnExecute()
 	{
 		GetParent()->GetSite()->PostMessage(WM_SYSCOMMAND, GetID(), 0);
-	}
-
-	virtual BOOL IsCustomizeMovable() const
-	{
-		return FALSE;
 	}
 
 protected:
@@ -145,12 +138,12 @@ public:
 	}
 	CSize GetSize(CDC* /*pDC*/)
 	{
-		CXTPRibbonPaintManager* pPaintManager = m_pParent->GetPaintManager()->GetRibbonPaintManager();
+		CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)m_pParent->GetPaintManager();
 		return CSize(pPaintManager->GetEditHeight() * 13 / 22, pPaintManager->GetEditHeight());
 	}
 	void Draw(CDC* pDC)
 	{
-		GetParent()->GetPaintManager()->GetRibbonPaintManager()->DrawRibbonQuickAccessButton(pDC, this);
+		((CXTPRibbonBar*)GetParent()->GetRootParent())->GetRibbonPaintManager()->DrawRibbonQuickAccessButton(pDC, this);
 	}
 
 	BOOL OnSetPopup(BOOL bPopup)
@@ -168,10 +161,6 @@ public:
 		return CXTPControlPopup::OnSetPopup(bPopup);
 	}
 
-	virtual BOOL IsCustomizeMovable() const
-	{
-		return FALSE;
-	}
 };
 
 IMPLEMENT_XTP_CONTROL(CXTPRibbonBarControlQuickAccessPopup, CXTPControlPopup)
@@ -187,12 +176,12 @@ public:
 	}
 	CSize GetSize(CDC* /*pDC*/)
 	{
-		CXTPRibbonPaintManager* pPaintManager = m_pParent->GetPaintManager()->GetRibbonPaintManager();
+		CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)m_pParent->GetPaintManager();
 		return CSize(pPaintManager->GetEditHeight() * 13 / 22, pPaintManager->GetEditHeight());
 	}
 	void Draw(CDC* pDC)
 	{
-		m_pParent->GetPaintManager()->GetRibbonPaintManager()->DrawRibbonQuickAccessMoreButton(pDC, this);
+		((CXTPRibbonBar*)GetParent())->GetRibbonPaintManager()->DrawRibbonQuickAccessMoreButton(pDC, this);
 	}
 
 	BOOL OnSetPopup(BOOL bPopup)
@@ -243,6 +232,9 @@ CXTPRibbonBar::CXTPRibbonBar()
 
 	m_pControlTab = (CXTPRibbonControlTab*)m_pControls->Add(new CXTPRibbonControlTab, XTP_ID_RIBBONCONTROLTAB, NULL, -1, TRUE);
 
+
+	m_barType = xtpBarTypeRibbon;
+
 	m_dwFlags = xtpFlagIgnoreSetMenuMessage | xtpFlagStretched;
 
 	m_bCustomizable = FALSE;
@@ -250,7 +242,7 @@ CXTPRibbonBar::CXTPRibbonBar()
 	m_bTabsVisible = TRUE;
 
 	m_nMinVisibleWidth = 250;
-	m_nMinVisibleHeight = -1;
+	m_bTrackOnHover = FALSE;
 
 	m_bMinimized = FALSE;
 
@@ -271,7 +263,6 @@ CXTPRibbonBar::CXTPRibbonBar()
 	m_bAllowQuickAccessCustomization = TRUE;
 
 	m_nGroupsHeight = 0;
-	m_nClientHeight = 0;
 	m_nQuickAccessHeight = 0;
 
 	m_nGroupsScrollPos = 0;
@@ -282,11 +273,12 @@ CXTPRibbonBar::CXTPRibbonBar()
 	EnableAnimation();
 }
 
-CXTPRibbonPaintManager* CXTPRibbonBar::GetRibbonPaintManager() const
+CXTPRibbonTheme* CXTPRibbonBar::GetRibbonPaintManager() const
 {
 	CXTPPaintManager* pPaintManager = GetPaintManager();
+	ASSERT(pPaintManager->BaseTheme() == xtpThemeRibbon);
 
-	return pPaintManager->GetRibbonPaintManager();
+	return (CXTPRibbonTheme*)pPaintManager;
 }
 
 
@@ -329,7 +321,7 @@ CXTPControlPopup* CXTPRibbonBar::AddSystemButton(int nID)
 	if (m_pControlSystemButton)
 		return m_pControlSystemButton;
 
-	m_pControlSystemButton = (CXTPRibbonControlSystemButton*)GetControls()->InsertAt(new CXTPRibbonControlSystemButton, 0);
+	m_pControlSystemButton = (CXTPControlPopup*)GetControls()->InsertAt(new CXTPRibbonControlSystemButton, 0);
 
 	if (nID > 0) m_pControlSystemButton->SetID(nID);
 
@@ -414,27 +406,10 @@ void CXTPRibbonBar::SetCurSel(int nIndex)
 
 CXTPRibbonTab* CXTPRibbonBar::InsertTab(int nItem, int nID)
 {
-	CString strPrompt;
-	VERIFY(strPrompt.LoadString(nID));
+	CString strCaption;
+	VERIFY(strCaption.LoadString(nID));
 
-	CXTPRibbonTab* pRibbonTab = InsertTab(nItem, strPrompt, nID);
-	if (!pRibbonTab)
-		return pRibbonTab;
-
-	if (strPrompt.Find('\n') != -1)
-	{
-		CString strCaption, strKeyboardTip, strToolTip;
-
-		AfxExtractSubString(strToolTip, strPrompt, 1);
-		AfxExtractSubString(strCaption, strPrompt, 2);
-		AfxExtractSubString(strKeyboardTip, strPrompt, 3);
-
-		pRibbonTab->SetCaption(strCaption.IsEmpty() ? strToolTip : strCaption);
-		pRibbonTab->SetTooltip(strToolTip);
-		pRibbonTab->SetKeyboardTip(strKeyboardTip);
-	}
-
-	return pRibbonTab;
+	return InsertTab(nItem, strCaption, nID);
 }
 
 CXTPRibbonTab* CXTPRibbonBar::InsertTab(int nItem, LPCTSTR lpszCaption, int nID)
@@ -449,9 +424,6 @@ CXTPRibbonTab* CXTPRibbonBar::InsertTab(int nItem, LPCTSTR lpszCaption, int nID)
 	{
 		SetCurSel(0);
 	}
-
-	m_bTrackOnHover = FALSE;
-	m_barType = xtpBarTypeRibbon;
 
 	return pItem;
 }
@@ -554,7 +526,7 @@ int CXTPRibbonBar::GetQuickAccessHeight() const
 int CXTPRibbonBar::CalcQuickAccessHeight()
 {
 	CClientDC dc(this);
-	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
+	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this, FALSE));
 
 	int nQuickAccessHeight = GetButtonSize().cy + 4;
 
@@ -577,10 +549,7 @@ CSize CXTPRibbonBar::CalcDockingLayout(int nLength, DWORD dwMode, int /*nWidth*/
 	m_bGroupReducedChanged = FALSE;
 
 	CXTPWindowRect rc(GetSite());
-
-	int nMinVisibleHeight = m_nMinVisibleHeight == -1 ? m_nMinVisibleWidth : m_nMinVisibleHeight;
-
-	if (rc.Height() < nMinVisibleHeight)
+	if (rc.Height() < m_nMinVisibleWidth)
 		bRibbonBarVisible = FALSE;
 
 	if (bRibbonBarVisible != m_bRibbonBarVisible)
@@ -598,7 +567,7 @@ CSize CXTPRibbonBar::CalcDockingLayout(int nLength, DWORD dwMode, int /*nWidth*/
 		return CSize(nLength, 0);
 	}
 
-	int nCaptionHeight = GetCaptionHeight() + GetRibbonTopBorder();
+	int nCaptionHeight = GetCaptionHeight();
 	int nHeight = nCaptionHeight + GetTabsHeight() + GetGroupsHeight();
 
 	m_nQuickAccessHeight = CalcQuickAccessHeight();
@@ -641,20 +610,12 @@ int CXTPRibbonBar::GetTabsHeight() const
 	return m_bTabsVisible ? GetRibbonPaintManager()->m_nTabsHeight : 2;
 }
 
-int CXTPRibbonBar::CalcClientHeight()
-{
-	if (m_nClientHeight > 0)
-		return m_nClientHeight;
-
-	return GetRibbonPaintManager()->GetEditHeight() * 3;
-}
-
 int CXTPRibbonBar::CalcGroupsHeight()
 {
 	if (m_nGroupsHeight > 0)
 		return m_nGroupsHeight;
 
-	int nHeight = CalcClientHeight();
+	int nHeight = GetRibbonPaintManager()->GetEditHeight() * 3;
 	int nCaptionHeight = GetRibbonPaintManager()->GetGroupCaptionHeight();
 
 	return nHeight + nCaptionHeight + 10;
@@ -695,9 +656,6 @@ void CXTPRibbonBar::SetTabsVisible(BOOL bVisible)
 
 BOOL CXTPRibbonBar::IsQuickAccessControl(CXTPControl* pControl) const
 {
-	if (!pControl)
-		return FALSE;
-
 	if (pControl == m_pControlQuickAccess)
 		return TRUE;
 
@@ -723,7 +681,8 @@ int CXTPRibbonBar::GetCaptionHeight() const
 	if (!IsFrameThemeEnabled() && !m_bShowCaptionAlways)
 		return 0;
 
-	int nHeight = GetRibbonPaintManager()->GetRibbonCaptionHeight();
+	int nBorder =  m_pFrameHook ? m_pFrameHook->GetFrameBorder() : 0;
+	int nHeight = GetRibbonPaintManager()->GetRibbonCaptionHeight() + nBorder;
 
 	if (!IsQuickAccessVisible() || IsQuickAccessBelowRibbon())
 		return nHeight;
@@ -731,10 +690,10 @@ int CXTPRibbonBar::GetCaptionHeight() const
 	int nQuickAccessHeight = GetQuickAccessHeight();
 	nQuickAccessHeight = max(nQuickAccessHeight, GetTabsHeight() - 2);
 
-	if (nHeight >= nQuickAccessHeight)
+	if (nHeight >= nQuickAccessHeight + nBorder)
 		return nHeight;
 
-	return nQuickAccessHeight;
+	return nQuickAccessHeight + nBorder;
 }
 
 void CXTPRibbonBar::Reposition(int cx, int cy)
@@ -757,12 +716,10 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 	if (bShowCaption)
 	{
 		nFrameBorder = m_pFrameHook ? m_pFrameHook->GetFrameBorder() : 0;
-		int nRibbonTopBorder = GetRibbonTopBorder();
-		int nCaptionOffset = nRibbonTopBorder - nFrameBorder;
 
-		m_rcCaption.SetRect(-nFrameBorder, nCaptionOffset, cx + nFrameBorder, GetCaptionHeight() + nRibbonTopBorder);
-		rcTabControl.OffsetRect(0, m_rcCaption.Height() + nCaptionOffset);
-		rcRibbonGroups.OffsetRect(0, m_rcCaption.Height() + nCaptionOffset);
+		m_rcCaption.SetRect(-nFrameBorder, 0, cx + nFrameBorder, GetCaptionHeight());
+		rcTabControl.OffsetRect(0, m_rcCaption.Height());
+		rcRibbonGroups.OffsetRect(0, m_rcCaption.Height());
 
 		m_rcCaptionText.SetRect(0, 0, cx, m_rcCaption.bottom);
 		m_rcHeader.SetRect(0, 0, cx, m_rcCaption.bottom);
@@ -811,18 +768,13 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 
 	int nCorner = nQuickAccessHeight + nTabsHeight - 3;
 
-	if (m_pControlSystemButton && m_pControlSystemButton->IsSimpleButton())
-	{
-		nCorner = 10 + GetSystemMetrics(SM_CXSMICON);
-	}
-
 	if (m_bShowQuickAccess && m_bShowQuickAccessBelow)
 	{
 		m_rcQuickAccess.SetRect(0, rcRibbonGroups.bottom, cx, rcRibbonGroups.bottom + nQuickAccessHeight);
 	}
 	else
 	{
-		m_rcQuickAccess.SetRect(3 + nCorner, m_rcCaption.top + nFrameBorder - 2, m_rcCaption.right, m_rcCaption.top + nFrameBorder - 2 + nQuickAccessHeight - 1);
+		m_rcQuickAccess.SetRect(3 + nCorner, nFrameBorder - 2, m_rcCaption.right, nFrameBorder - 2 + nQuickAccessHeight - 1);
 	}
 
 	int nLeft = 2;
@@ -832,26 +784,8 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 	{
 		CSize szControl(nCorner, nCorner - 1);
 		int nTop = m_rcCaption.top + nFrameBorder - 1;
-		nLeft = 0;
-		int nGap = 0;
 
-		if (m_pControlSystemButton->IsSimpleButton())
-		{
-			szControl = m_pControlSystemButton->GetSize(&dc);
-			nTop = rcTabControl.top + (nTabsHeight - szControl.cy) / 2;
-			nLeft ++;
-			nGap = 4;
-
-			CRect rcMargin = GetRibbonPaintManager()->m_rcFileButtonMargin;
-
-			nTop += rcMargin.top;
-			szControl.cy -= rcMargin.top;
-
-			nLeft += rcMargin.left;
-			nGap += rcMargin.right;
-
-		}
-		else if (!bShowCaption)
+		if (!bShowCaption)
 		{
 			szControl = m_pControlSystemButton->GetSize(&dc);
 			nTop = rcTabControl.top + (nTabsHeight - szControl.cy) / 2;
@@ -860,11 +794,12 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 		{
 			szControl = m_pControlSystemButton->GetSize(&dc);
 			nTop = m_rcCaption.top + (m_rcCaption.Height() - szControl.cy) / 2;
-			if (!m_bShowQuickAccessBelow) m_rcQuickAccess.left = 3 + szControl.cx + 12;
+			m_rcQuickAccess.left = 3 + szControl.cx + 12;
 		}
+		nLeft = 0;
 
 		CRect rcControl(nLeft, nTop, nLeft + szControl.cx, nTop + szControl.cy);
-		nLeft += szControl.cx + nGap;
+		nLeft += szControl.cx;
 
 		m_pControlSystemButton->SetHideWrap(!bShowCaption && !m_bTabsVisible);
 		m_pControlSystemButton->SetRect(rcControl);
@@ -919,8 +854,6 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 	BOOL bQuickAccessMoreVisible = FALSE;
 	BOOL bQuickAccessFound = FALSE;
 
-	BOOL bQuickAccessNearControls = (m_pControlSystemButton && m_pControlSystemButton->IsSimpleButton());
-
 	for (i = 0; i < (int)arrQuickAccessControls.GetSize(); i++)
 	{
 		CXTPControl* pControl = arrQuickAccessControls.GetAt(i);
@@ -934,10 +867,7 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 
 		if (pControl == m_pControlQuickAccess && bQuickAccessFound &&
 			!bQuickAccessNearTabs && !m_bShowQuickAccessBelow)
-		{
-			if (!bQuickAccessNearControls)
-				nLeft += 12;
-		}
+			nLeft += 12;
 
 		if (!pControl->IsVisible())
 			continue;
@@ -947,20 +877,14 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 		CSize szControl = pControl->GetSize(&dc);
 		int nTop = m_rcQuickAccess.top + (m_rcQuickAccess.Height() - szControl.cy + 1) / 2;
 
-		if (!m_bShowQuickAccessBelow && !bQuickAccessNearTabs)
+		if (!bSpecial && !m_bShowQuickAccessBelow && !bQuickAccessNearTabs)
 		{
-			if (bQuickAccessNearControls)
-				nTop += 1;
-			else if (!bSpecial)
-				nTop += 2;
+			nTop += 2;
 		}
 		if (!bSpecial)
 		{
 			bQuickAccessFound = TRUE;
 		}
-
-		if (pControl->GetBeginGroup())
-			nLeft += 6;
 
 		if (!bSpecial && (nLeft + szControl.cx > nRight))
 		{
@@ -1011,10 +935,10 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 
 	if (!m_bTabsVisible) rcTabControl.bottom = rcTabControl.top;
 
-	if (nLeft + 6 > nRight || !m_bTabsVisible)
+	if (nLeft + 6 > nRight)
 		m_rcTabControl.SetRectEmpty();
 	else
-		m_rcTabControl = CRect(nLeft, rcTabControl.top, nRight, rcTabControl.bottom + 1);
+		m_rcTabControl = CRect(nLeft, rcTabControl.top, nRight, rcTabControl.bottom);
 
 	if (m_pControlTab)
 	{
@@ -1031,10 +955,6 @@ void CXTPRibbonBar::Reposition(int cx, int cy)
 	if (bShowCaption)
 	{
 		RepositionContextHeaders();
-	}
-	else
-	{
-		m_pContextHeaders->RemoveAll();
 	}
 }
 
@@ -1157,7 +1077,7 @@ void CXTPRibbonBar::RepositionContextHeaders()
 			continue;
 		}
 		if (pPreviousHeader && pPreviousHeader->m_color == pTab->GetContextColor() &&
-			pPreviousHeader->m_strCaption == pTab->GetContextCaption())
+			pPreviousHeader->m_strCpation == pTab->GetContextCaption())
 		{
 			pPreviousHeader->m_rcRect.right = pTab->GetRect().right;
 			pPreviousHeader->m_pLastTab = pTab;
@@ -1222,11 +1142,6 @@ void CXTPRibbonBar::RepositionContextHeaders()
 	}
 }
 
-int CXTPRibbonBar::GetRibbonTopBorder() const
-{
-	return m_pFrameHook && m_pFrameHook->IsDwmEnabled() ? m_pFrameHook->GetFrameBorder() : 0;
-}
-
 void CXTPRibbonBar::RepositionCaptionButtons()
 {
 	if (!IsFrameThemeEnabled())
@@ -1250,7 +1165,7 @@ void CXTPRibbonBar::RepositionCaptionButtons()
 	DWORD dwExStyle = pSite->GetExStyle();
 	BOOL bToolWindow = (dwExStyle & WS_EX_TOOLWINDOW) == WS_EX_TOOLWINDOW;
 
-	int nFrameBorder = GetRibbonTopBorder();
+	int nFrameBorder = m_pFrameHook->GetFrameBorder();
 
 	m_rcHeader.DeflateRect(0, nFrameBorder, 0, 3);
 
@@ -1285,7 +1200,7 @@ void CXTPRibbonBar::RepositionCaptionButtons()
 
 
 	CClientDC dc(this);
-	CXTPFontDC font(&dc, &GetPaintManager()->GetFramePaintManager()->m_fontFrameCaption);
+	CXTPFontDC font(&dc, &GetRibbonPaintManager()->m_fontFrameCaption);
 
 	GetSite()->GetWindowText(m_strCaptionText);
 
@@ -1317,7 +1232,7 @@ void CXTPRibbonBar::RepositionGroups(CDC* pDC, CRect rcGroups)
 
 	CXTPRibbonGroups* pGroups = pTab->GetGroups();
 
-	pGroups->CalcDynamicSize(pDC, rcGroups.Width(), LM_COMMIT, CRect(rcGroups.left + 4, rcGroups.top + 3, 8, 3));
+	pGroups->CalcDynamicSize(pDC, rcGroups.Width(), LM_COMMIT, CRect(rcGroups.left + 4, rcGroups.top + 3, 6, 3));
 }
 
 void CXTPRibbonBar::EnsureVisible(CXTPControl* pControl)
@@ -1384,8 +1299,6 @@ void CXTPRibbonBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
 
 	CXTPPaintManager* pPaintManager = GetPaintManager();
 
-	CXTPFontDC font(pDC, pPaintManager->GetCommandBarFont(this));
-
 	GetRibbonPaintManager()->FillRibbonBar(pDC, this);
 
 	if (IsFrameThemeEnabled() && CRect().IntersectRect(m_rcCaption, rcClipBox))
@@ -1406,7 +1319,7 @@ void CXTPRibbonBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
 
 	GetTabPaintManager()->m_bDrawTextHidePrefix = !IsKeyboardCuesVisible();
 
-	if (m_pControlTab && CRect().IntersectRect(rcClipBox, m_rcTabControl) && m_bTabsVisible)
+	if (m_pControlTab && CRect().IntersectRect(rcClipBox, m_rcTabControl))
 	{
 		GetTabPaintManager()->DrawTabControl(m_pControlTab, pDC, m_rcTabControl);
 	}
@@ -1447,6 +1360,7 @@ void CXTPRibbonBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
 
 		if (CRect().IntersectRect(rcClipBox, rc))
 		{
+			CXTPFontDC font(pDC, pPaintManager->GetCommandBarFont(this, pControl->IsItemDefault()));
 			pControl->Draw(pDC);
 		}
 	}
@@ -1456,31 +1370,10 @@ void CXTPRibbonBar::DrawCommandBar(CDC* pDC, CRect rcClipBox)
 
 	if (pCommandBars && pCommandBars->IsCustomizeMode())
 	{
-		CXTPControl* pDragControl = DYNAMIC_DOWNCAST(CXTPControl, pCommandBars->GetDragControl());
-
-		if (pDragControl && pDragControl->GetParent() == this && pDragControl->IsVisible())
+		if (pCommandBars->GetDragControl() && pCommandBars->GetDragControl()->GetParent() == this &&
+			pCommandBars->GetDragControl()->IsVisible())
 		{
-			CRect rc = pDragControl->GetRect();
-			pDC->Draw3dRect(rc, 0, 0);
-			rc.DeflateRect(1, 1);
-			pDC->Draw3dRect(rc, 0, 0);
-		}
-
-		CXTPRibbonTab* pDragTab = DYNAMIC_DOWNCAST(CXTPRibbonTab, pCommandBars->GetDragControl());
-
-		if (pDragTab && pDragTab->GetParent() == this && pDragTab->IsVisible())
-		{
-			CRect rc = pDragTab->GetRect();
-			pDC->Draw3dRect(rc, 0, 0);
-			rc.DeflateRect(1, 1);
-			pDC->Draw3dRect(rc, 0, 0);
-		}
-
-		CXTPRibbonGroup* pDragGroup = DYNAMIC_DOWNCAST(CXTPRibbonGroup, pCommandBars->GetDragControl());
-
-		if (pDragGroup && pDragGroup->GetRibbonBar() == this && pDragGroup->IsVisible())
-		{
-			CRect rc = pDragGroup->GetRect();
+			CRect rc = pCommandBars->GetDragControl()->GetRect();
 			pDC->Draw3dRect(rc, 0, 0);
 			rc.DeflateRect(1, 1);
 			pDC->Draw3dRect(rc, 0, 0);
@@ -1504,12 +1397,31 @@ void CXTPRibbonBar::OnLButtonDblClk(UINT nFlags, CPoint point)
 	if ((nHit == HTNOWHERE) && IsFrameThemeEnabled() && m_pContextHeaders->HitTest(point))
 		nHit = HTCAPTION;
 
-	if (nHit == HTCAPTION || nHit == HTSYSMENU)
+	if (nHit == HTCAPTION)
 	{
 		CWnd* pSite = GetSite();
-		ClientToScreen(&point);
+		UINT syscmd = 0;
 
-		::DefWindowProc(pSite->GetSafeHwnd(), WM_NCLBUTTONDBLCLK, nHit, MAKELPARAM(point.x, point.y));
+		if ((pSite->GetStyle() & WS_MINIMIZE) || (pSite->GetStyle() & WS_MAXIMIZE))
+		{
+			syscmd = SC_RESTORE;
+		}
+		else if ((pSite->GetStyle() & WS_MAXIMIZEBOX))
+		{
+			syscmd = SC_MAXIMIZE;
+		}
+
+		if (syscmd != 0)
+		{
+			if (syscmd == SC_MAXIMIZE && pSite->GetStyle() & WS_SYSMENU)
+			{
+				if (::GetMenuState(::GetSystemMenu(pSite->GetSafeHwnd(), FALSE), syscmd, MF_BYCOMMAND) & MFS_GRAYED)
+					return;
+			}
+
+			ClientToScreen(&point);
+			pSite->SendMessage(WM_SYSCOMMAND, syscmd | HTCAPTION, MAKELPARAM(point.x, point.y));
+		}
 		return;
 	}
 
@@ -1522,6 +1434,7 @@ void CXTPRibbonBar::OnLButtonDblClk(UINT nFlags, CPoint point)
 		}
 		else if (m_bMinimizeOnDblClick)
 		{
+			m_pControlTab->SetSelectedItem(NULL);
 			SetRibbonMinimized(TRUE);
 		}
 		m_bMinimizeOnDblClick = TRUE;
@@ -1547,10 +1460,6 @@ int CXTPRibbonBar::HitTestCaption(CPoint point) const
 
 		if ((point.y < m_rcCaption.top + 5) && (dwStyle & WS_SIZEBOX) && ((dwStyle & WS_MAXIMIZE) == 0))
 			return HTTOP;
-
-		if (m_pControlSystemButton && m_pControlSystemButton->IsSimpleButton() &&
-			(point.x < 7 + GetSystemMetrics(SM_CXSMICON)) && (dwStyle & WS_SYSMENU))
-			return HTSYSMENU;
 
 		return HTCAPTION;
 	}
@@ -1579,12 +1488,6 @@ void CXTPRibbonBar::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	m_bMinimizeOnDblClick = m_pControlTab->HitTest(point) == GetSelectedTab();
 
-	if (m_bMinimizeOnDblClick && IsRibbonMinimized() && !m_pControlTab->IsPopupBarTracking())
-		m_bMinimizeOnDblClick = FALSE;
-
-	if (m_bMinimizeOnDblClick && IsCustomizeMode())
-		m_bMinimizeOnDblClick = FALSE;
-
 	CXTPRibbonTabContextHeader* pContextHeader = m_pContextHeaders->HitTest(point);
 	if (pContextHeader)
 	{
@@ -1602,28 +1505,23 @@ void CXTPRibbonBar::OnLButtonDown(UINT nFlags, CPoint point)
 		GetCommandBars()->ClosePopups();
 		UpdateWindow();
 
-		if (nHit == HTSYSMENU)
-		{
-			point.x = 0;
-			point.y = m_rcCaption.bottom;
-			ClientToScreen(&point);
-			pSite->SendMessage(0x0313, (WPARAM)pSite->GetSafeHwnd(), MAKELPARAM(point.x, point.y));
-
+		if (pSite->GetStyle() & WS_MAXIMIZE)
 			return;
-		}
 
 		if (nHit == HTCAPTION)
 		{
-			::DefWindowProc(pSite->GetSafeHwnd(), WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(point.x, point.y));
+			pSite->PostMessage(WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(point.x, point.y));
 		}
 		else if (nHit >= HTSIZEFIRST && nHit <= HTSIZELAST)
 		{
-			if (pSite->GetStyle() & WS_MAXIMIZE)
-				return;
+			if (pSite->GetStyle() & WS_SYSMENU)
+			{
+				if (::GetMenuState(::GetSystemMenu(pSite->GetSafeHwnd(), FALSE), SC_SIZE, MF_BYCOMMAND) & MFS_GRAYED)
+					return;
+			}
 
-			::DefWindowProc(pSite->GetSafeHwnd(), WM_NCLBUTTONDOWN, nHit, MAKELPARAM(point.x, point.y));
+			pSite->PostMessage(WM_SYSCOMMAND,  SC_SIZE + (nHit - HTSIZEFIRST + 1), MAKELPARAM(point.x, point.y));
 		}
-
 		return;
 	}
 
@@ -1632,38 +1530,10 @@ void CXTPRibbonBar::OnLButtonDown(UINT nFlags, CPoint point)
 		GetCommandBars()->ClosePopups();
 	}
 
-	if (m_bMinimizeOnDblClick)
+	if (m_bMinimizeOnDblClick || !m_pControlTab->PerformClick(m_hWnd, point))
 	{
-
 		CXTPMenuBar::OnLButtonDown(nFlags, point);
-		return;
 	}
-
-	if (m_pControlTab->PerformClick(m_hWnd, point))
-	{
-		if (IsRibbonMinimized())
-		{
-			m_pControlTab->ShowPopupBar(FALSE);
-			m_bMinimizeOnDblClick = TRUE;
-
-		}
-		return;
-	}
-
-	if (IsCustomizable() && IsCustomizeMode() && m_pControls->HitTest(point) == NULL && GetSelectedTab())
-	{
-		m_pCommandBars->ClosePopups();
-
-		CXTPRibbonTab* pTab = GetSelectedTab();
-		CXTPRibbonGroup* pGroup = pTab->GetGroups()->HitTest(point);
-		if (pGroup)
-		{
-			m_pCommandBars->SetDragControl(pGroup);
-			return;
-		}
-	}
-
-	CXTPMenuBar::OnLButtonDown(nFlags, point);
 }
 
 BOOL CXTPRibbonBar::IsRibbonMinimized() const
@@ -1681,14 +1551,18 @@ void CXTPRibbonBar::SetRibbonMinimized(BOOL bMinimized)
 		{
 			m_pControlTab->SetSelectedItem(m_pControlTab->FindNextFocusable(-1, +1));
 		}
-
-		RebuildControls(GetSelectedTab());
+		else if (!m_bMinimized)
+		{
+			RebuildControls(GetSelectedTab());
+		}
+		else if (bMinimized)
+		{
+			m_pControlTab->SetSelectedItem(NULL);
+		}
 
 		OnRecalcLayout();
 
 		GetCommandBars()->ClosePopups();
-
-		GetSite()->SendMessage(WM_XTP_RIBBONMINIMIZE, (WPARAM)this);
 	}
 }
 
@@ -1730,7 +1604,7 @@ void CXTPRibbonBar::OnRButtonUp(UINT nFlags, CPoint point)
 {
 	int nHit = HitTestCaption(point);
 
-	if (nHit == HTCAPTION || nHit == HTSYSMENU)
+	if (nHit == HTCAPTION)
 	{
 		GetCommandBars()->ClosePopups();
 		UpdateWindow();
@@ -1935,7 +1809,7 @@ BOOL CXTPRibbonBar::PreviewAccel(UINT chAccel)
 		{
 			SetTrackingMode(TRUE, FALSE, TRUE);
 
-			SetSelected(m_bTabsVisible ? m_pControlTab->GetIndex() : 0, TRUE);
+			SetSelected(m_pControlTab->GetIndex(), TRUE);
 			m_pControlTab->SetFocused(TRUE);
 		}
 
@@ -1971,7 +1845,7 @@ BOOL CXTPRibbonBar::PreviewAccel(UINT chAccel)
 		CString strCaption = pTab->GetCaption();
 		if (!strCaption.IsEmpty() && pTab->IsEnabled() && pTab->IsVisible())
 		{
-			int nAmpIndex = CXTPShortcutManager::FindAccelPos(strCaption);
+			int nAmpIndex = strCaption.Find(_T('&'));
 			BOOL bFound = nAmpIndex > -1 && nAmpIndex < strCaption.GetLength() - 1;
 
 			if (bFound && CXTPShortcutManager::CompareAccelKey(strCaption[nAmpIndex + 1], chAccel))
@@ -1991,8 +1865,6 @@ BOOL CXTPRibbonBar::PreviewAccel(UINT chAccel)
 				m_pControlTab->SetFocused(TRUE);
 
 				if (!IsRibbonMinimized()) pCommandBars->ShowKeyboardTips(this, 2);
-
-				m_pControlTab->ShowPopupBar(TRUE);
 
 				return TRUE;
 			}
@@ -2018,7 +1890,7 @@ BOOL CXTPRibbonBar::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard
 {
 	m_pControlTab->PerformMouseMove(m_hWnd, CPoint(-1, -1));
 
-	if (m_bTracking || bMode) HighlightGroup(NULL);
+	HighlightGroup(NULL);
 
 	return CXTPMenuBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard);
 }
@@ -2042,11 +1914,6 @@ BOOL CXTPRibbonBar::IsAllowQuickAccessControl(CXTPControl* pControl)
 		return pControl->GetID() > 0;
 	}
 
-	if (pControl->IsKindOf(RUNTIME_CLASS(CXTPRibbonGroupOption)))
-	{
-		return pControl->GetID() > 0;
-	}
-
 	if ((pControl->GetFlags() & xtpFlagNoMovable) == 0)
 		return TRUE;
 
@@ -2066,17 +1933,11 @@ void CXTPRibbonBar::ShowContextMenu(CPoint point, CXTPControl* pSelectedControl)
 
 	CWnd* pSite = m_bShowQuickAccess ? this : GetOwnerSite();
 
-	CXTPMouseManager* pMouseManager = XTPMouseManager();
-
 	if (pPopupBar->GetControls()->GetVisibleCount() > 0)
 	{
-		BOOL bLocked = pMouseManager->IsMouseLocked();
-		if (bLocked) pMouseManager->UnlockMouseMove();
-
-		CXTPCommandBars::TrackPopupMenu(pPopupBar, TPM_RIGHTBUTTON | (pSelectedControl->GetParent() == this ? 0 : TPM_RECURSE),
-			point.x, point.y, pSite, NULL, pSite);
-
-		if (bLocked) pMouseManager->LockMouseMove();
+		CXTPCommandBars::TrackPopupMenu(pPopupBar, TPM_RIGHTBUTTON
+			| (pSelectedControl->GetParent() == this ? 0 : TPM_RECURSE)
+			, point.x, point.y, pSite, NULL, pSite);
 	}
 
 	pPopupBar->InternalRelease();
@@ -2123,7 +1984,6 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 	{
 		pSelectedControl = ((CXTPPopupBar*)pSelectedControl->GetParent())->GetControlPopup();
 	}
-	CXTPCommandBars* pCommandBars = GetCommandBars();
 
 	BOOL bMoreMenu = pSelectedControl->GetID() == XTP_ID_RIBBONCONTROLQUICKACCESS;
 
@@ -2131,7 +1991,7 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 	if (!XTPResourceManager()->LoadMenu(&menu, bMoreMenu ? XTP_IDR_RIBBONCUSTOMIZEMENUMORE : XTP_IDR_RIBBONCUSTOMIZEMENU))
 		return NULL;
 
-	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
+	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
 	pPopupBar->SetOwner(this);
 	pPopupBar->LoadMenu(menu.GetSubMenu(0));
 
@@ -2141,7 +2001,7 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 	BOOL bQuickAccess = IsQuickAccessControl(pSelectedControl);
 
 	BOOL bAllow = IsAllowQuickAccessControl(pSelectedControl);
-	BOOL bSystem = ((pSelectedControl->GetFlags() & xtpFlagNoMovable) && !bAllow) || pSelectedControl->IsTemporary();
+	BOOL bSystem = (pSelectedControl->GetFlags() & xtpFlagNoMovable) || pSelectedControl->IsTemporary();
 
 	for (int i = 0; i < pPopupBar->GetControlCount(); i++)
 	{
@@ -2156,7 +2016,7 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 		if (pControl->GetID() == XTP_ID_RIBBONCUSTOMIZE_QUICKACCESSABOVE_MORE)
 			pControl->SetID(XTP_ID_RIBBONCUSTOMIZE_QUICKACCESSABOVE);
 
-		switch (pControl->GetID())
+		switch(pControl->GetID())
 		{
 			case XTP_ID_RIBBONCUSTOMIZE_REMOVE:
 				pControl->SetVisible(bQuickAccess && !bSystem && m_bAllowQuickAccessCustomization);
@@ -2171,12 +2031,7 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 
 			case XTP_ID_RIBBONCUSTOMIZE:
 				if (!m_bAllowQuickAccessCustomization)
-				{
-					if (pCommandBars->IsCustomizeAvail())
-						pControl->SetCaption(XTP_IDS_CUSTOMIZE);
-					else
-						pControl->SetVisible(FALSE);
-				}
+					pControl->SetCaption(XTP_IDS_CUSTOMIZE);
 				break;
 
 			case XTP_ID_RIBBONCUSTOMIZE_QUICKACCESSBELOW:
@@ -2189,7 +2044,6 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 
 			case XTP_ID_RIBBONCUSTOMIZE_LABEL:
 				pControl = pPopupBar->GetControls()->SetControlType(i, xtpControlLabel);
-				pControl->SetFlags(xtpFlagSkipFocus);
 				pControl->SetItemDefault(TRUE);
 				pControl->SetVisible(m_bAllowQuickAccessCustomization && GetQuickAccessControls()->GetOriginalControls());
 				break;
@@ -2197,8 +2051,6 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 			case XTP_ID_RIBBONCUSTOMIZE_MINIMIZE:
 				pControl->SetVisible(m_bAllowMinimize);
 				pControl->SetChecked(m_bMinimized);
-				if (GetTabCount() == 0)
-					pControl->SetEnabled(FALSE);
 				break;
 
 			case XTP_ID_RIBBONCUSTOMIZE_COMMANDS:
@@ -2234,7 +2086,7 @@ CXTPPopupBar* CXTPRibbonBar::CreateContextMenu(CXTPControl* pSelectedControl)
 			default:
 				continue;
 		}
-		pControl->SetFlags(pControl->GetFlags() | xtpFlagManualUpdate);
+		pControl->SetFlags(xtpFlagManualUpdate);
 	}
 
 	GetSite()->SendMessage(WM_XTP_TOOLBARCONTEXTMENU, (WPARAM)this, (LPARAM)pPopupBar);
@@ -2316,7 +2168,6 @@ LRESULT CXTPRibbonBar::OnCustomizeCommand(WPARAM wParam, LPARAM lParam)
 
 		pControl->SetBeginGroup(FALSE);
 		pControl->SetVisible(TRUE);
-		pControl->SetFlags(pControl->GetFlags() & ~xtpFlagNoMovable);
 
 		if (pControl->GetType() == xtpControlGallery || pControl->GetType() == xtpControlPopup)
 			pControl->SetStyle(xtpButtonIcon);
@@ -2356,19 +2207,6 @@ LRESULT CXTPRibbonBar::OnCustomizeCommand(WPARAM wParam, LPARAM lParam)
 		SetRibbonMinimized(!IsRibbonMinimized());
 		return TRUE;
 	}
-
-	if ((int)wParam < 9000 || (int)wParam > 10000)
-	{
-		tagNMCONTROL->pControl->GetParent()->GetRootParent()->OnTrackLost();
-
-		if (m_pCommandBars->GetSite()->SendMessage(WM_XTP_COMMAND, wParam, lParam) == 0)
-		{
-			m_pCommandBars->GetSite()->SendMessage(WM_COMMAND, wParam);
-		}
-		return TRUE;
-	}
-
-
 
 
 	return FALSE;
@@ -2481,7 +2319,7 @@ void CXTPRibbonBar::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive /*= FALSE*
 
 		if (pRibbonBar->m_pControlSystemButton)
 		{
-			m_pControlSystemButton = (CXTPRibbonControlSystemButton*)GetControls()->AddClone(pRibbonBar->m_pControlSystemButton,
+			m_pControlSystemButton = (CXTPControlPopup*)GetControls()->AddClone(pRibbonBar->m_pControlSystemButton,
 				0, TRUE);
 		}
 		RebuildControls(GetSelectedTab());
@@ -2632,8 +2470,6 @@ void CXTPRibbonBar::OnKeyboardTip(CXTPCommandBarKeyboardTip* pTip)
 		SetSelected(m_pControlTab->GetIndex(), TRUE);
 		m_pControlTab->SetFocused(TRUE);
 
-		m_pControlTab->ShowPopupBar(TRUE);
-
 		if (!IsRibbonMinimized()) GetCommandBars()->ShowKeyboardTips(this, 2);
 
 		return;
@@ -2646,7 +2482,7 @@ void CXTPRibbonScrollableBar::CreateControlKeyboardTips(CXTPControl* pControl, L
 		return;
 
 	CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
-	CXTPRibbonPaintManager* pPaintManager = pCommandBars->GetPaintManager()->GetRibbonPaintManager();
+	CXTPRibbonTheme* pPaintManager = (CXTPRibbonTheme*)pCommandBars->GetPaintManager();
 	CRect rcGroups = GetGroupsRect();
 
 	if (pControl->GetCaption().IsEmpty() && pControl->GetKeyboardTip().IsEmpty())
@@ -2783,26 +2619,18 @@ void CXTPRibbonBar::CreateKeyboardTips()
 			pCommandBars->m_keyboardTips.arr.Add(pWnd);
 		}
 
-		if (m_bTabsVisible)
+		for (i = 0; i < GetTabCount(); i++)
 		{
-			for (i = 0; i < GetTabCount(); i++)
+			CXTPRibbonTab* pTab = GetTab(i);
+
+			CString strCaption = pTab->GetCaption();
+			if (!strCaption.IsEmpty() && pTab->IsEnabled() && pTab->IsVisible())
 			{
-				CXTPRibbonTab* pTab = GetTab(i);
+				CPoint pt(pTab->GetRect().CenterPoint().x, pTab->GetRect().bottom - 9);
 
-				CString strCaption = pTab->GetCaption();
-				if (!strCaption.IsEmpty() && pTab->IsEnabled() && pTab->IsVisible())
-				{
-					CPoint pt(pTab->GetRect().CenterPoint().x, pTab->GetRect().bottom - 9);
+				CXTPCommandBarKeyboardTip* pWnd = new CXTPCommandBarKeyboardTip(pCommandBars, pTab, strCaption, pt, DT_CENTER | DT_TOP, TRUE);
 
-					CXTPCommandBarKeyboardTip* pWnd = new CXTPCommandBarKeyboardTip(pCommandBars, pTab, strCaption, pt, DT_CENTER | DT_TOP, TRUE);
-
-					if (!pTab->GetKeyboardTip().IsEmpty())
-					{
-						pWnd->m_strTip = pTab->GetKeyboardTip();
-					}
-
-					pCommandBars->m_keyboardTips.arr.Add(pWnd);
-				}
+				pCommandBars->m_keyboardTips.arr.Add(pWnd);
 			}
 		}
 
@@ -2883,9 +2711,6 @@ void CXTPRibbonBar::OnCustomizeDrop(CXTPControl* pDataObject, DROPEFFECT& dropEf
 		pClone->SetBeginGroup(bBeginGroup);
 		pCommandBars->SetDragControl(pClone);
 
-		if (m_pControlTab && nDropIndex == m_pControlTab->GetIndex() + 1 && bDropAfter)
-			pClone->SetFlags(pClone->GetFlags() | xtpFlagRightAlign);
-
 	}
 	else
 	{
@@ -2902,223 +2727,5 @@ void CXTPRibbonBar::OnCustomizeDrop(CXTPControl* pDataObject, DROPEFFECT& dropEf
 
 	m_rcMarker.SetRectEmpty();
 	Redraw();
-}
-
-void CXTPRibbonBar::CustomizeFindDropIndex(CXTPControl* pDataObject, const CPoint& point, CRect& rcMarker, int& nDropIndex, BOOL& bDropAfter)
-{
-	CXTPMenuBar::CustomizeFindDropIndex(pDataObject, point, rcMarker, nDropIndex, bDropAfter);
-
-	if (nDropIndex != -1)
-	{
-		if (m_pControlSystemButton && nDropIndex == m_pControlSystemButton->GetIndex())
-			rcMarker.SetRectEmpty();
-
-		if (IsQuickAccessControl(GetControl(nDropIndex)))
-			rcMarker.SetRectEmpty();
-	}
-
-	if (IsCustomizable() && rcMarker.IsRectEmpty() && GetSelectedTab())
-	{
-		CXTPRibbonGroup* pGroup = GetSelectedTab()->GetGroups()->HitTest(point);
-
-		if (pGroup && GetControls()->HitTest(point) == NULL)
-		{
-			CRect rc(pGroup->GetRect());
-			rcMarker.SetRect(rc.left + 2, rc.top + 2, rc.left + 8, rc.top + 22);
-
-			nDropIndex =  pGroup->GetControlGroupOption()->GetIndex();
-			bDropAfter = FALSE;
-			m_bVerticalMarker = FALSE;
-		}
-	}
-}
-
-#define xtpKeyDown xtpKeyPopup
-#define xtpKeyUp xtpKeyBack
-
-CRect CXTPRibbonScrollableBar::_GetBoundRect(CXTPControl* pControl, BOOL bSelected, XTPSpecialKey key)
-{
-	CRect rc(pControl->GetRect());
-
-	if (pControl->GetRibbonGroup() && DYNAMIC_DOWNCAST(CXTPRibbonGroupOption, pControl))
-	{
-		rc = pControl->GetRibbonGroup()->GetCaptionRect();
-		rc.DeflateRect(4, 0, 4, 0);
-	}
-	else if (!bSelected && (key == xtpKeyDown || key == xtpKeyUp) && !pControl->GetRibbonGroup() && DYNAMIC_DOWNCAST(CXTPRibbonBarControlQuickAccessPopup, pControl))
-	{
-		rc.right = CXTPClientRect(pControl->GetParent()).right;
-	}
-	else if (bSelected && key == xtpKeyUp && DYNAMIC_DOWNCAST(CXTPRibbonControlTab, pControl))
-	{
-		if (((CXTPRibbonControlTab*)pControl)->GetSelectedItem())
-		{
-			rc = ((CXTPRibbonControlTab*)pControl)->GetSelectedItem()->GetRect();
-		}
-	}
-
-	return rc;
-}
-
-BOOL CXTPRibbonBar::ProcessSpecialKey(XTPSpecialKey key)
-{
-	if (key != xtpKeyEscape)
-		HideKeyboardTips();
-
-	if (CXTPRibbonScrollableBar::ProcessSpecialKey(key))
-		return TRUE;
-
-	return CXTPMenuBar::ProcessSpecialKey(key);
-}
-
-BOOL CXTPRibbonScrollableBar::ProcessSpecialKey(XTPSpecialKey key)
-{
-	CXTPControl* pSelected = m_pParent->GetSelected();
-
-	if (!pSelected)
-		return FALSE;
-
-	if (key == xtpKeyReturn || key == xtpKeySpace)
-	{
-		if (pSelected->IsFocused())
-			pSelected->OnClick(TRUE);
-		else
-			pSelected->OnUnderlineActivate();
-
-		return TRUE;
-	}
-
-	if (key != xtpKeyDown && key != xtpKeyUp && key != xtpKeyLeft && key != xtpKeyRight)
-		return FALSE;
-
-	CRect rcCondidate(0, 0, 0, 0);
-	CRect rcSelected = _GetBoundRect(pSelected, TRUE, key);
-	int nSelCenter = rcSelected.CenterPoint().y;
-	CXTPControl* pCondidate = NULL;
-	CXTPControl* pFirst = NULL;
-	int nCount = m_pParent->GetControlCount();
-
-	if (key == xtpKeyRight)
-	{
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPControl* pControl = m_pParent->GetControl(i);
-			if (pControl == pSelected || !pControl->IsVisible(xtpHideScroll) || (pControl->GetFlags() & xtpFlagSkipFocus))
-				continue;
-
-			CRect rc = _GetBoundRect(pControl, FALSE, key);
-
-			if (((rc.top + 1 >= rcSelected.top && rc.top < rcSelected.bottom) || (rcSelected.top + 1 >= rc.top && rcSelected.top < rc.bottom)))
-			{
-				if ((rc.left >= rcSelected.right) && ((pCondidate == NULL) || (rc.left < rcCondidate.left) ||
-					(rc.left == rcCondidate.left && abs(rc.CenterPoint().y - nSelCenter) < abs(rcCondidate.CenterPoint().y - nSelCenter))))
-				{
-					pCondidate = pControl;
-					rcCondidate = rc;
-				}
-
-				if (pFirst == NULL || rc.left < pFirst->GetRect().left ||
-					(rc.left == pFirst->GetRect().left && abs(rc.CenterPoint().y - nSelCenter) < abs(pFirst->GetRect().CenterPoint().y - nSelCenter)))
-				{
-					pFirst = pControl;
-				}
-			}
-		}
-	}
-	else if (key == xtpKeyLeft)
-	{
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPControl* pControl = m_pParent->GetControl(i);
-			if (pControl == pSelected || !pControl->IsVisible(xtpHideScroll) || (pControl->GetFlags() & xtpFlagSkipFocus))
-				continue;
-
-			CRect rc = _GetBoundRect(pControl, FALSE, key);
-
-			if (((rc.top + 1 >= rcSelected.top && rc.top < rcSelected.bottom) || (rcSelected.top + 1 >= rc.top && rcSelected.top < rc.bottom)))
-			{
-				if ((rc.right <= rcSelected.left) && ((pCondidate == NULL) || (rc.right > rcCondidate.right) ||
-					(rc.right == rcCondidate.right && abs(rc.CenterPoint().y - nSelCenter) < abs(rcCondidate.CenterPoint().y - nSelCenter))))
-				{
-					pCondidate = pControl;
-					rcCondidate = rc;
-				}
-
-				if (pFirst == NULL || rc.right >= pFirst->GetRect().right ||
-					(rc.right == pFirst->GetRect().right && abs(rc.CenterPoint().y - nSelCenter) < abs(pFirst->GetRect().CenterPoint().y - nSelCenter)))
-				{
-					pFirst = pControl;
-				}
-			}
-		}
-	}
-	else if (key == xtpKeyDown)
-	{
-		nSelCenter = rcSelected.CenterPoint().x;
-
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPControl* pControl = m_pParent->GetControl(i);
-			if (pControl == pSelected || !pControl->IsVisible(xtpHideScroll) || (pControl->GetFlags() & xtpFlagSkipFocus))
-				continue;
-
-			CRect rc = _GetBoundRect(pControl, FALSE, key);
-
-			if (((rc.left + 1 >= rcSelected.left && rc.left < rcSelected.right) || (rcSelected.left + 1 >= rc.left && rcSelected.left < rc.right)))
-			{
-				if ((rc.top >= rcSelected.bottom) && ((pCondidate == NULL) || (rc.top < rcCondidate.top) ||
-					(rc.top == rcCondidate.top && abs(rc.CenterPoint().x - nSelCenter) < abs(rcCondidate.CenterPoint().x - nSelCenter))))
-				{
-					pCondidate = pControl;
-					rcCondidate = rc;
-				}
-			}
-		}
-	}
-	else if (key == xtpKeyUp)
-	{
-		nSelCenter = rcSelected.CenterPoint().x;
-
-		for (int i = 0; i < nCount; i++)
-		{
-			CXTPControl* pControl = m_pParent->GetControl(i);
-			if (pControl == pSelected || !pControl->IsVisible(xtpHideScroll) || (pControl->GetFlags() & xtpFlagSkipFocus))
-				continue;
-
-			CRect rc = _GetBoundRect(pControl, FALSE, key);
-
-			if (((rc.left + 1 >= rcSelected.left && rc.left < rcSelected.right) || (rcSelected.left + 1 >= rc.left && rcSelected.left < rc.right)))
-			{
-				if ((rc.bottom <= rcSelected.top) && ((pCondidate == NULL) || (rc.bottom > rcCondidate.bottom) ||
-					(rc.bottom == rcCondidate.bottom && abs(rc.CenterPoint().x - nSelCenter) < abs(rcCondidate.CenterPoint().x - nSelCenter))))
-				{
-					pCondidate = pControl;
-					rcCondidate = rc;
-				}
-			}
-		}
-	}
-
-	if (pCondidate)
-	{
-		m_pParent->SetSelected(pCondidate->GetIndex(), key == xtpKeyRight || key == xtpKeyDown ? TRUE_KEYBOARD_NEXT : TRUE_KEYBOARD_PREV);
-	}
-	else if (pFirst)
-	{
-		m_pParent->SetSelected(pFirst->GetIndex(), key == xtpKeyRight || key == xtpKeyDown? TRUE_KEYBOARD_NEXT : TRUE_KEYBOARD_PREV);
-	}
-
-
-	return TRUE;
-}
-
-void CXTPRibbonBar::Reset(BOOL /*bShowWarningMessage*/)
-{
-	CWnd* pWnd = GetSite();
-	if (pWnd && ::IsWindow(pWnd->m_hWnd)) pWnd->SendMessage(WM_XTP_CUSTOMIZATION_RESETTOOLBAR, 0, (LPARAM)this);
-
-	RefreshMenu();
-	OnInitialUpdate();
-	OnRecalcLayout();
 }
 

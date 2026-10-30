@@ -1,14 +1,13 @@
-// from server: 40% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Ribbon/XTPRibbonGroup.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Ribbon\XTPRibbonGroup.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPRibbonGroup.cpp: implementation of the CXTPRibbonGroup class.
 //
 // This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -41,7 +40,7 @@
 #include "XTPRibbonGroup.h"
 #include "XTPRibbonGroups.h"
 #include "XTPRibbonBar.h"
-#include "XTPRibbonPaintManager.h"
+#include "XTPRibbonTheme.h"
 #include "XTPRibbonQuickAccessControls.h"
 
 #ifdef _DEBUG
@@ -55,23 +54,10 @@ IMPLEMENT_SERIAL(CXTPRibbonGroup, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_C
 
 //////////////////////////////////////////////////////////////////////////
 // CXTPRibbonGroupOption
-IMPLEMENT_XTP_CONTROL(CXTPRibbonGroupOption, CXTPControlButton)
-
-CXTPRibbonGroupOption::CXTPRibbonGroupOption()
-{
-	SetFlags(xtpFlagNoMovable);
-}
 
 void CXTPRibbonGroupOption::Draw(CDC* pDC)
 {
-	if (m_pRibbonGroup)
-	{
-		m_pRibbonGroup->GetRibbonBar()->GetRibbonPaintManager()->DrawControlGroupOption(pDC, this, TRUE);
-	}
-	else
-	{
-		CXTPControlButton::Draw(pDC);
-	}
+	m_pRibbonGroup->GetRibbonBar()->GetRibbonPaintManager()->DrawControlGroupOption(pDC, this, TRUE);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,19 +68,19 @@ CXTPRibbonGroupControlPopup::CXTPRibbonGroupControlPopup(CXTPRibbonGroup* pGroup
 {
 	m_pRibbonGroup = pGroup;
 	m_pPopupGroup = pGroup;
-	SetFlags(xtpFlagManualUpdate | xtpFlagNoMovable);
+	SetFlags(xtpFlagManualUpdate);
 	m_controlType = xtpControlButtonPopup;
 	m_pCommandBar = CXTPPopupBar::CreatePopupBar(0);
 }
 
 CSize CXTPRibbonGroupControlPopup::GetSize (CDC* pDC)
 {
-	return GetParent()->GetPaintManager()->GetRibbonPaintManager()->DrawControlGroupPopup(pDC, this, FALSE);
+	return ((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawControlGroupPopup(pDC, this, FALSE);
 }
 
 void CXTPRibbonGroupControlPopup::Draw(CDC* pDC)
 {
-	GetParent()->GetPaintManager()->GetRibbonPaintManager()->DrawControlGroupPopup(pDC, this, TRUE);
+	((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawControlGroupPopup(pDC, this, TRUE);
 }
 
 BOOL CXTPRibbonGroupControlPopup::IsTransparent() const
@@ -202,11 +188,8 @@ CXTPRibbonGroup::CXTPRibbonGroup()
 	m_nId = -1;
 	m_nIconId = -1;
 	m_bReduced = FALSE;
-	m_nAllowReduce = 4;
 	m_bVisible = TRUE;
 	m_bControlsCentering = FALSE;
-
-	m_bAutoArrangeEditCaption = TRUE;
 
 
 	m_pControlGroupOption = new CXTPRibbonGroupOption();
@@ -237,15 +220,6 @@ void CXTPRibbonGroup::SetID(int nId)
 	m_nId = nId;
 	m_pControlGroupOption->SetID(m_nId);
 	m_pControlGroupPopup->SetID(m_nId);
-}
-
-void CXTPRibbonGroup::SetCaption(LPCTSTR lpszCaption)
-{
-	if (m_strCaption != lpszCaption)
-	{
-		m_strCaption = lpszCaption;
-		if (m_pParent) m_pParent->DelayLayout();
-	}
 }
 
 void CXTPRibbonGroup::Copy(CXTPRibbonGroup* pGroup)
@@ -291,55 +265,6 @@ void CXTPRibbonGroup::Remove(CXTPControl* pControl)
 	}
 }
 
-CXTPControl* CXTPRibbonGroup::FindControl(int nId) const
-{
-	return FindControl(xtpControlError, nId, FALSE, FALSE);
-}
-
-CXTPControl* CXTPRibbonGroup::FindControl(XTPControlType type, int nId, BOOL bVisible, BOOL bRecursive) const
-{
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
-	{
-		CXTPControl* pControl = GetAt(nIndex);
-		if ((type == xtpControlError || pControl->GetType() == type) &&
-			(!bVisible || pControl->IsVisible()) &&
-			(nId == -1 || nId == pControl->GetID()))
-			return pControl;
-
-		if (bRecursive)
-		{
-			CXTPCommandBar* pBar = pControl->GetCommandBar();
-			if (pBar)
-			{
-				pControl = pBar->GetControls()->FindControl(type, nId, bVisible, bRecursive);
-				if (pControl != NULL) return pControl;
-			}
-		}
-	}
-	return NULL;
-}
-
-CXTPControl* CXTPRibbonGroup::SetControlType(CXTPControl* pControl, XTPControlType type)
-{
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	if (IsPopupControlType(pControl->GetType()) && IsPopupControlType(type))
-	{
-		pControl->m_controlType = type;
-		return pControl;
-	}
-
-	CXTPControl* pNew = Add(type, 0, _T(""), IndexOf(pControl) + 1, FALSE);
-	pNew->CXTPControl::Copy(pControl, FALSE);
-	pNew->m_controlType = type;
-
-	Remove(pControl);
-
-	return pNew;
-
-}
 void CXTPRibbonGroup::RemoveAt(int nIndex)
 {
 	if (nIndex >= 0 && nIndex < GetCount())
@@ -431,7 +356,7 @@ void CXTPRibbonGroup::SetRect(CRect rc)
 
 void CXTPRibbonGroup::RepositionControls(CDC* pDC)
 {
-	CXTPRibbonPaintManager* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
+	CXTPRibbonTheme* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
 
 	int x = m_rcGroup.left + 4;
 	int y = m_rcGroup.top + pPaintManager->GetGroupCaptionHeight();
@@ -447,13 +372,6 @@ void CXTPRibbonGroup::RepositionControls(CDC* pDC)
 
 		x += sz.cx;
 	}
-}
-
-CRect CXTPRibbonGroup::GetCaptionRect() const
-{
-	CRect rcCaption(m_rcGroup);
-	rcCaption.top = rcCaption.bottom - GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight();
-	return rcCaption;
 }
 
 
@@ -808,15 +726,5 @@ BOOL CXTPRibbonGroup::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
 
 
 	return bResult;
-}
-
-BOOL CXTPRibbonGroup::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
-{
-	if (nCode == CN_EVENT && nID == XTP_CN_REDRAWPARENT)
-	{
-		GetRibbonBar()->Redraw(0, FALSE);
-		return TRUE;
-	}
-	return CCmdTarget::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 

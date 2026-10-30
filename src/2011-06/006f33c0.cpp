@@ -1,108 +1,81 @@
-// from server: 0% by colin
+// from server: 39% by colin
+// roc-cl: 30729
 // roc-lang: cpp
-// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: rbxgs v8datamodel/DebrisService.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+#include "v8datamodel/DebrisService.h"
+#include "v8datamodel/TimerService.h"
+#include "util/standardout.h"
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
+static RBX::Reflection::BoundFuncDesc<RBX::DebrisService, void(boost::shared_ptr<RBX::Instance>, double), 2> func_AddItem(&RBX::DebrisService::addItem, "AddItem", "item", "lifetime", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::PropDescriptor<RBX::DebrisService, int> prop_MaxItems("MaxItems", "Data", &RBX::DebrisService::getMaxItems, &RBX::DebrisService::setMaxItems, RBX::Reflection::PropertyDescriptor::STANDARD);
 
-boost::mutex& moo2()
+static void cleanup(boost::weak_ptr<RBX::Instance> item)
 {
-	static boost::mutex mutex2;
-	return mutex2;
-}
-
-void initMoo()
-{
-	moo2();
+	try
+	{
+		boost::shared_ptr<RBX::Instance> i = item.lock();
+		if (i)
+			i->setParent(NULL);
+	}
+	catch (std::exception& e)
+	{
+		RBX::StandardOut::singleton()->print(RBX::MESSAGE_WARNING, e);
+	}
 }
 
 namespace RBX
 {
-	// seems to be inlined
-	boost::mutex& Name::mutex()
+	DebrisService::DebrisService()
+		: Base("Debris"),
+		  maxItems(300),
+		  timer(NULL)
 	{
-		boost::call_once(initMoo, flag);
-		return moo2();
 	}
 
-	std::map<int, Name*>& Name::dictionary()
+	void DebrisService::setMaxItems(int value)
 	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
+		if (value != maxItems)
 		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
+			if (value < 0)
+				throw std::runtime_error("DebrisService MaxItems must be greater than 0");
 
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
+			maxItems = value;
+			raisePropertyChanged(prop_MaxItems);
+			DebrisService::cleanup();
 		}
 	}
 
-	const Name& Name::lookup(const std::string& sName)
+	void DebrisService::addItem(boost::shared_ptr<Instance> item, double lifetime)
 	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
+		if (timer)
+			timer->delay(boost::bind(&::cleanup, item), lifetime);
 
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
+		queue.push(item);
+		DebrisService::cleanup();
+	}
+
+	void DebrisService::cleanup()
+	{
+		while ((int)queue.size() > maxItems)
 		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
+			::cleanup(queue.front());
+			queue.pop();
 		}
 	}
 
-	const Name& Name::lookup(const char* sName)
+	void DebrisService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 	{
-		if (!sName)
+		while ((int)queue.size() > 0)
 		{
-			return getNullName();
+			::cleanup(queue.front());
+			queue.pop();
 		}
 
-		return lookup(std::string(sName));
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		timer = ServiceProvider::create<TimerService>(newProvider);
 	}
 }

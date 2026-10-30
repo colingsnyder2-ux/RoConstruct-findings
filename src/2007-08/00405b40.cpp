@@ -1,30 +1,12 @@
-// from server: 90% by colin
-struct UIEnumConnectionPoints_CComEnum_CComObject {
-    void* vtable;
-    char pad[0x14];
-    int field_18;
-    void* Destroy(char flag);
-    void sub_402fe0();
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_campaign_enum_e48885f48ab9e114.cpp
 
-struct GlobalObject {
-    void* vtable;
-};
-
-extern GlobalObject* g_object_8bae44;
-
-
-extern "C" void __cdecl sub_62fc62(void* p);
-
-void* UIEnumConnectionPoints_CComEnum_CComObject::Destroy(char flag) {
-    this->vtable = (void*)0x784fa8;
-    this->field_18 = 0xc0000001;
-    GlobalObject* g = g_object_8bae44;
-    void (__stdcall *fn)() = *(void (__stdcall**)())((char*)g->vtable + 8);
-    fn();
-    sub_402fe0();
-    if (flag & 1) {
-        sub_62fc62(this);
-    }
-    return this;
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#define _ATL_APARTMENT_THREADED
+#include <atlbase.h>
+#include <atlcom.h>
+template class ATL::CComEnumImpl<IEnumUnknown, &IID_IEnumUnknown, IUnknown*, ATL::_CopyInterface<IUnknown> >;
+template class ATL::CComEnum<IEnumUnknown, &IID_IEnumUnknown, IUnknown*, ATL::_CopyInterface<IUnknown>, ATL::CComSingleThreadModel>;

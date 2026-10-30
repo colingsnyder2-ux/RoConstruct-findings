@@ -1,9 +1,7 @@
-// from server: 40% by atomic.potato
-extern "C" double __cdecl f78a830(double, double);
-extern "C" void __cdecl f788d60(void*, double);
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-int f0079c700(double value, void* state)
-{
-    f788d60(state, f78a830(1.0, value));
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

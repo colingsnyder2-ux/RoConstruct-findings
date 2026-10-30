@@ -1,214 +1,271 @@
-// from server: 66% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client Rendering/RenderLib/Profiler.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_lexicalnumericfamily_eb9428ccda301e37.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "decomp.h"
+namespace boost {template<class E> __declspec(noreturn) void throw_exception(E const&);}
+#ifndef BOOST_LEXICAL_CAST_INCLUDED
+#define BOOST_LEXICAL_CAST_INCLUDED
 
-#include <G3D/RegistryUtil.h>
-#include <GLG3D/DXCaps.h>
-#include <GLG3D/GLCaps.h>
-#include <boost/lexical_cast.hpp>
+// Boost lexical_cast.hpp header  -------------------------------------------//
+//
+// See http://www.boost.org for most recent version including documentation.
+// See end of this header for rights and permissions.
+//
+// what:  lexical_cast custom keyword cast
+// who:   contributed by Kevlin Henney,
+//        enhanced with contributions from Terje Slettebø,
+//        with additional fixes and suggestions from Gennaro Prota,
+//        Beman Dawes, Dave Abrahams, Daryle Walker, Peter Dimov,
+//        and other Boosters
+// when:  November 2000, March 2003, June 2005
+
+#include <cstddef>
 #include <string>
-#include <windows.h>
+#include <typeinfo>
+#include <boost/config.hpp>
+#include <boost/limits.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/type_traits/is_pointer.hpp>
 
-namespace RBX {
-namespace Render {
+#ifdef BOOST_NO_STRINGSTREAM
+#include <strstream>
+#else
+#include <sstream>
+#endif
 
-typedef void (*DelayFunction)(unsigned int uiParameter);
+#if defined(BOOST_NO_STRINGSTREAM) || \
+    defined(BOOST_NO_STD_WSTRING) || \
+    defined(BOOST_NO_STD_LOCALE) 
+#define DISABLE_WIDE_CHAR_SUPPORT
+#endif
 
-static float getShaderModel();
-static int getCPUSpeed();
-static std::string getCPUMake();
-static std::string getMaxRes();
-static int getRam();
-
-// SIZE 0x80
-struct SpecData
+namespace boost
 {
-	static bool glLoaded;
+    // exception used to indicate runtime lexical_cast failure
+    class bad_lexical_cast : public std::bad_cast
+    {
+    public:
+        bad_lexical_cast() :
+        source(&typeid(void)), target(&typeid(void))
+        {
+        }
+        bad_lexical_cast(
+            const std::type_info &source_type,
+            const std::type_info &target_type) :
+            std::bad_cast("bad cast"), source(&source_type), target(&target_type)
+        {
+        }
+        const std::type_info &source_type() const
+        {
+            return *source;
+        }
+        const std::type_info &target_type() const
+        {
+            return *target;
+        }
+        virtual const char *what() const throw()
+        {
+            return "bad lexical cast: "
+                   "source type value could not be interpreted as target";
+        }
+        virtual ~bad_lexical_cast() throw()
+        {
+        }
+    private:
+        const std::type_info *source;
+        const std::type_info *target;
+    };
 
-	float shaderModel;      // 0x00
-	int videoMemory;        // 0x04
-	int CPUSpeed;           // 0x08
-	std::string glVendor;   // 0x0c
-	std::string gfxcard;    // 0x28
-	std::string cpu;        // 0x44
-	int ram;                // 0x60
-	std::string resolution; // 0x64
+    namespace detail // selectors for choosing stream character type
+    {
+        template<typename Type>
+        struct stream_char
+        {
+            typedef char type;
+        };
 
-	SpecData();
-};
+        #ifndef DISABLE_WIDE_CHAR_SUPPORT
+#if !defined(BOOST_NO_INTRINSIC_WCHAR_T)
+        template<>
+        struct stream_char<wchar_t>
+        {
+            typedef wchar_t type;
+        };
+#endif
 
-DECOMP_SIZE_ASSERT(SpecData, 0x80)
+        template<>
+        struct stream_char<wchar_t *>
+        {
+            typedef wchar_t type;
+        };
 
-bool SpecData::glLoaded;
+        template<>
+        struct stream_char<const wchar_t *>
+        {
+            typedef wchar_t type;
+        };
 
-// FUNCTION: WEBSERVICE 0x10169a30
-static float getShaderModel()
-{
-	if ((G3D::GLCaps::supports_GL_ARB_fragment_shader() && G3D::GLCaps::supports_GL_ARB_vertex_shader()) ||
-		(G3D::GLCaps::supports_GL_ARB_shader_objects() && G3D::GLCaps::supports_GL_ARB_shading_language_100())) {
-		return 2.0f;
-	}
+        template<>
+        struct stream_char<std::wstring>
+        {
+            typedef wchar_t type;
+        };
+        #endif
 
-	if (G3D::GLCaps::supports("GL_ATI_fragment_shader") || G3D::GLCaps::supports("GL_NV_fragement_program")) {
-		return 2.0f;
-	}
+        template<typename TargetChar, typename SourceChar>
+        struct widest_char
+        {
+            typedef TargetChar type;
+        };
 
-	if (G3D::GLCaps::supports("GL_ATI_texture_env_combine3") || G3D::GLCaps::supports("GL_NV_texture_shader3")) {
-		return 1.4f;
-	}
+        template<>
+        struct widest_char<char, wchar_t>
+        {
+            typedef wchar_t type;
+        };
+    }
+    
+    namespace detail // stream wrapper for handling lexical conversions
+    {
+        template<typename Target, typename Source>
+        class lexical_stream
+        {
+        private:
+            typedef typename widest_char<
+                typename stream_char<Target>::type,
+                typename stream_char<Source>::type>::type char_type;
 
-	if (G3D::GLCaps::supports("GL_NV_register_combiners")) {
-		return 1.2f;
-	}
+        public:
+            lexical_stream()
+            {
+                stream.unsetf(std::ios::skipws);
 
-	return 1.0f;
+                if(std::numeric_limits<Target>::is_specialized)
+                    stream.precision(std::numeric_limits<Target>::digits10 + 1);
+                else if(std::numeric_limits<Source>::is_specialized)
+                    stream.precision(std::numeric_limits<Source>::digits10 + 1);
+            }
+            ~lexical_stream()
+            {
+                #if defined(BOOST_NO_STRINGSTREAM)
+                stream.freeze(false);
+                #endif
+            }
+            bool operator<<(const Source &input)
+            {
+                return !(stream << input).fail();
+            }
+            template<typename InputStreamable>
+            bool operator>>(InputStreamable &output)
+            {
+                return !is_pointer<InputStreamable>::value &&
+                       stream >> output &&
+                       stream.get() ==
+#if defined(__GNUC__) && (__GNUC__<3) && defined(BOOST_NO_STD_WSTRING)
+// GCC 2.9x lacks std::char_traits<>::eof().
+// We use BOOST_NO_STD_WSTRING to filter out STLport and libstdc++-v3
+// configurations, which do provide std::char_traits<>::eof().
+    
+                           EOF;
+#else
+                           std::char_traits<char_type>::eof();
+#endif
+            }
+            bool operator>>(std::string &output)
+            {
+                #if defined(BOOST_NO_STRINGSTREAM)
+                stream << '\0';
+                #endif
+                output = stream.str();
+                return true;
+            }
+            #ifndef DISABLE_WIDE_CHAR_SUPPORT
+            bool operator>>(std::wstring &output)
+            {
+                output = stream.str();
+                return true;
+            }
+            #endif
+        private:
+            #if defined(BOOST_NO_STRINGSTREAM)
+            std::strstream stream;
+            #elif defined(BOOST_NO_STD_LOCALE)
+            std::stringstream stream;
+            #else
+            std::basic_stringstream<char_type> stream;
+            #endif
+        };
+    }
+
+    #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+
+    // call-by-const reference version
+
+    namespace detail
+    {
+        template<class T>
+        struct array_to_pointer_decay
+        {
+            typedef T type;
+        };
+
+        template<class T, std::size_t N>
+        struct array_to_pointer_decay<T[N]>
+        {
+            typedef const T * type;
+        };
+    }
+
+    template<typename Target, typename Source>
+    Target lexical_cast(const Source &arg)
+    {
+        typedef typename detail::array_to_pointer_decay<Source>::type NewSource;
+
+        detail::lexical_stream<Target, NewSource> interpreter;
+        Target result;
+
+        if(!(interpreter << arg && interpreter >> result))
+            throw_exception(bad_lexical_cast(typeid(NewSource), typeid(Target)));
+        return result;
+    }
+
+    #else
+
+    // call-by-value fallback version (deprecated)
+
+    template<typename Target, typename Source>
+    Target lexical_cast(Source arg)
+    {
+        detail::lexical_stream<Target, Source> interpreter;
+        Target result;
+
+        if(!(interpreter << arg && interpreter >> result))
+            throw_exception(bad_lexical_cast(typeid(Source), typeid(Target)));
+        return result;
+    }
+
+    #endif
 }
 
-// FUNCTION: WEBSERVICE 0x10169c60
-static __int64 GetCyclesDifference(DelayFunction DelayFunction, unsigned int uiParameter)
-{
-	unsigned int t0Lo, t0Hi;
-	unsigned int t1Lo, t1Hi;
+// Copyright Kevlin Henney, 2000-2005. All rights reserved.
+//
+// Distributed under the Boost Software License, Version 1.0. (See
+// accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-	__try {
-		__asm {
-			rdtsc
-			mov esi, eax
-			mov edi, edx
+#undef DISABLE_WIDE_CHAR_SUPPORT
+#endif
 
-			push uiParameter
-			call DelayFunction
-			pop ebx
-
-			rdtsc
-			mov t1Hi, edx
-			mov t1Lo, eax
-
-			mov t0Hi, edi
-			mov t0Lo, esi
-		}
-	}
-	__except (1) {
-		return 0;
-	}
-
-	return (__int64) t1Hi * 0x100000000 - ((__int64) t0Hi << 32) - t0Lo + t1Lo;
-}
-
-// FUNCTION: WEBSERVICE 0x10169d20
-static void Delay(unsigned int time)
-{
-	LARGE_INTEGER Frequency, StartCounter, EndCounter;
-
-	if (QueryPerformanceFrequency(&Frequency)) {
-		__int64 ticks = (Frequency.QuadPart / 1000) * time;
-
-		QueryPerformanceCounter(&StartCounter);
-
-		do {
-			QueryPerformanceCounter(&EndCounter);
-		} while ((EndCounter.QuadPart - StartCounter.QuadPart) < ticks);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10169d90
-static void DelayOverhead(unsigned int time)
-{
-	LARGE_INTEGER Frequency, StartCounter, EndCounter;
-
-	if (QueryPerformanceFrequency(&Frequency)) {
-		__int64 ticks = (Frequency.QuadPart / 1000) * time;
-
-		QueryPerformanceCounter(&StartCounter);
-
-		do {
-			QueryPerformanceCounter(&EndCounter);
-		} while ((EndCounter.QuadPart - StartCounter.QuadPart) == ticks);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x10169e00
-static std::string getCPUMake()
-{
-	std::string cpu_name;
-
-	if (G3D::RegistryUtil::readString(
-			"HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\ProcessorNameString",
-			cpu_name
-		)) {
-		return cpu_name;
-	}
-
-	return "Could not determine CPU name";
-}
-
-// FUNCTION: WEBSERVICE 0x10169ee0
-static int getCPUSpeed()
-{
-	int speed;
-
-	if (G3D::RegistryUtil::read32bitNumber(
-			"HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz",
-			speed
-		)) {
-		if (speed > 300) {
-			return speed;
-		}
-	}
-
-	__int64 total = 0;
-	__int64 overhead = 0;
-
-	for (int i = 0; i < 2; i++) {
-		total += GetCyclesDifference(Delay, 50);
-		overhead += GetCyclesDifference(DelayOverhead, 50);
-	}
-
-	total = (total - overhead) / 2;
-	total = total / 50;
-	total = total / 1000;
-
-	if (total < 100 || total > 50000) {
-		total = 1400;
-	}
-
-	return (int) total;
-}
-
-// FUNCTION: WEBSERVICE 0x10169ff0
-static std::string getMaxRes()
-{
-	int width = GetSystemMetrics(SM_CXSCREEN);
-	int height = GetSystemMetrics(SM_CYSCREEN);
-
-	std::string w = boost::lexical_cast<std::string>(width);
-	std::string h = boost::lexical_cast<std::string>(height);
-
-	return w + "x" + h;
-}
-
-static int getRam()
-{
-	MEMORYSTATUS memoryStatus;
-
-	GlobalMemoryStatus(&memoryStatus);
-
-	return (int) memoryStatus.dwTotalPhys / (1024 * 1024);
-}
-
-// FUNCTION: WEBSERVICE 0x1016a100
-SpecData::SpecData()
-	: shaderModel(glLoaded ? getShaderModel() : 0.0f),
-	  videoMemory((int) (G3D::DXCaps::videoMemorySize() / (1024 * 1024))), CPUSpeed(getCPUSpeed()),
-	  glVendor(glLoaded ? G3D::GLCaps::vendor() : "?"), gfxcard(glLoaded ? G3D::GLCaps::renderer() : "?"),
-	  cpu(getCPUMake()), ram(getRam()), resolution(getMaxRes())
-{
-}
-
-} // namespace Render
-} // namespace RBX
+template std::string boost::lexical_cast<std::string,int>(const int&);
+template std::string boost::lexical_cast<std::string,unsigned int>(const unsigned int&);
+template std::string boost::lexical_cast<std::string,long>(const long&);
+template std::string boost::lexical_cast<std::string,unsigned long>(const unsigned long&);
+template std::string boost::lexical_cast<std::string,float>(const float&);
+template std::string boost::lexical_cast<std::string,double>(const double&);
+template std::string boost::lexical_cast<std::string,short>(const short&);
+template std::string boost::lexical_cast<std::string,unsigned short>(const unsigned short&);
+template std::string boost::lexical_cast<std::string,bool>(const bool&);
+template std::string boost::lexical_cast<std::string,char>(const char&);
+template std::string boost::lexical_cast<std::string,unsigned char>(const unsigned char&);

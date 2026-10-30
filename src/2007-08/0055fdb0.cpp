@@ -1,5 +1,4 @@
-// from server: 70% by colin
-// roc 2007-08 0055fdb0  unit: seg_00550000  size: 47 bytes
+// roc 2007-08 0055fdb0  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fdb0
 //
 // 0055fdb0  8b442404             mov eax, dword ptr [esp + 4]
@@ -17,24 +16,12 @@
 // 0055fdd9  8bc6                 mov eax, esi
 // 0055fddb  5e                   pop esi
 // 0055fddc  c20400               ret 4
-// library rbxgs/v8datamodel\Selection.cpp (function ??0FilteredSelection@RBX@@QAE@XZ)
+// copied from an identical function in another client (function ??0CutVerb@@QAE@H@Z)
 
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Selection.cpp
-
-struct FilteredSelection {
-    void* vftable;
-    void construct(const char* name);
-    FilteredSelection(const char* name);
-};
-
-extern "C" void* __stdcall basic_string_ctor(void* self, const char* s);
-extern "C" void __cdecl construct_helper(FilteredSelection* self, const char* name);
-
-FilteredSelection::FilteredSelection(const char* name) {
-    basic_string_ctor(this, "Duplicate");
-    construct_helper(this, name);
-    this->vftable = (void*)0x7a940c;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("Duplicate",p){}

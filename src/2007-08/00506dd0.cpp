@@ -1,13 +1,14 @@
-// from server: 98% by colin
+// from server: 100% by tajop
 struct Vector3 {
     float x, y, z;
 };
 
 struct Ray {
     void* vtable;
-    Vector3 m_origin;
-    Vector3 m_direction;
-    Vector3 m_invDirection;
+    char pad_04[8];      // untouched by ctor
+    float f_0c;          // target: fstp [esi+0xc]
+    float f_10;          // target: fstp [esi+0x10]
+    Vector3 m_invDirection; // target: lea ecx,[esi+0x14]
     void set(const Vector3& origin, const Vector3& direction);
     Ray();
 };
@@ -25,11 +26,11 @@ Ray::Ray()
 {
     vtable = (void*)0x7a060c;
     sub_475050(&m_invDirection);
-    m_origin.z = G3D_ray_epsilon;
+    f_0c = G3D_ray_epsilon;
     if (!(G3D_ray_inf_init_flag & 1)) {
         G3D_ray_inf_init_flag |= 1;
         G3D_ray_inf_d = *(double*)G3D_ray_inf_ptr;
     }
-    m_direction.x = (float)G3D_ray_inf_d;
+    f_10 = (float)G3D_ray_inf_d;
     sub_506b40(this, G3D_ray_inf);
 }

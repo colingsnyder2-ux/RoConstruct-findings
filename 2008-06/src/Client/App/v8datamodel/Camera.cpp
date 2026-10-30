@@ -514,4 +514,23 @@ namespace RBX
 
 		return currentDistance;
 	}
+
+	bool Camera::canZoom(int direction) const
+	{
+		G3D::Vector3 v = cameraGoal.translation - cameraFocus.translation;
+		float distance = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+		if (direction > 0)
+			return distance > distanceMin();
+		else
+			return distance < distanceMax();
+	}
+
+	bool Camera::canTilt(int direction) const
+	{
+		float elevation = Math::elevationAngle(cameraGoal.lookVector());
+		if (direction < 0)
+			return elevation >= -Math::piHalf();
+		else
+			return elevation <= Math::piHalf();
+	}
 }

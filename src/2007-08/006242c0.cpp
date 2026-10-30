@@ -1,47 +1,71 @@
-// from server: 44% by colin
-// roc 2007-08 006242c0  unit: RBX::ArrowButton  size: 213 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006242c0
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_wordlist_plain_native_family_a48f6f07beb1c62f.cpp
 
-extern "C" {
-    void __stdcall sub_77E460();
-    void __stdcall sub_77E5E4();
-    void __stdcall sub_77E5E0();
-    void __stdcall sub_77E434();
-    void __stdcall sub_77E4FC();
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("util/ContentProvider.h", "../roc_wordlist_static_asset_header_179d09ed9a896b44.cpp")
+#include <set>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "util/ContentProvider.h"
+namespace RBX {
+	class WordList
+	{
+	private:
+		std::set<std::string> blacklist;
+		void decrypt(std::string& str);
+	public:
+		WordList();
+		~WordList();
+
+		bool ContainsProfanity(std::string str);
+
+	};
+
+
+void WordList::decrypt(std::string& str)
+{
+	for(unsigned i = 0; i<str.size(); ++i){
+		str[i] = 0x55 ^ str[i];
+	}
 }
 
-struct StringIter {
-    void* p;
-};
-
-struct MyString {
-    char pad[0x1c];
-    void begin(StringIter* out);
-    void end(StringIter* out);
-    void erase(StringIter* out, StringIter first, StringIter last);
-};
-
-struct Locale {
-    void _Incref();
-    void dtor();
-};
-
-struct ArrowButton {
-    void func(int a, int b);
-};
-
-void __stdcall helper_6241c0(void* out, int a, int b, int c, int d);
-
-void ArrowButton::func(int a, int b)
+WordList::WordList()
 {
-    Locale loc;
-    StringIter first;
-    StringIter last;
-    StringIter result;
-    MyString* str = (MyString*)((char*)this + 0x4c);
-    str->begin(&first);
-    str->end(&last);
-    helper_6241c0(&result, *(int*)&first, *(int*)&last, a, b);
-    str->erase(&result, first, last);
-    loc.dtor();
+	/* Load blacklist
+
+	
+	*/
+
+	std::string filename = ContentProvider::getAssetFile("Fonts\\diogenes.fnt");
+	
+	std::ifstream infile(filename.c_str());
+	std::string line;
+	while( std::getline(infile, line, '\n'))
+	{
+		boost::to_lower(line);
+		boost::trim(line);
+		blacklist.insert(line);
+	}
+
+	infile.close();
+}
+WordList::~WordList()
+{
+
+}
+bool WordList::ContainsProfanity(std::string str)
+{
+	/*
+	1. Convert query to lower case
+	2. Check for in black list
+	*/
+
+	boost::to_lower(str);
+
+	return blacklist.find(str) != blacklist.end();
+}
+
+
 }

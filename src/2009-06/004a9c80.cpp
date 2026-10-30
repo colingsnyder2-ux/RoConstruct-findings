@@ -1,10 +1,10 @@
-// from server: 99% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Win32Window.cpp
+// roc-lib: g3d-6.09 GLG3Dcpp/roc_line_eb2a2907090c8b55.cpp
 
 // Candidate translation unit (score above; library headers required).
+#line 1 ".\\glg3dcpp\\Win32Window.cpp"
 /**
   @file Win32Window.cpp
 
@@ -728,7 +728,9 @@ bool Win32Window::inputCapture() const {
 
 
 void Win32Window::setGammaRamp(const Array<uint16>& gammaRamp) {
+#line 772
     alwaysAssertM(gammaRamp.size() >= 256, "Gamma ramp must have at least 256 entries");
+#line 725
 
     Log* debugLog = Log::common();
 

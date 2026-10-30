@@ -1,15 +1,15 @@
-// from server: 69% by colin
-struct boost_iostreams_DUoutput_V_basic_null_device_stream_buffer {
-    void* field_0;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-    void some_method();
-};
-
-extern "C" void __cdecl sub_859dd0(void*);
-extern "C" void __cdecl sub_983144(void*, void*);
-
-void boost_iostreams_DUoutput_V_basic_null_device_stream_buffer::some_method() {
-    char buf[0x28];
-    sub_859dd0(buf);
-    sub_983144(buf, (void*)0xd21de0);
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

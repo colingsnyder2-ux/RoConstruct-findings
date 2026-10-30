@@ -1,99 +1,54 @@
-// from server: 73% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-lib: rbxgs-net roc_player_loadappearance_genuine_d68f705aae6a1ff2.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
+#undef _RELEASEASSERT
+#define private public
+#include "Client.h"
+#include "Player.h"
+#include "security/SecurityContext.h"
+#include "v8datamodel/TimerService.h"
+#include "v8datamodel/CharacterAppearance.h"
+#include "v8datamodel/Accoutrement.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/SpawnLocation.h"
+#include "v8world/World.h"
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
+#undef private
 
-namespace RBX
+static void setAppearanceParent(boost::shared_ptr<RBX::Instance> parent, boost::shared_ptr<RBX::Instance> instance)
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	if (dynamic_cast<RBX::CharacterAppearance*>(instance.get()))
+		instance->setParent(parent.get());
+	else if (dynamic_cast<RBX::Accoutrement*>(instance.get()))
+		instance->setParent(parent.get());
+	else
+		throw std::runtime_error("Attempt to add a non-CharacterAppearance/Accoutrement object to a character");
+}
 
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+namespace RBX { namespace Network {
+void Player::loadCharacterAppearance()
+{
+	if (!Players::backendProcessing(this, true))
+		throw std::runtime_error("LoadCharacterAppearance can only be called by the backend server");
 
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
+	removeCharacterAppearance();
+
+	if (character && !characterAppearance.empty())
 	{
-		setName("Run Service");
-	}
-
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
-
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
-
-		if (join)
-			runThread->join();
-	}
-
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
+		std::vector<boost::shared_ptr<Instance>> characterApperance;
 		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
+			std::vector<std::string> strings;
+			boost::algorithm::split(strings, this->characterAppearance, boost::algorithm::is_any_of(";"));
+			for (size_t i = 0; i < strings.size(); i++)
+				ContentProvider::singleton().load(ContentId(strings[i]), characterApperance);
 		}
-	}
-
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
-
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
+		std::for_each(characterApperance.begin(), characterApperance.end(), boost::bind(&setAppearanceParent, character, _1));
+		if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
+			workspace->getWorld()->update();
 	}
 }
+}}

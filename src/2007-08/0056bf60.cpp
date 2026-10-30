@@ -1,23 +1,51 @@
-// from server: 0% by colin
-struct ArchiveBinder {
-    int field0;
-    int construct(int arg);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
+
+// Candidate translation unit (score above; library headers required).
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-int ArchiveBinder::construct(int arg) {
-    int* p;
-    this->field0 = 0;
-    p = (int*)operator_new(0x10);
-    if (p != 0) {
-        p[1] = 1;
-        p[2] = 1;
-        p[0] = 0x7a9ebc;
-        p[3] = arg;
-    } else {
-        p = 0;
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+extern void __cdecl deleteObject(Object*);
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
     }
-    this->field0 = (int)p;
-    return (int)this;
+    catch (...) {
+        deleteObject(p);
+        throw;
+    }
 }

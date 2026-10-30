@@ -1,569 +1,326 @@
-// from server: 35% by colin
-// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/program_options/src/options_description.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_http_trust_once_c8cab14bd7631575.cpp
 
 // Candidate translation unit (score above; library headers required).
-// Copyright Vladimir Prus 2002-2004.
-// Copyright Bertolt Mildner 2004.
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt
-// or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-
-#define BOOST_PROGRAM_OPTIONS_SOURCE
-#include <boost/program_options/config.hpp>
-#include <boost/program_options/options_description.hpp>
-// FIXME: this is only to get multiple_occureces class
-// should move that to a separate headers.
-#include <boost/program_options/parsers.hpp>
-
-
-#include <boost/lexical_cast.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/detail/workaround.hpp>
-#include <boost/throw_exception.hpp>
-
-#include <cassert>
-#include <climits>
-#include <cstring>
-#include <cstdarg>
+#define _SCL_SECURE_NO_DEPRECATE // required to disable a warning
+#include "util/Http.h"
+#include <boost/thread/once.hpp>
+#include <windows.h>
+#include <atlutil.h>
+#include <wininet.h>
 #include <sstream>
-#include <iterator>
-using namespace std;
+#include <G3D/format.h>
+#include <boost/scoped_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 
-namespace boost { namespace program_options {
+class HttpRequest_source : public boost::iostreams::device<boost::iostreams::input>
+{
+private:
+	void* request;
 
-    option_description::option_description()
-    {
-    }
-    
-    option_description::
-    option_description(const char* name,
-                       const value_semantic* s)
-    : m_value_semantic(s)
-    {
-        this->set_name(name);
-    }
-                                           
+public:
+	HttpRequest_source(void* request)
+		: request(request)
+	{
+	}
+public:
+	// does not match
+	int read(char* s, int n)
+	{
+		DWORD numBytes;
+		if (!InternetQueryDataAvailable(request, &numBytes, 0, NULL))
+			return -1;
+		if (numBytes == 0)
+			return -1;
 
-    option_description::
-    option_description(const char* name,
-                       const value_semantic* s,
-                       const char* description)
-    : m_description(description), m_value_semantic(s)
-    {
-        this->set_name(name);
-    }
+		DWORD bytesRead;
+		if (!InternetReadFile(request, s, n, &bytesRead))
+			throw std::runtime_error("InternetReadFile failed");
 
-    option_description::~option_description()
-    {
-    }
+		return bytesRead;
+	}
+};
 
-    option_description::match_result
-    option_description::match(const std::string& option, bool approx) const
-    {
-        match_result result = no_match;
-        if (!m_long_name.empty()) {
+struct String_sink : public boost::iostreams::device<boost::iostreams::output>
+{
+public:
+	std::string& s;
 
-            if (*m_long_name.rbegin() == '*')
-            {
-                // The name ends with '*'. Any specified name with the given
-                // prefix is OK.
-                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
-                    == 0)
-                    result = approximate_match;
-            }
+public:
+	String_sink(std::string& s)
+		: s(s)
+	{
+	}
+public:
+	// NOTE: not checked
+	int write(const char* c, int n)
+	{
+		s.append(c, n);
+		return n;
+	}
+};
 
-            if (approx)
-            {
-                if (m_long_name.find(option) == 0)
-                    if (m_long_name == option)
-                        result = full_match;
-                    else
-                        result = approximate_match;
-            }
-            else
-            {
-                if (m_long_name == option)
-                    result = full_match;
-            }
-        }
-         
-        if (m_short_name == option)
-            result = full_match;
+namespace RBX
+{
+	void ThrowIfFailure(bool success, const char* message)
+	{
+		if (!success)
+		{
+			DWORD error = GetLastError();
 
-        return result;        
-    }
+			char buffer[256];
+			if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_SYS_DEFAULT), buffer, sizeof(buffer), NULL))
+				throw std::runtime_error(G3D::format("%s, err=0x%X", message, error));
+			else
+				throw std::runtime_error(G3D::format("%s, %s", message, buffer));
+		}
+	}
 
-    const std::string& 
-    option_description::key(const std::string& option) const
-    {        
-        if (!m_long_name.empty()) 
-            if (m_long_name.find('*') != string::npos)
-                // The '*' character means we're long_name
-                // matches only part of the input. So, returning
-                // long name will remove some of the information,
-                // and we have to return the option as specified
-                // in the source.
-                return option;
-            else
-                return m_long_name;
-        else
-            return m_short_name;
-    }
+	template<bool isPost>
+	static void httpGetPost(const std::string& url, std::istream& data, bool compressData, const char* additionalHeaders, std::string& response)
+	{
+		if (url.size() == 0)
+			throw std::runtime_error("empty url");
 
-    const std::string&
-    option_description::long_name() const
-    {
-        return m_long_name;
-    }
+		if (!Http::trustCheck(url.c_str()))
+			throw std::runtime_error(G3D::format("trust check failed for %s", url.c_str()));
 
-    option_description&
-    option_description::set_name(const char* _name)
-    {
-        std::string name(_name);
-        string::size_type n = name.find(',');
-        if (n != string::npos) {
-            assert(n == name.size()-2);
-            m_long_name = name.substr(0, n);
-            m_short_name = '-' + name.substr(n+1,1);
-        } else {
-            m_long_name = name;
-        }
-        return *this;
-    }
+		ATL::CUrl crack;
+		crack.CrackUrl(url.c_str());
 
-    const std::string&
-    option_description::description() const
-    {
-        return m_description;
-    }
+		if (crack.GetHostNameLength() == 0)
+			throw std::runtime_error(G3D::format("'%s' is missing a hostName", url.c_str()));
 
-    shared_ptr<const value_semantic>
-    option_description::semantic() const
-    {
-        return m_value_semantic;
-    }
-    
-    std::string 
-    option_description::format_name() const
-    {
-        if (!m_short_name.empty())
-            return string(m_short_name).append(" [ --").
-            append(m_long_name).append(" ]");
-        else
-            return string("--").append(m_long_name);
-    }
+		HINTERNET session = InternetOpenA("Roblox", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 
-    std::string 
-    option_description::format_parameter() const
-    {
-        if (m_value_semantic->max_tokens() != 0)
-            return m_value_semantic->name();
-        else
-            return "";
-    }
+		HINTERNET connection = InternetConnectA(session,
+			crack.GetHostName(),
+			crack.GetPortNumber(),
+			crack.GetUserNameA(),
+			crack.GetPassword(),
+			INTERNET_SERVICE_HTTP,
+			0,
+			TRUE);
 
-    options_description_easy_init::
-    options_description_easy_init(options_description* owner)
-    : owner(owner)
-    {}
+		{
+			ATL::CString s = crack.GetUrlPath();
+			s += crack.GetExtraInfo();
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const char* description)
-    {
-        // Create untypes semantic which accepts zero tokens: i.e. 
-        // no value can be specified on command line.
-        // FIXME: does not look exception-safe
-        shared_ptr<option_description> d(
-            new option_description(name, new untyped_value(true), description));
+			HINTERNET request = HttpOpenRequestA(
+				connection,
+				isPost ? "POST" : "GET",
+				s.GetString(),
+				NULL,
+				NULL,
+				NULL,
+				INTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_KEEP_CONNECTION | INTERNET_FLAG_NEED_FILE,
+				TRUE);
 
-        owner->add(d);
-        return *this;
-    }
+			if (!request)
+				throw std::runtime_error(G3D::format("HttpOpenRequest failed for %s", url.c_str()));
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const value_semantic* s)
-    {
-        shared_ptr<option_description> d(new option_description(name, s));
-        owner->add(d);
-        return *this;
-    }
+			if (additionalHeaders)
+			{
+				if (!HttpAddRequestHeadersA(request, additionalHeaders, (int)strlen(additionalHeaders), HTTP_ADDREQ_FLAG_ADD))
+					ThrowIfFailure(false, "HttpAddRequestHeaders failed");
+			}
 
-    options_description_easy_init&
-    options_description_easy_init::
-    operator()(const char* name,
-               const value_semantic* s,
-               const char* description)
-    {
-        shared_ptr<option_description> d(new option_description(name, s, description));
+			if (!HttpAddRequestHeadersA(request, "Accept-Encoding: gzip\r\n", (int)strlen("Accept-Encoding: gzip\r\n"), HTTP_ADDREQ_FLAG_ADD))
+				ThrowIfFailure(false, "HttpAddRequestHeaders failed");
 
-        owner->add(d);
-        return *this;
-    }
+			{
+				boost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);
 
-    options_description::options_description(unsigned line_length)
-    : m_line_length(line_length)
-    {}
+				if (isPost)
+				{
+					std::string uploadData;
 
-    options_description::options_description(const string& caption,
-                                             unsigned line_length)
-    : m_caption(caption), m_line_length(line_length)
-    {}
+					{
+						boost::iostreams::filtering_stream<boost::iostreams::output> out;
 
-    void
-    options_description::add(shared_ptr<option_description> desc)
-    {
-        m_options.push_back(desc);
-        belong_to_group.push_back(false);
-    }
+						if (compressData)
+						{
+							std::string contentEncodingHeader = "Content-Encoding: gzip\r\n";
+							if (!HttpAddRequestHeadersA(request, contentEncodingHeader.c_str(), (int)contentEncodingHeader.size(), HTTP_ADDREQ_FLAG_ADD))
+								ThrowIfFailure(false, "HttpAddRequestHeaders failed");
 
-    options_description&
-    options_description::add(const options_description& desc)
-    {
-        shared_ptr<options_description> d(new options_description(desc));
-        groups.push_back(d);
+							out.push(boost::iostreams::basic_gzip_compressor<>(gzipParams));
+						}
 
-        for (size_t i = 0; i < desc.m_options.size(); ++i) {
-            add(desc.m_options[i]);
-            belong_to_group.back() = true;
-        }
+						out.push(String_sink(uploadData));
+						boost::iostreams::copy(data, out);
+					}
 
-        return *this;
-    }
+					int headerLength = (int)uploadData.size();
 
-    options_description_easy_init
-    options_description::add_options()
-    {       
-        return options_description_easy_init(this);
-    }
+					INTERNET_BUFFERSA buffers = {0};
+					buffers.dwStructSize = sizeof(INTERNET_BUFFERSA);
+					if (!HttpSendRequestExA(request, &buffers, NULL, 0, TRUE))
+						throw std::runtime_error("HttpSendRequestEx failed");
 
-    const option_description&
-    options_description::find(const std::string& name, bool approx) const
-    {
-        const option_description* d = find_nothrow(name, approx);
-        if (!d)
-            boost::throw_exception(unknown_option(name));
-        return *d;
-    }
+					DWORD bytesWritten;
+					if (!InternetWriteFile(request, uploadData.c_str(), headerLength, &bytesWritten))
+						ThrowIfFailure(false, "InternetWriteFile failed");
 
-    const std::vector< shared_ptr<option_description> >& 
-    options_description::options() const
-    {
-        return m_options;
-    }
+					if (bytesWritten != headerLength)
+						throw std::runtime_error("Failed to upload content");
 
-    const option_description* 
-    options_description::find_nothrow(const std::string& name, 
-                                      bool approx) const
-    {
-        int found = -1;
-        // We use linear search because matching specified option
-        // name with the declared option name need to take care about
-        // case sensitivity and trailing '*' and so we can't use simple map.
-        for(unsigned i = 0; i < m_options.size(); ++i)
-        {
-            option_description::match_result r = 
-                m_options[i]->match(name, approx);
+					if (!HttpEndRequestA(request, NULL, 0, TRUE))
+						ThrowIfFailure(false, "HttpEndRequest failed");
+				}
+				else
+				{
+					if (!HttpSendRequestA(request, NULL, 0, NULL, 0))
+						ThrowIfFailure(false, "HttpSendRequest failed");
+				}
 
-            if (r == option_description::no_match)
-                continue;
+				int statusCode;
+				{
+					char buffer[80];
+					DWORD length = sizeof(buffer);
+					if (!HttpQueryInfoA(request, HTTP_QUERY_STATUS_CODE, buffer, &length, NULL))
+						ThrowIfFailure(false, "HttpQueryInfo failed");
+					statusCode = atol(buffer);
+				}
 
-            // If we have a full patch, and an approximate match,
-            // ignore approximate match instead of reporting error.
-            // Say, if we have options "all" and "all-chroots", then
-            // "--all" on the command line should select the first one,
-            // without ambiguity.
-            //
-            // For now, we don't check the situation when there are 
-            // two full matches. 
-                            
-            if (r == option_description::full_match)
-            {
-                return m_options[i].get();                
-            }
+				{
+					boost::iostreams::filtering_stream<boost::iostreams::input> in;
 
-            if (found != -1)
-            {
-                vector<string> alts;
-                // FIXME: the use of 'key' here might not
-                // be the best approach.
-                alts.push_back(m_options[found]->key(name));
-                alts.push_back(m_options[i]->key(name));
-                boost::throw_exception(ambiguous_option(name, alts));
-            }
-            else
-            {
-                found = i;
-            }
-        }
-        if (found != -1) {
-            return m_options[found].get();
-        } else {
-            return 0;
-        }
-    }
+					char buffer[256];
+					DWORD length = sizeof(buffer);
+					if (HttpQueryInfoA(request, HTTP_QUERY_CONTENT_ENCODING, buffer, &length, NULL))
+					{
+						if (std::string(buffer) == "gzip")
+							in.push(boost::iostreams::basic_gzip_decompressor<>());
+					}
 
-    BOOST_PROGRAM_OPTIONS_DECL
-    std::ostream& operator<<(std::ostream& os, const options_description& desc)
-    {
-        desc.print(os);
-        return os;
-    }
+					in.push(HttpRequest_source(request));
+					boost::iostreams::copy(in, String_sink(response));
+				}
 
-    namespace {
+				if (statusCode != 200)
+					throw std::runtime_error(G3D::format("statusCode = %d", statusCode));
+			}
 
-        /* Given a string 'par', that contains no newline characters
-           outputs it to 'os' with wordwrapping, that is, as several
-           line.
+			InternetCloseHandle(request);
+		}
 
-           Each output line starts with 'indent' space characters, 
-           following by characters from 'par'. The total length of
-           line is no longer than 'line_length'.
-                                      
-        */
-        void format_paragraph(std::ostream& os,
-                              std::string par,
-                              unsigned indent,
-                              unsigned line_length)
-        {                    
-            // Through reminder of this function, 'line_length' will
-            // be the length available for characters, not including
-            // indent.
-            assert(indent < line_length);
-            line_length -= indent;
+		InternetCloseHandle(connection);
+		InternetCloseHandle(session);
+	}
 
-            // index of tab (if present) is used as additional indent relative
-            // to first_column_width if paragrapth is spanned over multiple
-            // lines if tab is not on first line it is ignored
-            string::size_type par_indent = par.find('\t');
+	bool Http::isScript(const char* url)
+	{
+		ATL::CUrl crack;
+		crack.CrackUrl(url);
+		if (crack.GetScheme() == ATL_URL_SCHEME_FTP || (crack.GetScheme() > ATL_URL_SCHEME_GOPHER && crack.GetScheme() <= ATL_URL_SCHEME_HTTPS))
+			return false;
 
-            if (par_indent == string::npos)
-            {
-                par_indent = 0;
-            }
-            else
-            {
-                // only one tab per paragraph allowed
-                if (count(par.begin(), par.end(), '\t') > 1)
-                {
-                    boost::throw_exception(program_options::error(
-                        "Only one tab per paragraph is allowed"));
-                }
-          
-                // erase tab from string
-                par.erase(par_indent, 1);
+		ATL::CString sUrl(url);
+		if (sUrl.Find("javascript:") == 0)
+			return true;
+		if (sUrl.Find("jscript:") == 0)
+			return true;
 
-                // this assert may fail due to user error or 
-                // environment conditions!
-                assert(par_indent < line_length);
+		return false;
+	}
 
-                // ignore tab if not on first line
-                if (par_indent >= line_length)
-                {
-                    par_indent = 0;
-                }            
-            }
-          
-            if (par.size() < line_length)
-            {
-                os << par;
-            }
-            else
-            {
-                string::const_iterator       line_begin = par.begin();
-                const string::const_iterator par_end = par.end();
+	bool Http::isRobloxSite(const char* url)
+	{
+		ATL::CUrl crack;
+		crack.CrackUrl(url);
+		if (crack.GetScheme() != ATL_URL_SCHEME_FTP && (crack.GetScheme() <= ATL_URL_SCHEME_GOPHER && crack.GetScheme() > ATL_URL_SCHEME_HTTPS))
+			return false;
 
-                bool first_line = true; // of current paragraph!        
-            
-                while (line_begin < par_end)  // paragraph lines
-                {
-                    if (!first_line)
-                    {
-                        // If line starts with space, but second character
-                        // is not space, remove the leading space.
-                        // We don't remove double spaces because those
-                        // might be intentianal.
-                        if ((*line_begin == ' ') &&
-                            ((line_begin + 1 < par_end) &&
-                             (*(line_begin + 1) != ' ')))
-                        {
-                            line_begin += 1;  // line_begin != line_end
-                        }
-                    }
+		ATL::CString hostName = crack.GetHostName();
+		hostName.MakeLower();
+		if (hostName.Right((int)strlen("roblox.com")) == "roblox.com")
+			return true;
+		if (hostName.Right((int)strlen("72.32.62.210")) == "72.32.62.210")
+			return true;
+		if (hostName.Right((int)strlen("robloxopolis.com")) == "robloxopolis.com")
+			return true;
 
-                    // Take care to never increment the iterator past
-                    // the end, since MSVC 8.0 (brokenly), assumes that
-                    // doing that, even if no access happens, is a bug.
-                    unsigned remaining = distance(line_begin, par_end);
-                    string::const_iterator line_end = line_begin + 
-                        ((remaining < line_length) ? remaining : line_length);
-            
-                    // prevent chopped words
-                    // Is line_end between two non-space characters?
-                    if ((*(line_end - 1) != ' ') &&
-                        ((line_end < par_end) && (*line_end != ' ')))
-                    {
-                        // find last ' ' in the second half of the current paragraph line
-                        string::const_iterator last_space =
-                            find(reverse_iterator<string::const_iterator>(line_end),
-                                 reverse_iterator<string::const_iterator>(line_begin),
-                                 ' ')
-                            .base();
-                
-                        if (last_space != line_begin)
-                        {                 
-                            // is last_space within the second half of the 
-                            // current line
-                            if ((unsigned)std::distance(last_space, line_end) < 
-                                (line_length - indent) / 2)
-                            {
-                                line_end = last_space;
-                            }
-                        }                                                
-                    } // prevent chopped words
-             
-                    // write line to stream
-                    copy(line_begin, line_end, ostream_iterator<char>(os));
-              
-                    if (first_line)
-                    {
-                        indent += par_indent;
-                        first_line = false;
-                    }
+		return false;
+	}
 
-                    // more lines to follow?
-                    if (line_end != par_end)
-                    {
-                        os << '\n';
-                
-                        for(unsigned pad = indent; pad > 0; --pad)
-                        {
-                            os.put(' ');
-                        }                                                        
-                    }
-              
-                    // next line starts after of this line
-                    line_begin = line_end;              
-                } // paragraph lines
-            }          
-        }                              
-        
-        void format_description(std::ostream& os,
-                                const std::string& desc, 
-                                unsigned first_column_width,
-                                unsigned line_length)
-        {
-            // we need to use one char less per line to work correctly if actual
-            // console has longer lines
-            assert(line_length > 1);
-            if (line_length > 1)
-            {
-                --line_length;
-            }
+	static bool skipTrustCheck;
+	static boost::once_flag trustCheckOnce = BOOST_ONCE_INIT;
+	static void initializeTrustCheck()
+	{
+		DWORD data = 0;
+		ATL::CRegKey key;
+		if (key.Open(HKEY_CURRENT_USER, "Software\\ROBLOX Corporation\\Roblox", KEY_READ) == ERROR_SUCCESS)
+			key.QueryDWORDValue("SkipTrustCheck", data);
+		if (key.Open(HKEY_LOCAL_MACHINE, "Software\\Roblox", KEY_READ) == ERROR_SUCCESS)
+			key.QueryDWORDValue("SkipTrustCheck", data);
+		skipTrustCheck = data == TRUE;
+	}
 
-            // line_length must be larger than first_column_width
-            // this assert may fail due to user error or environment conditions!
-            assert(line_length > first_column_width);
+	bool Http::trustCheck(const char* url)
+	{
+		boost::call_once(&initializeTrustCheck, trustCheckOnce);
+		if (skipTrustCheck)
+			return true;
 
-            // Note: can't use 'tokenizer' as name of typedef -- borland
-            // will consider uses of 'tokenizer' below as uses of
-            // boost::tokenizer, not typedef.
-            typedef boost::tokenizer<boost::char_separator<char> > tok;
-          
-            tok paragraphs(
-                desc,
-                char_separator<char>("\n", "", boost::keep_empty_tokens));
-          
-            tok::const_iterator       par_iter = paragraphs.begin();                
-            const tok::const_iterator par_end = paragraphs.end();
+		if (ATL::CString("about:blank") == url)
+			return true;
 
-            while (par_iter != par_end)  // paragraphs
-            {
-                format_paragraph(os, *par_iter, first_column_width, 
-                                 line_length);
-            
-                ++par_iter;
-            
-                // prepair next line if any
-                if (par_iter != par_end)
-                {
-                    os << '\n';
-              
-                    for(unsigned pad = first_column_width; pad > 0; --pad)
-                    {
-                        os.put(' ');
-                    }                    
-                }            
-            }  // paragraphs
-        }
-    
-        void format_one(std::ostream& os, const option_description& opt, 
-                        unsigned first_column_width, unsigned line_length)
-        {
-            stringstream ss;
-            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
-            
-            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
-            os << ss.str();
+		if (isRobloxSite(url))
+			return true;
 
-            if (!opt.description().empty())
-            {
-                for(unsigned pad = first_column_width - ss.str().size(); 
-                    pad > 0; 
-                    --pad)
-                {
-                    os.put(' ');
-                }
-            
-                format_description(os, opt.description(),
-                                   first_column_width, line_length);
-            }
-        }
-    }
+		if (isScript(url))
+			return true;
 
-    void 
-    options_description::print(std::ostream& os) const
-    {
-        if (!m_caption.empty())
-            os << m_caption << ":\n";
+		ATL::CUrl crack;
+		crack.CrackUrl(url);
+		switch (crack.GetScheme())
+		{
+		case ATL_URL_SCHEME_FTP:
+		case ATL_URL_SCHEME_HTTP:
+		case ATL_URL_SCHEME_HTTPS:
+			return false;
+		default:
+		{
+			ATL::CString sUrl = url;
+			sUrl.Replace("%20", " ");
+			if (sUrl.Find("res://") == 0)
+			{
+				if (sUrl.Find("res://mshtml.dll") == 0) return true;
+				if (sUrl.Find("res://ieframe.dll") == 0) return true;
+				if (sUrl.Find("res://shdoclc.dll") == 0) return true;
+				TCHAR module[_MAX_PATH];
+				if (GetModuleFileName(NULL, module, _MAX_PATH))
+				{
+					ATL::CString strResourceURL;
+					strResourceURL.Format(_T("res://%s"), module);
+					if (sUrl.Find(strResourceURL) == 0) return true;
+				}
+			}
+			return false;
+		}
+		}
+	}
 
-        /* Find the maximum width of the option column */
-        unsigned width(23);
-        unsigned i; // vc6 has broken for loop scoping
-        for (i = 0; i < m_options.size(); ++i)
-        {
-            const option_description& opt = *m_options[i];
-            stringstream ss;
-            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
-            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
-        }
-        
-        /* add an additional space to improve readability */
-        ++width;
-            
-        /* The options formatting style is stolen from Subversion. */
-        for (i = 0; i < m_options.size(); ++i)
-        {
-            if (belong_to_group[i])
-                continue;
+	void Http::get(std::string& response)
+	{
+		const char* h = NULL;
+		if (!additionalHeaders.empty())
+			h = additionalHeaders.c_str();
 
-            const option_description& opt = *m_options[i];
+		std::istringstream dummy;
+		httpGetPost<false>(url, dummy, false, h, response);
+	}
 
-            format_one(os, opt, width, m_line_length);
-
-            os << "\n";
-        }
-
-        for (unsigned j = 0; j < groups.size(); ++j) {            
-            os << "\n" << *groups[j];
-        }
-    }
-
-}}
+	void Http::post(std::istream& input, bool compress, std::string& response)
+	{
+		if (additionalHeaders.empty())
+			httpGetPost<true>(url, input, compress, NULL, response);
+		else
+			httpGetPost<true>(url, input, compress, additionalHeaders.c_str(), response);
+	}
+}

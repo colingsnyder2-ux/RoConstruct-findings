@@ -1,14 +1,13 @@
-// from server: 63% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPTabClientWnd.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPStatusBar.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPTabClientWnd.cpp : implementation of the CXTPTabClientWnd class.
+// XTPStatusBar.cpp : implementation of the CXTPStatusBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,39 +25,17 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/Resource.h"
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPImageManager.h"
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPToolTipContext.h"
-#include "Common/XTPMarkupRender.h"
 #include "Common/XTPColorManager.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPToolTipContext.h"
 
-#include "TabManager/XTPTabManager.h"
-#include "TabManager/XTPTabPaintManager.h"
-
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBars.h"
-#include "XTPCommandBar.h"
-#include "XTPPopupBar.h"
-#include "XTPToolBar.h"
-#include "XTPMenuBar.h"
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPControlButton.h"
-#include "XTPControlEdit.h"
-#include "XTPControlExt.h"
-#include "XTPMouseManager.h"
-#include "XTPCommandBarsFrameHook.h"
+#include "XTPStatusBar.h"
 #include "XTPPaintManager.h"
-#include "XTPOffice2003Theme.h"
-#include "XTPTabClientWnd.h"
-#include "XTPShortcutManager.h"
-#include "XTPFrameWnd.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -66,564 +43,343 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifndef OIC_WINLOGO
-#define OIC_WINLOGO         32517
-#endif
+#define SBPF_UPDATE 0x0001  // pending update of text
+#define CX_PANE_BORDER 6    // 3 pixels on each side of each pane
 
-#define XTP_TID_REFRESHFRAME 0xACD1
+#define WM_GETTHEMED_STATUSBAR (WM_USER + 9300)
 
+//////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarPane
 
-#define xtpTabNavigateButtonActiveFiles 4
+IMPLEMENT_DYNAMIC(CXTPStatusBarPane, CCmdTarget)
 
-#define ACTION_CANCEL       0
-#define ACTION_POPUP        1
-#define ACTION_ATTACH       2
-#define ACTION_INSERTHORIZ  3
-#define ACTION_INSERTVERT   4
-
-class CXTPTabClientWnd::CNavigateButtonActiveFiles : public CXTPTabManagerNavigateButton
+CXTPStatusBarPane::CXTPStatusBarPane()
 {
-public:
-	CNavigateButtonActiveFiles(CXTPTabManager* pManager, CXTPTabClientWnd* pTabClientWnd)
-		: CXTPTabManagerNavigateButton(pManager, xtpTabNavigateButtonActiveFiles, xtpTabNavigateButtonNone)
-	{
-		m_bHiddenTabs = FALSE;
-		m_pTabClientWnd = pTabClientWnd;
-		XTPResourceManager()->LoadString(&m_strToolTip, XTP_IDS_TABNAVIGATEBUTTON_ACTIVEFILES);
-	}
+	m_nID = 0;
+	m_cxText = 0;
+	m_nStyle = 0;
+	m_nFlags = 0;
 
-	void DrawEntry(CDC* pDC, CRect rc)
-	{
-		CPoint pt(rc.CenterPoint().x, rc.CenterPoint().y + 1);
-		CPoint pts[] =
-		{
-			CPoint(pt.x - 4, pt.y - 1), CPoint(pt.x - 1, pt.y + 2) , CPoint(pt.x, pt.y + 2), CPoint(pt.x + 3, pt.y - 1)
-		};
-		pDC->Polygon(pts, 4);
+	m_nIndex = -1;
+	m_nStatusIndex = -1;
+	m_pStatusBar = NULL;
 
-		if (m_bHiddenTabs)
-		{
-			pDC->Rectangle(pt.x - 4, pt.y - 5, pt.x + 4, pt.y - 3);
-		}
-	}
+	m_hWndPane = NULL;
+	m_bAutoDeleteWnd = FALSE;
+	m_bVisible = TRUE;
 
-	void Reposition(CRect& rcNavigateButtons)
-	{
-		CRect rc = m_pManager->GetAppearanceSet()->GetHeaderMargin();
+	m_clrText = (COLORREF)-1;
+	m_clrBackground = (COLORREF)-1;
 
-		m_bHiddenTabs = m_pManager->GetItemsLength() > m_pManager->GetRectLength(rcNavigateButtons) - rc.left - rc.right - GetSize().cx;
+	m_nIconIndex = -1;
+	m_nAlignment = DT_LEFT;
 
-		CXTPTabManagerNavigateButton::Reposition(rcNavigateButtons);
-	}
-	void PerformClick(HWND hWnd, CPoint /*pt*/)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		if (!pCommandBars || pCommandBars->IsCustomizeMode())
-			return;
+	m_rcMargins.SetRect(2, 1, 2, 1);
+	m_bButton = FALSE;
+	m_bPressed = FALSE;
 
-		m_bPressed = TRUE;
-		m_pManager->RedrawControl(NULL, FALSE);
+}
 
-		CPoint pt(m_rcButton.left, m_rcButton.bottom);
-		m_pTabClientWnd->WorkspaceToScreen(&pt);
-		CRect rcExclude(pt.x, pt.y - m_rcButton.Height(), pt.x + m_rcButton.Width(), pt.y);
-
-		CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
-
-		CXTPImageManager* pImageManager = new CXTPImageManager();
-		pPopupBar->SetImageManager(pImageManager);
-
-		int nIconId = 0;
-		HICON hIconLast = 0;
-
-		CWnd* pActiveWnd = m_pTabClientWnd->MDIGetActive();
-
-		for (int nIndex = 0; nIndex < m_pManager->GetItemCount(); nIndex++)
-		{
-			CXTPTabManagerItem* pItem = m_pManager->GetItem(nIndex);
-			if (!pItem->GetHandle())
-				continue;
-
-			CString strCaption = pItem->GetCaption();
-			CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, nIndex + 1, _T(""), nIndex, TRUE);
-
-			HICON hIcon = m_pTabClientWnd->GetItemIcon(pItem);
-			if (hIconLast != hIcon)
-			{
-				nIconId++;
-				pImageManager->SetIcon(CXTPImageManagerIconHandle(hIcon, FALSE), nIconId);
-				hIconLast = hIcon;
-			}
-
-			pControl->SetIconId(nIconId);
-			pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strCaption, 0));
-			pControl->SetDescription(_T(""));
-
-			if (pActiveWnd && pItem->GetHandle() == pActiveWnd->GetSafeHwnd())
-				pControl->SetChecked(TRUE);
-		}
-
-		int nItem = pCommandBars->TrackPopupMenu(pPopupBar, TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY, pt.x, pt.y, m_pTabClientWnd, &rcExclude);
-		pPopupBar->InternalRelease();
-
-		m_bPressed = FALSE;
-		m_pManager->PerformMouseMove(hWnd, CPoint(-1, -1));
-		m_pManager->RedrawControl(NULL, FALSE);
-
-		if (nItem > 0)
-		{
-			CXTPTabManagerItem* pItem = m_pManager->GetItem(nItem - 1);
-
-			if (pItem)
-			{
-				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
-			}
-		}
-	}
-
-protected:
-	BOOL m_bHiddenTabs;
-	CXTPTabClientWnd* m_pTabClientWnd;
-
-};
-
-class CXTPTabClientWnd::CTabClientDropTarget : public COleDropTarget
+CXTPStatusBarPane::~CXTPStatusBarPane()
 {
-public:
-	CTabClientDropTarget()
+	CWnd* pWnd = CWnd::FromHandlePermanent(m_hWndPane);
+
+	if (pWnd && ::IsWindow(pWnd->GetSafeHwnd()))
 	{
-		m_ptDragLastPoint = CPoint(-1, -1);
-		m_dwDragLastTick = 0;
-	}
+		pWnd->DestroyWindow();
 
-	void OnDragLeave(CWnd* /*pWnd*/)
-	{
-		m_dwDragLastTick = 0;
-		m_ptDragLastPoint = CPoint(-1, -1);
-	}
-
-	virtual DROPEFFECT OnDragOver(CWnd* /*pWnd*/, COleDataObject* /*pDataObject*/, DWORD /*dwKeyState*/, CPoint point)
-	{
-		ASSERT(m_pTabClientWnd);
-
-		if (!m_pTabClientWnd || !m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver)
-			return DROPEFFECT_NONE;
-
-		if (m_dwDragLastTick != (DWORD)-1 && m_pTabClientWnd->GetPaintManager()->m_bSelectOnDragOver == 2)
+		if (m_bAutoDeleteWnd)
 		{
-			DWORD dwTick = GetTickCount();
+			delete pWnd;
+		}
+	}
+}
 
-			if (point != m_ptDragLastPoint)
-			{
-				m_dwDragLastTick = dwTick;
-				m_ptDragLastPoint = point;
-			}
+CRect CXTPStatusBarPane::GetRect() const
+{
+	RECT rc;
 
-			if (dwTick - m_dwDragLastTick > CXTPTabPaintManager::m_nSelectOnDragOverDelay)
-			{
-				m_dwDragLastTick = (DWORD)-1;
-			}
+	if (!m_pStatusBar->DefWindowProc(SB_GETRECT, m_nStatusIndex, (LPARAM)&rc))
+		::SetRectEmpty(&rc);
+
+	// WINBUG: CStatusBar::GetItemRect(...) does not return the correct size
+	// of the last item in the status bar in most cases, so we need to calculate
+	// the width ourself...
+
+	if (m_nStatusIndex == m_pStatusBar->GetVisiblePaneCount() - 1)
+	{
+		if ((m_nStyle & SBPS_STRETCH) == 0)
+		{
+			rc.right = rc.left + m_cxText + (::GetSystemMetrics(SM_CXEDGE)* 3);
 		}
 		else
 		{
-			CXTPTabManagerItem* pItem = m_pTabClientWnd->HitTest(point);
+			rc.right = CXTPClientRect(m_pStatusBar).right;
 
-			if (pItem)
+			if ((GetStyle() & SBARS_SIZEGRIP) == SBARS_SIZEGRIP)
 			{
-				if (!pItem->IsSelected())
-				m_pTabClientWnd->MDIActivate(CWnd::FromHandle(pItem->GetHandle()));
-			}
-			else
-			{
-				m_dwDragLastTick = 0;
+				rc.right -= (::GetSystemMetrics(SM_CXSMICON) + ::GetSystemMetrics(SM_CXEDGE));
 			}
 		}
-
-		return DROPEFFECT_NONE;
 	}
-public:
-	CXTPTabClientWnd* m_pTabClientWnd;
 
-protected:
-	DWORD m_dwDragHoverMode;
-	DWORD m_dwDragLastTick;
-	CPoint m_ptDragLastPoint;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// CWorkspace
-
-CXTPTabClientWnd::CWorkspace::CWorkspace()
-{
-	m_pTabClientWnd = NULL;
-	m_dHeight = 100;
-
-	m_pNewWindowItem = NULL;
+	return rc;
 }
 
-CXTPTabClientWnd::CWorkspace::~CWorkspace()
+void CXTPStatusBarPane::Redraw() const
 {
-
+	if (this && m_pStatusBar && m_pStatusBar->GetSafeHwnd() && m_bVisible)
+	{
+		m_pStatusBar->InvalidateRect(GetRect());
+	}
 }
 
-void CXTPTabClientWnd::CWorkspace::SetSelectedItem(CXTPTabManagerItem* pItem)
+CRect CXTPStatusBarPane::GetMargins() const
 {
-	if (pItem == m_pNewWindowItem)
-		pItem = GetItem(GetItemCount() - 1);
-
-
-	CXTPTabManager::SetSelectedItem(pItem);
+	return m_rcMargins;
 }
 
-
-BOOL CXTPTabClientWnd::CWorkspace::IsMouseLocked() const
+void CXTPStatusBarPane::SetMargins(int nLeft, int nTop, int nRight, int nBottom)
 {
-	return CXTPTabManager::IsMouseLocked() || XTPMouseManager()->IsTrackedLock();
+	m_rcMargins.SetRect(nLeft, nTop, nRight, nBottom);
 }
 
-void CXTPTabClientWnd::CWorkspace::RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
+void CXTPStatusBarPane::SetText(LPCTSTR lpszText)
 {
-	if (!m_pTabClientWnd->m_bLockReposition)
-		m_pTabClientWnd->InvalidateRect(lpRect, FALSE);
+	ASSERT(m_pStatusBar);
+	if (m_pStatusBar) m_pStatusBar->SetPaneText(m_nIndex, lpszText);
 }
 
-void CXTPTabClientWnd::CWorkspace::Reposition()
+CString CXTPStatusBarPane::GetText() const
 {
-	if (!m_pTabClientWnd)
+	return m_strText;
+}
+
+void CXTPStatusBarPane::SetWidth(int nWidth)
+{
+	m_pStatusBar->SetPaneWidth(m_nIndex, nWidth);
+}
+
+int CXTPStatusBarPane::GetWidth() const
+{
+	return m_cxText;
+}
+
+void CXTPStatusBarPane::SetStyle(int nStyle)
+{
+	m_pStatusBar->SetPaneStyle(m_nIndex, nStyle);
+
+}
+int CXTPStatusBarPane::GetStyle() const
+{
+	return m_nStyle;
+}
+
+UINT CXTPStatusBarPane::GetID() const
+{
+	return m_nID;
+}
+
+int CXTPStatusBarPane::GetIndex() const
+{
+	return m_nIndex;
+}
+
+CXTPStatusBar* CXTPStatusBarPane::GetStatusBar() const
+{
+	return m_pStatusBar;
+}
+
+void CXTPStatusBarPane::Remove()
+{
+	m_pStatusBar->RemoveAt(m_nIndex);
+}
+
+void CXTPStatusBarPane::SetVisible(BOOL bVisible)
+{
+	if (m_bVisible != bVisible)
+	{
+		m_bVisible = bVisible;
+
+		if (m_hWndPane)
+			::ShowWindow(m_hWndPane, m_bVisible ? SW_SHOW : SW_HIDE);
+
+		m_pStatusBar->UpdateAllPanes(TRUE, FALSE);
+	}
+}
+
+BOOL CXTPStatusBarPane::IsVisible() const
+{
+	return m_bVisible;
+}
+
+void CXTPStatusBarPane::OnDraw(CDC* pDC, CRect rcItem)
+{
+	CXTPPaintManager* pPaintManager = m_pStatusBar->GetPaintManager();
+
+	if (pPaintManager)
+	{
+		pPaintManager->DrawStatusBarPaneEntry(pDC, rcItem, this);
+	}
+}
+
+void CXTPStatusBarPane::BestFit()
+{
+	CClientDC dc(m_pStatusBar);
+	CXTPFontDC font(&dc, GetTextFont());
+
+	m_cxText = dc.GetTextExtent(m_strText).cx + m_rcMargins.left + m_rcMargins.right;
+
+	CXTPImageManagerIcon* pIcon = GetImage();
+	if (pIcon) m_cxText += pIcon->GetWidth() + (!m_strText.IsEmpty() ? 2 : 0);
+}
+
+void CXTPStatusBarPane::SetTextColor(COLORREF clrText)
+{
+	m_clrText = clrText;
+	Redraw();
+}
+
+COLORREF CXTPStatusBarPane::GetTextColor() const
+{
+	return m_clrText;
+}
+
+void CXTPStatusBarPane::SetBackgroundColor(COLORREF clrBackground)
+{
+	m_clrBackground = clrBackground;
+	Redraw();
+}
+
+COLORREF CXTPStatusBarPane::GetBackgroundColor() const
+{
+	return m_clrBackground;
+}
+
+CFont* CXTPStatusBarPane::GetTextFont()
+{
+	ASSERT(m_pStatusBar);
+	return (m_pStatusBar && m_fntText.m_hObject == NULL) ?
+		&m_pStatusBar->m_fontStatus : &m_fntText;
+}
+
+void CXTPStatusBarPane::SetTextFont(CFont* pFntText)
+{
+	ASSERT(pFntText);
+	if (!pFntText)
 		return;
 
-	if (m_pTabClientWnd->m_bLockReposition)
-	{
-		m_pTabClientWnd->m_bForceToRecalc = TRUE;
-	}
-	else
-	{
-		m_pTabClientWnd->Reposition();
-	}
+	LOGFONT lf;
+	pFntText->GetLogFont(&lf);
+
+	SetTextFont(&lf);
 }
 
-BOOL CXTPTabClientWnd::CWorkspace::IsAllowReorder() const
+void CXTPStatusBarPane::SetTextFont(PLOGFONT pLogfText)
 {
-	return m_pTabClientWnd->m_bAllowReorder;
+	ASSERT(pLogfText);
+
+	m_fntText.DeleteObject();
+	m_fntText.CreateFontIndirect(pLogfText);
+
+	Redraw();
 }
 
-void CXTPTabClientWnd::CWorkspace::SetAllowReorder(BOOL bAllowReorder)
+CXTPImageManagerIcon* CXTPStatusBarPane::GetImage() const
 {
-	m_pTabClientWnd->m_bAllowReorder = bAllowReorder;
-}
-
-BOOL CXTPTabClientWnd::CWorkspace::IsDrawStaticFrame() const
-{
-	return GetPaintManager()->m_bStaticFrame && !m_pTabClientWnd->m_bEnableGroups;
-}
-
-
-BOOL CXTPTabClientWnd::CWorkspace::DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
-{
-	if (pItem == m_pNewWindowItem)
-	{
-		if (!bDraw)
-			return TRUE;
-
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		CXTPImageManager* pImageManager = pCommandBars ? pCommandBars->GetImageManager() : XTPImageManager();
-
-		CXTPImageManagerIcon* pIcon = pImageManager->GetImage(m_pTabClientWnd->m_nNewWindowTabCommand);
-		if (pIcon) pIcon->Draw(pDC, pt, szIcon);
-
-		return TRUE;
-	}
-
-	if (GetPaintManager()->m_bShowIcons == FALSE)
-		return FALSE;
-
-	if (!bDraw)
-	{
-		return TRUE;
-	}
-
-
-	if (pItem->GetImageIndex() != -1)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		CXTPImageManager* pImageManager = pCommandBars ? pCommandBars->GetImageManager() : XTPImageManager();
-
-		CXTPImageManagerIcon* pIcon = pImageManager->GetImage(pItem->GetImageIndex());
-		if (pIcon) pIcon->Draw(pDC, pt, szIcon);
-
-		return TRUE;
-	}
-
-	HICON hIcon = GetItemIcon(pItem);
-	if (hIcon)
-	{
-		DrawIconEx(pDC->GetSafeHdc(), pt.x, pt.y, hIcon, szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
-	}
-
-	return TRUE;
-}
-
-CXTPTabPaintManager* CXTPTabClientWnd::CWorkspace::GetPaintManager() const
-{
-	return m_pTabClientWnd ? m_pTabClientWnd->m_pPaintManager : NULL;
-}
-
-CString CXTPTabClientWnd::CWorkspace::GetItemTooltip(const CXTPTabManagerItem* pItem) const
-{
-	return m_pTabClientWnd->GetItemTooltip(pItem);
-}
-
-// finds the tab item for specified window. Returns NULL if not found
-CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::FindItem(const HWND hWnd) const
-{
-	// loop through all tab items
-	for (int nIndex = 0; nIndex < GetItemCount(); nIndex++)
-	{
-		// check for window handle
-		if (GetItem(nIndex)->GetHandle() == hWnd)
-		{
-			return GetItem(nIndex);
-		}
-	}
+	if (m_nIconIndex != -1)
+		return m_pStatusBar->GetImageManager()->GetImage(m_nIconIndex, 0);
 
 	return NULL;
 }
 
-
-// add new item into the tab control for specified MDIChild. If bRedraw is
-// set to TRUE then framework will be redrawn in order to show new item.
-CXTPTabManagerItem* CXTPTabClientWnd::CWorkspace::AddItem(const CWnd* pChildWnd)
+int CXTPStatusBarPane::GetIconIndex() const
 {
-	ASSERT(pChildWnd != NULL);
-	if (!pChildWnd)
-		return NULL;
-	ASSERT(::IsWindow(pChildWnd->GetSafeHwnd()));
-
-	// make sure we add MDIChild window
-	if ((pChildWnd->GetExStyle() & WS_EX_MDICHILD) == 0)
-		return NULL;
-
-	if (GetItemCount() == 0)
-		AddNewWindowItem();
-
-	int nIndex = GetItemCount();
-
-	if (m_pNewWindowItem) nIndex--;
-
-
-	switch (m_pTabClientWnd->GetNewTabPositon())
-	{
-	case xtpWorkspaceNewTabLeftMost:
-		nIndex = 0;
-		break;
-
-	case xtpWorkspaceNewTabNextToActive:
-		nIndex = GetCurSel() + 1;
-		break;
-	}
-
-	// save information about new entry
-	CXTPTabManagerItem* pItem = CXTPTabManager::AddItem(nIndex);
-	pItem->SetCaption(m_pTabClientWnd->GetItemText(pChildWnd));
-
-	return pItem;
+	return m_nIconIndex;
 }
 
-BOOL CXTPTabClientWnd::CWorkspace::OnBeforeItemClick(CXTPTabManagerItem* pItem)
+void CXTPStatusBarPane::SetIconIndex(int nIconIndex)
 {
-	return m_pTabClientWnd->OnBeforeItemClick(pItem);
+	m_nIconIndex = nIconIndex;
+	m_pStatusBar->UpdateAllPanes(TRUE, FALSE);
 }
 
-void CXTPTabClientWnd::CWorkspace::OnItemClick(CXTPTabManagerItem* pItem)
+void CXTPStatusBarPane::SetTextAlignment(int nAlign)
 {
-	ASSERT(pItem);
-	if (!pItem)
+	m_nAlignment = nAlign;
+	Redraw();
+}
+
+int CXTPStatusBarPane::GetTextAlignment() const
+{
+	return m_nAlignment;
+}
+
+void CXTPStatusBarPane::SetTooltip(LPCTSTR lpszTooltip)
+{
+	m_strToolTip = lpszTooltip;
+}
+
+CString CXTPStatusBarPane::GetTooltip() const
+{
+	return m_strToolTip;
+}
+
+void CXTPStatusBarPane::SetEnabled(BOOL bEnabled)
+{
+	UINT nNewStyle = GetStyle() & ~SBPS_DISABLED;
+	if (!bEnabled)
+		nNewStyle |= SBPS_DISABLED;
+
+	SetStyle(nNewStyle);
+}
+
+void CXTPStatusBarPane::OnLButtonDown(CPoint point)
+{
+	if (!m_bButton)
 		return;
 
-	if (pItem == m_pNewWindowItem)
+	m_bPressed = TRUE;
+	Redraw();
+
+	m_pStatusBar->SetCapture();
+	CRect rcButton = GetRect();
+
+	BOOL  bClick = FALSE;
+
+	while (::GetCapture() == m_pStatusBar->GetSafeHwnd())
 	{
-		m_pTabClientWnd->GetParent()->SendMessage(WM_COMMAND, m_pTabClientWnd->m_nNewWindowTabCommand);
+		BOOL bPressed = rcButton.PtInRect(point);
 
-		return;
-	}
-
-	CWnd* pWnd = CWnd::FromHandle(pItem->GetHandle());
-	if (pWnd)
-	{
-		m_pTabClientWnd->MDIActivate(pWnd);
-
-		CWnd* pFocus = GetFocus();
-
-		BOOL bHasFocus = pFocus->GetSafeHwnd() &&
-			(pFocus == pWnd || pWnd->IsChild(pFocus) || (pFocus->GetOwner()->GetSafeHwnd() && pWnd->IsChild(pFocus->GetOwner())));
-
-		if (!bHasFocus)
-			pWnd->SetFocus();
-	}
-}
-
-CWnd* CXTPTabClientWnd::CWorkspace::GetWindow() const
-{
-	return m_pTabClientWnd;
-}
-
-void CXTPTabClientWnd::CWorkspace::OnNavigateButtonClick(CXTPTabManagerNavigateButton* pButton)
-{
-	if (pButton->GetID() != xtpTabNavigateButtonClose)
-		return;
-
-	CXTPTabManagerItem* pItem = pButton->GetItem() ? pButton->GetItem() : m_pSelected;
-
-	if (!pItem)
-		return;
-
-	m_pTabClientWnd->PostMessage(WM_IDLEUPDATECMDUI);
-
-	HWND hWnd = pItem->GetHandle();
-	::SendMessage(hWnd, WM_CLOSE, 0, 0);
-}
-
-void CXTPTabClientWnd::CWorkspace::OnRecalcLayout()
-{
-
-}
-
-CXTPMarkupContext* CXTPTabClientWnd::CWorkspace::GetMarkupContext() const
-{
-	return m_pTabClientWnd->m_pMarkupContext;
-}
-
-HICON CXTPTabClientWnd::CWorkspace::GetItemIcon(const CXTPTabManagerItem* pItem) const
-{
-	return m_pTabClientWnd->GetItemIcon(pItem);
-}
-
-COLORREF CXTPTabClientWnd::CWorkspace::GetItemColor(const CXTPTabManagerItem* pItem) const
-{
-	COLORREF clr = m_pTabClientWnd->GetItemColor(pItem);
-
-	if (clr != COLORREF_NULL)
-	{
-		if (clr >= xtpTabColorBlue && clr <= xtpTabColorMagenta)
-			return CXTPTabPaintManager::GetOneNoteColor((XTPTabOneNoteColor)clr);
-
-		return clr;
-	}
-
-	return CXTPTabManager::GetItemColor(pItem);
-}
-
-void CXTPTabClientWnd::CWorkspace::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerItem* pItem)
-{
-	if (pItem == m_pNewWindowItem)
-	{
-		m_pTabClientWnd->SetActiveWorkspace(this);
-
-		m_pHighlighted = NULL;
-
-		OnItemClick(pItem);
-
-		return;
-	}
-
-	if (m_pTabClientWnd->GetWorkspaceCount() == 1 && pItem->GetTabManager()->GetItemCount() == 1)
-	{
-		OnItemClick(pItem);
-		return;
-	}
-
-	if (m_pSelected != pItem)
-	{
-		m_pSelected = pItem;
-	}
-
-
-	m_pTabClientWnd->m_bLockReposition = TRUE;
-	m_pTabClientWnd->SetActiveWorkspace(this);
-	m_pTabClientWnd->m_bLockReposition = FALSE;
-
-	if (GetPaintManager()->m_bHotTracking)
-		m_pHighlighted = pItem;
-
-	::SetCapture(hWnd);
-
-	Reposition();
-
-	CArray<CRect, CRect&> arrRects;
-
-	for (int j = 0; j < GetItemCount(); j++)
-	{
-		CRect rc = GetItem(j)->GetRect();
-		arrRects.Add(rc);
-	}
-
-	BOOL bRefreshCursor = FALSE;
-	BOOL bAccept = FALSE;
-
-	for (;;)
-	{
+		if (bPressed != m_bPressed)
+		{
+			m_bPressed = bPressed;
+			Redraw();
+		}
 		MSG msg;
+
+		if (!::PeekMessage(&msg, NULL, NULL, NULL, PM_NOREMOVE))
+			continue;
+
 		VERIFY(::GetMessage(&msg, NULL, 0, 0));
 
-		if (::GetCapture() != hWnd)
-		{
-			DispatchMessage (&msg);
-			goto ExitLoop;
-		}
 		switch (msg.message)
 		{
 			case WM_MOUSEMOVE:
-				{
-					pt = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
-
-					if (m_rcHeaderRect.IsRectEmpty() || m_rcHeaderRect.PtInRect(pt))
-					{
-						if (bRefreshCursor)
-						{
-							m_pTabClientWnd->CancelLoop();
-							::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-							bRefreshCursor = FALSE;
-
-						}
-						for (int i = 0; i < arrRects.GetSize(); i++)
-						{
-							if (i != pItem->GetIndex() && arrRects[i].PtInRect(pt) && m_arrItems[i] != m_pNewWindowItem)
-							{
-
-								CXTPTabManagerItem* p = pItem;
-								m_arrItems[pItem->GetIndex()] = m_arrItems[i];
-								m_arrItems[i] = p;
-
-								OnItemsChanged();
-								break;
-							}
-						}
-
-					}
-					else if (m_pTabClientWnd->m_bEnableGroups)
-					{
-						if (!bRefreshCursor)
-						{
-							m_pTabClientWnd->InitLoop();
-							bRefreshCursor = TRUE;
-						}
-						m_pTabClientWnd->ReorderWorkspace(pt, pItem);
-					}
-				}
-
+				point = CPoint((short signed)LOWORD(msg.lParam), (short signed)HIWORD(msg.lParam));
 				break;
+
+			case WM_LBUTTONUP:
+				bClick = m_bPressed;
+				goto ExitLoop;
 
 			case WM_KEYDOWN:
 				if (msg.wParam != VK_ESCAPE)
 					break;
+
 			case WM_CANCELMODE:
 			case WM_RBUTTONDOWN:
 				goto ExitLoop;
-
-			case WM_LBUTTONUP:
-				bAccept = TRUE;
-				goto ExitLoop;
-
 
 			default:
 				DispatchMessage (&msg);
@@ -632,2492 +388,1471 @@ void CXTPTabClientWnd::CWorkspace::ReOrder(HWND hWnd, CPoint pt, CXTPTabManagerI
 	}
 
 ExitLoop:
-
 	ReleaseCapture();
-	PerformMouseMove(hWnd, pt);
-	OnItemClick(pItem);
 
-	if (bRefreshCursor)
+	m_bPressed = FALSE;
+	Redraw();
+
+	if (bClick)
 	{
-		m_pTabClientWnd->CancelLoop();
-		::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-
-		if (bAccept && m_pTabClientWnd->m_nFocusedAction != ACTION_CANCEL)
-		{
-			if (m_pTabClientWnd->m_nFocusedAction == ACTION_POPUP)
-				m_pTabClientWnd->ContextMenu(pt);
-			else  m_pTabClientWnd->DoWorkspaceCommand(pItem, m_pTabClientWnd->m_pFocusWorkspace, m_pTabClientWnd->m_nFocusedAction);
-		}
+		m_pStatusBar->OnPaneClick(this);
 	}
-
-	pItem->GetTabManager()->EnsureVisible(pItem);
-}
-
-BOOL CXTPTabClientWnd::CWorkspace::DrawParentBackground(CDC* pDC, CRect rc)
-{
-	if (m_pTabClientWnd->m_themeCommandBars == xtpThemeVisualStudio2008)
-	{
-		CXTPCommandBars* pCommandBars = m_pTabClientWnd->GetCommandBars();
-		if (!pCommandBars)
-			return FALSE;
-
-		CXTPOffice2003Theme* pPaintManager = (CXTPOffice2003Theme*)pCommandBars->GetPaintManager();
-		if (((CXTPPaintManager*)pPaintManager)->BaseTheme() != xtpThemeVisualStudio2008)
-			return FALSE;
-
-		CWnd* pWnd = m_pTabClientWnd->GetParentFrame();
-		CXTPWindowRect rcFill((CWnd*)pWnd);
-
-		m_pTabClientWnd->ScreenToClient(rcFill);
-		rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
-		rcFill.top = rc.top;
-		rcFill.bottom = rc.bottom;
-
-		XTPDrawHelpers()->GradientFill(pDC, rcFill, pPaintManager->m_clrDockBar, TRUE, rc);
-		return TRUE;
-	}
-	return FALSE;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-// CSingleWorkspace
+// CXTPStatusBar
 
-CXTPTabClientWnd::CSingleWorkspace::~CSingleWorkspace()
-{
-	DestroyWindow();
-}
+IMPLEMENT_DYNAMIC(CXTPStatusBar, CControlBar)
 
-CWnd* CXTPTabClientWnd::CSingleWorkspace::GetWindow() const
+CXTPStatusBar::CXTPStatusBar()
 {
-	return (CWnd*)this;
-}
-
-INT_PTR CXTPTabClientWnd::CSingleWorkspace::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	return PerformToolHitTest(m_hWnd, point, pTI);
-}
-
-BOOL CXTPTabClientWnd::CSingleWorkspace::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	if (m_pTabClientWnd)
+	// setup default border/margin depending on type of system
+	m_cyTopBorder = 2;
+	if (IsWin4())
 	{
-		m_pTabClientWnd->m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
-	}
-
-	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
-}
-
-BOOL CXTPTabClientWnd::CSingleWorkspace::PreTranslateMessage(MSG* pMsg)
-{
-	if (pMsg->message == WM_LBUTTONDOWN ||
-		pMsg->message == WM_RBUTTONDOWN ||
-		pMsg->message == WM_MBUTTONDOWN ||
-		pMsg->message == WM_LBUTTONDBLCLK ||
-		pMsg->message == WM_RBUTTONDBLCLK)
-	{
-
-		if (GetParentFrame()->SendMessage(WM_XTP_PRETRANSLATEMOUSEMSG, (WPARAM)pMsg->message, pMsg->lParam))
-			return TRUE;
-	}
-
-
-	return CWnd::PreTranslateMessage(pMsg);
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
-{
-	if (!m_pTabClientWnd->m_bLockReposition)
-		InvalidateRect(lpRect, FALSE);
-}
-
-BEGIN_MESSAGE_MAP(CXTPTabClientWnd::CSingleWorkspace, CWnd)
-	{ WM_LBUTTONDBLCLK, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnLButtonDblClk },
-	{ WM_PAINT, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(void))&CXTPTabClientWnd::CSingleWorkspace::OnPaint },
-	{ WM_PRINTCLIENT, 0, 0, 0, AfxSig_lwl, (AFX_PMSG)(AFX_PMSGW)(LRESULT (AFX_MSG_CALL CWnd::*)(WPARAM, LPARAM))&CXTPTabClientWnd::CSingleWorkspace::OnPrintClient },
-	{ WM_ERASEBKGND, 0, 0, 0, AfxSig_bD, (AFX_PMSG)(AFX_PMSGW)(BOOL (AFX_MSG_CALL CWnd::*)(CDC*))&CXTPTabClientWnd::CSingleWorkspace::OnEraseBkgnd },
-	{ WM_LBUTTONDOWN, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnLButtonDown },
-	{ WM_MOUSEMOVE, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnMouseMove },
-	{ WM_MOUSELEAVE, 0, 0, 0, AfxSig_vv, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(void))&CXTPTabClientWnd::CSingleWorkspace::OnMouseLeave },
-	{ WM_RBUTTONDOWN, 0, 0, 0, AfxSig_vwp, (AFX_PMSG)(AFX_PMSGW)(void (AFX_MSG_CALL CWnd::*)(UINT, CPoint))&CXTPTabClientWnd::CSingleWorkspace::OnRButtonDown },
-END_MESSAGE_MAP()
-
-void CXTPTabClientWnd::CSingleWorkspace::OnRButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	UNREFERENCED_PARAMETER(point);
-
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnPaint()
-{
-	CPaintDC dcPaint(this);
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint);
-
-	if (m_pTabClientWnd)
-	{
-		CRect rectClient;
-		m_pTabClientWnd->GetWindowRect(rectClient);
-		ScreenToClient(&rectClient);
-		dcPaint.ExcludeClipRect(rectClient);
-		dc.ExcludeClipRect(rectClient);
-
-	}
-	GetPaintManager()->DrawTabControl(this, &dc, rc);
-}
-
-LRESULT CXTPTabClientWnd::CSingleWorkspace::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		if (m_pTabClientWnd)
-		{
-			CRect rectClient;
-			m_pTabClientWnd->GetWindowRect(rectClient);
-			ScreenToClient(&rectClient);
-			pDC->ExcludeClipRect(rectClient);
-
-		}
-		CXTPClientRect rc(this);
-		GetPaintManager()->DrawTabControl(this, pDC, rc);
-	}
-	return TRUE;
-}
-
-BOOL CXTPTabClientWnd::CSingleWorkspace::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnLButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	m_pTabClientWnd->m_bLockUpdate = TRUE;
-	m_pTabClientWnd->m_bDelayLock = TRUE;
-
-	PerformClick(m_hWnd, point);
-
-
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	OnLButtonDown(nFlags, point);
-}
-
-
-void CXTPTabClientWnd::CSingleWorkspace::OnMouseMove(UINT /*nFlags*/, CPoint point)
-{
-	PerformMouseMove(m_hWnd, point);
-}
-
-void CXTPTabClientWnd::CSingleWorkspace::OnMouseLeave()
-{
-	PerformMouseMove(m_hWnd, CPoint(-1, -1));
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlTabWorkspace
-
-IMPLEMENT_XTP_CONTROL(CXTPControlTabWorkspace, CXTPControlButton)
-
-CXTPControlTabWorkspace::CXTPControlTabWorkspace()
-{
-	m_bForceRecalc = FALSE;
-	m_nWidth = 220;
-
-	SetFlags(xtpFlagSkipFocus | xtpFlagNoMovable);
-}
-
-CXTPControlTabWorkspace::~CXTPControlTabWorkspace()
-{
-
-}
-
-void CXTPControlTabWorkspace::RedrawControl(LPCRECT lpRect, BOOL bAnimate)
-{
-	m_pParent->Redraw(lpRect, bAnimate);
-}
-
-CXTPTabPaintManager* CXTPControlTabWorkspace::GetPaintManager() const
-{
-	return CWorkspace::GetPaintManager();
-}
-
-CWnd* CXTPControlTabWorkspace::GetWindow() const
-{
-	return (CWnd*)GetParent();
-}
-
-void CXTPControlTabWorkspace::OnMouseMove(CPoint point)
-{
-	CXTPControl::OnMouseMove(point);
-
-	if (!m_pTabClientWnd)
-		return;
-
-	PerformMouseMove(m_pParent->m_hWnd, point);
-}
-
-void CXTPControlTabWorkspace::OnRecalcLayout()
-{
-	m_bForceRecalc = TRUE;
-	m_pParent->OnRecalcLayout();
-	RedrawControl(GetRect(), FALSE);
-}
-
-XTPTabPosition CXTPControlTabWorkspace::GetPosition() const
-{
-	switch (m_pParent->GetPosition())
-	{
-		case xtpBarLeft: return xtpTabPositionLeft;
-		case xtpBarRight: return xtpTabPositionRight;
-		case xtpBarBottom: return xtpTabPositionBottom;
-	}
-	return xtpTabPositionTop;
-}
-
-void CXTPControlTabWorkspace::OnRemoved()
-{
-	if (m_pTabClientWnd && m_pTabClientWnd->m_pTabWorkspace == this)
-	{
-		m_pTabClientWnd->m_pTabWorkspace = NULL;
-		m_pTabClientWnd->m_arrWorkspace.RemoveAll();
-	}
-}
-
-void CXTPControlTabWorkspace::SetRect(CRect rcControl)
-{
-	if (rcControl == CXTPControl::m_rcControl && !m_bForceRecalc)
-		return;
-
-	m_bForceRecalc = FALSE;
-	CXTPControl::SetRect(rcControl);
-
-	CXTPTabPaintManager* pPaintManager = GetPaintManager();
-	if (!pPaintManager)
-		return;
-
-	CClientDC dc(m_pParent);
-	pPaintManager->RepositionTabControl(this, &dc, rcControl);
-}
-
-void CXTPControlTabWorkspace::Draw(CDC* pDC)
-{
-	CXTPTabPaintManager* pPaintManager = GetPaintManager();
-	if (!pPaintManager)
-	{
-		CXTPControlButton::Draw(pDC);
-		return;
-	}
-	pPaintManager->DrawTabControl(this, pDC, GetRect());
-}
-
-CSize CXTPControlTabWorkspace::GetSize(CDC* pDC)
-{
-	CXTPTabPaintManager* pPaintManager = GetPaintManager();
-	if (!pPaintManager)
-		return CXTPControl::GetSize(pDC);
-
-	int nHeight = pPaintManager->GetAppearanceSet()->GetHeaderHeight(this);
-	if (pPaintManager->m_bStaticFrame) nHeight += 2;
-
-	return IsVerticalPosition(m_pParent->GetPosition()) ? CSize(nHeight, m_nWidth) : CSize(m_nWidth, nHeight);
-}
-
-INT_PTR CXTPControlTabWorkspace::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	if (!m_pTabClientWnd)
-		return -1;
-
-	CXTPTabManagerItem* pItem = HitTest(point);
-
-	if (pItem)
-	{
-		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipNever)
-			return 0;
-
-		if (GetPaintManager()->m_toolBehaviour == xtpTabToolTipShrinkedOnly && !pItem->IsItemShrinked())
-			return 0;
-
-		CString strTip = GetItemTooltip(pItem);
-		if (strTip.IsEmpty())
-			return 0;
-
-		INT_PTR nHit = pItem->GetIndex();
-
-		CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), pItem->GetRect(), nHit, strTip);
-
-		return nHit;
-	}
-
-	return 0;
-}
-
-void CXTPControlTabWorkspace::OnClick(BOOL bKeyboard, CPoint point)
-{
-	if (!m_pTabClientWnd)
-	{
-		CXTPControlButton::OnClick(bKeyboard, point);
-		return;
-	}
-
-	if (!bKeyboard)
-	{
-		m_pTabClientWnd->m_bLockUpdate = TRUE;
-		m_pTabClientWnd->m_bDelayLock = TRUE;
-
-		PerformClick(m_pParent->m_hWnd, point);
-
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPTabClientWnd
-
-IMPLEMENT_DYNAMIC(CXTPTabClientWnd, CWnd)
-
-CXTPTabClientWnd::CXTPTabClientWnd()
-{
-	m_pParentFrame = NULL;
-	m_bAllowReorder = TRUE;
-
-	m_pPaintManager = new CXTPTabPaintManager();
-	m_pPaintManager->m_bBoldSelected = TRUE;
-
-	m_themeCommandBars = xtpThemeNone;
-	m_bAutoTheme = TRUE;
-
-	m_bLockUpdate = FALSE;
-	m_bLockReposition = FALSE;
-	m_bForceToRecalc = FALSE;
-
-	m_pActiveWorkspace = NULL;
-	m_bHorizSplitting = TRUE;
-
-	m_bRefreshed = FALSE;
-
-	m_bThemedBackColor = TRUE;
-	m_bUpdateContents = FALSE;
-	m_bRightToLeft = FALSE;
-	m_bAutoUpdateTabCaption = TRUE;
-	m_pMarkupContext = NULL;
-
-	m_bUseSplitterTracker = TRUE;
-	m_bIgnoreFlickersOnActivate = FALSE;
-
-	m_bShowNewWindowTab = FALSE;
-	m_nNewWindowTabCommand = ID_FILE_NEW;
-
-	m_pCommandBars = NULL;
-
-	m_nSplitterSize = 5;
-
-	m_pDC = NULL;
-
-	m_hCursorHoriz = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
-	m_hCursorVert = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
-	m_hCursorNew = XTPResourceManager()->LoadCursor(XTP_IDC_WORKSPACE_NEW);
-	m_hCursorDelete = XTPResourceManager()->LoadCursor(XTP_IDC_WORKSPACE_DELETE);
-
-	m_bShowWorkspace = TRUE;
-	m_pTabWorkspace = NULL;
-	m_bEnableGroups = FALSE;
-	m_bUserWorkspace = FALSE;
-
-	m_nMsgUpdateSkinState = RegisterWindowMessage(_T("WM_SKINFRAMEWORK_UPDATESTATE"));
-	m_nMsgQuerySkinState = RegisterWindowMessage(_T("WM_SKINFRAMEWORK_QUERYSTATE"));
-
-	CImageList il;
-	il.Create(XTP_IDB_WORKSPACE_ICONS, 16, 1, RGB(0, 255, 0));
-	UINT nIDs[] =
-	{
-		XTP_ID_WORKSPACE_NEWHORIZONTAL, XTP_ID_WORKSPACE_NEWVERTICAL
-	};
-	XTPImageManager()->SetIcons(il, nIDs, 2, CSize(16, 16));
-
-	m_dwFlags = 0;
-
-	m_pDropTarget = new CTabClientDropTarget();
-	m_pDropTarget->m_pTabClientWnd = this;
-
-	m_pToolTipContext = new CXTPToolTipContext;
-
-	m_bDelayLock = FALSE;
-
-	m_newTabPosition = xtpWorkspaceNewTabRightMost;
-	m_afterCloseTabPosition = xtpWorkspaceActivateTopmost;
-
-}
-
-CXTPTabClientWnd::~CXTPTabClientWnd()
-{
-	CMDTARGET_RELEASE(m_pPaintManager);
-
-	if (m_pTabWorkspace != NULL)
-	{
-		m_pTabWorkspace->m_pTabClientWnd = NULL;
-		m_pTabWorkspace->DeleteAllItems();
+		m_cxLeftBorder = 0;
+		m_cxRightBorder = 0;
+		m_cyBottomBorder = 0;
 	}
 	else
 	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			delete GetWorkspace(i);
-		}
+		m_cxLeftBorder = 2;
+		m_cxRightBorder = 2;
+		m_cyBottomBorder = 1;
 	}
+	// minimum height set with SB_SETMINHEIGHT is cached
+	m_nMinHeight = 0;
 
-	SAFE_DELETE(m_pDropTarget);
+	m_pCommandBars = 0;
+	m_bCommandBarsTheme = TRUE;
+	m_bDrawDisabledText = TRUE;
+	m_pToolTipContext = new CXTPToolTipContext;
+
+	CXTPPaintManager::CNonClientMetrics ncm;
+	m_fontStatus.CreateFontIndirect(&ncm.lfStatusFont);
+
+
+	m_pHighlightedPane = NULL;
+
+	m_bShowSizeGripper = TRUE;
+	m_nRibbonDividerIndex = 0;
+
+}
+
+BOOL CXTPStatusBar::IsWin4()
+{
+#if (_MSC_VER >= 1300)
+	return TRUE;
+#else
+	DWORD dwVersion = ::GetVersion();
+	return (BYTE)dwVersion >= 4;
+#endif
+}
+
+
+CXTPStatusBar::~CXTPStatusBar()
+{
+	RemoveAll();
 
 	CMDTARGET_RELEASE(m_pToolTipContext);
 
-
-	XTPMarkupReleaseContext(m_pMarkupContext);
 }
 
-void CXTPTabClientWnd::EnableMarkup(BOOL bEnableMarkup)
+CXTPImageManager* CXTPStatusBar::GetImageManager() const
 {
-	XTPMarkupReleaseContext(m_pMarkupContext);
+	if (m_pCommandBars)
+		return m_pCommandBars->GetImageManager();
 
-	if (bEnableMarkup)
-	{
-		m_pMarkupContext = XTPMarkupCreateContext(m_hWnd);
-	}
+	return XTPImageManager();
 }
 
-
-BOOL CXTPTabClientWnd::IsLayoutRTL() const
+CXTPStatusBarPane* CXTPStatusBar::HitTest(CPoint pt, CRect* lpRect) const
 {
-	if (GetParentFrame()->GetExStyle() & WS_EX_LAYOUTRTL)
-		return TRUE;
-
-	return m_bRightToLeft;
-}
-
-#ifndef WS_EX_NOINHERITLAYOUT
-#define WS_EX_NOINHERITLAYOUT   0x00100000L
-#endif
-
-void CXTPTabClientWnd::SetLayoutRTL(BOOL bRightToLeft)
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return;
-
-	if (m_bUserWorkspace)
-		return;
-
-	m_bRightToLeft = bRightToLeft;
-
-	if (!m_bEnableGroups && GetWorkspaceCount() == 1)
+	for (int i = 0; i < GetPaneCount(); i++)
 	{
-		((CSingleWorkspace*)GetWorkspace(0))->ModifyStyleEx(m_bRightToLeft ? 0 : WS_EX_LAYOUTRTL,
-			m_bRightToLeft ? WS_EX_LAYOUTRTL : 0);
-	}
+		CXTPStatusBarPane* pPane = GetPane(i);
+		if (!pPane->IsVisible())
+			continue;
 
-	if (m_bEnableGroups)
-	{
-		ModifyStyleEx(m_bRightToLeft ? 0 : WS_EX_LAYOUTRTL,
-			m_bRightToLeft ? WS_EX_LAYOUTRTL | WS_EX_NOINHERITLAYOUT : 0);
-	}
+		CRect rc(0, 0, 0, 0);
+		GetItemRect(i, &rc);
 
-	RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
-	m_pParentFrame->DelayRecalcLayout();
-}
+		if (rc.PtInRect(pt))
+		{
+			if (lpRect)
+				*lpRect = rc;
 
-
-CXTPTabManagerItem* CXTPTabClientWnd::FindItem(const HWND hWnd) const
-{
-	// loop through all tab items
-	for (int nIndex = 0; nIndex < GetWorkspaceCount(); nIndex++)
-	{
-		CXTPTabManagerItem* pItem = GetWorkspace(nIndex)->FindItem(hWnd);
-
-		if (pItem)
-			return pItem;
+			return pPane;
+		}
 	}
 
 	return NULL;
 }
 
-BOOL CXTPTabClientWnd::OnBeforeItemClick(CXTPTabManagerItem* pItem)
+void CXTPStatusBar::RemoveAll()
 {
-	UNREFERENCED_PARAMETER(pItem);
+	for (int i = 0; i < (int)m_arrPanes.GetSize(); i++)
+	{
+		m_arrPanes[i]->InternalRelease();
+	}
+	m_arrPanes.RemoveAll();
 
+	m_pHighlightedPane = NULL;
 
-	return TRUE;
+	UpdateAllPanes(TRUE, TRUE);
 }
 
-CWnd* CXTPTabClientWnd::MDIGetActive()
+CXTPStatusBarPane* CXTPStatusBar::GetPane(int nIndex) const
 {
-	return (GetParentFrame()->MDIGetActive());
+	ASSERT(nIndex >= 0 && nIndex < GetPaneCount());
 
+	return nIndex >= 0 && nIndex < GetPaneCount() ? m_arrPanes[nIndex]: NULL;
 }
 
-void CXTPTabClientWnd::MDIActivate(CWnd* pWnd)
+CXTPStatusBarPane* CXTPStatusBar::FindPane(UINT nID) const
 {
-	if (!pWnd || !::IsWindow(pWnd->GetSafeHwnd()))
-		return;
-
-	SendMessage(WM_MDIACTIVATE, (WPARAM)pWnd->m_hWnd, 0);
-
-	if (pWnd->GetStyle() & WS_MINIMIZE)
+	for (int i = 0; i < GetPaneCount(); i++)
 	{
-		pWnd->SendMessage(WM_SYSCOMMAND, (WPARAM)SC_RESTORE, 0L);
-	}
-}
-
-CString CXTPTabClientWnd::GetItemTooltip(const CXTPTabManagerItem* pItem) const
-{
-	CString strTooltip = pItem->m_strToolTip;
-	if (!strTooltip.IsEmpty())
-		return strTooltip;
-
-	CMDIChildWnd* pChild = DYNAMIC_DOWNCAST(CMDIChildWnd, CWnd::FromHandle(pItem->GetHandle()));
-	if (pChild)
-	{
-		strTooltip = (LPCTSTR)pChild->SendMessage(WM_XTP_GETWINDOWTOOLTIP, (WPARAM)pItem);
-		if (!strTooltip.IsEmpty())
-			return strTooltip;
-
-
-		if (pChild->GetActiveDocument())
-			strTooltip = pChild->GetActiveDocument()->GetPathName();
-
-		if (!strTooltip.IsEmpty())
-			return strTooltip;
-	}
-	return pItem->GetCaption();
-}
-
-CString CXTPTabClientWnd::GetItemText(const CWnd* pChildWnd) const
-{
-	ASSERT(pChildWnd != NULL);
-	if (!pChildWnd)
-		return _T("");
-
-	ASSERT(pChildWnd->IsKindOf(RUNTIME_CLASS(CMDIChildWnd)));
-
-	CString sWindowText = (LPCTSTR)((CWnd*)pChildWnd)->
-		SendMessage(WM_XTP_GETWINDOWTEXT);
-
-	if (sWindowText.IsEmpty())
-	{
-		CDocument* pDoc = ((CMDIChildWnd*)pChildWnd)->GetActiveDocument();
-		if (pDoc != NULL)
-			sWindowText = pDoc->GetTitle();
-
-		if (sWindowText.IsEmpty())
-			CXTPDrawHelpers::GetWindowCaption(pChildWnd->GetSafeHwnd(), sWindowText);
-	}
-
-	return sWindowText;
-}
-
-COLORREF CXTPTabClientWnd::GetItemColor(const CXTPTabManagerItem* pItem) const
-{
-	COLORREF clr = (COLORREF)::SendMessage(pItem->GetHandle(), WM_XTP_GETTABCOLOR, 0, 0);
-
-	if (clr != 0)
-	{
-		return clr;
-	}
-
-	return COLORREF_NULL;
-}
-
-
-HICON CXTPTabClientWnd::GetItemIcon(const CXTPTabManagerItem* pItem) const
-{
-	HWND hWnd = pItem->GetHandle();
-	HICON hIcon;
-
-	hIcon = (HICON)::SendMessage(hWnd, WM_XTP_GETTABICON, 0, 0);
-
-	if (!hIcon) hIcon = (HICON)::SendMessage(hWnd, WM_GETICON, ICON_SMALL, 0);
-	if (!hIcon) hIcon = (HICON)::SendMessage(hWnd, WM_GETICON, ICON_BIG, 0);
-	if (!hIcon) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWnd, GCLP_HICONSM);
-	if (!hIcon) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(hWnd, GCLP_HICON);
-
-	return hIcon ? hIcon : AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPTabClientWnd, CWnd)
-	//{{AFX_MSG_MAP(CXTPTabClientWnd)
-	ON_MESSAGE(WM_MDIACTIVATE, OnMDIActivate)
-	ON_MESSAGE(WM_MDINEXT, OnMDINext)
-	ON_MESSAGE(WM_MDICREATE, OnMDICreate)
-	ON_MESSAGE(WM_MDIDESTROY, OnMDIDestroy)
-	ON_WM_SIZE()
-	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_NCPAINT()
-	ON_WM_NCCALCSIZE()
-	ON_WM_NCACTIVATE()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_MOUSEMOVE()
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_WM_SYSCOLORCHANGE()
-	ON_WM_SETCURSOR()
-	ON_WM_RBUTTONDOWN()
-
-	ON_COMMAND_RANGE(XTP_ID_WORKSPACE_MOVEPREVIOUS, XTP_ID_WORKSPACE_NEWVERTICAL, OnWorkspaceCommand)
-	ON_UPDATE_COMMAND_UI_RANGE(XTP_ID_WORKSPACE_MOVEPREVIOUS, XTP_ID_WORKSPACE_NEWVERTICAL, OnUpdateWorkspaceCommand)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-CXTPTabClientWnd::CWorkspace* CXTPTabClientWnd::CreateWorkspace()
-{
-	if (m_pTabWorkspace != NULL)
-		return m_pTabWorkspace;
-
-	if (m_bUserWorkspace)
-		return NULL;
-
-	if (m_bEnableGroups)
-		return new CWorkspace();
-
-	return new CSingleWorkspace();
-}
-
-CXTPTabClientWnd::CWorkspace*  CXTPTabClientWnd::AddWorkspace(int nIndex)
-{
-	if (m_pDropTarget) m_pDropTarget->Revoke();
-
-	CWorkspace* pWorkspace = CreateWorkspace();
-	if (!pWorkspace)
-		return NULL;
-
-	if (m_bEnableGroups)
-	{
-		if (m_pDropTarget) m_pDropTarget->Register(this);
-	}
-	else if (!m_bUserWorkspace)
-	{
-		VERIFY(((CSingleWorkspace*)pWorkspace)->Create(AfxRegisterWndClass(CS_DBLCLKS, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), _T(""), WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE, CXTPEmptyRect(), m_pParentFrame, 0));
-		if (m_pDropTarget) m_pDropTarget->Register((CSingleWorkspace*)pWorkspace);
-
-		if (IsLayoutRTL())
-		{
-			((CSingleWorkspace*)pWorkspace)->ModifyStyleEx(0, WS_EX_LAYOUTRTL);
-		}
-	}
-
-	if (nIndex == -1) nIndex = GetWorkspaceCount();
-	m_arrWorkspace.InsertAt(nIndex, pWorkspace);
-
-	pWorkspace->m_pTabClientWnd = this;
-
-
-	pWorkspace->SetActive(FALSE);
-	pWorkspace->SetItemMetrics(CSize(70, 18), 0, CSize(220, 0));
-	pWorkspace->GetNavigateButtons()->InsertAt(2, new CNavigateButtonActiveFiles(pWorkspace, this));
-
-	UpdateFlags(pWorkspace);
-
-	m_bForceToRecalc = TRUE;
-
-	return pWorkspace;
-
-}
-
-BOOL CXTPTabClientWnd::Attach(CXTPMDIFrameWnd* pParentFrame, BOOL bEnableGroups /*= FALSE*/)
-{
-	return Attach(pParentFrame->GetCommandBars(), pParentFrame, bEnableGroups);
-}
-
-BOOL CXTPTabClientWnd::Attach(CXTPCommandBars* pCommandBars, CMDIFrameWnd* pParentFrame, BOOL bEnableGroups)
-{
-	ASSERT(GetWorkspaceCount() == 0);
-	ASSERT(pParentFrame != NULL);
-	if (!pParentFrame)
-		return FALSE;
-	ASSERT(::IsWindow(pParentFrame->GetSafeHwnd()));
-
-	m_bEnableGroups = bEnableGroups;
-
-	m_pCommandBars = NULL;
-
-	// check if already attached
-	if (IsAttached())
-	{
-		TRACE(_T("CXTPTabClientWnd::Attach: window has already been attached. Call Detach() function before !\n"));
-		return FALSE;
-	}
-
-	// make sure the specified window is/derived from CMDIFrameWnd class
-	if (!pParentFrame->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd)))
-	{
-		TRACE(_T("CXTPTabClientWnd::Attach: specified frame window is not of CMDIFrameWnd class (or derived)!\n"));
-		return FALSE;
-	}
-
-	// try to sublass MDIClient window
-	if (!SubclassWindow(pParentFrame->m_hWndMDIClient))
-	{
-		TRACE(_T("CXTPTabClientWnd::Attach: failed to subclass MDI Client window\n"));
-		return FALSE;
-	}
-
-	m_pCommandBars = pCommandBars;
-
-	SendMessage(m_nMsgUpdateSkinState);
-
-	// save the pointer to parent MDIFrame
-	m_pParentFrame = pParentFrame;
-
-	CheckCommandBarsTheme();
-	GetPaintManager()->RefreshMetrics();
-
-
-	SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER);
-
-	// update the size and position of the tab control and MDIClient window
-	Reposition();
-
-	if (bEnableGroups)
-	{
-		::SetClassLong(m_hWnd, GCL_STYLE, ::GetClassLong(m_hWnd, GCL_STYLE) | CS_DBLCLKS);
-	}
-
-	// populate tab control with MDIChild windows if any exist at the moment
-	UpdateContents();
-
-	return TRUE;
-}
-
-void CXTPTabClientWnd::EnableToolTips(XTPTabToolTipBehaviour behaviour /*= xtpTabToolTipAlways*/)
-{
-	m_pPaintManager->EnableToolTips(behaviour);
-}
-
-void CXTPTabClientWnd::ShowWorkspace(BOOL bShow)
-{
-	if (m_bShowWorkspace == bShow)
-		return;
-
-	if (!m_bEnableGroups && !m_bUserWorkspace)
-	{
-		if (GetWorkspaceCount() == 1 && ((CSingleWorkspace*)GetWorkspace(0))->m_hWnd)
-		{
-			((CSingleWorkspace*)GetWorkspace(0))->ShowWindow(bShow ? SW_SHOW : SW_HIDE);
-		}
-
-		m_bShowWorkspace = bShow;
-		UpdateContents();
-		Reposition();
-	}
-}
-
-BOOL CXTPTabClientWnd::Detach()
-{
-	// check if any attached
-	if (!IsAttached())
-	{
-		TRACE(_T("CXTPTabClientWnd::Attach: there is nothing to detach! Window hasn't been attached!\n"));
-		return FALSE;
-	}
-
-	if (m_pDropTarget) m_pDropTarget->Revoke();
-
-	if (m_pTabWorkspace)
-	{
-		m_pTabWorkspace->m_pTabClientWnd = NULL;
-		m_pTabWorkspace->DeleteAllItems();
-	}
-	else
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			delete GetWorkspace(i);
-		}
-	}
-
-	m_arrWorkspace.RemoveAll();
-
-	m_pActiveWorkspace = NULL;
-
-	HWND hWnd = m_hWnd;
-	// unsubclass MDIClient window
-	UnsubclassWindow();
-
-	// update the size and position of the MDIClient window
-	if (::IsWindow(m_pParentFrame->GetSafeHwnd()))
-		m_pParentFrame->RecalcLayout();
-
-	m_pParentFrame = NULL;
-	m_pCommandBars = NULL;
-
-	::SendMessage(hWnd, m_nMsgUpdateSkinState, 0, 0);
-
-	return TRUE;
-}
-
-
-
-INT_PTR CXTPTabClientWnd::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	if (XTPMouseManager()->IsTrackedLock())
-		return -1;
-
-	if (!m_bShowWorkspace)
-		return -1;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		if (GetWorkspace(i)->GetControlRect().PtInRect(point))
-		{
-			return GetWorkspace(i)->PerformToolHitTest(m_hWnd, point, pTI);
-		}
-	}
-	return -1;
-}
-
-
-void CXTPTabClientWnd::CheckCommandBarsTheme()
-{
-	if (!m_bAutoTheme)
-		return;
-
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-	if (!pCommandBars)
-		return;
-
-	XTPPaintTheme themeCommandBars = pCommandBars->GetPaintManager()->GetCurrentTheme();
-	if (m_themeCommandBars == themeCommandBars)
-		return;
-
-	// initialize attributes common to most themes.
-	m_pPaintManager->m_bStaticFrame = FALSE;
-	m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-	m_pPaintManager->m_bOneNoteColors = FALSE;
-	m_pPaintManager->m_bHotTracking = FALSE;
-	m_pPaintManager->m_rcButtonMargin.SetRect(0,0,0,0);
-	m_pPaintManager->m_bClearTypeTextQuality = pCommandBars->GetPaintManager()->m_bClearTypeTextQuality;
-	m_pPaintManager->m_bBoldSelected = FALSE;
-	m_pPaintManager->m_rcClientMargin.SetRect(2,2,2,2);
-
-	// set theme specific attributes.
-	switch (themeCommandBars)
-	{
-	case xtpThemeOffice2000:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPageSelected);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
-
-	case xtpThemeOfficeXP:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearanceVisualStudio);
-			m_pPaintManager->m_bStaticFrame = TRUE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
-		}
-		break;
-
-	case xtpThemeOffice2003:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorOffice2003);
-		}
-		break;
-
-	case xtpThemeNativeWinXP:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorWinNative);
-		}
-		break;
-
-	case xtpThemeWhidbey:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2005);
-			m_pPaintManager->m_bStaticFrame = TRUE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameSingleLine;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-		}
-		break;
-
-	case xtpThemeResource:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorResource);
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-		}
-		break;
-
-	case xtpThemeRibbon:
-		{
-			m_pPaintManager->m_bDisableLunaColors = FALSE;
-			m_pPaintManager->m_bOneNoteColors = FALSE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->m_rcClientMargin.SetRect(3,2,3,4);
-
-			if (pCommandBars->GetMenuBar() && pCommandBars->GetMenuBar()->GetType() == xtpBarTypeRibbon)
-			{
-				m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPageAccess2007);
-				m_pPaintManager->m_rcButtonMargin.SetRect(3, 0, 3, 0);
-			}
-			else
-			{
-				m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2007);
-				m_pPaintManager->m_rcButtonMargin.SetRect(2, 2, 2, 2);
-			}
-		}
-		break;
-
-	case xtpThemeVisualStudio2008:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage2003);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2008);
-			m_pPaintManager->m_bStaticFrame = FALSE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-		}
-		break;
-
-	case xtpThemeVisualStudio6:
-		{
-			m_pPaintManager->m_bBoldSelected = TRUE;
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
-
-	case xtpThemeVisualStudio2010:
-		{
-			m_pPaintManager->m_bStaticFrame = FALSE;
-			m_pPaintManager->m_clientFrame = xtpTabFrameBorder;
-			m_pPaintManager->m_bDisableLunaColors = TRUE;
-			m_pPaintManager->m_bHotTracking = TRUE;
-			m_pPaintManager->m_rcClientMargin.SetRect(0, 2, 0, 2);
-			m_pPaintManager->m_rcButtonMargin.SetRect(0, 2, 0, 1);
-
-			CXTPTabPaintManager::CAppearanceSetPropertyPageFlat* pAppearance =
-				new CXTPTabPaintManager::CAppearanceSetVisualStudio2010();
-
-			pAppearance->m_rcHeaderMargin.left = 1;
-			pAppearance->m_rcHeaderMargin.top = 0;
-
-			m_pPaintManager->SetAppearanceSet(pAppearance);
-			m_pPaintManager->SetColor(xtpTabColorVisualStudio2010);
-			SetFlags(xtpWorkspaceHideClose | xtpWorkspaceShowCloseTab);
-		}
-		break;
-
-	default:
-		{
-			m_pPaintManager->SetAppearance(xtpTabAppearancePropertyPage);
-			m_pPaintManager->SetColor(xtpTabColorDefault);
-		}
-		break;
-	}
-
-	m_pPaintManager->RefreshMetrics();
-	m_themeCommandBars = themeCommandBars;
-
-	Refresh();
-}
-
-int CXTPTabClientWnd::GetWorkspaceCount() const
-{
-	return (int)m_arrWorkspace.GetSize();
-}
-
-CXTPTabClientWnd::CWorkspace* CXTPTabClientWnd::GetWorkspace(int nIndex) const
-{
-	return m_arrWorkspace[nIndex];
-}
-
-
-void CXTPTabClientWnd::OnIdleUpdateCmdUI()
-{
-	if (m_bDelayLock)
-	{
-		m_bDelayLock = FALSE;
-		m_bLockUpdate = FALSE;
-	}
-
-	UpdateContents();
-}
-
-void CXTPTabClientWnd::CWorkspace::AddNewWindowItem()
-{
-	if (!m_pNewWindowItem && m_pTabClientWnd->m_bShowNewWindowTab)
-	{
-		m_pNewWindowItem = CXTPTabManager::AddItem(-1);
-		m_pNewWindowItem->SetClosable(FALSE);
-		m_pNewWindowItem->GetNavigateButtons()->RemoveAll();
-	}
-}
-
-CXTPTabManagerItem* CXTPTabClientWnd::AddItem(CWnd* pChildWnd)
-{
-#ifdef _DEBUG
-	if (m_bEnableGroups)
-	{
-		ASSERT((pChildWnd->GetStyle() & WS_MAXIMIZE) == 0);
-	}
-#endif
-
-	if (GetWorkspaceCount() == 0)
-		AddWorkspace();
-
-	if (GetWorkspaceCount() == 0)
-		return NULL;
-
-	CWorkspace* pActiveWorkspace = m_pActiveWorkspace ? m_pActiveWorkspace : m_arrWorkspace[GetWorkspaceCount() - 1];
-
-	return pActiveWorkspace->AddItem(pChildWnd);
-}
-
-
-void CXTPTabClientWnd::SetActiveWorkspace(CWorkspace* pWorkspace)
-{
-	if (m_pActiveWorkspace != pWorkspace)
-	{
-		if (m_pActiveWorkspace)
-			m_pActiveWorkspace->SetActive(FALSE);
-
-		m_pActiveWorkspace = pWorkspace;
-		m_pActiveWorkspace->SetActive(TRUE);
-	}
-}
-
-void CXTPTabClientWnd::WorkspaceToScreen(LPPOINT lpPoint) const
-{
-	if (m_bEnableGroups)
-	{
-		ClientToScreen(lpPoint);
-	}
-	else if (GetWorkspaceCount() != 0)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(0);
-		pWorkspace->GetWindow()->ClientToScreen(lpPoint);
-	}
-
-}
-void CXTPTabClientWnd::ScreenToWorkspace(LPPOINT lpPoint) const
-{
-	if (m_bEnableGroups)
-	{
-		ScreenToClient(lpPoint);
-	}
-	else if (GetWorkspaceCount() != 0)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(0);
-		pWorkspace->GetWindow()->ScreenToClient(lpPoint);
-	}
-}
-
-
-void CXTPTabClientWnd::Refresh(BOOL bRecalcLayout)
-{
-	if (!IsAttached())
-		return;
-
-	if (m_bRefreshed)
-		return;
-
-	m_bRefreshed = TRUE;
-
-	UpdateContents();
-
-	if (GetWorkspaceCount() != 0)
-	{
-		CPoint pt;
-		GetCursorPos(&pt);
-		ScreenToWorkspace(&pt);
-
-		if (m_bEnableGroups)
-		{
-			OnMouseMove(0, pt);
-		}
-		else if (!m_bUserWorkspace)
-		{
-			((CSingleWorkspace*)GetWorkspace(0))->OnMouseMove(0, pt);
-		}
-	}
-
-	Invalidate(FALSE);
-
-	if (bRecalcLayout)
-	{
-		if (m_bEnableGroups)
-			SetWindowPos(NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-
-		CXTPCommandBars* pCommandBars = GetCommandBars();
-		if (pCommandBars)
-			pCommandBars->RecalcFrameLayout();
-	}
-
-	m_bRefreshed = FALSE;
-}
-
-
-void CXTPTabClientWnd::UpdateContents()
-{
-	if (m_hWnd == 0)
-		return;
-
-	if (!m_bShowWorkspace)
-		return;
-
-	if (m_bLockUpdate)
-		return;
-
-	// check MDI windows
-	CFrameWnd* pFrameWnd = GetParentFrame();
-	if (pFrameWnd == NULL)
-		return;
-
-	if (m_bUpdateContents)
-		return;
-
-	m_bUpdateContents = TRUE;
-
-	CheckCommandBarsTheme();
-
-	m_bLockReposition = TRUE;
-
-	// get pointer to currently active MDIChild
-	CWnd* pActiveChildWnd = MDIGetActive();
-
-	CXTPTabManagerItem* pActiveItem = NULL, *pNewItem = NULL;
-
-	int i;
-	for (i = 0; i < GetWorkspaceCount(); i++)
-	{
-		for (int nIndex = 0; nIndex < GetWorkspace(i)->GetItemCount(); nIndex++)
-			GetWorkspace(i)->GetItem(nIndex)->m_bFound = FALSE;
-	}
-
-
-	// start enumerating from currently active MDIChild
-	CWnd* pChildWnd = GetWindow(GW_CHILD);
-
-	// enumerate all child windows
-	while (pChildWnd)
-	{
-		// see if can find
-		CXTPTabManagerItem* pFoundItem = FindItem(pChildWnd->GetSafeHwnd());
-
-		if (pFoundItem != NULL)
-		{
-			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
-			{
-				// update text if necessary
-				if (m_bAutoUpdateTabCaption) pFoundItem->SetCaption(GetItemText(pChildWnd));
-
-			}
-			else
-			{
-				pFoundItem->Remove();
-				pFoundItem = NULL;
-			}
-		}
-		else
-		{
-			if ((pChildWnd->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
-			{
-				// add item
-				pNewItem = pFoundItem = AddItem(pChildWnd);
-				if (pNewItem)
-				{
-
-					pFoundItem->m_hWnd = pChildWnd->GetSafeHwnd();
-
-					pFrameWnd->SendMessage(WM_XTP_NEWTABITEM, (WPARAM)pNewItem);
-					pNewItem->GetTabManager()->SetSelectedItem(pNewItem);
-				}
-
-			}
-		}
-		if (pFoundItem)
-		{
-			pFoundItem->m_bFound = TRUE;
-
-			if (pChildWnd == pActiveChildWnd)
-				pActiveItem = pFoundItem;
-		}
-
-		// get next MDIChild
-		pChildWnd = pChildWnd->GetWindow(GW_HWNDNEXT);
-	}
-
-	for (i = GetWorkspaceCount() - 1; i >= 0; i--)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(i);
-		for (int nIndex = pWorkspace->GetItemCount() - 1; nIndex >= 0; nIndex--)
-		{
-			CXTPTabManagerItem* pItem = pWorkspace->GetItem(nIndex);
-			if (!pItem->m_bFound && pItem != pWorkspace->m_pNewWindowItem)
-			{
-				pItem->Remove();
-			}
-		}
-
-		if (pWorkspace->GetItemCount() - (pWorkspace->m_pNewWindowItem ? 1 : 0) == 0)
-		{
-			if (pWorkspace == m_pActiveWorkspace)
-				m_pActiveWorkspace = NULL;
-
-			CWorkspace* pWorkcpaceGrow = i == 0 ? (GetWorkspaceCount() > 1 ? GetWorkspace(i + 1): NULL) : GetWorkspace(i - 1);
-			if (pWorkcpaceGrow)
-			{
-				pWorkcpaceGrow->m_dHeight += pWorkspace->m_dHeight + m_nSplitterSize;
-			}
-
-			if (pWorkspace != m_pTabWorkspace) delete pWorkspace;
-			m_arrWorkspace.RemoveAt(i);
-
-			m_bForceToRecalc = TRUE;
-
-			if (m_bEnableGroups)
-			{
-				Invalidate(FALSE);
-			}
-		}
-	}
-
-	// set the active item
-	if (pActiveItem != NULL)
-	{
-		if (pActiveItem->GetTabManager()->GetSelectedItem() != pActiveItem)
-		{
-			pActiveItem->GetTabManager()->SetSelectedItem(pActiveItem);
-		}
-
-		SetActiveWorkspace((CWorkspace*)pActiveItem->GetTabManager());
-
-	}
-
-	m_bLockReposition = FALSE;
-
-	if (m_bForceToRecalc)
-	{
-		// update the size and position of the tab control and MDIClient window
-		if (::IsWindow(GetParentFrame()->GetSafeHwnd()))
-		{
-			Reposition();
-		}
-
-		if (pNewItem)
-			pNewItem->GetTabManager()->EnsureVisible(pNewItem);
-
-
-		m_bForceToRecalc = FALSE;
-	}
-
-	m_bUpdateContents = FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPTabClientWnd message handlers
-
-
-// handler for WM_MDIACTIVATE message. Will select corresponding
-// tab control item
-LRESULT CXTPTabClientWnd::OnMDIActivate(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	LRESULT lResult = 0;
-
-	if (m_bEnableGroups || m_bIgnoreFlickersOnActivate || !m_bShowWorkspace)
-	{
-		lResult = Default();
-	}
-	else
-	{
-		SetRedraw(FALSE);
-
-		lResult = Default();
-
-		SetRedraw(TRUE);
-		RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
-	}
-
-	UpdateContents();
-	return lResult;
-}
-
-
-// handler for WM_MDICREATE message. Will add new item into the
-// tab control
-LRESULT CXTPTabClientWnd::OnMDICreate(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	LRESULT lResult = Default();
-
-	if (lResult && m_bEnableGroups)
-	{
-		CWnd* pWnd = CWnd::FromHandle((HWND)lResult);
-		if (pWnd)
-		{
-			pWnd->ModifyStyle(WS_BORDER | WS_DLGFRAME | WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, 0);
-			pWnd->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
-			pWnd->MoveWindow(0, 0, 0, 0);
-		}
-	}
-
-	UpdateContents();
-	return lResult;
-}
-
-void CXTPTabClientWnd::ActivateNextItem(CXTPTabManagerItem* pItem)
-{
-	if (!pItem)
-		return;
-
-	CXTPTabManagerItem* pItemActivate = pItem->GetTabManager()->GetItem(pItem->GetIndex() + 1);
-
-	if (!pItemActivate)
-	{
-		pItemActivate = pItem->GetTabManager()->GetItem(pItem->GetIndex() - 1);
-	}
-
-	if (!pItemActivate)
-		return;
-
-	HWND hWndActivate = pItemActivate->GetHandle();
-	if (!hWndActivate)
-		return;
-
-	::BringWindowToTop(hWndActivate);
-}
-
-// handler for WM_MDIDESTROY message. Will remove the correspondent item
-// from the tab control
-LRESULT CXTPTabClientWnd::OnMDIDestroy(WPARAM wParam, LPARAM /*lParam*/)
-{
-	if (m_afterCloseTabPosition == xtpWorkspaceActivateNextToClosed)
-		ActivateNextItem(FindItem((HWND)wParam));
-
-	LRESULT lResult = Default();
-	UpdateContents();
-	return lResult;
-}
-
-LRESULT CXTPTabClientWnd::OnMDINext(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	LRESULT lResult = Default();
-	UpdateContents();
-	return lResult;
-}
-
-BOOL CXTPTabClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (nHitTest == HTCLIENT && m_bEnableGroups)
-	{
-		CPoint point;
-
-		GetCursorPos(&point);
-		ScreenToClient(&point);
-
-		for (int nIndex = 0; nIndex < GetWorkspaceCount(); nIndex++)
-		{
-			CWorkspace* pWorkspace = GetWorkspace(nIndex);
-			if (pWorkspace->m_rcSplitter.PtInRect(point))
-			{
-				SetCursor(!m_bHorizSplitting ? m_hCursorHoriz : m_hCursorVert);
-				return TRUE;
-			}
-		}
-	}
-
-	return CWnd::OnSetCursor(pWnd, nHitTest, message);
-}
-
-void CXTPTabClientWnd::CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType)
-{
-	if (GetWorkspaceCount() == 0 || !m_bShowWorkspace || m_bUserWorkspace)
-	{
-		CWnd::CalcWindowRect(lpClientRect, nAdjustType);
-		return;
-	}
-
-	if (!m_bEnableGroups)
-	{
-		CSingleWorkspace* pWorkspace = (CSingleWorkspace*)GetWorkspace(0);
-
-		// now do the laying out
-		HDWP dwh = BeginDeferWindowPos(2);
-
-		// move tab window
-		if (::IsWindow(pWorkspace->m_hWnd) && (pWorkspace->GetStyle() & WS_VISIBLE) == WS_VISIBLE)
-		{
-			{
-
-				// move tab control
-				dwh = ::DeferWindowPos(dwh, pWorkspace->m_hWnd, NULL, lpClientRect->left,
-					lpClientRect->top,
-					lpClientRect->right-lpClientRect->left,
-					lpClientRect->bottom-lpClientRect->top, SWP_NOZORDER);
-
-
-				CClientDC dc(pWorkspace);
-
-				CRect rectTab(lpClientRect);
-				rectTab.OffsetRect(-rectTab.TopLeft());
-
-				GetPaintManager()->RepositionTabControl(pWorkspace, &dc, rectTab);
-
-				CRect rectTabAdjust(lpClientRect);
-				GetPaintManager()->AdjustClientRect(pWorkspace, rectTabAdjust);
-				*lpClientRect = rectTabAdjust;
-
-
-				pWorkspace->Invalidate(FALSE);
-			}
-
-			if (lpClientRect->bottom < lpClientRect->top ||
-				lpClientRect->right < lpClientRect->left)
-				::memset(lpClientRect, 0, sizeof(RECT));
-
-			::ShowWindow(pWorkspace->m_hWnd, SW_SHOWNA);
-		}
-
-		// move MDIClient window
-		dwh = ::DeferWindowPos(dwh, m_hWnd, NULL, lpClientRect->left, lpClientRect->top,
-			lpClientRect->right - lpClientRect->left,
-			lpClientRect->bottom - lpClientRect->top,
-			SWP_NOZORDER);
-
-		EndDeferWindowPos(dwh);
-	}
-	else
-	{
-
-		CClientDC dc(this);
-
-		CRect rcBorders(2, 2, -2, -2);
-		m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(NULL, rcBorders, xtpTabWorkspacePartWidth);
-
-		CRect rcClient(0, 0, lpClientRect->right-lpClientRect->left + rcBorders.Width(), lpClientRect->bottom-lpClientRect->top + rcBorders.Height());
-
-		int nIndex;
-		double dTotalHeight = 0;
-		int nWorkspaceCount = GetWorkspaceCount();
-
-		for (nIndex = 0; nIndex < nWorkspaceCount; nIndex++)
-		{
-			dTotalHeight += GetWorkspace(nIndex)->m_dHeight;
-		}
-		int nTotalHeight = (m_bHorizSplitting ? rcClient.Height() : rcClient.Width()) - m_nSplitterSize * (nWorkspaceCount - 1);
-		double dHeight = 0;
-		if ((int)dTotalHeight == 0) dTotalHeight = 1.0;
-
-		CRect rcWorkspace(rcClient);
-
-		for (nIndex = 0; nIndex < nWorkspaceCount; nIndex++)
-		{
-			CWorkspace* pWorkspace = GetWorkspace(nIndex);
-
-			CRect rc(rcClient);
-			if (nIndex != nWorkspaceCount - 1)
-			{
-				dHeight = dHeight += pWorkspace->m_dHeight;
-
-				int nHeight = int(dHeight * nTotalHeight / dTotalHeight) + m_nSplitterSize * nIndex;
-
-				if (m_bHorizSplitting)
-				{
-					pWorkspace->m_rcSplitter.SetRect(rc.left, rcWorkspace.top + nHeight, rc.right, rcWorkspace.top + nHeight + m_nSplitterSize);
-
-					rc.bottom = rcWorkspace.top + nHeight;
-					rcClient.top = rc.bottom + m_nSplitterSize;
-				}
-				else
-				{
-					pWorkspace->m_rcSplitter.SetRect(rcWorkspace.left + nHeight, rc.top, rcWorkspace.left + nHeight + m_nSplitterSize, rc.bottom);
-
-					rc.right = rcWorkspace.left + nHeight;
-					rcClient.left = rc.right + m_nSplitterSize;
-				}
-			}
-			else
-			{
-				pWorkspace->m_rcSplitter.SetRectEmpty();
-
-			}
-
-
-			GetPaintManager()->RepositionTabControl(pWorkspace, &dc, rc);
-			rc = pWorkspace->GetClientRect();
-
-			for (int i = 0; i < pWorkspace->GetItemCount(); i++)
-			{
-				HWND hWndChild = pWorkspace->GetItem(i)->m_hWnd;
-				::MoveWindow(hWndChild, rc.left, rc.top, rc.Width(), rc.Height(), TRUE);
-			}
-		}
-
-		Invalidate(FALSE);
-		//UpdateWindow();
-	}
-
-	CWnd::CalcWindowRect(lpClientRect, nAdjustType);
-}
-
-// update the size of the tab control and the MDIClient window
-void CXTPTabClientWnd::OnSize(UINT nType, int cx, int cy)
-{
-	CWnd::OnSize(nType, cx, cy);
-}
-
-BOOL CXTPTabClientWnd::OnEraseBkgnd(CDC*)
-{
-	if (!m_bThemedBackColor && !m_bEnableGroups)
-	{
-		return (BOOL)Default();
-	}
-	return TRUE;
-}
-
-LRESULT CXTPTabClientWnd::OnPrintClient(WPARAM wParam, LPARAM)
-{
-	if (!m_bThemedBackColor && !m_bEnableGroups)
-	{
-		return (LRESULT)Default();
-	}
-
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		CXTPClientRect rc(this);
-		OnDraw(pDC, rc);
-	}
-	return TRUE;
-}
-
-void CXTPTabClientWnd::OnFillBackground(CDC* pDC, CRect rc)
-{
-	CXTPCommandBars* pCommandBars = GetCommandBars();
-	if (pCommandBars)
-	{
-		if (!m_bThemedBackColor)
-			DefWindowProc(WM_PAINT, (WPARAM)pDC->m_hDC, 0);
-		else
-			pDC->FillSolidRect(rc, pCommandBars->GetPaintManager()->GetXtremeColor(COLOR_APPWORKSPACE));
-	}
-	else
-	{
-		pDC->FillSolidRect(rc, GetSysColor(COLOR_APPWORKSPACE));
-	}
-
-}
-
-void CXTPTabClientWnd::OnDraw(CDC* pDC, CRect rc)
-{
-	if (GetWorkspaceCount() == 0 || !m_bEnableGroups)
-	{
-		OnFillBackground(pDC, rc);
-	}
-	else
-	{
-		CRect rcClipBox;
-		pDC->GetClipBox(&rcClipBox);
-
-		for (int i = GetWorkspaceCount() - 1; i >= 0; i--)
-		{
-			CWorkspace* pWorkspace = GetWorkspace(i);
-
-			if (CRect().IntersectRect(rcClipBox, pWorkspace->m_rcControl))
-			{
-				GetPaintManager()->DrawTabControl(GetWorkspace(i), pDC, pWorkspace->m_rcControl);
-			}
-
-			if (!pWorkspace->m_rcSplitter.IsRectEmpty())
-			{
-				m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(pDC, pWorkspace->m_rcSplitter, m_bHorizSplitting ? xtpTabWorkspacePartHSplitter : xtpTabWorkspacePartVSplitter);
-			}
-		}
-	}
-}
-
-void CXTPTabClientWnd::OnPaint()
-{
-	if (!m_bThemedBackColor && !m_bEnableGroups)
-	{
-		Default();
-		return;
-	}
-	CPaintDC dcPaint(this);
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(dcPaint);
-
-	OnDraw(&dc, rc);
-}
-
-void CXTPTabClientWnd::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
-{
-	if (m_bEnableGroups)
-	{
-		m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(NULL, &lpncsp->rgrc[0], xtpTabWorkspacePartWidth);
-	}
-
-	CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
-}
-
-
-BOOL CXTPTabClientWnd::OnNcActivate(BOOL bActive)
-{
-	if (m_bEnableGroups)
-		return TRUE;
-
-	return CWnd::OnNcActivate(bActive);
-}
-
-void CXTPTabClientWnd::OnNcPaint()
-{
-	if (!m_bEnableGroups)
-	{
-		Default();
-		return;
-	}
-
-	CWindowDC dcPaint(this);
-	CXTPWindowRect rc(this);
-	rc.OffsetRect(rc.TopLeft());
-
-	m_pPaintManager->GetAppearanceSet()->DrawWorkspacePart(&dcPaint, rc, xtpTabWorkspacePartBorder);
-}
-
-void CXTPTabClientWnd::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	CWnd::OnRButtonDown(nFlags, point);
-
-}
-
-void CXTPTabClientWnd::RepositionWorkspaces(CRect rc, CRect rcAvail, CWorkspace* pWorkspaceFirst, CWorkspace* pWorkspaceSecond)
-{
-	double dTotal = pWorkspaceFirst->m_dHeight + pWorkspaceSecond->m_dHeight + m_nSplitterSize;
-
-	if (!m_bHorizSplitting)
-	{
-		double dDelta = double(rc.left - rcAvail.left) / rcAvail.Width();
-		pWorkspaceFirst->m_dHeight = GetExStyle() & WS_EX_LAYOUTRTL ? dTotal - dDelta * dTotal - m_nSplitterSize : dDelta * dTotal;
-	}
-	else
-	{
-		double dDelta = double(rc.top - rcAvail.top) / rcAvail.Height();
-		pWorkspaceFirst->m_dHeight = dDelta * dTotal;
-	}
-
-	pWorkspaceSecond->m_dHeight = dTotal - pWorkspaceFirst->m_dHeight - m_nSplitterSize;
-}
-
-void CXTPTabClientWnd::NormalizeWorkspaceSize()
-{
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CWorkspace* pWorkspace = GetWorkspace (i);
-		pWorkspace->m_dHeight = !m_bHorizSplitting ? pWorkspace->GetControlRect().Width() : pWorkspace->GetControlRect().Height();
-	}
-}
-
-void CXTPTabClientWnd::TrackSplitter(int nWorkspace, CPoint point)
-{
-	ASSERT(nWorkspace >= 0 && nWorkspace < GetWorkspaceCount() - 1);
-
-	if (nWorkspace < 0 || nWorkspace >= GetWorkspaceCount() - 1)
-		return;
-
-	NormalizeWorkspaceSize();
-
-	CXTPSplitterTracker tracker;
-
-	CWorkspace* pWorkspaceFirst = m_arrWorkspace[nWorkspace];
-	CWorkspace* pWorkspaceSecond = m_arrWorkspace[nWorkspace + 1];
-
-	CRect rcFirst = pWorkspaceFirst->GetControlRect();
-	CRect rcSecond = pWorkspaceSecond->GetControlRect();
-
-	CRect rcAvail;
-	rcAvail.UnionRect(rcFirst, rcSecond);
-
-	CRect rc = pWorkspaceFirst->m_rcSplitter;
-
-	ClientToScreen(&rc);
-	ClientToScreen(&rcAvail);
-	ClientToScreen(&point);
-
-	if (m_bUseSplitterTracker)
-	{
-		if (tracker.Track(this, rcAvail, rc, point, !m_bHorizSplitting))
-		{
-			RepositionWorkspaces(rc, rcAvail, pWorkspaceFirst, pWorkspaceSecond);
-			GetParentFrame()->RecalcLayout();
-		}
-	}
-	else
-	{
-		CPoint ptOffset = !m_bHorizSplitting ? CPoint(rc.left - point.x, 0) :
-			CPoint(0, rc.top - point.y);
-
-		SetCapture();
-
-		while (CWnd::GetCapture() == this)
-		{
-			MSG msg;
-
-			if (!GetMessage(&msg, NULL, 0, 0))
-				break;
-
-			if (msg.message == WM_MOUSEMOVE)
-			{
-
-				point = CPoint(msg.lParam);
-				ClientToScreen(&point);
-				point += ptOffset;
-
-				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
-				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
-
-				if (!m_bHorizSplitting)
-				{
-					if (rc.left == point.x)
-						continue;
-					rc.OffsetRect(point.x - rc.left, 0);
-				}
-				else
-				{
-					if (rc.top == point.y)
-						continue;
-					rc.OffsetRect(0, point.y - rc.top);
-				}
-
-				RepositionWorkspaces(rc, rcAvail, pWorkspaceFirst, pWorkspaceSecond);
-
-				GetParentFrame()->RecalcLayout();
-			}
-			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
-			else if (msg.message == WM_LBUTTONUP) break;
-			else ::DispatchMessage(&msg);
-		}
-
-		if (CWnd::GetCapture() == this) ReleaseCapture();
-
-	}
-
-}
-
-void CXTPTabClientWnd::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (!m_bEnableGroups)
-	{
-		CWnd::OnLButtonDown(nFlags, point);
-		return;
-	}
-
-	m_bLockUpdate = TRUE;
-
-	m_bDelayLock = TRUE;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(i);
-		if (pWorkspace->m_rcSplitter.PtInRect(point) && i < GetWorkspaceCount() - 1)
-		{
-			TrackSplitter(i, point);
-			break;
-		}
-
-		if (pWorkspace->GetControlRect().PtInRect(point))
-		{
-			if (!pWorkspace->IsActive())
-			{
-				CXTPTabManagerItem* pSelectedItem = pWorkspace->GetSelectedItem();
-				if (pSelectedItem) pWorkspace->OnItemClick(pSelectedItem);
-			}
-
-			pWorkspace->PerformClick(m_hWnd, point);
-			break;
-		}
-	}
-
-}
-
-
-void CXTPTabClientWnd::InitLoop()
-{
-	// handle pending WM_PAINT messages
-	MSG msg;
-	while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
-	{
-		if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
-			return;
-		DispatchMessage(&msg);
-	}
-
-	// initialize state
-	m_rectLast.SetRectEmpty();
-	m_sizeLast.cx = m_sizeLast.cy = 0;
-	m_rcGroup.SetRectEmpty();
-	m_pFocusWorkspace = NULL;
-
-	// lock window update while dragging
-	ASSERT(m_pDC == NULL);
-	CWnd* pWnd = CWnd::GetDesktopWindow();
-	if (pWnd->LockWindowUpdate())
-		m_pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE | DCX_LOCKWINDOWUPDATE);
-	else
-		m_pDC = pWnd->GetDCEx(NULL, DCX_WINDOW | DCX_CACHE);
-	ASSERT(m_pDC != NULL);
-}
-
-void CXTPTabClientWnd::CancelLoop()
-{
-	DrawFocusRect(TRUE);    // gets rid of focus rect
-
-	CWnd* pWnd = CWnd::GetDesktopWindow();
-	pWnd->UnlockWindowUpdate();
-	if (m_pDC != NULL)
-	{
-		pWnd->ReleaseDC(m_pDC);
-		m_pDC = NULL;
-	}
-}
-
-void CXTPTabClientWnd::DrawFocusRect(BOOL bRemoveRect)
-{
-	ASSERT(m_pDC != NULL);
-	if (!m_pDC)
-		return;
-
-	// determine new rect and size
-	CBrush* pDitherBrush = CDC::GetHalftoneBrush();
-	CRect rect = m_rcGroup;
-	ClientToScreen(rect);
-
-	CSize size(GetSystemMetrics(SM_CXFRAME), GetSystemMetrics(SM_CYFRAME));
-
-	if (bRemoveRect)
-		size.cx = size.cy = 0;
-
-	// draw it and remember last size
-	m_pDC->DrawDragRect(&rect, size, &m_rectLast, m_sizeLast,
-		pDitherBrush, pDitherBrush);
-
-	m_rectLast = rect;
-	m_sizeLast = size;
-}
-
-
-void CXTPTabClientWnd::ReorderWorkspace(CPoint pt, CXTPTabManagerItem* pItem)
-{
-	CXTPClientRect rc(this);
-
-	CRect rcGroup(0, 0, 0, 0);
-	m_pFocusWorkspace = NULL;
-	m_nFocusedAction = ACTION_CANCEL;
-
-	if (rc.PtInRect(pt))
-	{
-		m_nFocusedAction = ACTION_POPUP;
-		::SetCursor(m_hCursorNew);
-
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			CWorkspace* pWorkspace = GetWorkspace(i);
-
-			BOOL bSelfAvail = pItem->GetTabManager() != pWorkspace || pWorkspace->GetItemCount() > 1;
-
-			if (pWorkspace->GetHeaderRect().PtInRect(pt))
-			{
-				rcGroup = pWorkspace->GetClientRect();
-
-				m_pFocusWorkspace = pWorkspace;
-				m_nFocusedAction = ACTION_ATTACH;
-				break;
-			}
-
-			if ((GetWorkspaceCount() == 1 || m_bHorizSplitting) && bSelfAvail)
-			{
-				int nOffset = pWorkspace->GetControlRect().bottom - pt.y;
-				if (nOffset > 0 && nOffset < 30)
-				{
-					rcGroup = pWorkspace->GetControlRect();
-					rcGroup.top = rcGroup.CenterPoint().y;
-
-					m_pFocusWorkspace = pWorkspace;
-					m_nFocusedAction = ACTION_INSERTHORIZ;
-					break;
-				}
-
-			}
-
-			if ((GetWorkspaceCount() == 1 || !m_bHorizSplitting) && bSelfAvail)
-			{
-				int nOffset = pWorkspace->GetControlRect().right - pt.x;
-				if (nOffset > 0 && nOffset < 30)
-				{
-					rcGroup = pWorkspace->GetControlRect();
-					rcGroup.left = rcGroup.CenterPoint().x;
-
-					m_pFocusWorkspace = pWorkspace;
-					m_nFocusedAction = ACTION_INSERTVERT;
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		::SetCursor(m_hCursorDelete);
-	}
-
-	if (m_rcGroup != rcGroup)
-	{
-		m_rcGroup = rcGroup;
-		DrawFocusRect();
-	}
-}
-
-int CXTPTabClientWnd::FindIndex(CXTPTabManager* pWorkspace) const
-{
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		if (GetWorkspace(i) == pWorkspace)
-			return i;
-	}
-	return -1;
-}
-
-CXTPTabManagerItem* CXTPTabClientWnd::HitTest(CPoint pt) const
-{
-	if (!m_bShowWorkspace)
-		return NULL;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CXTPTabManagerItem* pItem = GetWorkspace(i)->HitTest(pt);
-		if (pItem)
-			return pItem;
+		if (GetPane(i)->m_nID == nID)
+			return GetPane(i);
 	}
 	return NULL;
 }
 
-CXTPCommandBars* CXTPTabClientWnd::GetCommandBars() const
-{
-	return m_pCommandBars;
-}
-
-void CXTPTabClientWnd::SetCommandBars(CXTPCommandBars* pCommandBars)
-{
-	m_pCommandBars = pCommandBars;
-}
-
-void CXTPTabClientWnd::ContextMenu(CPoint pt)
-{
-	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
-
-	ClientToScreen(&pt);
-
-	pPopupBar->GetControls()->Add(new CXTPControlWorkspaceActions, 0);
-
-	CXTPControl* pControl = pPopupBar->GetControls()->Add(xtpControlButton, XTP_ID_WORKSPACE_CANCEL);
-	pControl->SetBeginGroup(TRUE);
-	pControl->SetFlags(xtpFlagManualUpdate);
-
-	CXTPCommandBars::TrackPopupMenu(pPopupBar, 0, pt.x, pt.y, GetParentFrame());
-
-	pPopupBar->InternalRelease();
-
-}
-
-void CXTPTabClientWnd::OnWorkspaceCommand(UINT nID)
-{
-	CXTPTabManagerItem* pItem = NULL;
-
-	if (!IsWorkspaceCommandEnabled(nID, &pItem))
-		return;
-
-	ASSERT(pItem);
-	if (!pItem)
-		return;
-
-	switch (nID)
-	{
-		case XTP_ID_WORKSPACE_NEWVERTICAL:
-			DoWorkspaceCommand(pItem, (CWorkspace*)pItem->GetTabManager(), ACTION_INSERTVERT);
-			break;
-
-		case XTP_ID_WORKSPACE_NEWHORIZONTAL:
-			DoWorkspaceCommand(pItem, (CWorkspace*)pItem->GetTabManager(), ACTION_INSERTHORIZ);
-			break;
-
-		case XTP_ID_WORKSPACE_MOVEPREVIOUS:
-			{
-				int nIndex = FindIndex(pItem->GetTabManager());
-				DoWorkspaceCommand(pItem, GetWorkspace(nIndex - 1), ACTION_ATTACH);
-			}
-			break;
-		case XTP_ID_WORKSPACE_MOVENEXT:
-			{
-				int nIndex = FindIndex(pItem->GetTabManager());
-				DoWorkspaceCommand(pItem, GetWorkspace(nIndex + 1), ACTION_ATTACH);
-			}
-			break;
-	}
-}
-
-void CXTPTabClientWnd::OnUpdateWorkspaceCommand(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(IsWorkspaceCommandEnabled(pCmdUI->m_nID));
-}
-
-BOOL CXTPTabClientWnd::IsWorkspaceCommandEnabled(UINT nID, CXTPTabManagerItem** ppItem)
-{
-	if (!m_bEnableGroups)
-		return FALSE;
-
-	CWnd* pWnd = MDIGetActive();
-	if (!pWnd)
-		return FALSE;
-
-	CXTPTabManagerItem* pItem = FindItem(pWnd->GetSafeHwnd());
-	if (!pItem)
-		return FALSE;
-
-	if (ppItem)
-		*ppItem = pItem;
-
-	switch (nID)
-	{
-		case XTP_ID_WORKSPACE_NEWVERTICAL:
-			return (GetWorkspaceCount() == 1 || !m_bHorizSplitting) && pItem->GetTabManager()->GetItemCount() > 1;
-
-		case XTP_ID_WORKSPACE_NEWHORIZONTAL:
-			return (GetWorkspaceCount() == 1 || m_bHorizSplitting) && pItem->GetTabManager()->GetItemCount() > 1;
-
-		case XTP_ID_WORKSPACE_MOVEPREVIOUS:
-			return FindIndex(pItem->GetTabManager()) != 0;
-
-		case XTP_ID_WORKSPACE_MOVENEXT:
-			return FindIndex(pItem->GetTabManager()) != GetWorkspaceCount() - 1;
-
-	}
-	return TRUE;
-}
-
-
-void CXTPTabClientWnd::MDITile(BOOL bHorizontal)
-{
-	if (!m_bEnableGroups || m_bUserWorkspace)
-		return;
-
-	if (GetItemCount() < 2)
-		return;
-
-	m_bLockUpdate = m_bLockReposition = TRUE;
-
-	CArray<CXTPTabManagerItem*, CXTPTabManagerItem*> arrItems;
-
-	while (GetWorkspaceCount() > 0)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(0);
-
-		for (int j = 0; j < pWorkspace->GetItemCount(); j++)
-		{
-			CXTPTabManagerItem* pItem = pWorkspace->GetItem(j);
-			arrItems.Add(pItem);
-			pItem->InternalAddRef();
-		}
-
-		m_arrWorkspace.RemoveAt(0);
-		delete pWorkspace;
-	}
-
-	for (int i = 0; i < (int)arrItems.GetSize(); i++)
-	{
-		CXTPTabManagerItem* pItem = arrItems[i];
-		COLORREF clr = pItem->m_clrItem;
-
-		CWorkspace* pWorkspace = AddWorkspace(i);
-
-		pWorkspace->CXTPTabManager::AddItem(-1, pItem);
-
-		pItem->m_clrItem = clr;
-		pWorkspace->SetSelectedItem(pItem);
-
-		pWorkspace->m_dHeight = 100;
-	}
-
-	m_pActiveWorkspace = NULL;
-	m_bHorizSplitting = bHorizontal;
-
-	m_bLockUpdate = m_bLockReposition = FALSE;
-	m_bForceToRecalc = TRUE;
-	UpdateContents();
-
-	NormalizeWorkspaceSize();
-}
-
-void CXTPTabClientWnd::DoWorkspaceCommand(CXTPTabManagerItem* pItem, CWorkspace* pFocusWorkspace, int nAction)
-{
-	m_bLockUpdate = m_bLockReposition = TRUE;
-	CWorkspace* pOldWorkspace = NULL;
-
-	switch (nAction)
-	{
-		case ACTION_ATTACH:
-			{
-				ASSERT(pFocusWorkspace);
-				if (!pFocusWorkspace)
-					return;
-
-				if (pFocusWorkspace != pItem->GetTabManager())
-				{
-					pOldWorkspace = (CWorkspace*)pItem->GetTabManager();
-					pItem->InternalAddRef();
-					pItem->Remove();
-
-					COLORREF clr = pItem->m_clrItem;
-
-					int nInsert = pFocusWorkspace->GetItemCount() + (pFocusWorkspace->m_pNewWindowItem ? -1 : 0);
-					pFocusWorkspace->CXTPTabManager::AddItem(nInsert, pItem);
-
-					pItem->m_clrItem = clr;
-				}
-
-				pFocusWorkspace->SetSelectedItem(pItem);
-
-				break;
-			}
-		case ACTION_INSERTHORIZ:
-		case ACTION_INSERTVERT:
-			{
-				NormalizeWorkspaceSize();
-
-				ASSERT(pFocusWorkspace);
-				if (!pFocusWorkspace)
-					return;
-
-				pOldWorkspace = (CWorkspace*)pItem->GetTabManager();
-
-				pItem->InternalAddRef();
-				pItem->Remove();
-
-				COLORREF clr = pItem->m_clrItem;
-
-				int nIndex = FindIndex(pFocusWorkspace) + 1;
-				CWorkspace* pWorkspace = AddWorkspace(nIndex);
-
-				pWorkspace->AddNewWindowItem();
-
-				int nInsert = pWorkspace->GetItemCount() + (pWorkspace->m_pNewWindowItem ? -1 : 0);
-				pWorkspace->CXTPTabManager::AddItem(nInsert, pItem);
-
-				pItem->m_clrItem = clr;
-				pWorkspace->SetSelectedItem(pItem);
-
-				pWorkspace->m_dHeight = (pFocusWorkspace->m_dHeight - m_nSplitterSize) / 2;
-				pFocusWorkspace->m_dHeight = pFocusWorkspace->m_dHeight - pWorkspace->m_dHeight - m_nSplitterSize;
-
-				m_bHorizSplitting = (nAction == ACTION_INSERTHORIZ);
-				break;
-			}
-
-	}
-
-	if (pOldWorkspace && pOldWorkspace->GetItemCount() > 1)
-	{
-		HWND hWndChild = ::GetWindow(m_hWnd, GW_CHILD);
-		while (hWndChild)
-		{
-			CXTPTabManagerItem* pItemOld = FindItem(hWndChild);
-			if (pItemOld && pItemOld->GetTabManager() == pOldWorkspace)
-			{
-				pOldWorkspace->SetSelectedItem(pItemOld);
-				break;
-			}
-			hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT);
-		}
-	}
-
-	m_bLockUpdate = m_bLockReposition = FALSE;
-	m_bForceToRecalc = TRUE;
-	UpdateContents();
-}
-
-void CXTPTabClientWnd::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_bEnableGroups)
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			GetWorkspace(i)->PerformMouseMove(m_hWnd, point);
-		}
-	}
-
-	CWnd::OnMouseMove(nFlags, point);
-}
-
-
-void CXTPTabClientWnd::OnMouseLeave()
-{
-	if (m_bEnableGroups)
-	{
-		for (int i = 0; i < GetWorkspaceCount(); i++)
-		{
-			GetWorkspace(i)->PerformMouseMove(m_hWnd, CPoint(-1, -1));
-		}
-	}
-}
-
-
-
-void CXTPTabClientWnd::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	OnLButtonDown(nFlags, point);
-}
-
-void CXTPTabClientWnd::OnSysColorChange()
-{
-	CWnd::OnSysColorChange();
-
-	GetPaintManager()->RefreshMetrics();
-
-	Refresh();
-}
-
-BOOL CXTPTabClientWnd::PreTranslateMessage(MSG* pMsg)
-{
-	if (m_bEnableGroups)
-	{
-
-		if (pMsg->message == WM_LBUTTONDOWN ||
-			pMsg->message == WM_RBUTTONDOWN ||
-			pMsg->message == WM_MBUTTONDOWN ||
-			pMsg->message == WM_LBUTTONDBLCLK ||
-			pMsg->message == WM_RBUTTONDBLCLK)
-		{
-			if (pMsg->hwnd != m_hWnd)
-				return CWnd::PreTranslateMessage(pMsg);
-
-			if (GetParentFrame()->SendMessage(WM_XTP_PRETRANSLATEMOUSEMSG, (WPARAM)pMsg->message, pMsg->lParam))
-				return TRUE;
-		}
-	}
-
-	return CWnd::PreTranslateMessage(pMsg);
-}
-
-CXTPTabPaintManager* CXTPTabClientWnd::GetPaintManager() const
-{
-	return m_pPaintManager;
-}
-
-void CXTPTabClientWnd::SetPaintManager(CXTPTabPaintManager* pPaintManager)
-{
-	m_pPaintManager->InternalRelease();
-	m_pPaintManager = pPaintManager;
-	m_pPaintManager->RefreshMetrics();
-
-	m_themeCommandBars = xtpThemeCustom;
-	m_bAutoTheme = FALSE;
-
-	Refresh();
-}
-
-void CXTPTabClientWnd::SetAutoTheme(BOOL bAutoTheme /*= FALSE*/)
-{
-	m_bAutoTheme = bAutoTheme;
-}
-
-BOOL CXTPTabClientWnd::GetAutoTheme() const
-{
-	return m_bAutoTheme;
-}
-
-void CXTPTabClientWnd::UpdateFlags(CWorkspace* pWorkspace)
-{
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonClose)->SetFlags(
-		m_dwFlags & xtpWorkspaceHideClose ? xtpTabNavigateButtonNone : xtpTabNavigateButtonAutomatic);
-
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonActiveFiles)->SetFlags(
-		m_dwFlags & xtpWorkspaceShowActiveFiles ? xtpTabNavigateButtonAlways : xtpTabNavigateButtonNone);
-
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonLeft)->SetFlags((m_dwFlags & xtpWorkspaceHideArrowsAlways) == xtpWorkspaceHideArrowsAlways ? xtpTabNavigateButtonNone :
-		m_dwFlags & xtpWorkspaceHideArrows ? xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
-	pWorkspace->FindNavigateButton(xtpTabNavigateButtonRight)->SetFlags((m_dwFlags & xtpWorkspaceHideArrowsAlways) == xtpWorkspaceHideArrowsAlways ? xtpTabNavigateButtonNone :
-		m_dwFlags & xtpWorkspaceHideArrows ? xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
-
-
-	if (m_dwFlags & xtpWorkspaceShowCloseTab || m_dwFlags & xtpWorkspaceShowCloseSelectedTab)
-	{
-		pWorkspace->ShowCloseItemButton(m_dwFlags & xtpWorkspaceShowCloseSelectedTab ?
-			xtpTabNavigateButtonAutomatic : xtpTabNavigateButtonAlways);
-	}
-}
-
-
-void CXTPTabClientWnd::SetFlags(DWORD dwFlags)
-{
-	m_dwFlags = dwFlags;
-
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-		UpdateFlags(GetWorkspace(i));
-
-	Reposition();
-}
-
-void CXTPTabClientWnd::Reposition()
-{
-	m_bForceToRecalc = FALSE;
-
-	if (m_pTabWorkspace)
-	{
-		m_pTabWorkspace->OnRecalcLayout();
-	}
-	else if (!m_bUserWorkspace)
-	{
-		GetParentFrame()->RecalcLayout();
-	}
-}
-
-BOOL CXTPTabClientWnd::IsAllowReorder() const
-{
-	return m_bAllowReorder;
-}
-
-void CXTPTabClientWnd::SetAllowReorder(BOOL bAllowReorder)
-{
-	m_bAllowReorder = bAllowReorder;
-}
-
-CXTPTabManagerItem* CXTPTabClientWnd::GetSelectedItem () const
-{
-	if (m_pActiveWorkspace)
-		return m_pActiveWorkspace->GetSelectedItem();
-	return NULL;
-}
-
-CXTPTabManagerItem* CXTPTabClientWnd::GetItem(int nIndex) const
-{
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-	{
-		CWorkspace* pWorkspace = GetWorkspace(i);
-		int nCount = pWorkspace->GetItemCount();
-
-		if (nIndex < nCount)
-			return pWorkspace->GetItem(nIndex);
-
-		nIndex -= nCount;
-	}
-	return NULL;
-}
-
-int CXTPTabClientWnd::GetItemCount() const
+int CXTPStatusBar::GetVisiblePaneCount() const
 {
 	int nCount = 0;
 
-	for (int i = 0; i < GetWorkspaceCount(); i++)
-		nCount += GetWorkspace(i)->GetItemCount();
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		if (m_arrPanes[i]->IsVisible()) nCount++;
+	}
 
 	return nCount;
 }
 
-LRESULT CXTPTabClientWnd::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar creation, etc
+
+
+
+BOOL CXTPStatusBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
 {
-	if (m_bEnableGroups && IsAttached())
+	return CreateEx(pParentWnd, 0, dwStyle, nID);
+}
+
+void CXTPStatusBar::SetFont(CFont* pFont, BOOL bRedraw /* = TRUE */)
+{
+	LOGFONT lf;
+	pFont->GetLogFont(&lf);
+
+	m_fontStatus.DeleteObject();
+	m_fontStatus.CreateFontIndirect(&lf);
+
+	CWnd::SetFont(&m_fontStatus, bRedraw);
+}
+
+BOOL CXTPStatusBar::CreateEx(CWnd* pParentWnd, DWORD dwCtrlStyle, DWORD dwStyle, UINT nID)
+{
+	ASSERT_VALID(pParentWnd);   // must have a parent
+
+	// save the style (some of these style bits are MFC specific)
+	m_dwStyle = (dwStyle & CBRS_ALL);
+
+	// translate MFC style bits to windows style bits
+	dwStyle &= ~CBRS_ALL;
+	dwStyle |= CCS_NOPARENTALIGN | CCS_NOMOVEY | CCS_NODIVIDER | CCS_NORESIZE;
+	if ((pParentWnd->GetStyle() & WS_THICKFRAME) && m_bShowSizeGripper)
+		dwStyle |= SBARS_SIZEGRIP;
+	dwStyle |= dwCtrlStyle;
+
+#if _MSC_VER <= 1100
+	VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTLS_REG));
+#else
+	VERIFY(AfxDeferRegisterClass(AFX_WNDCOMMCTL_BAR_REG));
+#endif
+
+	// create the HWND
+	CRect rect;
+	rect.SetRectEmpty();
+	return CWnd::Create(STATUSCLASSNAME, NULL, dwStyle, rect, pParentWnd, nID);
+}
+
+BOOL CXTPStatusBar::PreCreateWindow(CREATESTRUCT& cs)
+{
+	// in Win4, status bars do not have a border at all, since it is
+	//  provided by the client area.
+	if (IsWin4() &&
+		(m_dwStyle & (CBRS_ALIGN_ANY | CBRS_BORDER_ANY)) == CBRS_BOTTOM)
+	{
+		m_dwStyle &= ~(CBRS_BORDER_ANY | CBRS_BORDER_3D);
+	}
+	return CControlBar::PreCreateWindow(cs);
+}
+
+BOOL CXTPStatusBar::SetIndicators(const UINT* lpIDArray, int nIDCount)
+{
+	ASSERT_VALID(this);
+	ASSERT(nIDCount >= 1);  // must be at least one of them
+	ASSERT(lpIDArray == NULL ||
+		AfxIsValidAddress(lpIDArray, sizeof(UINT) * nIDCount, FALSE));
+	ASSERT(::IsWindow(m_hWnd));
+
+	RemoveAll();
+
+	// copy initial data from indicator array
+	BOOL bResult = TRUE;
+
+	if (lpIDArray != NULL)
+	{
+		for (int i = 0; i < nIDCount; i++)
+		{
+			CXTPStatusBarPane* pPane = new CXTPStatusBarPane();
+			m_arrPanes.Add(pPane);
+
+			pPane->m_pStatusBar = this;
+			pPane->m_nID = *lpIDArray++;
+			pPane->m_nFlags |= SBPF_UPDATE;
+
+			if (pPane->m_nID != 0)
+			{
+				if (!pPane->m_strText.LoadString(pPane->m_nID))
+				{
+					TRACE1("Warning: failed to load indicator string 0x%04X.\n",
+						pPane->m_nID);
+					bResult = FALSE;
+					break;
+				}
+
+				pPane->BestFit();
+			}
+			else
+			{
+				// no indicator (must access via index)
+				// default to 1/4 the screen width (first pane is stretchy)
+				pPane->m_cxText = ::GetSystemMetrics(SM_CXSCREEN)/4;
+				if (i == 0)
+					pPane->m_nStyle |= (SBPS_STRETCH | SBPS_NOBORDERS);
+			}
+		}
+	}
+	UpdateAllPanes(TRUE, TRUE);
+
+	return bResult;
+}
+
+void CXTPStatusBar::CalcInsideRect(CRect& rect, BOOL bHorz) const
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+	ASSERT(bHorz);  // vertical status bar not supported
+
+	// subtract standard CControlBar borders
+	CControlBar::CalcInsideRect(rect, bHorz);
+
+	// subtract size grip if present
+	if ((GetStyle() & SBARS_SIZEGRIP) && !::IsZoomed(::GetParent(m_hWnd)))
+	{
+		// get border metrics from common control
+		int rgBorders[3];
+		CXTPStatusBar* pBar = (CXTPStatusBar*)this;
+		pBar->DefWindowProc(SB_GETBORDERS, 0, (LPARAM)&rgBorders);
+
+		// size grip uses a border + size of scrollbar + cx border
+		rect.right -= rgBorders[0] + ::GetSystemMetrics(SM_CXVSCROLL) +
+			::GetSystemMetrics(SM_CXBORDER) * 2;
+	}
+}
+
+void CXTPStatusBar::UpdateAllPanes(BOOL bUpdateRects, BOOL bUpdateText)
+{
+	if (!GetSafeHwnd())
+		return;
+
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// update the status pane locations
+	if (bUpdateRects)
+	{
+		// get border information and client work area
+		CRect rect;
+		GetWindowRect(rect);
+		rect.OffsetRect(-rect.left, -rect.top);
+		CalcInsideRect(rect, TRUE);
+		int rgBorders[3];
+		VERIFY((BOOL)DefWindowProc(SB_GETBORDERS, 0, (LPARAM)&rgBorders));
+
+		// determine extra space for stretchy pane
+		int cxExtra = rect.Width() + rgBorders[2];
+		int nStretchyCount = 0, i, nVisibleCount = 0;
+
+		for (i = 0; i < GetPaneCount(); i++)
+		{
+			CXTPStatusBarPane* pPane = GetPane(i);
+			pPane->m_nIndex = i;
+
+			if (!pPane->IsVisible())
+				continue;
+
+			pPane->m_nStatusIndex = nVisibleCount;
+			nVisibleCount++;
+
+			if (pPane->m_nStyle & SBPS_STRETCH)
+				++nStretchyCount;
+			cxExtra -= (pPane->m_cxText + CX_PANE_BORDER + rgBorders[2]);
+		}
+
+		// determine right edge of each pane
+		CArray<int, int&> rgRights;
+		rgRights.SetSize(nVisibleCount);
+
+		int right = rgBorders[0], j = 0;
+
+		for (i = 0; i < GetPaneCount(); i++)
+		{
+			CXTPStatusBarPane* pPane = GetPane(i);
+			if (!pPane->IsVisible())
+				continue;
+
+			// determine size of the pane
+			ASSERT(pPane->m_cxText >= 0);
+			right += pPane->m_cxText + CX_PANE_BORDER;
+			if ((pPane->m_nStyle & SBPS_STRETCH) && cxExtra > 0)
+			{
+				ASSERT(nStretchyCount != 0);
+				int cxAddExtra = cxExtra / nStretchyCount;
+				right += cxAddExtra;
+				--nStretchyCount;
+				cxExtra -= cxAddExtra;
+			}
+			rgRights[j] = right;
+			j++;
+
+			// next pane
+			right += rgBorders[2];
+		}
+
+		// set new right edges for all panes
+		DefWindowProc(SB_SETPARTS, nVisibleCount, (LPARAM)rgRights.GetData());
+
+		PositionControls();
+	}
+
+	// update text in the status panes if specified
+	if (bUpdateText)
+	{
+		for (int i = 0; i < GetPaneCount(); i++)
+		{
+			CXTPStatusBarPane* pPane = GetPane(i);
+			if (!pPane->IsVisible())
+				continue;
+
+			if (pPane->m_nFlags & SBPF_UPDATE)
+				SetPaneText(i, pPane->m_strText);
+		}
+	}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar attribute access
+
+int CXTPStatusBar::CommandToIndex(UINT nIDFind) const
+{
+	ASSERT_VALID(this);
+
+	if (GetPaneCount() <= 0)
+		return -1;
+
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		if (GetPane(i)->m_nID == nIDFind)
+			return i;
+	}
+
+	return -1;
+}
+
+UINT CXTPStatusBar::GetItemID(int nIndex) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+
+	if (!pPane)
+		return 0;
+
+	return pPane->m_nID;
+}
+
+void CXTPStatusBar::GetItemRect(int nIndex, LPRECT lpRect) const
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	if (!lpRect)
+		return;
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	if (!pPane)
+	{
+		::SetRectEmpty(lpRect);
+		return;
+	}
+
+	*lpRect = pPane->GetRect();
+}
+
+UINT CXTPStatusBar::GetPaneStyle(int nIndex) const
+{
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+
+	if (!pPane)
+		return 0;
+
+	return pPane->m_nStyle;
+}
+
+void CXTPStatusBar::SetPaneStyle(int nIndex, UINT nStyle)
+{
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+
+	if (pPane && pPane->m_nStyle != nStyle)
+	{
+		// if the pane is changing SBPS_STRETCH, then...
+		if ((pPane->m_nStyle ^ nStyle) & SBPS_STRETCH)
+		{
+			// ... we need to re-layout the panes
+			pPane->m_nStyle = nStyle;
+			UpdateAllPanes(TRUE, FALSE);
+		}
+
+		// use SetPaneText, since it updates the style and text
+		pPane->m_nStyle = nStyle;
+		pPane->m_nFlags |= SBPF_UPDATE;
+		SetPaneText(nIndex, pPane->m_strText);
+	}
+}
+
+void CXTPStatusBar::GetPaneInfo(int nIndex, UINT& nID, UINT& nStyle,
+	int& cxWidth) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	nID = pPane->m_nID;
+	nStyle = pPane->m_nStyle;
+	cxWidth = pPane->m_cxText;
+}
+
+void CXTPStatusBar::SetPaneInfo(int nIndex, UINT nID, UINT nStyle, int cxWidth)
+{
+	ASSERT_VALID(this);
+
+	BOOL bChanged = FALSE;
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	pPane->m_nID = nID;
+	if (pPane->m_nStyle != nStyle)
+	{
+		if ((pPane->m_nStyle ^ nStyle) & SBPS_STRETCH)
+			bChanged = TRUE;
+		else
+		{
+			pPane->m_nStyle = nStyle;
+			pPane->m_nFlags |= SBPF_UPDATE;
+			SetPaneText(nIndex, pPane->m_strText);
+		}
+		pPane->m_nStyle = nStyle;
+	}
+	if (cxWidth != pPane->m_cxText)
+	{
+		// change width of one pane -> invalidate the entire status bar
+		pPane->m_cxText = cxWidth;
+		bChanged = TRUE;
+	}
+	if (bChanged)
+		UpdateAllPanes(TRUE, FALSE);
+}
+
+void CXTPStatusBar::GetPaneText(int nIndex, CString& s) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	s = pPane->m_strText;
+}
+
+CString CXTPStatusBar::GetPaneText(int nIndex) const
+{
+	ASSERT_VALID(this);
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return _T("");
+
+	return pPane->m_strText;
+}
+
+void CXTPStatusBar::SetPaneWidth(int nIndex, int cxText)
+{
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return;
+
+	if (cxText <= 0)
+	{
+		pPane->BestFit();
+		UpdateAllPanes(TRUE, FALSE);
+	}
+	else if (pPane->m_cxText != cxText)
+	{
+		pPane->m_cxText = cxText;
+		UpdateAllPanes(TRUE, FALSE);
+	}
+}
+
+BOOL CXTPStatusBar::SetPaneText(int nIndex, const CString& lpszNewText, BOOL bUpdate)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	ASSERT(pPane);
+	if (!pPane)
+		return FALSE;
+
+	if (!(pPane->m_nFlags & SBPF_UPDATE) && (lpszNewText == pPane->m_strText))
+	{
+		// nothing to change
+		return TRUE;
+	}
+
+	pPane->m_strText = lpszNewText;
+
+	if (!pPane->IsVisible())
+		return FALSE;
+
+	if (!bUpdate)
+	{
+		// can't update now, wait until later
+		pPane->m_nFlags |= SBPF_UPDATE;
+		return TRUE;
+	}
+
+	pPane->m_nFlags &= ~SBPF_UPDATE;
+	DefWindowProc(SB_SETTEXT, ((WORD)pPane->m_nStyle) | pPane->m_nStatusIndex,
+		(pPane->m_nStyle & SBPS_DISABLED) ? NULL :
+		(LPARAM)(LPCTSTR)pPane->m_strText);
+
+	Invalidate(FALSE);
+
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar implementation
+
+CSize CXTPStatusBar::CalcFixedLayout(BOOL, BOOL bHorz)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// determine size of font being used by the status bar
+	TEXTMETRIC tm;
+	{
+		CClientDC dc(NULL);
+		CXTPFontDC font(&dc, &m_fontStatus);
+		VERIFY(dc.GetTextMetrics(&tm));
+	}
+
+	// get border information
+	CRect rect;
+	rect.SetRectEmpty();
+	CalcInsideRect(rect, bHorz);
+	int rgBorders[3];
+	DefWindowProc(SB_GETBORDERS, 0, (LPARAM)&rgBorders);
+
+	// determine size, including borders
+	CSize size;
+	size.cx = 32767;
+	size.cy = tm.tmHeight - tm.tmInternalLeading - 1
+		+ rgBorders[1] * 2 + ::GetSystemMetrics(SM_CYBORDER) * 2
+		- rect.Height();
+
+	if (size.cy < m_nMinHeight)
+		size.cy = m_nMinHeight;
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	if (pPaintManager && size.cy < pPaintManager->m_nStatusBarMinHeight)
+		size.cy = pPaintManager->m_nStatusBarMinHeight;
+
+	return size;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar message handlers
+
+BEGIN_MESSAGE_MAP(CXTPStatusBar, CControlBar)
+	//{{AFX_MSG_MAP(CXTPStatusBar)
+	ON_WM_NCHITTEST_EX()
+	ON_WM_NCPAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_PAINT()
+	ON_WM_CREATE()
+	ON_WM_ERASEBKGND()
+	ON_WM_NCCALCSIZE()
+	ON_WM_SIZE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+	ON_WM_WINDOWPOSCHANGING()
+	ON_MESSAGE(WM_SETTEXT, OnSetText)
+	ON_MESSAGE(WM_GETTEXT, OnGetText)
+	ON_MESSAGE(WM_GETTEXTLENGTH, OnGetTextLength)
+	ON_MESSAGE(SB_SETMINHEIGHT, OnSetMinHeight)
+	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+
+	ON_MESSAGE(WM_GETTHEMED_STATUSBAR, OnGetThemedStatusBar)
+	ON_WM_WINDOWPOSCHANGED()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+int CXTPStatusBar::OnCreate(LPCREATESTRUCT lpcs)
+{
+	if (CControlBar::OnCreate(lpcs) == -1)
+		return -1;
+
+	SetFont(&m_fontStatus, FALSE);
+	SendMessage (SB_SETMINHEIGHT, 20);
+
+	return 0;
+}
+
+LRESULT CXTPStatusBar::OnNcHitTest(CPoint)
+{
+	LRESULT nResult = (LRESULT)Default();
+	if (nResult == HTBOTTOMRIGHT)
+		return (LRESULT)HTBOTTOMRIGHT;
+
+	return (LRESULT)HTCLIENT;
+}
+
+void CXTPStatusBar::OnMouseLeave()
+{
+	OnMouseMove(0, CPoint(-1, -1));
+}
+
+void CXTPStatusBar::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CXTPStatusBarPane* pPane = HitTest(point);
+	if (pPane && (!pPane->IsButton() || !pPane->IsEnabled()))
+		pPane = NULL;
+
+	if (pPane != m_pHighlightedPane)
+	{
+		CXTPStatusBarPane* pHighlightedPane = m_pHighlightedPane;
+		m_pHighlightedPane = pPane;
+
+		if (pHighlightedPane) pHighlightedPane->Redraw();
+		if (m_pHighlightedPane) m_pHighlightedPane->Redraw();
+
+		if (m_pHighlightedPane)
+		{
+			TRACKMOUSEEVENT tme =
+			{
+				sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd
+			};
+			_TrackMouseEvent(&tme);
+		}
+	}
+
+
+	CControlBar::OnMouseMove(nFlags, point);
+}
+
+void CXTPStatusBar::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	CControlBar::OnLButtonDown(nFlags, point);
+
+	if (m_pHighlightedPane)
+	{
+		m_pHighlightedPane->OnLButtonDown(point);
+	}
+}
+
+LRESULT CXTPStatusBar::OnGetThemedStatusBar(WPARAM, LPARAM)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	if (!pPaintManager)
+		return FALSE;
+
+	return pPaintManager->m_bThemedStatusBar;
+}
+
+void CXTPStatusBar::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* lpncsp)
+{
+	// calculate border space (will add to top/bottom, subtract from right/bottom)
+	CRect rect;
+	rect.SetRectEmpty();
+	CControlBar::CalcInsideRect(rect, TRUE);
+	ASSERT(rect.top >= 2);
+
+	// adjust non-client area for border space
+	lpncsp->rgrc[0].left += rect.left;
+	lpncsp->rgrc[0].top += rect.top - 2;
+	lpncsp->rgrc[0].right += rect.right;
+	lpncsp->rgrc[0].bottom += rect.bottom;
+}
+
+void CXTPStatusBar::OnBarStyleChange(DWORD dwOldStyle, DWORD dwNewStyle)
+{
+	if (m_hWnd != NULL &&
+		((dwOldStyle & CBRS_BORDER_ANY) != (dwNewStyle & CBRS_BORDER_ANY)))
+	{
+		// recalc non-client area when border styles change
+		SetWindowPos(NULL, 0, 0, 0, 0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_DRAWFRAME);
+	}
+}
+
+void CXTPStatusBar::OnNcPaint()
+{
+	EraseNonClient();
+}
+
+void CXTPStatusBar::OnSize(UINT nType, int cx, int cy)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	CControlBar::OnSize(nType, cx, cy);
+
+	// need to adjust pane right edges (because of stretchy pane)
+	UpdateAllPanes(TRUE, FALSE);
+	Invalidate(FALSE);
+}
+
+void CXTPStatusBar::OnWindowPosChanging(LPWINDOWPOS lpWndPos)
+{
+	// not necessary to invalidate the borders
+	DWORD dwStyle = m_dwStyle;
+	m_dwStyle &= ~(CBRS_BORDER_ANY);
+	CControlBar::OnWindowPosChanging(lpWndPos);
+	m_dwStyle = dwStyle;
+}
+
+LRESULT CXTPStatusBar::OnSetText(WPARAM, LPARAM lParam)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	int nIndex = CommandToIndex(0);
+	if (nIndex < 0)
+		return -1;
+	return SetPaneText(nIndex, (LPCTSTR)lParam) ? 0 : -1;
+}
+
+LRESULT CXTPStatusBar::OnGetText(WPARAM wParam, LPARAM lParam)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	int nMaxLen = (int)wParam;
+	if (nMaxLen == 0)
+		return 0;       // nothing copied
+	LPTSTR lpszDest = (LPTSTR)lParam;
+
+	int nLen = 0;
+	int nIndex = CommandToIndex(0); // use pane with ID zero
+	if (nIndex >= 0)
+	{
+		CXTPStatusBarPane* pPane = GetPane(nIndex);
+		nLen = pPane->m_strText.GetLength();
+		if (nLen > nMaxLen)
+			nLen = nMaxLen - 1; // number of characters to copy (less term.)
+		MEMCPY_S(lpszDest, (LPCTSTR)pPane->m_strText, nLen*sizeof(TCHAR));
+	}
+	lpszDest[nLen] = '\0';
+	return nLen + 1;      // number of bytes copied
+}
+
+LRESULT CXTPStatusBar::OnGetTextLength(WPARAM, LPARAM)
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	int nLen = 0;
+	int nIndex = CommandToIndex(0); // use pane with ID zero
+	if (nIndex >= 0)
+	{
+		CXTPStatusBarPane* pPane = GetPane(nIndex);
+		nLen = pPane->m_strText.GetLength();
+	}
+	return nLen;
+}
+
+LRESULT CXTPStatusBar::OnSetMinHeight(WPARAM wParam, LPARAM)
+{
+	LRESULT lResult = Default();
+	m_nMinHeight = (int)wParam;
+	return lResult;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar idle update through CStatusCmdUI class
+
+class CXTPStatusBar::CStatusCmdUI : public CCmdUI      // class private to this file!
+{
+public: // re-implementations only
+	virtual void Enable(BOOL bOn);
+	virtual void SetCheck(int nCheck);
+	virtual void SetText(LPCTSTR lpszText);
+};
+
+void CXTPStatusBar::CStatusCmdUI::Enable(BOOL bOn)
+{
+	m_bEnableChanged = TRUE;
+	CXTPStatusBar* pStatusBar = (CXTPStatusBar*)m_pOther;
+	ASSERT(pStatusBar != NULL);
+	if (!pStatusBar)
+		return;
+	ASSERT_KINDOF(CXTPStatusBar, pStatusBar);
+	ASSERT(m_nIndex < m_nIndexMax);
+
+	CXTPStatusBarPane* pPane = pStatusBar->GetPane(m_nIndex);
+	if (pPane) pPane->SetEnabled(bOn);
+}
+
+void CXTPStatusBar::CStatusCmdUI::SetCheck(int nCheck) // "checking" will pop out the text
+{
+	CXTPStatusBar* pStatusBar = (CXTPStatusBar*)m_pOther;
+	ASSERT(pStatusBar != NULL);
+	if (!pStatusBar)
+		return;
+	ASSERT_KINDOF(CXTPStatusBar, pStatusBar);
+	ASSERT(m_nIndex < m_nIndexMax);
+
+	UINT nNewStyle = pStatusBar->GetPaneStyle(m_nIndex) & ~SBPS_POPOUT;
+	if (nCheck != 0)
+		nNewStyle |= SBPS_POPOUT;
+	pStatusBar->SetPaneStyle(m_nIndex, nNewStyle);
+}
+
+void CXTPStatusBar::CStatusCmdUI::SetText(LPCTSTR lpszText)
+{
+	CXTPStatusBar* pStatusBar = (CXTPStatusBar*)m_pOther;
+	ASSERT(pStatusBar != NULL);
+	if (!pStatusBar)
+		return;
+	ASSERT_KINDOF(CXTPStatusBar, pStatusBar);
+	ASSERT(m_nIndex < m_nIndexMax);
+
+	pStatusBar->SetPaneText(m_nIndex, lpszText);
+}
+
+void CXTPStatusBar::OnUpdateCmdUI(CFrameWnd* pTarget, BOOL bDisableIfNoHndler)
+{
+	CStatusCmdUI state;
+	state.m_pOther = this;
+	state.m_nIndexMax = (UINT)GetPaneCount();
+	for (state.m_nIndex = 0; state.m_nIndex < state.m_nIndexMax;
+		state.m_nIndex++)
+	{
+		state.m_nID = GetPane(state.m_nIndex)->m_nID;
+
+		// allow the statusbar itself to have update handlers
+		if (CWnd::OnCmdMsg(state.m_nID, CN_UPDATE_COMMAND_UI, &state, NULL))
+			continue;
+
+		// allow target (owner) to handle the remaining updates
+		state.DoUpdate(pTarget, FALSE);
+	}
+
+	// update the dialog controls added to the status bar
+	UpdateDialogControls(pTarget, bDisableIfNoHndler);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar diagnostics
+
+#ifdef _DEBUG
+void CXTPStatusBar::AssertValid() const
+{
+	CControlBar::AssertValid();
+}
+
+void CXTPStatusBar::Dump(CDumpContext& dc) const
+{
+	CControlBar::Dump(dc);
+
+	if (dc.GetDepth() > 0)
+	{
+		for (int i = 0; i < GetPaneCount(); i++)
+		{
+			dc << "\nstatus pane[" << i << "] = {";
+			dc << "\n\tnID = " << GetPane(i)->m_nID;
+			dc << "\n\tnStyle = " << GetPane(i)->m_nStyle;
+			dc << "\n\tcxText = " << GetPane(i)->m_cxText;
+			dc << "\n\tstrText = " << GetPane(i)->m_strText;
+			dc << "\n\t}";
+		}
+	}
+	dc << "\n";
+}
+#endif //_DEBUG
+
+
+CXTPPaintManager* CXTPStatusBar::GetPaintManager() const
+{
+	if (!m_bCommandBarsTheme)
+		return NULL;
+
+	if (m_pCommandBars)
+		return m_pCommandBars->GetPaintManager();
+	return XTPPaintManager();
+}
+
+void CXTPStatusBar::DrawPaneEntry(CDC* pDC, int nIndex, CRect rcItem)
+{
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+
+	if (pPane)
+	{
+		pPane->OnDraw(pDC, rcItem);
+	}
+}
+
+void CXTPStatusBar::OnPaint()
+{
+	UpdateAllPanes(FALSE, TRUE);
+
+	if (GetPaintManager() == NULL)
+	{
+		Default();
+		return;
+	}
+
+	CPaintDC dcPaint (this);
+	CXTPBufferDC dc(dcPaint);
+
+	OnDraw(&dc);
+}
+
+LRESULT CXTPStatusBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	if (GetPaintManager() == NULL)
+	{
+		return Default();
+	}
+
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		OnDraw(pDC);
+	}
+
+	return TRUE;
+}
+
+void CXTPStatusBar::OnDraw(CDC* pDC)
+{
+	CXTPClientRect rcClient(this);
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	pPaintManager->FillStatusBar(pDC, this);
+
+	int nVisibleCount = GetVisiblePaneCount();
+
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		CXTPStatusBarPane* pPane = GetPane(i);
+		if (!pPane->IsVisible())
+			continue;
+
+		CRect rcItem;
+		GetItemRect (i, rcItem);
+
+		BOOL bGripperPane = (pPane->m_nStatusIndex == nVisibleCount - 1);
+
+		if (pPane->HasBorders())
+			pPaintManager->DrawStatusBarPaneBorder(pDC, rcItem, pPane, bGripperPane);
+
+		DrawPaneEntry(pDC, i, rcItem);
+	}
+
+	if (((GetParent()->GetStyle() & WS_THICKFRAME) != 0) &&
+		(GetStyle() & SBARS_SIZEGRIP) && !::IsZoomed(::GetParent(m_hWnd)))
+		DrawStretch(pDC, rcClient);
+}
+
+BOOL CXTPStatusBar::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	if (pPaintManager == NULL)
+	{
+		return (BOOL)Default();
+	}
+
+	return TRUE;
+}
+
+void CXTPStatusBar::DrawStretch(CDC* pDC, CRect& rcClient)
+{
+	GetPaintManager()->DrawStatusBarGripper(pDC, rcClient);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBar message handlers
+
+BOOL CXTPStatusBar::RemoveIndicator(UINT nID)
+{
+	int nIndex = CommandToIndex(nID);
+	if (nIndex == -1)
+	{
+		TRACE1("WARNING: Pane ID %d was not found in the status bar.\n", nID);
+		return FALSE;
+	}
+
+	return RemoveAt(nIndex);
+}
+
+BOOL CXTPStatusBar::RemoveAt(int nIndex)
+{
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	if (!pPane)
+		return FALSE;
+
+	if (m_pHighlightedPane == pPane)
+	{
+		m_pHighlightedPane = NULL;
+	}
+
+	m_arrPanes.RemoveAt(nIndex);
+
+	pPane->InternalRelease();
+
+	UpdateAllPanes(TRUE, TRUE);
+
+	return TRUE;
+}
+
+CXTPStatusBarPane* CXTPStatusBar::AddIndicator(CXTPStatusBarPane* pPane, UINT nID, int nIndex)
+{
+	if (nIndex < 0 || nIndex > GetPaneCount())
+	{
+		TRACE0("WARNING: Pane index out of range.\n");
+		nIndex = GetPaneCount();
+	}
+
+	if (CommandToIndex(nID) != -1)
+	{
+		TRACE1("WARNING: Pane ID %d already exists in the status bar.\n", nID);
+	}
+
+	m_arrPanes.InsertAt(nIndex, pPane);
+	pPane->m_nID = nID;
+	pPane->m_pStatusBar = this;
+
+	if (nID != 0)
+	{
+		CString strText;
+		if (strText.LoadString(nID))
+		{
+			pPane->m_strText = strText;
+		}
+		pPane->BestFit();
+	}
+	else
+	{
+		// no indicator (must access via index)
+		// default to 1/4 the screen width (first pane is stretchy)
+		pPane->m_cxText = ::GetSystemMetrics(SM_CXSCREEN)/4;
+		if (nIndex == 0)
+			pPane->m_nStyle |= (SBPS_STRETCH | SBPS_NOBORDERS);
+	}
+
+	UpdateAllPanes(TRUE, TRUE);
+
+	return pPane;
+}
+
+CXTPStatusBarPane* CXTPStatusBar::AddIndicator(UINT nID, int nIndex)
+{
+	if (nIndex < 0 || nIndex > GetPaneCount())
+	{
+		TRACE0("WARNING: Pane index out of range.\n");
+		return NULL;
+	}
+
+	if (CommandToIndex(nID) != -1)
+	{
+		TRACE1("WARNING: Pane ID %d already exists in the status bar.\n", nID);
+		return NULL;
+	}
+
+	return AddIndicator(new CXTPStatusBarPane(), nID, nIndex);
+}
+
+void CXTPStatusBar::PositionControls()
+{
+	CXTPClientRect rcClient(this);
+
+	int cx = ::GetSystemMetrics(SM_CXEDGE);
+
+	for (int i = 0; i < GetPaneCount(); i++)
+	{
+		CXTPStatusBarPane* pPane = GetPane(i);
+		if (pPane->m_hWndPane == NULL || !IsWindow(pPane->m_hWndPane))
+			continue;
+
+		CRect rcPane;
+		GetItemRect(i, &rcPane);
+
+		if (pPane->HasBorders())
+		{
+			rcPane.DeflateRect(cx, cx);
+		}
+
+		::MoveWindow(pPane->m_hWndPane, rcPane.left, rcPane.top, rcPane.Width(), rcPane.Height(), TRUE);
+	}
+}
+
+BOOL CXTPStatusBar::AddControl(CWnd* pWnd, UINT nID, BOOL bAutoDelete)
+{
+	int nIndex = CommandToIndex (nID);
+
+	if (nIndex == -1)
+		return FALSE;
+
+	CXTPStatusBarPane* pPane = GetPane(nIndex);
+	if (!pPane)
+		return FALSE;
+
+	pPane->m_hWndPane = pWnd->GetSafeHwnd();
+	pPane->m_bAutoDeleteWnd = bAutoDelete;
+
+	PositionControls();
+	return TRUE;
+}
+
+void CXTPStatusBar::OnWindowPosChanged(WINDOWPOS* lpwndpos)
+{
+	CControlBar::OnWindowPosChanged(lpwndpos);
+
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+	if (pPaintManager && pPaintManager->BaseTheme() == xtpThemeRibbon)
+	{
+		if ((lpwndpos->flags & (SWP_SHOWWINDOW | SWP_HIDEWINDOW)) != 0)
+		{
+			GetParentFrame()->SetWindowPos(0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+		}
+	}
+}
+
+LRESULT CXTPStatusBar::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM)
+{
+	// handle delay hide/show
+	BOOL bVis = GetStyle() & WS_VISIBLE;
+	UINT swpFlags = 0;
+	if ((m_nStateFlags & delayHide) && bVis)
+		swpFlags = SWP_HIDEWINDOW;
+	else if ((m_nStateFlags & delayShow) && !bVis)
+		swpFlags = SWP_SHOWWINDOW;
+	m_nStateFlags &= ~(delayShow | delayHide);
+	if (swpFlags != 0)
+	{
+		SetWindowPos(NULL, 0, 0, 0, 0, swpFlags |
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+	}
+
+	// the style must be visible and if it is docked
+	// the dockbar style must also be visible
+	if ((GetStyle() & WS_VISIBLE) &&
+		(m_pDockBar == NULL || (m_pDockBar->GetStyle() & WS_VISIBLE)))
+	{
+		// MFCBUG: removed check for IsFrameWnd so we can update statusbar
+		// for dialog based applications as well as doc/view apps.
+		CFrameWnd* pTarget = (CFrameWnd*)GetOwner();
+		if (pTarget == NULL)
+			pTarget = (CFrameWnd*)GetParent();
+		if (pTarget != NULL)
+			OnUpdateCmdUI(pTarget, (BOOL)wParam);
+	}
+	return 0L;
+}
+
+INT_PTR CXTPStatusBar::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	ASSERT_VALID(this);
+	ASSERT(::IsWindow(m_hWnd));
+
+	// check child windows first by calling CControlBar
+	INT_PTR nHit = CControlBar::OnToolHitTest(point, pTI);
+	if (nHit != -1)
+		return nHit;
+
+	CRect rcPane;
+	CXTPStatusBarPane* pPane = HitTest(point, &rcPane);
+	if (pPane)
+	{
+		nHit = pPane->GetID();
+
+		CString strTip = pPane->GetTooltip();
+		if (strTip.IsEmpty())
+			return -1;
+
+		CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rcPane, nHit, strTip);
+
+		return nHit;
+	}
+	return -1;
+}
+
+void CXTPStatusBar::OnPaneClick(CXTPStatusBarPane* pPane)
+{
+	GetParentFrame()->SendMessage(WM_COMMAND, pPane->GetID());
+}
+
+
+BOOL CXTPStatusBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+
+
+	if (m_pToolTipContext)
 	{
 		m_pToolTipContext->FilterToolTipMessage(this, message, wParam, lParam);
 	}
 
-	if (message == m_nMsgQuerySkinState && m_bEnableGroups && IsAttached())
+	return CControlBar::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarPaneWnd
+/////////////////////////////////////////////////////////////////////////////
+CXTPStatusBarPaneWnd::CXTPStatusBarPaneWnd()
+{
+}
+
+CXTPStatusBarPaneWnd::~CXTPStatusBarPaneWnd()
+{
+}
+
+IMPLEMENT_DYNCREATE(CXTPStatusBarPaneWnd, CWnd)
+
+BEGIN_MESSAGE_MAP(CXTPStatusBarPaneWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTPStatusBarPaneWnd)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPStatusBarPaneWnd::OnPaint()
+{
+	// background is already filled in gray
+	CPaintDC dc(this);
+
+	// Get the client rect.
+	CXTPClientRect rcClient(this);
+
+	CXTPBufferDC memDC(dc, rcClient);
+	memDC.FillSolidRect(rcClient, GetXtremeColor(COLOR_3DFACE));
+
+	// Draw the logo text
+	DoPaint(&memDC, rcClient);
+}
+
+BOOL CXTPStatusBarPaneWnd::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+BOOL CXTPStatusBarPaneWnd::Create(LPCTSTR lpszWindowName, CWnd* pParentWnd, DWORD dwStyle/*= WS_CHILD | WS_VISIBLE*/, UINT m_nID/*= 0xffff*/)
+{
+	CString wndClass = ::AfxRegisterWndClass(CS_HREDRAW | CS_DBLCLKS);
+
+	if (!CWnd::Create(wndClass, lpszWindowName, dwStyle,
+		CRect(0, 0, 0, 0), pParentWnd, m_nID))
 	{
-		return TRUE;
+		return FALSE;
 	}
 
-	if (!m_bEnableGroups && (message == WM_MDIICONARRANGE || message == WM_MDICASCADE
-		|| message == WM_MDITILE) && GetCommandBars())
+	m_strWindowText = lpszWindowName;
+
+	return TRUE;
+}
+
+void CXTPStatusBarPaneWnd::DoPaint(CDC* /*pDC*/, CRect& /*rcClient*/)
+{
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarLogoPane
+/////////////////////////////////////////////////////////////////////////////
+CXTPStatusBarLogoPane::CXTPStatusBarLogoPane()
+{
+	CXTPPaintManager::CNonClientMetrics ncm;
+	ncm.lfMenuFont.lfWeight = FW_BOLD;
+
+	SetLogoFont(ncm.lfMenuFont);
+}
+
+CXTPStatusBarLogoPane::~CXTPStatusBarLogoPane()
+{
+	m_Font.DeleteObject();
+}
+
+BEGIN_MESSAGE_MAP(CXTPStatusBarLogoPane, CXTPStatusBarPaneWnd)
+	//{{AFX_MSG_MAP(CXTPStatusBarLogoPane)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPStatusBarLogoPane::SetLogoFont(LPCTSTR lpszFontName, int nHeight/*= 24*/,
+	int nWeight/*= FW_BOLD*/, BOOL bItalic/*= TRUE*/, BOOL bUnderline/*= FALSE*/)
+{
+	if (m_Font.m_hObject)
 	{
-		XTPPaintTheme theme = GetCommandBars()->GetPaintManager()->BaseTheme();
+		m_Font.DeleteObject();
+	}
 
-		if (theme == xtpThemeResource || theme == xtpThemeRibbon)
+	m_Font.CreateFont(nHeight, 0, 0, 0, nWeight, (BYTE)bItalic,
+		(BYTE)bUnderline, 0, 0, 0, 0, 0, 0, lpszFontName);
+	SetTextSize();
+}
+
+void CXTPStatusBarLogoPane::SetLogoFont(LOGFONT& logFont)
+{
+	if (m_Font.m_hObject)
+	{
+		m_Font.DeleteObject();
+	}
+
+	m_Font.CreateFontIndirect(&logFont);
+	SetTextSize();
+}
+
+void CXTPStatusBarLogoPane::SetTextSize()
+{
+	CWindowDC dc(NULL);
+	CFont* pOldFont = dc.SelectObject(&m_Font);
+	m_sizeText = dc.GetTextExtent(m_strWindowText);
+	dc.SelectObject(pOldFont);
+}
+
+void CXTPStatusBarLogoPane::DoPaint(CDC* pDC, CRect& rcClient)
+{
+	// Determine the size of the logo text.
+	CSize sizeText = pDC->GetTextExtent(m_strWindowText);
+
+	// Calculate the top "y" location.
+	int y = (rcClient.Height()-sizeText.cy)/2;
+
+	// Resize the rect to reflect the actual text size.
+	rcClient.top = y;
+	rcClient.bottom = rcClient.top + sizeText.cy;
+
+	// Set the text color.
+	pDC->SetTextColor(GetXtremeColor(COLOR_3DSHADOW));
+
+	// Draw text
+	pDC->SetBkMode(TRANSPARENT);
+
+	CXTPFontDC fnt(pDC, &m_Font);
+	pDC->DrawText(m_strWindowText, &rcClient,
+		DT_VCENTER | DT_CENTER | DT_END_ELLIPSIS | DT_SINGLELINE);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPStatusBarIconPane
+/////////////////////////////////////////////////////////////////////////////
+
+CXTPStatusBarIconPane::CXTPStatusBarIconPane()
+{
+	m_hIcon = NULL;
+	m_sizeIcon.cx = ::GetSystemMetrics(SM_CXSMICON);
+	m_sizeIcon.cy = ::GetSystemMetrics(SM_CYSMICON);
+}
+
+CXTPStatusBarIconPane::~CXTPStatusBarIconPane()
+{
+	if (m_hIcon)
+	{
+		DestroyIcon(m_hIcon);
+	}
+}
+
+BEGIN_MESSAGE_MAP(CXTPStatusBarIconPane, CXTPStatusBarPaneWnd)
+	//{{AFX_MSG_MAP(CXTPStatusBarIconPane)
+	ON_WM_ENABLE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CXTPStatusBarIconPane::DoPaint(CDC* pDC, CRect& rcClient)
+{
+	if (m_hIcon)
+	{
+		// determine the x-y location of the icon
+		CPoint point;
+		point.x = (rcClient.Width() -m_sizeIcon.cx)/2;
+		point.y = (rcClient.Height()-m_sizeIcon.cy)/2;
+
+		// draw the icon associated with this pane.
+		if (IsWindowEnabled())
 		{
-			CArray<CXTPCommandBarsFrameHook*, CXTPCommandBarsFrameHook*> arrChildren;
-
-			HWND hWnd = ::GetWindow(m_hWnd, GW_CHILD);
-			while (hWnd)
-			{
-				if (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_MDICHILD)
-				{
-					CXTPCommandBarsFrameHook* pFrame = (CXTPCommandBarsFrameHook*)::SendMessage(hWnd, CXTPCommandBarsFrameHook::m_nMsgQueryFrameHook, 0, 0);
-
-					if (pFrame)
-					{
-						RECT rc = CXTPWindowRect(hWnd);
-						pFrame->m_bLockNCPaint += 1;
-						::SendMessage(hWnd, WM_NCCALCSIZE, FALSE, (LPARAM)&rc);
-						pFrame->m_bLockNCPaint -= 1;
-
-						::SetTimer(hWnd, XTP_TID_REFRESHFRAME, 100, NULL);
-
-						arrChildren.Add(pFrame);
-					}
-				}
-				hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
-			}
-
-			LRESULT lResult = CWnd::WindowProc(message, wParam, lParam);
-
-			for (int i = 0; i < (int)arrChildren.GetSize(); i++)
-			{
-				CXTPCommandBarsFrameHook* pFrame = arrChildren[i];
-				pFrame->RedrawFrame();
-			}
-
-			return lResult;
+			pDC->DrawState(point, m_sizeIcon, m_hIcon,
+				DST_ICON | DSS_NORMAL, (HBRUSH)NULL);
+		}
+		else
+		{
+			CBrush brush(GetXtremeColor(COLOR_3DSHADOW));
+			pDC->DrawState(point, m_sizeIcon, m_hIcon,
+				DST_ICON | DSS_MONO, (HBRUSH)brush);
 		}
 	}
-
-	return CWnd::WindowProc(message, wParam, lParam);
 }
 
-void CXTPTabClientWnd::SetTabWorkspace(CWorkspace* pWorkspace)
+void CXTPStatusBarIconPane::SetPaneIcon(LPCTSTR lpszIconID)
 {
-	ASSERT(!m_bEnableGroups);
+	// Locate the resource handle for the icon id.
+	HINSTANCE hInstance = AfxFindResourceHandle(lpszIconID, RT_GROUP_ICON);
 
-	m_pTabWorkspace = pWorkspace;
-	m_bUserWorkspace = pWorkspace != NULL;
+	if (m_hIcon)
+	{
+		DestroyIcon(m_hIcon);
+	}
 
-	if (pWorkspace) pWorkspace->m_pTabClientWnd = this;
+	// Load the image for the icon pane.
+	m_hIcon = (HICON)::LoadImage(hInstance, lpszIconID, IMAGE_ICON,
+		::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
 }
 
-void CXTPTabClientWnd::ShowNewWindowTab(BOOL bShowNewWindowTab, int nCommand)
+void CXTPStatusBarIconPane::SetPaneIcon(int nIconID)
 {
-	m_bShowNewWindowTab = bShowNewWindowTab;
-	m_nNewWindowTabCommand = nCommand;
+	SetPaneIcon(MAKEINTRESOURCE(nIconID));
 }
 
-
-void CXTPTabClientWnd::SaveState()
+void CXTPStatusBarIconPane::OnEnable(BOOL bEnable)
 {
-	AfxGetApp()->WriteProfileInt(_T("TabDocking"), _T("Position"), (int)m_pPaintManager->GetPosition());
+	CXTPStatusBarPaneWnd::OnEnable(bEnable);
+
+	// Refresh the icon to indicate state.
+	Invalidate();
+	UpdateWindow();
 }
 
-void CXTPTabClientWnd::LoadState()
-{
-	int nValue = AfxGetApp()->GetProfileInt(_T("TabDocking"), _T("Position"), xtpTabPositionTop);
-	m_pPaintManager->SetPosition(XTPTabPosition(nValue));
-	m_bForceToRecalc = TRUE;
-}
 
 

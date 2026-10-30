@@ -1,88 +1,51 @@
-// from server: 0% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs roc_codex_eh_count16_b260dc2bc31f66e9.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
 
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
+struct Object {
+    virtual ~Object();
+};
 
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
 
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
+struct Count : CountBase {
+    Object* object;
 
-#include "OgreAlignedAllocator.h"
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
 
-#include "OgrePlatformInformation.h"
-#include "OgreBitwise.h"
+extern void __cdecl deleteObject(Object*);
 
-/**
-*
-* |___2___|3|_________5__________|__6__|
-* ^         ^
-* 1         4
-*
-* 1 -> Pointer to start of the block allocated by new.
-* 2 -> Gap used to get 4 aligned on given alignment
-* 3 -> Byte offset between 1 and 4
-* 4 -> Pointer to the start of data block.
-* 5 -> Data block.
-* 6 -> Wasted memory at rear of data block.
-*/
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
 
-namespace Ogre {
-
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size, size_t alignment)
-    {
-        assert(0 < alignment && alignment <= 128 && Bitwise::isPO2(alignment));
-
-        unsigned char* p = new unsigned char[size + alignment];
-        size_t offset = alignment - (size_t(p) & (alignment-1));
-
-        unsigned char* result = p + offset;
-        result[-1] = (unsigned char)offset;
-
-        return result;
+S::S(Object* p) : count(0)
+{
+    try {
+        count = new Count(p);
     }
-    //---------------------------------------------------------------------
-    void* AlignedMemory::allocate(size_t size)
-    {
-        return allocate(size, OGRE_SIMD_ALIGNMENT);
+    catch (...) {
+        deleteObject(p);
+        throw;
     }
-    //---------------------------------------------------------------------
-    void AlignedMemory::deallocate(void* p)
-    {
-        if (p)
-        {
-            unsigned char* mem = (unsigned char*)p;
-            mem = mem - mem[-1];
-            delete [] mem;
-        }
-    }
-
 }

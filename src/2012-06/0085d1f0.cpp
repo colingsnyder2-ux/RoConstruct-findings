@@ -1,15 +1,15 @@
-// from server: 40% by Intel
-extern "C" void __stdcall sub_85d020(int, int, int, int, int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp
 
-struct S {
-    int f();
-};
-
-int S::f()
-{
-    int a = *(int*)((int)this + 0x10);
-    int b = *(int*)((int)this + 0xc);
-    int c = *(int*)((int)this + 0x14);
-    sub_85d020(a, b, b, a, c);
-    return 0;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_null_device<char,boost::iostreams::output>,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

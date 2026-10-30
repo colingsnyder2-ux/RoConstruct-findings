@@ -1,8 +1,7 @@
-// from server: 49% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/DockingPane/XTPDockingPaneMiniWnd.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\DockingPane\XTPDockingPaneMiniWnd.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockingPaneMiniWnd.cpp : implementation of the CXTPDockingPaneMiniWnd class.

@@ -1,218 +1,280 @@
-// from server: 23% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: g3d-6.09 G3Dcpp/Vector2.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: raknet-4.081 Rand.cpp
 
 // Candidate translation unit (score above; library headers required).
 /**
- @file Vector2.cpp
- 
- 2D vector class, used for texture coordinates primarily.
- 
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @cite Portions based on Dave Eberly'x Magic Software Library
-  at http://www.magic-software.com
- 
- @created 2001-06-02
- @edited  2006-01-16
- */
+*
+* Grabbed by Kevin from http://www.math.keio.ac.jp/~matumoto/cokus.c
+* This is the ``Mersenne Twister'' random number generator MT19937, which
+* generates pseudorandom integers uniformly distributed in 0..(2^32 - 1)
+* starting from any odd seed in 0..(2^32 - 1).  This version is a recode
+* by Shawn Cokus (Cokus@math.washington.edu) on March 8, 1998 of a version by
+* Takuji Nishimura (who had suggestions from Topher Cooper and Marc Rieffel in
+* July-August 1997).
+*
+* Effectiveness of the recoding (on Goedel2.math.washington.edu, a DEC Alpha
+* running OSF/1) using GCC -O3 as a compiler: before recoding: 51.6 sec. to
+* generate 300 million random numbers; after recoding: 24.0 sec. for the same
+* (i.e., 46.5% of original time), so speed is now about 12.5 million random
+* number generations per second on this machine.
+*
+* According to the URL <http://www.math.keio.ac.jp/~matumoto/emt.html>
+* (and paraphrasing a bit in places), the Mersenne Twister is ``designed
+* with consideration of the flaws of various existing generators,'' has
+* a period of 2^19937 - 1, gives a sequence that is 623-dimensionally
+* equidistributed, and ``has passed many stringent tests, including the
+* die-hard test of G. Marsaglia and the load test of P. Hellekalek and
+* S. Wegenkittl.''  It is efficient in memory usage (typically using 2506
+* to 5012 bytes of static data, depending on data type sizes, and the code
+* is quite short as well).  It generates random numbers in batches of 624
+* at a time, so the caching and pipelining of modern systems is exploited.
+* It is also divide- and mod-free.
+*
+* Licensing is free http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/elicense.html
+*
+* The code as Shawn received it included the following notice:
+*
+*   Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura. When
+*   you use this, send an e-mail to <matumoto@math.keio.ac.jp> with
+*   an appropriate reference to your work.
+*
+* It would be nice to CC: <Cokus@math.washington.edu> when you write.
+*/
 
-#include "G3D/platform.h"
+#include <stdio.h>
 #include <stdlib.h>
-#include "G3D/Vector2.h"
-#include "G3D/g3dmath.h"
-#include "G3D/format.h"
-#include "G3D/BinaryInput.h"
-#include "G3D/BinaryOutput.h"
-#include "G3D/TextInput.h"
-#include "G3D/TextOutput.h"
+#include <string.h>
+#include "Rand.h"
 
-namespace G3D {
+//
+// uint32 must be an unsigned integer type capable of holding at least 32
+// bits; exactly 32 should be fastest, but 64 is better on an Alpha with
+// GCC at -O3 optimization so try your options and see what's best for you
+//
 
-const Vector2& Vector2::zero() {
-    static Vector2 v(0, 0);
-    return v;
+//typedef unsigned int uint32;
+
+#define N        (624)       // length of state vector
+#define M        (397)       // a period parameter
+#define K        (0x9908B0DFU)      // a magic constant
+#define hiBit(u)       ((u) & 0x80000000U)   // mask all but highest   bit of u
+#define loBit(u)       ((u) & 0x00000001U)   // mask all but lowest    bit of u
+#define loBits(u)      ((u) & 0x7FFFFFFFU)   // mask  the highest   bit of u
+#define mixBits(u, v)  (hiBit(u)|loBits(v))  // move hi bit of u to hi bit of v
+
+static unsigned int _state[ N + 1 ];     // state vector + 1 extra to not violate ANSI C
+static unsigned int *_next;        // next random value is computed from here
+static int _left = -1; // can *next++ this many times before reloading
+
+using namespace RakNet;
+
+void seedMT( unsigned int seed, unsigned int *state, unsigned int *&next, int &left );
+unsigned int reloadMT( unsigned int *state, unsigned int *&next, int &left );
+unsigned int randomMT( unsigned int *state, unsigned int *&next, int &left );
+void fillBufferMT( void *buffer, unsigned int bytes, unsigned int *state, unsigned int *&next, int &left );
+float frandomMT( unsigned int *state, unsigned int *&next, int &left );
+
+// Uses global vars
+void seedMT( unsigned int seed )
+{
+	seedMT(seed, _state, _next, _left);
+}
+unsigned int reloadMT( void )
+{
+	return reloadMT(_state, _next, _left);
+}
+unsigned int randomMT( void )
+{
+	return randomMT(_state, _next, _left);
+}
+float frandomMT( void )
+{
+	return frandomMT(_state, _next, _left);
+}
+void fillBufferMT( void *buffer, unsigned int bytes )
+{
+	fillBufferMT(buffer, bytes, _state, _next, _left);
 }
 
-const Vector2& Vector2::unitX() {
-    static Vector2 v(1, 0);
-    return v;
-}
+void seedMT( unsigned int seed, unsigned int *state, unsigned int *&next, int &left )   // Defined in cokus_c.c
+{
+	(void) next;
 
-const Vector2& Vector2::unitY() {
-    static Vector2 v(0, 1);
-    return v;
-}
+	//
+	// We initialize state[0..(N-1)] via the generator
+	//
+	//  x_new = (69069 * x_old) mod 2^32
+	//
+	// from Line 15 of Table 1, p. 106, Sec. 3.3.4 of Knuth's
+	// _The Art of Computer Programming_, Volume 2, 3rd ed.
+	//
+	// Notes (SJC): I do not know what the initial state requirements
+	// of the Mersenne Twister are, but it seems this seeding generator
+	// could be better.  It achieves the maximum period for its modulus
+	// (2^30) iff x_initial is odd (p. 20-21, Sec. 3.2.1.2, Knuth); if
+	// x_initial can be even, you have sequences like 0, 0, 0, ...;
+	// 2^31, 2^31, 2^31, ...; 2^30, 2^30, 2^30, ...; 2^29, 2^29 + 2^31,
+	// 2^29, 2^29 + 2^31, ..., etc. so I force seed to be odd below.
+	//
+	// Even if x_initial is odd, if x_initial is 1 mod 4 then
+	//
+	//  the   lowest bit of x is always 1,
+	//  the  next-to-lowest bit of x is always 0,
+	//  the 2nd-from-lowest bit of x alternates   ... 0 1 0 1 0 1 0 1 ... ,
+	//  the 3rd-from-lowest bit of x 4-cycles   ... 0 1 1 0 0 1 1 0 ... ,
+	//  the 4th-from-lowest bit of x has the 8-cycle ... 0 0 0 1 1 1 1 0 ... ,
+	//   ...
+	//
+	// and if x_initial is 3 mod 4 then
+	//
+	//  the   lowest bit of x is always 1,
+	//  the  next-to-lowest bit of x is always 1,
+	//  the 2nd-from-lowest bit of x alternates   ... 0 1 0 1 0 1 0 1 ... ,
+	//  the 3rd-from-lowest bit of x 4-cycles   ... 0 0 1 1 0 0 1 1 ... ,
+	//  the 4th-from-lowest bit of x has the 8-cycle ... 0 0 1 1 1 1 0 0 ... ,
+	//   ...
+	//
+	// The generator's potency (min. s>=0 with (69069-1)^s = 0 mod 2^32) is
+	// 16, which seems to be alright by p. 25, Sec. 3.2.1.3 of Knuth.  It
+	// also does well in the dimension 2..5 spectral tests, but it could be
+	// better in dimension 6 (Line 15, Table 1, p. 106, Sec. 3.3.4, Knuth).
+	//
+	// Note that the random number user does not see the values generated
+	// here directly since reloadMT() will always munge them first, so maybe
+	// none of all of this matters.  In fact, the seed values made here could
+	// even be extra-special desirable if the Mersenne Twister theory says
+	// so-- that's why the only change I made is to restrict to odd seeds.
+	//
 
-const Vector2& Vector2::inf() { 
-	static Vector2 v((float)G3D::inf(), (float)G3D::inf());
-	return v; 
-}
+	register unsigned int x = ( seed | 1U ) & 0xFFFFFFFFU, *s = state;
+	register int j;
 
-const Vector2& Vector2::nan() { 
-	static Vector2 v((float)G3D::nan(), (float)G3D::nan()); 
-	return v; 
-}
+	for ( left = 0, *s++ = x, j = N; --j;
+		*s++ = ( x *= 69069U ) & 0xFFFFFFFFU )
 
-const Vector2& Vector2::minFinite() {
-	static Vector2 v(-FLT_MAX, -FLT_MAX); 
-	return v; 
-}
-
-const Vector2& Vector2::maxFinite() {
-	static Vector2 v(FLT_MAX, FLT_MAX); 
-	return v; 
-}
-
-
-
-// Deprecated.
-const Vector2 Vector2::ZERO(0, 0);
-const Vector2 Vector2::UNIT_S(1, 0);
-const Vector2 Vector2::UNIT_T(0, 1);
-
-unsigned int Vector2::hashCode() const {
-    unsigned int xhash = (*(int*)(void*)(&x));
-    unsigned int yhash = (*(int*)(void*)(&y));
-
-    return xhash + (yhash * 37);
-}
-
-Vector2::Vector2(BinaryInput& b) {
-    deserialize(b);
-}
-
-void Vector2::deserialize(BinaryInput& b) {
-    x = b.readFloat32();
-    y = b.readFloat32();
-}
-
-void Vector2::serialize(BinaryOutput& b) const {
-    b.writeFloat32(x);
-    b.writeFloat32(y);
-}
-
-
-
-void Vector2::deserialize(TextInput& t) {
-    t.readSymbol("(");
-    x = (float)t.readNumber();
-    t.readSymbol(",");
-    y = (float)t.readNumber();
-    t.readSymbol(")");
+		;
 }
 
 
-void Vector2::serialize(TextOutput& t) const {
-   t.writeSymbol("(");
-   t.writeNumber(x);
-   t.writeSymbol(",");
-   t.writeNumber(y);
-   t.writeSymbol(")");
+unsigned int reloadMT( unsigned int *state, unsigned int *&next, int &left )
+{
+	register unsigned int * p0 = state, *p2 = state + 2, *pM = state + M, s0, s1;
+	register int j;
+
+	if ( left < -1 )
+		seedMT( 4357U );
+
+	left = N - 1, next = state + 1;
+
+	for ( s0 = state[ 0 ], s1 = state[ 1 ], j = N - M + 1; --j; s0 = s1, s1 = *p2++ )
+		* p0++ = *pM++ ^ ( mixBits( s0, s1 ) >> 1 ) ^ ( loBit( s1 ) ? K : 0U );
+
+	for ( pM = state, j = M; --j; s0 = s1, s1 = *p2++ )
+		* p0++ = *pM++ ^ ( mixBits( s0, s1 ) >> 1 ) ^ ( loBit( s1 ) ? K : 0U );
+
+	s1 = state[ 0 ], *p0 = *pM ^ ( mixBits( s0, s1 ) >> 1 ) ^ ( loBit( s1 ) ? K : 0U );
+
+	s1 ^= ( s1 >> 11 );
+
+	s1 ^= ( s1 << 7 ) & 0x9D2C5680U;
+
+	s1 ^= ( s1 << 15 ) & 0xEFC60000U;
+
+	return ( s1 ^ ( s1 >> 18 ) );
 }
 
-//----------------------------------------------------------------------------
 
-Vector2 Vector2::random() {
-    Vector2 result;
+unsigned int randomMT( unsigned int *state, unsigned int *&next, int &left )
+{
+	unsigned int y;
 
-    do {
-        result = Vector2((float)symmetricRandom(), (float)symmetricRandom());
-    } while ((result.squaredLength() > 1.0f) || (result.squaredLength() == 1.0f));
+	if ( --left < 0 )
+		return ( reloadMT(state, next, left) );
 
-    result.unitize();
+	y = *next++;
 
-    return result;
+	y ^= ( y >> 11 );
+
+	y ^= ( y << 7 ) & 0x9D2C5680U;
+
+	y ^= ( y << 15 ) & 0xEFC60000U;
+
+	return ( y ^ ( y >> 18 ) );
+
+	// This change made so the value returned is in the same range as what rand() returns
+	// return(y ^ (y >> 18)) % 32767;
 }
 
-//----------------------------------------------------------------------------
-Vector2 Vector2::operator/ (float fScalar) const {
-    Vector2 kQuot;
+void fillBufferMT( void *buffer, unsigned int bytes, unsigned int *state, unsigned int *&next, int &left )
+{
+	unsigned int offset=0;
+	unsigned int r;
+	while (bytes-offset>=sizeof(r))
+	{
+		r = randomMT(state, next, left);
+		memcpy((char*)buffer+offset, &r, sizeof(r));
+		offset+=sizeof(r);
+	}
 
-    if ( fScalar != 0.0f ) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.x = fInvScalar * x;
-        kQuot.y = fInvScalar * y;
-        return kQuot;
-    } else {
-        return Vector2::inf();
-    }
+	r = randomMT(state, next, left);
+	memcpy((char*)buffer+offset, &r, bytes-offset);
 }
 
-//----------------------------------------------------------------------------
-Vector2& Vector2::operator/= (float fScalar) {
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        x *= fInvScalar;
-        y *= fInvScalar;
-    } else {
-        x = (float)G3D::inf();
-        y = (float)G3D::inf();
-    }
-
-    return *this;
+float frandomMT( unsigned int *state, unsigned int *&next, int &left )
+{
+	return ( float ) ( ( double ) randomMT(state, next, left) / 4294967296.0 );
+}
+RakNetRandom::RakNetRandom()
+{
+	left=-1;
+}
+RakNetRandom::~RakNetRandom()
+{
+}
+void RakNetRandom::SeedMT( unsigned int seed )
+{
+	printf("%i\n",seed);
+	seedMT(seed, state, next, left);
 }
 
-//----------------------------------------------------------------------------
-float Vector2::unitize (float fTolerance) {
-	float fLength = length();
-
-    if (fLength > fTolerance) {
-		float fInvLength = 1.0f / fLength;
-        x *= fInvLength;
-        y *= fInvLength;
-    } else {
-        fLength = 0.0;
-    }
-
-    return fLength;
+unsigned int RakNetRandom::ReloadMT( void )
+{
+	return reloadMT(state, next, left);
 }
 
-//----------------------------------------------------------------------------
-
-std::string Vector2::toString() const {
-    return G3D::format("(%g, %g)", x, y);
+unsigned int RakNetRandom::RandomMT( void )
+{
+	return randomMT(state, next, left);
 }
 
-// 2-char swizzles
+float RakNetRandom::FrandomMT( void )
+{
+	return frandomMT(state, next, left);
+}
 
-Vector2 Vector2::xx() const  { return Vector2       (x, x); }
-Vector2 Vector2::yx() const  { return Vector2       (y, x); }
-Vector2 Vector2::xy() const  { return Vector2       (x, y); }
-Vector2 Vector2::yy() const  { return Vector2       (y, y); }
+void RakNetRandom::FillBufferMT( void *buffer, unsigned int bytes )
+{
+	fillBufferMT(buffer, bytes, state, next, left);
+}
 
-// 3-char swizzles
+/*
+int main(void)
+{
+int j;
 
-Vector3 Vector2::xxx() const  { return Vector3       (x, x, x); }
-Vector3 Vector2::yxx() const  { return Vector3       (y, x, x); }
-Vector3 Vector2::xyx() const  { return Vector3       (x, y, x); }
-Vector3 Vector2::yyx() const  { return Vector3       (y, y, x); }
-Vector3 Vector2::xxy() const  { return Vector3       (x, x, y); }
-Vector3 Vector2::yxy() const  { return Vector3       (y, x, y); }
-Vector3 Vector2::xyy() const  { return Vector3       (x, y, y); }
-Vector3 Vector2::yyy() const  { return Vector3       (y, y, y); }
+// you can seed with any uint32, but the best are odds in 0..(2^32 - 1)
 
-// 4-char swizzles
+seedMT(4357U);
 
-Vector4 Vector2::xxxx() const  { return Vector4       (x, x, x, x); }
-Vector4 Vector2::yxxx() const  { return Vector4       (y, x, x, x); }
-Vector4 Vector2::xyxx() const  { return Vector4       (x, y, x, x); }
-Vector4 Vector2::yyxx() const  { return Vector4       (y, y, x, x); }
-Vector4 Vector2::xxyx() const  { return Vector4       (x, x, y, x); }
-Vector4 Vector2::yxyx() const  { return Vector4       (y, x, y, x); }
-Vector4 Vector2::xyyx() const  { return Vector4       (x, y, y, x); }
-Vector4 Vector2::yyyx() const  { return Vector4       (y, y, y, x); }
-Vector4 Vector2::xxxy() const  { return Vector4       (x, x, x, y); }
-Vector4 Vector2::yxxy() const  { return Vector4       (y, x, x, y); }
-Vector4 Vector2::xyxy() const  { return Vector4       (x, y, x, y); }
-Vector4 Vector2::yyxy() const  { return Vector4       (y, y, x, y); }
-Vector4 Vector2::xxyy() const  { return Vector4       (x, x, y, y); }
-Vector4 Vector2::yxyy() const  { return Vector4       (y, x, y, y); }
-Vector4 Vector2::xyyy() const  { return Vector4       (x, y, y, y); }
-Vector4 Vector2::yyyy() const  { return Vector4       (y, y, y, y); }
+// print the first 2,002 random numbers seven to a line as an example
 
+for(j=0; j<2002; j++)
+RAKNET_DEBUG_PRINTF(" %10lu%s", (unsigned int) randomMT(), (j%7)==6 ? "\n" : "");
 
+return(EXIT_SUCCESS);
+}
 
-} // namespace
+*/
+

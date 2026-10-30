@@ -1,4 +1,3 @@
-// from server: 71% by colin
 // roc 2007-08 0058d2d0  unit: RBX::SoundService  size: 83 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0058d2d0
 //
@@ -28,22 +27,37 @@
 // 0058d31e  5e                   pop esi
 // 0058d31f  83c444               add esp, 0x44
 // 0058d322  c3                   ret 
+// copied from an identical function in another client (function ?f@@YA?AUString@@ABUVector@@@Z)
 
-extern "C" int __cdecl _snprintf(char*, unsigned int, const char*, ...);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct String;
 
-struct SoundService {
-    float field0;
-    float field4;
-    float field8;
-    void* method(void* out);
+typedef int (__cdecl *FormatFunction)(char*, unsigned int, const char*, ...);
+typedef void (__thiscall *StringConstructor)(String*, const char*);
+
+extern FormatFunction formatFunction;
+extern StringConstructor stringConstructor;
+
+struct Vector {
+    float x, y, z;
 };
 
-extern "C" void __stdcall string_ctor(void* self, const char* str);
+struct String {
+    char storage[28];
+    String(const char*);
+    ~String();
+};
 
-void* SoundService::method(void* out)
+__forceinline String::String(const char* text)
 {
-    char buf[0x40];
-    _snprintf(buf, 0x40, "%g, %g, %g", field0, field4, field8);
-    string_ctor(out, buf);
-    return out;
+    stringConstructor(this, text);
+}
+
+String __cdecl f(const Vector& value)
+{
+    char buffer[64];
+    formatFunction(buffer, 64, "%g, %g, %g",
+                   value.x, value.y, value.z);
+    return String(buffer);
 }

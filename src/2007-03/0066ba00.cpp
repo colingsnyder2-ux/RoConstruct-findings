@@ -1,11 +1,11 @@
-// from server: 0% by colin
+// from server: 62% by colin
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Common/XTPPropExchange.cpp
+// roc-lib: xtp-15.2.1 Source/Common/XTPImageManager.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPPropExchange.cpp: implementation of the CXTPPropExchange class.
+// XTPImageManager.cpp : implementation of the CXTPImageManager class.
 //
 // This file is a part of the XTREME TOOLKIT PRO MFC class library.
 // (c)1998-2011 Codejock Software, All Rights Reserved.
@@ -26,2560 +26,2279 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <math.h>
+
+#include "XTPVC80Helpers.h"
+#include "XTPColorManager.h"
+#include "XTPDrawHelpers.h"
+#include "XTPSystemHelpers.h"
 #include "XTPMacros.h"
 #include "XTPPropExchange.h"
-#include "XTPVC80Helpers.h"
-
+#include "XTPImageManager.h"
 #include "XTPResourceManager.h"
 
-#include <afxole.h>
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+#include "GraphicLibrary/XTPGraphicBitmapPng.h"
+#endif
 
 #ifdef _DEBUG
+#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
 #endif
 
-#pragma warning(disable : 4310)
+#define DESTROYICON(hIcon) if (hIcon) { ::DestroyIcon(hIcon); hIcon = 0; }
+#define FREE(hHandle) if (hHandle) { free(hHandle); hHandle = 0; }
 
-#ifdef _UNICODE
-#define CT2BSTR(x) (BSTR)(LPCWSTR)x
-#else
-#define CT2BSTR(x) (BSTR)XTP_CT2CW(x)
+double CXTPImageManager::m_dDisabledAlphaFactor = 1.0;
+double CXTPImageManager::m_dDisabledBrightnessFactor = 0.5;
+BOOL CXTPImageManager::m_bAutoResample = FALSE;
+CLIPFORMAT CXTPImageManager::m_nImageClipFormat = (CLIPFORMAT)RegisterClipboardFormat(_T("Xtreme ToolBar Image"));
+CLIPFORMAT CXTPImageManager::m_nAlphaClipFormat = (CLIPFORMAT)RegisterClipboardFormat(_T("Alpha Bitmap Image"));
+
+#ifndef NOMIRRORBITMAP
+#define NOMIRRORBITMAP      (DWORD)0x80000000 /* Do not Mirror the bitmap in this call */
 #endif
 
-enum VARTYPE_EX
+#define  IMAGE_PLACEHOLDER 0xDEADBEAF
+
+//---------------------------------------------------------------------------
+//    Should be a prime number:
+// 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001, 32003, 48017, 64007
+#define XTP_IMAGEMAN_HASH_TABLE_SIZE 127
+
+//////////////////////////////////////////////////////////////////////////
+// Common
+
+// Based on http://support.microsoft.com/kb/303916/en-us
+BOOL CXTPImageManager::BitmapsCompatible(LPBITMAP lpbm1, LPBITMAP lpbm2) const
 {
-	VT_EX_RECT = 100,
-	VT_EX_SIZE = 101
+	if (lpbm1->bmBitsPixel != lpbm2->bmBitsPixel)
+		return FALSE;
+
+	if (lpbm1->bmPlanes != lpbm2->bmPlanes)
+		return FALSE;
+
+	if (lpbm1->bmWidth != lpbm2->bmWidth)
+		return FALSE;
+
+	if (lpbm1->bmHeight != lpbm2->bmHeight)
+		return FALSE;
+
+	return TRUE;
+}
+
+// Based on http://www.rsdn.ru/article/files/Functions/mctranspblt.xml
+BOOL CXTPImageManager::McTransparentBlt(HDC hdcDest, int nXOriginDest, int nYOriginDest,
+	int nWidthDest, int nHeightDest, HDC hdcSrc,
+	int nXOriginSrc, int nYOriginSrc, int nWidthSrc,
+	int nHeightSrc, UINT crTransparent)
+{
+
+	BOOL bResult = FALSE;
+
+	if (!hdcDest || !hdcSrc)
+		return FALSE;
+
+	HDC hdcMask = NULL;
+	HDC hdcTmpSrc = NULL;
+	HBITMAP hbmTransMask = NULL;
+	HBITMAP oldhbmTransMask = NULL;
+	HBITMAP hbmTmpSrc = NULL;
+	HBITMAP oldhbmTmpSrc = NULL;
+
+
+	COLORREF OldBkColor = ::SetBkColor(hdcDest, RGB(255, 255, 255));
+	COLORREF OldTextColor = ::SetTextColor(hdcDest, RGB(0, 0, 0));
+
+	if ((hdcMask = ::CreateCompatibleDC(hdcDest)) == NULL)
+	{
+		goto ClearUp;
+	}
+
+	if ((hdcTmpSrc = ::CreateCompatibleDC(hdcSrc))==NULL)
+	{
+		goto ClearUp;
+	}
+
+	if ((hbmTmpSrc = ::CreateCompatibleBitmap(hdcDest,nWidthSrc,nHeightSrc))==NULL)
+	{
+		goto ClearUp;
+	}
+
+	oldhbmTmpSrc = (HBITMAP)::SelectObject(hdcTmpSrc,hbmTmpSrc);
+
+	if (!::BitBlt(hdcTmpSrc, 0, 0, nWidthSrc, nHeightSrc, hdcSrc, nXOriginSrc, nYOriginSrc, SRCCOPY))
+	{
+		goto ClearUp;
+	}
+
+	if ((hbmTransMask = ::CreateBitmap(nWidthSrc, nHeightSrc, 1, 1, NULL)) == NULL)
+	{
+		goto ClearUp;
+	}
+
+	oldhbmTransMask = (HBITMAP)::SelectObject(hdcMask,hbmTransMask);
+
+	::SetBkColor(hdcTmpSrc,crTransparent);
+	if (!::BitBlt(hdcMask, 0, 0, nWidthSrc, nHeightSrc, hdcTmpSrc, 0, 0, SRCCOPY))
+	{
+		goto ClearUp;
+	}
+
+	if (crTransparent != RGB(0, 0, 0))
+	{
+		::SetBkColor(hdcTmpSrc, RGB(0, 0, 0));
+		::SetTextColor(hdcTmpSrc, RGB(255, 255, 255));
+
+		if (!::BitBlt(hdcTmpSrc, 0, 0, nWidthSrc, nHeightSrc, hdcMask, 0, 0, SRCAND))
+		{
+			goto ClearUp;
+		}
+	}
+
+	if ((nWidthDest == nWidthSrc) && (nHeightDest == nHeightSrc))
+	{
+		if (!::BitBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthSrc, nHeightSrc, hdcMask, 0, 0, SRCAND))
+		{
+			goto ClearUp;
+		}
+		if (!::BitBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthSrc, nHeightSrc, hdcTmpSrc, 0, 0, SRCPAINT))
+		{
+			goto ClearUp;
+		}
+	}
+	else
+	{
+		if (!::StretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, hdcMask, 0, 0, nWidthSrc, nHeightSrc,SRCAND))
+		{
+			goto ClearUp;
+		}
+		if (!::StretchBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest, hdcTmpSrc, 0, 0,  nWidthSrc, nHeightSrc,SRCPAINT))
+		{
+			goto ClearUp;
+		}
+	}
+	bResult = TRUE;
+
+ClearUp:
+	if (hdcMask)
+	{
+		if (oldhbmTransMask)
+			::SelectObject(hdcMask,oldhbmTransMask);
+		::DeleteDC(hdcMask);
+	}
+
+	if (hbmTmpSrc)
+	{
+		if (oldhbmTmpSrc)
+			::SelectObject(hdcTmpSrc,oldhbmTmpSrc);
+		::DeleteObject(hbmTmpSrc);
+	}
+
+	if (hdcTmpSrc)
+		::DeleteDC(hdcTmpSrc);
+
+	if (hbmTransMask)
+		::DeleteObject(hbmTransMask);
+
+	::SetBkColor(hdcDest, OldBkColor);
+	::SetTextColor(hdcDest,OldTextColor);
+
+	return bResult;
+}
+
+BOOL CXTPImageManager::IsWindow2000() const
+{
+	return XTPSystemVersion()->IsWin2KOrGreater();
+}
+
+BOOL CXTPImageManager::TransparentBlt(HDC hdcDest, const CRect& rcDest,HDC hdcSrc,
+	const CRect& rcSrc, UINT crTransparent) const
+{
+	if (IsWindow2000() && XTPDrawHelpers()->m_pfnTransparentBlt)
+	{
+		return XTPDrawHelpers()->m_pfnTransparentBlt(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), crTransparent);
+	}
+
+	return McTransparentBlt(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), crTransparent);
+}
+
+// Based on http://support.microsoft.com/kb/303916/en-us
+BOOL CXTPImageManager::BlendImages(HBITMAP hbmSrc1, BOOL bRTL1, HBITMAP hbmSrc2, BOOL bRTL2, HBITMAP hbmDst) const
+{
+	BITMAP bmSrc1, bmSrc2, bmDst;
+	RGBQUAD *lprgbSrc1, *lprgbSrc2, *lprgbDst;
+	DWORD dwWidthBytes;
+	int x, y;
+
+	// Get weighting value for second source image.
+
+	// Get information about the surfaces you were passed.
+	if (!GetObject(hbmSrc1, sizeof(BITMAP), &bmSrc1)) return FALSE;
+	if (!GetObject(hbmSrc2, sizeof(BITMAP), &bmSrc2)) return FALSE;
+	if (!GetObject(hbmDst,  sizeof(BITMAP), &bmDst))  return FALSE;
+
+	// Make sure you have data that meets your requirements.
+	if (!BitmapsCompatible(&bmSrc1, &bmSrc2)) return FALSE;
+	if (!BitmapsCompatible(&bmSrc1, &bmDst))  return FALSE;
+	if (bmSrc1.bmBitsPixel != 32) return FALSE;
+	if (bmSrc1.bmPlanes != 1) return FALSE;
+	if (!bmSrc1.bmBits || !bmSrc2.bmBits || !bmDst.bmBits) return FALSE;
+
+	dwWidthBytes = bmDst.bmWidthBytes;
+
+	// Initialize the surface pointers.
+	lprgbSrc1 = (RGBQUAD*)bmSrc1.bmBits;
+	lprgbSrc2 = (RGBQUAD*)bmSrc2.bmBits;
+	lprgbDst  = (RGBQUAD*)bmDst.bmBits;
+
+	#define F(a)  BYTE(gbSrc1.##a + (255 - gbSrc1.rgbReserved) * gbSrc2.##a / 255)
+
+	for (y = 0; y < bmDst.bmHeight; y++)
+	{
+		for (x = 0; x < bmDst.bmWidth; x++)
+		{
+			RGBQUAD& gbSrc1 = bRTL1 ? lprgbSrc1[bmDst.bmWidth - 1 - x] : lprgbSrc1[x];
+			RGBQUAD& gbSrc2 = bRTL2 ? lprgbSrc2[bmDst.bmWidth - 1 - x] : lprgbSrc2[x];
+
+			lprgbDst[x].rgbRed   = F(rgbRed);
+			lprgbDst[x].rgbGreen = F(rgbGreen);
+			lprgbDst[x].rgbBlue  = F(rgbBlue);
+		}
+
+		// Move to next scan line.
+		lprgbSrc1 = (RGBQUAD *)((LPBYTE)lprgbSrc1 + dwWidthBytes);
+		lprgbSrc2 = (RGBQUAD *)((LPBYTE)lprgbSrc2 + dwWidthBytes);
+		lprgbDst  = (RGBQUAD *)((LPBYTE)lprgbDst  + dwWidthBytes);
+	}
+
+	return TRUE;
+}
+
+// Based on http://support.microsoft.com/kb/303916/en-us
+HBITMAP AFX_CDECL CXTPImageManager::Create32BPPDIBSection(HDC hDC, int iWidth, int iHeight, LPBYTE* lpBits)
+{
+	BITMAPINFO bmi;
+	HBITMAP hbm;
+	LPBYTE pBits;
+
+	// Initialize header to 0s.
+	ZeroMemory(&bmi, sizeof(bmi));
+
+	// Fill out the fields you care about.
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = iWidth;
+	bmi.bmiHeader.biHeight = iHeight;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+
+	// Create the surface.
+	hbm = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS, (LPVOID*)&pBits, NULL, 0);
+
+	if (lpBits)
+	{
+		*lpBits = pBits;
+	}
+
+	return(hbm);
+}
+
+// Based on http://support.microsoft.com/kb/303916/en-us
+BOOL CXTPImageManager::DoAlphaBlend(HDC hdcDest,                 // Handle to destination DC.
+	int nXOriginDest,            // X-coord of upper-left corner.
+	int nYOriginDest,            // Y-coord of upper-left corner.
+	int nWidthDest,              // Destination width.
+	int nHeightDest,             // Destination height.
+	HDC hdcSrc,                  // Handle to source DC.
+	int nXOriginSrc,             // X-coord of upper-left corner.
+	int nYOriginSrc,             // Y-coord of upper-left corner.
+	int nWidthSrc,               // Source width.
+	int nHeightSrc              // Source height.
+) const
+{
+	HDC      hdcSrc1 = NULL;
+	HDC      hdcSrc2 = NULL;
+	HBITMAP  hbmSrc1 = NULL, hbmOldSrc1 = NULL;
+	HBITMAP  hbmSrc2 = NULL, hbmOldSrc2 = NULL;
+	HBITMAP  hbmDst  = NULL;
+	BOOL     bReturn = FALSE;
+	BOOL     bRTLSrc    = XTPDrawHelpers()->IsContextRTL(hdcSrc);
+	BOOL     bRTLDest   = XTPDrawHelpers()->IsContextRTL(hdcDest);
+
+	// Create surfaces for sources and destination images.
+	hbmSrc1 = CXTPImageManager::Create32BPPDIBSection(hdcDest, nWidthDest,nHeightDest);
+	if (!hbmSrc1) goto HANDLEERROR;
+
+	hbmSrc2 = CXTPImageManager::Create32BPPDIBSection(hdcDest, nWidthDest,nHeightDest);
+	if (!hbmSrc2) goto HANDLEERROR;
+
+	hbmDst  = CXTPImageManager::Create32BPPDIBSection(hdcDest, nWidthDest,nHeightDest);
+	if (!hbmDst) goto HANDLEERROR;
+
+	// Create HDCs to hold our surfaces.
+	hdcSrc1 = CreateCompatibleDC(hdcSrc);
+	if (!hdcSrc1) goto HANDLEERROR;
+
+	hdcSrc2 = CreateCompatibleDC(hdcSrc);
+	if (!hdcSrc2) goto HANDLEERROR;
+
+	XTPDrawHelpers()->SetContextRTL(hdcSrc2, FALSE);
+	XTPDrawHelpers()->SetContextRTL(hdcSrc1, FALSE);
+
+	// Prepare the surfaces for drawing.
+	hbmOldSrc1 = (HBITMAP)SelectObject(hdcSrc1, hbmSrc1);
+	hbmOldSrc2 = (HBITMAP)SelectObject(hdcSrc2, hbmSrc2);
+	SetStretchBltMode(hdcSrc1, COLORONCOLOR);
+	SetStretchBltMode(hdcSrc2, COLORONCOLOR);
+
+
+	// Capture a copy of the source area.
+	if (!StretchBlt(hdcSrc1, 0,0,nWidthDest,nHeightDest,
+		hdcSrc,  nXOriginSrc, nYOriginSrc, nWidthSrc, nHeightSrc,
+		SRCCOPY))
+		goto HANDLEERROR;
+
+
+	// Capture a copy of the destination area.
+	if (!BitBlt(hdcSrc2, 0, 0, nWidthDest, nHeightDest,
+		hdcDest, nXOriginDest, nYOriginDest, SRCCOPY))
+		goto HANDLEERROR;
+
+
+
+	SelectObject(hdcSrc1, hbmOldSrc1); hbmOldSrc1 = NULL;
+	SelectObject(hdcSrc2, hbmOldSrc2); hbmOldSrc2 = NULL;
+
+	// Blend the two source areas to create the destination image.
+	bReturn = BlendImages(hbmSrc1, bRTLSrc, hbmSrc2, bRTLDest, hbmDst);
+
+
+	// Display the blended (destination) image to the target HDC.
+	if (bReturn)
+	{
+		hbmOldSrc1 = (HBITMAP)SelectObject(hdcSrc1, hbmDst);
+
+		BitBlt(hdcDest, nXOriginDest, nYOriginDest, nWidthDest, nHeightDest,
+			hdcSrc1, 0,0, SRCCOPY | (bRTLDest ? NOMIRRORBITMAP : 0));
+
+		SelectObject(hdcSrc1, hbmOldSrc1);
+		hbmOldSrc1 = NULL;
+	}
+
+	// Clean up the rest of the objects you created.
+
+HANDLEERROR:
+
+	if (hbmOldSrc1) SelectObject(hdcSrc1, hbmOldSrc1);
+	if (hbmOldSrc2) SelectObject(hdcSrc2, hbmOldSrc2);
+	if (hdcSrc1) DeleteDC(hdcSrc1);
+	if (hdcSrc2) DeleteDC(hdcSrc2);
+	if (hbmSrc1) DeleteObject(hbmSrc1);
+	if (hbmSrc2) DeleteObject(hbmSrc2);
+	if (hbmDst) DeleteObject(hbmDst);
+
+	return bReturn;
+}
+
+
+BOOL CXTPImageManager::AlphaBlend(HDC hdcDest, const CRect& rcDest, HDC hdcSrc, const CRect& rcSrc) const
+{
+	if (XTPDrawHelpers()->IsContextRTL(hdcDest) && XTPSystemVersion()->IsWin9x())
+	{
+		return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+	}
+
+	if (XTPDrawHelpers()->m_pfnAlphaBlend && (IsWindow2000() || (rcSrc.top == 0 && rcSrc.left == 0 && rcDest.top >= 0)))
+	{
+		BLENDFUNCTION bf;
+		ZeroMemory(&bf, sizeof(BLENDFUNCTION));
+
+		bf.AlphaFormat  = 0x01;
+		bf.SourceConstantAlpha = 255;
+		bf.BlendOp = AC_SRC_OVER;
+
+		return XTPDrawHelpers()->m_pfnAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), bf);
+
+	}
+	return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+}
+
+BOOL CXTPImageManager::AlphaBlend2(HDC hdcDest, const CRect& rcDest, HDC hdcSrc, const CRect& rcSrc, BYTE Transparency) const
+{
+	if (XTPDrawHelpers()->IsContextRTL(hdcDest) && XTPSystemVersion()->IsWin9x())
+	{
+		return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+	}
+
+	if (XTPDrawHelpers()->m_pfnAlphaBlend && (IsWindow2000() || (rcSrc.top == 0 && rcSrc.left == 0)))
+	{
+		BLENDFUNCTION bf;
+		ZeroMemory(&bf, sizeof(BLENDFUNCTION));
+
+		bf.AlphaFormat  = 0;
+		bf.SourceConstantAlpha = Transparency;
+		bf.BlendOp = AC_SRC_OVER;
+
+		return XTPDrawHelpers()->m_pfnAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+			hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), bf);
+
+	}
+	return DoAlphaBlend(hdcDest, rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
+		hdcSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height());
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerImageList
+
+CXTPImageManagerImageList::CXTPImageManagerImageList()
+{
+	m_hImageList = NULL;
+	m_bDestroyImageList = FALSE;
+	m_nBaseCommand = 0;
+	m_pImageManager = NULL;
+}
+
+CXTPImageManagerImageList::~CXTPImageManagerImageList()
+{
+	if (m_hImageList && m_bDestroyImageList)
+	{
+		ImageList_Destroy(m_hImageList);
+	}
+
+	RemoveAll();
+}
+
+void CXTPImageManagerImageList::RemoveAll()
+{
+	UINT nCommand;
+	CXTPImageManagerIcon* pIcon;
+
+	POSITION pos = m_mapIcons.GetStartPosition();
+	while (pos)
+	{
+		m_mapIcons.GetNextAssoc(pos, nCommand, pIcon);
+		pIcon->InternalRelease();
+	}
+
+	m_mapIcons.RemoveAll();
+}
+
+BOOL CXTPImageManagerImageList::Lookup(UINT nCommand)
+{
+	return ((nCommand >= m_nBaseCommand) &&
+		(nCommand < m_nBaseCommand + ImageList_GetImageCount(m_hImageList)));
+}
+
+CSize CXTPImageManagerImageList::GetIconSize() const
+{
+	int nWidth = 0, nHeight = 0;
+	VERIFY(ImageList_GetIconSize(m_hImageList, &nWidth, &nHeight));
+
+	return CSize(nWidth, nHeight);
+}
+
+CXTPImageManagerIcon* CXTPImageManagerImageList::GetIcon(UINT nCommand)
+{
+	CXTPImageManagerIcon* pImage = NULL;
+
+	if (m_mapIcons.Lookup(nCommand, pImage))
+	{
+		return pImage;
+	}
+
+	CSize sz = GetIconSize();
+
+	pImage = new CXTPImageManagerIcon(nCommand, sz.cx, sz.cy, this);
+	m_mapIcons.SetAt(nCommand, pImage);
+
+	return pImage;
+}
+
+void CXTPImageManagerImageList::Draw(CDC* pDC, CPoint pt, CXTPImageManagerIcon* pIcon, CSize szIcon, COLORREF clrBK, COLORREF clrFG, UINT uiFlags)
+{
+	ImageList_DrawEx(m_hImageList, pIcon->GetID() - m_nBaseCommand, pDC->GetSafeHdc(),
+		pt.x, pt.y, szIcon.cx, szIcon.cy, clrBK, clrFG, ILD_TRANSPARENT | ILD_NORMAL | uiFlags);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIcon
+
+
+struct CXTPImageManagerIcon::ICONIMAGE
+{
+	BITMAPINFOHEADER    icHeader;   // DIB header
+	RGBQUAD             icColors[1];// Color table
+	BYTE                icXOR[1];   // DIB bits for XOR mask
+	BYTE                icAND[1];   // DIB bits for AND mask
 };
 
-LCID CXTPPropExchange::m_lcidDateTime = XTP_LOCALE_ISO8601;
+#pragma pack(push, 2)
+// resources are WORD-aligned
 
-/////////////////////////////////////////////////////////////////////////////
-BOOL ParseDateTimeISO8601(COleDateTime& rDT, LPCTSTR pcszDateTime)
+struct CXTPImageManagerIcon::ICONDIRENTRY
 {
-	SYSTEMTIME st;
-	ZeroMemory(&st, sizeof(SYSTEMTIME));
+	BYTE        bWidth;             // Width, in pixels, of the image
+	BYTE        bHeight;            // Height, in pixels, of the image
+	BYTE        bColorCount;        // Number of colors in image (0 if >= 8bpp)
+	BYTE        bReserved;          // Reserved (must be 0)
+	WORD        wPlanes;            // Color Planes
+	WORD        wBitCount;          // Bits per pixel
+	DWORD       dwBytesInRes;       // How many bytes in this resource ?
+	DWORD       dwImageOffset;      // Where in the file is this image ?
+};
 
-	int nResult = SCANF_S(pcszDateTime, _T("%hu-%hu-%huT%hu:%hu:%hu"),
-		&st.wYear, &st.wDay, &st.wMonth, &st.wHour, &st.wMinute, &st.wSecond);
-
-	if (nResult == 3 || nResult == 5 || nResult == 6)
-	{
-		COleDateTime dtTemp(st);
-		if (dtTemp.GetStatus() != COleDateTime::valid)
-			return FALSE;
-
-		rDT = dtTemp;
-		return TRUE;
-	}
-
-	ZeroMemory(&st, sizeof(SYSTEMTIME));
-
-	nResult = SCANF_S(pcszDateTime, _T("%hu:%hu:%hu"),
-		&st.wHour, &st.wMinute, &st.wSecond);
-
-	if (nResult == 2 || nResult == 3)
-	{
-		double dblTime = (((long)st.wHour * 3600L) +  // hrs in seconds
-			((long)st.wMinute * 60L) +  // mins in seconds
-			((long)st.wSecond)) / 86400.;
-
-		rDT = dblTime;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-CString FormatDateTimeISO8601(const COleDateTime& dt)
+struct CXTPImageManagerIcon::ICONDIRHEADER
 {
-	ASSERT(dt.m_status == COleDateTime::valid);
+	WORD            idReserved;     // Reserved (must be 0)
+	WORD            idType;         // Resource Type (1 for icons)
+	WORD            idCount;        // How many images ?
+};
 
-	CString strValue;
-
-	if ((DWORD)dt == 0)
-	{
-		strValue = dt.Format(_T("%H:%M:%S"));
-	}
-	else if ((double)(DWORD)(dt) == (double)dt)
-	{
-		strValue = dt.Format(_T("%Y-%d-%m"));
-	}
-	else
-	{
-		strValue = dt.Format(_T("%Y-%d-%mT%H:%M:%S"));
-	}
-
-	return strValue;
-}
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeEnumerator
-
-CXTPPropExchangeEnumerator::CXTPPropExchangeEnumerator(CXTPPropExchange* pContainer, LPCTSTR lpszSection)
+struct CXTPImageManagerIcon::GRPICONDIRENTRY
 {
-	m_pContainer = pContainer;
-	m_strSectionName = lpszSection;
-	m_nCount = 0;
-}
+	BYTE   bWidth;                  // Width, in pixels, of the image
+	BYTE   bHeight;                 // Height, in pixels, of the image
+	BYTE   bColorCount;             // Number of colors in image (0 if >= 8bpp)
+	BYTE   bReserved;               // Reserved
+	WORD   wPlanes;                 // Color Planes
+	WORD   wBitCount;               // Bits per pixel
+	DWORD  dwBytesInRes;            // how many bytes in this resource ?
+	WORD   nID;                     // the ID
+};
 
-CXTPPropExchangeEnumerator::~CXTPPropExchangeEnumerator()
+struct CXTPImageManagerIcon::GRPICONDIR
 {
+	WORD              idReserved;   // Reserved (must be 0)
+	WORD              idType;       // Resource type (1 for icons)
+	WORD              idCount;      // How many images ?
+	GRPICONDIRENTRY   idEntries[1]; // The entries for each image
+};
 
-}
+#pragma pack(pop)
 
-POSITION CXTPPropExchangeEnumerator::GetPosition(DWORD dwCount /*= 0*/, BOOL bCompactMode /*= TRUE*/)
+BOOL CXTPImageManagerIcon::IsAlphaBitmapFile(LPCTSTR pszFileName)
 {
-	m_nCount = dwCount;
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (!m_pContainer)
-		return NULL;
-
-	if (!bCompactMode)
+	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		PX_DWord(m_pContainer, _T("Count"), m_nCount, 0);
-	}
-	else
-	{
-		if (m_pContainer->IsStoring())
-			m_pContainer->WriteCount(m_nCount);
-		else
-			m_nCount = m_pContainer->ReadCount();
-	}
-
-	return m_nCount == 0 ? NULL : (POSITION)1;
-}
-
-CXTPPropExchange* CXTPPropExchangeEnumerator::GetNext(POSITION& pos)
-{
-	CString strSection;
-	strSection.Format(_T("%s%i"), (LPCTSTR)m_strSectionName, (DWORD)(DWORD_PTR)pos - 1);
-
-	CXTPPropExchange* pSection = m_pContainer->GetSection(strSection);
-
-	pos++;
-	if ((DWORD)(DWORD_PTR)pos > m_nCount) pos = NULL;
-
-	return pSection;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-IMPLEMENT_DYNAMIC(CXTPPropExchange, CCmdTarget)
-
-CXTPPropExchange::CXTPPropExchange()
-{
-	m_bLoading = FALSE;
-	m_dwData = 0;
-	m_pOwner = NULL;
-	m_nSchema = _XTP_SCHEMA_CURRENT;
-	m_bChildSection = FALSE;
-	m_bInitialized = FALSE;
-	m_bEmptySection = FALSE;
-	m_bUseDefaultOnLoad = TRUE;
-	m_bUseDefaultOnSave = TRUE;
-
-}
-
-CXTPPropExchange::~CXTPPropExchange()
-{
-
-}
-
-void CXTPPropExchange::InitSection(CXTPPropExchange* pRootSection)
-{
-	ASSERT(m_bLoading == pRootSection->m_bLoading);
-
-	m_bChildSection = TRUE;
-	m_nSchema = pRootSection->m_nSchema;
-	m_dwData = pRootSection->m_dwData;
-	m_bEmptySection = pRootSection->m_bEmptySection;
-	m_bUseDefaultOnLoad = pRootSection->m_bUseDefaultOnLoad;
-	m_bUseDefaultOnSave = pRootSection->m_bUseDefaultOnSave;
-}
-
-
-
-void CXTPPropExchange::EmptySection()
-{
-	m_bEmptySection = TRUE;
-}
-
-
-DWORD CXTPPropExchange::GetSizeOfVarType(VARTYPE vt)
-{
-	switch (vt)
-	{
-	case VT_BOOL: return sizeof(BOOL);
-	case VT_UI1: return sizeof(BYTE);
-	case VT_I2: return 2;
-	case VT_I4: return 4;
-	case VT_R4:
-		ASSERT(sizeof(float) == 4);
-		return 4;
-	case VT_R8:
-		ASSERT(sizeof(double) == 8);
-		return 8;
-	case VT_EX_RECT: return sizeof(RECT);
-	case VT_EX_SIZE: return sizeof(SIZE);
-	case VT_CY: return sizeof(CURRENCY);
-	case VT_BSTR:return sizeof(BSTR);
-	case VT_VARIANT: return sizeof(VARIANT);
-	case VT_DATE: return sizeof(COleDateTime);
-	}
-
-	return 0;
-}
-
-void CXTPPropExchange::Write (LPCTSTR pszPropName, const void* lpBuf, UINT nCount)
-{
-	ASSERT(IsStoring());
-	ASSERT(lpBuf != NULL);
-	ExchangeBlobProp(pszPropName, (BYTE*&)lpBuf, (DWORD&)nCount);
-}
-
-UINT CXTPPropExchange::Read (LPCTSTR pszPropName, void* lpBuf, UINT nCount)
-{
-	ASSERT(IsLoading());
-	ASSERT(lpBuf != NULL);
-	if (!ExchangeBlobProp(pszPropName, (BYTE*&)lpBuf, (DWORD&)nCount))
-		return 0;
-
-	return nCount;
-}
-
-AFX_INLINE int REPLACEW_S(BSTR& strReplace, LPCWSTR lpszOld, LPCWSTR lpszNew)
-{
-	int nOldLength = (strReplace == NULL) ? 0 : (int)wcslen(strReplace);
-	int nSourceLen = (lpszOld == NULL) ? 0 : (int)wcslen(lpszOld);
-
-	if (nSourceLen == 0 || nOldLength == 0)
-		return 0;
-
-	int nReplacementLen = (lpszNew == NULL) ? 0 : (int)wcslen(lpszNew);
-
-	// loop once to figure out the size of the result string
-	int nCount = 0;
-	LPWSTR lpszStart = strReplace;
-	LPWSTR lpszTarget;
-
-	while ((lpszTarget = wcsstr(lpszStart, lpszOld)) != NULL)
-	{
-		nCount++;
-		lpszStart = lpszTarget + nSourceLen;
-	}
-
-
-	// if any changes were made, make them
-	if (nCount > 0)
-	{
-		int nNewLength = nOldLength + (nReplacementLen-nSourceLen)*nCount;
-		ASSERT(nNewLength <= nOldLength); // not implemented
-
-		lpszStart = strReplace;
-
-		// loop again to actually do the work
-		while ((lpszTarget = wcsstr(lpszStart, lpszOld)) != NULL)
-		{
-			int nBalance = nOldLength - int(lpszTarget - strReplace + nSourceLen);
-			MEMMOVE_S(lpszTarget + nReplacementLen, lpszTarget + nSourceLen,
-				nBalance * sizeof(WORD));
-			MEMCPY_S(lpszTarget, lpszNew, nReplacementLen*sizeof(WORD));
-			lpszStart = lpszTarget + nReplacementLen;
-			lpszStart[nBalance] = '\0';
-			nOldLength += (nReplacementLen - nSourceLen);
-		}
-
-		ASSERT(strReplace[nNewLength] == '\0');
-	}
-
-	return nCount;
-}
-
-void CXTPPropExchange::PreformatString(BSTR bstrValue)
-{
-	ASSERT(bstrValue && m_bLoading);
-
-	REPLACEW_S(bstrValue, L"\\\\", L"\001\001");
-	REPLACEW_S(bstrValue, L"\\n", L"\n");
-	REPLACEW_S(bstrValue, L"\\r", L"\r");
-	REPLACEW_S(bstrValue, L"\\t", L"\t");
-	REPLACEW_S(bstrValue, L"\001\001", L"\\");
-}
-
-void CXTPPropExchange::PreformatString(CString& strValue, BOOL bLoading)
-{
-	if (bLoading)
-	{
-		if (strValue.Find(_T('\\')) == -1)
-			return;
-
-		strValue.Replace(_T("\\\\"), _T("\001\001"));
-		strValue.Replace(_T("\\n"), _T("\n"));
-		strValue.Replace(_T("\\r"), _T("\r"));
-		strValue.Replace(_T("\\t"), _T("\t"));
-		strValue.Replace(_T("\001\001"), _T("\\"));
-	}
-	else
-	{
-		strValue.Replace(_T("\\"), _T("\\\\"));
-		strValue.Replace(_T("\n"), _T("\\n"));
-		strValue.Replace(_T("\r"), _T("\\r"));
-		strValue.Replace(_T("\t"), _T("\\t"));
-	}
-}
-
-void CXTPPropExchange::PreformatString(CString& strValue)
-{
-	PreformatString(strValue, m_bLoading);
-}
-
-BOOL CXTPPropExchange::ExchangePropDateHelper(CString& strValue, COleDateTime& dt)
-{
-	if (m_lcidDateTime == XTP_LOCALE_ISO8601)
-	{
-		if (m_bLoading)
-		{
-			return ParseDateTimeISO8601(dt, strValue);
-		}
-		else
-		{
-			strValue = FormatDateTimeISO8601(dt);
-		}
-
-		return TRUE;
-
-	}
-
-	if (m_bLoading)
-	{
-		if (!dt.ParseDateTime(strValue, 0, m_lcidDateTime))
-			return FALSE;
-
-	}
-	else
-	{
-		TRY
-		{
-			strValue = dt.Format(0, m_lcidDateTime);
-		}
-		CATCH_ALL(e)
-		{
-			VERIFY(strValue.LoadString(AFX_IDS_INVALID_DATETIME));
-		}
-		END_CATCH_ALL
-
-	}
-
-	return TRUE;
-}
-
-
-BOOL CXTPPropExchange::ExchangePropStringHelper(CString& strValue, VARTYPE vtProp,
-	void* pvProp, const void* pvDefault)
-{
-	if (m_bLoading)
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-				int dwValue = _ttoi(strValue);
-				return CopyPropValue(vtProp, pvProp, &dwValue);
-			}
-		case VT_R4:
-			{
-				TCHAR* pChar = NULL;
-				float fValue = (float)_tcstod(strValue, &pChar);
-				return CopyPropValue(vtProp, pvProp, &fValue);
-			}
-		case VT_R8:
-			{
-				TCHAR* pChar = NULL;
-				double fValue = _tcstod(strValue, &pChar);
-				return CopyPropValue(vtProp, pvProp, &fValue);
-			}
-		case VT_DATE:
-			{
-				COleDateTime dt;
-
-				if (!ExchangePropDateHelper(strValue, dt))
-					return FALSE;
-
-				*(COleDateTime*)pvProp = dt;
-				return TRUE;
-			}
-
-		case VT_BSTR:
-			ASSERT(FALSE);
-			return FALSE;
-
-		case VT_LPSTR:
-		case VT_EX_SIZE:
-		case VT_EX_RECT:
-			{
-				if (vtProp == VT_EX_SIZE)
-				{
-					SIZE sz = {0, 0};
-					if (SCANF_S(strValue, _T("%i, %i"), &sz.cx, &sz.cy) != 2)
-						return CopyPropValue(vtProp, pvProp, pvDefault);
-
-					*((LPSIZE)pvProp) = sz;
-				}
-				else if (vtProp == VT_EX_RECT)
-				{
-					RECT rc = {0, 0, 0, 0};
-					if (SCANF_S(strValue, _T("%i, %i, %i, %i"), &rc.left, &rc.top, &rc.right, &rc.bottom) != 4)
-						return CopyPropValue(vtProp, pvProp, pvDefault);
-
-					*((LPRECT)pvProp) = rc;
-				}
-				else
-				{
-					PreformatString(strValue);
-					*(CString*)pvProp = strValue;
-				}
-				return TRUE;
-			}
-		case VT_VARIANT:
-			{
-				COleVariant varValue(strValue);
-				if (m_lcidDateTime == XTP_LOCALE_ISO8601)
-				{
-					COleDateTime dt;
-					if (ParseDateTimeISO8601(dt, strValue))
-					{
-						varValue = dt;
-					}
-				}
-				return CopyPropValue(vtProp, pvProp, &varValue);
-			}
-		}
-
-	}
-	else
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-				int nValue = 0;
-				memcpy(&nValue, pvProp, GetSizeOfVarType(vtProp));
-
-				strValue.Format(_T("%i"), nValue);
-
-			}
-			return TRUE;
-
-		case VT_BSTR:
-			ASSERT(FALSE);
-			return FALSE;
-
-		case VT_LPSTR:
-			{
-				strValue = *(CString*)pvProp;
-				PreformatString(strValue);
-			}
-			return TRUE;
-
-		case VT_DATE:
-			{
-				COleDateTime& dt = *(COleDateTime*)pvProp;
-				ExchangePropDateHelper(strValue, dt);
-			}
-			return TRUE;
-
-		case VT_R4:
-			{
-				double d = (double) *(float*)pvProp;
-				strValue.Format(_T("%g"), d);
-				return TRUE;
-			}
-
-		case VT_R8:
-
-			strValue.Format(_T("%g"), *(double*)pvProp);
-			return TRUE;
-
-		case VT_EX_SIZE:
-			{
-				strValue.Format(_T("%i, %i"), ((LPSIZE)pvProp)->cx, ((LPSIZE)pvProp)->cy);
-			}
-			return TRUE;
-
-		case VT_EX_RECT:
-			{
-				strValue.Format(_T("%i, %i, %i, %i"), ((LPRECT)pvProp)->left, ((LPRECT)pvProp)->top, ((LPRECT)pvProp)->right, ((LPRECT)pvProp)->bottom);
-			}
-			return TRUE;
-
-		case VT_VARIANT:
-
-			LCID lcidID = m_lcidDateTime;
-			COleVariant& varProp = *((COleVariant*)pvProp);
-
-			if (lcidID == XTP_LOCALE_ISO8601 && varProp.vt == VT_DATE)
-			{
-				strValue = FormatDateTimeISO8601(varProp.date);
-				return TRUE;
-			}
-			if (lcidID == XTP_LOCALE_ISO8601)
-			{
-				lcidID = LOCALE_NEUTRAL;
-			}
-			COleVariant var;
-			HRESULT hr = VariantChangeTypeEx(&var, &varProp, lcidID, 0, VT_BSTR);
-
-			if (FAILED(hr) || var.vt != VT_BSTR)
-				return FALSE;
-
-			strValue = var.bstrVal;
-
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-void CXTPPropExchange::BinToString(BYTE* pData, DWORD nBytes, CString& str)
-{
-	if (nBytes > 0)
-	{
-		LPTSTR lpsz = str.GetBuffer(nBytes * 2);
-
-		for (UINT i = 0; i < nBytes; i++)
-		{
-			*lpsz++ = (TCHAR)((pData[i] & 0x0F) + 'A'); //low nibble
-			*lpsz++ = (TCHAR)(((pData[i] >> 4) & 0x0F) + 'A'); //high nibble
-		}
-
-		str.ReleaseBuffer(nBytes * 2);
-	}
-	else
-	{
-		str.Empty();
-	}
-}
-
-BOOL CXTPPropExchange::StringToBin(const CString& str, BYTE*& pData, DWORD& nBytes)
-{
-	if (str.GetLength() > 0)
-	{
-		int nLen = str.GetLength();
-		if ((nLen == 0) || (nLen % 2 != 0))
-			return FALSE;
-
-		DWORD nCount = nLen/2;
-		if (pData == NULL)
-		{
-			pData = (BYTE*)malloc(nCount);
-			nBytes = nCount;
-		}
-		if (pData == NULL)
-			return FALSE;
-
-		if (nBytes < nCount)
-			return FALSE;
-
-		for (int i = 0; i < nLen; i += 2)
-		{
-			(pData)[i/2] = (BYTE)
-				(((str[i + 1] - 'A') << 4) + (str[i] - 'A'));
-		}
-	}
-	else
-	{
-		nBytes = 0;
-	}
-
-	return TRUE;
-}
-
-
-BOOL CXTPPropExchange::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
-{
-	if (IsStoring())
-	{
-		CString str;
-		BinToString(pData, nBytes, str);
-
-		PX_String(this, pszPropName, str, _T(""));
-	}
-	else
-	{
-		CString str;
-		if (!PX_String(this, pszPropName, str))
-			return FALSE;
-
-		return StringToBin(str, pData, nBytes);
-	}
-	return TRUE;
-
-}
-
-
-BOOL CXTPPropExchange::IsSamePropValue(VARTYPE vtProp, const void* pv1, const void* pv2)
-{
-	if (pv1 == pv2)
-		return TRUE;
-
-	if ((pv1 == NULL) || (pv2 == NULL))
 		return FALSE;
-
-	BOOL bSame = FALSE;
-
-	switch (vtProp)
-	{
-	case VT_BSTR:
-		bSame = wcscmp(*(BSTR*)pv1, (BSTR)pv2) == 0;
-		break;
-
-	case VT_LPSTR:
-		bSame = ((CString*)pv1)->Compare((LPCTSTR)pv2) == 0;
-		break;
-
-	case VT_BOOL:
-	case VT_UI1:
-	case VT_I2:
-	case VT_I4:
-	case VT_CY:
-	case VT_R4:
-	case VT_R8:
-	case VT_EX_RECT:
-	case VT_EX_SIZE:
-		bSame = memcmp(pv1, pv2, GetSizeOfVarType(vtProp)) == 0;
-		break;
-
-	case VT_VARIANT:
-		bSame = *((COleVariant*)pv1) == *((COleVariant*)pv2);
-		break;
-
-	case VT_DATE:
-		bSame = *((COleDateTime*)pv1) == *((COleDateTime*)pv2);
-		break;
 	}
 
-	return bSame;
+	DWORD dwBytesRead;
+
+	BITMAPFILEHEADER fileHeader;
+
+	if (!ReadFile(hFile, &fileHeader, sizeof(BITMAPFILEHEADER), &dwBytesRead, 0) || dwBytesRead != sizeof(BITMAPFILEHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BITMAPINFOHEADER infoHeader;
+
+	if (!ReadFile(hFile, &infoHeader, sizeof(BITMAPINFOHEADER), &dwBytesRead, 0) || dwBytesRead != sizeof(BITMAPINFOHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BOOL bResult = infoHeader.biBitCount == 32;
+
+	CloseHandle(hFile);
+
+	return bResult;
 }
 
-BOOL CXTPPropExchange::CopyPropValue(VARTYPE vtProp, void* pvDest, const void* pvSrc)
+BOOL CXTPImageManagerIcon::IsPngBitmapFile(LPCTSTR pszFileName)
 {
-	ASSERT(AfxIsValidAddress(pvDest, 1));
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (pvSrc != NULL)
+	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		ASSERT(AfxIsValidAddress(pvSrc, 1, FALSE));
-
-		switch (vtProp)
-		{
-		case VT_UI1:
-			*(BYTE*)pvDest = *(BYTE*)pvSrc;
-			break;
-
-		case VT_I2:
-			*(short*)pvDest = *(short*)pvSrc;
-			break;
-
-		case VT_I4:
-			*(long*)pvDest = *(long*)pvSrc;
-			break;
-
-		case VT_BOOL:
-			*(BOOL*)pvDest = *(BOOL*)pvSrc;
-			break;
-
-		case VT_BSTR:
-			*(BSTR*)pvDest = SysAllocString((BSTR)pvSrc);
-			break;
-
-		case VT_LPSTR:
-			*(CString*)pvDest = (LPCTSTR)pvSrc;
-			break;
-
-		case VT_CY:
-			*(CY*)pvDest = *(CY*)pvSrc;
-			break;
-
-		case VT_R4:
-			*(float*)pvDest = *(float*)pvSrc;
-			break;
-
-		case VT_R8:
-			*(double*)pvDest = *(double*)pvSrc;
-			break;
-
-		case VT_EX_RECT:
-			*(RECT*)pvDest = *(RECT*)pvSrc;
-			break;
-
-		case VT_EX_SIZE:
-			*(SIZE*)pvDest = *(SIZE*)pvSrc;
-			break;
-
-		case VT_DATE:
-			*(COleDateTime*)pvDest = *(COleDateTime*)pvSrc;
-			break;
-
-		case VT_VARIANT:
-			TRY
-			{
-				*(COleVariant*)pvDest = *(COleVariant*)pvSrc;
-			}
-			CATCH_ALL(e)
-			{
-				return FALSE;
-			}
-			END_CATCH_ALL
-
-			return TRUE;
-
-		default:
-			return FALSE;
-		}
+		return FALSE;
 	}
-	return pvSrc != NULL;
+
+	DWORD dwBytesRead;
+
+	BYTE fileHeader[4];
+	BYTE png_signature[4] = {137, 80, 78, 71};
+
+	if (!ReadFile(hFile, &fileHeader, sizeof(fileHeader), &dwBytesRead, 0) || dwBytesRead != sizeof(fileHeader))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BOOL bResult = memcmp(&fileHeader, &png_signature, 4) == 0;
+
+	CloseHandle(hFile);
+
+	return bResult;
 }
 
-CRuntimeClass* CXTPPropExchange::FindRuntimeClass(LPCSTR szClassName)
+
+HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromFile(LPCTSTR lpszFileName, BOOL* lbAlphaBitmap)
 {
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+	BOOL bPngBitmap = CXTPImageManagerIcon::IsPngBitmapFile(lpszFileName);
 
-	CRuntimeClass* pClass;
-	// search app specific classes
-	AFX_MODULE_STATE* pModuleState = AfxGetModuleState();
-
-	for (pClass = pModuleState->m_classList; pClass != NULL;
-	pClass = pClass->m_pNextClass)
+	if (bPngBitmap)
 	{
-		if (lstrcmpA(szClassName, pClass->m_lpszClassName) == 0)
-		{
-			return pClass;
-		}
-	}
+		CXTPGraphicBitmapPng bmp;
+		if (!bmp.LoadFromFile(lpszFileName))
+			return NULL;
 
-#ifdef _AFXDLL
-	// search classes in shared DLLs
-	for (CDynLinkLibrary* pDLL = pModuleState->m_libraryList; pDLL != NULL;
-	pDLL = pDLL->m_pNextDLL)
-	{
-		for (pClass = pDLL->m_classList; pClass != NULL;
-		pClass = pClass->m_pNextClass)
+		if (lbAlphaBitmap)
 		{
-			if (lstrcmpA(szClassName, pClass->m_lpszClassName) == 0)
-			{
-				return pClass;
-			}
+			*lbAlphaBitmap = bmp.IsAlpha();
 		}
+		return (HBITMAP)bmp.Detach();
 	}
 #endif
-	ASSERT(FALSE);
-	return 0;
-}
+	BOOL bAlphaBitmap = CXTPImageManagerIcon::IsAlphaBitmapFile(lpszFileName);
 
-BOOL CXTPPropExchange::ExchangeRuntimeClass(LPCTSTR pszPropName, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
-{
-	CString strClassName;
+	HBITMAP hBmp = (HBITMAP)LoadImage(0, lpszFileName,
+		IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | (bAlphaBitmap ? LR_CREATEDIBSECTION : 0) | LR_LOADFROMFILE);
 
-	if (!IsLoading())
+	if (hBmp)
 	{
-		strClassName = CString(pClass->m_lpszClassName);
-		PX_String(this, pszPropName, strClassName, CString(pDefaultClass->m_lpszClassName));
-	}
-	else
-	{
-		if (!PX_String(this, pszPropName, strClassName))
+		if (lbAlphaBitmap)
 		{
-			pClass = pDefaultClass;
-			return TRUE;
+			*lbAlphaBitmap = bAlphaBitmap;
 		}
-
-		pClass = FindRuntimeClass(XTP_CT2CA(strClassName));
-		if (!pClass)
-			return FALSE;
+		return hBmp;
 	}
-	return TRUE;
-}
 
-BOOL CXTPPropExchange::ExchangeObjectInstance(CObject*& pObject, CRuntimeClass* pObjectRuntime)
-{
-	if (!IsLoading())
+	LPPICTURE pPict = NULL;
+
+	if (OleLoadPicturePath((LPOLESTR)XTP_CT2CW(lpszFileName), NULL, 0, 0, IID_IPicture, (LPVOID*)&pPict) == S_OK)
 	{
-		CRuntimeClass* pClass = pObject->GetRuntimeClass();
-		PX_RuntimeClass(this, _T("Class"), pClass, pObjectRuntime);
-	}
-	else
-	{
-		CRuntimeClass* pClass = NULL;
-		PX_RuntimeClass(this, _T("Class"), pClass, pObjectRuntime);
-		if (!pClass)
-			return FALSE;
+		CDC dc;
+		dc.CreateCompatibleDC(NULL);
 
-		pObject = (CObject*)AfxDynamicDownCast(pObjectRuntime, pClass->CreateObject());
-		if (!pObject)
-			return FALSE;
-	}
-	return TRUE;
-}
-void CXTPPropExchange::WriteCount (DWORD dwCount)
-{
-	PX_DWord(this, _T("Count"), dwCount, 0);
-}
+		long hmWidth;
+		long hmHeight;
 
-DWORD CXTPPropExchange::ReadCount()
-{
-	DWORD nCount = 0;
-	PX_DWord(this, _T("Count"), nCount, 0);
-	return nCount;
-}
+		pPict->get_Width(&hmWidth);
+		pPict->get_Height(&hmHeight);
 
-CArchive* CXTPPropExchange::GetArchive(LPCTSTR pszPropName)
-{
-	if (IsStoring())
-	{
+		int cx = MulDiv(dc.GetDeviceCaps(LOGPIXELSX), (int)hmWidth, 2540);
+		int cy = MulDiv(dc.GetDeviceCaps(LOGPIXELSY), (int)hmHeight, 2540);
 
-		CMemFile* pMemFile = new CMemFile();
-		CArchive* pArchive = new CArchive(pMemFile, CArchive::store);
+		HBITMAP hbmpImage = CXTPImageManager::Create32BPPDIBSection(NULL, cx, cy);
 
-		return pArchive;
+		HGDIOBJ hOldBitmap = ::SelectObject(dc, hbmpImage);
+		dc.FillSolidRect(0, 0, cx, cy, GetSysColor(COLOR_3DFACE));
+
+		pPict->Render(dc, 0, 0, cx, cy, 0, hmHeight-1, hmWidth, -hmHeight, 0);
+
+		::SelectObject(dc, hOldBitmap);
+
+		pPict->Release();
+
+		return hbmpImage;
 	}
 
-	DWORD nBytes = 0;
-	BYTE* pData = NULL;
-	PX_Blob(this, pszPropName, pData, nBytes);
-
-	if (nBytes == 0)
-		return NULL;
-
-	CMemFile* pMemFile = new CMemFile(pData, nBytes);
-	CArchive* pArchive = new CArchive(pMemFile, CArchive::load);
-
-	return pArchive;
-}
-
-void CXTPPropExchange::ReleaseArchive(LPCTSTR pszPropName, CArchive* pArchive)
-{
-	ASSERT(pArchive);
-	if (!pArchive)
-		return;
-
-	CMemFile* pFile = DYNAMIC_DOWNCAST(CMemFile, pArchive->GetFile());
-	ASSERT(pFile);
-	if (!pFile)
-		return;
-
-	BYTE* pData = NULL;
-	if (IsStoring())
-	{
-		pArchive->Flush();
-
-		DWORD nBytes = (DWORD)pFile->GetPosition();
-		pData = pFile->Detach();
-		PX_Blob(this, pszPropName, pData, nBytes);
-
-	}
-	else
-	{
-		pData = pFile->Detach();
-	}
-
-	pArchive->Abort();
-	pFile->Close();
-	free(pData);
-
-	delete pFile;
-	delete pArchive;
-}
-
-void CXTPPropExchange::ExchangeSchema()
-{
-	PX_Long(this, _T("Schema"), (long&)m_nSchema, _XTP_SCHEMA_CURRENT);
-}
-
-void CXTPPropExchange::ExchangeSchemaSafe()
-{
-	PX_Long(this, _T("Schema"), (long&)m_nSchema, _XTP_SCHEMA_1122);
-}
-
-void CXTPPropExchange::ExchangeLocale()
-{
-	PX_DWord(this, _T("Locale"), (DWORD&)CXTPPropExchange::m_lcidDateTime, XTP_LOCALE_ISO8601);
+	return NULL;
 }
 
 
-
-CXTPPropExchangeEnumerator* CXTPPropExchange::GetEnumerator(LPCTSTR lpszSection)
+BOOL AFX_CDECL CXTPImageManagerIcon::IsPngBitmapResource(HMODULE hModule, LPCTSTR lpBitmapName)
 {
-	return new CXTPPropExchangeEnumerator(this, lpszSection);
-}
+	BYTE png_signature[4] = {137, 80, 78, 71};
 
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeArchive
+	HRSRC hResource = ::FindResource(hModule, lpBitmapName, _T("PNG"));
 
-IMPLEMENT_DYNAMIC(CXTPPropExchangeArchive, CXTPPropExchange)
-
-CXTPPropExchangeArchive::CXTPPropExchangeArchive(CArchive& ar) :
-	m_ar((CSelfArchive&)ar)
-{
-	ASSERT_POINTER(&ar, CArchive);
-	m_bLoading = m_ar.IsLoading();
-
-}
-
-CXTPPropExchange* CXTPPropExchangeArchive::GetSection(LPCTSTR /*pszSection*/)
-{
-	CXTPPropExchangeArchive* pSection = new CXTPPropExchangeArchive(m_ar);
-	pSection->InitSection(this);
-	return pSection;
-}
-
-
-BOOL CXTPPropExchangeArchive::ExchangeRuntimeClass(LPCTSTR /*pszPropName*/, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
-{
-	if (!OnBeforeExchange())
+	if (hResource == NULL)
 		return FALSE;
 
-	if (!IsLoading())
-	{
-		m_ar.WriteClass(pClass);
-	}
-	else
-	{
-		pClass = m_ar.ReadClass(pDefaultClass, &m_nSchema);
-
-		if (!pClass)
-			return FALSE;
-	}
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeArchive::ExchangeObjectInstance(CObject*& pObject, CRuntimeClass* pObjectRuntime)
-{
-	if (!CXTPPropExchange::ExchangeObjectInstance(pObject, pObjectRuntime))
-		return FALSE;
-
-	if (IsLoading())
-	{
-		m_ar.CheckCount();
-		m_ar.m_pLoadArray->InsertAt(m_ar.m_nMapCount++, pObject);
-	}
-	else
-	{
-		m_ar.MapObject(NULL);
-		m_ar.CheckCount();
-		m_ar.m_pStoreMap->SetAt(pObject, (LPVOID)(DWORD_PTR)m_ar.m_nMapCount++);
-
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeArchive::ExchangeProp(LPCTSTR /*pszPropName*/, VARTYPE vtProp,
-		void* pvProp, const void* pvDefault)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	UNUSED(pvDefault);       // unused in release builds
-
-	ASSERT(AfxIsValidAddress(pvProp, 1, FALSE));
-	ASSERT((pvDefault == NULL) || AfxIsValidAddress(pvDefault, 1, FALSE));
-
-	if (m_bLoading)
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-			m_ar >> *(BYTE*)pvProp;
-			break;
-		case VT_I2:
-			m_ar >> *(WORD*)pvProp;
-			break;
-		case VT_I4:
-			m_ar >> *(long*)pvProp;
-			break;
-		case VT_BOOL:
-			m_ar >> *(BOOL*)pvProp;
-			break;
-		case VT_BSTR:
-			ASSERT(FALSE);
-			break;
-		case VT_LPSTR:
-			m_ar >> *(CString*)pvProp;
-			break;
-		case VT_CY:
-			m_ar >> ((CY*)pvProp)->Lo;
-			m_ar >> ((CY*)pvProp)->Hi;
-			break;
-		case VT_R4:
-			m_ar >> *(float*)pvProp;
-			break;
-		case VT_R8:
-			m_ar >> *(double*)pvProp;
-			break;
-		case VT_EX_RECT:
-			m_ar >> *(RECT*)pvProp;
-			break;
-		case VT_EX_SIZE:
-			m_ar >> *(SIZE*)pvProp;
-			break;
-		case VT_VARIANT:
-			m_ar >> *(COleVariant*)pvProp;
-			break;
-		case VT_DATE:
-			m_ar >> *(COleDateTime*)pvProp;
-			break;
-		}
-	}
-	else
-	{
-		switch (vtProp)
-		{
-		case VT_UI1:
-			m_ar << *(BYTE*)pvProp;
-			break;
-		case VT_I2:
-			m_ar << *(WORD*)pvProp;
-			break;
-		case VT_I4:
-			m_ar << *(long*)pvProp;
-			break;
-		case VT_BOOL:
-			m_ar << *(BOOL*)pvProp;
-			break;
-		case VT_BSTR:
-			ASSERT(FALSE);
-			break;
-		case VT_LPSTR:
-			m_ar << *(CString*)pvProp;
-			break;
-		case VT_CY:
-			m_ar << ((CY*)pvProp)->Lo;
-			m_ar << ((CY*)pvProp)->Hi;
-			break;
-		case VT_R4:
-			m_ar << *(float*)pvProp;
-			break;
-		case VT_R8:
-			m_ar << *(double*)pvProp;
-			break;
-		case VT_EX_RECT:
-			m_ar << *(RECT*)pvProp;
-			break;
-		case VT_EX_SIZE:
-			m_ar << *(SIZE*)pvProp;
-			break;
-		case VT_VARIANT:
-			m_ar << *(COleVariant*)pvProp;
-			break;
-		case VT_DATE:
-			m_ar << *(COleDateTime*)pvProp;
-			break;
-		}
-	}
-
-	return TRUE;
-}
-
-void CXTPPropExchangeArchive::WriteCount (DWORD dwCount)
-{
-	m_ar.WriteCount(dwCount);
-}
-DWORD CXTPPropExchangeArchive::ReadCount()
-{
-	return (DWORD)m_ar.ReadCount();
-}
-void CXTPPropExchangeArchive::Write (LPCTSTR /*pszPropName*/, const void* lpBuf, UINT nCount)
-{
-	ASSERT(lpBuf);
-	m_ar.Write(lpBuf, nCount);
-}
-
-UINT CXTPPropExchangeArchive::Read (LPCTSTR /*pszPropName*/, void* lpBuf, UINT nCount)
-{
-	ASSERT(lpBuf);
-	return m_ar.Read(lpBuf, nCount);
-}
-
-BOOL CXTPPropExchangeArchive::ExchangeBlobProp(LPCTSTR /*pszPropName*/, BYTE*& pData, DWORD& nBytes)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	if (IsStoring())
-	{
-		WriteCount(nBytes);
-		m_ar.Write(pData, nBytes);
-	}
-	else
-	{
-		DWORD nCount = ReadCount();
-
-		if (pData == NULL)
-		{
-			pData = (BYTE*)malloc(nCount);
-			nBytes = nCount;
-		}
-
-		if (nBytes < nCount)
-			return FALSE;
-
-		return m_ar.Read(pData, nCount) == nCount;
-	}
-
-	return TRUE;
-}
-
-CArchive* CXTPPropExchangeArchive::GetArchive(LPCTSTR /*pszPropName*/)
-{
-	return &m_ar;
-}
-
-void CXTPPropExchangeArchive::ReleaseArchive(LPCTSTR /*pszPropName*/, CArchive* /*pArchive*/)
-{
-
-}
-
-void CXTPPropExchangeArchive::ExchangeSchemaSafe()
-{
-	DWORD dwSafe = 0xFF0ADBF;
-
-	if (IsStoring())
-	{
-		m_ar << dwSafe;
-		m_ar << m_nSchema;
-	}
-	else
-	{
-		if (m_ar.m_lpBufCur + sizeof(DWORD) > m_ar.m_lpBufMax)
-			m_ar.FillBuffer(sizeof(DWORD));
-
-		DWORD dw = *(DWORD*)m_ar.m_lpBufCur;
-
-		if (dw == dwSafe)
-		{
-			m_ar >> dwSafe;
-			m_ar >> m_nSchema;
-		}
-		else
-		{
-			m_nSchema = _XTP_SCHEMA_100;
-		}
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeRegistry
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeRegistry, CXTPPropExchange)
-
-CXTPPropExchangeRegistry::CXTPPropExchangeRegistry(BOOL bLoading, HKEY hParentKey, LPCTSTR lpszSection)
-{
-	ASSERT(lpszSection != NULL);
-	if (hParentKey == 0)
-	{
-		m_hParentKey = AfxGetApp()->GetAppRegistryKey();
-		m_bCloseParentKey = TRUE;
-	}
-	else
-	{
-		m_hParentKey = hParentKey;
-		m_bCloseParentKey = FALSE;
-	}
-
-	m_bLoading = bLoading;
-	m_strSectionName = lpszSection;
-	m_hSectionKey = NULL;
-
-}
-
-CXTPPropExchangeRegistry::~CXTPPropExchangeRegistry()
-{
-	if (m_hSectionKey)
-	{
-		RegCloseKey(m_hSectionKey);
-	}
-	if (m_bCloseParentKey && m_hParentKey)
-	{
-		RegCloseKey(m_hParentKey);
-	}
-}
-
-CXTPPropExchange* CXTPPropExchangeRegistry::GetSection(LPCTSTR lpszSection)
-{
-	OnBeforeExchange();
-
-	CXTPPropExchangeRegistry* pSection = new CXTPPropExchangeRegistry(IsLoading(), m_hSectionKey, lpszSection);
-	pSection->InitSection(this);
-	return pSection;
-}
-
-BOOL CXTPPropExchangeRegistry::IsPropertyExists(LPCTSTR pszPropName)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	return RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, NULL, NULL, NULL) == ERROR_SUCCESS;
-}
-
-BOOL CXTPPropExchangeRegistry::IsSectionExists(LPCTSTR lpszSection)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	HKEY hSectionKey = 0;
-
-	if (RegOpenKeyEx(m_hSectionKey, lpszSection, 0, m_bLoading ? KEY_READ : KEY_WRITE, &hSectionKey) == ERROR_SUCCESS)
-	{
-		RegCloseKey(hSectionKey);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-BOOL CXTPPropExchangeRegistry::OnBeforeExchange()
-{
-	if (m_hParentKey == NULL)
-		return FALSE;
-
-	if (!m_bInitialized)
-	{
-		ASSERT(m_hSectionKey == 0);
-
-		VERIFY(RegCreateKeyEx(m_hParentKey, m_strSectionName, 0, REG_NONE, REG_OPTION_NON_VOLATILE, m_bLoading ? KEY_READ : KEY_WRITE, NULL, &m_hSectionKey, NULL) == ERROR_SUCCESS);
-
-		m_bInitialized = TRUE;
-	}
-	return m_hSectionKey != NULL;
-}
-
-void CXTPPropExchangeRegistry::EmptySection()
-{
-	CXTPPropExchange::EmptySection();
-
-	if (m_hSectionKey)
-	{
-		RegCloseKey(m_hSectionKey);
-		m_hSectionKey = 0;
-	}
-
-	AfxDelRegTreeHelper(m_hParentKey, m_strSectionName);
-	m_bInitialized = FALSE;
-}
-
-
-BOOL CXTPPropExchangeRegistry::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-				void* pvProp, const void* pvDefault /*= NULL*/)
-{
-	if (m_bLoading)
-	{
-		if (!m_bUseDefaultOnLoad)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		ASSERT(m_hSectionKey);
-
-		switch (vtProp)
-		{
-		case VT_R4:
-		case VT_R8:
-		case VT_DATE:
-		case VT_BSTR:
-			ASSERT(FALSE); // Not Implemented
-			return FALSE;
-
-		case VT_VARIANT:
-			return FALSE; // Not Implemented
-
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-
-				DWORD dwValue;
-				DWORD dwType;
-				DWORD dwCount = sizeof(DWORD);
-				LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-					(LPBYTE)&dwValue, &dwCount);
-
-				if (lResult == ERROR_SUCCESS)
-				{
-					ASSERT(dwType == REG_DWORD);
-					ASSERT(dwCount == sizeof(DWORD));
-
-					return CopyPropValue(vtProp, pvProp, &dwValue);
-
-				}
-				else
-				{
-					return CopyPropValue(vtProp, pvProp, pvDefault);
-				}
-			}
-		case VT_LPSTR:
-		case VT_EX_SIZE:
-		case VT_EX_RECT:
-			{
-				CString strValue;
-				DWORD dwType, dwCount;
-				LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-					NULL, &dwCount);
-				if (lResult == ERROR_SUCCESS)
-				{
-					ASSERT(dwType == REG_SZ);
-					lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-						(LPBYTE)strValue.GetBuffer(dwCount/sizeof(TCHAR)), &dwCount);
-					strValue.ReleaseBuffer();
-				}
-				if (lResult == ERROR_SUCCESS)
-				{
-					ASSERT(dwType == REG_SZ);
-
-					if (vtProp == VT_EX_SIZE)
-					{
-						SIZE sz = {0, 0};
-						if (SCANF_S(strValue, _T("%i, %i"), &sz.cx, &sz.cy) != 2)
-							return CopyPropValue(vtProp, pvProp, pvDefault);
-
-						*((LPSIZE)pvProp) = sz;
-					}
-					else if (vtProp == VT_EX_RECT)
-					{
-						RECT rc = {0, 0, 0, 0};
-						if (SCANF_S(strValue, _T("%i, %i, %i, %i"), &rc.left, &rc.top, &rc.right, &rc.bottom) != 4)
-							return CopyPropValue(vtProp, pvProp, pvDefault);
-
-						*((LPRECT)pvProp) = rc;
-					}
-					else
-					{
-						*(CString*)pvProp = strValue;
-					}
-
-				}
-				else
-				{
-					return CopyPropValue(vtProp, pvProp, pvDefault);
-				}
-				return TRUE;
-			}
-		}
-	}
-	else
-	{
-		if (!m_bUseDefaultOnSave)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return FALSE;
-
-		if (IsSamePropValue(vtProp, pvProp, pvDefault))
-		{
-			if (m_hSectionKey && !m_bEmptySection)
-				RegDeleteValue(m_hSectionKey, pszPropName);
-			return TRUE;
-		}
-
-		LONG lResult = -1;
-
-		switch (vtProp)
-		{
-		case VT_UI1:
-		case VT_I2:
-		case VT_I4:
-		case VT_BOOL:
-			{
-				DWORD dwValue = 0;
-				CopyPropValue(vtProp, &dwValue, pvProp);
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_DWORD, (LPBYTE)&dwValue, sizeof(DWORD));
-			}
-			break;
-
-		case VT_LPSTR:
-			{
-				CString& strValue = *(CString*)pvProp;
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
-					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
-			}
-			break;
-
-		case VT_R4:
-		case VT_R8:
-			lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_BINARY, (LPBYTE)pvProp, GetSizeOfVarType(vtProp));
-			break;
-
-		case VT_DATE:
-		case VT_VARIANT:
-		case VT_BSTR:
-			ASSERT(FALSE); // Not Implemented
-			break;
-
-		case VT_EX_SIZE:
-			{
-				CString strValue;
-				strValue.Format(_T("%i, %i"), ((LPSIZE)pvProp)->cx, ((LPSIZE)pvProp)->cy);
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
-					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
-			}
-			break;
-
-		case VT_EX_RECT:
-				CString strValue;
-				strValue.Format(_T("%i, %i, %i, %i"), ((LPRECT)pvProp)->left, ((LPRECT)pvProp)->top, ((LPRECT)pvProp)->right, ((LPRECT)pvProp)->bottom);
-				lResult = RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_SZ,
-					(LPBYTE)(LPCTSTR)strValue, (strValue.GetLength() + 1) * sizeof(TCHAR));
-			break;
-
-		}
-
-		return lResult == ERROR_SUCCESS;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPPropExchangeRegistry::ExchangeBlobProp(LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
-{
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	ASSERT(m_hSectionKey != 0);
-
-	if (IsStoring())
-	{
-		LONG lResult = ::RegSetValueEx(m_hSectionKey, pszPropName, NULL, REG_BINARY,
-			pData, nBytes);
-		return lResult == ERROR_SUCCESS;
-
-	}
-	else
-	{
-		DWORD dwType, dwCount;
-		LONG lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-			NULL, &dwCount);
-
-		if (lResult != ERROR_SUCCESS)
-			return FALSE;
-
-		ASSERT(dwType == REG_BINARY);
-
-
-		if (pData == NULL)
-		{
-			pData = (BYTE*)malloc(dwCount);
-			nBytes = dwCount;
-		}
-
-		if (nBytes < dwCount)
-			return FALSE;
-
-		lResult = RegQueryValueEx(m_hSectionKey, (LPTSTR)pszPropName, NULL, &dwType,
-				(LPBYTE)pData, &dwCount);
-
-		if (lResult != ERROR_SUCCESS)
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeXMLNode
-
-#ifndef _XTP_EXCLUDE_XML
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeXMLNode, CXTPPropExchange)
-
-CXTPPropExchangeXMLNode::CXTPPropExchangeXMLNode(BOOL bLoading, CXTPDOMNodePtr xmlParentNode, LPCTSTR lpszSection)
-{
-	m_bLoading = bLoading;
-	m_strSectionName = lpszSection;
-	m_xmlParentNode = xmlParentNode;
-	m_xmlSectionNode = NULL;
-	m_bCompactMode = TRUE;
-
-	if (xmlParentNode)
-	{
-		xmlParentNode->get_ownerDocument(&m_xmlDocPtr);
-
-		if (m_xmlDocPtr == 0)
-		{
-			m_xmlDocPtr = xmlParentNode;
-		}
-	}
-
-	m_strEncoding = _T("UTF-8");
-
-}
-
-BOOL CXTPPropExchangeXMLNode::IsXMLSupported()
-{
-	CXTPDOMDocumentPtr xmlDocPtr;
-
-	if (!SUCCEEDED(xmlDocPtr.CreateInstance(CLSID_XTPDOMDocument)))
-	{
-		return FALSE;
-	}
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeXMLNode::CreateDocumentInstance()
-{
-	if (m_xmlDocPtr == NULL)
-	{
-		if (!SUCCEEDED(m_xmlDocPtr.CreateInstance(CLSID_XTPDOMDocument)))
-		{
-			TRACE(_T("Warning: CreateDocumentInstance failed in CXTPPropExchangeXMLNode --\n"));
-			TRACE(_T("\tperhaps AfxOleInit() has not been called, or msxml3.dll not found."));
-
-			return FALSE;
-		}
-
-		m_xmlDocPtr->put_preserveWhiteSpace(VARIANT_TRUE);
-
-	}
-	return TRUE;
-}
-
-void CXTPPropExchangeXMLNode::TraceParseError()
-{
-#ifdef _DEBUG
-	XTPXML::IXMLDOMParseErrorPtr parseError = 0;
-	if (FAILED(m_xmlDocPtr->get_parseError(&parseError)))
-		return;
-
-	BSTR bstrReason = 0;
-	if (FAILED(parseError->get_reason(&bstrReason)))
-		return;
-
-	CString strReason(bstrReason);
-	TRACE(_T("Warning: CXTPPropExchangeXMLNode::LoadFromString failed. ParseError.Reason = %s"), (LPCTSTR)strReason);
-
-	SysFreeString(bstrReason);
-#endif
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCWSTR lpszState)
-{
-	return LoadFromEncodedString(XTP_CW2CA(lpszState));
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromEncodedString(LPCSTR lpszState)
-{
-	if (!lpszState)
-		return FALSE;
-
-	if (!CreateDocumentInstance())
-		return FALSE;
-
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	VARIANT_BOOL bResult;
-
-	VARIANT va;
-	va.vt = VT_ARRAY | VT_UI1;
-
-	ULONG nLen = (ULONG)strlen(lpszState);
-	va.parray = SafeArrayCreateVector(VT_UI1, 0, nLen);
-	MEMCPY_S(va.parray->pvData, lpszState, nLen);
-
-	HRESULT hr = m_xmlDocPtr->load(va, &bResult);
-	VariantClear(&va);
-
-	if (FAILED(hr) || bResult == VARIANT_FALSE)
-	{
-		TraceParseError();
-		return FALSE;
-	}
-
-	m_xmlParentNode = m_xmlDocPtr;
-	m_xmlSectionNode = NULL;
-	m_bInitialized = FALSE;
-
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCSTR lpszState)
-{
-	return LoadFromString((BSTR)XTP_CA2CW(lpszState));
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromString(LPCWSTR lpszState)
-{
-	return LoadFromString((BSTR)(lpszState));
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromString(BSTR lpszState)
-{
-	if (!CreateDocumentInstance())
-		return FALSE;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	VARIANT_BOOL bResult;
-	HRESULT hr = m_xmlDocPtr->loadXML(lpszState, &bResult);
-	if (FAILED(hr) || bResult == VARIANT_FALSE)
-	{
-		TraceParseError();
-		return FALSE;
-	}
-
-	m_xmlParentNode = m_xmlDocPtr;
-	m_xmlSectionNode = NULL;
-	m_bInitialized = FALSE;
-
-	return TRUE;
-}
-
-BOOL CXTPPropExchangeXMLNode::LoadFromResource(HINSTANCE hInstance, LPCTSTR lpszResourceName, LPCTSTR lpszResourceType)
-{
-	HRSRC hRsrc = ::FindResource(hInstance, lpszResourceName, lpszResourceType);
-	if (hRsrc == NULL)
-		return FALSE;
-
-	HGLOBAL hGlobal = LoadResource(hInstance, hRsrc);
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
 	if (hGlobal == NULL)
 		return FALSE;
 
-	LPCSTR pData = (LPCSTR)LockResource(hGlobal);
-	if (pData == NULL)
-		return FALSE;
-
-	DWORD dwSize = (DWORD)SizeofResource(hInstance, hRsrc);
-	if (dwSize == 0)
-		return FALSE;
-
-	LPSTR lpstr = (LPSTR)malloc(dwSize + 1);
-	if (!lpstr)
-		return FALSE;
-
-	MEMCPY_S(lpstr, pData, dwSize);
-	lpstr[dwSize] = 0;
-
-	BOOL bResult = LoadFromEncodedString(lpstr);
+	LPBYTE pBitmapInfoHeader = (LPBYTE)::LockResource(hGlobal);
+	BOOL bPngBitmap = memcmp(pBitmapInfoHeader, &png_signature, 4) == 0;
 
 	UnlockResource(hGlobal);
 	FreeResource(hGlobal);
 
-	free(lpstr);
+	return (bPngBitmap);
+}
+
+BOOL AFX_CDECL CXTPImageManagerIcon::IsAlphaBitmapResource(HMODULE hModule, LPCTSTR lpBitmapName)
+{
+	HRSRC hResource = ::FindResource(hModule, lpBitmapName, RT_BITMAP);
+
+	if (hResource == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	LPBITMAPINFOHEADER pBitmapInfoHeader = (LPBITMAPINFOHEADER)::LockResource(hGlobal);
+	ASSERT(pBitmapInfoHeader != NULL);
+	if (!pBitmapInfoHeader)
+		return FALSE;
+
+	BOOL bAlpahBitmap = pBitmapInfoHeader->biBitCount == 32;
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return (bAlpahBitmap);
+}
+
+HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromResource(LPCTSTR lpszResource, BOOL* lbAlphaBitmap)
+{
+	HMODULE hModule;
+
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+	hModule = AfxFindResourceHandle(lpszResource, _T("PNG"));
+
+	BOOL bPngBitmap = IsPngBitmapResource(hModule, lpszResource);
+	if (bPngBitmap)
+	{
+		CXTPGraphicBitmapPng bmpIcons;
+
+		HRSRC hResource = ::FindResource(hModule, lpszResource, _T("PNG"));
+
+		if (!bmpIcons.LoadFromResource(hModule, hResource))
+			return NULL;
+
+		if (lbAlphaBitmap)
+		{
+			*lbAlphaBitmap = bmpIcons.IsAlpha();
+		}
+
+		return (HBITMAP)bmpIcons.Detach();
+	}
+#endif
+
+	hModule = AfxFindResourceHandle(lpszResource, RT_BITMAP);
+
+	CBitmap bmpIcons;
+	BOOL bAlphaBitmap = IsAlphaBitmapResource(hModule, lpszResource);
+
+	if (lbAlphaBitmap)
+	{
+		*lbAlphaBitmap = bAlphaBitmap;
+	}
+
+	if (bAlphaBitmap)
+	{
+		return LoadAlphaBitmap(hModule, lpszResource);
+	}
+
+	return (HBITMAP)LoadImage(hModule, lpszResource, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE);
+}
+
+HBITMAP AFX_CDECL CXTPImageManagerIcon::LoadBitmapFromResource(HMODULE hModule, LPCTSTR lpszResource, BOOL* lbAlphaBitmap)
+{
+#ifdef _XTP_INCLUDE_GRAPHICLIBRARY
+
+	BOOL bPngBitmap = IsPngBitmapResource(hModule, lpszResource);
+	if (bPngBitmap)
+	{
+		CXTPGraphicBitmapPng bmpIcons;
+
+		HRSRC hResource = ::FindResource(hModule, lpszResource, _T("PNG"));
+
+		if (!bmpIcons.LoadFromResource(hModule, hResource))
+			return NULL;
+
+		if (lbAlphaBitmap)
+		{
+			*lbAlphaBitmap = bmpIcons.IsAlpha();
+		}
+
+		return (HBITMAP)bmpIcons.Detach();
+	}
+#endif
+
+	CBitmap bmpIcons;
+	BOOL bAlphaBitmap = IsAlphaBitmapResource(hModule, lpszResource);
+
+	if (lbAlphaBitmap)
+	{
+		*lbAlphaBitmap = bAlphaBitmap;
+	}
+
+	if (bAlphaBitmap)
+	{
+		return LoadAlphaBitmap(hModule, lpszResource);
+	}
+
+	return (HBITMAP)LoadImage(hModule, lpszResource, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE);
+}
+
+HBITMAP CXTPImageManagerIcon::LoadAlphaBitmap(UINT nIDResource)
+{
+	return LoadAlphaBitmap(AfxFindResourceHandle(MAKEINTRESOURCE(nIDResource), RT_BITMAP),
+		MAKEINTRESOURCE(nIDResource));
+}
+
+HBITMAP CXTPImageManagerIcon::LoadAlphaBitmap(HMODULE hModule, LPCTSTR lpszResource)
+{
+	HRSRC hResource = ::FindResource(hModule, lpszResource, RT_BITMAP);
+	if (hResource == NULL)
+		return NULL;
+
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
+	if (hGlobal == NULL)
+		return NULL;
+
+	LPBITMAPINFO pResourceInfo = (LPBITMAPINFO)::LockResource(hGlobal);
+	ASSERT(pResourceInfo != NULL);
+	if (!pResourceInfo)
+		return NULL;
+
+	int biSizeImage = pResourceInfo->bmiHeader.biHeight * pResourceInfo->bmiHeader.biWidth * 4;
+
+	HBITMAP hbmResult = NULL;
+
+	if (pResourceInfo->bmiHeader.biBitCount == 32 &&
+		SizeofResource(hModule, hResource) >= int(biSizeImage + sizeof(BITMAPINFOHEADER)))
+	{
+		CDC dcSrc;
+		dcSrc.CreateCompatibleDC(NULL);
+
+		PBITMAPINFO pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + sizeof(COLORREF) * 3);
+		ASSERT(pBitmapInfo != NULL);
+		if (!pBitmapInfo)
+			return NULL;
+
+		MEMCPY_S(pBitmapInfo, &pResourceInfo->bmiHeader, sizeof(BITMAPINFOHEADER));
+		pBitmapInfo->bmiHeader.biSizeImage = biSizeImage;
+
+		BYTE* pDestBits = NULL;
+		HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDestBits, NULL, 0);
+
+		if (hBmp && pDestBits)
+		{
+			MEMCPY_S(pDestBits, &pResourceInfo->bmiColors, biSizeImage);
+			hbmResult = hBmp;
+		}
+		FREE(pBitmapInfo);
+	}
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return hbmResult;
+
+}
+
+
+
+HBITMAP CXTPImageManagerIcon::LoadAlphaIcon(LPCTSTR pszFileName, int nWidth)
+{
+
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return NULL;
+	}
+
+	ICONDIRHEADER idh;
+
+	DWORD dwBytesRead = 0;
+	if (!ReadFile(hFile, &idh, sizeof(ICONDIRHEADER) , &dwBytesRead, NULL) || dwBytesRead != sizeof(ICONDIRHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (idh.idType != 1 || idh.idCount == 0)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+
+	ICONDIRENTRY* pEntries = (ICONDIRENTRY*)malloc(sizeof(ICONDIRENTRY) * idh.idCount);
+
+	if (pEntries == NULL)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (!ReadFile(hFile, pEntries, idh.idCount * sizeof(ICONDIRENTRY), &dwBytesRead, NULL)
+		|| dwBytesRead != idh.idCount * sizeof(ICONDIRENTRY))
+	{
+		free(pEntries);
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	HBITMAP hBitmap = 0;
+
+	for (int i = 0; i < idh.idCount; i++)
+	{
+		if (pEntries[i].wBitCount == 32 && (((int)pEntries[i].bWidth == nWidth) || (nWidth == 0)))
+		{
+			if (!SetFilePointer(hFile, pEntries[i].dwImageOffset,
+				NULL, FILE_BEGIN))
+				continue;
+
+			ICONIMAGE* pIconImage = (ICONIMAGE*)malloc(pEntries[i].dwBytesInRes);
+			if (pIconImage == NULL)
+				continue;
+
+			dwBytesRead = 0;
+			BOOL bResult = ReadFile(hFile, pIconImage, pEntries[i].dwBytesInRes,
+				&dwBytesRead, NULL);
+
+			if (!bResult || (dwBytesRead != pEntries[i].dwBytesInRes) || (pIconImage->icHeader.biBitCount != 32))
+			{
+				free(pIconImage);
+				continue;
+			}
+
+			CDC dcSrc;
+			dcSrc.CreateCompatibleDC(NULL);
+
+			pIconImage->icHeader.biHeight /= 2;
+			pIconImage->icHeader.biSizeImage = pIconImage->icHeader.biHeight * pIconImage->icHeader.biWidth * 4;
+
+			BYTE* pDest = NULL;
+			HBITMAP hBmp = CreateDIBSection(dcSrc, (BITMAPINFO*)&pIconImage->icHeader, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+
+			if (pDest != NULL && hBmp != NULL)
+			{
+				MEMCPY_S(pDest, &pIconImage->icColors, pIconImage->icHeader.biSizeImage);
+				hBitmap = hBmp;
+
+				free(pIconImage);
+				break;
+			}
+
+			free(pIconImage);
+		}
+	}
+	free(pEntries);
+	CloseHandle(hFile);
+
+	return hBitmap;
+
+}
+
+BOOL CXTPImageManager::SetIconFromIcoFile(LPCTSTR pszFileName, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	HANDLE hFile = CreateFile(pszFileName, GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return FALSE;
+	}
+
+	CXTPImageManagerIcon::ICONDIRHEADER idh;
+
+	DWORD dwBytesRead = 0;
+	if (!ReadFile(hFile, &idh, sizeof(CXTPImageManagerIcon::ICONDIRHEADER) , &dwBytesRead, NULL) || dwBytesRead != sizeof(CXTPImageManagerIcon::ICONDIRHEADER))
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (idh.idType != 1 || idh.idCount == 0)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+
+	CXTPImageManagerIcon::ICONDIRENTRY* pEntries = (CXTPImageManagerIcon::ICONDIRENTRY*)malloc(sizeof(CXTPImageManagerIcon::ICONDIRENTRY) * idh.idCount);
+
+	if (pEntries == NULL)
+	{
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	if (!ReadFile(hFile, pEntries, idh.idCount * sizeof(CXTPImageManagerIcon::ICONDIRENTRY), &dwBytesRead, NULL)
+		|| dwBytesRead != idh.idCount * sizeof(CXTPImageManagerIcon::ICONDIRENTRY))
+	{
+		free(pEntries);
+		CloseHandle(hFile);
+		return FALSE;
+	}
+
+	BOOL bResult = FALSE;
+
+	for (int i = 0; i < idh.idCount; i++)
+	{
+		CSize szResourceIcon((int)pEntries[i].bWidth, (int)pEntries[i].bHeight);
+		CXTPImageManagerIconHandle hIcon;
+
+		if ((szIcon == szResourceIcon) || (szIcon == CSize(0, 0)))
+		{
+			if (!SetFilePointer(hFile, pEntries[i].dwImageOffset,
+				NULL, FILE_BEGIN))
+				continue;
+
+			CXTPImageManagerIcon::ICONIMAGE* pIconImage = (CXTPImageManagerIcon::ICONIMAGE*)malloc(pEntries[i].dwBytesInRes);
+			if (pIconImage == NULL)
+				continue;
+
+			dwBytesRead = 0;
+			BOOL bReadFile = ReadFile(hFile, pIconImage, pEntries[i].dwBytesInRes,
+				&dwBytesRead, NULL);
+
+			if (!bReadFile || (dwBytesRead != pEntries[i].dwBytesInRes))
+			{
+				free(pIconImage);
+				continue;
+			}
+
+			if (pIconImage->icHeader.biBitCount == 32)
+			{
+
+				CDC dcSrc;
+				dcSrc.CreateCompatibleDC(NULL);
+
+				pIconImage->icHeader.biHeight /= 2;
+				pIconImage->icHeader.biSizeImage = pIconImage->icHeader.biHeight * pIconImage->icHeader.biWidth * 4;
+
+				BYTE* pDest = NULL;
+				HBITMAP hBitmap = CreateDIBSection(dcSrc, (BITMAPINFO*)&pIconImage->icHeader, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+
+				if (pDest != NULL && hBitmap != NULL)
+				{
+					MEMCPY_S(pDest, &pIconImage->icColors, pIconImage->icHeader.biSizeImage);
+
+					hIcon = hBitmap;
+				}
+			}
+			else
+			{
+				hIcon = CreateIconFromResourceEx((PBYTE)pIconImage, pEntries[i].dwBytesInRes, TRUE,
+					0x00030000, szResourceIcon.cx, szResourceIcon.cy, LR_DEFAULTCOLOR);
+			}
+
+			if (!hIcon.IsEmpty())
+			{
+				SetIcon(hIcon, nIDCommand, szResourceIcon, imageState);
+				bResult = TRUE;
+			}
+
+			free(pIconImage);
+		}
+	}
+	free(pEntries);
+	CloseHandle(hFile);
 
 	return bResult;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerResource
 
-BOOL CXTPPropExchangeXMLNode::LoadFromFile(LPCTSTR strFileName)
+CXTPImageManagerResource::CXTPImageManagerResource(CXTPImageManager* pImageManager, CSize szIcon)
 {
-	if (!FILEEXISTS_S(strFileName))
-		return FALSE;
+	m_pImageManager = pImageManager;
+	m_szIcon = szIcon;
+	m_pBits = NULL;
+	m_nAllocWidth = 0;
 
-	if (!CreateDocumentInstance())
-		return FALSE;
+	m_hbmpImage = 0;
+	m_hbmpMask = 0;
 
-	ASSERT(m_xmlDocPtr != 0);
+	HDC hdcScreen = ::GetDC(HWND_DESKTOP);
+	m_dc.Attach(::CreateCompatibleDC(hdcScreen));
+	ReleaseDC(HWND_DESKTOP, hdcScreen);
 
-	VARIANT_BOOL bResult;
-	HRESULT hr = m_xmlDocPtr->load(COleVariant(strFileName), &bResult);
-	if (FAILED(hr) || bResult == VARIANT_FALSE)
+	::InitializeCriticalSection(&m_cs);
+}
+
+CXTPImageManagerResource::~CXTPImageManagerResource()
+{
+	RemoveAll();
+
+	::DeleteCriticalSection(&m_cs);
+}
+
+void CXTPImageManagerResource::RemoveAll()
+{
+	int i;
+	for (i = 0; i < (int)m_arrIcons.GetSize(); i++)
 	{
-		TraceParseError();
-		return FALSE;
+		delete m_arrIcons[i];
+	}
+	m_arrIcons.RemoveAll();
+
+	for (i = 0; i < (int)m_arrAlloc.GetSize(); i++)
+	{
+		delete m_arrAlloc[i];
+	}
+	m_arrAlloc.RemoveAll();
+
+
+	if (m_hbmpImage)
+	{
+		DeleteObject(m_hbmpImage);
+		m_hbmpImage = NULL;
+	}
+	if (m_hbmpMask)
+	{
+		DeleteObject(m_hbmpMask);
+		m_hbmpMask = NULL;
 	}
 
-	m_xmlParentNode = m_xmlDocPtr;
-	m_xmlSectionNode = NULL;
-	m_bInitialized = FALSE;
-
-	return TRUE;
+	m_nAllocWidth = 0;
+	m_pBits = NULL;
 }
 
 
-void CXTPPropExchangeXMLNode::FormatString(CString& str)
+CXTPImageManagerResource* CXTPImageManager::GetResource(CSize szIcon)
 {
-	const LPCTSTR lpszCrLf = _T("\r\n");
+	DWORD dwSize = MAKELONG(szIcon.cx, szIcon.cy);
 
-#define ADDINDENT(str, i, strOffset)\
-	str.Insert(i, lpszCrLf);\
-	str.Insert(i + 2, strOffset);\
-	i += strOffset.GetLength() + 2;
+	CXTPImageManagerResource* pResource = NULL;
+	if (m_mapResources.Lookup(dwSize, pResource))
+		return pResource;
 
+	pResource = new CXTPImageManagerResource(this, szIcon);
+	m_mapResources.SetAt(dwSize, pResource);
 
-	CString strOffset(_T('\t'));
-
-	for (int i = 1; i < str.GetLength(); i++)
-	{
-		if (((str[i] == _T('>')) && (str[i - 1] == _T('/'))) || ((str[i] == _T('<')) && (str[i + 1] == _T('/'))))
-		{
-			strOffset.Delete(strOffset.GetLength() - 1);
-			if (str[i] == _T('<') && str[i - 1] == _T('>'))
-			{
-				ADDINDENT(str, i, strOffset);
-			}
-		}
-		else if (str[i] == _T('<'))
-		{
-			ADDINDENT(str, i, strOffset);
-			strOffset += _T('\t');
-		}
-	}
+	return pResource;
 }
 
-
-CString CXTPPropExchangeXMLNode::GetEncodedXML(BOOL bFormatted)
+XTP_IMAGERESOURCE_INFO* CXTPImageManagerResource::AllocBitmap()
 {
-	CString str;
-	if (!OnBeforeExchange())
-		return str;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	if (IsRootSection())
+	if (m_arrAlloc.GetSize() > 0)
 	{
-		UpdateDocumentEncoding();
+		XTP_IMAGERESOURCE_INFO* pRInfo = m_arrAlloc[m_arrAlloc.GetSize() - 1];
+		m_arrAlloc.RemoveAt(m_arrAlloc.GetSize() - 1);
+		m_arrIcons.Add(pRInfo);
+		return pRInfo;
+	}
 
-		COleStreamFile stream;
-		if(!stream.CreateMemoryStream())
-			return str;
+	if (!m_hbmpImage && !m_hbmpMask)
+	{
+		m_hbmpImage = CXTPImageManager::Create32BPPDIBSection(NULL, m_szIcon.cx, m_szIcon.cy, &m_pBits);
+		m_hbmpMask = CreateBitmap(m_szIcon.cx, m_szIcon.cy, 1, 1, NULL);
 
-		VARIANT var;
-		var.vt = VT_UNKNOWN;
-		var.punkVal = stream.GetStream();
+		m_nAllocWidth = m_szIcon.cx;
 
-		if (FAILED(m_xmlDocPtr->save(var)))
-			return str;
+		if (!m_hbmpImage || !m_hbmpMask)
+			return NULL;
 
-		stream.SeekToBegin();
-		DWORD dwLength = (DWORD)stream.GetLength();
+		XTP_IMAGERESOURCE_INFO* pRInfo = new XTP_IMAGERESOURCE_INFO();
+		pRInfo->pResource = this;
+		pRInfo->bAlpha = FALSE;
+		pRInfo->rc = CRect(0, 0, m_szIcon.cx, m_szIcon.cy);
 
-		char* lpszBuffer = new char[dwLength + 1];
-		stream.Read(lpszBuffer, dwLength);
+		m_arrIcons.Add(pRInfo);
+		return pRInfo;
+	}
 
-		if (dwLength > 0 && lpszBuffer[dwLength - 1] <= 13) dwLength--; // Remove /n
-		if (dwLength > 0 && lpszBuffer[dwLength - 1] <= 13) dwLength--; // Remove /r
+	LPBYTE pBits = NULL;
+	HBITMAP hbmpImage = CXTPImageManager::Create32BPPDIBSection(NULL, m_szIcon.cx + m_nAllocWidth, m_szIcon.cy, &pBits);
+	HBITMAP hbmpMask = CreateBitmap(m_szIcon.cx + m_nAllocWidth, m_szIcon.cy, 1, 1, NULL);
 
-		lpszBuffer[dwLength] = 0;
+	if (hbmpImage && pBits)
+	{
+		LPBYTE pBitsI = pBits;
 
-		str = lpszBuffer;
-
-		delete[] lpszBuffer;
+		for (int y = 0; y < m_szIcon.cy; y++)
+		{
+			memcpy(pBitsI, m_pBits, m_nAllocWidth * 4);
+			m_pBits += m_nAllocWidth * 4;
+			pBitsI += (m_szIcon.cx + m_nAllocWidth) * 4;
+		}
 	}
 	else
 	{
-		ASSERT(FALSE);
+		return NULL;
 	}
 
-	if (bFormatted)
+	if (hbmpMask)
 	{
-		FormatString(str);
-	}
-
-	return str;
-}
-
-CString CXTPPropExchangeXMLNode::GetXML(BOOL bFormatted)
-{
-	CString str;
-	if (!OnBeforeExchange())
-		return str;
-
-	ASSERT(m_xmlDocPtr != 0);
-
-	BSTR bstrXML = 0;
-
-	if (IsRootSection())
-	{
-		if (FAILED(m_xmlDocPtr->get_xml(&bstrXML)))
-			return str;
+		m_dc.SetBitmap(hbmpMask);
+		m_dc.DrawState(CPoint(0, 0), CSize(0, 0), m_hbmpMask, 0, 0);
+		m_dc.SetBitmap(NULL);
 	}
 	else
 	{
-		if (FAILED(m_xmlSectionNode->get_xml(&bstrXML)))
-			return str;
+		return NULL;
 	}
 
-	str = bstrXML;
-	SysFreeString(bstrXML);
+	DeleteObject(m_hbmpImage);
+	DeleteObject(m_hbmpMask);
 
-	if (bFormatted)
-	{
-		FormatString(str);
-	}
+	m_hbmpImage = hbmpImage;
+	m_hbmpMask = hbmpMask;
+	m_pBits = pBits;
 
-	return str;
+	XTP_IMAGERESOURCE_INFO* pRInfo = new XTP_IMAGERESOURCE_INFO();
+	pRInfo->pResource = this;
+	pRInfo->bAlpha = FALSE;
+	pRInfo->rc = CRect(m_nAllocWidth, 0, m_nAllocWidth + m_szIcon.cx, m_szIcon.cy);
+	m_arrIcons.Add(pRInfo);
+
+	m_nAllocWidth += m_szIcon.cx;
+
+	return pRInfo;
 }
 
-void CXTPPropExchangeXMLNode::FormatFile(LPCTSTR lpszFileName)
+void CXTPImageManagerResource::Clear(XTP_IMAGERESOURCE_INFO* pRInfo)
 {
-	const LPCSTR lpszCrLf = "\r\n";
-	const LPCSTR lpszOffset = "\t";
+	CXTPLockGuard lock(m_cs);
 
-	#define WRITEINDENT\
-		fileBuffer.Write(lpszBegin, int(lpszCurrent - lpszBegin) - nWhiteSpace);\
-		fileBuffer.Write(lpszCrLf, 2);\
-		for (int j = 0; j < nOffset; j++) fileBuffer.Write(lpszOffset, 1);\
-		lpszBegin = lpszCurrent
-
-
-	CFile file;
-	if (!file.Open(lpszFileName, CFile::modeRead))
-		return;
-
-	DWORD dwLength = (DWORD)file.GetLength();
-
-	if (dwLength < 3)
-		return;
-
-	BYTE* lpszBuffer = new BYTE[dwLength + 1];
-
-	file.Read(lpszBuffer, dwLength);
-	lpszBuffer[dwLength] = 0;
-	file.Close();
-
-	if (!file.Open(lpszFileName, CFile::modeWrite | CFile::modeCreate))
+	for (int i = 0; i < (int)m_arrIcons.GetSize(); i++)
 	{
-		delete[] lpszBuffer;
-		return;
-	}
-
-	CMemFile fileBuffer;
-
-	int nOffset = 1, nWhiteSpace = 0;
-	if (dwLength > 2 && lpszBuffer[dwLength - 2] == '\r')
-		lpszBuffer[dwLength - 2] = 0;
-
-	BYTE *lpszCurrent = lpszBuffer + 1, *lpszBegin = lpszBuffer;
-
-	while (*lpszCurrent++)
-	{
-		BYTE& chCurrent = *lpszCurrent;
-
-		if (((chCurrent == _T('>')) && (*(lpszCurrent - 1) == '/' || *(lpszCurrent - 1) == '?'))
-			|| ((chCurrent == _T('<')) && (*(lpszCurrent + 1) == '/')))
+		if (m_arrIcons[i] == pRInfo)
 		{
-			nOffset--;
-			if (chCurrent == '<' && *(lpszCurrent - 1 - nWhiteSpace) == '>')
+			m_arrIcons.RemoveAt(i);
+			m_arrAlloc.Add(pRInfo);
+
+			if (m_arrAlloc.GetSize() * m_szIcon.cx == m_nAllocWidth)
 			{
-				WRITEINDENT;
+				ASSERT(m_arrIcons.GetSize() == 0);
+				RemoveAll();
 			}
-		}
-		else if (chCurrent == '<')
-		{
-			WRITEINDENT;
-			nOffset++;
-		}
-
-		nWhiteSpace = (chCurrent == '\r' || chCurrent == '\n' || chCurrent == '\t') ? nWhiteSpace + 1 : 0;
-	}
-
-	fileBuffer.Write(lpszBegin, int(lpszCurrent - lpszBegin) - 1);
-	fileBuffer.Write(lpszCrLf, 2);
-
-	delete[] lpszBuffer;
-
-	dwLength = (DWORD)fileBuffer.GetLength();
-	BYTE* lpszFileBuffer = fileBuffer.Detach();
-
-	file.Write(lpszFileBuffer, dwLength);
-	file.Close();
-
-	free(lpszFileBuffer);
-}
-
-void CXTPPropExchangeXMLNode::UpdateDocumentEncoding()
-{
-	ASSERT(m_xmlDocPtr != 0);
-
-	CString strInstruction = _T("version=\"1.0\" encoding=\"") + m_strEncoding + _T("\"");
-
-	BOOL bInstructionExists = FALSE;
-
-	CXTPDOMNodePtr ptrBaseInstruction = 0;
-	if (SUCCEEDED(m_xmlDocPtr->selectSingleNode(L"/node()", &ptrBaseInstruction)) && ptrBaseInstruction != 0)
-	{
-		BSTR bstrNodeName = 0;
-		ptrBaseInstruction->get_nodeName(&bstrNodeName);
-
-		if (wcscmp(bstrNodeName, L"xml") == 0)
-		{
-			bInstructionExists = TRUE;
-		}
-
-		SysFreeString(bstrNodeName);
-	}
-
-	XTPXML::IXMLDOMProcessingInstructionPtr ptrInstruction = 0;
-	if (!bInstructionExists && SUCCEEDED(m_xmlDocPtr->createProcessingInstruction(L"xml", CT2BSTR(strInstruction), &ptrInstruction)))
-	{
-		CXTPDOMNodePtr xmlNodePtr;
-		if (SUCCEEDED(m_xmlDocPtr->selectSingleNode(L"/node()", &xmlNodePtr)))
-		{
-			m_xmlDocPtr->insertBefore(ptrInstruction, _variant_t(xmlNodePtr.GetInterfacePtr()), 0);
+			return;
 		}
 	}
 }
 
-HRESULT CXTPPropExchangeXMLNode::SaveToFile(LPCTSTR strFileName, BOOL bFormatted)
+BOOL AFX_CDECL CXTPImageManagerIcon::IsAlphaIconHandle(HICON hIcon)
 {
-	CString str;
-	if (!OnBeforeExchange())
-		return E_FAIL;
-
-	UpdateDocumentEncoding();
-
-	HRESULT hr = m_xmlDocPtr->save(COleVariant(strFileName));
-	if (FAILED(hr))
-		return hr;
-
-	if (bFormatted)
-	{
-		FormatFile(strFileName);
-	}
-
-	return S_OK;
-}
-
-CXTPPropExchange* CXTPPropExchangeXMLNode::GetSection(LPCTSTR lpszSection)
-{
-	OnBeforeExchange();
-
-	CXTPPropExchangeXMLNode* pSection = new CXTPPropExchangeXMLNode(IsLoading(), m_xmlSectionNode, lpszSection);
-	pSection->m_bCompactMode = m_bCompactMode;
-	pSection->InitSection(this);
-	return pSection;
-}
-
-BOOL CXTPPropExchangeXMLNode::OnBeforeExchange()
-{
-	if (!m_bInitialized)
-	{
-		m_bInitialized = TRUE;
-
-		if (m_xmlDocPtr == NULL && IsRootSection())
-		{
-			ASSERT(m_xmlParentNode == 0);
-
-			if (!CreateDocumentInstance())
-				return FALSE;
-
-			if (m_xmlDocPtr == 0)
-				return FALSE;
-
-			m_xmlParentNode = m_xmlDocPtr;
-			ASSERT(m_xmlParentNode != 0);
-		}
-
-		if ((m_xmlDocPtr == NULL) || (m_xmlParentNode == NULL))
-			return FALSE;
-
-		ASSERT(m_xmlSectionNode == 0);
-
-		m_xmlSectionNode = GetProfileNode(m_strSectionName);
-
-		if (m_xmlSectionNode != NULL && IsRootSection())
-		{
-			PX_Bool(this, _T("CompactMode"), m_bCompactMode, FALSE);
-		}
-	}
-
-	if ((m_xmlDocPtr == NULL) || (m_xmlParentNode == NULL))
+	if (!hIcon)
 		return FALSE;
 
-	return m_xmlSectionNode != NULL;
-}
-
-void CXTPPropExchangeXMLNode::EmptySection()
-{
-	CXTPPropExchange::EmptySection();
-
-	OnBeforeExchange();
-
-	if (m_xmlSectionNode != 0 && m_xmlParentNode != 0)
+	ICONINFO iconInfo;
+	if ((CXTPImageManager::IsAlphaIconsImageListSupported() || XTPSystemVersion()->IsWinXPOrGreater())
+		&& GetIconInfo(hIcon, &iconInfo))
 	{
-		m_xmlParentNode->removeChild(m_xmlSectionNode, NULL);
-		m_xmlSectionNode = 0;
-		m_bInitialized = FALSE;
-	}
-}
+		LPBYTE pBitsI = NULL;
+		BOOL bAlpha = -1;
+		HBITMAP hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap(iconInfo.hbmColor, &bAlpha, &pBitsI);
 
-void CXTPPropExchangeXMLNode::SetCompactMode(BOOL bCompactMode)
-{
-	m_bCompactMode = bCompactMode;
-}
+		DeleteObject(iconInfo.hbmColor);
+		DeleteObject(iconInfo.hbmMask);
 
-
-CXTPDOMNodePtr CXTPPropExchangeXMLNode::GetProfileNode(LPCTSTR strSection)
-{
-	ASSERT(m_xmlParentNode != 0);
-	CXTPDOMNodePtr xmlNodePtr;
-	CXTPDOMElementPtr xmlElementPtr;
-
-	HRESULT hr = m_xmlParentNode->selectSingleNode(CT2BSTR(strSection), &xmlNodePtr);
-
-	if (FAILED(hr) || xmlNodePtr == NULL)
-	{
-		m_xmlDocPtr->createElement(CT2BSTR(strSection), &xmlElementPtr);
-		ASSERT(xmlElementPtr != 0);
-		if (xmlElementPtr)
+		if (bAlpha == TRUE && pBitsI)
 		{
-			m_xmlParentNode->appendChild(xmlElementPtr, &xmlNodePtr);
+			DeleteObject(hBitmap);
+			return TRUE;
 		}
+
+		if (hBitmap) DeleteObject(hBitmap);
 	}
 
-	return xmlNodePtr;
+	return FALSE;
 }
 
-CXTPDOMNodePtr CXTPPropExchangeXMLNode::GetEntryNode(LPCTSTR lpszEntry, BOOL bCreate)
+XTP_IMAGERESOURCE_INFO* CXTPImageManagerResource::Add(const CXTPImageManagerIconHandle& hHandle)
 {
-	ASSERT(m_xmlSectionNode != 0);
+	CXTPLockGuard lock(m_cs);
 
-	CXTPDOMNodePtr xmlNodeEntryPtr;
+	ASSERT(hHandle.m_pRInfo == NULL);
+	ASSERT(!hHandle.IsEmpty());
+	if (hHandle.IsEmpty())
+		return NULL;
 
-	if (lpszEntry == 0 || _tcslen(lpszEntry) == 0)
-		return m_xmlSectionNode;
+	if (hHandle.GetExtent() != GetExtent())
+		return NULL;
 
-	if (m_bCompactMode)
+	if (!hHandle.m_hIcon && !hHandle.m_hBitmap)
+		return NULL;
+
+	XTP_IMAGERESOURCE_INFO* pRInfo = AllocBitmap();
+	if (pRInfo == NULL)
+		return NULL;
+
+	if (hHandle.m_hIcon)
 	{
-		XTPXML::IXMLDOMNamedNodeMapPtr map;
-		m_xmlSectionNode->get_attributes(&map);
-		HRESULT hr = map->getNamedItem(CT2BSTR(lpszEntry), &xmlNodeEntryPtr);
-
-		if (FAILED(hr) || xmlNodeEntryPtr == NULL)
+		ICONINFO iconInfo;
+		if (CXTPImageManager::IsAlphaIconsImageListSupported() && GetIconInfo(hHandle.m_hIcon, &iconInfo))
 		{
-			if (bCreate)
+			LPBYTE pBitsI = NULL;
+			BOOL bAlpha = -1;
+			HBITMAP hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap(iconInfo.hbmColor, &bAlpha, &pBitsI);
+
+			DeleteObject(iconInfo.hbmColor);
+			DeleteObject(iconInfo.hbmMask);
+
+			if (bAlpha == TRUE && pBitsI)
 			{
-				XTPXML::IXMLDOMAttributePtr xmlElementPtr;
-				m_xmlDocPtr->createAttribute(CT2BSTR(lpszEntry), &xmlElementPtr);
-				if (xmlElementPtr)
+				for (int y = 0; y < m_szIcon.cy; y++)
 				{
-					map->setNamedItem(xmlElementPtr, &xmlNodeEntryPtr);
+					LPBYTE pBitsRow = m_pBits + ((y * m_nAllocWidth + pRInfo->rc.left) * 4);
+					memcpy(pBitsRow, pBitsI, m_szIcon.cx * 4);
+					pBitsI += m_szIcon.cx * 4;
 				}
+
+				pRInfo->bAlpha = TRUE;
+
+				DeleteObject(hBitmap);
+				return pRInfo;
 			}
-			else
-			{
-				return 0;
-			}
+
+			if (hBitmap) DeleteObject(hBitmap);
+		}
+
+		if (m_hbmpImage)
+		{
+			m_dc.SetBitmap(m_hbmpImage);
+			m_dc.FillSolidRect(pRInfo->rc, 0);
+			DrawIconEx(m_dc, pRInfo->rc.left, pRInfo->rc.top, hHandle.m_hIcon, 0, 0, 0, NULL, DI_NORMAL);
+			m_dc.SetBitmap(NULL);
+		}
+
+		if (m_hbmpMask)
+		{
+			m_dc.SetBitmap(m_hbmpMask);
+			m_dc.FillSolidRect(pRInfo->rc, 0);
+			DrawIconEx(m_dc, pRInfo->rc.left, pRInfo->rc.top, hHandle.m_hIcon, 0, 0, 0, NULL, DI_MASK);
+			m_dc.SetBitmap(NULL);
+		}
+
+		pRInfo->bAlpha = FALSE;
+	}
+	else
+	{
+		LPBYTE pBitsI = ((CXTPImageManagerIconHandle&)hHandle).PreMultiply();
+		if (!pBitsI)
+			return NULL;
+
+		for (int y = 0; y < m_szIcon.cy; y++)
+		{
+			LPBYTE pBitsRow = m_pBits + ((y * m_nAllocWidth + pRInfo->rc.left) * 4);
+			memcpy(pBitsRow, pBitsI, m_szIcon.cx * 4);
+			pBitsI += m_szIcon.cx * 4;
+		}
+
+		pRInfo->bAlpha = TRUE;
+	}
+
+	return pRInfo;
+}
+
+BOOL CXTPImageManager::IsDrawReverted(CDC* pDC) const
+{
+	if (m_bDrawReverted == 1)
+		return TRUE;
+	if (m_bDrawReverted == 2)
+		return CXTPDrawHelpers::IsContextRTL(pDC);
+	return FALSE;
+}
+
+void CXTPImageManagerResource::CreateIcon(CXTPImageManagerIconHandle& hHandle, XTP_IMAGERESOURCE_INFO* pRInfo)
+{
+	CXTPLockGuard lock(m_cs);
+
+	hHandle.Clear();
+
+	HBITMAP hBitmap = 0;
+	LPBYTE pBits = 0;
+
+
+	{
+		hBitmap = CXTPImageManager::Create32BPPDIBSection(NULL, m_szIcon.cx, m_szIcon.cy, &pBits);
+		if (!hBitmap || !pBits)
+			return;
+
+		LPBYTE pBitsI = pBits;
+
+		for (int y = 0; y < m_szIcon.cy; y++)
+		{
+			LPBYTE pBitsRow = m_pBits + ((y * m_nAllocWidth + pRInfo->rc.left) * 4);
+			memcpy(pBitsI, pBitsRow, m_szIcon.cx * 4);
+			pBitsI += m_szIcon.cx * 4;
+		}
+	}
+
+	if (pRInfo->bAlpha)
+	{
+		hHandle.m_hBitmap = hBitmap;
+		hHandle.m_pBits = pBits;
+	}
+	else
+	{
+		HBITMAP hbmpMask = CreateBitmap(m_szIcon.cx, m_szIcon.cy, 1, 1, NULL);
+		{
+			CXTPCompatibleDC dc(0, hbmpMask);
+			m_dc.SetBitmap(m_hbmpMask);
+			dc.BitBlt(0, 0, m_szIcon.cx, m_szIcon.cy, &m_dc, pRInfo->rc.left, 0, SRCCOPY);
+			m_dc.SetBitmap(NULL);
+		}
+
+		ICONINFO ii;
+		ii.fIcon    = TRUE;
+		ii.xHotspot = 0;
+		ii.yHotspot = 0;
+		ii.hbmColor = hBitmap;
+		ii.hbmMask  = hbmpMask;
+		hHandle.m_hIcon = CreateIconIndirect(&ii);
+
+		DeleteObject(hBitmap);
+		DeleteObject(hbmpMask);
+	}
+
+	hHandle.m_bClearHandles = TRUE;
+}
+
+
+void CXTPImageManagerResource::DrawIconComposited(CDC* pDC, XTP_IMAGERESOURCE_INFO* pRInfo, CPoint pt, CSize szIcon)
+{
+	CBitmap bmp;
+	LPDWORD lpBits = 0;
+	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), szIcon.cx, szIcon.cy, (LPBYTE*)&lpBits));
+	if (!lpBits)
+		return;
+
+	CXTPCompatibleDC dc(&m_dc, &bmp);
+
+	dc.SetBkColor(0xFFFFFF);
+	dc.SetTextColor(0);
+
+	if (m_hbmpMask)
+	{
+		m_dc.SetBitmap(m_hbmpMask);
+		StretchBlt(dc, 0, 0, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left, 0, m_szIcon.cx, m_szIcon.cy, SRCCOPY);
+		m_dc.SetBitmap(NULL);
+	}
+
+	for (int i = 0; i < szIcon.cx * szIcon.cy; i++)
+	{
+		*lpBits =  (*lpBits == 0) ? 0xFF000000 : 0;
+		lpBits++;
+	}
+
+	if (m_hbmpImage)
+	{
+		m_dc.SetBitmap(m_hbmpImage);
+		StretchBlt(dc, 0, 0, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left, 0, m_szIcon.cx, m_szIcon.cy, SRCINVERT);
+		m_dc.SetBitmap(NULL);
+	}
+
+	XTPImageManager()->AlphaBlend(*pDC, CRect(pt, szIcon), dc, CRect(0, 0, szIcon.cx, szIcon.cy));
+}
+
+
+void CXTPImageManagerResource::Draw(CDC* pDC, XTP_IMAGERESOURCE_INFO* pRInfo, CPoint pt, CSize szIcon, BOOL bDrawComposited)
+{
+	CXTPLockGuard lock(m_cs);
+
+	if (!pRInfo->bAlpha)
+	{
+		pDC->SetStretchBltMode(COLORONCOLOR);
+
+		if (bDrawComposited)
+		{
+			DrawIconComposited(pDC, pRInfo, pt, szIcon);
+			return;
+		}
+
+		if (m_pImageManager->IsDrawReverted(pDC))
+		{
+			pt.x += szIcon.cx;
+			szIcon.cx = -szIcon.cx;
+		}
+
+		if (m_hbmpMask)
+		{
+			m_dc.SetBitmap(m_hbmpMask);
+			m_dc.SetTextColor(0);
+			m_dc.SetBkColor(0xFFFFFF);
+
+			COLORREF clrOldText = pDC->SetTextColor(0);
+			COLORREF clrOldBk = pDC->SetBkColor(0xFFFFFF);
+
+			StretchBlt(pDC->GetSafeHdc(), pt.x, pt.y, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left,  0,  m_szIcon.cx, m_szIcon.cy, SRCAND);
+
+			pDC->SetBkColor(clrOldBk);
+			pDC->SetTextColor(clrOldText);
+			m_dc.SetBitmap(NULL);
+		}
+
+		if (m_hbmpImage)
+		{
+			m_dc.SetBitmap(m_hbmpImage);
+			StretchBlt(pDC->GetSafeHdc(), pt.x, pt.y, szIcon.cx, szIcon.cy, m_dc, pRInfo->rc.left,  0,  m_szIcon.cx, m_szIcon.cy, SRCINVERT);
+			m_dc.SetBitmap(NULL);
 		}
 	}
 	else
 	{
-		CXTPDOMNodePtr xmlNodeSectionPtr = m_xmlSectionNode;
-
-		HRESULT hr = xmlNodeSectionPtr->selectSingleNode(CT2BSTR(lpszEntry), &xmlNodeEntryPtr);
-		if (FAILED(hr) || xmlNodeEntryPtr == NULL)
-		{
-			if (bCreate)
-			{
-
-				CXTPDOMElementPtr xmlElementPtr;
-				m_xmlDocPtr->createElement(CT2BSTR(lpszEntry), &xmlElementPtr);
-				ASSERT(xmlElementPtr != 0);
-				if (xmlElementPtr)
-				{
-					xmlNodeSectionPtr->appendChild(xmlElementPtr, &xmlNodeEntryPtr);
-				}
-			}
-			else
-			{
-				return 0;
-			}
-		}
-
+		m_dc.SetBitmap(m_hbmpImage);
+		XTPImageManager()->AlphaBlend(pDC->GetSafeHdc(), CRect(pt, szIcon),
+			m_dc, CRect(pRInfo->rc.TopLeft(), m_szIcon));
+		m_dc.SetBitmap(NULL);
 	}
-	ASSERT(xmlNodeEntryPtr != 0);
-	return xmlNodeEntryPtr;
 }
 
-CString CXTPPropExchangeXMLNode::BstrToString(BSTR bstrVal)
+CSize CXTPImageManagerResource::GetExtent() const
 {
-	return CString(XTP_CW2CT(bstrVal));
+	return m_szIcon;
 }
 
-BOOL CXTPPropExchangeXMLNode::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-	void* pvProp, const void* pvDefault)
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIconHandle
+
+void CXTPImageManagerIconHandle::Init()
 {
-	if (m_bLoading)
+	m_hIcon = NULL;
+	m_hBitmap = NULL;
+	m_pBits = NULL;
+	m_bClearHandles = FALSE;
+	m_pImageManager = NULL;
+	m_pRInfo = NULL;
+	m_szIcon = CSize(0, 0);
+	m_bUseResources = TRUE;
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle()
+{
+	Init();
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle(HICON hIcon, BOOL bUseResources)
+{
+	Init();
+
+	m_hIcon = hIcon;
+	m_bClearHandles = FALSE;
+	m_szIcon = _GetExtent();
+	m_bUseResources = bUseResources;
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle(HBITMAP hBitmap)
+{
+	Init();
+
+	m_hBitmap = hBitmap;
+	m_bClearHandles = FALSE;
+	m_szIcon = _GetExtent();
+}
+
+CXTPImageManagerIconHandle::CXTPImageManagerIconHandle(const CXTPImageManagerIconHandle& hHandle)
+{
+	Init();
+
+	m_hIcon = hHandle.m_hIcon;
+	m_hBitmap = hHandle.m_hBitmap;
+	m_pBits = hHandle.m_pBits;
+	m_pRInfo = hHandle.m_pRInfo;
+	m_pImageManager = hHandle.m_pImageManager;
+	m_bUseResources = hHandle.m_bUseResources;
+
+	m_bClearHandles = FALSE;
+	m_szIcon = hHandle.GetExtent();
+}
+
+
+void CXTPImageManagerIconHandle::CopyHandle(HBITMAP hBitmap)
+{
+	Clear();
+	m_hBitmap = CXTPImageManagerIcon::CopyAlphaBitmap(hBitmap);
+
+	m_szIcon = _GetExtent();
+	m_bClearHandles = TRUE;
+}
+
+void CXTPImageManagerIconHandle::CopyHandle(const CXTPImageManagerIconHandle& hHandle)
+{
+	Clear();
+
+	if (m_pImageManager && !hHandle.IsEmpty() && m_pImageManager->m_bUseResources && hHandle.m_bUseResources)
 	{
-		if (!m_bUseDefaultOnLoad)
-			pvDefault = NULL;
+		CXTPImageManagerResource* pResource = m_pImageManager->GetResource(hHandle.GetExtent());
 
-		if (!OnBeforeExchange())
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		CXTPDOMNodePtr xmlEntryPtr = GetEntryNode(pszPropName, FALSE);
-		if (xmlEntryPtr == 0)
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		BSTR bstrValue = NULL;
-		xmlEntryPtr->get_text(&bstrValue);
-
-		if (vtProp == VT_BSTR)
+		if (hHandle.m_pRInfo == NULL)
 		{
-			PreformatString(bstrValue);
-			*(BSTR*)pvProp = bstrValue;
-			return TRUE;
+			m_pRInfo = pResource->Add(hHandle);
 		}
-
-		CString strValue(BstrToString(bstrValue));
-		if (bstrValue) SysFreeString(bstrValue);
-
-		return ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault);
+		else
+		{
+			CXTPImageManagerIconHandle iconClear;
+			iconClear.CopyHandle(hHandle);
+			m_pRInfo = pResource->Add(iconClear);
+		}
 	}
 	else
 	{
-		if (!m_bUseDefaultOnSave)
-			pvDefault = NULL;
-
-		if (IsSamePropValue(vtProp, pvProp, pvDefault))
-			return TRUE;
-
-		if (!OnBeforeExchange())
-			return FALSE;
-
-		CXTPDOMNodePtr xmlEntryPtr = GetEntryNode(pszPropName, TRUE);
-		ASSERT(xmlEntryPtr != 0);
-
-		if (vtProp == VT_BSTR)
+		if (hHandle.m_hIcon) m_hIcon = CopyIcon(hHandle.m_hIcon);
+		if (hHandle.m_hBitmap) m_hBitmap = CXTPImageManagerIcon::CopyAlphaBitmap(hHandle.m_hBitmap, hHandle.m_pBits ? &m_pBits : NULL);
+		if (hHandle.m_pRInfo)
 		{
-			xmlEntryPtr->put_text(*(BSTR*)pvProp);
-			return TRUE;
+			hHandle.m_pRInfo->pResource->CreateIcon(*this, hHandle.m_pRInfo);
+		}
+	}
+	m_bUseResources = hHandle.m_bUseResources;
+
+	m_bClearHandles = TRUE;
+	m_szIcon = hHandle.GetExtent();
+}
+
+const CXTPImageManagerIconHandle& CXTPImageManagerIconHandle::operator=(const HICON hIcon)
+{
+	Clear();
+	m_hIcon = hIcon;
+	m_bClearHandles = TRUE;
+	m_szIcon = _GetExtent();
+
+	return *this;
+}
+const CXTPImageManagerIconHandle& CXTPImageManagerIconHandle::operator=(const HBITMAP hBitmap)
+{
+	Clear();
+
+	m_hBitmap = hBitmap;
+	m_bClearHandles = TRUE;
+	m_szIcon = _GetExtent();
+
+	return *this;
+}
+
+CXTPImageManagerIconHandle::~CXTPImageManagerIconHandle()
+{
+	Clear();
+}
+
+BOOL CXTPImageManagerIconHandle::IsEmpty() const
+{
+	return (m_hIcon == 0 && m_hBitmap == 0 && m_pRInfo == NULL) || (m_szIcon == CSize(0, 0));
+}
+
+BOOL CXTPImageManagerIconHandle::IsAlpha() const
+{
+	return m_hBitmap != 0 || (m_pRInfo && m_pRInfo->bAlpha);
+}
+
+HBITMAP CXTPImageManagerIconHandle::GetBitmap() const
+{
+	ASSERT(IsAlpha());
+
+	if (m_hBitmap)
+		return m_hBitmap;
+
+	if (m_pRInfo && m_pRInfo->pResource && m_pRInfo->pResource->m_hbmpImage)
+		return m_pRInfo->pResource->m_hbmpImage;
+
+	ASSERT(FALSE);
+	return NULL;
+}
+
+HICON CXTPImageManagerIconHandle::GetIcon() const
+{
+	return m_hIcon;
+}
+
+void CXTPImageManagerIconHandle::Detach()
+{
+	m_bClearHandles = FALSE;
+	Clear();
+}
+
+void CXTPImageManagerIconHandle::Clear()
+{
+	if (m_bClearHandles)
+	{
+		if (m_hIcon)
+		{
+			DestroyIcon(m_hIcon);
 		}
 
-		CString strValue;
-		if (!ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault))
+		if (m_hBitmap)
+		{
+			DeleteObject(m_hBitmap);
+		}
+
+		if (m_pRInfo)
+		{
+			m_pRInfo->pResource->Clear(m_pRInfo);
+			m_pRInfo = NULL;
+		}
+	}
+
+	m_hIcon = 0;
+	m_hBitmap = 0;
+	m_pBits = 0;
+	m_pRInfo = NULL;
+	m_bClearHandles = FALSE;
+}
+
+CSize CXTPImageManagerIconHandle::GetExtent() const
+{
+	return m_szIcon;
+}
+
+CSize CXTPImageManagerIconHandle::_GetExtent() const
+{
+	if (m_pRInfo != NULL)
+		return m_pRInfo->pResource->GetExtent();
+
+	if (m_hIcon)
+		return CXTPImageManagerIcon::GetExtent(m_hIcon);
+
+	if (m_hBitmap)
+	{
+		BITMAP bmpinfo;
+		if (::GetObject(m_hBitmap, sizeof(bmpinfo), &bmpinfo))
+		{
+			return CSize((int)bmpinfo.bmWidth, (int)bmpinfo.bmHeight);
+		}
+	}
+	return 0;
+}
+
+
+
+void CXTPImageManagerIconHandle::Draw(CDC* pDC, CPoint pt, CSize szIcon, BOOL bDrawComposited)
+{
+	if (IsEmpty())
+		return;
+
+	if (m_pRInfo)
+	{
+		m_pRInfo->pResource->Draw(pDC, m_pRInfo, pt, szIcon, bDrawComposited);
+	}
+	else if (!IsAlpha())
+	{
+		CXTPImageManager* pImageManager = m_pImageManager ? m_pImageManager : XTPImageManager();
+
+		if (pImageManager->IsDrawReverted(pDC))
+		{
+			pt.x += szIcon.cx;
+			szIcon.cx = -szIcon.cx;
+		}
+
+		if (!bDrawComposited)
+		{
+			DrawIconEx(pDC->GetSafeHdc(), pt.x, pt.y, GetIcon(), szIcon.cx, szIcon.cy, 0, 0, DI_NORMAL);
+		}
+		else
+		{
+			CXTPImageManagerIcon::DrawIconComposited(pDC, pt, szIcon, GetIcon());
+		}
+	}
+	else if (PreMultiply())
+	{
+		if (pt.y < 0 && (szIcon.cy == (int)m_szIcon.cy))
+		{
+			if (pt.y + m_szIcon.cy > 0)
+			{
+				CXTPImageManagerIcon::DrawAlphaBitmap(pDC, m_hBitmap, CPoint(pt.x, 0),
+					CSize(szIcon.cx, m_szIcon.cy + pt.y), CPoint(0, -pt.y), CSize(m_szIcon.cx, m_szIcon.cy + pt.y));
+			}
+		}
+		else
+		{
+			CXTPImageManagerIcon::DrawAlphaBitmap(pDC, m_hBitmap, pt, szIcon, CPoint(0, 0), m_szIcon);
+		}
+	}
+}
+
+BOOL CXTPImageManagerIconHandle::CreateIconFromResource(LPCTSTR lpszResourceName, CSize szIcon, BOOL bGroupResource)
+{
+	if (bGroupResource)
+	{
+		HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_GROUP_ICON);
+		if (hInst)
+			return CreateIconFromResource(hInst, lpszResourceName, szIcon, TRUE);
+	}
+
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_ICON);
+	if (hInst)
+		return CreateIconFromResource(hInst, lpszResourceName, szIcon, FALSE);
+
+	return FALSE;
+
+}
+
+BOOL CXTPImageManagerIconHandle::CreateIconFromResource(HINSTANCE hInst, LPCTSTR lpszResourceName, CSize szIcon, BOOL bGroupResource)
+{
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_GROUP_ICON);
+
+	if (hRsrc != NULL && bGroupResource)
+	{
+		// Load and Lock to get a pointer to a GRPICONDIR
+		HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+		if (!hGlobal)
 			return FALSE;
 
-		xmlEntryPtr->put_text(CT2BSTR(strValue));
+		CXTPImageManagerIcon::GRPICONDIR* lpGrpIconDir = (CXTPImageManagerIcon::GRPICONDIR*)LockResource(hGlobal);
+		if (!lpGrpIconDir)
+			return FALSE;
+
+		for (int i = (int)lpGrpIconDir->idCount - 1; i >= 0; i--)
+		{
+			if (lpGrpIconDir->idEntries[i].bWidth == szIcon.cx && lpGrpIconDir->idEntries[i].bHeight == szIcon.cy)
+			{
+				if (CreateIconFromResource(hInst, MAKEINTRESOURCE(lpGrpIconDir->idEntries[i].nID), szIcon, FALSE))
+					return TRUE;
+			}
+		}
+
+		return FALSE;
 	}
-	return TRUE;
 
-}
-CString CXTPPropExchangeXMLNode::GetSectionName()
-{
-	if (!OnBeforeExchange())
-		return _T("");
+	hRsrc = ::FindResource(hInst, lpszResourceName, RT_ICON);
 
-	BSTR bstrValue = NULL;
-	m_xmlSectionNode->get_nodeName(&bstrValue);
-
-	CString strValue(bstrValue);
-	if (bstrValue) SysFreeString(bstrValue);
-
-	return strValue;
-}
-
-BOOL CXTPPropExchangeXMLNode::IsSectionExists(LPCTSTR lpszSection)
-{
-	if (!OnBeforeExchange())
+	if (hRsrc == NULL)
 		return FALSE;
 
-	CXTPDOMNodePtr xmlNodePtr;
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (!hGlobal)
+		return FALSE;
+	CXTPImageManagerIcon::ICONIMAGE* lpIconImage = (CXTPImageManagerIcon::ICONIMAGE*)LockResource(hGlobal);
 
-	HRESULT hr = m_xmlSectionNode->selectSingleNode(CT2BSTR(lpszSection), &xmlNodePtr);
-
-	if (FAILED(hr) || xmlNodePtr == NULL)
+	if (lpIconImage == NULL)
 		return FALSE;
 
-	return TRUE;
-}
+	DWORD dwResourceSize = SizeofResource(hInst, hRsrc);
 
-BOOL CXTPPropExchangeXMLNode::PutSection(CXTPPropExchangeXMLNode* pNode)
-{
-	if (!pNode)
-		return FALSE;
-
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	if (!pNode || !pNode->OnBeforeExchange())
-		return FALSE;
-
-	ASSERT(m_xmlSectionNode != 0);
-
-	if (FAILED(m_xmlSectionNode->appendChild(pNode->m_xmlSectionNode, NULL)))
-		return FALSE;
-
-	return TRUE;
-}
-
-CXTPPropExchangeXMLNode* CXTPPropExchangeXMLNode::Clone(BOOL bRecursive)
-{
-	if (!OnBeforeExchange())
-		return NULL;
-
-	ASSERT(m_xmlParentNode != 0);
-	CXTPDOMNodePtr xmlNodePtr;
-
-	VARIANT_BOOL vbRecursive;
-	vbRecursive = bRecursive ? VARIANT_TRUE : VARIANT_FALSE;
-	if (FAILED(m_xmlSectionNode->cloneNode(vbRecursive, &xmlNodePtr)))
-		return NULL;
-
-	CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)GetSection(GetSectionName());
-
-	pSection->m_bInitialized = TRUE;
-	pSection->m_xmlSectionNode = xmlNodePtr;
-
-	return pSection;
-}
-
-CXTPPropExchangeXMLNode* CXTPPropExchangeXMLNode::CreateSection(LPCTSTR pszSection)
-{
-	if (!pszSection || !OnBeforeExchange())
-		return NULL;
-
-	ASSERT(m_xmlParentNode != 0);
-	CXTPDOMNodePtr xmlNodePtr;
-	CXTPDOMElementPtr xmlElementPtr;
-
-	if (m_xmlSectionNode == 0 || m_xmlDocPtr == 0)
-		return NULL;
-
-	m_xmlDocPtr->createElement(CT2BSTR(pszSection), &xmlElementPtr);
-	if (xmlElementPtr == 0)
+	if (lpIconImage->icHeader.biBitCount == 32)
 	{
-		ASSERT(0);
-		return NULL;
+		CDC dcSrc;
+		dcSrc.CreateCompatibleDC(0);
+
+		BITMAPINFOHEADER* pBitmapInfo = (BITMAPINFOHEADER*)malloc(sizeof(BITMAPINFOHEADER) + sizeof(COLORREF) * 3);
+		if (!pBitmapInfo)
+			return FALSE;
+
+		*pBitmapInfo = lpIconImage->icHeader;
+
+		pBitmapInfo->biHeight /= 2;
+		pBitmapInfo->biSizeImage = pBitmapInfo->biHeight * pBitmapInfo->biWidth * 4;
+
+		BYTE* pDest = NULL;
+		HBITMAP hBitmap = CreateDIBSection(dcSrc, (BITMAPINFO*)pBitmapInfo, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+
+		if (pDest == NULL || hBitmap == NULL)
+		{
+			free(pBitmapInfo);
+			return FALSE;
+		}
+
+		ASSERT(pBitmapInfo->biSizeImage <= dwResourceSize - sizeof(BITMAPINFOHEADER));
+
+		MEMCPY_S(pDest, &lpIconImage->icColors, pBitmapInfo->biSizeImage);
+
+		*this = hBitmap; // NOTE: it call DeleteObejct in destructor
+		free(pBitmapInfo);
+	}
+	else
+	{
+		*this = CreateIconFromResourceEx((PBYTE)lpIconImage, dwResourceSize, TRUE,
+			0x00030000, szIcon.cx, szIcon.cy, LR_DEFAULTCOLOR);
 	}
 
-	if (FAILED(m_xmlSectionNode->appendChild(xmlElementPtr, &xmlNodePtr)))
+	return !IsEmpty();
+}
+
+
+LPBYTE CXTPImageManagerIconHandle::PreMultiply()
+{
+	if (m_pBits != NULL)
+		return m_pBits;
+
+	if (m_hBitmap == 0)
 		return NULL;
 
-	CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)GetSection(pszSection);
+	LPBYTE pBits = NULL;
 
-	pSection->m_bInitialized = TRUE;
-	pSection->m_xmlSectionNode = xmlNodePtr;
+	HBITMAP hBitmapAlpha =  CXTPImageManagerIcon::PreMultiplyAlphaBitmap(m_hBitmap, NULL, &pBits);
+	if (!hBitmapAlpha || (pBits == NULL))
+		return NULL;
 
-	return pSection;
+	Clear();
+
+	m_hBitmap = hBitmapAlpha;
+	m_pBits = pBits;
+	m_bClearHandles = TRUE;
+	m_szIcon = _GetExtent();
+
+	return m_pBits;
 }
 
-
-void CXTPPropExchangeXMLNode::SetLoading(BOOL bLoading)
+BOOL CXTPImageManagerIcon::IsAlpha() const
 {
-	m_bLoading = bLoading;
+	return m_hIcon.IsAlpha();
 }
 
-BOOL CXTPPropExchangeXMLNode::IsPropertyExists(LPCTSTR pszPropName)
+HBITMAP CXTPImageManagerIcon::InvertAlphaBitmap(HBITMAP hBitmap)
 {
-	if (!OnBeforeExchange())
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	DWORD* pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+
+	HBITMAP hBitmapAlpha = 0;
+
+	TRY
+	{
+		UINT nSize;
+		if (!GetBitmapBits(dcSrc, hBitmap, pBitmapInfo, (LPVOID&)pBits, nSize))
+			return 0;
+
+		DWORD* pDest = NULL;
+
+		hBitmapAlpha = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDest, NULL, 0);
+		if (pDest == NULL || hBitmapAlpha == NULL)
+			AfxThrowMemoryException();
+
+		int cy = pBitmapInfo->bmiHeader.biHeight;
+		int cx = pBitmapInfo->bmiHeader.biWidth;
+
+		for (int y = 0; y < cy; y++)
+		{
+			DWORD* pBitsRow = &pBits[y * cx + cx - 1];
+
+			for (int x = 0; x < cx; x++)
+			{
+				*pDest++ = *pBitsRow--;
+			}
+		}
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+	}
+	END_CATCH
+
+	FREE(pBits);
+	FREE(pBitmapInfo);
+
+	return hBitmapAlpha;
+}
+
+HBITMAP CXTPImageManagerIcon::PreMultiplyAlphaBitmap(HBITMAP hBitmap, BOOL* pbAlpha, LPBYTE* lpBits)
+{
+	if (lpBits) *lpBits = NULL;
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PBYTE pBitsSrc = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+
+	HBITMAP hBitmapAlpha = 0;
+
+	TRY
+	{
+		UINT nSize;
+		if (!GetBitmapBits(dcSrc, hBitmap, pBitmapInfo, (LPVOID&)pBitsSrc, nSize))
+			return 0;
+
+		BYTE* pBitsDest = NULL;
+
+		hBitmapAlpha = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pBitsDest, NULL, 0);
+		if (pBitsDest == NULL || hBitmapAlpha == NULL)
+			AfxThrowMemoryException();
+
+		MEMCPY_S(pBitsDest, pBitsSrc, nSize);
+
+		BOOL bAlpha0Found = FALSE;
+
+		BYTE* pBitsI = pBitsDest;
+		UINT nCount = nSize / 4;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBitsI[3];
+			pBitsI[0] = BYTE(pBitsI[0] * nAlpha / 255);
+			pBitsI[1] = BYTE(pBitsI[1] * nAlpha / 255);
+			pBitsI[2] = BYTE(pBitsI[2] * nAlpha / 255);
+
+			if (pbAlpha)
+			{
+				if (nAlpha == 0)
+					bAlpha0Found = TRUE;
+
+				if ((nAlpha != 255 && nAlpha != 0) || (nAlpha == 255 && bAlpha0Found) || (nAlpha == 255 && *pbAlpha == -1))
+					*pbAlpha = TRUE;
+			}
+			pBitsI += 4;
+		}
+
+		if (pbAlpha && (*pbAlpha == FALSE))
+		{
+			MEMCPY_S(pBitsDest, pBitsSrc, nSize);
+		}
+
+		if (lpBits)
+		{
+			*lpBits = pBitsDest;
+		}
+
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+	}
+	END_CATCH
+
+	FREE(pBitsSrc);
+	FREE(pBitmapInfo);
+
+	return hBitmapAlpha;
+}
+
+BOOL CXTPImageManagerIcon::GetBitmapBits(CDC& dcSrc, HBITMAP hBitmap, PBITMAPINFO& pBitmapInfo, LPVOID& pBits, UINT& nSize)
+{
+	if (hBitmap == 0)
 		return FALSE;
 
-	if (GetEntryNode(pszPropName, FALSE) != NULL)
+	BITMAPINFO  bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+
+
+	if (GetDIBits(dcSrc, hBitmap, 0, 0, NULL, (BITMAPINFO*)&bmi, DIB_RGB_COLORS) == 0)
+		return FALSE;
+
+	if (bmi.bmiHeader.biBitCount != 32)
+		return FALSE;
+
+	nSize = bmi.bmiHeader.biHeight * bmi.bmiHeader.biWidth * 4;
+	pBits = (PBYTE)malloc(nSize);
+	if (pBits == NULL)
+		return FALSE;
+
+	if ((pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + 3 * sizeof(COLORREF))) == NULL)
+	{
+		FREE(pBits);
+		return FALSE;
+	}
+
+	MEMCPY_S(pBitmapInfo, &bmi, sizeof(BITMAPINFOHEADER));
+
+	if (GetDIBits(dcSrc, hBitmap, 0, bmi.bmiHeader.biHeight, pBits, pBitmapInfo, DIB_RGB_COLORS) == NULL)
+	{
+		FREE(pBits);
+		FREE(pBitmapInfo);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+HBITMAP CXTPImageManagerIcon::CopyAlphaBitmap(HBITMAP hBitmap, LPBYTE* lpBits)
+{
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PBYTE pBitsSrc = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+	UINT nSize;
+
+	if (!GetBitmapBits(dcSrc, hBitmap, pBitmapInfo, (LPVOID&)pBitsSrc, nSize))
+		return 0;
+
+	BYTE* pBitsDest = NULL;
+	HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pBitsDest, NULL, 0);
+
+	if (pBitsDest != NULL && hBmp != NULL)
+	{
+		MEMCPY_S(pBitsDest, pBitsSrc, nSize);
+	}
+
+	FREE(pBitsSrc);
+	FREE(pBitmapInfo);
+
+	if (lpBits)
+	{
+		*lpBits = pBitsDest;
+	}
+
+	return hBmp;
+
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIcon
+CXTPImageManagerIcon::CXTPImageManagerIcon(UINT nID, int nWidth, int nHeight, CXTPImageManagerIconSet* pIconSet)
+	: m_nID(nID)
+	, m_nWidth(nWidth)
+	, m_nHeight(nHeight)
+	, m_pIconSet(pIconSet)
+	, m_pImageList(NULL)
+{
+	m_bDrawComposited = FALSE;
+
+	if (m_pIconSet)
+	{
+		m_hIcon.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hFaded.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hShadow.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hHot.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hChecked.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hPressed.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hDisabled.m_pImageManager = m_pIconSet->m_pImageManager;
+		m_hDisabledAuto.m_pImageManager = m_pIconSet->m_pImageManager;
+	}
+
+}
+
+CXTPImageManagerIcon::CXTPImageManagerIcon(UINT nID, int nWidth, int nHeight, CXTPImageManagerImageList* pImageList)
+	: m_nID(nID)
+	, m_nWidth(nWidth)
+	, m_nHeight(nHeight)
+	, m_pIconSet(NULL)
+	, m_pImageList(pImageList)
+{
+}
+
+
+CXTPImageManagerIcon::~CXTPImageManagerIcon()
+{
+	Clear(TRUE);
+}
+
+UINT CXTPImageManagerIcon::GetID() const
+{
+	return m_nID;
+}
+
+int CXTPImageManagerIcon::GetHeight() const
+{
+	return m_nHeight;
+}
+
+int CXTPImageManagerIcon::GetWidth() const
+{
+	return m_nWidth;
+}
+
+void CXTPImageManagerIcon::Clear(BOOL bIcon /* = FALSE */)
+{
+	if (bIcon)
+	{
+		m_hIcon.Clear();
+	}
+	m_hFaded.Clear();
+	m_hShadow.Clear();
+	m_hHot.Clear();
+	m_hChecked.Clear();
+	m_hPressed.Clear();
+	m_hDisabled.Clear();
+	m_hDisabledAuto.Clear();
+}
+
+void CXTPImageManagerIcon::Refresh()
+{
+	m_hFaded.Clear();
+	m_hShadow.Clear();
+	m_hDisabledAuto.Clear();
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetIcon()
+{
+	return m_hIcon;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetIcon(XTPImageState imageState)
+{
+	return imageState == xtpImageDisabled ? GetDisabledIcon() : imageState == xtpImageHot? GetHotIcon() :
+		imageState == xtpImageChecked? GetCheckedIcon() : imageState == xtpImagePressed? GetPressedIcon() : GetIcon();
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetFadedIcon()
+{
+	if (m_hFaded.IsEmpty())
+	{
+		CreateFadedIcon();
+	}
+	return m_hFaded.IsEmpty() ? m_hIcon : m_hFaded;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetShadowIcon()
+{
+	if (m_hShadow.IsEmpty())
+	{
+		CreateShadowIcon();
+	}
+	return m_hShadow;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetHotIcon()
+{
+	return !m_hHot.IsEmpty() ? m_hHot : m_hIcon;
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetCheckedIcon()
+{
+	return !m_hChecked.IsEmpty() ? m_hChecked : GetHotIcon();
+}
+
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetPressedIcon()
+{
+	return !m_hPressed.IsEmpty() ? m_hPressed : GetHotIcon();
+}
+
+BOOL CXTPImageManagerIcon::HasDisabledIcon() const
+{
+	if (!m_hDisabled.IsEmpty())
+		return TRUE;
+
+	if (!m_hDisabledAuto.IsEmpty())
 		return TRUE;
 
 	return FALSE;
 }
 
-
-class CXTPPropExchangeXMLNode::CXMLEnumerator : public CXTPPropExchangeEnumerator
+CXTPImageManagerIconHandle& CXTPImageManagerIcon::GetDisabledIcon(BOOL bCreateIfNotExists /*= TRUE*/)
 {
-public:
-	CXMLEnumerator::CXMLEnumerator(CXTPPropExchangeXMLNode* pContainer, LPCTSTR lpszSection)
-		: CXTPPropExchangeEnumerator(pContainer, lpszSection)
+	if (!m_hDisabled.IsEmpty())
+		return m_hDisabled;
+
+	if (!m_hDisabledAuto.IsEmpty())
+		return m_hDisabledAuto;
+
+	if (bCreateIfNotExists)
 	{
+		CreateDisabledIcon();
 	}
 
-public:
-	CXTPDOMNodePtr GetProfileNode(POSITION pos)
-	{
-		CXTPDOMNodePtr xmlNodePtr;
-
-		if (m_xmlNodes == NULL)
-			return NULL;
-
-		if (SUCCEEDED(m_xmlNodes->get_item((int)(INT_PTR)pos, &xmlNodePtr)))
-			return xmlNodePtr;
-
-		return 0;
-	}
-
-	POSITION GetPosition(DWORD dwCount = 0, BOOL /*bCompactMode*/ = TRUE)
-	{
-		m_nCount = dwCount;
-
-		if (!m_pContainer)
-			return NULL;
-
-		if (m_pContainer->IsLoading())
-		{
-			if (!m_pContainer->OnBeforeExchange())
-				return NULL;
-
-			CString strNode;
-			strNode.Format(_T("%s"), m_strSectionName.IsEmpty() ? _T("*") : (LPCTSTR)m_strSectionName);
-
-			if (FAILED(((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->selectNodes(CT2BSTR(strNode), &m_xmlNodes)))
-			{
-				return NULL;
-			}
-
-			m_xmlNextNode = GetProfileNode(0);
-			if (m_xmlNextNode == 0)
-				return NULL;
-		}
-
-		return (POSITION)1;
-	}
-
-	CXTPPropExchange* GetNext(POSITION& pos)
-	{
-		CXTPPropExchangeXMLNode* pSection = (CXTPPropExchangeXMLNode*)m_pContainer->GetSection(m_strSectionName);
-
-		CXTPDOMNodePtr xmlNodePtr;
-		CXTPDOMElementPtr xmlElementPtr;
-
-
-		if (m_pContainer->IsStoring())
-		{
-			ASSERT((DWORD)(DWORD_PTR)pos <= m_nCount);
-
-			pSection->m_xmlDocPtr->createElement(CT2BSTR(m_strSectionName), &xmlElementPtr);
-			ASSERT(xmlElementPtr != 0);
-			if (xmlElementPtr)
-			{
-				((CXTPPropExchangeXMLNode*)m_pContainer)->m_xmlSectionNode->appendChild(xmlElementPtr, &xmlNodePtr);
-			}
-
-			pos++;
-			if ((DWORD)(DWORD_PTR)pos > m_nCount) pos = NULL;
-		}
-		else
-		{
-			ASSERT(m_xmlNextNode != NULL);
-			ASSERT(m_xmlNodes != NULL);
-
-			xmlNodePtr = m_xmlNextNode;
-
-			m_xmlNextNode = GetProfileNode(pos);
-			if (m_xmlNextNode == NULL)
-				pos = NULL;
-			else
-				pos++;
-
-		}
-
-		pSection->m_bInitialized = TRUE;
-		pSection->m_xmlSectionNode = xmlNodePtr;
-
-		return pSection;
-	}
-
-	int GetCount() const
-	{
-		long nCount = m_nCount;
-
-		if (m_pContainer && m_pContainer->IsLoading() && SUCCEEDED(m_xmlNodes->get_length(&nCount)))
-		{
-			return nCount;
-		}
-
-		return nCount;
-	}
-
-protected:
-	CXTPDOMNodePtr m_xmlNextNode;
-	XTPXML::IXMLDOMNodeListPtr m_xmlNodes;
-};
-
-
-
-CXTPPropExchangeEnumerator* CXTPPropExchangeXMLNode::GetEnumerator(LPCTSTR lpszSection)
-{
-	if (IsStoring() || !IsPropertyExists(_T("Count")))
-		return new CXMLEnumerator(this, lpszSection);
-
-	return new CXTPPropExchangeEnumerator(this, lpszSection);
+	return m_hDisabledAuto;
 }
 
-void CXTPPropExchangeXMLNode::SetEncoding(LPCTSTR lpszEncoding)
+BOOL CXTPImageManagerIcon::SetIcon(const CXTPImageManagerIconHandle& iconHandle, XTPImageState imageState)
 {
-	m_strEncoding = lpszEncoding;
-}
-
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropExchangeIniFile
-
-IMPLEMENT_DYNAMIC(CXTPPropExchangeIniFile, CXTPPropExchange)
-
-CXTPPropExchangeIniFile::CXTPPropExchangeIniFile(BOOL bLoading, LPCTSTR lpszParentSection, LPCTSTR lpszSection)
-{
-	ASSERT(lpszSection != NULL);
-
-	m_bLoading = bLoading;
-	m_bTempFile = TRUE;
-	m_bEmptySection = TRUE;
-
-	if (lpszParentSection == NULL)
+	switch (imageState)
 	{
-		m_strSectionName = lpszSection;
-	}
-	else
-	{
-		m_strSectionName = CString(lpszParentSection) + _T("\\") + CString(lpszSection);
-	}
-
-}
-
-CXTPPropExchangeIniFile::~CXTPPropExchangeIniFile()
-{
-	if (IsRootSection() && !m_strFileName.IsEmpty() && m_bTempFile)
-	{
-		::DeleteFile((LPTSTR)(LPCTSTR)m_strFileName);
-	}
-
-}
-
-
-void CXTPPropExchangeIniFile::EmptySection()
-{
-	if (m_bEmptySection || m_strSectionName.IsEmpty())
-		return;
-
-	CXTPPropExchange::EmptySection();
-
-	size_t nLength = (size_t)m_strSectionName.GetLength();
-	LPTSTR lpszBuffer = 0;
-	int nSize = 8000;
-
-	do
-	{
-		lpszBuffer = new TCHAR[nSize];
-		int nResult = GetPrivateProfileSectionNames(lpszBuffer, nSize, m_strFileName);
-
-		if (nResult == 0)
-		{
-			delete[] lpszBuffer;
-			return;
-		}
-
-		if (nResult == nSize - 2)
-		{
-			nSize = nSize * 2;
-			delete[] lpszBuffer;
-			lpszBuffer = 0;
-		}
-	}
-	while (lpszBuffer == 0);
-
-	LPTSTR lpszSection = lpszBuffer;
-	size_t nSectionLen = _tcslen(lpszSection);
-
-	while (nSectionLen > 0)
-	{
-		if (nLength <= nSectionLen &&
-			(memcmp((LPCTSTR)m_strSectionName, lpszSection, nLength * sizeof(TCHAR)) == 0) &&
-			(nLength == nSectionLen || lpszSection[nLength] == _T('\\')))
-		{
-			WritePrivateProfileString(lpszSection, NULL, NULL, m_strFileName);
-		}
-
-		lpszSection = lpszSection + nSectionLen + 1;
-		nSectionLen = _tcslen(lpszSection);
-	}
-
-
-	delete[] lpszBuffer;
-}
-
-CXTPPropExchange* CXTPPropExchangeIniFile::GetSection(LPCTSTR lpszSection)
-{
-	OnBeforeExchange();
-
-	CXTPPropExchangeIniFile* pSection = new CXTPPropExchangeIniFile(IsLoading(), m_strSectionName, lpszSection);
-	pSection->InitSection(this);
-	pSection->m_strFileName = m_strFileName;
-	pSection->m_bTempFile = m_bTempFile;
-	return pSection;
-}
-
-BOOL CXTPPropExchangeIniFile::OnBeforeExchange()
-{
-	if (!m_bInitialized)
-	{
-		if (m_strFileName.IsEmpty())
-		{
-			TCHAR lpszTempPath[MAX_PATH];
-			TCHAR lpszTempFileName[MAX_PATH];
-
-			if (GetTempPath(MAX_PATH, lpszTempPath) == 0)
-				return FALSE;
-
-			if (GetTempFileName(lpszTempPath, _T("xtp"), 0, lpszTempFileName) == 0)
-				return FALSE;
-
-			m_strFileName = lpszTempFileName;
-			m_bTempFile = TRUE;
-		}
-
-		m_bInitialized = TRUE;
-	}
-	return !m_strFileName.IsEmpty();
-}
-
-
-BOOL CXTPPropExchangeIniFile::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
-				void* pvProp, const void* pvDefault /*= NULL*/)
-{
-	if (m_bLoading)
-	{
-		if (!m_bUseDefaultOnLoad)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		CString strValue;
-
-		DWORD dwSize = GetPrivateProfileString(m_strSectionName, pszPropName, NULL, strValue.GetBuffer(256), 256, m_strFileName);
-
-		if (dwSize == 0)
-			return CopyPropValue(vtProp, pvProp, pvDefault);
-
-		if (dwSize == 256 - 1)
-		{
-			dwSize = GetPrivateProfileString(m_strSectionName, pszPropName, NULL, strValue.GetBuffer(16000), 16000, m_strFileName);
-			ASSERT(dwSize < 16000 - 1);
-		}
-
-		strValue.ReleaseBuffer(dwSize);
-
-		return ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault);
-	}
-	else
-	{
-		if (!m_bUseDefaultOnSave)
-			pvDefault = NULL;
-
-		if (!OnBeforeExchange())
-			return FALSE;
-
-		if (IsSamePropValue(vtProp, pvProp, pvDefault))
-		{
-			if (!m_bEmptySection)
-				WritePrivateProfileString (m_strSectionName, pszPropName, NULL, m_strFileName);
-
-			return TRUE;
-		}
-
-		CString strValue;
-		if (!ExchangePropStringHelper(strValue, vtProp, pvProp, pvDefault))
-			return FALSE;
-
-		if (!WritePrivateProfileString (m_strSectionName, pszPropName, strValue, m_strFileName))
+		case xtpImageNormal:
+			SetNormalIcon(iconHandle);
+			break;
+		case xtpImageHot:
+			SetHotIcon(iconHandle);
+			break;
+		case xtpImageChecked:
+			SetCheckedIcon(iconHandle);
+			break;
+		case xtpImageDisabled:
+			SetDisabledIcon(iconHandle);
+			break;
+		case xtpImagePressed:
+			SetPressedIcon(iconHandle);
+			break;
+		default:
 			return FALSE;
 	}
 
@@ -2587,384 +2306,2102 @@ BOOL CXTPPropExchangeIniFile::ExchangeProp(LPCTSTR pszPropName, VARTYPE vtProp,
 }
 
 
-void CXTPPropExchangeIniFile::SaveToFile(LPCTSTR strFileName)
+BOOL CXTPImageManagerIcon::SetIcon(const CXTPImageManagerIconHandle& hIcon)
 {
-	ASSERT(IsRootSection() && IsStoring());
+	ASSERT(!hIcon.IsEmpty());
+	Clear(TRUE);
+	m_hIcon.CopyHandle(hIcon);
+	CSize sz = GetExtent();
 
-	if (m_strFileName.Compare(strFileName) != 0 && !m_strFileName.IsEmpty())
+	m_nHeight = sz.cy;
+	m_nWidth = sz.cx;
+
+	if (m_pIconSet)
+		m_pIconSet->RefreshAll();
+
+	return TRUE;
+}
+
+BOOL CXTPImageManagerIcon::SetIcon(UINT nIDResourceIcon, int nWidth, int nHeight)
+{
+	Clear(TRUE);
+
+	ASSERT(nWidth != 0 && nHeight != 0);
+
+	if (!m_hIcon.CreateIconFromResource(MAKEINTRESOURCE(nIDResourceIcon), CSize(nWidth, nHeight)))
+		return FALSE;
+
+	m_nHeight = nHeight;
+	m_nWidth = nWidth;
+
+	return TRUE;
+}
+
+void CXTPImageManagerIcon::SetNormalIcon(const CXTPImageManagerIconHandle& hIcon)
+{
+	ASSERT(!hIcon.IsEmpty());
+
+	Refresh();
+	m_hIcon.CopyHandle(hIcon);
+
+
+#ifdef _DEBUG
+	CSize sz = GetExtent();
+
+	ASSERT((int)m_nHeight == sz.cy);
+	ASSERT((int)m_nWidth == sz.cx);
+
+#endif
+}
+
+void CXTPImageManagerIcon::SetHotIcon(const CXTPImageManagerIconHandle& hIcon)
+{
+	Refresh();
+	m_hHot.CopyHandle(hIcon);
+}
+
+void CXTPImageManagerIcon::SetCheckedIcon(const CXTPImageManagerIconHandle& hIcon)
+{
+	Refresh();
+	m_hChecked.CopyHandle(hIcon);
+}
+
+void CXTPImageManagerIcon::SetPressedIcon(const CXTPImageManagerIconHandle& hIcon)
+{
+	Refresh();
+	m_hPressed.CopyHandle(hIcon);
+}
+
+void CXTPImageManagerIcon::SetDisabledIcon(const CXTPImageManagerIconHandle& hIcon)
+{
+	Refresh();
+	m_hDisabled.CopyHandle(hIcon);
+}
+
+
+COLORREF CXTPImageManagerIcon::LightenColor(COLORREF clr, double factor)
+{
+	return RGB(
+		factor * 255 + (1.0 - factor) * GetRValue(clr),
+		factor * 255 + (1.0 - factor) * GetGValue(clr),
+		factor * 255 + (1.0 - factor) * GetBValue(clr)) ;
+}
+
+void CXTPImageManagerIcon::CreateFadedIcon()
+{
+	ASSERT(m_hFaded.IsEmpty());
+
+	if (!m_hIcon.m_bUseResources)
+		return;
+
+	CXTPImageManagerIconHandle hFaded;
+	hFaded.CopyHandle(m_hIcon);
+
+	if (!hFaded.IsAlpha())
 	{
-		::DeleteFile(strFileName);
-		::CopyFile(m_strFileName, strFileName, FALSE);
+		ICONINFO info;
+		if (GetIconInfo(hFaded.GetIcon(), &info))
+		{
+			if (!CXTPDrawHelpers::IsLowResolution())
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+
+				for (int i = 0; i < bmp.bmWidth; i++)
+				for (int j = 0; j < bmp.bmHeight; j++)
+				{
+					COLORREF clr = dc.GetPixel(i, j);
+					COLORREF clrMask = dcMask.GetPixel(i, j);
+					if (clrMask == 0)
+						dc.SetPixel(i, j, LightenColor(clr, .3));
+				}
+			}
+
+			hFaded = CreateIconIndirect(&info);
+
+			::DeleteObject(info.hbmColor);
+			::DeleteObject(info.hbmMask);
+		}
+	}
+	else if (hFaded.PreMultiply())
+	{
+		PBYTE pBits = hFaded.PreMultiply();
+		CSize szIcon = hFaded.GetExtent();
+
+		UINT nCount = szIcon.cx * szIcon.cy;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBits[3];
+			if (nAlpha != 0)
+			{
+				pBits[0] = BYTE(.3 * nAlpha + (1.0 - .3) * pBits[0]);
+				pBits[1] = BYTE(.3 * nAlpha + (1.0 - .3) * pBits[1]);
+				pBits[2] = BYTE(.3 * nAlpha + (1.0 - .3) * pBits[2]);
+			}
+			pBits += 4;
+		}
+	}
+
+	m_hFaded.CopyHandle(hFaded);
+}
+
+void CXTPImageManagerIcon::CreateShadowIcon()
+{
+	ASSERT(m_hShadow.IsEmpty());
+
+	if (!m_hIcon.m_bUseResources)
+		return;
+
+	COLORREF clrBackground = GetXtremeColor(XPCOLOR_HIGHLIGHT);
+	COLORREF clrShadow = RGB(GetRValue(clrBackground) * .75, GetGValue(clrBackground) * .75, GetBValue(clrBackground) * .75);
+
+	CXTPImageManagerIconHandle hShadow;
+	hShadow.CopyHandle(GetHotIcon());
+
+	if (!hShadow.IsAlpha())
+	{
+		ICONINFO info;
+		if (GetIconInfo(hShadow.GetIcon(), &info))
+		{
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+
+				for (int i = 0; i < bmp.bmWidth; i++)
+				for (int j = 0; j < bmp.bmHeight; j++)
+				{
+					COLORREF clrMask = dcMask.GetPixel(i, j);
+					if (clrMask == 0)
+						dc.SetPixel(i, j, clrShadow);
+				}
+			}
+
+			hShadow = CreateIconIndirect(&info);
+
+			::DeleteObject(info.hbmMask);
+			::DeleteObject(info.hbmColor);
+		}
+	}
+	else if (hShadow.PreMultiply())
+	{
+		PBYTE pBits = hShadow.PreMultiply();
+		CSize szIcon = hShadow.GetExtent();
+
+		UINT nCount = szIcon.cx * szIcon.cy;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBits[3];
+			pBits[0] = BYTE(GetRValue(clrShadow) * nAlpha / 255);
+			pBits[1] = BYTE(GetGValue(clrShadow) * nAlpha / 255);
+			pBits[2] = BYTE(GetBValue(clrShadow) * nAlpha / 255);
+			pBits += 4;
+		}
+	}
+
+	m_hShadow.CopyHandle(hShadow);
+}
+
+void CXTPImageManagerIcon::CreateDisabledIcon(COLORREF clrDisabledLight /*= (COLORREF)-1*/, COLORREF clrDisabledDark /*= (COLORREF)-1*/)
+{
+	if (!m_hDisabledAuto.IsEmpty())
+		return;
+
+	BOOL bOfficeDisabledIcons = clrDisabledLight != (COLORREF)-1 && clrDisabledDark != (COLORREF)-1;
+
+	CXTPImageManagerIconHandle hDisabled;
+	hDisabled.CopyHandle(m_hIcon);
+
+	if (!hDisabled.IsAlpha())
+	{
+		ICONINFO info;
+		if (GetIconInfo(hDisabled.GetIcon(), &info))
+		{
+			{
+				CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(info.hbmColor));
+				CXTPCompatibleDC dcMask(NULL, CBitmap::FromHandle(info.hbmMask));
+
+				BITMAP bmp;
+				::GetObject(info.hbmColor, sizeof(BITMAP), &bmp);
+
+				for (int i = 0; i < bmp.bmWidth; i++)
+				for (int j = 0; j < bmp.bmHeight; j++)
+				{
+					COLORREF clrMask = dcMask.GetPixel(i, j);
+					COLORREF clr = dc.GetPixel(i, j);
+
+					if (clrMask == 0)
+					{
+						if (bOfficeDisabledIcons)
+						{
+							double dGray = (GetRValue(clr) * 0.299 + GetGValue(clr) * 0.587 + GetBValue(clr) * 0.114)/255;
+							double dLight = 1.0 - dGray;
+
+							clr = RGB(dLight * GetRValue(clrDisabledDark) + dGray * GetRValue(clrDisabledLight),
+								dLight * GetGValue(clrDisabledDark) + dGray * GetGValue(clrDisabledLight),
+								dLight * GetBValue(clrDisabledDark) + dGray * GetBValue(clrDisabledLight));
+
+							dc.SetPixel(i, j, clr);
+						}
+						else
+						{
+							double dGray = GetRValue(clr) * 0.299 + GetGValue(clr) * 0.587 + GetBValue(clr) * 0.114;
+							int nGray = (BYTE)(pow(dGray / 255.0, CXTPImageManager::m_dDisabledBrightnessFactor) * 255.0);
+
+							dc.SetPixel(i, j, RGB(nGray, nGray, nGray));
+						}
+					}
+				}
+			}
+
+			hDisabled = CreateIconIndirect(&info);
+			::DeleteObject(info.hbmMask);
+			::DeleteObject(info.hbmColor);
+
+		}
+	}
+	else if (hDisabled.PreMultiply())
+	{
+		PBYTE pBits = hDisabled.PreMultiply();
+		CSize szIcon = hDisabled.GetExtent();
+
+		UINT nCount = szIcon.cx * szIcon.cy;
+
+		for (UINT i = 0; i < nCount; i++)
+		{
+			int nAlpha = pBits[3];
+			if (nAlpha != 0)
+			{
+				int R = pBits[0] * 255 / nAlpha;
+				int G = pBits[1] * 255 / nAlpha;
+				int B = pBits[2] * 255 / nAlpha;
+
+				if (bOfficeDisabledIcons)
+				{
+					double dGray = (R * 0.114 + G * 0.587 + B * 0.299)/255.0;
+					double dLight = 1.0 - dGray;
+
+					R = BYTE(dLight * GetBValue(clrDisabledDark) + dGray * GetBValue(clrDisabledLight));
+					G = BYTE(dLight * GetGValue(clrDisabledDark) + dGray * GetGValue(clrDisabledLight));
+					B = BYTE(dLight * GetRValue(clrDisabledDark) + dGray * GetRValue(clrDisabledLight));
+				}
+				else
+				{
+					double dGray = R * 0.114 + G * 0.587 + B * 0.299;
+					R = G = B = (BYTE)(pow(dGray / 255.0, CXTPImageManager::m_dDisabledBrightnessFactor) * 255.0);
+					nAlpha = BYTE(nAlpha / CXTPImageManager::m_dDisabledAlphaFactor);
+				}
+
+				pBits[0] = BYTE(R * nAlpha / 255);
+				pBits[1] = BYTE(G * nAlpha / 255);
+				pBits[2] = BYTE(B * nAlpha / 255);
+			}
+
+			pBits += 4;
+		}
+	}
+
+	m_hDisabledAuto.CopyHandle(hDisabled);
+}
+
+CSize CXTPImageManagerIcon::GetExtent() const
+{
+	return m_hIcon.GetExtent();
+}
+
+CSize CXTPImageManagerIcon::GetExtent(HICON hIcon)
+{
+	ASSERT(hIcon);
+
+	CSize extent(0);
+	if (hIcon)
+	{
+		ICONINFO iconinfo;
+		if (::GetIconInfo(hIcon, &iconinfo))
+		{
+			BITMAP bmpinfo;
+			if (::GetObject(iconinfo.hbmMask, sizeof(bmpinfo), &bmpinfo))
+			{
+				extent.cx = (int)bmpinfo.bmWidth;
+				extent.cy = (int)bmpinfo.bmHeight;
+				if (!iconinfo.hbmColor)
+				{
+					// b/w icons have double size for XOR and AND masks
+					extent.cy /= 2;
+				}
+			}
+			// cleanup GDI
+			if (iconinfo.hbmMask) ::DeleteObject(iconinfo.hbmMask);
+			if (iconinfo.hbmColor) ::DeleteObject(iconinfo.hbmColor);
+		}
+	}
+	return extent;
+}
+
+
+HICON CXTPImageManagerIcon::ScaleToFit(HICON hIcon, CSize szExtent, int nWidth)
+{
+	if (nWidth == 0 || szExtent == CSize(0))
+	{
+		// invalid arg
+		return NULL;
+	}
+	if (nWidth == szExtent.cx)
+		return ::CopyIcon(hIcon);
+
+	CSize szDesiredExtent(nWidth, MulDiv(szExtent.cy, nWidth, szExtent.cx));
+
+	// scale the icon
+	CImageList images;
+	VERIFY(images.Create(szDesiredExtent.cx, szDesiredExtent.cy, ILC_COLOR32 | ILC_MASK, 1, 1));
+	images.Add(hIcon);
+	return images.ExtractIcon(0);
+}
+
+BOOL CXTPImageManagerIcon::GetDIBBitmap(HBITMAP hBitmap, PBYTE& pBits, UINT& nBitsSize, PBITMAPINFO& pBitmapInfo, UINT& nBitmapInfoSize)
+{
+	pBits = 0;
+	pBitmapInfo = 0;
+
+	BITMAPINFO  bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	TRY
+	{
+		if (GetDIBits(dcSrc, hBitmap, 0, 0, NULL, (BITMAPINFO*)&bmi, DIB_RGB_COLORS) == 0)
+			AfxThrowMemoryException();
+
+		nBitsSize = bmi.bmiHeader.biSizeImage != 0? bmi.bmiHeader.biSizeImage :
+			bmi.bmiHeader.biHeight * bmi.bmiHeader.biWidth * 4;
+
+		pBits = (PBYTE)malloc(nBitsSize);
+		if (pBits == NULL)
+			AfxThrowMemoryException();
+
+		int nColorTableSize = bmi.bmiHeader.biBitCount == 4 ? 16 : bmi.bmiHeader.biBitCount == 8 ? 256 : 3;
+
+		nBitmapInfoSize = sizeof(BITMAPINFOHEADER) + nColorTableSize * sizeof(COLORREF);
+		if ((pBitmapInfo = (PBITMAPINFO)malloc(nBitmapInfoSize)) == NULL)
+			AfxThrowMemoryException();
+
+		MEMCPY_S(pBitmapInfo, &bmi, sizeof(BITMAPINFOHEADER));
+
+		if (GetDIBits(dcSrc, hBitmap, 0, bmi.bmiHeader.biHeight, pBits, pBitmapInfo, DIB_RGB_COLORS) == NULL)
+			AfxThrowMemoryException();
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+		return FALSE;
+	}
+	END_CATCH
+
+	return TRUE;
+}
+
+HBITMAP CXTPImageManagerIcon::ReadDIBBitmap(CArchive& ar, LPBYTE* lpBits)
+{
+	PBITMAPINFO pBitmapInfo = 0;
+	PBYTE pBitsSrc = 0;
+
+	DWORD dwCount = (DWORD) ar.ReadCount();
+	DWORD dwBitsCount = 0;
+
+	if (dwCount > 0)
+	{
+		pBitmapInfo = (PBITMAPINFO)malloc(dwCount);
+		ar.Read(pBitmapInfo, dwCount);
+
+		dwBitsCount = (DWORD) ar.ReadCount();
+		pBitsSrc = (PBYTE)malloc(dwBitsCount);
+		ar.Read(pBitsSrc, dwBitsCount);
+	}
+	else
+	{
+		return NULL;
+	}
+
+	if (!pBitmapInfo || dwBitsCount == 0)
+	{
+		FREE(pBitsSrc);
+		FREE(pBitmapInfo);
+		return NULL;
+	}
+
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	if (pBitmapInfo->bmiHeader.biSizeImage == 0)
+	{
+		pBitmapInfo->bmiHeader.biSizeImage = dwBitsCount;
+	}
+
+	BYTE* pBitsDest = NULL;
+	HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pBitsDest, NULL, 0);
+
+	if (!pBitsDest || !hBmp)
+	{
+		FREE(pBitsSrc);
+		FREE(pBitmapInfo);
+		return NULL;
+	}
+
+	MEMCPY_S(pBitsDest, pBitsSrc, min(dwBitsCount, pBitmapInfo->bmiHeader.biSizeImage));
+
+	FREE(pBitsSrc);
+	FREE(pBitmapInfo);
+
+	if (lpBits)
+	{
+		*lpBits = pBitsDest;
+	}
+
+	return hBmp;
+}
+
+void CXTPImageManagerIcon::WriteDIBBitmap(CArchive& ar, HBITMAP hBitmap)
+{
+	PBYTE pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+	UINT nBitsSize;
+	UINT nBitmapInfoSize;
+
+	if (GetDIBBitmap(hBitmap, pBits, nBitsSize, pBitmapInfo, nBitmapInfoSize))
+	{
+		ar.WriteCount(nBitmapInfoSize);
+		ar.Write(pBitmapInfo, nBitmapInfoSize);
+		ar.WriteCount(nBitsSize);
+		ar.Write(pBits, nBitsSize);
+	}
+	else
+	{
+		ar.WriteCount(0);
+	}
+	FREE(pBits);
+	FREE(pBitmapInfo);
+}
+
+void CXTPImageManagerIcon::SerializeIcon(CXTPImageManagerIconHandle& hIcon, CArchive& ar, long nSchema)
+{
+	if (ar.IsStoring())
+	{
+		CXTPImageManagerIconHandle hHandle;
+		hHandle.CopyHandle(hIcon);
+		hHandle.PreMultiply();
+
+		ICONINFO info;
+
+		if (!hHandle.IsEmpty())
+		{
+			if (hHandle.IsAlpha())
+			{
+				WriteDIBBitmap(ar, hHandle.GetBitmap());
+				ar.WriteCount(0);
+			}
+			else if (GetIconInfo(hHandle.GetIcon(), &info))
+			{
+				WriteDIBBitmap(ar, info.hbmColor);
+				WriteDIBBitmap(ar, info.hbmMask);
+
+				::DeleteObject(info.hbmColor);
+				::DeleteObject(info.hbmMask);
+
+			}
+			else
+			{
+				ar.WriteCount(0);
+				ar.WriteCount(0);
+			}
+		}
+		else
+		{
+			ar.WriteCount(0);
+			ar.WriteCount(0);
+		}
+	}
+	else
+	{
+		CXTPImageManagerIconHandle hHandle;
+
+		LPBYTE lpBits = NULL;
+		HBITMAP hbmColor = ReadDIBBitmap(ar, &lpBits);
+		HBITMAP hbmMask = ReadDIBBitmap(ar, NULL);
+
+		if (hbmColor)
+		{
+			if (hbmMask == 0)
+			{
+				hHandle = hbmColor;
+
+				if (nSchema > _XTP_SCHEMA_112)
+				{
+					hHandle.m_pBits = lpBits;
+				}
+				hbmColor = 0;
+			}
+			else
+			{
+				BITMAP bmp;
+				::GetObject(hbmColor, sizeof(BITMAP), &bmp);
+
+				CImageList il;
+				il.Create(bmp.bmWidth, bmp.bmHeight, ILC_COLOR24 | ILC_MASK, 0, 1);
+				il.Add(CBitmap::FromHandle(hbmColor), hbmMask == 0 ? (CBitmap*)NULL : CBitmap::FromHandle(hbmMask));
+				hHandle = il.ExtractIcon(0);
+			}
+
+			if (hbmColor) ::DeleteObject(hbmColor);
+			if (hbmMask) ::DeleteObject(hbmMask);
+		}
+
+		hIcon.CopyHandle(hHandle);
+	}
+
+}
+
+void CXTPImageManagerIcon::Serialize(CArchive& ar)
+{
+	long nSchema = _XTP_SCHEMA_CURRENT;
+
+	if (ar.IsStoring())
+	{
+		ar << m_nHeight;
+		ar << nSchema;
+
+	}
+	else
+	{
+		ar >> m_nHeight;
+		ar >> nSchema;
+	}
+	SerializeIcon(m_hIcon, ar, nSchema);
+	SerializeIcon(m_hDisabled, ar, nSchema);
+	SerializeIcon(m_hHot, ar, nSchema);
+
+	if (nSchema > _XTP_SCHEMA_875)
+	{
+		SerializeIcon(m_hChecked, ar, nSchema);
+	}
+	if (nSchema > _XTP_SCHEMA_98)
+	{
+		SerializeIcon(m_hPressed, ar, nSchema);
 	}
 }
 
-BOOL CXTPPropExchangeIniFile::LoadFromFile(LPCTSTR strFileName)
+void CXTPImageManagerIcon::Copy(CXTPImageManagerIcon* pIcon)
 {
-	ASSERT(IsRootSection() && IsLoading());
+	ASSERT(m_nID == pIcon->GetID());
+	m_nWidth = pIcon->m_nWidth;
+	m_nHeight = pIcon->m_nHeight;
 
-	if (!FILEEXISTS_S(strFileName))
-		return FALSE;
+	m_hIcon.CopyHandle(pIcon->m_hIcon);
+	m_hDisabled.CopyHandle(pIcon->m_hDisabled);
+	m_hHot.CopyHandle(pIcon->m_hHot);
+	m_hChecked.CopyHandle(pIcon->m_hChecked);
+	m_hPressed.CopyHandle(pIcon->m_hPressed);
 
-	if (!OnBeforeExchange())
-		return FALSE;
-
-	return ::CopyFile(strFileName, m_strFileName, FALSE);
+	m_hFaded.Clear();
+	m_hShadow.Clear();
+	m_hDisabledAuto.Clear();
 }
 
-void CXTPPropExchangeIniFile::AssignFile(LPCTSTR strFileName)
+void CXTPImageManagerIcon::DrawAlphaBitmap(CDC* pDC, HBITMAP hBitmap, CPoint ptDest, CSize szDest, CPoint ptSrc, CSize szSrc)
 {
-	m_strFileName = strFileName;
-	m_bTempFile = FALSE;
-	m_bEmptySection = FALSE;
+	if (szSrc == CSize(0))
+		szSrc = szDest;
+
+	CXTPCompatibleDC dc(NULL, CBitmap::FromHandle(hBitmap));
+
+	XTPImageManager()->AlphaBlend(pDC->GetSafeHdc(), CRect(ptDest, szDest),
+		dc, CRect(ptSrc, szSrc));
+
 }
-
-
-/////////////////////////////////////////////////////////////////////////////
-// PX_ functions
-
-BOOL AFX_CDECL PX_Byte(CXTPPropExchange* pPX, LPCTSTR pszPropName, BYTE& nValue, BYTE nDefault)
+CXTPImageManager* CXTPImageManagerIcon::GetImageManager() const
 {
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&nValue, short);
-	if (!pPX)
-		return FALSE;
-
-	return  pPX->ExchangeProp(pszPropName, VT_UI1, &nValue, &nDefault);
-}
-
-BOOL AFX_CDECL PX_Short(CXTPPropExchange* pPX, LPCTSTR pszPropName, short& sValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&sValue, short);
-	if (!pPX)
-		return FALSE;
-
-	return  pPX->ExchangeProp(pszPropName, VT_I2, &sValue);
-}
-
-BOOL AFX_CDECL PX_Short(CXTPPropExchange* pPX, LPCTSTR pszPropName, short& sValue,
-	short sDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&sValue, short);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I2, &sValue, &sDefault);
-}
-
-BOOL AFX_CDECL PX_UShort(CXTPPropExchange* pPX, LPCTSTR pszPropName, USHORT& usValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&usValue, USHORT);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I2, &usValue);
-}
-
-BOOL AFX_CDECL PX_UShort(CXTPPropExchange* pPX, LPCTSTR pszPropName, USHORT& usValue,
-	USHORT usDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&usValue, USHORT);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I2, &usValue, &usDefault);
-}
-
-BOOL AFX_CDECL PX_Long(CXTPPropExchange* pPX, LPCTSTR pszPropName, long& lValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&lValue, long);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &lValue);
-}
-
-BOOL AFX_CDECL PX_Long(CXTPPropExchange* pPX, LPCTSTR pszPropName, long& lValue,
-	long lDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&lValue, long);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &lValue, &lDefault);
-}
-
-BOOL AFX_CDECL PX_DWord(CXTPPropExchange* pPX, LPCTSTR pszPropName, DWORD& dwValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&dwValue, DWORD);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &dwValue);
-}
-
-BOOL AFX_CDECL PX_DWord(CXTPPropExchange* pPX, LPCTSTR pszPropName, DWORD& dwValue,
-	DWORD dwDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&dwValue, DWORD);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &dwValue, &dwDefault);
-}
-
-BOOL AFX_CDECL PX_UI8(CXTPPropExchange* pPX, LPCTSTR pszPropName,
-	ULONGLONG& ullValue, ULONGLONG ullDefault)
-{
-	POINT ptData64 = {(LONG)(DWORD)(ullValue >> 32), (LONG)(DWORD)ullValue};
-	POINT ptDefault = {(LONG)(DWORD)(ullDefault >> 32), (LONG)(DWORD)ullDefault};
-
-	BOOL bResult = PX_Point(pPX, pszPropName, ptData64, ptDefault);
-
-	if (bResult && pPX->IsLoading())
+	if (m_pIconSet)
 	{
-		ullValue = (DWORD)ptData64.x;
-		ullValue = ullValue << 32;
-		ullValue += (DWORD)ptData64.y;
+		ASSERT(m_pIconSet->m_pImageManager);
+		return m_pIconSet->m_pImageManager;
+	}
+
+	return XTPImageManager();
+}
+
+void CXTPImageManagerIcon::DrawMono(CDC* pDC, CPoint pt, CXTPImageManagerIconHandle& hIcon, CSize szIcon, COLORREF clrBrush)
+{
+	if (hIcon.IsAlpha())
+		return;
+
+	if (szIcon.cx == 0)
+		szIcon.cx = m_nWidth;
+
+	if (szIcon.cy == 0)
+		szIcon.cy = m_nHeight * szIcon.cx / m_nWidth;
+
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, szIcon.cx, szIcon.cy);
+	{
+		CXTPCompatibleDC dc(pDC, &bmp);
+		dc.FillSolidRect(0, 0, szIcon.cx, szIcon.cy, 0xFFFFFF);
+
+		Draw(&dc, CPoint(0, 0), hIcon, szIcon);
+	}
+	pDC->DrawState(pt, szIcon, bmp, (UINT)DSS_MONO, CBrush(clrBrush));
+}
+
+void CXTPImageManagerIcon::Draw(CDC* pDC, CPoint pt, CSize szIcon)
+{
+	Draw(pDC, pt, GetIcon(), szIcon);
+}
+
+void CXTPImageManagerIcon::Draw(CDC* pDC, CPoint pt)
+{
+	Draw(pDC, pt, GetIcon());
+}
+
+void CXTPImageManagerIcon::DrawIconComposited(CDC* pDC, CPoint pt, CSize szIcon, HICON hIcon)
+{
+	CRect rcDest;
+	if (szIcon.cx < 0)
+	{
+		rcDest.SetRect(pt.x + szIcon.cx, pt.y, pt.x, pt.y + szIcon.cy);
+	}
+	else
+	{
+		rcDest.SetRect(pt.x, pt.y, pt.x + szIcon.cx, pt.y + szIcon.cy);
+	}
+
+	CSize sz(rcDest.Width(), rcDest.Height());
+	CBitmap bmp;
+	LPDWORD lpBits;
+	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
+
+	CXTPCompatibleDC dc(pDC, &bmp);
+
+	CRect rcDestOrig(0, 0, sz.cx, sz.cy);
+
+	dc.FillSolidRect(rcDestOrig, 0xFF00FF);
+	DrawIconEx(dc, szIcon.cx > 0 ? 0 : -szIcon.cx, 0, hIcon, szIcon.cx, szIcon.cy, 0, 0, DI_NORMAL);
+
+	for (int i = 0; i < sz.cx * sz.cy; i++)
+	{
+		if (lpBits[0] == 0xFF00FF)
+		{
+			lpBits[0] = 0;
+		}
+		else
+		{
+			lpBits[0] |= 0xFF000000;
+		}
+		lpBits++;
+	}
+
+	XTPImageManager()->AlphaBlend(*pDC, rcDest, dc, rcDestOrig);
+}
+
+void CXTPImageManagerIcon::Draw(CDC* pDC, CPoint pt, CXTPImageManagerIconHandle& hIcon, CSize szIcon /*= 0*/, COLORREF clrBK, COLORREF clrFG, UINT uiFlags)
+{
+	if (szIcon.cx == 0)
+		szIcon.cx = m_nWidth;
+
+	if (szIcon.cy == 0)
+		szIcon.cy = m_nHeight * szIcon.cx / m_nWidth;
+
+	if (m_pImageList)
+	{
+		m_pImageList->Draw(pDC, pt, this, szIcon,clrBK, clrFG, uiFlags);
+		return;
+	}
+
+	hIcon.Draw(pDC, pt, szIcon, m_bDrawComposited);
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManagerIconSet
+
+CXTPImageManagerIconSet::CXTPImageManagerIconSet(UINT nID, CXTPImageManager* pImageManager)
+	: m_nID(nID)
+{
+	ASSERT(pImageManager);
+	m_pImageManager = pImageManager;
+
+
+}
+
+CXTPImageManagerIconSet::~CXTPImageManagerIconSet()
+{
+	RemoveAll();
+}
+
+void CXTPImageManagerIconSet::RemoveAll()
+{
+	UINT nWidth;
+	CXTPImageManagerIcon* pIcon;
+
+	POSITION pos = m_mapIcons.GetStartPosition();
+	while (pos)
+	{
+		m_mapIcons.GetNextAssoc(pos, nWidth, pIcon);
+		pIcon->Clear(TRUE);
+		pIcon->InternalRelease();
+	}
+	m_mapIcons.RemoveAll();
+}
+
+CXTPImageManagerIcon* CXTPImageManagerIconSet::CreateIcon(UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = 0;
+	if (m_mapIcons.Lookup(nWidth, pIcon))
+	{
+		ASSERT(pIcon->m_nID == m_nID);
+		ASSERT(pIcon->m_nWidth == nWidth);
+	}
+	else
+	{
+		pIcon = new CXTPImageManagerIcon(m_nID, nWidth, 15, this);
+		m_mapIcons.SetAt(nWidth, pIcon);
+	}
+
+	ASSERT(pIcon);
+
+	return pIcon;
+}
+
+void CXTPImageManagerIconSet::SetIcon(const CXTPImageManagerIconHandle& hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetDisabledIcon(const CXTPImageManagerIconHandle& hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetDisabledIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetHotIcon(const CXTPImageManagerIconHandle& hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetHotIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetCheckedIcon(const CXTPImageManagerIconHandle& hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetCheckedIcon(hIcon);
+}
+
+void CXTPImageManagerIconSet::SetPressedIcon(const CXTPImageManagerIconHandle& hIcon, UINT nWidth)
+{
+	CXTPImageManagerIcon* pIcon = CreateIcon(nWidth);
+	pIcon->SetPressedIcon(hIcon);
+}
+
+CXTPImageManagerIcon* CXTPImageManagerIconSet::GetIcon(UINT nWidth, BOOL bScaled)
+{
+	ASSERT(m_mapIcons.GetCount() > 0);
+
+	CXTPImageManagerIcon* pIcon = NULL;
+	BOOL bSpecial = (nWidth == ICON_BIG) || (nWidth == ICON_SMALL);
+
+	if (!bSpecial)
+	{
+		if (m_mapIcons.Lookup(nWidth, pIcon))
+		{
+			return pIcon;
+		}
+		if (!bScaled)
+			return NULL;
+	}
+
+	UINT nDelta = 0;
+
+	POSITION pos = m_mapIcons.GetStartPosition();
+	while (pos)
+	{
+		UINT nWidthScale;
+		CXTPImageManagerIcon* pIconScale;
+
+		m_mapIcons.GetNextAssoc(pos, nWidthScale, pIconScale);
+
+		if (bSpecial)
+		{
+			if (((nDelta == 0) || ((nWidth == ICON_SMALL && nWidthScale < nDelta)
+				|| (nWidth == ICON_BIG && nWidthScale > nDelta))))
+			{
+				pIcon = pIconScale;
+				nDelta = nWidthScale;
+			}
+		}
+		else if (nDelta == 0 || (UINT)abs(int(nWidthScale - nWidth)) < nDelta)
+		{
+			pIcon = pIconScale;
+			nDelta = (UINT)abs(int(nWidthScale - nWidth));
+		}
+	}
+
+	ASSERT(pIcon != 0);
+	if (!pIcon)
+		return NULL;
+
+	return pIcon;
+}
+
+
+void CXTPImageManagerIconSet::RefreshAll()
+{
+	POSITION pos = m_mapIcons.GetStartPosition();
+	UINT nWidth;
+	CXTPImageManagerIcon* pIcon;
+
+	while (pos)
+	{
+		m_mapIcons.GetNextAssoc(pos, nWidth, pIcon);
+
+		pIcon->Refresh();
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPImageManager
+
+CXTPImageManager::CXTPImageManager()
+{
+	m_clrMask = (COLORREF)-1;
+
+	m_nCustomID = 0x10AAA;
+
+	m_mapImages.InitHashTable(XTP_IMAGEMAN_HASH_TABLE_SIZE, FALSE);
+
+	m_bDrawReverted = 2;
+
+	m_bUseResources = TRUE;
+
+
+}
+
+CXTPImageManager* AFX_CDECL XTPImageManager()
+{
+	static CXTPImageManager s_managerInstance;
+	return &s_managerInstance;
+}
+
+CXTPImageManager::~CXTPImageManager()
+{
+	RemoveAll();
+}
+
+BOOL CXTPImageManager::LoadToolbar(UINT nIDResourceToolBar, UINT*& pItems, int& nCount, CSize& szIcon) const
+{
+	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResourceToolBar);
+
+	struct CToolBarData
+	{
+		WORD wVersion;
+		WORD wWidth;
+		WORD wHeight;
+		WORD wItemCount;
+
+		WORD* items()
+		{
+			return (WORD*)(this + 1);
+		}
+	};
+
+	ASSERT(lpszResourceName != NULL);
+	if (!lpszResourceName)
+		return FALSE;
+
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
+	if (hRsrc == NULL)
+		return FALSE;
+
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL)
+		return FALSE;
+
+	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
+	if (pData == NULL)
+		return FALSE;
+
+	ASSERT(pData->wVersion == 1);
+
+	pItems = new UINT[pData->wItemCount];
+
+	nCount = 0;
+	for (int i = 0; i < pData->wItemCount; i++)
+		if (pData->items()[i]) pItems[nCount++] = pData->items()[i];
+
+	szIcon = CSize(pData->wWidth, pData->wHeight);
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+	return TRUE;
+}
+
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, CBitmap& bmpIcons, XTPImageState imageState)
+{
+	UINT* pItems = NULL;
+	CSize szIcon(0);
+	int nCount = 0;
+	BOOL bResult = LoadToolbar(nIDResourceToolBar, pItems, nCount, szIcon);
+
+	if (bResult && !SetIcons(bmpIcons, pItems, nCount, szIcon, imageState))
+		bResult = FALSE;
+
+	if (pItems)
+	{
+		delete[] pItems;
 	}
 
 	return bResult;
 }
-
-BOOL AFX_CDECL PX_Int(CXTPPropExchange* pPX, LPCTSTR pszPropName, int& nValue)
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, UINT nIDResourceBitmap, XTPImageState imageState)
 {
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&nValue, int);
-	if (!pPX)
-		return FALSE;
+	UINT* pItems = NULL;
+	CSize szIcon(0);
+	int nCount = 0;
+	BOOL bResult = LoadToolbar(nIDResourceToolBar, pItems, nCount, szIcon);
 
-	return pPX->ExchangeProp(pszPropName, VT_I4, &nValue);
-}
+	if (bResult && !SetIcons(nIDResourceBitmap, pItems, nCount, CSize(0, 0), imageState))
+		bResult = FALSE;
 
-BOOL AFX_CDECL PX_Int(CXTPPropExchange* pPX, LPCTSTR pszPropName, int& nValue,
-	int nDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&nValue, int);
-	if (!pPX)
-		return FALSE;
+	if (pItems)
+	{
+		delete[] pItems;
+	}
 
-	return pPX->ExchangeProp(pszPropName, VT_I4, &nValue, &nDefault);
-}
+	return bResult;
 
-BOOL AFX_CDECL PX_ULong(CXTPPropExchange* pPX, LPCTSTR pszPropName, ULONG& ulValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&ulValue, ULONG);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &ulValue);
-}
-
-BOOL AFX_CDECL PX_ULong(CXTPPropExchange* pPX, LPCTSTR pszPropName, ULONG& ulValue,
-	ULONG ulDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&ulValue, ULONG);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_I4, &ulValue, &ulDefault);
-}
-
-BOOL AFX_CDECL PX_Bool(CXTPPropExchange* pPX, LPCTSTR pszPropName, BOOL& bValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&bValue, BOOL);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_BOOL, &bValue);
-}
-
-BOOL AFX_CDECL PX_Bool(CXTPPropExchange* pPX, LPCTSTR pszPropName, BOOL& bValue,
-	BOOL bDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&bValue, BOOL);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_BOOL, &bValue, &bDefault);
-}
-
-BOOL AFX_CDECL PX_String(CXTPPropExchange* pPX, LPCTSTR pszPropName, CString& strValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&strValue, CString);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_LPSTR, &strValue);
-}
-
-BOOL AFX_CDECL PX_String(CXTPPropExchange* pPX, LPCTSTR pszPropName, CString& strValue,
-	LPCTSTR lpszDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&strValue, CString);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_LPSTR, &strValue, lpszDefault);
-}
-
-BOOL AFX_CDECL PX_Bstr(CXTPPropExchange* pPX, LPCTSTR pszPropName, BSTR& lpszValue,
-	BSTR lpszDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&lpszValue, BSTR);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_BSTR, &lpszValue, lpszDefault);
-}
-
-BOOL AFX_CDECL PX_Float(CXTPPropExchange* pPX, LPCTSTR pszPropName, float& floatValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&floatValue, float);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R4, &floatValue);
-}
-
-BOOL AFX_CDECL PX_Float(CXTPPropExchange* pPX, LPCTSTR pszPropName, float& floatValue,
-	float floatDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&floatValue, float);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R4, &floatValue, &floatDefault);
-}
-
-BOOL AFX_CDECL PX_Double(CXTPPropExchange* pPX, LPCTSTR pszPropName, double& doubleValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&doubleValue, double);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R8, &doubleValue);
-}
-
-BOOL AFX_CDECL PX_DateTime(CXTPPropExchange* pPX, LPCTSTR pszPropName, COleDateTime& dtValue)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&dtValue, COleDateTime);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_DATE, &dtValue);
-}
-
-BOOL AFX_CDECL PX_Double(CXTPPropExchange* pPX, LPCTSTR pszPropName, double& doubleValue,
-	double doubleDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT_POINTER(&doubleValue, double);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_R8, &doubleValue, &doubleDefault);
-}
-
-BOOL AFX_CDECL PX_Size(CXTPPropExchange* pPX, LPCTSTR pszPropName, SIZE& szValue, SIZE szDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_EX_SIZE, &szValue, &szDefault);
-}
-
-BOOL AFX_CDECL PX_Point(CXTPPropExchange* pPX, LPCTSTR pszPropName, POINT& ptValue, POINT ptDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	ASSERT(sizeof(POINT) == sizeof(SIZE));
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_EX_SIZE, &ptValue, &ptDefault);
-}
-
-BOOL AFX_CDECL PX_Rect(CXTPPropExchange* pPX, LPCTSTR pszPropName, RECT& rcValue, RECT rcDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_EX_RECT, &rcValue, &rcDefault);
-}
-
-BOOL AFX_CDECL PX_Variant(CXTPPropExchange* pPX, LPCTSTR pszPropName, COleVariant& variant, COleVariant variantDefault)
-{
-	ASSERT_POINTER(pPX, CXTPPropExchange);
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeProp(pszPropName, VT_VARIANT, &variant, &variantDefault);
 }
 
 
-BOOL AFX_CDECL PX_RuntimeClass(CXTPPropExchange* pPX, LPCTSTR pszPropName, CRuntimeClass*& pClass, CRuntimeClass* pDefaultClass)
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, XTPImageState imageState)
 {
-	if (!pPX)
-		return FALSE;
-
-	return pPX->ExchangeRuntimeClass(pszPropName, pClass, pDefaultClass);
+	return SetIcons(nIDResourceToolBar, nIDResourceToolBar, imageState);
 }
 
-BOOL AFX_CDECL PX_Blob(CXTPPropExchange* pPX, LPCTSTR pszPropName, BYTE*& pData, DWORD& nBytes)
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceToolBar, CImageList& imlIcons, XTPImageState imageState)
 {
-	if (!pPX)
+	UINT* pItems = NULL;
+	CSize szIcon(0);
+	int nCount = 0;
+	BOOL bResult = LoadToolbar(nIDResourceToolBar, pItems, nCount, szIcon);
+
+	if (bResult && !SetIcons(imlIcons, pItems, nCount, szIcon, imageState))
+		bResult = FALSE;
+
+	if (pItems)
+	{
+		delete[] pItems;
+	}
+
+	return bResult;
+
+}
+
+BOOL CXTPImageManager::SetIcon(const CXTPImageManagerIconHandle& hIcon, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	if (hIcon.IsEmpty())
 		return FALSE;
 
-	return pPX->ExchangeBlobProp(pszPropName, pData, nBytes);
+	if (szIcon == CSize(0))
+	{
+		szIcon = hIcon.GetExtent();
+	}
+	if (szIcon == CSize(0))
+		return FALSE;
+
+	CXTPImageManagerIconSet* pIconSet;
+	if (m_mapImages.Lookup(nIDCommand, pIconSet))
+	{
+		if (imageState == xtpImageNormal) pIconSet->SetIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImageDisabled) pIconSet->SetDisabledIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImageHot) pIconSet->SetHotIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImageChecked) pIconSet->SetCheckedIcon(hIcon, szIcon.cx);
+		if (imageState == xtpImagePressed) pIconSet->SetPressedIcon(hIcon, szIcon.cx);
+	}
+	else if (imageState == xtpImageNormal)
+	{
+		pIconSet = new CXTPImageManagerIconSet(nIDCommand, this);
+		pIconSet->SetIcon(hIcon, szIcon.cx);
+		m_mapImages.SetAt(nIDCommand, pIconSet);
+	}
+	else return FALSE;
+
+	return TRUE;
+}
+
+BOOL CXTPImageManager::SetIcon(UINT nIDResourceIcon, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	return SetIcon(MAKEINTRESOURCE(nIDResourceIcon), nIDCommand, szIcon, imageState);
+}
+
+BOOL CXTPImageManager::SetIconFromResource(HINSTANCE hInst, LPCTSTR lpszResourceName, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
+{
+	// determine location of the bitmap in resource fork
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_GROUP_ICON);
+	if (hRsrc != NULL)
+	{
+		// Load and Lock to get a pointer to a GRPICONDIR
+		HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+		if (!hGlobal)
+			return FALSE;
+
+		CXTPImageManagerIcon::GRPICONDIR* lpGrpIconDir = (CXTPImageManagerIcon::GRPICONDIR*)
+			LockResource(hGlobal);
+		if (!lpGrpIconDir)
+			return FALSE;
+
+		for (WORD i = 0; i < lpGrpIconDir->idCount; i++)
+		{
+			CXTPImageManagerIconHandle hIcon;
+			CSize szResourceIcon(lpGrpIconDir->idEntries[i].bWidth, lpGrpIconDir->idEntries[i].bHeight);
+
+			if ((szIcon == szResourceIcon) || (szIcon == CSize(0, 0)))
+			{
+				if (!hIcon.CreateIconFromResource(hInst, MAKEINTRESOURCE(lpGrpIconDir->idEntries[i].nID),
+					szResourceIcon, FALSE))
+				{
+					return FALSE;
+				}
+
+				if (!SetIcon(hIcon, nIDCommand, szResourceIcon, imageState))
+				{
+					return FALSE;
+				}
+			}
+		}
+	}
+	else
+	{
+		CXTPImageManagerIconHandle hIcon;
+
+		if (!hIcon.CreateIconFromResource(hInst, lpszResourceName, szIcon, FALSE))
+		{
+			return FALSE;
+		}
+
+		return SetIcon(hIcon, nIDCommand, szIcon, imageState);
+	}
+	return TRUE;
 }
 
 
-BOOL AFX_CDECL PX_Serialize(CXTPPropExchange* pPX, LPCTSTR pszPropName, CObject* pObject)
+BOOL CXTPImageManager::SetIcon(LPCTSTR lpszResourceName, UINT nIDCommand, CSize szIcon, XTPImageState imageState)
 {
-	if (!pPX)
+	// determine location of the bitmap in resource fork
+	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_GROUP_ICON);
+	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_GROUP_ICON);
+
+	if (hRsrc != NULL)
+	{
+		SetIconFromResource(hInst, lpszResourceName, nIDCommand, szIcon, imageState);
+	}
+	else
+	{
+		CXTPImageManagerIconHandle hIcon;
+
+		if (!hIcon.CreateIconFromResource(lpszResourceName, szIcon, FALSE))
+		{
+			return FALSE;
+		}
+
+		return SetIcon(hIcon, nIDCommand, szIcon, imageState);
+	}
+	return TRUE;
+}
+
+
+BOOL CXTPImageManager::SetIcons(CImageList& imlIcons, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState)
+{
+	if (!imlIcons.GetSafeHandle())
 		return FALSE;
 
-	CArchive* pArchive = pPX->GetArchive(pszPropName);
+	if ((nCount == 0) && (pCommands == 0))
+	{
+		nCount = imlIcons.GetImageCount();
+	}
 
-	if (!pArchive)
+	if (szIcon == CSize(0) && nCount > 0)
+	{
+		IMAGEINFO imageInfo;
+		imlIcons.GetImageInfo(0, &imageInfo);
+		szIcon = CRect(imageInfo.rcImage).Size();
+	}
+
+	BOOL bIncludeAll = imlIcons.GetImageCount() == nCount;
+	int j = 0;
+
+	for (int i = 0; i < nCount; i++)
+	{
+		if ((pCommands == NULL) || bIncludeAll || (pCommands[i] != 0 && pCommands[i] != IMAGE_PLACEHOLDER))
+		{
+			HICON hIcon = imlIcons.ExtractIcon(j);
+			if (hIcon)
+			{
+				SetIcon(hIcon, pCommands ? pCommands[i]: i, szIcon, imageState);
+				DestroyIcon(hIcon);
+			}
+			else
+			{
+				return FALSE;
+			}
+			j++;
+		}
+	}
+	return TRUE;
+}
+
+
+BOOL CXTPImageManager::SplitBitmap(HBITMAP hbmSource, int nCount, HBITMAP* pDest) const
+{
+	ASSERT(pDest != NULL);
+	ASSERT(sizeof(int) == 4);
+
+	if (!pDest)
 		return FALSE;
 
-	BOOL bResult = FALSE;
+	BITMAPINFO  bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PINT pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+
+	BOOL bResult = TRUE;
+	int i;
+
+	TRY
+	{
+		if (GetDIBits(dcSrc, hbmSource, 0, 0, NULL, (BITMAPINFO*)&bmi, DIB_RGB_COLORS) == 0)
+			AfxThrowMemoryException();
+
+		UINT nSize = bmi.bmiHeader.biHeight * bmi.bmiHeader.biWidth * 4;
+		pBits = (PINT)malloc(nSize);
+		if (pBits == NULL)
+			AfxThrowMemoryException();
+
+		if ((pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + 3 * sizeof(COLORREF))) == NULL)
+			AfxThrowMemoryException();
+
+		MEMCPY_S(pBitmapInfo, &bmi, sizeof(BITMAPINFOHEADER));
+
+		if (GetDIBits(dcSrc, hbmSource, 0, bmi.bmiHeader.biHeight, pBits, pBitmapInfo, DIB_RGB_COLORS) == NULL)
+			AfxThrowMemoryException();
+
+		ASSERT(pBitmapInfo->bmiHeader.biWidth % nCount == 0);
+
+		pBitmapInfo->bmiHeader.biWidth /= nCount;
+		pBitmapInfo->bmiHeader.biSizeImage /= nCount;
+
+		PINT* pDestBits = new PINT[nCount];
+		for (i = 0; i < nCount; i++)
+		{
+			pDest[i] = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDestBits[i], NULL, 0);
+			if (!pDest[i])
+			{
+				for (int j = 0; j < i; j++)
+					DeleteObject(pDest[j]);
+
+				delete[] pDestBits;
+
+				AfxThrowMemoryException();
+			}
+		}
+
+		PINT pBitsIter = pBits;
+
+		for (int y = 0; y < pBitmapInfo->bmiHeader.biHeight; y++)
+		{
+			for (i = 0; i < nCount; i++)
+			{
+				for (int x = 0; x < pBitmapInfo->bmiHeader.biWidth; x++)
+				{
+					*pDestBits[i]++ = *pBitsIter++;
+				}
+			}
+		}
+		delete[] pDestBits;
+
+	}
+	CATCH (CMemoryException, e)
+	{
+		TRACE(_T("Failed -- Memory exception thrown."));
+		bResult = FALSE;
+	}
+	END_CATCH
+
+	FREE(pBits);
+	FREE(pBitmapInfo);
+
+	return bResult;
+
+}
+
+COLORREF CXTPImageManager::GetBitmapMaskColor(CBitmap& bmpIcons, CPoint pt)
+{
+	CXTPCompatibleDC dc(NULL, &bmpIcons);
+	return dc.GetPixel(pt);
+}
+
+COLORREF CXTPImageManager::GetBitmapMaskColor(UINT nIDBitmap, CPoint pt)
+{
+	CBitmap bmp;
+	VERIFY(bmp.LoadBitmap(nIDBitmap));
+	return GetBitmapMaskColor(bmp, pt);
+}
+
+
+HBITMAP CXTPImageManager::ResampleAlphaLayer(UINT nIDBitmap, COLORREF clrMask)
+{
+	HBITMAP hbmAlpha = CXTPImageManagerIcon::LoadAlphaBitmap(nIDBitmap);
+	if (!hbmAlpha)
+		return 0;
+
+	CBitmap bmp;
+	bmp.Attach(hbmAlpha);
+
+	return CXTPImageManager::ResampleAlphaLayer(bmp, clrMask);
+}
+
+HBITMAP CXTPImageManager::ResampleAlphaLayer(HBITMAP bmpAlpha, COLORREF clrMask)
+{
+	CDC dcSrc;
+	dcSrc.CreateCompatibleDC(NULL);
+
+	PBYTE pBits = 0;
+	PBITMAPINFO pBitmapInfo = 0;
+	UINT nSize;
+
+	if (!CXTPImageManagerIcon::GetBitmapBits(dcSrc, bmpAlpha, pBitmapInfo, (LPVOID&)pBits, nSize))
+		return 0;
+
+	PBYTE pTarget = NULL;
+	PBYTE pSource = pBits;
+	pBitmapInfo->bmiHeader.biBitCount = 24;
+	pBitmapInfo->bmiHeader.biSizeImage = 0;
+	pBitmapInfo->bmiHeader.biCompression = BI_RGB;
+
+	HBITMAP hBitmapResult = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pTarget, NULL, 0);
+
+	if (pTarget && pSource && hBitmapResult)
+	{
+		BYTE byMaskRed = GetRValue(clrMask);
+		BYTE byMaskGreen = GetGValue(clrMask);
+		BYTE byMaskBlue = GetBValue(clrMask);
+
+		for (int i = 0; i < pBitmapInfo->bmiHeader.biHeight; i ++)
+		{
+			for (int j = 0; j < pBitmapInfo->bmiHeader.biWidth; j ++)
+			{
+				int iAlpha = pSource[3];
+
+				if (iAlpha < 120) // Transparent
+				{
+					pTarget[0] = byMaskRed;
+					pTarget[1] = byMaskGreen;
+					pTarget[2] = byMaskBlue;
+				}
+				else if (iAlpha == 255) // Opaque
+				{
+					pTarget[0] = pSource[0];
+					pTarget[1] = pSource[1];
+					pTarget[2] = pSource[2];
+				}
+				else
+				{
+					pTarget[0] = (BYTE)((pSource[0] * (255 - iAlpha) + pSource[0] * iAlpha) >> 8);
+					pTarget[1] = (BYTE)((pSource[1] * (255 - iAlpha) + pSource[1] * iAlpha) >> 8);
+					pTarget[2] = (BYTE)((pSource[2] * (255 - iAlpha) + pSource[2] * iAlpha) >> 8);
+				}
+
+				pTarget += 3;
+				pSource += 4;
+			}
+
+			if (pBitmapInfo->bmiHeader.biWidth & 1)
+				pTarget++;
+		}
+	}
+
+	FREE(pBits);
+	FREE(pBitmapInfo);
+
+	return hBitmapResult;
+}
+
+BOOL CXTPImageManager::SetIcons(CBitmap& bmpIcons, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState, BOOL bAlpha)
+{
+	if (szIcon == CSize(0) && nCount > 0)
+	{
+		BITMAP bmpInfo;
+		bmpIcons.GetBitmap(&bmpInfo);
+		szIcon = CSize(bmpInfo.bmWidth / nCount, bmpInfo.bmHeight);
+	}
+
+	if (nCount == 0 && szIcon.cx > 0)
+	{
+		BITMAP bmpInfo;
+		bmpIcons.GetBitmap(&bmpInfo);
+		nCount = bmpInfo.bmWidth / szIcon.cx;
+	}
+
+	if (szIcon.cx == 0)
+		return FALSE;
+
+	if (bAlpha && !IsAlphaIconsSupported() && m_bAutoResample)
+	{
+		HBITMAP hBitmap = ResampleAlphaLayer(bmpIcons, m_clrMask == COLORREF(-1) ? RGB(0, 0xFF, 0) : m_clrMask);
+		if (!hBitmap)
+			return FALSE;
+
+		CBitmap bmpResample;
+		bmpResample.Attach(hBitmap);
+		return SetIcons(bmpResample, pCommands, nCount, szIcon, imageState, FALSE);
+	}
+
+	if (bAlpha)
+	{
+		BITMAP bmpInfo;
+		bmpIcons.GetBitmap(&bmpInfo);
+		if (bmpInfo.bmWidth % szIcon.cx != 0)
+			return FALSE;
+
+		int nIconCount = bmpInfo.bmWidth / szIcon.cx;
+
+		HBITMAP* pDestBitmap = new HBITMAP[nIconCount];
+
+		if (!SplitBitmap(bmpIcons, nIconCount, pDestBitmap))
+		{
+			delete[] pDestBitmap;
+			return FALSE;
+		}
+		BOOL bIgnoreNulls = (nIconCount == nCount);
+
+		int j = 0;
+
+		for (int i = 0; i < nCount; i++)
+		{
+			if ((!pCommands || bIgnoreNulls || (pCommands[i] != 0 && pCommands[i] != IMAGE_PLACEHOLDER)) && j < nIconCount)
+			{
+
+				SetIcon(pDestBitmap[j], pCommands ? pCommands[i]: i, szIcon, imageState);
+				j++;
+			}
+		}
+
+		for (j = 0; j < nIconCount; j++)
+		{
+			DeleteObject(pDestBitmap[j]);
+		}
+
+		delete[] pDestBitmap;
+
+
+		return TRUE;
+
+	}
+	else
+	{
+		CImageList imgList;
+
+
+		if (!imgList.Create(szIcon.cx, szIcon.cy, ILC_COLOR24 | ILC_MASK, 0, 1))
+			return FALSE;
+
+		COLORREF clrMask = m_clrMask != (COLORREF)-1 ? m_clrMask : GetBitmapMaskColor(bmpIcons);
+		imgList.Add(&bmpIcons, clrMask);
+
+		return SetIcons(imgList, pCommands, nCount, szIcon, imageState);
+	}
+
+}
+
+
+BOOL CXTPImageManager::SetIcons(UINT nIDResourceBitmap, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState)
+{
+	return SetIcons(MAKEINTRESOURCE(nIDResourceBitmap), pCommands, nCount, szIcon, imageState);
+}
+
+BOOL CXTPImageManager::SetIcons(LPCTSTR lpszResourceBitmap, UINT* pCommands, int nCount, CSize szIcon, XTPImageState imageState)
+{
+	BOOL bAlphaBitmap = FALSE;
+	CBitmap bmpIcons;
+
+	HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromResource(lpszResourceBitmap, &bAlphaBitmap);
+
+	if (!hBmp)
+		return FALSE;
+
+	bmpIcons.Attach(hBmp);
+
+	return SetIcons(bmpIcons, pCommands, nCount, szIcon, imageState, bAlphaBitmap);
+}
+
+
+BOOL CXTPImageManager::SetImageList(HIMAGELIST hImageList, int nBaseCommand, BOOL bDestoryImageList)
+{
+	if (!hImageList)
+		return FALSE;
+
+	CXTPImageManagerImageList* pImageList = new CXTPImageManagerImageList;
+	pImageList->m_bDestroyImageList = bDestoryImageList;
+	pImageList->m_hImageList = hImageList;
+	pImageList->m_nBaseCommand = nBaseCommand;
+	pImageList->m_pImageManager = this;
+
+	m_arrImageList.Add(pImageList);
+	return TRUE;
+}
+
+BOOL CXTPImageManager::SetImageList(UINT nBitmap, int cx, int nBaseCommand, COLORREF clrMask)
+{
+	BOOL bAlpha = FALSE;
+	HBITMAP hBitmap = CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nBitmap), &bAlpha);
+	if (!hBitmap)
+		return FALSE;
+
+	BITMAP bmpInfo;
+	if (!::GetObject(hBitmap, sizeof(BITMAP), &bmpInfo))
+		return FALSE;
+
+	if (cx == 0) cx = bmpInfo.bmWidth;
+
+	if (((bmpInfo.bmWidth % cx) != 0))
+		return FALSE;
+
+	HIMAGELIST hImageList = ImageList_Create(cx, bmpInfo.bmHeight, (bAlpha ? ILC_COLOR32 : ILC_COLOR24) |
+		(clrMask == COLORREF_NULL ? 0 : ILC_MASK), 0, 1);
+
+	if (!hImageList)
+		return FALSE;
+
+	if (bAlpha || (clrMask == COLORREF_NULL))
+	{
+		ImageList_Add(hImageList, hBitmap, NULL);
+	}
+	else
+	{
+		ImageList_AddMasked(hImageList, hBitmap, clrMask);
+	}
+
+	DeleteObject(hBitmap);
+
+	return SetImageList(hImageList, nBaseCommand, TRUE);
+}
+
+
+
+
+BOOL CXTPImageManager::IsPngBitmapResource(UINT nIDResourceBitmap)
+{
+	return CXTPImageManagerIcon::IsPngBitmapResource(AfxFindResourceHandle(MAKEINTRESOURCE(nIDResourceBitmap), _T("PNG")),
+		MAKEINTRESOURCE(nIDResourceBitmap));
+}
+
+
+
+BOOL CXTPImageManager::IsAlphaBitmapResource(UINT nIDResourceBitmap)
+{
+	return CXTPImageManagerIcon::IsAlphaBitmapResource(AfxFindResourceHandle(MAKEINTRESOURCE(nIDResourceBitmap), RT_BITMAP),
+		MAKEINTRESOURCE(nIDResourceBitmap));
+}
+
+UINT CXTPImageManager::AddCustomIcon(const CXTPImageManagerIconHandle& hIcon)
+{
+	CSize szIcon = hIcon.GetExtent();
+	m_nCustomID++;
+
+	CXTPImageManagerIconSet* pIconSet = new CXTPImageManagerIconSet(m_nCustomID, this);
+	pIconSet->SetIcon(hIcon, szIcon.cx);
+	m_mapImages.SetAt(m_nCustomID, pIconSet);
+
+	return m_nCustomID;
+}
+
+void CXTPImageManager::CopyImage(UINT nCommand)
+{
+	CMemFile memFile;
+	CArchive ar (&memFile, CArchive::store);
+
+	Serialize(nCommand, ar);
+	ar.Flush();
+
+	DWORD dwCount = (DWORD)memFile.GetPosition();
+	BYTE* pControls = memFile.Detach();
+
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwCount);
+	if (hGlobal != NULL)
+	{
+		LPVOID lpData = GlobalLock(hGlobal);
+
+		MEMCPY_S(lpData, pControls, dwCount);
+
+		GlobalUnlock(hGlobal);
+		SetClipboardData(m_nImageClipFormat, hGlobal);
+	}
+
+	ar.Close();
+	memFile.Close();
+	free(pControls);
+}
+
+
+
+UINT CXTPImageManager::PasteCustomImage(COleDataObject& data)
+{
+#ifdef __AFXOLE_H__
+	HGLOBAL hGlobal = data.GetGlobalData (m_nImageClipFormat);
+
+	if (hGlobal == NULL) return 0;
+
 	try
 	{
-		pObject->Serialize(*pArchive);
-		bResult = TRUE;
+		CSharedFile globFile;
+		globFile.SetHandle(hGlobal, FALSE);
+		CArchive ar (&globFile, CArchive::load);
+
+		m_nCustomID++;
+		Serialize(m_nCustomID, ar);
+
+		ar.Close();
+
 	}
 	catch (COleException* pEx)
 	{
 		pEx->Delete ();
-
+		return 0;
 	}
 	catch (CArchiveException* pEx)
 	{
 		pEx->Delete ();
+		return 0;
+	}
+	return m_nCustomID;
+#else
+	return 0;
+#endif
+}
+
+BOOL CXTPImageManager::IsPrimaryImageExists(UINT nCommand, int nWidth) const
+{
+	CXTPImageManagerIconSet* pIconSet = GetIconSet(nCommand);
+
+	if (pIconSet)
+	{
+		CXTPImageManagerIcon* pIcon = pIconSet->GetIcon(nWidth, FALSE);
+		if (pIcon)
+			return TRUE;
 	}
 
-	pPX->ReleaseArchive(pszPropName, pArchive);
+	CXTPImageManagerImageList* pImageList = GetImageList(nCommand);
+	if (pImageList)
+	{
+		return nWidth == 0 || pImageList->GetIconSize().cx == nWidth;
+	}
 
-	return bResult;
+	return FALSE;
+}
+
+CXTPImageManagerIcon* CXTPImageManager::GetImage(UINT nCommand, int nWidth) const
+{
+	CXTPImageManagerIconSet* pIconSet = GetIconSet(nCommand);
+
+	if (pIconSet)
+	{
+		return pIconSet->GetIcon(nWidth);
+	}
+
+	CXTPImageManagerImageList* pImageList = GetImageList(nCommand);
+	if (pImageList)
+	{
+		return pImageList->GetIcon(nCommand);
+	}
+
+	return NULL;
+}
+
+BOOL CXTPImageManager::Lookup(UINT nCommand) const
+{
+	return (GetIconSet(nCommand) != NULL) || (GetImageList(nCommand) != NULL);
+}
+
+CXTPImageManagerIconSet* CXTPImageManager::GetIconSet(UINT nCommand) const
+{
+	CXTPImageManagerIconSet* pIconSet;
+	if (m_mapImages.Lookup(nCommand, pIconSet))
+	{
+		return pIconSet;
+
+	}
+	return NULL;
+}
+
+CXTPImageManagerImageList* CXTPImageManager::GetImageList(UINT nCommand) const
+{
+	for (int i = 0; i < (int)m_arrImageList.GetSize(); i++)
+	{
+		CXTPImageManagerImageList* pImageList = m_arrImageList[i];
+
+		if (pImageList->Lookup(nCommand))
+			return pImageList;
+	}
+	return NULL;
+}
+
+void CXTPImageManager::RemoveIcon(UINT nIDCommand)
+{
+	CXTPImageManagerIconSet* pIconSet;
+	if (m_mapImages.Lookup(nIDCommand, pIconSet))
+	{
+		m_mapImages.RemoveKey(nIDCommand);
+		pIconSet->RemoveAll();
+		pIconSet->InternalRelease();
+	}
+}
+
+void CXTPImageManager::RemoveAll()
+{
+	POSITION pos = m_mapImages.GetStartPosition();
+	UINT nID;
+	CXTPImageManagerIconSet* pIconSet;
+	while (pos)
+	{
+		m_mapImages.GetNextAssoc(pos, nID, pIconSet);
+		pIconSet->RemoveAll();
+		pIconSet->InternalRelease();
+	}
+	m_mapImages.RemoveAll();
+
+	pos = m_mapResources.GetStartPosition();
+	DWORD dwSize;
+	CXTPImageManagerResource* pResource;
+	while (pos)
+	{
+		m_mapResources.GetNextAssoc(pos, dwSize, pResource);
+		delete pResource;
+	}
+	m_mapResources.RemoveAll();
+
+
+	for (int i = 0; i < (int)m_arrImageList.GetSize(); i++)
+	{
+		delete m_arrImageList[i];
+	}
+	m_arrImageList.RemoveAll();
+
+}
+
+void CXTPImageManager::RefreshAll()
+{
+	POSITION pos = m_mapImages.GetStartPosition();
+	UINT nID;
+	CXTPImageManagerIconSet* pIconSet;
+
+	while (pos)
+	{
+		m_mapImages.GetNextAssoc(pos, nID, pIconSet);
+		pIconSet->RefreshAll();
+	}
+
+	for (int i = 0; i < (int)m_arrImageList.GetSize(); i++)
+	{
+		m_arrImageList[i]->RemoveAll();
+	}
+}
+
+COLORREF CXTPImageManager::SetMaskColor(COLORREF clrMask)
+{
+	COLORREF clrReturn = m_clrMask;
+	m_clrMask = clrMask;
+	return clrReturn;
+}
+COLORREF CXTPImageManager::GetMaskColor() const
+{
+	return m_clrMask;
+}
+
+BOOL CXTPImageManager::IsAlphaIconsSupported() const
+{
+	return TRUE;
+
+}
+
+BOOL CXTPImageManager::IsAlphaIconsImageListSupported()
+{
+	DWORD dwComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
+	return HIWORD(dwComCtlVersion) > 5;
+}
+
+void CXTPImageManager::DoPropExchange(UINT nCommand, CXTPPropExchange* pPX)
+{
+#ifndef _XTP_EXCLUDE_PROPEXCHANGE
+	if (nCommand > m_nCustomID)
+		m_nCustomID = nCommand;
+
+	const LPCTSTR lpszCheck = _T("CXTPImageManagerIcons");
+	CString strCheck = lpszCheck;
+
+	if (pPX->IsStoring())
+	{
+		PX_String(pPX, _T("CheckSum"), strCheck, lpszCheck);
+
+		ASSERT(nCommand > 0);
+//this assertion kill VB6
+
+		CXTPImageManagerIconSet* pIconSet = GetIconSet(nCommand);
+
+		ASSERT(pIconSet);
+//this assertion kill VB6
+
+		if (!pIconSet)
+		{
+			CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Icon")));
+			pEnumerator->GetPosition(0);
+			return;
+		}
+
+		UINT nWidth;
+		CXTPImageManagerIcon* pIcon;
+		DWORD dwCount =(DWORD)pIconSet->m_mapIcons.GetCount();
+
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Icon")));
+		POSITION posEnum = pEnumerator->GetPosition(dwCount);
+
+		POSITION pos = pIconSet->m_mapIcons.GetStartPosition();
+		while (pos)
+		{
+			pIconSet->m_mapIcons.GetNextAssoc(pos, nWidth, pIcon);
+
+			CXTPPropExchangeSection secIcon(pEnumerator->GetNext(posEnum));
+
+			PX_Long(&secIcon, _T("Width"), (long&)nWidth);
+			PX_Serialize(&secIcon, _T("Data"), pIcon);
+		}
+	}
+	else
+	{
+		PX_String(pPX, _T("CheckSum"), strCheck, lpszCheck);
+
+		if (strCheck != lpszCheck)
+			AfxThrowArchiveException(CArchiveException::badClass);
+
+
+		CXTPImageManagerIconSet* pIconSet;
+		if (m_mapImages.Lookup(nCommand, pIconSet))
+		{
+			pIconSet->RemoveAll();
+		}
+		else
+		{
+			pIconSet = new CXTPImageManagerIconSet(nCommand, this);
+			m_mapImages.SetAt(nCommand, pIconSet);
+		}
+
+		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Icon")));
+		POSITION posEnum = pEnumerator->GetPosition();
+
+		while (posEnum)
+		{
+			CXTPPropExchangeSection secIcon(pEnumerator->GetNext(posEnum));
+
+			UINT nWidth = 16;
+			PX_Long(&secIcon, _T("Width"), (long&)nWidth);
+
+			CXTPImageManagerIcon* pIcon = new CXTPImageManagerIcon(nCommand, nWidth, 15, pIconSet);
+			PX_Serialize(&secIcon, _T("Data"), pIcon);
+
+			pIconSet->m_mapIcons.SetAt(nWidth, pIcon);
+		}
+	}
+#endif
+}
+
+void CXTPImageManager::Serialize(UINT nCommand, CArchive& ar)
+{
+#ifndef _XTP_EXCLUDE_PROPEXCHANGE
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(nCommand, &px);
+#endif
+}
+
+
+
+void CXTPImageManager::DoPropExchange(CXTPPropExchange* pPX)
+{
+#ifndef _XTP_EXCLUDE_PROPEXCHANGE
+	CMap<UINT, UINT, CXTPImageManagerIconSet*, CXTPImageManagerIconSet*>* pIcons = GetImages();
+
+	CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("IconSet")));
+	POSITION posEnum = pEnumerator->GetPosition((DWORD)pIcons->GetCount());
+
+	if (pPX->IsStoring())
+	{
+		UINT nIDCommand;
+		CXTPImageManagerIconSet* pIconSet;
+
+		POSITION pos = pIcons->GetStartPosition();
+
+		while (pos)
+		{
+			pIcons->GetNextAssoc(pos, nIDCommand, pIconSet);
+			CXTPPropExchangeSection secIconSet(pEnumerator->GetNext(posEnum));
+
+			PX_Long(&secIconSet, _T("Id"), (long&)nIDCommand);
+			DoPropExchange(nIDCommand, &secIconSet);
+		}
+	}
+	else
+	{
+		RemoveAll();
+
+		while (posEnum)
+		{
+			CXTPPropExchangeSection secIconSet(pEnumerator->GetNext(posEnum));
+
+			UINT nIDCommand = 0;
+			PX_Long(&secIconSet, _T("Id"), (long&)nIDCommand);
+
+			DoPropExchange(nIDCommand, &secIconSet);
+		}
+	}
+#endif
+}
+void CXTPImageManager::Serialize(CArchive& ar)
+{
+#ifndef _XTP_EXCLUDE_PROPEXCHANGE
+	CXTPPropExchangeArchive px(ar);
+	DoPropExchange(&px);
+#endif
+}
+
+
+void CXTPImageManager::AddIcons(CXTPImageManager* pImageManager)
+{
+	if (pImageManager == 0)
+		return;
+
+	POSITION pos = pImageManager->m_mapImages.GetStartPosition();
+	UINT nID;
+	CXTPImageManagerIconSet* pIconSet;
+
+	while (pos)
+	{
+		pImageManager->m_mapImages.GetNextAssoc(pos, nID, pIconSet);
+
+		AddIcons(pIconSet);
+	}
+}
+
+void CXTPImageManager::AddIcons(CXTPImageManagerIconSet* pIconSetAdd)
+{
+	int nId = pIconSetAdd->GetID();
+
+	CXTPImageManagerIconSet* pIconSet = NULL;
+
+	if (!m_mapImages.Lookup(nId, pIconSet))
+	{
+		pIconSet = new CXTPImageManagerIconSet(nId, this);
+
+		m_mapImages.SetAt(nId, pIconSet);
+	}
+
+	POSITION pos = pIconSetAdd->m_mapIcons.GetStartPosition();
+	UINT nWidth;
+	CXTPImageManagerIcon* pIconAdd;
+
+	while (pos)
+	{
+		pIconSetAdd->m_mapIcons.GetNextAssoc(pos, nWidth, pIconAdd);
+
+		CXTPImageManagerIcon* pIcon = NULL;
+		if (!pIconSet->m_mapIcons.Lookup(nWidth, pIcon))
+		{
+			pIcon  = new CXTPImageManagerIcon(nId, nWidth, pIconAdd->GetHeight());
+			pIconSet->m_mapIcons.SetAt(nWidth, pIcon);
+		}
+
+		pIcon->Copy(pIconAdd);
+	}
+}
+
+BOOL CXTPImageManager::DoDisableBitmap(HBITMAP hBmp, COLORREF clrDisabledLight, COLORREF clrDisabledDark,
+		int nBlackAndWhiteContrast)
+{
+	ASSERT(nBlackAndWhiteContrast == -1 ||
+		(nBlackAndWhiteContrast >= 0 && nBlackAndWhiteContrast <= 255));
+
+	BOOL bOfficeDisabledIcons = clrDisabledLight != (COLORREF)-1 && clrDisabledDark != (COLORREF)-1;
+
+	BITMAP bmBitmap;
+
+	// Get information about the surfaces you were passed.
+	if (!GetObject(hBmp,  sizeof(BITMAP), &bmBitmap))  return FALSE;
+
+	// Make sure you have data that meets your requirements.
+	if (bmBitmap.bmBitsPixel != 32)
+		return FALSE;
+
+	if (bmBitmap.bmPlanes != 1)
+		return FALSE;
+
+	if (!bmBitmap.bmBits)
+		return FALSE;
+
+	DWORD dwWidthBytes = bmBitmap.bmWidthBytes;
+
+	// Initialize the surface pointers.
+	RGBQUAD *lprgbBitmap = (RGBQUAD*)bmBitmap.bmBits;
+
+	//************************************************
+	int x, y;
+	for (y = 0; y < bmBitmap.bmHeight; y++)
+	{
+		for (x = 0; x < bmBitmap.bmWidth; x++)
+		{
+			if (bOfficeDisabledIcons)
+			{
+				double dGray = (lprgbBitmap[x].rgbBlue * 0.114 + lprgbBitmap[x].rgbGreen * 0.587 + lprgbBitmap[x].rgbRed * 0.299)/255.0;
+				double dLight = 1.0 - dGray;
+
+				lprgbBitmap[x].rgbBlue  = BYTE(dLight * GetBValue(clrDisabledDark) + dGray * GetBValue(clrDisabledLight));
+				lprgbBitmap[x].rgbGreen = BYTE(dLight * GetGValue(clrDisabledDark) + dGray * GetGValue(clrDisabledLight));
+				lprgbBitmap[x].rgbRed   = BYTE(dLight * GetRValue(clrDisabledDark) + dGray * GetRValue(clrDisabledLight));
+			}
+			else if (nBlackAndWhiteContrast != -1)
+			{
+				int nGray = (lprgbBitmap[x].rgbBlue * 114 + lprgbBitmap[x].rgbGreen * 587 + lprgbBitmap[x].rgbRed * 299) / 1000;
+				nGray = nGray + (255 - nGray) * nBlackAndWhiteContrast / 255;
+				nGray = min(nGray, 255);
+
+				lprgbBitmap[x].rgbBlue = BYTE(nGray);
+				lprgbBitmap[x].rgbGreen = BYTE(nGray);
+				lprgbBitmap[x].rgbRed = BYTE(nGray);
+
+				lprgbBitmap[x].rgbReserved = BYTE(lprgbBitmap[x].rgbReserved / CXTPImageManager::m_dDisabledAlphaFactor);
+			}
+			else
+			{
+				double dGray = (lprgbBitmap[x].rgbBlue * 0.114 + lprgbBitmap[x].rgbGreen * 0.587 + lprgbBitmap[x].rgbRed * 0.299)/255.0;
+
+				lprgbBitmap[x].rgbBlue = (BYTE)(pow(dGray, CXTPImageManager::m_dDisabledBrightnessFactor) * 255.0);
+				lprgbBitmap[x].rgbGreen = lprgbBitmap[x].rgbBlue;
+				lprgbBitmap[x].rgbRed = lprgbBitmap[x].rgbBlue;
+
+				lprgbBitmap[x].rgbReserved = BYTE(lprgbBitmap[x].rgbReserved / CXTPImageManager::m_dDisabledAlphaFactor);
+			}
+		}
+
+		// Move to next scan line.
+		lprgbBitmap = (RGBQUAD *)((LPBYTE)lprgbBitmap + dwWidthBytes);
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPImageManager::DisableBitmap(HDC hDC, const CRect& rcRect, COLORREF clrDisabledLight, COLORREF clrDisabledDark)
+{
+	HDC      hdcDst  = NULL;
+	HBITMAP  hbmDst  = NULL;
+	HBITMAP  hbmpOld = NULL;
+
+	BOOL    bReturn = FALSE;
+	// Create surfaces for new image.
+	hbmDst  = CXTPImageManager::Create32BPPDIBSection(hDC, rcRect.Width(), rcRect.Height());
+	if (!hbmDst) goto HANDLEERROR;
+
+	// Create HDCs to hold our surfaces.
+	hdcDst  = CreateCompatibleDC(hDC);
+	if (!hdcDst) goto HANDLEERROR;
+
+	// Prepare the surfaces for drawing.
+	hbmpOld = (HBITMAP)SelectObject(hdcDst,  hbmDst);
+
+	// Capture a copy of the source area.
+	if (!BitBlt(hdcDst, 0, 0, rcRect.Width(), rcRect.Height(),
+		hDC, rcRect.left, rcRect.top, SRCCOPY) )
+		goto HANDLEERROR;
+
+	// Modify sourcepixels to create the destination image.
+	bReturn = DoDisableBitmap(hbmDst, clrDisabledLight, clrDisabledDark);
+
+	// Display the disabled image to the target HDC.
+	if (bReturn)
+	{
+		BitBlt(hDC, rcRect.left, rcRect.top, rcRect.Width(), rcRect.Height(),
+			hdcDst, 0,0, SRCCOPY);
+	}
+
+HANDLEERROR:
+
+	// Clean up the rest of the objects you created.
+	if (hbmpOld) SelectObject(hdcDst, hbmpOld);
+	if (hdcDst) DeleteDC(hdcDst);
+	if (hbmDst) DeleteObject(hbmDst);
+
+	return bReturn;
+}
+
+BOOL CXTPImageManager::BlackWhiteBitmap(HDC hDC, const CRect& rcRect, int nBlackAndWhiteContrast)
+{
+	HDC      hdcDst  = NULL;
+	HBITMAP  hbmDst  = NULL;
+	HBITMAP  hbmpOld = NULL;
+
+	BOOL    bReturn = FALSE;
+	// Create surfaces for new image.
+	hbmDst  = CXTPImageManager::Create32BPPDIBSection(hDC, rcRect.Width(), rcRect.Height());
+	if (!hbmDst) goto HANDLEERROR;
+
+	// Create HDCs to hold our surfaces.
+	hdcDst  = CreateCompatibleDC(hDC);
+	if (!hdcDst) goto HANDLEERROR;
+
+	// Prepare the surfaces for drawing.
+	hbmpOld = (HBITMAP)SelectObject(hdcDst,  hbmDst);
+
+	// Capture a copy of the source area.
+	if (!BitBlt(hdcDst, 0, 0, rcRect.Width(), rcRect.Height(),
+		hDC, rcRect.left, rcRect.top, SRCCOPY) )
+		goto HANDLEERROR;
+
+	// Modify sourcepixels to create the destination image.
+	bReturn = DoDisableBitmap(hbmDst, (COLORREF)-1, (COLORREF)-1, nBlackAndWhiteContrast);
+
+	// Display the disabled image to the target HDC.
+	if (bReturn)
+	{
+		BitBlt(hDC, rcRect.left, rcRect.top, rcRect.Width(), rcRect.Height(),
+			hdcDst, 0,0, SRCCOPY);
+	}
+
+HANDLEERROR:
+
+	// Clean up the rest of the objects you created.
+	if (hbmpOld) SelectObject(hdcDst, hbmpOld);
+	if (hdcDst) DeleteDC(hdcDst);
+	if (hbmDst) DeleteObject(hbmDst);
+
+	return bReturn;
 }
 
 

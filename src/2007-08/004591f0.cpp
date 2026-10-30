@@ -1,42 +1,17 @@
-// from server: 45% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-struct CRobloxWnd {
-    void* vptr;
-    void* field_4;
-    void construct(void* a, void* b);
-};
-
-struct RefCounted {
-    void* vptr;
-    long refcount;
-};
-
-struct Holder {
-    void* owner;
-    RefCounted* ptr;
-};
-
-void CRobloxWnd::construct(void* a, void* b) {
-    this->vptr = a;
-    this->field_4 = 0;
-    ((void (__thiscall*)(void*, void*, void*))0x458840)(&this->field_4, a, b);
-    if (a != 0) {
-        Holder* h = (Holder*)((char*)a + 0xa4);
-        if (h != 0) {
-            h->owner = a;
-            RefCounted* old = (RefCounted*)this->field_4;
-            if (old != 0) {
-                _InterlockedExchangeAdd(&old->refcount, 1);
-            }
-            RefCounted* prev = h->ptr;
-            if (prev != 0) {
-                if (_InterlockedExchangeAdd(&prev->refcount, -1) == 1) {
-                    ((void (__thiscall*)(RefCounted*))prev->vptr)(prev);
-                }
-            }
-            h->ptr = old;
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

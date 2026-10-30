@@ -1,109 +1,16 @@
-// from server: 35% by colin
-// roc 2007-08 005e4600  unit: RBX::BoxSelectCommand  size: 297 bytes
-// library rbxgs/util/Name.cpp
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_boxselect2008layout1dfd3854114f125f.cpp
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// Candidate translation unit (score above; library headers required).
+#include <set>
+#include "v8datamodel/Selection.h"
+#include <algorithm>
+namespace RBX {
+class BoxSelectCommand {char prefix[28];ServiceClient<Selection> selection;char gap[12];std::set<Instance*> previousItemsInBox;public:void selectAnd(const std::set<Instance*>&);void selectReverse(const std::set<Instance*>&);};
+template<int Action> class SelectionOutput:public std::_Outit {Selection* selection;public:SelectionOutput(Selection* s):selection(s){}SelectionOutput& operator*(){return *this;}SelectionOutput operator++(int){return *this;}SelectionOutput& operator++(){return *this;}SelectionOutput& operator=(Instance* i){if(Action==0)selection->addToSelection(i);else if(Action==1)selection->removeFromSelection(i);else selection->toggleSelection(i);return *this;}};
 
-struct SharedPtr {
-    void* px;
-    void* pn;
-};
-
-struct SetNode {
-    SetNode* left;
-    SetNode* parent;
-    SetNode* right;
-    char color;
-    char pad[3];
-    int value;
-};
-
-struct Set {
-    SetNode* head;
-    int size;
-};
-
-struct BoxSelectCommand {
-    char pad0[0x18];
-    Set previousItemsInBox;
-    char pad1[0x8];
-    void selectAnd(const Set& newItemsInBox);
-    void selectReverse(const Set& newItemsInBox);
-    void getMouseInstances(Set& instances, const SharedPtr& inputObject,
-                           const void* selectBox, const void* camera,
-                           void* currentInstance);
-    void onMouseMove(const SharedPtr& inputObject);
-};
-
-void BoxSelectCommand::onMouseMove(const SharedPtr& inputObject)
-{
-    Set newItemsInBox;
-    SetNode* first1;
-    SetNode* last1;
-    SetNode* first2;
-    SetNode* last2;
-
-    first1 = previousItemsInBox.head->left;
-    last1 = previousItemsInBox.head;
-    first2 = newItemsInBox.head->left;
-    last2 = newItemsInBox.head;
-
-    if (first1 != 0 && first1 != last1) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2 == last2) {
-        goto done;
-    }
-    if (first1 != 0 && first1 != last1) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2 == last2) {
-        goto done;
-    }
-    if (first1 == 0) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2 == first1->parent) {
-        _invalid_parameter_noinfo();
-    }
-    if (first1 == 0) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2 == first1->parent) {
-        _invalid_parameter_noinfo();
-    }
-    if (first1->value < first2->value) {
-        if (first2 == first1->parent) {
-            _invalid_parameter_noinfo();
-        }
-        getMouseInstances(newItemsInBox, inputObject, 0, 0, 0);
-        goto loop;
-    }
-    if (first2 == first1->parent) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2 == first1->parent) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2->value < first1->value) {
-        goto loop;
-    }
-    goto done;
-
-loop:
-    first1 = previousItemsInBox.head->left;
-    last1 = previousItemsInBox.head;
-    first2 = newItemsInBox.head->left;
-    last2 = newItemsInBox.head;
-    if (first1 != 0 && first1 != last1) {
-        _invalid_parameter_noinfo();
-    }
-    if (first2 == last2) {
-        goto done;
-    }
-    goto loop;
-
-done:
-    selectAnd(newItemsInBox);
-    selectReverse(newItemsInBox);
+void BoxSelectCommand::selectAnd(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<0>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<1>(selection));previousItemsInBox=n;}
+void BoxSelectCommand::selectReverse(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<2>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<2>(selection));previousItemsInBox=n;}
 }

@@ -1,433 +1,515 @@
-// from server: 57% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/EnumProperty.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: raknet-4.081 StringCompressor.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "reflection/type.h"
-#include <g3d/color3.h>
-#include <g3d/vector3.h>
-#include <boost/shared_ptr.hpp>
-#include "v8tree/Instance.h"
-#include "v8datamodel/BrickColor.h"
+/*
+ *  Copyright (c) 2014, Oculus VR, Inc.
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the BSD-style license found in the
+ *  LICENSE file in the root directory of this source tree. An additional grant 
+ *  of patent rights can be found in the PATENTS file in the same directory.
+ *
+ */
 
-namespace RBX
+/// \file
+///
+
+
+
+#include "StringCompressor.h"
+#include "DS_HuffmanEncodingTree.h"
+#include "BitStream.h"
+#include "RakString.h"
+#include "RakAssert.h"
+#include <string.h>
+
+#include <memory.h>
+
+
+
+
+
+
+
+using namespace RakNet;
+
+StringCompressor* StringCompressor::instance=0;
+int StringCompressor::referenceCount=0;
+
+void StringCompressor::AddReference(void)
 {
-	namespace Reflection
+	if (++referenceCount==1)
 	{
-		// TODO: check if type singletons are matching
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
+		instance = RakNet::OP_NEW<StringCompressor>( _FILE_AND_LINE_ );
+	}
+}
+void StringCompressor::RemoveReference(void)
+{
+	RakAssert(referenceCount > 0);
+
+	if (referenceCount > 0)
+	{
+		if (--referenceCount==0)
 		{
-			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instance>>()
-		{
-			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<boost::shared_ptr<Instances>>()
-		{
-			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<int>()
-		{
-			static Type type("int", typeid(int));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<bool>()
-		{
-			static Type type("bool", typeid(bool));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<float>()
-		{
-			static Type type("float", typeid(float));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<double>()
-		{
-			static Type type("double", typeid(double));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<ContentId>()
-		{
-			static Type type("ContentId", typeid(ContentId));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<std::string>()
-		{
-			static Type type("string", typeid(std::string));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<G3D::Vector3>()
-		{
-			static Type type("Vector3", typeid(G3D::Vector3));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<G3D::Color3>()
-		{
-			static Type type("Color3", typeid(G3D::Color3));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<std::vector<Value>>()
-		{
-			static Type type("Table", typeid(std::vector<Value>));
-			return type;
-		}
-
-		template<>
-		const Type& Type::singleton<BrickColor>()
-		{
-			static Type type("BrickColor", typeid(BrickColor));
-			return type;
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
-		{
-			return getValue(instance);
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<bool>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<float>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<int>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
-		}
-
-		template<>
-		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
-		{
-			return StringConverter<ContentId>::convertToString(getValue(instance));
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			setValue(instance, text);
-			return true;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			bool value;
-			if (StringConverter<bool>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			float value;
-			if (StringConverter<float>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			int value;
-			if (StringConverter<int>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			G3D::Vector3 value;
-			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			G3D::Color3 value;
-			if (StringConverter<G3D::Color3>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
-		{
-			ContentId value;
-			if (StringConverter<ContentId>::convertToValue(text, value))
-			{
-				setValue(instance, value);
-				return true;
-			}
-
-			return false;
-		}
-
-		template<>
-		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				float value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			float value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				bool value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			bool value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, BrickColor(value));
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance).asInt());
-		}
-
-		template<>
-		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				int value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-		
-		template<>
-		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			int value = getValue(instance);
-			element->setValue(value);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				ContentId value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(ContentId(getValue(instance)));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				std::string value;
-				if (element->getValue(value))
-				{
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			element->setValue(getValue(instance));
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
-				{
-					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
-					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
-
-					G3D::Vector3 value;
-
-					X->getValue(value.x);
-					Y->getValue(value.y);
-					Z->getValue(value.z);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			const Name* xName = &tag_X;
-			XmlElement* xElement = new XmlElement(*xName);
-			element->pushBackChild(xElement);
-
-			const Name* yName = &tag_Y;
-			XmlElement* yElement = new XmlElement(*yName);
-			element->pushBackChild(yElement);
-
-			const Name* zName = &tag_Z;
-			XmlElement* zElement = new XmlElement(*zName);
-			element->pushBackChild(zElement);
-
-			G3D::Vector3 value = getValue(instance);
-
-			xElement->setValue(value.x);
-			yElement->setValue(value.y);
-			zElement->setValue(value.z);
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
-		{
-			if (!element->isXsiNil())
-			{
-				unsigned int colorValue;
-				if (element->getValue(colorValue))
-				{
-					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
-					setValue(instance, color);	
-				}
-				else
-				{
-					const XmlElement* R = element->findFirstChildByTag(tag_R);
-					const XmlElement* G = element->findFirstChildByTag(tag_G);
-					const XmlElement* B = element->findFirstChildByTag(tag_B);
-
-					G3D::Color3 value;
-
-					R->getValue(value.r);
-					G->getValue(value.g);
-					B->getValue(value.b);
-
-					setValue(instance, value);
-				}
-			}
-		}
-
-		template<>
-		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
-		{
-			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
-			element->setValue(value.asUInt32());
+			RakNet::OP_DELETE(instance, _FILE_AND_LINE_);
+			instance=0;
 		}
 	}
+}
+
+StringCompressor* StringCompressor::Instance(void)
+{
+	return instance;
+}
+
+unsigned int englishCharacterFrequencies[ 256 ] =
+{
+	0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		722,
+		0,
+		0,
+		2,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		11084,
+		58,
+		63,
+		1,
+		0,
+		31,
+		0,
+		317,
+		64,
+		64,
+		44,
+		0,
+		695,
+		62,
+		980,
+		266,
+		69,
+		67,
+		56,
+		7,
+		73,
+		3,
+		14,
+		2,
+		69,
+		1,
+		167,
+		9,
+		1,
+		2,
+		25,
+		94,
+		0,
+		195,
+		139,
+		34,
+		96,
+		48,
+		103,
+		56,
+		125,
+		653,
+		21,
+		5,
+		23,
+		64,
+		85,
+		44,
+		34,
+		7,
+		92,
+		76,
+		147,
+		12,
+		14,
+		57,
+		15,
+		39,
+		15,
+		1,
+		1,
+		1,
+		2,
+		3,
+		0,
+		3611,
+		845,
+		1077,
+		1884,
+		5870,
+		841,
+		1057,
+		2501,
+		3212,
+		164,
+		531,
+		2019,
+		1330,
+		3056,
+		4037,
+		848,
+		47,
+		2586,
+		2919,
+		4771,
+		1707,
+		535,
+		1106,
+		152,
+		1243,
+		100,
+		0,
+		2,
+		0,
+		10,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0
+};
+
+StringCompressor::StringCompressor()
+{
+	DataStructures::Map<int, HuffmanEncodingTree *>::IMPLEMENT_DEFAULT_COMPARISON();
+
+	// Make a default tree immediately, since this is used for RPC possibly from multiple threads at the same time
+	HuffmanEncodingTree *huffmanEncodingTree = RakNet::OP_NEW<HuffmanEncodingTree>( _FILE_AND_LINE_ );
+	huffmanEncodingTree->GenerateFromFrequencyTable( englishCharacterFrequencies );
+
+	huffmanEncodingTrees.Set(0, huffmanEncodingTree);
+}
+void StringCompressor::GenerateTreeFromStrings( unsigned char *input, unsigned inputLength, uint8_t languageId )
+{
+	HuffmanEncodingTree *huffmanEncodingTree;
+	if (huffmanEncodingTrees.Has(languageId))
+	{
+		huffmanEncodingTree = huffmanEncodingTrees.Get(languageId);
+		RakNet::OP_DELETE(huffmanEncodingTree, _FILE_AND_LINE_);
+	}
+
+	unsigned index;
+	unsigned int frequencyTable[ 256 ];
+
+	if ( inputLength == 0 )
+		return ;
+
+	// Zero out the frequency table
+	memset( frequencyTable, 0, sizeof( frequencyTable ) );
+
+	// Generate the frequency table from the strings
+	for ( index = 0; index < inputLength; index++ )
+		frequencyTable[ input[ index ] ] ++;
+
+	// Build the tree
+	huffmanEncodingTree = RakNet::OP_NEW<HuffmanEncodingTree>( _FILE_AND_LINE_ );
+	huffmanEncodingTree->GenerateFromFrequencyTable( frequencyTable );
+	huffmanEncodingTrees.Set(languageId, huffmanEncodingTree);
+}
+
+StringCompressor::~StringCompressor()
+{
+	for (unsigned i=0; i < huffmanEncodingTrees.Size(); i++)
+		RakNet::OP_DELETE(huffmanEncodingTrees[i], _FILE_AND_LINE_);
+}
+
+void StringCompressor::EncodeString( const char *input, int maxCharsToWrite, RakNet::BitStream *output, uint8_t languageId )
+{
+	HuffmanEncodingTree *huffmanEncodingTree;
+	if (huffmanEncodingTrees.Has(languageId)==false)
+		return;
+	huffmanEncodingTree=huffmanEncodingTrees.Get(languageId);
+
+	if ( input == 0 )
+	{
+		output->WriteCompressed( (uint32_t) 0 );
+		return ;
+	}
+
+	RakNet::BitStream encodedBitStream;
+
+	uint32_t stringBitLength;
+
+	int charsToWrite;
+
+	if ( maxCharsToWrite<=0 || ( int ) strlen( input ) < maxCharsToWrite )
+		charsToWrite = ( int ) strlen( input );
+	else
+		charsToWrite = maxCharsToWrite - 1;
+
+	huffmanEncodingTree->EncodeArray( ( unsigned char* ) input, charsToWrite, &encodedBitStream );
+
+	stringBitLength = (uint32_t) encodedBitStream.GetNumberOfBitsUsed();
+
+	output->WriteCompressed( stringBitLength );
+
+	output->WriteBits( encodedBitStream.GetData(), stringBitLength );
+}
+
+bool StringCompressor::DecodeString( char *output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
+{
+	HuffmanEncodingTree *huffmanEncodingTree;
+	if (huffmanEncodingTrees.Has(languageId)==false)
+		return false;
+	if (maxCharsToWrite<=0)
+		return false;
+	huffmanEncodingTree=huffmanEncodingTrees.Get(languageId);
+
+	uint32_t stringBitLength;
+	int bytesInStream;
+
+	output[ 0 ] = 0;
+
+	if ( input->ReadCompressed( stringBitLength ) == false )
+		return false;
+
+	if ( (unsigned) input->GetNumberOfUnreadBits() < stringBitLength )
+		return false;
+
+	bytesInStream = huffmanEncodingTree->DecodeArray( input, stringBitLength, maxCharsToWrite, ( unsigned char* ) output );
+
+	if ( bytesInStream < maxCharsToWrite )
+		output[ bytesInStream ] = 0;
+	else
+		output[ maxCharsToWrite - 1 ] = 0;
+
+	return true;
+}
+#ifdef _CSTRING_COMPRESSOR
+void StringCompressor::EncodeString( const CString &input, int maxCharsToWrite, RakNet::BitStream *output )
+{
+	LPTSTR p = input;
+	EncodeString(p, maxCharsToWrite*sizeof(TCHAR), output, languageID);
+}
+bool StringCompressor::DecodeString( CString &output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
+{
+	LPSTR p = output.GetBuffer(maxCharsToWrite*sizeof(TCHAR));
+	DecodeString(p,maxCharsToWrite*sizeof(TCHAR), input, languageID);
+	output.ReleaseBuffer(0)
+
+}
+#endif
+#ifdef _STD_STRING_COMPRESSOR
+void StringCompressor::EncodeString( const std::string &input, int maxCharsToWrite, RakNet::BitStream *output, uint8_t languageId )
+{
+	EncodeString(input.c_str(), maxCharsToWrite, output, languageId);
+}
+bool StringCompressor::DecodeString( std::string *output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
+{
+	if (maxCharsToWrite <= 0)
+	{
+		output->clear();
+		return true;
+	}
+
+	char *destinationBlock;
+	bool out;
+
+#if USE_ALLOCA==1
+	if (maxCharsToWrite < MAX_ALLOCA_STACK_ALLOCATION)
+	{
+		destinationBlock = (char*) alloca(maxCharsToWrite);
+		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
+		*output=destinationBlock;
+	}
+	else
+#endif
+	{
+		destinationBlock = (char*) rakMalloc_Ex( maxCharsToWrite, _FILE_AND_LINE_ );
+		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
+		*output=destinationBlock;
+		rakFree_Ex(destinationBlock, _FILE_AND_LINE_ );
+	}
+
+	return out;
+}
+#endif
+void StringCompressor::EncodeString( const RakString *input, int maxCharsToWrite, RakNet::BitStream *output, uint8_t languageId )
+{
+	EncodeString(input->C_String(), maxCharsToWrite, output, languageId);
+}
+bool StringCompressor::DecodeString( RakString *output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
+{
+	if (maxCharsToWrite <= 0)
+	{
+		output->Clear();
+		return true;
+	}
+
+	char *destinationBlock;
+	bool out;
+
+#if USE_ALLOCA==1
+	if (maxCharsToWrite < MAX_ALLOCA_STACK_ALLOCATION)
+	{
+		destinationBlock = (char*) alloca(maxCharsToWrite);
+		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
+		*output=destinationBlock;
+	}
+	else
+#endif
+	{
+		destinationBlock = (char*) rakMalloc_Ex( maxCharsToWrite, _FILE_AND_LINE_ );
+		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
+		*output=destinationBlock;
+		rakFree_Ex(destinationBlock, _FILE_AND_LINE_ );
+	}
+
+	return out;
 }

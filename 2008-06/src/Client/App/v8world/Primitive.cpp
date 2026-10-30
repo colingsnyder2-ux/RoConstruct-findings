@@ -81,7 +81,7 @@ namespace RBX
 
 	void Primitive::setGuid(const Guid& value) 
 	{
-		RBXASSERT(!world);
+		                 ;
 		guid.copyDataFrom(value);
 		guidSetExternally = true;
 	}
@@ -322,6 +322,29 @@ namespace RBX
 		}
 	}
 
+	void Primitive::setFlag0xaa(bool value)
+	{
+		bool wasAnchored = dragging || anchored || flag0xaa;
+		if (flag0xaa != value)
+		{
+			flag0xaa = value;
+			bool isAnchored = dragging || anchored || flag0xaa;
+			if (isAnchored != wasAnchored && world)
+			{
+				if (isAnchored)
+					world->onPrimitiveAddedAnchor(this);
+				else
+					world->onPrimitiveRemovingAnchor(this);
+			}
+		}
+	}
+
+	void Primitive::setPV(const PV& pv)
+	{
+		body->setVelocity(pv.velocity);
+		setCoordinateFrame(pv.position);
+	}
+
 	void Primitive::setCanCollide(bool value)
 	{
 		bool oldDrag = !dragging && canCollide;
@@ -376,17 +399,20 @@ namespace RBX
 		{
 			fuzzyExtentsStateId = -2;
 			geometry->setGridSize(protectedSize);
-
-			float newSize = geometry->getGridVolume();
-			body->setMass(newSize);
-			body->setMoment(geometry->getMoment(newSize));
-			JointK.setDirty();
+			setMassInertia(geometry->getGridVolume());
 
 			if (world)
 				world->onPrimitiveExtentsChanged(this);
 
 			JointK.setDirty();
 		}
+	}
+
+	void Primitive::setMassInertia(float mass)
+	{
+		body->setMass(mass);
+		body->setMoment(geometry->getMoment(mass));
+		JointK.setDirty();
 	}
 
 	bool Primitive::aaBoxCollide(const Primitive& p0, const Primitive& p1)

@@ -1,21 +1,16 @@
-// from server: 76% by atomic.potato
-struct S
-{
-    char padding[16];
-    int *p10;
-    char padding2[12];
-    int *p20;
-    char padding3[12];
-    int *p30;
-    char padding4[92];
-    int value;
-    void f();
-};
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_a8b429b397bb580b.cpp
 
-void S::f()
-{
-    int v = value;
-    *p10 = v;
-    *p20 = v;
-    *p30 = v - v;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/any.hpp>
+#include <boost/function.hpp>
+#include <boost/signal.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::basic_gzip_compressor<std::allocator<char> >,std::char_traits<char>,std::allocator<char>,boost::iostreams::output>;

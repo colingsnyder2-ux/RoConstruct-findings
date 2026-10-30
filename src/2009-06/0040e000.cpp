@@ -1,342 +1,145 @@
-// from server: 38% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/dlgprntx.cpp
-
-// Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// roc 2009-06 0040e000  unit: VCBrowserViewExternal::?$CComObjectNoLock  size: 238 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0040e000
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// 0040e000  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 0040e004  83ec14               sub esp, 0x14
+// 0040e007  85c0                 test eax, eax
+// 0040e009  750b                 jne 0x40e016
+// 0040e00b  b803400080           mov eax, 0x80004003
+// 0040e010  83c414               add esp, 0x14
+// 0040e013  c20c00               ret 0xc
+// 0040e016  c70000000000         mov dword ptr [eax], 0
+// 0040e01c  b801000000           mov eax, 1
+// 0040e021  c7042400020480       mov dword ptr [esp], 0x80040200
+// 0040e028  84056ca0a300         test byte ptr [0xa3a06c], al
+// 0040e02e  751a                 jne 0x40e04a
+// 0040e030  09056ca0a300         or dword ptr [0xa3a06c], eax
+// 0040e036  c70564a0a30004000000 mov dword ptr [0xa3a064], 4
+// 0040e040  c70568a0a300ffffffff mov dword ptr [0xa3a068], 0xffffffff
+// 0040e04a  833d64a0a300ff       cmp dword ptr [0xa3a064], -1
+// 0040e051  57                   push edi
+// 0040e052  bf64a0a300           mov edi, 0xa3a064
+// 0040e057  0f8486000000         je 0x40e0e3
+// 0040e05d  53                   push ebx
+// 0040e05e  8b5c2424             mov ebx, dword ptr [esp + 0x24]
+// 0040e062  55                   push ebp
+// 0040e063  8b6c2424             mov ebp, dword ptr [esp + 0x24]
+// 0040e067  56                   push esi
+// 0040e068  8b07                 mov eax, dword ptr [edi]
+// 0040e06a  83f8fe               cmp eax, -2
+// 0040e06d  750e                 jne 0x40e07d
+// 0040e06f  8b7f04               mov edi, dword ptr [edi + 4]
+// 0040e072  6a00                 push 0
+// 0040e074  ffd7                 call edi
+// 0040e076  83c404               add esp, 4
+// 0040e079  8bf8                 mov edi, eax
+// 0040e07b  eb3a                 jmp 0x40e0b7
+// 0040e07d  8d3428               lea esi, [eax + ebp]
+// 0040e080  8b06                 mov eax, dword ptr [esi]
+// 0040e082  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0040e085  8d4c2414             lea ecx, [esp + 0x14]
+// 0040e089  51                   push ecx
+// 0040e08a  56                   push esi
+// 0040e08b  ffd2                 call edx
+// 0040e08d  85c0                 test eax, eax
+// 0040e08f  7c23                 jl 0x40e0b4
+// 0040e091  8b03                 mov eax, dword ptr [ebx]
+// 0040e093  3b442414             cmp eax, dword ptr [esp + 0x14]
+// 0040e097  751b                 jne 0x40e0b4
+// 0040e099  8b4b04               mov ecx, dword ptr [ebx + 4]
+// 0040e09c  3b4c2418             cmp ecx, dword ptr [esp + 0x18]
+// 0040e0a0  7512                 jne 0x40e0b4
+// 0040e0a2  8b5308               mov edx, dword ptr [ebx + 8]
+// 0040e0a5  3b54241c             cmp edx, dword ptr [esp + 0x1c]
+// 0040e0a9  7509                 jne 0x40e0b4
+// 0040e0ab  8b430c               mov eax, dword ptr [ebx + 0xc]
+// 0040e0ae  3b442420             cmp eax, dword ptr [esp + 0x20]
+// 0040e0b2  7416                 je 0x40e0ca
+// 0040e0b4  83c704               add edi, 4
+// 0040e0b7  833fff               cmp dword ptr [edi], -1
+// 0040e0ba  75ac                 jne 0x40e068
+// 0040e0bc  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0040e0c0  5e                   pop esi
+// 0040e0c1  5d                   pop ebp
+// 0040e0c2  5b                   pop ebx
+// 0040e0c3  5f                   pop edi
+// 0040e0c4  83c414               add esp, 0x14
+// 0040e0c7  c20c00               ret 0xc
+// 0040e0ca  8b4c2430             mov ecx, dword ptr [esp + 0x30]
+// 0040e0ce  8931                 mov dword ptr [ecx], esi
+// 0040e0d0  8b16                 mov edx, dword ptr [esi]
+// 0040e0d2  8b4204               mov eax, dword ptr [edx + 4]
+// 0040e0d5  56                   push esi
+// 0040e0d6  ffd0                 call eax
+// 0040e0d8  5e                   pop esi
+// 0040e0d9  5d                   pop ebp
+// 0040e0da  c744240800000000     mov dword ptr [esp + 8], 0
+// 0040e0e2  5b                   pop ebx
+// 0040e0e3  8b442404             mov eax, dword ptr [esp + 4]
+// 0040e0e7  5f                   pop edi
+// 0040e0e8  83c414               add esp, 0x14
+// 0040e0eb  c20c00               ret 0xc
+// copied from an identical function in another client (function ?function@@YGJPAXABUGuid@@PAPAUPoint@@@Z)
 
-#include "stdafx.h"
-#include <dlgs.h>       // for standard control IDs for commdlg
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Guid {
+    unsigned long a, b, c, d;
+};
 
+struct Point;
 
+struct PointTable {
+    void* slot0;
+    unsigned long (__stdcall *addRef)(Point*);
+    void* slot2;
+    long (__stdcall *getGuid)(Point*, Guid*);
+};
 
-#define new DEBUG_NEW
+struct Point {
+    PointTable* table;
+};
 
-/////////////////////////////////////////////////////////////////////////////
-// Windows 2000 Print dialog
-
-#include "initguid.h"
-#define INITGUID
-
-DEFINE_GUID(IID_IPrintDialogCallback, 0x5852a2c3, 0x6530, 0x11d1, 0xb6, 0xa3, 0x0, 0x0, 0xf8, 0x75, 0x7b, 0xf9);
-DEFINE_GUID(IID_IPrintDialogServices, 0x509aaeda, 0x5639, 0x11d1, 0xb6, 0xa1, 0x0, 0x0, 0xf8, 0x75, 0x7b, 0xf9);
-
-BEGIN_MESSAGE_MAP(CPrintDialogEx, CCommonDialog)
-	//{{AFX_MSG_MAP(CPrintDialogEx)
-	ON_MESSAGE(WM_INITDIALOG, &CPrintDialogEx::HandleInitDialog)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-CPrintDialogEx::CPrintDialogEx(DWORD dwFlags, CWnd* pParentWnd)
-	: m_pUnkSite(NULL), CCommonDialog(pParentWnd)
+long __stdcall function(void* object, const Guid& requested, Point** output)
 {
-	memset(&m_pdex, 0, sizeof(m_pdex));
+    if (!output)
+        return (long)0x80004003UL;
 
-	m_pdex.lStructSize = sizeof(m_pdex);
-	m_pdex.Flags = dwFlags;
-	m_pdex.nStartPage = START_PAGE_GENERAL;
+    *output = 0;
+    long result = (long)0x80040200UL;
 
-	m_pdex.Flags &= ~PD_RETURNIC; // do not support information context
-}
+    static int offsets[2];
+    static unsigned int initialized;
 
-INT_PTR CPrintDialogEx::DoModal()
-{
-	ASSERT_VALID(this);
-
-	m_pdex.hwndOwner = PreModal();
-	ASSERT(m_pdex.lpCallback == NULL);
-	m_pdex.lpCallback = (IUnknown*)(IPrintDialogCallback*)this;
-	INT_PTR nResult = ::AfxCtxPrintDlgEx(&m_pdex);
-	PostModal();
-	return nResult;
-}
-
-// Create an HDC without calling DoModal.
-HDC CPrintDialogEx::CreatePrinterDC()
-{
-	ASSERT_VALID(this);
-	m_pdex.hDC = AfxCreateDC(m_pdex.hDevNames, m_pdex.hDevMode);
-	return m_pdex.hDC;
-}
-
-int CPrintDialogEx::GetCopies() const
-{
-	ASSERT_VALID(this);
-
-	if (m_pdex.Flags & PD_USEDEVMODECOPIES)
-    {
-        LPDEVMODE pDevMode=GetDevMode();
-        ENSURE(pDevMode);
-		return pDevMode->dmCopies;
+    if (!(initialized & 1)) {
+        initialized |= 1;
+        offsets[0] = 4;
+        offsets[1] = -1;
     }
-	else
-    {
-		return m_pdex.nCopies;
+
+    int* entry = offsets;
+    while (*entry != -1) {
+        if (*entry == -2) {
+            typedef int* (__cdecl *GetEntries)(int);
+            GetEntries getEntries = (GetEntries)entry[1];
+            entry = getEntries(0);
+        } else {
+            Point* point = (Point*)((char*)object + *entry);
+            Guid actual;
+
+            if (point->table->getGuid(point, &actual) >= 0 &&
+                requested.a == actual.a &&
+                requested.b == actual.b &&
+                requested.c == actual.c &&
+                requested.d == actual.d) {
+                *output = point;
+                point->table->addRef(point);
+                result = 0;
+                break;
+            }
+            ++entry;
+        }
     }
+
+    return result;
 }
-
-LPDEVMODE CPrintDialogEx::GetDevMode() const
-{
-	if (m_pdex.hDevMode == NULL)
-		return NULL;
-
-	return (LPDEVMODE)::GlobalLock(m_pdex.hDevMode);
-}
-
-CString CPrintDialogEx::GetDriverName() const
-{
-	if (m_pdex.hDevNames == NULL)
-		return (LPCTSTR)NULL;
-
-	LPDEVNAMES lpDev = (LPDEVNAMES)GlobalLock(m_pdex.hDevNames);
-	return (LPCTSTR)lpDev + lpDev->wDriverOffset;
-}
-
-CString CPrintDialogEx::GetDeviceName() const
-{
-	if (m_pdex.hDevNames == NULL)
-		return (LPCTSTR)NULL;
-
-	LPDEVNAMES lpDev = (LPDEVNAMES)GlobalLock(m_pdex.hDevNames);
-	return (LPCTSTR)lpDev + lpDev->wDeviceOffset;
-}
-
-CString CPrintDialogEx::GetPortName() const
-{
-	if (m_pdex.hDevNames == NULL)
-		return (LPCTSTR)NULL;
-
-	LPDEVNAMES lpDev = (LPDEVNAMES)GlobalLock(m_pdex.hDevNames);
-	return (LPCTSTR)lpDev + lpDev->wOutputOffset;
-}
-
-// this function must not be in afxdlgs.inl because of DLL delay loading
-BOOL CPrintDialogEx::GetDefaults()
-{
-	m_pdex.Flags |= PD_RETURNDEFAULT;
-	return SUCCEEDED(::AfxCtxPrintDlgEx(&m_pdex));
-}
-
-////////////////////////////////////////////////////////////////////////////
-// CPrintDialogEx interfaces
-
-// IUnknown
-HRESULT CPrintDialogEx::QueryInterface(REFIID riid, void** ppvObject)
-{
-	if(ppvObject == NULL)
-		return E_POINTER;
-
-	if(InlineIsEqualUnknown(riid) || InlineIsEqualGUID(riid, IID_IPrintDialogCallback))
-	{
-		*ppvObject = (IPrintDialogCallback*)this;
-//		AddRef();
-		return S_OK;
-	}
-	else if(InlineIsEqualGUID(riid, IID_IObjectWithSite))
-	{
-		*ppvObject = (IObjectWithSite*)this;
-//		AddRef();
-		return S_OK;
-	}
-
-	return E_NOINTERFACE;
-}
-
-ULONG CPrintDialogEx::AddRef()
-{
-	return 1;
-}
-
-ULONG CPrintDialogEx::Release()
-{
-	return 1;
-}
-
-// IPrintDialogCallback
-HRESULT CPrintDialogEx::InitDone()
-{
-	return S_FALSE;
-}
-
-HRESULT CPrintDialogEx::SelectionChange()
-{
-	return S_FALSE;
-}
-
-HRESULT CPrintDialogEx::HandleMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, LRESULT* plResult)
-{
-	// set up m_hWnd the first time
-	if(m_hWnd == NULL)
-		Attach(hWnd);
-
-	// we need to set this, because the message comes from the another loop
-	_AFX_THREAD_STATE* pThreadState = _afxThreadState.GetData();
-	pThreadState->m_lastSentMsg.hwnd = hWnd;
-	pThreadState->m_lastSentMsg.message = message;
-	pThreadState->m_lastSentMsg.wParam = wParam;
-	pThreadState->m_lastSentMsg.lParam = lParam;
-	pThreadState->m_lastSentMsg.time = ::GetMessageTime();
-	pThreadState->m_lastSentMsg.pt = CPoint(::GetMessagePos());
-
-	// call message map
-	HRESULT hRet = OnWndMsg(message, wParam, lParam, plResult) ? S_OK : S_FALSE;
-
-	// special case handling
-	if(hRet == S_OK && message == WM_NOTIFY)	// return in DWL_MSGRESULT
-		::SetWindowLongPtr(::GetParent(hWnd), DWLP_MSGRESULT, (LONG_PTR)*plResult);
-
-	if(message == WM_INITDIALOG && hRet == S_OK && (BOOL)*plResult != FALSE)
-		hRet = S_FALSE;
-
-	return hRet;
-}
-
-// IObjectWithSite
-HRESULT CPrintDialogEx::SetSite(IUnknown *pUnkSite)
-{
-	if (m_pUnkSite != NULL)
-		m_pUnkSite->Release();
-	m_pUnkSite = pUnkSite;
-	if (m_pUnkSite != NULL)
-		m_pUnkSite->AddRef();
-	return S_OK;
-}
-
-HRESULT CPrintDialogEx::GetSite(REFIID riid, void **ppvSite)
-{
-	HRESULT hRes = E_POINTER;
-	if (ppvSite != NULL)
-	{
-		if (m_pUnkSite != NULL)
-		{
-			hRes = m_pUnkSite->QueryInterface(riid, ppvSite);
-		}
-		else
-		{
-			*ppvSite = NULL;
-			hRes = E_FAIL;
-		}
-	}
-	return hRes;
-}
-
-////////////////////////////////////////////////////////////////////////////
-// CPrintDialogEx implementation (overrides)
-
-HWND CPrintDialogEx::PreModal()
-{
-	// cannot call DoModal on a dialog already constructed as modeless
-	ASSERT(m_hWnd == NULL);
-
-	// allow OLE servers to disable themselves
-	CWinApp* pApp = AfxGetApp();
-	if (pApp != NULL)
-		pApp->EnableModeless(FALSE);
-
-	// find parent HWND
-	HWND hWnd = CWnd::GetSafeOwner_(m_pParentWnd->GetSafeHwnd(), &m_hWndTop);
-
-	// return window to use as parent for dialog
-	return hWnd;
-}
-
-void CPrintDialogEx::PostModal()
-{
-	Detach();               // just in case
-
-	// re-enable windows
-	if (::IsWindow(m_hWndTop))
-		::EnableWindow(m_hWndTop, TRUE);
-	m_hWndTop = NULL;
-	CWinApp* pApp = AfxGetApp();
-	if (pApp != NULL)
-		pApp->EnableModeless(TRUE);
-}
-
-LRESULT CPrintDialogEx::DefWindowProc(UINT /*nMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	// does nothing, this is a dialog
-	return 0;
-}
-
-LRESULT CPrintDialogEx::HandleInitDialog(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	PreInitDialog();
-
-#ifndef _AFX_NO_OCC_SUPPORT
-	// create OLE controls
-	COccManager* pOccManager = afxOccManager;
-	if ((pOccManager != NULL) && (m_pOccDialogInfo != NULL))
-	{
-		BOOL bDlgInit;
-		if (m_lpDialogInit != NULL)
-			bDlgInit = pOccManager->CreateDlgControls(this, m_lpDialogInit,
-				m_pOccDialogInfo);
-		else
-			bDlgInit = pOccManager->CreateDlgControls(this, m_lpszTemplateName,
-				m_pOccDialogInfo);
-
-		if (!bDlgInit)
-		{
-			TRACE(traceAppMsg, 0, "Warning: CreateDlgControls failed during dialog init.\n");
-			EndDialog(-1);
-			return FALSE;
-		}
-	}
-#endif
-
-	// Call OnInitDialog
-	BOOL bResult = OnInitDialog();
-
-
-#ifndef _AFX_NO_OCC_SUPPORT
-	if (bResult && (m_nFlags & WF_OLECTLCONTAINER))
-	{
-		CWnd* pWndNext = GetNextDlgTabItem(NULL);
-		if (pWndNext != NULL)
-		{
-			pWndNext->SetFocus();   // UI Activate OLE control
-			bResult = FALSE;
-		}
-	}
-#endif
-
-	return bResult;
-}
-
-////////////////////////////////////////////////////////////////////////////
-// CPrintDialogEx diagnostics
-
-#ifdef _DEBUG
-void CPrintDialogEx::Dump(CDumpContext& dc) const
-{
-	CDialog::Dump(dc);
-
-	dc << "m_pdex.hwndOwner = " << m_pdex.hwndOwner;
-
-	if (m_pdex.hDC != NULL)
-		dc << "\nm_pdex.hDC = " << CDC::FromHandle(m_pdex.hDC);
-
-	dc << "\nm_pdex.Flags = ";
-	dc.DumpAsHex(m_pdex.Flags);
-	dc << "\nm_pdex.nMinPage = " << m_pdex.nMinPage;
-	dc << "\nm_pdex.nMaxPage = " << m_pdex.nMaxPage;
-	dc << "\nm_pdex.nCopies = " << m_pdex.nCopies;
-
-	dc << "\n";
-}
-#endif //_DEBUG
-
-IMPLEMENT_DYNAMIC(CPrintDialogEx, CCommonDialog)
-
-////////////////////////////////////////////////////////////////////////////

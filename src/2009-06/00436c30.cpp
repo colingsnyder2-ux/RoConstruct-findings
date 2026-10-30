@@ -1,43 +1,29 @@
-// from server: 26% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Sky.cpp
+// roc-lib: rbxgs-dll roc_espclaude_3d33995c2323af12.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Sky.h"
-#include <G3D/GImage.h>
+#define _DLL
+#include <string>
+#pragma pack(push, 4)
+#include <boost/bind.hpp>
+#pragma pack(pop)
 
-static std::string testImage(const std::string& file, G3D::GImage& master)
-{
-	G3D::GImage image;
-	image.load(file);
+namespace RBX {
+struct SoundItem {
+    std::string name;
+    int value;
+};
 
-	if (image.width != master.width)
-		throw std::runtime_error("skybox images have different widths");
-
-	if (image.height != master.height)
-		throw std::runtime_error("skybox images have different heights");
-
-	if (image.channels != master.channels)
-		throw std::runtime_error("skybox images have different numbers of channels");
-
-	return file;
+class Base1 { public: virtual ~Base1(); int x; };
+class Base2 { public: virtual ~Base2(); int y; };
+class Listener : public Base1, public Base2 {
+public:
+    void onItem(int& a, int& b, SoundItem item);
+};
 }
 
-namespace RBX
-{
-	Sky::Sky()
-		: drawCelestialBodies(true),
-		  numStars(3000)
-	{
-		setName("Sky");
-
-		skyUp = ContentId::fromAssets("Sky\\null_plainsky512_up.jpg");
-		skyLf = ContentId::fromAssets("Sky\\null_plainsky512_lf.jpg");
-		skyRt = ContentId::fromAssets("Sky\\null_plainsky512_rt.jpg");
-		skyBk = ContentId::fromAssets("Sky\\null_plainsky512_bk.jpg");
-		skyFt = ContentId::fromAssets("Sky\\null_plainsky512_ft.jpg");
-		skyDn = ContentId::fromAssets("Sky\\null_plainsky512_dn.jpg");
-	}
-}
+typedef boost::reference_wrapper<int> IntRef;
+template boost::_bi::bind_t<void, boost::_mfi::mf3<void, RBX::Listener, int&, int&, RBX::SoundItem>, boost::_bi::list_av_4<RBX::Listener*, IntRef, IntRef, RBX::SoundItem>::type>
+boost::bind<void, RBX::Listener, int&, int&, RBX::SoundItem, RBX::Listener*, IntRef, IntRef, RBX::SoundItem>(void (RBX::Listener::*)(int&, int&, RBX::SoundItem), RBX::Listener*, IntRef, IntRef, RBX::SoundItem);

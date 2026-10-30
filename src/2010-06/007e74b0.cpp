@@ -1,14 +1,13 @@
-// from server: 92% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTTreeBase.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTTreeBase.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTTreeBase.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2009 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -215,12 +214,6 @@ void CXTTreeBase::OnKillFocus(CWnd* /*pNewWnd*/)
 	}
 }
 
-AFX_INLINE BOOL IsArrowKey(UINT nChar)
-{
-	return (nChar == VK_UP) || (nChar == VK_DOWN) || (nChar == VK_PRIOR) || (nChar == VK_NEXT) || (nChar == VK_HOME) || (nChar == VK_END) ||
-		(nChar == VK_LEFT) || (nChar == VK_RIGHT) || (nChar == VK_BACK) || (nChar == VK_ADD) || (nChar == VK_MULTIPLY) || (nChar == VK_SUBTRACT);
-}
-
 void CXTTreeBase::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
 {
 	if (!m_bMultiSelect)
@@ -233,7 +226,7 @@ void CXTTreeBase::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
 	BOOL bShift = (::GetKeyState(VK_SHIFT) < 0);
 
 
-	if (!bCtrl && !bShift && IsArrowKey(nChar))
+	if (!bCtrl && !bShift)
 	{
 		UINT uCount = GetSelectedCount();
 
@@ -387,13 +380,6 @@ HTREEITEM CXTTreeBase::GetLastItem(HTREEITEM hItem) const
 	if (hItem == NULL)
 	{
 		hItem = m_pTreeCtrl->GetRootItem();
-
-		htiNext = m_pTreeCtrl->GetNextSiblingItem(hItem);
-		while (htiNext != NULL)
-		{
-			hItem = htiNext;
-			htiNext = m_pTreeCtrl->GetNextSiblingItem(htiNext);
-		}
 	}
 
 	while (m_pTreeCtrl->ItemHasChildren(hItem) != NULL)
@@ -536,7 +522,6 @@ HTREEITEM CXTTreeBase::FindItem(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALS
 	// For the first pass only, we check to see if it
 	// is the item we're looking for.
 	BOOL bFirstPass = TRUE;
-	BOOL bFoundRoot = FALSE;
 
 	while (htiCur && (htiCur != htiSel || bFirstPass))
 	{
@@ -591,9 +576,6 @@ HTREEITEM CXTTreeBase::FindItem(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALS
 		htiCur = bDownDir ? GetNextItem(htiCur) : GetPrevItem(htiCur);
 		if (htiCur == NULL)
 		{
-			if (bFoundRoot)
-				return NULL;
-
 			if (bDownDir)
 			{
 				htiCur = m_pTreeCtrl->GetRootItem();
@@ -602,8 +584,6 @@ HTREEITEM CXTTreeBase::FindItem(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALS
 			{
 				htiCur = GetLastItem(NULL);
 			}
-
-			bFoundRoot = TRUE;
 		}
 	}
 
@@ -1165,8 +1145,6 @@ BOOL CXTTreeBase::SetItemState(HTREEITEM hItem, UINT nState, UINT nStateMask)
 	{
 		//still need to alter selection state
 		NMTREEVIEW nmtv;
-		ZeroMemory(&nmtv, sizeof(NMTREEVIEW));
-
 		nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
 		nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
 		nmtv.hdr.code = TVN_SELCHANGING;
@@ -1418,8 +1396,6 @@ BOOL CXTTreeBase::OnButtonDown(BOOL bLeft, UINT nFlags, CPoint point)
 				// (anyway, this is smoother than the selection flicker
 				//  the default gives)
 				NMTREEVIEW nmtv;
-				ZeroMemory(&nmtv, sizeof(NMTREEVIEW));
-
 #ifdef TVN_CHKCHANGE
 				nmtv.hdr.code = TVN_CHKCHANGE;
 #else
@@ -1582,8 +1558,6 @@ void CXTTreeBase::DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint poin
 
 	//construct tree notification info
 	NMTREEVIEW nmtv;
-	ZeroMemory(&nmtv, sizeof(NMTREEVIEW));
-
 	nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
 	nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
 	nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
@@ -1906,7 +1880,6 @@ BOOL CXTTreeBase::PreTranslateMessage(MSG* pMsg)
 			if (htItem != NULL)
 			{
 				m_pTreeCtrl->Expand(htItem, TVE_TOGGLE);
-				return TRUE;
 			}
 		}
 	}

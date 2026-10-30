@@ -1,47 +1,17 @@
-// from server: 49% by colin
-struct Node {
-    Node* next;
-    char pad[8];
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_cd88090dd994c870.cpp
 
-struct Inner {
-    char pad0[0xc];
-    Node* head;
-    char pad1[8];
-    Node* head2;
-};
-
-struct Outer {
-    char pad0[4];
-    Node* head;
-    char pad1[4];
-    Inner inner;
-    int f();
-};
-
-extern "C" void __stdcall sub_55D3D0(void*);
-extern "C" void __cdecl sub_62FC62(void*);
-
-int Outer::f()
-{
-    Node* n = inner.head;
-    if (n) {
-        do {
-            Node* cur = n;
-            n = n->next;
-            sub_55D3D0((char*)cur + 4);
-            sub_62FC62(cur);
-        } while (n);
-    }
-    Node* m = head;
-    if (m) {
-        do {
-            Node* cur = m;
-            m = m->next;
-            ((Outer*)cur)->f();
-            sub_62FC62(cur);
-        } while (m);
-    }
-    sub_55D3D0((char*)this + 0xc);
-    return 0;
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "v8datamodel/DataModel.cpp"

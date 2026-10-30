@@ -1,24 +1,11 @@
-// from server: 85% by atomic.potato
-struct CRobloxControlMaterialSelector
-{
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared-rtm roc_espeon_colorentrynativevector160b2e39d0f8f701.cpp
 
-extern "C" void __stdcall sub_B24520(void* dst, void* src);
-
-void __cdecl CopyRange(void* first, void* last, void* src)
-{
-    char* dst = (char*)first;
-    char* end = (char*)last;
-    char* s = (char*)src;
-
-    if (dst == end)
-        return;
-
-    do
-    {
-        *(int*)dst = *(int*)s;
-        *(int*)(dst + 4) = *(int*)(s + 4);
-        sub_B24520(dst + 8, s + 8);
-        dst += 12;
-    } while (dst != end);
-}
+// Candidate translation unit (score above; library headers required).
+#include <afxwin.h>
+#include <vector>
+struct ColorEntry { unsigned int first; unsigned int second; CString name; };
+typedef char verifyColorEntry[(sizeof(ColorEntry)==12)?1:-1];
+template class std::vector<ColorEntry>;

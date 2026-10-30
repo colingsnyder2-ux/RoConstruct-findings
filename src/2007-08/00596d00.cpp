@@ -1,23 +1,19 @@
-// from server: 97% by colin
+// from server: 100% by tajop
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+
+// std::string::operator=(const char*) is imported from MSVCP80 (call through IAT).
 struct S_func_00596d00 {
     char pad0[0xe8];
     double m_d;
-    char pad1[0x100 - 0xe8 - 8];
-    char m_str[0x10];
-    void f(char* p);
+    std::string m_str;
+    void f(const bool& v);
 };
 
-struct Str {
-    void assign(const char*);
-};
-
-extern "C" void* __stdcall sub_77e62c(void*, const char*);
-
-void S_func_00596d00::f(char* p)
+void S_func_00596d00::f(const bool& v)
 {
-    const char* s = (const char*)0x7a0b44;
-    if (*p == 0)
-        s = (const char*)0x7979d0;
-    ((Str*)((char*)this + 0xf0))->assign(s);
-    m_d = (double)(*p != 0);
+    m_str = v ? "true" : "false";
+    m_d = v ? 1 : 0;
 }

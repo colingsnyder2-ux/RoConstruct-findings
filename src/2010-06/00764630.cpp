@@ -1,22 +1,9 @@
-// from server: 78% by colin
-struct GuiLayerCollector {
-    int loadZVectorsHelper(char* a, char* b, char* c, char* d, char* e, char* f);
-    int loadZVectors();
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_nestedstringresize_321354d37176baf1.cpp
 
-extern "C" int __cdecl sub_764490(char*, char*, char*, char*, char*, char*);
-
-int GuiLayerCollector::loadZVectors()
-{
-    char* p1;
-    char* p2;
-    char* p3;
-    char* p4;
-    char* p5;
-    char* p6;
-    char flag = 0;
-    sub_764490(p1, p2, p3, p4, p5, p6);
-    int diff = (int)p5 - (int)p1;
-    int q = diff / 24;
-    return (int)p4 - q * 24;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+template void std::vector<std::vector<std::string> >::resize(size_type,std::vector<std::string>);

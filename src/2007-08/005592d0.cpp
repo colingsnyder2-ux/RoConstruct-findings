@@ -1,10 +1,29 @@
-// from server: 98% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/DataModel.cpp
+// roc-lib: rbxgs roc_espeon_aug2007_signals133_app_f67a762c6254fbb4.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define _MT 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 #include "v8datamodel/Lighting.h"
 #include "v8datamodel/DataModel.h"
 #include "v8datamodel/TimeState.h"
@@ -47,11 +66,11 @@ namespace RBX
 		  guiRoot(Creatable::create<GuiRoot>()),
 		  guiHooks(Creatable::create<GuiRoot>()),
 		  timeState(new TimeState),
-		  mutex(new boost::recursive_mutex),
+		  mutex(new boost::mutex),
 		  guiTarget(NULL),
 		  forceArrowCursor(true),
 		  dirty(false),
-		  drawId(0)
+		  closed(false)
 	{
 		setName("Level");
 	}
@@ -262,135 +281,13 @@ namespace RBX
 		}
 	}
 
-	std::string DataModel::evaluate(const std::string& valueName) const
-	{
-		World* world = workspace->getWorld();
-
-		if (valueName == "timer")
-		{
-			float time = timeState->totalVirtualTime;
-			return StringConverter<float>::convertToString(time);
-		}
-		else if (valueName == "FPS")
-		{
-			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
-		}
-		else if (valueName == "simDC")
-		{
-			return report(timeState->simulationStopwatch);
-		}
-		else if (valueName == "drawId")
-		{
-			return StringConverter<int>::convertToString(drawId);
-		}
-		else if (valueName == "graphicsMode")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "culling")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "cullingPercent")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "antiAliasing")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "bevels")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "videoMemory")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "GfxTime")
-		{
-			return tempMetric->getMetric(valueName);
-		}
-		else if (valueName == "numPrimitives")
-		{
-			return StringConverter<int>::convertToString(world->getPrimitives().size());
-		}
-		else if (valueName == "numJoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumJoints());
-		}
-		else if (valueName == "numContacts")
-		{
-			return StringConverter<int>::convertToString(world->getNumContacts());
-		}
-		else if (valueName == "numContactsInCollisionStage")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
-		}
-		else if (valueName == "numSteppingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
-		}
-		else if (valueName == "numTouchingContacts")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
-		}
-		else if (valueName == "maxTreeDepth")
-		{
-			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
-		}
-		else if (valueName == "contactPairHitRatio")
-		{
-			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
-		}
-		else if (valueName == "numLinkCalls")
-		{
-			return StringConverter<int>::convertToString(world->getNumLinkCalls());
-		}
-		else if (valueName == "numHashNodes")
-		{
-			return StringConverter<int>::convertToString(world->getNumHashNodes());
-		}
-		else if (valueName == "maxBucketSize")
-		{
-			return StringConverter<int>::convertToString(world->getMaxBucketSize());
-		}
-		else if (valueName == "numBodies")
-		{
-			return StringConverter<int>::convertToString(world->getNumBodies());
-		}
-		else if (valueName == "numConstraints")
-		{
-			return StringConverter<int>::convertToString(world->getNumConstraints());
-		}
-		else if (valueName == "numPoints")
-		{
-			return StringConverter<int>::convertToString(world->getNumPoints());
-		}
-		else if (valueName == "energyBody")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
-		}
-		else if (valueName == "energyConnector")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
-		}
-		else if (valueName == "energyTotal")
-		{
-			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
-		}
-		else
-		{
-			return "?";
-		}
-	}
 
 	void DataModel::Lock::doLock(const DataModel* dataModel)
 	{
 		if (dataModel)
 		{
 			mutex = dataModel->mutex;
-			lock = new boost::recursive_mutex::scoped_lock(*mutex);
+			lock = new boost::mutex::scoped_lock(*mutex);
 		}
 	}
 

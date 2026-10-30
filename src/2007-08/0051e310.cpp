@@ -1,320 +1,296 @@
-// from server: 51% by colin
-// roc-lang: cpp
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/CoordinateFrame.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: g3d-6.09-ijg-dll jutils.c
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file CoordinateFrame.cpp
+/*
+ * jutils.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains tables and miscellaneous utility routines needed
+ * for both compression and decompression.
+ * Note we prefix all global names with "j" to minimize conflicts with
+ * a surrounding application.
+ */
 
- Coordinate frame class
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
- @maintainer Morgan McGuire, matrix@graphics3d.com
 
- @created 2001-06-02
- @edited  2006-03-25
-*/
+/*
+ * jpeg_zigzag_order[i] is the zigzag-order position of the i'th element
+ * of a DCT block read in natural order (left to right, top to bottom).
+ */
 
-#include "G3D/platform.h"
-#include "G3D/CoordinateFrame.h"
-#include "G3D/Quat.h"
-#include "G3D/Matrix4.h"
-#include "G3D/Box.h"
-#include "G3D/AABox.h"
-#include "G3D/Sphere.h"
-#include "G3D/Triangle.h"
-#include "G3D/Ray.h"
-#include "G3D/Capsule.h"
-#include "G3D/Cylinder.h"
+#if 0				/* This table is not actually needed in v6a */
 
-namespace G3D {
+const int jpeg_zigzag_order[DCTSIZE2] = {
+   0,  1,  5,  6, 14, 15, 27, 28,
+   2,  4,  7, 13, 16, 26, 29, 42,
+   3,  8, 12, 17, 25, 30, 41, 43,
+   9, 11, 18, 24, 31, 40, 44, 53,
+  10, 19, 23, 32, 39, 45, 52, 54,
+  20, 22, 33, 38, 46, 51, 55, 60,
+  21, 34, 37, 47, 50, 56, 59, 61,
+  35, 36, 48, 49, 57, 58, 62, 63
+};
 
-const float CoordinateFrame::zLookDirection = -1;
+#endif
 
-Ray CoordinateFrame::lookRay() const {
-    return Ray::fromOriginAndDirection(translation, lookVector());
+/*
+ * jpeg_natural_order[i] is the natural-order position of the i'th element
+ * of zigzag order.
+ *
+ * When reading corrupted data, the Huffman decoders could attempt
+ * to reference an entry beyond the end of this array (if the decoded
+ * zero run length reaches past the end of the block).  To prevent
+ * wild stores without adding an inner-loop test, we put some extra
+ * "63"s after the real entries.  This will cause the extra coefficient
+ * to be stored in location 63 of the block, not somewhere random.
+ * The worst case would be a run-length of 15, which means we need 16
+ * fake entries.
+ */
+
+const int jpeg_natural_order[DCTSIZE2+16] = {
+  0,  1,  8, 16,  9,  2,  3, 10,
+ 17, 24, 32, 25, 18, 11,  4,  5,
+ 12, 19, 26, 33, 40, 48, 41, 34,
+ 27, 20, 13,  6,  7, 14, 21, 28,
+ 35, 42, 49, 56, 57, 50, 43, 36,
+ 29, 22, 15, 23, 30, 37, 44, 51,
+ 58, 59, 52, 45, 38, 31, 39, 46,
+ 53, 60, 61, 54, 47, 55, 62, 63,
+ 63, 63, 63, 63, 63, 63, 63, 63, /* extra entries for safety in decoder */
+ 63, 63, 63, 63, 63, 63, 63, 63
+};
+
+
+/*
+ * Arithmetic utilities
+ */
+
+GLOBAL(long)
+jdiv_round_up (long a, long b)
+/* Compute a/b rounded up to next integer, ie, ceil(a/b) */
+/* Assumes a >= 0, b > 0 */
+{
+  return (a + b - 1L) / b;
 }
 
 
-bool CoordinateFrame::fuzzyEq(const CoordinateFrame& other) const {
-
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (! G3D::fuzzyEq(other.rotation[r][c], rotation[r][c])) {
-                return false;
-            }
-        }
-        if (! G3D::fuzzyEq(translation[c], other.translation[c])) {
-            return false;
-        }
-    }
-
-    return true;
+GLOBAL(long)
+jround_up (long a, long b)
+/* Compute a rounded up to next multiple of b, ie, ceil(a/b)*b */
+/* Assumes a >= 0, b > 0 */
+{
+  a += b - 1L;
+  return a - (a % b);
 }
 
 
-bool CoordinateFrame::fuzzyIsIdentity() const {
-    const Matrix3& I = Matrix3::identity();
+/* On normal machines we can apply MEMCOPY() and MEMZERO() to sample arrays
+ * and coefficient-block arrays.  This won't work on 80x86 because the arrays
+ * are FAR and we're assuming a small-pointer memory model.  However, some
+ * DOS compilers provide far-pointer versions of memcpy() and memset() even
+ * in the small-model libraries.  These will be used if USE_FMEM is defined.
+ * Otherwise, the routines below do it the hard way.  (The performance cost
+ * is not all that great, because these routines aren't very heavily used.)
+ */
 
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (fuzzyNe(I[r][c], rotation[r][c])) {
-                return false;
-            }
-        }
-        if (fuzzyNe(translation[c], 0)) {
-            return false;
-        }
-    }
+#ifndef NEED_FAR_POINTERS	/* normal case, same as regular macros */
+#define FMEMCOPY(dest,src,size)	MEMCOPY(dest,src,size)
+#define FMEMZERO(target,size)	MEMZERO(target,size)
+#else				/* 80x86 case, define if we can */
+#ifdef USE_FMEM
+#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#endif
+#endif
 
-    return true;
+
+GLOBAL(void)
+jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
+		   JSAMPARRAY output_array, int dest_row,
+		   int num_rows, JDIMENSION num_cols)
+/* Copy some rows of samples from one place to another.
+ * num_rows rows are copied from input_array[source_row++]
+ * to output_array[dest_row++]; these areas may overlap for duplication.
+ * The source and destination arrays must be at least as wide as num_cols.
+ */
+{
+  register JSAMPROW inptr, outptr;
+#ifdef FMEMCOPY
+  register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+#else
+  register JDIMENSION count;
+#endif
+  register int row;
+
+  input_array += source_row;
+  output_array += dest_row;
+
+  for (row = num_rows; row > 0; row--) {
+    inptr = *input_array++;
+    outptr = *output_array++;
+#ifdef FMEMCOPY
+    FMEMCOPY(outptr, inptr, count);
+#else
+    for (count = num_cols; count > 0; count--)
+      *outptr++ = *inptr++;	/* needn't bother with GETJSAMPLE() here */
+#endif
+  }
 }
 
 
-bool CoordinateFrame::isIdentity() const {
-    return 
-        (translation == Vector3::zero()) &&
-        (rotation == Matrix3::identity());
+GLOBAL(void)
+jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
+		 JDIMENSION num_blocks)
+/* Copy a row of coefficient blocks from one place to another. */
+{
+#ifdef FMEMCOPY
+  FMEMCOPY(output_row, input_row, num_blocks * (DCTSIZE2 * SIZEOF(JCOEF)));
+#else
+  register JCOEFPTR inptr, outptr;
+  register long count;
+
+  inptr = (JCOEFPTR) input_row;
+  outptr = (JCOEFPTR) output_row;
+  for (count = (long) num_blocks * DCTSIZE2; count > 0; count--) {
+    *outptr++ = *inptr++;
+  }
+#endif
 }
 
 
-Matrix4 CoordinateFrame::toMatrix4() const {
-    return Matrix4(*this);
+GLOBAL(void)
+jzero_far (void FAR * target, size_t bytestozero)
+/* Zero out a chunk of FAR memory. */
+/* This might be sample-array data, block-array data, or alloc_large data. */
+{
+#ifdef FMEMZERO
+  FMEMZERO(target, bytestozero);
+#else
+  register char FAR * ptr = (char FAR *) target;
+  register size_t count;
+
+  for (count = bytestozero; count > 0; count--) {
+    *ptr++ = 0;
+  }
+#endif
 }
 
 
-std::string CoordinateFrame::toXML() const {
-    return G3D::format(
-        "<COORDINATEFRAME>\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf\n</COORDINATEFRAME>\n",
-        rotation[0][0], rotation[0][1], rotation[0][2], translation.x,
-        rotation[1][0], rotation[1][1], rotation[1][2], translation.y,
-        rotation[2][0], rotation[2][1], rotation[2][2], translation.z,
-        0.0, 0.0, 0.0, 1.0);
+/** Used by robustTmpfile.  Returns nonzero if fread, fwrite, and fseek all
+succeed on the file.
+  @author Morgan McGuire, morgan@graphics3d.com  */
+static int isFileGood(FILE* f) {
+
+	int x, n, result;
+
+	/* Must be a valid file handle */
+	if (f == NULL) {
+		return 0;
+	}
+
+	/* Try to write */
+	x = 1234;
+	n = fwrite(&x, sizeof(int), 1, f);
+
+	if (n != 1) {
+		return 0;
+	}
+
+	/* Seek back to the beginning */
+	result = fseek(f, 0, SEEK_SET);
+	if (result != 0) {
+		return 0;
+	}
+
+	/* Read */
+	n =	fread(&x, sizeof(int), 1, f);
+	if (n != 1) {
+		return 0;
+	}
+
+	/* Seek back to the beginning again */
+	fseek(f, 0, SEEK_SET);
+
+	return 1;
 }
 
 
-Plane CoordinateFrame::toObjectSpace(const Plane& p) const {
-    Vector3 N, P;
-    double d;
-    p.getEquation(N, d);
-    P = N * (float)d;
-    P = pointToObjectSpace(P);
-    N = normalToObjectSpace(N);
-    return Plane(N, P);
+FILE* _robustTmpfile() {
+    FILE* t = tmpfile();
+#ifdef _WIN32
+	char* n = NULL;
+#endif
+	char name[256];
+
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    /* tmpfile failed; try the tmpnam routine */
+    t = fopen(tmpnam(NULL), "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    #ifdef _WIN32
+		n = _tempnam("c:/tmp/", "t");
+        /* Try to create something in C:\tmp */
+        t = fopen(n, "w+");
+		if (isFileGood(t)) {
+			return t;
+		}
+
+        /* Try c:\temp */
+		n = _tempnam("c:/temp/", "t");
+        t = fopen(n, "w+");
+	    if (isFileGood(t)) {
+			return t;
+		}
+
+        /* try the current directory */
+		n = _tempnam("./", "t");
+        t = fopen(n, "w+");
+		if (isFileGood(t)) {
+			return t;
+		}
+    #endif
+
+    /* Try some hardcoded paths */
+    sprintf(name, "%s/tmp%d", "c:/tmp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "%s/tmp%d", "/tmp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "%s/tmp%d", "c:/temp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "tmp%d", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    fprintf(stderr, "Unable to create a temporary file; robustTmpfile returning NULL\n");
+
+    return NULL;
 }
 
-
-Plane CoordinateFrame::toWorldSpace(const Plane& p) const {
-    Vector3 N, P;
-    double d;
-    p.getEquation(N, d);
-    P = N * (float)d;
-    P = pointToWorldSpace(P);
-    N = normalToWorldSpace(N);
-    return Plane(N, P);
-}
-
-
-Triangle CoordinateFrame::toObjectSpace(const Triangle& t) const {
-    return Triangle(pointToObjectSpace(t.vertex(0)),
-        pointToObjectSpace(t.vertex(1)),
-        pointToObjectSpace(t.vertex(2)));
-}
-
-
-Triangle CoordinateFrame::toWorldSpace(const Triangle& t) const {
-    return Triangle(pointToWorldSpace(t.vertex(0)),
-        pointToWorldSpace(t.vertex(1)),
-        pointToWorldSpace(t.vertex(2)));
-}
-
-Cylinder CoordinateFrame::toWorldSpace(const Cylinder& c) const {
-    return Cylinder(
-        pointToWorldSpace(c.getPoint1()), 
-        pointToWorldSpace(c.getPoint2()), 
-        c.radius());
-}
-
-Capsule CoordinateFrame::toWorldSpace(const Capsule& c) const {
-    return Capsule(
-        pointToWorldSpace(c.getPoint1()), 
-        pointToWorldSpace(c.getPoint2()), 
-        c.getRadius());
-}
-
-Box CoordinateFrame::toWorldSpace(const AABox& b) const {
-    return toWorldSpace(b.toBox());
-}
-
-Box CoordinateFrame::toWorldSpace(const Box& b) const {
-    Box out(b);
-
-    for (int i = 0; i < 8; i++) {
-        out._corner[i] = pointToWorldSpace(out._corner[i]);
-    }
-
-    for (int i = 0; i < 3; i++) {
-        out._axis[i] = vectorToWorldSpace(out._axis[i]);
-    }
-
-    out._center = pointToWorldSpace(out._center);
-
-    return out;
-}
-
-
-Box CoordinateFrame::toObjectSpace(const Box &b) const {
-    return inverse().toWorldSpace(b);
-}
-
-
-Box CoordinateFrame::toObjectSpace(const AABox& b) const {
-    return toObjectSpace(b.toBox());
-}
-
-
-CoordinateFrame::CoordinateFrame(class BinaryInput& b) : rotation(Matrix3::zero()) {
-    deserialize(b);
-}
-
-
-void CoordinateFrame::deserialize(class BinaryInput& b) {
-    rotation.deserialize(b);
-    translation.deserialize(b);
-}
-
-
-void CoordinateFrame::serialize(class BinaryOutput& b) const {
-    rotation.serialize(b);
-    translation.serialize(b);
-}
-
-
-Sphere CoordinateFrame::toWorldSpace(const Sphere &b) const {
-    return Sphere(pointToWorldSpace(b.center), b.radius);
-}
-
-
-Sphere CoordinateFrame::toObjectSpace(const Sphere &b) const {
-    return Sphere(pointToObjectSpace(b.center), b.radius);
-}
-
-
-Ray CoordinateFrame::toWorldSpace(const Ray& r) const {
-    return Ray::fromOriginAndDirection(pointToWorldSpace(r.origin), vectorToWorldSpace(r.direction));
-}
-
-
-Ray CoordinateFrame::toObjectSpace(const Ray& r) const {
-    return Ray::fromOriginAndDirection(pointToObjectSpace(r.origin), vectorToObjectSpace(r.direction));
-}
-
-
-void CoordinateFrame::lookAt(const Vector3 &target) {
-    lookAt(target, Vector3::unitY());
-}
-
-
-void CoordinateFrame::lookAt(
-    const Vector3&  target,
-    Vector3         up) {
-
-    up = up.direction();
-
-    Vector3 look = (target - translation).direction();
-    if (look.dot(up) > .99) {
-        up = Vector3::unitX();
-        if (look.dot(up) > .99) {
-            up = Vector3::unitY();
-        }
-    }
-
-    up -= look * look.dot(up);
-    up.unitize();
-
-    Vector3 z = -look;
-    Vector3 x = -z.cross(up);
-    x.unitize();
-
-    Vector3 y = z.cross(x);
-
-    rotation.setColumn(0, x);
-    rotation.setColumn(1, y);
-    rotation.setColumn(2, z);
-}
-
-
-CoordinateFrame CoordinateFrame::lerp(
-    const CoordinateFrame&  other,
-    float                   alpha) const {
-
-    if (alpha == 1.0f) {
-        return other;
-    } else if (alpha == 0.0f) {
-        return *this;
-    } else {
-        Quat q1 = Quat(this->rotation);
-        Quat q2 = Quat(other.rotation);
-
-        return CoordinateFrame(
-            q1.slerp(q2, alpha).toRotationMatrix(),
-            this->translation * (1 - alpha) + other.translation * alpha);
-    }
-} 
-
-
-void CoordinateFrame::pointToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = pointToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::normalToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const  {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = normalToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::vectorToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = vectorToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::pointToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = pointToObjectSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::normalToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = normalToObjectSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::vectorToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = vectorToObjectSpace(v[i]);
-    }
-}
-
-} // namespace

@@ -1,3404 +1,1932 @@
-// from server: 51% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/RenderDevice.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPControlComboBox.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file RenderDevice.cpp
- 
- @maintainer Morgan McGuire, morgan@graphics3d.com
- 
- @created 2001-07-08
- @edited  2006-01-30
- */
+// XTPControlComboBox.cpp : implementation of the CXTPControlComboBox class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-#include "G3D/platform.h"
-#include "G3D/Log.h"
-#include "G3D/GCamera.h"
-#include "GLG3D/glcalls.h"
-#include "GLG3D/RenderDevice.h"
-#include "GLG3D/Texture.h"
-#include "GLG3D/getOpenGLState.h"
-#include "GLG3D/VARArea.h"
-#include "GLG3D/VAR.h"
-#include "GLG3D/Framebuffer.h"
-#include "G3D/fileutils.h"
-#include <time.h>
-#ifdef G3D_WIN32
-    #include "GLG3D/Win32Window.h"
-#else
-    #include "GLG3D/SDLWindow.h"    
+#include "stdafx.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPPropExchange.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPToolTipContext.h"
+
+#include "XTPControlComboBox.h"
+#include "XTPCommandBar.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPPaintManager.h"
+#include "XTPMouseManager.h"
+#include "XTPControls.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
-#include "GLG3D/GLCaps.h"
-
-namespace G3D {
-
-const GWindow* GWindow::m_current = NULL;
 
 
-RenderDevice* RenderDevice::lastRenderDeviceCreated = NULL;
+CXTPEdit::CRichEditContext::CRichEditContext()
+{
+	m_hInstance = LoadLibraryA("RICHED20.DLL");
+	m_bRichEdit2 = TRUE;
 
-
-GLenum BufferToGL[MAX_BUFFER_SIZE] = {GL_NONE,
-                                      GL_FRONT_LEFT,
-                                      GL_FRONT_RIGHT,
-                                      GL_BACK_LEFT,
-                                      GL_BACK_RIGHT,
-                                      GL_FRONT,
-                                      GL_BACK,
-                                      GL_LEFT,
-                                      GL_RIGHT,
-                                      GL_FRONT_AND_BACK,
-                                      0xFFFF,                   //BUFFER_CURRENT
-                                      GL_COLOR_ATTACHMENT0_EXT,
-                                      GL_COLOR_ATTACHMENT1_EXT,
-                                      GL_COLOR_ATTACHMENT2_EXT,
-                                      GL_COLOR_ATTACHMENT3_EXT,
-                                      GL_COLOR_ATTACHMENT4_EXT,
-                                      GL_COLOR_ATTACHMENT5_EXT,
-                                      GL_COLOR_ATTACHMENT6_EXT,
-                                      GL_COLOR_ATTACHMENT7_EXT,
-                                      GL_COLOR_ATTACHMENT8_EXT,
-                                      GL_COLOR_ATTACHMENT9_EXT,
-                                      GL_COLOR_ATTACHMENT10_EXT,
-                                      GL_COLOR_ATTACHMENT11_EXT,
-                                      GL_COLOR_ATTACHMENT12_EXT,
-                                      GL_COLOR_ATTACHMENT13_EXT,
-                                      GL_COLOR_ATTACHMENT14_EXT,
-                                      GL_COLOR_ATTACHMENT15_EXT};
-
-static GLint toGLBlendFunc(RenderDevice::BlendFunc b) {
-    switch (b) {
-    case RenderDevice::BLEND_SRC_ALPHA:
-        return GL_SRC_ALPHA;
-        
-    case RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA:
-        return GL_ONE_MINUS_SRC_ALPHA;
-
-    case RenderDevice::BLEND_ONE:
-        return GL_ONE;
-        
-    case RenderDevice::BLEND_ZERO:
-        return GL_ZERO;
-
-    case RenderDevice::BLEND_SRC_COLOR:
-        return GL_SRC_COLOR;
-
-    case RenderDevice::BLEND_DST_COLOR:
-        return GL_DST_COLOR;
-
-    case RenderDevice::BLEND_ONE_MINUS_SRC_COLOR:
-        return GL_ONE_MINUS_SRC_COLOR;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_ZERO;
-    }
+	if (m_hInstance)
+	{
+	#ifdef _UNICODE
+		m_strClassName = _T("RichEdit20W");
+	#else
+		m_strClassName = _T("RichEdit20A");
+	#endif
+	}
+	else
+	{
+		m_hInstance = LoadLibraryA("RICHED32.DLL");
+		m_strClassName = _T("RICHEDIT");
+		m_bRichEdit2 = FALSE;
+	}
 }
 
-static void _glViewport(double a, double b, double c, double d) {
-    glViewport(iRound(a), iRound(b), 
-	       iRound(a + c) - iRound(a), iRound(b + d) - iRound(b));
+CXTPEdit::CRichEditContext::~CRichEditContext()
+{
 }
 
-static GLenum primitiveToGLenum(RenderDevice::Primitive primitive) {
-	switch (primitive) {
-    case RenderDevice::LINES:
-		return GL_LINES;
-
-    case RenderDevice::LINE_STRIP:
-		return GL_LINE_STRIP;
-
-    case RenderDevice::TRIANGLES:
-		return GL_TRIANGLES;
-
-    case RenderDevice::TRIANGLE_STRIP:
-		return GL_TRIANGLE_STRIP;
-
-    case RenderDevice::TRIANGLE_FAN:
-		return GL_TRIANGLE_FAN;
-
-    case RenderDevice::QUADS:
-		return GL_QUADS;
-
-    case RenderDevice::QUAD_STRIP:
-		return GL_QUAD_STRIP;
-
-    case RenderDevice::POINTS:
-        return GL_POINTS;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return 0;
-    }
+CXTPEdit::CRichEditContext& CXTPEdit::GetRichEditContext()
+{
+	static CRichEditContext s_RichContext;
+	return s_RichContext;
 }
 
+// CXTPEdit
 
-std::string RenderDevice::getCardDescription() const {
-    return cardDescription;
+IMPLEMENT_DYNCREATE(CXTPEdit, CEdit)
+
+CXTPEdit::CXTPEdit()
+{
+	m_bImeMode = FALSE;
+	m_bComposited = FALSE;
+	m_bIgonoreEditChanged = FALSE;
 }
 
-
-RenderDevice::RenderDevice() : _window(NULL), deleteWindow(false) {
-
-    _initialized = false;
-    cleanedup = false;
-    inPrimitive = false;
-    inShader = false;
-    _numTextureUnits = 0;
-    _numTextures = 0;
-    _numTextureCoords = 0;
-    emwaFrameRate = 0;
-    lastTime = System::getTick();
-
-    for (int i = 0; i < GLCaps::G3D_MAX_TEXTURE_UNITS; ++i) {
-        currentlyBoundTexture[i] = 0;
-    }
-
-    lastRenderDeviceCreated = this;
+BOOL CXTPEdit::IsCommandEnabled(UINT nID)
+{
+	if (nID == ID_EDIT_PASTE)
+	{
+		return ((GetStyle() & (ES_READONLY | WS_DISABLED)) == 0) && ::IsClipboardFormatAvailable(CF_TEXT);
+	}
+	else if (nID == ID_EDIT_CUT || nID == ID_EDIT_COPY)
+	{
+		int nStartChar, nEndChar;
+		GetSel(nStartChar, nEndChar);
+		return (nStartChar != nEndChar) && ((nID == ID_EDIT_COPY) || ((GetStyle() & (ES_READONLY | WS_DISABLED)) == 0));
+	}
+	return TRUE;
 }
 
+BOOL CXTPEdit::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* /*pHandlerInfo*/)
+{
+	if ((nID == ID_EDIT_PASTE || nID == ID_EDIT_CUT || nID == ID_EDIT_COPY) && (nCode == CN_UPDATE_COMMAND_UI))
+	{
+		CCmdUI* pCmdUI = (CCmdUI*)pExtra;
+		pCmdUI->Enable(IsCommandEnabled(nID));
+		return TRUE;
+	}
 
-void RenderDevice::setVARAreaMilestone() {
-    currentVARArea->renderDevice = this;
-
-    if (VARArea::mode == VARArea::VBO_MEMORY) {
-        // We don't need milestones when using VBO; the spec guarantees
-        // correct synchronization.
-        return;
-    }
-
-    MilestoneRef milestone = createMilestone("VAR Milestone");
-    setMilestone(milestone);
-
-    debugAssert(currentVARArea.notNull());
-
-    // Overwrite any preexisting milestone
-    currentVARArea->milestone = milestone;
+	return FALSE;
 }
 
+BOOL CXTPEdit::OnCommand(WPARAM wParam, LPARAM)
+{
+	UINT nID = LOWORD(wParam);
 
-RenderDevice::~RenderDevice() {
-    debugAssertM(cleanedup, "You deleted a RenderDevice without calling RenderDevice::cleanup()");
+	if (nID == ID_EDIT_PASTE) Paste();
+	else if (nID == ID_EDIT_COPY) Copy();
+	else if (nID == ID_EDIT_CUT) Cut();
+	else return FALSE;
+
+	return TRUE;
 }
 
-/**
- Used by RenderDevice::init.
- */
-static const char* isOk(bool x) {
-    return x ? "ok" : "UNSUPPORTED";
+BOOL CXTPEdit::ShowContextMenu(CXTPControl* pControl, CPoint point)
+{
+	CString strPrompt;
+	if (!strPrompt.LoadString(ID_EDIT_CUT))
+		return FALSE;
+
+	CXTPCommandBar* pParentBar = pControl->GetParent();
+
+	CXTPCommandBars* pCommandBars = pParentBar->GetCommandBars();
+	if (pCommandBars == NULL)
+		return FALSE;
+
+	CXTPMouseManager* pMouseManager = pCommandBars->GetMouseManager();
+	pMouseManager->UnlockMouseMove();
+
+	ClientToScreen(&point);
+
+	MSG msg;
+	if (PeekMessage(&msg, m_hWnd, EM_SETSEL, EM_SETSEL, PM_NOREMOVE))
+	{
+		SendMessage(EM_SETSEL, 0, -1);
+	}
+
+	CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
+	CXTPControl* pControlCut = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_CUT);
+	pControlCut->SetEnabled(IsCommandEnabled(ID_EDIT_CUT));
+	CXTPControl* pControlCopy = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_COPY);
+	pControlCopy->SetEnabled(IsCommandEnabled(ID_EDIT_COPY));
+	CXTPControl* pControlPaste = pPopupBar->GetControls()->Add(xtpControlButton, ID_EDIT_PASTE);
+	pControlPaste->SetEnabled(IsCommandEnabled(ID_EDIT_PASTE));
+
+	pPopupBar->SetGrabFocus(FALSE);
+
+	int nAlign = pControl->GetParent()->GetExStyle() & (WS_EX_LAYOUTRTL | WS_EX_RIGHT) ? TPM_RIGHTALIGN : TPM_LEFTALIGN;
+
+
+	int nCommand = CXTPCommandBars::TrackPopupMenu(pPopupBar, TPM_NONOTIFY | TPM_RECURSE | TPM_RETURNCMD | nAlign, point.x, point.y, this, NULL, this);
+
+	if (nCommand > 0)
+	{
+		OnCommand(nCommand, 0);
+	}
+
+	pMouseManager->LockMouseMove();
+
+	pPopupBar->InternalRelease();
+
+	if (pParentBar->GetSafeHwnd())
+	{
+		pParentBar->Redraw();
+		pParentBar->UpdateWindow();
+	}
+
+	return TRUE;
 }
 
-/**
- Used by RenderDevice::init.
- */
-static const char* isOk(void* x) {
-    // GCC incorrectly claims this function is not called.
-    return isOk(x != NULL);
+BOOL CXTPEdit::CreateEdit(DWORD dwStyle, CWnd* pParentWnd)
+{
+	if (GetRichEditContext().m_hInstance)
+	{
+		BOOL bResult = CWnd::Create(GetRichEditContext().m_strClassName, 0, dwStyle, CRect(0, 0, 0, 0), pParentWnd, 0);
+		SendMessage(EM_SETEVENTMASK, 0, ENM_CHANGE);
+		SendMessage(EM_SETTEXTMODE, TM_PLAINTEXT | TM_SINGLELEVELUNDO);
+
+		return bResult;
+	}
+
+	return Create(dwStyle, CRect(0, 0, 0, 0), pParentWnd, 0);
 }
 
+BOOL CXTPEdit::IsDialogCode(UINT nChar, LPARAM lParam)
+{
+	const BOOL bNavigateKeys = (nChar == VK_BACK) || (nChar >= VK_PRIOR && nChar <= VK_DELETE) ||
+		((nChar == 'C' || nChar == 'V' || nChar == 'X' || nChar == 'Z') && (GetKeyState(VK_CONTROL) < 0));
 
-bool RenderDevice::supportsOpenGLExtension(
-    const std::string& extension) const {
+	if (!bNavigateKeys)
+		return FALSE;
 
-    return GLCaps::supports(extension);
+	MSG msg;
+	msg.message = WM_KEYDOWN;
+	msg.hwnd = m_hWnd;
+	msg.wParam = (WPARAM)nChar;
+	msg.lParam = lParam;
+
+	if (IsDialogMessage(&msg))
+		return TRUE;
+
+	return FALSE;
 }
 
-
-bool RenderDevice::init(
-    const GWindowSettings&      _settings,
-    Log*                        log) {
-
-    deleteWindow = true;
-    #ifdef G3D_WIN32
-        return init(Win32Window::create(_settings), log);
-    #else
-        return init(new SDLWindow(_settings), log);
-    #endif
+void CXTPEdit::SetWindowTextEx(LPCTSTR lpszString)
+{
+	m_bIgonoreEditChanged = TRUE;
+	SetWindowText(0);
+	m_bIgonoreEditChanged = FALSE;
+	SetWindowText(lpszString);
 }
 
 
-GWindow* RenderDevice::window() const {
-    return _window;
+void CXTPEdit::GetWindowTextEx(CString& rString)
+{
+#ifdef _UNICODE
+	if (GetRichEditContext().m_bRichEdit2)
+	{
+		GETTEXTLENGTHEX gtl =
+		{
+			GTL_DEFAULT, 1200
+		};
+
+		int nLen = (int)SendMessage(EM_GETTEXTLENGTHEX, (WPARAM)&gtl);
+
+		if (nLen > 0)
+		{
+			GETTEXTEX gt =
+			{
+				(nLen + 1) * sizeof(TCHAR), GT_DEFAULT, 1200, 0, 0
+			};
+
+			SendMessage(EM_GETTEXTEX, (WPARAM)&gt, (LPARAM)rString.GetBufferSetLength(nLen));
+			rString.ReleaseBuffer();
+		}
+		else
+		{
+			rString.Empty();
+		}
+	}
+	else
+#endif
+	{
+		GetWindowText(rString);
+	}
+}
+
+BEGIN_MESSAGE_MAP(CXTPEdit, CEdit)
+	ON_MESSAGE_VOID(WM_IME_STARTCOMPOSITION, OnImeStartComposition)
+	ON_MESSAGE_VOID(WM_IME_ENDCOMPOSITION, OnImeEndComposition)
+	ON_WM_KILLFOCUS()
+	ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+void CXTPEdit::OnImeStartComposition()
+{
+	Default();
+	m_bImeMode = TRUE;
+}
+
+void CXTPEdit::OnImeEndComposition()
+{
+	Default();
+	m_bImeMode = FALSE;
+}
+
+void CXTPEdit::OnKillFocus(CWnd* pNewWnd)
+{
+	CEdit::OnKillFocus(pNewWnd);
+	m_bImeMode = FALSE;
+}
+
+void CXTPEdit::OnPaint()
+{
+	Default();
+
+	if (m_bComposited)
+	{
+		CClientDC dc(this);
+		CXTPPaintManager::FillCompositeAlpha(&dc, CXTPClientRect(this));
+	}
 }
 
 
-bool RenderDevice::init(GWindow* window, Log* log) {
-    debugAssert(! initialized());
-    debugAssert(window);
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxAutoCompleteWnd
 
-    _swapBuffersAutomatically = true;
-    swapGLBuffersPending = false;
-    _window = window;
 
-    GWindowSettings settings;
-    window->getSettings(settings);
-    
-    // Load the OpenGL extensions if they have not already been loaded.
-    GLCaps::loadExtensions(log);
+HHOOK CXTPControlComboBoxAutoCompleteWnd::m_hHookMessage = 0;
+CXTPControlComboBoxAutoCompleteWnd* CXTPControlComboBoxAutoCompleteWnd::m_pWndMonitor = 0;
 
-    debugLog = log;
+#define WM_XTP_SHELLAUTOCOMPLETESTART (WM_XTP_COMMANDBARS_BASE + 30)
 
-    beginEndFrame = 0;
-    if (debugLog) {debugLog->section("Initialization");}
+CXTPControlComboBoxAutoCompleteWnd::CXTPControlComboBoxAutoCompleteWnd()
+{
+	m_hWndAutoComplete = 0;
+	m_hWndEdit = 0;
+}
 
-    debugAssert((settings.lightSaturation >= 0.5) && 
-                (settings.lightSaturation <= 2.0));
+CXTPControlComboBoxAutoCompleteWnd::~CXTPControlComboBoxAutoCompleteWnd()
+{
+	SetupMessageHook(FALSE);
+	SetAutoCompeteHandle(NULL);
+}
 
-    // Under Windows, reset the last error so that our debug box
-    // gives the correct results
-    #ifdef G3D_WIN32
-        SetLastError(0);
-    #endif
+BOOL CXTPControlComboBoxAutoCompleteWnd::IsDialogCode(UINT nChar, LPARAM lParam)
+{
+	if (!m_hWndAutoComplete)
+		return FALSE;
 
-	const int minimumDepthBits    = iMin(16, settings.depthBits);
-	const int desiredDepthBits    = settings.depthBits;
+	if (! ((nChar == VK_UP || nChar == VK_DOWN || nChar == VK_NEXT || nChar == VK_PRIOR) && (GetKeyState(VK_MENU) >= 0)))
+		return FALSE;
 
-	const int minimumStencilBits  = settings.stencilBits;
-	const int desiredStencilBits  = settings.stencilBits;
+	HWND hWnd = ::GetWindow(m_hWndAutoComplete, GW_CHILD);
+	hWnd = ::GetWindow(hWnd, GW_HWNDLAST);
 
-    // Don't use more texture units than allowed at compile time.
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        _numTextureUnits = iMin(GLCaps::G3D_MAX_TEXTURE_UNITS, 
-                                glGetInteger(GL_MAX_TEXTURE_UNITS_ARB));
-    } else {
-        _numTextureUnits = 1;
-    }
+	MSG msg;
+	msg.message = WM_KEYDOWN;
+	msg.hwnd = hWnd;
+	msg.wParam = (WPARAM)nChar;
+	msg.lParam = lParam;
 
-    // NVIDIA cards with GL_NV_fragment_program have different 
-    // numbers of texture coords, units, and textures
-    if (GLCaps::supports("GL_NV_fragment_program")) {
-        glGetIntegerv(GL_MAX_TEXTURE_COORDS_NV, &_numTextureCoords);
-        _numTextureCoords = iClamp(_numTextureCoords,
-                                   _numTextureUnits,
-                                   GLCaps::G3D_MAX_TEXTURE_UNITS);
+	if (::IsDialogMessage(m_hWndAutoComplete, &msg))
+		return TRUE;
 
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_NV, &_numTextures);
-        _numTextures = iClamp(_numTextures,
-                              _numTextureUnits, 
-                              GLCaps::G3D_MAX_TEXTURE_UNITS);
-    } else {
-        _numTextureCoords = _numTextureUnits;
-        _numTextures      = _numTextureUnits;
-    }
+	return FALSE;
+}
 
-    if (! GLCaps::supports_GL_ARB_multitexture()) {
-        // No multitexture
-        if (debugLog) {
-            debugLog->println("No GL_ARB_multitexture support: "
-                              "forcing number of texture units "
-                              "to no more than 1");
-        }
-        _numTextureCoords = iMax(1, _numTextureCoords);
-        _numTextures      = iMax(1, _numTextures);
-        _numTextureUnits  = iMax(1, _numTextureUnits);
-    }
-    debugAssertGLOk();
 
-    if (debugLog) {
-		int t = 0;
-       
-        int t0 = 0;
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            t = t0 = glGetInteger(GL_MAX_TEXTURE_UNITS_ARB);
-        }
+HRESULT CXTPControlComboBoxAutoCompleteWnd::ShellAutoComplete(HWND hEdit, DWORD dwFlags)
+{
+	m_hWndEdit = hEdit;
+	HRESULT hResult = E_FAIL;
 
-		if (GLCaps::supports_GL_ARB_fragment_program()) {
-			t = glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS_ARB);
+	HMODULE hLib = LoadLibraryA("shlwapi.dll");
+	if (hLib)
+	{
+		typedef HRESULT (STDAPICALLTYPE *SHAUTOCOMPLETE)(HWND hwndEdit, DWORD dwFlags);
+
+		SHAUTOCOMPLETE _SHAutoComplete = NULL;
+		_SHAutoComplete = (SHAUTOCOMPLETE)GetProcAddress(hLib, "SHAutoComplete");
+
+		if (_SHAutoComplete)
+		{
+			hResult = _SHAutoComplete(hEdit, dwFlags);
 		}
 
-        debugLog->printf("numTextureCoords                      = %d\n"
-                         "numTextures                           = %d\n"
-                         "numTextureUnits                       = %d\n"
-                         "glGet(GL_MAX_TEXTURE_UNITS_ARB)       = %d\n"
-                         "glGet(GL_MAX_TEXTURE_IMAGE_UNITS_ARB) = %d\n",
-                         _numTextureCoords, _numTextures, _numTextureUnits,
-                         t0,
-						 t);
-    }
-
-    if (debugLog) {debugLog->println("Setting video mode");}
-
-    setVideoMode();
-
-    if (!strcmp((char*)glGetString(GL_RENDERER), "GDI Generic") && debugLog) {
-        debugLog->printf(
-         "\n*********************************************************\n"
-           "* WARNING: This computer does not have correctly        *\n"
-           "*          installed graphics drivers and is using      *\n"
-           "*          the default Microsoft OpenGL implementation. *\n"
-           "*          Most graphics capabilities are disabled.  To *\n"
-           "*          correct this problem, download and install   *\n"
-           "*          the latest drivers for the graphics card.    *\n"
-           "*********************************************************\n\n");
-    }
-
-	glViewport(0, 0, getWidth(), getHeight());
-
-    int depthBits, stencilBits, redBits, greenBits, blueBits, alphaBits;
-    depthBits       = glGetInteger(GL_DEPTH_BITS);
-    stencilBits     = glGetInteger(GL_STENCIL_BITS);
-    redBits         = glGetInteger(GL_RED_BITS);
-    greenBits       = glGetInteger(GL_GREEN_BITS);
-    blueBits        = glGetInteger(GL_BLUE_BITS);
-    alphaBits       = glGetInteger(GL_ALPHA_BITS);
-    debugAssertGLOk();
-
-    bool depthOk   = depthBits >= minimumDepthBits;
-    bool stencilOk = stencilBits >= minimumStencilBits;
-
-    if (debugLog) {
-        debugLog->printf("Operating System: %s\n",
-                         System::operatingSystem().c_str());
-
-        debugLog->printf("Processor Architecture: %s\n\n", 
-                         System::cpuArchitecture().c_str());
-
-        debugLog->printf("GL Vendor:      %s\n", GLCaps::vendor().c_str());
-
-        debugLog->printf("GL Renderer:    %s\n", GLCaps::renderer().c_str());
-
-        debugLog->printf("GL Version:     %s\n", GLCaps::glVersion().c_str());
-
-        debugLog->printf("Driver version: %s\n\n", GLCaps::driverVersion().c_str());
-
-		std::string extStringCopy = (char*)glGetString(GL_EXTENSIONS);
-
-        debugLog->printf(
-            "GL extensions: \"%s\"\n\n",
-            extStringCopy.c_str());
-    }
- 
-
-    cardDescription = GLCaps::renderer() + " " + GLCaps::driverVersion();
-
-    if (debugLog) {
-    debugLog->section("Video Status");
-
-    GWindowSettings actualSettings;
-    window->getSettings(actualSettings);
-
-    // This call is here to make GCC realize that isOk is used.
-    (void)isOk(false);
-    (void)isOk((void*)NULL);
-
-    debugLog->printf(
-             "Capability    Minimum   Desired   Received  Ok?\n"
-             "-------------------------------------------------\n"
-             "* RENDER DEVICE \n"
-             "Depth       %4d bits %4d bits %4d bits   %s\n"
-             "Stencil     %4d bits %4d bits %4d bits   %s\n"
-             "Alpha                           %4d bits   %s\n"
-             "Red                             %4d bits   %s\n"
-             "Green                           %4d bits   %s\n"
-             "Blue                            %4d bits   %s\n"
-             "FSAA                      %2d    %2d    %s\n"
-
-             "Width             %8d pixels           %s\n"
-             "Height            %8d pixels           %s\n"
-             "Mode                 %10s             %s\n\n",
-
-             minimumDepthBits, desiredDepthBits, depthBits, isOk(depthOk),
-             minimumStencilBits, desiredStencilBits, stencilBits, isOk(stencilOk),
-
-             alphaBits, "ok",
-             redBits, "ok", 
-             greenBits, "ok", 
-             blueBits, "ok", 
-
-             settings.fsaaSamples, actualSettings.fsaaSamples,
-             isOk(settings.fsaaSamples == actualSettings.fsaaSamples),
-
-             settings.width, "ok",
-             settings.height, "ok",
-             (settings.fullScreen ? "Fullscreen" : "Windowed"), "ok"
-             );
-    }
-
-
-
-	inPrimitive        = false;
-	inIndexedPrimitive = false;
-
-    if (debugLog) debugLog->println("Done initializing RenderDevice.\n");
-
-    _initialized = true;
-
-    if (alphaBits != 0) {
-        enableAlphaWrite();
-    }
-
-    setCaption("3D");
-    
-    _window->m_renderDevice = this;
-
-    return true;
-}
-
-
-bool RenderDevice::initialized() const {
-    return _initialized;
-}
-
-
-#ifdef G3D_WIN32
-
-HDC RenderDevice::getWindowHDC() const {
-    return wglGetCurrentDC();
-}
-
-#endif
-
-void RenderDevice::setGamma(
-    double              brightness,
-    double              gamma) {
-    
-    Array<uint16> gammaRamp(256);
-
-    for (int i = 0; i < 256; ++i) {
-        gammaRamp[i] =
-            (uint16)min(65535, 
-                      max(0, 
-                      (int)(pow((brightness * (i + 1)) / 256.0, gamma) * 65535 + 0.5)));
+		FreeLibrary(hLib);
 	}
-    
-    _window->setGammaRamp(gammaRamp);
+
+	return hResult;
 }
 
-
-void RenderDevice::notifyResize(int w, int h) {
-    _window->notifyResize(w, h);
-}
-
-
-void RenderDevice::setVideoMode() {
-
-    debugAssertM(stateStack.size() == 0, 
-                 "Cannot call setVideoMode between pushState and popState");
-    debugAssertM(beginEndFrame == 0, 
-                 "Cannot call setVideoMode between beginFrame and endFrame");
-
-    // Reset all state
-
-    GWindowSettings settings;
-    _window->getSettings(settings);
-
-    // Set the refresh rate
-    #ifdef G3D_WIN32
-        if (wglSwapIntervalEXT != NULL) {
-            if (debugLog) {
-                if (settings.asychronous) {
-                    debugLog->printf("wglSwapIntervalEXT(0);\n");
-                } else {
-                    debugLog->printf("wglSwapIntervalEXT(1);\n");
-                }
-            }
-            wglSwapIntervalEXT(settings.asychronous ? 0 : 1);
-        }
-    #endif
-
-    {
-        if (debugLog) {
-            debugLog->printf("Setting brightness to %g\n", 
-                                        settings.lightSaturation);
-        }
-        // Adjust the gamma so that changing the 
-        // light intensities won't affect the actual screen
-        // brightness.  This method due to John Carmack.
-        lightSaturation = settings.lightSaturation;
-        brightScale = 1.0 / lightSaturation;
-        setGamma(lightSaturation, 1.0);
-        if (debugLog) debugLog->println("Brightness set.");
-    }
-
-    // Enable proper specular lighting
-    if (GLCaps::supports("GL_EXT_separate_specular_color")) {
-        if (debugLog) {
-            debugLog->println("Enabling separate specular lighting.\n");
-        }
-        glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL_EXT, 
-                      GL_SEPARATE_SPECULAR_COLOR_EXT);
-        debugAssertGLOk();
-    } else if (debugLog) {
-        debugLog->println("Cannot enable separate specular lighting, extension not supported.\n");
-    }
-
-
-    // Make sure we use good interpolation.
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-    // Smoothing by default on NVIDIA cards.  On ATI cards
-    // there is a bug that causes shaders to generate incorrect
-    // results and run at 0 fps, so we can't enable this.
-    if (! beginsWith(GLCaps::vendor(), "ATI")) {
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_POINT_SMOOTH);
-    }
-    
-
-    // glHint(GL_GENERATE_MIPMAP_HINT_EXT, GL_NICEST);
-    if (GLCaps::supports("GL_ARB_multisample")) {
-        glEnable(GL_MULTISAMPLE_ARB);
-    }
-
-    debugAssertGLOk();
-    if (GLCaps::supports("GL_NV_multisample_filter_hint")) {
-        glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-    }
-
-    resetState();
-
-    if (debugLog) debugLog->printf("Done setting initial state.\n");
-}
-
-
-void RenderDevice::setCaption(const std::string& caption) {
-    _window->setCaption(caption);
-}
-
-
-int RenderDevice::getWidth() const {
-	return width();
-}
-
-
-int RenderDevice::getHeight() const {
-	return height();
-}
-
-
-int RenderDevice::width() const {
-	if (state.framebuffer.isNull()) {
-	    return _window->width();
-	} else {
-		return state.framebuffer->width();
+void CXTPControlComboBoxAutoCompleteWnd::CloseWindow()
+{
+	if (m_hWndAutoComplete)
+	{
+		ShowWindow(m_hWndAutoComplete, SW_HIDE);
 	}
 }
 
-
-int RenderDevice::height() const {
-	if (state.framebuffer.isNull()) {
-	    return _window->height();
-	} else {
-		return state.framebuffer->height();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
-Vector4 RenderDevice::project(const Vector3& v) const {
-    return project(Vector4(v, 1));
-}
-
-
-Vector4 RenderDevice::project(const Vector4& v) const {
-    return glToScreen(v);
-}
-
-
-void RenderDevice::cleanup() {
-    debugAssert(initialized());
-
-    if (debugLog) {debugLog->println("Shutting down RenderDevice.");}
-
-    if (debugLog) {debugLog->println("Restoring gamma.");}
-    setGamma(1, 1);
-
-    if (debugLog) {debugLog->println("Freeing all VAR memory");}
-
-    if (deleteWindow) {
-        if (debugLog) {debugLog->println("Deleting window.");}
-        VARArea::cleanupAllVARAreas();
-        delete _window;
-    }
-
-    cleanedup = true;
-}
-
-
-void RenderDevice::push2D() {
-    push2D(getViewport());
-}
-
-void RenderDevice::push2D(const Rect2D& viewport) {
-	push2D(NULL, viewport);
-}
-
-void RenderDevice::push2D(const FramebufferRef& fb) {
-	const Rect2D& viewport = fb.notNull() ? fb->rect2DBounds() : Rect2D::xywh(0, 0, _window->width(), _window->height());
-	push2D(fb, viewport);
-}
-
-void RenderDevice::push2D(const FramebufferRef& fb, const Rect2D& viewport) {
-    pushState();
-
-	setFramebuffer(fb);
-    setDepthTest(DEPTH_ALWAYS_PASS);
-    disableLighting();
-    setCullFace(CULL_NONE);
-    disableDepthWrite();
-    setViewport(viewport);
-	setObjectToWorldMatrix(CoordinateFrame());
-
-    // 0.375 is a float-to-int adjustment.  See: http://msdn.microsoft.com/library/default.asp?url=/library/en-us/opengl/apptips_7wqb.asp
-    //setCameraToWorldMatrix(CoordinateFrame(Matrix3::identity(), Vector3(-0.375, -0.375, 0.0)));
-
-    setCameraToWorldMatrix(CoordinateFrame());
-
-    setProjectionMatrix(Matrix4::orthogonalProjection(viewport.x0(), viewport.x0() + viewport.width(), viewport.y0() + viewport.height(), viewport.y0(), -1, 1));
-}
-
-
-void RenderDevice::pop2D() {
-    popState();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-RenderDevice::RenderState::RenderState(int width, int height, int htutc) :
-
-    // WARNING: this must be kept in sync with the initialization code
-    // in init();
-    viewport(Rect2D::xywh(0, 0, width, height)),
-
-    useClip2D(false),
-
-    depthWrite(true),
-    colorWrite(true),
-    alphaWrite(false),
-
-    depthTest(DEPTH_LEQUAL),
-    alphaTest(ALPHA_ALWAYS_PASS),
-    alphaReference(0.0) {
-
-	framebuffer = NULL;
-
-    lights.twoSidedLighting =    false;
-
-
-    srcBlendFunc                = BLEND_ONE;
-    dstBlendFunc                = BLEND_ZERO;
-    blendEq                     = BLENDEQ_ADD;
-
-    drawBuffer                  = BUFFER_BACK;
-
-    stencil.stencilTest         = STENCIL_ALWAYS_PASS;
-    stencil.stencilReference    = 0;
-    stencil.frontStencilFail    = STENCIL_KEEP;
-    stencil.frontStencilZFail   = STENCIL_KEEP;
-    stencil.frontStencilZPass   = STENCIL_KEEP;
-    stencil.backStencilFail     = STENCIL_KEEP;
-    stencil.backStencilZFail    = STENCIL_KEEP;
-    stencil.backStencilZPass    = STENCIL_KEEP;
-
-    polygonOffset               = 0;
-    lineWidth                   = 1;
-    pointSize                   = 1;
-
-    renderMode                  = RenderDevice::RENDER_SOLID;
-
-    shininess                   = 15;
-    specular                    = Color3::white() * 0.8f;
-
-    lights.ambient              = Color4(0.25f, 0.25f, 0.25f, 1.0f);
-
-    lights.lighting             = false;
-    color                       = Color4(1,1,1,1);
-    normal                      = Vector3(0,0,0);
-
-    // Note: texture units and lights initialize themselves
-
-    matrices.objectToWorldMatrix         = CoordinateFrame();
-    matrices.cameraToWorldMatrix         = CoordinateFrame();
-    matrices.cameraToWorldMatrixInverse  = CoordinateFrame();
-
-    stencil.stencilClear        = 0;
-    depthClear                  = 1;
-    colorClear                  = Color4(0,0,0,1);
-
-    shadeMode                   = SHADE_FLAT;
-
-    vertexAndPixelShader        = NULL;
-	objectShader				= NULL;
-    shader                      = NULL;
-    vertexProgram               = NULL;
-    pixelProgram                = NULL;
-
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        lights.lightEnabled[i] = false;
-    }
-
-    // Set projection matrix
-    double aspect;
-    aspect = (double)viewport.width() / viewport.height();
-
-    matrices.projectionMatrix = Matrix4::perspectiveProjection(-aspect, aspect, -1, 1, 0.1f, 100.0f);
-
-    cullFace                    = CULL_BACK;
-
-    lowDepthRange               = 0;
-    highDepthRange              = 1;
-
-
-    highestTextureUnitThatChanged = htutc;
-}
-
-
-RenderDevice::RenderState::TextureUnit::TextureUnit() : texture(NULL), LODBias(0) {
-    texCoord        = Vector4(0,0,0,1);
-    combineMode     = TEX_MODULATE;
-
-    // Identity texture matrix
-    memset(textureMatrix, 0, sizeof(float) * 16);
-    for (int i = 0; i < 4; ++i) {
-        textureMatrix[i + i * 4] = (float)1.0;
-    }
-}
-
-
-void RenderDevice::resetState() {
-    state = RenderState(getWidth(), getHeight());
-
-	glClearDepth(1.0);
-
-    glEnable(GL_NORMALIZE);
-
-    debugAssertGLOk();
-    if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-        glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
-    }
-
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
-
-    // Compute specular term correctly
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-    debugAssertGLOk();
-
-    if (debugLog) debugLog->println("Setting initial rendering state.\n");
-    glDisable(GL_LIGHT0);
-    debugAssertGLOk();
-    {
-        // WARNING: this must be kept in sync with the 
-        // RenderState constructor
-        state = RenderState(getWidth(), getHeight(), iMax(_numTextures, _numTextureCoords) - 1);
-
-        _glViewport(state.viewport.x0(), state.viewport.y0(), state.viewport.width(), state.viewport.height());
-        glDepthMask(GL_TRUE);
-        glColorMask(1,1,1,0);
-
-        if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-            glActiveStencilFaceEXT(GL_BACK);
-        }
-        for (int i = 0; i < 2; ++i) {
-            glStencilMask((GLuint)~0);
-            glDisable(GL_STENCIL_TEST);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-            glStencilFunc(GL_ALWAYS, 0, 0xFFFFFFFF);
-            glDisable(GL_ALPHA_TEST);
-            if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-                glActiveStencilFaceEXT(GL_FRONT);
-            }
-        }
-
-        glDepthFunc(GL_LEQUAL);
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_SCISSOR_TEST);
-
-        glDisable(GL_BLEND);
-        glDisable(GL_POLYGON_OFFSET_FILL);
-        glLineWidth(1);
-        glPointSize(1);
-
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, state.lights.ambient);
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, state.lights.twoSidedLighting);
-
-        glDisable(GL_LIGHTING);
-
-        glDrawBuffer(GL_BACK);
-
-        for (int i = 0; i < MAX_LIGHTS; ++i) {
-            setLight(i, NULL, true);
-        }
-        glColor4d(1, 1, 1, 1);
-        glNormal3d(0, 0, 0);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        setShininess(state.shininess);
-        setSpecularCoefficient(state.specular);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        glShadeModel(GL_FLAT);
-
-        glClearStencil(0);
-        glClearDepth(1);
-        glClearColor(0,0,0,1);
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(state.matrices.projectionMatrix);
-        glMatrixMode(GL_MODELVIEW);
-
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-
-        glDepthRange(0, 1);
-
-        // Set up the texture units.
-        if (glMultiTexCoord4fvARB != NULL) {
-            for (int t = _numTextureCoords - 1; t >= 0; --t) {
-                float f[] = {0,0,0,1};
-                glMultiTexCoord4fvARB(GL_TEXTURE0_ARB + t, f);
-            }
-        } else if (_numTextureCoords > 0) {
-            glTexCoord(Vector4(0,0,0,1));
-        }
-
-        if (glActiveTextureARB != NULL) {
-            glActiveTextureARB(GL_TEXTURE0_ARB);
-        }
-    }
-    debugAssertGLOk();
-
-}
-
-
-bool RenderDevice::RenderState::Lights::operator==(const Lights& other) const {
-    for (int L = 0; L < MAX_LIGHTS; ++L) {
-        if ((lightEnabled[L] != other.lightEnabled[L]) ||
-            (lightEnabled[L] && (light[L] != other.light[L]))) {
-            return false;
-        }
-    }
-
-    debugAssertM(changed == false,
-        "Should never enter lighting comparison "
-        "when lighting has not changed.");
-
-    return 
-        (lighting == other.lighting) && 
-        (ambient == other.ambient) &&
-        (twoSidedLighting == other.twoSidedLighting);
-}
-
-
-bool RenderDevice::RenderState::Stencil::operator==(const Stencil& other) const {
-    return 
-        (stencilTest == other.stencilTest) &&
-        (stencilReference == other.stencilReference) &&
-        (stencilClear == other.stencilClear) &&
-        (frontStencilFail == other.frontStencilFail) &&
-        (frontStencilZFail == other.frontStencilZFail) &&
-        (frontStencilZPass == other.frontStencilZPass) &&
-        (backStencilFail == other.backStencilFail) &&
-        (backStencilZFail == other.backStencilZFail) &&
-        (backStencilZPass == other.backStencilZPass);
-}
-
-
-bool RenderDevice::RenderState::Matrices::operator==(const Matrices& other) const {
-    return
-        (objectToWorldMatrix == other.objectToWorldMatrix) &&
-        (cameraToWorldMatrix == other.cameraToWorldMatrix) &&
-        (projectionMatrix == other.projectionMatrix);
-}
-
-
-void RenderDevice::setState(
-    const RenderState&          newState) {
-
-    // The state change checks inside the individual
-    // methods will (for the most part) minimize
-    // the state changes so we can set all of the
-    // new state explicitly.
-    
-	// Set framebuffer first, since it can affect the viewport
-	if (state.framebuffer != newState.framebuffer) {
-		setFramebuffer(newState.framebuffer);
-
-		// Intentionally corrupt the viewport, forcing renderdevice to reset it
-		state.viewport = Rect2D::xywh(-1,-1,-1,-1);
-	}
-
-    setViewport(newState.viewport);
-    debugAssertGLOk();
-
-    if (newState.useClip2D) {
-        enableClip2D(newState.clip2D);
-    } else {
-        disableClip2D();
-    }
-    
-    if (newState.depthWrite) {
-        enableDepthWrite();
-    } else {
-        disableDepthWrite();
-    }
-
-    if (newState.colorWrite) {
-        enableColorWrite();
-    } else {
-        disableColorWrite();
-    }
-
-    if (newState.alphaWrite) {
-        enableAlphaWrite();
-    } else {
-        disableAlphaWrite();
-    }
-    debugAssertGLOk();
-
-    setDrawBuffer(newState.drawBuffer);
-
-    setShadeMode(newState.shadeMode);
-    setDepthTest(newState.depthTest);
-    debugAssertGLOk();
-
-    if (newState.stencil != state.stencil) {
-        setStencilConstant(newState.stencil.stencilReference);
-
-		debugAssertGLOk();
-        setStencilTest(newState.stencil.stencilTest);
-
-        setStencilOp(
-            newState.stencil.frontStencilFail, newState.stencil.frontStencilZFail, newState.stencil.frontStencilZPass,
-            newState.stencil.backStencilFail, newState.stencil.backStencilZFail, newState.stencil.backStencilZPass);
-
-        setStencilClearValue(newState.stencil.stencilClear);
-    }
-
-    setDepthClearValue(newState.depthClear);
-
-    setColorClearValue(newState.colorClear);
-
-    setAlphaTest(newState.alphaTest, newState.alphaReference);
-
-    setBlendFunc(newState.srcBlendFunc, newState.dstBlendFunc, newState.blendEq);
-
-    setRenderMode(newState.renderMode);
-    setPolygonOffset(newState.polygonOffset);
-    setLineWidth(newState.lineWidth);
-    setPointSize(newState.pointSize);
-
-    setSpecularCoefficient(newState.specular);
-    setShininess(newState.shininess);
-
-    if (state.lights.changed) {//(newState.lights != state.lights) {
-        if (newState.lights.lighting) {
-            enableLighting();
-        } else {
-            disableLighting();
-        }
-
-        if (newState.lights.twoSidedLighting) {
-            enableTwoSidedLighting();
-        } else {
-            disableTwoSidedLighting();
-        }
-
-        setAmbientLightColor(newState.lights.ambient);
-
-        for (int i = 0; i < MAX_LIGHTS; ++i) {
-            if (newState.lights.lightEnabled[i]) {
-                setLight(i, newState.lights.light[i]);
-            } else {
-                setLight(i, NULL);
-            }
-        }
-    }
-
-    setColor(newState.color);
-    setNormal(newState.normal);
-
-    for (int u = state.highestTextureUnitThatChanged; u >= 0; --u) {
-        if (newState.textureUnit[u] != state.textureUnit[u]) {
-
-            if (u < (int)numTextures()) {
-                setTexture(u, newState.textureUnit[u].texture);
-
-                if (u < (int)numTextureUnits()) {
-                    setTextureCombineMode(u, newState.textureUnit[u].combineMode);
-                    setTextureMatrix(u, newState.textureUnit[u].textureMatrix);
-
-                    setTextureLODBias(u, newState.textureUnit[u].LODBias);
-                }
-            }
-            setTexCoord(u, newState.textureUnit[u].texCoord);            
-        }
-    }
-
-    setCullFace(newState.cullFace);
-
-    setDepthRange(newState.lowDepthRange, newState.highDepthRange);
-
-    if (state.matrices.changed) { //(newState.matrices != state.matrices) { 
-        if (newState.matrices.cameraToWorldMatrix != state.matrices.cameraToWorldMatrix) {
-            setCameraToWorldMatrix(newState.matrices.cameraToWorldMatrix);
-        }
-
-        if (newState.matrices.objectToWorldMatrix != state.matrices.objectToWorldMatrix) {
-            setObjectToWorldMatrix(newState.matrices.objectToWorldMatrix);
-        }
-
-        setProjectionMatrix(newState.matrices.projectionMatrix);
-    }
-
-    setVertexAndPixelShader(newState.vertexAndPixelShader);
-	setObjectShader(newState.objectShader);
-    setShader(newState.shader);
-
-    if (supportsVertexProgram()) {
-        setVertexProgram(newState.vertexProgram);
-    }
-
-    if (supportsPixelProgram()) {
-        setPixelProgram(newState.pixelProgram);
-    }
-    
-    // Adopt the popped state's deltas relative the state that it replaced.
-    state.highestTextureUnitThatChanged = newState.highestTextureUnitThatChanged;
-    state.matrices.changed = newState.matrices.changed;
-    state.lights.changed = newState.lights.changed;
-}
-
-
-void RenderDevice::enableTwoSidedLighting() {
-    minStateChange();
-    if (! state.lights.twoSidedLighting) {
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-        state.lights.twoSidedLighting = true;
-        state.lights.changed = true;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::disableTwoSidedLighting() {
-    minStateChange();
-    if (state.lights.twoSidedLighting) {
-        glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
-        state.lights.twoSidedLighting = false;
-        state.lights.changed = true;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::beforePrimitive() {
-	if (! state.shader.isNull()) {
-        debugAssert(! inShader);
-        inShader = true;
-		state.shader->beforePrimitive(this);
-        inShader = false;
-	}
-
-    // If a Shader was bound, it will force this.  Otherwise we need to do so.
-    forceVertexAndPixelShaderBind();
-}
-
-
-void RenderDevice::afterPrimitive() {
-	if (! state.shader.isNull()) {
-        debugAssert(! inShader);
-		inShader = true;
-        state.shader->afterPrimitive(this);
-        inShader = false;
-	}
-}
-
-
-void RenderDevice::setSpecularCoefficient(const Color3& c) {
-    minStateChange();
-    if (state.specular != c) {
-        state.specular = c;
-
-        static float spec[4];
-        spec[0] = c[0];
-        spec[1] = c[1];
-        spec[2] = c[2];
-        spec[3] = 1.0f;
-
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::setSpecularCoefficient(float s) {
-    setSpecularCoefficient(s * Color3::white());
-}
-
-
-void RenderDevice::setShininess(float s) {
-    minStateChange();
-    if (state.shininess != s) {
-        state.shininess = s;
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, s);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::setRenderMode(RenderMode m) {
-    minStateChange();
-
-    if (m == RENDER_CURRENT) {
-        return;
-    }
-
-    if (state.renderMode != m) {
-        minGLStateChange();
-        state.renderMode = m;
-        switch (m) {
-        case RENDER_SOLID:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            break;
-
-        case RENDER_WIREFRAME:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            break;
-
-        case RENDER_POINTS:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-            break;
-
-        case RENDER_CURRENT:
-            return;
-            break;
-        }
-    }
-}
-
-
-RenderDevice::RenderMode RenderDevice::renderMode() const {
-    return state.renderMode;
-}
-
-
-void RenderDevice::setDrawBuffer(Buffer b) {
-    minStateChange();
-
-    if (b == BUFFER_CURRENT) return;
-
-    if (state.framebuffer.isNull()) {
-        alwaysAssertM((b >= BUFFER_NONE) && (b <= BUFFER_CURRENT), 
-                  "Drawing to a color buffer is only supported by application-created framebuffers!");
-    } else {
-        alwaysAssertM((b >= BUFFER_CURRENT) && (b <= BUFFER_COLOR15), 
-                  "Visible buffers cannot be specified for application-created framebuffers!");
-    }
-
-    if (b != state.drawBuffer) {
-        minGLStateChange();
-        state.drawBuffer = b;
-        glDrawBuffer (BufferToGL[state.drawBuffer]);
-    }
-}
-
-
-void RenderDevice::setCullFace(CullFace f) {
-    minStateChange();
-    if (f != state.cullFace) {
-        minGLStateChange();
-        switch (f) {
-        case CULL_FRONT:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
-            break;
-
-        case CULL_BACK:
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-            break;
-
-        case CULL_NONE:
-            glDisable(GL_CULL_FACE);
-            break;
-
-        default:
-            debugAssertM(false, "Fell through switch");
-        }
-
-        state.cullFace = f;
-    }
-}
-
-
-
-void RenderDevice::pushState() {
-    debugAssert(! inPrimitive);
-
-    stateStack.push(state);
-
-    // Record that that the lights and matrices are unchanged since the previous state.
-    // This allows popState to restore the lighting environment efficiently.
-
-    state.lights.changed = false;
-    state.matrices.changed = false;
-    state.highestTextureUnitThatChanged = -1;
-
-    mDebugPushStateCalls += 1;
-}
-
-
-void RenderDevice::popState() {
-    debugAssert(! inPrimitive);
-    debugAssertM(stateStack.size() > 0, "More calls to RenderDevice::pushState() than RenderDevice::popState().");
-    setState(stateStack.last());
-    stateStack.popDiscard();
-}
-
-
-void RenderDevice::clear(bool clearColor, bool clearDepth, bool clearStencil) {
-    debugAssert(! inPrimitive);
-#   ifdef G3D_DEBUG
-    std::string why;
-    debugAssertM(currentFramebufferComplete(why), why);
-#   endif
-    majStateChange();
-    majGLStateChange();
-
-    GLint mask = 0;
-
-    // TODO: do we need to enable write to clear these buffers?
-    pushState();
-    if (clearColor) {
-        mask |= GL_COLOR_BUFFER_BIT;
-        enableColorWrite();
-    }
-
-    if (clearDepth) {
-        mask |= GL_DEPTH_BUFFER_BIT;
-        enableDepthWrite();
-    }
-
-    int oldMask;
-    glGetIntegerv(GL_STENCIL_WRITEMASK, &oldMask);
-
-    if (clearStencil) {
-        mask |= GL_STENCIL_BUFFER_BIT;
-        glStencilMask((GLuint)~0);
-        minGLStateChange();
-        minStateChange();
-    }
-
-    glClear(mask);
-    glStencilMask(oldMask);
-    minGLStateChange();
-    minStateChange();
-    popState();
-}
-
-
-uint RenderDevice::numTextureUnits() const {
-    return _numTextureUnits;
-}
-
-
-uint RenderDevice::numTextures() const {
-    return _numTextures;
-}
-
-
-uint RenderDevice::numTextureCoords() const {
-    return _numTextureCoords;
-}
-
-
-void RenderDevice::beginFrame() {
-    if (swapGLBuffersPending) {
-        _window->swapGLBuffers();
-        swapGLBuffersPending = false;
-    }
-
-    mDebugNumMajorOpenGLStateChanges = 0;
-    mDebugNumMinorOpenGLStateChanges = 0;
-    mDebugNumMajorStateChanges = 0;
-    mDebugNumMinorStateChanges = 0;
-    mDebugPushStateCalls = 0;
-
-    ++beginEndFrame;
-    triangleCount = 0;
-    debugAssertM(beginEndFrame == 1, "Mismatched calls to beginFrame/endFrame");
-    pushState();
-}
-
-
-void RenderDevice::setSwapBuffersAutomatically(bool b) {
-    if (b == _swapBuffersAutomatically) {
-        // Setting to current state; nothing to do.
-        return;
-    }
-
-    if (swapGLBuffersPending) {
-        // Process the pending swap buffers call
-        _window->swapGLBuffers();
-        swapGLBuffersPending = false;
-    }
-
-    _swapBuffersAutomatically = b;
-}
-
-
-void RenderDevice::endFrame() {
-    --beginEndFrame;
-    debugAssertM(beginEndFrame == 0, "Mismatched calls to beginFrame/endFrame");
-
-    popState();
-
-    // Schedule a swap buffer iff we are handling them automatically.
-    swapGLBuffersPending = _swapBuffersAutomatically;
-
-    debugAssertM(stateStack.size() == 0, "Missing RenderDevice::popState or RenderDevice::pop2D.");
-
-    double now = System::getTick();
-    double dt = now - lastTime;
-    if (dt == 0) {
-        dt = 0.0001;
-    }
-
-    {
-        // high frame rate: A (interpolation parameter) is small
-        // low frame rate: A is big
-        const double A = clamp(dt, .07, 1);
-    
-        emwaFrameRate     = lerp(emwaFrameRate, 1 / dt, A);
-        emwaTriangleRate  = lerp(emwaTriangleRate, triangleCount / dt, A);
-        emwaTriangleCount = lerp(emwaTriangleCount, triangleCount, A);
-    }
-
-    if ((emwaFrameRate == inf()) || (isNaN(emwaFrameRate))) {
-        emwaFrameRate = 1000000;
-    } else if (emwaFrameRate < 0) {
-        emwaFrameRate = 0;
-    }
-
-    if ((emwaTriangleRate == inf()) || isNaN(emwaTriangleRate)) {
-        emwaTriangleRate = 1e20;
-    } else if (emwaTriangleRate < 0) {
-        emwaTriangleRate = 0;
-    }
-
-    if ((emwaTriangleCount == inf()) || isNaN(emwaTriangleCount)) {
-        emwaTriangleRate = 1e20;
-    } else if (emwaTriangleCount < 0) {
-        emwaTriangleCount = 0;
-    }
-
-    lastTime = now;
-}
-
-
-bool RenderDevice::alphaWrite() const {
-    return state.alphaWrite;
-}
-
-
-bool RenderDevice::depthWrite() const {
-    return state.depthWrite;
-}
-
-
-bool RenderDevice::colorWrite() const {
-    return state.colorWrite;
-}
-
-
-void RenderDevice::setStencilClearValue(int s) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.stencil.stencilClear != s) {
-        minGLStateChange();
-        glClearStencil(s);
-        state.stencil.stencilClear = s;
-    }
-}
-
-
-void RenderDevice::setDepthClearValue(double d) {
-    minStateChange();
-    debugAssert(! inPrimitive);
-    if (state.depthClear != d) {
-        minGLStateChange();
-        glClearDepth(d);
-        state.depthClear = d;
-    }
-}
-
-
-void RenderDevice::setColorClearValue(const Color4& c) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.colorClear != c) {
-        minGLStateChange();
-        glClearColor(c.r, c.g, c.b, c.a);
-        state.colorClear = c;
-    }
-}
-
-
-void RenderDevice::setViewport(const Rect2D& v) {
-    minStateChange();
-    if (state.viewport != v) {
-        // Flip to OpenGL y-axis
-		float h = height();
-        _glViewport(v.x0(), h - v.y1(), v.width(), v.height());
-        state.viewport = v;
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::enableClip2D(const Rect2D& clip) {
-    minStateChange();
-    minGLStateChange();
-    state.clip2D = clip;
-
-	int clipX0 = iFloor(clip.x0());
-	int clipY0 = iFloor(clip.y0());
-	int clipX1 = iCeil(clip.x1());
-	int clipY1 = iCeil(clip.y1());
-
-	glScissor(clipX0, getHeight() - clipY1, clipX1 - clipX0, clipY1 - clipY0);
-
-    if (! state.useClip2D) {
-        glEnable(GL_SCISSOR_TEST);
-        minStateChange();
-        minGLStateChange();
-    }
-    state.useClip2D = true;
-}
-
-
-void RenderDevice::disableClip2D() {
-    minStateChange();
-    if (state.useClip2D) {
-        minGLStateChange();
-        glDisable(GL_SCISSOR_TEST);
-    }
-    state.useClip2D = false;
-}
-
-
-void RenderDevice::setProjectionAndCameraMatrix(const GCamera& camera) {
-    double pixelAspect = state.viewport.width() / state.viewport.height();
-
-    // Half extents of viewport
-    double y = -camera.getNearPlaneZ() * tan(camera.getFieldOfView() / 2.0);
-    double x = y * pixelAspect;
-
-    double r, l, t, b, n, f;
-    n = -camera.getNearPlaneZ();
-    f = -camera.getFarPlaneZ();
-    r = x;
-    l = -x;
-    t = y;
-    b = -y;
-
-    setProjectionMatrix(Matrix4::perspectiveProjection(l, r, b, t, n, f));
-	setCameraToWorldMatrix(camera.getCoordinateFrame());
-}
-
-
-Rect2D RenderDevice::getViewport() const {
-    return state.viewport;
-}
-
-
-void RenderDevice::setFramebuffer(const FramebufferRef &fbo) {
-    // Check for extension
-    majStateChange();
-    if (fbo != state.framebuffer) {
-        majGLStateChange();
-        // Set Framebuffer
-        if (fbo.isNull()) {
-            state.drawBuffer = BUFFER_BACK;
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-        } else {
-            state.drawBuffer = BUFFER_COLOR0;
-            debugAssertM(GLCaps::supports_GL_EXT_framebuffer_object(), 
-                "Framebuffer Object not supported!");
-            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->openGLID());
-        }
-        state.framebuffer = fbo;
-    }
-}
-
-
-void RenderDevice::setDepthTest(DepthTest test) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-	if (test == DEPTH_CURRENT) {
+void CXTPControlComboBoxAutoCompleteWnd::SetAutoCompeteHandle(HWND hWnd)
+{
+	if (m_hWndAutoComplete == hWnd)
 		return;
+
+	if (hWnd)
+	{
+		XTPMouseManager()->AddTrustedWindow(hWnd);
+	}
+	else
+	{
+		XTPMouseManager()->RemoveTrustedWindow(m_hWndAutoComplete);
 	}
 
-    if (state.depthTest != test) {
-        minGLStateChange();
-        if (test == DEPTH_ALWAYS_PASS) {
-            glDisable(GL_DEPTH_TEST);
-        } else {
-            minStateChange();
-            minGLStateChange();
-            glEnable(GL_DEPTH_TEST);
-            switch (test) {
-            case DEPTH_LESS:
-                glDepthFunc(GL_LESS);
-                break;
-
-            case DEPTH_LEQUAL:
-                glDepthFunc(GL_LEQUAL);
-                break;
-
-            case DEPTH_GREATER:
-                glDepthFunc(GL_GREATER);
-                break;
-
-            case DEPTH_GEQUAL:
-                glDepthFunc(GL_GEQUAL);
-                break;
-
-            case DEPTH_EQUAL:
-                glDepthFunc(GL_EQUAL);
-                break;
-
-            case DEPTH_NOTEQUAL:
-                glDepthFunc(GL_NOTEQUAL);
-                break;
-
-            case DEPTH_NEVER_PASS:
-                glDepthFunc(GL_NEVER);
-                break;
-
-            default:
-                debugAssertM(false, "Fell through switch");
-            }
-        }
-
-        state.depthTest = test;
-
-    }
+	m_hWndAutoComplete = hWnd;
 }
 
-static GLenum toGLEnum(RenderDevice::StencilTest t) {
-
-    switch (t) {
-    case RenderDevice::STENCIL_CURRENT:
-        return 0;
-
-    case RenderDevice::STENCIL_ALWAYS_PASS:
-        return GL_ALWAYS;
-
-    case RenderDevice::STENCIL_LESS:
-        return GL_LESS;
-
-    case RenderDevice::STENCIL_LEQUAL:
-        return GL_LEQUAL;
-
-    case RenderDevice::STENCIL_GREATER:
-        return GL_GREATER;
-
-    case RenderDevice::STENCIL_GEQUAL:
-        return GL_GEQUAL;
-
-    case RenderDevice::STENCIL_EQUAL:
-        return GL_EQUAL;
-
-    case RenderDevice::STENCIL_NOTEQUAL:
-        return GL_NOTEQUAL;
-
-    case RenderDevice::STENCIL_NEVER_PASS:
-        return GL_NEVER;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_NONE;
-    }
-}
-
-
-void RenderDevice::_setStencilTest(RenderDevice::StencilTest test, int reference) {
-
-	if (test == RenderDevice::STENCIL_CURRENT) {
-		return;
+void CXTPControlComboBoxAutoCompleteWnd::SetupMessageHook(BOOL bSetup)
+{
+	if (bSetup && m_hHookMessage == 0)
+	{
+		ASSERT(m_pWndMonitor == NULL);
+		m_hHookMessage = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, AfxGetInstanceHandle(), GetCurrentThreadId());
+		XTPKeyboardManager()->HookKeyboard(this);
+		m_pWndMonitor = this;
 	}
 
-    const GLenum t = toGLEnum(test);
-
-    if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-        // NVIDIA/EXT
-        glActiveStencilFaceEXT(GL_BACK);
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        glActiveStencilFaceEXT(GL_FRONT);
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        minGLStateChange(4);
-    } else if (GLCaps::supports_GL_ATI_separate_stencil()) {
-        // ATI
-        glStencilFuncSeparateATI(t, t, reference, 0xFFFFFFFF);
-        minGLStateChange(1);
-    } else {
-        // Default OpenGL
-        glStencilFunc(t, reference, 0xFFFFFFFF);
-        minGLStateChange(1);
-    }
-}
-
-
-void RenderDevice::setStencilConstant(int reference) {
-    minStateChange();
-
-    debugAssert(! inPrimitive);
-    if (state.stencil.stencilReference != reference) {
-
-        state.stencil.stencilReference = reference;
-        _setStencilTest(state.stencil.stencilTest, reference);
-        minStateChange();
-
-    }
-}
-
-
-void RenderDevice::setStencilTest(StencilTest test) {
-    minStateChange();
-
-	if (test == STENCIL_CURRENT) {
-		return;
+	if (!bSetup && m_hHookMessage && (m_pWndMonitor == this))
+	{
+		UnhookWindowsHookEx(m_hHookMessage);
+		XTPKeyboardManager()->UnhookKeyboard(m_pWndMonitor);
+		m_hHookMessage = 0;
+		m_pWndMonitor = NULL;
 	}
 
-    debugAssert(! inPrimitive);
-
-    if (state.stencil.stencilTest != test) {
-        glEnable(GL_STENCIL_TEST);
-
-        if (test == STENCIL_ALWAYS_PASS) {
-
-            // Can't actually disable if the stencil op is using the test as well
-            // due to an OpenGL limitation.
-            if ((state.stencil.frontStencilFail   == STENCIL_KEEP) &&
-                (state.stencil.frontStencilZFail  == STENCIL_KEEP) &&
-                (state.stencil.frontStencilZPass  == STENCIL_KEEP) &&
-                (! GLCaps::supports_GL_EXT_stencil_two_side() ||
-                 ((state.stencil.backStencilFail  == STENCIL_KEEP) &&
-                  (state.stencil.backStencilZFail == STENCIL_KEEP) &&
-                  (state.stencil.backStencilZPass == STENCIL_KEEP)))) {
-                minGLStateChange();
-                glDisable(GL_STENCIL_TEST);
-            }
-
-        } else {
-
-            _setStencilTest(test, state.stencil.stencilReference);
-        }
-
-        state.stencil.stencilTest = test;
-
-    }
-}
-
-
-RenderDevice::AlphaTest RenderDevice::alphaTest() const {
-    return state.alphaTest;
-}
-
-
-double RenderDevice::alphaTestReference() const {
-    return state.alphaReference;
-}
-
-
-void RenderDevice::setAlphaTest(AlphaTest test, double reference) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-
-	if (test == ALPHA_CURRENT) {
-		return;
-	}
-
-    if ((state.alphaTest != test) || (state.alphaReference != reference)) {
-        minGLStateChange();
-        if (test == ALPHA_ALWAYS_PASS) {
-            
-            glDisable(GL_ALPHA_TEST);
-
-        } else {
-
-            glEnable(GL_ALPHA_TEST);
-            switch (test) {
-            case ALPHA_LESS:
-                glAlphaFunc(GL_LESS, reference);
-                break;
-
-            case ALPHA_LEQUAL:
-                glAlphaFunc(GL_LEQUAL, reference);
-                break;
-
-            case ALPHA_GREATER:
-                glAlphaFunc(GL_GREATER, reference);
-                break;
-
-            case ALPHA_GEQUAL:
-                glAlphaFunc(GL_GEQUAL, reference);
-                break;
-
-            case ALPHA_EQUAL:
-                glAlphaFunc(GL_EQUAL, reference);
-                break;
-
-            case ALPHA_NOTEQUAL:
-                glAlphaFunc(GL_NOTEQUAL, reference);
-                break;
-
-            case ALPHA_NEVER_PASS:
-                glAlphaFunc(GL_NEVER, reference);
-                break;
-
-            default:
-                debugAssertM(false, "Fell through switch");
-            }
-        }
-
-        state.alphaTest = test;
-        state.alphaReference = reference;
-    }
-}
-
-
-
-
-GLint RenderDevice::toGLStencilOp(RenderDevice::StencilOp op) const {
-
-    switch (op) {
-    case RenderDevice::STENCIL_KEEP:
-        return GL_KEEP;
-
-    case RenderDevice::STENCIL_ZERO:
-        return GL_ZERO;
-
-    case RenderDevice::STENCIL_REPLACE:
-        return GL_REPLACE;
-
-    case RenderDevice::STENCIL_INVERT:
-        return GL_INVERT;
-
-    case RenderDevice::STENCIL_INCR_WRAP:
-        if (GLCaps::supports_GL_EXT_stencil_wrap()) {
-            return GL_INCR_WRAP_EXT;
-        }
-        // Intentionally fall through
-
-    case RenderDevice::STENCIL_INCR:
-        return GL_INCR;
-
-
-    case RenderDevice::STENCIL_DECR_WRAP:
-        if (GLCaps::supports_GL_EXT_stencil_wrap()) {
-            return GL_DECR_WRAP_EXT;
-        }
-        // Intentionally fall through
-
-    case RenderDevice::STENCIL_DECR:
-        return GL_DECR;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_KEEP;
-    }
-}
-
-
-void RenderDevice::setShader(const ShaderRef& s) {
-    majStateChange();
-
-	if (s != state.shader) {
-        debugAssertM(! inShader, "Cannot set the Shader from within a Shader!");
-		state.shader = s;
+	if (!bSetup)
+	{
+		SetAutoCompeteHandle(NULL);
 	}
 }
 
+int CXTPControlComboBoxAutoCompleteWnd::OnHookMessage(HWND /*hWnd*/, UINT nMessage, WPARAM& /*wParam*/, LPARAM& /*lParam*/, LRESULT& /*lResult*/)
+{
+	if (nMessage == WM_MOUSEWHEEL && m_hWndAutoComplete)
+		return FALSE_EXIT;
 
-void RenderDevice::setObjectShader(const ObjectShaderRef& s) {
-	if (s != state.objectShader) {
-		state.objectShader = s;
-	}
+	return FALSE;
 }
 
-
-void RenderDevice::forceVertexAndPixelShaderBind() {
-    // Only change the vertex shader if it does not match the one used last time.
-    if (lastVertexAndPixelShader != state.vertexAndPixelShader) {
-
-        majGLStateChange();
-        if (state.vertexAndPixelShader.isNull()) {
-            // Disables the programmable pipeline
-            glUseProgramObjectARB(0);
-        } else {
-            glUseProgramObjectARB(state.vertexAndPixelShader->glProgramObject());
-        }
-        debugAssertGLOk();
-
-        lastVertexAndPixelShader = state.vertexAndPixelShader;
-    }
-}
-
-
-void RenderDevice::setVertexAndPixelShader(const VertexAndPixelShaderRef& s) {
-    majStateChange();
-
-    if (s != state.vertexAndPixelShader) {
-
-        state.vertexAndPixelShader = s;
-
-        if (s.notNull()) {
-            alwaysAssertM(s->ok(), s->messages());
-        }
-
-        // The actual shader will change in beforePrimitive or when the arg list is bound.
-    }
-}
-
-
-void RenderDevice::setVertexAndPixelShader(
-    const VertexAndPixelShaderRef&          s,
-    const VertexAndPixelShader::ArgList&    args) {
-
-    setVertexAndPixelShader(s);
-
-    if (s.notNull()) {
-        s->bindArgList(this, args);
-    }
-}
-
-
-void RenderDevice::setVertexProgram(const VertexProgramRef& vp) {
-    majStateChange();
-    if (vp != state.vertexProgram) {
-        if (state.vertexProgram != (VertexProgramRef)NULL) {
-            state.vertexProgram->disable();
-        }
-
-        majGLStateChange();
-        if (vp != (VertexProgramRef)NULL) {
-            debugAssert(supportsVertexProgram());
-            vp->bind();
-        }
-
-        state.vertexProgram = vp;
-    }
-}
-
-
-void RenderDevice::setVertexProgram(
-    const VertexProgramRef& vp,
-    const GPUProgram::ArgList& args) {
-
-    setVertexProgram(vp);
-    
-    vp->setArgs(this, args);
-}
-
-
-void RenderDevice::setPixelProgram(const PixelProgramRef& pp) {
-    majStateChange();
-    if (pp != state.pixelProgram) {
-        if (state.pixelProgram != (PixelProgramRef)NULL) {
-            state.pixelProgram->disable();
-        }
-        if (pp != (PixelProgramRef)NULL) {
-            debugAssert(supportsPixelProgram());
-            pp->bind();
-        }
-        majGLStateChange();
-        state.pixelProgram = pp;
-    }
-}
-
-
-void RenderDevice::setPixelProgram(
-    const PixelProgramRef& pp,
-    const GPUProgram::ArgList& args) {
-
-    setPixelProgram(pp);
-    
-    pp->setArgs(this, args);
-}
-
-
-void RenderDevice::setStencilOp(
-    StencilOp                       frontStencilFail,
-    StencilOp                       frontZFail,
-    StencilOp                       frontZPass,
-    StencilOp                       backStencilFail,
-    StencilOp                       backZFail,
-    StencilOp                       backZPass) {
-
-    minStateChange();
-
-	if (frontStencilFail == STENCILOP_CURRENT) {
-		frontStencilFail = state.stencil.frontStencilFail;
-	}
-	
-	if (frontZFail == STENCILOP_CURRENT) {
-		frontZFail = state.stencil.frontStencilZFail;
-	}
-	
-	if (frontZPass == STENCILOP_CURRENT) {
-		frontZPass = state.stencil.frontStencilZPass;
-	}
-
-	if (backStencilFail == STENCILOP_CURRENT) {
-		backStencilFail = state.stencil.backStencilFail;
-	}
-	
-	if (backZFail == STENCILOP_CURRENT) {
-		backZFail = state.stencil.backStencilZFail;
-	}
-	
-	if (backZPass == STENCILOP_CURRENT) {
-		backZPass = state.stencil.backStencilZPass;
-	}
-    
-	if ((frontStencilFail  != state.stencil.frontStencilFail) ||
-        (frontZFail        != state.stencil.frontStencilZFail) ||
-        (frontZPass        != state.stencil.frontStencilZPass) || 
-        (GLCaps::supports_two_sided_stencil() && 
-        ((backStencilFail  != state.stencil.backStencilFail) ||
-         (backZFail        != state.stencil.backStencilZFail) ||
-         (backZPass        != state.stencil.backStencilZPass)))) { 
-
-        if (GLCaps::supports_GL_EXT_stencil_two_side()) {
-            // NVIDIA
-
-            // Set back face operation
-            glActiveStencilFaceEXT(GL_BACK);
-            glStencilOp(
-                toGLStencilOp(backStencilFail),
-                toGLStencilOp(backZFail),
-                toGLStencilOp(backZPass));
-            
-            // Set front face operation
-            glActiveStencilFaceEXT(GL_FRONT);
-            glStencilOp(
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            minGLStateChange(4);
-
-        } else if (GLCaps::supports_GL_ATI_separate_stencil()) {
-            // ATI
-            minGLStateChange(2);
-            glStencilOpSeparateATI(GL_FRONT, 
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            glStencilOpSeparateATI(GL_BACK, 
-                toGLStencilOp(backStencilFail),
-                toGLStencilOp(backZFail),
-                toGLStencilOp(backZPass));
-
-        } else {
-            // Generic OpenGL
-
-            // Set front face operation
-            glStencilOp(
-                toGLStencilOp(frontStencilFail),
-                toGLStencilOp(frontZFail),
-                toGLStencilOp(frontZPass));
-
-            minGLStateChange(1);
-        }
-
-
-        // Need to manage the mask as well
-
-        if ((frontStencilFail  == STENCIL_KEEP) &&
-            (frontZPass        == STENCIL_KEEP) && 
-            (frontZFail        == STENCIL_KEEP) &&
-            (! GLCaps::supports_two_sided_stencil() ||
-            ((backStencilFail  == STENCIL_KEEP) &&
-             (backZPass        == STENCIL_KEEP) &&
-             (backZFail        == STENCIL_KEEP)))) {
-
-            // Turn off writing.  May need to turn off the stencil test.
-            if (state.stencil.stencilTest == STENCIL_ALWAYS_PASS) {
-                // Test doesn't need to be on
-                glDisable(GL_STENCIL_TEST);
-            }
-
-        } else {
-
-            debugAssertM(glGetInteger(GL_STENCIL_BITS) > 0,
-                "Allocate stencil bits from RenderDevice::init before using the stencil buffer.");
-
-            // Turn on writing.  We also need to turn on the
-            // stencil test in this case.
-
-            if (state.stencil.stencilTest == STENCIL_ALWAYS_PASS) {
-                // Test is not already on
-                glEnable(GL_STENCIL_TEST);
-                _setStencilTest(state.stencil.stencilTest, state.stencil.stencilReference);
-            }
-        }
-
-        state.stencil.frontStencilFail  = frontStencilFail;
-        state.stencil.frontStencilZFail = frontZFail;
-        state.stencil.frontStencilZPass = frontZPass;
-        state.stencil.backStencilFail   = backStencilFail;
-        state.stencil.backStencilZFail  = backZFail;
-        state.stencil.backStencilZPass  = backZPass;
-    }
-}
-
-
-void RenderDevice::setStencilOp(
-    StencilOp           fail,
-    StencilOp           zfail,
-    StencilOp           zpass) {
-    debugAssert(! inPrimitive);
-
-    setStencilOp(fail, zfail, zpass, fail, zfail, zpass);
-}
-
-
-static GLenum toGLBlendEq(RenderDevice::BlendEq e) {
-    switch (e) {
-    case RenderDevice::BLENDEQ_MIN:
-        debugAssert(GLCaps::supports("GL_EXT_blend_minmax"));
-        return GL_MIN;
-
-    case RenderDevice::BLENDEQ_MAX:
-        debugAssert(GLCaps::supports("GL_EXT_blend_minmax"));
-        return GL_MAX;
-
-    case RenderDevice::BLENDEQ_ADD:
-        return GL_FUNC_ADD;
-
-    case RenderDevice::BLENDEQ_SUBTRACT:
-        debugAssert(GLCaps::supports("GL_EXT_blend_subtract"));
-        return GL_FUNC_SUBTRACT;
-
-    case RenderDevice::BLENDEQ_REVERSE_SUBTRACT:
-        debugAssert(GLCaps::supports("GL_EXT_blend_subtract"));
-        return GL_FUNC_REVERSE_SUBTRACT;
-
-    default:
-        debugAssertM(false, "Fell through switch");
-        return GL_ZERO;
-    }
-}
-
-
-void RenderDevice::setBlendFunc(
-    BlendFunc src,
-    BlendFunc dst,
-    BlendEq   eq) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-	if (src == BLEND_CURRENT) {
-		src = state.srcBlendFunc;
-	}
-
-	if (dst == BLEND_CURRENT) {
-		dst = state.dstBlendFunc;
-	}
-
-    if (eq == BLENDEQ_CURRENT) {
-        eq = state.blendEq;
-    }
-
-    if ((state.dstBlendFunc != dst) ||
-        (state.srcBlendFunc != src) ||
-        (state.blendEq != eq)) {
-
-        minGLStateChange();
-
-        if ((dst == BLEND_ZERO) && (src == BLEND_ONE) && ((eq == BLENDEQ_ADD) || (eq == BLENDEQ_SUBTRACT))) {
-            glDisable(GL_BLEND);
-        } else {
-            glEnable(GL_BLEND);
-            glBlendFunc(toGLBlendFunc(src), toGLBlendFunc(dst));
-
-            debugAssert(eq == BLENDEQ_ADD ||
-                GLCaps::supports("GL_EXT_blend_minmax") ||
-                GLCaps::supports("GL_EXT_blend_subtract"));
-
-            static bool supportsBlendEq = GLCaps::supports("GL_EXT_blend_minmax");
-
-            if (supportsBlendEq && (glBlendEquationEXT != 0)) {
-                glBlendEquationEXT(toGLBlendEq(eq));
-            }
-        }
-        state.dstBlendFunc = dst;
-        state.srcBlendFunc = src;
-        state.blendEq = eq;
-    }
-}
-
-
-void RenderDevice::setLineWidth(
-    double               width) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.lineWidth != width) {
-        glLineWidth(width);
-        minGLStateChange();
-        state.lineWidth = width;
-    }
-}
-
-
-void RenderDevice::setPointSize(
-    double               width) {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.pointSize != width) {
-        glPointSize(width);
-        minGLStateChange();
-        state.pointSize = width;
-    }
-}
-
-
-void RenderDevice::setAmbientLightColor(
-    const Color4&        color) {
-    debugAssert(! inPrimitive);
-
-    minStateChange();
-    if (color != state.lights.ambient) {
-        float c[] =
-            {color.r / lightSaturation,
-             color.g / lightSaturation,
-             color.b / lightSaturation,
-             1.0f};
-    
-        state.lights.changed = true;
-        minGLStateChange();
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
-        state.lights.ambient = color;
-    }
-}
-
-
-void RenderDevice::setAmbientLightColor(
-    const Color3&        color) {
-    setAmbientLightColor(Color4(color, 1.0));
-}
-
-
-void RenderDevice::enableLighting() {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (! state.lights.lighting) {
-        glEnable(GL_LIGHTING);
-        minGLStateChange();
-        state.lights.lighting = true;
-        state.lights.changed = true;
-    }
-}
-
-
-void RenderDevice::disableLighting() {
-    debugAssert(! inPrimitive);
-    minStateChange();
-    if (state.lights.lighting) {
-        glDisable(GL_LIGHTING);
-        minGLStateChange();
-        state.lights.lighting = false;
-        state.lights.changed = true;
-    }
-}
-
-
-void RenderDevice::setObjectToWorldMatrix(
-    const CoordinateFrame& cFrame) {
-    
-    minStateChange();
-    debugAssert(! inPrimitive);
-
-    // No test to see if it is already equal; this is called frequently and is
-    // usually different.
-    state.matrices.changed = true;
-    state.matrices.objectToWorldMatrix = cFrame;
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse * state.matrices.objectToWorldMatrix);
-    minGLStateChange();
-}
-
-
-const CoordinateFrame& RenderDevice::getObjectToWorldMatrix() const {
-    return state.matrices.objectToWorldMatrix;
-}
-
-
-void RenderDevice::setCameraToWorldMatrix(
-    const CoordinateFrame& cFrame) {
-
-    debugAssert(! inPrimitive);
-    majStateChange();
-    majGLStateChange();
-    
-    state.matrices.changed = true;
-    state.matrices.cameraToWorldMatrix = cFrame;
-    state.matrices.cameraToWorldMatrixInverse = cFrame.inverse();
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse * state.matrices.objectToWorldMatrix);
-
-    // Reload lights since the camera matrix changed.  We must do this even for lights
-    // that are not enabled since those lights will not be re-set at the GL level if they
-    // are enabled without being otherwise changed.  Of course, we must follow up by disabling
-    // those lights again.
-    for (int i = 0; i < MAX_LIGHTS; ++i) {
-        bool wasEnabled = state.lights.lightEnabled[i];
-        setLight(i, &state.lights.light[i], true);
-        if (! wasEnabled) {
-            setLight(i, NULL);
-        }
-    }
-}
-
-
-const CoordinateFrame& RenderDevice::getCameraToWorldMatrix() const {
-    return state.matrices.cameraToWorldMatrix;
-}
-
-
-Matrix4 RenderDevice::getProjectionMatrix() const {
-    return state.matrices.projectionMatrix;
-}
-
-
-CoordinateFrame RenderDevice::getModelViewMatrix() const {
-    return state.matrices.cameraToWorldMatrixInverse * getObjectToWorldMatrix();
-}
-
-
-Matrix4 RenderDevice::getModelViewProjectionMatrix() const {
-    return getProjectionMatrix() * getModelViewMatrix();
-}
-
-
-void RenderDevice::setProjectionMatrix(const Matrix4& P) {
-    minStateChange();
-    if (state.matrices.projectionMatrix != P) {
-        state.matrices.projectionMatrix = P;
-        state.matrices.changed = true;
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrix(P);
-        glMatrixMode(GL_MODELVIEW);
-        minGLStateChange();
-    }
-}
-
-
-void RenderDevice::forceSetTextureMatrix(int unit, const double* m) {
-    float f[16];
-    for (int i = 0; i < 16; ++i) {
-        f[i] = m[i];
-    }
-
-    forceSetTextureMatrix(unit, f);
-}
-
-
-void RenderDevice::forceSetTextureMatrix(int unit, const float* m) {
-    minStateChange();
-    minGLStateChange();
-
-    state.touchedTextureUnit(unit);
-    memcpy(state.textureUnit[unit].textureMatrix, m, sizeof(float)*16);
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    // Transpose the texture matrix
-    float tt[16];
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            tt[i + j * 4] = m[j + i * 4];
-        }
-    }
-    glMatrixMode(GL_TEXTURE);
-    glLoadMatrixf(tt);
-
-    TextureRef texture = state.textureUnit[unit].texture;
-
-    // invert y
-    if ((texture != NULL) && texture->invertY) {
-
-        float ymax = 1.0;
-    
-        if (texture->getDimension() == Texture::DIM_2D_RECT) {
-            ymax = texture->getTexelHeight();
-        }
-
-        float m[16] = 
-        { 1,  0,  0,  0,
-          0, -1,  0,  0,
-          0,  0,  1,  0,
-          0,  ymax,  0,  1};
-
-        glMultMatrixf(m);
-    }
-
-}
-
-
-Matrix4 RenderDevice::getTextureMatrix(uint unit) {
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
-
-    const float* M = state.textureUnit[unit].textureMatrix;
-
-    return Matrix4(M[0], M[4], M[8],  M[12],
-                   M[1], M[5], M[9],  M[13],
-                   M[2], M[6], M[10], M[14],
-                   M[3], M[7], M[11], M[15]);
-}
-
-
-
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-	const Matrix4&	     m) {
-
-	float f[16];
-	for (int r = 0; r < 4; ++r) {
-		for (int c = 0; c < 4; ++c) {
-			f[r * 4 + c] = m[r][c];
+LRESULT CALLBACK CXTPControlComboBoxAutoCompleteWnd::CallWndProc(int code, WPARAM wParam, LPARAM lParam)
+{
+	CWPSTRUCT* pMSG = (CWPSTRUCT*)lParam;
+
+	if (pMSG && m_pWndMonitor && pMSG->message == WM_WINDOWPOSCHANGING)
+	{
+		const HWND& hWndAutoComplete = m_pWndMonitor->m_hWndAutoComplete;
+		WINDOWPOS* pWindowPos = (WINDOWPOS*)pMSG->lParam;
+
+		if ((hWndAutoComplete != 0 && hWndAutoComplete == pWindowPos->hwnd) && (pWindowPos->flags & SWP_HIDEWINDOW))
+		{
+			m_pWndMonitor->SetAutoCompeteHandle(NULL);
+		}
+		else if ((hWndAutoComplete == 0) && (pWindowPos->flags & SWP_SHOWWINDOW))
+		{
+			HWND hWnd = pWindowPos->hwnd;
+			TCHAR szClassName[255];
+			::GetClassName(hWnd, szClassName, 255);
+
+			if (_tcscmp(szClassName, _T("Auto-Suggest Dropdown")) == 0)
+			{
+				m_pWndMonitor->SetAutoCompeteHandle(hWnd);
+				PostMessage(m_pWndMonitor->m_hWndEdit, WM_XTP_SHELLAUTOCOMPLETESTART, 0, 0);
+			}
 		}
 	}
 
-	setTextureMatrix(unit, f);
+	return CallNextHookEx(m_hHookMessage, code, wParam, lParam);
 }
 
 
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-    const double*        m) {
 
-    debugAssert(! inPrimitive);
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
+// CXTPControlComboBox
 
-    forceSetTextureMatrix(unit, m);
+IMPLEMENT_XTP_CONTROL(CXTPControlComboBox, CXTPControlPopup)
+
+CXTPControlComboBox::CXTPControlComboBox(CXTPCommandBars* pCommandBars)
+{
+	EnableAutomation();
+
+	m_controlType = xtpControlComboBox;
+	m_bDropDown = FALSE;
+	m_comboStyle = xtpComboNormal;
+	m_nWidth = 100;
+	m_nLabelWidth = 0;
+	m_nThumbWidth = 0;
+	m_pEdit = NULL;
+	m_strEditText = _T("");
+	m_nCurSel = m_nLastSel = -1;
+	m_bDelayReposition = FALSE;
+	m_bDelayDestroy = FALSE;
+	m_bIgnoreAutoComplete = m_bAutoComplete = FALSE;
+	m_bFocused = FALSE;
+	m_nDropDownItemCount = 12;
+	m_bIgnoreSelection = FALSE;
+
+	m_pCommandBar = new CXTPControlComboBoxList();
+	m_pCommandBar->SetCommandBars(pCommandBars);
+
+	((CXTPControlComboBoxList*)m_pCommandBar)->CreateListBox();
+
+	m_dwShellAutoCompleteFlags = 0;
+
+	m_pAutoCompleteWnd = NULL;
+	m_nEditIconId = 0;
+	m_bSelEndOk = FALSE;
+	m_bEditChanged = TRUE;
+
+	m_dwEditStyle = 0;
+}
+
+CXTPControlComboBox::~CXTPControlComboBox()
+{
+	if (m_pEdit)
+	{
+		delete m_pEdit;
+	}
+	SAFE_DELETE(m_pAutoCompleteWnd);
+}
+
+CString CXTPControlComboBox::GetEditText() const
+{
+	CString strEditText = _GetEditText();
+
+	return strEditText == GetEditHint() ? _T("") : strEditText;
+}
+
+CString CXTPControlComboBox::_GetEditText() const
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_bEditChanged)
+	{
+		m_pEdit->GetWindowTextEx(m_strEditText);
+		m_bEditChanged = FALSE;
+	}
+
+	return m_strEditText;
+}
+
+void CXTPControlComboBox::SetEditText(const CString& strText)
+{
+	_SetEditText(strText.IsEmpty() ? GetEditHint() : strText);
+}
+
+void CXTPControlComboBox::_SetEditText(const CString& strText)
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && _GetEditText() != strText)
+	{
+		m_pEdit->SetWindowTextEx(strText);
+	}
+	m_strEditText = strText;
+	m_bEditChanged = FALSE;
+}
+
+void CXTPControlComboBox::SetEditHint(LPCTSTR lpszEditHint)
+{
+	if (!GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
+	{
+		_SetEditText(_T(""));
+	}
+
+	m_strEditHint = lpszEditHint;
+
+	if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
+	{
+		_SetEditText(GetEditHint());
+	}
+}
+
+BOOL CXTPControlComboBox::IsImageVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return GetImage(0) != NULL;
+
+	BOOL bImageVisible = (CXTPControl::GetStyle() == xtpButtonIcon || CXTPControl::GetStyle() == xtpButtonIconAndCaption)
+		&& (GetImage(0) != NULL);
+
+	return bImageVisible;
+}
+
+BOOL CXTPControlComboBox::IsCaptionVisible() const
+{
+	if (GetParent()->GetType() == xtpBarTypePopup)
+		return TRUE;
+
+	if (GetCaption().IsEmpty())
+		return FALSE;
+
+	XTPButtonStyle buttonStyle = CXTPControl::GetStyle();
+
+	if ((buttonStyle == xtpButtonCaption) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow))
+		return TRUE;
+
+	return m_comboStyle == xtpComboLabel;
+}
+
+CString CXTPControlComboBox::GetEditHint() const
+{
+	return !m_strEditHint.IsEmpty() ? m_strEditHint : m_pAction ? m_pAction->GetEditHint() : _T("");
+}
+
+void CXTPControlComboBox::UpdatePopupSelection()
+{
+	CEdit* pEdit = GetEditCtrl();
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+
+	if (!m_bIgnoreSelection && pEdit && pEdit->GetSafeHwnd() && pPopupBar)
+	{
+		CString strWindowText = _GetEditText();
+
+		int nIndex = pPopupBar->FindStringExact(0, strWindowText);
+		if (nIndex != LB_ERR)
+			pPopupBar->SetCurSel(nIndex);
+		else
+		{
+			nIndex = pPopupBar->FindString(0, strWindowText);
+			pPopupBar->SetTopIndex(nIndex);
+			pPopupBar->SetCurSel(nIndex);
+			pPopupBar->SetCurSel(-1);
+		}
+	}
+}
+
+void CXTPControlComboBox::OnEditChanged()
+{
+	CEdit* pEdit = GetEditCtrl();
+
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+
+	if (!m_bIgnoreSelection && m_bAutoComplete && !m_bIgnoreAutoComplete && pEdit && pEdit->GetSafeHwnd() && pPopupBar)
+	{
+		CString strWindowText = _GetEditText();
+		int nLength = strWindowText.GetLength();
+
+		if (nLength > 0)
+		{
+			// Currently selected range
+			int nStart = 0, nEnd = 0;
+			pEdit->GetSel(nStart, nEnd);
+
+			if (nStart == nEnd && nLength == nEnd)
+			{
+				int nIndex = pPopupBar->FindString(0, strWindowText);
+				if (nIndex != LB_ERR)
+				{
+					CString strWindowTextNew;
+					pPopupBar->GetText(nIndex, strWindowTextNew);
+
+					_SetEditText(strWindowTextNew);
+					pEdit->SetSel(strWindowTextNew.GetLength(), nLength);
+				}
+
+			}
+		}
+		m_bIgnoreAutoComplete = TRUE;
+	}
+
+	UpdatePopupSelection();
+
+	NotifySite(CBN_EDITCHANGE);
 }
 
 
-void RenderDevice::setTextureMatrix(
-    uint                 unit,
-    const float*        m) {
 
-    debugAssert(! inPrimitive);
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
+void CXTPControlComboBox::OnSelChanged()
+{
+	m_bIgnoreSelection = TRUE;
+	_SetEditText(GetListBoxText());
+	m_bIgnoreSelection = FALSE;
 
-    if (memcmp(m, state.textureUnit[unit].textureMatrix, sizeof(float)*16)) {
-        forceSetTextureMatrix(unit, m);
-    }
+	RedrawParent();
+
+	NotifySite(CBN_SELCHANGE);
+}
+
+BOOL CXTPControlComboBox::OnHookMouseWheel(UINT /*nFlags*/, short zDelta, CPoint /*pt*/)
+{
+	if (!IsFocused())
+		return FALSE;
+
+	if (GetDroppedState())
+		return FALSE;
+
+	if (m_pAutoCompleteWnd)
+		return FALSE;
+
+	if (!IsValidList())
+		return FALSE;
+
+	((CXTPControlComboBoxPopupBar*)m_pCommandBar)->ProcessHookKeyDown(this, zDelta > 0 ? VK_UP : VK_DOWN, 0);
+	return TRUE;
+}
+
+BOOL CXTPControlComboBox::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(IsFocused());
+
+	if (!IsFocused())
+		return FALSE;
+
+	m_bIgnoreAutoComplete = (nChar == VK_DELETE) || (nChar == VK_BACK);
+
+	if (m_pEdit && m_pEdit->m_bImeMode)
+		return FALSE_EXIT;
+
+	if (nChar == VK_TAB && ((m_pAutoCompleteWnd == NULL) || ((m_dwShellAutoCompleteFlags & SHACF_USETAB) == 0)))
+		return FALSE;
+
+	if (nChar == VK_RETURN)
+		return FALSE;
+
+	if (nChar == VK_ESCAPE)
+	{
+		m_pCommandBar->OnTrackLost();
+
+		SetCurSel(m_nLastSel);
+		SetEditText(m_strLastText);
+
+		SetFocused(FALSE);
+
+		return GetParent()->GetType() == xtpBarTypePopup;
+	}
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && GetKeyState(VK_MENU) < 0 && GetKeyState(VK_CONTROL) >= 0)
+	{
+		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
+		if (pCommandBars && pCommandBars->OnFrameAccel((TCHAR)nChar))
+			return TRUE;
+	}
+
+	if ((nChar == VK_F4 && GetKeyState(VK_MENU) >= 0) || ((nChar == VK_UP || nChar == VK_DOWN) && GetKeyState(VK_MENU) < 0))
+	{
+		OnClick(FALSE);
+		return TRUE;
+	}
+
+	if (m_pAutoCompleteWnd && m_pAutoCompleteWnd->IsDialogCode(nChar, lParam))
+		return TRUE;
+
+	if ((!m_pEdit || (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_NEXT || nChar == VK_PRIOR) && (GetKeyState(VK_MENU) >= 0)) && IsValidList())
+	{
+		((CXTPControlComboBoxPopupBar*)m_pCommandBar)->ProcessHookKeyDown(this, nChar, lParam);
+		return TRUE;
+	}
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->IsDialogCode(nChar, lParam))
+	{
+		return TRUE;
+	}
+
+	return FALSE_EXIT;
+}
+
+BOOL CXTPControlComboBox::GetDropDownListStyle() const
+{
+	return m_pEdit != NULL;
+}
+
+CXTPControlComboBoxEditCtrl* CXTPControlComboBox::CreateEditControl()
+{
+	return new CXTPControlComboBoxEditCtrl();
+}
+
+void CXTPControlComboBox::SetDropDownListStyle(BOOL bSet)
+{
+	m_bDropDown = bSet;
+
+	if (bSet && m_pEdit == NULL)
+	{
+		m_pEdit = CreateEditControl();
+		m_pEdit->m_pControl = this;
+	}
+	else if (!bSet && m_pEdit != NULL)
+	{
+		delete m_pEdit;
+		m_pEdit = NULL;
+	}
+}
+
+void CXTPControlComboBox::EnableShellAutoComplete(DWORD dwFlags /*= SHACF_FILESYSTEM | SHACF_URLALL*/)
+{
+	m_dwShellAutoCompleteFlags = dwFlags;
+	SAFE_DELETE(m_pAutoCompleteWnd);
+
+	if (m_pEdit->GetSafeHwnd() && dwFlags)
+	{
+		m_pAutoCompleteWnd = new CXTPControlComboBoxAutoCompleteWnd();
+
+		if (FAILED(m_pAutoCompleteWnd->ShellAutoComplete(m_pEdit->GetSafeHwnd(), m_dwShellAutoCompleteFlags)))
+		{
+			SAFE_DELETE(m_pAutoCompleteWnd);
+		}
+	}
+}
+
+void CXTPControlComboBox::EnableAutoComplete(BOOL bAutoComplete /*= TRUE*/)
+{
+	m_bAutoComplete = bAutoComplete;
 }
 
 
-void RenderDevice::setTextureMatrix(
-    uint                    unit,
-    const CoordinateFrame&  c) {
+void CXTPControlComboBox::SetRect(CRect rcControl)
+{
+	CString strEditText = GetEditText();
 
-    float m[16] = 
-    {c.rotation[0][0], c.rotation[0][1], c.rotation[0][2], c.translation.x,
-     c.rotation[1][0], c.rotation[1][1], c.rotation[1][2], c.translation.y,
-     c.rotation[2][0], c.rotation[2][1], c.rotation[2][2], c.translation.z,
-                    0,                0,                0,               1};
+	if (m_bDelayDestroy && m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->DestroyWindow();
+		m_bDelayDestroy = FALSE;
+	}
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetExStyle() & WS_EX_LAYOUTRTL)
+	{
+		m_pEdit->DestroyWindow();
+	}
 
-    setTextureMatrix(unit, m);
+	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent)
+	{
+		m_pEdit->DestroyWindow();
+	}
+
+	if (m_rcControl == rcControl && !(m_pEdit && !m_pEdit->GetSafeHwnd()) && (m_bDelayReposition == FALSE))
+	{
+		if (!(m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent))
+			return;
+	}
+
+	m_rcControl = rcControl;
+
+	if (m_pEdit)
+	{
+		if (!m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->CreateEdit(WS_CHILD | ES_AUTOHSCROLL | m_dwEditStyle, m_pParent);
+
+			if (!GetEnabled()) m_pEdit->EnableWindow(FALSE);
+
+			if (m_dwShellAutoCompleteFlags != 0) EnableShellAutoComplete(m_dwShellAutoCompleteFlags);
+		}
+
+		m_pEdit->SetFont(GetPaintManager()->GetIconFont(), FALSE);
+		m_pEdit->SetMargins(0, 0);
+		m_pEdit->UpdateCharFormat();
+		if (m_pEdit->GetSafeHwnd() != ::GetFocus()) SetEditText(strEditText);
+		m_pEdit->m_bComposited = HasDwmCompositedRect();
+
+		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, m_nThumbWidth + 3, 3);
+		DeflateEditRect(rcControl);
+		m_pEdit->MoveWindow(rcControl);
+		ShowHideEditControl();
+	}
+	m_bDelayReposition = FALSE;
+}
+
+void CXTPControlComboBox::ShowHideEditControl()
+{
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
+			| (m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
+	}
+}
+
+void CXTPControlComboBox::OnRemoved()
+{
+	ShowHideEditControl();
+
+	CXTPControlPopup::OnRemoved();
+}
+
+void CXTPControlComboBox::SetEnabled(BOOL bEnabled)
+{
+	if (bEnabled != m_bEnabled)
+	{
+		m_bEnabled = bEnabled;
+		if (m_pEdit && m_pEdit->GetSafeHwnd())
+		{
+			m_pEdit->EnableWindow(GetEnabled());
+			m_pEdit->UpdateCharFormat();
+		}
+
+		RedrawParent();
+	}
+}
+
+void CXTPControlComboBox::SetParent(CXTPCommandBar* pParent)
+{
+	if (pParent != m_pParent && pParent)
+	{
+		CWnd* pSite = pParent->GetSite();
+		if (pSite)
+			SetWindowLongPtr(m_pCommandBar->GetSafeHwnd(), GWLP_HWNDPARENT, (LONG_PTR)pSite->GetSafeHwnd());
+	}
+	if (!pParent && m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->DestroyWindow();
+
+	}
+	CXTPControlPopup::SetParent(pParent);
+}
+
+BOOL  CXTPControlComboBox::OnSetSelected(int bSelected)
+{
+	if (!CXTPControl::OnSetSelected(bSelected))
+		return FALSE;
+
+	if (!bSelected)
+	{
+		SetFocused(FALSE);
+	}
+
+	if (m_pEdit->GetSafeHwnd())
+	{
+		m_pEdit->UpdateCharFormat();
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPControlComboBox::HasFocus() const
+{
+	return IsFocused() || (m_pCommandBar->IsTrackingMode()) || m_pParent->GetCommandBars()->GetMouseManager()->IsMouseLocked();
+}
+
+BOOL CXTPControlComboBox::IsFocusable() const
+{
+	return TRUE;
+}
+
+void CXTPControlComboBox::OnClick(BOOL bKeyboard , CPoint pt)
+{
+	if (m_pEdit && m_pEdit->m_bImeMode)
+		return;
+
+	if (IsCustomizeMode())
+	{
+		m_pParent->SetPopuped(-1);
+		m_pParent->SetSelected(-1);
+		CustomizeStartDrag(pt);
+	}
+	else if (bKeyboard && GetEnabled())
+	{
+		if (IsFocused())
+		{
+			OnExecute();
+		}
+		else
+		{
+			SetFocused(TRUE);
+		}
+	}
+	else if (m_bPopup && IsFocused())
+	{
+		m_pParent->SetPopuped(-1);
+
+	}
+	else CXTPControlPopup::OnClick(bKeyboard, pt);
+}
+
+void CXTPControlComboBox::OnUnderlineActivate()
+{
+	m_pParent->HideKeyboardTips();
+	SetFocused(TRUE);
+}
+
+void CXTPControlComboBox::OnMouseHover()
+{
+}
+
+void CXTPControlComboBox::SetHideFlags(DWORD dwFlags)
+{
+	if (m_dwHideFlags != dwFlags)
+	{
+		m_dwHideFlags = dwFlags;
+
+		ShowHideEditControl();
+		DelayLayoutParent();
+	}
+}
+
+void CXTPControlComboBox::OnActionChanged(int nProperty)
+{
+	if (nProperty == 2)    // Visible
+	{
+		ShowHideEditControl();
+	}
+
+	if (nProperty == 0 && m_pEdit && m_pEdit->GetSafeHwnd())    // Enabled
+	{
+		m_pEdit->EnableWindow(GetEnabled());
+		m_pEdit->UpdateCharFormat();
+	}
+
+	if (nProperty == 4) // EditHint
+	{
+		if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
+		{
+			_SetEditText(GetEditHint());
+		}
+	}
+}
+
+void CXTPControlComboBox::OnActionChanging(int nProperty)
+{
+	if (nProperty == 4 && !GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
+	{
+		_SetEditText(_T(""));
+	}
+}
+
+void CXTPControlComboBox::OnCalcDynamicSize(DWORD dwMode)
+{
+	if (dwMode & LM_VERTDOCK) SetHideFlags(m_dwHideFlags | xtpHideDockingPosition);
+	else SetHideFlags(m_dwHideFlags & ~xtpHideDockingPosition);
+}
+
+DWORD CXTPControlComboBox::GetEditStyle() const
+{
+	return m_dwEditStyle;
+}
+
+void CXTPControlComboBox::SetEditStyle(DWORD dwStyle)
+{
+	m_dwEditStyle = dwStyle;
+
+	if (m_pEdit && m_pEdit->GetSafeHwnd())
+	{
+		m_bDelayDestroy = TRUE;
+		DelayLayoutParent();
+	}
 }
 
 
-void RenderDevice::setTextureLODBias(
-    uint                    unit,
-    float                   bias) {
-
-    minStateChange();
-    if (state.textureUnit[unit].LODBias != bias) {
-        state.touchedTextureUnit(unit);
-
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-        }
-
-        state.textureUnit[unit].LODBias = bias;
-
-        minGLStateChange();
-        glTexEnvf(GL_TEXTURE_FILTER_CONTROL_EXT, GL_TEXTURE_LOD_BIAS_EXT, bias);
-    }
-}
-
-
-void RenderDevice::setTextureCombineMode(
-    uint                    unit,
-    const CombineMode       mode) {
-
-    minStateChange();
-	if (mode == TEX_CURRENT) {
+void CXTPControlComboBox::Copy(CXTPControl* pControl, BOOL bRecursive)
+{
+	CXTPControlComboBox* pControlCombo = DYNAMIC_DOWNCAST(CXTPControlComboBox, pControl);
+	ASSERT(pControlCombo);
+	if (!pControlCombo)
+	{
+		CXTPControlPopup::Copy(pControl, bRecursive);
 		return;
 	}
 
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
+	m_dwEditStyle = pControlCombo->m_dwEditStyle;
+	m_comboStyle = pControlCombo->m_comboStyle;
 
-    if ((state.textureUnit[unit].combineMode != mode)) {
-        minGLStateChange();
-        state.touchedTextureUnit(unit);
+	SetEditText(pControlCombo->GetEditText());
+	SetEditHint(pControlCombo->m_strEditHint);
+	SetDropDownListStyle(pControlCombo->m_pEdit != NULL);
+	m_bAutoComplete = pControlCombo->m_bAutoComplete;
+	EnableShellAutoComplete(pControlCombo->m_dwShellAutoCompleteFlags);
+	m_nEditIconId = pControlCombo->m_nEditIconId;
+	m_nDropDownItemCount = pControlCombo->m_nDropDownItemCount;
 
-        state.textureUnit[unit].combineMode = mode;
-
-        if (GLCaps::supports_GL_ARB_multitexture()) {
-            glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-        }
-
-        static const bool hasAdd = GLCaps::supports("GL_EXT_texture_env_add");
-        static const bool hasCombine = GLCaps::supports("GL_ARB_texture_env_combine");
-        static const bool hasDot3 = GLCaps::supports("GL_ARB_texture_env_dot3");
-
-        switch (mode) {
-        case TEX_REPLACE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-            break;
-
-        case TEX_BLEND:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-            break;
-
-        case TEX_MODULATE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            break;
-
-        case TEX_INTERPOLATE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-            break;
-
-        case TEX_ADD:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasCombine ? GL_ADD : GL_BLEND);
-            break;
-
-        case TEX_SUBTRACT:
-            // (add and subtract are in the same extension)
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasAdd ? GL_SUBTRACT_ARB : GL_BLEND);
-            break;
-
-        case TEX_ADD_SIGNED:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasAdd ? GL_ADD_SIGNED_ARB : GL_BLEND);
-            break;
-            
-        case TEX_DOT3_RGB:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasDot3 ? GL_DOT3_RGB_ARB : GL_BLEND);
-            break;
-             
-        case TEX_DOT3_RGBA:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, hasDot3 ? GL_DOT3_RGBA_ARB : GL_BLEND);
-            break;
-
-        default:
-            debugAssertM(false, "Unrecognized texture combine mode");
-        }
-    }
+	CXTPControlPopup::Copy(pControl, bRecursive);
 }
 
+BOOL CXTPControlComboBox::Compare(CXTPControl* pOther)
+{
+	if (!CXTPControlPopup::Compare(pOther))
+		return FALSE;
 
-void RenderDevice::resetTextureUnit(
-    uint                    unit) {
-    debugAssertM((int)unit < _numTextureUnits,
-        format("Attempted to access texture unit %d on a device with %d units.",
-        unit, _numTextureUnits));
+	if (!pOther->IsKindOf(RUNTIME_CLASS(CXTPControlComboBox)))
+		return FALSE;
 
-    RenderState newState(state);
-    state.textureUnit[unit] = RenderState::TextureUnit();
-    state.touchedTextureUnit(unit);
-    setState(newState);
+	return TRUE;
 }
 
+CString CXTPControlComboBox::GetListBoxText() const
+{
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
 
-void RenderDevice::setPolygonOffset(
-    double              offset) {
-    debugAssert(! inPrimitive);
+	if (!pPopupBar)
+		return _T("");
 
-    minStateChange();
-
-    if (state.polygonOffset != offset) {
-        minGLStateChange();
-        if (offset != 0) {
-            glEnable(GL_POLYGON_OFFSET_FILL);
-            glEnable(GL_POLYGON_OFFSET_LINE);
-            glEnable(GL_POLYGON_OFFSET_POINT);
-            glPolygonOffset(offset, sign(offset));
-        } else {
-            glDisable(GL_POLYGON_OFFSET_POINT);
-            glDisable(GL_POLYGON_OFFSET_FILL);
-            glDisable(GL_POLYGON_OFFSET_LINE);
-        }
-        state.polygonOffset = offset;
-    }
+	int nSel = pPopupBar->GetCurSel();
+	CString str;
+	if (nSel >= 0)
+		pPopupBar->GetText(nSel, str);
+	return str;
 }
 
-
-void RenderDevice::setNormal(const Vector3& normal) {
-    state.normal = normal;
-    glNormal3fv(normal);
-    minStateChange();
-    minGLStateChange();
+BOOL CXTPControlComboBox::IsValidList() const
+{
+	return GetComboBoxPopupBar() != NULL;
 }
 
-
-void RenderDevice::setTexCoord(uint unit, const Vector4& texCoord) {
-    debugAssertM((int)unit < _numTextureCoords,
-        format("Attempted to access texture coordinate %d on a device with %d coordinates.",
-        unit, _numTextureCoords));
-
-    state.textureUnit[unit].texCoord = texCoord;
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glMultiTexCoord(GL_TEXTURE0_ARB + unit, texCoord);
-    } else {
-        debugAssertM(unit == 0, "This machine has only one texture unit");
-        glTexCoord(texCoord);
-    }
-    state.touchedTextureUnit(unit);
-    minStateChange();
-    minGLStateChange();
+CXTPControlComboBoxPopupBar* CXTPControlComboBox::GetComboBoxPopupBar() const
+{
+	return DYNAMIC_DOWNCAST(CXTPControlComboBoxPopupBar, m_pCommandBar);
 }
 
-
-void RenderDevice::setTexCoord(uint unit, const Vector3& texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 1));
+int CXTPControlComboBox::GetCurSel() const
+{
+	CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+	return pPopupBar ? pPopupBar->GetCurSel() : m_nCurSel;
 }
 
+void CXTPControlComboBox::SetCurSel(int nIndex)
+{
+	if ((GetCurSel() != nIndex) || (m_nCurSel != nIndex))
+	{
+		m_nCurSel = nIndex;
 
-void RenderDevice::setTexCoord(uint unit, const Vector3int16& texCoord) {
-    setTexCoord(unit, Vector4(texCoord.x, texCoord.y, texCoord.z, 1));
+		CXTPControlComboBoxPopupBar* pPopupBar = GetComboBoxPopupBar();
+		if (pPopupBar)
+		{
+			pPopupBar->SetCurSel(nIndex);
+		}
+
+		OnSelChanged();
+	}
 }
 
-
-void RenderDevice::setTexCoord(uint unit, const Vector2& texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 0, 1));
+BOOL CXTPControlComboBox::IsFocused() const
+{
+	return m_bFocused;
 }
 
+void CXTPControlComboBox::SetFocused(BOOL bFocused)
+{
+	if (m_bFocused == bFocused)
+		return;
 
-void RenderDevice::setTexCoord(uint unit, const Vector2int16& texCoord) {
-    setTexCoord(unit, Vector4(texCoord.x, texCoord.y, 0, 1));
-}
+	m_bFocused = bFocused;
 
+	if (bFocused)
+	{
+		m_nLastSel = GetCurSel();
+		m_bSelEndOk = FALSE;
 
-void RenderDevice::setTexCoord(uint unit, double texCoord) {
-    setTexCoord(unit, Vector4(texCoord, 0, 0, 1));
-}
+		if (m_pEdit->GetSafeHwnd() && ::GetFocus() != m_pEdit->GetSafeHwnd())
+			m_pEdit->SetFocus();
 
+		m_pParent->SetTrackingMode(TRUE, FALSE);
+		m_pParent->SetSelected(m_nIndex);
 
-void RenderDevice::sendVertex(const Vector2& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex2fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
+		XTPMouseManager()->LockMouseMove();
 
+		NotifySite(CBN_SETFOCUS);
+	}
+	else
+	{
+		if (!m_bSelEndOk && !GetDroppedState() && !m_pEdit)
+		{
+			SetCurSel(m_nLastSel);
+			NotifySite(CBN_SELENDCANCEL);
+		}
 
-void RenderDevice::sendVertex(const Vector3& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex3fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
 
+		if (m_pEdit->GetSafeHwnd() && ::GetFocus() == m_pEdit->GetSafeHwnd())
+			::SetFocus(m_pParent->GetTrackFocus());
 
-void RenderDevice::sendVertex(const Vector4& vertex) {
-    debugAssertM(inPrimitive, "Can only be called inside beginPrimitive()...endPrimitive()");
-    glVertex4fv(vertex);
-    ++currentPrimitiveVertexCount;
-}
+		XTPMouseManager()->UnlockMouseMove();
 
-
-void RenderDevice::beginPrimitive(Primitive p) {
-    debugAssertM(! inPrimitive, "Already inside a primitive");
-    debugAssertM( currentFramebufferComplete(), "Bound Framebuffer Incomplete!");
-
-    beforePrimitive();
-	runObjectShader();
-    
-    inPrimitive = true;
-    currentPrimitiveVertexCount = 0;
-    currentPrimitive = p;
-
-    debugAssertGLOk();
-
-    glBegin(primitiveToGLenum(p));
-}
-
-
-void RenderDevice::endPrimitive() {
-    debugAssertM(inPrimitive, "Call to endPrimitive() without matching beginPrimitive()");
-
-    mDebugNumMinorStateChanges += currentPrimitiveVertexCount;
-    mDebugNumMinorOpenGLStateChanges += currentPrimitiveVertexCount;
-	countTriangles(currentPrimitive, currentPrimitiveVertexCount);
-
-    glEnd();
-    inPrimitive = false;
-
-    afterPrimitive();
-}
-
-
-void RenderDevice::countTriangles(RenderDevice::Primitive primitive, int numVertices) {
-	switch (primitive) {
-    case LINES:
-        triangleCount += (numVertices / 2);
-        break;
-
-    case LINE_STRIP:
-        triangleCount += (numVertices - 1);
-        break;
-
-    case TRIANGLES:
-        triangleCount += (numVertices / 3);
-        break;
-
-    case TRIANGLE_STRIP:
-    case TRIANGLE_FAN:
-        triangleCount += (numVertices - 2);
-        break;
-
-    case QUADS:
-        triangleCount += ((numVertices / 4) * 2);
-        break;
-
-    case QUAD_STRIP:
-        triangleCount += (((numVertices / 2) - 1) * 2);
-        break;
-
-    case POINTS:
-        triangleCount += numVertices;
-        break;
-    }
-}
-
-
-void RenderDevice::setTexture(
-    uint                unit,
-    TextureRef          texture) {
-
-    // NVIDIA cards have more textures than texture units.
-    // "fixedFunction" textures have an associated unit 
-    // and must be glEnabled.  Programmable units *cannot*
-    // be enabled.
-    bool fixedFunction = ((int)unit < _numTextureUnits);
-
-    debugAssertM(! inPrimitive, 
-                 "Can't change textures while rendering a primitive.");
-
-    debugAssertM((int)unit < _numTextures,
-        format("Attempted to access texture %d"
-               " on a device with %d textures.",
-               unit, _numTextures));
-
-    TextureRef oldTexture = state.textureUnit[unit].texture;
-    majStateChange();
-
-    if (oldTexture == texture) {
-        return;
-    }
-
-    majGLStateChange();
-
-    state.textureUnit[unit].texture = texture;
-    state.touchedTextureUnit(unit);
-
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    // Turn off whatever was on previously if this is a fixed function unit
-    if (fixedFunction) {
-        glDisableAllTextures();
-    }
-
-    if (texture.notNull()) {
-        GLint id = texture->getOpenGLID();
-        GLint u = texture->getOpenGLTextureTarget();
-
-        if ((GLint)currentlyBoundTexture[unit] != id) {
-            glBindTexture(u, id);
-            currentlyBoundTexture[unit] = id;
-        }
-
-        if (fixedFunction) {
-            glEnable(u);
-        }
-    } else {
-        // Disabled texture unit
-        currentlyBoundTexture[unit] = 0;
-    }
-
-    // Force a reload of the texture matrix if invertY != old invertY.
-    // This will take care of flipping the texture when necessary.
-    if (oldTexture.isNull() ||
-        texture.isNull() ||
-        (oldTexture->invertY != texture->invertY)) {
-
-        if (fixedFunction) {
-            // We can only set the matrix for some units
-            forceSetTextureMatrix(unit, state.textureUnit[unit].textureMatrix);
-        }
-    }
-
-}
-
-
-double RenderDevice::getDepthBufferValue(
-    int                     x,
-    int                     y) const {
-
-    GLfloat depth;
-
-    glReadPixels(x,
-		         (getHeight() - 1) - y,
-                 1, 1,
-                 GL_DEPTH_COMPONENT,
-		         GL_FLOAT,
-		         &depth);
-
-    return depth;
-}
-
-
-/**
- Returns the current date as a string in the form YYYY-MM-DD
- */
-static std::string currentDateString() {
-    time_t t1;
-    time(&t1);
-    tm* t = localtime(&t1);
-    return format("%d-%02d-%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday); 
-}
-
-
-void RenderDevice::screenshotPic(GImage& dest, bool useBackBuffer, bool getAlpha) const {
-    if (useBackBuffer) {
-        glReadBuffer(GL_BACK);
-    } else {
-        glReadBuffer(GL_FRONT);
-    }
-    
-    int ch = getAlpha ? 4 : 3;
-
-    if ((dest.channels != ch) ||
-        (dest.width != getWidth()) ||
-        (dest.height != getHeight())) {
-        // Only resize if the current size is not correct
-        dest.resize(getWidth(), getHeight(), ch);
-    }
-
-    glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, getWidth(), getHeight(), 
-        getAlpha ? GL_RGBA : GL_RGB,
-        GL_UNSIGNED_BYTE, dest.byte());    
-
-    glPopClientAttrib();
-
-    // Flip right side up
-    if (getAlpha) {
-        flipRGBAVertical(dest.byte(), dest.byte(), getWidth(), getHeight());
-    } else {
-        flipRGBVertical(dest.byte(), dest.byte(), getWidth(), getHeight());
-    }
-
-    // Restore the read buffer to the back
-    glReadBuffer(GL_BACK);
-
-    int i;
-    double s = getLightSaturation();
-
-    if (s != 1.0) {
-        // Adjust the coloring for gamma correction
-        // Lookup table for mapping v -> v * lightSaturation;
-        uint8 L[255];
-        uint8 *data = dest.byte();
-        
-        for (i = 255; i >= 0; --i) {
-            L[i] = iMin(255, iRound((double)i * s));
-        }
-
-        // skip the alpha channel if there is one
-        int sz = dest.width * dest.height * dest.channels;
-        for (i = 0; i < sz; i += ch) {
-            for (int c = 0; c < 3; ++c) {
-                data[i + c] = L[data[i + c]];
-            }
-        }
-    }
-
-}
-
-
-std::string RenderDevice::screenshot(const std::string& filepath) const {
-    GImage screen;
-    int i;
-
-    screenshotPic(screen);
-
-    // Save the file
-    std::string basename = currentDateString();
-    std::string filename;
-    i = 0;
-    do {
-        filename = filepath + basename + "_" + format("%03d", i) + ".jpg";
-        ++i;
-    } while (fileExists(filename));   
-
-    screen.save(filename);
-
-    return filename;
-}
-
-
-bool RenderDevice::supportsTextureFormat(const TextureFormat* fmt) {
-    debugAssertM(! inPrimitive, 
-        "Cannot call supportsTextureFormat between beginPrimitive and endPrimitive.");
-    return GLCaps::supports(fmt);
-}
-
-
-double RenderDevice::getFrameRate() const {
-    return emwaFrameRate;
-}
-
-
-double RenderDevice::getTriangleRate() const {
-    return emwaTriangleRate;
-}
-
-
-double RenderDevice::getTrianglesPerFrame() const {
-    return emwaTriangleCount;
-}
-
-
-void RenderDevice::beginIndexedPrimitives() {
-	debugAssert(! inPrimitive);
-	debugAssert(! inIndexedPrimitive);
-
-    // TODO: can we avoid this push?
-	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT); 
-
-	inIndexedPrimitive = true;
-}
-
-
-void RenderDevice::endIndexedPrimitives() {
-	debugAssert(! inPrimitive);
-	debugAssert(inIndexedPrimitive);
-
-
-  if (GLCaps::supports_GL_ARB_vertex_buffer_object()) {
-    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-  }
-
-
-	glPopClientAttrib();
-	inIndexedPrimitive = false;
-    currentVARArea = NULL;
-}
-
-
-void RenderDevice::setVARAreaFromVAR(const class VAR& v) {
-	debugAssert(inIndexedPrimitive);
-	debugAssert(! inPrimitive);
-    alwaysAssertM(currentVARArea.isNull() || (v.area == currentVARArea), 
-        "All vertex arrays used within a single begin/endIndexedPrimitive"
-        " block must share the same VARArea.");
-
-    majStateChange();
-
-    if (v.area != currentVARArea) {
-        currentVARArea = const_cast<VAR&>(v).area;
-
-        if (VARArea::mode == VARArea::VBO_MEMORY) {
-            // Bind the buffer (for MAIN_MEMORY, we need do nothing)
-            glBindBufferARB(GL_ARRAY_BUFFER_ARB, currentVARArea->glbuffer);
-            majGLStateChange();
-        }
-    }
-
-}
-
-
-void RenderDevice::setVertexArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.vertexPointer();
-}
-
-
-void RenderDevice::setVertexAttribArray(unsigned int attribNum, const class VAR& v, bool normalize) {
-    setVARAreaFromVAR(v);
-	v.vertexAttribPointer(attribNum, normalize);
-}
-
-
-void RenderDevice::setNormalArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.normalPointer();
-}
-
-
-void RenderDevice::setColorArray(const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.colorPointer();
-}
-
-
-void RenderDevice::setTexCoordArray(unsigned int unit, const class VAR& v) {
-    setVARAreaFromVAR(v);
-	v.texCoordPointer(unit);
-}
-
-
-MilestoneRef RenderDevice::createMilestone(const std::string& name) {
-    return new Milestone(name);
-}
-
-
-void RenderDevice::setMilestone(const MilestoneRef& m) {
-    minStateChange();
-    minGLStateChange();
-    m->set();
-}
-
-
-void RenderDevice::waitForMilestone(const MilestoneRef& m) {
-    minStateChange();
-    minGLStateChange();
-    m->wait();
-}
-
-
-void RenderDevice::setLight(int i, const GLight& light) {
-    
-    setLight(i, &light, false);
-}
-
-
-void RenderDevice::setLight(int i, void* x) {
-    debugAssert(x == NULL); (void)x;
-    setLight(i, NULL, false);
-}
-
-
-void RenderDevice::setLight(int i, const GLight* _light, bool force) {
-    debugAssert(i >= 0);
-    debugAssert(i < MAX_LIGHTS);
-    int gi = GL_LIGHT0 + i;
-
-    const GLight& light = *_light;
-
-
-    minStateChange();
-
-    if (_light == NULL) {
-
-        if (state.lights.lightEnabled[i] || force) {
-            // Don't bother copying this light over
-            state.lights.lightEnabled[i] = false;
-            state.lights.changed = true;
-            glDisable(gi);
-        }
-
-        minGLStateChange();
-    
-    } else {
-
-        for (int j = 0; j < 3; ++j) {
-            debugAssert(light.attenuation[j] >= 0);
-        }
-
-    
-        if (! state.lights.lightEnabled[i] || force) {
-            glEnable(gi);
-            state.lights.lightEnabled[i] = true;
-            state.lights.changed = true;
-        }
-
-    
-        if ((state.lights.light[i] != light) || force) {
-            state.lights.changed = true;
-            state.lights.light[i] = light;
-
-            minGLStateChange();
-
-            Color4 zero(0, 0, 0, 1);
-            Color4 brightness(light.color / lightSaturation, 1);
-
-            int mm = glGetInteger(GL_MATRIX_MODE);
-            glMatrixMode(GL_MODELVIEW);
-            glPushMatrix();
-                glLoadIdentity();
-                glLoadMatrix(state.matrices.cameraToWorldMatrixInverse);
-                glLightfv(gi, GL_POSITION,              light.position);
-                glLightfv(gi, GL_SPOT_DIRECTION,        light.spotDirection);
-                glLightf (gi, GL_SPOT_CUTOFF,           light.spotCutoff);
-                glLightfv(gi, GL_AMBIENT,               zero);
-                if (light.diffuse) {
-                    glLightfv(gi, GL_DIFFUSE,               brightness);
-                } else {
-                    glLightfv(gi, GL_DIFFUSE,               zero);
-                }
-                if (light.specular) {
-                    glLightfv(gi, GL_SPECULAR,              brightness);
-                } else {
-                    glLightfv(gi, GL_SPECULAR,              zero);
-                }
-                glLightf (gi, GL_CONSTANT_ATTENUATION,  light.attenuation[0]);
-                glLightf (gi, GL_LINEAR_ATTENUATION,    light.attenuation[1]);
-                glLightf (gi, GL_QUADRATIC_ATTENUATION, light.attenuation[2]);
-            glPopMatrix();
-            glMatrixMode(mm);
-        }    
-    }
-    
-}
-
-
-void RenderDevice::configureShadowMap(
-    uint                unit,
-    const Matrix4&      lightMVP,
-    const TextureRef&   shadowMap) {
-
-    minStateChange();
-    minGLStateChange();
-
-    // http://www.nvidia.com/dev_content/nvopenglspecs/GL_ARB_shadow.txt
-
-    debugAssertM(shadowMap->getFormat()->OpenGLBaseFormat == GL_DEPTH_COMPONENT,
-        "Can only configure shadow maps from depth textures");
-
-    debugAssertM(shadowMap->depthReadMode() != Texture::DEPTH_NORMAL,
-        "Shadow maps must be configured for either Texture::DEPTH_LEQUAL"
-        " or Texture::DEPTH_GEQUAL comparisions.");
-
-    debugAssertM(GLCaps::supports_GL_ARB_shadow(),
-        "The device does not support shadow maps");
-
-
-    // Texture coordinate generation will use the current MV matrix
-    // to determine OpenGL "eye" space.  We want OpenGL "eye" space to
-    // be our world space, so set the object to world matrix to be the
-    // identity.
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadMatrix(state.matrices.cameraToWorldMatrixInverse);
-
-    setTexture(unit, shadowMap);
-    
-    if (GLCaps::supports_GL_ARB_multitexture()) {
-        glActiveTextureARB(GL_TEXTURE0_ARB + unit);
-    }
-
-    static const Matrix4 bias(
-        0.5f, 0.0f, 0.0f, 0.5f,
-        0.0f, 0.5f, 0.0f, 0.5f,
-        0.0f, 0.0f, 0.5f, 0.5f - .000001f,
-        0.0f, 0.0f, 0.0f, 1.0f);
-    
-    Matrix4 textureMatrix = glGetMatrix(GL_TEXTURE_MATRIX);
-
-	Matrix4 textureProjectionMatrix2D =
-        textureMatrix * bias * lightMVP;
-
-	// Set up tex coord generation - all 4 coordinates required
-	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_S, GL_EYE_PLANE, textureProjectionMatrix2D[0]);
-	glEnable(GL_TEXTURE_GEN_S);
-	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_T, GL_EYE_PLANE, textureProjectionMatrix2D[1]);
-	glEnable(GL_TEXTURE_GEN_T);
-	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_R, GL_EYE_PLANE, textureProjectionMatrix2D[2]);
-	glEnable(GL_TEXTURE_GEN_R);
-	glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-	glTexGenfv(GL_Q, GL_EYE_PLANE, textureProjectionMatrix2D[3]);
-	glEnable(GL_TEXTURE_GEN_Q);
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
-
-void RenderDevice::configureReflectionMap(
-    uint                textureUnit,
-    TextureRef          reflectionTexture) {
-
-    debugAssert(reflectionTexture->getDimension() == Texture::DIM_CUBE_MAP);
-
-    // Texture coordinates will be generated in object space.
-    // Set the texture matrix to transform them into camera space.
-    CoordinateFrame cframe = getCameraToWorldMatrix();
-
-    // The environment map assumes we are always in the center,
-    // so zero the translation.
-    cframe.translation = Vector3::zero();
-
-    // The environment map is in world space.  The reflection vector
-    // will automatically be multiplied by the object->camera space 
-    // transformation by hardware (just like any other vector) so we 
-    // take it back from camera space to world space for the correct
-    // vector.
-    setTexture(textureUnit, reflectionTexture);
-
-    setTextureMatrix(textureUnit, cframe);
-
-    minStateChange();
-    minGLStateChange();
-    glActiveTextureARB(GL_TEXTURE0_ARB + textureUnit);
-    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB);
-    glEnable(GL_TEXTURE_GEN_S);
-    glEnable(GL_TEXTURE_GEN_T);
-    glEnable(GL_TEXTURE_GEN_R);
-}
-
-
-void RenderDevice::sendSequentialIndices(RenderDevice::Primitive primitive, int numVertices) {
-
-    beforePrimitive();
-	runObjectShader();
-
-    glDrawArrays(primitiveToGLenum(primitive), 0, numVertices);
-    // Mark all active arrays as busy.
-    setVARAreaMilestone();
-
-	countTriangles(primitive, numVertices);
-    afterPrimitive();
-
-    minStateChange();
-    minGLStateChange();
-}
-
-
-void RenderDevice::internalSendIndices(
-    RenderDevice::Primitive primitive,
-    size_t                  indexSize, 
-    int                     numIndices, 
-    const void*             index) {
-
-    beforePrimitive();
-	runObjectShader();
-
-	GLenum i;
-
-	switch (indexSize) {
-	case sizeof(uint32):
-		i = GL_UNSIGNED_INT;
-		break;
-
-	case sizeof(uint16):
-		i = GL_UNSIGNED_SHORT;
-		break;
-
-	case sizeof(uint8):
-		i = GL_UNSIGNED_BYTE;
-		break;
-
-	default:
-		debugAssertM(false, "Indices must be either 8, 16, or 32-bytes each.");
-        i = 0;
+		NotifySite(CBN_KILLFOCUS);
 	}
 
-    GLenum p = primitiveToGLenum(primitive);
-
-	glDrawElements(p, numIndices, i, index);
-
-    afterPrimitive();
+	RedrawParent();
 }
 
 
-bool RenderDevice::supportsTwoSidedStencil() const {
-    return GLCaps::supports_GL_EXT_stencil_two_side();
+void CXTPControlComboBox::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && GetEditHint() == _GetEditText())
+	{
+		_SetEditText(_T(""));
+	}
+
+	m_strLastText = GetEditText();
+
+
+	m_bIgnoreAutoComplete = TRUE;
+	UpdatePopupSelection();
+
+	if (m_pParent->GetTrackFocus() == 0)
+		m_pParent->SetTrackFocus(pOldWnd ? pOldWnd->GetSafeHwnd() : m_pParent->GetSite()->GetSafeHwnd());
+
+	if (!m_bPopup)
+		m_pParent->SetPopuped(-1);
+
+	SetFocused(TRUE);
+	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(TRUE);
+}
+
+void CXTPControlComboBox::OnKillFocus()
+{
+	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && _GetEditText().IsEmpty())
+	{
+		_SetEditText(GetEditHint());
+	}
+
+	SetFocused(FALSE);
+
+	if (GetDroppedState())
+		m_pParent->SetPopuped(-1);
+
+	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(FALSE);
+}
+
+BOOL CXTPControlComboBox::GetDroppedState() const
+{
+	return m_bPopup;
+	//return m_pCommandBar->IsTrackingMode() && ((CXTPPopupBar*)m_pCommandBar)->GetControlPopup() == (CXTPControlPopup*)this;
+}
+
+BOOL CXTPControlComboBox::OnSetPopup(BOOL bPopup)
+{
+	if (bPopup)
+	{
+		m_bSelEndOk = FALSE;
+		m_nLastSel = GetCurSel();
+	}
+	else if (!IsFocused() && m_pEdit == NULL && !m_bSelEndOk)
+	{
+		SetCurSel(m_nLastSel);
+	}
+
+	if (!bPopup && !m_bSelEndOk)
+	{
+		NotifySite(CBN_SELENDCANCEL);
+	}
+
+
+	if (m_pAutoCompleteWnd && bPopup) m_pAutoCompleteWnd->CloseWindow();
+
+	m_bPopup = bPopup;
+	if (bPopup && GetEditCtrl()) GetEditCtrl()->SetFocus();
+
+	return CXTPControlPopup::OnSetPopup(bPopup);
+}
+
+void CXTPControlComboBox::OnExecute()
+{
+	if (GetCurSel() != -1 && (GetDroppedState() || (!m_pEdit && IsFocused())))
+		NotifySite(CBN_SELENDOK);
+
+	m_bSelEndOk = TRUE;
+
+	m_nLastSel = GetCurSel();
+
+	CXTPControlPopup::OnExecute();
+}
+
+CHARFORMAT2 CXTPControlComboBox::GetDefaultCharFormat()
+{
+	CHARFORMAT2 cf;
+	ZeroMemory(&cf, sizeof(CHARFORMAT2));
+	cf.dwMask = CFM_COLOR | CFM_BACKCOLOR;
+
+	if (GetEnabled())
+	{
+		cf.crTextColor = GetXtremeColor(COLOR_WINDOWTEXT);
+
+		if (!GetEditHint().IsEmpty() && GetEditHint() == _GetEditText())
+		{
+			cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
+		}
+	}
+	else
+	{
+		cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
+	}
+
+	cf.crBackColor = GetPaintManager()->GetControlEditBackColor(this);
+
+	return cf;
+}
+
+void CXTPControlComboBox::ModifyListBoxStyle(DWORD dwRemove, DWORD dwAdd)
+{
+	if (IsValidList())
+	{
+		CXTPControlComboBoxList* pComboBoxList = ((CXTPControlComboBoxList*)m_pCommandBar);
+
+		pComboBoxList->m_dwStyle |= dwAdd;
+		pComboBoxList->m_dwStyle &= ~dwRemove;
+
+		pComboBoxList->DestroyWindow();
+		pComboBoxList->CreateListBox();
+	}
 }
 
 
-bool RenderDevice::supportsTextureRectangle() const {
-    return GLCaps::supports_GL_EXT_texture_rectangle();
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxPopup
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPControlComboBoxPopupBar, CXTPPopupBar)
+
+CXTPControlComboBoxPopupBar::CXTPControlComboBoxPopupBar()
+{
+	m_bComboBar = TRUE;
+	m_bGrabFocus = FALSE;
+}
+
+BOOL CXTPControlComboBoxPopupBar::ProcessHookKeyDown(CXTPControlComboBox* pComboBox, UINT nChar, LPARAM lParam)
+{
+	int nSel = GetCurSel();
+
+	if (pComboBox->GetEditCtrl())
+	{
+		if ((GetKeyState(VK_MENU) >= 0) && (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_PRIOR || nChar == VK_NEXT))
+		{
+			CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+		}
+		else
+		{
+			return FALSE;
+		}
+	}
+	else
+	{
+		if ((nChar == VK_F4 && GetKeyState(VK_MENU) >= 0) || ((nChar == VK_UP || nChar == VK_DOWN) && GetKeyState(VK_MENU) < 0))
+		{
+			return FALSE;
+		}
+		else
+		{
+			CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+		}
+	}
+
+	if (nSel != GetCurSel())
+	{
+		pComboBox->OnSelChanged();
+		if (pComboBox->GetEditCtrl()->GetSafeHwnd()) pComboBox->GetEditCtrl()->SetSel(0, -1);
+	}
+	return TRUE;
+}
+
+BOOL CXTPControlComboBoxPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(m_pControlPopup);
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+	if (!pComboBox)
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+
+	if (nChar == VK_ESCAPE)
+	{
+		if (pComboBox->IsFocused())
+			return FALSE;
+
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+	}
+
+	if (nChar == VK_TAB) return FALSE;
+
+	return ProcessHookKeyDown(pComboBox, nChar, lParam);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxList
+
+CXTPControlComboBoxList::CXTPControlComboBoxList()
+{
+	m_barPosition = xtpBarListBox;
+	m_nMRUWidth = 0;
+	m_bGrabFocus = FALSE;
+	m_dwStyle = 0;
+	m_nListIconId = -1;
+}
+
+BEGIN_MESSAGE_MAP(CXTPControlComboBoxList, CXTPPopupBar)
+	ON_WM_LBUTTONUP()
+	ON_WM_NCPAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_DRAWITEM_REFLECT()
+	ON_WM_MEASUREITEM_REFLECT()
+END_MESSAGE_MAP()
+
+
+IMPLEMENT_XTP_COMMANDBAR(CXTPControlComboBoxList, CXTPControlComboBoxPopupBar)
+
+
+void CXTPControlComboBoxList::CreateListBox()
+{
+	DWORD dwStyle = m_dwStyle & ~CBRS_GRIPPER;
+
+	CWnd* pSite = GetSite();
+
+	if (pSite && ((dwStyle & (LBS_OWNERDRAWFIXED|LBS_OWNERDRAWVARIABLE)) != 0))
+	{
+		CreateEx(WS_EX_CLIENTEDGE|WS_EX_TOOLWINDOW, _T("LISTBOX"), _T(""),
+			WS_CHILD | WS_VSCROLL | WS_CLIPCHILDREN | dwStyle | LBS_NOTIFY,
+			CRect(0, 0, 0, 0), pSite, 0);
+
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, 0 );
+		ModifyStyle(WS_CHILD, WS_POPUP);
+		SetWindowLongPtr(m_hWnd, GWLP_HWNDPARENT, (LONG_PTR)(pSite->m_hWnd));
+	}
+	else
+	{
+		CreateEx(WS_EX_CLIENTEDGE | WS_EX_TOOLWINDOW, _T("LISTBOX"), _T(""),
+			WS_POPUP | WS_VSCROLL | WS_CLIPCHILDREN | dwStyle, CRect(0, 0, 0, 0), 0, 0);
+	}
+
+	if (m_pCommandBars && m_nListIconId != -1)
+	{
+		CXTPImageManagerIcon* pIcon = GetImageManager()->GetImage(m_nListIconId, 0);
+		if (pIcon)
+		{
+			((CListBox*)this)->SetItemHeight(-1, pIcon->GetHeight() + 4);
+		}
+	}
+}
+
+void CXTPControlComboBoxList::DrawItem (LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+	if (pComboBox) pComboBox->DrawItem(lpDrawItemStruct);
+}
+
+void CXTPControlComboBoxList::MeasureItem(LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+	if (pComboBox) pComboBox->MeasureItem(lpMeasureItemStruct);
+}
+
+void CXTPControlComboBoxList::OnLButtonDown(UINT /*nFlags*/, CPoint /*point*/)
+{
+	// do nothing.
+}
+
+int CXTPControlComboBoxList::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult)
+{
+	if (nMessage == WM_MOUSEWHEEL)
+	{
+		CWnd::DefWindowProc(WM_MOUSEWHEEL, wParam, lParam);
+		return TRUE;
+	}
+	return CXTPCommandBar::OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
 }
 
 
-bool RenderDevice::supportsVertexProgramNV2() const {
-    return GLCaps::supports_GL_NV_vertex_program2();
+void CXTPControlComboBoxList::OnNcPaint()
+{
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	Default();
+	CWindowDC dc(this);
+	CXTPWindowRect rc(this);
+	rc.OffsetRect(-rc.TopLeft());
+	dc.Draw3dRect(rc, pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_BORDER), pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_BORDER));
+
+	rc.DeflateRect(1, 1);
+	dc.Draw3dRect(rc, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_WINDOW));
+
+}
+
+BOOL CXTPControlComboBoxList::OnEraseBkgnd(CDC* pDC)
+{
+	return CWnd::OnEraseBkgnd(pDC);
+}
+
+void CXTPControlComboBoxList::OnLButtonUp(UINT /*nFlags*/, CPoint /*point*/)
+{
+	CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
+
+	pComboBox->OnSelChanged();
+	pComboBox->OnExecute();
+}
+
+BOOL CXTPControlComboBoxList::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
+{
+	if (!CXTPCommandBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard))
+		return FALSE;
+
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+
+	if (!bMode)
+	{
+		pComboBox->NotifySite(CBN_CLOSEUP);
+
+		XTPMouseManager()->UnlockMouseMove();
+		ShowWindow(SW_HIDE);
+
+		if (GetParentCommandBar())
+			GetParentCommandBar()->SetPopuped(-1);
+
+		m_pControlPopup = 0;
+
+	}
+	else
+	{
+		XTPMouseManager()->LockMouseMove();
+
+		pComboBox->UpdatePopupSelection();
+
+		pComboBox->NotifySite(CBN_DROPDOWN);
+	}
+
+
+	return TRUE;
+}
+
+CListBox* CXTPControlComboBoxList::GetListBoxCtrl() const
+{
+	return (CListBox*)this;
+}
+
+BOOL CXTPControlComboBoxList::ProcessHookKeyDown(CXTPControlComboBox* pComboBox, UINT nChar, LPARAM lParam)
+{
+	int nSel = GetCurSel();
+
+	if (pComboBox->GetEditCtrl())
+	{
+		if ((GetKeyState(VK_MENU) >= 0) && (nChar == VK_UP || nChar == VK_DOWN || nChar == VK_PRIOR || nChar == VK_NEXT))
+		{
+			CWnd::DefWindowProc(WM_KEYDOWN, (WPARAM)nChar, lParam);
+		}
+		else
+		{
+			return FALSE;
+		}
+	}
+	else
+	{
+		if ((nChar == VK_F4 && GetKeyState(VK_MENU) >= 0) || ((nChar == VK_UP || nChar == VK_DOWN) && GetKeyState(VK_MENU) < 0))
+		{
+			return FALSE;
+		}
+		else
+		{
+			MSG msg;
+			msg.message = WM_KEYDOWN;
+			msg.hwnd = m_hWnd;
+			msg.wParam = (WPARAM)nChar;
+			msg.lParam = lParam;
+
+			::IsDialogMessage(m_hWnd, &msg);
+			AfxGetThread()->PumpMessage();
+		}
+	}
+
+	if (nSel != GetCurSel())
+	{
+		pComboBox->OnSelChanged();
+		if (pComboBox->GetEditCtrl()->GetSafeHwnd()) pComboBox->GetEditCtrl()->SetSel(0, -1);
+	}
+	return TRUE;
+}
+
+BOOL CXTPControlComboBoxList::OnHookKeyDown(UINT nChar, LPARAM lParam)
+{
+	ASSERT(m_pControlPopup);
+	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
+	if (!pComboBox)
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+
+	if (nChar == VK_ESCAPE)
+	{
+		if (pComboBox->IsFocused())
+			return FALSE;
+
+		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
+	}
+
+	if (nChar == VK_TAB) return FALSE;
+
+	if (nChar == VK_RETURN)
+	{
+		m_pControlPopup->OnExecute();
+		return TRUE;
+	}
+
+	return ProcessHookKeyDown(pComboBox, nChar, lParam);
+}
+
+void CXTPControlComboBoxList::OnMouseMove(UINT nFlags, CPoint point)
+{
+	BOOL bOutside;
+	UINT nItem = GetListBoxCtrl()->ItemFromPoint(point, bOutside);
+
+	if (!bOutside && GetCurSel() != (int)nItem)
+		SetCurSel(nItem);
+
+	CXTPPopupBar::OnMouseMove(nFlags, point);
 }
 
 
-bool RenderDevice::supportsVertexBufferObject() const { 
-    return GLCaps::supports_GL_ARB_vertex_buffer_object();
+
+BOOL CXTPControlComboBoxList::Popup(CXTPControlPopup* pControlPopup, BOOL /*bSelectFirst*/)
+{
+	m_pControlPopup = pControlPopup;
+
+	SetFont(GetPaintManager()->GetIconFont());
+
+	CWnd* pWndOwner = GetOwnerSite();
+	if (pWndOwner) pWndOwner->SendMessage(WM_XTP_INITCOMMANDSPOPUP, 0, (LPARAM)this);
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	if (pCommandBars && pCommandBars->IsLayoutRTL())
+		ModifyStyleEx(WS_EX_LAYOUTRTL, WS_EX_RIGHT | WS_EX_LEFTSCROLLBAR | WS_EX_RTLREADING);
+	else ModifyStyleEx(WS_EX_RIGHT | WS_EX_LEFTSCROLLBAR | WS_EX_RTLREADING, 0);
+
+	SetTrackingMode(TRUE, FALSE);
+
+	UpdateFlags();
+
+	CRect rcControl = pControlPopup->GetRect();
+
+	int nItemHeight = GetListBoxCtrl()->GetItemHeight(0);
+	int nHeight = min (((CXTPControlComboBox*)m_pControlPopup)->m_nDropDownItemCount,
+		max(1, GetListBoxCtrl()->GetCount())) * nItemHeight + 4;
+	int nWidth = m_nMRUWidth <= 0 ? rcControl.Width() : m_nMRUWidth;
+	UpdateLocation(CSize(nWidth, nHeight));
+
+	EnableWindow();
+
+	return TRUE;
+}
+
+void CXTPControlComboBoxList::DrawCommandBar(CDC* pDC, CRect /*rcClipBox*/)
+{
+	pDC->FillSolidRect(CXTPClientRect(this), GetXtremeColor(COLOR_WINDOW));
+	CWnd::DefWindowProc(WM_PAINT, (WPARAM)pDC->m_hDC, 0);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxEditCtrl
+
+BEGIN_MESSAGE_MAP(CXTPControlComboBoxEditCtrl, CXTPEdit)
+	ON_WM_SETFOCUS()
+	ON_WM_MOUSEMOVE()
+	ON_WM_KILLFOCUS()
+	ON_WM_DESTROY()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_CONTEXTMENU()
+	ON_MESSAGE(XTP_TTM_WINDOWFROMPOINT, OnWindowFromPoint)
+	ON_MESSAGE_VOID(WM_XTP_SHELLAUTOCOMPLETESTART, OnShellAutoCompleteStart)
+	ON_CONTROL_REFLECT(EN_CHANGE, OnEditChanged)
+END_MESSAGE_MAP()
+
+void CXTPControlComboBoxEditCtrl::OnEditChanged()
+{
+	m_pControl->m_bEditChanged = TRUE;
+
+	if (::GetFocus() == m_hWnd && !m_bIgonoreEditChanged)
+		m_pControl->OnEditChanged();
+
+	SetMargins(0, 0);
+	UpdateCharFormat();
+}
+
+void CXTPControlComboBoxEditCtrl::UpdateCharFormat()
+{
+	CHARFORMAT2 cf = m_pControl->GetDefaultCharFormat();
+	cf.cbSize = GetRichEditContext().m_bRichEdit2 ? sizeof(CHARFORMAT2) : sizeof(CHARFORMAT);
+
+	::SendMessage(m_hWnd, EM_SETCHARFORMAT, 0, (LPARAM)&cf);
+	::SendMessage(m_hWnd, EM_SETBKGNDCOLOR, FALSE, cf.crBackColor);
+}
+
+void CXTPControlComboBoxEditCtrl::OnShellAutoCompleteStart()
+{
+	m_pControl->GetCommandBar()->OnTrackLost();
+}
+
+void CXTPControlComboBoxEditCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/)
+{
+}
+
+void CXTPControlComboBoxEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_pControl->IsCustomizeMode())
+	{
+		ClientToScreen(&point);
+		m_pControl->GetParent()->ScreenToClient(&point);
+
+		m_pControl->GetParent()->OnRButtonDown(nFlags, point);
+		return;
+	}
+
+	m_pControl->GetCommandBar()->OnTrackLost();
+	m_pControl->SetFocused(TRUE);
+
+	if (!ShowContextMenu(m_pControl, point))
+		CXTPEdit::OnRButtonDown(nFlags, point);
+}
+
+void CXTPControlComboBoxEditCtrl::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (m_pControl->IsCustomizeMode())
+	{
+		if (m_pControl->IsCustomizeMovable())
+			m_pControl->OnClick();
+	}
+	else CEdit::OnLButtonDown(nFlags, point);
+}
+
+void CXTPControlComboBoxEditCtrl::OnDestroy()
+{
+	GetWindowTextEx(m_pControl->m_strEditText);
+	CEdit::OnDestroy();
+}
+
+BOOL CXTPControlComboBoxEditCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	CXTPCommandBar* pCommandBar = m_pControl->GetParent();
+
+	if (pCommandBar)
+	{
+		pCommandBar->FilterToolTipMessage(message, wParam, lParam);
+	}
+
+	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
+}
+
+LRESULT CXTPControlComboBoxEditCtrl::OnWindowFromPoint(WPARAM, LPARAM)
+{
+	return 1;
+}
+
+void CXTPControlComboBoxEditCtrl::OnSetFocus(CWnd* pOldWnd)
+{
+	if (!m_pControl->IsCustomizeMode())
+	{
+		m_pControl->OnSetFocus(pOldWnd);
+		CEdit::OnSetFocus(pOldWnd);
+
+		SetSel(0, 0);
+		::PostMessage(m_hWnd, EM_SETSEL, 0, -1);
+	}
+}
+
+void CXTPControlComboBoxEditCtrl::OnKillFocus(CWnd* pNewWnd)
+{
+	CXTPEdit::OnKillFocus(pNewWnd);
+	m_pControl->OnKillFocus();
+}
+
+void CXTPControlComboBoxEditCtrl::OnMouseMove(UINT nFlags, CPoint point)
+{
+	CEdit::OnMouseMove(nFlags, point);
+
+	MapWindowPoints(m_pControl->GetParent(), &point, 1);
+	m_pControl->GetParent()->OnMouseMove(nFlags, point);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPControlComboBoxList
+
+void CXTPControlComboBoxList::Copy(CXTPCommandBar* pCommandBar, BOOL bRecursive)
+{
+	CXTPPopupBar::Copy(pCommandBar, bRecursive);
+
+	m_nListIconId = ((CXTPControlComboBoxList*)pCommandBar)->m_nListIconId;
+
+	if (!m_hWnd)
+		CreateListBox();
+
+	CListBox* pListBox = (CListBox*)(CXTPControlComboBoxList*)pCommandBar;
+	DWORD dwCount = pListBox->m_hWnd ? pListBox->GetCount() : 0;
+
+	for (UINT i = 0; i < dwCount; i++)
+	{
+		CString str;
+		pListBox->GetText(i, str);
+		GetListBoxCtrl()->AddString(str);
+	}
+
+}
+
+void CXTPControlComboBoxList::DoPropExchange(CXTPPropExchange* pPX)
+{
+	CXTPPopupBar::DoPropExchange(pPX);
+
+	if (pPX->GetSchema() > _XTP_SCHEMA_110)
+	{
+		PX_Int(pPX, _T("ListIconId"), m_nListIconId, -1);
+	}
+
+	CListBox* pThis = (CListBox*)this;
+	CString str;
+
+	CXTPPropExchangeSection secItems(pPX->GetSection(_T("Items")));
+
+	if (pPX->IsStoring())
+	{
+		if (m_hWnd)
+		{
+			DWORD dwCount = pThis->GetCount();
+			secItems->WriteCount(dwCount);
+
+			for (int i = 0; i < (int)dwCount; i++)
+			{
+				pThis->GetText(i, str);
+
+				CString strSection;
+				strSection.Format(_T("Item%i"), i);
+				PX_String(&secItems, strSection, str, _T(""));
+
+			}
+		}
+		else
+		{
+			pPX->WriteCount(0);
+		}
+	}
+	else
+	{
+		if (!m_hWnd)
+			CreateListBox();
+
+		DWORD nNewCount = secItems->ReadCount();
+		for (DWORD i = 0; i < nNewCount; i++)
+		{
+			CString strSection;
+			strSection.Format(_T("Item%i"), i);
+
+			PX_String(&secItems, strSection, str, _T(""));
+			pThis->AddString(str);
+		}
+	}
 }
 
 
-uint32 RenderDevice::debugNumMajorOpenGLStateChanges() const {
-    return mDebugNumMajorOpenGLStateChanges;
+void CXTPControlComboBox::SetListIconId(int nId)
+{
+	if (m_pParent) GetCommandBar()->SetCommandBars(m_pParent->GetCommandBars());
+
+	if (IsValidList())
+	{
+		CXTPControlComboBoxList* pComboBoxList = ((CXTPControlComboBoxList*)m_pCommandBar);
+		pComboBoxList->m_nListIconId = nId;
+
+		ModifyListBoxStyle(0, LBS_OWNERDRAWFIXED | LBS_HASSTRINGS);
+	}
 }
 
-
-uint32 RenderDevice::debugNumPushStateCalls() const {
-    return mDebugPushStateCalls;
+int CXTPControlComboBox::GetListIconId() const
+{
+	return IsValidList() ?  ((CXTPControlComboBoxList*)m_pCommandBar)->m_nListIconId : -1;
 }
 
-
-uint32 RenderDevice::debugNumMinorOpenGLStateChanges() const {
-    return mDebugNumMinorOpenGLStateChanges;
+int CXTPControlComboBox::GetDropDownWidth() const
+{
+	return m_pCommandBar->GetWidth();
 }
 
+int CXTPControlComboBox::GetCustomizeMinWidth() const
+{
+	return m_nLabelWidth + m_nThumbWidth + 5;
 
-uint32 RenderDevice::debugNumMajorStateChanges() const {
-    return mDebugNumMajorStateChanges;
 }
 
-
-uint32 RenderDevice::debugNumMinorStateChanges() const {
-    return mDebugNumMinorStateChanges;
+void CXTPControlComboBox::DeflateEditRect(CRect& rcControl)
+{
+	if (m_nEditIconId > 0)
+	{
+		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
+		if (pIcon)
+			rcControl.left += pIcon->GetWidth() + 2;
+	}
 }
 
-std::string RenderDevice::dummyString;
-bool RenderDevice::checkFramebuffer(std::string& whyNot) const {
-    GLenum status;
-    status = (GLenum)glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+void CXTPControlComboBox::DrawEditText(CDC* pDC, CRect rcText)
+{
+	if (!GetEditCtrl() && GetEnabled() && IsFocused())
+	{
+		CRect rcFocus(rcText.left - 1, rcText.top + 1, rcText.right - 1, rcText.bottom - 1);
+		pDC->FillSolidRect(rcFocus, GetXtremeColor(COLOR_HIGHLIGHT));
+	}
 
-    switch(status) {
-    case GL_FRAMEBUFFER_COMPLETE_EXT:
-        return true;
+	if (m_nEditIconId > 0)
+	{
+		CXTPImageManagerIcon* pIcon = m_pParent->GetImageManager()->GetImage(m_nEditIconId, 0);
+		if (pIcon)
+		{
+			pIcon->Draw(pDC, CPoint(rcText.left, rcText.CenterPoint().y - pIcon->GetHeight() / 2), GetEnabled() ? pIcon->GetIcon() : pIcon->GetDisabledIcon());
+			rcText.left += pIcon->GetWidth() + 2;
+		}
+	}
 
-    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENTS_EXT:
-        whyNot = "Framebuffer Incomplete: Incomplete Attachment.";
-		break;
+	if (GetEditCtrl())
+		return;
 
-    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        whyNot = "Unsupported framebuffer format.";
-		break;
+	CString strListBoxText = GetListBoxText();
 
-    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-        whyNot = "Framebuffer Incomplete: Missing attachment.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-        whyNot = "Framebuffer Incomplete: Attached images must have same dimensions.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-        whyNot = "Framebuffer Incomplete: Attached images must have same format.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-        whyNot = "Framebuffer Incomplete: Missing draw buffer.";
-		break;
-
-    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-        whyNot = "Framebuffer Incomplete: Missing read buffer.";
-		break;
-
-    default:
-        whyNot = "Framebuffer Incomplete: Unknown error.";
-    }
-
-    return false;    
+	if (!strListBoxText.IsEmpty())
+	{
+		pDC->SetTextColor(GetXtremeColor(!GetEnabled() ? COLOR_GRAYTEXT: IsFocused() ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT));
+		pDC->DrawText(strListBoxText, rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+	}
+	else if (!GetEditHint().IsEmpty() && GetEnabled() && !IsFocused())
+	{
+		pDC->SetTextColor(GetXtremeColor(COLOR_GRAYTEXT));
+		pDC->DrawText(GetEditHint(), rcText, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+	}
 }
 
+void CXTPControlComboBox::MeasureItem(LPMEASUREITEMSTRUCT /*lpMeasureItemStruct*/)
+{
 
-/////////////////////////////////////////////////////////////////////////////////////
-
-
-static void var(TextOutput& t, const std::string& name, const std::string& val) {
-    t.writeSymbols(name,"=");
-    t.writeString(val);
-    t.writeNewline();
 }
 
+void CXTPControlComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	CString strText;
+	GetLBText(lpDrawItemStruct->itemID, strText);
 
-static void var(TextOutput& t, const std::string& name, const bool val) {
-    t.writeSymbols(name, "=", val ? "Yes" : "No");
-    t.writeNewline();
+	CRect rc(&lpDrawItemStruct->rcItem);
+
+	ASSERT(lpDrawItemStruct->CtlType == ODT_LISTBOX);
+
+	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
+
+	BOOL bSelected = lpDrawItemStruct->itemState & ODS_SELECTED;
+	CXTPPaintManager* pPaintManager = GetPaintManager();
+
+	COLORREF crOldTextColor = pDC->SetTextColor(pPaintManager->GetRectangleTextColor(bSelected, FALSE, TRUE, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup));
+
+	if (bSelected)
+		pPaintManager->DrawRectangle(pDC, rc, TRUE, FALSE, TRUE, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
+	else
+		pDC->FillSolidRect(rc, pPaintManager->GetXtremeColor(COLOR_WINDOW));
+
+	int nListIconId = GetListIconId();
+	if (nListIconId != -1)
+	{
+		CXTPImageManager* pImageManager = GetCommandBar()->GetImageManager();
+		CXTPImageManagerIcon* pImage = pImageManager->GetImage(nListIconId + lpDrawItemStruct->itemID, 0);
+
+		if (pImage)
+		{
+			pImage->Draw(pDC, CPoint(rc.left + 2, (rc.top + rc.bottom - pImage->GetHeight()) / 2),
+				pImage->GetIcon(bSelected ? xtpImageHot : xtpImageNormal));
+			rc.left += pImage->GetWidth() + 2;
+		}
+	}
+
+	CXTPFontDC font(pDC, pPaintManager->GetIconFont());
+
+	pDC->SetBkMode(TRANSPARENT);
+	rc.left += 3;
+	pDC->DrawText(strText, rc, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
+
+	pDC->SetTextColor(crOldTextColor);
 }
 
-
-static void var(TextOutput& t, const std::string& name, const int val) {
-    t.writeSymbols(name,"=");
-    t.writeNumber(val);
-    t.writeNewline();
-}
-
-
-void RenderDevice::describeSystem(
-    TextOutput& t) {
-
-    t.writeSymbols("GPU", "{");
-    t.writeNewline();
-    t.pushIndent();
-        var(t, "Chipset", GLCaps::renderer());
-        var(t, "Vendor", GLCaps::vendor());
-        var(t, "Driver", GLCaps::driverVersion());
-        var(t, "OpenGL version", GLCaps::glVersion());
-        var(t, "Textures", GLCaps::numTextures());
-        var(t, "Texture coordinates", GLCaps::numTextureCoords());
-        var(t, "Texture units", GLCaps::numTextureUnits());
-    t.popIndent();
-    t.writeSymbols("}");
-    t.writeNewline();
-    t.writeNewline();
-
-    GWindow* w = window();
-    GWindowSettings settings;
-    w->getSettings(settings);
-
-    t.writeSymbols("Window", "{");
-    t.writeNewline();
-    t.pushIndent();
-        var(t, "API", w->getAPIName());
-        var(t, "Version", w->getAPIVersion());
-        t.writeNewline();
-
-        var(t, "In focus", w->hasFocus());
-        var(t, "Centered", settings.center);
-        var(t, "Framed", settings.framed);
-        var(t, "Visible", settings.visible);
-        var(t, "Resizable", settings.resizable);
-        var(t, "Full screen", settings.fullScreen);
-        var(t, "Top", settings.y);
-        var(t, "Left", settings.x);
-        var(t, "Width", settings.width);
-        var(t, "Height", settings.height);
-        var(t, "Refresh rate", settings.refreshRate);
-        t.writeNewline();
-
-        var(t, "Alpha bits", settings.alphaBits);
-        var(t, "Red bits", settings.rgbBits);
-        var(t, "Green bits", settings.rgbBits);
-        var(t, "Blue bits", settings.rgbBits);
-        var(t, "Depth bits", settings.depthBits);
-        var(t, "Stencil bits", settings.stencilBits);
-        var(t, "Asynchronous", settings.asychronous);
-        var(t, "Stereo", settings.stereo);
-        var(t, "FSAA samples", settings.fsaaSamples);
-
-    t.popIndent();
-    t.writeSymbols("}");
-    t.writeNewline();
-    t.writeNewline();
-}
-
-} // namespace
 

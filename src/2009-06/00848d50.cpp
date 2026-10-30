@@ -1,69 +1,39 @@
-// from server: 42% by colin
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render Material.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_processimage_e8b5aa72eb9630f4.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RenderLib/Material.h"
+#include <string>
+#include <exception>
+struct Texture {
+    void* data;
+    int width;
+    int height;
+    int format;
 
-namespace RBX
+    Texture(const std::string&, int);
+    virtual ~Texture();
+    void save(const std::string&, int);
+};
+
+int getFormat(const std::string&);
+void resizeTexture(Texture&, std::string&);
+void processTexture(const std::string&, std::string, int);
+
+void processTexture(const std::string& source, std::string destination,
+                    int maximumSize)
 {
-	namespace Render
-	{
-		Material::Level::Level(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
-			: emptyLevel(false),
-			  mBaseTexture(baseTexture),
-			  mColor(color),
-			  mSpecular(specular),
-			  mShiny(shiny),
-			  mReflect(reflect),
-			  mTransparent(transparent)
-		{
-			if (baseTexture.notNull())
-				mMatte = baseTexture->alphaOnlyVersion();
+    int format = getFormat(source);
+    if (format == 9)
+        throw std::exception("unknown texture format");
 
-			if (mTransparent > 0.0f)
-				mReflect = 0.0f;
-		}
-
-		Material::Level::Level()
-			: emptyLevel(true),
-			  mColor(G3D::Color3::white()),
-			  mSpecular(0.0f),
-			  mShiny(0.0f),
-			  mReflect(0.0f),
-			  mTransparent(0.0f)
-		{
-		}
-
-		Material::Level::~Level() {}
-
-		void Material::Level::configureRenderDevice(G3D::RenderDevice* renderDevice) const
-		{
-			renderDevice->setColor(mColor);
-			renderDevice->setSpecularCoefficient(mSpecular);
-			renderDevice->setShininess(mShiny);
-			renderDevice->setTexture(0, baseTexture(renderDevice));
-		}
-
-		Material::Material() {}
-		Material::~Material() {}
-
-		const Material::Level& Material::appendEmptyLevel()
-		{
-			return levels.next();
-		}
-
-		const Material::Level& Material::appendLevel(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
-		{
-			levels.push_back(Material::Level(baseTexture, color, specular, shiny, reflect, transparent));
-			return levels.last();
-		}
-
-		bool Material::veryTransparent() const
-		{
-			return levels.size() > 0 && levels.front().mTransparent > 0.25f;
-		}
-	}
+    Texture texture(source, format);
+    if (texture.width <= maximumSize && texture.height <= maximumSize) {
+        if (destination != source)
+            texture.save(destination, 5);
+    } else {
+        resizeTexture(texture, destination);
+        processTexture(destination, destination, maximumSize);
+    }
 }

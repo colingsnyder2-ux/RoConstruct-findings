@@ -1,39 +1,25 @@
-// from server: 57% by colin
-struct S_func_00555990 {
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_unit_909f36e58bb868ca.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Vector2.h>
+#include <math.h>
+namespace RBX {
+class GuiRoot {
+public:
+ static G3D::Vector2 canvasSize;
+ static G3D::Vector2 toPixelSize(const G3D::Vector2&);
 };
+G3D::Vector2 GuiRoot::toPixelSize(const G3D::Vector2& percent) {
+ G3D::Vector2 pixelSize(0,0);
+ if (canvasSize.y > 0.75f * canvasSize.x)
+  pixelSize = (0.01f * percent) * G3D::Vector2(canvasSize.x, 0.75f * canvasSize.x);
+ else
+  pixelSize = (0.01f * percent) * G3D::Vector2(1.33f * canvasSize.y, canvasSize.y);
+ return pixelSize;
+}
 
-float __cdecl f(float* out, const float* in)
-{
-    extern float g_8c1e64;
-    extern float g_787054;
-    extern float g_8c1e68;
-    extern float g_7a8378;
-    extern float g_7a837c;
-
-    out[0] = 0.0f;
-    out[1] = 0.0f;
-
-    float a = g_8c1e64;
-    float b = g_787054;
-    float c = a * b;
-    float d = g_8c1e68;
-
-    if (d == c) {
-        float e = g_7a8378;
-        float f2 = e * c;
-        float g = in[0];
-        float h = g_7a837c;
-        float i = h * g;
-        float j = i * in[1];
-        out[0] = f2;
-        out[1] = j;
-    } else {
-        float g = in[0];
-        float h = g_7a837c;
-        float i = h * g;
-        float j = i * in[1];
-        out[0] = c;
-        out[1] = j;
-    }
-    return 0.0f;
 }

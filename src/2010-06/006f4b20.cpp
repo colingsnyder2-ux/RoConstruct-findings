@@ -1,108 +1,43 @@
-// from server: 94% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-lib: rbxgs-dll roc_descriptor_receiver_native_name_order_7d5f8e8ab29991a4.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/Name.h"
-#include "util/Debug.h"
-#include <boost/thread/once.hpp>
+#pragma include_alias("reflection/object.h", "../roc_descriptor_receiver_class_header_268a149c290eb686.cpp")
+#undef _RELEASEASSERT
+#include "reflection/object.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/cstdint.hpp>
 
-// intentionally outside of the RBX namespace
-boost::once_flag flag = BOOST_ONCE_INIT;
-
-boost::mutex& moo2()
-{
-	static boost::mutex mutex2;
-	return mutex2;
+namespace RakNet { class BitStream; }
+namespace RBX { namespace Network {
+template<class T> class DescriptorReceiver {
+ std::vector<const T*> idToDesc;
+ int idBits;
+ void learnName(std::string s, int i);
+public:
+ void getValue(unsigned int id, const T*& value) const { value = idToDesc.at(id); }
+ void learn(RakNet::BitStream& stream, bool exchangeChecksum, bool useRakString);
+ unsigned int receive(RakNet::BitStream& stream, const T*& value, bool versionCheck) const;
+ bool verifyChecksum(const T* value, boost::uint32_t remoteChecksum);
+};
+using namespace Reflection;
+template<> void DescriptorReceiver<PropertyDescriptor>::learnName(std::string s, int i) {
+ std::vector<std::string> words;
+ boost::split(words,s,boost::is_any_of(":"));
+ const Name& n = Name::lookup(words[0]);
+ ClassDescriptor::ClassDescriptors::const_iterator iter = ClassDescriptor::all_begin();
+ while(iter != ClassDescriptor::all_end()) {
+  const ClassDescriptor* c = *iter;
+  if(c->name == n) {
+   const Name& propertyName = Name::lookup(words[1]);
+   PropertyContainer::CollectionType::const_iterator desc = c->PropertyContainer::findDescriptor(propertyName);
+   if(desc != c->PropertyContainer::descriptors_end()) { idToDesc[i] = *desc; return; }
+   else break;
+  }
+  ++iter;
+ }
+ idToDesc[i] = NULL;
 }
-
-void initMoo()
-{
-	moo2();
-}
-
-namespace RBX
-{
-	// seems to be inlined
-	boost::mutex& Name::mutex()
-	{
-		boost::call_once(initMoo, flag);
-		return moo2();
-	}
-
-	std::map<int, Name*>& Name::dictionary()
-	{
-		static std::map<int, Name*> d;
-		return d;
-	}
-
-	Name::NamMap& Name::namMap()
-	{
-		static NamMap n;
-		return n;
-	}
-
-	const Name& Name::getNullName()
-	{
-		boost::mutex::scoped_lock scoped_lock(mutex());
-		static const Name& nullName = declare("", 0);
-		return nullName;
-	}
-
-	const Name& Name::declare(const char* sName, int dictionaryIndex)
-	{
-		if (!sName)
-		{
-			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
-			return getNullName();
-		}
-
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			if (dictionaryIndex != -1)
-			{
-				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
-				dictionary()[dictionaryIndex] = iter->second;
-			}
-			return *iter->second;
-		}
-		else
-		{
-			Name* name = new Name(sName, dictionaryIndex);
-			namMap()[sName] = name;
-			dictionary()[dictionaryIndex] = name;
-			return *name;
-		}
-	}
-
-	const Name& Name::lookup(const std::string& sName)
-	{
-		RBXASSERT(sName.size() < 50);
-		boost::mutex::scoped_lock scoped_lock(mutex());
-
-		NamMap::iterator iter = namMap().find(sName);
-		if (iter != namMap().end())
-		{
-			return *iter->second;
-		}
-		else
-		{
-			return getNullName();
-		}
-	}
-
-	const Name& Name::lookup(const char* sName)
-	{
-		if (!sName)
-		{
-			return getNullName();
-		}
-
-		return lookup(std::string(sName));
-	}
-}
+} }

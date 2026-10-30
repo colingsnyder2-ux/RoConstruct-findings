@@ -1,226 +1,70 @@
-// from server: 62% by colin
-// roc-lang: cpp
 // roc-cl: 50727
+// roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Server.cpp
+// roc-lib: rbxgs-dll roc_espeon_deserializerefslot41acaf6a50338696.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <RakPeer.h>
-#include "Server.h"
-#include "IdManager.h"
-#include "NetworkSettings.h"
-#include "PacketIds.h"
-#include "API.h"
-#include "util/Http.h"
-#include "util/standardout.h"
-#include <boost/thread.hpp>
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int, int), 2> server_startFunction(&RBX::Network::Server::start, "Start", "port", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int), 1>  f_disconnect(&RBX::Network::Server::stop, "Stop", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, int(void), 0> f_GetClientCount(&RBX::Network::Server::getClientCount, "GetClientCount", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(std::string, std::string, int), 3> server_setServerManagerPingFunction(&RBX::Network::Server::setServerManagerPing, "SetServerManagerPing", "pingUrl", "publicIP", "thumbnailId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-static bool isReplicator(boost::shared_ptr<RBX::Instance> instance)
-{
-	return dynamic_cast<const RBX::Network::Replicator*>(instance.get()) != NULL;
-}
-
-namespace RBX
-{
-	namespace Network
-	{
-		Server::Server()
-			: outgoingPort(0)
-		{
-			setName("NetworkServer");
-			rakPeer->SetMaximumIncomingConnections(32);
-			rakPeer->SetIncomingPassword(API::version.c_str(), (int)API::version.size());
-			updateLogger();
-		}
-
-		Server::~Server() {}
-
-		void Server::stop(int blockDuration)
-		{
-			if (rakPeer->IsActive())
-				rakPeer->Shutdown(blockDuration);
-
-			removeAllChildren();
-		}
-
-		void Server::start(int port, int threadSleepTime)
-		{
-			SocketDescriptor d(port, "");
-
-			if (!rakPeer->Startup(32, threadSleepTime, &d, 1))
-				throw std::runtime_error("Failed to start network server");
-
-			outgoingPort = port;
-			StandardOut::singleton()->print(MESSAGE_INFO, "Starting network server on port %d", port);
-
-			unsigned numAddresses = rakPeer->GetNumberOfAddresses();
-
-			StandardOut::singleton()->print(MESSAGE_INFO, "IP addresses:");
-
-			for (unsigned i = 0; i < numAddresses; i++)
-			{
-				StandardOut::singleton()->print(MESSAGE_INFO, "%s", rakPeer->GetLocalIP(i));
-			}
-
-			updateNetworkSimulator();
-		}
-
-		int Server::getClientCount()
-		{
-			if (getChildren())
-			{
-				return std::count_if(getChildren()->begin(), getChildren()->end(), &isReplicator);
-			}
-			else
-			{
-				return 0;
-			}
-		}
-
-		void Server::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			if (oldProvider)
-			{
-				players->setConnection(NULL);
-
-				if (rakPeer->IsActive())
-					rakPeer->Shutdown(1000);
-
-				removeAllChildren();
-
-				players.reset();
-			}
-
-			Peer::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider)
-			{
-				players = shared_from(newProvider->create<Players>());
-
-				players->setConnection(peerInterface());
-			}
-		}
-
-		void Server::setServerManagerPing(std::string pingUrl, std::string publicIP, int thumbnailId)
-		{
-			pingThread.reset(new worker_thread(boost::bind(&Server::ping, boost::weak_ptr<Server>(shared_from(this)), publicIP, thumbnailId, pingUrl), "rbx_serverping"));
-		}
-
-		bool Server::serverIsPresent(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return ServiceProvider::find<Server>(sp) != NULL;
-		}
-
-		PluginReceiveResult Server::OnReceive(RakPeerInterface* peer, Packet* packet)
-		{
-			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
-			if (result != RR_CONTINUE_PROCESSING)
-				return result;
-
-			if (packet->data[0] == ID_NEW_INCOMING_CONNECTION)
-			{
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_INFO, "New connection from %s\n", packet->systemAddress.ToString());
-
-					boost::shared_ptr<ClientProxy> proxy = Creatable::create<ClientProxy>(packet->systemAddress, this);
-					proxy->setParent(this);
-					proxy->sendTop();
-
-					event_IncommingConnection.fire(this, packet->systemAddress.ToString(), proxy);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Server::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-			}
-
-			return RR_CONTINUE_PROCESSING;
-		}
-
-		worker_thread::work_result Server::ping(boost::weak_ptr<Server> server, std::string publicIP, int thumbnailId, std::string pingUrl)
-		{
-			try
-			{
-				std::stringstream nameStream;
-
-				{
-					TextXmlWriter writer(nameStream);
-
-					XmlElement root(Name::declare("root", -1));
-
-					boost::shared_ptr<Server> s = server.lock();
-					if (!s)
-						return worker_thread::done;
-
-					root.addChild(new XmlElement(Name::declare("server", -1), publicIP));
-					root.addChild(new XmlElement(Name::declare("port", -1), s->outgoingPort));
-					root.addChild(new XmlElement(Name::declare("numPlayers", -1), s->players->numPlayers()));
-					root.addChild(new XmlElement(Name::declare("maxPlayers", -1), s->players->getMaxPlayers()));
-					root.addChild(new XmlElement(Name::declare("thumbnailId", -1), thumbnailId));
-
-					writer.serialize(&root);
-
-					nameStream.flush();
-				}
-
-				std::string response;
-				Http(pingUrl).post(nameStream, false, response);
-			}
-			catch (std::exception& exp)
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, exp);
-			}
-
-			boost::xtime xt;
-			boost::xtime_get(&xt, boost::TIME_UTC);
-
-			xt.sec += 10;
-
-			boost::thread::sleep(xt);
-
-			return worker_thread::more;
-		}
-
-		Server::ClientProxy::ClientProxy(SystemAddress systemAddress, Server* server)
-			: Replicator(systemAddress, server->peerInterface()),
-			  server(server)
-		{
-		}
-		
-		Server::ClientProxy::~ClientProxy() {}
-
-		void Server::ClientProxy::onSentMarker(long id)
-		{
-			sendPhysicsEnabled = true;
-		}
-
-		void Server::ClientProxy::sendTop()
-		{
-			RakNet::BitStream bitStream;
-
-			bitStream << (unsigned char)ID_SET_GLOBALS;
-
-			std::vector<Instance*>::iterator end = replicationContainers.end();
-
-			for (std::vector<Instance*>::iterator iter = replicationContainers.begin(); iter != end; iter++)
-			{
-				RBXASSERT(*iter != NULL);
-
-				serializeId(bitStream, *iter);
-				ServiceProvider::create<IdManager>(this)->addInstance(*iter);
-			}
-
-			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
-		}
-	}
+#pragma include_alias("reflection/function.h", "roc_espeon_machineheader2f6c7dcf10adead1.cpp")
+#pragma include_alias("reflection/signal.h", "roc_espeon_machineheader16e657153fe9fb6e.cpp")
+#pragma include_alias("reflection/type.h", "roc_espeon_machineheader4aaa2bdeb1c2b6c3.cpp")
+#pragma include_alias("reflection/reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/Reflection.h", "roc_espeon_machineheadera6fefc64bf3a6f9e.cpp")
+#pragma include_alias("reflection/enumconverter.h", "roc_espeon_machineheader297ae1c3351d4ab6.cpp")
+#pragma include_alias("util/Http.h", "roc_espeon_machineheader5b78b946a11cad23.cpp")
+#pragma include_alias("reflection/object.h", "roc_espeon_machineheadercadaaebe20af2047.cpp")
+#pragma include_alias("reflection/member.h", "roc_espeon_machineheader459d66d9acfae4ab.cpp")
+#pragma include_alias("reflection/descriptor.h", "roc_espeon_machineheader0acd23dba6f04ff5.cpp")
+#pragma include_alias("reflection/property.h", "roc_espeon_machineheadercfb6c68c9dd60df6.cpp")
+#pragma include_alias(<v8tree/Verb.h>, <roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp>)
+#pragma include_alias("v8tree/Verb.h", "roc_espeon_insertnativeheader1a746c4cc8c6ae06.cpp")
+#pragma include_alias(<util/Name.h>, <roc_espeon_insertnativeheader115b7bccd0a9061e.cpp>)
+#pragma include_alias("util/Name.h", "roc_espeon_insertnativeheader115b7bccd0a9061e.cpp")
+#pragma include_alias(<util/Debug.h>, <roc_espeon_insertnativeheader5fe96130a83d2e88.cpp>)
+#pragma include_alias("util/Debug.h", "roc_espeon_insertnativeheader5fe96130a83d2e88.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_espeon_nativeinstanceguidportablea1682bda32c99cd2.cpp")
+#define _CPPUNWIND 1
+#include "v8tree/Instance.h"
+#include <map>
+#include <vector>
+namespace RakNet {class BitStream;}
+// Native Streaming.h WaitItem; target map is at +0x2b54.
+struct WaitItem {const RBX::Reflection::RefPropertyDescriptor* desc; boost::shared_ptr<RBX::Instance> instance;};
+bool resolveId(const RBX::Guid::Data&,RBX::Instance*&);
+boost::shared_ptr<RBX::Instance> acquireInstance(RBX::Instance*);
+// Borrowed descriptor view: target calls setter at vtable +0x34. Other slots unidentified.
+struct RefSetterView {
+virtual void slot0()=0;
+virtual void slot1()=0;
+virtual void slot2()=0;
+virtual void slot3()=0;
+virtual void slot4()=0;
+virtual void slot5()=0;
+virtual void slot6()=0;
+virtual void slot7()=0;
+virtual void slot8()=0;
+virtual void slot9()=0;
+virtual void slot10()=0;
+virtual void slot11()=0;
+virtual void slot12()=0;
+virtual void setRefValue(RBX::Reflection::DescribedBase*,RBX::Reflection::DescribedBase*) const=0;
+};
+class IdSerializerRecovery {
+public:
+ void deserializeId(RakNet::BitStream&,RBX::Guid::Data&);
+ void deserializeRef(RBX::Reflection::Property&,RakNet::BitStream&);
+};
+void IdSerializerRecovery::deserializeRef(RBX::Reflection::Property& property,RakNet::BitStream& stream) {
+ RBX::Guid::Data id;
+ deserializeId(stream,id);
+ RBX::Instance* owner=static_cast<RBX::Instance*>(property.getInstance());
+ if(owner) {
+  const RBX::Reflection::RefPropertyDescriptor& desc=static_cast<const RBX::Reflection::RefPropertyDescriptor&>(property.getDescriptor());
+  RBX::Instance* value;
+  if(resolveId(id,value)) reinterpret_cast<const RefSetterView*>(&desc)->setRefValue(owner,value);
+  else {
+   WaitItem wi={&desc,acquireInstance(owner)};
+   typedef std::map<RBX::Guid::Data,std::vector<WaitItem> > WaitMap;
+   (*reinterpret_cast<WaitMap*>(reinterpret_cast<char*>(this)+0x2b54))[id].push_back(wi);
+  }
+ }
 }

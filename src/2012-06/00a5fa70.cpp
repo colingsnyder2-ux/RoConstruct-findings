@@ -1,8 +1,8 @@
-// from server: 0% by TrollStein
+// from server: 38% by colin
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTColorPageStandard.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTColorPageStandard.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTColorPageStandard.cpp : implementation file

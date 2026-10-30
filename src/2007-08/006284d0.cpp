@@ -1,45 +1,28 @@
-// from server: 55% by colin
-struct AssemblyStage {
-    float field0;
-    float field4;
-    float field8;
-    float fieldC;
-    float field10;
-    float field14;
-    float field18;
-    bool onEngineChanging(void* p);
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll util/RunningAverage.cpp
 
-extern "C" void __cdecl sub_5AB780(float* out, float* in);
-extern "C" void __cdecl sub_5AC270(float* out, float* in);
-extern "C" void* __cdecl sub_5AA880(void* self, void* p);
-extern "C" float __cdecl sub_628390(float* v);
+// Candidate translation unit (score above; library headers required).
+#include "util/RunningAverage.h"
+#include "util/Math.h"
 
-bool AssemblyStage::onEngineChanging(void* p)
+namespace RBX
 {
-    float a[3];
-    float b[3];
-    a[0] = field0 - *(float*)((char*)p + 0x24);
-    a[1] = field4 - *(float*)((char*)p + 0x28);
-    a[2] = field8 - *(float*)((char*)p + 0x2c);
-    sub_5AB780(a, b);
-    sub_5AC270(b, a);
+	void RunningAverageState::update(const G3D::CoordinateFrame& cofm, float radius)
+	{
+		this->position = this->position * 0.75f + cofm.translation * 0.25f;
+		this->angles = this->angles * 0.75f + Quaternion(cofm.rotation) * (radius * 0.25f);
+	}
 
-    if (!(a[0] > *(float*)((char*)p + 0x34)))
-        return false;
-
-    float* q = (float*)sub_5AA880((char*)p + 0x34, b);
-    float s = *(float*)((char*)p + 0x34);
-
-    float v[4];
-    v[0] = fieldC - q[0] * s;
-    v[1] = field10 - q[1] * s;
-    v[2] = field14 - q[2] * s;
-    v[3] = field18 - q[3] * s;
-
-    float d = sub_628390(v);
-    if (!(d > *(float*)((char*)p + 0x34)))
-        return false;
-
-    return true;
+	bool RunningAverageState::withinTolerance(const G3D::CoordinateFrame& cofm, float radius, float tolerance)
+	{
+		G3D::Vector3 deltaPos = Math::vector3Abs(this->position - cofm.translation);
+		if (Math::maxAxisLength(deltaPos) > tolerance)
+			return false;
+		Quaternion deltaAngles = Quaternion(cofm.rotation) * radius;
+		if ((this->angles - deltaAngles).maxComponent() > tolerance)
+			return false;
+		return true;
+	}
 }

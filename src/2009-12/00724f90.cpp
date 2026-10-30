@@ -1,21 +1,11 @@
-// from server: 48% by atomic.potato
-struct S
-{
-    int pad0[4];
-    int* p10;
-    int pad1[3];
-    int* p20;
-    int pad2[3];
-    int* p30;
-    int pad3[3];
-    int value;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
 
-    void f();
-};
-
-void S::f()
-{
-    *p10 = value;
-    *p20 = value;
-    *p30 = value - value;
-}
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

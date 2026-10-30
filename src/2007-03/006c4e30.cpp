@@ -1,2738 +1,1296 @@
-// from server: 36% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbasetabctrl.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPaneAutoHidePanel.cpp
 
 // Candidate translation unit (score above; library headers required).
-// This is a part of the Microsoft Foundation Classes C++ library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
+// XTPDockingPaneAutoHidePanel.cpp : implementation of the CXTPDockingPaneAutoHidePanel class.
 //
-// This source code is only intended as a supplement to the
-// Microsoft Foundation Classes Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the
-// Microsoft Foundation Classes product.
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "afxcontrolbarutil.h"
-#include "afxbasetabctrl.h"
-#include "afxdockablepane.h"
-#include "afxdockablepaneadapter.h"
-#include "afxbasetabbedpane.h"
-#include "afxpaneframewnd.h"
-#include "afxdockingmanager.h"
-#include "afxglobalutils.h"
-#include "afxmdiclientareawnd.h"
-#include "afxtooltipmanager.h"
-#include "afxribbonres.h"
+#include "Common/Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPImageManager.h"
+#include "Common/XTPResourceManager.h"
+#include "TabManager/XTPTabManager.h"
+
+#include "XTPDockingPane.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneTabbedContainer.h"
+#include "XTPDockingPaneAutoHidePanel.h"
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPaneSplitterContainer.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CMFCTabDropTarget message handlers
+#define TID_CHECKACTIVE 1
+#define TID_CLOSE 4
+#define TID_SLIDEIN 2
+#define TID_SLIDEOUT 3
 
-BOOL CMFCTabDropTarget::Register(CMFCBaseTabCtrl *pOwner)
+double CXTPDockingPaneAutoHideWnd::m_dAnimationDelay = -1;
+int CXTPDockingPaneAutoHideWnd::m_nAnimationInterval = 16;                 // smother animation
+int CXTPDockingPaneAutoHideWnd::m_nAnimationDuration = 128;                // fast slide completion
+BOOL CXTPDockingPaneAutoHidePanel::m_bCloseActiveWindow = TRUE;
+DWORD CXTPDockingPaneAutoHideWnd::m_nMouseHoverDelay = HOVER_DEFAULT;
+UINT CXTPDockingPaneAutoHideWnd::m_nInactiveCollapseDelay = 100;
+
+void CXTPDockingPaneAutoHideWnd::GetMinMaxInfo (LPMINMAXINFO pMinMaxInfo, BOOL bIncludeSplitter /*= TRUE*/) const
 {
-	m_pOwner = pOwner;
-	return COleDropTarget::Register(pOwner);
+	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
+	pMinMaxInfo->ptMaxTrackSize = CPoint(32000, 32000);
+
+	if (!m_pPane || !m_pPane->m_pSelectedPane)
+		return;
+
+	m_pPane->m_pSelectedPane->GetMinMaxInfo(pMinMaxInfo);
+	m_pPane->AdjustMinMaxInfoClientRect(pMinMaxInfo, TRUE);
+
+	if (!bIncludeSplitter)
+		return;
+
+	if (m_direction == xtpPaneDockLeft || m_direction == xtpPaneDockRight)
+	{
+		pMinMaxInfo->ptMinTrackSize.x += 4;
+		pMinMaxInfo->ptMaxTrackSize.x += 4;
+	}
+	else
+	{
+		pMinMaxInfo->ptMinTrackSize.y += 4;
+		pMinMaxInfo->ptMaxTrackSize.y += 4;
+	}
 }
 
-DROPEFFECT CMFCTabDropTarget::OnDragEnter(CWnd* /*pWnd*/, COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
+CXTPDockingPaneAutoHideWnd::CXTPDockingPaneAutoHideWnd(CXTPDockingPaneAutoHidePanel* pPanel, CXTPDockingPaneTabbedContainer* pPane)
+	: m_pPanel(pPanel), m_pPane(pPane)
 {
-	ENSURE(m_pOwner != NULL);
+	ASSERT(pPane);
+	if (!pPane)
+		return;
 
-	if (!CMFCToolBar::IsCustomizeMode() || !pDataObject->IsDataAvailable(CMFCToolBarButton::m_cFormat))
+	ASSERT(pPane->m_pSelectedPane);
+	if (!pPane->m_pSelectedPane)
+		return;
+
+	m_bTracking = FALSE;
+
+	m_direction = m_pPanel->GetDirection();
+	m_bHoriz = (m_direction == xtpPaneDockTop || m_direction == xtpPaneDockBottom);
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+
+	CWnd* pSite = pManager->GetSite();
+	CXTPDockingPaneBase* pTopPane = pManager->GetTopPane();
+
+	CRect rcClient = pTopPane->GetPaneWindowRect();
+
+	MINMAXINFO mmInfo;
+	GetMinMaxInfo(&mmInfo);
+
+	CSize szDocking = CSize(
+		max(mmInfo.ptMinTrackSize.x, min(mmInfo.ptMaxTrackSize.x, pPane->m_pSelectedPane->m_szDocking.cx + 4)),
+		max(mmInfo.ptMinTrackSize.y, min(mmInfo.ptMaxTrackSize.y, pPane->m_pSelectedPane->m_szDocking.cy + 4)));
+
+
+	switch (pManager->GetRTLDirection(m_direction))
 	{
-		return DROPEFFECT_NONE;
+		case xtpPaneDockLeft:
+			rcClient.right = rcClient.left + szDocking.cx;
+			break;
+
+		case xtpPaneDockRight:
+			rcClient.left = rcClient.right - szDocking.cx;
+			break;
+
+		case xtpPaneDockTop:
+			rcClient.bottom = rcClient.top + szDocking.cy;
+			break;
+
+		case xtpPaneDockBottom:
+			rcClient.top = rcClient.bottom - szDocking.cy;
+			break;
 	}
 
-	return m_pOwner->OnDragEnter(pDataObject, dwKeyState, point);
-}
+	pSite->ScreenToClient(&rcClient);
 
-void CMFCTabDropTarget::OnDragLeave(CWnd* /*pWnd*/)
-{
-	ENSURE(m_pOwner != NULL);
-	m_pOwner->OnDragLeave();
-}
+	CRect rcAvail, rc;
+	BOOL bResizable = GetAvailableRect(rcAvail, rc);
 
-DROPEFFECT CMFCTabDropTarget::OnDragOver(CWnd* /*pWnd*/, COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
-{
-	ENSURE(m_pOwner != NULL);
+	HCURSOR hCursor = !bResizable || pManager->IsSplittersLocked() ? AfxGetApp()->LoadStandardCursor(IDC_ARROW) :
+		XTPResourceManager()->LoadCursor(!m_bHoriz ? XTP_IDC_HSPLITBAR :  XTP_IDC_VSPLITBAR);
+	m_rcWindow = rcClient;
 
-	if (!CMFCToolBar::IsCustomizeMode() || !pDataObject->IsDataAvailable(CMFCToolBarButton::m_cFormat))
+	//pSite->UpdateWindow();
+	//pSite->SetRedraw(FALSE);
+
+	CreateEx(pSite->GetExStyle() & WS_EX_LAYOUTRTL, AfxRegisterWndClass(0, hCursor), _T(""),
+		WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, rcClient, pSite, 0);
+
+	//pSite->SetRedraw(TRUE);
+
+
+	m_nSlideStep = 0;
+	m_nStepsCount = 1;
+
+	if (m_dAnimationDelay != .0 && m_nAnimationInterval != 0)
 	{
-		if (m_pOwner != NULL)
+		if (m_dAnimationDelay > 0)
 		{
-			int nTabIndex = m_pOwner->GetTabFromPoint(point);
-
-			if (nTabIndex != -1 && nTabIndex != m_pOwner->GetActiveTab())
-			{
-				m_pOwner->SetActiveTab(nTabIndex);
-			}
+			// keep the animation delay behaviour relative to 50 ms frame interval as per original
+			// implementation
+			m_nStepsCount = int((m_bHoriz ? m_rcWindow.Width() : m_rcWindow.Height()) * m_dAnimationDelay * 50 / m_nAnimationInterval);
 		}
-
-		return(DROPEFFECT_NONE);
+		else
+		{
+			m_nStepsCount = m_nAnimationDuration/m_nAnimationInterval;
+		}
 	}
+	if (m_nStepsCount < 1) m_nStepsCount = 1;
 
 
-	return m_pOwner->OnDragOver(pDataObject, dwKeyState, point);
+	m_bSlideOut = FALSE;
+	if (m_nStepsCount > 1)
+		SetTimer(TID_SLIDEIN, m_nAnimationInterval, NULL);
+	DoSlideStep();
+	m_pPane->ShowWindow(SW_SHOW);
+
+	SetTimer(TID_CHECKACTIVE, m_nInactiveCollapseDelay, NULL);
+
+	m_nDeactivationCount = 6;
+
 }
 
-DROPEFFECT CMFCTabDropTarget::OnDropEx(CWnd* /*pWnd*/, COleDataObject* pDataObject, DROPEFFECT dropEffect, DROPEFFECT /*dropList*/, CPoint point)
+CXTPDockingPaneManager* CXTPDockingPaneAutoHideWnd::GetDockingPaneManager() const
 {
-	ENSURE(m_pOwner != NULL);
+	ASSERT(m_pPanel);
+	return m_pPanel ? m_pPanel->GetDockingPaneManager() : NULL;
+}
 
-	if (!CMFCToolBar::IsCustomizeMode() || !pDataObject->IsDataAvailable(CMFCToolBarButton::m_cFormat))
+
+void CXTPDockingPaneAutoHideWnd::DoSlideStep()
+{
+	CRect rc(m_rcWindow);
+
+	switch (m_direction)
 	{
-		return DROPEFFECT_NONE;
+		case xtpPaneDockLeft:
+			rc.right = rc.left + (m_nSlideStep + 1) * m_rcWindow.Width() / m_nStepsCount;
+			break;
+
+		case xtpPaneDockRight:
+			rc.left = rc.right - (m_nSlideStep + 1) * m_rcWindow.Width() / m_nStepsCount;
+			break;
+
+		case xtpPaneDockTop:
+			rc.bottom = rc.top + (m_nSlideStep + 1) * m_rcWindow.Height() / m_nStepsCount;
+			break;
+
+		case xtpPaneDockBottom:
+			rc.top = rc.bottom - (m_nSlideStep + 1) * m_rcWindow.Height() / m_nStepsCount;
+			break;
+	}
+	SetWindowPos(&CWnd::wndTop, rc.left, rc.top, rc.Width(), rc.Height(), SWP_SHOWWINDOW | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
+	Invalidate(FALSE);
+}
+
+void CXTPDockingPaneAutoHideWnd::RecalcLayout(BOOL /*bNotify*/)
+{
+	if (!m_pPane || !m_pPane->GetSafeHwnd())
+		return;
+
+	AFX_SIZEPARENTPARAMS layout;
+	layout.bStretch = TRUE;
+	GetClientRect(&layout.rect);
+	CRect rcClient(layout.rect);
+	layout.hDWP = ::BeginDeferWindowPos(8); // reasonable guess
+
+	CRect rcPane(CPoint(0, 0), m_rcWindow.Size());
+
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			rcPane.OffsetRect(- m_rcWindow.Width() + rcClient.Width(), 0);
+			rcPane.right -= 4;
+			break;
+
+		case xtpPaneDockTop:
+			rcPane.OffsetRect(0, - m_rcWindow.Height() + rcClient.Height());
+			rcPane.bottom -= 4;
+			break;
+
+		case xtpPaneDockRight:
+			rcPane.left += 4;
+			break;
+
+		case xtpPaneDockBottom:
+			rcPane.top += 4;
+			break;
 	}
 
-	return m_pOwner->OnDrop(pDataObject, dropEffect, point) ? dropEffect : DROPEFFECT_NONE;
+	m_pPane->OnSizeParent(this, rcPane, &layout);
+
+	if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
+		TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CMFCBaseTabCtrl
+IMPLEMENT_DYNAMIC(CXTPDockingPaneAutoHideWnd, CMiniFrameWnd)
 
-int CMFCBaseTabCtrl::AFX_TAB_TEXT_MARGIN = 4;
-int CMFCBaseTabCtrl::AFX_TAB_IMAGE_MARGIN = 4;
-
-#define AFX_DEFAULT_TAB_BORDER_SIZE 2
-
-UINT AFX_WM_ON_RENAME_TAB = ::RegisterWindowMessage(_T("AFX_WM_ON_RENAME_TAB"));
-UINT AFX_WM_CHANGE_ACTIVE_TAB = ::RegisterWindowMessage(_T("AFX_WM_ONCHANGE_ACTIVE_TAB"));
-UINT AFX_WM_ON_MOVE_TAB = ::RegisterWindowMessage(_T("AFX_WM_ON_MOVE_TAB"));
-UINT AFX_WM_CHANGING_ACTIVE_TAB = ::RegisterWindowMessage(_T("AFX_WM_ON_CHANGING_ACTIVE_TAB"));
-UINT AFX_WM_ON_GET_TAB_TOOLTIP = ::RegisterWindowMessage(_T("AFX_WM_ON_GET_TAB_TOOLTIP"));
-
-IMPLEMENT_DYNAMIC(CMFCBaseTabCtrl, CWnd)
-
-CMFCBaseTabCtrl::CMFCBaseTabCtrl()
-{
-	m_bAutoDestroyWindow = FALSE;
-	m_iActiveTab = -1;
-	m_iTabBeforeDrag = -1;
-	m_iTabsNum = 0;
-
-	m_sizeImage = CSize(0, 0);
-	m_hImageList = NULL;
-
-	m_iCurTab = -1;
-	m_nNextTabID = 1;
-
-	m_bCustomToolTips = FALSE;
-
-	m_bHideInactiveWnd = TRUE;
-
-	m_location = LOCATION_BOTTOM;
-	m_bReadyToDetach = FALSE;
-	m_ptHot = CPoint(0, 0);
-	m_nOffsetFromTabLeft = 0;
-
-	m_iHighlighted = -1;
-	m_iPressed = -1;
-
-	m_bActivateOnBtnUp = FALSE;
-
-	m_bEnableTabSwap = TRUE;
-	m_nRestoredActiveTabID = 0;
-
-	m_pDockingBarWrapperRTC = NULL;
-
-	m_bEnableWrapping = FALSE;
-
-	m_clrActiveTabBk = (COLORREF) -1;
-	m_clrActiveTabFg = (COLORREF) -1;
-
-	m_nTabBorderSize = AFX_DEFAULT_TAB_BORDER_SIZE;
-
-	m_nTabsHeight = 0;
-
-	// in-place editing
-	m_pInPlaceEdit = NULL;
-	m_iEditedTab = -1;
-
-	m_bIsInPlaceEdit = FALSE;
-	m_bHideSingleTab = FALSE;
-
-	m_bLabelNoPrefix = FALSE;
-	m_bActivateLastVisibleTab = FALSE;
-	m_bHighLightTabs = FALSE;
-
-	m_bIsAutoColor = FALSE;
-	m_bIsDefaultAutoColor = TRUE;
-
-	m_bIsDlgControl = FALSE;
-
-	m_iLastActiveTab = -1;
-	m_bActivateLastActiveTab = FALSE;
-
-	m_bIsMDITab = FALSE;
-	m_bSetActiveTabFired = FALSE;
-	m_bUserSelectedTab = FALSE;
-
-	m_bSetActiveTabByMouseClick = FALSE;
-	m_bActivateTabOnRightClick = FALSE;
-
-	m_bWindowPosChanged = FALSE;
-
-	m_pToolTip = NULL;
-	m_pToolTipClose = NULL;
-
-	m_bTabCloseButtonHighlighted = FALSE;
-	m_bTabCloseButtonPressed = FALSE;
-	m_rectCloseButton.SetRectEmpty();
-}
-
-CMFCBaseTabCtrl::~CMFCBaseTabCtrl()
-{
-}
-
-//{{AFX_MSG_MAP(CMFCBaseTabCtrl)
-BEGIN_MESSAGE_MAP(CMFCBaseTabCtrl, CWnd)
+BEGIN_MESSAGE_MAP(CXTPDockingPaneAutoHideWnd, CMiniFrameWnd)
+	ON_WM_PAINT()
+	ON_WM_TIMER()
+	ON_WM_CLOSE()
 	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_LBUTTONDBLCLK()
 	ON_WM_MOUSEMOVE()
-	ON_WM_CANCELMODE()
-	ON_WM_DESTROY()
-	ON_WM_CREATE()
-	ON_WM_SYSCOLORCHANGE()
-	ON_WM_WINDOWPOSCHANGED()
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXT, 0, 0xFFFF, &CMFCBaseTabCtrl::OnNeedTipText)
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
-//}}AFX_MSG_MAP
 
-/////////////////////////////////////////////////////////////////////////////
-// CMFCBaseTabCtrl message handlers
 
-void CMFCBaseTabCtrl::CleanUp()
+void CXTPDockingPaneAutoHideWnd::CloseWindow()
 {
-	for (int i = 0; i < m_iTabsNum; i ++)
+	if (!IsWindow(m_hWnd))
+		return;
+
+	ShowWindow(SW_HIDE);
+
+	if (m_pPane && m_pPane->GetSafeHwnd() && m_pPane->GetParent() == this)
 	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
-
-		// we need to delete tab info only in the case the contained window is not
-		// derived from CPane, because CPane detects that it's
-		// tabbed while processing OnDestroy and removes itself from the parent tabbed
-		// window.
-		if (pTab->m_pWnd->m_hWnd == NULL || ::IsWindow(pTab->m_pWnd->m_hWnd))
-		{
-			BOOL bDeleteTabInfo = !pTab->m_pWnd->IsKindOf(RUNTIME_CLASS(CPane));
-
-			if (m_bAutoDestroyWindow)
-			{
-				pTab->m_pWnd->DestroyWindow();
-			}
-
-			if (bDeleteTabInfo || !m_bAutoDestroyWindow)
-			{
-				delete pTab;
-			}
-		}
+		m_pPane->ShowWindow(SW_HIDE);
+		m_pPane->SetDockingSite(GetDockingPaneManager()->GetSite());
 	}
+	m_pPane = 0;
 
-	CTooltipManager::DeleteToolTip(m_pToolTip);
-	CTooltipManager::DeleteToolTip(m_pToolTipClose);
+	if (m_pPanel && m_pPanel->m_pActiveWnd == this)
+		m_pPanel->m_pActiveWnd = 0;
 
-	m_arTabs.RemoveAll();
-	m_iTabsNum = 0;
-	m_iActiveTab = -1;
+	PostMessage(WM_CLOSE);
 }
 
-void CMFCBaseTabCtrl::AddTab(CWnd* pNewWnd, LPCTSTR lpszName, UINT uiImageId, BOOL bDetachable)
+void CXTPDockingPaneAutoHideWnd::PostNcDestroy()
 {
-	if (pNewWnd->GetSafeHwnd() != NULL && pNewWnd->GetDlgCtrlID() == -1)
+	if (m_pPanel && m_pPanel->m_pActiveWnd == this)
+		m_pPanel->m_pActiveWnd = 0;
+
+	if (m_dwRef <= 1)
 	{
-		ASSERT(FALSE);
-		TRACE0("Unable to add a new tab with control bar ID -1. \n");
+		delete this;
+	}
+	else
+	{
+		InternalRelease();
+	}
+}
+
+void CXTPDockingPaneAutoHideWnd::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == TID_CLOSE)
+	{
+		CloseWindow();
 		return;
 	}
 
-	CWnd* pWndToAdd = CreateWrapper(pNewWnd, lpszName, bDetachable);
-	ASSERT_VALID(pWndToAdd);
-
-	InsertTab(pWndToAdd, lpszName, -1, uiImageId, bDetachable);
-}
-
-void CMFCBaseTabCtrl::AddTab(CWnd* pTabWnd, UINT uiResTabLabel, UINT uiImageId, BOOL bDetachable)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pTabWnd);
-
-	if (pTabWnd->GetDlgCtrlID() == -1)
-	{
-		ASSERT(FALSE);
-		TRACE0("Unable to add a new tab with control bar ID -1. \n");
+	if (!m_pPane)
 		return;
-	}
 
-	CString strLabel;
-	ENSURE(strLabel.LoadString(uiResTabLabel));
-
-	CWnd* pWndToAdd = CreateWrapper(pTabWnd, strLabel, bDetachable);
-	ASSERT_VALID(pWndToAdd);
-
-	AddTab(pWndToAdd, strLabel, uiImageId, bDetachable);
-}
-
-void CMFCBaseTabCtrl::InsertTab(CWnd* pNewWnd, LPCTSTR lpszTabLabel, int nInsertAt, UINT uiImageId, BOOL bDetachable)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pNewWnd);
-	ENSURE(lpszTabLabel != NULL);
-
-	CWnd* pWndToAdd = CreateWrapper(pNewWnd, lpszTabLabel, bDetachable);
-	ASSERT_VALID(pWndToAdd);
-
-	if (!IsWindowVisible())
-	{
-		ShowWindow(SW_SHOW);
-	}
-
-	if (nInsertAt < 0 || nInsertAt > m_iTabsNum)
-	{
-		nInsertAt = m_iTabsNum;
-	}
-
-	CWnd* pActiveWnd = GetActiveWnd();
-
-	// can't detach non-docking control bar derived objects
-	if (!pWndToAdd->IsKindOf(RUNTIME_CLASS(CDockablePane)))
-	{
-		bDetachable = FALSE;
-	}
-
-	m_arTabs.InsertAt(nInsertAt, new CMFCTabInfo(lpszTabLabel, uiImageId, pWndToAdd, m_nNextTabID, bDetachable));
-
-	m_iTabsNum++;
-
-	if (m_pToolTip->GetSafeHwnd() != NULL)
-	{
-		CRect rectEmpty(0, 0, 0, 0);
-		m_pToolTip->AddTool(this, m_bCustomToolTips ? LPSTR_TEXTCALLBACK : lpszTabLabel, &rectEmpty, m_nNextTabID);
-	}
-
-	m_nNextTabID ++;
-
-	OnChangeTabs();
-	RecalcLayout();
-
-	if (m_iTabsNum == 1)
-	{
-		//----------------------------------------
-		// First tab automatically becames active:
-		//----------------------------------------
-		SetActiveTab(0);
-	}
-	else
-	{
-		m_iLastActiveTab = m_iActiveTab;
-
-		if (m_iActiveTab == nInsertAt)
-		{
-			m_iLastActiveTab++;
-
-			if (m_bHideInactiveWnd && pActiveWnd != NULL)
-			{
-				pActiveWnd->ShowWindow(SW_HIDE);
-			}
-
-			pWndToAdd->ShowWindow(SW_SHOWNORMAL);
-		}
-		else if (m_bHideInactiveWnd)
-		{
-			if (pWndToAdd->GetSafeHwnd() != NULL)
-			{
-				pWndToAdd->ShowWindow(SW_HIDE);
-			}
-		}
-	}
-
-	if (!m_bHideInactiveWnd && pActiveWnd != NULL && pActiveWnd->GetSafeHwnd() != NULL)
-	{
-		pActiveWnd->BringWindowToTop();
-	}
-}
-
-void CMFCBaseTabCtrl::InsertTab(CWnd* pNewWnd, UINT uiResTabLabel, int nInsertAt, UINT uiImageId, BOOL bDetachable)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pNewWnd);
-
-	if (pNewWnd->GetDlgCtrlID() == -1)
-	{
-		ASSERT(FALSE);
-		TRACE0("Unable to add a new tab with control bar ID -1. \n");
+	if (m_pPanel && m_pPanel->m_pActiveWnd != this)
 		return;
-	}
 
-	CString strLabel;
-	ENSURE(strLabel.LoadString(uiResTabLabel));
-
-	CWnd* pWndToAdd = CreateWrapper(pNewWnd, strLabel, bDetachable);
-	ASSERT_VALID(pWndToAdd);
-
-	InsertTab(pWndToAdd, strLabel, nInsertAt, uiImageId, bDetachable);
-}
-
-BOOL CMFCBaseTabCtrl::RemoveTab(int iTab, BOOL bRecalcLayout)
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
+	if (nIDEvent == TID_CHECKACTIVE)
 	{
-		TRACE(_T("RemoveTab: illegal tab number %d\n"), iTab);
-		return FALSE;
-	}
+		if (m_bTracking)
+			return;
 
-	if (m_iTabsNum == 1)
-	{
-		RemoveAllTabs();
-		return TRUE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	if (m_pToolTip->GetSafeHwnd() != NULL)
-	{
-		m_pToolTip->DelTool(this, pTab->m_iTabID);
-	}
-
-	//----------------------------
-	// Detach tab from collection:
-	//----------------------------
-	m_arTabs.RemoveAt(iTab);
-	m_iTabsNum --;
-
-	//-----------------------------------
-	// Destroy tab window and delete tab:
-	//-----------------------------------
-	if (m_bAutoDestroyWindow)
-	{
-		ASSERT_VALID(pTab->m_pWnd);
-		pTab->m_pWnd->DestroyWindow();
-	}
-
-	delete pTab;
-
-	int iActiveTab = m_iActiveTab;
-	if (m_iActiveTab >= iTab)
-	{
-		if (m_bActivateLastVisibleTab)
+		CPoint pt;
+		GetCursorPos(&pt);
+		if (!m_pPane->IsActive() && !CXTPWindowRect(this).PtInRect(pt) && !CXTPWindowRect(m_pPanel).PtInRect(pt))
 		{
-			GetLastVisibleTab(iActiveTab);
-		}
-		else
-		{
-			// Find the next best tab to be activated
-			for (int i = m_iTabsNum - 1; i >= 0; --i)
+			if (!m_bSlideOut)
 			{
-				CMFCTabInfo* pNextActiveTab = (CMFCTabInfo*) m_arTabs [i];
-				ASSERT_VALID(pNextActiveTab);
-
-				if (i < iTab && iActiveTab >= 0 && iActiveTab < m_iTabsNum)
+				if (--m_nDeactivationCount <= 0)
 				{
-					break;
-				}
+					m_nDeactivationCount = 0;
 
-				if (pNextActiveTab->m_bVisible)
-				{
-					iActiveTab = i;
-				}
-			}
-		}
+					InternalAddRef();
 
-		m_iActiveTab = -1;
-	}
-
-	OnChangeTabs();
-
-	if (bRecalcLayout)
-	{
-		RecalcLayout();
-		if (iActiveTab != -1)
-		{
-			if (m_bActivateLastActiveTab &&(m_iLastActiveTab != -1))
-			{
-				int iLastActiveTab = m_iLastActiveTab;
-				if (iTab < m_iLastActiveTab)
-				{
-					iLastActiveTab = m_iLastActiveTab -1;
-				}
-
-				int iTabToActivate = -1;
-				GetFirstVisibleTab(iLastActiveTab, iTabToActivate);
-
-				SetActiveTab(iTabToActivate);
-			}
-			else
-			{
-				int iTabToActivate = -1;
-				GetFirstVisibleTab(iActiveTab, iTabToActivate);
-				SetActiveTab(iTabToActivate);
-			}
-
-			FireChangeActiveTab(m_iActiveTab);
-		}
-	}
-
-	return TRUE;
-}
-
-void CMFCBaseTabCtrl::RemoveAllTabs()
-{
-	m_iActiveTab = -1;
-	m_nNextTabID = 1;
-
-	while (m_iTabsNum > 0)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [m_iTabsNum - 1];
-		ASSERT_VALID(pTab);
-
-		m_iTabsNum--;
-
-		if (m_pToolTip->GetSafeHwnd() != NULL)
-		{
-			m_pToolTip->DelTool(this, pTab->m_iTabID);
-		}
-
-		if (m_bAutoDestroyWindow)
-		{
-			pTab->m_pWnd->DestroyWindow();
-		}
-
-		delete pTab;
-	}
-
-	if (m_pToolTip->GetSafeHwnd() != NULL)
-	{
-		ASSERT(m_pToolTip->GetToolCount() == 0);
-	}
-
-	m_arTabs.RemoveAll();
-
-	OnChangeTabs();
-
-	RecalcLayout();
-	FireChangeActiveTab((UINT)-1);
-}
-
-int CMFCBaseTabCtrl::GetVisibleTabsNum() const
-{
-	int nCount = 0;
-
-	for (int i = 0; i < m_iTabsNum; i++)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
-
-		if (pTab->m_bVisible)
-		{
-			nCount++;
-		}
-	}
-
-	return nCount;
-}
-
-BOOL CMFCBaseTabCtrl::ShowTab(int iTab, BOOL bShow /*= TRUE*/, BOOL bRecalcLayout /*= TRUE*/, BOOL bActivate)
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		TRACE(_T("ShowTab: illegal tab number %d\n"), iTab);
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	if (pTab->m_bVisible == bShow)
-	{
-		return TRUE;
-	}
-
-	int nVisibleCount = GetVisibleTabsNum();
-	pTab->m_bVisible = bShow;
-
-	int iActiveTab = (bShow ? m_iActiveTab : -1);
-
-	if (!bShow)
-	{
-		//----------
-		// Hide tab:
-		//----------
-		if (m_bHideInactiveWnd)
-		{
-			ASSERT_VALID(pTab->m_pWnd);
-			pTab->m_pWnd->ShowWindow(SW_HIDE);
-		}
-
-		if (iTab == m_iActiveTab)
-		{
-			// Find the next best tab to be activated
-			for (int i = m_iTabsNum - 1; i >= 0; --i)
-			{
-				CMFCTabInfo* pNextActiveTab = (CMFCTabInfo*) m_arTabs [i];
-				ASSERT_VALID(pNextActiveTab);
-
-				if (i < iTab && iActiveTab >= 0)
-				{
-					break;
-				}
-
-				if (pNextActiveTab->m_bVisible)
-				{
-					iActiveTab = i;
-				}
-			}
-
-			m_iActiveTab = -1;
-		}
-	}
-
-	// If there was no tab visible, activate this first one
-	if (bShow && nVisibleCount == 0)
-	{
-		iActiveTab = iTab;
-	}
-
-	if (bRecalcLayout)
-	{
-		RecalcLayout();
-	}
-
-	if (iActiveTab >= 0 && !bShow && m_iActiveTab == -1 || bActivate || nVisibleCount == 0)
-	{
-		SetActiveTab(iActiveTab);
-		FireChangeActiveTab(m_iActiveTab);
-	}
-
-	return TRUE;
-}
-
-CWnd* CMFCBaseTabCtrl::GetTabWnd(int iTab) const
-{
-	if (iTab >= 0 && iTab < m_iTabsNum)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-		ASSERT_VALID(pTab);
-
-		return pTab->m_pWnd;
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
-CWnd* CMFCBaseTabCtrl::GetTabWndNoWrapper(int iTab) const
-{
-	if (iTab >= 0 && iTab < m_iTabsNum)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-		ASSERT_VALID(pTab);
-
-		CDockablePaneAdapter* pWrapper = DYNAMIC_DOWNCAST(CDockablePaneAdapter, pTab->m_pWnd);
-		if (pWrapper != NULL)
-		{
-			return pWrapper->GetWrappedWnd();
-		}
-
-		return pTab->m_pWnd;
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
-BOOL CMFCBaseTabCtrl::GetTabRect(int iTab, CRect& rect) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	if (!pTab->m_bVisible)
-	{
-		rect.SetRectEmpty();
-		return FALSE;
-	}
-
-	rect = pTab->m_rect;
-	return TRUE;
-}
-
-int CMFCBaseTabCtrl::GetTabID(int iTab) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return -1;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_iTabID;
-}
-
-BOOL CMFCBaseTabCtrl::GetTabLabel(int iTab, CString& strLabel) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	strLabel = pTab->m_bIconOnly ? _T("") : pTab->m_strText;
-	return TRUE;
-}
-
-BOOL CMFCBaseTabCtrl::SetTabLabel(int iTab, const CString& strLabel)
-{
-	if (iTab < 0 || iTab >= m_iTabsNum || strLabel.IsEmpty())
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	pTab->m_strText = strLabel;
-
-	if (m_pToolTip->GetSafeHwnd() != NULL)
-	{
-		if (m_bCustomToolTips)
-		{
-			CToolInfo info;
-
-			m_pToolTip->GetToolInfo(info, this, pTab->m_iTabID);
-			m_pToolTip->DelTool(this, pTab->m_iTabID);
-
-			m_pToolTip->AddTool(this, LPSTR_TEXTCALLBACK, &info.rect, pTab->m_iTabID);
-		}
-		else
-		{
-			m_pToolTip->UpdateTipText(strLabel, this, pTab->m_iTabID);
-		}
-	}
-
-	if (pTab->m_pWnd->GetSafeHwnd() != NULL)
-	{
-		pTab->m_pWnd->SetWindowText(strLabel);
-	}
-
-	RecalcLayout();
-
-	if (iTab == m_iActiveTab)
-	{
-		//--------------------------------------------------
-		// Set text to the parent frame/docking control bar:
-		//--------------------------------------------------
-		CBaseTabbedPane* pTabControlBar = DYNAMIC_DOWNCAST(CBaseTabbedPane, GetParent());
-		if (pTabControlBar != NULL) // tabbed dock bar - redraw caption only in this case
-		{
-			// miniframe will take the text from the tab control bar
-			if (pTabControlBar->CanSetCaptionTextToTabName())
-			{
-				pTabControlBar->SetWindowText(strLabel);
-			}
-
-			CWnd* pWndToUpdate = pTabControlBar;
-			if (!pTabControlBar->IsDocked())
-			{
-				pWndToUpdate = pTabControlBar->GetParent();
-			}
-
-			if (pWndToUpdate != NULL)
-			{
-				pWndToUpdate->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
-			}
-		}
-	}
-
-	return TRUE;
-}
-UINT CMFCBaseTabCtrl::GetTabIcon(int iTab) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return(UINT) -1;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_uiIcon;
-}
-
-BOOL CMFCBaseTabCtrl::SetTabIcon(int iTab, UINT uiIcon)
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	if (pTab->m_hIcon != NULL)
-	{
-		::DestroyIcon(pTab->m_hIcon);
-	}
-
-	pTab->m_uiIcon = uiIcon;
-	pTab->m_hIcon = NULL;
-
-	return TRUE;
-}
-
-HICON CMFCBaseTabCtrl::GetTabHicon(int iTab) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return NULL;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_hIcon;
-}
-
-BOOL CMFCBaseTabCtrl::SetTabHicon(int iTab, HICON hIcon)
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	if (pTab->m_hIcon != NULL)
-	{
-		::DestroyIcon(pTab->m_hIcon);
-	}
-
-	if (hIcon != NULL)
-	{
-		pTab->m_hIcon = ::CopyIcon(hIcon);
-	}
-	else
-	{
-		pTab->m_hIcon = NULL;
-	}
-
-	pTab->m_uiIcon = (UINT)-1;
-
-	m_sizeImage.cx = max(m_sizeImage.cx, afxGlobalData.m_sizeSmallIcon.cx);
-	m_sizeImage.cy = max(m_sizeImage.cy, afxGlobalData.m_sizeSmallIcon.cy);
-
-	SetTabsHeight();
-
-	return TRUE;
-}
-
-BOOL CMFCBaseTabCtrl::IsTabIconOnly(int iTab) const
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_bIconOnly;
-};
-
-BOOL CMFCBaseTabCtrl::SetTabIconOnly(int iTab, BOOL bIconOnly, BOOL bAlwaysShowToolTip)
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	pTab->m_bIconOnly = bIconOnly;
-	pTab->m_bAlwaysShowToolTip = bAlwaysShowToolTip;
-
-	RecalcLayout();
-	return TRUE;
-}
-
-BOOL CMFCBaseTabCtrl::IsTabDetachable(int iTab) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_bIsDetachable;
-}
-
-BOOL CMFCBaseTabCtrl::EnableTabDetach(int iTab, BOOL bEnable)
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	pTab->m_bIsDetachable = bEnable;
-	return TRUE;
-}
-
-CWnd* CMFCBaseTabCtrl::GetActiveWnd() const
-{
-	return m_iActiveTab == -1 ? NULL : ((CMFCTabInfo*) m_arTabs [m_iActiveTab])->m_pWnd;
-}
-
-int CMFCBaseTabCtrl::GetTabFromPoint(CPoint& pt) const
-{
-	for (int i = 0; i < m_iTabsNum; i ++)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
-
-		if (pTab->m_bVisible && pTab->m_rect.PtInRect(pt))
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-int CMFCBaseTabCtrl::GetTabFromHwnd(HWND hwnd) const
-{
-	for (int i = 0; i < m_iTabsNum; i ++)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
-
-		if (pTab->m_pWnd == NULL)
-		{
-			continue;
-		}
-
-		if (pTab->m_pWnd->GetSafeHwnd() == hwnd)
-		{
-			return i;
-		}
-
-		CDockablePaneAdapter* pWrapper = DYNAMIC_DOWNCAST(CDockablePaneAdapter, pTab->m_pWnd);
-		if (pWrapper != NULL)
-		{
-			CWnd* pWrappedWnd = pWrapper->GetWrappedWnd();
-			if (pWrappedWnd != NULL && pWrappedWnd->GetSafeHwnd() == hwnd)
-			{
-				return i;
-			}
-		}
-	}
-
-	return -1;
-}
-
-int CMFCBaseTabCtrl::GetTabByID(int id) const
-{
-	for (int i = 0; i < m_iTabsNum; i ++)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
-
-		if (pTab->m_iTabID == id)
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-BOOL CMFCBaseTabCtrl::IsTabVisible(int iTab) const
-{
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		TRACE(_T("IsTabVisible: illegal tab number %d\n"), iTab);
-		return FALSE;
-	}
-
-	const CMFCTabInfo* pTab = (const CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_bVisible;
-}
-
-int CMFCBaseTabCtrl::GetTabNumberToDetach(int nTabNum) const
-{
-	return(nTabNum == -1 ? m_iActiveTab : nTabNum);
-}
-
-BOOL CMFCBaseTabCtrl::DetachTab(AFX_DOCK_METHOD dockMethod, int nTabNum, BOOL bHide)
-{
-	int nTabToDetach = GetTabNumberToDetach(nTabNum);
-	if (nTabToDetach < 0)
-	{
-		return FALSE;
-	}
-
-	ASSERT(nTabToDetach >= 0 && nTabToDetach < GetTabsNum());
-
-	if (!IsTabDetachable(nTabToDetach))
-	{
-		return FALSE;
-	}
-
-	CPane* pDockingBar = DYNAMIC_DOWNCAST(CPane, GetTabWnd(nTabToDetach));
-	if (pDockingBar == NULL)
-	{
-		return FALSE;
-	}
-
-	ASSERT_VALID(pDockingBar);
-
-	if (!pDockingBar->CanFloat())
-	{
-		return FALSE;
-	}
-
-	CRect rectFloat; rectFloat.SetRectEmpty();
-
-	if (!pDockingBar->OnBeforeFloat(rectFloat, dockMethod))
-	{
-		return FALSE;
-	}
-
-	if (dockMethod == DM_MOUSE)
-	{
-		CPoint ptMouse;
-		GetCursorPos(&ptMouse);
-		CPoint ptHotDelta = m_ptHot - ptMouse;
-		CSize szSensitivity = CDockablePane::GetDragSensitivity();
-
-		if (abs(ptHotDelta.x) < szSensitivity.cx && abs(ptHotDelta.y) < szSensitivity.cy)
-		{
-			return FALSE;
-		}
-	}
-
-	if (pDockingBar != NULL && pDockingBar->CanBeAttached())
-	{
-		AFX_DOCK_TYPE dockType = pDockingBar->GetDockingMode();
-
-		CBaseTabbedPane* pParent = DYNAMIC_DOWNCAST(CBaseTabbedPane, GetParent());
-		CPaneFrameWnd* pMiniFrame = pParent == NULL ? NULL : pParent->GetParentMiniFrame();
-
-		if (pParent != NULL)
-		{
-			if (!pParent->CanFloat() && GetVisibleTabsNum() == 1)
-			{
-				return FALSE;
-			}
-
-			if (pDockingBar->IsKindOf(RUNTIME_CLASS(CDockablePane)))
-			{
-				((CDockablePane*) pDockingBar)->EnableGripper(TRUE);
-			}
-
-			if (!bHide &&(dockType & DT_STANDARD) != 0 && dockMethod == DM_MOUSE)
-			{
-				bHide = TRUE;
-			}
-
-			if (/*!bHide && */nTabToDetach != m_iActiveTab)
-			{
-				pDockingBar->ShowWindow(SW_SHOW);
-			}
-
-			pParent->FloatTab(pDockingBar, nTabToDetach, dockMethod, bHide);
-
-			if (GetTabsNum() == 0)
-			{
-				if (pMiniFrame != NULL)
-				{
-					pMiniFrame->RemovePane(pParent, TRUE);
-				}
-				else
-				{
-					if (pParent->AllowDestroyEmptyTabbedPane())
+					if (!CXTPDockingPaneAutoHidePanel::m_bCloseActiveWindow || GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsing, m_pPane->GetSelected()))
 					{
-						pParent->DestroyWindow();
+						m_nDeactivationCount = 6;
 					}
 					else
 					{
-						ShowWindow(SW_HIDE);
+						m_bSlideOut = TRUE;
+						if (m_hWnd) SetTimer(TID_SLIDEOUT, m_nAnimationInterval, NULL);
 					}
+
+					InternalRelease();
 				}
-			}
-			else if (GetVisibleTabsNum() == 0)
-			{
-				pParent->ShowPane(FALSE, FALSE, FALSE);
-			}
-			RecalcLayout();
-		}
-
-		CPaneFrameWnd* pParentFrame = pDockingBar->GetParentMiniFrame();
-		if ((dockType & DT_STANDARD) != 0 && dockMethod == DM_MOUSE)
-		{
-			if (pParentFrame != NULL)
-			{
-				ReleaseCapture();
-				pParentFrame->SetFocus();
-				GetParent()->SendMessage(WM_IDLEUPDATECMDUI);
-			}
-		}
-
-		m_bReadyToDetach = FALSE;
-
-		HWND hWndToDestroy = NULL;
-		if (GetTabsNum() == 1 && m_bHideSingleTab)
-		{
-			CRect rectWnd;
-			pParent->GetWindowRect(rectWnd);
-
-			CDockablePane* pTabDockingBar = DYNAMIC_DOWNCAST(CDockablePane, GetTabWnd(0));
-
-			pParent->InsertPane(pTabDockingBar, pParent);
-			pParent->ReplacePane(pTabDockingBar, dockMethod);
-			pTabDockingBar->SetPaneAlignment(pParent->GetCurrentAlignment());
-			RemoveTab(0);
-			CWnd* pNewParent = (pMiniFrame == NULL) ? pParent->GetDockSiteFrameWnd() : pMiniFrame;
-
-			pTabDockingBar->EnableGripper(TRUE);
-			pNewParent->ScreenToClient(rectWnd);
-
-			pTabDockingBar->SetParent(pNewParent);
-			pTabDockingBar->SetWindowPos(NULL, rectWnd.left, rectWnd.top, rectWnd.Width(), rectWnd.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_HIDEWINDOW);
-
-			pTabDockingBar->ShowPane(TRUE, FALSE, FALSE);
-			pParent->ShowWindow(SW_HIDE);
-			pTabDockingBar->GetParent()->InvalidateRect(NULL);
-			pTabDockingBar->GetParent()->UpdateWindow();
-			hWndToDestroy = pParent->GetSafeHwnd();
-		}
-
-		if (dockMethod == DM_MOUSE && pParentFrame != NULL)
-		{
-			ASSERT_VALID(pParentFrame);
-
-			if ((dockType & DT_STANDARD) != 0)
-			{
-				pParentFrame->EnterDragMode(hWndToDestroy);
-				pParentFrame->MoveDragFrame();
-			}
-			else if ((dockType & DT_IMMEDIATE) != 0)
-			{
-				pParentFrame->SetFocus();
-			}
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-void CMFCBaseTabCtrl::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	m_bWindowPosChanged = FALSE;
-
-	CWnd::OnLButtonDown(nFlags, point);
-
-	if (m_rectCloseButton.PtInRect(point))
-	{
-		m_bTabCloseButtonPressed = TRUE;
-		RedrawWindow(m_rectCloseButton);
-		return;
-	}
-
-	m_iHighlighted = GetTabFromPoint(point);
-	int iHighlighted = m_iHighlighted;
-
-	if (iHighlighted >= 0)
-	{
-		BOOL bTabWasMoved = FALSE;
-
-		if (!ActivateOnBtnUp())
-		{
-			int nTab = GetTabFromPoint(point);
-
-			if (nTab >= 0 && nTab != m_iActiveTab)
-			{
-				m_iLastActiveTab = m_iActiveTab;
-
-				m_bSetActiveTabFired = FALSE;
-				m_bSetActiveTabByMouseClick = TRUE;
-				m_bUserSelectedTab = TRUE;
-
-				if (!SetActiveTab(nTab))
-				{
-					m_bSetActiveTabFired = TRUE;
-					m_bSetActiveTabByMouseClick = FALSE;
-					m_bUserSelectedTab = FALSE;
-					m_bWindowPosChanged = FALSE;
-					return;
-				}
-
-				m_bSetActiveTabByMouseClick = FALSE;
-				m_bUserSelectedTab = FALSE;
-
-				if (!m_bSetActiveTabFired)
-				{
-					FireChangeActiveTab(m_iActiveTab);
-				}
-
-				m_bSetActiveTabFired = FALSE;
-			}
-			else if (nTab == m_iActiveTab)
-			{
-				//-----------------------------
-				// Set focus to the tab window:
-				//-----------------------------
-				CWnd* pWnd = GetTabWnd(nTab);
-				if (pWnd->GetSafeHwnd() != NULL)
-				{
-					pWnd->SetFocus();
-				}
-			}
-
-			bTabWasMoved = (nTab != GetTabFromPoint(point));
-
-			m_iHighlighted = -1;
-			ReleaseCapture();
-		}
-		else
-		{
-			m_iPressed = m_iHighlighted;
-		}
-
-		if (iHighlighted != m_iActiveTab)
-		{
-			InvalidateTab(iHighlighted);
-		}
-
-		if (!bTabWasMoved && !m_bWindowPosChanged)
-		{
-			EnterDragMode();
-		}
-	}
-	m_bWindowPosChanged = FALSE;
-}
-
-void CMFCBaseTabCtrl::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	CWnd::OnRButtonDown(nFlags, point);
-
-	if (m_bActivateTabOnRightClick)
-	{
-		int nTab = GetTabFromPoint(point);
-		if (nTab >= 0 && nTab != m_iActiveTab)
-		{
-			m_bSetActiveTabFired = FALSE;
-			m_bSetActiveTabByMouseClick = TRUE;
-			m_bUserSelectedTab = FALSE;
-
-			if (!SetActiveTab(nTab))
-			{
-				m_bSetActiveTabByMouseClick = FALSE;
-				m_bUserSelectedTab = FALSE;
-				return;
-			}
-
-			m_bSetActiveTabByMouseClick = FALSE;
-			m_bUserSelectedTab = FALSE;
-
-			if (!m_bSetActiveTabFired)
-			{
-				FireChangeActiveTab(m_iActiveTab);
-			}
-
-			m_bSetActiveTabFired = FALSE;
-		}
-		else if (nTab == m_iActiveTab)
-		{
-			//-----------------------------
-			// Set focus to the tab window:
-			//-----------------------------
-			CWnd* pWnd = GetTabWnd(nTab);
-			if (pWnd->GetSafeHwnd() != NULL)
-			{
-				pWnd->SetFocus();
-			}
-		}
-	}
-}
-
-void CMFCBaseTabCtrl::EnterDragMode()
-{
-	m_bReadyToDetach = TRUE;
-	SetCapture();
-	GetCursorPos(&m_ptHot);
-
-	CRect rectTab;
-	GetTabRect(m_iActiveTab, rectTab);
-	m_iTabBeforeDrag = m_iActiveTab;
-	ClientToScreen(rectTab);
-	m_nOffsetFromTabLeft = m_ptHot.x - rectTab.left;
-}
-
-void CMFCBaseTabCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	CWnd::OnLButtonDblClk(nFlags, point);
-
-	if (m_bIsInPlaceEdit)
-	{
-		int iTab = GetTabFromPoint(point);
-		if (iTab  == GetActiveTab())
-		{
-			if (StartRenameTab(iTab))
-				return;
-		}
-	}
-	else
-	{
-		CWnd* pWndTarget = FindTargetWnd(point);
-		if (pWndTarget == NULL)
-		{
-			DetachTab(DM_DBL_CLICK);
-		}
-	}
-}
-
-void CMFCBaseTabCtrl::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if (m_bTabCloseButtonPressed)
-	{
-		m_bTabCloseButtonPressed = FALSE;
-		m_bTabCloseButtonHighlighted = FALSE;
-
-		RedrawWindow(m_rectCloseButton);
-
-		if (m_rectCloseButton.PtInRect(point))
-		{
-			CWnd* pWndActive = GetActiveWnd();
-			if (pWndActive != NULL)
-			{
-				pWndActive->SendMessage(WM_CLOSE);
-			}
-
-			return;
-		}
-	}
-
-	if (m_iTabBeforeDrag != m_iActiveTab)
-	{
-		CWnd* pWndParent = GetParent();
-		ASSERT_VALID(pWndParent);
-
-		pWndParent->SendMessage(AFX_WM_ON_MOVE_TAB, m_iTabBeforeDrag, m_iActiveTab);
-		if (pWndParent->IsKindOf(RUNTIME_CLASS(CBaseTabbedPane)) || pWndParent->IsKindOf(RUNTIME_CLASS(CMDIClientAreaWnd)))
-		{
-			pWndParent = AFXGetParentFrame(pWndParent);
-			if (pWndParent != NULL)
-			{
-				pWndParent->SendMessage(AFX_WM_ON_MOVE_TAB, m_iTabBeforeDrag, m_iActiveTab);
-			}
-		}
-	}
-
-	if (m_bReadyToDetach)
-	{
-		m_bReadyToDetach = FALSE;
-		ReleaseCapture();
-
-		if (!ActivateOnBtnUp())
-		{
-			m_iPressed = -1;
-			m_iHighlighted = -1;
-		}
-	}
-
-	if (ActivateOnBtnUp())
-	{
-		bool bNewActiveTab = m_iActiveTab != m_iHighlighted;
-
-		if (m_iHighlighted == m_iPressed && m_iHighlighted >= 0 && m_iHighlighted != m_iActiveTab)
-		{
-			m_iLastActiveTab = m_iActiveTab;
-			m_bSetActiveTabByMouseClick = TRUE;
-			m_bUserSelectedTab = FALSE;
-
-			if (!SetActiveTab(m_iHighlighted))
-			{
-				m_bSetActiveTabByMouseClick = FALSE;
-				m_bUserSelectedTab = FALSE;
-				m_iPressed = -1;
-
-				if (!IsOneNoteStyle())
-				{
-					m_iHighlighted = -1;
-				}
-
-				ReleaseCapture();
-				return;
-			}
-
-			FireChangeActiveTab(m_iActiveTab);
-			m_bSetActiveTabByMouseClick = FALSE;
-			m_bUserSelectedTab = FALSE;
-		}
-
-		int iHighlighted = m_iHighlighted;
-		int iPressed = m_iPressed;
-
-		m_iPressed = -1;
-
-		if (!IsOneNoteStyle())
-		{
-			m_iHighlighted = -1;
-		}
-
-		ReleaseCapture();
-
-		if (bNewActiveTab)
-		{
-			InvalidateTab(iHighlighted);
-
-			if (iPressed != iHighlighted)
-			{
-				InvalidateTab(iPressed);
-			}
-		}
-	}
-
-	if (IsOneNoteStyle())
-	{
-		CRect rectTabAreaTop;
-		CRect rectTabAreaBottom;
-
-		GetTabArea(rectTabAreaTop, rectTabAreaBottom);
-
-		if (!rectTabAreaTop.IsRectEmpty())
-		{
-			InvalidateRect(rectTabAreaTop, FALSE);
-		}
-
-		if (!rectTabAreaBottom.IsRectEmpty())
-		{
-			InvalidateRect(rectTabAreaBottom, FALSE);
-		}
-
-		UpdateWindow();
-	}
-
-	CWnd::OnLButtonUp(nFlags, point);
-}
-
-void CMFCBaseTabCtrl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CWnd::OnMouseMove(nFlags, point);
-
-	int iPrevHighlighted = m_iHighlighted;
-
-	BOOL bTabCloseButtonHighlighted = m_bTabCloseButtonHighlighted;
-	m_bTabCloseButtonHighlighted = m_rectCloseButton.PtInRect(point);
-
-	if (bTabCloseButtonHighlighted != m_bTabCloseButtonHighlighted)
-	{
-		if (m_bTabCloseButtonHighlighted)
-		{
-			m_bTabCloseButtonPressed = (nFlags & MK_LBUTTON);
-		}
-
-		RedrawWindow(m_rectCloseButton);
-	}
-
-	if (m_iHighlighted >= 0 && m_iPressed < 0 && !m_bReadyToDetach)
-	{
-		CPoint pt = point;
-		ClientToScreen(&pt);
-		CWnd* pWnd = CWnd::WindowFromPoint(pt);
-		if (pWnd != NULL && pWnd->GetSafeHwnd() != GetSafeHwnd())
-		{
-			ReleaseCapture();
-			m_iHighlighted = -1;
-			InvalidateTab(iPrevHighlighted);
-			return;
-		}
-	}
-
-	m_iHighlighted = GetTabFromPoint(point);
-
-	if (m_iPressed >= 0 && m_iHighlighted != m_iPressed)
-	{
-		m_iHighlighted = -1;
-	}
-
-	if (m_iHighlighted != iPrevHighlighted &&(m_bHighLightTabs || IsActiveTabCloseButton()))
-	{
-		if (iPrevHighlighted < 0)
-		{
-			if (m_iHighlighted >= 0)
-			{
-				SetCapture();
 			}
 		}
 		else
 		{
-			if (m_iHighlighted < 0 && m_iPressed < 0)
+			m_nDeactivationCount = 6;
+			if (m_bSlideOut)
 			{
-				m_bTabCloseButtonHighlighted = FALSE;
-				m_bTabCloseButtonPressed = FALSE;
-
-				if (!m_bReadyToDetach)
-				{
-					ReleaseCapture();
-				}
+				m_bSlideOut = FALSE;
+				KillTimer(TID_SLIDEOUT);
+				SetTimer(TID_SLIDEIN, m_nAnimationInterval, NULL);
 			}
 		}
-
-		InvalidateTab(m_iHighlighted);
-		InvalidateTab(iPrevHighlighted);
+		return;
 	}
 
-	if (m_bReadyToDetach)
+	if (nIDEvent == TID_SLIDEOUT && m_bSlideOut)
 	{
-		int nNumTabs = m_iTabsNum; // how many tabs before detch
-
-		// try to rearrange tabs if their number > 1
-		if (IsPtInTabArea(point) && nNumTabs > 1 && m_bEnableTabSwap)
+		m_nSlideStep--;
+		if (m_nSlideStep > -1) DoSlideStep();
+		else
 		{
-			CRect rectTab;
-			int nTabNum = GetTabFromPoint(point);
+			m_bSlideOut = FALSE;
+			KillTimer(TID_SLIDEOUT);
 
-			if (nTabNum != m_iActiveTab && nTabNum != -1)
-			{
-				int nSecondTab = m_iActiveTab;
-				SwapTabs(nTabNum, nSecondTab);
-				RecalcLayout();
-				SetActiveTab(nTabNum);
-				int nCurrTabNum = GetTabFromPoint(point);
-				if (nCurrTabNum != nTabNum)
-				{
-					GetTabRect(nTabNum, rectTab);
-					CPoint ptCursorNewPos = point;
+			InternalAddRef();
 
-					ptCursorNewPos.x = rectTab.left + m_nOffsetFromTabLeft;
+			GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsed, m_pPane->GetSelected());
+			CloseWindow();
 
-					ClientToScreen(&ptCursorNewPos);
-					SetCursorPos(ptCursorNewPos.x, ptCursorNewPos.y);
-				}
-			}
-			return;
+			InternalRelease();
 		}
+		return;
+	}
 
-		if (IsPtInTabArea(point))
+	if (nIDEvent == TID_SLIDEIN && !m_bSlideOut)
+	{
+		m_nSlideStep++;
+		if (m_nSlideStep < m_nStepsCount) DoSlideStep();
+		else
 		{
-			return;
+			m_nSlideStep = m_nStepsCount - 1;
+			KillTimer(TID_SLIDEIN);
+
+			GetDockingPaneManager()->_OnAction(xtpPaneActionExpanded, m_pPane->GetSelected());
 		}
-
-		BOOL bDetachSucceeded = DetachTab(DM_MOUSE);
-
-		if (bDetachSucceeded && nNumTabs <= 2)
-		{
-			// last tab was detached successfully - run out, because the control
-			// has been destroyed
-			return;
-		}
-
-		if (bDetachSucceeded)
-		{
-			m_bReadyToDetach = FALSE;
-		}
-
 		return;
 	}
 }
 
-void CMFCBaseTabCtrl::OnCancelMode()
+
+void CXTPDockingPaneAutoHideWnd::OnMouseMove(UINT nFlags, CPoint point)
 {
-	CWnd::OnCancelMode();
-
-	if (m_bTabCloseButtonPressed || m_bTabCloseButtonHighlighted)
+	if (m_bSlideOut)
 	{
-		m_bTabCloseButtonPressed = FALSE;
-		m_bTabCloseButtonHighlighted = FALSE;
-
-		RedrawWindow(m_rectCloseButton);
-	}
-
-	if (m_iHighlighted >= 0)
-	{
-		int iTab = m_iHighlighted;
-
-		ReleaseCapture();
-		m_iHighlighted = -1;
-		m_iPressed = -1;
-
-		InvalidateTab(iTab);
-	}
-
-	if (m_pInPlaceEdit != NULL)
-	{
-		m_pInPlaceEdit->DestroyWindow();
-		delete m_pInPlaceEdit;
-		m_pInPlaceEdit = NULL;
-		m_iEditedTab = -1;
-		ReleaseCapture();
-	}
-
-	m_bReadyToDetach = FALSE;
-}
-
-void CMFCBaseTabCtrl::InvalidateTab(int iTab)
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0)
-	{
+		OnTimer(TID_CHECKACTIVE);
 		return;
 	}
 
-	CRect rectTab;
-
-	if (GetTabRect(iTab, rectTab))
-	{
-		InvalidateRect(rectTab);
-		UpdateWindow();
-	}
+	CMiniFrameWnd::OnMouseMove(nFlags, point);
 }
 
-void CMFCBaseTabCtrl::OnDestroy()
+
+void CXTPDockingPaneAutoHideWnd::OnClose()
 {
-	CleanUp();
-	CWnd::OnDestroy();
+	CMiniFrameWnd::OnClose();
 }
 
-int CMFCBaseTabCtrl::FindTabInfo(int nBarID, CMFCTabInfo** ppTabInfo)
+BOOL CXTPDockingPaneAutoHideWnd::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	*ppTabInfo = NULL;
-	for (int i = 0; i < m_arTabs.GetSize(); i++)
-	{
-		CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs.GetAt(i);
-		ASSERT_VALID(pTabInfo);
-
-		if (pTabInfo->m_pWnd != NULL && pTabInfo->m_pWnd->GetDlgCtrlID() == nBarID)
-		{
-			*ppTabInfo = pTabInfo;
-			return i;
-		}
-	}
-
-	return NULL;
+	return TRUE;
 }
 
-void CMFCBaseTabCtrl::ApplyRestoredTabInfo(BOOL bUseTabIndexes)
+void CXTPDockingPaneAutoHideWnd::OnPaint()
 {
-	CDockingManager* pDockManager = afxGlobalUtils.GetDockingManager(AFXGetParentFrame(this));
-	ASSERT_VALID(pDockManager);
+	CPaintDC dc(this);
 
-	POSITION pos = NULL;
-
-	for (pos = m_lstRestoredTabInfo.GetHeadPosition(); pos != NULL;)
-	{
-		CMFCRestoredTabInfo tabInfo = m_lstRestoredTabInfo.GetNext(pos);
-
-		CMFCTabInfo* pCurrTabInfo = NULL;
-		FindTabInfo(tabInfo.m_nControlBarID, &pCurrTabInfo);
-		if (pCurrTabInfo != NULL)
-		{
-			continue;
-		}
-
-		CDockablePane* pBar = DYNAMIC_DOWNCAST(CDockablePane, pDockManager->FindPaneByID(tabInfo.m_nControlBarID, TRUE));
-
-		if (pBar != NULL)
-		{
-			if (pBar->IsTabbed())
-			{
-				CMFCBaseTabCtrl* pTabWnd = (CMFCBaseTabCtrl*) pBar->GetParent();
-				CBaseTabbedPane* pTabBar = (CBaseTabbedPane*) pTabWnd->GetParent();
-				ASSERT_VALID(pTabBar);
-				pBar->SetParent(GetParent());
-				pTabBar->RemovePane(pBar);
-				if (pBar->IsKindOf(RUNTIME_CLASS(CDockablePane)))
-				{
-					((CDockablePane*) pBar)->EnableGripper(TRUE);
-				}
-
-				pBar->ShowWindow(SW_SHOW);
-			}
-
-			if (pBar->IsAutoHideMode())
-			{
-				pBar->SetAutoHideMode(FALSE, CBRS_ALIGN_ANY);
-			}
-
-			CPaneFrameWnd* pMiniFrame = pBar->GetParentMiniFrame();
-			if (pMiniFrame != NULL)
-			{
-				pMiniFrame->RemovePane(pBar);
-			}
-
-			pBar->SetParent(GetParent());
-
-			CBaseTabbedPane* pTabbedBar = DYNAMIC_DOWNCAST(CBaseTabbedPane, GetParent());
-			pBar->AttachToTabWnd(pTabbedBar, DM_SHOW, FALSE);
-		}
-	}
-
-	int nTabIdx = 0;
-	int nVisibleTabNumber = 0;
-
-	for (pos = m_lstRestoredTabInfo.GetHeadPosition(); pos != NULL; nTabIdx++)
-	{
-		CMFCRestoredTabInfo tabInfo = m_lstRestoredTabInfo.GetNext(pos);
-		CMFCTabInfo* pCurrTabInfo = NULL;
-		int nCurIdx = FindTabInfo(tabInfo.m_nControlBarID, &pCurrTabInfo);
-
-		if (pCurrTabInfo == NULL)
-		{
-			continue;
-		}
-
-		pCurrTabInfo->m_strText  = tabInfo.m_strText;
-		pCurrTabInfo->m_clrText  = tabInfo.m_clrText;
-		pCurrTabInfo->m_clrBack  = tabInfo.m_clrBack;
-		pCurrTabInfo->m_bIsDetachable = tabInfo.m_bDetachable;
-
-		ShowTab(nCurIdx, tabInfo.m_bVisible, FALSE);
-
-		if (tabInfo.m_bVisible)
-		{
-			nVisibleTabNumber++;
-		}
-
-		if (bUseTabIndexes && nCurIdx != nTabIdx)
-		{
-			SwapTabs(nCurIdx, nTabIdx);
-			if (pCurrTabInfo->m_pWnd != NULL && nTabIdx == m_nRestoredActiveTabID)
-			{
-				pCurrTabInfo->m_pWnd->ShowWindow(SW_SHOW);
-			}
-		}
-	}
-
-	if (nVisibleTabNumber > 0 && !SetActiveTab(m_nRestoredActiveTabID))
-	{
-		SetActiveTab(0);
-	}
-
-	if (nVisibleTabNumber == 0)
-	{
-		CBaseTabbedPane* pTabBar = DYNAMIC_DOWNCAST(CBaseTabbedPane, GetParent());
-		if (pTabBar != NULL)
-		{
-			pTabBar->ShowPane(FALSE, FALSE, FALSE);
-		}
-	}
-
-	RecalcLayout();
-}
-
-void CMFCBaseTabCtrl::Serialize(CArchive& ar)
-{
-	int nTabCount = 0;
-	if (ar.IsLoading())
-	{
-		m_lstRestoredTabInfo.RemoveAll();
-
-		ar >> nTabCount;
-
-		for (int i = 0; i < nTabCount; i++)
-		{
-			CMFCRestoredTabInfo tabInfo;
-
-			ar >> tabInfo.m_strText;
-			ar >> tabInfo.m_bVisible;
-			ar >> tabInfo.m_nControlBarID;
-			ar >> tabInfo.m_bDetachable;
-			ar >> tabInfo.m_clrText;
-			ar >> tabInfo.m_clrBack;
-
-			m_lstRestoredTabInfo.AddTail(tabInfo);
-		}
-		ar >> m_nRestoredActiveTabID;
-
-		int nLoc = 0;
-		ar >> nLoc;
-	}
-	else
-	{
-		nTabCount = (int) m_arTabs.GetSize();
-		ar << nTabCount;
-
-		for (int i = 0; i < nTabCount; i++)
-		{
-			CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs.GetAt(i);
-			ASSERT_VALID(pTabInfo);
-
-			ar << pTabInfo->m_strText;
-			ar << pTabInfo->m_bVisible;
-
-			ASSERT_VALID(pTabInfo->m_pWnd);
-			ar << pTabInfo->m_pWnd->GetDlgCtrlID();
-
-			ar << pTabInfo->m_bIsDetachable;
-			ar << pTabInfo->m_clrText;
-			ar << pTabInfo->m_clrBack;
-		}
-
-		ar << m_iActiveTab;
-		ar << m_location;
-	}
-}
-
-void CMFCBaseTabCtrl::SwapTabs(int nFisrtTabID, int nSecondTabID)
-{
-	if (m_arTabs.GetSize() <= nFisrtTabID ||
-		m_arTabs.GetSize() <= nSecondTabID)
-	{
+	if (!m_pPane)
 		return;
-	}
-	CMFCTabInfo* pTabInfoFirst  = (CMFCTabInfo*) m_arTabs.GetAt(nFisrtTabID);
-	CMFCTabInfo* pTabInfoSecond = (CMFCTabInfo*) m_arTabs.GetAt(nSecondTabID);
-	m_arTabs.SetAt(nFisrtTabID, pTabInfoSecond);
-	m_arTabs.SetAt(nSecondTabID, pTabInfoFirst);
-}
 
-void CMFCBaseTabCtrl::MoveTab(int nSource, int nDest)
-{
-	ASSERT_VALID(this);
+	CXTPDockingPanePaintManager* pPaintManager = m_pPane->CXTPDockingPaneBase::GetPaintManager();
 
-	if (nSource == nDest)
+	CXTPClientRect rc(this);
+	dc.FillSolidRect(rc, pPaintManager->GetXtremeColor(XPCOLOR_3DFACE));
+
+
+	switch (m_direction)
 	{
-		return;
-	}
-
-	CMFCTabInfo* pSource = (CMFCTabInfo*) m_arTabs [nSource];
-	CMFCTabInfo* pActive = (CMFCTabInfo*) m_arTabs [m_iActiveTab];
-
-	ASSERT(nDest < m_arTabs.GetSize());
-
-	if (nDest == -1)
-	{
-		m_arTabs.Add(pSource);
-		m_arTabs.RemoveAt(nSource);
-	}
-	else
-	{
-		m_arTabs.RemoveAt(nSource);
-		m_arTabs.InsertAt(nDest, pSource);
-	}
-
-	for (int iTab = 0; iTab < m_arTabs.GetSize(); iTab++)
-	{
-		if (pActive == (CMFCTabInfo*) m_arTabs [iTab])
-		{
-			if (iTab != m_iActiveTab)
-			{
-				SetActiveTab(iTab);
-				FireChangeActiveTab(m_iActiveTab);
-			}
+		case xtpPaneDockLeft:
+			dc.Draw3dRect(rc.right - 1, rc.top, 1, rc.Height(), pPaintManager->GetXtremeColor(COLOR_BTNTEXT), pPaintManager->GetXtremeColor(COLOR_BTNTEXT));
+			dc.Draw3dRect(rc.right - 2, rc.top, 1, rc.Height(), pPaintManager->GetXtremeColor(COLOR_3DSHADOW), pPaintManager->GetXtremeColor(COLOR_3DSHADOW));
 			break;
-		}
+
+		case xtpPaneDockTop:
+			dc.Draw3dRect(rc.left, rc.bottom - 1, rc.Width(), 1, pPaintManager->GetXtremeColor(COLOR_BTNTEXT), pPaintManager->GetXtremeColor(COLOR_BTNTEXT));
+			dc.Draw3dRect(rc.left, rc.bottom - 2, rc.Width(), 1, pPaintManager->GetXtremeColor(COLOR_3DSHADOW), pPaintManager->GetXtremeColor(COLOR_3DSHADOW));
+			break;
+
+		case xtpPaneDockRight:
+			dc.Draw3dRect(rc.left + 1, rc.top, 1, rc.Height(), pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT), pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT));
+			break;
+
+		case xtpPaneDockBottom:
+			dc.Draw3dRect(rc.left, rc.top + 1, rc.Width(), 1, pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT), pPaintManager->GetXtremeColor(COLOR_3DHIGHLIGHT));
+			break;
 	}
-	RecalcLayout();
 }
 
-BOOL CMFCBaseTabCtrl::SetTabsOrder(const CArray<int,int>& arOrder)
+void CXTPDockingPaneAutoHideWnd::Reposition(CRect rc, CRect rcClient)
 {
-	ASSERT_VALID(this);
+	CWnd* pSite = GetDockingPaneManager()->GetSite();
 
-	if (arOrder.GetSize() != m_iTabsNum)
+	switch (GetDockingPaneManager()->GetRTLDirection(m_direction))
 	{
-		ASSERT(FALSE);
+	case xtpPaneDockLeft:  rc.left = rcClient.left; break;
+	case xtpPaneDockRight: rc.right = rcClient.right; break;
+	case xtpPaneDockTop: rc.top = rcClient.top; break;
+	case xtpPaneDockBottom: rc.bottom = rcClient.bottom; break;
+	}
+	if (!m_bHoriz) m_pPane->m_pSelectedPane->m_szDocking.cx = rc.Width();
+	else m_pPane->m_pSelectedPane->m_szDocking.cy = rc.Height();
+
+	pSite->ScreenToClient(&rc);
+	m_rcWindow = rc;
+	MoveWindow(m_rcWindow);
+	Invalidate(FALSE);
+}
+
+BOOL CXTPDockingPaneAutoHideWnd::GetAvailableRect(CRect& rcAvail, CRect& rc) const
+{
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	if (!pManager)
 		return FALSE;
-	}
 
-	CPtrArray arTabsSaved;
-	int i = 0;
+	CRect rcClient = pManager->GetTopPane()->GetPaneWindowRect();
 
-	for (i = 0; i < m_iTabsNum; i ++)
+	int nGap = pManager->m_nSplitterGap + 4;
+
+	rcAvail = rcClient;
+
+	MINMAXINFO mmInfo;
+	GetMinMaxInfo(&mmInfo, m_direction == xtpPaneDockRight || m_direction == xtpPaneDockBottom);
+
+	switch (m_direction)
 	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
+		case xtpPaneDockLeft:
+			rcAvail.DeflateRect(max(mmInfo.ptMinTrackSize.x, nGap), 0, nGap, 0);
 
-		arTabsSaved.Add(pTab);
+			if (rcAvail.right - rcClient.left > mmInfo.ptMaxTrackSize.x)
+				rcAvail.right = mmInfo.ptMaxTrackSize.x + rcClient.left;
+
+			if (rcAvail.left >= rcAvail.right)
+				return FALSE;
+
+			rc.left = rc.right - 4;
+			break;
+
+		case xtpPaneDockRight:
+			rcAvail.DeflateRect(nGap, 0, max(mmInfo.ptMinTrackSize.x, nGap), 0);
+
+			if (rcClient.right - rcAvail.left > mmInfo.ptMaxTrackSize.x)
+				rcAvail.left = rcClient.right - mmInfo.ptMaxTrackSize.x;
+
+			if (rcAvail.left >= rcAvail.right)
+				return FALSE;
+
+			rc.right = rc.left + 4;
+			break;
+
+		case xtpPaneDockTop:
+			rcAvail.DeflateRect(0, max(mmInfo.ptMinTrackSize.y, nGap), 0, nGap);
+
+			if (rcAvail.bottom - rcClient.top > mmInfo.ptMaxTrackSize.y)
+				rcAvail.bottom = mmInfo.ptMaxTrackSize.y + rcClient.top;
+
+			if (rcAvail.top >= rcAvail.bottom)
+				return FALSE;
+
+			rc.top = rc.bottom - 4;
+			break;
+
+		case xtpPaneDockBottom:
+			rcAvail.DeflateRect(0, nGap, 0, max(mmInfo.ptMinTrackSize.y, nGap));
+
+			if (rcClient.bottom - rcAvail.top > mmInfo.ptMaxTrackSize.y)
+				rcAvail.top = rcClient.bottom - mmInfo.ptMaxTrackSize.y;
+
+			if (rcAvail.top >= rcAvail.bottom)
+				return FALSE;
+
+			rc.bottom = rc.top + 4;
+			break;
 	}
-
-	m_arTabs.RemoveAll();
-
-	BOOL bActiveTabIsChamged = FALSE;
-
-	for (i = 0; i < m_iTabsNum; i ++)
-	{
-		int nIndex = arOrder [i];
-		ASSERT(nIndex >= 0);
-		ASSERT(nIndex < m_iTabsNum);
-
-		CMFCTabInfo* pTab = (CMFCTabInfo*) arTabsSaved [nIndex];
-		ASSERT_VALID(pTab);
-
-		m_arTabs.Add(pTab);
-
-		if (nIndex == m_iActiveTab && !bActiveTabIsChamged)
-		{
-			m_iActiveTab = i;
-			bActiveTabIsChamged = TRUE;
-		}
-	}
-
 	return TRUE;
 }
 
-CWnd* CMFCBaseTabCtrl::CreateWrapper(CWnd* pWndToWrap, LPCTSTR lpszTabLabel, BOOL bDetachable)
+void CXTPDockingPaneAutoHideWnd::OnLButtonDown(UINT /*nFlags*/, CPoint point)
 {
-	ASSERT_VALID(pWndToWrap);
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
 
-	if (pWndToWrap->IsKindOf(RUNTIME_CLASS(CDockablePane)) || !bDetachable || !m_bEnableWrapping)
+	if (!pManager || pManager->IsSplittersLocked())
+		return;
+
+	if (!m_pPane)
+		return;
+
+	CXTPWindowRect rc(this);
+	CRect rcClient = pManager->GetTopPane()->GetPaneWindowRect();
+
+	CRect rcAvail;
+	if (!GetAvailableRect(rcAvail, rc))
+		return;
+
+	m_bTracking = TRUE;
+
+	if (pManager->IsSplitterTrackerUsed())
 	{
-		return pWndToWrap;
-	}
+		if (GetExStyle() & WS_EX_LAYOUTRTL)
+			point = rc.TopLeft();
+		else ClientToScreen(&point);
 
 
-	CDockablePaneAdapter* pWrapper = NULL;
+		CXTPSplitterTracker tracker;
 
-	if (m_pDockingBarWrapperRTC != NULL)
-	{
-		pWrapper = DYNAMIC_DOWNCAST(CDockablePaneAdapter, m_pDockingBarWrapperRTC->CreateObject());
+		if (tracker.Track(this, rcAvail, rc, point, !m_bHoriz))
+		{
+			Reposition(rc, rcClient);
+		}
 	}
 	else
 	{
-		pWrapper = new CDockablePaneAdapter;
-	}
+		SetCapture();
 
-	ASSERT_VALID(pWrapper);
-
-	CRect rectInit(pWrapper->m_rectInitial);
-
-	// create will alter the runtime class, but here we have to save it
-	// and set back after create
-	CRuntimeClass* pSaveRTC = pWrapper->GetTabbedPaneRTC();
-
-	DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-	DWORD dwControlBarStyle = AFX_DEFAULT_DOCKING_PANE_STYLE;
-	if (pWndToWrap->IsKindOf(RUNTIME_CLASS(CBasePane)))
-	{
-		dwStyle |= ((CBasePane*) pWndToWrap)->GetPaneStyle();
-		dwControlBarStyle = ((CBasePane*) pWndToWrap)->GetControlBarStyle();
-	}
-
-	if (!pWrapper->Create(lpszTabLabel, this, rectInit, TRUE, (UINT) pWndToWrap->GetDlgCtrlID(), dwStyle, AFX_CBRS_REGULAR_TABS, dwControlBarStyle))
-	{
-		delete pWrapper;
-		TRACE0("Unable to create CDockablePaneAdapter. \n");
-		return pWndToWrap;
-	}
-	pWrapper->EnableGripper(FALSE);
-	pWrapper->SetWrappedWnd(pWndToWrap);
-
-	pWrapper->m_recentDockInfo.m_rectRecentFloatingRect = rectInit;
-
-	if (pSaveRTC != NULL)
-	{
-		pWrapper->SetTabbedPaneRTC(pSaveRTC);
-	}
-
-	return pWrapper;
-}
-
-BOOL CMFCBaseTabCtrl::StartRenameTab(int iTab)
-{
-	ASSERT_VALID(this);
-	ENSURE(GetSafeHwnd() != NULL);
-
-	if (!m_bIsInPlaceEdit)
-	{
-		return FALSE;
-	}
-
-	if (iTab < 0 || iTab >= m_arTabs.GetSize())
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs.GetAt(iTab);
-	if (pTabInfo->m_rect.IsRectEmpty())
-	{
-		return FALSE;
-	}
-
-	ENSURE(m_pInPlaceEdit == NULL);
-
-	m_pInPlaceEdit = new CEdit;
-	ASSERT_VALID(m_pInPlaceEdit);
-
-	CRect rectEdit = pTabInfo->m_rect;
-	CalcRectEdit(rectEdit);
-
-	if (!m_pInPlaceEdit->Create(WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, rectEdit, this, 1))
-	{
-		delete m_pInPlaceEdit;
-		m_pInPlaceEdit = NULL;
-
-		return FALSE;
-	}
-
-	m_pInPlaceEdit->SetWindowText(pTabInfo->m_strText);
-	m_pInPlaceEdit->SetFont(&afxGlobalData.fontRegular);
-	m_pInPlaceEdit->SetSel(0, -1, TRUE);
-
-	m_pInPlaceEdit->SetFocus();
-	m_iEditedTab = iTab;
-
-	SetCapture();
-	return TRUE;
-}
-
-BOOL CMFCBaseTabCtrl::PreTranslateMessage(MSG* pMsg)
-{
-	if (m_pInPlaceEdit != NULL)
-	{
-		if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+		while (CWnd::GetCapture() == this)
 		{
-			switch(pMsg->wParam)
-			{
-			case VK_RETURN:
-				if (!RenameTab())
-				{
-					MessageBeep((UINT)-1);
-					return TRUE;
-				}
-				// Slide down!
+			MSG msg;
 
-			case VK_ESCAPE:
-				m_pInPlaceEdit->DestroyWindow();
-				delete m_pInPlaceEdit;
-				m_pInPlaceEdit = NULL;
-				m_iEditedTab = -1;
-				ReleaseCapture();
+			while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
+			{
+				if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
+					return;
+				DispatchMessage(&msg);
+			}
+
+			if (!GetMessage(&msg, NULL, 0, 0))
 				break;
 
-			default:
-				return FALSE;
-			}
-
-			return TRUE;
-		}
-		else if (pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
-		{
-			CRect rectEdit;
-			m_pInPlaceEdit->GetClientRect(rectEdit);
-			m_pInPlaceEdit->MapWindowPoints(this, rectEdit);
-
-			CPoint ptCursor;
-			::GetCursorPos(&ptCursor);
-			ScreenToClient(&ptCursor);
-
-			if (rectEdit.PtInRect(ptCursor))
+			if (msg.message == WM_MOUSEMOVE)
 			{
-				m_pInPlaceEdit->SendMessage(pMsg->message, pMsg->wParam, pMsg->lParam);
-			}
-			else if (pMsg->message != WM_MOUSEMOVE)
-			{
-				m_pInPlaceEdit->DestroyWindow();
-				delete m_pInPlaceEdit;
-				m_pInPlaceEdit = NULL;
-				m_iEditedTab = -1;
-				ReleaseCapture();
-			}
+				point = CPoint(msg.lParam);
+				ClientToScreen(&point);
 
-			return TRUE;
-		}
-		else
-		{
-			return FALSE;
-		}
-	}
+				point.x = max(min(point.x, rcAvail.right), rcAvail.left);
+				point.y = max(min(point.y, rcAvail.bottom), rcAvail.top);
 
-	return CWnd::PreTranslateMessage(pMsg);
-}
-
-BOOL CMFCBaseTabCtrl::RenameTab()
-{
-	ASSERT_VALID(this);
-	ASSERT(m_bIsInPlaceEdit);
-
-	if (m_pInPlaceEdit == NULL)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	CString strName;
-	m_pInPlaceEdit->GetWindowText(strName);
-
-	if (!strName.IsEmpty() && OnRenameTab(m_iEditedTab, strName) &&
-		GetParent()->SendMessage(AFX_WM_ON_RENAME_TAB, m_iEditedTab, (LPARAM)(LPCTSTR) strName) == 0)
-	{
-		return SetTabLabel(m_iEditedTab, strName);
-	}
-
-	return FALSE;
-}
-
-void CMFCBaseTabCtrl::SetActiveTabTextColor(COLORREF clr)
-{
-	m_clrActiveTabFg = clr;
-}
-
-void CMFCBaseTabCtrl::SetActiveTabColor(COLORREF clr)
-{
-	m_clrActiveTabBk = clr;
-
-	if (m_brActiveTab.GetSafeHandle() != NULL)
-	{
-		m_brActiveTab.DeleteObject();
-	}
-
-	m_brActiveTab.CreateSolidBrush(GetActiveTabColor());
-}
-
-COLORREF CMFCBaseTabCtrl::GetTabBkColor(int iTab) const
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return(COLORREF)-1;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	COLORREF color = pTab->m_clrBack;
-
-	if (color == (COLORREF)-1 && m_bIsAutoColor)
-	{
-		color = m_arAutoColors [iTab % m_arAutoColors.GetSize()];
-		pTab->m_clrBack = color;
-	}
-
-	return color;
-}
-
-BOOL CMFCBaseTabCtrl::SetTabBkColor(int iTab, COLORREF color)
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	pTab->m_clrBack = color;
-	return TRUE;
-}
-
-COLORREF CMFCBaseTabCtrl::GetTabTextColor(int iTab) const
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return(COLORREF)-1;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_clrText;
-}
-
-BOOL CMFCBaseTabCtrl::SetTabTextColor(int iTab, COLORREF color)
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return FALSE;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	pTab->m_clrText = color;
-	return TRUE;
-}
-
-int CMFCBaseTabCtrl::GetTabFullWidth(int iTab) const
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
-	{
-		return 0;
-	}
-
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	return pTab->m_nFullWidth;
-}
-
-BOOL CMFCBaseTabCtrl::SetImageList(UINT uiID, int cx, COLORREF clrTransp)
-{
-	CBitmap bmp;
-	if (!bmp.LoadBitmap(uiID))
-	{
-		TRACE(_T("CMFCTabCtrl::SetImageList Can't load bitmap: %x\n"), uiID);
-		return FALSE;
-	}
-
-	if (m_Images.GetSafeHandle() != NULL)
-	{
-		m_Images.DeleteImageList();
-	}
-
-	BITMAP bmpObj;
-	bmp.GetBitmap(&bmpObj);
-
-	UINT nFlags = (clrTransp == (COLORREF) -1) ? 0 : ILC_MASK;
-
-	switch(bmpObj.bmBitsPixel)
-	{
-	case 4:
-	default:
-		nFlags |= ILC_COLOR4;
-		break;
-
-	case 8:
-		nFlags |= ILC_COLOR8;
-		break;
-
-	case 16:
-		nFlags |= ILC_COLOR16;
-		break;
-
-	case 24:
-		nFlags |= ILC_COLOR24;
-		break;
-
-	case 32:
-		nFlags |= ILC_COLOR32;
-		break;
-	}
-
-	m_Images.Create(cx, bmpObj.bmHeight, nFlags, 0, 0);
-	m_Images.Add(&bmp, clrTransp);
-
-	m_sizeImage = CSize(cx, bmpObj.bmHeight);
-
-	SetTabsHeight();
-	return TRUE;
-}
-
-BOOL CMFCBaseTabCtrl::SetImageList(HIMAGELIST hImageList)
-{
-	ENSURE(hImageList != NULL);
-
-	if (m_Images.GetSafeHandle() != NULL)
-	{
-		m_Images.DeleteImageList();
-	}
-
-	CImageList* pImageList = CImageList::FromHandle(hImageList);
-	if (pImageList == NULL)
-	{
-		ASSERT(FALSE);
-		return FALSE;
-	}
-
-	IMAGEINFO info;
-	pImageList->GetImageInfo(0, &info);
-
-	CRect rectImage = info.rcImage;
-	m_sizeImage = rectImage.Size();
-
-	m_hImageList = hImageList;
-
-	SetTabsHeight();
-	return TRUE;
-}
-
-void CMFCBaseTabCtrl::ClearImageList()
-{
-	if (m_Images.GetSafeHandle() != NULL)
-	{
-		m_Images.DeleteImageList();
-	}
-
-	m_sizeImage = CSize(0, 0);
-	SetTabsHeight();
-}
-
-void CMFCBaseTabCtrl::ResetImageList()
-{
-	ClearImageList();
-	m_hImageList = NULL;
-	m_mapAddedIcons.RemoveAll();
-}
-
-void CMFCBaseTabCtrl::SetTabsHeight()
-{
-	const int nImageHeight = m_sizeImage.cy <= 0 ? 0 : m_sizeImage.cy + 7;
-	m_nTabsHeight = (max(nImageHeight, afxGlobalData.GetTextHeight() + 5));
-}
-
-void CMFCBaseTabCtrl::HideSingleTab(BOOL bHide)
-{
-	if (m_bHideSingleTab == bHide)
-	{
-		return;
-	}
-
-	m_bHideSingleTab = bHide;
-
-	if (GetSafeHwnd() != NULL)
-	{
-		RecalcLayout();
-	}
-}
-
-CWnd* CMFCBaseTabCtrl::GetFirstVisibleTab(int& iTabNum)
-{
-	return GetFirstVisibleTab(0, iTabNum);
-}
-
-CWnd* CMFCBaseTabCtrl::GetFirstVisibleTab(int iStartFrom, int& iTabNum)
-{
-	for (int i = iStartFrom; i < m_iTabsNum; i++)
-	{
-		CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTabInfo);
-
-		if (pTabInfo->m_bVisible)
-		{
-			iTabNum = i;
-			return pTabInfo->m_pWnd;
-		}
-	}
-	if (iStartFrom > 0)
-	{
-		return GetFirstVisibleTab(0, iTabNum);
-	}
-	iTabNum = -1;
-	return NULL;
-}
-
-CWnd* CMFCBaseTabCtrl::GetLastVisibleTab(int& iTabNum)
-{
-	for (int i = m_iTabsNum - 1; i >= 0; i--)
-	{
-		CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTabInfo);
-
-		if (pTabInfo->m_bVisible)
-		{
-			iTabNum = i;
-			return pTabInfo->m_pWnd;
-		}
-	}
-	iTabNum = -1;
-	return NULL;
-}
-
-void CMFCBaseTabCtrl::SetDrawNoPrefix(BOOL bNoPrefix, BOOL bRedraw)
-{
-	ASSERT_VALID(this);
-	m_bLabelNoPrefix = bNoPrefix;
-
-	if (bRedraw && GetSafeHwnd() != NULL)
-	{
-		RedrawWindow();
-	}
-}
-
-int CMFCBaseTabCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	if (AFXGetParentFrame(this) == NULL)
-	{
-		m_bEnableWrapping = FALSE;
-	}
-
-	_AFX_THREAD_STATE* pState = AfxGetThreadState();
-	if (pState->m_bNeedTerm) // AfxOleInit was called
-	{
-		m_DropTarget.Register(this);
-	}
-
-	return 0;
-}
-
-CSize CMFCBaseTabCtrl::GetMaxWindowSize() const
-{
-	CSize sizeMax(0, 0);
-	int nTabCount = (int) m_arTabs.GetSize();
-
-	for (int i = 0; i < nTabCount; i++)
-	{
-		CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs.GetAt(i);
-		ASSERT_VALID(pTabInfo);
-
-		if (pTabInfo->m_pWnd != NULL)
-		{
-			CSize sizeCurr(0, 0);
-			if (pTabInfo->m_pWnd->IsKindOf(RUNTIME_CLASS(CBasePane)))
-			{
-				CBasePane* pBar = DYNAMIC_DOWNCAST(CBasePane, pTabInfo->m_pWnd);
-				if (pBar != NULL)
+				if (!m_bHoriz)
 				{
-					sizeCurr = pBar->CalcFixedLayout(FALSE, TRUE);
+					if (rc.left == point.x)
+						continue;
+					rc.OffsetRect(point.x - rc.left, 0);
 				}
+				else
+				{
+					if (rc.top == point.y)
+						continue;
+					rc.OffsetRect(0, point.y - rc.top);
+				}
+
+				Reposition(rc, rcClient);
 			}
-			else
+			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
+			else if (msg.message == WM_LBUTTONUP) break;
+			else ::DispatchMessage(&msg);
+		}
+
+		if (CWnd::GetCapture() == this) ReleaseCapture();
+	}
+
+	m_bTracking = FALSE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CPanelDropTarget
+
+class CXTPDockingPaneAutoHidePanel::CPanelDropTarget : public COleDropTarget
+{
+	virtual DROPEFFECT OnDragOver(CWnd* pWnd, COleDataObject* /*pDataObject*/, DWORD /*dwKeyState*/, CPoint point)
+	{
+		CXTPDockingPaneAutoHidePanel* pPanel = (CXTPDockingPaneAutoHidePanel*)pWnd;
+		ASSERT_VALID(pPanel);
+
+		if (!pPanel->GetPaintManager()->GetPanelPaintManager()->m_bSelectOnDragOver)
+			return DROPEFFECT_NONE;
+
+		CXTPDockingPane* pPane = pPanel->HitTest(point);
+		if (pPane)
+		{
+			if (!(pPanel->m_pActiveWnd && pPanel->m_pActiveWnd->GetPane()->GetSelected() == pPane))
 			{
-				CRect rectWnd;
-				pTabInfo->m_pWnd->GetWindowRect(rectWnd);
-				sizeCurr = rectWnd.Size();
+				pPanel->ShowPane(pPane, FALSE);
 			}
-
-			sizeMax.cx = max(sizeCurr.cx, sizeMax.cx);
-			sizeMax.cy = max(sizeCurr.cy, sizeMax.cy);
 		}
+
+		return DROPEFFECT_NONE;
 	}
+};
 
-	return sizeMax;
-}
+//////////////////////////////////////////////////////////////////////////
+// CAutoHidePanelTabManager
 
-void CMFCBaseTabCtrl::EnableAutoColor(BOOL bEnable/* = TRUE*/)
+class CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager : public CXTPTabManager
 {
-	if (m_bIsAutoColor && !bEnable)
+public:
+	CAutoHidePanelTabManager()
 	{
-		for (int i = 0; i < m_iTabsNum; i ++)
-		{
-			CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs.GetAt(i);
-			ASSERT_VALID(pTabInfo);
-
-			pTabInfo->m_clrBack = (COLORREF)-1;
-		}
+		FindNavigateButton(xtpTabNavigateButtonLeft)->SetFlags(xtpTabNavigateButtonNone);
+		FindNavigateButton(xtpTabNavigateButtonRight)->SetFlags(xtpTabNavigateButtonNone);
 	}
 
-	m_bIsAutoColor = bEnable;
-	InitAutoColors();
-
-	if (GetSafeHwnd() != NULL)
+	virtual void Reposition()
 	{
-		RedrawWindow();
+
 	}
-}
-
-void CMFCBaseTabCtrl::InitAutoColors()
-{
-	if (!m_bIsDefaultAutoColor)
+	virtual BOOL DrawIcon(CDC* pDC, CPoint pt, CXTPTabManagerItem* pItem, BOOL bDraw, CSize& szIcon) const
 	{
-		return;
-	}
+		if (!pItem)
+			return TRUE;
 
-	m_arAutoColors.RemoveAll();
+		if (GetPanel()->GetPaintManager()->GetPanelPaintManager()->m_bShowIcons == FALSE)
+			return FALSE;
 
-	if (afxGlobalData.m_nBitsPerPixel > 8)
-	{
-		m_arAutoColors.Add(RGB(197, 212, 242));
-		m_arAutoColors.Add(RGB(255, 220, 120));
-		m_arAutoColors.Add(RGB(190, 206, 161));
-		m_arAutoColors.Add(RGB(240, 160, 161));
-		m_arAutoColors.Add(RGB(188, 168, 225));
-		m_arAutoColors.Add(RGB(156, 193, 182));
-		m_arAutoColors.Add(RGB(247, 184, 134));
-		m_arAutoColors.Add(RGB(217, 173, 194));
-		m_arAutoColors.Add(RGB(165, 194, 215));
-		m_arAutoColors.Add(RGB(179, 166, 190));
-		m_arAutoColors.Add(RGB(234, 214, 163));
-		m_arAutoColors.Add(RGB(246, 250, 125));
-		m_arAutoColors.Add(RGB(181, 233, 157));
-		m_arAutoColors.Add(RGB(95, 195, 207));
-		m_arAutoColors.Add(RGB(193, 131, 131));
-		m_arAutoColors.Add(RGB(202, 202, 213));
-	}
-	else
-	{
-		m_arAutoColors.Add(RGB(0, 255, 0));
-		m_arAutoColors.Add(RGB(0, 255, 255));
-		m_arAutoColors.Add(RGB(255, 0, 255));
-		m_arAutoColors.Add(RGB(192, 192, 192));
-		m_arAutoColors.Add(RGB(255, 255, 0));
-	}
-}
 
-void CMFCBaseTabCtrl::OnSysColorChange()
-{
-	CWnd::OnSysColorChange();
+		CXTPImageManagerIcon* pImage = ((CXTPDockingPane*)pItem->GetData())->GetIcon(szIcon.cx);
 
-	InitAutoColors();
-}
+		if (!pImage)
+			return FALSE;
 
-void CMFCBaseTabCtrl::SetAutoColors(const CArray<COLORREF, COLORREF>& arColors)
-{
-	int i = 0;
-
-	for (i = 0; i < m_iTabsNum; i ++)
-	{
-		CMFCTabInfo* pTabInfo = (CMFCTabInfo*) m_arTabs.GetAt(i);
-		ASSERT_VALID(pTabInfo);
-
-		pTabInfo->m_clrBack = (COLORREF)-1;
-	}
-
-	m_arAutoColors.RemoveAll();
-
-	if (arColors.GetSize() == 0)
-	{
-		m_bIsDefaultAutoColor = TRUE;
-		InitAutoColors();
-	}
-	else
-	{
-		m_bIsDefaultAutoColor = FALSE;
-
-		for (i = 0; i < arColors.GetSize(); i++)
-		{
-			m_arAutoColors.Add(arColors [i]);
-		}
-	}
-
-	if (GetSafeHwnd() != NULL)
-	{
-		RedrawWindow();
-	}
-}
-
-void CMFCBaseTabCtrl::SetLocation(Location location)
-{
-	ASSERT_VALID(this);
-
-	m_location = location;
-	RecalcLayout();
-
-	if (GetSafeHwnd() != NULL)
-	{
-		GetParent()->RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_ALLCHILDREN);
-	}
-}
-
-BOOL CMFCBaseTabCtrl::IsColored() const
-{
-	for (int iTab = 0; iTab < m_iTabsNum; iTab++)
-	{
-		if (GetTabBkColor(iTab) != (COLORREF)-1)
+		if (!bDraw)
 		{
 			return TRUE;
 		}
-	}
 
-	return FALSE;
-}
+		pItem->DrawImage(pDC, CRect(pt, szIcon), pImage);
 
-void CMFCBaseTabCtrl::FireChangeActiveTab(int nNewTab)
-{
-	CFrameWnd* pParentFrame = AFXGetTopLevelFrame(this);
-	CWnd* pParent = GetParent();
-	ASSERT_VALID(pParent);
-
-	pParent->SendMessage(AFX_WM_CHANGE_ACTIVE_TAB, nNewTab, (LPARAM)this);
-	if (pParent != pParentFrame && pParentFrame != NULL)
-	{
-		ASSERT_VALID(pParentFrame);
-		pParentFrame->SendMessage(AFX_WM_CHANGE_ACTIVE_TAB, nNewTab, (LPARAM)this);
-	}
-
-	m_bSetActiveTabFired = TRUE;
-}
-
-BOOL CMFCBaseTabCtrl::FireChangingActiveTab(int nNewTab)
-{
-	CFrameWnd* pParentFrame = AFXGetTopLevelFrame(this);
-	CWnd* pParent = GetParent();
-	ASSERT_VALID(pParent);
-
-	BOOL bRes = (BOOL) pParent->SendMessage(AFX_WM_CHANGING_ACTIVE_TAB, nNewTab, (LPARAM)this);
-	if (bRes)
-	{
 		return TRUE;
+
 	}
 
-	if (pParent != pParentFrame && pParentFrame != NULL)
+	virtual void RedrawControl(LPCRECT lpRect, BOOL /*bAnimate*/)
 	{
-		ASSERT_VALID(pParentFrame);
-		bRes = (BOOL) pParentFrame->SendMessage(AFX_WM_CHANGING_ACTIVE_TAB, nNewTab, (LPARAM)this);
+		if (GetPanel()->m_hWnd) GetPanel()->InvalidateRect(lpRect, FALSE);
 	}
 
-	return bRes;
-}
-
-BOOL CMFCBaseTabCtrl::HasImage(int iTab) const
-{
-	ASSERT_VALID(this);
-
-	if (iTab < 0 || iTab >= m_iTabsNum)
+	virtual CXTPTabPaintManager* GetPaintManager() const
 	{
-		return FALSE;
+		return GetPanel()->GetPaintManager()->GetPanelPaintManager();
+
 	}
 
-	CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [iTab];
-	ASSERT_VALID(pTab);
-
-	if (pTab->m_hIcon != NULL)
+	CXTPTabManagerItem* Add()
 	{
-		return TRUE;
+		return AddItem(GetItemCount());
 	}
 
-	return GetImageList() != NULL && pTab->m_uiIcon != (UINT)-1;
-}
-
-void CMFCBaseTabCtrl::SetTabBorderSize(int nTabBorderSize, BOOL bRepaint/* = TRUE*/)
-{
-	if (nTabBorderSize == -1)
+	XTPTabPosition GetPosition() const
 	{
-		nTabBorderSize = AFX_DEFAULT_TAB_BORDER_SIZE;
-	}
-
-	if (m_nTabBorderSize != nTabBorderSize)
-	{
-		m_nTabBorderSize = nTabBorderSize;
-
-		RecalcLayout();
-
-		if (bRepaint && GetSafeHwnd() != NULL)
+		switch (GetPanel()->GetDirection())
 		{
-			Invalidate();
-			UpdateWindow();
+			case xtpPaneDockLeft: return xtpTabPositionRight;
+			case xtpPaneDockRight: return xtpTabPositionLeft;
+			case xtpPaneDockTop: return xtpTabPositionBottom;
+			case xtpPaneDockBottom: return xtpTabPositionTop;
+		}
+		return xtpTabPositionTop;
+	}
+
+	void PerformMouseMove(HWND hwnd, CPoint pt)
+	{
+		CXTPTabManager::PerformMouseMove(hwnd, pt);
+	}
+
+	CXTPDockingPaneAutoHidePanel* GetPanel() const;
+
+public:
+	CAutoHidePanelTabManagersArray* m_pArray;
+	CRect m_rcManager;
+};
+
+class CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManagersArray : public CArray<CAutoHidePanelTabManager*, CAutoHidePanelTabManager*>
+{
+public:
+
+	~CAutoHidePanelTabManagersArray()
+	{
+		FreeAll();
+	}
+
+	void FreeAll()
+	{
+		for (int i = 0; i < GetSize(); i++)
+		{
+			delete GetAt(i);
+		}
+		RemoveAll();
+	}
+	CAutoHidePanelTabManager* AddManager()
+	{
+		CAutoHidePanelTabManager* pManager = new CAutoHidePanelTabManager();
+		Add(pManager);
+		pManager->m_pArray = this;
+		return pManager;
+	}
+
+	void Draw(CDC* pDC)
+	{
+		CRect rcClipBox;
+		pDC->GetClipBox(rcClipBox);
+
+		CXTPTabPaintManager* pPaintManager = m_pAutoHidePanel->GetPaintManager()->GetPanelPaintManager();
+		for (int i = 0; i < GetSize(); i++)
+		{
+			CAutoHidePanelTabManager* pManager = GetAt(i);
+
+			if (CRect().IntersectRect(rcClipBox, pManager->m_rcManager))
+				pPaintManager->DrawTabControl(pManager, pDC, pManager->m_rcManager);
 		}
 	}
+
+
+
+public:
+	CXTPDockingPaneAutoHidePanel* m_pAutoHidePanel;
+};
+
+
+
+CXTPDockingPaneAutoHidePanel* CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager::GetPanel() const
+{
+	return m_pArray->m_pAutoHidePanel;
 }
 
-BOOL CMFCBaseTabCtrl::EnableCustomToolTips(BOOL bEnable/* = TRUE*/)
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneAutoHidePanel
+
+int CXTPDockingPaneAutoHidePanel::GetPanelHeight() const
 {
-	if (m_bCustomToolTips == bEnable)
+	CXTPTabPaintManager::CAppearanceSet* pAppearanceSet = GetPaintManager()->GetPanelPaintManager()->GetAppearanceSet();
+
+	return pAppearanceSet->GetButtonHeight(NULL) +
+		pAppearanceSet->m_rcHeaderMargin.bottom + pAppearanceSet->m_rcHeaderMargin.top;
+}
+
+void CXTPDockingPaneAutoHidePanel::RefreshManagersArray(CDC* pDC, CRect rcClient)
+{
+	BOOL bIndent = (m_direction == xtpPaneDockLeft || m_direction == xtpPaneDockRight)
+		&& (m_pLayout->m_wndPanels[xtpPaneDockTop] != NULL && !m_pLayout->m_wndPanels[xtpPaneDockTop]->IsEmpty());
+
+	if (bIndent)
 	{
-		return TRUE;
+		rcClient.top += GetPanelHeight();
 	}
 
-	m_bCustomToolTips = bEnable;
+	m_pTabManagers->FreeAll();
 
-	if (m_pToolTip->GetSafeHwnd() == NULL)
+	CRect rcMargins = GetPaintManager()->GetPanelPaintManager()->GetAppearanceSet()->GetHeaderMargin();
+
+	POSITION pos = GetHeadPosition();
+	while (pos)
 	{
-		return TRUE;
-	}
+		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)GetNext(pos);
+		if (pContainer->IsEmpty())
+			continue;
 
-	for (int i = 0; i < m_iTabsNum; i++)
-	{
-		CMFCTabInfo* pTab = (CMFCTabInfo*) m_arTabs [i];
-		ASSERT_VALID(pTab);
+		CAutoHidePanelTabManager* pManager = m_pTabManagers->AddManager();
 
-		if (m_bCustomToolTips)
+		POSITION posPane = pContainer->GetHeadPosition();
+		while (posPane)
 		{
-			CToolInfo info;
+			CXTPDockingPane* pPane = (CXTPDockingPane*)pContainer->GetNext(posPane);
 
-			m_pToolTip->GetToolInfo(info, this, pTab->m_iTabID);
-			m_pToolTip->DelTool(this, pTab->m_iTabID);
+			CXTPTabManagerItem* pItem = pManager->Add();
 
-			m_pToolTip->AddTool(this, LPSTR_TEXTCALLBACK, &info.rect, pTab->m_iTabID);
+			pItem->SetData((DWORD_PTR)pPane);
+			if (pContainer->GetSelected() == pPane) pManager->SetSelectedItem(pItem);
+
+			pItem->SetCaption(pPane->GetShortTitle());
+			pItem->SetColor(pPane->GetItemColor());
+			pItem->SetEnabled(pPane->GetEnabled() & xtpPaneEnableClient);
+		}
+		pManager->GetPaintManager()->RepositionTabControl(pManager, pDC, rcClient);
+		pManager->m_rcManager = rcClient;
+
+		if (m_direction == xtpPaneDockLeft || m_direction == xtpPaneDockRight)
+		{
+			rcClient.top += pManager->GetItemsLength() + rcMargins.left + rcMargins.right + 8;
 		}
 		else
 		{
-			m_pToolTip->UpdateTipText(pTab->m_strText, this, pTab->m_iTabID);
+			rcClient.left += pManager->GetItemsLength() + rcMargins.left + rcMargins.right + 8;
+
 		}
 	}
+}
 
-	RecalcLayout();
+CXTPDockingPaneAutoHidePanel::CXTPDockingPaneAutoHidePanel(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBaseContainer(xtpPaneTypeAutoHidePanel, pLayout)
+{
+	m_direction = xtpPaneDockLeft;
+	m_pActiveWnd = 0;
+	m_pTabManagers = new CAutoHidePanelTabManagersArray();
+	m_pTabManagers->m_pAutoHidePanel = this;
+
+	m_pDropTarget = new CPanelDropTarget();
+	m_rcFrameRect.SetRectEmpty();
+
+}
+
+CXTPDockingPaneAutoHidePanel::~CXTPDockingPaneAutoHidePanel()
+{
+	if (m_pActiveWnd)
+	{
+		m_pActiveWnd->m_pPane = 0;
+		m_pActiveWnd->m_pPanel = 0;
+		CloseActiveWindow();
+	}
+
+	if (m_hWnd)
+		DestroyWindow();
+
+	delete m_pTabManagers;
+	delete m_pDropTarget;
+}
+
+void CXTPDockingPaneAutoHidePanel::_InsertPane(CXTPDockingPaneBase* pPane)
+{
+	m_lstPanes.AddTail(pPane);
+
+	pPane->SetParentContainer(this);
+	pPane->SetDockingSite(m_pDockingSite);
+
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	pPane->OnParentContainerChanged(this);
+
+	if (pPane->GetType() == xtpPaneTypeTabbedContainer)
+	{
+		CWnd* pFocus = GetFocus();
+		if (((CXTPDockingPaneTabbedContainer*)pPane)->GetSafeHwnd() && pFocus->GetSafeHwnd() && (pFocus == ((CXTPDockingPaneTabbedContainer*)pPane) || ((CXTPDockingPaneTabbedContainer*)pPane)->IsChild(pFocus)))
+			GetDockingPaneManager()->GetSite()->SetFocus();
+	}
+
+	if (m_hWnd) Invalidate(FALSE);
+}
+
+void CXTPDockingPaneAutoHidePanel::RemovePane(CXTPDockingPaneBase* pPane)
+{
+	POSITION pos = m_lstPanes.Find(pPane);
+	ASSERT(pos);
+
+	m_lstPanes.RemoveAt(pos);
+	if (m_hWnd) Invalidate(FALSE);
+	GetDockingPaneManager()->RecalcFrameLayout(this, TRUE);
+
+	if (m_lstPanes.IsEmpty())
+	{
+		if (m_hWnd) DestroyWindow();
+	}
+
+	pPane->m_pParentContainer = NULL;
+}
+
+void CXTPDockingPaneAutoHidePanel::Create(CWnd* pParent)
+{
+	CWnd::Create(_T("XTPDockingPaneAutoHidePanel"), NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, CXTPEmptyRect(), pParent, 0);
+	m_pDropTarget->Register(this);
+}
+
+void CXTPDockingPaneAutoHidePanel::OnSizeParentEx(CWnd* pParent, CRect& rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+
+	if (IsEmpty())
+	{
+		if (m_hWnd) DestroyWindow();
+		return;
+	}
+
+	if (!m_hWnd)
+		Create(pParent);
+
+	if (m_rcFrameRect != rect)
+	{
+		CloseActiveWindow();
+		m_rcFrameRect = rect;
+	}
+
+	int nHeight = GetPanelHeight();
+
+	CRect rcClient(rect);
+	switch (m_direction)
+	{
+		case xtpPaneDockLeft:
+			rcClient.right = rect.left = rect.left + nHeight;
+			break;
+
+		case xtpPaneDockRight:
+			rcClient.left = rect.right = rect.right - nHeight;
+			break;
+
+		case xtpPaneDockTop:
+			rcClient.bottom = rect.top = rect.top + nHeight;
+			break;
+
+		case xtpPaneDockBottom:
+			rcClient.top = rect.bottom = rect.bottom - nHeight;
+			break;
+	}
+
+	CClientDC dc(this);
+	CRect rcPanel(rcClient);
+	rcPanel.OffsetRect(-rcPanel.TopLeft());
+	RefreshManagersArray(&dc, rcPanel);
+
+	if (lpLayout->hDWP != NULL)
+	{
+		MoveWindow(rcClient);
+		Invalidate(FALSE);
+	}
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPDockingPaneAutoHidePanel, CWnd)
+	ON_WM_PAINT()
+	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_MESSAGE(WM_MOUSEHOVER, OnMouseHover)
+	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
+END_MESSAGE_MAP()
+
+LRESULT CXTPDockingPaneAutoHidePanel::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
+{
+	CDC* pDC = CDC::FromHandle((HDC)wParam);
+	if (pDC)
+	{
+		OnDraw(pDC);
+	}
+
 	return TRUE;
 }
 
-BOOL CMFCBaseTabCtrl::OnNeedTipText(UINT /*id*/, NMHDR* pNMH, LRESULT* /*pResult*/)
+void CXTPDockingPaneAutoHidePanel::OnPaint()
 {
-	static CMFCTabToolTipInfo info;
-
-	ENSURE(pNMH != NULL);
-
-	LPNMTTDISPINFO pTTDispInfo = (LPNMTTDISPINFO) pNMH;
-	ASSERT((pTTDispInfo->uFlags & TTF_IDISHWND) == 0);
-
-	if (pNMH->hwndFrom == m_pToolTipClose->GetSafeHwnd())
-	{
-		ENSURE(info.m_strText.LoadString(IDS_AFXBARRES_CLOSEBAR));
-
-		pTTDispInfo->lpszText = const_cast<LPTSTR>((LPCTSTR) info.m_strText);
-		return TRUE;
-	}
-
-	if (m_pToolTip->GetSafeHwnd() == NULL || pNMH->hwndFrom != m_pToolTip->GetSafeHwnd())
-	{
-		return FALSE;
-	}
-
-	CFrameWnd* pParentFrame = AFXGetTopLevelFrame(this);
-	CWnd* pParent = GetParent();
-	ASSERT_VALID(pParent);
-
-	info.m_pTabWnd = this;
-
-	CPoint ptCursor;
-	::GetCursorPos(&ptCursor);
-	ScreenToClient(&ptCursor);
-
-	if (m_rectCloseButton.PtInRect(ptCursor))
-	{
-		return FALSE;
-	}
-
-	info.m_nTabIndex = GetTabFromPoint(ptCursor);
-	info.m_strText.Empty();
-
-	pParent->SendMessage(AFX_WM_ON_GET_TAB_TOOLTIP, 0, (LPARAM) &info);
-	if (pParent != pParentFrame && pParentFrame != NULL)
-	{
-		ASSERT_VALID(pParentFrame);
-		pParentFrame->SendMessage(AFX_WM_ON_GET_TAB_TOOLTIP, 0, (LPARAM) &info);
-	}
-
-	if (info.m_strText.IsEmpty())
-	{
-		return FALSE;
-	}
-
-	pTTDispInfo->lpszText = const_cast<LPTSTR>((LPCTSTR) info.m_strText);
-	return TRUE;
+	CPaintDC dcPaint(this);
+	CXTPBufferDC dc(dcPaint);
+	OnDraw(&dc);
 }
 
-void CMFCBaseTabCtrl::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
+void CXTPDockingPaneAutoHidePanel::OnDraw(CDC* pDC)
 {
-	CWnd::OnWindowPosChanged(lpwndpos);
+	CXTPClientRect rc(this);
 
-	m_bWindowPosChanged = TRUE;
+	CXTPPaintManagerColorGradient& clr = GetPaintManager()->GetPanelPaintManager()->GetColorSet()->m_clrAutoHideFace;
+
+	if (clr.clrDark == clr.clrLight)
+	{
+		pDC->FillSolidRect(rc, clr.clrDark);
+	}
+	else
+	{
+		CRect rcFill(rc);
+
+		if (m_direction == xtpPaneDockRight)
+		{
+			rcFill.left -= CXTPClientRect(GetParent()).Width() - rcFill.Width();
+		}
+
+		rcFill.right = rcFill.left + max(rcFill.Width(), GetSystemMetrics(SM_CXFULLSCREEN) / 2);
+		XTPDrawHelpers()->GradientFill(pDC, rcFill, clr.clrLight, clr.clrDark, TRUE, rc);
+	}
+
+	m_pTabManagers->Draw(pDC);
+}
+
+CXTPTabManagerItem* CXTPDockingPaneAutoHidePanel::GetPaneTab(CXTPDockingPane* pPane) const
+{
+	for (int i = 0; i < m_pTabManagers->GetSize(); i++)
+	{
+		CAutoHidePanelTabManager* pTabManager = m_pTabManagers->GetAt(i);
+
+		for (int j = 0; j < pTabManager->GetItemCount(); j++)
+		{
+			CXTPTabManagerItem* pItem = pTabManager->GetItem(j);
+
+			if ((CXTPDockingPane*)pItem->GetData() == pPane)
+			{
+				return pItem;
+			}
+		}
+	}
+	return NULL;
+}
+
+CXTPDockingPane* CXTPDockingPaneAutoHidePanel::HitTest(CPoint point) const
+{
+	for (int i = 0; i < m_pTabManagers->GetSize(); i++)
+	{
+		CXTPTabManagerItem* pItem = m_pTabManagers->GetAt(i)->HitTest(point);
+		if (pItem)
+		{
+			return (CXTPDockingPane*)pItem->GetData();
+		}
+
+	}
+	return NULL;
+}
+
+void CXTPDockingPaneAutoHidePanel::CloseActiveWindows()
+{
+	for (int i = 0; i < 4; i++)
+	{
+		SAFE_CALLPTR(m_pLayout->m_wndPanels[i], CloseActiveWindow());
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::CloseActiveWindow(BOOL bDelayed)
+{
+	if (!m_bCloseActiveWindow)
+		return;
+
+	if (m_pActiveWnd)
+	{
+		if (m_pActiveWnd->m_pPane)
+		{
+			if (GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsing, m_pActiveWnd->m_pPane->GetSelected()))
+				return;
+
+			GetDockingPaneManager()->_OnAction(xtpPaneActionCollapsed,
+				m_pActiveWnd->m_pPane->GetSelected());
+		}
+
+		if (bDelayed)
+		{
+			// let the window close itself
+			if (m_pActiveWnd->m_pPane)
+			{
+				m_pActiveWnd->m_pPane->ShowWindow(SW_HIDE);
+				m_pActiveWnd->m_pPane->SetDockingSite(GetDockingPaneManager()->GetSite());
+				m_pActiveWnd->m_pPane = 0;
+			}
+			m_pActiveWnd->SetTimer(TID_CLOSE, 50, NULL);
+		}
+		else
+		{
+			m_pActiveWnd->CloseWindow();
+		}
+
+		m_pActiveWnd = 0;
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::ShowPane(CXTPDockingPane* pPane, BOOL bSetFocus)
+{
+	if (m_pActiveWnd && m_pActiveWnd->m_pPane && m_pActiveWnd->m_pPane->GetSelected() == pPane)
+	{
+		if (bSetFocus) m_pActiveWnd->m_pPane->SelectPane(pPane, TRUE, FALSE);
+
+		if (m_pActiveWnd->m_bSlideOut)
+		{
+			m_pActiveWnd->OnTimer(TID_CHECKACTIVE);
+		}
+		return;
+	}
+
+	CloseActiveWindows();
+
+	if (GetDockingPaneManager()->_OnAction(xtpPaneActionExpanding, pPane))
+		return;
+
+	CXTPDockingPaneTabbedContainer* pContainer = ((CXTPDockingPaneTabbedContainer*)pPane->m_pParentContainer);
+
+	ASSERT(pContainer);
+	if (!pContainer)
+		return;
+	ASSERT(pContainer->GetType() == xtpPaneTypeTabbedContainer);
+
+	pContainer->SelectPane(pPane, FALSE, TRUE);
+	CXTPDockingPaneAutoHideWnd* pActiveWnd = new CXTPDockingPaneAutoHideWnd(this, pContainer);
+
+	if (bSetFocus) pContainer->SelectPane(pPane, TRUE, FALSE);
+
+	if (m_hWnd) Invalidate(FALSE);
+	GetDockingPaneManager()->RecalcFrameLayout(this);
+
+	m_pActiveWnd = pActiveWnd;
+}
+
+void CXTPDockingPaneAutoHidePanel::OnLButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		if (m_pActiveWnd && m_pActiveWnd->m_pPane->GetSelected() == pPane)
+		{
+			pPane->SetFocus();
+
+		}
+		else
+		{
+			ShowPane(pPane);
+		}
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::OnRButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		GetDockingPaneManager()->NotifyOwner(XTP_DPN_RCLICK, (LPARAM)(CXTPDockingPaneBase*)pPane);
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::OnMouseMove(UINT nFlags, CPoint point)
+{
+	for (int i = 0; i < m_pTabManagers->GetSize(); i++)
+	{
+		m_pTabManagers->GetAt(i)->PerformMouseMove(m_hWnd, point);
+	}
+
+
+
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		TRACKMOUSEEVENT tme =
+		{
+			sizeof(TRACKMOUSEEVENT), TME_HOVER | TME_LEAVE, m_hWnd, CXTPDockingPaneAutoHideWnd::m_nMouseHoverDelay
+		};
+		_TrackMouseEvent(&tme);
+
+	}
+	CWnd::OnMouseMove(nFlags, point);
+}
+
+void CXTPDockingPaneAutoHidePanel::OnMouseLeave()
+{
+	OnMouseMove(0, CPoint(-1, -1));
+}
+
+LRESULT CXTPDockingPaneAutoHidePanel::OnMouseHover(WPARAM, LPARAM lParam)
+{
+	CPoint point(lParam);
+	CXTPDockingPane* pPane = HitTest(point);
+	if (pPane)
+	{
+		if (!CXTPDrawHelpers::IsTopParentActive(m_hWnd) || (m_pActiveWnd && m_pActiveWnd->m_pPane->GetSelected() == pPane))
+			return 1;
+
+		ShowPane(pPane, FALSE);
+	}
+
+	return 1;
 }
 
 
+void CXTPDockingPaneAutoHidePanel::Copy(CXTPDockingPaneAutoHidePanel* pClone, CXTPPaneToPaneMap* pMap)
+{
+	ASSERT(pClone);
+	if (!pClone)
+		return;
+
+	m_direction = pClone->m_direction;
+	m_pDockingSite = GetDockingPaneManager()->GetSite();
+
+	POSITION pos = pClone->GetHeadPosition();
+	while (pos)
+	{
+		CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)pClone->GetNext(pos);
+		if (!pPane->IsEmpty() || pMap)
+		{
+			_InsertPane(pPane->Clone(m_pLayout, pMap));
+		}
+	}
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneAutoHidePanel::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	CXTPDockingPaneAutoHidePanel* pPane = (CXTPDockingPaneAutoHidePanel*)GetDockingPaneManager()->
+		OnCreatePane(GetType(), pLayout);
+
+	pPane->Copy(this, pMap);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
+}
+
+void CXTPDockingPaneAutoHidePanel::InvalidatePane(BOOL /*bSelectionChanged*/)
+{
+	if (!m_hWnd)
+		return;
+
+	CClientDC dc(this);
+	CXTPClientRect rcPanel(this);
+
+	RefreshManagersArray(&dc, rcPanel);
+	Invalidate(FALSE);
+}
+
+
+void CXTPDockingPaneAutoHidePanel::OnChildContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
+{
+	if (m_pActiveWnd)
+	{
+		if (!m_bCloseActiveWindow)
+		{
+			GetDockingPaneManager()->RecalcFrameLayout(this);
+
+			m_pActiveWnd->RecalcLayout(TRUE);
+		}
+		else
+		{
+			CloseActiveWindow(GetDockingPaneManager()->m_bAttachingPane);
+		}
+	}
+}
+
+void CXTPDockingPaneAutoHidePanel::DeletePane()
+{
+	InternalRelease();
+}
+
+void CXTPDockingPaneAutoHidePanel::OnFinalRelease()
+{
+	if (m_hWnd != NULL)
+		DestroyWindow();
+
+	CCmdTarget::OnFinalRelease();
+}
 

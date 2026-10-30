@@ -1,14 +1,13 @@
-// from server: 41% by colin
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/FlowGraph/XTPFlowGraphConnectionPoint.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\PropertyGrid\XTPPropertyGridItemColor.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPFlowGraphConnectionPoint.cpp : implementation of the CXTPFlowGraphConnectionPoint class.
+// XTPPropertyGridItemColor.cpp : implementation of the CXTPPropertyGridItemColor class.
 //
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// This file is a part of the XTREME PROPERTYGRID MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -25,163 +24,262 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "StdAfx.h"
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPDrawHelpers.h"
 
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPMarkupRender.h"
+#include "XTPPropertyGridInplaceEdit.h"
+#include "XTPPropertyGridInplaceButton.h"
+#include "XTPPropertyGridInplaceList.h"
+#include "XTPPropertyGridItem.h"
+#include "XTPPropertyGridItemColor.h"
+#include "XTPPropertyGrid.h"
+#include "XTPPropertyGridDefines.h"
 
-#include "XTPFlowGraphElement.h"
-#include "XTPFlowGraphNode.h"
-#include "XTPFlowGraphControl.h"
-#include "XTPFlowGraphPaintManager.h"
-#include "XTPFlowGraphConnectionPoint.h"
-#include "XTPFlowGraphImage.h"
-#include "XTPFlowGraphUndoManager.h"
-#include "XTPFlowGraphConnection.h"
-#include "XTPFlowGraphConnectionPoints.h"
+#ifdef _XTP_INCLUDE_CONTROLS
+#include "Controls/XTColorDialog.h"
+#include "Controls/XTColorSelectorCtrl.h"
+#include "Controls/XTColorPopup.h"
+#include "Controls/XTNotify.h"
+#include "Controls/XTGlobal.h"
+#endif
 
-IMPLEMENT_SERIAL(CXTPFlowGraphConnectionPoint, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 
-CXTPFlowGraphConnectionPoint::CXTPFlowGraphConnectionPoint()
+/////////////////////////////////////////////////////////////////////////////
+// CXTPPropertyGridItemColor
+
+IMPLEMENT_DYNAMIC(CXTPPropertyGridItemColor, CXTPPropertyGridItem)
+
+CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(LPCTSTR strCaption, COLORREF clr, COLORREF* pBindColor)
+	: CXTPPropertyGridItem(strCaption)
 {
-	m_nStyle = -1;
-	m_clrPoint = (COLORREF)-1;
-
-	m_nId = (int)(INT_PTR)this;
-
-	m_nType = xtpFlowGraphPointInput;
-
-	m_bLocked = FALSE;
-
-	m_nImageIndex = -1;
-
-	m_pNode = NULL;
-
-	m_nMaxConnections = -1;
-
-	m_pMarkupUIElement = NULL;
-
-	m_rcPoint.SetRectEmpty();
-
-	m_nConnectionPointIndex = -1;
-
+	m_pBindColor = pBindColor;
+	SetColor(clr);
+	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
+	m_strDefaultValue = m_strValue;
+	m_colorEditor = xtpGridItemColorExtendedDialog;
 }
 
-CXTPFlowGraphConnectionPoint::~CXTPFlowGraphConnectionPoint()
+CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(UINT nID, COLORREF clr, COLORREF* pBindColor)
+	: CXTPPropertyGridItem(nID)
 {
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
+	m_pBindColor = pBindColor;
+	SetColor(clr);
+	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
+	m_strDefaultValue = m_strValue;
+	m_colorEditor = xtpGridItemColorExtendedDialog;
 }
 
-void CXTPFlowGraphConnectionPoint::DoPropExchange(CXTPPropExchange* pPX)
+CXTPPropertyGridItemColor::~CXTPPropertyGridItemColor()
 {
-	PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
-	PX_String(pPX, _T("Tooltip"), m_strTooltip, _T(""));
-	PX_DWord(pPX, _T("Color"), (DWORD)m_clrPoint, (COLORREF)-1);
-	PX_Int(pPX, _T("Style"), m_nStyle, (int)-1);
-	PX_Enum(pPX, _T("Type"), m_nType, xtpFlowGraphPointInput);
+}
 
-	PX_Int(pPX, _T("Id"), m_nId, 0);
+/////////////////////////////////////////////////////////////////////////////
+//
 
-	PX_Bool(pPX, _T("Locked"), m_bLocked, FALSE);
+BOOL CXTPPropertyGridItemColor::OnDrawItemValue(CDC& dc, CRect rcValue)
+{
+	COLORREF clr = dc.GetTextColor();
+	CRect rcSample(rcValue.left - 2, rcValue.top + 1, rcValue.left + 18, rcValue.bottom - 1);
+	CXTPPenDC pen(dc, clr);
+	CXTPBrushDC brush(dc, m_clrValue);
+	dc.Rectangle(rcSample);
 
-	PX_Int(pPX, _T("MaxConnections"), m_nMaxConnections, -1);
+	CRect rcText(rcValue);
+	rcText.left += 25;
 
-	PX_Int(pPX, _T("ImageIndex"), m_nImageIndex, -1);
+	dc.DrawText(m_strValue, rcText, DT_SINGLELINE | DT_VCENTER);
 
-	if (pPX->IsLoading())
+	return TRUE;
+}
+
+CRect CXTPPropertyGridItemColor::GetValueRect()
+{
+	CRect rcValue(CXTPPropertyGridItem::GetValueRect());
+	rcValue.left += 25;
+	return rcValue;
+}
+
+COLORREF AFX_CDECL CXTPPropertyGridItemColor::StringToRGB(LPCTSTR str)
+{
+	CString strRed, strGreen, strBlue;
+
+	AfxExtractSubString(strRed, str, 0, ';');
+	AfxExtractSubString(strGreen, str, 1, ';');
+	AfxExtractSubString(strBlue, str, 2, ';');
+
+	return RGB(__min(_ttoi(strRed), 255), __min(_ttoi(strGreen), 255), __min(_ttoi(strBlue), 255));
+}
+
+CString AFX_CDECL CXTPPropertyGridItemColor::RGBToString(COLORREF clr)
+{
+	CString str;
+	str.Format(_T("%i; %i; %i"), GetRValue(clr), GetGValue(clr), GetBValue(clr));
+	return str;
+}
+
+void CXTPPropertyGridItemColor::SetValue(CString strValue)
+{
+	SetColor(StringToRGB(strValue));
+}
+
+void CXTPPropertyGridItemColor::SetColor(COLORREF clr)
+{
+	m_clrValue = clr;
+
+	if (m_pBindColor)
 	{
-		CXTPFlowGraphControl* pControl = GetControl();
-		if (pControl)
-		{
-			m_pMarkupUIElement = XTPMarkupParseText(pControl->GetMarkupContext(), m_strCaption);
-		}
+		*m_pBindColor = clr;
+	}
+
+	CXTPPropertyGridItem::SetValue(RGBToString(clr));
+}
+
+void CXTPPropertyGridItemColor::BindToColor(COLORREF* pBindColor)
+{
+	m_pBindColor = pBindColor;
+	if (m_pBindColor)
+	{
+		*m_pBindColor = m_clrValue;
 	}
 }
 
-CXTPFlowGraphControl* CXTPFlowGraphConnectionPoint::GetControl() const
+
+void CXTPPropertyGridItemColor::OnBeforeInsert()
 {
-	if (m_pNode)
-		return m_pNode->GetControl();
-	return NULL;
+	if (m_pBindColor && *m_pBindColor != m_clrValue)
+	{
+		SetColor(*m_pBindColor);
+	}
 }
 
-CXTPFlowGraphPage* CXTPFlowGraphConnectionPoint::GetPage() const
+void CXTPPropertyGridItemColor::SetEditorStyle(XTPPropertyGridItemColorEditor editor)
 {
-	if (m_pNode)
-		return m_pNode->GetPage();
-	return NULL;
+	m_colorEditor = editor;
+
+	if (m_colorEditor == xtpGridItemColorPopup)
+		SetFlags(xtpGridItemHasEdit | xtpGridItemHasComboButton);
+	else
+		SetFlags(xtpGridItemHasEdit | xtpGridItemHasExpandButton);
 }
 
-void CXTPFlowGraphConnectionPoint::Remove()
+XTPPropertyGridItemColorEditor CXTPPropertyGridItemColor::GetEditorStyle()
 {
-	if (!m_pNode)
+	return m_colorEditor;
+}
+
+
+void CXTPPropertyGridItemColor::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
+{
+	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
 		return;
 
-	m_pNode->GetConnectionPoints()->Remove(this);
-}
+	if (!OnRequestEdit())
+		return;
 
-BOOL CXTPFlowGraphConnectionPoint::HitTestConnectionArea(CPoint point) const
-{
-	CXTPFlowGraphPaintManager* pPaintManager = GetControl()->GetPaintManager();
+	CWnd* pGrid = m_pGrid;
 
-	return pPaintManager->HitTestConnectionArea(this, point);
-}
-
-CXTPFlowGraphImage* CXTPFlowGraphConnectionPoint::GetImage() const
-{
-	CXTPFlowGraphControl* pControl = GetControl();
-	if (!pControl)
-		return NULL;
-
-	return pControl->GetImages()->GetAt(m_nImageIndex);
-}
-
-void CXTPFlowGraphConnectionPoint::OnGraphChanged()
-{
-	if (m_pNode) m_pNode->OnGraphChanged();
-}
-
-void CXTPFlowGraphConnectionPoint::SetCaption(LPCTSTR lpszCaption)
-{
-	CXTPFlowGraphControl* pControl = GetControl();
-	if (pControl)
+#ifdef _XTP_INCLUDE_CONTROLS
+	if (m_colorEditor == xtpGridItemColorPopup)
 	{
-		pControl->GetUndoManager()->AddUndoCommand(new CXTPFlowGraphUndoSetNodeCaptionCommand(this, m_strCaption));
+		class CPropertyGridItemColorColorPopup: public CXTColorPopup
+		{
+		public:
+			CPropertyGridItemColorColorPopup()
+				: CXTColorPopup(TRUE)
+			{
+				m_pItem = NULL;
+			}
+
+			BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+			{
+				if (message == CPN_XT_SELENDOK)
+				{
+					CString strValue = m_pItem->RGBToString((COLORREF)wParam);
+					if (m_pItem->OnAfterEdit(strValue))
+					{
+						m_pItem->OnValueChanged(strValue);
+					}
+					*pResult = 0;
+					return TRUE;
+				}
+				if (message == CPN_XT_SELENDCANCEL)
+				{
+					m_pItem->OnCancelEdit();
+				}
+				return CXTColorPopup::OnWndMsg(message, wParam, lParam, pResult);\
+			}
+
+			CXTPPropertyGridItemColor* m_pItem;
+		};
+
+
+		CPropertyGridItemColorColorPopup *pColorPopup = new CPropertyGridItemColorColorPopup();
+
+		CRect rcItem= GetItemRect();
+		m_pGrid->ClientToScreen(&rcItem);
+		rcItem.left = rcItem.right - 158; // small hack. need to add CPS_XT_LEFTALLIGN
+
+		COLORREF clrDefault = StringToRGB(m_strDefaultValue);
+		pColorPopup->Create(rcItem, m_pGrid, CPS_XT_USERCOLORS|CPS_XT_EXTENDED|CPS_XT_MORECOLORS|CPS_XT_SHOW3DSELECTION|CPS_XT_SHOWHEXVALUE, GetColor(), clrDefault);
+		pColorPopup->SetOwner(m_pGrid);
+		pColorPopup->SetFocus();
+		pColorPopup->AddListener(pColorPopup->GetSafeHwnd());
+		pColorPopup->m_pItem = this;
 	}
-
-	m_strCaption = lpszCaption;
-
-	XTPMarkupReleaseElement(m_pMarkupUIElement);
-
-	if (pControl)
+	else if (m_colorEditor == xtpGridItemColorExtendedDialog)
 	{
-		m_pMarkupUIElement = XTPMarkupParseText(pControl->GetMarkupContext(), lpszCaption);
+		InternalAddRef();
+
+		CXTColorDialog dlg(m_clrValue, m_clrValue, 0, m_pGrid);
+
+		if (dlg.DoModal() == IDOK)
+		{
+			CString strValue = RGBToString(dlg.GetColor());
+
+			if (OnAfterEdit(strValue))
+			{
+				OnValueChanged(strValue);
+				SAFE_INVALIDATE(pGrid);
+			}
+		}
+		else
+		{
+			OnCancelEdit();
+		}
+
+		InternalRelease();
 	}
-
-	OnGraphChanged();
-}
-
-
-void CXTPFlowGraphConnectionPoint::OnRemoved()
-{
-	int i;
-
-	for (i = (int)m_arrInputConnections.GetSize() - 1; i >= 0; i--)
+	else
+#endif
 	{
-		m_arrInputConnections[i]->Remove();
+		InternalAddRef();
+
+		CColorDialog dlg(m_clrValue, 0, m_pGrid);
+
+		if (dlg.DoModal() == IDOK)
+		{
+			CString strValue = RGBToString(dlg.GetColor());
+
+			if (OnAfterEdit(strValue))
+			{
+				OnValueChanged(strValue);
+				SAFE_INVALIDATE(pGrid);
+			}
+		}
+		else
+		{
+			OnCancelEdit();
+		}
+
+		InternalRelease();
 	}
-
-	for (i = (int)m_arrOutputConnections.GetSize() - 1; i >= 0; i--)
-	{
-		m_arrOutputConnections[i]->Remove();
-	}
-
-	// Removed Connections should update them
-	ASSERT(m_arrInputConnections.GetSize() == 0);
-	ASSERT(m_arrOutputConnections.GetSize() == 0);
-
-	CXTPFlowGraphElement::OnRemoved();
 }
 
 

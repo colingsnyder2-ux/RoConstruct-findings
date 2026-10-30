@@ -1,14 +1,13 @@
-// from server: 41% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Controls/Dialog/XTPColorPageStandard.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageStandard.cpp
 
 // Candidate translation unit (score above; library headers required).
-// XTPColorPageStandard.cpp : implementation file
+// XTColorPageStandard.cpp : implementation file
 //
 // This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,13 +25,14 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Resource.h"
 
+#include "Common/XTPColorManager.h"
 #include "Common/XTPDrawHelpers.h"
 
-#include "../Resource.h"
-#include "../Defines.h"
-#include "XTPColorDialog.h"
-#include "XTPColorPageStandard.h"
+#include "XTDefines.h"
+#include "XTColorDialog.h"
+#include "XTColorPageStandard.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -40,123 +40,175 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CXTPColorHex::CRgnCell
-
-#define XTP_CXCELL   28
-#define XTP_CYCELL   30
-#define XTP_CXSMCELL 14
-#define XTP_CYSMCELL 15
-
-CXTPColorHex::CRgnCell::CRgnCell(CRect& rect, COLORREF color, int u, int d)
-: m_color(color)
+const COLORREF CXTColorHex::clrSelArray[] =
 {
-	m_iCell[0] = u;
-	m_iCell[1] = d;
+	RGB(0x00, 0x33, 0x66), // row 1
+	RGB(0x33, 0x66, 0x99),
+	RGB(0x33, 0x66, 0xCC),
+	RGB(0x00, 0x33, 0x99),
+	RGB(0x00, 0x00, 0x99),
+	RGB(0x00, 0x00, 0xCC),
+	RGB(0x00, 0x00, 0x66),
 
-	rect.OffsetRect(XTP_CXSMCELL, 0);
-	m_rect = rect;
+	RGB(0x00, 0x66, 0x66), // row 2
+	RGB(0x00, 0x66, 0x99),
+	RGB(0x00, 0x99, 0xCC),
+	RGB(0x00, 0x66, 0xCC),
+	RGB(0x00, 0x33, 0xCC),
+	RGB(0x00, 0x00, 0xFF),
+	RGB(0x33, 0x33, 0xFF),
+	RGB(0x33, 0x33, 0x99),
 
-	m_pts[0] = CPoint(rect.left+7, rect.top);
-	m_pts[1] = CPoint(rect.right, rect.top+4);
-	m_pts[2] = CPoint(rect.right, rect.top+12);
-	m_pts[3] = CPoint(rect.left+7, rect.bottom+1);
-	m_pts[4] = CPoint(rect.left, rect.top+12);
-	m_pts[5] = CPoint(rect.left, rect.top+4);
+	RGB(0x00, 0x80, 0x80), // row 3
+	RGB(0x00, 0x99, 0x99),
+	RGB(0x33, 0xCC, 0xCC),
+	RGB(0x00, 0xCC, 0xFF),
+	RGB(0x00, 0x99, 0xFF),
+	RGB(0x00, 0x66, 0xFF),
+	RGB(0x33, 0x66, 0xFF),
+	RGB(0x33, 0x33, 0xCC),
+	RGB(0x66, 0x66, 0x99),
 
-	VERIFY(CreatePolygonRgn(m_pts, 6, WINDING));
-}
+	RGB(0x33, 0x99, 0x66), // row 4
+	RGB(0x00, 0xCC, 0x99),
+	RGB(0x00, 0xFF, 0xCC),
+	RGB(0x00, 0xFF, 0xFF),
+	RGB(0x33, 0xCC, 0xFF),
+	RGB(0x33, 0x99, 0xFF),
+	RGB(0x66, 0x99, 0xFF),
+	RGB(0x66, 0x66, 0xFF),
+	RGB(0x66, 0x00, 0xFF),
+	RGB(0x66, 0x00, 0xCC),
 
-CXTPColorHex::CRgnCell::CRgnCell(CRect& rect, COLORREF color, int u, int d, int x, int y, BOOL bLarge /*=FALSE*/)
-: m_color(color)
+	RGB(0x33, 0x99, 0x33), // row 5
+	RGB(0x00, 0xCC, 0x66),
+	RGB(0x00, 0xFF, 0x99),
+	RGB(0x66, 0xFF, 0xCC),
+	RGB(0x66, 0xFF, 0xFF),
+	RGB(0x66, 0xCC, 0xFF),
+	RGB(0x99, 0xCC, 0xFF),
+	RGB(0x99, 0x99, 0xFF),
+	RGB(0x99, 0x66, 0xFF),
+	RGB(0x99, 0x33, 0xFF),
+	RGB(0x99, 0x00, 0xFF),
+
+	RGB(0x00, 0x66, 0x00), // row 6
+	RGB(0x00, 0xCC, 0x00),
+	RGB(0x00, 0xFF, 0x00),
+	RGB(0x66, 0xFF, 0x99),
+	RGB(0x99, 0xFF, 0xCC),
+	RGB(0xCC, 0xFF, 0xFF),
+	RGB(0xCC, 0xEC, 0xFF),
+	RGB(0xCC, 0xCC, 0xFF),
+	RGB(0xCC, 0x99, 0xFF),
+	RGB(0xCC, 0x66, 0xFF),
+	RGB(0xCC, 0x00, 0xFF),
+	RGB(0x99, 0x00, 0xCC),
+
+	RGB(0x00, 0x33, 0x00), // row 7
+	RGB(0x00, 0x80, 0x00),
+	RGB(0x33, 0xCC, 0x33),
+	RGB(0x66, 0xFF, 0x66),
+	RGB(0x99, 0xFF, 0x99),
+	RGB(0xCC, 0xFF, 0xCC),
+	RGB(0xFF, 0xFF, 0xFF),
+	RGB(0xFF, 0xCC, 0xFF),
+	RGB(0xFF, 0x99, 0xFF),
+	RGB(0xFF, 0x66, 0xFF),
+	RGB(0xFF, 0x00, 0xFF),
+	RGB(0xCC, 0x00, 0xCC),
+	RGB(0x66, 0x00, 0x66),
+
+	RGB(0x33, 0x66, 0x00), // row 8
+	RGB(0x00, 0x99, 0x00),
+	RGB(0x66, 0xFF, 0x33),
+	RGB(0x99, 0xFF, 0x66),
+	RGB(0xCC, 0xFF, 0x99),
+	RGB(0xFF, 0xFF, 0xCC),
+	RGB(0xFF, 0xCC, 0xCC),
+	RGB(0xFF, 0x99, 0xCC),
+	RGB(0xFF, 0x66, 0xCC),
+	RGB(0xFF, 0x33, 0xCC),
+	RGB(0xCC, 0x00, 0x99),
+	RGB(0x80, 0x00, 0x80),
+
+	RGB(0x33, 0x33, 0x00), // row 9
+	RGB(0x66, 0x99, 0x00),
+	RGB(0x99, 0xFF, 0x33),
+	RGB(0xCC, 0xFF, 0x66),
+	RGB(0xFF, 0xFF, 0x99),
+	RGB(0xFF, 0xCC, 0x99),
+	RGB(0xFF, 0x99, 0x99),
+	RGB(0xFF, 0x66, 0x99),
+	RGB(0xFF, 0x33, 0x99),
+	RGB(0xCC, 0x33, 0x99),
+	RGB(0x99, 0x00, 0x99),
+
+	RGB(0x66, 0x66, 0x33), // row 10
+	RGB(0x99, 0xCC, 0x00),
+	RGB(0xCC, 0xFF, 0x33),
+	RGB(0xFF, 0xFF, 0x66),
+	RGB(0xFF, 0xCC, 0x66),
+	RGB(0xFF, 0x99, 0x66),
+	RGB(0xFF, 0x7C, 0x80),
+	RGB(0xFF, 0x00, 0x66),
+	RGB(0xD6, 0x00, 0x93),
+	RGB(0x99, 0x33, 0x66),
+
+	RGB(0x80, 0x80, 0x00), // row 11
+	RGB(0xCC, 0xCC, 0x00),
+	RGB(0xFF, 0xFF, 0x00),
+	RGB(0xFF, 0xCC, 0x00),
+	RGB(0xFF, 0x99, 0x33),
+	RGB(0xFF, 0x66, 0x00),
+	RGB(0xFF, 0x50, 0x50),
+	RGB(0xCC, 0x00, 0x66),
+	RGB(0x66, 0x00, 0x33),
+
+	RGB(0x99, 0x66, 0x33), // row 12
+	RGB(0xCC, 0x99, 0x00),
+	RGB(0xFF, 0x99, 0x00),
+	RGB(0xCC, 0x66, 0x00),
+	RGB(0xFF, 0x33, 0x00),
+	RGB(0xFF, 0x00, 0x00),
+	RGB(0xCC, 0x00, 0x00),
+	RGB(0x99, 0x00, 0x33),
+
+	RGB(0x66, 0x33, 0x00), // row 13
+	RGB(0x99, 0x66, 0x00),
+	RGB(0xCC, 0x33, 0x00),
+	RGB(0x99, 0x33, 0x00),
+	RGB(0x99, 0x00, 0x00),
+	RGB(0x80, 0x00, 0x00),
+	RGB(0xA5, 0x00, 0x21),
+
+	RGB(0xF8, 0xF8, 0xF8), // row 1 (gray scale)
+	RGB(0xDD, 0xDD, 0xDD),
+	RGB(0xB2, 0xB2, 0xB2),
+	RGB(0x80, 0x80, 0x80),
+	RGB(0x5F, 0x5F, 0x5F),
+	RGB(0x33, 0x33, 0x33),
+	RGB(0x1C, 0x1C, 0x1C),
+	RGB(0x08, 0x08, 0x08),
+
+	RGB(0xEA, 0xEA, 0xEA), // row 2 (gray scale)
+	RGB(0xC0, 0xC0, 0xC0),
+	RGB(0x96, 0x96, 0x96),
+	RGB(0x77, 0x77, 0x77),
+	RGB(0x4D, 0x4D, 0x4D),
+	RGB(0x29, 0x29, 0x29),
+	RGB(0x11, 0x11, 0x11),
+
+	RGB(0xFF, 0xFF, 0xFF), // large white cell
+	RGB(0x00, 0x00, 0x00)   // large black cell
+};
+
+bool CXTColorHex::IsValidColor(COLORREF cr) const
 {
-	m_iCell[0] = u;
-	m_iCell[1] = d;
-
-	rect = CRect(x, y, x + (bLarge? XTP_CXCELL: XTP_CXSMCELL), y + (bLarge? XTP_CYCELL: XTP_CYSMCELL));
-	m_rect = rect;
-
-	if (bLarge)
+	int i;
+	for (i = 0; i < _countof(clrSelArray); ++i)
 	{
-		m_pts[0] = CPoint(rect.left+14, rect.top);
-		m_pts[1] = CPoint(rect.right, rect.top+8);
-		m_pts[2] = CPoint(rect.right, rect.top+24);
-		m_pts[3] = CPoint(rect.left+14, rect.bottom+2);
-		m_pts[4] = CPoint(rect.left, rect.top+24);
-		m_pts[5] = CPoint(rect.left, rect.top+8);
-	}
-	else
-	{
-		m_pts[0] = CPoint(rect.left+7, rect.top);
-		m_pts[1] = CPoint(rect.right, rect.top+4);
-		m_pts[2] = CPoint(rect.right, rect.top+12);
-		m_pts[3] = CPoint(rect.left+7, rect.bottom+1);
-		m_pts[4] = CPoint(rect.left, rect.top+12);
-		m_pts[5] = CPoint(rect.left, rect.top+4);
-	}
-
-	VERIFY(CreatePolygonRgn(m_pts, 6, WINDING));
-}
-
-BOOL CXTPColorHex::CRgnCell::DrawCell(CDC* pDC)
-{
-	if (pDC->GetSafeHdc())
-	{
-		CBrush brush(m_color);
-		return pDC->FillRgn(this, &brush);
-	}
-	return FALSE;
-}
-
-BOOL CXTPColorHex::CRgnCell::DrawSelection(CDC* pDC)
-{
-	if (!pDC->GetSafeHdc())
-		return FALSE;
-
-	CBrush brush(RGB(0xff,0xff,0xff));
-	if (pDC->FrameRgn(this, &brush, 4, 2))
-	{
-		CXTPBrushDC brushDC(*pDC, RGB(0x00,0x00,0x00));
-
-		CPoint pts[6];
-
-		int i;
-		for (i = 0; i < 6; ++i)
-		{
-			pts[i] = m_pts[i];
-		}
-
-		pts[0].Offset( 0, 4);
-		pts[1].Offset(-4, 2);
-		pts[2].Offset(-4,-2);
-		pts[3].Offset( 0,-4);
-		pts[4].Offset( 4,-2);
-		pts[5].Offset( 4, 2);
-
-		for (i = 0; i < 6; ++i)
-		{
-			pDC->MoveTo(m_pts[i]);
-			pDC->LineTo(m_pts[((i+1)<6)?(i+1):0]);
-
-			pDC->MoveTo(pts[i]);
-			pDC->LineTo(pts[((i+1)<6)?(i+1):0]);
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPColorHex
-
-bool CXTPColorHex::IsValidColor(COLORREF color) const
-{
-	for (POSITION pos = m_rgnList.GetHeadPosition(); pos;)
-	{
-		CRgnCell* pCell = m_rgnList.GetNext(pos);
-		if (pCell && pCell->m_color == color)
+		if (cr == clrSelArray[i])
 		{
 			return true;
 		}
@@ -164,27 +216,29 @@ bool CXTPColorHex::IsValidColor(COLORREF color) const
 	return false;
 }
 
-CXTPColorHex::CXTPColorHex()
-: m_clrColor((COLORREF)-1)
-, m_bPreSubclassInit(true)
-, m_pCell(NULL)
-{
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorHex
 
+CXTColorHex::CXTColorHex()
+{
+	m_bSmallCell = TRUE;
+	m_clrColor = (COLORREF)-1;
+	m_bLBtnDown = FALSE;
+	m_bPreSubclassInit = true;
 }
 
-CXTPColorHex::~CXTPColorHex()
+CXTColorHex::~CXTColorHex()
 {
-	while (!m_rgnList.IsEmpty())
+	while (!m_arCells.IsEmpty())
 	{
-		CRgnCell* pCell = m_rgnList.RemoveHead();
-		SAFE_DELETE(pCell);
+		HEXCOLOR_CELL* pCI = m_arCells.RemoveHead();
+		SAFE_DELETE_AR (pCI->pPoint);
+		SAFE_DELETE (pCI);
 	}
 }
 
-IMPLEMENT_DYNAMIC(CXTPColorHex, CStatic)
-
-BEGIN_MESSAGE_MAP(CXTPColorHex, CStatic)
-	//{{AFX_MSG_MAP(CXTPColorHex)
+BEGIN_MESSAGE_MAP(CXTColorHex, CStatic)
+	//{{AFX_MSG_MAP(CXTColorHex)
 	ON_WM_PAINT()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
@@ -195,10 +249,12 @@ BEGIN_MESSAGE_MAP(CXTPColorHex, CStatic)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+#define CX_ANCHOR   42
+#define CY_ANCHOR   3
 #define CX_HEXDISP  182
-#define CY_HEXDISP  199
+#define CY_HEXDISP  196
 
-void CXTPColorHex::OnPaint()
+void CXTColorHex::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
@@ -226,365 +282,1157 @@ void CXTPColorHex::OnPaint()
 		}
 		else
 		{
-			dcPicker.FillSolidRect(rc, ::GetSysColor(COLOR_3DFACE));
+			dcPicker.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
 		}
 
-		for (POSITION pos = m_rgnList.GetHeadPosition(); pos;)
-		{
-			CRgnCell* pCell = m_rgnList.GetNext(pos);
-			if (pCell)
-			{
-				pCell->DrawCell(&dcPicker);
-			}
-		}
-
+		DrawColorSelector(&dcPicker);
 		dcPicker.SelectObject(pOldBitmap);
 	}
 
 	memDC.DrawState(CPoint(0, 0), rc.Size(), &m_bmpPicker, DSS_NORMAL, 0);
-
-	if (m_pCell)
-	{
-		// if white is selected we need to draw a selection for
-		// both the large and small cells.
-		if (m_pCell->m_color == RGB(0xff,0xff,0xff))
-		{
-			for (POSITION pos = m_rgnList.GetHeadPosition(); pos;)
-			{
-				CRgnCell* pCell = m_rgnList.GetNext(pos);
-				if (pCell && pCell->m_color == RGB(0xff,0xff,0xff))
-				{
-					pCell->DrawSelection(&memDC);
-				}
-			}
-		}
-
-		// otherwise just draw selection the color.
-		else
-		{
-			m_pCell->DrawSelection(&memDC);
-		}
-	}
+	SelectColorCell(&memDC);
 }
 
-BOOL CXTPColorHex::OnEraseBkgnd(CDC* pDC)
+BOOL CXTColorHex::OnEraseBkgnd(CDC* /*pDC*/)
 {
-	UNREFERENCED_PARAMETER(pDC);
 	return TRUE;
 }
 
-#define XOFFSET(x,cx) (x+(7*cx))
-
-void CXTPColorHex::CreateCellArray()
+void CXTColorHex::SelectColorCell(CDC* pDC)
 {
-	CXTPClientRect rcClient(this);
-	int x = (rcClient.Width()-CX_HEXDISP)/2;
-	int y = 10; /*(rcClient.Height()-CY_HEXDISP)/2*/
-
-	CXTPEmptyRect rect; // row 1
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x80), -1, 8, XOFFSET(x,6), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x69,0x80), -1, 9));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x54,0x80), -1, 10));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x3d,0x80), -1, 11));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x27,0x80), -1, 12));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x12,0x80), -1, 13));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x00,0x80), -1, 14));
-
-	y+=12; // row 2
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x69), -1, 16, XOFFSET(x,5), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0xc0),  0, 17));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xa0,0xc0),  1, 18));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0xc0),  2, 19));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x4b,0xc0),  3, 20));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x24,0xc0),  4, 21));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x00,0xc0),  5, 22));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x12,0x00,0x80),  6, 23));
-
-	y+=12; // row 3
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x54),  6, 25, XOFFSET(x,4), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0xa0),  7, 26));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xff,0xff),  8, 27));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0xff),  9, 28));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0xff), 10, 29));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x46,0xff), 11, 30));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x00,0xff), 12, 31));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x24,0x00,0xc0), 13, 32));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x27,0x00,0x80), 14, 33));
-
-	y+=12; // row 4
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x3d), 14, 35, XOFFSET(x,3), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0x80), 15, 36));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xff,0xc0), 16, 37));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0xff,0xff), 17, 38));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0xc0,0xff), 18, 39));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0x80,0xff), 19, 40));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0x57,0xff), 20, 41));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x46,0x00,0xff), 21, 42));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x4e,0x00,0xc0), 22, 43));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x3d,0x00,0x80), 23, 44));
-
-	y+=12; // row 5
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x27), 23, 46, XOFFSET(x,2), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0x4b), 24, 47));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xff,0x80), 25, 48));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0xff,0xc0), 26, 49));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa0,0xff,0xff), 27, 50));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa0,0xc0,0xff), 28, 51));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa0,0xa0,0xff), 29, 52));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x57,0xff), 30, 53));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0xff), 31, 54));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0xc0), 32, 55));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x56,0x00,0x80), 33, 56));
-
-	y+=12; // row 6
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x12), 33, 58, XOFFSET(x,1), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0x24), 34, 59));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xff,0x46), 35, 60));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0xff,0x80), 36, 61));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa0,0xff,0xc0), 37, 62));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xcc,0xff,0xff), 38, 63));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc3,0xda,0xed), 39, 64));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0xa0,0xff), 40, 65));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x57,0xff), 41, 66));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0xff), 42, 67));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa3,0x00,0xc0), 43, 68));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x6b,0x00,0x80), 44, 69));
-
-	y+=12; // row 7
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x80,0x00), 44, 70, x, y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xc0,0x00), 45, 71));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0xff,0x00), 46, 72));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x57,0xff,0x57), 47, 73));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa0,0xff,0xa0), 48, 74));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xcc,0xff,0xcc), 49, 75));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xff,0xff), 50, 76));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xcc,0xff), 51, 77));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xa0,0xff), 52, 78));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x57,0xff), 53, 79));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x00,0xff), 54, 80));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0xc0), 55, 81));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x80), 56, 82));
-
-	y+=12; // row 8
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x12,0x80,0x00), 57, 82, XOFFSET(x,1), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x24,0xc0,0x00), 58, 83));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x46,0xff,0x00), 59, 84));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0xff,0x57), 60, 85));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0xff,0xa0), 61, 86));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xff,0xcc), 62, 87));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xcc,0xcc), 63, 88));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xa0,0xc0), 64, 89));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x57,0xc0), 65, 90));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x00,0xc0), 66, 91));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0x9d), 67, 92));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x67), 68, 93));
-
-	y+=12; // row 9
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x27,0x80,0x00), 70, 93, XOFFSET(x,2), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x4e,0xc0,0x00), 71, 94));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0xff,0x00), 72, 95));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0xff,0x57), 73, 96));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xff,0xa0), 74, 97));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xc0,0xa0), 75, 98));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xa0,0xa0), 76, 99));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x57,0x80), 77, 100));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x00,0x80), 78, 101));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0x80), 79, 102));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x52), 80, 103));
-
-	y+=12; // row 10
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x3d,0x80,0x00), 82, 103, XOFFSET(x,3), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0xc0,0x00), 83, 104));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0xff,0x00), 84, 105));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xff,0x57), 85, 106));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xc0,0x57), 86, 107));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x80,0x57), 87, 108));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x57,0x57), 88, 109));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x00,0x42), 89, 110));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0x4b), 90, 111));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x3b), 91, 112));
-
-	y+=12; // row 11
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x56,0x80,0x00),  93, 112, XOFFSET(x,4), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xa3,0xc0,0x00),  94, 113));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xff,0x00),  95, 114));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xc0,0x00),  96, 115));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x80,0x00),  97, 116));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x42,0x00),  98, 117));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0x00,0x00),  99, 118));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0x20), 100, 119));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x25), 101, 120));
-
-	y+=12; // row 12
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x6b,0x80,0x00), 103, 120, XOFFSET(x,5), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0xc0,0x00), 104, 121));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x9d,0x00), 105, 122));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x80,0x00), 106, 123));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x4b,0x00), 107, 124));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x20,0x00), 108, 125));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0x00,0x00), 109, 126));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x10), 110, 142));
-
-	y+=12; // row 13
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x80,0x00), 112, 121, XOFFSET(x,6), y));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x67,0x00), 113, 122));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x52,0x00), 114, 123));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x3b,0x00), 115, 124));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x25,0x00), 116, 125));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x10,0x00), 117, 126));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x00,0x00), 118, 127));
-
-	y+=24; // large white cell
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xff,0xff,0xff), 126, 128, x, y, TRUE));
-
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xf8,0xf8,0xf8), 127, 129, XOFFSET(x,5), y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xea,0xea,0xea), 128, 130, XOFFSET(x,6), y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xdd,0xdd,0xdd), 129, 131, XOFFSET(x,5)+14, y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xc0,0xc0,0xc0), 130, 132, XOFFSET(x,6)+14, y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0xb2,0xb2,0xb2), 131, 133, XOFFSET(x,5)+14*2, y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x96,0x96,0x96), 132, 134, XOFFSET(x,6)+14*2, y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x80,0x80,0x80), 133, 135, XOFFSET(x,5)+14*3, y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x77,0x77,0x77), 134, 136, XOFFSET(x,6)+14*3, y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x5f,0x5f,0x5f), 135, 137, XOFFSET(x,5)+14*4, y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x4d,0x4d,0x4d), 136, 138, XOFFSET(x,6)+14*4, y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x33,0x33,0x33), 137, 139, XOFFSET(x,5)+14*5, y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x29,0x29,0x29), 138, 140, XOFFSET(x,6)+14*5, y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x1c,0x1c,0x1c), 139, 141, XOFFSET(x,5)+14*6, y+4));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x11,0x11,0x11), 140, 142, XOFFSET(x,6)+14*6, y+16));
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x08,0x08,0x08), 141, 143, XOFFSET(x,5)+14*7, y+4));
-
-	// large black cell
-	m_rgnList.AddTail(new CRgnCell(rect, RGB(0x00,0x00,0x00), 142, -1, XOFFSET(x,22), y, TRUE));
-
-	// the color can be set using SetSelectedColor(color) before the
-	// window is initialized, so check here and set the active color
-	// pointer as well.
-
-	if (m_clrColor != (COLORREF)-1)
+	CXTColorDialog* pParentWnd = (CXTColorDialog*)GetParent()->GetParent();
+	ASSERT(pParentWnd);
+	if (!pParentWnd)
+		return;
+	if (pParentWnd->GetColor() == m_clrColor)
 	{
-		if (!m_pCell)
+		if (m_clrColor == RGB(0xff, 0xff, 0xff))
 		{
-			m_pCell = GetColorCell(m_clrColor);
+			CXTPClientRect rcClient(this);
+			CPoint ptCurrent = m_ptCurrent;
+
+			m_ptCurrent.x = (rcClient.Width()-14)/2;
+			m_ptCurrent.y = 74 + CY_ANCHOR;
+			DrawSelectCell(pDC);
+
+			m_ptCurrent.x = (rcClient.Width()-CX_HEXDISP)/2;
+			m_ptCurrent.y = 171 + CY_ANCHOR;
+			DrawLargeSelectCell(pDC);
+
+			m_ptCurrent = ptCurrent;
 		}
-	}
-}
-
-BOOL CXTPColorHex::UpdateSelection(CPoint point, BOOL bNotify /*=TRUE*/)
-{
-	for (POSITION pos = m_rgnList.GetHeadPosition(); pos;)
-	{
-		CRgnCell* pCell = m_rgnList.GetNext(pos);
-		if (pCell && pCell->PtInRegion(point))
+		else if (m_clrColor == RGB(0x00, 0x00, 0x00))
 		{
-			return UpdateSelection(pCell, bNotify);
+			DrawLargeSelectCell(pDC);
 		}
-	}
-	return FALSE;
-}
-
-BOOL CXTPColorHex::UpdateSelection(CRgnCell* pCell, BOOL bNotify /*=TRUE*/)
-{
-	if (pCell)
-	{
-		COLORREF color = pCell->m_color;
-
-		if (m_clrColor != color)
+		else if (IsValidColor(m_clrColor))
 		{
-			m_pCell = pCell;
-			m_clrColor = color;
-
-			CWnd* pWnd = GetOwner();
-			if (pWnd && bNotify)
+			if (m_bSmallCell)
 			{
-				pWnd->SendMessage(WM_XTP_UPDATECOLOR,
-					(WPARAM)m_clrColor, (LPARAM)m_hWnd);
+				DrawSelectCell(pDC);
+			}
+			else
+			{
+				DrawLargeSelectCell(pDC);
 			}
 		}
 	}
-	else
-	{
-		m_clrColor = (COLORREF)-1;
-		m_pCell = NULL;
-	}
-
-	if (::IsWindow(m_hWnd))
-	{
-		RedrawWindow();
-	}
-
-	return (m_pCell != NULL);
 }
 
-void CXTPColorHex::OnLButtonDown(UINT nFlags, CPoint point)
+void CXTColorHex::DrawLargeSelectCell(CDC* pDC)
 {
-	if (GetFocus() != this)
-		SetFocus();
+	int x = m_ptCurrent.x;
+	int y = m_ptCurrent.y;
+	x -= 2;
 
-	if (UpdateSelection(point))
+	COLORREF clr = RGB(0x00, 0x00, 0x00);
+
+	// outer border
+	int i;
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + i, y-i, clr);
+
+	pDC->SetPixel(x + 3, y-2, clr);
+	pDC->SetPixel(x + 4, y-3, clr);
+	pDC->SetPixel(x + 5, y-3, clr);
+	pDC->SetPixel(x + 6, y-4, clr);
+	pDC->SetPixel(x + 7, y-4, clr);
+	pDC->SetPixel(x + 8, y-5, clr);
+	pDC->SetPixel(x + 9, y-5, clr);
+	pDC->SetPixel(x + 10, y-6, clr);
+	pDC->SetPixel(x + 11, y-6, clr);
+	pDC->SetPixel(x + 12, y-7, clr);
+	pDC->SetPixel(x + 13, y-7, clr);
+	pDC->SetPixel(x + 14, y-8, clr);
+	pDC->SetPixel(x + 15, y-8, clr);
+	pDC->SetPixel(x + 16, y-8, clr);
+	pDC->SetPixel(x + 17, y-8, clr);
+	pDC->SetPixel(x + 18, y-8, clr);
+	pDC->SetPixel(x + 19, y-7, clr);
+	pDC->SetPixel(x + 20, y-7, clr);
+	pDC->SetPixel(x + 21, y-6, clr);
+	pDC->SetPixel(x + 22, y-6, clr);
+	pDC->SetPixel(x + 23, y-5, clr);
+	pDC->SetPixel(x + 24, y-5, clr);
+	pDC->SetPixel(x + 25, y-4, clr);
+	pDC->SetPixel(x + 26, y-4, clr);
+	pDC->SetPixel(x + 27, y-3, clr);
+	pDC->SetPixel(x + 28, y-3, clr);
+	pDC->SetPixel(x + 29, y-2, clr);
+	pDC->SetPixel(x + 30, y-2, clr);
+	pDC->SetPixel(x + 31, y-1, clr);
+
+	for (i = 0; i < 17; ++i)
+		pDC->SetPixel(x + 32, y + i, clr);
+
+	pDC->SetPixel(x + 31, y + 17, clr);
+	pDC->SetPixel(x + 30, y + 18, clr);
+	pDC->SetPixel(x + 29, y + 18, clr);
+	pDC->SetPixel(x + 28, y + 19, clr);
+	pDC->SetPixel(x + 27, y + 19, clr);
+	pDC->SetPixel(x + 26, y + 20, clr);
+	pDC->SetPixel(x + 25, y + 20, clr);
+	pDC->SetPixel(x + 24, y + 21, clr);
+	pDC->SetPixel(x + 23, y + 21, clr);
+	pDC->SetPixel(x + 22, y + 22, clr);
+	pDC->SetPixel(x + 21, y + 22, clr);
+	pDC->SetPixel(x + 20, y + 23, clr);
+	pDC->SetPixel(x + 19, y + 23, clr);
+	pDC->SetPixel(x + 18, y + 24, clr);
+	pDC->SetPixel(x + 17, y + 24, clr);
+	pDC->SetPixel(x + 16, y + 24, clr);
+	pDC->SetPixel(x + 15, y + 24, clr);
+	pDC->SetPixel(x + 14, y + 24, clr);
+	pDC->SetPixel(x + 13, y + 23, clr);
+	pDC->SetPixel(x + 12, y + 23, clr);
+	pDC->SetPixel(x + 11, y + 22, clr);
+	pDC->SetPixel(x + 10, y + 22, clr);
+	pDC->SetPixel(x + 9, y + 21, clr);
+	pDC->SetPixel(x + 8, y + 21, clr);
+	pDC->SetPixel(x + 7, y + 20, clr);
+	pDC->SetPixel(x + 6, y + 20, clr);
+	pDC->SetPixel(x + 5, y + 19, clr);
+	pDC->SetPixel(x + 4, y + 19, clr);
+	pDC->SetPixel(x + 3, y + 18, clr);
+	pDC->SetPixel(x + 2, y + 18, clr);
+	pDC->SetPixel(x + 1, y + 17, clr);
+
+	for (i = 0; i < 17; ++i)
+		pDC->SetPixel(x, y + i, clr);
+
+	// inner border
+	for (i = 0; i < 15; ++i)
+		pDC->SetPixel(x + 4, y + 1 + i, clr);
+
+	pDC->SetPixel(x + 5, y + 16, clr);
+	pDC->SetPixel(x + 6, y + 16, clr);
+	pDC->SetPixel(x + 7, y + 17, clr);
+	pDC->SetPixel(x + 8, y + 17, clr);
+	pDC->SetPixel(x + 9, y + 18, clr);
+	pDC->SetPixel(x + 10, y + 18, clr);
+	pDC->SetPixel(x + 11, y + 19, clr);
+	pDC->SetPixel(x + 12, y + 19, clr);
+	pDC->SetPixel(x + 13, y + 20, clr);
+	pDC->SetPixel(x + 14, y + 20, clr);
+	pDC->SetPixel(x + 15, y + 21, clr);
+	pDC->SetPixel(x + 16, y + 21, clr);
+	pDC->SetPixel(x + 17, y + 21, clr);
+	pDC->SetPixel(x + 18, y + 20, clr);
+	pDC->SetPixel(x + 19, y + 20, clr);
+	pDC->SetPixel(x + 20, y + 19, clr);
+	pDC->SetPixel(x + 21, y + 19, clr);
+	pDC->SetPixel(x + 22, y + 18, clr);
+	pDC->SetPixel(x + 23, y + 18, clr);
+	pDC->SetPixel(x + 24, y + 17, clr);
+	pDC->SetPixel(x + 25, y + 17, clr);
+	pDC->SetPixel(x + 26, y + 16, clr);
+	pDC->SetPixel(x + 27, y + 16, clr);
+
+	for (i = 0; i < 15; ++i)
+		pDC->SetPixel(x + 28, y + 1 + i, clr);
+
+	pDC->SetPixel(x + 27, y, clr);
+	pDC->SetPixel(x + 26, y, clr);
+	pDC->SetPixel(x + 25, y-1, clr);
+	pDC->SetPixel(x + 24, y-1, clr);
+	pDC->SetPixel(x + 23, y-2, clr);
+	pDC->SetPixel(x + 22, y-2, clr);
+	pDC->SetPixel(x + 21, y-3, clr);
+	pDC->SetPixel(x + 20, y-3, clr);
+	pDC->SetPixel(x + 19, y-4, clr);
+	pDC->SetPixel(x + 18, y-4, clr);
+	pDC->SetPixel(x + 17, y-5, clr);
+	pDC->SetPixel(x + 16, y-5, clr);
+	pDC->SetPixel(x + 15, y-5, clr);
+	pDC->SetPixel(x + 14, y-4, clr);
+	pDC->SetPixel(x + 13, y-4, clr);
+	pDC->SetPixel(x + 12, y-3, clr);
+	pDC->SetPixel(x + 11, y-3, clr);
+	pDC->SetPixel(x + 10, y-2, clr);
+	pDC->SetPixel(x + 9, y-2, clr);
+	pDC->SetPixel(x + 8, y-1, clr);
+	pDC->SetPixel(x + 7, y-1, clr);
+	pDC->SetPixel(x + 6, y, clr);
+	pDC->SetPixel(x + 5, y, clr);
+
+	// fill inside.
+	clr = RGB(0xff, 0xff, 0xff);
+
+	for (i = 0; i < 17; ++i)
 	{
-		SetCapture();
+		pDC->SetPixel(x + 1, y + i, clr);
+		pDC->SetPixel(x + 2, y + i, clr);
+		pDC->SetPixel(x + 3, y + i, clr);
 	}
 
-	CStatic::OnLButtonDown(nFlags, point);
+	pDC->SetPixel(x + 4, y, clr);
+	pDC->SetPixel(x + 4, y + 16, clr);
+
+	for (i = 0; i < 17; ++i)
+	{
+		pDC->SetPixel(x + 29, y + i, clr);
+		pDC->SetPixel(x + 30, y + i, clr);
+		pDC->SetPixel(x + 31, y + i, clr);
+	}
+
+	pDC->SetPixel(x + 28, y, clr);
+	pDC->SetPixel(x + 28, y + 16, clr);
+
+	for (i = 0; i < 5; ++i)
+	{
+		pDC->SetPixel(x + 2 + i, y-1, clr);
+		pDC->SetPixel(x + 4 + i, y-2, clr);
+		pDC->SetPixel(x + 6 + i, y-3, clr);
+		pDC->SetPixel(x + 8 + i, y-4, clr);
+		pDC->SetPixel(x + 10 + i, y-5, clr);
+		pDC->SetPixel(x + 12 + i, y-6, clr);
+		pDC->SetPixel(x + 16 + i, y-6, clr);
+		pDC->SetPixel(x + 14 + i, y-7, clr);
+		pDC->SetPixel(x + 18 + i, y-5, clr);
+		pDC->SetPixel(x + 20 + i, y-4, clr);
+		pDC->SetPixel(x + 22 + i, y-3, clr);
+		pDC->SetPixel(x + 24 + i, y-2, clr);
+		pDC->SetPixel(x + 26 + i, y-1, clr);
+		pDC->SetPixel(x + 26 + i, y + 17, clr);
+		pDC->SetPixel(x + 24 + i, y + 18, clr);
+		pDC->SetPixel(x + 22 + i, y + 19, clr);
+		pDC->SetPixel(x + 20 + i, y + 20, clr);
+		pDC->SetPixel(x + 18 + i, y + 21, clr);
+		pDC->SetPixel(x + 14 + i, y + 23, clr);
+		pDC->SetPixel(x + 16 + i, y + 22, clr);
+		pDC->SetPixel(x + 12 + i, y + 22, clr);
+		pDC->SetPixel(x + 10 + i, y + 21, clr);
+		pDC->SetPixel(x + 8 + i, y + 20, clr);
+		pDC->SetPixel(x + 6 + i, y + 19, clr);
+		pDC->SetPixel(x + 4 + i, y + 18, clr);
+		pDC->SetPixel(x + 2 + i, y + 17, clr);
+	}
 }
 
-void CXTPColorHex::OnLButtonDblClk(UINT nFlags, CPoint point)
+void CXTColorHex::DrawSelectCell(CDC* pDC)
 {
-	if (GetFocus() != this)
-		SetFocus();
+	COLORREF clr = RGB(0x00, 0x00, 0x00);
+	int x = m_ptCurrent.x;
+	int y = m_ptCurrent.y;
+	x -= 2;
+	y -= 1;
 
-	if (UpdateSelection(point))
+	// outer border
+	int i;
+	for (i = 0; i < 11; ++i)
+		pDC->SetPixel(x, y + i, clr);
+
+	pDC->SetPixel(x + 1, y + 11, clr);
+	pDC->SetPixel(x + 2, y + 11, clr);
+	pDC->SetPixel(x + 3, y + 12, clr);
+	pDC->SetPixel(x + 4, y + 12, clr);
+	pDC->SetPixel(x + 5, y + 13, clr);
+	pDC->SetPixel(x + 6, y + 13, clr);
+
+	for (i = 0; i < 5; ++i)
+		pDC->SetPixel(x + 7 + i, y + 14, clr);
+
+	pDC->SetPixel(x + 12, y + 13, clr);
+	pDC->SetPixel(x + 13, y + 13, clr);
+	pDC->SetPixel(x + 14, y + 12, clr);
+	pDC->SetPixel(x + 15, y + 12, clr);
+	pDC->SetPixel(x + 16, y + 11, clr);
+	pDC->SetPixel(x + 17, y + 11, clr);
+
+	for (i = 0; i < 11; ++i)
+		pDC->SetPixel(x + 18, y + i, clr);
+
+	pDC->SetPixel(x + 16, y-1, clr);
+	pDC->SetPixel(x + 17, y-1, clr);
+	pDC->SetPixel(x + 14, y-2, clr);
+	pDC->SetPixel(x + 15, y-2, clr);
+	pDC->SetPixel(x + 12, y-3, clr);
+	pDC->SetPixel(x + 13, y-3, clr);
+
+	for (i = 0; i < 5; ++i)
+		pDC->SetPixel(x + 7 + i, y-4, clr);
+
+	pDC->SetPixel(x + 5, y-3, clr);
+	pDC->SetPixel(x + 6, y-3, clr);
+	pDC->SetPixel(x + 3, y-2, clr);
+	pDC->SetPixel(x + 4, y-2, clr);
+	pDC->SetPixel(x + 1, y-1, clr);
+	pDC->SetPixel(x + 2, y-1, clr);
+
+	// inner border
+	for (i = 0; i < 7; ++i)
+		pDC->SetPixel(x + 3, y + 2 + i, clr);
+
+	pDC->SetPixel(x + 4, y + 9, clr);
+	pDC->SetPixel(x + 5, y + 9, clr);
+	pDC->SetPixel(x + 6, y + 10, clr);
+	pDC->SetPixel(x + 7, y + 10, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 8 + i, y + 11, clr);
+
+	pDC->SetPixel(x + 11, y + 10, clr);
+	pDC->SetPixel(x + 12, y + 10, clr);
+	pDC->SetPixel(x + 13, y + 9, clr);
+	pDC->SetPixel(x + 14, y + 9, clr);
+
+	for (i = 0; i < 7; ++i)
+		pDC->SetPixel(x + 15, y + 2 + i, clr);
+
+	pDC->SetPixel(x + 13, y + 1, clr);
+	pDC->SetPixel(x + 14, y + 1, clr);
+	pDC->SetPixel(x + 11, y, clr);
+	pDC->SetPixel(x + 12, y, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 8 + i, y-1, clr);
+
+	pDC->SetPixel(x + 6, y, clr);
+	pDC->SetPixel(x + 7, y, clr);
+	pDC->SetPixel(x + 4, y + 1, clr);
+	pDC->SetPixel(x + 5, y + 1, clr);
+
+	// fill inside.
+	clr = RGB(0xff, 0xff, 0xff);
+	x++;
+
+	for (i = 0; i < 11; ++i)
 	{
-		CWnd* pWnd = GetOwner();
-		if (pWnd)
+		pDC->SetPixel(x, y + i, clr);
+		pDC->SetPixel(x + 1, y + i, clr);
+	}
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 2, y + 9 + i, clr);
+
+	pDC->SetPixel(x + 3, y + 10, clr);
+	pDC->SetPixel(x + 3, y + 11, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 4, y + 10 + i, clr);
+
+	pDC->SetPixel(x + 5, y + 11, clr);
+	pDC->SetPixel(x + 5, y + 12, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 6, y + 11 + i, clr);
+
+	pDC->SetPixel(x + 7, y + 12, clr);
+	pDC->SetPixel(x + 7, y + 13, clr);
+	pDC->SetPixel(x + 8, y + 12, clr);
+	pDC->SetPixel(x + 8, y + 13, clr);
+	pDC->SetPixel(x + 9, y + 12, clr);
+	pDC->SetPixel(x + 9, y + 13, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 10, y + 11 + i, clr);
+
+	pDC->SetPixel(x + 11, y + 11, clr);
+	pDC->SetPixel(x + 11, y + 12, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 12, y + 10 + i, clr);
+
+	pDC->SetPixel(x + 13, y + 10, clr);
+	pDC->SetPixel(x + 13, y + 11, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 14, y + 9 + i, clr);
+
+	for (i = 0; i < 11; ++i)
+	{
+		pDC->SetPixel(x + 15, y + i, clr);
+		pDC->SetPixel(x + 16, y + i, clr);
+	}
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 14, y-1 + i, clr);
+
+	pDC->SetPixel(x + 13, y, clr);
+	pDC->SetPixel(x + 13, y-1, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 12, y-2 + i, clr);
+
+	pDC->SetPixel(x + 11, y-1, clr);
+	pDC->SetPixel(x + 11, y-2, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 10, y-3 + i, clr);
+
+	pDC->SetPixel(x + 7, y-2, clr);
+	pDC->SetPixel(x + 7, y-3, clr);
+	pDC->SetPixel(x + 8, y-2, clr);
+	pDC->SetPixel(x + 8, y-3, clr);
+	pDC->SetPixel(x + 9, y-2, clr);
+	pDC->SetPixel(x + 9, y-3, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 6, y-3 + i, clr);
+
+	pDC->SetPixel(x + 5, y-1, clr);
+	pDC->SetPixel(x + 5, y-2, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 4, y-2 + i, clr);
+
+	pDC->SetPixel(x + 3, y, clr);
+	pDC->SetPixel(x + 3, y-1, clr);
+
+	for (i = 0; i < 3; ++i)
+		pDC->SetPixel(x + 2, y-1 + i, clr);
+}
+
+void CXTColorHex::DrawCell(CDC* pDC, CPoint point, COLORREF clr, int l, int u, int r, int d)
+{
+	HEXCOLOR_CELL* pCI = new HEXCOLOR_CELL;
+
+	CPen penNew(PS_SOLID, 1, clr);
+	CPen* pOldPen = pDC->SelectObject(&penNew);
+
+	pCI->clr = clr;
+	pCI->bSmall = TRUE;
+	pCI->pPoint = new CPoint[168];
+	pCI->direction[0] = l;
+	pCI->direction[1] = u;
+	pCI->direction[2] = r;
+	pCI->direction[3] = d;
+
+	m_arCells.AddTail(pCI);
+
+	if (clr == m_clrColor)
+	{
+		m_ptCurrent.x = point.x;
+		m_ptCurrent.y = point.y;
+	}
+
+	int idx = 0;
+	int i;
+	for (i = 0; i < 9; ++i)
+	{
+		CPoint point1(point.x, point.y + i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
 		{
-			pWnd->SendMessage(WM_XTP_COLORDBLCLK,
-				(WPARAM)m_clrColor, (LPARAM)MAKELPARAM(LOWORD(point.x),HIWORD(point.y)));
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 1, point.y + i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 11; ++i)
+	{
+		CPoint point1(point.x + 2, (point.y-1)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 3, (point.y-1)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 13; ++i)
+	{
+		CPoint point1(point.x + 4, (point.y-2)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 5, (point.y-2)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 15; ++i)
+	{
+		CPoint point1(point.x + 6, (point.y-3)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 7, (point.y-3)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+		CPoint point3(point.x + 8, (point.y-3)+i);
+		pDC->SetPixel(point3, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point3;
+			idx++;
+		}
+	}
+	for (i = 0; i < 13; ++i)
+	{
+		CPoint point1(point.x + 9, (point.y-2)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 10, (point.y-2)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 11; ++i)
+	{
+		CPoint point1(point.x + 11, (point.y-1)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 12, (point.y-1)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 9; ++i)
+	{
+		CPoint point1(point.x + 13, point.y + i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
 		}
 	}
 
+	pDC->SelectObject(pOldPen);
+}
+
+void CXTColorHex::DrawLargeCell(CDC* pDC, CPoint point, COLORREF clr, int l, int u, int r, int d)
+{
+	HEXCOLOR_CELL* pCI = new HEXCOLOR_CELL;
+
+	CPen penNew(PS_SOLID, 1, clr);
+	CPen* pOldPen = pDC->SelectObject(&penNew);
+
+	pCI->clr = clr;
+	pCI->bSmall = FALSE;
+	pCI->pPoint = new CPoint[691];
+	pCI->direction[0] = l;
+	pCI->direction[1] = u;
+	pCI->direction[2] = r;
+	pCI->direction[3] = d;
+
+	m_arCells.AddTail(pCI);
+
+	if (clr == m_clrColor)
+	{
+		m_ptCurrent.x = point.x;
+		m_ptCurrent.y = point.y;
+	}
+
+	int idx = 0;
+	int i;
+	for (i = 0; i < 17; ++i)
+	{
+		CPoint point1(point.x, point.y + i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 1, point.y + i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 19; ++i)
+	{
+		CPoint point1(point.x + 2, (point.y-1)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 3, (point.y-1)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 21; ++i)
+	{
+		CPoint point1(point.x + 4, (point.y-2)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 5, (point.y-2)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 23; ++i)
+	{
+		CPoint point1(point.x + 6, (point.y-3)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+	}
+	for (i = 0; i < 25; ++i)
+	{
+		CPoint point1(point.x + 7, (point.y-4)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 8, (point.y-4)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 27; ++i)
+	{
+		CPoint point1(point.x + 9, (point.y-5)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 10, (point.y-5)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 29; ++i)
+	{
+		CPoint point1(point.x + 11, (point.y-6)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 12, (point.y-6)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 31; ++i)
+	{
+		CPoint point1(point.x + 13, (point.y-7)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 14, (point.y-7)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+		CPoint point3(point.x + 15, (point.y-7)+i);
+		pDC->SetPixel(point3, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point3;
+			idx++;
+		}
+	}
+	for (i = 0; i < 29; ++i)
+	{
+		CPoint point1(point.x + 16, (point.y-6)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 17, (point.y-6)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 27; ++i)
+	{
+		CPoint point1(point.x + 18, (point.y-5)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 19, (point.y-5)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 25; ++i)
+	{
+		CPoint point1(point.x + 20, (point.y-4)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 21, (point.y-4)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 23; ++i)
+	{
+		CPoint point1(point.x + 22, (point.y-3)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+	}
+	for (i = 0; i < 21; ++i)
+	{
+		CPoint point1(point.x + 23, (point.y-2)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 24, (point.y-2)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 19; ++i)
+	{
+		CPoint point1(point.x + 25, (point.y-1)+i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 26, (point.y-1)+i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+	for (i = 0; i < 17; ++i)
+	{
+		CPoint point1(point.x + 27, point.y + i);
+		pDC->SetPixel(point1, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point1;
+			idx++;
+		}
+		CPoint point2(point.x + 28, point.y + i);
+		pDC->SetPixel(point2, clr);
+		if (pCI != NULL)
+		{
+			pCI->pPoint[idx] = point2;
+			idx++;
+		}
+	}
+
+	pDC->SelectObject(pOldPen);
+}
+
+void CXTColorHex::DrawColorSelector(CDC* pDC)
+{
+	CXTPClientRect rcClient(this);
+
+	int x = ((rcClient.Width()-CX_HEXDISP)/2)+CX_ANCHOR;
+	int y = CY_ANCHOR;
+
+	int i = -1;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], -1, -1, 1, 8);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 0, -1, 2, 9);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 1, -1, 3, 10);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 2, -1, 4, 11);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 3, -1, 5, 12);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 4, -1, 6, 13);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 5, -1, 7, 14);
+
+	x -= 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 6, -1, 8, 16);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 7, 0, 9, 17);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 8, 1, 10, 18);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 9, 2, 11, 19);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 10, 3, 12, 20);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 11, 4, 13, 21);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 12, 5, 14, 22);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 13, 6, 15, 23);
+
+	x -= 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 14, 6, 16, 25);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 15, 7, 17, 26);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 16, 8, 18, 27);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 17, 9, 19, 28);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 18, 10, 20, 29);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 19, 11, 21, 30);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 20, 12, 22, 31);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 21, 13, 23, 32);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 22, 14, 24, 33);
+
+	x -= 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 23, 14, 25, 35);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 24, 15, 26, 36);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 25, 16, 27, 37);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 26, 17, 28, 38);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 27, 18, 29, 39);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 28, 19, 30, 40);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 29, 20, 31, 41);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 30, 21, 32, 42);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 31, 22, 33, 43);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 32, 23, 34, 44);
+
+	x -= 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 33, 23, 35, 46);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 34, 24, 36, 47);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 35, 25, 37, 48);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 36, 26, 38, 49);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 37, 27, 39, 50);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 38, 28, 40, 51);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 39, 29, 41, 52);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 40, 30, 42, 53);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 41, 31, 43, 54);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 42, 32, 44, 55);
+	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 43, 33, 45, 56);
+
+	x -= 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 44, 33, 46, 58);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 45, 34, 47, 59);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 46, 35, 48, 60);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 47, 36, 49, 61);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 48, 37, 50, 62);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 49, 38, 51, 63);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 50, 39, 52, 64);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 51, 40, 53, 65);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 52, 41, 54, 66);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 53, 42, 55, 67);
+	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 54, 43, 56, 68);
+	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 55, 44, 57, 69);
+
+	x -= 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 56, 44, 58, 70);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 57, 45, 59, 71);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 58, 46, 60, 72);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 59, 47, 61, 73);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 60, 48, 62, 74);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 61, 49, 63, 75);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 62, 50, 64, 76);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 63, 51, 65, 77);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 64, 52, 66, 78);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 65, 53, 67, 79);
+	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 66, 54, 68, 80);
+	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 67, 55, 69, 81);
+	DrawCell(pDC, CPoint(x + 168, y), clrSelArray[++i], 68, 56, 70, 82);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 69, 57, 71, 82);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 70, 58, 72, 83);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 71, 59, 73, 84);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 72, 60, 74, 85);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 73, 61, 75, 86);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 74, 62, 76, 87);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 75, 63, 77, 88);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 76, 64, 78, 89);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 77, 65, 79, 90);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 78, 66, 80, 91);
+	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 79, 67, 81, 92);
+	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 80, 68, 82, 93);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 81, 70, 83, 93);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 82, 71, 84, 94);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 83, 72, 85, 95);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 84, 73, 86, 96);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 85, 74, 87, 97);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 86, 75, 88, 98);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 87, 76, 89, 99);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 88, 77, 90, 100);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 89, 78, 91, 101);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 90, 79, 92, 102);
+	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 91, 80, 93, 103);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 92, 82, 94, 103);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 93, 83, 95, 104);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 94, 84, 96, 105);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 95, 85, 97, 106);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 96, 86, 98, 107);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 97, 87, 99, 108);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 98, 88, 100, 109);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 99, 89, 101, 110);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 100, 90, 102, 111);
+	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 101, 91, 103, 112);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 102, 93, 104, 112);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 103, 94, 105, 113);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 104, 95, 106, 114);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 105, 96, 107, 115);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 106, 97, 108, 116);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 107, 98, 109, 117);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 108, 99, 110, 118);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 109, 100, 111, 119);
+	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 110, 101, 112, 120);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 111, 103, 113, 120);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 112, 104, 114, 121);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 113, 105, 115, 122);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 114, 106, 116, 123);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 115, 107, 117, 124);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 116, 108, 118, 125);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 117, 109, 119, 126);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 118, 110, 120, 142);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 119, 112, 121, 121);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 120, 113, 122, 122);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 121, 114, 123, 123);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 122, 115, 124, 124);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 123, 116, 125, 125);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 124, 117, 126, 126);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 125, 118, 142, 142);
+
+	// Grey scale colors.
+	x -= 7;
+	y += 25;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 142, 142, 135, 135);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 135, 135, 136, 136);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 136, 136, 137, 137);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 137, 137, 138, 138);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 138, 138, 139, 139);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 139, 139, 140, 140);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 140, 140, 141, 141);
+	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 141, 141, 143, 143);
+
+	x += 7;
+	y += 12;
+	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 127, 127, 128, 128);
+	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 128, 128, 129, 129);
+	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 129, 129, 130, 130);
+	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 130, 130, 131, 131);
+	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 131, 131, 132, 132);
+	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 132, 132, 133, 133);
+	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 133, 133, 134, 134);
+
+	x = (rcClient.Width() - CX_HEXDISP)/2;
+	DrawLargeCell(pDC, CPoint(x, y-12), clrSelArray[++i], 126, 126, 127, 127);
+
+	x = ((rcClient.Width() - CX_HEXDISP)/2) + (CX_HEXDISP-29);
+	DrawLargeCell(pDC, CPoint(x, y - 12), clrSelArray[++i], 134, 134, -1, -1);
+}
+
+void CXTColorHex::UpdateSelection(CPoint point)
+{
+	COLORREF clr = ColorFromPoint(point);
+
+	if ((clr != (COLORREF)-1) && (m_clrColor != clr))
+	{
+		m_clrColor = clr;
+		GetParent()->SendMessage(XTWM_UPDATECOLOR,
+			(WPARAM)(COLORREF)m_clrColor);
+
+		CRect rc;
+		GetClientRect(&rc);
+
+		CClientDC dc(this);
+		CXTPBufferDC memDC(dc, rc);
+
+		memDC.DrawState(CPoint(0, 0), rc.Size(), &m_bmpPicker, DSS_NORMAL, 0);
+		SelectColorCell(&memDC);
+	}
+}
+
+void CXTColorHex::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (GetFocus() != this)
+		SetFocus();
+
+	UpdateSelection(point);
+	m_bLBtnDown = TRUE;
+
+	CWnd::OnLButtonDown(nFlags, point);
+}
+
+
+void CXTColorHex::OnLButtonDblClk(UINT nFlags, CPoint point)
+{
 	CStatic::OnLButtonDblClk(nFlags, point);
+
+	if (GetFocus() != this)
+		SetFocus();
+
+	COLORREF clr = ColorFromPoint(point);
+
+	if (clr != (COLORREF)-1)
+	{
+		UpdateSelection(point);
+		m_bLBtnDown = TRUE;
+
+		CPropertyPage* pParentPage = (CPropertyPage*)GetParent();
+		ASSERT_VALID(pParentPage);
+
+		CPropertySheet* pParentSheet = (CPropertySheet*)pParentPage->GetParent();
+		ASSERT_VALID(pParentSheet);
+
+		pParentSheet->EndDialog(IDOK);
+	}
 }
 
-COLORREF CXTPColorHex::ColorFromPoint(CPoint point)
+COLORREF CXTColorHex::ColorFromPoint(CPoint point)
 {
-	for (POSITION pos = m_rgnList.GetHeadPosition(); pos;)
+	POSITION pos;
+	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
 	{
-		CRgnCell* pCell = m_rgnList.GetNext(pos);
-		if (pCell && pCell->PtInRegion(point))
+		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
+		ASSERT(pCI != NULL);
+
+		if (pCI == NULL)
+			return (COLORREF)-1;
+
+		int nPixelCount = pCI->bSmall ? 168 : 691;
+		int i;
+		for (i = 0; i < nPixelCount; ++i)
 		{
-			return pCell->m_color;
+			if (point == pCI->pPoint[i])
+			{
+				m_ptCurrent = pCI->pPoint[0];
+				m_bSmallCell = pCI->bSmall;
+				return pCI->clr;
+			}
 		}
 	}
+
 	return (COLORREF)-1;
 }
 
-void CXTPColorHex::OnLButtonUp(UINT nFlags, CPoint point)
+void CXTColorHex::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	if (GetCapture() == this)
-	{
-		ReleaseCapture();
-	}
-
-	CStatic::OnLButtonUp(nFlags, point);
+	m_bLBtnDown = FALSE;
+	CWnd::OnLButtonUp(nFlags, point);
 }
 
-void CXTPColorHex::OnMouseMove(UINT nFlags, CPoint point)
+void CXTColorHex::OnMouseMove(UINT nFlags, CPoint point)
 {
-	if (GetCapture() == this)
+	if (m_bLBtnDown)
 	{
 		UpdateSelection(point);
 	}
 
-	CStatic::OnMouseMove(nFlags, point);
+	CWnd::OnMouseMove(nFlags, point);
 }
 
-bool CXTPColorHex::Init()
+bool CXTColorHex::Init()
 {
 	if (::IsWindow(m_hWnd))
 	{
-		// create each color cell and add it to our list.
-		CreateCellArray();
 		ModifyStyle(NULL, SS_NOTIFY);
 		return true;
 	}
@@ -592,9 +1440,9 @@ bool CXTPColorHex::Init()
 	return false;
 }
 
-void CXTPColorHex::PreSubclassWindow()
+void CXTColorHex::PreSubclassWindow()
 {
-	CStatic::PreSubclassWindow();
+	CWnd::PreSubclassWindow();
 
 	if (m_bPreSubclassInit)
 	{
@@ -603,9 +1451,9 @@ void CXTPColorHex::PreSubclassWindow()
 	}
 }
 
-int CXTPColorHex::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int CXTColorHex::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CStatic::OnCreate(lpCreateStruct) == -1)
+	if (CWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
 	// Initialize the control.
@@ -614,9 +1462,9 @@ int CXTPColorHex::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-BOOL CXTPColorHex::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CXTColorHex::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if (!CStatic::PreCreateWindow(cs))
+	if (!CWnd::PreCreateWindow(cs))
 		return FALSE;
 
 	// When creating controls dynamically Init() must
@@ -628,94 +1476,103 @@ BOOL CXTPColorHex::PreCreateWindow(CREATESTRUCT& cs)
 	return TRUE;
 }
 
-CXTPColorHex::CRgnCell* CXTPColorHex::GetColorCell(int iIndex)
+CXTColorHex::HEXCOLOR_CELL* CXTColorHex::GetColorCell(COLORREF clr)
 {
-	POSITION pos = m_rgnList.FindIndex(iIndex);
-	if (pos) {
-		return m_rgnList.GetAt(pos);
-	}
-	return NULL;
-}
+	bool bWhite = false;
 
-CXTPColorHex::CRgnCell* CXTPColorHex::GetColorCell(COLORREF color)
-{
-	for (POSITION pos = m_rgnList.GetHeadPosition(); pos;)
+	POSITION pos;
+	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
 	{
-		CRgnCell* pCell = m_rgnList.GetNext(pos);
-		if (pCell && pCell->m_color == color) {
-			return pCell;
+		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
+		ASSERT(pCI != NULL);
+		if (!pCI)
+			continue;
+
+		if (clr == pCI->clr)
+		{
+			if (clr == RGB(0xff, 0xff, 0xff) && bWhite == false)
+			{
+				if (m_ptCurrent.y >= 176) // big hex selected
+				{
+					bWhite = true;
+					continue;
+				}
+			}
+			return pCI;
 		}
 	}
+
 	return NULL;
 }
 
-BOOL CXTPColorHex::SetSelectedColor(int iIndex, BOOL bNotify /*=TRUE*/)
+void CXTColorHex::SetSelectedColor(int iIndex)
 {
 	if (iIndex != -1)
 	{
-		return UpdateSelection(GetColorCell(iIndex), bNotify);
-	}
+		POSITION pos2 = m_arCells.FindIndex(iIndex);
+		ASSERT(pos2 != NULL);
 
-	return FALSE;
+		HEXCOLOR_CELL* pClrCell = m_arCells.GetAt(pos2);
+		ASSERT(pClrCell != NULL);
+
+		if (pClrCell)
+			UpdateSelection(pClrCell->pPoint[0]);
+	}
 }
 
-BOOL CXTPColorHex::SetSelectedColor(COLORREF color, BOOL bNotify /*=TRUE*/)
+void CXTColorHex::SetSelectedColor(COLORREF clr)
 {
-	if (!::IsWindow(m_hWnd))
-	{
-		m_clrColor = color;
-		return TRUE;
-	}
+	m_clrColor = clr;
+	int iIndex = -1;
 
-	if (color != (COLORREF)-1)
+	POSITION pos;
+	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos), ++iIndex)
 	{
-		return UpdateSelection(GetColorCell(color), bNotify);
-	}
+		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
+		ASSERT(pCI != NULL);
 
-	return FALSE;
+		if (pCI && (clr == pCI->clr))
+		{
+			SetSelectedColor(iIndex);
+		}
+	}
 }
 
-BOOL CXTPColorHex::PreTranslateMessage(MSG* pMsg)
+BOOL CXTColorHex::PreTranslateMessage(MSG* pMsg)
 {
 	switch (pMsg->message)
 	{
 	case WM_KEYDOWN:
 		{
-			if (m_pCell)
+			HEXCOLOR_CELL* pClrCell = GetColorCell(m_clrColor);
+			if (pClrCell == NULL)
+				pClrCell = GetColorCell(RGB(0x00, 0x00, 0x00));
+
+			TCHAR vkey = (TCHAR)pMsg->wParam;
+			switch (vkey)
 			{
-				TCHAR vkey = (TCHAR)pMsg->wParam;
-				switch (vkey)
-				{
-				case VK_LEFT:
-				case VK_RIGHT:
-					{
-						POSITION pos = m_rgnList.Find(m_pCell);
-						if (pos)
-						{
-							if (vkey == VK_LEFT)
-							{
-								m_rgnList.GetPrev(pos);
-							}
-							else
-							{
-								m_rgnList.GetNext(pos);
-							}
+			case VK_LEFT:
+				SetSelectedColor(pClrCell->direction[0]);
+				break;
+			case VK_UP:
+				SetSelectedColor(pClrCell->direction[1]);
+				break;
+			case VK_RIGHT:
+				SetSelectedColor(pClrCell->direction[2]);
+				break;
+			case VK_DOWN:
+				SetSelectedColor(pClrCell->direction[3]);
+				break;
+			case VK_RETURN:
+			case VK_SPACE:
+				CPropertyPage* pParentPage = (CPropertyPage*)GetParent();
+				ASSERT_VALID(pParentPage);
 
-							if (pos)
-							{
-								UpdateSelection(m_rgnList.GetAt(pos));
-							}
-						}
-						return TRUE;
-					}
+				CPropertySheet* pParentSheet = (CPropertySheet*)pParentPage->GetParent();
+				ASSERT_VALID(pParentSheet);
 
-				case VK_UP:
-				case VK_DOWN:
-					{
-						SetSelectedColor(m_pCell->m_iCell[(vkey == VK_UP) ? 0 : 1]);
-						return TRUE;
-					}
-				}
+				pParentSheet->EndDialog(IDOK);
+				break;
 			}
 		}
 		break;
@@ -725,70 +1582,43 @@ BOOL CXTPColorHex::PreTranslateMessage(MSG* pMsg)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPColorPageStandard
+// CXTColorPageStandard
 
-BEGIN_MESSAGE_MAP(CXTPColorPageStandard, CPropertyPage)
-	//{{AFX_MSG_MAP(CXTPColorPageStandard)
+BEGIN_MESSAGE_MAP(CXTColorPageStandard, CPropertyPage)
+	//{{AFX_MSG_MAP(CXTColorPageStandard)
 	//ON_WM_PAINT()
 	//ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_XTP_UPDATECOLOR, OnUpdateColor)
-	ON_MESSAGE(WM_XTP_COLORDBLCLK, OnColorDblClick)
+	ON_MESSAGE(XTWM_UPDATECOLOR, OnUpdateColor)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CXTPColorPageStandard construction/destruction
+// CXTColorPageStandard construction/destruction
 
-CXTPColorPageStandard::CXTPColorPageStandard(CXTPColorDialog* pParentSheet)
-: CPropertyPage(CXTPColorPageStandard::IDD)
+CXTColorPageStandard::CXTColorPageStandard(CXTColorDialog* pParentSheet)
+: CPropertyPage(CXTColorPageStandard::IDD)
 {
 	m_psp.dwFlags &= ~PSP_HASHELP;
 	m_pParentSheet = pParentSheet;
 
-	//{{AFX_DATA_INIT(CXTPColorPageStandard)
+	//{{AFX_DATA_INIT(CXTColorPageStandard)
 	//}}AFX_DATA_INIT
 }
 
-CXTPColorPageStandard::~CXTPColorPageStandard()
+CXTColorPageStandard::~CXTColorPageStandard()
 {
 }
 
-void CXTPColorPageStandard::DoDataExchange(CDataExchange* pDX)
+void CXTColorPageStandard::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTPColorPageStandard)
-	DDX_Control(pDX, XTP_IDC_CLR_HEX, m_colorHex);
+	//{{AFX_DATA_MAP(CXTColorPageStandard)
+	DDX_Control(pDX, XT_IDC_CLR_HEX, m_colorHex);
 	//}}AFX_DATA_MAP
 }
 
-LRESULT CXTPColorPageStandard::OnUpdateColor(WPARAM wParam, LPARAM lParam)
+LRESULT CXTColorPageStandard::OnUpdateColor(WPARAM wParam, LPARAM /*lParam*/)
 {
-	if ((HWND)lParam == m_colorHex.m_hWnd)
-	{
-		m_pParentSheet->SetNewColor((COLORREF)wParam, FALSE);
-	}
-	else
-	{
-		m_colorHex.SetSelectedColor((COLORREF)wParam, FALSE);
-	}
-
+	m_pParentSheet->SetNewColor((COLORREF)wParam, FALSE);
 	return 0;
-}
-
-LRESULT CXTPColorPageStandard::OnColorDblClick(WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(wParam);
-	UNREFERENCED_PARAMETER(lParam);
-
-	m_pParentSheet->EndDialog(IDOK);
-
-	return 0;
-}
-
-BOOL CXTPColorPageStandard::OnSetActive()
-{
-	COLORREF color = m_pParentSheet->GetColor();
-	m_colorHex.SetSelectedColor(color, FALSE);
-
-	return CPropertyPage::OnSetActive();
 }

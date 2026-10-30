@@ -1,226 +1,178 @@
-// from server: 67% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Server.cpp
+// roc-lib: rbxgs-net roc_unit_84e78d9b334728ac.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("Replicator.h", "roc_unit_5e9a43ec03963384.cpp")
+#pragma include_alias("util/Profiling.h", "roc_unit_dc79b233469e3206.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#pragma include_alias("Network/Player.h", "roc_unit_1cb1f788b2f04b82.cpp")
+#undef _RELEASEASSERT
 #include <RakPeer.h>
-#include "Server.h"
-#include "IdManager.h"
-#include "NetworkSettings.h"
-#include "PacketIds.h"
+#include "v8datamodel/Stats.h"
+#include "Replicator.h"
+#include <RakNetTypes.h>
+#include <RakPeer.h>
+#include <MessageIdentifiers.h>
 #include "API.h"
-#include "util/Http.h"
+#include "Client.h"
 #include "util/standardout.h"
-#include <boost/thread.hpp>
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int, int), 2> server_startFunction(&RBX::Network::Server::start, "Start", "port", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(int), 1>  f_disconnect(&RBX::Network::Server::stop, "Stop", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, int(void), 0> f_GetClientCount(&RBX::Network::Server::getClientCount, "GetClientCount", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(std::string, int, int, int), 4> f_connect(&RBX::Network::Client::connect, "Connect", "server", "serverPort", "clientPort", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(int), 1> f_disconnect(&RBX::Network::Client::disconnect, "Disconnect", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Server, void(std::string, std::string, int), 3> server_setServerManagerPingFunction(&RBX::Network::Server::setServerManagerPing, "SetServerManagerPing", "pingUrl", "publicIP", "thumbnailId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-static bool isReplicator(boost::shared_ptr<RBX::Instance> instance)
+class Exposer : protected PacketLogger
 {
-	return dynamic_cast<const RBX::Network::Replicator*>(instance.get()) != NULL;
-}
+public:
+	static const char* IDTOString(int id)
+	{
+		Exposer exposer;
+		return exposer.PacketLogger::IDTOString((unsigned char)id);
+	}
+};
 
 namespace RBX
 {
 	namespace Network
 	{
-		Server::Server()
-			: outgoingPort(0)
+		Client::Client()
 		{
-			setName("NetworkServer");
-			rakPeer->SetMaximumIncomingConnections(32);
-			rakPeer->SetIncomingPassword(API::version.c_str(), (int)API::version.size());
+			setName("NetworkClient");
 			updateLogger();
 		}
 
-		Server::~Server() {}
-
-		void Server::stop(int blockDuration)
+		Client::~Client()
 		{
-			if (rakPeer->IsActive())
-				rakPeer->Shutdown(blockDuration);
-
-			removeAllChildren();
+			rakPeer->CloseConnection(serverId, true, 0);
 		}
 
-		void Server::start(int port, int threadSleepTime)
+		void Client::disconnect(int blockDuration)
 		{
-			SocketDescriptor d(port, "");
+			removeAllChildren();
+			rakPeer->CloseConnection(serverId, true, 0);
+			rakPeer->Shutdown(blockDuration, 0);
+		}
 
-			if (!rakPeer->Startup(32, threadSleepTime, &d, 1))
-				throw std::runtime_error("Failed to start network server");
+		void Client::onEvent(const ServiceProvider* source, Closing event)
+		{
+			disconnect(3000);
+		}
 
-			outgoingPort = port;
-			StandardOut::singleton()->print(MESSAGE_INFO, "Starting network server on port %d", port);
+		void Client::connect(std::string server, int serverPort, int clientPort, int threadSleepTime)
+		{
+			SocketDescriptor d(clientPort, "");
+			if (!rakPeer->Startup(1, threadSleepTime, &d, 1))
+				throw std::runtime_error("Failed to start network client");
 
-			unsigned numAddresses = rakPeer->GetNumberOfAddresses();
+			if (!rakPeer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size()))
+				throw std::runtime_error("Failed to connect to server");
 
-			StandardOut::singleton()->print(MESSAGE_INFO, "IP addresses:");
-
-			for (unsigned i = 0; i < numAddresses; i++)
-			{
-				StandardOut::singleton()->print(MESSAGE_INFO, "%s", rakPeer->GetLocalIP(i));
-			}
+			StandardOut::singleton()->print(MESSAGE_INFO, "Connecting to %s:%d", server.c_str(), serverPort);
 
 			updateNetworkSimulator();
 		}
 
-		int Server::getClientCount()
+		void Client::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
 		{
-			if (getChildren())
-			{
-				return std::count_if(getChildren()->begin(), getChildren()->end(), &isReplicator);
-			}
-			else
-			{
-				return 0;
-			}
-		}
+			Notifier<ServiceProvider, Closing>::disconnect(oldProvider, this);
 
-		void Server::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
 			if (oldProvider)
 			{
-				players->setConnection(NULL);
+				RunService* runService = oldProvider->find<RunService>();
+				if (runService)
+					runService->runDisabled = false;
 
-				if (rakPeer->IsActive())
-					rakPeer->Shutdown(1000);
+				disconnect(3000);
 
-				removeAllChildren();
-
-				players.reset();
+				Players* p = oldProvider->find<Players>();
+				p->setConnection(NULL);
 			}
 
-			Peer::onServiceProvider(oldProvider, newProvider);
+			Instance::onServiceProvider(oldProvider, newProvider);
 
 			if (newProvider)
 			{
-				players = shared_from(newProvider->create<Players>());
+				Players* p = newProvider->create<Players>();
+				p->setConnection(rakPeer.get());
 
-				players->setConnection(peerInterface());
+				RunService* runService = newProvider->find<RunService>();
+				if (runService)
+					runService->runDisabled = true;
 			}
+
+			Notifier<ServiceProvider, Closing>::connect(newProvider, this);
 		}
 
-		void Server::setServerManagerPing(std::string pingUrl, std::string publicIP, int thumbnailId)
-		{
-			pingThread.reset(new worker_thread(boost::bind(&Server::ping, boost::weak_ptr<Server>(shared_from(this)), publicIP, thumbnailId, pingUrl), "rbx_serverping"));
-		}
-
-		bool Server::serverIsPresent(const Instance* context, bool testInDatamodel)
+		bool Client::clientIsPresent(const Instance* context, bool testInDatamodel)
 		{
 			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
 			RBXASSERT(!testInDatamodel || sp);
 
-			return ServiceProvider::find<Server>(sp) != NULL;
+			return ServiceProvider::find<Client>(sp) != NULL;
 		}
 
-		PluginReceiveResult Server::OnReceive(RakPeerInterface* peer, Packet* packet)
+		PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
 		{
 			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
 			if (result != RR_CONTINUE_PROCESSING)
 				return result;
 
-			if (packet->data[0] == ID_NEW_INCOMING_CONNECTION)
+			switch(packet->data[0])
 			{
+			case ID_CONNECTION_REQUEST_ACCEPTED:
 				try
 				{
-					StandardOut::singleton()->print(MESSAGE_INFO, "New connection from %s\n", packet->systemAddress.ToString());
-
-					boost::shared_ptr<ClientProxy> proxy = Creatable::create<ClientProxy>(packet->systemAddress, this);
+					StandardOut::singleton()->print(MESSAGE_INFO, "Connection accepted from %s\n", packet->systemAddress.ToString());
+					serverId = packet->systemAddress;
+					
+					boost::shared_ptr<Replicator> proxy = Creatable::create<Replicator>(packet->systemAddress, this->rakPeer.get());
 					proxy->setParent(this);
-					proxy->sendTop();
-
-					event_IncommingConnection.fire(this, packet->systemAddress.ToString(), proxy);
+					
+					event_ConnectionAccepted.fire(this, packet->systemAddress.ToString(), proxy);
 				}
 				catch (std::exception& e)
 				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Server::OnReceive packet %d: %s", packet->data[0], e.what());
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
 				}
+				break;
+
+			case ID_CONNECTION_ATTEMPT_FAILED:
+			case ID_NO_FREE_INCOMING_CONNECTIONS:
+			case ID_CONNECTION_BANNED:
+				try
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Failed to connect to %s. %s\n", packet->systemAddress.ToString(), Exposer::IDTOString(packet->data[0]));
+					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
+				}
+				break;
+			
+			case ID_INVALID_PASSWORD:
+				try
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Invalid version from %s", packet->systemAddress.ToString());
+					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
+					event_ConnectionRejected.fire(this, packet->systemAddress.ToString());
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
+				}
+				break;
+
+			case ID_DISCONNECTION_NOTIFICATION:
+			case ID_CONNECTION_LOST:
+				RBXASSERT(packet->systemAddress == serverId);
+				serverId = UNASSIGNED_SYSTEM_ADDRESS;
+				break;
 			}
 
 			return RR_CONTINUE_PROCESSING;
-		}
-
-		worker_thread::work_result Server::ping(boost::weak_ptr<Server> server, std::string publicIP, int thumbnailId, std::string pingUrl)
-		{
-			try
-			{
-				std::stringstream nameStream;
-
-				{
-					TextXmlWriter writer(nameStream);
-
-					XmlElement root(Name::declare("root", -1));
-
-					boost::shared_ptr<Server> s = server.lock();
-					if (!s)
-						return worker_thread::done;
-
-					root.addChild(new XmlElement(Name::declare("server", -1), publicIP));
-					root.addChild(new XmlElement(Name::declare("port", -1), s->outgoingPort));
-					root.addChild(new XmlElement(Name::declare("numPlayers", -1), s->players->numPlayers()));
-					root.addChild(new XmlElement(Name::declare("maxPlayers", -1), s->players->getMaxPlayers()));
-					root.addChild(new XmlElement(Name::declare("thumbnailId", -1), thumbnailId));
-
-					writer.serialize(&root);
-
-					nameStream.flush();
-				}
-
-				std::string response;
-				Http(pingUrl).post(nameStream, false, response);
-			}
-			catch (std::exception& exp)
-			{
-				StandardOut::singleton()->print(MESSAGE_ERROR, exp);
-			}
-
-			boost::xtime xt;
-			boost::xtime_get(&xt, boost::TIME_UTC);
-
-			xt.sec += 10;
-
-			boost::thread::sleep(xt);
-
-			return worker_thread::more;
-		}
-
-		Server::ClientProxy::ClientProxy(SystemAddress systemAddress, Server* server)
-			: Replicator(systemAddress, server->peerInterface()),
-			  server(server)
-		{
-		}
-		
-		Server::ClientProxy::~ClientProxy() {}
-
-		void Server::ClientProxy::onSentMarker(long id)
-		{
-			sendPhysicsEnabled = true;
-		}
-
-		void Server::ClientProxy::sendTop()
-		{
-			RakNet::BitStream bitStream;
-
-			bitStream << (unsigned char)ID_SET_GLOBALS;
-
-			std::vector<Instance*>::iterator end = replicationContainers.end();
-
-			for (std::vector<Instance*>::iterator iter = replicationContainers.begin(); iter != end; iter++)
-			{
-				RBXASSERT(*iter != NULL);
-
-				serializeId(bitStream, *iter);
-				ServiceProvider::create<IdManager>(this)->addInstance(*iter);
-			}
-
-			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE_ORDERED, 0, remotePlayerId, false);
 		}
 	}
 }

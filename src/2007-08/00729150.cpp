@@ -1,47 +1,22 @@
-// from server: 58% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_stack_e5671816d5497b14.cpp
 
-struct Node {
-    Node* next;
-    Node* prev;
-    int pad[4];
-};
-
-struct List {
-    Node* head;
-    Node* tail;
-    int size;
-    Node* field_10;
-    Node* field_14;
-};
-
-struct S {
-    List* field_0;
-    Node* field_4;
-    int pad[2];
-    Node* field_10;
-    Node* field_14;
-    void f();
-};
-
-void g(S* s);
-
-void S::f() {
-    if (field_10 == 0)
-        _invalid_parameter_noinfo();
-    if (field_14 == field_10->next)
-        _invalid_parameter_noinfo();
-    field_14 = field_14->prev;
-    if (field_0 == 0)
-        _invalid_parameter_noinfo();
-    if (field_4 == field_0->field_10)
-        _invalid_parameter_noinfo();
-    Node* p = field_4->next;
-    Node* q = field_10;
-    if (q != 0 && q != (Node*)((char*)field_4 + 0x18))
-        _invalid_parameter_noinfo();
-    if (field_14 == p) {
-        g(this);
-        g(this);
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _MT
+#define _MT
+#endif
+#ifndef _DLL
+#define _DLL
+#endif
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_ctor_notifier_131e539308ae6945.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "script/ScriptContext.cpp"

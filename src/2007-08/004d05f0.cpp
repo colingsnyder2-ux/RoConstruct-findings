@@ -1,40 +1,18 @@
-// from server: 73% by colin
-struct PartChunk {
-    void* field0;
-    void* field4;
-    void* field8;
-    PartChunk* assign(PartChunk* const* other);
-};
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_manual_meshcache_48239a58a7313120.cpp
 
-extern "C" long __stdcall InterlockedDecrement(long volatile*);
-extern "C" long __stdcall InterlockedIncrement(long volatile*);
-extern "C" void __cdecl free(void*);
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Table.h>
+#include <G3D/Vector3.h>
+#include <G3D/ReferenceCount.h>
+struct Mesh:G3D::ReferenceCountedObject {char storage[28];};
+struct Variations {G3D::ReferenceCountedPointer<Mesh> meshes[1];};
+typedef G3D::Table<G3D::Vector3,Variations> Table;
+struct SurfaceTypes {unsigned value;SurfaceTypes():value(0){}};
+template<class K,class V> struct Entry {K key;V value;};
+template<class K,class V> struct Node {unsigned hash;Entry<K,V> entry;Node* next;
+Node(K k,V v,unsigned h,Node* n){this->entry.key=k;this->entry.value=v;this->hash=h;this->next=n;}};
+template struct Node<SurfaceTypes,Table>;
 
-PartChunk* PartChunk::assign(PartChunk* const* other) {
-    PartChunk* src = *other;
-    PartChunk* old = (PartChunk*)field0;
-    if (src != old) {
-        if (old != 0) {
-            if (InterlockedDecrement((long*)((char*)old + 4)) == 0) {
-                void* node = *(void**)((char*)field0 + 8);
-                while (node != 0) {
-                    void** vt = *(void***)node;
-                    ((void (__thiscall*)(void*))vt[1])(node);
-                    void* next = *(void**)((char*)node + 4);
-                    free(node);
-                    node = next;
-                }
-                if (field0 != 0) {
-                    void** vt = *(void***)field0;
-                    ((void (__thiscall*)(void*, int))vt[0])(field0, 1);
-                }
-            }
-        }
-        field0 = 0;
-    }
-    if (src != 0) {
-        field0 = src;
-        InterlockedIncrement((long*)((char*)src + 4));
-    }
-    return this;
-}

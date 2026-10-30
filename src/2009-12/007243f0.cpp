@@ -1,40 +1,64 @@
-// from server: 74% by atomic.potato
+// roc 2009-12 007243f0  unit: VWinHttpRequest_source::?$stream_buffer  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 007243f0
+//
+// 007243f0  56                   push esi
+// 007243f1  8bf1                 mov esi, ecx
+// 007243f3  8b4614               mov eax, dword ptr [esi + 0x14]
+// 007243f6  8b08                 mov ecx, dword ptr [eax]
+// 007243f8  8b5624               mov edx, dword ptr [esi + 0x24]
+// 007243fb  8b02                 mov eax, dword ptr [edx]
+// 007243fd  2bc1                 sub eax, ecx
+// 007243ff  85c0                 test eax, eax
+// 00724401  7e24                 jle 0x724427
+// 00724403  50                   push eax
+// 00724404  51                   push ecx
+// 00724405  8b4e40               mov ecx, dword ptr [esi + 0x40]
+// 00724408  ff15f8b39800         call dword ptr [0x98b3f8]
+// 0072440e  8b4e4c               mov ecx, dword ptr [esi + 0x4c]
+// 00724411  8b5614               mov edx, dword ptr [esi + 0x14]
+// 00724414  8b4650               mov eax, dword ptr [esi + 0x50]
+// 00724417  890a                 mov dword ptr [edx], ecx
+// 00724419  8b5624               mov edx, dword ptr [esi + 0x24]
+// 0072441c  03c1                 add eax, ecx
+// 0072441e  890a                 mov dword ptr [edx], ecx
+// 00724420  2bc1                 sub eax, ecx
+// 00724422  8b4e34               mov ecx, dword ptr [esi + 0x34]
+// 00724425  8901                 mov dword ptr [ecx], eax
+// 00724427  5e                   pop esi
+// 00724428  c3                   ret 
+// copied from an identical function in another client (function ?flush@S@@QAEXXZ)
+
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+typedef void *(__thiscall *AppendFunction)(void *, const char *, unsigned int);
+extern AppendFunction append;
+
 struct S {
-    char pad0[0x14];
-    int* field14;
-    char pad18[0x0c];
-    int* field24;
-    char pad28[0x0c];
-    int* field34;
-    char pad38[0x08];
-    int field40;
-    char pad44[0x08];
-    int field4c;
-    int field50;
-    void f();
+    char padding0[0x14];
+    char **first;
+    char padding1[0x0C];
+    char **last;
+    char padding2[0x0C];
+    int *available;
+    char padding3[0x08];
+    void *output;
+    char padding4[0x08];
+    char *buffer;
+    int length;
+
+    void flush();
 };
 
-extern "C" void* __stdcall append_impl(void*, const char*, unsigned int);
-
-void S::f()
+void S::flush()
 {
-    int* p14 = field14;
-    int ecx = *p14;
-    int* p24 = field24;
-    int eax = *p24;
-    eax -= ecx;
-    if (eax > 0)
-    {
-        append_impl((void*)field40, (const char*)ecx, (unsigned int)eax);
-        int ecx2 = field4c;
-        int* edx = field14;
-        int eax2 = field50;
-        *edx = ecx2;
-        int* edx2 = field24;
-        eax2 += ecx2;
-        *edx2 = ecx2;
-        eax2 -= ecx2;
-        int* ecx3 = field34;
-        *ecx3 = eax2;
+    char *start = *first;
+    int count = *last - start;
+    if (count > 0) {
+        append(output, start, count);
+        char *begin = buffer;
+        char *end = begin + length;
+        *first = begin;
+        *last = begin;
+        *available = end - begin;
     }
 }

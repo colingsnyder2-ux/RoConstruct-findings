@@ -1,27 +1,11 @@
-// from server: 93% by atomic.potato
-extern "C" void __stdcall G1_func_0098dec0(void*);
-extern "C" void __cdecl G1_func_007f385a(void*);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: mfc-9.0-shared-rtm roc_espeon_colorentrynativevector160b2e39d0f8f701.cpp
 
-struct S_func_00452e30 {
-    char pad[0xc];
-    void* m_begin;
-    void* m_end;
-    void* m_cap;
-    void f();
-};
-
-void S_func_00452e30::f()
-{
-    if (m_begin) {
-        char* p = (char*)m_begin;
-        char* e = (char*)m_end;
-        while (p != e) {
-            G1_func_0098dec0(p + 8);
-            p += 0xc;
-        }
-        G1_func_007f385a(m_begin);
-    }
-    m_begin = 0;
-    m_end = 0;
-    m_cap = 0;
-}
+// Candidate translation unit (score above; library headers required).
+#include <afxwin.h>
+#include <vector>
+struct ColorEntry { unsigned int first; unsigned int second; CString name; };
+typedef char verifyColorEntry[(sizeof(ColorEntry)==12)?1:-1];
+template class std::vector<ColorEntry>;

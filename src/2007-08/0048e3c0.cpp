@@ -1,108 +1,43 @@
-// from server: 35% by colin
-// roc 2007-08 0048e3c0  unit: RBX::Network::VPlayer::?$RefPropDescriptor  size: 386 bytes
+// roc-cl: 50727
+// roc-lang: cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_descriptor_receiver_native_name_order_7d5f8e8ab29991a4.cpp
 
-extern "C" __declspec(dllimport) void __stdcall _invalid_parameter_noinfo();
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("reflection/object.h", "../roc_descriptor_receiver_class_header_268a149c290eb686.cpp")
+#undef _RELEASEASSERT
+#include "reflection/object.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/cstdint.hpp>
 
-struct RefPropDescriptor {
-    char pad0[0xc];
-    int field_c;
-    int field_4;
-    int field_0;
-
-    void construct(char* name, char* category, int get, int set, int attributes, int security);
-    void checkFlags();
+namespace RakNet { class BitStream; }
+namespace RBX { namespace Network {
+template<class T> class DescriptorReceiver {
+ std::vector<const T*> idToDesc;
+ int idBits;
+ void learnName(std::string s, int i);
+public:
+ void getValue(unsigned int id, const T*& value) const { value = idToDesc.at(id); }
+ void learn(RakNet::BitStream& stream, bool exchangeChecksum, bool useRakString);
+ unsigned int receive(RakNet::BitStream& stream, const T*& value, bool versionCheck) const;
+ bool verifyChecksum(const T* value, boost::uint32_t remoteChecksum);
 };
-
-struct Helper {
-    int a;
-    int b;
-    int c;
-    int d;
-    char e;
-};
-
-extern "C" void __cdecl sub_489940();
-extern "C" void __cdecl sub_48d5b0();
-extern "C" void __cdecl sub_4891b0();
-extern "C" void __cdecl sub_4872f0();
-
-void RefPropDescriptor::construct(char* name, char* category, int get, int set, int attributes, int security)
-{
-    Helper h;
-    int local2c;
-    int local30;
-    int local10;
-    int local14;
-    int local18;
-    int local28;
-    int local34;
-    int local38;
-    int ebp_val;
-    int ebx_val;
-    int esi_val;
-    int eax_val;
-    char dl_val;
-
-    sub_489940();
-    sub_48d5b0();
-    ebp_val = local34;
-    if (ebp_val != -2 && ebp_val != 0 && ebp_val != ebx_val)
-        _invalid_parameter_noinfo();
-
-    eax_val = local18;
-    if (eax_val == esi_val) {
-        local28 = ebx_val;
-        local28 = esi_val;
-        local28 = ebx_val;
-        local28 = esi_val;
-        h.e = 0;
-        return;
-    }
-
-    if (field_c != 0) {
-        sub_4872f0();
-        ebx_val = local30;
-        esi_val = local2c;
-    } else {
-        while (1) {
-            if (esi_val != -2 && esi_val != 0 && esi_val != local34)
-                _invalid_parameter_noinfo();
-            if (ebx_val == local38)
-                break;
-            if (esi_val != -2) {
-                if (esi_val == 0)
-                    _invalid_parameter_noinfo();
-                if (esi_val + 0x18 < 0x10)
-                    eax_val = esi_val + 4;
-                else
-                    eax_val = *(int*)(esi_val + 4);
-                if (ebx_val >= eax_val + *(int*)(esi_val + 0x14))
-                    _invalid_parameter_noinfo();
-            }
-            dl_val = *(char*)ebx_val;
-            ebp_val = field_4;
-            sub_4891b0();
-            if (*(int*)eax_val != 0 && *(int*)eax_val != local10)
-                _invalid_parameter_noinfo();
-            if (*(int*)(eax_val + 4) == ebp_val)
-                break;
-            if (esi_val != -2) {
-                if (esi_val == 0)
-                    _invalid_parameter_noinfo();
-                if (esi_val + 0x18 < 0x10)
-                    eax_val = esi_val + 4;
-                else
-                    eax_val = *(int*)(esi_val + 4);
-                if (ebx_val >= eax_val + *(int*)(esi_val + 0x14))
-                    _invalid_parameter_noinfo();
-            }
-            ebx_val++;
-        }
-    }
-
-    local28 = esi_val;
-    local28 = ebp_val;
-    local28 = ebx_val;
-    local28 = local18;
-    h.e = 0;
+using namespace Reflection;
+template<> void DescriptorReceiver<PropertyDescriptor>::learnName(std::string s, int i) {
+ std::vector<std::string> words;
+ boost::split(words,s,boost::is_any_of(":"));
+ const Name& n = Name::lookup(words[0]);
+ ClassDescriptor::ClassDescriptors::const_iterator iter = ClassDescriptor::all_begin();
+ while(iter != ClassDescriptor::all_end()) {
+  const ClassDescriptor* c = *iter;
+  if(c->name == n) {
+   const Name& propertyName = Name::lookup(words[1]);
+   PropertyContainer::CollectionType::const_iterator desc = c->PropertyContainer::findDescriptor(propertyName);
+   if(desc != c->PropertyContainer::descriptors_end()) { idToDesc[i] = *desc; return; }
+   else break;
+  }
+  ++iter;
+ }
+ idToDesc[i] = NULL;
 }
+} }

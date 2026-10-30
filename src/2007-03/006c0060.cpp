@@ -1,218 +1,323 @@
-// from server: 53% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/ReportControl/XTPReportDragDrop.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "gui/Gui.h"
+// CXTPReportDragDrop.cpp : implementation of the CXTPReportHeaderDropWnd class.
+//
+// This file is a part of the XTREME REPORTCONTROL MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
 
-namespace RBX
+#include "stdafx.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTPReportDefines.h"
+#include "XTPReportHeader.h"
+#include "XTPReportPaintManager.h"
+#include "XTPReportColumn.h"
+#include "XTPReportDragDrop.h"
+#include "XTPReportControl.h"
+#include "XTPReportColumn.h"
+#include "XTPReportColumns.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportHeaderDragWnd
+
+CXTPReportHeaderDragWnd::CXTPReportHeaderDragWnd()
 {
-	const G3D::Color4& GuiItem::disabledFill()
+	m_pHeader = NULL;
+	m_pPaintManager = NULL;
+	m_pColumn = NULL;
+}
+
+CXTPReportHeaderDragWnd::~CXTPReportHeaderDragWnd()
+{
+}
+
+
+BEGIN_MESSAGE_MAP(CXTPReportHeaderDragWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTPReportHeaderDragWnd)
+	ON_WM_PAINT()
+	ON_WM_ERASEBKGND()
+	ON_WM_TIMER()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportHeaderDragWnd message handlers
+
+BOOL CXTPReportHeaderDragWnd::Create(CRect rect, CXTPReportHeader* pHeader, CXTPReportPaintManager* pPaintManager, CXTPReportColumn* pColumn)
+{
+	m_pHeader = pHeader;
+	m_pPaintManager = pPaintManager;
+	m_pColumn = pColumn;
+	if (rect.Height() == 0)
+		rect.bottom = rect.top + pPaintManager->GetHeaderHeight();
+
+	DWORD dwStyle = WS_POPUP | WS_DISABLED;
+	DWORD dwExStyle = WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
+
+	BOOL bCreated = CreateEx(dwExStyle, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle,
+		rect.left, rect.top, rect.Width(), rect.Height(),
+		NULL, NULL, NULL);
+
+	if (bCreated && m_pHeader && m_pHeader->GetControl() &&
+		m_pHeader->GetControl()->m_bHScrollBarVisible )
 	{
-		static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
-		return c;
+		SetTimer(1, 100, NULL);
+	}
+	return bCreated;
+}
+
+
+void CXTPReportHeaderDragWnd::OnPaint()
+{
+	CPaintDC dc(this);
+	CXTPClientRect rc(this);
+	CXTPBufferDC memDC(dc, rc);
+	OnDraw(&memDC, rc);
+}
+
+BOOL CXTPReportHeaderDragWnd::OnEraseBkgnd(CDC* /*pDC*/)
+{
+	return TRUE;
+}
+
+void CXTPReportHeaderDragWnd::OnDraw(CDC* pDC, CRect rcClient)
+{
+	if (!m_pPaintManager)
+		return;
+
+	// draw background
+	m_pPaintManager->FillHeaderControl(pDC, rcClient);
+	// draw column header
+	m_pPaintManager->DrawColumn(pDC, m_pColumn, m_pHeader, rcClient, TRUE);
+}
+
+void CXTPReportHeaderDragWnd::PostNcDestroy()
+{
+	CWnd::PostNcDestroy();
+	delete this;
+}
+
+void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
+{
+	UNREFERENCED_PARAMETER(nIDEvent);
+
+	if (!m_pHeader || !m_pHeader->GetControl())
+	{
+		return;
+	}
+	CXTPReportControl* pControl = m_pHeader->GetControl();
+
+	ASSERT(pControl->m_bHScrollBarVisible);
+
+	CRect rcHeaderScreen = m_pHeader->m_rcHeader;
+	pControl->ClientToScreen(&rcHeaderScreen);
+
+	CRect rcControlScreen(0,0,0,0);
+	CRect rcDragScreen(0,0,0,0);
+
+	pControl->GetWindowRect(&rcControlScreen);
+	GetWindowRect(&rcDragScreen);
+
+
+	CPoint ptMouseScreen(0, 0);
+	if (!GetCursorPos(&ptMouseScreen) ||
+		ptMouseScreen.y < rcHeaderScreen.top || ptMouseScreen.y > rcHeaderScreen.bottom)
+	{
+		return;
 	}
 
-	const G3D::Color4& GuiItem::translucentBackdrop()
-	{
-		static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
-		return c;
-	}
+	BOOL bScrolled = FALSE;
+	BOOL bLayoutRTL = pControl->GetExStyle() & WS_EX_LAYOUTRTL;
 
-	G3D::Vector2 GuiRoot::canvasSize;
-	G3D::Matrix4 GuiRoot::oldProjectionMatrix;
-	G3D::CoordinateFrame GuiRoot::oldCameraWorld;
+	int nDiffRight = bLayoutRTL ? rcControlScreen.left - rcDragScreen.left :
+		rcDragScreen.right - rcControlScreen.right;
 
-	GuiItem::GuiItem() 
+	if (nDiffRight > 0)
 	{
-		setName("Unnamed GuiItem");
-	}
+		int nStep = max(min(7, nDiffRight/10), CXTPReportHeader::s_nMinAutoScrollStep);
+		UINT uTimer = max(10, 100 - nDiffRight);
+		SCROLLINFO scrollInfo;
 
-	const GuiItem* GuiItem::getGuiItem(int index) const
-	{
-		return dynamic_cast<const GuiItem*>(getChild(index));
-	}
-
-	GuiItem* GuiItem::getGuiItem(int index)
-	{
-		return dynamic_cast<GuiItem*>(getChild(index));
-	}
-
-	GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
-	{
-		for (size_t i = 0; i < numChildren(); i++)
+		BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
+		if (bRes)
 		{
-			GuiItem* current = getGuiItem((int)i);
-
-			if (current && current != focus.get())
+			if (scrollInfo.nPos < scrollInfo.nMax)
 			{
-				GuiResponse itemResponse = current->process(event);
-				if (itemResponse.wasUsed())
+				pControl->SetLeftOffset(scrollInfo.nPos + nStep);
+				SetTimer(1, uTimer, NULL);
+				bScrolled = TRUE;
+			}
+		}
+	}
+	else
+	{
+		int nLeftBorderX = bLayoutRTL ? rcControlScreen.right : rcControlScreen.left;
+
+		int nFreezCols = pControl->GetFreezeColumnsCount();
+		if (nFreezCols && pControl->GetColumns())
+		{
+			CXTPReportColumn* pLastFCol = pControl->GetColumns()->GetVisibleAt(nFreezCols - 1);
+			if (pLastFCol)
+			{
+				CRect rcLastFCol = pLastFCol->GetRect();
+				pControl->ClientToScreen(&rcLastFCol);
+
+				int nLastFCol_middleX = rcLastFCol.left + rcLastFCol.Width() / 2;
+				if (rcDragScreen.left < rcLastFCol.right &&
+					ptMouseScreen.x > nLastFCol_middleX )
 				{
-					this->loseFocus();
-
-					focus = shared_from(current);
-					focus->loseFocus();
-
-					return itemResponse;
+					nLeftBorderX = rcLastFCol.right;
 				}
 			}
 		}
 
-		return GuiResponse::notUsed();
-	}
+		int nDiffLeft = bLayoutRTL ? rcDragScreen.right - nLeftBorderX : nLeftBorderX - rcDragScreen.left;
 
-	void GuiItem::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
-	{
-		if (instance == focus)
-			loseFocus();
-
-		Instance::onDescendentRemoving(instance);
-	}
-
-	Rect GuiItem::getMyRect() const
-	{
-		G3D::Vector2 pos = getPosition();
-		return Rect(pos, pos + getSize());
-	}
-
-	const GuiItem* GuiItem::getGuiParent() const
-	{
-		return dynamic_cast<const GuiItem*>(getParent());
-	}
-	
-	GuiResponse GuiItem::process(const GuiEvent& event)
-	{
-		if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE)
-			return GuiResponse::notUsed();
-
-		if (focus)
+		if (nDiffLeft > 0)
 		{
-			if (focus->canLoseFocus())
+			int nStep = max(min(7, nDiffLeft/10), CXTPReportHeader::s_nMinAutoScrollStep);
+			UINT uTimer = max(10, 100 - nDiffLeft);
+			SCROLLINFO scrollInfo;
+
+			BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
+			if (bRes)
 			{
-				GuiResponse response = processNonFocus(event);
-				if (response.wasUsed())
-					return response;
-			}
-
-			GuiResponse focusResponse = focus->process(event);
-			if (focusResponse.wasUsed())
-				return focusResponse;
-
-			loseFocus();
-		}
-
-		RBXASSERT(!focus);
-		return processNonFocus(event);
-	}
-
-	void TopMenuBar::init()
-	{
-		layoutStyle = Layout::HORIZONTAL;
-		backdropColor = G3D::Color4::clear();
-		visible = true;
-	}
-
-	G3D::Vector2 TopMenuBar::getSize() const
-	{
-		G3D::Vector2 size(0.0f, 0.0f);
-
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			const GuiItem* current = getGuiItem((int)i);
-
-			if (current)
-			{
-				G3D::Vector2 childSize = current->getSize();
-				switch (layoutStyle)
+				if (scrollInfo.nPos > scrollInfo.nMin)
 				{
-				case Layout::VERTICAL:
-					size.x = G3D::max(size.x, childSize.x);
-					size.y += childSize.y;
-					break;
-				case Layout::HORIZONTAL:
-					size.x += childSize.x;
-					size.y = G3D::max(size.y, childSize.y);
-					break;
+					pControl->SetLeftOffset(scrollInfo.nPos - nStep);
+					SetTimer(1, uTimer, NULL);
+					bScrolled = TRUE;
 				}
 			}
 		}
-
-		return size;
 	}
 
-	void TopMenuBar::render2d(Adorn* adorn)
+	//-------------------------------------------------------------------------
+	if (bScrolled)
 	{
-		if (isVisible())
-		{
-			if (backdropColor != G3D::Color4::clear())
-			{
-				adorn->rect2d(getMyRect2D(), backdropColor);
-			}
+		CPoint ptMouse = ptMouseScreen;
+		pControl->ScreenToClient(&ptMouse);
 
-			for (size_t i = 0; i < numChildren(); i++)
-			{
-				GuiItem* current = getGuiItem((int)i);
-				if (current)
-					current->render2d(adorn);
-			}
-		}
+		pControl->RedrawControl();
+		pControl->UpdateWindow();
+
+		m_pHeader->OnMouseMove(0, ptMouse);
 	}
+}
 
-	GuiResponse TopMenuBar::process(const GuiEvent& event)
-	{
-		if (isVisible())
-		{
-			GuiResponse response = GuiItem::process(event);
-			if (response.wasUsed())
-			{
-				return response;
-			}
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportHeaderDropWnd
 
-			if (backdropColor.a > 0.0f && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition))
-			{
-				return GuiResponse::used();
-			}
-		}
+CXTPReportHeaderDropWnd::CXTPReportHeaderDropWnd(COLORREF crColor)
+	: m_clr(crColor)
+{
+	m_nHeight = 0;
+}
 
-		return GuiResponse::notUsed();
-	}
+CXTPReportHeaderDropWnd::~CXTPReportHeaderDropWnd()
+{
+}
 
-	void RelativePanel::init(const Layout& layout)
-	{
-		setName("RelativePanel");
-		layoutStyle = layout.layoutStyle;
-		backdropColor = layout.backdropColor;
-		xLocation = layout.xLocation;
-		yLocation = layout.yLocation;
-		offset = layout.offset;
-	}
 
-	GuiRoot::GuiRoot() 
-	{
-		setName("GuiRoot");
-	}
+BEGIN_MESSAGE_MAP(CXTPReportHeaderDropWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTPReportHeaderDropWnd)
+	ON_WM_ERASEBKGND()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
-	int GuiRoot::normalizedFontSize(int fontSize)
-	{
-		static G3D::Vector2 percentSize(100.0f, 75.0f);
-		return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
-	}
 
-	void GuiRoot::render2d(Adorn* adorn)
-	{
-		short height = static_cast<short>(adorn->getHeight());
-		short width = static_cast<short>(adorn->getWidth());
+/////////////////////////////////////////////////////////////////////////////
+// CXTPReportHeaderDropWnd message handlers
 
-		canvasSize = G3D::Vector2(width, height);
+BOOL CXTPReportHeaderDropWnd::Create(int nHeight)
+{
+	m_nHeight = nHeight + 20;
 
-		for (size_t i = 0; i < numChildren(); i++)
-		{
-			GuiItem* current = getGuiItem((int)i);
-			if (current)
-				current->render2d(adorn);
-		}
-	}
+	DWORD dwStyle = WS_POPUP | WS_DISABLED;
+	DWORD dwExStyle = WS_EX_TOOLWINDOW ;
+
+	BOOL bResult = CreateEx(dwExStyle, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle,
+		0, 0, 12, m_nHeight,
+		NULL, NULL, NULL);
+
+	CRgn rgn1, rgn2;
+	POINT ptArrow[7];
+
+	ptArrow[0].x = 8;   ptArrow[0].y = 0;
+	ptArrow[1].x = 8;   ptArrow[1].y = 4;
+	ptArrow[2].x = 11;  ptArrow[2].y = 4;
+	ptArrow[3].x = 6;   ptArrow[3].y = 9;
+	ptArrow[4].x = 1;   ptArrow[4].y = 4;
+	ptArrow[5].x = 4;   ptArrow[5].y = 4;
+	ptArrow[6].x = 4;   ptArrow[6].y = 0;
+	rgn1.CreatePolygonRgn(ptArrow, 7, ALTERNATE);
+
+
+	ptArrow[0].x = 4;   ptArrow[0].y = m_nHeight;
+	ptArrow[1].x = 4;   ptArrow[1].y = m_nHeight-4;
+	ptArrow[2].x = 0;   ptArrow[2].y = m_nHeight-4;
+	ptArrow[3].x = 6;   ptArrow[3].y = m_nHeight-10;
+	ptArrow[4].x = 12;  ptArrow[4].y = m_nHeight-4;
+	ptArrow[5].x = 8;   ptArrow[5].y = m_nHeight-4;
+	ptArrow[6].x = 8;   ptArrow[6].y = m_nHeight;
+	rgn2.CreatePolygonRgn(ptArrow, 7, ALTERNATE);
+
+	m_rgn.CreateRectRgn(0, 0, 12, nHeight);
+	m_rgn.CombineRgn(&rgn1, &rgn2, RGN_OR);
+	SetWindowRgn(m_rgn, FALSE);
+
+	rgn1.DeleteObject();
+	rgn2.DeleteObject();
+
+	return bResult;
+}
+
+
+void CXTPReportHeaderDropWnd::PostNcDestroy()
+{
+	m_rgn.DeleteObject();
+
+	CWnd::PostNcDestroy();
+	delete this;
+}
+
+BOOL CXTPReportHeaderDropWnd::OnEraseBkgnd(CDC* pDC)
+{
+	pDC->FillSolidRect(0, 0, 12, m_nHeight, m_clr);
+	return TRUE;
+}
+
+void CXTPReportHeaderDropWnd::SetWindowPos(int x, int y)
+{
+	CWnd::SetWindowPos(&wndTop,
+		x - 6, y - (m_nHeight / 2), 0, 0,
+		SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
 }

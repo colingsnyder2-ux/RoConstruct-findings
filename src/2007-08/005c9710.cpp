@@ -1,10 +1,8 @@
-// from server: 94% by colin
-extern "C" int __cdecl sub_5BF410(int, int);
-extern "C" void __cdecl sub_5BDB70(int, double);
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Oi /fp:fast /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_lua_math_959f967534d7e1e5.cpp
 
-int sub_5C9710(int a)
-{
-    sub_5BF410(a, 1);
-    sub_5BDB70(a, 1.4426950408889634);
-    return 1;
-}
+// Candidate translation unit (score above; library headers required).
+#include "lua-5.1.1/src/lmathlib.c"

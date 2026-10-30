@@ -1,6 +1,6 @@
-// from server: 26% by colin
+// from server: 27% by Yeetserama
 struct CXTPControlWindowList {
-    void* FormatLabel(void* arg1, int arg2, void* arg3);
+    void* __cdecl FormatLabel(void* arg1, int arg2, void* arg3);
 };
 
 extern "C" {

@@ -1,16 +1,15 @@
-// from server: 88% by colin
+// roc-cl: 30729
 // roc-lang: c
-// roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.7 pngwio.c
+// roc-lib: libpng-1.2.5-dll pngwio.c
 
 // Candidate translation unit (score above; library headers required).
 
 /* pngwio.c - functions for data output
  *
- * libpng 1.2.7 - September 12, 2004
+ * libpng 1.2.5 - October 3, 2002
  * For conditions of distribution and use, see copyright notice in png.h
- * Copyright (c) 1998-2004 Glenn Randers-Pehrson
+ * Copyright (c) 1998-2002 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *

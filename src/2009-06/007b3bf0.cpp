@@ -1,14 +1,13 @@
-// from server: 46% by TrollStein
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPDockBar.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPDockBar.cpp
 
 // Candidate translation unit (score above; library headers required).
 // XTPDockBar.cpp : implementation of the CXTPDockBar class.
 //
 // This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2011 Codejock Software, All Rights Reserved.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
 //
 // THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
 // RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
@@ -26,19 +25,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
+#include <afxpriv.h>
 #include "Common/XTPDrawHelpers.h"
-#include "Common/XTPSystemHelpers.h"
-#include "Common/XTPHookManager.h"
-#include "Common/XTPColorManager.h"
 
-#include "XTPCommandBarsDefines.h"
-#include "XTPCommandBar.h"
-#include "XTPCommandBars.h"
-#include "XTPCommandBarsFrameHook.h"
 #include "XTPDockBar.h"
 #include "XTPToolBar.h"
-#include "XTPMenuBar.h"
 #include "XTPCommandBars.h"
 #include "XTPDockContext.h"
 #include "XTPPaintManager.h"
@@ -74,7 +65,6 @@ BEGIN_MESSAGE_MAP(CXTPDockBar, CWnd)
 	ON_WM_ERASEBKGND()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_NCHITTEST_EX()
-	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -438,23 +428,12 @@ CSize CXTPDockBar::CalcDynamicLayout(int nLength, DWORD nMode, AFX_SIZEPARENTPAR
 	{
 		// move and resize all the windows at once!
 		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
-		{
 			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
-		}
 	}
 
 	return sizeFixed;
 }
 
-void CXTPDockBar::OnSize(UINT nType, int cx, int cy)
-{
-	CWnd::OnSize(nType, cx, cy);
-
-	if (GetPosition() == xtpBarTop && m_pCommandBars->IsDwmEnabled())
-	{
-		m_pCommandBars->m_pFrameHook->UpdateDwmClientArea();
-	}
-}
 
 
 LRESULT CXTPDockBar::OnSizeParent(WPARAM, LPARAM lParam)
@@ -695,7 +674,7 @@ int CXTPDockBar::Insert(CXTPToolBar* pBarIns, CRect /*rect*/, CPoint ptMid)
 	int nTotalWidth = 0;
 	//int nPosInsBefore = 0;
 	BOOL bHorz = m_dwStyle & CBRS_ORIENT_HORZ;
-	BOOL bAllowTopMost = pBarIns->IsRibbonBar() || m_pCommandBars->GetMenuBar() == NULL ||
+	BOOL bAllowTopMost = m_pCommandBars->GetMenuBar() == NULL ||
 		!m_pCommandBars->GetMenuBar()->IsRibbonBar() || FindBar(m_pCommandBars->GetMenuBar()) == -1;
 
 	for (nPos = 0; nPos < m_arrBars.GetSize(); nPos++)

@@ -1,11 +1,11 @@
-// from server: 66% by colin
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-boost-1_34_1 vector_sp.cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_bcb06b1ffd4bd340.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-struct T; typedef boost::shared_ptr<T> E;
-#include <vector>
-template class std::vector<E>;
+// Propagate independently verified August2007 pre-Guid Instance declarations; original native body remains unchanged.
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#include "roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp"
+#include "v8datamodel/Tool.cpp"

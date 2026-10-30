@@ -1,10 +1,12 @@
-// from server: 64% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// roc-lib: rbxgs-dll roc_espclaude_3860b455f69b86d3.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8xml/XmlElement.h", "roc_xml_native_value_calls_header8ea484bdc6069352.cpp")
+#pragma include_alias("v8xml/XmlSerializer.h", "roc_xml_native_legacy_parser_headerb864cade0382cfdc.cpp")
+#pragma include_alias("util/ContentProvider.h", "roc_xml_static_registration_headereff1282ddb47f7be.cpp")
 #include "v8xml/XmlSerializer.h"
 #include "util/Debug.h"
 #include "util/base64.hpp"
@@ -258,6 +260,8 @@ bool endsWithClose(const std::string& test)
 	return false;
 }
 
+extern std::string legacyHash(std::string);
+
 std::auto_ptr<XmlElement> TextXmlParser::parse()
 {
 	if (buffer->sgetc() == -1)
@@ -298,9 +302,12 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 			{
 				bool isXsiNil;
 				const XmlAttribute* xsiNilAttribute = newElement->findAttribute(name_xsinil);
-				if (xsiNilAttribute && xsiNilAttribute->getValue(isXsiNil) && !isXsiNil)
+				if (!xsiNilAttribute || !xsiNilAttribute->getValue(isXsiNil) || !isXsiNil)
 				{
-					if (readText(false) == "")
+					if (readText(false) != "")
+					{
+					}
+					else
 					{
 						const RBX::Name* mimeType;
 						const XmlAttribute* mimeTypeAttribute = newElement->findAttribute(tag_mimeType);
@@ -315,30 +322,31 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 						if (tagName.substr(0, 6) == "binary")
 						{
 							std::stringbuf encoded(readText(false), std::ios_base::in);
+							std::istreambuf_iterator<char> from(&encoded);
+							std::istreambuf_iterator<char> to;
 							std::stringstream decoded;
-
+							std::ostreambuf_iterator<char> out(decoded.rdbuf());
 							int ioStatus = 0;
 							base64<char> decoder;
-							decoder.get(
-								std::istreambuf_iterator<char>(&encoded),
-								std::istreambuf_iterator<char>(),
-								std::ostreambuf_iterator<char>(decoded),
-								ioStatus);
+							decoder.get(from, to, out, ioStatus);
 
 							decoded.flush();
 
-							RBX::ContentId contentId = RBX::ContentProvider::singleton().registerContent(decoded, *mimeType);
+							RBX::ContentId contentId = RBX::ContentProvider::registerContent(decoded, *mimeType);
+							std::string oldHash = legacyHash(contentId.toString());
+							legacyHashes[oldHash] = contentId.toString();
 							newElement->setValue(contentId);
 						}
 						else if (tag_hash == tagName)
 						{
 							std::string name = readText(false);
+							if (legacyHashes.find(name) != legacyHashes.end())
+								name = legacyHashes[name];
 							newElement->setValue(RBX::ContentId(name.c_str(), *mimeType));
 						}
 						else if (tagName.substr(0, 3) == "url")
 						{
-							std::string url = readText(true);
-							newElement->setValue(RBX::ContentId(url.c_str(), *mimeType));
+							newElement->setValue(RBX::ContentId(readText(true).c_str(), *mimeType));
 						}
 						else if (tag_null == tagName)
 						{
@@ -351,7 +359,7 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 
 						std::string closingTag = readTag();
 						if (!isCloseTag(closingTag))
-							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", tagName.substr(0, 32).c_str()));
+							throw std::runtime_error(G3D::format("TextXmlParser::parse - '%s' should be a closing tag", closingTag.substr(0, 32).c_str()));
 					}
 				}
 			}
@@ -360,7 +368,8 @@ std::auto_ptr<XmlElement> TextXmlParser::parse()
 				newElement->setValue(readText(true));
 			}
 
-			currentElement->pushBackChild(newElement);
+			if (currentElement)
+				currentElement->pushBackChild(newElement);
 
 			if (endsWithClose(currentTag))
 				elements.pop();
@@ -599,3 +608,4 @@ hash:
 		TextXmlWriter::serializeNode(xmlNode, depth);
 	}
 }
+
