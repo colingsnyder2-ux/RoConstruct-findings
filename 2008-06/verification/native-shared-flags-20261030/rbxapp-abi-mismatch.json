@@ -1,0 +1,33 @@
+[
+ {
+  "address": "005d9160",
+  "size": 19,
+  "asm": [
+   "005d9160 call 0x5d8b10",
+   "005d9165 test eax, eax",
+   "005d9167 je 0x5d9170",
+   "005d9169 mov eax, dword ptr [eax + 0x2c8]",
+   "005d916f ret ",
+   "005d9170 xor eax, eax",
+   "005d9172 ret "
+  ]
+ },
+ {
+  "address": "005d9180",
+  "size": 30,
+  "asm": [
+   "005d9180 call 0x5d8b10",
+   "005d9185 test eax, eax",
+   "005d9187 je 0x5d9191",
+   "005d9189 mov eax, dword ptr [eax + 0x2c8]",
+   "005d918f jmp 0x5d9193",
+   "005d9191 xor eax, eax",
+   "005d9193 test eax, eax",
+   "005d9195 je 0x5d919b",
+   "005d9197 mov eax, dword ptr [eax + 0x10]",
+   "005d919a ret ",
+   "005d919b xor eax, eax",
+   "005d919d ret "
+  ]
+ }
+]

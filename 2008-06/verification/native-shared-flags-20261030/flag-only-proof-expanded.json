@@ -1,0 +1,175 @@
+{
+ "symbols": [
+  {
+   "symbol": "??DVector3@G3D@@QBE?AV01@M@Z",
+   "copies": 41,
+   "variants": 2
+  },
+  {
+   "symbol": "?pointToWorldSpace@CoordinateFrame@G3D@@QBE?AVVector3@2@ABV32@@Z",
+   "copies": 25,
+   "variants": 2
+  },
+  {
+   "symbol": "??DCoordinateFrame@G3D@@QBE?AV01@ABV01@@Z",
+   "copies": 17,
+   "variants": 2
+  },
+  {
+   "symbol": "??$min@M@std@@YAABMABM0@Z",
+   "copies": 23,
+   "variants": 2
+  },
+  {
+   "symbol": "??$max@M@std@@YAABMABM0@Z",
+   "copies": 26,
+   "variants": 2
+  },
+  {
+   "symbol": "??$min@M@G3D@@YAMABM0@Z",
+   "copies": 21,
+   "variants": 2
+  },
+  {
+   "symbol": "??$max@M@G3D@@YAMABM0@Z",
+   "copies": 20,
+   "variants": 2
+  },
+  {
+   "symbol": "?min@Vector2@G3D@@QBE?AV12@ABV12@@Z",
+   "copies": 6,
+   "variants": 2
+  },
+  {
+   "symbol": "?max@Vector2@G3D@@QBE?AV12@ABV12@@Z",
+   "copies": 6,
+   "variants": 2
+  },
+  {
+   "symbol": "?xyxy@Rect2D@G3D@@SA?AV12@ABVVector2@2@0@Z",
+   "copies": 6,
+   "variants": 2
+  },
+  {
+   "symbol": "_sqrtf",
+   "copies": 30,
+   "variants": 2
+  },
+  {
+   "symbol": "?magnitude@Vector3@G3D@@QBEMXZ",
+   "copies": 17,
+   "variants": 2
+  },
+  {
+   "symbol": "?squaredMagnitude@Vector3@G3D@@QBEMXZ",
+   "copies": 24,
+   "variants": 2
+  },
+  {
+   "symbol": "?direction@Vector3@G3D@@QBE?AV12@XZ",
+   "copies": 16,
+   "variants": 2
+  },
+  {
+   "symbol": "?cross@Vector3@G3D@@QBE?AV12@ABV12@@Z",
+   "copies": 14,
+   "variants": 2
+  },
+  {
+   "symbol": "??DVector2@G3D@@QBE?AV01@M@Z",
+   "copies": 8,
+   "variants": 2
+  },
+  {
+   "symbol": "?center@Rect2D@G3D@@QBE?AVVector2@2@XZ",
+   "copies": 3,
+   "variants": 2
+  },
+  {
+   "symbol": "?contains@Rect2D@G3D@@QBE_NABVVector2@2@@Z",
+   "copies": 2,
+   "variants": 2
+  },
+  {
+   "symbol": "?clamp@G3D@@YAMMMM@Z",
+   "copies": 14,
+   "variants": 2
+  },
+  {
+   "symbol": "??8Vector3@G3D@@QBE_NABV01@@Z",
+   "copies": 21,
+   "variants": 2
+  },
+  {
+   "symbol": "?xyxy@Rect2D@G3D@@SA?AV12@MMMM@Z",
+   "copies": 4,
+   "variants": 2
+  },
+  {
+   "symbol": "??DMatrix3@G3D@@QBE?AVVector3@1@ABV21@@Z",
+   "copies": 14,
+   "variants": 2
+  },
+  {
+   "symbol": "??8Color3@G3D@@QBE_NABV01@@Z",
+   "copies": 3,
+   "variants": 2
+  },
+  {
+   "symbol": "??8CoordinateFrame@G3D@@QBE_NABV01@@Z",
+   "copies": 13,
+   "variants": 2
+  },
+  {
+   "symbol": "?lookVector@CoordinateFrame@G3D@@QBE?AVVector3@2@XZ",
+   "copies": 10,
+   "variants": 2
+  },
+  {
+   "symbol": "?clamp@Vector3@G3D@@QBE?AV12@ABV12@0@Z",
+   "copies": 6,
+   "variants": 2
+  },
+  {
+   "symbol": "??9CoordinateFrame@G3D@@QBE_NABV01@@Z",
+   "copies": 8,
+   "variants": 2
+  },
+  {
+   "symbol": "?max@Vector3@G3D@@QBE?AV12@ABV12@@Z",
+   "copies": 4,
+   "variants": 2
+  },
+  {
+   "symbol": "?dot@Vector3@G3D@@QBEMABV12@@Z",
+   "copies": 11,
+   "variants": 2
+  },
+  {
+   "symbol": "?inverse@CoordinateFrame@G3D@@QBE?AV12@XZ",
+   "copies": 9,
+   "variants": 2
+  },
+  {
+   "symbol": "?isUnit@Vector3@G3D@@QBE_NXZ",
+   "copies": 2,
+   "variants": 2
+  },
+  {
+   "symbol": "?pointToObjectSpace@CoordinateFrame@G3D@@QBE?AVVector3@2@ABV32@@Z",
+   "copies": 7,
+   "variants": 2
+  },
+  {
+   "symbol": "??9Color3@G3D@@QBE_NABV01@@Z",
+   "copies": 2,
+   "variants": 2
+  }
+ ],
+ "count": 33,
+ "provider_copies": 433,
+ "source_sha256": "a74a5d1f82ea0bf9da39cbc8102afcd4be3bfba3419ef5d2a2461cea81d4e26b",
+ "header_hashes_equal": true,
+ "configuration_difference": "/fp only",
+ "safety": "Not a swap-safety proof. No module altered."
+}
