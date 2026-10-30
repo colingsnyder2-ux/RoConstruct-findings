@@ -1,0 +1,8 @@
+{
+ "compiled": true,
+ "linked": true,
+ "ran": true,
+ "exit": 0,
+ "output": "LOD50: 0.5 shift: -2.23517418e-008 cull: -1.#INF\nlighting: 3 update scenarios passed; real hidden WGL context, max lights=8",
+ "unresolved": []
+}
