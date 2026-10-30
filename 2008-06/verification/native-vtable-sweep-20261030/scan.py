@@ -82,7 +82,7 @@ for module, test in [('RbxgsApp', 'rbxgs_app'), ('XTP', 'xtp_colors')]:
                             continue
                     except (KeyError, ValueError):
                         continue
-                    results.append(dict(module=module, object=obj.name, symbol=symbol,
+                    results.append(dict(module=module, object=obj.name, symbol=symbol, source_vtable=name,
                                         class_name=class_name, vtable=table['vtable'],
                                         slot=slot, target=target, size=len(body),
                                         relocations=len(relocs), data_refs=len(refs)))

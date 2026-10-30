@@ -1,5 +1,6 @@
 """Verify raw code and executable bytes for unrelocated vtable candidates."""
 import json
+import struct
 from pathlib import Path
 
 import pefile
@@ -19,7 +20,7 @@ for module in sorted({r['module'] for r in rows}):
     addresses = {}
     for line in (directory / (test + '.map')).read_text().splitlines():
         words = line.split()
-        if len(words) >= 5 and words[3] == 'f' and words[-1].startswith('linked:'):
+        if len(words) >= 4 and words[-1].startswith('linked:'):
             try:
                 addresses.setdefault((words[1], words[-1][7:]), set()).add(int(words[2], 16))
             except ValueError:
@@ -32,8 +33,17 @@ for module in sorted({r['module'] for r in rows}):
         candidates = addresses.get((row['symbol'], row['object']), set())
         proved = [addr for addr in candidates if 0 <= addr-base <= len(image)-len(target)
                   and image[addr-base:addr-base+len(target)] == target]
-        if target in bodies and proved:
-            results.append(dict(row, executable_addresses=['%08x' % a for a in sorted(proved)]))
+        source_tables = addresses.get((row['source_vtable'], row['object']), set())
+        linked_slots = []
+        for table in source_tables:
+            pointer = table - base + 4 * row['slot']
+            if 0 <= pointer <= len(image)-4:
+                callee = struct.unpack_from('<I', image, pointer)[0]
+                if callee in proved:
+                    linked_slots.append(table)
+        if target in bodies and proved and linked_slots:
+            results.append(dict(row, executable_addresses=['%08x' % a for a in sorted(proved)],
+                                executable_vtables=['%08x' % a for a in sorted(linked_slots)]))
 path = root / 'work/native-vtable-unrelocated-20261030.json'
 path.write_text(json.dumps(results, indent=2) + '\n')
 print('Rows:', len(results), 'distinct target addresses:', len({r['target'] for r in results}))

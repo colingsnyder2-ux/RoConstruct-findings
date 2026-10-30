@@ -3,6 +3,7 @@
     "module": "RbxgsApp",
     "object": "Contact.obj",
     "symbol": "?getEdgeType@Contact@RBX@@EBE?AW4EdgeType@Edge@2@XZ",
+    "source_vtable": "??_7BallBallContact@RBX@@6B@",
     "class_name": "RBX::BallBallContact",
     "vtable": "008436bc",
     "slot": 3,
@@ -12,12 +13,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456fd0"
+    ],
+    "executable_vtables": [
+      "00545574"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Contact.obj",
     "symbol": "?getEdgeType@Contact@RBX@@EBE?AW4EdgeType@Edge@2@XZ",
+    "source_vtable": "??_7BallBlockContact@RBX@@6B@",
     "class_name": "RBX::BallBlockContact",
     "vtable": "008436e8",
     "slot": 3,
@@ -27,12 +32,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456fd0"
+    ],
+    "executable_vtables": [
+      "00545598"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Contact.obj",
     "symbol": "?getEdgeType@Contact@RBX@@EBE?AW4EdgeType@Edge@2@XZ",
+    "source_vtable": "??_7BlockBlockContact@RBX@@6B@",
     "class_name": "RBX::BlockBlockContact",
     "vtable": "00843714",
     "slot": 3,
@@ -42,12 +51,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456fd0"
+    ],
+    "executable_vtables": [
+      "005455d4"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "glue_misc.obj",
     "symbol": "?getEdgeType@Joint@RBX@@MBE?AW4EdgeType@Edge@2@XZ",
+    "source_vtable": "??_7RotateJoint@RBX@@6B@",
     "class_name": "RBX::RotateJoint",
     "vtable": "0084adc4",
     "slot": 3,
@@ -57,12 +70,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00412ce0"
+    ],
+    "executable_vtables": [
+      "0053ad84"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "glue_misc.obj",
     "symbol": "?getJointType@RotateJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7RotateJoint@RBX@@6B@",
     "class_name": "RBX::RotateJoint",
     "vtable": "0084adc4",
     "slot": 5,
@@ -72,12 +89,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456fd0"
+    ],
+    "executable_vtables": [
+      "0053ad84"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "GlueJoint.obj",
     "symbol": "?getJointType@GlueJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7GlueJoint@RBX@@6B@",
     "class_name": "RBX::GlueJoint",
     "vtable": "0084ae7c",
     "slot": 5,
@@ -87,12 +108,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004be470"
+    ],
+    "executable_vtables": [
+      "00546ed4"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Humanoid.obj",
     "symbol": "?getControllerType@NullController@RBX@@UBE?AW4ControllerType@Controller@2@XZ",
+    "source_vtable": "??_7NullController@RBX@@6B@",
     "class_name": "RBX::NullController",
     "vtable": "00832a04",
     "slot": 2,
@@ -102,12 +127,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00412ce0"
+    ],
+    "executable_vtables": [
+      "00538e2c"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "JointInstance.obj",
     "symbol": "?getJointType@SnapJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7SnapJoint@RBX@@6B@",
     "class_name": "RBX::SnapJoint",
     "vtable": "0083e0fc",
     "slot": 5,
@@ -117,12 +146,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004bc8e0"
+    ],
+    "executable_vtables": [
+      "0053c1d4"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "JointInstance.obj",
     "symbol": "?getJointType@WeldJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7WeldJoint@RBX@@6B@",
     "class_name": "RBX::WeldJoint",
     "vtable": "0083e0bc",
     "slot": 5,
@@ -132,12 +165,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004bca30"
+    ],
+    "executable_vtables": [
+      "0053c20c"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "JointInstance.obj",
     "symbol": "?getJointType@RotateVJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7RotateVJoint@RBX@@6B@",
     "class_name": "RBX::RotateVJoint",
     "vtable": "0083e17c",
     "slot": 5,
@@ -147,12 +184,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456f80"
+    ],
+    "executable_vtables": [
+      "0053c244"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "JointInstance.obj",
     "symbol": "?getJointType@RotatePJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7RotatePJoint@RBX@@6B@",
     "class_name": "RBX::RotatePJoint",
     "vtable": "0083e13c",
     "slot": 5,
@@ -162,12 +203,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004bbb30"
+    ],
+    "executable_vtables": [
+      "0053c27c"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "MotorJoint.obj",
     "symbol": "?getJointType@MotorJoint@RBX@@EBE?AW4JointType@Joint@2@XZ",
+    "source_vtable": "??_7MotorJoint@RBX@@6B@",
     "class_name": "RBX::MotorJoint",
     "vtable": "0083f764",
     "slot": 5,
@@ -177,12 +222,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004becd0"
+    ],
+    "executable_vtables": [
+      "00546f1c"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Primitive.obj",
     "symbol": "?onSetSize@Geometry@RBX@@MAEXXZ",
+    "source_vtable": "??_7Geometry@RBX@@6B@",
     "class_name": "RBX::Geometry",
     "vtable": "0083f7c4",
     "slot": 0,
@@ -192,12 +241,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00401bf0"
+    ],
+    "executable_vtables": [
+      "0053d934"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Primitive.obj",
     "symbol": "?getGeometryType@Geometry@RBX@@UBE?AW4GeometryType@12@XZ",
+    "source_vtable": "??_7Geometry@RBX@@6B@",
     "class_name": "RBX::Geometry",
     "vtable": "0083f7c4",
     "slot": 2,
@@ -207,12 +260,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456f80"
+    ],
+    "executable_vtables": [
+      "0053d934"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Primitive.obj",
     "symbol": "?getGeometryType@Ball@RBX@@UBE?AW4GeometryType@Geometry@2@XZ",
+    "source_vtable": "??_7Ball@RBX@@6B@",
     "class_name": "RBX::Ball",
     "vtable": "0083f814",
     "slot": 2,
@@ -222,12 +279,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456fd0"
+    ],
+    "executable_vtables": [
+      "0053d95c"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "Primitive.obj",
     "symbol": "?getGeometryType@Block@RBX@@UBE?AW4GeometryType@Geometry@2@XZ",
+    "source_vtable": "??_7Block@RBX@@6B@",
     "class_name": "RBX::Block",
     "vtable": "0083f7ec",
     "slot": 2,
@@ -237,12 +298,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004bbb30"
+    ],
+    "executable_vtables": [
+      "0053d984"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "UserController.obj",
     "symbol": "?getControllerType@KeyboardPrimaryController@RBX@@UBE?AW4ControllerType@Controller@2@XZ",
+    "source_vtable": "??_7KeyboardPrimaryController@RBX@@6B@",
     "class_name": "RBX::KeyboardPrimaryController",
     "vtable": "00839fa4",
     "slot": 2,
@@ -252,12 +317,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00456fd0"
+    ],
+    "executable_vtables": [
+      "00546a84"
     ]
   },
   {
     "module": "RbxgsApp",
     "object": "UserController.obj",
     "symbol": "?getControllerType@KeyboardSecondaryController@RBX@@UBE?AW4ControllerType@Controller@2@XZ",
+    "source_vtable": "??_7KeyboardSecondaryController@RBX@@6B@",
     "class_name": "RBX::KeyboardSecondaryController",
     "vtable": "00839fbc",
     "slot": 2,
@@ -267,12 +336,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004bbb30"
+    ],
+    "executable_vtables": [
+      "00546a9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPColorManager.obj",
     "symbol": "?AssertValid@CObject@@UBEXXZ",
+    "source_vtable": "??_7CXTPColorManager@@6B@",
     "class_name": "CXTPColorManager",
     "vtable": "00855e0c",
     "slot": 3,
@@ -282,12 +355,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004685a0"
+    ],
+    "executable_vtables": [
+      "004dfc6c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDefaultTheme.obj",
     "symbol": "?BaseTheme@CXTPDefaultTheme@XTPPaintThemes@@MAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPDefaultTheme@XTPPaintThemes@@6B@",
     "class_name": "XTPPaintThemes::CXTPDefaultTheme",
     "vtable": "008626fc",
     "slot": 55,
@@ -297,12 +374,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004f0e74"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPaneAutoHidePanel.obj",
     "symbol": "?Reposition@CAutoHidePanelTabManager@CXTPDockingPaneAutoHidePanel@@UAEXXZ",
+    "source_vtable": "??_7CAutoHidePanelTabManager@CXTPDockingPaneAutoHidePanel@@6B@",
     "class_name": "CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager",
     "vtable": "008650b4",
     "slot": 1,
@@ -312,12 +393,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004685a0"
+    ],
+    "executable_vtables": [
+      "004e9044"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPaneAutoHidePanel.obj",
     "symbol": "?IsMouseLocked@CXTPTabManager@@MBEHXZ",
+    "source_vtable": "??_7CAutoHidePanelTabManager@CXTPDockingPaneAutoHidePanel@@6B@",
     "class_name": "CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager",
     "vtable": "008650b4",
     "slot": 29,
@@ -327,12 +412,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004e9044"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPaneAutoHidePanel.obj",
     "symbol": "?HeaderHasFocus@CXTPTabManager@@MBEHXZ",
+    "source_vtable": "??_7CAutoHidePanelTabManager@CXTPDockingPaneAutoHidePanel@@6B@",
     "class_name": "CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager",
     "vtable": "008650b4",
     "slot": 30,
@@ -342,12 +431,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004e9044"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPanePaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetFlat@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetFlat@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetFlat",
     "vtable": "008618a4",
     "slot": 15,
@@ -357,12 +450,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3900"
+    ],
+    "executable_vtables": [
+      "004eedc4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPanePaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetFlat@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetFlat@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetFlat",
     "vtable": "008618a4",
     "slot": 16,
@@ -372,12 +469,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3910"
+    ],
+    "executable_vtables": [
+      "004eedc4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPanePaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetFlat@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPageFlat@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPageFlat",
     "vtable": "008618ec",
     "slot": 15,
@@ -387,12 +488,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3900"
+    ],
+    "executable_vtables": [
+      "004eee9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPDockingPanePaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetPropertyPageFlat@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPageFlat@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPageFlat",
     "vtable": "008618ec",
     "slot": 16,
@@ -402,12 +507,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004eee9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPNativeXPTheme.obj",
     "symbol": "?BaseTheme@CXTPNativeXPTheme@XTPPaintThemes@@MAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPNativeXPTheme@XTPPaintThemes@@6B@",
     "class_name": "XTPPaintThemes::CXTPNativeXPTheme",
     "vtable": "0086336c",
     "slot": 55,
@@ -417,12 +526,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004aa220"
+    ],
+    "executable_vtables": [
+      "004f0fb4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPOffice2003Theme.obj",
     "symbol": "?BaseTheme@CXTPOffice2003Theme@XTPPaintThemes@@MAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPOffice2003Theme@XTPPaintThemes@@6B@",
     "class_name": "XTPPaintThemes::CXTPOffice2003Theme",
     "vtable": "0086310c",
     "slot": 55,
@@ -432,12 +545,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3910"
+    ],
+    "executable_vtables": [
+      "004eef2c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPOffice2003Theme.obj",
     "symbol": "?BaseTheme@CXTPWhidbeyTheme@XTPPaintThemes@@UAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPWhidbeyTheme@XTPPaintThemes@@6B@",
     "class_name": "XTPPaintThemes::CXTPWhidbeyTheme",
     "vtable": "0086323c",
     "slot": 55,
@@ -447,12 +564,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00494100"
+    ],
+    "executable_vtables": [
+      "004ef05c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPOffice2007Theme.obj",
     "symbol": "?BaseTheme@CXTPOffice2007Theme@@MAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPOffice2007Theme@@6B@",
     "class_name": "CXTPOffice2007Theme",
     "vtable": "0086288c",
     "slot": 55,
@@ -462,12 +583,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a39e0"
+    ],
+    "executable_vtables": [
+      "004ee8a4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPOfficeTheme.obj",
     "symbol": "?BaseTheme@CXTPOfficeTheme@XTPPaintThemes@@MAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPOfficeTheme@XTPPaintThemes@@6B@",
     "class_name": "XTPPaintThemes::CXTPOfficeTheme",
     "vtable": "008634d4",
     "slot": 55,
@@ -477,12 +602,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004f02ac"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPPropExchange.obj",
     "symbol": "?IsAllowDefaultValues@CXTPPropExchange@@UBEHXZ",
+    "source_vtable": "??_7CXTPPropExchange@@6B@",
     "class_name": "CXTPPropExchange",
     "vtable": "0085ae54",
     "slot": 34,
@@ -492,12 +621,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004e01f4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPPropExchange.obj",
     "symbol": "?IsAllowBlobValues@CXTPPropExchange@@UBEHXZ",
+    "source_vtable": "??_7CXTPPropExchange@@6B@",
     "class_name": "CXTPPropExchange",
     "vtable": "0085ae54",
     "slot": 35,
@@ -507,12 +640,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004e01f4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPPropExchange.obj",
     "symbol": "?IsAllowDefaultValues@CXTPPropExchangeArchive@@UBEHXZ",
+    "source_vtable": "??_7CXTPPropExchangeArchive@@6B@",
     "class_name": "CXTPPropExchangeArchive",
     "vtable": "0085af94",
     "slot": 34,
@@ -522,12 +659,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004e02f4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPPropExchange.obj",
     "symbol": "?IsAllowBlobValues@CXTPPropExchangeArchive@@UBEHXZ",
+    "source_vtable": "??_7CXTPPropExchangeArchive@@6B@",
     "class_name": "CXTPPropExchangeArchive",
     "vtable": "0085af94",
     "slot": 35,
@@ -537,42 +678,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPPropExchange.obj",
-    "symbol": "?IsAllowDefaultValues@CXTPPropExchange@@UBEHXZ",
-    "class_name": "CXTPPropExchangeXMLNode",
-    "vtable": "0085b0d4",
-    "slot": 34,
-    "target": "007286a0",
-    "size": 6,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00445b30"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPPropExchange.obj",
-    "symbol": "?IsAllowBlobValues@CXTPPropExchange@@UBEHXZ",
-    "class_name": "CXTPPropExchangeXMLNode",
-    "vtable": "0085b0d4",
-    "slot": 35,
-    "target": "00416690",
-    "size": 3,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004493f0"
+    ],
+    "executable_vtables": [
+      "004e02f4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPReportRecord.obj",
     "symbol": "?IsFiltered@CXTPReportRecord@@UBEHXZ",
+    "source_vtable": "??_7CXTPReportRecord@@6B@",
     "class_name": "CXTPReportRecord",
     "vtable": "0085455c",
     "slot": 23,
@@ -582,12 +697,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004ec00c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPReportRecordItem.obj",
     "symbol": "?IsPreviewItem@CXTPReportRecordItem@@UBEHXZ",
+    "source_vtable": "??_7CXTPReportRecordItem@@6B@",
     "class_name": "CXTPReportRecordItem",
     "vtable": "008532e4",
     "slot": 50,
@@ -597,12 +716,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004e6e7c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPReportRecordItemText.obj",
     "symbol": "?IsPreviewItem@CXTPReportRecordItemPreview@@UBEHXZ",
+    "source_vtable": "??_7CXTPReportRecordItemPreview@@6B@",
     "class_name": "CXTPReportRecordItemPreview",
     "vtable": "00854924",
     "slot": 50,
@@ -612,12 +735,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004e73f4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPRibbonTheme.obj",
     "symbol": "?BaseTheme@CXTPRibbonTheme@@MAE?AW4XTPPaintTheme@@XZ",
+    "source_vtable": "??_7CXTPRibbonTheme@@6B@",
     "class_name": "CXTPRibbonTheme",
     "vtable": "00861934",
     "slot": 55,
@@ -627,192 +754,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004963c0"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?AddRef@XTextHost@CXTPRichRender@@UAGKXZ",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 1,
-    "target": "006e8870",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00449690"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?Release@XTextHost@CXTPRichRender@@UAGKXZ",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 2,
-    "target": "006e8870",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00449690"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxGetDC@XTextHost@CXTPRichRender@@UAEPAUHDC__@@XZ",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 3,
-    "target": "00416690",
-    "size": 3,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004493f0"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxSetFocus@XTextHost@CXTPRichRender@@UAEXXZ",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 18,
-    "target": "0047d410",
-    "size": 1,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004685a0"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxActivate@XTextHost@CXTPRichRender@@UAEJPAJ@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 22,
-    "target": "0078c5a0",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00465570"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxDeactivate@XTextHost@CXTPRichRender@@UAEJJ@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 23,
-    "target": "0078c5a0",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00465570"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxGetClientRect@XTextHost@CXTPRichRender@@UAEJPAUtagRECT@@@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 24,
-    "target": "0078c5a0",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00465570"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxGetPasswordChar@XTextHost@CXTPRichRender@@UAEJPAD@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 32,
-    "target": "006e8870",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00449690"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxGetExtent@XTextHost@CXTPRichRender@@UAEJPAUtagSIZE@@@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 34,
-    "target": "006e8860",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004672d0"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?OnTxCharFormatChange@XTextHost@CXTPRichRender@@UAEJPBU_charformatw@@@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 35,
-    "target": "0078c5a0",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00465570"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?OnTxParaFormatChange@XTextHost@CXTPRichRender@@UAEJPBU_paraformat@@@Z",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 36,
-    "target": "0078c5a0",
-    "size": 8,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "00465570"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPRichRender.obj",
-    "symbol": "?TxImmGetContext@XTextHost@CXTPRichRender@@UAEKXZ",
-    "class_name": "CXTPRichRender::XTextHost",
-    "vtable": "0086a85c",
-    "slot": 39,
-    "target": "00416690",
-    "size": 3,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004493f0"
+    ],
+    "executable_vtables": [
+      "004ef714"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPScrollBar.obj",
     "symbol": "?DoAnimate@CXTPScrollBase@@MAEXXZ",
+    "source_vtable": "??_7CXTPScrollBase@@6B@",
     "class_name": "CXTPScrollBase",
     "vtable": "0086daf0",
     "slot": 3,
@@ -822,12 +773,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004685a0"
+    ],
+    "executable_vtables": [
+      "004e9404"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPSystemHelpers.obj",
     "symbol": "?GetAccessibleParent@CXTPAccessible@@UAEJPAPAUIDispatch@@@Z",
+    "source_vtable": "??_7CXTPAccessible@@6B@",
     "class_name": "CXTPAccessible",
     "vtable": "00856e6c",
     "slot": 1,
@@ -837,12 +792,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004672d0"
+    ],
+    "executable_vtables": [
+      "004e1c9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPSystemHelpers.obj",
     "symbol": "?GetAccessibleChildCount@CXTPAccessible@@UAEJPAJ@Z",
+    "source_vtable": "??_7CXTPAccessible@@6B@",
     "class_name": "CXTPAccessible",
     "vtable": "00856e6c",
     "slot": 2,
@@ -852,12 +811,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004672d0"
+    ],
+    "executable_vtables": [
+      "004e1c9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPSystemHelpers.obj",
     "symbol": "?GetAccessibleFocus@CXTPAccessible@@UAEJPAUtagVARIANT@@@Z",
+    "source_vtable": "??_7CXTPAccessible@@6B@",
     "class_name": "CXTPAccessible",
     "vtable": "00856e6c",
     "slot": 12,
@@ -867,12 +830,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00449690"
+    ],
+    "executable_vtables": [
+      "004e1c9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPSystemHelpers.obj",
     "symbol": "?GetAccessibleSelection@CXTPAccessible@@UAEJPAUtagVARIANT@@@Z",
+    "source_vtable": "??_7CXTPAccessible@@6B@",
     "class_name": "CXTPAccessible",
     "vtable": "00856e6c",
     "slot": 13,
@@ -882,12 +849,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00449690"
+    ],
+    "executable_vtables": [
+      "004e1c9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPSystemHelpers.obj",
     "symbol": "?GetAccessible@CXTPAccessible@@UAEPAVCCmdTarget@@XZ",
+    "source_vtable": "??_7CXTPAccessible@@6B@",
     "class_name": "CXTPAccessible",
     "vtable": "00856e6c",
     "slot": 22,
@@ -897,12 +868,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004e1c9c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabClientWnd.obj",
     "symbol": "?OnRecalcLayout@CWorkspace@CXTPTabClientWnd@@MAEXXZ",
+    "source_vtable": "??_7CWorkspace@CXTPTabClientWnd@@6B@",
     "class_name": "CXTPTabClientWnd::CWorkspace",
     "vtable": "0085b1fc",
     "slot": 33,
@@ -912,12 +887,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004685a0"
+    ],
+    "executable_vtables": [
+      "004ebcf4"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabManager.obj",
     "symbol": "?OnBeforeItemClick@CXTPTabManager@@MAEHPAVCXTPTabManagerItem@@@Z",
+    "source_vtable": "??_7CXTPTabManager@@6B@",
     "class_name": "CXTPTabManager",
     "vtable": "0086932c",
     "slot": 25,
@@ -927,12 +906,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00449690"
+    ],
+    "executable_vtables": [
+      "004eb904"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetPropertyPage@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPage@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPage",
     "vtable": "008693fc",
     "slot": 15,
@@ -942,12 +925,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3810"
+    ],
+    "executable_vtables": [
+      "004f042c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetPropertyPage@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPage@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPage",
     "vtable": "008693fc",
     "slot": 16,
@@ -957,12 +944,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004f042c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetPropertyPage2003@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPage2003@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPage2003",
     "vtable": "00869444",
     "slot": 15,
@@ -972,12 +963,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3880"
+    ],
+    "executable_vtables": [
+      "004f0474"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetPropertyPage2003@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPage2003@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPage2003",
     "vtable": "00869444",
     "slot": 16,
@@ -987,12 +982,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00494100"
+    ],
+    "executable_vtables": [
+      "004f0474"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetPropertyPage2007@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPage2007@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPage2007",
     "vtable": "0086948c",
     "slot": 15,
@@ -1002,12 +1001,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a38c0"
+    ],
+    "executable_vtables": [
+      "004f04bc"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetPropertyPage2007@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPage2007@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPage2007",
     "vtable": "0086948c",
     "slot": 16,
@@ -1017,12 +1020,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a38c0"
+    ],
+    "executable_vtables": [
+      "004f04bc"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetStateButtons@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetStateButtons@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetStateButtons",
     "vtable": "008694d4",
     "slot": 16,
@@ -1032,12 +1039,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3910"
+    ],
+    "executable_vtables": [
+      "004f0504"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetVisualStudio@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetVisualStudio@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetVisualStudio",
     "vtable": "0086951c",
     "slot": 15,
@@ -1047,12 +1058,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3900"
+    ],
+    "executable_vtables": [
+      "004f054c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetVisualStudio@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetVisualStudio@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetVisualStudio",
     "vtable": "0086951c",
     "slot": 16,
@@ -1062,12 +1077,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3910"
+    ],
+    "executable_vtables": [
+      "004f054c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetPropertyPage@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPageSelected@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPageSelected",
     "vtable": "00869654",
     "slot": 15,
@@ -1077,12 +1096,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3810"
+    ],
+    "executable_vtables": [
+      "004f0594"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetPropertyPage@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetPropertyPageSelected@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetPropertyPageSelected",
     "vtable": "00869654",
     "slot": 16,
@@ -1092,12 +1115,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004f0594"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetVisio@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetVisio@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetVisio",
     "vtable": "008693b4",
     "slot": 15,
@@ -1107,12 +1134,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a39e0"
+    ],
+    "executable_vtables": [
+      "004f05dc"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSetPropertyPage2003@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSetVisualStudio2005@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetVisualStudio2005",
     "vtable": "00869564",
     "slot": 15,
@@ -1122,12 +1153,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004a3880"
+    ],
+    "executable_vtables": [
+      "004f063c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManager.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSetPropertyPage2003@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSetVisualStudio2005@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSetVisualStudio2005",
     "vtable": "00869564",
     "slot": 16,
@@ -1137,12 +1172,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00494100"
+    ],
+    "executable_vtables": [
+      "004f063c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManagerAppearance.obj",
     "symbol": "?GetSupportedColorSets@CAppearanceSet@CXTPTabPaintManager@@UAEHXZ",
+    "source_vtable": "??_7CAppearanceSet@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSet",
     "vtable": "00869734",
     "slot": 15,
@@ -1152,12 +1191,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "0049ae30"
+    ],
+    "executable_vtables": [
+      "004efe0c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManagerAppearance.obj",
     "symbol": "?GetDefaultColorSet@CAppearanceSet@CXTPTabPaintManager@@UAE?AW4XTPTabColorStyle@@XZ",
+    "source_vtable": "??_7CAppearanceSet@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CAppearanceSet",
     "vtable": "00869734",
     "slot": 16,
@@ -1167,12 +1210,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "00445b30"
+    ],
+    "executable_vtables": [
+      "004efe0c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManagerColors.obj",
     "symbol": "?IsAppThemed@CColorSet@CXTPTabPaintManager@@UBEHXZ",
+    "source_vtable": "??_7CColorSet@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CColorSet",
     "vtable": "0086da60",
     "slot": 10,
@@ -1182,42 +1229,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004f2a68"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPTabPaintManagerColors.obj",
     "symbol": "?IsAppThemed@CColorSet@CXTPTabPaintManager@@UBEHXZ",
-    "class_name": "CXTPTabPaintManager::CColorSetDefault",
-    "vtable": "008617fc",
-    "slot": 10,
-    "target": "00416690",
-    "size": 3,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004493f0"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPTabPaintManagerColors.obj",
-    "symbol": "?IsAppThemed@CColorSet@CXTPTabPaintManager@@UBEHXZ",
-    "class_name": "CXTPTabPaintManager::CColorSetOffice2003",
-    "vtable": "00861b40",
-    "slot": 10,
-    "target": "00416690",
-    "size": 3,
-    "relocations": 0,
-    "data_refs": 0,
-    "executable_addresses": [
-      "004493f0"
-    ]
-  },
-  {
-    "module": "XTP",
-    "object": "XTPTabPaintManagerColors.obj",
-    "symbol": "?IsAppThemed@CColorSet@CXTPTabPaintManager@@UBEHXZ",
+    "source_vtable": "??_7CColorSetWhidbey@CXTPTabPaintManager@@6B@",
     "class_name": "CXTPTabPaintManager::CColorSetWhidbey",
     "vtable": "0086dac0",
     "slot": 10,
@@ -1227,12 +1248,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004493f0"
+    ],
+    "executable_vtables": [
+      "004f2ac8"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPToolTipContext.obj",
     "symbol": "?SaveObject@XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@UAGJXZ",
+    "source_vtable": "??_7XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@6B@",
     "class_name": "CXTPToolTipContext::CHTMLToolTip::XOleClientSite",
     "vtable": "0085c764",
     "slot": 3,
@@ -1242,12 +1267,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004672d0"
+    ],
+    "executable_vtables": [
+      "004e879c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPToolTipContext.obj",
     "symbol": "?ShowObject@XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@UAGJXZ",
+    "source_vtable": "??_7XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@6B@",
     "class_name": "CXTPToolTipContext::CHTMLToolTip::XOleClientSite",
     "vtable": "0085c764",
     "slot": 6,
@@ -1257,12 +1286,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004672d0"
+    ],
+    "executable_vtables": [
+      "004e879c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTPToolTipContext.obj",
     "symbol": "?RequestNewObjectLayout@XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@UAGJXZ",
+    "source_vtable": "??_7XOleClientSite@CHTMLToolTip@CXTPToolTipContext@@6B@",
     "class_name": "CXTPToolTipContext::CHTMLToolTip::XOleClientSite",
     "vtable": "0085c764",
     "slot": 8,
@@ -1272,12 +1305,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004672d0"
+    ],
+    "executable_vtables": [
+      "004e879c"
     ]
   },
   {
     "module": "XTP",
     "object": "XTThemeManager.obj",
     "symbol": "?RefreshMetrics@CXTThemeManagerStyle@@UAEXXZ",
+    "source_vtable": "??_7CXTThemeManagerStyle@@6B@",
     "class_name": "CXTThemeManagerStyle",
     "vtable": "0085cf44",
     "slot": 1,
@@ -1287,12 +1324,16 @@
     "data_refs": 0,
     "executable_addresses": [
       "004685a0"
+    ],
+    "executable_vtables": [
+      "004f0c80"
     ]
   },
   {
     "module": "XTP",
     "object": "XTThemeManager.obj",
     "symbol": "?OnThemeChanged@CXTThemeManagerStyleHost@@MAEXXZ",
+    "source_vtable": "??_7CXTThemeManagerStyleHost@@6B@",
     "class_name": "CXTThemeManagerStyleHost",
     "vtable": "0085cf58",
     "slot": 2,
@@ -1302,6 +1343,9 @@
     "data_refs": 0,
     "executable_addresses": [
       "004685a0"
+    ],
+    "executable_vtables": [
+      "004f0c9c"
     ]
   }
 ]
