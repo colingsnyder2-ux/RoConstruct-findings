@@ -1,0 +1,767 @@
+[
+ {
+  "address": "004913d0",
+  "symbol": "??$?0P8Instance@RBX@@BEPAV01@XZP801@AEXPAV01@@Z@?$RefPropDescriptor@VInstance@RBX@@V12@@Reflection@RBX@@QAE@PBD0P8Instance@2@BEPAV32@XZP832@AEXPAV32@@ZW4Functionality@PropertyDescriptor@12@@Z",
+  "size": 169,
+  "map_line": "0001:00002510       ??$?0P8Instance@RBX@@BEPAV01@XZP801@AEXPAV01@@Z@?$RefPropDescriptor@VInstance@RBX@@V12@@Reflection@RBX@@QAE@PBD0P8Instance@2@BEPAV32@XZP832@AEXPAV32@@ZW4Functionality@PropertyDescriptor@12@@Z 00403510 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005e3b30",
+  "symbol": "??$?0PAVJoint@RBX@@@?$NonFactoryProduct@VJointInstance@RBX@@$1?sAutoJoint@2@3QBDB@RBX@@QAE@PAVJoint@1@@Z",
+  "size": 107,
+  "map_line": "0001:00007850       ??$?0PAVJoint@RBX@@@?$NonFactoryProduct@VJointInstance@RBX@@$1?sAutoJoint@2@3QBDB@RBX@@QAE@PAVJoint@1@@Z 00408850 f i linked:verified_live-live-0029.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0041ab40",
+  "symbol": "??$?0V?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@@any@boost@@QAE@ABV?$function@$$A6AXMM@ZV?$allocator@X@std@@@1@@Z",
+  "size": 89,
+  "map_line": "0001:00009710       ??$?0V?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@@any@boost@@QAE@ABV?$function@$$A6AXMM@ZV?$allocator@X@std@@@1@@Z 0040a710 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0041cff0",
+  "symbol": "??$?0VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@@?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@QAE@VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@H@Z",
+  "size": 164,
+  "map_line": "0001:0000ab60       ??$?0VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@@?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@QAE@VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@H@Z 0040bb60 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0041d310",
+  "symbol": "??$?0VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@@?$slot@V?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@@boost@@QAE@ABVGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@@Z",
+  "size": 180,
+  "map_line": "0001:0000acc0       ??$?0VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@@?$slot@V?$function@$$A6AXMM@ZV?$allocator@X@std@@@boost@@@boost@@QAE@ABVGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@@Z 0040bcc0 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005e3e60",
+  "symbol": "??$?0VJoint@RBX@@@?$DescribedNonCreatable@VAutoJoint@RBX@@VJointInstance@2@$1?sAutoJoint@2@3QBDB@RBX@@QAE@PAVJoint@1@@Z",
+  "size": 163,
+  "map_line": "0001:00007920       ??$?0VJoint@RBX@@@?$DescribedNonCreatable@VAutoJoint@RBX@@VJointInstance@2@$1?sAutoJoint@2@3QBDB@RBX@@QAE@PAVJoint@1@@Z 00408920 f i linked:verified_live-live-0029.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00443320",
+  "symbol": "??$?4PBVPropertyDescriptor@Reflection@RBX@@@any@boost@@QAEAAV01@ABQBVPropertyDescriptor@Reflection@RBX@@@Z",
+  "size": 68,
+  "map_line": "0001:00004320       ??$?4PBVPropertyDescriptor@Reflection@RBX@@@any@boost@@QAEAAV01@ABQBVPropertyDescriptor@Reflection@RBX@@@Z 00405320 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0048dd00",
+  "symbol": "??$?4V?$shared_ptr@VInstance@RBX@@@boost@@@any@boost@@QAEAAV01@ABV?$shared_ptr@VInstance@RBX@@@1@@Z",
+  "size": 90,
+  "map_line": "0001:000039a0       ??$?4V?$shared_ptr@VInstance@RBX@@@boost@@@any@boost@@QAEAAV01@ABV?$shared_ptr@VInstance@RBX@@@1@@Z 004049a0 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0042c590",
+  "symbol": "??$?RV?$slot_call_iterator@U?$caller@V?$shared_ptr@VInstance@RBX@@@boost@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@2@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@boost@@@?$last_value@X@boost@@QBE?AUunusable@01@V?$slot_call_iterator@U?$caller@V?$shared_ptr@VInstance@RBX@@@boost@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@2@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@1@0@Z",
+  "size": 146,
+  "map_line": "0001:00004c70       ??$?RV?$slot_call_iterator@U?$caller@V?$shared_ptr@VInstance@RBX@@@boost@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@2@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@boost@@@?$last_value@X@boost@@QBE?AUunusable@01@V?$slot_call_iterator@U?$caller@V?$shared_ptr@VInstance@RBX@@@boost@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@2@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@1@0@Z 00405c70 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00411f50",
+  "symbol": "??$create@VBodyColors@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyColors@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000c4e0       ??$create@VBodyColors@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyColors@RBX@@@boost@@XZ 0040d4e0 f i linked:verified_live-live-0070.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00440bf0",
+  "symbol": "??$create@VBodyPosition@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyPosition@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000f0d0       ??$create@VBodyPosition@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyPosition@RBX@@@boost@@XZ 004100d0 f i linked:verified_live-live-0075.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0041e4d0",
+  "symbol": "??$create@VBodyVelocity@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyVelocity@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000f1d0       ??$create@VBodyVelocity@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyVelocity@RBX@@@boost@@XZ 004101d0 f i linked:verified_live-live-0075.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0048f220",
+  "symbol": "??$create@VDebrisService@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VDebrisService@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000fbe0       ??$create@VDebrisService@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VDebrisService@RBX@@@boost@@XZ 00410be0 f i linked:verified_live-live-0071.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0045c580",
+  "symbol": "??$create@VForceField@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VForceField@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:00010340       ??$create@VForceField@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VForceField@RBX@@@boost@@XZ 00411340 f i linked:verified_live-live-0073.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00569070",
+  "symbol": "??$create@VGlobalSettings@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlobalSettings@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:000114d0       ??$create@VGlobalSettings@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlobalSettings@RBX@@@boost@@XZ 004124d0 f i linked:verified_live-live-0026.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": true
+ },
+ {
+  "address": "004b2890",
+  "symbol": "??$create@VGlue@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlue@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:00008440       ??$create@VGlue@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlue@RBX@@@boost@@XZ 00409440 f i linked:verified_live-live-0029.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00580230",
+  "symbol": "??$create@VHole@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VHole@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:00014f90       ??$create@VHole@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VHole@RBX@@@boost@@XZ 00415f90 f i linked:verified_live-live-0025.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0041ec30",
+  "symbol": "??$create@VRocket@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VRocket@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000f250       ??$create@VRocket@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VRocket@RBX@@@boost@@XZ 00410250 f i linked:verified_live-live-0075.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00409620",
+  "symbol": "??$create@VSelection@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VSelection@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:00015ec0       ??$create@VSelection@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VSelection@RBX@@@boost@@XZ 00416ec0 f i linked:verified_live-live-0076.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "004a3850",
+  "symbol": "??$create@VShirt@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VShirt@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000c8b0       ??$create@VShirt@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VShirt@RBX@@@boost@@XZ 0040d8b0 f i linked:verified_live-live-0070.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0040b320",
+  "symbol": "??$create@VSkin@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VSkin@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:0000c560       ??$create@VSkin@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VSkin@RBX@@@boost@@XZ 0040d560 f i linked:verified_live-live-0070.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00409140",
+  "symbol": "??$create@VTeam@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VTeam@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:00016b10       ??$create@VTeam@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VTeam@RBX@@@boost@@XZ 00417b10 f i linked:verified_live-live-0035.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00490450",
+  "symbol": "??$create@VTeams@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VTeams@RBX@@@boost@@XZ",
+  "size": 120,
+  "map_line": "0001:00017130       ??$create@VTeams@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VTeams@RBX@@@boost@@XZ 00418130 f i linked:verified_0003.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00666cc0",
+  "symbol": "??$doDeclare@$1?sFallingDown@RBX@@3QBDB@Name@RBX@@CAABV01@XZ",
+  "size": 101,
+  "map_line": "0001:00017260       ??$doDeclare@$1?sFallingDown@RBX@@3QBDB@Name@RBX@@CAABV01@XZ 00418260 f i linked:verified_live-live-0001.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00667560",
+  "symbol": "??$doDeclare@$1?sFreefall@RBX@@3QBDB@Name@RBX@@CAABV01@XZ",
+  "size": 101,
+  "map_line": "0001:000172d0       ??$doDeclare@$1?sFreefall@RBX@@3QBDB@Name@RBX@@CAABV01@XZ 004182d0 f i linked:verified_live-live-0003.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00667d80",
+  "symbol": "??$doDeclare@$1?sGettingUp@RBX@@3QBDB@Name@RBX@@CAABV01@XZ",
+  "size": 101,
+  "map_line": "0001:00017340       ??$doDeclare@$1?sGettingUp@RBX@@3QBDB@Name@RBX@@CAABV01@XZ 00418340 f i linked:verified_live-live-0004.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00667ba0",
+  "symbol": "??$doDeclare@$1?sJumping@RBX@@3QBDB@Name@RBX@@CAABV01@XZ",
+  "size": 101,
+  "map_line": "0001:000173b0       ??$doDeclare@$1?sJumping@RBX@@3QBDB@Name@RBX@@CAABV01@XZ 004183b0 f i linked:verified_live-live-0006.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00666a50",
+  "symbol": "??$doDeclare@$1?sRunning@RBX@@3QBDB@Name@RBX@@CAABV01@XZ",
+  "size": 101,
+  "map_line": "0001:00017420       ??$doDeclare@$1?sRunning@RBX@@3QBDB@Name@RBX@@CAABV01@XZ 00418420 f i linked:verified_live-live-0007.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00666f70",
+  "symbol": "??$doDeclare@$1?sSeated@RBX@@3QBDB@Name@RBX@@CAABV01@XZ",
+  "size": 101,
+  "map_line": "0001:00017490       ??$doDeclare@$1?sSeated@RBX@@3QBDB@Name@RBX@@CAABV01@XZ 00418490 f i linked:verified_live-live-0008.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005b7db0",
+  "symbol": "??$getset@P8Decal@RBX@@BE?AVTextureId@2@XZP812@AEXV32@@Z@?$PropDescriptor@VDecal@RBX@@VTextureId@2@@Reflection@RBX@@SA?AV?$auto_ptr@VGetSet@?$TypedPropertyDescriptor@VTextureId@RBX@@@Reflection@RBX@@@std@@P8Decal@2@BE?AVTextureId@2@XZP852@AEXV62@@Z@Z",
+  "size": 77,
+  "map_line": "0001:00017a00       ??$getset@P8Decal@RBX@@BE?AVTextureId@2@XZP812@AEXV32@@Z@?$PropDescriptor@VDecal@RBX@@VTextureId@2@@Reflection@RBX@@SA?AV?$auto_ptr@VGetSet@?$TypedPropertyDescriptor@VTextureId@RBX@@@Reflection@RBX@@@std@@P8Decal@2@BE?AVTextureId@2@XZP852@AEXV62@@Z@Z 00418a00 f i linked:verified_live-live-0023.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005599d0",
+  "symbol": "??$polymorphic_cast@PAVInstance@RBX@@VDescribedBase@Reflection@2@@boost@@YAPAVInstance@RBX@@PAVDescribedBase@Reflection@2@@Z",
+  "size": 68,
+  "map_line": "0001:00002660       ??$polymorphic_cast@PAVInstance@RBX@@VDescribedBase@Reflection@2@@boost@@YAPAVInstance@RBX@@PAVDescribedBase@Reflection@2@@Z 00403660 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0056d120",
+  "symbol": "??$singleton@VBrickColor@RBX@@@Type@Reflection@RBX@@SAABV012@XZ",
+  "size": 105,
+  "map_line": "0001:00018600       ??$singleton@VBrickColor@RBX@@@Type@Reflection@RBX@@SAABV012@XZ 00419600 f   linked:verified_live-live-0040.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0056cd80",
+  "symbol": "??$singleton@VContentId@RBX@@@Type@Reflection@RBX@@SAABV012@XZ",
+  "size": 100,
+  "map_line": "0001:00018590       ??$singleton@VContentId@RBX@@@Type@Reflection@RBX@@SAABV012@XZ 00419590 f   linked:verified_live-live-0040.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "004932c0",
+  "symbol": "??0?$DescribedCreatable@VHole@RBX@@VFeature@2@$1?sHole@2@3QBDB@RBX@@IAE@XZ",
+  "size": 156,
+  "map_line": "0001:00014c00       ??0?$DescribedCreatable@VHole@RBX@@VFeature@2@$1?sHole@2@3QBDB@RBX@@IAE@XZ 00415c00 f i linked:verified_live-live-0025.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00568ed0",
+  "symbol": "??0?$DescribedNonCreatable@VGlobalSettings@RBX@@VServiceProvider@2@$1?sGlobalSettings@2@3QBDB@RBX@@QAE@XZ",
+  "size": 176,
+  "map_line": "0001:000113d0       ??0?$DescribedNonCreatable@VGlobalSettings@RBX@@VServiceProvider@2@$1?sGlobalSettings@2@3QBDB@RBX@@QAE@XZ 004123d0 f i linked:verified_live-live-0026.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00411720",
+  "symbol": "??0?$FactoryProduct@VHole@RBX@@VFeature@2@$1?sHole@2@3QBDB@RBX@@IAE@XZ",
+  "size": 100,
+  "map_line": "0001:00014590       ??0?$FactoryProduct@VHole@RBX@@VFeature@2@$1?sHole@2@3QBDB@RBX@@IAE@XZ 00415590 f i linked:verified_live-live-0025.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00570580",
+  "symbol": "??0?$MemberDescriptorContainer@VPropertyDescriptor@Reflection@RBX@@@Reflection@RBX@@IAE@PAV012@@Z",
+  "size": 211,
+  "map_line": "0001:00019630       ??0?$MemberDescriptorContainer@VPropertyDescriptor@Reflection@RBX@@@Reflection@RBX@@IAE@PAV012@@Z 0041a630 f i linked:verified_live-live-0063.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00568d70",
+  "symbol": "??0?$NonFactoryProduct@VServiceProvider@RBX@@$1?sGlobalSettings@2@3QBDB@RBX@@QAE@XZ",
+  "size": 120,
+  "map_line": "0001:000112d0       ??0?$NonFactoryProduct@VServiceProvider@RBX@@$1?sGlobalSettings@2@3QBDB@RBX@@QAE@XZ 004122d0 f i linked:verified_live-live-0026.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00492890",
+  "symbol": "??0?$SignalDesc@VRunService@RBX@@$$A6AXMM@Z@Reflection@RBX@@QAE@PBD00@Z",
+  "size": 296,
+  "map_line": "0001:000092f0       ??0?$SignalDesc@VRunService@RBX@@$$A6AXMM@Z@Reflection@RBX@@QAE@PBD00@Z 0040a2f0 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "004377c0",
+  "symbol": "??0ContentId@RBX@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "size": 76,
+  "map_line": "0001:00019710       ??0ContentId@RBX@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z 0041a710 f i linked:verified_live-live-0082.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00573b10",
+  "symbol": "??0GuiRoot@RBX@@QAE@XZ",
+  "size": 197,
+  "map_line": "0001:0001a130       ??0GuiRoot@RBX@@QAE@XZ     0041b130 f   linked:verified_live-live-0000.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00501c30",
+  "symbol": "??0RenderStats@@QAE@XZ",
+  "size": 64,
+  "map_line": "0001:0001a2e0       ??0RenderStats@@QAE@XZ     0041b2e0 f   linked:verified_live-live-0060.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005e4600",
+  "symbol": "??0Snap@RBX@@QAE@XZ",
+  "size": 258,
+  "map_line": "0001:00008260       ??0Snap@RBX@@QAE@XZ        00409260 f   linked:verified_live-live-0029.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005cf6d0",
+  "symbol": "??0TopMenuBar@RBX@@QAE@XZ",
+  "size": 155,
+  "map_line": "0001:0001a320       ??0TopMenuBar@RBX@@QAE@XZ  0041b320 f i linked:verified_live-live-0028.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00495d60",
+  "symbol": "??0XmlNameValuePair@@QAE@ABVName@RBX@@PBD@Z",
+  "size": 103,
+  "map_line": "0001:00019760       ??0XmlNameValuePair@@QAE@ABVName@RBX@@PBD@Z 0041a760 f   linked:verified_live-live-0082.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0062f0b0",
+  "symbol": "??1?$FactoryProduct@VBodyForce@RBX@@VBodyMover@2@$1?sBodyForce@2@3PADA@RBX@@MAE@XZ",
+  "size": 103,
+  "map_line": "0001:0000cfc0       ??1?$FactoryProduct@VBodyForce@RBX@@VBodyMover@2@$1?sBodyForce@2@3PADA@RBX@@MAE@XZ 0040dfc0 f i linked:verified_live-live-0075.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0048f830",
+  "symbol": "??1?$FactoryProduct@VHole@RBX@@VFeature@2@$1?sHole@2@3QBDB@RBX@@MAE@XZ",
+  "size": 93,
+  "map_line": "0001:000124d0       ??1?$FactoryProduct@VHole@RBX@@VFeature@2@$1?sHole@2@3QBDB@RBX@@MAE@XZ 004134d0 f i linked:verified_live-live-0025.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0048dba0",
+  "symbol": "??1?$holder@V?$shared_ptr@VInstance@RBX@@@boost@@@any@boost@@UAE@XZ",
+  "size": 110,
+  "map_line": "0001:000035a0       ??1?$holder@V?$shared_ptr@VInstance@RBX@@@boost@@@any@boost@@UAE@XZ 004045a0 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005d5690",
+  "symbol": "??1Decal@RBX@@UAE@XZ",
+  "size": 80,
+  "map_line": "0001:00017c70       ??1Decal@RBX@@UAE@XZ       00418c70 f i linked:verified_live-live-0023.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00559a50",
+  "symbol": "??RGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@Z@Reflection@RBX@@QBEXPBVPropertyDescriptor@23@@Z",
+  "size": 179,
+  "map_line": "0001:00004690       ??RGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@Z@Reflection@RBX@@QBEXPBVPropertyDescriptor@23@@Z 00405690 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00668d70",
+  "symbol": "?biggerJointSize@RBX@@YAHPBVJoint@1@0@Z",
+  "size": 174,
+  "map_line": "0001:0001a550       ?biggerJointSize@RBX@@YAHPBVJoint@1@0@Z 0041b550 f   linked:verified_live-live-0042.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0064b7f0",
+  "symbol": "?changeJointState@SleepStage@RBX@@AAEXABV?$vector@PAVJoint@RBX@@V?$allocator@PAVJoint@RBX@@@std@@@std@@W4EdgeState@Sim@2@@Z",
+  "size": 75,
+  "map_line": "0001:0001b220       ?changeJointState@SleepStage@RBX@@AAEXABV?$vector@PAVJoint@RBX@@V?$allocator@PAVJoint@RBX@@@std@@@std@@W4EdgeState@Sim@2@@Z 0041c220 f   linked:verified_live-live-0045.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0048db60",
+  "symbol": "?clone@?$holder@V?$shared_ptr@VInstance@RBX@@@boost@@@any@boost@@UBEPAVplaceholder@23@XZ",
+  "size": 57,
+  "map_line": "0001:00003560       ?clone@?$holder@V?$shared_ptr@VInstance@RBX@@@boost@@@any@boost@@UBEPAVplaceholder@23@XZ 00404560 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0041d3d0",
+  "symbol": "?connectGeneric@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@MBE?AVconnection@signals@boost@@PAVSignalInstance@23@PAVGenericSlotWrapper@23@W4connect_position@56@@Z",
+  "size": 219,
+  "map_line": "0001:0000ae40       ?connectGeneric@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@MBE?AVconnection@signals@boost@@PAVSignalInstance@23@PAVGenericSlotWrapper@23@W4connect_position@56@@Z 0040be40 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005ead30",
+  "symbol": "?destroyJointsToWorld@World@RBX@@QAEXABV?$Array@PAVPrimitive@RBX@@@G3D@@@Z",
+  "size": 221,
+  "map_line": "0001:0001b700       ?destroyJointsToWorld@World@RBX@@QAEXABV?$Array@PAVPrimitive@RBX@@@G3D@@@Z 0041c700 f   linked:verified_live-live-0046.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00668d30",
+  "symbol": "?edgeIsAwake@SleepStage@RBX@@AAE_NPAVEdge@2@@Z",
+  "size": 13,
+  "map_line": "0001:0001b7dd       ?edgeIsAwake@SleepStage@RBX@@AAE_NPAVEdge@2@@Z 0041c7dd f   linked:verified_live-live-0044.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00443c60",
+  "symbol": "?erase@?$vector@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@std@@QAE?AV?$_Vector_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@V?$_Vector_const_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@0@Z",
+  "size": 141,
+  "map_line": "0001:0001b920       ?erase@?$vector@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@std@@QAE?AV?$_Vector_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@V?$_Vector_const_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@0@Z 0041c920 f i linked:verified_live-live-0081.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00412180",
+  "symbol": "?erase@?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@QAE?AV?$_Vector_iterator@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@2@V?$_Vector_const_iterator@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@2@0@Z",
+  "size": 189,
+  "map_line": "0001:0001c460       ?erase@?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@QAE?AV?$_Vector_iterator@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@2@V?$_Vector_const_iterator@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@2@0@Z 0041d460 f i linked:verified_live-live-0079.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "004a2fa0",
+  "symbol": "?find@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVName@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVName@RBX@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z",
+  "size": 127,
+  "map_line": "0001:0001c750       ?find@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVName@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVName@RBX@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z 0041d750 f i linked:verified_live-live-0067.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0058eef0",
+  "symbol": "?find@?$_Tree@V?$_Tset_traits@VContentId@RBX@@U?$less@VContentId@RBX@@@std@@V?$allocator@VContentId@RBX@@@4@$0A@@std@@@std@@QAE?AViterator@12@ABVContentId@RBX@@@Z",
+  "size": 126,
+  "map_line": "0001:0001d2c0       ?find@?$_Tree@V?$_Tset_traits@VContentId@RBX@@U?$less@VContentId@RBX@@@std@@V?$allocator@VContentId@RBX@@@4@$0A@@std@@@std@@QAE?AViterator@12@ABVContentId@RBX@@@Z 0041e2c0 f i linked:verified_live-live-0083.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "007b8400",
+  "symbol": "?fromGImage@Texture@G3D@@SA?AV?$ReferenceCountedPointer@VTexture@G3D@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABVGImage@2@PBVTextureFormat@2@W4Dimension@12@ABVSettings@12@@Z",
+  "size": 70,
+  "map_line": "0001:0001d430       ?fromGImage@Texture@G3D@@SA?AV?$ReferenceCountedPointer@VTexture@G3D@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABVGImage@2@PBVTextureFormat@2@W4Dimension@12@ABVSettings@12@@Z 0041e430 f i linked:verified_live-live-0061.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00647ab0",
+  "symbol": "?getBallInsideInfo@Block@RBX@@QAE?AW4GeoPairType@2@ABVVector3@G3D@@AAPBV45@AAW4NormalId@2@@Z",
+  "size": 216,
+  "map_line": "0001:0001d510       ?getBallInsideInfo@Block@RBX@@QAE?AW4GeoPairType@2@ABVVector3@G3D@@AAPBV45@AAW4NormalId@2@@Z 0041e510 f   linked:verified_live-live-0041.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0060da00",
+  "symbol": "?getHitLegacy@ContactManager@RBX@@QBEPAVPrimitive@2@ABVRay@G3D@@PBV32@PBVHitTestFilter@2@AAVVector3@5@AAMABM@Z",
+  "size": 260,
+  "map_line": "0001:0001e240       ?getHitLegacy@ContactManager@RBX@@QBEPAVPrimitive@2@ABVRay@G3D@@PBV32@PBVHitTestFilter@2@AAVVector3@5@AAMABM@Z 0041f240 f   linked:verified_live-live-0043.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0060cd60",
+  "symbol": "?getSlowHit@ContactManager@RBX@@ABEPAVPrimitive@2@ABV?$Array@PAVPrimitive@RBX@@@G3D@@ABVRay@5@PBV?$Array@PBVPrimitive@RBX@@@5@PBVHitTestFilter@2@AAVVector3@5@MAA_N5@Z",
+  "size": 618,
+  "map_line": "0001:0001de60       ?getSlowHit@ContactManager@RBX@@ABEPAVPrimitive@2@ABV?$Array@PAVPrimitive@RBX@@@G3D@@ABVRay@5@PBV?$Array@PBVPrimitive@RBX@@@5@PBVHitTestFilter@2@AAVVector3@5@MAA_N5@Z 0041ee60 f   linked:verified_live-live-0043.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00647f40",
+  "symbol": "?hitTest@Block@RBX@@UAE_NABVRay@G3D@@AAVVector3@4@AA_N@Z",
+  "size": 364,
+  "map_line": "0001:0001d690       ?hitTest@Block@RBX@@UAE_NABVRay@G3D@@AAVVector3@4@AA_N@Z 0041e690 f   linked:verified_live-live-0041.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00677190",
+  "symbol": "?hitTestBall@HitTest@RBX@@CA_NABVPart@2@AAVRay@G3D@@AAVVector3@5@M@Z",
+  "size": 202,
+  "map_line": "0001:0001e380       ?hitTestBall@HitTest@RBX@@CA_NABVPart@2@AAVRay@G3D@@AAVVector3@5@M@Z 0041f380 f   linked:verified_live-live-0056.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00677300",
+  "symbol": "?hitTestBox@HitTest@RBX@@CA_NABVPart@2@AAVRay@G3D@@AAVVector3@5@M@Z",
+  "size": 121,
+  "map_line": "0001:0001e450       ?hitTestBox@HitTest@RBX@@CA_NABVPart@2@AAVRay@G3D@@AAVVector3@5@M@Z 0041f450 f   linked:verified_live-live-0056.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00498300",
+  "symbol": "?insert@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBVInstanceHandle@RBX@@H@2@@Z",
+  "size": 233,
+  "map_line": "0001:00019ac0       ?insert@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBVInstanceHandle@RBX@@H@2@@Z 0041aac0 f i linked:verified_live-live-0082.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00498b20",
+  "symbol": "?insert@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBVInstanceHandle@RBX@@H@2@@Z",
+  "size": 536,
+  "map_line": "0001:00019bb0       ?insert@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBVInstanceHandle@RBX@@H@2@@Z 0041abb0 f i linked:verified_live-live-0082.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005595e0",
+  "symbol": "?manage@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z",
+  "size": 50,
+  "map_line": "0001:00004650       ?manage@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z 00405650 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00499bc0",
+  "symbol": "?manage@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z",
+  "size": 50,
+  "map_line": "0001:00003d30       ?manage@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z 00404d30 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005561e0",
+  "symbol": "?manage@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z",
+  "size": 50,
+  "map_line": "0001:000098b0       ?manage@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z 0040a8b0 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00559430",
+  "symbol": "?manager@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z",
+  "size": 139,
+  "map_line": "0001:00004440       ?manager@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXPBVPropertyDescriptor@Reflection@RBX@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z 00405440 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "004999b0",
+  "symbol": "?manager@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z",
+  "size": 139,
+  "map_line": "0001:00003910       ?manager@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$00$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z 00404910 f i linked:verified_live-live-0078.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00555fd0",
+  "symbol": "?manager@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z",
+  "size": 139,
+  "map_line": "0001:000095f0       ?manager@?$functor_manager@VGenericSlotAdapter@?$SignalDescImpl@$01$$A6AXMM@Z@Reflection@RBX@@V?$allocator@X@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z 0040a5f0 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005703a0",
+  "symbol": "?mergeMembers@?$MemberDescriptorContainer@VPropertyDescriptor@Reflection@RBX@@@Reflection@RBX@@IAEXPBV123@@Z",
+  "size": 148,
+  "map_line": "0001:00019590       ?mergeMembers@?$MemberDescriptorContainer@VPropertyDescriptor@Reflection@RBX@@@Reflection@RBX@@IAEXPBV123@@Z 0041a590 f i linked:verified_live-live-0063.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "006770f0",
+  "symbol": "?partAdorn@Draw@RBX@@SAXABVPart@2@PAVAdorn@2@ABVColor3@G3D@@@Z",
+  "size": 79,
+  "map_line": "0001:0001e850       ?partAdorn@Draw@RBX@@SAXABVPart@2@PAVAdorn@2@ABVColor3@G3D@@@Z 0041f850 f   linked:verified_live-live-0052.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00677630",
+  "symbol": "?partSurface@DrawAdorn@RBX@@SAXABVPart@2@HPAVAdorn@2@ABVColor4@G3D@@@Z",
+  "size": 99,
+  "map_line": "0001:0001ea30       ?partSurface@DrawAdorn@RBX@@SAXABVPart@2@HPAVAdorn@2@ABVColor4@G3D@@@Z 0041fa30 f   linked:verified_live-live-0053.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00554960",
+  "symbol": "?raise@?$Notifier@VRunService@RBX@@VHeartbeat@2@@RBX@@IBEXVHeartbeat@2@@Z",
+  "size": 123,
+  "map_line": "0001:00008fe0       ?raise@?$Notifier@VRunService@RBX@@VHeartbeat@2@@RBX@@IBEXVHeartbeat@2@@Z 00409fe0 f i linked:verified_live-live-0068.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00557e80",
+  "symbol": "?raise@?$Notifier@VSelection@RBX@@VSelectionChanged@2@@RBX@@IBEXVSelectionChanged@2@@Z",
+  "size": 202,
+  "map_line": "0001:000158b0       ?raise@?$Notifier@VSelection@RBX@@VSelectionChanged@2@@RBX@@IBEXVSelectionChanged@2@@Z 004168b0 f i linked:verified_live-live-0076.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "0048b9a0",
+  "symbol": "?raise@?$Notifier@VServiceProvider@RBX@@UServiceAdded@2@@RBX@@IBEXUServiceAdded@2@@Z",
+  "size": 205,
+  "map_line": "0001:0001bc50       ?raise@?$Notifier@VServiceProvider@RBX@@UServiceAdded@2@@RBX@@IBEXUServiceAdded@2@@Z 0041cc50 f i linked:verified_live-live-0079.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "00430e10",
+  "symbol": "?raise@?$Notifier@VWorld@RBX@@UAutoJoin@2@@RBX@@IBEXUAutoJoin@2@@Z",
+  "size": 129,
+  "map_line": "0001:0001b5e0       ?raise@?$Notifier@VWorld@RBX@@UAutoJoin@2@@RBX@@IBEXUAutoJoin@2@@Z 0041c5e0 f i linked:verified_live-live-0046.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005666d0",
+  "symbol": "?setFace@FaceInstance@RBX@@QAEXW4NormalId@2@@Z",
+  "size": 34,
+  "map_line": "0001:0001eb80       ?setFace@FaceInstance@RBX@@QAEXW4NormalId@2@@Z 0041fb80 f   linked:verified_live-live-0024.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "005ef770",
+  "symbol": "?setFaceId@Feature@RBX@@QAEXW4NormalId@2@@Z",
+  "size": 34,
+  "map_line": "0001:00015090       ?setFaceId@Feature@RBX@@QAEXW4NormalId@2@@Z 00416090 f   linked:verified_live-live-0025.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ },
+ {
+  "address": "006774a0",
+  "symbol": "?surfaceBorder@DrawAdorn@RBX@@CAXPAVAdorn@2@ABVVector3@G3D@@MHABVColor4@5@@Z",
+  "size": 394,
+  "map_line": "0001:0001e8a0       ?surfaceBorder@DrawAdorn@RBX@@CAXPAVAdorn@2@ABVVector3@G3D@@MHABVColor4@5@@Z 0041f8a0 f   linked:verified_live-live-0053.obj",
+  "code_exact": true,
+  "data_exact": true,
+  "new_forced_root": false
+ }
+]

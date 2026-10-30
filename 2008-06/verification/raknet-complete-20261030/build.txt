@@ -1,0 +1,6 @@
+RakNet/layer-openrbx: 21/21 files compiled, lib ok; 439 2008 functions owned 1:1, 2736 via generic shapes
+layer openrbx: 0 compile errors
+layer upstream: 0 compile errors
+verified layer: 4 exact symbols swapped in
+round 1: NetworkIDManager.obj needs ?GET_BASE_OBJECT_FROM_ID@NetworkIDManager@@QAEPAXUNetworkID@ -> use NetworkIDManager.obj from layer 2
+RakNet: linked=True test_exit=0; 2894 object functions, 396 byte-identical to unique 2008 functions (336 of >=16 bytes)

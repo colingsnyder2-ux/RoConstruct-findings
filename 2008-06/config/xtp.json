@@ -32,5 +32,59 @@
  "depends": [
   "libpng"
  ],
- "deduplicate_layer_files": true
+ "deduplicate_layer_files": true,
+ "native_units": [
+  {
+   "recipe": "xtp-11.2.2-shared-mfc",
+   "file": "Source/CommandBars/XTPControlPopupColor.cpp",
+   "cl": "30729",
+   "flags": "/O2 /MD /GS /EHsc",
+   "addrs": [
+    "006ea020"
+   ],
+   "symbols": {
+    "006ea020": "?CreateObject@CXTPControlColorSelector@@SGPAVCObject@@XZ"
+   },
+   "provenance": "Constructor-qualified binding correction: 006ea020 calls 006e9bd0 (CXTPControlColorSelector); old 006b6c90 calls a different observed type. See verification/constructor-bindings-20261030."
+  },
+  {
+   "recipe": "xtp-11.2.2-shared-mfc",
+   "file": "Source/Ribbon/XTPRibbonBar.cpp",
+   "cl": "30729",
+   "flags": "/O2 /MD /GS /EHsc",
+   "addrs": [
+    "00722e60"
+   ],
+   "symbols": {
+    "00722e60": "?CreateObject@CXTPRibbonBarControlQuickAccessPopup@@SGPAVCObject@@XZ"
+   },
+   "provenance": "Constructor-qualified binding correction: 00722e60 calls 00721f40 (CXTPRibbonBarControlQuickAccessPopup); old 006e7aa0 calls a different observed type. See verification/constructor-bindings-20261030."
+  },
+  {
+   "recipe": "xtp-11.2.2-shared-mfc",
+   "file": "Source/Ribbon/XTPRibbonSystemButton.cpp",
+   "cl": "30729",
+   "flags": "/O2 /MD /GS /EHsc",
+   "addrs": [
+    "0079b1d0"
+   ],
+   "symbols": {
+    "0079b1d0": "?CreateObject@CXTPRibbonControlSystemPopupBarListCaption@@SGPAVCObject@@XZ"
+   },
+   "provenance": "Constructor-qualified binding correction: 0079b1d0 calls 0079a7d0 (CXTPRibbonControlSystemPopupBarListCaption); old 006adcb0 calls a different observed type. See verification/constructor-bindings-20261030."
+  },
+  {
+   "recipe": "xtp-11.2.2-shared-mfc",
+   "file": "Source/Ribbon/XTPRibbonTab.cpp",
+   "cl": "21022",
+   "flags": "/O2 /MD /GS /EHsc /Ob1",
+   "addrs": [
+    "00794170"
+   ],
+   "symbols": {
+    "00794170": "?CreateObject@CXTPRibbonTab@@SGPAVCObject@@XZ"
+   },
+   "provenance": "Constructor-qualified binding correction: 00794170 calls 00793dd0 (CXTPRibbonTab); old 006dbd20 calls a different observed type. See verification/constructor-bindings-20261030."
+  }
+ ]
 }

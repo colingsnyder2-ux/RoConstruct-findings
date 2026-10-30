@@ -1,0 +1,3 @@
+# RakNet upstream compilation, 2026-10-30
+
+RakPeer.cpp used alloca without the Windows CRT declaration. Force-including the actual MSVC malloc.h restores its normal CRT declaration without editing vendor files or adding fake helpers. Both layers now have0 compile errors. The rebuilt loopback/BitStream runtime passes, including the existing four forced exact symbols. Selected-module inventory remains396 with2894 object functions; the newly compiled alternate RakPeer object is not a new integration. The hybrid header/source ABI still needs broader work before claiming complete original RakNet reproduction.0 server credits claimed.

@@ -260,6 +260,7 @@ def install(live, built, refresh_native=False):
     """Preserve every exact address; require gains unless a complete native replay requests a context refresh.
     Addresses omitted by the new plan retain their verified objects from the live layer."""
     before, after = kept_addresses(live), kept_addresses(built)
+    retained = {}
     if before - after and (after - before or refresh_native):
         lost, data = before - after, json.loads((built / "swaps.json").read_text())
         for item in json.loads((live / "swaps.json").read_text())["swaps"]:
@@ -267,6 +268,7 @@ def install(live, built, refresh_native=False):
             if keep:
                 name = "live-" + item["obj"]
                 shutil.copy2(live / item["obj"], built / name)
+                retained[item["obj"]] = name
                 data["swaps"].append(dict(item, obj=name, keep=keep))
                 lost -= set(keep.values())
         (built / "swaps.json").write_text(json.dumps(data, indent=1))
@@ -275,6 +277,21 @@ def install(live, built, refresh_native=False):
         shutil.rmtree(built)
         return "kept existing layer (%d addresses; new layer lost %d, gained %d)" % (
             len(before), len(before - after), len(after - before))
+    # Replaying exact bodies must not silently re-enable rejected swaps.
+    for name in ("excluded.json", "vdrop.json"):
+        if (live / name).exists():
+            shutil.copy2(live / name, built / name)
+    if (live / "helpers.json").exists():
+        providers = {item["obj"] for item in json.loads((built / "swaps.json").read_text())["swaps"]}
+        helpers = {}
+        for symbol, provider in json.loads((live / "helpers.json").read_text()).items():
+            if provider in retained:
+                helpers[symbol] = retained[provider]
+            elif (provider in providers and (live / provider).is_file()
+                  and (built / provider).is_file()
+                  and (live / provider).read_bytes() == (built / provider).read_bytes()):
+                helpers[symbol] = provider
+        (built / "helpers.json").write_text(json.dumps(helpers, indent=1))
     old = live.with_name("verified.old")
     if old.exists():
         shutil.rmtree(old)

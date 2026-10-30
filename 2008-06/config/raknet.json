@@ -19,7 +19,7 @@
     "tools/rbxgs/Client/Network/RakNet30/Source"
    ],
    "defines_from_recipe": "openrbx-raknet",
-   "flags": "/O2 /GS- /EHsc /MD"
+   "flags": "/O2 /GS- /EHsc /MD /FImalloc.h"
   }
  ],
  "test": "raknet_loopback",
