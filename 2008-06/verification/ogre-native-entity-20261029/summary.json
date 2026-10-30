@@ -47,5 +47,7 @@
  "native_single_object_hardware_hits": 4,
  "complete_native_subentity_geometry_path": false,
  "complete_game_rendering": false,
- "server_credits_claimed": 0
+ "server_credits_claimed": 0,
+ "complete_native_node_layout": false,
+ "node_layout_correction": "../ogre-native-node-20261029/correction.json"
 }

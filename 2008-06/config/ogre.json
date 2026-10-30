@@ -7,7 +7,7 @@
    "mode": "recipe",
    "recipe": "ogre-1.4.5-dll",
    "files": [
-    "roc_native_scene_entity_f7f3fb8e07cd1c02.cpp"
+    "roc_native_scene_entity_06b4ac9bd1d8d33c.cpp"
    ],
    "direct": true,
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
@@ -193,7 +193,7 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_scene_entity_f7f3fb8e07cd1c02.cpp",
+   "file": "roc_native_scene_entity_06b4ac9bd1d8d33c.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
    "addrs": [
@@ -278,7 +278,7 @@
     "0068c480": "?resetViewProjMode@RbxSceneManager@Ogre@@IAEXXZ",
     "0069bc50": "?renderSingleObject@RbxSceneManager@Ogre@@MAEXPBVRenderable@2@PBVPass@2@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
    },
-   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer. Real Ogre1.4.5 create/destroy bodies now share the protected collection helper and remove excluded public-helper aliases. Runtime covers factory-owned Light lifetime and duplicate creation. Vtable slots206/208/209/212 confirm pointer destroy, bulk destroy and iterator as RbxSceneManager overrides; these replace prior SceneManager/HeaderRecovery donor aliases with authentic types. Camera teardown bodies retain binary-proven inherited native maps. Vtable slots27/30/31/32/80/81/82 prove camera/clearScene/world-geometry methods; filename and stream world-geometry overloads are distinct, correcting an old stream alias at the filename address. Real rgdx plugin supplies RenderSystem camera-removal notifications without opening a render window. Native hasCamera/hasSceneNode overrides (vtable slots29/47) replace old SDK-name aliases so lifecycle queries do not collide with rgmain imports. RenderScene/setPass/queue/graph bodies now share the constructor-proven native class. Binary stores prove mRbxRenderFlag at0x8bb9 adjacent to existing visibility flag. Actual hidden-window D3D9 frame readback exercises native render overrides. Native renderSingleObject uses the existing constructor-proven RbxSubEntity declaration and allocation/RTTI-proven empty-layout RbxSceneNode tag. A genuine derived light-list wrapper keeps the one measured out-of-line begin call without the mined unsafe downcast. Native view/projection setup/reset dependencies also reproduced. Four frame modes cover ordinary, start-light, all-light and point-filtered per-light loops.",
+   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer. Real Ogre1.4.5 create/destroy bodies now share the protected collection helper and remove excluded public-helper aliases. Runtime covers factory-owned Light lifetime and duplicate creation. Vtable slots206/208/209/212 confirm pointer destroy, bulk destroy and iterator as RbxSceneManager overrides; these replace prior SceneManager/HeaderRecovery donor aliases with authentic types. Camera teardown bodies retain binary-proven inherited native maps. Vtable slots27/30/31/32/80/81/82 prove camera/clearScene/world-geometry methods; filename and stream world-geometry overloads are distinct, correcting an old stream alias at the filename address. Real rgdx plugin supplies RenderSystem camera-removal notifications without opening a render window. Native hasCamera/hasSceneNode overrides (vtable slots29/47) replace old SDK-name aliases so lifecycle queries do not collide with rgmain imports. RenderScene/setPass/queue/graph bodies now share the constructor-proven native class. Binary stores prove mRbxRenderFlag at0x8bb9 adjacent to existing visibility flag. Actual hidden-window D3D9 frame readback exercises native render overrides. Native renderSingleObject uses the existing constructor-proven RbxSubEntity declaration and RTTI-only RbxSceneNode identity view (full storage/constructor contract not recovered). A genuine derived light-list wrapper keeps the one measured out-of-line begin call without the mined unsafe downcast. Native view/projection setup/reset dependencies also reproduced. Four frame modes cover ordinary, start-light, all-light and point-filtered per-light loops. Correction:0x84f934 and allocation0x228 describe SDK SceneNode; actual RbxSceneNode vtable0x84d30c, constructor00674160, allocation0x248, extra ordered cache at0x228. Do not instantiate or use sizeof on the RTTI-only view.",
    "helper_symbols": [
     "_native_ogre_scene_lifecycle",
     "_native_ogre_frame_smoke"
@@ -354,7 +354,7 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_scene_entity_2135d4e65a59b065.cpp",
+   "file": "roc_native_scene_entity_caeb837607e585e7.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
    "addrs": [
@@ -363,7 +363,7 @@
    "symbols": {
     "0069e630": "?findLightsAffectingFrustum@RbxSceneManager@Ogre@@UAEXPBVCamera@2@@Z"
    },
-   "provenance": "Same constructor-proven complete RbxSceneManager class as render unit. Vector3 header compiled precise before fast Sphere/header context, matching original EspClaude float context; only light-frustum root selected. Constructor/destructor remain code/data exact, proving preserved receiver layout. Fast variant is1250B, this exact native variant1219B."
+   "provenance": "Same constructor-proven complete RbxSceneManager class as render unit. Vector3 header compiled precise before fast Sphere/header context, matching original EspClaude float context; only light-frustum root selected. Constructor/destructor remain code/data exact, proving preserved receiver layout. Fast variant is1250B, this exact native variant1219B. Correction:0x84f934 and allocation0x228 describe SDK SceneNode; actual RbxSceneNode vtable0x84d30c, constructor00674160, allocation0x248, extra ordered cache at0x228. Do not instantiate or use sizeof on the RTTI-only view."
   }
  ],
  "prefer_module_data": true
