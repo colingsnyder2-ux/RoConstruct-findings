@@ -8094,7 +8094,13 @@
     "verification/native-xtp-forced-20261030/runtime-proof.json": "302d609b81cf2ceb3b8e6ac0f93129722571ae529e750c3661a9716162486b19",
     "verification/native-xtp-forced-20261030/vdrop.json": "8433405d2e293cea05047e4a3929829c15077db25427548397e851fc158c30c8",
     "verification/native-xtp-forced-20261030/verified-input-hashes.json": "84090e5c1e19a29d81838d74de2ca131b98879653f8888f8612d5dd9aa89cfe8",
-    "verification/runtime-tests.json": "f6a1bff3c090c9433d2d87bd53e19dcfc4d17a8fdd6671457ca67a3e5eec2f09"
+    "verification/runtime-tests.json": "f6a1bff3c090c9433d2d87bd53e19dcfc4d17a8fdd6671457ca67a3e5eec2f09",
+    "verification/shared-symbol-audit-20261030/notes.md": "89cb1b30ad7bfff58d9ba3806b04635d1a0250c2566511b24780762886e53b8c",
+    "verification/shared-symbol-audit-20261030/placed-comparison.json": "d6871cd8d0c8c56c587d373d474e2a716e4413b5238f84e38acf1296f15a37db",
+    "verification/shared-symbol-audit-20261030/placed-complete-comparison.json": "459136b1b931b0dc4c007ddf33f49949fe0f6d0baaea9402c9ae7a54212f3970",
+    "verification/shared-symbol-audit-20261030/placed-final.json": "8d72440ae11fe90b7042b8a7f6d81ba28e24fd0636affae197ea5be4b7334f77",
+    "verification/shared-symbol-audit-20261030/placed-final.log": "0dbff0ba8a65255d98dadb4b475f322c2515569556a2f21dc97ceafa5606967d",
+    "verification/shared-symbol-audit-20261030/shared-current-summary.json": "32534f4d03bd3a3a4e8e4cffb4e703d9b06c760a50dbf7e6b7a679c7827b8cd2"
   },
   "format": 1,
   "large_files": {},
