@@ -1743,6 +1743,13 @@
     "user": "colin"
   },
   {
+    "addr": "005e8000",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e8050",
     "client": "2008-06",
     "job": "a76582d4868d40cfb32c15461b097791",
@@ -1755,6 +1762,13 @@
     "job": "a76582d4868d40cfb32c15461b097791",
     "model": "gpt-6",
     "user": "colin"
+  },
+  {
+    "addr": "005e8140",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005e81b0",
@@ -1771,11 +1785,25 @@
     "user": "colin"
   },
   {
+    "addr": "005e8470",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005e8500",
     "client": "2008-06",
     "job": "9e9dfed56be04a56baf6aafd8cbbbb4d",
     "model": "Codex",
     "user": "colin"
+  },
+  {
+    "addr": "005e85b0",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005e86f0",
@@ -1946,6 +1974,20 @@
     "user": "colin"
   },
   {
+    "addr": "005fdb70",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "005fdc40",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "005fe030",
     "client": "2008-06",
     "job": "049e96d76a3f4247996576ed7902e79f",
@@ -1979,6 +2021,13 @@
     "job": "981c606609864414b2c608ce100c68ef",
     "model": "Claude Opus 5.5",
     "user": "colin"
+  },
+  {
+    "addr": "005fe6d0",
+    "client": "2008-06",
+    "job": "423b06fc038948b4be208435827038c4",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
   },
   {
     "addr": "005ff1a0",

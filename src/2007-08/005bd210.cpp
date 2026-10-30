@@ -1,61 +1,174 @@
-// from server: 76% by colin
-// roc 2007-08 005bd210  unit: RBX::VPVInstance::?$EnumPropDescriptor  size: 60 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005bd210
-//
-// 005bd210  56                   push esi
-// 005bd211  57                   push edi
-// 005bd212  8bf9                 mov edi, ecx
-// 005bd214  807f0400             cmp byte ptr [edi + 4], 0
-// 005bd218  740a                 je 0x5bd224
-// 005bd21a  8b07                 mov eax, dword ptr [edi]
-// 005bd21c  8b10                 mov edx, dword ptr [eax]
-// 005bd21e  ffd2                 call edx
-// 005bd220  c6470400             mov byte ptr [edi + 4], 0
-// 005bd224  33f6                 xor esi, esi
-// 005bd226  397718               cmp dword ptr [edi + 0x18], esi
-// 005bd229  7e1c                 jle 0x5bd247
-// 005bd22b  53                   push ebx
-// 005bd22c  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 005bd230  8b4714               mov eax, dword ptr [edi + 0x14]
-// 005bd233  8b0cb0               mov ecx, dword ptr [eax + esi*4]
-// 005bd236  8b11                 mov edx, dword ptr [ecx]
-// 005bd238  8b420c               mov eax, dword ptr [edx + 0xc]
-// 005bd23b  53                   push ebx
-// 005bd23c  ffd0                 call eax
-// 005bd23e  83c601               add esi, 1
-// 005bd241  3b7718               cmp esi, dword ptr [edi + 0x18]
-// 005bd244  7cea                 jl 0x5bd230
-// 005bd246  5b                   pop ebx
-// 005bd247  5f                   pop edi
-// 005bd248  5e                   pop esi
-// 005bd249  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_workspace_family_fbf0e7faf4c095a7.cpp
 
-struct EnumPropDescriptor {
-    void* getset;
-    char flag;
-    char pad[3];
-    char pad2[0x10];
-    int count;
-    void** items;
-    void sub_5BD210(int);
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_arg_header_14221fd67bb3ca43.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_flags_header_a6acc69782cd7c29.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-void EnumPropDescriptor::sub_5BD210(int a)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp>)
+#pragma include_alias("util/IRenderable.h", "../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp")
+#pragma include_alias(<util/IRenderable.h>, <../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp>)
+#pragma include_alias("v8datamodel/JointInstance.h", "../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp")
+#pragma include_alias(<v8datamodel/JointInstance.h>, <../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp>)
+#pragma include_alias("v8world/IMoving.h", "../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp")
+#pragma include_alias(<v8world/IMoving.h>, <../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp>)
+#pragma include_alias("v8kernel/IStage.h", "../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp")
+#pragma include_alias(<v8kernel/IStage.h>, <../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp>)
+#pragma include_alias("reflection/function.h", "../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp")
+#pragma include_alias(<reflection/function.h>, <../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp>)
+#pragma include_alias("reflection/member.h", "../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp")
+#pragma include_alias(<reflection/member.h>, <../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp>)
+#pragma include_alias("reflection/property.h", "../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp")
+#pragma include_alias(<reflection/property.h>, <../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp>)
+#pragma include_alias("reflection/signal.h", "../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp")
+#pragma include_alias(<reflection/signal.h>, <../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp>)
+#pragma include_alias("script/Script.h", "../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp")
+#pragma include_alias(<script/Script.h>, <../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp>)
+#pragma include_alias("util/ICameraSubject.h", "../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp")
+#pragma include_alias(<util/ICameraSubject.h>, <../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp>)
+#pragma include_alias("util/IControllable.h", "../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp")
+#pragma include_alias(<util/IControllable.h>, <../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp>)
+#pragma include_alias("util/ILocation.h", "../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp")
+#pragma include_alias(<util/ILocation.h>, <../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp>)
+#pragma include_alias("v8datamodel/ICameraOwner.h", "../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp")
+#pragma include_alias(<v8datamodel/ICameraOwner.h>, <../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp>)
+#pragma include_alias("v8datamodel/ICharacterSubject.h", "../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp")
+#pragma include_alias(<v8datamodel/ICharacterSubject.h>, <../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp>)
+#pragma include_alias("v8datamodel/IPrimaryPart.h", "../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp")
+#pragma include_alias(<v8datamodel/IPrimaryPart.h>, <../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp>)
+#pragma include_alias("v8datamodel/PVInstance.h", "../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp")
+#pragma include_alias(<v8datamodel/PVInstance.h>, <../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp>)
+#pragma include_alias("v8tree/Service.h", "../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp")
+#pragma include_alias(<v8tree/Service.h>, <../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp>)
+#pragma include_alias("util/UIEvent.h", "../roc_espeon_aug2007_uievent_header_3f3774ebe50da7af.cpp")
+#pragma include_alias(<util/UIEvent.h>, <../roc_espeon_aug2007_uievent_header_3f3774ebe50da7af.cpp>)
+#pragma include_alias("v8datamodel/Workspace.h", "../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp")
+#pragma include_alias(<v8datamodel/Workspace.h>, <../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp>)
+#include "util/IRenderable.h"
+
+namespace RBX 
 {
-    if (flag) {
-        void* p = getset;
-        void (*fn)(void*) = *(void (**)(void*))p;
-        fn(p);
-        flag = 0;
-    }
-    int i = 0;
-    if (count > 0) {
-        do {
-            void* item = items[i];
-            void* vt = *(void**)item;
-            void (*fn)(void*, int) = *(void (**)(void*, int))((char*)vt + 0xc);
-            fn(item, a);
-            i++;
-        } while (i < count);
-    }
+	IRenderable::~IRenderable()
+	{
+		RBXASSERT(index2d == -1);
+		RBXASSERT(index3d == -1);
+		RBXASSERT(bucket == NULL);
+	}
+
+	void IRenderable::shouldRenderSetDirty()
+	{
+		if (bucket)
+			bucket->recomputeShouldRender(this);
+	}
+
+	IRenderableBucket::~IRenderableBucket()
+	{
+		RBXASSERT(renderable2ds.size() == 0);
+		RBXASSERT(renderable3ds.size() == 0);
+	}
+
+	void IRenderableBucket::onAdded(IRenderable* iR)
+	{
+		RBXASSERT(iR->index2d == -1);
+		RBXASSERT(iR->index3d == -1);
+		RBXASSERT(iR->bucket == NULL);
+
+		iR->bucket = this;
+		recomputeShouldRender(iR);
+	}
+
+	void IRenderableBucket::onRemoving(IRenderable* iR)
+	{
+		RBXASSERT(iR->bucket == this);
+
+		if (iR->index2d >= 0)
+			renderable2ds.fastRemove(iR);
+
+		if (iR->index3d >= 0)
+			renderable3ds.fastRemove(iR);
+
+		iR->bucket = NULL;
+
+		RBXASSERT(iR->index2d == -1);
+		RBXASSERT(iR->index3d == -1);
+	}
+
+	void IRenderableBucket::recomputeShouldRender(IRenderable* iR)
+	{
+		RBXASSERT(iR->bucket == this);
+
+		if (iR->shouldRender2d())
+		{
+			if (iR->index2d < 0)
+				renderable2ds.fastAppend(iR);
+		}
+		else if (iR->index2d >= 0)
+		{
+			renderable2ds.fastRemove(iR);
+		}
+
+		if (iR->shouldRender3dAdorn())
+		{
+			if (iR->index3d < 0)
+				renderable3ds.fastAppend(iR);
+		}
+		else if (iR->index3d >= 0)
+		{
+			renderable3ds.fastRemove(iR);
+		}
+	}
+
+	void IRenderableBucket::render2dItems(Adorn* adorn)
+	{
+		if (shouldRenderDirty)
+		{
+			recomputeAllShouldRender();
+			shouldRenderDirty = false;
+		}
+		for (int i = 0; i < renderable2ds.size(); ++i)
+			renderable2ds[i]->render2d(adorn);
+	}
+
+	void IRenderableBucket::render3dAdornItems(Adorn* adorn)
+	{
+		if (shouldRenderDirty)
+		{
+			recomputeAllShouldRender();
+			shouldRenderDirty = false;
+		}
+		for (int i = 0; i < renderable3ds.size(); ++i)
+			renderable3ds[i]->render3dAdorn(adorn);
+	}
 }

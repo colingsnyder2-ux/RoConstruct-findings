@@ -1,81 +1,145 @@
-// from server: 55% by colin
-// roc 2007-08 00414610  unit: DHTMLWindow  size: 93 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00414610
-//
-// 00414610  83ec0c               sub esp, 0xc
-// 00414613  56                   push esi
-// 00414614  8bf1                 mov esi, ecx
-// 00414616  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0041461a  3bce                 cmp ecx, esi
-// 0041461c  7446                 je 0x414664
-// 0041461e  8b11                 mov edx, dword ptr [ecx]
-// 00414620  53                   push ebx
-// 00414621  57                   push edi
-// 00414622  33ff                 xor edi, edi
-// 00414624  33c0                 xor eax, eax
-// 00414626  33db                 xor ebx, ebx
-// 00414628  85d2                 test edx, edx
-// 0041462a  7411                 je 0x41463d
-// 0041462c  8b5908               mov ebx, dword ptr [ecx + 8]
-// 0041462f  50                   push eax
-// 00414630  8b4104               mov eax, dword ptr [ecx + 4]
-// 00414633  50                   push eax
-// 00414634  8bca                 mov ecx, edx
-// 00414636  8bfa                 mov edi, edx
-// 00414638  ffd1                 call ecx
-// 0041463a  83c408               add esp, 8
-// 0041463d  8d54240c             lea edx, [esp + 0xc]
-// 00414641  3bf2                 cmp esi, edx
-// 00414643  7411                 je 0x414656
-// 00414645  8bcf                 mov ecx, edi
-// 00414647  8b3e                 mov edi, dword ptr [esi]
-// 00414649  890e                 mov dword ptr [esi], ecx
-// 0041464b  8bc8                 mov ecx, eax
-// 0041464d  8b4604               mov eax, dword ptr [esi + 4]
-// 00414650  894e04               mov dword ptr [esi + 4], ecx
-// 00414653  895e08               mov dword ptr [esi + 8], ebx
-// 00414656  85ff                 test edi, edi
-// 00414658  7408                 je 0x414662
-// 0041465a  6a01                 push 1
-// 0041465c  50                   push eax
-// 0041465d  ffd7                 call edi
-// 0041465f  83c408               add esp, 8
-// 00414662  5f                   pop edi
-// 00414663  5b                   pop ebx
-// 00414664  8bc6                 mov eax, esi
-// 00414666  5e                   pop esi
-// 00414667  83c40c               add esp, 0xc
-// 0041466a  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_native_app_workspace_6b9417b6b2e35175.cpp
 
-struct DHTMLWindow {
-    void* field0;
-    void* field4;
-    void* field8;
-    DHTMLWindow* assign(DHTMLWindow* other);
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_arg_header_14221fd67bb3ca43.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_flags_header_a6acc69782cd7c29.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-DHTMLWindow* DHTMLWindow::assign(DHTMLWindow* other) {
-    if (other != this) {
-        void* new0 = 0;
-        void* new4 = 0;
-        void* new8 = 0;
-        void* old0 = other->field0;
-        if (old0 != 0) {
-            new8 = other->field8;
-            new4 = other->field4;
-            new0 = old0;
-            void (*fn)(void*, void*) = (void (*)(void*, void*))old0;
-            fn(new4, new0);
-        }
-        void* tmp0 = this->field0;
-        void* tmp4 = this->field4;
-        this->field0 = new0;
-        this->field4 = new4;
-        this->field8 = new8;
-        if (tmp0 != 0) {
-            void (*fn2)(void*, void*) = (void (*)(void*, void*))tmp0;
-            fn2(tmp4, (void*)1);
-        }
-    }
-    return this;
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_header_bb71fe27a95b99c9.cpp>)
+#pragma include_alias("v8world/IPipelined.h", "../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp")
+#pragma include_alias(<v8world/IPipelined.h>, <../roc_espeon_aug2007_ipipelined_header_459cfa06a40ba136.cpp>)
+#pragma include_alias("v8world/Joint.h", "../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp")
+#pragma include_alias(<v8world/Joint.h>, <../roc_espeon_aug2007_joint_accessor_header_d77e5f1c0b32672c.cpp>)
+#pragma include_alias("util/IRenderable.h", "../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp")
+#pragma include_alias(<util/IRenderable.h>, <../roc_espeon_aug2007_bucket_header_1deff476fbc5a7ac.cpp>)
+#pragma include_alias("v8datamodel/JointInstance.h", "../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp")
+#pragma include_alias(<v8datamodel/JointInstance.h>, <../roc_espeon_aug2007_jointinstance_header_2070a5362277cad1.cpp>)
+#pragma include_alias("v8world/IMoving.h", "../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp")
+#pragma include_alias(<v8world/IMoving.h>, <../roc_espeon_aug2007_imoving_header_a7323a6be498a3c4.cpp>)
+#pragma include_alias("v8kernel/IStage.h", "../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp")
+#pragma include_alias(<v8kernel/IStage.h>, <../roc_espeon_aug2007_istage_header_b0262a91d28a95d1.cpp>)
+#pragma include_alias("reflection/function.h", "../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp")
+#pragma include_alias(<reflection/function.h>, <../roc_espeon_aug2007_abstract_header_991b5e9635f5d75d.cpp>)
+#pragma include_alias("reflection/member.h", "../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp")
+#pragma include_alias(<reflection/member.h>, <../roc_espeon_aug2007_abstract_header_56ab3d07f46302ce.cpp>)
+#pragma include_alias("reflection/property.h", "../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp")
+#pragma include_alias(<reflection/property.h>, <../roc_espeon_aug2007_abstract_header_4b7af236c124d7bd.cpp>)
+#pragma include_alias("reflection/signal.h", "../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp")
+#pragma include_alias(<reflection/signal.h>, <../roc_espeon_aug2007_abstract_header_35400af2df14a7cc.cpp>)
+#pragma include_alias("script/Script.h", "../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp")
+#pragma include_alias(<script/Script.h>, <../roc_espeon_aug2007_abstract_header_206648adc176eff8.cpp>)
+#pragma include_alias("util/ICameraSubject.h", "../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp")
+#pragma include_alias(<util/ICameraSubject.h>, <../roc_espeon_aug2007_abstract_header_15846f007cad7f25.cpp>)
+#pragma include_alias("util/IControllable.h", "../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp")
+#pragma include_alias(<util/IControllable.h>, <../roc_espeon_aug2007_abstract_header_134fb1e5a9dd6b81.cpp>)
+#pragma include_alias("util/ILocation.h", "../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp")
+#pragma include_alias(<util/ILocation.h>, <../roc_espeon_aug2007_abstract_header_b220b165aaf2f641.cpp>)
+#pragma include_alias("v8datamodel/ICameraOwner.h", "../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp")
+#pragma include_alias(<v8datamodel/ICameraOwner.h>, <../roc_espeon_aug2007_abstract_header_328a7f313eb894b0.cpp>)
+#pragma include_alias("v8datamodel/ICharacterSubject.h", "../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp")
+#pragma include_alias(<v8datamodel/ICharacterSubject.h>, <../roc_espeon_aug2007_abstract_header_72d3fec55ed90c1f.cpp>)
+#pragma include_alias("v8datamodel/IPrimaryPart.h", "../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp")
+#pragma include_alias(<v8datamodel/IPrimaryPart.h>, <../roc_espeon_aug2007_abstract_header_d558c6e252d36c0e.cpp>)
+#pragma include_alias("v8datamodel/PVInstance.h", "../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp")
+#pragma include_alias(<v8datamodel/PVInstance.h>, <../roc_espeon_aug2007_abstract_header_e7c5a66547093118.cpp>)
+#pragma include_alias("v8tree/Service.h", "../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp")
+#pragma include_alias(<v8tree/Service.h>, <../roc_espeon_aug2007_abstract_header_cf6415ca14eaa52c.cpp>)
+#pragma include_alias("util/UIEvent.h", "../roc_espeon_aug2007_uievent_header_3f3774ebe50da7af.cpp")
+#pragma include_alias(<util/UIEvent.h>, <../roc_espeon_aug2007_uievent_header_3f3774ebe50da7af.cpp>)
+#pragma include_alias("v8datamodel/Workspace.h", "../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp")
+#pragma include_alias(<v8datamodel/Workspace.h>, <../roc_espeon_aug2007_workspace_header_d38fc45c16cb1519.cpp>)
+#include "v8datamodel/TimerService.h"
+#include "util/standardout.h"
+
+namespace RBX
+{
+	TimerService::TimerService() {}
+
+	void TimerService::delay(boost::function0<void> func, double seconds)
+	{
+		Item item;
+		item.time = G3D::System::getLocalTime() + seconds;
+		item.func = func;
+
+		std::list<Item>::iterator pos = items.end();
+
+		std::list<Item>::reverse_iterator iter = items.rbegin();
+		std::list<Item>::reverse_iterator end = items.rend();
+
+		for (; iter != end; iter++)
+		{
+			if (iter->time > item.time)
+				pos = iter.base();
+			else
+				break;
+		}
+
+		items.insert(pos, item);
+	}
+
+	void TimerService::onEvent(const RunService* source, Heartbeat event)
+	{
+		G3D::RealTime time = G3D::System::getLocalTime();
+
+		while (items.size() > 0)
+		{
+			Item& item = items.front();
+
+			if (time >= item.time)
+			{
+				try
+				{
+					item.func();
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_WARNING, e);
+				}
+
+				items.pop_front();
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	void TimerService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Heartbeat>::disconnect(runService, this);
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+		runService = shared_from(ServiceProvider::create<RunService>(newProvider));
+
+		Notifier<RunService,Heartbeat>::connect(runService, this);
+	}
 }

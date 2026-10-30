@@ -312,7 +312,7 @@
   "path": "2008-06/src/Client/Rendering/g3d/include/G3D/CoordinateFrame.h"
  },
  "0047edc0": {
-  "line": 183,
+  "line": 184,
   "path": "2008-06/src/Client/App/include/v8world/Primitive.h"
  },
  "00486ba0": {
@@ -1548,7 +1548,7 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/DataModel.h"
  },
  "00574fb0": {
-  "line": 240,
+  "line": 241,
   "path": "2008-06/src/Client/App/include/v8world/Primitive.h"
  },
  "00575060": {
@@ -2080,7 +2080,7 @@
   "path": "2008-06/src/Client/App/include/v8world/Controller.h"
  },
  "00598b60": {
-  "line": 212,
+  "line": 213,
   "path": "2008-06/src/Client/App/include/v8world/Primitive.h"
  },
  "00598bd0": {
@@ -2600,7 +2600,7 @@
   "path": "2008-06/src/Client/App/v8datamodel/Accoutrement.cpp"
  },
  "005b08a0": {
-  "line": 429,
+  "line": 415,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005b0940": {
@@ -3796,7 +3796,7 @@
   "path": "2008-06/src/Client/App/include/v8world/Ball.h"
  },
  "005e7420": {
-  "line": 576,
+  "line": 602,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e74c0": {
@@ -3848,11 +3848,11 @@
   "path": "2008-06/src/Client/App/include/v8world/Geometry.h"
  },
  "005e7980": {
-  "line": 406,
+  "line": 432,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e7a50": {
-  "line": 423,
+  "line": 449,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e7bd0": {
@@ -3860,7 +3860,7 @@
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e7be0": {
-  "line": 439,
+  "line": 465,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e7c80": {
@@ -3876,7 +3876,7 @@
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e7f10": {
-  "line": 207,
+  "line": 208,
   "path": "2008-06/src/Client/App/include/v8world/Primitive.h"
  },
  "005e7f20": {
@@ -3896,11 +3896,11 @@
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e85e0": {
-  "line": 414,
+  "line": 440,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e8610": {
-  "line": 550,
+  "line": 576,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e86f0": {
@@ -3908,7 +3908,7 @@
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e8990": {
-  "line": 543,
+  "line": 569,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "005e9190": {
@@ -4400,27 +4400,27 @@
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd4c0": {
-  "line": 91,
+  "line": 89,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd4e0": {
-  "line": 97,
+  "line": 95,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd500": {
-  "line": 103,
+  "line": 101,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd580": {
-  "line": 113,
+  "line": 111,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd5a0": {
-  "line": 118,
+  "line": 116,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd770": {
-  "line": 128,
+  "line": 126,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fd820": {
@@ -4436,7 +4436,7 @@
   "path": "2008-06/src/Client/App/include/reflection/reflection.h"
  },
  "005fdaf0": {
-  "line": 134,
+  "line": 132,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fdf00": {
@@ -4444,15 +4444,15 @@
   "path": "2008-06/src/Client/App/include/v8tree/Instance.h"
  },
  "005fdfe0": {
-  "line": 198,
+  "line": 186,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fe140": {
-  "line": 244,
+  "line": 232,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fe1d0": {
-  "line": 263,
+  "line": 251,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005fe240": {
@@ -4472,7 +4472,7 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Tool.h"
  },
  "005fe6a0": {
-  "line": 128,
+  "line": 126,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005ff3b0": {
@@ -4480,15 +4480,15 @@
   "path": "2008-06/src/Client/App/include/v8datamodel/Mouse.h"
  },
  "005ff680": {
-  "line": 434,
+  "line": 420,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005ff750": {
-  "line": 342,
+  "line": 328,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005ff8d0": {
-  "line": 375,
+  "line": 361,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005ffa10": {
@@ -4496,11 +4496,11 @@
   "path": "2008-06/src/glue/rbxgs/glue_equipables.cpp"
  },
  "005ffb70": {
-  "line": 384,
+  "line": 370,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "005ffc00": {
-  "line": 403,
+  "line": 389,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "00600240": {
@@ -4508,15 +4508,15 @@
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "00600420": {
-  "line": 446,
+  "line": 432,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "006004b0": {
-  "line": 465,
+  "line": 451,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "006004d0": {
-  "line": 471,
+  "line": 457,
   "path": "2008-06/src/Client/App/v8datamodel/Tool.cpp"
  },
  "00606250": {
@@ -6536,19 +6536,19 @@
   "path": "2008-06/src/Client/App/v8world/Block.cpp"
  },
  "00649130": {
-  "line": 9,
+  "line": 10,
   "path": "2008-06/src/Client/App/v8world/Ball.cpp"
  },
  "00649170": {
-  "line": 20,
+  "line": 21,
   "path": "2008-06/src/Client/App/v8world/Ball.cpp"
  },
  "00649190": {
-  "line": 15,
+  "line": 16,
   "path": "2008-06/src/Client/App/v8world/Ball.cpp"
  },
  "006491a0": {
-  "line": 27,
+  "line": 28,
   "path": "2008-06/src/Client/App/v8world/Ball.cpp"
  },
  "006497e0": {
@@ -7832,11 +7832,11 @@
   "path": "2008-06/src/Client/Rendering/g3d/include/GLG3D/Texture.h"
  },
  "00773250": {
-  "line": 445,
+  "line": 471,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "00773630": {
-  "line": 479,
+  "line": 505,
   "path": "2008-06/src/Client/App/v8world/Primitive.cpp"
  },
  "00773670": {

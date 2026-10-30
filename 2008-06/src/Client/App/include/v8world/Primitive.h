@@ -173,6 +173,7 @@ namespace RBX
 			return dragging;
 		}
 		void setAnchor(bool _anchored);
+		void setFlag0xaa(bool value); // 0x5e8140
 		bool getAnchor() const
 		{
 			return getAnchorObject() != NULL;

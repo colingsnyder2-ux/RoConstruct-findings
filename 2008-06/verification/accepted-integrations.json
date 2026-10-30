@@ -2533,6 +2533,52 @@
         ]
       },
       "timestamp": 1793323110.9398494
+    },
+    {
+      "job": "423b06fc038948b4be208435827038c4",
+      "patches": {
+        "App/include/v8world/Primitive.h": [
+          [
+            "\t\tvoid setAnchor(bool _anchored);\n",
+            "\t\tvoid setAnchor(bool _anchored);\n\t\tvoid setFlag0xaa(bool value); // 0x5e8140\n"
+          ]
+        ],
+        "App/v8datamodel/Tool.cpp": [
+          [
+            "\tTool::ToolState Tool::computeDesiredState()\n\t{\n\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\tif (!getHandleConst())",
+            "\tTool::ToolState Tool::computeDesiredState()\n\t{\n\t\tif (!getHandleConst())"
+          ],
+          [
+            "\tvoid Tool::onEvent_AddedBackend(boost::shared_ptr<Instance> child)\n\t{\n\t\tif (child.get() != this)\n\t\t{\n\t\t\tRBXASSERT(ServiceProvider::findServiceProvider(this));\n\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\t\tToolState state = computeDesiredState();\n\t\t\tconst ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);\n\n\t\t\tRBXASSERT(serviceProvider);\n\n\t\t\tsetDesiredState(state, serviceProvider);\n\t\t}\n\t}",
+            "\tvoid Tool::rebuildBackendState()\n\t{\n\t\tToolState state = computeDesiredState();\n\t\tsetDesiredState(state, ServiceProvider::findServiceProvider(this));\n\t}\n\n\tvoid Tool::onEvent_AddedBackend(boost::shared_ptr<Instance> child)\n\t{\n\t\tif (child.get() != this)\n\t\t{\n\t\t\trebuildBackendState();\n\t\t}\n\t}"
+          ],
+          [
+            "\t\tif (ServiceProvider::findServiceProvider(this) && child.get() != this)\n\t\t{\n\t\t\tRBXASSERT(Network::Players::backendProcessing(this, true));\n\n\t\t\tif (child.get() == (Instance*)this->weld.get())\n\t\t\t{\n\t\t\t\tRBXASSERT(Tool::drawSelected());\n\t\t\t\tsetDesiredState(HAS_TORSO, ServiceProvider::findServiceProvider(this));\n\t\t\t}\n\n\t\t\tToolState state = computeDesiredState();\n\t\t\tconst ServiceProvider* serviceProvider = ServiceProvider::findServiceProvider(this);\n\n\t\t\tRBXASSERT(serviceProvider);\n\n\t\t\tsetDesiredState(state, serviceProvider);\n\t\t}",
+            "\t\tif (ServiceProvider::findServiceProvider(this) && child.get() != this)\n\t\t{\n\t\t\tif (child.get() == (Instance*)this->weld.get())\n\t\t\t{\n\t\t\t\tsetDesiredState(HAS_TORSO, ServiceProvider::findServiceProvider(this));\n\t\t\t}\n\n\t\t\trebuildBackendState();\n\t\t}"
+          ],
+          [
+            "\t\tHumanoid* humanoid = Humanoid::modelIsCharacter(getParent());\n\t\tRBXASSERT(humanoid);\n\n\t\tPartInstance* rightArm = humanoid->getRightArm();\n\t\tRBXASSERT(rightArm);\n\n\t\tPartInstance* handle = getHandle();\n\t\tRBXASSERT(handle);\n\n\t\tbuildWeld(rightArm, handle, humanoid->getRightArmGrip(), grip, \"RightGrip\");",
+            "\t\tHumanoid* humanoid = Humanoid::modelIsCharacter(getParent());\n\t\tPartInstance* rightArm = humanoid->getRightArm();\n\n\t\tPartInstance* handle = getHandle();\n\t\tif (handle)\n\t\t\thandle->setCanCollide(false);\n\n\t\tbuildWeld(rightArm, handle, humanoid->getRightArmGrip(), grip, \"RightGrip\");"
+          ]
+        ],
+        "App/v8world/Ball.cpp": [
+          [
+            "#include \"v8world/Ball.h\"",
+            "#pragma float_control(precise, off)\n#include \"v8world/Ball.h\""
+          ]
+        ],
+        "App/v8world/Primitive.cpp": [
+          [
+            "\tvoid Primitive::setCanCollide(bool value)\n\t{",
+            "\tvoid Primitive::setFlag0xaa(bool value)\n\t{\n\t\tbool wasAnchored = dragging || anchored || flag0xaa;\n\t\tif (flag0xaa != value)\n\t\t{\n\t\t\tflag0xaa = value;\n\t\t\tbool isAnchored = dragging || anchored || flag0xaa;\n\t\t\tif (isAnchored != wasAnchored && world)\n\t\t\t{\n\t\t\t\tif (isAnchored)\n\t\t\t\t\tworld->onPrimitiveAddedAnchor(this);\n\t\t\t\telse\n\t\t\t\t\tworld->onPrimitiveRemovingAnchor(this);\n\t\t\t}\n\t\t}\n\t}\n\n\tvoid Primitive::setPV(const PV& pv)\n\t{\n\t\tbody->setVelocity(pv.velocity);\n\t\tsetCoordinateFrame(pv.position);\n\t}\n\n\tvoid Primitive::setCanCollide(bool value)\n\t{"
+          ],
+          [
+            "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\n\t\t\tfloat newSize = geometry->getGridVolume();\n\t\t\tbody->setMass(newSize);\n\t\t\tbody->setMoment(geometry->getMoment(newSize));\n\t\t\tJointK.setDirty();\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}",
+            "\t\t\tfuzzyExtentsStateId = -2;\n\t\t\tgeometry->setGridSize(protectedSize);\n\t\t\tsetMassInertia(geometry->getGridVolume());\n\n\t\t\tif (world)\n\t\t\t\tworld->onPrimitiveExtentsChanged(this);\n\n\t\t\tJointK.setDirty();\n\t\t}\n\t}\n\n\tvoid Primitive::setMassInertia(float mass)\n\t{\n\t\tbody->setMass(mass);\n\t\tbody->setMoment(geometry->getMoment(mass));\n\t\tJointK.setDirty();\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793328145.3036857
     }
   ],
   "initial_patches": {}
