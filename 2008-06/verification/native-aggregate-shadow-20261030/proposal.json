@@ -1,0 +1,18 @@
+{
+  "client": "2008-06",
+  "base_revision": "7bd14fe31e1061befcf22efeb1f3b761e7389b057a997fe459ecc8db0fe2f142",
+  "model": "gpt-6.1-sol",
+  "targets": [
+    "005526d0"
+  ],
+  "declarations": [],
+  "patches": {
+    "Rendering/RenderLib/NativeAggregateShadow.cpp": [
+      [
+        "",
+        "#include \"RenderLib/Chunk.h\"\n#pragma optimize(\"\", off)\nbool RBX::Render::AggregateChunk::cachesShadows() const { return true; }\n#pragma optimize(\"\", on)\n"
+      ]
+    ]
+  },
+  "evidence": "Target RTTI names RBX::RenderBase::AggregateChunk: vtable 0082d258 slot 1 points to 005526d0, a 13-byte function returning true. The current SDK class is RBX::Render::AggregateChunk; its compiled COFF vtable slot 1 references cachesShadows. The namespace difference is explicit and needs independent ABI review. Existing SDK declaration is defined in a standalone real-header translation unit using a scoped optimize-off pragma; target and compiled/force-linked executable bytes match. Local RbxgsApp retained all prior local matches; M2, M4a and M5 pass. M4b remains unresolved. Local test used additional private overlay changes, so the server must rebuild this single patch independently against its own baseline."
+}

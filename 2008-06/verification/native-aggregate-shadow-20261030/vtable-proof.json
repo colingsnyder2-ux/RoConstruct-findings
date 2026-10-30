@@ -1,0 +1,11 @@
+{
+  "target_class": "RBX::RenderBase::AggregateChunk",
+  "target_vtable": "0082d258",
+  "slot": 1,
+  "target_pointer": "005526d0",
+  "sdk_class": "RBX::Render::AggregateChunk",
+  "sdk_slot_symbols": [
+    "?cachesShadows@AggregateChunk@Render@RBX@@UBE_NXZ"
+  ],
+  "class_names_differ": true
+}
