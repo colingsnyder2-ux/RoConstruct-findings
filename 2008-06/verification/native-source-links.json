@@ -7403,10 +7403,6 @@
   "line": 37,
   "path": "2008-06/src/Client/App/util/ExponentialRunningAverage.cpp"
  },
- "006683b0": {
-  "line": 192,
-  "path": "2008-06/src/Client/App/v8world/JointStage.cpp"
- },
  "006683f0": {
   "line": 202,
   "path": "2008-06/src/Client/App/v8world/JointStage.cpp"

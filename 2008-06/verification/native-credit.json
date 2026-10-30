@@ -2842,6 +2842,20 @@
     "user": "coldek"
   },
   {
+    "addr": "006683f0",
+    "client": "2008-06",
+    "job": "5d7a0e8e4b1f498f937c36372b0fc438",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
+    "addr": "00668850",
+    "client": "2008-06",
+    "job": "5d7a0e8e4b1f498f937c36372b0fc438",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "00669780",
     "client": "2008-06",
     "job": "310c52c1a5334eec93e6ab971d0506ae",

@@ -7513,11 +7513,150 @@
         ]
       ]
     },
-    "phase": "building",
-    "receipt": {},
-    "state": "verifying",
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989",
+      "gains": [],
+      "input_hash": "5098dff735a49e24042626c12b042783040d040cfc44e80637bbd8ffd2bafa8b",
+      "losses": [],
+      "submitted_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989"
+    },
+    "state": "rejected",
     "unit": "RBX::BodyForce",
-    "updated": 1793340106.004465,
+    "updated": 1793340254.8207805,
     "user": "colin"
+  },
+  {
+    "created": 1793342206.550871,
+    "id": "20bb340fac404296b4fc69c104b7991d",
+    "model": "GPT-5",
+    "patches": {
+      "App/util/standardout.cpp": [
+        [
+          "#include \"util/standardout.h\"\n",
+          "#include \"util/standardout.h\"\n\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989",
+      "gains": [],
+      "input_hash": "5098dff735a49e24042626c12b042783040d040cfc44e80637bbd8ffd2bafa8b",
+      "losses": [],
+      "submitted_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989"
+    },
+    "state": "rejected",
+    "unit": "RBX::StandardOut",
+    "updated": 1793342373.5484796,
+    "user": "colin"
+  },
+  {
+    "created": 1793342967.8078623,
+    "id": "4e04953c2c514f18b0420151cafa5681",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8world/Block.cpp": [
+        [
+          "#include \"v8world/Block.h\"\n",
+          "#include \"v8world/Block.h\"\n\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989",
+      "gains": [],
+      "input_hash": "5098dff735a49e24042626c12b042783040d040cfc44e80637bbd8ffd2bafa8b",
+      "losses": [],
+      "submitted_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989"
+    },
+    "state": "rejected",
+    "unit": "RBX::Block",
+    "updated": 1793343115.9061952,
+    "user": "colin"
+  },
+  {
+    "created": 1793343239.0519414,
+    "id": "0e062b7fcf244d87b4fba85bb208fcae",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/FaceInstance.cpp": [
+        [
+          "#include \"v8datamodel/FaceInstance.h\"\n",
+          "#include \"v8datamodel/FaceInstance.h\"\n\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989",
+      "gains": [],
+      "input_hash": "5098dff735a49e24042626c12b042783040d040cfc44e80637bbd8ffd2bafa8b",
+      "losses": [],
+      "submitted_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989"
+    },
+    "state": "rejected",
+    "unit": "RBX::FaceInstance",
+    "updated": 1793343392.0254743,
+    "user": "colin"
+  },
+  {
+    "created": 1793343447.8519526,
+    "id": "5d7a0e8e4b1f498f937c36372b0fc438",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/include/v8world/IPipelined.h": [
+        [
+          "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\tRBXASSERT(iStage);\n\t\t\tRBXASSERT(currentStage);\n\n\t\t\treturn",
+          "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\treturn"
+        ]
+      ],
+      "App/v8world/JointStage.cpp": [
+        [
+          "\t\tif (e->downstreamOfStage(this))\n\t\t{\n\t\t\tRBXASSERT(edgeHasPrimitivesDownstream(e));\n\t\t\tremoveEdgeFromDownstream(e);\n\t\t\te->removeFromPipeline(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(e->getEdgeType() == Edge::JOINT);\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tremoveFromList(j);\n\t\t\tremoveFromMap",
+          "\t\tif (e->downstreamOfStage(this))\n\t\t{\n\t\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\t\te->removeFromPipeline(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tincompleteJoints.erase(j);\n\t\t\tremoveFromMap"
+        ],
+        [
+          "\t\t\tif (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT)\n\t\t\t{\n\t\t\t\tRBXASSERT(edgeHasPrimitivesDownstream(j));\n\t\t\t\ttempJointList.push_back(j);\n\t\t\t}\n\t\t}\n\n\t\tfor (size_t i = 0; i < tempJointList.size(); ++i) // why loop here???\n\t\t{\n\t\t\tremoveJointFromDownstream(j);\n\t\t\tinsertToList(j);\n\t\t\tinsertToMap(j, p);\n\n\t\t\tPrimitive* otherP = j->otherPrimitive(p);\n\t\t\tinsertToMap(j, otherP);\n\t\t}",
+          "\t\t\tif (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT && j->downstreamOfStage(this))\n\t\t\t\ttempJointList.push_back(j);\n\t\t}\n\n\t\tfor (size_t i = 0; i < tempJointList.size(); ++i)\n\t\t{\n\t\t\tj = tempJointList[i];\n\t\t\tgetDownstreamWS()->onEdgeRemoving(j);\n\t\t\tJointStage::onEdgeAdded(j);\n\t\t}"
+        ],
+        [
+          "\tvoid JointStage::onEdgeAdded(Edge* e)",
+          "\t__declspec(noinline) void JointStage::onEdgeAdded(Edge* e)"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989",
+      "credits": 2,
+      "distinct_after": 9799,
+      "distinct_before": 9797,
+      "gains": [
+        "006683f0",
+        "00668850"
+      ],
+      "input_hash": "5098dff735a49e24042626c12b042783040d040cfc44e80637bbd8ffd2bafa8b",
+      "losses": [],
+      "new_distinct": [
+        "006683f0",
+        "00668850"
+      ],
+      "overlay_hash": "fe874dae7cae24c5d236376ad9e48a6766e30ab3e9aa285d645c9b27e6886c51",
+      "owned_after": 3324,
+      "owned_before": 3322,
+      "rebased": false,
+      "submitted_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989"
+    },
+    "state": "accepted",
+    "unit": "RBX::JointStage",
+    "updated": 1793343798.419454,
+    "user": "EspClaude"
   }
 ]

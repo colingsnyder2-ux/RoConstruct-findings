@@ -52,9 +52,6 @@ namespace RBX
 		}
 		bool downstreamOfStage(IStage* iStage) const
 		{
-			RBXASSERT(iStage);
-			RBXASSERT(currentStage);
-
 			return (int)currentStage->getStageType() > (int)iStage->getStageType();
 		}
 		bool inKernel() const

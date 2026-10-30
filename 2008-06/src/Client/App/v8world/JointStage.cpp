@@ -189,7 +189,7 @@ namespace RBX
 		insertToMap(j, j->getPrimitive(1));
 	}
 
-	void JointStage::onEdgeAdded(Edge* e)
+	__declspec(noinline) void JointStage::onEdgeAdded(Edge* e)
 	{
 		e->putInPipeline(this);
 
@@ -203,15 +203,13 @@ namespace RBX
 	{
 		if (e->downstreamOfStage(this))
 		{
-			RBXASSERT(edgeHasPrimitivesDownstream(e));
-			removeEdgeFromDownstream(e);
+			getDownstreamWS()->onEdgeRemoving(e);
 			e->removeFromPipeline(this);
 		}
 		else
 		{
-			RBXASSERT(e->getEdgeType() == Edge::JOINT);
 			Joint* j = rbx_static_cast<Joint*>(e);
-			removeFromList(j);
+			incompleteJoints.erase(j);
 			removeFromMap(j, j->getPrimitive(0));
 			removeFromMap(j, j->getPrimitive(1));
 			e->removeFromPipeline(this);
@@ -252,21 +250,15 @@ namespace RBX
 		Joint* j;
 		for (j = p->getFirstJoint(); j != NULL; j = p->getNextJoint(j))
 		{
-			if (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT)
-			{
-				RBXASSERT(edgeHasPrimitivesDownstream(j));
+			if (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT && j->downstreamOfStage(this))
 				tempJointList.push_back(j);
-			}
 		}
 
-		for (size_t i = 0; i < tempJointList.size(); ++i) // why loop here???
+		for (size_t i = 0; i < tempJointList.size(); ++i)
 		{
-			removeJointFromDownstream(j);
-			insertToList(j);
-			insertToMap(j, p);
-
-			Primitive* otherP = j->otherPrimitive(p);
-			insertToMap(j, otherP);
+			j = tempJointList[i];
+			getDownstreamWS()->onEdgeRemoving(j);
+			JointStage::onEdgeAdded(j);
 		}
 
 		getClumpStage()->onPrimitiveRemoving(p);

@@ -2358,5 +2358,27 @@
     "\n\nnamespace RBX\n{\n\tvoid ImageWidget::render2d(Adorn* adorn)\n\t{\n\t\tif (isVisible())\n\t\t\tguiImageDraw.render2d(adorn, isEnabled(), getMyRect(), Widget::NOTHING);\n\t}\n}\n"
    ]
   ]
+ },
+ {
+  "App/v8world/JointStage.cpp": [
+   [
+    "\t\tif (e->downstreamOfStage(this))\n\t\t{\n\t\t\tRBXASSERT(edgeHasPrimitivesDownstream(e));\n\t\t\tremoveEdgeFromDownstream(e);\n\t\t\te->removeFromPipeline(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tRBXASSERT(e->getEdgeType() == Edge::JOINT);\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tremoveFromList(j);\n\t\t\tremoveFromMap",
+    "\t\tif (e->downstreamOfStage(this))\n\t\t{\n\t\t\tgetDownstreamWS()->onEdgeRemoving(e);\n\t\t\te->removeFromPipeline(this);\n\t\t}\n\t\telse\n\t\t{\n\t\t\tJoint* j = rbx_static_cast<Joint*>(e);\n\t\t\tincompleteJoints.erase(j);\n\t\t\tremoveFromMap"
+   ],
+   [
+    "\t\t\tif (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT)\n\t\t\t{\n\t\t\t\tRBXASSERT(edgeHasPrimitivesDownstream(j));\n\t\t\t\ttempJointList.push_back(j);\n\t\t\t}\n\t\t}\n\n\t\tfor (size_t i = 0; i < tempJointList.size(); ++i) // why loop here???\n\t\t{\n\t\t\tremoveJointFromDownstream(j);\n\t\t\tinsertToList(j);\n\t\t\tinsertToMap(j, p);\n\n\t\t\tPrimitive* otherP = j->otherPrimitive(p);\n\t\t\tinsertToMap(j, otherP);\n\t\t}",
+    "\t\t\tif (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT && j->downstreamOfStage(this))\n\t\t\t\ttempJointList.push_back(j);\n\t\t}\n\n\t\tfor (size_t i = 0; i < tempJointList.size(); ++i)\n\t\t{\n\t\t\tj = tempJointList[i];\n\t\t\tgetDownstreamWS()->onEdgeRemoving(j);\n\t\t\tJointStage::onEdgeAdded(j);\n\t\t}"
+   ],
+   [
+    "\tvoid JointStage::onEdgeAdded(Edge* e)",
+    "\t__declspec(noinline) void JointStage::onEdgeAdded(Edge* e)"
+   ]
+  ],
+  "App/include/v8world/IPipelined.h": [
+   [
+    "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\tRBXASSERT(iStage);\n\t\t\tRBXASSERT(currentStage);\n\n\t\t\treturn",
+    "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\treturn"
+   ]
+  ]
  }
 ]
