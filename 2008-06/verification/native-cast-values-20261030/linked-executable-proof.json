@@ -1,0 +1,72 @@
+[
+ {
+  "target": "00417360",
+  "linked_proofs": [
+   {
+    "symbol": "??0FunctionRef@Lua@RBX@@QAE@XZ",
+    "owner": "linked:ThreadRef.obj",
+    "linked_address": "0041a450",
+    "size": 73,
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00422fc0",
+  "linked_proofs": [
+   {
+    "symbol": "??$?0VInstance@RBX@@@?$shared_ptr@VScript@RBX@@@boost@@QAE@ABV?$shared_ptr@VInstance@RBX@@@1@Udynamic_cast_tag@detail@1@@Z",
+    "owner": "linked:NativeValueConversions.obj",
+    "linked_address": "004193a0",
+    "size": 142,
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "004236d0",
+  "linked_proofs": [
+   {
+    "symbol": "??$dynamic_pointer_cast@VScript@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VScript@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+    "owner": "linked:NativeValueConversions.obj",
+    "linked_address": "004195a0",
+    "size": 37,
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0056f8c0",
+  "linked_proofs": [
+   {
+    "symbol": "??$convert@V?$shared_ptr@VInstance@RBX@@@boost@@@Value@Reflection@RBX@@QAEAAV?$shared_ptr@VInstance@RBX@@@boost@@XZ",
+    "owner": "linked:NativeValueConversions.obj",
+    "linked_address": "004198b0",
+    "size": 501,
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "005947f0",
+  "linked_proofs": [
+   {
+    "symbol": "??$convert@VFunctionRef@Lua@RBX@@@Value@Reflection@RBX@@QAEAAVFunctionRef@Lua@2@XZ",
+    "owner": "linked:NativeValueConversions.obj",
+    "linked_address": "004194a0",
+    "size": 255,
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ }
+]
