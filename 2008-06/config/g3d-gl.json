@@ -11,7 +11,8 @@
    "recipe": "g3d-6.09-rbx2008",
    "files": "GLG3Dcpp/*.cpp",
    "direct": true,
-   "flags": "/O2 /GS- /EHsc /MD"
+   "flags": "/O2 /GS- /EHsc /MD",
+   "extra_defines": "NO_SDL_MAIN"
   },
   {
    "name": "tonemap",
@@ -19,7 +20,8 @@
    "recipe": "g3d-6.09-rbx2008",
    "files": "contrib/ArticulatedModel/ToneMap.cpp",
    "direct": true,
-   "flags": "/O2 /GS- /EHsc /MD"
+   "flags": "/O2 /GS- /EHsc /MD",
+   "extra_defines": "NO_SDL_MAIN"
   }
  ],
  "test": "g3d_gl",

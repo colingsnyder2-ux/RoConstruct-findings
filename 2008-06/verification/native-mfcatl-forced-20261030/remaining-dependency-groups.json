@@ -1,0 +1,701 @@
+{
+ "?IID_IContent@@3U_GUID@@B": [
+  "00416bb0",
+  "00416ac0",
+  "004166a0"
+ ],
+ "?LIBID_RobloxLib@@3U_GUID@@B": [
+  "00416bb0",
+  "00416ac0",
+  "0040fff0"
+ ],
+ "?ReportError@@YAJABU_GUID@@PBDJ@Z": [
+  "0046c430",
+  "004166a0",
+  "0046b230"
+ ],
+ "__imp_?c_str@?$ImpStr@D@@QBEPBDXZ": [
+  "0046c430",
+  "00453c30",
+  "0046b230"
+ ],
+ "?makeText@@YA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@XZ": [
+  "004502b0",
+  "004501c0",
+  "004500d0"
+ ],
+ "_LIBID_RobloxLib": [
+  "004086f0",
+  "0040fa60"
+ ],
+ "?addListener@?$Notifier@VRunService@RBX@@VHeartbeat@2@@RBX@@QBEXPAV?$Listener@VRunService@RBX@@VHeartbeat@2@@2@@Z": [
+  "004321f0",
+  "004690f0"
+ ],
+ "__imp_??1StdString@@QAE@XZ": [
+  "004321f0",
+  "00416370"
+ ],
+ "__imp_?c_str@StdString@@QBEPBDXZ": [
+  "004321f0",
+  "00416370"
+ ],
+ "?IID_IWorkspace@@3U_GUID@@B": [
+  "0046c430",
+  "0046b230"
+ ],
+ "?contentProvider@DataModel@RBX@@QAEPAVContentProvider@2@XZ": [
+  "0046c430",
+  "00453c30"
+ ],
+ "?copyStream@RBX@@YAXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV?$basic_ostream@DU?$char_traits@D@std@@@3@H@Z": [
+  "0046c430",
+  "00453c30"
+ ],
+ "?getContent@ContentProvider@RBX@@QAE?AV?$auto_ptr@V?$basic_istream@DU?$char_traits@D@std@@@std@@@std@@VContentId@2@@Z": [
+  "0046c430",
+  "00453c30"
+ ],
+ "__imp_??0PathString@@QAE@PB_W@Z": [
+  "0046c430",
+  "0046b8d0"
+ ],
+ "__imp_??1PathString@@QAE@XZ": [
+  "0046c430",
+  "0046b8d0"
+ ],
+ "__imp_??BPathString@@QBEPBDXZ": [
+  "0046c430",
+  "0046b8d0"
+ ],
+ "??1Lock@@QAE@XZ": [
+  "0046b8d0",
+  "0046b230"
+ ],
+ "?format@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBDZZ": [
+  "0046b230",
+  "0042db20"
+ ],
+ "?documentText@@YA?AV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@PAUDocument@@PBD@Z": [
+  "004501c0",
+  "004500d0"
+ ],
+ "?GetInterfaceSafetyOptions@?$IObjectSafetyRobloxImpl@VCApp@@$00@@UAGJABU_GUID@@PAK1@Z": [
+  "004086f0"
+ ],
+ "?SetInterfaceSafetyOptions@?$IObjectSafetyRobloxImpl@VCApp@@$00@@UAGJABU_GUID@@KK@Z": [
+  "004086f0"
+ ],
+ "_IID_IApp": [
+  "004086f0"
+ ],
+ "_IID_IBrowserViewExternal": [
+  "0040fa60"
+ ],
+ "?Upload@CContent@@UAGJPA_W@Z": [
+  "00416bb0"
+ ],
+ "?_InternalQueryInterface@CContent@@QAEJABU_GUID@@PAPAX@Z": [
+  "00416bb0"
+ ],
+ "??0DockingPaneManager@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??0FrameBase@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??0StatusBar@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??0TabClientWnd@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??0ThemeManager@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??0WindowPos@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??1CMainFrame@@UAE@XZ": [
+  "004321f0"
+ ],
+ "??1DockingPaneManager@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??1FrameBase@@UAE@XZ": [
+  "004321f0"
+ ],
+ "??1StatusBar@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??1TabClientWnd@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??1ThemeManager@@QAE@XZ": [
+  "004321f0"
+ ],
+ "??1Thing@@QAE@XZ": [
+  "004321f0"
+ ],
+ "?SetImageManager@DockingPaneManager@@QAEXPAVCCmdTargetLike@@@Z": [
+  "004321f0"
+ ],
+ "?XTPImageManager@@YAPAVCCmdTargetLike@@XZ": [
+  "004321f0"
+ ],
+ "?g_lockA@@3_NA": [
+  "004321f0"
+ ],
+ "?g_lockB@@3_NA": [
+  "004321f0"
+ ],
+ "?g_lockC@@3_NA": [
+  "004321f0"
+ ],
+ "?getAppPath@@YA?AUStdString@@_N0@Z": [
+  "004321f0"
+ ],
+ "?heartbeatNotifier@@3V?$Notifier@VRunService@RBX@@VHeartbeat@2@@RBX@@A": [
+  "004321f0"
+ ],
+ "?onEvent@CMainFrame@@UAEXPBVRunService@RBX@@VHeartbeat@3@@Z": [
+  "004321f0"
+ ],
+ "__imp_??0MfcString@@QAE@XZ": [
+  "004321f0"
+ ],
+ "__imp_??1MfcString@@QAE@XZ": [
+  "004321f0"
+ ],
+ "__imp_?Format@MfcString@@QAAXPBDZZ": [
+  "004321f0"
+ ],
+ "__imp_?size@StdString@@QBEIXZ": [
+  "004321f0"
+ ],
+ "??0NativeCriticalSection@@QAE@XZ": [
+  "004690f0"
+ ],
+ "??0UserInputBase@RBX@@QAE@XZ": [
+  "004690f0"
+ ],
+ "??1DxUserInput@@UAE@XZ": [
+  "004690f0"
+ ],
+ "??1UserInputBase@RBX@@QAE@XZ": [
+  "004690f0"
+ ],
+ "?addListener@?$Notifier@VRunService@RBX@@VRunTransition@2@@RBX@@QBEXPAV?$Listener@VRunService@RBX@@VRunTransition@2@@2@@Z": [
+  "004690f0"
+ ],
+ "?centerCursor@DxUserInput@@UAEXXZ": [
+  "004690f0"
+ ],
+ "?getCursorPosition@DxUserInput@@MAE?AVVector2@G3D@@XZ": [
+  "004690f0"
+ ],
+ "?getGameCursor@UserInputBase@RBX@@MAE?AV?$ReferenceCountedPointer@VTextureProxyBase@RBX@@@G3D@@PAVAdorn@2@@Z": [
+  "004690f0"
+ ],
+ "?getRunService@DataModel@RBX@@QAEPAVRunService@2@XZ": [
+  "004690f0"
+ ],
+ "?getWrapMode@DxUserInput@@UBE?AW4WrapMode@UserInputBase@RBX@@XZ": [
+  "004690f0"
+ ],
+ "?initializeFirst@DxUserInput@@QAEXXZ": [
+  "004690f0"
+ ],
+ "?initializeSecond@DxUserInput@@QAEXXZ": [
+  "004690f0"
+ ],
+ "?keyDown@DxUserInput@@UBE_NW4SDLKey@@@Z": [
+  "004690f0"
+ ],
+ "?nativeGetParentFrame@NativeFrameView@@QBEPAU1@XZ": [
+  "004690f0"
+ ],
+ "?nativeGetTopLevelFrame@NativeFrameView@@QBEPAU1@XZ": [
+  "004690f0"
+ ],
+ "?nativeSharedDataModel@@YA?AV?$shared_ptr@VDataModel@RBX@@@boost@@PAVDataModel@RBX@@@Z": [
+  "004690f0"
+ ],
+ "?nativeSharedRunService@@YA?AV?$shared_ptr@VRunService@RBX@@@boost@@PAVRunService@RBX@@@Z": [
+  "004690f0"
+ ],
+ "?onEvent@DxUserInput@@MAEXPBVRunService@RBX@@VHeartbeat@3@@Z": [
+  "004690f0"
+ ],
+ "?onEvent@DxUserInput@@MAEXPBVRunService@RBX@@VRunTransition@3@@Z": [
+  "004690f0"
+ ],
+ "?setCursorId@UserInputBase@RBX@@UAEXPAVAdorn@2@ABVTextureId@2@@Z": [
+  "004690f0"
+ ],
+ "?setKeyState@DxUserInput@@UAEXW4SDLKey@@_N@Z": [
+  "004690f0"
+ ],
+ "?setWrapMode@DxUserInput@@UAEXW4WrapMode@UserInputBase@RBX@@@Z": [
+  "004690f0"
+ ],
+ "_DirectInput8Create@20": [
+  "004690f0"
+ ],
+ "_IID_IDirectInput8A": [
+  "004690f0"
+ ],
+ "??0MarshalLock@@QAE@XZ": [
+  "0041b310"
+ ],
+ "??1MarshalLock@@QAE@XZ": [
+  "0041b310"
+ ],
+ "??1Marshaller@@UAE@XZ": [
+  "0041b310"
+ ],
+ "??0CodeProfiler@Profiling@RBX@@QAE@PBD@Z": [
+  "0045c730"
+ ],
+ "??1NativeRobloxWnd@@UAE@XZ": [
+  "0045c730"
+ ],
+ "??1RenderDevice@G3D@@QAE@XZ": [
+  "0045c730"
+ ],
+ "?AdjustThrottle@NativeRobloxWnd@@UAEXN@Z": [
+  "0045c730"
+ ],
+ "?InvalidateRunView@NativeRobloxWnd@@UAEXXZ": [
+  "0045c730"
+ ],
+ "?defaultMode@@3HA": [
+  "0045c730"
+ ],
+ "?getContext@@YAPAUNativeContext@@XZ": [
+  "0045c730"
+ ],
+ "?getMetric@NativeRobloxWnd@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV23@@Z": [
+  "0045c730"
+ ],
+ "?initialValue@@3NB": [
+  "0045c730"
+ ],
+ "?renderName@@3QBDB": [
+  "0045c730"
+ ],
+ "??1Storage@@QAE@XZ": [
+  "0042c3c0"
+ ],
+ "??4?$function@$$A6AXXZ@boost@@QAEAAV01@P6AXXZ@Z": [
+  "0042c3c0"
+ ],
+ "?nothing@@YAXXZ": [
+  "0042c3c0"
+ ],
+ "?GetWindowTextA@COleControlSite@@UBEXAAV?$CStringT@DV?$StrTraitMFC@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z": [
+  "00401290"
+ ],
+ "?classCDialog@CDialog@@2UCRuntimeClass@@B": [
+  "00401290"
+ ],
+ "?eventsinkMap@CCmdTarget@@1UAFX_EVENTSINKMAP@@B": [
+  "00401290"
+ ],
+ "?Load@CContent@@UAGJPA_W@Z": [
+  "00416ac0"
+ ],
+ "??0RocContent@@QAE@XZ": [
+  "004186d0"
+ ],
+ "?first@RocContent@@UAGJXZ": [
+  "004186d0"
+ ],
+ "?second@RocContent@@UAGJXZ": [
+  "004186d0"
+ ],
+ "?primaryTable@@3PAPAXA": [
+  "0046ac90"
+ ],
+ "?secondaryTable@@3PAPAXA": [
+  "0046ac90"
+ ],
+ "?service@@3PAUService@@A": [
+  "0046ac90"
+ ],
+ "__imp_??0Stream@@QAE@HH@Z": [
+  "0046ac90"
+ ],
+ "?execScript@VCWorkspace@@QAEJPBDUtagVARIANT@@111PAPAUIDispatch@@@Z": [
+  "0046c430"
+ ],
+ "?format@G3D@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBDZZ": [
+  "0046c430"
+ ],
+ "?getNullName@Name@RBX@@SAABV12@XZ": [
+  "0046c430"
+ ],
+ "??0UrlContent@@QAE@PBD@Z": [
+  "004166a0"
+ ],
+ "??1UrlContent@@QAE@XZ": [
+  "004166a0"
+ ],
+ "?CheckUrl@@YAJPA_W@Z": [
+  "004166a0"
+ ],
+ "?ReportError@@YAJABU_GUID@@ABVexception@std@@@Z": [
+  "004166a0"
+ ],
+ "?load@UrlContent@@QAEXAAV?$basic_iostream@DU?$char_traits@D@std@@@std@@_NAAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@@Z": [
+  "004166a0"
+ ],
+ "__imp_??0CStr@@QAE@XZ": [
+  "004166a0"
+ ],
+ "__imp_??0TemporaryCStr@@QAE@PB_W@Z": [
+  "004166a0"
+ ],
+ "__imp_??1CStr@@QAE@XZ": [
+  "004166a0"
+ ],
+ "__imp_??1TemporaryCStr@@QAE@XZ": [
+  "004166a0"
+ ],
+ "__imp_??BCStr@@QBEPBDXZ": [
+  "004166a0"
+ ],
+ "__imp_??BTemporaryCStr@@QBEPBDXZ": [
+  "004166a0"
+ ],
+ "__imp_?Format@CStr@@QAAXPBDZZ": [
+  "004166a0"
+ ],
+ "?GetTopLevelRibbonBar@CMFCRibbonBaseElement@@QBEPAVCMFCRibbonBar@@XZ": [
+  "0060cb10"
+ ],
+ "?OnAfterChangeRect@CMFCRibbonButton@@MAEXPAVCDC@@@Z": [
+  "0060cb10"
+ ],
+ "?afxGlobalData@@3UAFX_GLOBAL_DATA@@A": [
+  "0060cb10"
+ ],
+ "?classCClassTreeView@CClassTreeView@@2UCRuntimeClass@@B": [
+  "00433b80"
+ ],
+ "?classCDeclarationView@CDeclarationView@@2UCRuntimeClass@@B": [
+  "00433b80"
+ ],
+ "?classCMemberTreeView@CMemberTreeView@@2UCRuntimeClass@@B": [
+  "00433b80"
+ ],
+ "??0ContentId@RBX@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z": [
+  "00453c30"
+ ],
+ "??0Lock@RBX@@QAE@V?$shared_ptr@VDataModel@RBX@@@@@Z": [
+  "00453c30"
+ ],
+ "??1Lock@RBX@@QAE@XZ": [
+  "00453c30"
+ ],
+ "?SetFocus@Window@@QAEPAVCWnd@@XZ": [
+  "00453c30"
+ ],
+ "?executeInNewThread@ScriptContext@RBX@@QAEXHPBD0@Z": [
+  "00453c30"
+ ],
+ "?get@ScriptSource@RBX@@QAE?AV?$shared_ptr@VScriptHost@RBX@@@@XZ": [
+  "00453c30"
+ ],
+ "?getDataModel@CRobloxDoc@@QAE?AUDataModelRef@@XZ": [
+  "00453c30"
+ ],
+ "?getList@ComboControl@@QAEPAUSearchObject@@XZ": [
+  "00453c30"
+ ],
+ "?getScriptContext@ScriptHost@RBX@@QAEPAVScriptContext@2@XZ": [
+  "00453c30"
+ ],
+ "?getText@ComboControl@@QAE?AUCStringRef@@XZ": [
+  "00453c30"
+ ],
+ "?isUrl@ContentProvider@RBX@@SA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z": [
+  "00453c30"
+ ],
+ "?print@StandardOut@RBX@@QAAXHPBDZZ": [
+  "00453c30"
+ ],
+ "?removeItem@ComboControl@@QAEXH@Z": [
+  "00453c30"
+ ],
+ "?singleton@StandardOut@RBX@@SA?AV?$shared_ptr@VStandardOut@RBX@@@@XZ": [
+  "00453c30"
+ ],
+ "__imp_??1CStringRef@@QAE@XZ": [
+  "00453c30"
+ ],
+ "__imp_??4?$ImpStr@D@@QAEAAU0@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z": [
+  "00453c30"
+ ],
+ "__imp_??BCStringRef@@QBEPBDXZ": [
+  "00453c30"
+ ],
+ "?insertModel@RobloxDocument@@QAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@_N@Z": [
+  "00459420"
+ ],
+ "?loadFile@CRobloxView@@QAEHV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z": [
+  "00455c30"
+ ],
+ "??$?0VSelectionState@@@?$SharedPtr@VInstance@RBX@@@@QAE@ABV?$SharedPtr@VSelectionState@@@@@Z": [
+  "004237d0"
+ ],
+ "??$make_shared@VInstance@RBX@@@@YA?AV?$SharedPtr@VInstance@RBX@@@@ABV?$WeakPtr@VInstance@RBX@@@@@Z": [
+  "004237d0"
+ ],
+ "??0?$SharedPtr@VInstance@RBX@@@@QAE@ABV0@@Z": [
+  "004237d0"
+ ],
+ "??0SelectionLock@@QAE@V?$SharedPtr@VInstance@RBX@@@@@Z": [
+  "004237d0"
+ ],
+ "??1?$SharedPtr@VInstance@RBX@@@@QAE@XZ": [
+  "004237d0"
+ ],
+ "??1?$SharedPtr@VSelectionState@@@@QAE@XZ": [
+  "004237d0"
+ ],
+ "??1SelectionLock@@QAE@XZ": [
+  "004237d0"
+ ],
+ "?selectInstance@CRobloxApp@@QAEXV?$SharedPtr@VInstance@RBX@@@@@Z": [
+  "004237d0"
+ ],
+ "?GetText@CListBox@@QBEXHAAV?$CStringT@DV?$StrTraitMFC@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z": [
+  "00416e90"
+ ],
+ "??0Authenticator@@QAE@PBD@Z": [
+  "00408a70"
+ ],
+ "??1Authenticator@@QAE@XZ": [
+  "00408a70"
+ ],
+ "?IID_IApp@@3U_GUID@@B": [
+  "00408a70"
+ ],
+ "?ReportException@@YAJABU_GUID@@AAVexception@std@@@Z": [
+  "00408a70"
+ ],
+ "?authenticate@Authenticator@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBD0@Z": [
+  "00408a70"
+ ],
+ "?getBaseUrl@@YA?AV?$CStr@D@@XZ": [
+  "00408a70"
+ ],
+ "?getLogger@@YA?AV?$shared_ptr@VLogger@@@@XZ": [
+  "00408a70"
+ ],
+ "?log@Logger@@QAAXHPBDZZ": [
+  "00408a70"
+ ],
+ "__imp_??0?$CStr@D@@QAE@PB_W@Z": [
+  "00408a70"
+ ],
+ "__imp_??1?$CStr@D@@QAE@XZ": [
+  "00408a70"
+ ],
+ "__imp_??B?$CStr@D@@QBEPBDXZ": [
+  "00408a70"
+ ],
+ "??0Lock@@QAE@U?$shared_ptr@UDataModel@@@@@Z": [
+  "0046b8d0"
+ ],
+ "??1Writer@@QAE@XZ": [
+  "0046b8d0"
+ ],
+ "?createWriter@VCWorkspace@@QAE?AV?$auto_ptr@UWriter@@@std@@XZ": [
+  "0046b8d0"
+ ],
+ "?write@VCWorkspace@@QAEXPAUWriter@@AAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z": [
+  "0046b8d0"
+ ],
+ "??$_Uninit_fill_n@PAUColorEntry@@IU1@V?$allocator@UColorEntry@@@std@@@std@@YAXPAUColorEntry@@IABU1@AAV?$allocator@UColorEntry@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z": [
+  "0044e760"
+ ],
+ "?makeString@@YA?AV?$CStringT@DV?$StrTraitATL@DV?$ChTraitsCRT@D@ATL@@@ATL@@@ATL@@H@Z": [
+  "0055fa70"
+ ],
+ "??0Lock@@QAE@V?$shared_ptr@UDataModel@@@@@Z": [
+  "0046b230"
+ ],
+ "??0LuaArgs@@QAE@XZ": [
+  "0046b230"
+ ],
+ "??1LuaArgs@@QAE@XZ": [
+  "0046b230"
+ ],
+ "?CheckSite@SiteCheck@@QAEJXZ": [
+  "0046b230"
+ ],
+ "?ToDispatch@@YAPAUIDispatch@@PAVLuaArgs@@@Z": [
+  "0046b230"
+ ],
+ "?execute@ScriptRunner@@QAE?AV?$auto_ptr@VLuaArgs@@@std@@HPBD0AAVLuaArgs@@@Z": [
+  "0046b230"
+ ],
+ "?getRunner@ScriptContext@@QAEPAVScriptRunner@@XZ": [
+  "0046b230"
+ ],
+ "?getScriptContext@VCWorkspace@@QAE?AV?$shared_ptr@VScriptContext@@@@XZ": [
+  "0046b230"
+ ],
+ "?push@LuaArgs@@QAEXVCComVariant@ATL@@@Z": [
+  "0046b230"
+ ],
+ "?activeDocument@@3PAVCDocument@@A": [
+  "0044b9a0"
+ ],
+ "?finishOpen@@YAXXZ": [
+  "0044b9a0"
+ ],
+ "?notifyDocument@@YAXHPAVCDocument@@@Z": [
+  "0044b9a0"
+ ],
+ "?open@CRobloxModule@@QAEPAVCDocument@@PBDH@Z": [
+  "0044b9a0"
+ ],
+ "?pendingObject@@3V?$scoped_ptr@UPendingObject@@@@A": [
+  "0044b9a0"
+ ],
+ "__imp_??BExeCString@@QBEPBDXZ": [
+  "0044b9a0"
+ ],
+ "__imp_?IsEmpty@ExeCString@@QBE_NXZ": [
+  "0044b9a0"
+ ],
+ "?CBrowserView_typeDescriptor@@3PADA": [
+  "0040fff0"
+ ],
+ "?CIDEBrowserView_typeDescriptor@@3PADA": [
+  "0040fff0"
+ ],
+ "?GetApp@CBrowserViewExternal@@UAGJPAPAUIDispatch@@@Z": [
+  "0040fff0"
+ ],
+ "?IID_IBrowserViewExternal@@3U_GUID@@B": [
+  "0040fff0"
+ ],
+ "?get_IsRobloxIDE@CBrowserViewExternal@@UAGJPAF@Z": [
+  "0040fff0"
+ ],
+ "?accept@TextureItem@@QAEXABVContentId@RBX@@@Z": [
+  "00441d60"
+ ],
+ "?getMimeType@@YAABVName@RBX@@PBD@Z": [
+  "00441d60"
+ ],
+ "?prepare@EditSession@@QAEXXZ": [
+  "00441d60"
+ ],
+ "?registerContent@@YA?AVContentId@RBX@@AAV?$basic_istream@DU?$char_traits@D@std@@@std@@ABVName@2@@Z": [
+  "00441d60"
+ ],
+ "??$?0H@Value@@QAE@ABH@Z": [
+  "0042db20"
+ ],
+ "??$?0M@Value@@QAE@ABM@Z": [
+  "0042db20"
+ ],
+ "??$?0V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Value@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z": [
+  "0042db20"
+ ],
+ "??$?0_N@Value@@QAE@AB_N@Z": [
+  "0042db20"
+ ],
+ "??0Value@@QAE@ABV0@@Z": [
+  "0042db20"
+ ],
+ "??0Value@@QAE@XZ": [
+  "0042db20"
+ ],
+ "__imp_??0BStr@@QAE@PB_W@Z": [
+  "0042db20"
+ ],
+ "__imp_??1BStr@@QAE@XZ": [
+  "0042db20"
+ ],
+ "__imp_??BBStr@@QBEPBDXZ": [
+  "0042db20"
+ ],
+ "??1XmlElement@@QAE@XZ": [
+  "0046bfd0"
+ ],
+ "?_InternalQueryInterface@StreamBase@@QAEJABU_GUID@@PAPAX@Z": [
+  "0046bfd0"
+ ],
+ "?raise_error@@YAXJABU_GUID@@@Z": [
+  "0046bfd0"
+ ],
+ "?report_exception@@YAJABU_GUID@@PBDI@Z": [
+  "0046bfd0"
+ ],
+ "?workspaceInterface@@3U_GUID@@B": [
+  "0046bfd0"
+ ],
+ "?write@VCWorkspaceNativeView@@QAEJPAVXmlElement@@PAV?$basic_ostream@DU?$char_traits@D@std@@@std@@@Z": [
+  "0046bfd0"
+ ],
+ "?writeXmlScripts@VCWorkspaceNativeView@@QAE?AV?$auto_ptr@VXmlElement@@@std@@XZ": [
+  "0046bfd0"
+ ],
+ "_report_error": [
+  "0046bfd0"
+ ],
+ "?color3uint8@BrickColor@RBX@@QBE?AUColor3uint8@G3D@@XZ": [
+  "00437b90"
+ ],
+ "?parse@BrickColor@RBX@@SA?AV12@PBD@Z": [
+  "00437b90"
+ ],
+ "__imp_??B?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@QBEPBDXZ": [
+  "00437b90"
+ ],
+ "??$any_cast@H@boost@@YAHABVany@0@@Z": [
+  "00416370"
+ ],
+ "??$any_cast@M@boost@@YAMABVany@0@@Z": [
+  "00416370"
+ ],
+ "??$any_cast@N@boost@@YANABVany@0@@Z": [
+  "00416370"
+ ],
+ "??$any_cast@_N@boost@@YA_NABVany@0@@Z": [
+  "00416370"
+ ],
+ "?castContent@Value@Reflection@RBX@@QBE?AVStdString@@XZ": [
+  "00416370"
+ ],
+ "?castString@Value@Reflection@RBX@@QBE?AVStdString@@XZ": [
+  "00416370"
+ ],
+ "?createSafeArray@@YAPAUtagSAFEARRAY@@PBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@Z": [
+  "00416370"
+ ],
+ "?getInstances@@YAPBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@PBVany@boost@@@Z": [
+  "00416370"
+ ],
+ "?isContent@Value@Reflection@RBX@@QBE_NXZ": [
+  "00416370"
+ ],
+ "?isInstances@Value@Reflection@RBX@@QBE_NXZ": [
+  "00416370"
+ ],
+ "?isString@Value@Reflection@RBX@@QBE_NXZ": [
+  "00416370"
+ ],
+ "?get@Value@@QAE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ": [
+  "0042be20"
+ ],
+ "__imp_?c_str@String@@QBEPBDXZ": [
+  "0042be20"
+ ]
+}
