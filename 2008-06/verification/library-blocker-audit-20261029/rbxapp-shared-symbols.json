@@ -1,0 +1,151 @@
+[
+ {
+  "symbol": "??0?$TypedPropertyDescriptor@H@Reflection@RBX@@IAE@AAVClassDescriptor@12@PBD1V?$auto_ptr@VGetSet@?$TypedPropertyDescriptor@H@Reflection@RBX@@@std@@W4Functionality@PropertyDescriptor@12@@Z",
+  "address": "0040a290",
+  "size": 98,
+  "cause": "has_relocations",
+  "provider_count": 4,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Accoutrement.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Sky.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Team.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Tool.obj"
+  ]
+ },
+ {
+  "symbol": "?classDescriptor@?$Described@VInstance@RBX@@$1?sInstance@2@3QBDBVDescribedBase@Reflection@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+  "address": "0040ad80",
+  "size": 101,
+  "cause": "has_relocations",
+  "provider_count": 37,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Accoutrement.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Camera.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\CharacterAppearance.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\custommesh.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\DebrisService.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\DebugSettings.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Decal.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Explosion.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\FaceInstance.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Feature.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Flag.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\FlagStand.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\ForceField.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\GameSettings.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\GeometryService.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\GlobalSettings.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Gyro.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Instance.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\JointInstance.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Lighting.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Message.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\PVInstance.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Script.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\ScriptContext.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Seat.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Selection.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Sky.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\SpawnLocation.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Surfaces.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Team.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Teams.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\TimerService.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Tool.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\UserController.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Value.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Visit.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-upstream\\Sky.obj"
+  ]
+ },
+ {
+  "symbol": "??0const_iterator@?$_Tree@V?$_Tmap_traits@PBVName@RBX@@W4InputType@Controller@2@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@W4InputType@Controller@2@@std@@@6@$0A@@std@@@std@@QAE@PAU_Node@?$_Tree_nod@V?$_Tmap_traits@PBVName@RBX@@W4InputType@Controller@2@U?$less@PBVName@RBX@@@std@@V?$allocator@U?$pair@QBVName@RBX@@W4InputType@Controller@2@@std@@@6@$0A@@std@@@2@PBV12@@Z",
+  "address": "0054f940",
+  "size": 61,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Controller.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Surfaces.obj"
+  ]
+ },
+ {
+  "symbol": "??$doDeclare@$1?sDecal@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+  "address": "00401a00",
+  "size": 101,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Decal.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\LuaInstanceBridge.obj"
+  ]
+ },
+ {
+  "symbol": "??0?$TypedPropertyDescriptor@VTextureId@RBX@@@Reflection@RBX@@IAE@AAVClassDescriptor@12@PBD1V?$auto_ptr@VGetSet@?$TypedPropertyDescriptor@VTextureId@RBX@@@Reflection@RBX@@@std@@W4Functionality@PropertyDescriptor@12@@Z",
+  "address": "005978a0",
+  "size": 98,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Decal.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Sky.obj"
+  ]
+ },
+ {
+  "symbol": "??$create@VGlobalSettings@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlobalSettings@RBX@@@boost@@XZ",
+  "address": "00440980",
+  "size": 120,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\GlobalSettings.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-upstream\\GlobalSettings.obj"
+  ]
+ },
+ {
+  "symbol": "?askAddChild@GuiItem@RBX@@EBE_NPBVInstance@2@@Z",
+  "address": "004117c0",
+  "size": 36,
+  "cause": "has_relocations",
+  "provider_count": 4,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\GUI.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Hopper.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\Widget.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-upstream\\Widget.obj"
+  ]
+ },
+ {
+  "symbol": "??$pushNewObject@V?$shared_ptr@VDescribedBase@Reflection@RBX@@@boost@@@?$Bridge@V?$shared_ptr@VDescribedBase@Reflection@RBX@@@boost@@$0A@@Lua@RBX@@SAPAV?$shared_ptr@VDescribedBase@Reflection@RBX@@@boost@@PAUlua_State@@V34@@Z",
+  "address": "005aa110",
+  "size": 190,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\LuaSignalBridge.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\ScriptContext.obj"
+  ]
+ },
+ {
+  "symbol": "?push@?$SharedPtrBridge@VDescribedBase@Reflection@RBX@@@Lua@RBX@@SAXPAUlua_State@@V?$shared_ptr@VDescribedBase@Reflection@RBX@@@boost@@@Z",
+  "address": "005aa730",
+  "size": 290,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\LuaSignalBridge.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\ScriptContext.obj"
+  ]
+ },
+ {
+  "symbol": "?_Xlen@?$vector@PAVFunctionDescriptor@Reflection@RBX@@V?$allocator@PAVFunctionDescriptor@Reflection@RBX@@@std@@@std@@KAXXZ",
+  "address": "004c6d40",
+  "size": 112,
+  "cause": "has_relocations",
+  "provider_count": 2,
+  "providers": [
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\reflection_function.obj",
+   "rebuild\\2008-06\\out\\RbxApp\\layer-openrbx\\reflection_object.obj"
+  ]
+ }
+]

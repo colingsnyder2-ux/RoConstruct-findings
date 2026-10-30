@@ -1,0 +1,181 @@
+[
+ {
+  "original": "roc_unit_37dc9d259436df0a.cpp",
+  "unit": "roc_native_part_definition_e657b829eabcd076.cpp",
+  "targets": [
+   "005ad2b0",
+   "005bb940",
+   "005d4d20",
+   "005d4df0",
+   "005d4ec0",
+   "005d4f90",
+   "006311b0",
+   "00631280",
+   "006372d0",
+   "006373a0",
+   "00637470",
+   "00637540",
+   "00637610",
+   "006376e0",
+   "006377b0",
+   "00637880"
+  ],
+  "compiled": true,
+  "rows": [
+   {
+    "address": "005ad2b0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "005bb940",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "005d4d20",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "005d4df0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "005d4ec0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "005d4f90",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "006311b0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "00631280",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "006372d0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "006373a0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "00637470",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "00637540",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "00637610",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "006376e0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "006377b0",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   },
+   {
+    "address": "00637880",
+    "score": 100,
+    "symbol": "??$?0VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@QAE@PBD0PQRocket@2@VVector3@G3D@@P832@AEXABVPropertyDescriptor@12@@ZW4Functionality@612@@Z",
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "original": "roc_unit_4349f38f33416276.cpp",
+  "unit": "roc_native_part_definition_4738518cff629dfa.cpp",
+  "targets": [
+   "007f63f0",
+   "007f6450",
+   "007f64b0",
+   "007f6510",
+   "007f6570",
+   "007f65d0",
+   "007f6630"
+  ],
+  "compiled": true,
+  "rows": [
+   {
+    "address": "007f63f0",
+    "score": 100,
+    "symbol": "??__EpropWalkToPart@RBX@@YAXXZ",
+    "reason": ""
+   },
+   {
+    "address": "007f6450",
+    "score": 100,
+    "symbol": "??__EpropWalkToPoint@RBX@@YAXXZ",
+    "reason": ""
+   },
+   {
+    "address": "007f64b0",
+    "score": 100,
+    "symbol": "??__EpropWalkDirection@RBX@@YAXXZ",
+    "reason": ""
+   },
+   {
+    "address": "007f6510",
+    "score": 100,
+    "symbol": "??__EpropWalkRotationalVelocity@RBX@@YAXXZ",
+    "reason": ""
+   },
+   {
+    "address": "007f6570",
+    "score": 100,
+    "symbol": "??__EpropJump@RBX@@YAXXZ",
+    "reason": ""
+   },
+   {
+    "address": "007f65d0",
+    "score": 100,
+    "symbol": "??__EpropTargetPoint@RBX@@YAXXZ",
+    "reason": ""
+   },
+   {
+    "address": "007f6630",
+    "score": 100,
+    "symbol": "??__EpropSit@RBX@@YAXXZ",
+    "reason": ""
+   }
+  ]
+ }
+]

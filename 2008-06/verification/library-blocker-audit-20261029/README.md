@@ -1,0 +1,15 @@
+# Library integration blocker audit, 2026-10-29
+
+This is a replay-snapshot audit, not new native integration credit. Address lists and input report hashes accompany each module. One cause can overlap another; counts must not be summed into a function total. An exact replay does not establish a linked owner, complete class layout or original declaration.
+
+The snapshot contains 1,020 distinct per-module header rejects: RbxApp320, RbxgsApp605, XTP28, G3D41 and Boost26. Cross-module address overlap has not been removed from that sum. DLL-context failures are3/4/1/4/11 respectively. Rbxgs also has59 compile-blocked addresses and13 failures after adoption of module headers. XTP has one compile failure and14 other mismatches. Ogre's selected native replay remains95/95; its other snippet bodies are outside that replay.
+
+The initial conservative RbxApp shared-symbol scan finds10 bound symbols with multiple module providers. All have relocations, so none qualifies for the relocation-free, call-free subset. This does not audit the entire historical2,336-symbol pool. Relocations need callee/data/ABI checks; equal masked bytes alone are insufficient for a blanket shared-symbol replacement.
+
+Two Rbxgs generated descriptor families fail because PartInstance is forward-declared when RefPropDescriptor instantiates conversions and dynamic_cast. Including the existing real PartInstance header fixes both compile errors while replaying against the adopted module headers. All23 requested target bodies then match code and referenced data. This is not23 new integrations: sixteen addresses match one generic Rocket constructor and remain ambiguous; the seven Humanoid global initialization functions are TU-local symbols and cannot be bound through the external-symbol swap path. Their property names uniquely distinguish each from eight code-identical candidates. The module-registration experiment rejected all seven for unavailable external symbols, kept the stronger454-address verified layer, and its trial module configuration was restored. No generated trial unit was adopted or credited.
+
+Probe scripts and JSON preserve this rejected integration route. The observed source includes already exist in the full original Gyro/Humanoid translation units; this fixes isolated generated replays, not a demonstrated missing include in the complete native source. Next work must inspect actual selected native owners or fix a class/header family with external methods, rather than count these local initializers as swaps.
+
+G3D reject inspection also found generated exports using private copied headers and absolute include paths alongside real-header source copies. Do not weaken its gate for all generated files. Rebuild explicit candidates with adopted G3D2008 headers and DLL context before considering a reviewed module entry.
+
+After the Ogre correction build and successful four-mode GPU runtime, placement was rerun and remains411. No new server credits or webhook delivery are claimed by this audit.

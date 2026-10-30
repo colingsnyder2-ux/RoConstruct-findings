@@ -1,0 +1,10 @@
+{
+ "module": "RbxApp",
+ "counts": {
+  "shared_symbols": 10,
+  "has_relocations": 10
+ },
+ "swaps_manifest_sha256": "982a874f528b7618dba76e3a949c7ded2ce5f82219ecbe601b6825f78177e3d3",
+ "report_sha256": "5c02f768e9b7e2b60c4250a4ec8d6899608dfb13932f66a2caeeef704bf769b2",
+ "source": "Current private build objects, not public total metrics"
+}
