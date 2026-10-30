@@ -21,7 +21,7 @@ test_dir.mkdir(parents=True, exist_ok=True)
 sdl = root / "tools/libs/g3d-6.09/source/demos/SDL.dll"
 shutil.copy2(sdl, test_dir / "SDL.dll")
 includes = rebuild._overlaid([rebuild._spec_path("2008-06", p) for p in spec["test_includes"]], [],
-                             (root / "tools/rbxgs/Client", out / "RbxgsApp/overlay"))[0]
+                             ((root / "tools/rbxgs/Client").resolve(), out / "RbxgsApp/overlay"))[0]
 libs = [folder / "linked.lib"] + [out / module / "linked/linked.lib" for module in
         ["G3D", "G3D-GL", "libpng", "Boost", "RakNet", "zlib-winapi", "zlib"]]
 libs.append(rebuild.dll_import_lib("2008-06", sdl.name, source=sdl))
