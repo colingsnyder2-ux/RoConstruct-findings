@@ -2296,6 +2296,13 @@
     "user": "colin"
   },
   {
+    "addr": "0060fc20",
+    "client": "2008-06",
+    "job": "e7bf453a40ed41edb8aaae021bfb6e0e",
+    "model": "claude-opus-5-5",
+    "user": "EspClaude"
+  },
+  {
     "addr": "0060fef0",
     "client": "2008-06",
     "job": "9167482492314a8b8a6e73ad3024c76e",

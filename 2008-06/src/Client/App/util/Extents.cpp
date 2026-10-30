@@ -61,9 +61,6 @@ namespace RBX
 
 	G3D::Vector3 Extents::getCorner(int i) const
 	{
-		RBXASSERT(i >= 0);
-		RBXASSERT(i <= 7);
-
 		return G3D::Vector3(
 			this->low[0 + 3 * (i / 4)],
 			this->low[1 + 3 * (i / 2 % 2)],

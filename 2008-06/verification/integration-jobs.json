@@ -7658,5 +7658,96 @@
     "unit": "RBX::JointStage",
     "updated": 1793343798.419454,
     "user": "EspClaude"
+  },
+  {
+    "created": 1793344162.702997,
+    "id": "dc0420bc6df9488c8553841b873aae3d",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/TimerService.cpp": [
+        [
+          "#include \"v8datamodel/TimerService.h\"\n",
+          "#include \"v8datamodel/TimerService.h\"\n\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "76b8f3cca5354a9b741a07e48ae187986cc41fb5f919f0c9aa7ec5631bac1451",
+      "gains": [],
+      "input_hash": "e44fd3bd132598c242511d8c2962fc36f0728e6a591a73bc5aee08da5711b09b",
+      "losses": [],
+      "submitted_revision": "76b8f3cca5354a9b741a07e48ae187986cc41fb5f919f0c9aa7ec5631bac1451"
+    },
+    "state": "rejected",
+    "unit": "RBX::TimerService",
+    "updated": 1793344341.118628,
+    "user": "colin"
+  },
+  {
+    "created": 1793344696.1548445,
+    "id": "ac0b1e9873084bcd9c5aa486b58d4637",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/ToolMouseCommand.cpp": [
+        [
+          "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+          "#include \"v8datamodel/ToolMouseCommand.h\"\n\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "76b8f3cca5354a9b741a07e48ae187986cc41fb5f919f0c9aa7ec5631bac1451",
+      "gains": [],
+      "input_hash": "e44fd3bd132598c242511d8c2962fc36f0728e6a591a73bc5aee08da5711b09b",
+      "losses": [],
+      "submitted_revision": "76b8f3cca5354a9b741a07e48ae187986cc41fb5f919f0c9aa7ec5631bac1451"
+    },
+    "state": "rejected",
+    "unit": "RBX::ToolMouseCommand",
+    "updated": 1793344858.6558523,
+    "user": "colin"
+  },
+  {
+    "created": 1793346211.6459057,
+    "id": "e7bf453a40ed41edb8aaae021bfb6e0e",
+    "model": "claude-opus-5-5",
+    "patches": {
+      "App/util/Extents.cpp": [
+        [
+          "\t\tRBXASSERT(i >= 0);\n\t\tRBXASSERT(i <= 7);\n\n\t\treturn G3D::Vector3(\n\t\t\tthis->low[0 + 3 * (i / 4)],\n\t\t\tthis->low[1 + 3 * (i / 2 % 2)],\n\t\t\tthis->low[2 + 3 * (i % 2)]\n\t\t);",
+          "\t\treturn G3D::Vector3(\n\t\t\tthis->low[0 + 3 * (i / 4)],\n\t\t\tthis->low[1 + 3 * (i / 2 % 2)],\n\t\t\tthis->low[2 + 3 * (i % 2)]\n\t\t);"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "76b8f3cca5354a9b741a07e48ae187986cc41fb5f919f0c9aa7ec5631bac1451",
+      "credits": 1,
+      "distinct_after": 9800,
+      "distinct_before": 9799,
+      "gains": [
+        "0060f480",
+        "0060fc20"
+      ],
+      "input_hash": "e44fd3bd132598c242511d8c2962fc36f0728e6a591a73bc5aee08da5711b09b",
+      "losses": [],
+      "new_distinct": [
+        "0060fc20"
+      ],
+      "overlay_hash": "7a1c48b14173502bc8f7cfba4823ce8e717bab6b3a0fefddb961210c1b10e58d",
+      "owned_after": 3326,
+      "owned_before": 3324,
+      "rebased": false,
+      "submitted_revision": "76b8f3cca5354a9b741a07e48ae187986cc41fb5f919f0c9aa7ec5631bac1451"
+    },
+    "state": "accepted",
+    "unit": "RBX::Sky",
+    "updated": 1793346375.1707418,
+    "user": "EspClaude"
   }
 ]

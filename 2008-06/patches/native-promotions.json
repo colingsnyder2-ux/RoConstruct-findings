@@ -2380,5 +2380,13 @@
     "\t\tbool downstreamOfStage(IStage* iStage) const\n\t\t{\n\t\t\treturn"
    ]
   ]
+ },
+ {
+  "App/util/Extents.cpp": [
+   [
+    "\t\tRBXASSERT(i >= 0);\n\t\tRBXASSERT(i <= 7);\n\n\t\treturn G3D::Vector3(\n\t\t\tthis->low[0 + 3 * (i / 4)],\n\t\t\tthis->low[1 + 3 * (i / 2 % 2)],\n\t\t\tthis->low[2 + 3 * (i % 2)]\n\t\t);",
+    "\t\treturn G3D::Vector3(\n\t\t\tthis->low[0 + 3 * (i / 4)],\n\t\t\tthis->low[1 + 3 * (i / 2 % 2)],\n\t\t\tthis->low[2 + 3 * (i % 2)]\n\t\t);"
+   ]
+  ]
  }
 ]
