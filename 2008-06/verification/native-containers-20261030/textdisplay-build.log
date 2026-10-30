@@ -1,0 +1,9 @@
+layer rbxgs: 0 compile errors
+layer net: 0 compile errors
+layer appdraw: 0 compile errors
+layer renderlib: 0 compile errors
+layer view: 0 compile errors
+layer lua: 0 compile errors
+layer glue: 0 compile errors
+ownership proofs: 252 cached objects, 17 checked
+RbxgsApp: linked=True test_exit=0; 94946 object functions, 4229 byte-identical to unique 2008 functions (3863 of >=16 bytes)
