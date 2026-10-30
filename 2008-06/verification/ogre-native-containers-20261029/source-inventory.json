@@ -1,0 +1,4570 @@
+[
+ {
+  "addr": "004d73a0",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 32,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d73c0",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 31,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreTextureUnitState.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d73e0",
+  "unit": "Ogre::VResource::?$SharedPtr",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d7420",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d7460",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 250,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "004d7560",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 23,
+  "recipe": "g3d-6.09",
+  "file": "GLG3Dcpp/Texture.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d7580",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 16,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "004d7590",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 16,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "004d75a0",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 78,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "004d75f0",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 78,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "004d7640",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 56,
+  "recipe": "g3d-6.09",
+  "file": "GLG3Dcpp/RenderDevice.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d7680",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 56,
+  "recipe": "openrbx-client",
+  "file": "RbxView/PBBMesh.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "004d76c0",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 5,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "004dab50",
+  "unit": "Ogre::MemoryDataStream",
+  "size": 958,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00565ff0",
+  "unit": "Ogre::RbxSceneManager::ShadowCasterSceneQueryListener",
+  "size": 5,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d74b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d74c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d74d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 33,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7500",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7510",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7520",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 9,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7530",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 12,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7540",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 12,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7550",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "005d7560",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 61,
+  "recipe": "openrbx-client",
+  "file": "App/humanoid/Humanoid.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "005d75a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 151,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_humanoid_head_helper_ad653ae437611735.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0066fe90",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0066fed0",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 70,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0066ff20",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 132,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0066ffb0",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 111,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00670710",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 47,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00670740",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 55,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00670780",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 147,
+  "recipe": "boost-1.34.1",
+  "file": "libs/signals/src/named_slot_map.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00670820",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 36,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00670850",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 510,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00670a50",
+  "unit": "Ogre::VRbxFont::?$SharedPtr",
+  "size": 755,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_tpl_map_string_meshptr_ec8e332780074925.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00678470",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 83,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006784d0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 25,
+  "recipe": "openrbx-client",
+  "file": "App/util/NormalId.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006784f0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 31,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678510",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 158,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006785b0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 56,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006785f0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 58,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678630",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 41,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678660",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 82,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006786c0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 48,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006786f0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 40,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678720",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 84,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678780",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 98,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006787f0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 49,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678830",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 70,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_ogre_map_string_value84_300b0b85e3ca9437.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00678880",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 141,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678910",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 60,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678950",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 141,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006789e0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 771,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678cf0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 127,
+  "recipe": "openrbx-client-dll",
+  "file": "App/util/Name.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00678d70",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 70,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00678dc0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 82,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_visual_engine_d4ce797c6a771e8f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00678e20",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 651,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_visual_engine_d4ce797c6a771e8f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006790b0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 106,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00679120",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 180,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006791e0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 205,
+  "recipe": "rbxgs-render",
+  "file": "roc_g3d_array_debug_89494c2c4f78369c.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006792b0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 1536,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_resource_release_4709ef25b50fc1eb.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006798b0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 104,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00679920",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 102,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00679990",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 332,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00679ae0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 907,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00679e70",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 692,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067a130",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 1700,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067a7e0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 5334,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espclaude_66d95e9814d0fd44.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067bcc0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 864,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067c020",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 257,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbx_create_indices_0cb0c310d58dd691.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c130",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 896,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067c4d0",
+  "unit": "Ogre::VisualEngine",
+  "size": 49,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c510",
+  "unit": "Ogre::VisualEngine",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067c520",
+  "unit": "Ogre::VisualEngine",
+  "size": 80,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_b894a2da96c86c7e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c570",
+  "unit": "Ogre::RbxEntity",
+  "size": 40,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067c5a0",
+  "unit": "Ogre::RbxEntity",
+  "size": 49,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreDefaultSceneQueries.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c5e0",
+  "unit": "Ogre::RbxEntity",
+  "size": 87,
+  "recipe": "openrbx-client-dll",
+  "file": "App/v8xml/SerializerV2.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c640",
+  "unit": "Ogre::RbxEntity",
+  "size": 95,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_e30ba7cfa3240599.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c6a0",
+  "unit": "Ogre::RbxEntity",
+  "size": 113,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_91a54940186435af.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c720",
+  "unit": "Ogre::RbxEntity",
+  "size": 85,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreEdgeListBuilder.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c780",
+  "unit": "Ogre::RbxEntity",
+  "size": 117,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_a1d8d26af91f29e3.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c800",
+  "unit": "Ogre::RbxEntity",
+  "size": 130,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_ebdcbd65a010751e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c890",
+  "unit": "Ogre::RbxEntity",
+  "size": 87,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreRenderSystem.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c8e7",
+  "unit": "Ogre::RbxEntity",
+  "size": 28,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreRenderSystem.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c910",
+  "unit": "Ogre::RbxEntity",
+  "size": 70,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067c960",
+  "unit": "Ogre::RbxEntity",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreEdgeListBuilder.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c9a0",
+  "unit": "Ogre::RbxEntity",
+  "size": 87,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreRenderSystem.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067c9f7",
+  "unit": "Ogre::RbxEntity",
+  "size": 26,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreRenderSystem.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067ca20",
+  "unit": "Ogre::RbxEntity",
+  "size": 41,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067ca50",
+  "unit": "Ogre::RbxEntity",
+  "size": 142,
+  "recipe": "g3d-6.09",
+  "file": "G3Dcpp/MeshAlg.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067cae0",
+  "unit": "Ogre::RbxEntity",
+  "size": 66,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067cb30",
+  "unit": "Ogre::RbxEntity",
+  "size": 150,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_ebdcbd65a010751e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067cbd0",
+  "unit": "Ogre::RbxEntity",
+  "size": 43,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067cc00",
+  "unit": "Ogre::RbxEntity",
+  "size": 1039,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_ebdcbd65a010751e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d010",
+  "unit": "Ogre::RbxEntity",
+  "size": 328,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_91a54940186435af.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d160",
+  "unit": "Ogre::RbxEntity",
+  "size": 58,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067d1a0",
+  "unit": "Ogre::RbxEntity",
+  "size": 79,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_15110fb6a0b86d4e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d1f0",
+  "unit": "Ogre::RbxEntity",
+  "size": 191,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_8e6003da0d343385.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d2d0",
+  "unit": "Ogre::RbxEntity",
+  "size": 241,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_16107800e0b0542a.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d3d0",
+  "unit": "Ogre::RbxEntity",
+  "size": 72,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067d420",
+  "unit": "Ogre::RbxEntity",
+  "size": 337,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_8e6003da0d343385.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d580",
+  "unit": "Ogre::RbxEntity",
+  "size": 44,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067d5b0",
+  "unit": "Ogre::RbxEntity",
+  "size": 44,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067d600",
+  "unit": "Ogre::RbxEntity",
+  "size": 534,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreRenderSystem.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d820",
+  "unit": "Ogre::RbxEntity",
+  "size": 205,
+  "recipe": "g3d-6.09",
+  "file": "G3Dcpp/MeshAlg.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067d8f0",
+  "unit": "Ogre::RbxEntity",
+  "size": 182,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067d9b0",
+  "unit": "Ogre::RbxEntity",
+  "size": 153,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_8e6003da0d343385.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067da50",
+  "unit": "Ogre::RbxEntity",
+  "size": 27,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067da70",
+  "unit": "Ogre::RbxEntity",
+  "size": 128,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067daf0",
+  "unit": "Ogre::RbxEntity",
+  "size": 2039,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067e2f0",
+  "unit": "Ogre::RbxEntity",
+  "size": 3704,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espclaude_3a38bc51a49d03ed.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067f170",
+  "unit": "Ogre::RbxEntity",
+  "size": 84,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreMesh.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067f1d0",
+  "unit": "Ogre::RbxEntity",
+  "size": 95,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreMeshSerializerImpl.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067f230",
+  "unit": "Ogre::RbxEntity",
+  "size": 796,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067f550",
+  "unit": "Ogre::RbxEntity",
+  "size": 609,
+  "recipe": "rbxgs-dll",
+  "file": "roc_espclaude_069d389152c04cf5.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067f7c0",
+  "unit": "Ogre::RbxEntity",
+  "size": 41,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreMeshSerializerImpl.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067f7f0",
+  "unit": "Ogre::RbxEntity",
+  "size": 93,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067f850",
+  "unit": "Ogre::RbxEntity",
+  "size": 545,
+  "recipe": "rbxgs-dll",
+  "file": "roc_espeon_skyrendernativeb9ff7f3686536bca.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0067fa80",
+  "unit": "Ogre::RbxEntity",
+  "size": 140,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067fb10",
+  "unit": "Ogre::RbxEntity",
+  "size": 53,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067fb50",
+  "unit": "Ogre::RbxEntity",
+  "size": 276,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067fc70",
+  "unit": "Ogre::RbxEntity",
+  "size": 196,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0067fd60",
+  "unit": "Ogre::RbxSky",
+  "size": 5120,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00681190",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 181,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_observed_3db354efc99e4c09.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00681250",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 174,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00681300",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 81,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_5230e5fcf10842ad.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00681360",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 510,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00681560",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 636,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_observed_53d74a95e1732a0f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006817e0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 249,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_17f9ce717551bd70.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006818e0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 283,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_34708910126535a9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00681a00",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 68,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_3de506635a8ad8a6.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00681a50",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 239,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00681b40",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 239,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00681c30",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 712,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00681f00",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 139,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreAlignedAllocator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00681f90",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 173,
+  "recipe": "openrbx-client-dll",
+  "file": "roc_espeon_sceneinsertassignment_fbd18b7782bbd42d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682040",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 177,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_9c23d949851390da.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682100",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 70,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00682150",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 107,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_ffd5d9229ca1a018.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006821c0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 279,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_a7cca1af0b493e35.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006822e0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 105,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_a7cca1af0b493e35.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682350",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 211,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00682430",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 169,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_b2126d94dfadd044.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006824e0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 115,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_b2126d94dfadd044.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682560",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 66,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_5d751f703f5eddd8.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006825b0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 1007,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006829a0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 293,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_listener_vertex_buffer_28806614eb3a450c.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682ad0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 69,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00682b20",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 26,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00682b40",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 72,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00682b90",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 58,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_88a75b4c54bbca54.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682bd0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 154,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00682c70",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 71,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreTangentSpaceCalc.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682cc0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 154,
+  "recipe": "rbxgs",
+  "file": "v8datamodel/FlagStand.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00682d60",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 669,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_twod_add_quad_color_fork_f8f01467d94dfda6.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00683000",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 176,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_espeon_renderprimitive6529969e3c0e9a10.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006830b0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 182,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_espeon_renderrectangle6060094c19a0a0f2.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00683170",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 94,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006831d0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 112,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_454d27b422690bab.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00683240",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 112,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_454d27b422690bab.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006832b0",
+  "unit": "Ogre::RbxSceneNode",
+  "size": 4309,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espclaude_610f7f834b7be5f0.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006843b0",
+  "unit": "Ogre::TwoDManager",
+  "size": 23,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006843d0",
+  "unit": "Ogre::TwoDManager",
+  "size": 23,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006843f0",
+  "unit": "Ogre::TwoDManager",
+  "size": 586,
+  "recipe": "g3d-6.09-dll",
+  "file": "roc_vrbxfont_compute_packed_458dceda9d4228a0.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00684640",
+  "unit": "Ogre::TwoDManager",
+  "size": 238,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00684730",
+  "unit": "Ogre::TwoDManager",
+  "size": 982,
+  "recipe": "g3d-6.09-dll",
+  "file": "roc_vrbxfont_draw2d_assigned_bounds_b5d1316817af0b1d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00684b10",
+  "unit": "Ogre::TwoDManager",
+  "size": 917,
+  "recipe": "g3d-6.09-dll",
+  "file": "roc_vrbxfont_constructor_server_c5079e23e94144b0.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00684eb0",
+  "unit": "Ogre::TwoDManager",
+  "size": 240,
+  "recipe": "g3d-6.09-dll",
+  "file": "roc_vrbxfont_from_file_7e346c652dd2a177.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00684fa0",
+  "unit": "Ogre::TwoDManager",
+  "size": 33,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreTechnique.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00684fd0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 50,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_252207500829304d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685010",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 144,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espeon_subentitydistance81be14ca97c968f3.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006850b0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 32,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006850d0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 24,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_b0a3250dc05458b4.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006850f0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685100",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 10,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreMovableObject.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685110",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 45,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685140",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 40,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_71ada4ca117b263f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685170",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 40,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006851a0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 40,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006851d0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 460,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_90e948f69e73921c.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006853a0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 167,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_90e948f69e73921c.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685450",
+  "unit": "Ogre::RbxSubEntity::RbxSubEntityShadowRenderable",
+  "size": 10,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685460",
+  "unit": "Ogre::RbxSubEntity::RbxSubEntityShadowRenderable",
+  "size": 10,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685470",
+  "unit": "Ogre::RbxSubEntity::RbxSubEntityShadowRenderable",
+  "size": 10,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685480",
+  "unit": "Ogre::RbxSubEntity::RbxSubEntityShadowRenderable",
+  "size": 10,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685490",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 254,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_0dfdb9b464d9c5b7.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685590",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 170,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_a514c3bb7ed458e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685660",
+  "unit": "Ogre::RbxSubEntity::RbxSubEntityShadowRenderable",
+  "size": 156,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_d9ba0af014c4f846.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685700",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 4,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685710",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 24,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_sub_transform_2a4870813417745d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685730",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 168,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_ogre_resume_1fd759b92d78c525.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006857e0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 63,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685820",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685830",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685850",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 192,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_7d4794109b155f59.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685910",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 269,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_d9ba0af014c4f846.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685a40",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 968,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbx_subentity_shadow_volume_f6cac9c91aa4e5c1.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685e10",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 24,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00685e30",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 99,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbx_adorn_state_ctor_5b7c48b8c5421fef.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00685ea0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 6588,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00687860",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 6756,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006892d0",
+  "unit": "Ogre::RbxSubEntity",
+  "size": 8940,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b6a0",
+  "unit": "Ogre::RbxSceneManager::SceneMgrQueuedRenderableVisitor",
+  "size": 38,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b6d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 20,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068b6f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 144,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068b7a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b7b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b7c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b7d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b800",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 27,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_short_methods_5b192b39c746b09e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068b820",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b840",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b860",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b880",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b8a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068b8b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 389,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_try_5a636a8fbb4dd2a2.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ba40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ba60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ba80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068baa0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bac0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bae0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 27,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_short_methods_5b192b39c746b09e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bb00",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bb20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bb40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bb60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bb80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 27,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_short_methods_5b192b39c746b09e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bba0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bbc0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bbe0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bc00",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bc20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 27,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_short_methods_5b192b39c746b09e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bc40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bc60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bc80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 10,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bc90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bcb0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bcd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 37,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bd00",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bd20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 29,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bd40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bd60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 18,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bd80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bda0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 134,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068be30",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 134,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_fork_ccf250026627378f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bec0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 33,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_scene_update.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bef0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 69,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bf40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 50,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068bf80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 94,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068bfe0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 143,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c070",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 61,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c0b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 301,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c1e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 72,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c230",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c240",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c250",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c260",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c270",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c290",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c2b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c2d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c2e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 65,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c370",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 149,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c410",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 103,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c480",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 97,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c4f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 51,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c530",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c540",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c550",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c560",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c570",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 217,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c650",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 212,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c730",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c740",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 97,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c7b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 225,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c8a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 88,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c900",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c910",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 21,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c930",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068c940",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068c950",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 168,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ca00",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 53,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ca40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 62,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_short_methods_5b192b39c746b09e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ca80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ca90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 21,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cab0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 21,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cad0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 136,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cb80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 136,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cc30",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 136,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cce0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 137,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cd90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 123,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ce30",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 25,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreAlignedAllocator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ce50",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 47,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ce80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 47,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ceb0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 50,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068cef0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 6,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cf00",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 46,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cf30",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 26,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManagerEnumerator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068cf50",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 43,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAlignedAllocator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068cf80",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 54,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068cfd0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 82,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d030",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 33,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d060",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 28,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d080",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 27,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d0a0",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 82,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d100",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 28,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d120",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 27,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d140",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 82,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d1a0",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 108,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d210",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 108,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d280",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 28,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d2a0",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 27,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d2c0",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 132,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d350",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 132,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d3e0",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 108,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d450",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 82,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d4b0",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 91,
+  "recipe": "openrbx-client-dll",
+  "file": "App/v8world/SimJobStage.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d510",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 42,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d540",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 54,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068d580",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 149,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d670",
+  "unit": "Ogre::RbxSceneManager::ShadowCasterSceneQueryListener",
+  "size": 32,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreOptimisedUtilGeneral.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d690",
+  "unit": "Ogre::RbxSceneManager::SceneMgrQueuedRenderableVisitor",
+  "size": 54,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d6d0",
+  "unit": "Ogre::RbxSceneManager::SceneMgrQueuedRenderableVisitor",
+  "size": 54,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d710",
+  "unit": "Ogre::RbxSceneManager::SceneMgrQueuedRenderableVisitor",
+  "size": 104,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d780",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 74,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d7d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 420,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espclaude_be1af347978f4727.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068d980",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 436,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068db40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 282,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068dc60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 261,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068dd70",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 31,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068dd90",
+  "unit": "Ogre::VGpuProgramParameters::?$SharedPtr",
+  "size": 43,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_rtti_a364433a605f6e52.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ddc0",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 49,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAlignedAllocator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068de00",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 31,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068de20",
+  "unit": "Ogre::VDataStream::?$SharedPtr",
+  "size": 31,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068de40",
+  "unit": "Ogre::VGpuProgramParameters::?$SharedPtr",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068de80",
+  "unit": "Ogre::VShadowCameraSetup::?$SharedPtr",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068dec0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 55,
+  "recipe": "ogre-1.7.0",
+  "file": "OgreAnimationTrack.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068df00",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 78,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068df50",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 78,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068dfa0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 108,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e010",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 80,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_client_map_bounds.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e060",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 76,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreMesh.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e0b0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 72,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_texture_copy.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e100",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 73,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e150",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 77,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e1a0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 88,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e200",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 80,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e250",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 83,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e2b0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 144,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e350",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 49,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e390",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 161,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e440",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 89,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e4a0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 89,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e500",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 231,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e5f0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 163,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e6a0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 163,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e750",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 99,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e7c0",
+  "unit": "Ogre::VRbxSky::?$SharedPtr",
+  "size": 181,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_rbxscene_ctor_e0d00b9d50dc0b49.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e890",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e8b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e8c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e8d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e8e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e8f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e900",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e910",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e920",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e930",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e940",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e950",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e960",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e970",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e980",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e990",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e9a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e9b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e9c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e9d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068e9e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068e9f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea00",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea10",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 12,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea30",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 10,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea50",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 12,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ea70",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ea80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 13,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068ea90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068eaa0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068eab0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 7,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068eac0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1285,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbxscene_sky_plane_line_234565f8e0d3b9ea.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068efd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 900,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_fe0538e1034a8d62.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068f360",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1000,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_fe0538e1034a8d62.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068f750",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 701,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068fa10",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 976,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068fde0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 98,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068fe50",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 154,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAlignedAllocator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068fef0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 44,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ff20",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 44,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0068ff50",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 154,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreAlignedAllocator.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0068fff0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 53,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00690030",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 156,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006900d0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 73,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00690120",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 135,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006901b0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 39,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006901e0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 42,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00690210",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 58,
+  "recipe": "rbxgs-render",
+  "file": "AggregatingSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00690250",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 72,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006902a0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 47,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006902d0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 98,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00690340",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 96,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006903a0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 188,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00690460",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 287,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00690580",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 158,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00690620",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 162,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006906d0",
+  "unit": "Ogre::RbxSceneManagerFactory",
+  "size": 219,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006907b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 880,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00690b20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 3476,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_large_shadow_02e53319fe5284dd.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00691900",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 493,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00691af0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 649,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00691d90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 510,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00691f90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 712,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00692260",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 139,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006922f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 510,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006924f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 43,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00692520",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 43,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00692550",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 101,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006925c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 418,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00692770",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 258,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00692880",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 327,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006929d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 50,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00692a10",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1603,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_large_skybox_8f6d8e40516e2b8d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693060",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 193,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693130",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 193,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693200",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 152,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006932a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 182,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693360",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 182,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693420",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 399,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006935b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 257,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006936c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 191,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693780",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 351,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006938e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 139,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693970",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 62,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006939b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 220,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00693a90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 502,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693c90",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 57,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00693cd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 235,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00693dc0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 239,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00693eb0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 57,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00693ef0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 44,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00693f20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 180,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00693fe0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 53,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00694020",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 81,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694080",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 81,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006940e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 200,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006941b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 200,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694280",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 149,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694320",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 149,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006943c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 245,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006944c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 65,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694510",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 280,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694630",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 74,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694680",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1979,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_rbxscene_fpfast_63a615e0f16e56ce.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694e40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 275,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_97dc8a390b2b28e8.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00694f60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 763,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695260",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 438,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695420",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1344,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbxscene_modulative_no_custom_proj_50e542f3fe79853d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695960",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 315,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695aa0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 304,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espeon_renderqueueauthenticb965e834ae5cb4f5.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695bd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 248,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695cd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 74,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695d20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 441,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbxscene_apply_animations_a7ba41ac8adad042.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695ee0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 245,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00695fe0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 245,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006960e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 420,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbx_scenemgr_shadowcasters_44af38d731495640.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00696290",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1077,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_fe0538e1034a8d62.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006966d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 277,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006967f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 65,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00696840",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 277,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00696960",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 280,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_fork_ccf250026627378f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00696a80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 286,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_fork_ccf250026627378f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00696ba0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 166,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00696c50",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 725,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00696f30",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 127,
+  "recipe": "openrbx-client-dll",
+  "file": "App/util/Name.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00696fb0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 239,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006970a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 106,
+  "recipe": "boost-1.34.1",
+  "file": "libs/regex/src/instances.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00697110",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 139,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006971a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 725,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00697480",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 139,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00697510",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 251,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00697630",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 186,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreAutoParamDataSource.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006976f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 470,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "006978d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 140,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00697960",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 686,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00697c10",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 140,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00697ca0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 44,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00697cd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 367,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00697e40",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 557,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_light_templates.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698070",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 556,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006982a0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 312,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006983e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 312,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698520",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 30,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698540",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 19,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698560",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 115,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006985e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 298,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_rbxscene_ctor_0606b79b7c96ed1a.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698710",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 176,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_rbxscene_ctor_e74067c8b9e1763d.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006987c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 198,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_rbxscene_destroyall_stock_7a06ef240f3628d2.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698890",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 371,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698a10",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 683,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00698cc0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1527,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbxscene_timed_no_viewport_8cefb7f930351b4e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006992c0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 302,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006993f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 177,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006994b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 48,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006994e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 125,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699560",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 162,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699610",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 125,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699690",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 165,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699740",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 481,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699930",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 189,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "006999f0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 311,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_client_map_bounds.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699b30",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 117,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00699bb0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 174,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00699c60",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 637,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "00699ee0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 131,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "00699f70",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 131,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreRenderQueueSortingGrouping.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069a000",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 532,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069a260",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 125,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0069a300",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 359,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069a470",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 565,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069a6b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 279,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0069a7d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 351,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069a950",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 765,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_medium_methods_9dcc4c18d140c047.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069ac50",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 342,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069add0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 345,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_ea71c50b47f88007.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069af50",
+  "unit": "Ogre::InstancedGeometry",
+  "size": 159,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0069aff0",
+  "unit": "Ogre::InstancedGeometry",
+  "size": 128,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0069b070",
+  "unit": "Ogre::InstancedGeometry",
+  "size": 196,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0069b140",
+  "unit": "Ogre::InstancedGeometry",
+  "size": 205,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069b210",
+  "unit": "Ogre::InstancedGeometry",
+  "size": 205,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069b2e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 993,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069b6d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1396,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069bc50",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 2391,
+  "recipe": null,
+  "file": null,
+  "snippet": true
+ },
+ {
+  "addr": "0069c5b0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 19,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069c5d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 19,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069c5f0",
+  "unit": "Ogre::RbxSceneManager::ShadowCasterSceneQueryListener",
+  "size": 520,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_shadow_query_mix_4e65ef0ea0a4a2ee.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069c800",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 2308,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_fork_fe0538e1034a8d62.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d110",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1351,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d660",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 185,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d720",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 185,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d7e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 93,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d840",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 132,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d8d0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 132,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069d960",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 184,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_short_methods_5b192b39c746b09e.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069da20",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 193,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069daf0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 288,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069dc10",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 225,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069dd00",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 227,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069ddf0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 389,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbx_scenemgr_create_movable_e87cf5c167b0c1ab.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069df80",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 158,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbx_scenemgr_destroy_movable_1b3520fec339c1aa.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e020",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 227,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "roc_fork_ccf250026627378f.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e110",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 37,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e140",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 51,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e180",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 89,
+  "recipe": "ogre-1.4.9-dll",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e1e0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 55,
+  "recipe": "ogre-1.4.9",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e220",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 359,
+  "recipe": "ogre-1.4.5",
+  "file": "roc_rbxscene_ctor_252e30df9e8b13f7.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e390",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 672,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_rbxscene_populate_shadow_count_989700d72290bd34.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069e630",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 1219,
+  "recipe": "ogre-1.4.5-dll",
+  "file": "roc_espclaude_9260ba432ec6e8a6.cpp",
+  "snippet": false
+ },
+ {
+  "addr": "0069ebd0",
+  "unit": "Ogre::RbxSceneManager",
+  "size": 4096,
+  "recipe": "ogre-1.6.4",
+  "file": "OgreSceneManager.cpp",
+  "snippet": false
+ }
+]

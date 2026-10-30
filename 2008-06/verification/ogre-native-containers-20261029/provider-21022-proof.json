@@ -1,0 +1,35 @@
+{
+ "source": {
+  "obj": "live-live-live-live-live-live-live-0134.obj",
+  "recipe": "ogre-1.6.4-dll",
+  "file": "OgreSceneManager.cpp",
+  "keep": {
+   "??$_Merge@PAPAVLight@Ogre@@PAPAV12@PAPAV12@UlightLess@SceneManager@2@@std@@YAPAPAVLight@Ogre@@PAPAV12@0000UlightLess@SceneManager@2@Urandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z": "00694020",
+   "?injectMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z": "0069e140"
+  },
+  "cl": "50727",
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+ },
+ "checks": [
+  {
+   "symbol": "??$_Merge@PAPAVLight@Ogre@@PAPAV12@PAPAV12@UlightLess@SceneManager@2@@std@@YAPAPAVLight@Ogre@@PAPAV12@0000UlightLess@SceneManager@2@Urandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+   "address": "00694020",
+   "present": true,
+   "code_exact": true,
+   "data_exact": true,
+   "size": 81,
+   "expected_size": 81,
+   "bad": []
+  },
+  {
+   "symbol": "?injectMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "address": "0069e140",
+   "present": true,
+   "code_exact": true,
+   "data_exact": true,
+   "size": 51,
+   "expected_size": 51,
+   "bad": []
+  }
+ ]
+}

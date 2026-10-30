@@ -1,0 +1,5 @@
+81 focused rebuild/dependency/strip/package/swap tests pass.
+All327 forced root code/data/map proofs pass, preserving312 old roots.
+Real subentity/shadow and native container runtime both return0.
+Full-binary ambiguity rejects5 initial candidates;15 unique addresses bound.
+59/59 native targets replay,0 compile failures. Fresh placement410,2 stale modules deferred.

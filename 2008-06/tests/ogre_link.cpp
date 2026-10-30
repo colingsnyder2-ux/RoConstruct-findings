@@ -2,4 +2,11 @@
 #include <cstdio>
 #pragma comment(lib, "msvcprt.lib")
 extern "C" int native_subentity_accessors_smoke();
-int main() { int result=native_subentity_accessors_smoke(); std::printf("native Ogre subentity and shadow buffers result=%d\n",result); return result; }
+extern "C" int native_ogre_containers_smoke();
+int main() {
+    int fields=native_subentity_accessors_smoke();
+    if (fields) return fields;
+    int containers=native_ogre_containers_smoke();
+    std::printf("native Ogre subentity/shadow=%d containers=%d\n",fields,containers);
+    return containers ? 100+containers : 0;
+}

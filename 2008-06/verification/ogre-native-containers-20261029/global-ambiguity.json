@@ -1,0 +1,227 @@
+[
+ {
+  "address": "0068cfd0",
+  "symbol": "?_Rrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+  "size": 82,
+  "global_data_exact_addresses": [
+   "0068cfd0"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "0068d060",
+  "symbol": "?_Max@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+  "size": 28,
+  "global_data_exact_addresses": [
+   "0068d060"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "0068d080",
+  "symbol": "?_Min@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+  "size": 27,
+  "global_data_exact_addresses": [
+   "0068d080"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "0068df00",
+  "symbol": "?_Lrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+  "size": 78,
+  "global_data_exact_addresses": [
+   "0068df00"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "0068d350",
+  "symbol": "?_Dec@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+  "size": 132,
+  "global_data_exact_addresses": [
+   "0068d350"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "0068d1a0",
+  "symbol": "?_Inc@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+  "size": 108,
+  "global_data_exact_addresses": [
+   "0068d1a0"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00682b40",
+  "symbol": "?_Tidy@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@IAEXXZ",
+  "size": 72,
+  "global_data_exact_addresses": [
+   "00682b40"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00670740",
+  "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@XZ",
+  "size": 55,
+  "global_data_exact_addresses": [
+   "00670740"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00690030",
+  "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@D@Z",
+  "size": 156,
+  "global_data_exact_addresses": [
+   "00690030"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00691d90",
+  "symbol": "?_Insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+  "size": 510,
+  "global_data_exact_addresses": [
+   "004a7720",
+   "004a88e0",
+   "005b32a0",
+   "00691d90"
+  ],
+  "globally_unique": false
+ },
+ {
+  "address": "00693eb0",
+  "symbol": "?_Ufill@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV34@IABV34@@Z",
+  "size": 57,
+  "global_data_exact_addresses": [
+   "0044e670",
+   "004a7c60",
+   "004dcd90",
+   "00693eb0"
+  ],
+  "globally_unique": false
+ },
+ {
+  "address": "00693cd0",
+  "symbol": "?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+  "size": 235,
+  "global_data_exact_addresses": [
+   "004a7a30",
+   "00693cd0"
+  ],
+  "globally_unique": false
+ },
+ {
+  "address": "00696c50",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+  "size": 725,
+  "global_data_exact_addresses": [
+   "00696c50"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00693970",
+  "symbol": "?_Erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+  "size": 62,
+  "global_data_exact_addresses": [
+   "00693970"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00683170",
+  "symbol": "??0?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE@XZ",
+  "size": 94,
+  "global_data_exact_addresses": [
+   "00410830",
+   "00429780",
+   "00498770",
+   "004987f0",
+   "004aefe0",
+   "0055e530",
+   "0055e590",
+   "00571540",
+   "00591e00",
+   "00594ae0",
+   "0061a200",
+   "00683170"
+  ],
+  "globally_unique": false
+ },
+ {
+  "address": "006790b0",
+  "symbol": "?_Construct_n@?$vector@MV?$allocator@M@std@@@std@@QAEXIABM@Z",
+  "size": 106,
+  "global_data_exact_addresses": [
+   "006790b0"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00699b30",
+  "symbol": "??0?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE@ABU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@1@ABV?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@1@@Z",
+  "size": 117,
+  "global_data_exact_addresses": [
+   "00699b30"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "006939b0",
+  "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+  "size": 220,
+  "global_data_exact_addresses": [
+   "00414510",
+   "004145f0",
+   "00424430",
+   "00442270",
+   "0046af90",
+   "004983f0",
+   "004a3390",
+   "004b0ca0",
+   "004b1160",
+   "004b8a80",
+   "004d8840",
+   "004dde30",
+   "004f1830",
+   "00553ca0",
+   "00560960",
+   "00588c10",
+   "0058b550",
+   "00592530",
+   "005b34a0",
+   "005b4050",
+   "005ba890",
+   "00648a90",
+   "0064ad30",
+   "00653170",
+   "00654470",
+   "00654550",
+   "00671830",
+   "006939b0"
+  ],
+  "globally_unique": false
+ },
+ {
+  "address": "006798b0",
+  "symbol": "??0?$vector@MV?$allocator@M@std@@@std@@QAE@I@Z",
+  "size": 104,
+  "global_data_exact_addresses": [
+   "006798b0"
+  ],
+  "globally_unique": true
+ },
+ {
+  "address": "00679920",
+  "symbol": "?push_back@?$vector@MV?$allocator@M@std@@@std@@QAEXABM@Z",
+  "size": 102,
+  "global_data_exact_addresses": [
+   "00679920"
+  ],
+  "globally_unique": true
+ }
+]

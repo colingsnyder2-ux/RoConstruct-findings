@@ -1,0 +1,38 @@
+{
+ "symbol": "?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+ "before_compiler": 50727,
+ "before_body_bytes": 243,
+ "before_head_offset": 4,
+ "after_compiler": 21022,
+ "after_body_bytes": 235,
+ "after_head_offset": 24,
+ "selected_map_line": "0001:00009da0       ?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z 0040ada0 f i linked:verified_0009.obj",
+ "selected_recipe": "ogre-1.4.5-dll",
+ "selected_file": "roc_native_ogre_containers_a87fcc1e65dfc17b.cpp",
+ "unbound_helper": true,
+ "native_runtime_exit": 0,
+ "prior_root_proofs": [
+  {
+   "symbol": "??$_Merge@PAPAVLight@Ogre@@PAPAV12@PAPAV12@UlightLess@SceneManager@2@@std@@YAPAPAVLight@Ogre@@PAPAV12@0000UlightLess@SceneManager@2@Urandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+   "address": "00694020",
+   "present": true,
+   "code_exact": true,
+   "data_exact": true,
+   "size": 81,
+   "expected_size": 81,
+   "bad": []
+  },
+  {
+   "symbol": "?injectMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "address": "0069e140",
+   "present": true,
+   "code_exact": true,
+   "data_exact": true,
+   "size": 51,
+   "expected_size": 51,
+   "bad": []
+  }
+ ],
+ "unrelated_merge_original_compiler_preserved": 50727,
+ "merge_object_has_no_incompatible_map_definition": true
+}

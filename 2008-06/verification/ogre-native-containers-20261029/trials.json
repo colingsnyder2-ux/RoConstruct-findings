@@ -1,0 +1,1804 @@
+[
+ {
+  "profile": "precise",
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+  "matches": [
+   {
+    "address": "0068cf80",
+    "symbol": "??A?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBEABVVector3@Ogre@@I@Z",
+    "size": 54
+   },
+   {
+    "address": "0068cf80",
+    "symbol": "??A?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEAAVVector3@Ogre@@I@Z",
+    "size": 54
+   },
+   {
+    "address": "0068d510",
+    "symbol": "?_Reverse@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXPAPAVLight@Ogre@@0@Z",
+    "size": 42
+   },
+   {
+    "address": "0068d510",
+    "symbol": "?_Reverse@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXPAPAVRenderable@Ogre@@0@Z",
+    "size": 42
+   },
+   {
+    "address": "00682ad0",
+    "symbol": "??E?$_Const_iterator@$00@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE?AV012@H@Z",
+    "size": 69
+   },
+   {
+    "address": "00682ad0",
+    "symbol": "??E?$_Iterator@$00@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE?AV012@H@Z",
+    "size": 69
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@VVector3@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@M@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@PAVAnimationState@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@VPlane@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@PAVLight@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@VVector4@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@PAVRenderable@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "006787f0",
+    "symbol": "??Dconst_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QBEABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@XZ",
+    "size": 49
+   },
+   {
+    "address": "0068cfd0",
+    "symbol": "?_Rrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+    "size": 82
+   },
+   {
+    "address": "0068d060",
+    "symbol": "?_Max@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+    "size": 28
+   },
+   {
+    "address": "0068d080",
+    "symbol": "?_Min@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+    "size": 27
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068d4b0",
+    "symbol": "??$_Allocate@VVector3@Ogre@@@std@@YAPAVVector3@Ogre@@IPAV12@@Z",
+    "size": 91
+   },
+   {
+    "address": "0068d4b0",
+    "symbol": "??$_Allocate@U_Node@?$_List_nod@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@0@IPAU120@@Z",
+    "size": 91
+   },
+   {
+    "address": "0067c5e0",
+    "symbol": "??$_Allocate@VPlane@Ogre@@@std@@YAPAVPlane@Ogre@@IPAV12@@Z",
+    "size": 87
+   },
+   {
+    "address": "0067c5e0",
+    "symbol": "??$_Allocate@VVector4@Ogre@@@std@@YAPAVVector4@Ogre@@IPAV12@@Z",
+    "size": 87
+   },
+   {
+    "address": "0067f7c0",
+    "symbol": "??$_Fill@PAVVector3@Ogre@@V12@@std@@YAXPAVVector3@Ogre@@0ABV12@@Z",
+    "size": 41
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@MV?$allocator@M@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "006900d0",
+    "symbol": "??H?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV01@H@Z",
+    "size": 73
+   },
+   {
+    "address": "006900d0",
+    "symbol": "??H?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV01@H@Z",
+    "size": 73
+   },
+   {
+    "address": "006787f0",
+    "symbol": "??Diterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QBEAAU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@XZ",
+    "size": 49
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068df00",
+    "symbol": "?_Lrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+    "size": 78
+   },
+   {
+    "address": "0068d350",
+    "symbol": "?_Dec@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+    "size": 132
+   },
+   {
+    "address": "0068d1a0",
+    "symbol": "?_Inc@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+    "size": 108
+   },
+   {
+    "address": "0067f170",
+    "symbol": "??$_Copy_opt@PAVVector3@Ogre@@PAV12@@std@@YAPAVVector3@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 84
+   },
+   {
+    "address": "0067f1d0",
+    "symbol": "??$_Copy_backward_opt@PAVVector3@Ogre@@PAV12@@std@@YAPAVVector3@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 95
+   },
+   {
+    "address": "0067c720",
+    "symbol": "??$_Copy_backward_opt@PAVPlane@Ogre@@PAV12@@std@@YAPAVPlane@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 85
+   },
+   {
+    "address": "0067c720",
+    "symbol": "??$_Copy_backward_opt@PAVVector4@Ogre@@PAV12@@std@@YAPAVVector4@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 85
+   },
+   {
+    "address": "00682b40",
+    "symbol": "?_Tidy@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@IAEXXZ",
+    "size": 72
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "00670740",
+    "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@XZ",
+    "size": 55
+   },
+   {
+    "address": "00690030",
+    "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@D@Z",
+    "size": 156
+   },
+   {
+    "address": "0067f7c0",
+    "symbol": "??$fill@PAVVector3@Ogre@@V12@@std@@YAXPAVVector3@Ogre@@0ABV12@@Z",
+    "size": 41
+   },
+   {
+    "address": "0067c960",
+    "symbol": "??$fill@PAVPlane@Ogre@@V12@@std@@YAXPAVPlane@Ogre@@0ABV12@@Z",
+    "size": 55
+   },
+   {
+    "address": "0067c960",
+    "symbol": "??$fill@PAVVector4@Ogre@@V12@@std@@YAXPAVVector4@Ogre@@0ABV12@@Z",
+    "size": 55
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE?AV?$_Vector_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBE?AV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE?AV?$_Vector_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBE?AV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@MV?$allocator@M@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@MV?$allocator@M@std@@@std@@QAE?AV?$_Vector_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@MV?$allocator@M@std@@@std@@QBE?AV?$_Vector_const_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@MV?$allocator@M@std@@@std@@QAE?AV?$_Vector_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@MV?$allocator@M@std@@@std@@QBE?AV?$_Vector_const_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "00691d90",
+    "symbol": "?_Insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+    "size": 510
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067cbd0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector3@Ogre@@PAV12@@stdext@@YAPAVVector3@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "006924f0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector3@Ogre@@PAV12@@stdext@@YAPAVVector3@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00692520",
+    "symbol": "??$_Unchecked_move_backward@PAVVector3@Ogre@@PAV12@@stdext@@YAPAVVector3@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067cbd0",
+    "symbol": "??$_Unchecked_move_backward@PAVPlane@Ogre@@PAV12@@stdext@@YAPAVPlane@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "006924f0",
+    "symbol": "??$_Unchecked_move_backward@PAVPlane@Ogre@@PAV12@@stdext@@YAPAVPlane@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00692520",
+    "symbol": "??$_Unchecked_move_backward@PAVPlane@Ogre@@PAV12@@stdext@@YAPAVPlane@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067cbd0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector4@Ogre@@PAV12@@stdext@@YAPAVVector4@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "006924f0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector4@Ogre@@PAV12@@stdext@@YAPAVVector4@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00692520",
+    "symbol": "??$_Unchecked_move_backward@PAVVector4@Ogre@@PAV12@@stdext@@YAPAVVector4@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00693eb0",
+    "symbol": "?_Ufill@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV34@IABV34@@Z",
+    "size": 57
+   },
+   {
+    "address": "0067d160",
+    "symbol": "?_Ufill@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV34@IABV34@@Z",
+    "size": 58
+   },
+   {
+    "address": "0067d160",
+    "symbol": "?_Ufill@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV34@IABV34@@Z",
+    "size": 58
+   },
+   {
+    "address": "00693cd0",
+    "symbol": "?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+    "size": 235
+   },
+   {
+    "address": "00696c50",
+    "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+    "size": 725
+   },
+   {
+    "address": "00693970",
+    "symbol": "?_Erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+    "size": 62
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Ucopy@V?$_Vector_const_iterator@MV?$allocator@M@std@@@std@@@?$vector@MV?$allocator@M@std@@@std@@IAEPAMV?$_Vector_const_iterator@MV?$allocator@M@std@@@1@0PAM@Z",
+    "size": 53
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Umove@V?$_Vector_iterator@MV?$allocator@M@std@@@std@@@?$vector@MV?$allocator@M@std@@@std@@IAEPAMV?$_Vector_iterator@MV?$allocator@M@std@@@1@0PAM@Z",
+    "size": 53
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Ucopy@V?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@IAEPAPAVLight@Ogre@@V?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Umove@V?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@IAEPAPAVLight@Ogre@@V?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Ucopy@V?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@IAEPAPAVRenderable@Ogre@@V?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Umove@V?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@IAEPAPAVRenderable@Ogre@@V?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0067fa80",
+    "symbol": "?erase@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "006978d0",
+    "symbol": "?erase@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00697c10",
+    "symbol": "?erase@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00696ba0",
+    "symbol": "?reserve@?$vector@MV?$allocator@M@std@@@std@@QAEXI@Z",
+    "size": 166
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@MV?$allocator@M@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "00683170",
+    "symbol": "??0?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 94
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAEXIABQAVAnimationState@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0067fa80",
+    "symbol": "?erase@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "006978d0",
+    "symbol": "?erase@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00697c10",
+    "symbol": "?erase@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "0067d600",
+    "symbol": "?_Insert_n@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEXV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@IABVPlane@Ogre@@@Z",
+    "size": 534
+   },
+   {
+    "address": "00696ba0",
+    "symbol": "?reserve@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXI@Z",
+    "size": 166
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0067fa80",
+    "symbol": "?erase@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "006978d0",
+    "symbol": "?erase@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00697c10",
+    "symbol": "?erase@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00696ba0",
+    "symbol": "?reserve@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXI@Z",
+    "size": 166
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "0067fc70",
+    "symbol": "?resize@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXIVVector3@Ogre@@@Z",
+    "size": 196
+   },
+   {
+    "address": "0069b070",
+    "symbol": "?resize@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXIVVector3@Ogre@@@Z",
+    "size": 196
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "006790b0",
+    "symbol": "?_Construct_n@?$vector@MV?$allocator@M@std@@@std@@QAEXIABM@Z",
+    "size": 106
+   },
+   {
+    "address": "0067d8f0",
+    "symbol": "?insert@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@ABVPlane@Ogre@@@Z",
+    "size": 182
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "0067d8f0",
+    "symbol": "?insert@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@ABVVector4@Ogre@@@Z",
+    "size": 182
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "00699b30",
+    "symbol": "??0?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE@ABU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@1@ABV?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@1@@Z",
+    "size": 117
+   },
+   {
+    "address": "006939b0",
+    "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+    "size": 220
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEXIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z",
+    "size": 5
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXIABVVector3@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "006798b0",
+    "symbol": "??0?$vector@MV?$allocator@M@std@@@std@@QAE@I@Z",
+    "size": 104
+   },
+   {
+    "address": "00679120",
+    "symbol": "?insert@?$vector@MV?$allocator@M@std@@@std@@QAE?AV?$_Vector_iterator@MV?$allocator@M@std@@@2@V?$_Vector_const_iterator@MV?$allocator@M@std@@@2@ABM@Z",
+    "size": 180
+   },
+   {
+    "address": "0067da70",
+    "symbol": "?push_back@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAEXABVPlane@Ogre@@@Z",
+    "size": 128
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAEXIABVPlane@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "00679120",
+    "symbol": "?insert@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@V?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@ABQAVLight@Ogre@@@Z",
+    "size": 180
+   },
+   {
+    "address": "0067da70",
+    "symbol": "?push_back@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAEXABVVector4@Ogre@@@Z",
+    "size": 128
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAEXIABVVector4@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "00679120",
+    "symbol": "?insert@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@V?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@ABQAVRenderable@Ogre@@@Z",
+    "size": 180
+   },
+   {
+    "address": "00679920",
+    "symbol": "?push_back@?$vector@MV?$allocator@M@std@@@std@@QAEXABM@Z",
+    "size": 102
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@MV?$allocator@M@std@@@std@@QAEXIABM@Z",
+    "size": 5
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXIABQAVLight@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXIABQAVRenderable@Ogre@@@Z",
+    "size": 5
+   }
+  ]
+ },
+ {
+  "profile": "fast",
+  "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+  "matches": [
+   {
+    "address": "0068cf80",
+    "symbol": "??A?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBEABVVector3@Ogre@@I@Z",
+    "size": 54
+   },
+   {
+    "address": "0068cf80",
+    "symbol": "??A?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEAAVVector3@Ogre@@I@Z",
+    "size": 54
+   },
+   {
+    "address": "0068d510",
+    "symbol": "?_Reverse@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXPAPAVLight@Ogre@@0@Z",
+    "size": 42
+   },
+   {
+    "address": "0068d510",
+    "symbol": "?_Reverse@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXPAPAVRenderable@Ogre@@0@Z",
+    "size": 42
+   },
+   {
+    "address": "00682ad0",
+    "symbol": "??E?$_Const_iterator@$00@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE?AV012@H@Z",
+    "size": 69
+   },
+   {
+    "address": "00682ad0",
+    "symbol": "??E?$_Iterator@$00@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE?AV012@H@Z",
+    "size": 69
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@VVector3@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@M@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@PAVAnimationState@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@VPlane@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@PAVLight@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@VVector4@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@PAVRenderable@Ogre@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "006787f0",
+    "symbol": "??Dconst_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QBEABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@XZ",
+    "size": 49
+   },
+   {
+    "address": "0068cfd0",
+    "symbol": "?_Rrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+    "size": 82
+   },
+   {
+    "address": "0068d060",
+    "symbol": "?_Max@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+    "size": 28
+   },
+   {
+    "address": "0068d080",
+    "symbol": "?_Min@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+    "size": 27
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068d4b0",
+    "symbol": "??$_Allocate@VVector3@Ogre@@@std@@YAPAVVector3@Ogre@@IPAV12@@Z",
+    "size": 91
+   },
+   {
+    "address": "0068d4b0",
+    "symbol": "??$_Allocate@U_Node@?$_List_nod@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@0@IPAU120@@Z",
+    "size": 91
+   },
+   {
+    "address": "0067c5e0",
+    "symbol": "??$_Allocate@VPlane@Ogre@@@std@@YAPAVPlane@Ogre@@IPAV12@@Z",
+    "size": 87
+   },
+   {
+    "address": "0067c5e0",
+    "symbol": "??$_Allocate@VVector4@Ogre@@@std@@YAPAVVector4@Ogre@@IPAV12@@Z",
+    "size": 87
+   },
+   {
+    "address": "0067f7c0",
+    "symbol": "??$_Fill@PAVVector3@Ogre@@V12@@std@@YAXPAVVector3@Ogre@@0ABV12@@Z",
+    "size": 41
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@MV?$allocator@M@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "006900d0",
+    "symbol": "??H?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV01@H@Z",
+    "size": 73
+   },
+   {
+    "address": "006900d0",
+    "symbol": "??H?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV01@H@Z",
+    "size": 73
+   },
+   {
+    "address": "006787f0",
+    "symbol": "??Diterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QBEAAU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@XZ",
+    "size": 49
+   },
+   {
+    "address": "0068cef0",
+    "symbol": "?max_size@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QBEIXZ",
+    "size": 6
+   },
+   {
+    "address": "0068df00",
+    "symbol": "?_Lrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+    "size": 78
+   },
+   {
+    "address": "0068d350",
+    "symbol": "?_Dec@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+    "size": 132
+   },
+   {
+    "address": "0068d1a0",
+    "symbol": "?_Inc@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+    "size": 108
+   },
+   {
+    "address": "0067f170",
+    "symbol": "??$_Copy_opt@PAVVector3@Ogre@@PAV12@@std@@YAPAVVector3@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 84
+   },
+   {
+    "address": "0067f1d0",
+    "symbol": "??$_Copy_backward_opt@PAVVector3@Ogre@@PAV12@@std@@YAPAVVector3@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 95
+   },
+   {
+    "address": "0067c720",
+    "symbol": "??$_Copy_backward_opt@PAVPlane@Ogre@@PAV12@@std@@YAPAVPlane@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 85
+   },
+   {
+    "address": "0067c720",
+    "symbol": "??$_Copy_backward_opt@PAVVector4@Ogre@@PAV12@@std@@YAPAVVector4@Ogre@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+    "size": 85
+   },
+   {
+    "address": "00682b40",
+    "symbol": "?_Tidy@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@IAEXXZ",
+    "size": 72
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "00670740",
+    "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@XZ",
+    "size": 55
+   },
+   {
+    "address": "00690030",
+    "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@D@Z",
+    "size": 156
+   },
+   {
+    "address": "0067f7c0",
+    "symbol": "??$fill@PAVVector3@Ogre@@V12@@std@@YAXPAVVector3@Ogre@@0ABV12@@Z",
+    "size": 41
+   },
+   {
+    "address": "0067c960",
+    "symbol": "??$fill@PAVPlane@Ogre@@V12@@std@@YAXPAVPlane@Ogre@@0ABV12@@Z",
+    "size": 55
+   },
+   {
+    "address": "0067c960",
+    "symbol": "??$fill@PAVVector4@Ogre@@V12@@std@@YAXPAVVector4@Ogre@@0ABV12@@Z",
+    "size": 55
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE?AV?$_Vector_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBE?AV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE?AV?$_Vector_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QBE?AV?$_Vector_const_iterator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@MV?$allocator@M@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@MV?$allocator@M@std@@@std@@QAE?AV?$_Vector_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@MV?$allocator@M@std@@@std@@QBE?AV?$_Vector_const_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@MV?$allocator@M@std@@@std@@QAE?AV?$_Vector_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@MV?$allocator@M@std@@@std@@QBE?AV?$_Vector_const_iterator@MV?$allocator@M@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068fef0",
+    "symbol": "?begin@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "0068ff20",
+    "symbol": "?end@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QBE?AV?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@XZ",
+    "size": 44
+   },
+   {
+    "address": "00691d90",
+    "symbol": "?_Insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+    "size": 510
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IAEPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@PAV21@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067cbd0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector3@Ogre@@PAV12@@stdext@@YAPAVVector3@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "006924f0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector3@Ogre@@PAV12@@stdext@@YAPAVVector3@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00692520",
+    "symbol": "??$_Unchecked_move_backward@PAVVector3@Ogre@@PAV12@@stdext@@YAPAVVector3@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067cbd0",
+    "symbol": "??$_Unchecked_move_backward@PAVPlane@Ogre@@PAV12@@stdext@@YAPAVPlane@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "006924f0",
+    "symbol": "??$_Unchecked_move_backward@PAVPlane@Ogre@@PAV12@@stdext@@YAPAVPlane@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00692520",
+    "symbol": "??$_Unchecked_move_backward@PAVPlane@Ogre@@PAV12@@stdext@@YAPAVPlane@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Ucopy@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067cbd0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector4@Ogre@@PAV12@@stdext@@YAPAVVector4@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "006924f0",
+    "symbol": "??$_Unchecked_move_backward@PAVVector4@Ogre@@PAV12@@stdext@@YAPAVVector4@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00692520",
+    "symbol": "??$_Unchecked_move_backward@PAVVector4@Ogre@@PAV12@@stdext@@YAPAVVector4@Ogre@@PAV12@00@Z",
+    "size": 43
+   },
+   {
+    "address": "00693eb0",
+    "symbol": "?_Ufill@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV34@IABV34@@Z",
+    "size": 57
+   },
+   {
+    "address": "0067d160",
+    "symbol": "?_Ufill@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV34@IABV34@@Z",
+    "size": 58
+   },
+   {
+    "address": "0067d160",
+    "symbol": "?_Ufill@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV34@IABV34@@Z",
+    "size": 58
+   },
+   {
+    "address": "00693cd0",
+    "symbol": "?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@2@@Z",
+    "size": 235
+   },
+   {
+    "address": "00696c50",
+    "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+    "size": 725
+   },
+   {
+    "address": "00693970",
+    "symbol": "?_Erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@2@@Z",
+    "size": 62
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAVVector3@Ogre@@@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@IAEPAVVector3@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Ucopy@V?$_Vector_const_iterator@MV?$allocator@M@std@@@std@@@?$vector@MV?$allocator@M@std@@@std@@IAEPAMV?$_Vector_const_iterator@MV?$allocator@M@std@@@1@0PAM@Z",
+    "size": 53
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Umove@V?$_Vector_iterator@MV?$allocator@M@std@@@std@@@?$vector@MV?$allocator@M@std@@@std@@IAEPAMV?$_Vector_iterator@MV?$allocator@M@std@@@1@0PAM@Z",
+    "size": 53
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAVPlane@Ogre@@@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEPAVPlane@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Ucopy@V?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@IAEPAPAVLight@Ogre@@V?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Umove@V?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@IAEPAPAVLight@Ogre@@V?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "0067d580",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "0067d5b0",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693ef0",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00697ca0",
+    "symbol": "??$_Umove@PAVVector4@Ogre@@@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@IAEPAVVector4@Ogre@@PAV23@00@Z",
+    "size": 44
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Ucopy@V?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@IAEPAPAVRenderable@Ogre@@V?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "00693fe0",
+    "symbol": "??$_Umove@V?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@IAEPAPAVRenderable@Ogre@@V?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@1@0PAPAV23@@Z",
+    "size": 53
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0067fa80",
+    "symbol": "?erase@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "006978d0",
+    "symbol": "?erase@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00697c10",
+    "symbol": "?erase@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00696ba0",
+    "symbol": "?reserve@?$vector@MV?$allocator@M@std@@@std@@QAEXI@Z",
+    "size": 166
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@MV?$allocator@M@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "00683170",
+    "symbol": "??0?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 94
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$list@PAVAnimationState@Ogre@@V?$allocator@PAVAnimationState@Ogre@@@std@@@std@@QAEXIABQAVAnimationState@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0067fa80",
+    "symbol": "?erase@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "006978d0",
+    "symbol": "?erase@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00697c10",
+    "symbol": "?erase@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "0067d600",
+    "symbol": "?_Insert_n@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@IAEXV?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@IABVPlane@Ogre@@@Z",
+    "size": 534
+   },
+   {
+    "address": "00696ba0",
+    "symbol": "?reserve@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXI@Z",
+    "size": 166
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "0067fb10",
+    "symbol": "??1?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE@XZ",
+    "size": 53
+   },
+   {
+    "address": "0067fa80",
+    "symbol": "?erase@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "006978d0",
+    "symbol": "?erase@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00697c10",
+    "symbol": "?erase@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@0@Z",
+    "size": 140
+   },
+   {
+    "address": "00696ba0",
+    "symbol": "?reserve@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXI@Z",
+    "size": 166
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "0067fc70",
+    "symbol": "?resize@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXIVVector3@Ogre@@@Z",
+    "size": 196
+   },
+   {
+    "address": "0069b070",
+    "symbol": "?resize@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXIVVector3@Ogre@@@Z",
+    "size": 196
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "006790b0",
+    "symbol": "?_Construct_n@?$vector@MV?$allocator@M@std@@@std@@QAEXIABM@Z",
+    "size": 106
+   },
+   {
+    "address": "0067d8f0",
+    "symbol": "?insert@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@V?$_Vector_const_iterator@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@2@ABVPlane@Ogre@@@Z",
+    "size": 182
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "0067d8f0",
+    "symbol": "?insert@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@V?$_Vector_const_iterator@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@2@ABVVector4@Ogre@@@Z",
+    "size": 182
+   },
+   {
+    "address": "0069aff0",
+    "symbol": "?swap@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAEXAAV12@@Z",
+    "size": 128
+   },
+   {
+    "address": "00699b30",
+    "symbol": "??0?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE@ABU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@1@ABV?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@1@@Z",
+    "size": 117
+   },
+   {
+    "address": "006939b0",
+    "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+    "size": 220
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEXIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z",
+    "size": 5
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@VVector3@Ogre@@V?$allocator@VVector3@Ogre@@@std@@@std@@QAEXIABVVector3@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "006798b0",
+    "symbol": "??0?$vector@MV?$allocator@M@std@@@std@@QAE@I@Z",
+    "size": 104
+   },
+   {
+    "address": "00679120",
+    "symbol": "?insert@?$vector@MV?$allocator@M@std@@@std@@QAE?AV?$_Vector_iterator@MV?$allocator@M@std@@@2@V?$_Vector_const_iterator@MV?$allocator@M@std@@@2@ABM@Z",
+    "size": 180
+   },
+   {
+    "address": "0067da70",
+    "symbol": "?push_back@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAEXABVPlane@Ogre@@@Z",
+    "size": 128
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@VPlane@Ogre@@V?$allocator@VPlane@Ogre@@@std@@@std@@QAEXIABVPlane@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "00679120",
+    "symbol": "?insert@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@V?$_Vector_const_iterator@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@2@ABQAVLight@Ogre@@@Z",
+    "size": 180
+   },
+   {
+    "address": "0067da70",
+    "symbol": "?push_back@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAEXABVVector4@Ogre@@@Z",
+    "size": 128
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@VVector4@Ogre@@V?$allocator@VVector4@Ogre@@@std@@@std@@QAEXIABVVector4@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "00679120",
+    "symbol": "?insert@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAE?AV?$_Vector_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@V?$_Vector_const_iterator@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@2@ABQAVRenderable@Ogre@@@Z",
+    "size": 180
+   },
+   {
+    "address": "00679920",
+    "symbol": "?push_back@?$vector@MV?$allocator@M@std@@@std@@QAEXABM@Z",
+    "size": 102
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@MV?$allocator@M@std@@@std@@QAEXIABM@Z",
+    "size": 5
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@QAEXIABQAVLight@Ogre@@@Z",
+    "size": 5
+   },
+   {
+    "address": "004d76c0",
+    "symbol": "?assign@?$vector@PAVRenderable@Ogre@@V?$allocator@PAVRenderable@Ogre@@@std@@@std@@QAEXIABQAVRenderable@Ogre@@@Z",
+    "size": 5
+   }
+  ]
+ }
+]

@@ -1,0 +1,135 @@
+--- VC2005 donor helper
+
++++ VC2008 native cohort helper
+
+@@ -1,11 +1,11 @@
+
+-sub esp, 0xc
++sub esp, 0x14
+ push ebx
+-mov ebx, dword ptr [esp + 0x18]
++mov ebx, dword ptr [esp + 0x20]
+ push ebp
+ push esi
+ mov ebp, ecx
+ push edi
+-mov edi, dword ptr [ebp + 4]
++mov edi, dword ptr [ebp + 0x18]
+ mov esi, dword ptr [edi + 4]
+ cmp byte ptr [esi + 0x2d], 0
+ mov al, 1
+@@ -18,81 +18,75 @@
+
+ mov edi, esi
+ call dword ptr [sym]
+ add esp, 8
++mov byte ptr [esp + 0x10], al
+ test al, al
+-mov byte ptr [esp + 0x10], al
+ je 0x3c
+ mov esi, dword ptr [esi]
+ jmp 0x3f
+ mov esi, dword ptr [esi + 8]
+ cmp byte ptr [esi + 0x2d], 0
+ je 0x20
++mov esi, dword ptr [ebp]
++mov dword ptr [esp + 0x18], edi
++mov dword ptr [esp + 0x14], esi
+ test al, al
+-mov esi, edi
+-mov dword ptr [esp + 0x18], esi
+-mov dword ptr [esp + 0x14], ebp
+-je 0x95
+-mov ecx, dword ptr [ebp + 4]
+-cmp edi, dword ptr [ecx]
+-jne 0x88
++je 0xac
++mov ecx, dword ptr [ebp + 0x18]
++mov edx, dword ptr [ecx]
++mov dword ptr [esp + 0x20], edx
++test esi, esi
++je 0x65
++cmp esi, esi
++je 0x6b
++call dword ptr [sym]
++cmp edi, dword ptr [esp + 0x20]
++jne 0x9f
+ push ebx
+ push edi
+ push 1
+-lea edx, [esp + 0x20]
+-push edx
++lea eax, [esp + 0x28]
++push eax
+ mov ecx, ebp
+ call sym
+ pop edi
+ mov ecx, eax
+ mov edx, dword ptr [ecx]
+-mov eax, dword ptr [esp + 0x1c]
++mov eax, dword ptr [esp + 0x24]
+ mov ecx, dword ptr [ecx + 4]
+ pop esi
+ pop ebp
++mov dword ptr [eax], edx
+ mov dword ptr [eax + 4], ecx
+ mov byte ptr [eax + 8], 1
+-mov dword ptr [eax], edx
+ pop ebx
+-add esp, 0xc
++add esp, 0x14
+ ret 8
+ lea ecx, [esp + 0x14]
+ call sym
+-mov esi, dword ptr [esp + 0x18]
+-lea edx, [esi + 0xc]
++mov esi, dword ptr [esp + 0x14]
++mov edx, dword ptr [esp + 0x18]
++add edx, 0xc
+ push ebx
+ push edx
+ call dword ptr [sym]
+ add esp, 8
+ test al, al
+-je 0xd8
++je 0xd0
+ mov eax, dword ptr [esp + 0x10]
+ push ebx
+ push edi
+ push eax
+-lea ecx, [esp + 0x20]
++lea ecx, [esp + 0x28]
+ push ecx
+-mov ecx, ebp
+-call sym
++jmp 0x7a
++mov eax, dword ptr [esp + 0x28]
++mov edx, dword ptr [esp + 0x18]
+ pop edi
+-mov ecx, eax
+-mov edx, dword ptr [ecx]
+-mov eax, dword ptr [esp + 0x1c]
+-mov ecx, dword ptr [ecx + 4]
++mov dword ptr [eax], esi
+ pop esi
+ pop ebp
+-mov dword ptr [eax + 4], ecx
+-mov byte ptr [eax + 8], 1
+-mov dword ptr [eax], edx
++mov dword ptr [eax + 4], edx
++mov byte ptr [eax + 8], 0
+ pop ebx
+-add esp, 0xc
++add esp, 0x14
+ ret 8
+-mov eax, dword ptr [esp + 0x20]
+-mov edx, dword ptr [esp + 0x14]
+-pop edi
+-mov dword ptr [eax + 4], esi
+-pop esi
+-pop ebp
+-mov byte ptr [eax + 8], 0
+-mov dword ptr [eax], edx
+-pop ebx
+-add esp, 0xc
+-ret 8
