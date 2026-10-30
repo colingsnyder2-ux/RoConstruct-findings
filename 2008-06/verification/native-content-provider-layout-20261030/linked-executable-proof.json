@@ -1,0 +1,140 @@
+[
+ {
+  "target": "004060d0",
+  "linked_proofs": [
+   {
+    "symbol": "?assetFolder@ContentProvider@RBX@@SA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00443d50",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0041dfe0",
+  "linked_proofs": [
+   {
+    "symbol": "??$doDeclare@$1?sContentProvider@RBX@@3PADA@Name@RBX@@CAABV01@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00444200",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0041e0f0",
+  "linked_proofs": [
+   {
+    "symbol": "??$callDoDeclare@$1?sContentProvider@RBX@@3PADA@Name@RBX@@CAXXZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00444fb0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0055cfa0",
+  "linked_proofs": [
+   {
+    "symbol": "?manager@?$functor_manager@V?$bind_t@W4work_result@worker_thread@RBX@@V?$mf0@W4work_result@worker_thread@RBX@@VContentProvider@3@@_mfi@boost@@V?$list1@V?$value@PAVContentProvider@RBX@@@_bi@boost@@@_bi@6@@_bi@boost@@V?$allocator@Vfunction_base@boost@@@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@U?$bool_@$00@mpl@4@@Z",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00444290",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "?manager@?$functor_manager@V?$bind_t@W4work_result@worker_thread@RBX@@V?$mf0@W4work_result@worker_thread@RBX@@VContentProvider@3@@_mfi@boost@@V?$list1@V?$value@PAVContentProvider@RBX@@@_bi@boost@@@_bi@6@@_bi@boost@@V?$allocator@Vfunction_base@boost@@@std@@@function@detail@boost@@CAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@Ufunction_obj_tag@234@@Z",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00444290",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0055d670",
+  "linked_proofs": [
+   {
+    "symbol": "?manage@?$functor_manager@V?$bind_t@W4work_result@worker_thread@RBX@@V?$mf0@W4work_result@worker_thread@RBX@@VContentProvider@3@@_mfi@boost@@V?$list1@V?$value@PAVContentProvider@RBX@@@_bi@boost@@@_bi@6@@_bi@boost@@V?$allocator@Vfunction_base@boost@@@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "004453e0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0055ddb0",
+  "linked_proofs": [
+   {
+    "symbol": "??$declare@$1?sContentProvider@RBX@@3PADA@Name@RBX@@SAABV01@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00445810",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "?className@?$NonFactoryProduct@VInstance@RBX@@$1?sContentProvider@2@3PADA@RBX@@SAABVName@2@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00445810",
+    "object_code_data_exact": true,
+    "code_exact": true
+   },
+   {
+    "symbol": "?getClassName@?$NonFactoryProduct@VInstance@RBX@@$1?sContentProvider@2@3PADA@RBX@@UBEABVName@2@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00445810",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "005612b0",
+  "linked_proofs": [
+   {
+    "symbol": "?classDescriptor@?$Described@VContentProvider@RBX@@$1?sContentProvider@2@3PADAV?$NonFactoryProduct@VInstance@RBX@@$1?sContentProvider@2@3PADA@2@@Reflection@RBX@@SAAAVClassDescriptor@23@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00447ac0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00562e60",
+  "linked_proofs": [
+   {
+    "symbol": "??1ContentProvider@RBX@@EAE@XZ",
+    "owner": "linked:ContentProvider.obj",
+    "linked_address": "00447930",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00593730",
+  "linked_proofs": [
+   {
+    "symbol": "?load@SerializerV2@@QAEXAAV?$basic_istream@DU?$char_traits@D@std@@@std@@PAVDataModel@RBX@@@Z",
+    "owner": "linked:NativeSerializerLoad.obj",
+    "linked_address": "004ac7f0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ }
+]
