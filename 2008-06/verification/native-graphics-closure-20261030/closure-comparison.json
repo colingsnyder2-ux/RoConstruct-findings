@@ -1,0 +1,30 @@
+{
+ "before": 21,
+ "after": 15,
+ "resolved": [
+  "?cache1@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@0V?$Table@VRenderSurfaceTypes@View@RBX@@V?$Table@VVector3@G3D@@UVariations@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@@G3D@@@G3D@@A",
+  "?cache1@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@0V?$Table@VRenderSurfaceTypes@View@RBX@@V?$Table@VVector3@G3D@@UVariations@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@@G3D@@@G3D@@A",
+  "?cache1@?$MeshFactory@VSphereMesh@View@RBX@@$00@View@RBX@@0V?$Table@VRenderSurfaceTypes@View@RBX@@V?$Table@VVector3@G3D@@UVariations@?$MeshFactory@VSphereMesh@View@RBX@@$00@View@RBX@@@G3D@@@G3D@@A",
+  "?decalCache@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@0V?$map@VDecalKey@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@U?$less@VDecalKey@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@@std@@V?$allocator@U?$pair@$$CBVDecalKey@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@@std@@@8@@std@@A",
+  "?decalCache@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@0V?$map@VDecalKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@U?$less@VDecalKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@@std@@V?$allocator@U?$pair@$$CBVDecalKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@@std@@@8@@std@@A",
+  "?decalCache@?$MeshFactory@VSphereMesh@View@RBX@@$00@View@RBX@@0V?$map@VDecalKey@?$MeshFactory@VSphereMesh@View@RBX@@$00@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@U?$less@VDecalKey@?$MeshFactory@VSphereMesh@View@RBX@@$00@View@RBX@@@std@@V?$allocator@U?$pair@$$CBVDecalKey@?$MeshFactory@VSphereMesh@View@RBX@@$00@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@@std@@@8@@std@@A"
+ ],
+ "new": [],
+ "remaining": [
+  "??0BrickMesh@View@RBX@@AAE@ABVVector3@G3D@@VRenderSurfaceTypes@12@VBrickColor@2@@Z",
+  "??0Variations@@QAE@XZ",
+  "??MAttributes@MaterialFactory@View@RBX@@QBE_NABU0123@@Z",
+  "??MLookup@@QBE_NABU0@@Z",
+  "?addToQueue@Bucket@AggregatingSceneManager@Render@RBX@@QAEXABV?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@Z",
+  "?allocateProxies@RenderScene@Render@RBX@@AAEXPAVRenderDevice@G3D@@ABVGCamera@5@@Z",
+  "?computeDirectionalShadowVolume@Mesh@Render@RBX@@QBEXABVCoordinateFrame@G3D@@ABVVector3@5@AAV?$Array@I@5@AAV?$Array@VVector3@G3D@@@5@_N@Z",
+  "?deconstructAggregate@AggregatingSceneManager@Render@RBX@@AAEXV?$ReferenceCountedPointer@VAggregateChunk@Render@RBX@@@G3D@@@Z",
+  "?getDepthBlur@EffectSettings@Render@RBX@@SAPAVDepthBlur@23@XZ",
+  "?getToneMap@EffectSettings@Render@RBX@@SAPAVToneMap@G3D@@XZ",
+  "?onWorkspaceDescendentAdded@View@1RBX@@EAEXV?$shared_ptr@VInstance@RBX@@@boost@@@Z",
+  "?prerender@AggregatingSceneManager@Render@RBX@@UAEXN@Z",
+  "?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VTexture@G3D@@@G3D@@PAVRenderDevice@5@@Z",
+  "?update@EffectSettings@Render@RBX@@QAE?AV?$ReferenceCountedPointer@VLighting@G3D@@@G3D@@MM_NMABV45@ABVLightingParameters@5@AAV65@@Z",
+  "?updateLighting@View@1RBX@@EAEXXZ"
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "Rendering/RenderLib/RenderStats.cpp": [
+  [
+   "",
+   "#include \"renderlib/RenderStats.h\"\n\nint RenderStats::chunkCount;\nint RenderStats::aggregatedChunkCount;\nint RenderStats::aggregateChunkCount;\n\n// FUNCTION: WEBSERVICE 0x101f7040\nRenderStats::RenderStats()\n{\n}\n"
+  ]
+ ],
+ "Rendering/RenderLib/Mesh.cpp": [
+  [
+   "\t\tstatic int vertexRefCount = 0;",
+   "G3D::MeshAlg::Geometry Mesh::visibleGeometry;\nG3D::Array<G3D::Vector2> Mesh::texCoordArray;\nG3D::Array<G3D::Vector3> Mesh::tangentArray;\nG3D::Array<int> Mesh::vertexRefCounts;\nG3D::Array<int> Mesh::freeList;\nG3D::VAR Mesh::vertexVAR;\nG3D::VAR Mesh::normalVAR;\nG3D::VAR Mesh::texCoordVAR;\nG3D::VAR Mesh::tangentVAR;\nbool Mesh::varDirty;\n\n\n// Genuine ShadowSurface has implicit member construction/destruction.\nMesh::ShadowSurface::ShadowSurface() {}\nMesh::ShadowSurface::~ShadowSurface() {}\n\n\t\tstatic int vertexRefCount = 0;"
+  ]
+ ],
+ "Rendering/RenderLib/RenderSurface.cpp": [
+  [
+   "namespace RBX\n{\n\tnamespace Render\n\t{",
+   "namespace RBX\n{\n\tnamespace Render\n\t{\n\t\t// Genuine SDK constructor is empty; members still construct/destruct.\n\t\tRenderSurface::RenderSurface() {}\n\t\tRenderSurface::~RenderSurface() {}"
+  ]
+ ]
+}

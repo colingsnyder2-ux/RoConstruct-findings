@@ -1,0 +1,23 @@
+unresolved with no later definition: ??0BrickMesh@View@RBX@@AAE@ABVVector3@G3D@@VRenderSurfaceTypes@12@VBri, ??0Variations@@QAE@XZ, ??MAttributes@MaterialFactory@View@RBX@@QBE_NABU0123@@Z, ??MLookup@@QBE_NABU0@@Z, ?addToQueue@Bucket@AggregatingSceneManager@Render@RBX@@QAEXABV?$Refere, ?allocateProxies@RenderScene@Render@RBX@@AAEXPAVRenderDevice@G3D@@ABVG, ?computeDirectionalShadowVolume@Mesh@Render@RBX@@QBEXABVCoordinateFram, ?deconstructAggregate@AggregatingSceneManager@Render@RBX@@AAEXV?$Refer, ?onWorkspaceDescendentAdded@View@1RBX@@EAEXV?$shared_ptr@VInstance@RBX, ?prerender@AggregatingSceneManager@Render@RBX@@UAEXN@Z, ?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VT, ?update@EffectSettings@Render@RBX@@QAE?AV?$ReferenceCountedPointer@VLi, ?updateLighting@View@1RBX@@EAEXXZ
+{
+ "compiled": true,
+ "linked": false,
+ "exit": null,
+ "output": "SceneManager::Bucket::addToQueue(class G3D::ReferenceCountedPointer<class RBX::Render::Chunk> const &)\" (?addToQueue@Bucket@AggregatingSceneManager@Render@RBX@@QAEXABV?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@Z) referenced in function \"private: void __thiscall RBX::Render::AggregatingSceneManager::queueSleepingChunk(class G3D::ReferenceCountedPointer<class RBX::Render::Chunk> const &)\" (?queueSleepingChunk@AggregatingSceneManager@Render@RBX@@AAEXABV?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@Z)\nlinked.lib(AggregatingSceneManager.obj) : error LNK2001: unresolved external symbol \"public: virtual void __thiscall RBX::Render::AggregatingSceneManager::prerender(double)\" (?prerender@AggregatingSceneManager@Render@RBX@@UAEXN@Z)\nlinked.lib(AggregatingSceneManager.obj) : error LNK2019: unresolved external symbol \"private: void __thiscall RBX::Render::AggregatingSceneManager::deconstructAggregate(class G3D::ReferenceCountedPointer<class RBX::Render::AggregateChunk>)\" (?deconstructAggregate@AggregatingSceneManager@Render@RBX@@AAEXV?$ReferenceCountedPointer@VAggregateChunk@Render@RBX@@@G3D@@@Z) referenced in function \"public: virtual void __thiscall RBX::Render::AggregatingSceneManager::removeModel(class G3D::ReferenceCountedPointer<class RBX::Render::Chunk> const &)\" (?removeModel@AggregatingSceneManager@Render@RBX@@UAEXABV?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@Z)\nnative_graphics_meshfactory_force_20261030.exe : fatal error LNK1120: 13 unresolved externals",
+ "unresolved": [
+  "??0BrickMesh@View@RBX@@AAE@ABVVector3@G3D@@VRenderSurfaceTypes@12@VBrickColor@2@@Z",
+  "??0Variations@@QAE@XZ",
+  "??MAttributes@MaterialFactory@View@RBX@@QBE_NABU0123@@Z",
+  "??MLookup@@QBE_NABU0@@Z",
+  "?addToQueue@Bucket@AggregatingSceneManager@Render@RBX@@QAEXABV?$ReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@Z",
+  "?allocateProxies@RenderScene@Render@RBX@@AAEXPAVRenderDevice@G3D@@ABVGCamera@5@@Z",
+  "?computeDirectionalShadowVolume@Mesh@Render@RBX@@QBEXABVCoordinateFrame@G3D@@ABVVector3@5@AAV?$Array@I@5@AAV?$Array@VVector3@G3D@@@5@_N@Z",
+  "?deconstructAggregate@AggregatingSceneManager@Render@RBX@@AAEXV?$ReferenceCountedPointer@VAggregateChunk@Render@RBX@@@G3D@@@Z",
+  "?onWorkspaceDescendentAdded@View@1RBX@@EAEXV?$shared_ptr@VInstance@RBX@@@boost@@@Z",
+  "?prerender@AggregatingSceneManager@Render@RBX@@UAEXN@Z",
+  "?resolve@MegaTextureProxy@View@RBX@@EAE?AV?$ReferenceCountedPointer@VTexture@G3D@@@G3D@@PAVRenderDevice@5@@Z",
+  "?update@EffectSettings@Render@RBX@@QAE?AV?$ReferenceCountedPointer@VLighting@G3D@@@G3D@@MM_NMABV45@ABVLightingParameters@5@AAV65@@Z",
+  "?updateLighting@View@1RBX@@EAEXXZ"
+ ],
+ "forced_external_placements": 291
+}

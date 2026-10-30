@@ -1,0 +1,8 @@
+{
+ "compiled": true,
+ "linked": true,
+ "exit": 0,
+ "output": "name caches: 64/64 passed",
+ "unresolved": [],
+ "forced_external_placements": 356
+}

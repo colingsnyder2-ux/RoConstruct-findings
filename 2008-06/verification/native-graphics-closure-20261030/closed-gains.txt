@@ -1,0 +1,8 @@
+{
+ "compiled": true,
+ "linked": true,
+ "ran": true,
+ "exit": 0,
+ "output": "graphics lifecycle: 128 construction/destruction cycles passed",
+ "unresolved": []
+}
