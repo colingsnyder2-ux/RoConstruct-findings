@@ -7,7 +7,7 @@
    "mode": "recipe",
    "recipe": "ogre-1.4.5-dll",
    "files": [
-    "roc_native_scene_teardown_4139150e949211ec.cpp"
+    "roc_native_scene_render_741d6d159190f764.cpp"
    ],
    "direct": true,
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
@@ -193,7 +193,7 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_scene_teardown_4139150e949211ec.cpp",
+   "file": "roc_native_scene_render_741d6d159190f764.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
    "addrs": [
@@ -224,7 +224,15 @@
     "00698710",
     "006987c0",
     "0069a000",
-    "00698890"
+    "00698890",
+    "0068b6f0",
+    "0068b6d0",
+    "0068bec0",
+    "0068bef0",
+    "00694680",
+    "00698cc0",
+    "0069a470",
+    "0068c070"
    ],
    "symbols": {
     "00565ff0": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAUWorldFragment@SceneQuery@3@@Z",
@@ -254,9 +262,21 @@
     "00698710": "?destroyCamera@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
     "006987c0": "?destroyAllCameras@RbxSceneManager@Ogre@@UAEXXZ",
     "0069a000": "?createCamera@RbxSceneManager@Ogre@@UAEPAVCamera@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
-    "00698890": "?clearScene@RbxSceneManager@Ogre@@UAEXXZ"
+    "00698890": "?clearScene@RbxSceneManager@Ogre@@UAEXXZ",
+    "0068b6f0": "?initRenderQueue@RbxSceneManager@Ogre@@MAEXXZ",
+    "0068b6d0": "?getRenderQueue@RbxSceneManager@Ogre@@UAEPAVRenderQueue@2@XZ",
+    "0068bec0": "?_updateSceneGraph@RbxSceneManager@Ogre@@UAEXPAVCamera@2@@Z",
+    "0068bef0": "?_findVisibleObjects@RbxSceneManager@Ogre@@UAEXPAVCamera@2@PAUVisibleObjectsBoundsInfo@2@_N@Z",
+    "00694680": "?_setPass@RbxSceneManager@Ogre@@UAEPBVPass@2@PBV32@_N1@Z",
+    "00698cc0": "?_renderScene@RbxSceneManager@Ogre@@UAEXPAVCamera@2@PAVViewport@2@_N@Z",
+    "0069a470": "?prepareRenderQueue@RbxSceneManager@Ogre@@MAEXXZ",
+    "0068c070": "?renderObjects@RbxSceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
    },
-   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer. Real Ogre1.4.5 create/destroy bodies now share the protected collection helper and remove excluded public-helper aliases. Runtime covers factory-owned Light lifetime and duplicate creation. Vtable slots206/208/209/212 confirm pointer destroy, bulk destroy and iterator as RbxSceneManager overrides; these replace prior SceneManager/HeaderRecovery donor aliases with authentic types. Camera teardown bodies retain binary-proven inherited native maps. Vtable slots27/30/31/32/80/81/82 prove camera/clearScene/world-geometry methods; filename and stream world-geometry overloads are distinct, correcting an old stream alias at the filename address. Real rgdx plugin supplies RenderSystem camera-removal notifications without opening a render window. Native hasCamera/hasSceneNode overrides (vtable slots29/47) replace old SDK-name aliases so lifecycle queries do not collide with rgmain imports."
+   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer. Real Ogre1.4.5 create/destroy bodies now share the protected collection helper and remove excluded public-helper aliases. Runtime covers factory-owned Light lifetime and duplicate creation. Vtable slots206/208/209/212 confirm pointer destroy, bulk destroy and iterator as RbxSceneManager overrides; these replace prior SceneManager/HeaderRecovery donor aliases with authentic types. Camera teardown bodies retain binary-proven inherited native maps. Vtable slots27/30/31/32/80/81/82 prove camera/clearScene/world-geometry methods; filename and stream world-geometry overloads are distinct, correcting an old stream alias at the filename address. Real rgdx plugin supplies RenderSystem camera-removal notifications without opening a render window. Native hasCamera/hasSceneNode overrides (vtable slots29/47) replace old SDK-name aliases so lifecycle queries do not collide with rgmain imports. RenderScene/setPass/queue/graph bodies now share the constructor-proven native class. Binary stores prove mRbxRenderFlag at0x8bb9 adjacent to existing visibility flag. Actual hidden-window D3D9 frame readback exercises native render overrides.",
+   "helper_symbols": [
+    "_native_ogre_scene_lifecycle",
+    "_native_ogre_frame_smoke"
+   ]
   },
   {
    "recipe": "ogre-1.4.5-dll",
@@ -325,6 +345,19 @@
     "00694020": "??$_Merge@PAPAVLight@Ogre@@PAPAV12@PAPAV12@UlightLess@SceneManager@2@@std@@YAPAPAVLight@Ogre@@PAPAV12@0000UlightLess@SceneManager@2@Urandom_access_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z"
    },
    "provenance": "Preserve the unrelated existing raw-pointer merge root and its original VC2005 helper context; migrate only the map-producing root."
+  },
+  {
+   "recipe": "ogre-1.4.5-dll",
+   "file": "roc_native_scene_render_1a075c9bcc99c268.cpp",
+   "cl": "21022",
+   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+   "addrs": [
+    "0069e630"
+   ],
+   "symbols": {
+    "0069e630": "?findLightsAffectingFrustum@RbxSceneManager@Ogre@@UAEXPBVCamera@2@@Z"
+   },
+   "provenance": "Same constructor-proven complete RbxSceneManager class as render unit. Vector3 header compiled precise before fast Sphere/header context, matching original EspClaude float context; only light-frustum root selected. Constructor/destructor remain code/data exact, proving preserved receiver layout. Fast variant is1250B, this exact native variant1219B."
   }
  ],
  "prefer_module_data": true

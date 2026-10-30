@@ -1,0 +1,83 @@
+[
+ {
+  "slot": 0,
+  "dll_address": "0x10131660",
+  "exports": [
+   "?initRenderQueue@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b6f0"
+ },
+ {
+  "slot": 4,
+  "dll_address": "0x10137050",
+  "exports": [
+   "?prepareRenderQueue@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a470"
+ },
+ {
+  "slot": 6,
+  "dll_address": "0x10143b20",
+  "exports": [
+   "?findLightsAffectingFrustum@SceneManager@Ogre@@MAEXPBVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e630"
+ },
+ {
+  "slot": 21,
+  "dll_address": "0x10131f90",
+  "exports": [
+   "?renderObjects@SceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c070"
+ },
+ {
+  "slot": 91,
+  "dll_address": "0x10131df0",
+  "exports": [
+   "?_updateSceneGraph@SceneManager@Ogre@@UAEXPAVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bec0"
+ },
+ {
+  "slot": 92,
+  "dll_address": "0x10131e10",
+  "exports": [
+   "?_findVisibleObjects@SceneManager@Ogre@@UAEXPAVCamera@2@PAUVisibleObjectsBoundsInfo@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bef0"
+ },
+ {
+  "slot": 95,
+  "dll_address": "0x1013d240",
+  "exports": [
+   "?_renderScene@SceneManager@Ogre@@UAEXPAVCamera@2@PAVViewport@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698cc0"
+ },
+ {
+  "slot": 134,
+  "dll_address": "0x10131640",
+  "exports": [
+   "?getRenderQueue@SceneManager@Ogre@@UAEPAVRenderQueue@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b6d0"
+ },
+ {
+  "slot": 224,
+  "dll_address": "0x101399b0",
+  "exports": [
+   "?_setPass@SceneManager@Ogre@@UAEPBVPass@2@PBV32@_N1@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694680"
+ }
+]

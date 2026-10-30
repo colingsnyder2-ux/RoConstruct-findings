@@ -1,0 +1,460 @@
+{
+ "exception": "0xc0000005",
+ "address": "0x10099c46",
+ "fault_address": "0x88",
+ "registers": {
+  "eip": "0x10099c46",
+  "esp": "0x1a6dd0",
+  "ebp": "0x1afec8",
+  "eax": "0x1a6e18",
+  "ebx": "0x25780d8",
+  "ecx": "0x0",
+  "edx": "0x1",
+  "esi": "0x0",
+  "edi": "0x990d8a"
+ },
+ "stack": [
+  "0x0",
+  "0x1a6de8",
+  "0x6d9e6458",
+  "0x102a6238",
+  "0x19",
+  "0x1a6e18",
+  "0x1a6df8",
+  "0x6d9e7169",
+  "0x102a6238",
+  "0x10105097",
+  "0x1a6e18",
+  "0x2",
+  "0x0",
+  "0x990d8a",
+  "0x1afb8c",
+  "0x1afec8",
+  "0x25780d8",
+  "0x77e80c30",
+  "0x673c77db",
+  "0x2578dd0",
+  "0x1a6e40",
+  "0x6dad3db8",
+  "0x2560000",
+  "0x19",
+  "0x1f",
+  "0x990d8a",
+  "0x25780d8",
+  "0x2577680",
+  "0x1a6e58",
+  "0x6dad3eb8",
+  "0x4",
+  "0x2577680",
+  "0x2577ed0",
+  "0x1a6e74",
+  "0x1afec8",
+  "0x1005816e",
+  "0x4",
+  "0x1afb8c",
+  "0x3c",
+  "0x1a6f64",
+  "0x1028308c",
+  "0x0",
+  "0x1012e34e",
+  "0x0",
+  "0x25780d8",
+  "0x1afb8c",
+  "0x2577680",
+  "0x6dad3db8",
+  "0x2560000",
+  "0x0",
+  "0x20",
+  "0x1afef4",
+  "0x3",
+  "0x1f",
+  "0x1a6ec0",
+  "0x6dad3eb8",
+  "0x20",
+  "0xf",
+  "0x12",
+  "0x0",
+  "0x1a6edc",
+  "0x6daa69ed",
+  "0x25784b0",
+  "0x42a9ac"
+ ],
+ "modules": [
+  {
+   "base": 4194304,
+   "name": "\\\\?\\C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\ogre_link\\ogre_link.exe"
+  },
+  {
+   "base": 140734596382720,
+   "name": "\\\\?\\C:\\Windows\\System32\\ntdll.dll"
+  },
+  {
+   "base": 2011168768,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ntdll.dll"
+  },
+  {
+   "base": 140734574690304,
+   "name": "\\\\?\\C:\\Windows\\System32\\wow64.dll"
+  },
+  {
+   "base": 140734586159104,
+   "name": "\\\\?\\C:\\Windows\\System32\\wow64base.dll"
+  },
+  {
+   "base": 140734587600896,
+   "name": "\\\\?\\C:\\Windows\\System32\\wow64win.dll"
+  },
+  {
+   "base": 140734593957888,
+   "name": "\\\\?\\C:\\Windows\\System32\\wow64con.dll"
+  },
+  {
+   "base": 2011103232,
+   "name": "\\\\?\\C:\\Windows\\System32\\wow64cpu.dll"
+  },
+  {
+   "base": 1979908096,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\kernel32.dll"
+  },
+  {
+   "base": 2006450176,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\KernelBase.dll"
+  },
+  {
+   "base": 1975779328,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\user32.dll"
+  },
+  {
+   "base": 2006253568,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\win32u.dll"
+  },
+  {
+   "base": 268435456,
+   "name": "\\\\?\\C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\ogre_link\\rgmain.dll"
+  },
+  {
+   "base": 1992556544,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\gdi32.dll"
+  },
+  {
+   "base": 1978925056,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\gdi32full.dll"
+  },
+  {
+   "base": 1977876480,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\msvcp_win.dll"
+  },
+  {
+   "base": 1981808640,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ucrtbase.dll"
+  },
+  {
+   "base": 1839071232,
+   "name": "\\\\?\\C:\\Windows\\WinSxS\\x86_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9635_none_508ff82ebcbafee0\\msvcp90.dll"
+  },
+  {
+   "base": 1839661056,
+   "name": "\\\\?\\C:\\Windows\\WinSxS\\x86_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9635_none_508ff82ebcbafee0\\msvcr90.dll"
+  },
+  {
+   "base": 1972043776,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\imm32.dll"
+  },
+  {
+   "base": 40304640,
+   "name": "\\\\?\\C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\ogre_link\\rgdx.dll"
+  },
+  {
+   "base": 40304640,
+   "name": "\\\\?\\C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\ogre_link\\rgdx.dll"
+  },
+  {
+   "base": 1973682176,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\advapi32.dll"
+  },
+  {
+   "base": 1980956672,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\msvcrt.dll"
+  },
+  {
+   "base": 1836843008,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\d3d9.dll"
+  },
+  {
+   "base": 2002190336,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\sechost.dll"
+  },
+  {
+   "base": 38469632,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\sechost.dll"
+  },
+  {
+   "base": 1994915840,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\rpcrt4.dll"
+  },
+  {
+   "base": 1953103872,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\dwmapi.dll"
+  },
+  {
+   "base": 1944911872,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\version.dll"
+  },
+  {
+   "base": 2003501056,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\combase.dll"
+  },
+  {
+   "base": 1946025984,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\DXCore.dll"
+  },
+  {
+   "base": 1946288128,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\uxtheme.dll"
+  },
+  {
+   "base": 1935802368,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\nvldumd.dll"
+  },
+  {
+   "base": 1984626688,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\shell32.dll"
+  },
+  {
+   "base": 1944780800,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\msasn1.dll"
+  },
+  {
+   "base": 1944584192,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cryptnet.dll"
+  },
+  {
+   "base": 1991376896,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\crypt32.dll"
+  },
+  {
+   "base": 1944518656,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cryptbase.dll"
+  },
+  {
+   "base": 1955856384,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\wldp.dll"
+  },
+  {
+   "base": 1943273472,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\drvstore.dll"
+  },
+  {
+   "base": 1943076864,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\devobj.dll"
+  },
+  {
+   "base": 1957036032,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cfgmgr32.dll"
+  },
+  {
+   "base": 38469632,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cfgmgr32.dll"
+  },
+  {
+   "base": 38797312,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cfgmgr32.dll"
+  },
+  {
+   "base": 2010644480,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\wintrust.dll"
+  },
+  {
+   "base": 1995767808,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\imagehlp.dll"
+  },
+  {
+   "base": 1942945792,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cryptsp.dll"
+  },
+  {
+   "base": 1942683648,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\rsaenh.dll"
+  },
+  {
+   "base": 1975255040,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\bcryptprimitives.dll"
+  },
+  {
+   "base": 1942487040,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\bcrypt.dll"
+  },
+  {
+   "base": 1856569344,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\nvgpucomp32.dll"
+  },
+  {
+   "base": 1972240384,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ole32.dll"
+  },
+  {
+   "base": 1855520768,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\NvMemMapStorage.dll"
+  },
+  {
+   "base": 1953300480,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\winmm.dll"
+  },
+  {
+   "base": 1962737664,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\powrprof.dll"
+  },
+  {
+   "base": 1962606592,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\umpdc.dll"
+  },
+  {
+   "base": 1963130880,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\windows.storage.dll"
+  },
+  {
+   "base": 1992753152,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\SHCore.dll"
+  },
+  {
+   "base": 1974861824,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\shlwapi.dll"
+  },
+  {
+   "base": 1670840320,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\nvd3dum.dll"
+  },
+  {
+   "base": 1945632768,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\directxdatabasehelper.dll"
+  },
+  {
+   "base": 1971060736,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\kernel.appcore.dll"
+  },
+  {
+   "base": 1954807808,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ResourcePolicyClient.dll"
+  },
+  {
+   "base": 1954807808,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ResourcePolicyClient.dll"
+  },
+  {
+   "base": 1996357632,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\msctf.dll"
+  },
+  {
+   "base": 40304640,
+   "name": "\\\\?\\C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\ogre_link\\rgdx.dll"
+  },
+  {
+   "base": 40304640,
+   "name": "\\\\?\\C:\\Users\\colin\\RoConstruct-codex-force-links\\rebuild\\2008-06\\out\\tests\\ogre_link\\rgdx.dll"
+  },
+  {
+   "base": 1973682176,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\advapi32.dll"
+  },
+  {
+   "base": 1836843008,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\d3d9.dll"
+  },
+  {
+   "base": 1953103872,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\dwmapi.dll"
+  },
+  {
+   "base": 1944911872,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\version.dll"
+  },
+  {
+   "base": 1935802368,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\nvldumd.dll"
+  },
+  {
+   "base": 1984626688,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\shell32.dll"
+  },
+  {
+   "base": 1955856384,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\wldp.dll"
+  },
+  {
+   "base": 1943273472,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\drvstore.dll"
+  },
+  {
+   "base": 1943076864,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\devobj.dll"
+  },
+  {
+   "base": 1957036032,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cfgmgr32.dll"
+  },
+  {
+   "base": 41877504,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cfgmgr32.dll"
+  },
+  {
+   "base": 41549824,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\cfgmgr32.dll"
+  },
+  {
+   "base": 1856569344,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\nvgpucomp32.dll"
+  },
+  {
+   "base": 1972240384,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ole32.dll"
+  },
+  {
+   "base": 1855520768,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\NvMemMapStorage.dll"
+  },
+  {
+   "base": 1953300480,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\winmm.dll"
+  },
+  {
+   "base": 1962737664,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\powrprof.dll"
+  },
+  {
+   "base": 1962606592,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\umpdc.dll"
+  },
+  {
+   "base": 1963130880,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\windows.storage.dll"
+  },
+  {
+   "base": 1992753152,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\SHCore.dll"
+  },
+  {
+   "base": 1974861824,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\shlwapi.dll"
+  },
+  {
+   "base": 1670840320,
+   "name": "\\\\?\\C:\\Windows\\System32\\DriverStore\\FileRepository\\nv_dispig.inf_amd64_cc526ccc3287f5cd\\nvd3dum.dll"
+  },
+  {
+   "base": 1945632768,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\directxdatabasehelper.dll"
+  },
+  {
+   "base": 1971060736,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\kernel.appcore.dll"
+  },
+  {
+   "base": 1954807808,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ResourcePolicyClient.dll"
+  },
+  {
+   "base": 1954807808,
+   "name": "\\\\?\\C:\\Windows\\SysWOW64\\ResourcePolicyClient.dll"
+  }
+ ]
+}

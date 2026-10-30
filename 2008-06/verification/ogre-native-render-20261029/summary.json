@@ -1,0 +1,47 @@
+{
+ "old_forced_roots": 332,
+ "new_forced_roots": 334,
+ "all_old_addresses_preserved": true,
+ "new_forced_addresses": [
+  "0068c070",
+  "0069e630"
+ ],
+ "new_forced_bytes": 1280,
+ "native_scene_roots_before": 28,
+ "native_scene_roots_after": 37,
+ "source_representatives_before": 358,
+ "source_representatives_after": 359,
+ "raw_inventory_before": 494,
+ "raw_inventory_after": 506,
+ "native_replay_targets": 92,
+ "native_replay_exact": 92,
+ "compile_failures": 0,
+ "linked": true,
+ "runtime_exit": 0,
+ "focused_tests_passed": 90,
+ "placed_distinct": 411,
+ "frame": {
+  "width": 64,
+  "height": 64,
+  "centre_rgb": [
+   255,
+   0,
+   0
+  ],
+  "corner_rgb": [
+   255,
+   0,
+   255
+  ],
+  "external_hidden_window": true,
+  "native_hardware_breakpoint_hits": {
+   "renderScene": 1,
+   "setPass": 1,
+   "light_frustum": 1,
+   "renderObjects": 2
+  },
+  "code_bytes_modified": false
+ },
+ "complete_game_rendering": false,
+ "server_credits_claimed": 0
+}

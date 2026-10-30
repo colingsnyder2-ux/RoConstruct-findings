@@ -1,0 +1,49 @@
+{
+ "same_source_except_vector3_header_fp_prelude": true,
+ "primary_file": "roc_native_scene_render_741d6d159190f764.cpp",
+ "light_cohort_file": "roc_native_scene_render_1a075c9bcc99c268.cpp",
+ "constructor_destructor": [
+  {
+   "profile": "fast",
+   "roots": [
+    {
+     "address": "0068e7c0",
+     "symbol": "??0RbxSceneManager@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+     "code_exact": true,
+     "data_exact": true,
+     "size": 181,
+     "target_size": 181
+    },
+    {
+     "address": "0069e220",
+     "symbol": "??1RbxSceneManager@Ogre@@UAE@XZ",
+     "code_exact": true,
+     "data_exact": true,
+     "size": 359,
+     "target_size": 359
+    }
+   ]
+  },
+  {
+   "profile": "vector-precise",
+   "roots": [
+    {
+     "address": "0068e7c0",
+     "symbol": "??0RbxSceneManager@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+     "code_exact": true,
+     "data_exact": true,
+     "size": 181,
+     "target_size": 181
+    },
+    {
+     "address": "0069e220",
+     "symbol": "??1RbxSceneManager@Ogre@@UAE@XZ",
+     "code_exact": true,
+     "data_exact": true,
+     "size": 359,
+     "target_size": 359
+    }
+   ]
+  }
+ ]
+}
