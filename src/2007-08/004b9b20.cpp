@@ -1,19 +1,17 @@
-// from server: 82% by colin
-struct RakPeer {
-    char pad[0x3c];
-    unsigned int field_3c;
+// from server: 100% by tajop
+struct BigNum16
+{
+    unsigned int word[16];
 };
 
-bool compareGreater(const RakPeer* self, const RakPeer* other) {
-    const unsigned int* a = &self->field_3c;
-    const unsigned int* b = &other->field_3c;
-    for (int i = 0xf; i >= 0; --i) {
-        if (b[i] > a[i]) {
+bool greaterThan(const BigNum16* a, const BigNum16* b)
+{
+    for (int i = 15; i >= 0; --i)
+    {
+        if (a->word[i] > b->word[i])
             return true;
-        }
-        if (b[i] < a[i]) {
+        if (a->word[i] < b->word[i])
             return false;
-        }
     }
     return false;
 }

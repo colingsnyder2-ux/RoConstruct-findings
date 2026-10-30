@@ -1,8 +1,8 @@
-// from server: 89% by colin
+// from server: 100% by tajop
 // roc 2007-08 006a59a0  unit: seg_006a0000  size: 84 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a59a0
 
-extern "C" int __stdcall SendMessageA(int, unsigned int, unsigned int, int*);
+extern "C" __declspec(dllimport) int __stdcall SendMessageA(int, unsigned int, unsigned int, int*);
 extern "C" int __cdecl sub_00646570();
 extern "C" int __cdecl sub_00738364(int);
 extern "C" int __cdecl sub_00630202(int);
@@ -22,10 +22,10 @@ int CXTPMenuBar::sub_006a59a0(int arg) {
     int b = sub_00738364(a);
     int c = sub_00630202(b);
     int d = *(int*)(c + 0xd4);
-    SendMessageA(d, 0x229, 0, &local);
+    int r = SendMessageA(d, 0x229, 0, &local);
     int* p = (int*)arg;
     if (p != 0) {
         *p = local;
     }
-    return local;
+    return r;
 }

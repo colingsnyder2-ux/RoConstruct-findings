@@ -7344,5 +7344,180 @@
     "unit": "RBX::PartDragTool, RBX::Primitive, RBX::Camera, RBX::JointsService, RBX::ModelInstance, RBX::NullTool",
     "updated": 1793331854.5109708,
     "user": "EspClaude"
+  },
+  {
+    "created": 1793337713.4709806,
+    "id": "43efaa2fbda944079018684c1d090546",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/Filters.cpp": [
+        [
+          "",
+          "\n\nnamespace RBX\n{\n\tHitTestFilter::Result UnlockedPartByLocalCharacter::filterResult(const Primitive* testMe) const\n\t{\n\t\tHitTestFilter::Result result = HitTestFilter::INCLUDE_PRIM;\n\t\tif (character && head)\n\t\t{\n\t\t\tconst PartInstance* p = PartInstance::fromPrimitiveConst(testMe);\n\t\t\tif (p->isDescendentOf(character.get()))\n\t\t\t\tresult = head->getIsTransparent() ? HitTestFilter::IGNORE_PRIM : HitTestFilter::STOP_TEST;\n\t\t}\n\t\tif (result == HitTestFilter::INCLUDE_PRIM)\n\t\t\tresult = Unlocked::unlocked(testMe) ? HitTestFilter::INCLUDE_PRIM : HitTestFilter::STOP_TEST;\n\t\treturn result;\n\t}\n}\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "7971ec7bd8f55c813be312d4757192c77f59df27eef29e88e4daef38642ba327",
+      "credits": 1,
+      "distinct_after": 9794,
+      "distinct_before": 9793,
+      "gains": [
+        "006602b0"
+      ],
+      "input_hash": "3e67f2b04fd210090408c2c329f0fa722477be159d573d570f2e9f23bafa30f2",
+      "losses": [],
+      "new_distinct": [
+        "006602b0"
+      ],
+      "overlay_hash": "87f42ed5b186c12a65ba997a1c91a852c806e36bc11b727daddb564ae01cda92",
+      "owned_after": 3319,
+      "owned_before": 3318,
+      "rebased": false,
+      "submitted_revision": "7971ec7bd8f55c813be312d4757192c77f59df27eef29e88e4daef38642ba327"
+    },
+    "state": "accepted",
+    "unit": "RBX::UnlockedPartByLocalCharacter",
+    "updated": 1793337888.6557562,
+    "user": "colin"
+  },
+  {
+    "created": 1793338030.104973,
+    "id": "498fcc2e7e1c45869facb62f677ff5eb",
+    "model": "GPT-5",
+    "patches": {
+      "App/gui/Widget.cpp": {
+        "after": [
+          [
+            "",
+            "\n\nnamespace RBX\n{\n\tvoid VerbWidget::onClick(const GuiEvent& event)\n\t{\n\t\tif (verb && verb->isEnabled())\n\t\t\tverb->doIt(event.iDataState);\n\t}\n\n\tbool VerbWidget::isEnabled()\n\t{\n\t\treturn Widget::isEnabled() && verb && verb->isEnabled();\n\t}\n}\n"
+          ],
+          [
+            "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+            "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+          ]
+        ],
+        "before": [
+          [
+            "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+            "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+          ]
+        ]
+      }
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "52ef13ce80f868b77d8b4376ae7e393f20c23c88105f8d7e3d7b19e9c8ec3f22",
+      "credits": 2,
+      "distinct_after": 9796,
+      "distinct_before": 9794,
+      "gains": [
+        "00642270",
+        "006423e0"
+      ],
+      "input_hash": "5cd7495e53d0e4746c21c36cf9efc0070cd5700f101420e4f726bba32f878e11",
+      "losses": [],
+      "new_distinct": [
+        "00642270",
+        "006423e0"
+      ],
+      "overlay_hash": "43408001fcacd29e2c1c842dc08d9849eef94cad8341aa8c7cf7a7209f5e5cba",
+      "owned_after": 3321,
+      "owned_before": 3319,
+      "rebased": false,
+      "submitted_revision": "52ef13ce80f868b77d8b4376ae7e393f20c23c88105f8d7e3d7b19e9c8ec3f22"
+    },
+    "state": "accepted",
+    "unit": "RBX::VerbWidget",
+    "updated": 1793338191.7623315,
+    "user": "colin"
+  },
+  {
+    "created": 1793338621.451033,
+    "id": "00e49e6686714f1c936a833f527f0353",
+    "model": "GPT-5",
+    "patches": {
+      "App/gui/Widget.cpp": [
+        [
+          "#include \"gui/Widget.h\"\n",
+          "#include \"gui/Widget.h\"\n#include \"gui/Button.h\"\n"
+        ],
+        [
+          "",
+          "\n\nnamespace RBX\n{\n\tvoid ImageWidget::render2d(Adorn* adorn)\n\t{\n\t\tif (isVisible())\n\t\t\tguiImageDraw.render2d(adorn, isEnabled(), getMyRect(), Widget::NOTHING);\n\t}\n}\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "35d9473d18b0c90cf49d1935b49f9dfe4211d3aeed1d46c104dafdaaee783867",
+      "credits": 1,
+      "distinct_after": 9797,
+      "distinct_before": 9796,
+      "gains": [
+        "0064f070"
+      ],
+      "input_hash": "de73341f9c5bc9e6d39f24f8045988cdec1c1e3f48ddcb47bde1e2ce926a9878",
+      "losses": [],
+      "new_distinct": [
+        "0064f070"
+      ],
+      "overlay_hash": "033c91cb337bc6b45cd775d7c6b71fc2b731c9a113267f75f285be1d781eca9d",
+      "owned_after": 3322,
+      "owned_before": 3321,
+      "rebased": false,
+      "submitted_revision": "35d9473d18b0c90cf49d1935b49f9dfe4211d3aeed1d46c104dafdaaee783867"
+    },
+    "state": "accepted",
+    "unit": "RBX::ImageWidget",
+    "updated": 1793338867.7845986,
+    "user": "colin"
+  },
+  {
+    "created": 1793339370.3900352,
+    "id": "5158d54200ec4ea4b009d8ded797cff8",
+    "model": "GPT-5",
+    "patches": {
+      "App/gui/Widget.cpp": [
+        [
+          "",
+          "\n\nnamespace RBX\n{\n\tImageButton::ImageButton(Adorn* adorn, Verb* verb, const std::string& image)\n\t\t: VerbWidget(verb), guiImageDraw(adorn, image)\n\t{\n\t\tsetName(image);\n\t}\n}\n"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false,
+      "baseline_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989",
+      "input_hash": "5098dff735a49e24042626c12b042783040d040cfc44e80637bbd8ffd2bafa8b",
+      "submitted_revision": "24fcdc0bb2f2c932ab9373a580c4882d436ae0d633976e4ac99776db95b59989"
+    },
+    "state": "rejected",
+    "unit": "RBX::ImageButton",
+    "updated": 1793339519.6587782,
+    "user": "colin"
+  },
+  {
+    "created": 1793340073.4831011,
+    "id": "1e7411f2c22d4c928bd87826fc88afad",
+    "model": "GPT-5",
+    "patches": {
+      "App/v8datamodel/Gyro.cpp": [
+        [
+          "#include \"v8datamodel/Gyro.h\"\n",
+          "#include \"v8datamodel/Gyro.h\"\n\n"
+        ]
+      ]
+    },
+    "phase": "building",
+    "receipt": {},
+    "state": "verifying",
+    "unit": "RBX::BodyForce",
+    "updated": 1793340106.004465,
+    "user": "colin"
   }
 ]

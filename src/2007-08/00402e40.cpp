@@ -1,25 +1,38 @@
-// from server: 66% by colin
-struct VCWorkspace_CComAggObject {
-    long __stdcall QueryInterface(void* pUnkOuter, void* ppvObject, void* pv);
+// from server: 100% by tajop
+struct _GUID { unsigned long Data1; unsigned short Data2; unsigned short Data3; unsigned char Data4[8]; };
+struct _ATL_INTMAP_ENTRY;
+
+extern "C" const _ATL_INTMAP_ENTRY _entries_784b88[];
+long __stdcall AtlInternalQueryInterface(void* pThis, const _ATL_INTMAP_ENTRY* pEntries, const _GUID& iid, void** ppvObject);
+
+struct CComContainedObject_Workspace {
+    char m_pad[4];
 };
 
-long __stdcall VCWorkspace_CComAggObject::QueryInterface(void* pUnkOuter, void* ppvObject, void* pv)
+struct CComAggObject_Workspace {
+    virtual long __stdcall QueryInterface(const _GUID& iid, void** ppvObject);
+    virtual unsigned long __stdcall AddRef();
+    virtual unsigned long __stdcall Release();
+    long m_dwRef;
+    CComContainedObject_Workspace m_contained;
+};
+
+long __stdcall CComAggObject_Workspace::QueryInterface(const _GUID& iid, void** ppvObject)
 {
-    if (pv == 0)
-        return 0x80004003;
-
-    *(void**)pv = 0;
-
-    unsigned int* p = (unsigned int*)ppvObject;
-    if (p[0] == 0 && p[1] == 0 && p[2] == 0xc0 && p[3] == 0x46000000)
+    if (ppvObject == 0)
+        return 0x80004003L;
+    *ppvObject = 0;
+    long hRes = 0;
+    if (((unsigned long*)&iid)[0] == 0 &&
+        ((unsigned long*)&iid)[1] == 0 &&
+        ((unsigned long*)&iid)[2] == 0x000000C0 &&
+        ((unsigned long*)&iid)[3] == 0x46000000)
     {
-        *(void**)pv = ppvObject;
-        void** vtbl = *(void***)ppvObject;
-        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[1];
-        fn(ppvObject);
-        return 0;
+        *ppvObject = (void*)this;
+        AddRef();
     }
-
-    extern long __stdcall sub_4022a0(void* p1, void* p2, void* p3, void* p4);
-    return sub_4022a0((char*)ppvObject + 8, (void*)0x784b88, ppvObject, pv);
+    else
+        hRes = AtlInternalQueryInterface(&m_contained, _entries_784b88, iid, ppvObject);
+    return hRes;
 }
+

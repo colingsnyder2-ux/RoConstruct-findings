@@ -2667,6 +2667,58 @@
         ]
       },
       "timestamp": 1793331854.240871
+    },
+    {
+      "job": "43efaa2fbda944079018684c1d090546",
+      "patches": {
+        "App/v8datamodel/Filters.cpp": [
+          [
+            "",
+            "\n\nnamespace RBX\n{\n\tHitTestFilter::Result UnlockedPartByLocalCharacter::filterResult(const Primitive* testMe) const\n\t{\n\t\tHitTestFilter::Result result = HitTestFilter::INCLUDE_PRIM;\n\t\tif (character && head)\n\t\t{\n\t\t\tconst PartInstance* p = PartInstance::fromPrimitiveConst(testMe);\n\t\t\tif (p->isDescendentOf(character.get()))\n\t\t\t\tresult = head->getIsTransparent() ? HitTestFilter::IGNORE_PRIM : HitTestFilter::STOP_TEST;\n\t\t}\n\t\tif (result == HitTestFilter::INCLUDE_PRIM)\n\t\t\tresult = Unlocked::unlocked(testMe) ? HitTestFilter::INCLUDE_PRIM : HitTestFilter::STOP_TEST;\n\t\treturn result;\n\t}\n}\n"
+          ]
+        ]
+      },
+      "timestamp": 1793337888.5178657
+    },
+    {
+      "job": "498fcc2e7e1c45869facb62f677ff5eb",
+      "patches": {
+        "App/gui/Widget.cpp": {
+          "after": [
+            [
+              "",
+              "\n\nnamespace RBX\n{\n\tvoid VerbWidget::onClick(const GuiEvent& event)\n\t{\n\t\tif (verb && verb->isEnabled())\n\t\t\tverb->doIt(event.iDataState);\n\t}\n\n\tbool VerbWidget::isEnabled()\n\t{\n\t\treturn Widget::isEnabled() && verb && verb->isEnabled();\n\t}\n}\n"
+            ],
+            [
+              "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+              "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+            ]
+          ],
+          "before": [
+            [
+              "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+              "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+            ]
+          ]
+        }
+      },
+      "timestamp": 1793338191.4453886
+    },
+    {
+      "job": "00e49e6686714f1c936a833f527f0353",
+      "patches": {
+        "App/gui/Widget.cpp": [
+          [
+            "#include \"gui/Widget.h\"\n",
+            "#include \"gui/Widget.h\"\n#include \"gui/Button.h\"\n"
+          ],
+          [
+            "",
+            "\n\nnamespace RBX\n{\n\tvoid ImageWidget::render2d(Adorn* adorn)\n\t{\n\t\tif (isVisible())\n\t\t\tguiImageDraw.render2d(adorn, isEnabled(), getMyRect(), Widget::NOTHING);\n\t}\n}\n"
+          ]
+        ]
+      },
+      "timestamp": 1793338867.5802467
     }
   ],
   "initial_patches": {}

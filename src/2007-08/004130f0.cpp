@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by tajop
 // roc 2007-08 004130f0  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004130f0
 
@@ -12,7 +12,7 @@ struct S_func_004130f0 {
 
 extern "C" int __cdecl sub_004016e0(int);
 extern "C" int __cdecl sub_00412d60();
-extern "C" int __cdecl _mbsnbcpy_s(char*, unsigned int, const char*, unsigned int);
+extern "C" __declspec(dllimport) int __cdecl _mbsnbcpy_s(char*, unsigned int, const char*, unsigned int);
 
 extern unsigned int g_786f98;
 

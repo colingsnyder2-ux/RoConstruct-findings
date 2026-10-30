@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by tajop
 extern "C" __declspec(dllimport) long __stdcall SendMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, long lParam);
 
 struct Inner {
@@ -31,11 +31,8 @@ void Outer::method()
     Holder* h = sub_6768c0(r2);
     if (h == 0)
         return;
-    Inner* in = h->inner;
-    int i = 0;
-    if (in->count <= 0)
-        return;
-    do {
+    for (int i = 0; i < h->inner->count; i++) {
+        Inner* in = h->inner;
         void* item;
         if (i >= 0 && i < in->count)
             item = in->items[i];
@@ -43,7 +40,5 @@ void Outer::method()
             item = 0;
         void* r3 = (void*)SendMessageA(field_a8, 0x18b, 0, 0);
         SendMessageA(field_a8, 0x181, (unsigned int)r3, (long)item);
-        in = h->inner;
-        i++;
-    } while (i < in->count);
+    }
 }

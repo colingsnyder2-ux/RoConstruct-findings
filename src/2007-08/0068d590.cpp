@@ -1,9 +1,9 @@
-// from server: 98% by atomic.potato
+// from server: 100% by tajop
 // roc 2007-08 0068d590  unit: CXTPTabClientWnd::CSingleWorkspace  size: 227 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0068d590
 
-extern "C" int __stdcall IsWindow(void*);
-extern "C" int __stdcall SendMessageA(void*, unsigned int, unsigned int, int);
+extern "C" __declspec(dllimport) int __stdcall IsWindow(void*);
+extern "C" __declspec(dllimport) int __stdcall SendMessageA(void*, unsigned int, unsigned int, int);
 
 struct CSingleWorkspace {
     char pad_0x00[0x20];
@@ -74,7 +74,7 @@ int CSingleWorkspace::Method() {
 
     int hwnd2 = this->field_0x11c;
     this->field_0x84 = 0;
-    SendMessageA((void*)saved, 0, (unsigned int)hwnd2, 0);
+    SendMessageA((void*)saved, (unsigned int)hwnd2, 0, 0);
 
     return 1;
 }

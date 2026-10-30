@@ -2318,5 +2318,45 @@
     "\t\t\t\t\tHumanoid::renderWaypoint(adorn, waypoint);\n\t\t\t}\n\t\t}\n\t}\n\n\tconst char* sNullTool = \"NullTool\";\n\n\tNullTool::NullTool(Workspace* workspace)\n\t\t: Base(workspace)\n\t{\n\t}\n\n\tNullTool::~NullTool() {}\n\n\tconst std::string NullTool::getCursorName() const\n\t{\n\t\treturn \"ArrowFarCursor\";\n\t}\n\n\tMouseCommand* NullTool::isSticky() const\n\t{\n\t\treturn new NullTool(workspace);\n\t}\n\n\tMouseCommand* NullTool::onMouseUp(const UIEvent& uiEvent)\n\t{\n\t\treleaseCapture();\n\t\treturn this;\n\t}\n}"
    ]
   ]
+ },
+ {
+  "App/v8datamodel/Filters.cpp": [
+   [
+    "",
+    "\n\nnamespace RBX\n{\n\tHitTestFilter::Result UnlockedPartByLocalCharacter::filterResult(const Primitive* testMe) const\n\t{\n\t\tHitTestFilter::Result result = HitTestFilter::INCLUDE_PRIM;\n\t\tif (character && head)\n\t\t{\n\t\t\tconst PartInstance* p = PartInstance::fromPrimitiveConst(testMe);\n\t\t\tif (p->isDescendentOf(character.get()))\n\t\t\t\tresult = head->getIsTransparent() ? HitTestFilter::IGNORE_PRIM : HitTestFilter::STOP_TEST;\n\t\t}\n\t\tif (result == HitTestFilter::INCLUDE_PRIM)\n\t\t\tresult = Unlocked::unlocked(testMe) ? HitTestFilter::INCLUDE_PRIM : HitTestFilter::STOP_TEST;\n\t\treturn result;\n\t}\n}\n"
+   ]
+  ]
+ },
+ {
+  "App/gui/Widget.cpp": {
+   "before": [
+    [
+     "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+     "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+    ]
+   ],
+   "after": [
+    [
+     "",
+     "\n\nnamespace RBX\n{\n\tvoid VerbWidget::onClick(const GuiEvent& event)\n\t{\n\t\tif (verb && verb->isEnabled())\n\t\t\tverb->doIt(event.iDataState);\n\t}\n\n\tbool VerbWidget::isEnabled()\n\t{\n\t\treturn Widget::isEnabled() && verb && verb->isEnabled();\n\t}\n}\n"
+    ],
+    [
+     "\t\t\treturn GuiResponse::notUsed();\n\t\t}\n\t}\n}",
+     "\t\t\treturn GuiResponse();\n\t\t}\n\t}\n}"
+    ]
+   ]
+  }
+ },
+ {
+  "App/gui/Widget.cpp": [
+   [
+    "#include \"gui/Widget.h\"\n",
+    "#include \"gui/Widget.h\"\n#include \"gui/Button.h\"\n"
+   ],
+   [
+    "",
+    "\n\nnamespace RBX\n{\n\tvoid ImageWidget::render2d(Adorn* adorn)\n\t{\n\t\tif (isVisible())\n\t\t\tguiImageDraw.render2d(adorn, isEnabled(), getMyRect(), Widget::NOTHING);\n\t}\n}\n"
+   ]
+  ]
  }
 ]

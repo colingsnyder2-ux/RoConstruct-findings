@@ -1,25 +1,47 @@
-// from server: 74% by colin
-extern "C" int __cdecl func_00630d36(int, int, int, int, int);
-extern "C" int __cdecl func_00630b9e(int, int);
-extern "C" void* __stdcall func_0077e710(int);
+// from server: 100% by tajop
+#include <typeinfo>
 
-struct LuaArguments {
-    int field0;
-    int field4;
-    void func_005bf930(int);
+namespace RBX {
+namespace Reflection {
+
+class PropertyDescriptor {
+public:
+    virtual ~PropertyDescriptor();
+    char pad[0x14];
 };
 
-void LuaArguments::func_005bf930(int arg)
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    class GetSet {
+    public:
+        virtual ~GetSet();
+        virtual T get(const void* instance) const = 0;
+        virtual void set(void* instance, const T& value) const = 0;
+    };
+    GetSet* getset;
+};
+
+}
+}
+
+namespace RBX { class SoundId { public: SoundId(); SoundId(const SoundId&); int v; }; }
+
+template<class T, class B>
+inline const T& checked_cast(const B& b)
 {
-    int local[3];
-    int result = func_00630d36(field0, 0, 0x887174, 0x887c18, 0);
-    if (result == 0) {
-        func_0077e710(0x786e04);
-        func_00630b9e(0x841e0c, (int)local);
-    }
-    int* p = (int*)result;
-    int* obj = (int*)p[6];
-    int* vtbl = (int*)obj[0];
-    int (*fn)(void*, int, int) = (int (*)(void*, int, int))vtbl[2];
-    fn(obj, field4, arg);
+    const T* p = dynamic_cast<const T*>(&b);
+    if (!p)
+        throw std::bad_cast("bad cast");
+    return *p;
+}
+struct LuaArguments {
+    const RBX::Reflection::PropertyDescriptor* descriptor;
+    void* instance;
+    void setProperty(const RBX::SoundId& value);
+};
+
+void LuaArguments::setProperty(const RBX::SoundId& value)
+{
+    checked_cast<RBX::Reflection::TypedPropertyDescriptor<RBX::SoundId> >(*descriptor).getset->set(instance, value);
 }

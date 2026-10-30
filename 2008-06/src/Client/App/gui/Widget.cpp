@@ -1,4 +1,5 @@
 #include "gui/Widget.h"
+#include "gui/Button.h"
 
 namespace RBX
 {
@@ -35,5 +36,30 @@ namespace RBX
 		{
 			return GuiResponse();
 		}
+	}
+}
+
+
+namespace RBX
+{
+	void VerbWidget::onClick(const GuiEvent& event)
+	{
+		if (verb && verb->isEnabled())
+			verb->doIt(event.iDataState);
+	}
+
+	bool VerbWidget::isEnabled()
+	{
+		return Widget::isEnabled() && verb && verb->isEnabled();
+	}
+}
+
+
+namespace RBX
+{
+	void ImageWidget::render2d(Adorn* adorn)
+	{
+		if (isVisible())
+			guiImageDraw.render2d(adorn, isEnabled(), getMyRect(), Widget::NOTHING);
 	}
 }

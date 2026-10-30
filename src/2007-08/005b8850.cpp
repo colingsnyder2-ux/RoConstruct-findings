@@ -1,32 +1,26 @@
-// from server: 89% by colin
-struct DescribedBase;
-struct Variant;
-
-struct EnumPropertyDescriptor {
-    bool equalValues(const DescribedBase* a, const DescribedBase* b) const;
+// from server: 100% by tajop
+struct Obj_005dc2a0 {
+    bool func_005dc2a0();
 };
 
-struct SurfaceEnumPropDescriptor : EnumPropertyDescriptor {
-    struct GetSet {
-        virtual bool isReadOnly() const;
-        virtual bool isWriteOnly() const;
-        virtual void getValue(const DescribedBase* instance, Variant& value) const;
-    };
+extern "C" Obj_005dc2a0* __stdcall func_005b7e80(const void* v, const void** out);
+
+struct GetSet {
+    virtual void v0();
+    virtual void v1();
+    virtual void getValue(const void* instance, const void** value);
+};
+
+struct SurfaceEnumPropDescriptor {
     char pad[0x1c];
     GetSet* getset;
-    bool equalValues(const DescribedBase* a, const DescribedBase* b) const;
+    bool equalValues(const void* a, const void* b) const;
 };
 
-extern "C" void* __stdcall func_005b7e80(const DescribedBase* a, const DescribedBase** out);
-extern "C" bool __stdcall func_005dc2a0(void* p);
-
-bool SurfaceEnumPropDescriptor::equalValues(const DescribedBase* a, const DescribedBase* b) const
+bool SurfaceEnumPropDescriptor::equalValues(const void* a, const void* b) const
 {
-    const DescribedBase* tmp;
-    void* v = func_005b7e80(a, &tmp);
-    if (func_005dc2a0(v)) {
-        GetSet* gs = getset;
-        gs->getValue(b, *(Variant*)&tmp);
+    if (func_005b7e80(b, &b)->func_005dc2a0()) {
+        getset->getValue(a, &b);
         return true;
     }
     return false;

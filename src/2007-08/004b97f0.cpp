@@ -1,31 +1,17 @@
-// from server: 96% by colin
-struct RakPeer
+// from server: 100% by tajop
+struct BigNum4
 {
-    int field_0;
-    int field_4;
-    int field_8;
-    int field_c;
-    int field_10;
-    int field_14;
-    int field_18;
-    int field_1c;
+    unsigned int word[4];
 };
 
-bool compare(const RakPeer* self, const RakPeer* other)
+bool greaterThan(const BigNum4* a, const BigNum4* b)
 {
-    int i = 3;
-    const int* a = &self->field_c;
-    int diff = (int)other - (int)self;
-    while (i >= 0)
+    for (int i = 3; i >= 0; --i)
     {
-        unsigned int lhs = *(const unsigned int*)((const char*)a + diff);
-        unsigned int rhs = *(const unsigned int*)a;
-        if (lhs > rhs)
+        if (a->word[i] > b->word[i])
             return true;
-        if (lhs < rhs)
+        if (a->word[i] < b->word[i])
             return false;
-        i--;
-        a--;
     }
     return false;
 }

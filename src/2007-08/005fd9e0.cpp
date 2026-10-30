@@ -1,17 +1,16 @@
-// from server: 97% by colin
-struct MouseCommand {
-    char pad[0x28];
+// from server: 100% by tajop
+struct PartTool {
+    PartTool* construct(int);
 };
 
-struct CloneTool : MouseCommand {
-    void construct(int);
-};
+extern "C" void __stdcall sub_5e3d10(int);
 
-void CloneTool::construct(int arg) {
-    extern void __stdcall base_construct(int);
-    base_construct(arg);
-    *(int*)this = 0x7c266c;
-    *(int*)((char*)this + 4) = 0x7c2650;
-    *(int*)((char*)this + 0x20) = 0;
+PartTool* PartTool::construct(int a)
+{
+    sub_5e3d10(a);
+    *(int*)this = 0x7acefc;
+    *(int*)((char*)this + 4) = 0x7acee4;
+    *(volatile int*)((char*)this + 0x20) = 0;
     *(int*)((char*)this + 0x24) = 0;
+    return this;
 }

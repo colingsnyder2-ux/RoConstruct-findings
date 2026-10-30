@@ -2576,6 +2576,20 @@
     "user": "coldek"
   },
   {
+    "addr": "00642270",
+    "client": "2008-06",
+    "job": "498fcc2e7e1c45869facb62f677ff5eb",
+    "model": "GPT-5",
+    "user": "colin"
+  },
+  {
+    "addr": "006423e0",
+    "client": "2008-06",
+    "job": "498fcc2e7e1c45869facb62f677ff5eb",
+    "model": "GPT-5",
+    "user": "colin"
+  },
+  {
     "addr": "00642fc0",
     "client": "2008-06",
     "job": "981c606609864414b2c608ce100c68ef",
@@ -2730,6 +2744,13 @@
     "user": "colin"
   },
   {
+    "addr": "0064f070",
+    "client": "2008-06",
+    "job": "00e49e6686714f1c936a833f527f0353",
+    "model": "GPT-5",
+    "user": "colin"
+  },
+  {
     "addr": "00658a00",
     "client": "2008-06",
     "job": "de7b9eae5623429791a439bbab6a29c6",
@@ -2741,6 +2762,13 @@
     "client": "2008-06",
     "job": "0e9e29d062944c2195b02e71d3218e3f",
     "model": "gpt-6.1-sol",
+    "user": "colin"
+  },
+  {
+    "addr": "006602b0",
+    "client": "2008-06",
+    "job": "43efaa2fbda944079018684c1d090546",
+    "model": "GPT-5",
     "user": "colin"
   },
   {
