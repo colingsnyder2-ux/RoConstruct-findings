@@ -1,3 +1,0 @@
-layer sdk-helpers: 0 compile errors
-verified layer: 144 exact symbols swapped in
-MfcAtl: linked=True test_exit=0; 515 object functions, 168 byte-identical to unique 2008 functions (153 of >=16 bytes)

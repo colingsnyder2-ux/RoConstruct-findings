@@ -1,7 +1,0 @@
-{
- "shared_symbols": 7654,
- "identical_code_and_recorded_refs": 7500,
- "same_code_different_refs": 79,
- "different_code": 75,
- "qualification": "Measurement only. Matching code and recorded references does not prove ABI safety or transitive callee identity. Flag-only differences require controlled recompilation."
-}
