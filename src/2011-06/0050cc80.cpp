@@ -1,515 +1,72 @@
+// roc 2011-06 0050cc80  unit: RBX::Network::ServerReplicator  size: 164 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0050cc80
+//
+// 0050cc80  6aff                 push -1
+// 0050cc82  6818d39d00           push 0x9dd318
+// 0050cc87  64a100000000         mov eax, dword ptr fs:[0]
+// 0050cc8d  50                   push eax
+// 0050cc8e  64892500000000       mov dword ptr fs:[0], esp
+// 0050cc95  51                   push ecx
+// 0050cc96  53                   push ebx
+// 0050cc97  56                   push esi
+// 0050cc98  8bf1                 mov esi, ecx
+// 0050cc9a  57                   push edi
+// 0050cc9b  8974240c             mov dword ptr [esp + 0xc], esi
+// 0050cc9f  33db                 xor ebx, ebx
+// 0050cca1  33ff                 xor edi, edi
+// 0050cca3  895c2418             mov dword ptr [esp + 0x18], ebx
+// 0050cca7  395e04               cmp dword ptr [esi + 4], ebx
+// 0050ccaa  7625                 jbe 0x50ccd1
+// 0050ccac  55                   push ebp
+// 0050ccad  8d4900               lea ecx, [ecx]
+// 0050ccb0  8b06                 mov eax, dword ptr [esi]
+// 0050ccb2  8b6cf804             mov ebp, dword ptr [eax + edi*8 + 4]
+// 0050ccb6  3beb                 cmp ebp, ebx
+// 0050ccb8  7410                 je 0x50ccca
+// 0050ccba  8bcd                 mov ecx, ebp
+// 0050ccbc  e80f220100           call 0x51eed0
+// 0050ccc1  55                   push ebp
+// 0050ccc2  e891d32f00           call 0x80a058
+// 0050ccc7  83c404               add esp, 4
+// 0050ccca  47                   inc edi
+// 0050cccb  3b7e04               cmp edi, dword ptr [esi + 4]
+// 0050ccce  72e0                 jb 0x50ccb0
+// 0050ccd0  5d                   pop ebp
+// 0050ccd1  885e14               mov byte ptr [esi + 0x14], bl
+// 0050ccd4  395e08               cmp dword ptr [esi + 8], ebx
+// 0050ccd7  7439                 je 0x50cd12
+// 0050ccd9  8b0e                 mov ecx, dword ptr [esi]
+// 0050ccdb  51                   push ecx
+// 0050ccdc  e823d62f00           call 0x80a304
+// 0050cce1  83c404               add esp, 4
+// 0050cce4  895e08               mov dword ptr [esi + 8], ebx
+// 0050cce7  891e                 mov dword ptr [esi], ebx
+// 0050cce9  895e04               mov dword ptr [esi + 4], ebx
+// 0050ccec  3bdb                 cmp ebx, ebx
+// 0050ccee  7422                 je 0x50cd12
+// 0050ccf0  8bd3                 mov edx, ebx
+// 0050ccf2  52                   push edx
+// 0050ccf3  e80cd62f00           call 0x80a304
+// 0050ccf8  83c404               add esp, 4
+// 0050ccfb  895e08               mov dword ptr [esi + 8], ebx
+// 0050ccfe  891e                 mov dword ptr [esi], ebx
+// 0050cd00  895e04               mov dword ptr [esi + 4], ebx
+// 0050cd03  3bdb                 cmp ebx, ebx
+// 0050cd05  760b                 jbe 0x50cd12
+// 0050cd07  8bc3                 mov eax, ebx
+// 0050cd09  50                   push eax
+// 0050cd0a  e8f5d52f00           call 0x80a304
+// 0050cd0f  83c404               add esp, 4
+// 0050cd12  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 0050cd16  5f                   pop edi
+// 0050cd17  5e                   pop esi
+// 0050cd18  5b                   pop ebx
+// 0050cd19  64890d00000000       mov dword ptr fs:[0], ecx
+// 0050cd20  83c410               add esp, 0x10
+// 0050cd23  c3                   ret 
+// copied from an identical function in another client (function ??1StringCompressor@RakNet@@QAE@XZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: raknet-4.081 StringCompressor.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
- *  Copyright (c) 2014, Oculus VR, Inc.
- *  All rights reserved.
- *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
- */
-
-/// \file
-///
-
-
-
-#include "StringCompressor.h"
-#include "DS_HuffmanEncodingTree.h"
-#include "BitStream.h"
-#include "RakString.h"
-#include "RakAssert.h"
-#include <string.h>
-
-#include <memory.h>
-
-
-
-
-
-
-
-using namespace RakNet;
-
-StringCompressor* StringCompressor::instance=0;
-int StringCompressor::referenceCount=0;
-
-void StringCompressor::AddReference(void)
-{
-	if (++referenceCount==1)
-	{
-		instance = RakNet::OP_NEW<StringCompressor>( _FILE_AND_LINE_ );
-	}
-}
-void StringCompressor::RemoveReference(void)
-{
-	RakAssert(referenceCount > 0);
-
-	if (referenceCount > 0)
-	{
-		if (--referenceCount==0)
-		{
-			RakNet::OP_DELETE(instance, _FILE_AND_LINE_);
-			instance=0;
-		}
-	}
-}
-
-StringCompressor* StringCompressor::Instance(void)
-{
-	return instance;
-}
-
-unsigned int englishCharacterFrequencies[ 256 ] =
-{
-	0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		722,
-		0,
-		0,
-		2,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		11084,
-		58,
-		63,
-		1,
-		0,
-		31,
-		0,
-		317,
-		64,
-		64,
-		44,
-		0,
-		695,
-		62,
-		980,
-		266,
-		69,
-		67,
-		56,
-		7,
-		73,
-		3,
-		14,
-		2,
-		69,
-		1,
-		167,
-		9,
-		1,
-		2,
-		25,
-		94,
-		0,
-		195,
-		139,
-		34,
-		96,
-		48,
-		103,
-		56,
-		125,
-		653,
-		21,
-		5,
-		23,
-		64,
-		85,
-		44,
-		34,
-		7,
-		92,
-		76,
-		147,
-		12,
-		14,
-		57,
-		15,
-		39,
-		15,
-		1,
-		1,
-		1,
-		2,
-		3,
-		0,
-		3611,
-		845,
-		1077,
-		1884,
-		5870,
-		841,
-		1057,
-		2501,
-		3212,
-		164,
-		531,
-		2019,
-		1330,
-		3056,
-		4037,
-		848,
-		47,
-		2586,
-		2919,
-		4771,
-		1707,
-		535,
-		1106,
-		152,
-		1243,
-		100,
-		0,
-		2,
-		0,
-		10,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0
-};
-
-StringCompressor::StringCompressor()
-{
-	DataStructures::Map<int, HuffmanEncodingTree *>::IMPLEMENT_DEFAULT_COMPARISON();
-
-	// Make a default tree immediately, since this is used for RPC possibly from multiple threads at the same time
-	HuffmanEncodingTree *huffmanEncodingTree = RakNet::OP_NEW<HuffmanEncodingTree>( _FILE_AND_LINE_ );
-	huffmanEncodingTree->GenerateFromFrequencyTable( englishCharacterFrequencies );
-
-	huffmanEncodingTrees.Set(0, huffmanEncodingTree);
-}
-void StringCompressor::GenerateTreeFromStrings( unsigned char *input, unsigned inputLength, uint8_t languageId )
-{
-	HuffmanEncodingTree *huffmanEncodingTree;
-	if (huffmanEncodingTrees.Has(languageId))
-	{
-		huffmanEncodingTree = huffmanEncodingTrees.Get(languageId);
-		RakNet::OP_DELETE(huffmanEncodingTree, _FILE_AND_LINE_);
-	}
-
-	unsigned index;
-	unsigned int frequencyTable[ 256 ];
-
-	if ( inputLength == 0 )
-		return ;
-
-	// Zero out the frequency table
-	memset( frequencyTable, 0, sizeof( frequencyTable ) );
-
-	// Generate the frequency table from the strings
-	for ( index = 0; index < inputLength; index++ )
-		frequencyTable[ input[ index ] ] ++;
-
-	// Build the tree
-	huffmanEncodingTree = RakNet::OP_NEW<HuffmanEncodingTree>( _FILE_AND_LINE_ );
-	huffmanEncodingTree->GenerateFromFrequencyTable( frequencyTable );
-	huffmanEncodingTrees.Set(languageId, huffmanEncodingTree);
-}
-
-StringCompressor::~StringCompressor()
-{
-	for (unsigned i=0; i < huffmanEncodingTrees.Size(); i++)
-		RakNet::OP_DELETE(huffmanEncodingTrees[i], _FILE_AND_LINE_);
-}
-
-void StringCompressor::EncodeString( const char *input, int maxCharsToWrite, RakNet::BitStream *output, uint8_t languageId )
-{
-	HuffmanEncodingTree *huffmanEncodingTree;
-	if (huffmanEncodingTrees.Has(languageId)==false)
-		return;
-	huffmanEncodingTree=huffmanEncodingTrees.Get(languageId);
-
-	if ( input == 0 )
-	{
-		output->WriteCompressed( (uint32_t) 0 );
-		return ;
-	}
-
-	RakNet::BitStream encodedBitStream;
-
-	uint32_t stringBitLength;
-
-	int charsToWrite;
-
-	if ( maxCharsToWrite<=0 || ( int ) strlen( input ) < maxCharsToWrite )
-		charsToWrite = ( int ) strlen( input );
-	else
-		charsToWrite = maxCharsToWrite - 1;
-
-	huffmanEncodingTree->EncodeArray( ( unsigned char* ) input, charsToWrite, &encodedBitStream );
-
-	stringBitLength = (uint32_t) encodedBitStream.GetNumberOfBitsUsed();
-
-	output->WriteCompressed( stringBitLength );
-
-	output->WriteBits( encodedBitStream.GetData(), stringBitLength );
-}
-
-bool StringCompressor::DecodeString( char *output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
-{
-	HuffmanEncodingTree *huffmanEncodingTree;
-	if (huffmanEncodingTrees.Has(languageId)==false)
-		return false;
-	if (maxCharsToWrite<=0)
-		return false;
-	huffmanEncodingTree=huffmanEncodingTrees.Get(languageId);
-
-	uint32_t stringBitLength;
-	int bytesInStream;
-
-	output[ 0 ] = 0;
-
-	if ( input->ReadCompressed( stringBitLength ) == false )
-		return false;
-
-	if ( (unsigned) input->GetNumberOfUnreadBits() < stringBitLength )
-		return false;
-
-	bytesInStream = huffmanEncodingTree->DecodeArray( input, stringBitLength, maxCharsToWrite, ( unsigned char* ) output );
-
-	if ( bytesInStream < maxCharsToWrite )
-		output[ bytesInStream ] = 0;
-	else
-		output[ maxCharsToWrite - 1 ] = 0;
-
-	return true;
-}
-#ifdef _CSTRING_COMPRESSOR
-void StringCompressor::EncodeString( const CString &input, int maxCharsToWrite, RakNet::BitStream *output )
-{
-	LPTSTR p = input;
-	EncodeString(p, maxCharsToWrite*sizeof(TCHAR), output, languageID);
-}
-bool StringCompressor::DecodeString( CString &output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
-{
-	LPSTR p = output.GetBuffer(maxCharsToWrite*sizeof(TCHAR));
-	DecodeString(p,maxCharsToWrite*sizeof(TCHAR), input, languageID);
-	output.ReleaseBuffer(0)
-
-}
-#endif
-#ifdef _STD_STRING_COMPRESSOR
-void StringCompressor::EncodeString( const std::string &input, int maxCharsToWrite, RakNet::BitStream *output, uint8_t languageId )
-{
-	EncodeString(input.c_str(), maxCharsToWrite, output, languageId);
-}
-bool StringCompressor::DecodeString( std::string *output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
-{
-	if (maxCharsToWrite <= 0)
-	{
-		output->clear();
-		return true;
-	}
-
-	char *destinationBlock;
-	bool out;
-
-#if USE_ALLOCA==1
-	if (maxCharsToWrite < MAX_ALLOCA_STACK_ALLOCATION)
-	{
-		destinationBlock = (char*) alloca(maxCharsToWrite);
-		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
-		*output=destinationBlock;
-	}
-	else
-#endif
-	{
-		destinationBlock = (char*) rakMalloc_Ex( maxCharsToWrite, _FILE_AND_LINE_ );
-		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
-		*output=destinationBlock;
-		rakFree_Ex(destinationBlock, _FILE_AND_LINE_ );
-	}
-
-	return out;
-}
-#endif
-void StringCompressor::EncodeString( const RakString *input, int maxCharsToWrite, RakNet::BitStream *output, uint8_t languageId )
-{
-	EncodeString(input->C_String(), maxCharsToWrite, output, languageId);
-}
-bool StringCompressor::DecodeString( RakString *output, int maxCharsToWrite, RakNet::BitStream *input, uint8_t languageId )
-{
-	if (maxCharsToWrite <= 0)
-	{
-		output->Clear();
-		return true;
-	}
-
-	char *destinationBlock;
-	bool out;
-
-#if USE_ALLOCA==1
-	if (maxCharsToWrite < MAX_ALLOCA_STACK_ALLOCATION)
-	{
-		destinationBlock = (char*) alloca(maxCharsToWrite);
-		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
-		*output=destinationBlock;
-	}
-	else
-#endif
-	{
-		destinationBlock = (char*) rakMalloc_Ex( maxCharsToWrite, _FILE_AND_LINE_ );
-		out=DecodeString(destinationBlock, maxCharsToWrite, input, languageId);
-		*output=destinationBlock;
-		rakFree_Ex(destinationBlock, _FILE_AND_LINE_ );
-	}
-
-	return out;
-}

@@ -1,407 +1,52 @@
 // from server: 100% by auto
+// roc 2007-08 00528e20  unit: seg_00520000  size: 128 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00528e20
+//
+// 00528e20  56                   push esi
+// 00528e21  57                   push edi
+// 00528e22  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 00528e26  8b4704               mov eax, dword ptr [edi + 4]
+// 00528e29  8b08                 mov ecx, dword ptr [eax]
+// 00528e2b  6a30                 push 0x30
+// 00528e2d  6a01                 push 1
+// 00528e2f  57                   push edi
+// 00528e30  ffd1                 call ecx
+// 00528e32  8bf0                 mov esi, eax
+// 00528e34  89b7a0010000         mov dword ptr [edi + 0x1a0], esi
+// 00528e3a  33c0                 xor eax, eax
+// 00528e3c  c70680895200         mov dword ptr [esi], 0x528980
+// 00528e42  884608               mov byte ptr [esi + 8], al
+// 00528e45  8b5764               mov edx, dword ptr [edi + 0x64]
+// 00528e48  0faf575c             imul edx, dword ptr [edi + 0x5c]
+// 00528e4c  83c40c               add esp, 0xc
+// 00528e4f  895628               mov dword ptr [esi + 0x28], edx
+// 00528e52  83bf1401000002       cmp dword ptr [edi + 0x114], 2
+// 00528e59  752b                 jne 0x528e86
+// 00528e5b  8bca                 mov ecx, edx
+// 00528e5d  51                   push ecx
+// 00528e5e  c74604a0895200       mov dword ptr [esi + 4], 0x5289a0
+// 00528e65  c7460c008c5200       mov dword ptr [esi + 0xc], 0x528c00
+// 00528e6c  8b4704               mov eax, dword ptr [edi + 4]
+// 00528e6f  8b5004               mov edx, dword ptr [eax + 4]
+// 00528e72  6a01                 push 1
+// 00528e74  57                   push edi
+// 00528e75  ffd2                 call edx
+// 00528e77  83c40c               add esp, 0xc
+// 00528e7a  894620               mov dword ptr [esi + 0x20], eax
+// 00528e7d  8bc7                 mov eax, edi
+// 00528e7f  5f                   pop edi
+// 00528e80  5e                   pop esi
+// 00528e81  e92afaffff           jmp 0x5288b0
+// 00528e86  894620               mov dword ptr [esi + 0x20], eax
+// 00528e89  8bc7                 mov eax, edi
+// 00528e8b  5f                   pop edi
+// 00528e8c  c74604708a5200       mov dword ptr [esi + 4], 0x528a70
+// 00528e93  c7460cb08a5200       mov dword ptr [esi + 0xc], 0x528ab0
+// 00528e9a  5e                   pop esi
+// 00528e9b  e910faffff           jmp 0x5288b0
+// library jpeg-6b/jdmerge.c (function _jinit_merged_upsampler)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdmerge.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jdmerge.c
- *
- * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains code for merged upsampling/color conversion.
- *
- * This file combines functions from jdsample.c and jdcolor.c;
- * read those files first to understand what's going on.
- *
- * When the chroma components are to be upsampled by simple replication
- * (ie, box filtering), we can save some work in color conversion by
- * calculating all the output pixels corresponding to a pair of chroma
- * samples at one time.  In the conversion equations
- *	R = Y           + K1 * Cr
- *	G = Y + K2 * Cb + K3 * Cr
- *	B = Y + K4 * Cb
- * only the Y term varies among the group of pixels corresponding to a pair
- * of chroma samples, so the rest of the terms can be calculated just once.
- * At typical sampling ratios, this eliminates half or three-quarters of the
- * multiplications needed for color conversion.
- *
- * This file currently provides implementations for the following cases:
- *	YCbCr => RGB color conversion only.
- *	Sampling ratios of 2h1v or 2h2v.
- *	No scaling needed at upsample time.
- *	Corner-aligned (non-CCIR601) sampling alignment.
- * Other special cases could be added, but in most applications these are
- * the only common cases.  (For uncommon cases we fall back on the more
- * general code in jdsample.c and jdcolor.c.)
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-#ifdef UPSAMPLE_MERGING_SUPPORTED
-
-
-/* Private subobject */
-
-typedef struct {
-  struct jpeg_upsampler pub;	/* public fields */
-
-  /* Pointer to routine to do actual upsampling/conversion of one row group */
-  JMETHOD(void, upmethod, (j_decompress_ptr cinfo,
-			   JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-			   JSAMPARRAY output_buf));
-
-  /* Private state for YCC->RGB conversion */
-  int * Cr_r_tab;		/* => table for Cr to R conversion */
-  int * Cb_b_tab;		/* => table for Cb to B conversion */
-  INT32 * Cr_g_tab;		/* => table for Cr to G conversion */
-  INT32 * Cb_g_tab;		/* => table for Cb to G conversion */
-
-  /* For 2:1 vertical sampling, we produce two output rows at a time.
-   * We need a "spare" row buffer to hold the second output row if the
-   * application provides just a one-row buffer; we also use the spare
-   * to discard the dummy last row if the image height is odd.
-   */
-  JSAMPROW spare_row;
-  boolean spare_full;		/* T if spare buffer is occupied */
-
-  JDIMENSION out_row_width;	/* samples per output row */
-  JDIMENSION rows_to_go;	/* counts rows remaining in image */
-} my_upsampler;
-
-typedef my_upsampler * my_upsample_ptr;
-
-#define SCALEBITS	16	/* speediest right-shift on some machines */
-#define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
-#define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
-
-
-/*
- * Initialize tables for YCC->RGB colorspace conversion.
- * This is taken directly from jdcolor.c; see that file for more info.
- */
-
-LOCAL(void)
-build_ycc_rgb_table (j_decompress_ptr cinfo)
-{
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-  int i;
-  INT32 x;
-  SHIFT_TEMPS
-
-  upsample->Cr_r_tab = (int *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				(MAXJSAMPLE+1) * SIZEOF(int));
-  upsample->Cb_b_tab = (int *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				(MAXJSAMPLE+1) * SIZEOF(int));
-  upsample->Cr_g_tab = (INT32 *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				(MAXJSAMPLE+1) * SIZEOF(INT32));
-  upsample->Cb_g_tab = (INT32 *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				(MAXJSAMPLE+1) * SIZEOF(INT32));
-
-  for (i = 0, x = -CENTERJSAMPLE; i <= MAXJSAMPLE; i++, x++) {
-    /* i is the actual input pixel value, in the range 0..MAXJSAMPLE */
-    /* The Cb or Cr value we are thinking of is x = i - CENTERJSAMPLE */
-    /* Cr=>R value is nearest int to 1.40200 * x */
-    upsample->Cr_r_tab[i] = (int)
-		    RIGHT_SHIFT(FIX(1.40200) * x + ONE_HALF, SCALEBITS);
-    /* Cb=>B value is nearest int to 1.77200 * x */
-    upsample->Cb_b_tab[i] = (int)
-		    RIGHT_SHIFT(FIX(1.77200) * x + ONE_HALF, SCALEBITS);
-    /* Cr=>G value is scaled-up -0.71414 * x */
-    upsample->Cr_g_tab[i] = (- FIX(0.71414)) * x;
-    /* Cb=>G value is scaled-up -0.34414 * x */
-    /* We also add in ONE_HALF so that need not do it in inner loop */
-    upsample->Cb_g_tab[i] = (- FIX(0.34414)) * x + ONE_HALF;
-  }
-}
-
-
-/*
- * Initialize for an upsampling pass.
- */
-
-METHODDEF(void)
-start_pass_merged_upsample (j_decompress_ptr cinfo)
-{
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-
-  /* Mark the spare buffer empty */
-  upsample->spare_full = FALSE;
-  /* Initialize total-height counter for detecting bottom of image */
-  upsample->rows_to_go = cinfo->output_height;
-}
-
-
-/*
- * Control routine to do upsampling (and color conversion).
- *
- * The control routine just handles the row buffering considerations.
- */
-
-METHODDEF(void)
-merged_2v_upsample (j_decompress_ptr cinfo,
-		    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-		    JDIMENSION in_row_groups_avail,
-		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-		    JDIMENSION out_rows_avail)
-/* 2:1 vertical sampling case: may need a spare row. */
-{
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-  JSAMPROW work_ptrs[2];
-  JDIMENSION num_rows;		/* number of rows returned to caller */
-
-  if (upsample->spare_full) {
-    /* If we have a spare row saved from a previous cycle, just return it. */
-    jcopy_sample_rows(& upsample->spare_row, 0, output_buf + *out_row_ctr, 0,
-		      1, upsample->out_row_width);
-    num_rows = 1;
-    upsample->spare_full = FALSE;
-  } else {
-    /* Figure number of rows to return to caller. */
-    num_rows = 2;
-    /* Not more than the distance to the end of the image. */
-    if (num_rows > upsample->rows_to_go)
-      num_rows = upsample->rows_to_go;
-    /* And not more than what the client can accept: */
-    out_rows_avail -= *out_row_ctr;
-    if (num_rows > out_rows_avail)
-      num_rows = out_rows_avail;
-    /* Create output pointer array for upsampler. */
-    work_ptrs[0] = output_buf[*out_row_ctr];
-    if (num_rows > 1) {
-      work_ptrs[1] = output_buf[*out_row_ctr + 1];
-    } else {
-      work_ptrs[1] = upsample->spare_row;
-      upsample->spare_full = TRUE;
-    }
-    /* Now do the upsampling. */
-    (*upsample->upmethod) (cinfo, input_buf, *in_row_group_ctr, work_ptrs);
-  }
-
-  /* Adjust counts */
-  *out_row_ctr += num_rows;
-  upsample->rows_to_go -= num_rows;
-  /* When the buffer is emptied, declare this input row group consumed */
-  if (! upsample->spare_full)
-    (*in_row_group_ctr)++;
-}
-
-
-METHODDEF(void)
-merged_1v_upsample (j_decompress_ptr cinfo,
-		    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-		    JDIMENSION in_row_groups_avail,
-		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-		    JDIMENSION out_rows_avail)
-/* 1:1 vertical sampling case: much easier, never need a spare row. */
-{
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-
-  /* Just do the upsampling. */
-  (*upsample->upmethod) (cinfo, input_buf, *in_row_group_ctr,
-			 output_buf + *out_row_ctr);
-  /* Adjust counts */
-  (*out_row_ctr)++;
-  (*in_row_group_ctr)++;
-}
-
-
-/*
- * These are the routines invoked by the control routines to do
- * the actual upsampling/conversion.  One row group is processed per call.
- *
- * Note: since we may be writing directly into application-supplied buffers,
- * we have to be honest about the output width; we can't assume the buffer
- * has been rounded up to an even width.
- */
-
-
-/*
- * Upsample and color convert for the case of 2:1 horizontal and 1:1 vertical.
- */
-
-METHODDEF(void)
-h2v1_merged_upsample (j_decompress_ptr cinfo,
-		      JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-		      JSAMPARRAY output_buf)
-{
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-  register int y, cred, cgreen, cblue;
-  int cb, cr;
-  register JSAMPROW outptr;
-  JSAMPROW inptr0, inptr1, inptr2;
-  JDIMENSION col;
-  /* copy these pointers into registers if possible */
-  register JSAMPLE * range_limit = cinfo->sample_range_limit;
-  int * Crrtab = upsample->Cr_r_tab;
-  int * Cbbtab = upsample->Cb_b_tab;
-  INT32 * Crgtab = upsample->Cr_g_tab;
-  INT32 * Cbgtab = upsample->Cb_g_tab;
-  SHIFT_TEMPS
-
-  inptr0 = input_buf[0][in_row_group_ctr];
-  inptr1 = input_buf[1][in_row_group_ctr];
-  inptr2 = input_buf[2][in_row_group_ctr];
-  outptr = output_buf[0];
-  /* Loop for each pair of output pixels */
-  for (col = cinfo->output_width >> 1; col > 0; col--) {
-    /* Do the chroma part of the calculation */
-    cb = GETJSAMPLE(*inptr1++);
-    cr = GETJSAMPLE(*inptr2++);
-    cred = Crrtab[cr];
-    cgreen = (int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr], SCALEBITS);
-    cblue = Cbbtab[cb];
-    /* Fetch 2 Y values and emit 2 pixels */
-    y  = GETJSAMPLE(*inptr0++);
-    outptr[RGB_RED] =   range_limit[y + cred];
-    outptr[RGB_GREEN] = range_limit[y + cgreen];
-    outptr[RGB_BLUE] =  range_limit[y + cblue];
-    outptr += RGB_PIXELSIZE;
-    y  = GETJSAMPLE(*inptr0++);
-    outptr[RGB_RED] =   range_limit[y + cred];
-    outptr[RGB_GREEN] = range_limit[y + cgreen];
-    outptr[RGB_BLUE] =  range_limit[y + cblue];
-    outptr += RGB_PIXELSIZE;
-  }
-  /* If image width is odd, do the last output column separately */
-  if (cinfo->output_width & 1) {
-    cb = GETJSAMPLE(*inptr1);
-    cr = GETJSAMPLE(*inptr2);
-    cred = Crrtab[cr];
-    cgreen = (int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr], SCALEBITS);
-    cblue = Cbbtab[cb];
-    y  = GETJSAMPLE(*inptr0);
-    outptr[RGB_RED] =   range_limit[y + cred];
-    outptr[RGB_GREEN] = range_limit[y + cgreen];
-    outptr[RGB_BLUE] =  range_limit[y + cblue];
-  }
-}
-
-
-/*
- * Upsample and color convert for the case of 2:1 horizontal and 2:1 vertical.
- */
-
-METHODDEF(void)
-h2v2_merged_upsample (j_decompress_ptr cinfo,
-		      JSAMPIMAGE input_buf, JDIMENSION in_row_group_ctr,
-		      JSAMPARRAY output_buf)
-{
-  my_upsample_ptr upsample = (my_upsample_ptr) cinfo->upsample;
-  register int y, cred, cgreen, cblue;
-  int cb, cr;
-  register JSAMPROW outptr0, outptr1;
-  JSAMPROW inptr00, inptr01, inptr1, inptr2;
-  JDIMENSION col;
-  /* copy these pointers into registers if possible */
-  register JSAMPLE * range_limit = cinfo->sample_range_limit;
-  int * Crrtab = upsample->Cr_r_tab;
-  int * Cbbtab = upsample->Cb_b_tab;
-  INT32 * Crgtab = upsample->Cr_g_tab;
-  INT32 * Cbgtab = upsample->Cb_g_tab;
-  SHIFT_TEMPS
-
-  inptr00 = input_buf[0][in_row_group_ctr*2];
-  inptr01 = input_buf[0][in_row_group_ctr*2 + 1];
-  inptr1 = input_buf[1][in_row_group_ctr];
-  inptr2 = input_buf[2][in_row_group_ctr];
-  outptr0 = output_buf[0];
-  outptr1 = output_buf[1];
-  /* Loop for each group of output pixels */
-  for (col = cinfo->output_width >> 1; col > 0; col--) {
-    /* Do the chroma part of the calculation */
-    cb = GETJSAMPLE(*inptr1++);
-    cr = GETJSAMPLE(*inptr2++);
-    cred = Crrtab[cr];
-    cgreen = (int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr], SCALEBITS);
-    cblue = Cbbtab[cb];
-    /* Fetch 4 Y values and emit 4 pixels */
-    y  = GETJSAMPLE(*inptr00++);
-    outptr0[RGB_RED] =   range_limit[y + cred];
-    outptr0[RGB_GREEN] = range_limit[y + cgreen];
-    outptr0[RGB_BLUE] =  range_limit[y + cblue];
-    outptr0 += RGB_PIXELSIZE;
-    y  = GETJSAMPLE(*inptr00++);
-    outptr0[RGB_RED] =   range_limit[y + cred];
-    outptr0[RGB_GREEN] = range_limit[y + cgreen];
-    outptr0[RGB_BLUE] =  range_limit[y + cblue];
-    outptr0 += RGB_PIXELSIZE;
-    y  = GETJSAMPLE(*inptr01++);
-    outptr1[RGB_RED] =   range_limit[y + cred];
-    outptr1[RGB_GREEN] = range_limit[y + cgreen];
-    outptr1[RGB_BLUE] =  range_limit[y + cblue];
-    outptr1 += RGB_PIXELSIZE;
-    y  = GETJSAMPLE(*inptr01++);
-    outptr1[RGB_RED] =   range_limit[y + cred];
-    outptr1[RGB_GREEN] = range_limit[y + cgreen];
-    outptr1[RGB_BLUE] =  range_limit[y + cblue];
-    outptr1 += RGB_PIXELSIZE;
-  }
-  /* If image width is odd, do the last output column separately */
-  if (cinfo->output_width & 1) {
-    cb = GETJSAMPLE(*inptr1);
-    cr = GETJSAMPLE(*inptr2);
-    cred = Crrtab[cr];
-    cgreen = (int) RIGHT_SHIFT(Cbgtab[cb] + Crgtab[cr], SCALEBITS);
-    cblue = Cbbtab[cb];
-    y  = GETJSAMPLE(*inptr00);
-    outptr0[RGB_RED] =   range_limit[y + cred];
-    outptr0[RGB_GREEN] = range_limit[y + cgreen];
-    outptr0[RGB_BLUE] =  range_limit[y + cblue];
-    y  = GETJSAMPLE(*inptr01);
-    outptr1[RGB_RED] =   range_limit[y + cred];
-    outptr1[RGB_GREEN] = range_limit[y + cgreen];
-    outptr1[RGB_BLUE] =  range_limit[y + cblue];
-  }
-}
-
-
-/*
- * Module initialization routine for merged upsampling/color conversion.
- *
- * NB: this is called under the conditions determined by use_merged_upsample()
- * in jdmaster.c.  That routine MUST correspond to the actual capabilities
- * of this module; no safety checks are made here.
- */
-
-GLOBAL(void)
-jinit_merged_upsampler (j_decompress_ptr cinfo)
-{
-  my_upsample_ptr upsample;
-
-  upsample = (my_upsample_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_upsampler));
-  cinfo->upsample = (struct jpeg_upsampler *) upsample;
-  upsample->pub.start_pass = start_pass_merged_upsample;
-  upsample->pub.need_context_rows = FALSE;
-
-  upsample->out_row_width = cinfo->output_width * cinfo->out_color_components;
-
-  if (cinfo->max_v_samp_factor == 2) {
-    upsample->pub.upsample = merged_2v_upsample;
-    upsample->upmethod = h2v2_merged_upsample;
-    /* Allocate a spare row buffer */
-    upsample->spare_row = (JSAMPROW)
-      (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-		(size_t) (upsample->out_row_width * SIZEOF(JSAMPLE)));
-  } else {
-    upsample->pub.upsample = merged_1v_upsample;
-    upsample->upmethod = h2v1_merged_upsample;
-    /* No spare row needed */
-    upsample->spare_row = NULL;
-  }
-
-  build_ycc_rgb_table(cinfo);
-}
-
-#endif /* UPSAMPLE_MERGING_SUPPORTED */

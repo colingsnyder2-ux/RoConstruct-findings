@@ -1,143 +1,48 @@
+// roc 2010-06 004834b0  unit: RBX::LDraw2Lua::LDrawParser  size: 115 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 004834b0
+//
+// 004834b0  6aff                 push -1
+// 004834b2  68c45a9800           push 0x985ac4
+// 004834b7  64a100000000         mov eax, dword ptr fs:[0]
+// 004834bd  50                   push eax
+// 004834be  64892500000000       mov dword ptr fs:[0], esp
+// 004834c5  83ec08               sub esp, 8
+// 004834c8  8b442418             mov eax, dword ptr [esp + 0x18]
+// 004834cc  53                   push ebx
+// 004834cd  56                   push esi
+// 004834ce  57                   push edi
+// 004834cf  8bf9                 mov edi, ecx
+// 004834d1  50                   push eax
+// 004834d2  8d4f04               lea ecx, [edi + 4]
+// 004834d5  897c2414             mov dword ptr [esp + 0x14], edi
+// 004834d9  c7076c31a100         mov dword ptr [edi], 0xa1316c
+// 004834df  ff1510a49e00         call dword ptr [0x9ea410]
+// 004834e5  33db                 xor ebx, ebx
+// 004834e7  6a04                 push 4
+// 004834e9  895c2420             mov dword ptr [esp + 0x20], ebx
+// 004834ed  8d7720               lea esi, [edi + 0x20]
+// 004834f0  e8ab443200           call 0x7a79a0
+// 004834f5  83c404               add esp, 4
+// 004834f8  3bc3                 cmp eax, ebx
+// 004834fa  7404                 je 0x483500
+// 004834fc  8930                 mov dword ptr [eax], esi
+// 004834fe  eb02                 jmp 0x483502
+// 00483500  33c0                 xor eax, eax
+// 00483502  8906                 mov dword ptr [esi], eax
+// 00483504  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 00483508  895e0c               mov dword ptr [esi + 0xc], ebx
+// 0048350b  895e10               mov dword ptr [esi + 0x10], ebx
+// 0048350e  895e14               mov dword ptr [esi + 0x14], ebx
+// 00483511  8bc7                 mov eax, edi
+// 00483513  5f                   pop edi
+// 00483514  5e                   pop esi
+// 00483515  5b                   pop ebx
+// 00483516  64890d00000000       mov dword ptr fs:[0], ecx
+// 0048351d  83c414               add esp, 0x14
+// 00483520  c20400               ret 4
+// copied from an identical function in another client (function ??0RenderQueueInvocationSequence@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)
+
 // roc-cl: 30729
 // roc-lang: cpp
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
 // roc-lib: ogre-1.4.9-dll OgreRenderQueueInvocation.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2005 The OGRE Team
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-
-#include "OgreRenderQueueInvocation.h"
-#include "OgreSceneManager.h"
-#include "OgreException.h"
-
-namespace Ogre
-{
-	String RenderQueueInvocation::RENDER_QUEUE_INVOCATION_SHADOWS = "SHADOWS";
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocation::RenderQueueInvocation(uint8 renderQueueGroupID, 
-		const String& invocationName)
-		: mRenderQueueGroupID(renderQueueGroupID), mInvocationName(invocationName), 
-		mSolidsOrganisation(QueuedRenderableCollection::OM_PASS_GROUP), 
-		mSuppressShadows(false), mSuppressRenderStateChanges(false)
-	{
-
-	}
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocation::~RenderQueueInvocation()
-	{
-
-	}
-	//-----------------------------------------------------------------------------
-	void RenderQueueInvocation::invoke(RenderQueueGroup* group, SceneManager* targetSceneManager)
-	{
-		bool oldShadows = targetSceneManager->_areShadowsSuppressed();
-		bool oldRSChanges = targetSceneManager->_areRenderStateChangesSuppressed();
-
-		targetSceneManager->_suppressShadows(mSuppressShadows);
-		targetSceneManager->_suppressRenderStateChanges(mSuppressRenderStateChanges);
-
-		targetSceneManager->_renderQueueGroupObjects(group, mSolidsOrganisation);
-
-		targetSceneManager->_suppressShadows(oldShadows);
-		targetSceneManager->_suppressRenderStateChanges(oldRSChanges);
-
-	}
-	//-----------------------------------------------------------------------------
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocationSequence::RenderQueueInvocationSequence(const String& name)
-		:mName(name)
-	{
-	}
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocationSequence::~RenderQueueInvocationSequence()
-	{
-		clear();
-	}
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocation* RenderQueueInvocationSequence::add(uint8 renderQueueGroupID, 
-		const String& invocationName)
-	{
-		RenderQueueInvocation* ret = 
-			new RenderQueueInvocation(renderQueueGroupID, invocationName);
-
-		mInvocations.push_back(ret);
-
-		return ret;
-
-	}
-	//-----------------------------------------------------------------------------
-	void RenderQueueInvocationSequence::add(RenderQueueInvocation* i)
-	{
-		mInvocations.push_back(i);
-	}
-	//-----------------------------------------------------------------------------
-	void RenderQueueInvocationSequence::clear(void)
-	{
-		for (RenderQueueInvocationList::iterator i = mInvocations.begin();
-			i != mInvocations.end(); ++i)
-		{
-			delete *i;
-		}
-		mInvocations.clear();
-	}
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocation* RenderQueueInvocationSequence::get(size_t index)
-	{
-		if (index >= size())
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"Index out of bounds", 
-				"RenderQueueInvocationSequence::get");
-
-		return mInvocations[index];
-	}
-	//-----------------------------------------------------------------------------
-	void RenderQueueInvocationSequence::remove(size_t index)
-	{
-		if (index >= size())
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-			"Index out of bounds", 
-			"RenderQueueInvocationSequence::remove");
-		
-		RenderQueueInvocationList::iterator i = mInvocations.begin();
-		std::advance(i, index);
-		delete *i;
-		mInvocations.erase(i);
-		
-	}
-	//-----------------------------------------------------------------------------
-	RenderQueueInvocationIterator RenderQueueInvocationSequence::iterator(void)
-	{
-		return RenderQueueInvocationIterator(mInvocations.begin(), mInvocations.end());
-	}
-	//-----------------------------------------------------------------------------
-
-
-}

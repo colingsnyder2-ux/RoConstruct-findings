@@ -1,444 +1,141 @@
 // from server: 100% by auto
+// roc 2007-08 00714580  unit: CXTCaptionButtonThemeOffice2003  size: 363 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00714580
+//
+// 00714580  83ec44               sub esp, 0x44
+// 00714583  53                   push ebx
+// 00714584  8b5c2450             mov ebx, dword ptr [esp + 0x50]
+// 00714588  85db                 test ebx, ebx
+// 0071458a  894c2404             mov dword ptr [esp + 4], ecx
+// 0071458e  7504                 jne 0x714594
+// 00714590  33c0                 xor eax, eax
+// 00714592  eb03                 jmp 0x714597
+// 00714594  8b4320               mov eax, dword ptr [ebx + 0x20]
+// 00714597  50                   push eax
+// 00714598  ff15bced7700         call dword ptr [0x77edbc]
+// 0071459e  85c0                 test eax, eax
+// 007145a0  7507                 jne 0x7145a9
+// 007145a2  5b                   pop ebx
+// 007145a3  83c444               add esp, 0x44
+// 007145a6  c20800               ret 8
+// 007145a9  55                   push ebp
+// 007145aa  56                   push esi
+// 007145ab  8b742454             mov esi, dword ptr [esp + 0x54]
+// 007145af  8b4618               mov eax, dword ptr [esi + 0x18]
+// 007145b2  57                   push edi
+// 007145b3  50                   push eax
+// 007145b4  e8053e0200           call 0x7383be
+// 007145b9  8d4e1c               lea ecx, [esi + 0x1c]
+// 007145bc  51                   push ecx
+// 007145bd  8d542418             lea edx, [esp + 0x18]
+// 007145c1  52                   push edx
+// 007145c2  8bf8                 mov edi, eax
+// 007145c4  ff15e0ed7700         call dword ptr [0x77ede0]
+// 007145ca  8babac000000         mov ebp, dword ptr [ebx + 0xac]
+// 007145d0  85ed                 test ebp, ebp
+// 007145d2  8b4610               mov eax, dword ptr [esi + 0x10]
+// 007145d5  8944245c             mov dword ptr [esp + 0x5c], eax
+// 007145d9  7504                 jne 0x7145df
+// 007145db  33c0                 xor eax, eax
+// 007145dd  eb03                 jmp 0x7145e2
+// 007145df  8b4520               mov eax, dword ptr [ebp + 0x20]
+// 007145e2  50                   push eax
+// 007145e3  ff15bced7700         call dword ptr [0x77edbc]
+// 007145e9  85c0                 test eax, eax
+// 007145eb  0f84e5000000         je 0x7146d6
+// 007145f1  83bba000000000       cmp dword ptr [ebx + 0xa0], 0
+// 007145f8  750f                 jne 0x714609
+// 007145fa  ff1544ec7700         call dword ptr [0x77ec44]
+// 00714600  3b4320               cmp eax, dword ptr [ebx + 0x20]
+// 00714603  7404                 je 0x714609
+// 00714605  33c9                 xor ecx, ecx
+// 00714607  eb05                 jmp 0x71460e
+// 00714609  b901000000           mov ecx, 1
+// 0071460e  8b44245c             mov eax, dword ptr [esp + 0x5c]
+// 00714612  83e001               and eax, 1
+// 00714615  7557                 jne 0x71466e
+// 00714617  85c9                 test ecx, ecx
+// 00714619  755f                 jne 0x71467a
+// 0071461b  53                   push ebx
+// 0071461c  8d4c2428             lea ecx, [esp + 0x28]
+// 00714620  e87bb9f6ff           call 0x67ffa0
+// 00714625  8d4c2434             lea ecx, [esp + 0x34]
+// 00714629  e8923ef5ff           call 0x6684c0
+// 0071462e  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 00714632  8b11                 mov edx, dword ptr [ecx]
+// 00714634  8b527c               mov edx, dword ptr [edx + 0x7c]
+// 00714637  8d442434             lea eax, [esp + 0x34]
+// 0071463b  50                   push eax
+// 0071463c  55                   push ebp
+// 0071463d  8d44242c             lea eax, [esp + 0x2c]
+// 00714641  50                   push eax
+// 00714642  ffd2                 call edx
+// 00714644  6a00                 push 0
+// 00714646  6a00                 push 0
+// 00714648  8d44243c             lea eax, [esp + 0x3c]
+// 0071464c  50                   push eax
+// 0071464d  8d4c2420             lea ecx, [esp + 0x20]
+// 00714651  51                   push ecx
+// 00714652  57                   push edi
+// 00714653  e8e8dbf6ff           call 0x682240
+// 00714658  8bc8                 mov ecx, eax
+// 0071465a  e801dff6ff           call 0x682560
+// 0071465f  5f                   pop edi
+// 00714660  5e                   pop esi
+// 00714661  5d                   pop ebp
+// 00714662  b801000000           mov eax, 1
+// 00714667  5b                   pop ebx
+// 00714668  83c444               add esp, 0x44
+// 0071466b  c20800               ret 8
+// 0071466e  e8fd48f5ff           call 0x668f70
+// 00714673  0520010000           add eax, 0x120
+// 00714678  eb0a                 jmp 0x714684
+// 0071467a  e8f148f5ff           call 0x668f70
+// 0071467f  0540010000           add eax, 0x140
+// 00714684  6a00                 push 0
+// 00714686  6a00                 push 0
+// 00714688  50                   push eax
+// 00714689  8d542420             lea edx, [esp + 0x20]
+// 0071468d  52                   push edx
+// 0071468e  57                   push edi
+// 0071468f  e8acdbf6ff           call 0x682240
+// 00714694  8bc8                 mov ecx, eax
+// 00714696  e8c5def6ff           call 0x682560
+// 0071469b  e8d048f5ff           call 0x668f70
+// 007146a0  6a20                 push 0x20
+// 007146a2  8bc8                 mov ecx, eax
+// 007146a4  e8f742f5ff           call 0x6689a0
+// 007146a9  8bf0                 mov esi, eax
+// 007146ab  e8c048f5ff           call 0x668f70
+// 007146b0  56                   push esi
+// 007146b1  6a20                 push 0x20
+// 007146b3  8bc8                 mov ecx, eax
+// 007146b5  e8e642f5ff           call 0x6689a0
+// 007146ba  50                   push eax
+// 007146bb  8d44241c             lea eax, [esp + 0x1c]
+// 007146bf  50                   push eax
+// 007146c0  8bcf                 mov ecx, edi
+// 007146c2  e8e3c1f1ff           call 0x6308aa
+// 007146c7  5f                   pop edi
+// 007146c8  5e                   pop esi
+// 007146c9  5d                   pop ebp
+// 007146ca  b801000000           mov eax, 1
+// 007146cf  5b                   pop ebx
+// 007146d0  83c444               add esp, 0x44
+// 007146d3  c20800               ret 8
+// 007146d6  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 007146da  53                   push ebx
+// 007146db  56                   push esi
+// 007146dc  e8cfda0000           call 0x7221b0
+// 007146e1  5f                   pop edi
+// 007146e2  5e                   pop esi
+// 007146e3  5d                   pop ebp
+// 007146e4  5b                   pop ebx
+// 007146e5  83c444               add esp, 0x44
+// 007146e8  c20800               ret 8
+// library xtp-11.2.2-vc8/Source\Controls\XTCaptionTheme.cpp (function ?DrawButtonThemeBackground@CXTCaptionButtonThemeOffice2003@@MAEHPAUtagDRAWITEMSTRUCT@@PAVCXTButton@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/Controls/XTCaptionTheme.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTCaptionTheme.cpp: implementation of the CXTCaptionTheme class.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPWinThemeWrapper.h"
-
-#include "XTThemeManager.h"
-#include "XTButtonTheme.h"
-#include "XTDefines.h"
-#include "XTButton.h"
-#include "XTCaption.h"
-#include "XTCaptionTheme.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-IMPLEMENT_THEME_FACTORY(CXTCaptionTheme)
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionTheme
-
-CXTCaptionTheme::CXTCaptionTheme()
-{
-}
-
-void CXTCaptionTheme::RefreshMetrics()
-{
-	CXTThemeManagerStyle ::RefreshMetrics();
-
-	m_clrEdgeShadow.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
-	m_clrEdgeLight.SetStandardValue(GetXtremeColor(COLOR_3DHILIGHT));
-}
-
-void CXTCaptionTheme::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	CRect rc = rcItem;
-
-	// Set the background mode to transparent.
-	pDC->SetBkMode(TRANSPARENT);
-
-	// repaint the background.
-	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
-
-	// draw the caption border.
-	if (pCaption->m_dwExStyle & CPWS_EX_GROOVE_EDGE)
-	{
-		pDC->Draw3dRect(rc, m_clrEdgeShadow, m_clrEdgeLight);
-		rc.DeflateRect(1, 1);
-		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
-
-		if (pCaption->m_nBorder == 0)
-		{
-			rc.DeflateRect(1, 1);
-		}
-	}
-
-	else
-	if (pCaption->m_dwExStyle & CPWS_EX_RAISED_EDGE)
-	{
-		pDC->Draw3dRect(rc, m_clrEdgeLight, m_clrEdgeShadow);
-
-		if (pCaption->m_nBorder == 0)
-		{
-			rc.DeflateRect(1, 1);
-		}
-	}
-
-	// draw the caption banner border.
-	rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
-	pDC->FillSolidRect(rc, pCaption->m_clrFace);
-}
-
-void CXTCaptionTheme::DrawCaptionText(CDC* pDC, CXTCaption* pCaption)
-{
-		// if the caption text is empty, return.
-	if (pCaption->GetCaptionText().IsEmpty())
-	{
-		return;
-	}
-
-	// Get the display area for the text.
-	CRect rcText(pCaption->GetTextRect());
-
-	// Set the text color and select the caption font.
-	CXTPFontDC fontDC(pDC, pCaption->GetFont());
-	pDC->SetTextColor(pCaption->m_clrText);
-
-	// draw the text, and select the original font.
-	pDC->DrawText(pCaption->GetCaptionText(), rcText,
-		DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
-}
-
-void CXTCaptionTheme::DrawCaptionIcon(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	// If no icon was defined, just return.
-	if (pCaption->m_hIcon == NULL)
-		return;
-
-	CRect rc = rcItem;
-	rc.left = (rc.right - pCaption->m_sizeIcon.cx)-(pCaption->m_nBorder + 2);
-
-	// stop the icon at the left hand border
-	if (rc.left < pCaption->m_nBorder)
-	{
-		rc.left = pCaption->m_nBorder;
-	}
-
-	rc.top = (rcItem.Height() - pCaption->m_sizeIcon.cy)/2;
-	rc.right = rc.left + pCaption->m_sizeIcon.cx;
-	rc.bottom = rc.top + pCaption->m_sizeIcon.cy;
-
-	// Only draw the icon if it will fit into the space between the borders
-	if (rc.right < rcItem.right - pCaption->m_nBorder)
-	{
-		// draw the icon associated with the caption.
-		::DrawIconEx(pDC->GetSafeHdc(), rc.left, rc.top, pCaption->m_hIcon,
-			rc.Width(), rc.Height(), NULL, (HBRUSH)NULL, DI_NORMAL);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionThemeOfficeXP
-
-void CXTCaptionThemeOfficeXP::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	CRect rc = rcItem;
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	// repaint the background.
-	pDC->FillSolidRect(rc, pCaption->m_clrBorder);
-
-	if (!pCaption->IsAppCaption())
-	{
-		pDC->Draw3dRect(rc, GetXtremeColor(COLOR_3DHILIGHT), GetXtremeColor(COLOR_3DSHADOW));
-	}
-	else
-	{
-		// draw the caption banner border.
-		rc.DeflateRect(pCaption->m_nBorder, pCaption->m_nBorder);
-		pDC->FillSolidRect(rc, pCaption->m_clrFace);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionThemeOffice2003
-
-CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003()
-{
-
-}
-
-CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL /*bPrimaryCaption*/)
-{
-	XT_ERROR_MSG("CXTCaptionThemeOffice2003::CXTCaptionThemeOffice2003(BOOL bPrimaryCaption) has been deprecated.\n\n"
-		"Use CXTCaption::SetAppCaption(bool bAppCaption) to set the application's primary caption.");
-}
-
-void CXTCaptionThemeOffice2003::DrawCaptionBack(CDC* pDC, CXTCaption* pCaption, CRect& rcItem)
-{
-	pDC->SetBkMode(TRANSPARENT);
-
-	if (pCaption->IsAppCaption())
-	{
-		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcCaption, FALSE);
-		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_FRAME), GetXtremeColor(XPCOLOR_FRAME));
-	}
-	else
-	{
-		XTPDrawHelpers()->GradientFill(pDC, rcItem, XTPColorManager()->grcToolBar, FALSE);
-		pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, GetXtremeColor(XPCOLOR_FRAME));
-	}
-}
-
-IMPLEMENT_THEME_FACTORY(CXTCaptionButtonTheme)
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButtonTheme
-
-CXTCaptionButtonTheme::CXTCaptionButtonTheme()
-{
-	m_bOffsetHiliteText = FALSE;
-}
-
-BOOL CXTCaptionButtonTheme::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
-{
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		SetColorFace(pCaption->m_clrFace);
-	}
-
-	return CXTButtonTheme::DrawButtonThemeBackground(lpDIS, pButton);
-}
-
-COLORREF CXTCaptionButtonTheme::GetTextColor(UINT /*nState*/, CXTButton* pButton)
-{
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		return pCaption->m_clrText;
-	}
-
-	return m_crText;
-}
-
-void CXTCaptionButtonTheme::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
-{
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
-		{
-			// select font into device context.
-			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
-			pDC->SetTextColor(GetTextColor(nState, pButton));
-
-			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
-				rcItem.OffsetRect(1, 1);
-
-			// draw the text, and select the original font.
-			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
-				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
-		}
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButtonThemeOfficeXP
-
-CXTCaptionButtonThemeOfficeXP::CXTCaptionButtonThemeOfficeXP()
-{
-	m_bAnimateIcon = FALSE;
-	m_bFadedIcon = FALSE;
-	m_bOffsetHiliteText = FALSE;
-}
-
-COLORREF CXTCaptionButtonThemeOfficeXP::GetTextColor(UINT nState, CXTButton* pButton)
-{
-	if (nState & ODS_DISABLED)
-		return GetXtremeColor(COLOR_GRAYTEXT);
-
-	if (pButton->GetHilite() || (nState & ODS_SELECTED))
-		return m_crTextHilite;
-
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		return pCaption->m_clrText;
-	}
-
-	return m_crText;
-}
-
-BOOL CXTCaptionButtonThemeOfficeXP::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
-{
-	// define some temporary variables.
-	CDC*  pDC = CDC::FromHandle(lpDIS->hDC);
-	CRect rcItem = lpDIS->rcItem;
-	int   nState = lpDIS->itemState;
-
-	// Paint the background.
-	if (pButton->GetHilite() || (nState & ODS_SELECTED))
-	{
-		pDC->FillSolidRect(rcItem, (nState & ODS_SELECTED) ?
-			GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED) : GetXtremeColor(XPCOLOR_HIGHLIGHT));
-
-		pDC->Draw3dRect(rcItem, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER),
-			GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
-	}
-	else
-	{
-		CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-		if (::IsWindow(pCaption->GetSafeHwnd()))
-		{
-			m_crBack = pCaption->m_clrFace;
-		}
-
-		pDC->FillSolidRect(rcItem, m_crBack);
-
-		if (m_bWordTheme)
-		{
-			pDC->Draw3dRect(rcItem,
-				m_crBorderShadow, m_crBorderShadow);
-
-		}
-	}
-
-	return TRUE;
-}
-
-void CXTCaptionButtonThemeOfficeXP::DrawButtonText(CDC* pDC, UINT nState, CRect& rcItem, CXTButton* pButton)
-{
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		if (pCaption->IsAppCaption() && !pCaption->GetCaptionText().IsEmpty())
-		{
-			// select font into device context.
-			CXTPFontDC fontDC(pDC, GetThemeFont(pButton));
-			pDC->SetTextColor(GetTextColor(nState, pButton));
-
-			if (nState & ODS_SELECTED && m_bOffsetHiliteText)
-				rcItem.OffsetRect(1, 1);
-
-			// draw the text, and select the original font.
-			pDC->DrawText(pCaption->GetCaptionText(), rcItem,
-				DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_CENTER | DT_NOPREFIX);
-		}
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButtonThemeOffice2003
-
-BOOL CXTCaptionButtonThemeOffice2003::GetGradientValues(CRect& rButton, CXTCaption* pCaption, CXTPPaintManagerColorGradient& clr)
-{
-	if (!::IsWindow(pCaption->GetSafeHwnd()))
-		return FALSE;
-
-	// get caption and button coordinates.
-	CXTPClientRect rCaption(pCaption);
-	pCaption->ScreenToClient(&rButton);
-
-	// get the caption's device context.
-	CClientDC dc(pCaption);
-
-	// create a memory device context to simulate caption background.
-	CDC memDC;
-	if (memDC.CreateCompatibleDC(&dc))
-	{
-		CBitmap bitmap;
-		bitmap.CreateCompatibleBitmap(&dc, rCaption.Width(), rCaption.Height());
-		CBitmap* pBmp = memDC.SelectObject(&bitmap);
-
-		// draw a gradient to the memory device context that matches what should be drawn
-		// on the caption background.
-		XTPDrawHelpers()->GradientFill(&memDC, rCaption, pCaption->IsAppCaption() ?
-			XTPColorManager()->grcCaption: XTPColorManager()->grcToolBar, FALSE);
-
-		// determine the light color gradient.
-		COLORREF crLight = memDC.GetPixel(rButton.TopLeft());
-
-		// determine the dark color gradient.
-		COLORREF crDark = memDC.GetPixel(rButton.BottomRight());
-
-		// set the gradient to and from values.
-		clr.SetStandardValue(crLight, crDark);
-
-		// cleanup GDI
-		memDC.SelectObject(pBmp);
-		memDC.DeleteDC();
-		bitmap.DeleteObject();
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTCaptionButtonThemeOffice2003::DrawButtonThemeBackground(LPDRAWITEMSTRUCT lpDIS, CXTButton* pButton)
-{
-	if (!::IsWindow(pButton->GetSafeHwnd()))
-		return FALSE;
-
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-	CRect rc = lpDIS->rcItem;
-	int nState = lpDIS->itemState;
-
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		BOOL bHilite = pButton->GetHilite();
-		BOOL bSelected = (nState & ODS_SELECTED) != 0;
-
-		// Paint the background.
-		if (bSelected || bHilite)
-		{
-			XTPDrawHelpers()->GradientFill(pDC, rc, bSelected ?
-				XTPColorManager()->grcLunaPushed: XTPColorManager()->grcLunaSelected, FALSE);
-
-			pDC->Draw3dRect(&rc, GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER),
-				GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER));
-		}
-		else
-		{
-			CXTPWindowRect rButton(pButton);
-
-			CXTPPaintManagerColorGradient clr;
-			GetGradientValues(rButton, pCaption, clr);
-
-			XTPDrawHelpers()->GradientFill(pDC, rc, clr, FALSE);
-		}
-
-		return TRUE;
-	}
-
-	return CXTButtonThemeOffice2003::DrawButtonThemeBackground(lpDIS, pButton);
-}
-
-COLORREF CXTCaptionButtonThemeOffice2003::GetTextColor(UINT nState, CXTButton* pButton)
-{
-	if (nState & ODS_DISABLED)
-		return GetXtremeColor(COLOR_GRAYTEXT);
-
-	if (pButton->GetHilite() || (nState & ODS_SELECTED))
-		return m_crTextHilite;
-
-	CXTCaption* pCaption = ((CXTCaptionButton*)pButton)->GetCaption();
-	if (::IsWindow(pCaption->GetSafeHwnd()))
-	{
-		return pCaption->m_clrText;
-	}
-
-	return m_crText;
-}

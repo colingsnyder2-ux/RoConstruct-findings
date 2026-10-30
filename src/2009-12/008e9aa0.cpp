@@ -1,730 +1,88 @@
+// roc 2009-12 008e9aa0  unit: CXTPRibbonGroup  size: 211 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008e9aa0
+//
+// 008e9aa0  83ec1c               sub esp, 0x1c
+// 008e9aa3  53                   push ebx
+// 008e9aa4  55                   push ebp
+// 008e9aa5  56                   push esi
+// 008e9aa6  8be9                 mov ebp, ecx
+// 008e9aa8  8b4d5c               mov ecx, dword ptr [ebp + 0x5c]
+// 008e9aab  57                   push edi
+// 008e9aac  e8bfb1faff           call 0x894c70
+// 008e9ab1  8b9860060000         mov ebx, dword ptr [eax + 0x660]
+// 008e9ab7  8b7d34               mov edi, dword ptr [ebp + 0x34]
+// 008e9aba  8b454c               mov eax, dword ptr [ebp + 0x4c]
+// 008e9abd  035d38               add ebx, dword ptr [ebp + 0x38]
+// 008e9ac0  33c9                 xor ecx, ecx
+// 008e9ac2  83c704               add edi, 4
+// 008e9ac5  894c2410             mov dword ptr [esp + 0x10], ecx
+// 008e9ac9  85c0                 test eax, eax
+// 008e9acb  7f0e                 jg 0x8e9adb
+// 008e9acd  5f                   pop edi
+// 008e9ace  5e                   pop esi
+// 008e9acf  5d                   pop ebp
+// 008e9ad0  5b                   pop ebx
+// 008e9ad1  83c41c               add esp, 0x1c
+// 008e9ad4  c20400               ret 4
+// 008e9ad7  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 008e9adb  85c9                 test ecx, ecx
+// 008e9add  7c15                 jl 0x8e9af4
+// 008e9adf  3bc8                 cmp ecx, eax
+// 008e9ae1  7d11                 jge 0x8e9af4
+// 008e9ae3  3b4d4c               cmp ecx, dword ptr [ebp + 0x4c]
+// 008e9ae6  0f8d82000000         jge 0x8e9b6e
+// 008e9aec  8b4548               mov eax, dword ptr [ebp + 0x48]
+// 008e9aef  8b3488               mov esi, dword ptr [eax + ecx*4]
+// 008e9af2  eb02                 jmp 0x8e9af6
+// 008e9af4  33f6                 xor esi, esi
+// 008e9af6  8b16                 mov edx, dword ptr [esi]
+// 008e9af8  8b8280000000         mov eax, dword ptr [edx + 0x80]
+// 008e9afe  6a00                 push 0
+// 008e9b00  8bce                 mov ecx, esi
+// 008e9b02  ffd0                 call eax
+// 008e9b04  85c0                 test eax, eax
+// 008e9b06  7448                 je 0x8e9b50
+// 008e9b08  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008e9b0c  8b16                 mov edx, dword ptr [esi]
+// 008e9b0e  8b929c000000         mov edx, dword ptr [edx + 0x9c]
+// 008e9b14  50                   push eax
+// 008e9b15  8d4c2418             lea ecx, [esp + 0x18]
+// 008e9b19  51                   push ecx
+// 008e9b1a  8bce                 mov ecx, esi
+// 008e9b1c  ffd2                 call edx
+// 008e9b1e  8b442414             mov eax, dword ptr [esp + 0x14]
+// 008e9b22  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e9b26  8d0c38               lea ecx, [eax + edi]
+// 008e9b29  83ec10               sub esp, 0x10
+// 008e9b2c  8bc4                 mov eax, esp
+// 008e9b2e  03d3                 add edx, ebx
+// 008e9b30  8938                 mov dword ptr [eax], edi
+// 008e9b32  89542438             mov dword ptr [esp + 0x38], edx
+// 008e9b36  8b16                 mov edx, dword ptr [esi]
+// 008e9b38  8b527c               mov edx, dword ptr [edx + 0x7c]
+// 008e9b3b  895804               mov dword ptr [eax + 4], ebx
+// 008e9b3e  894808               mov dword ptr [eax + 8], ecx
+// 008e9b41  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 008e9b45  89480c               mov dword ptr [eax + 0xc], ecx
+// 008e9b48  8bce                 mov ecx, esi
+// 008e9b4a  ffd2                 call edx
+// 008e9b4c  037c2414             add edi, dword ptr [esp + 0x14]
+// 008e9b50  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 008e9b54  8b454c               mov eax, dword ptr [ebp + 0x4c]
+// 008e9b57  41                   inc ecx
+// 008e9b58  3bc8                 cmp ecx, eax
+// 008e9b5a  894c2410             mov dword ptr [esp + 0x10], ecx
+// 008e9b5e  0f8c73ffffff         jl 0x8e9ad7
+// 008e9b64  5f                   pop edi
+// 008e9b65  5e                   pop esi
+// 008e9b66  5d                   pop ebp
+// 008e9b67  5b                   pop ebx
+// 008e9b68  83c41c               add esp, 0x1c
+// 008e9b6b  c20400               ret 4
+// 008e9b6e  e8999ff0ff           call 0x7f3b0c
+// copied from an identical function in another client (function ?RepositionControls@CXTPRibbonGroup@@MAEXPAVCDC@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonGroup.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPRibbonGroup.cpp: implementation of the CXTPRibbonGroup class.
-//
-// This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPImageManager.h"
-
-#include "CommandBars/XTPControl.h"
-#include "CommandBars/XTPControls.h"
-#include "CommandBars/XTPControlPopup.h"
-#include "CommandBars/XTPControlButton.h"
-#include "CommandBars/XTPPopupBar.h"
-#include "CommandBars/XTPToolBar.h"
-#include "CommandBars/XTPCommandBars.h"
-
-#include "XTPRibbonGroup.h"
-#include "XTPRibbonGroups.h"
-#include "XTPRibbonBar.h"
-#include "XTPRibbonTheme.h"
-#include "XTPRibbonQuickAccessControls.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-IMPLEMENT_SERIAL(CXTPRibbonGroup, CCmdTarget, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPRibbonGroupOption
-
-void CXTPRibbonGroupOption::Draw(CDC* pDC)
-{
-	m_pRibbonGroup->GetRibbonBar()->GetRibbonPaintManager()->DrawControlGroupOption(pDC, this, TRUE);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPRibbonGroupControlPopup
-
-
-CXTPRibbonGroupControlPopup::CXTPRibbonGroupControlPopup(CXTPRibbonGroup* pGroup)
-{
-	m_pRibbonGroup = pGroup;
-	m_pPopupGroup = pGroup;
-	SetFlags(xtpFlagManualUpdate);
-	m_controlType = xtpControlButtonPopup;
-	m_pCommandBar = CXTPPopupBar::CreatePopupBar(0);
-}
-
-CSize CXTPRibbonGroupControlPopup::GetSize (CDC* pDC)
-{
-	return ((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawControlGroupPopup(pDC, this, FALSE);
-}
-
-void CXTPRibbonGroupControlPopup::Draw(CDC* pDC)
-{
-	((CXTPRibbonTheme*)GetParent()->GetPaintManager())->DrawControlGroupPopup(pDC, this, TRUE);
-}
-
-BOOL CXTPRibbonGroupControlPopup::IsTransparent() const
-{
-	return TRUE;
-}
-
-CXTPRibbonBar* CXTPRibbonGroupControlPopup::GetRibbonBar() const
-{
-	ASSERT(m_pParent);
-	if (!m_pParent)
-		return NULL;
-
-	if (DYNAMIC_DOWNCAST(CXTPRibbonBar, m_pParent))
-		return (CXTPRibbonBar*)m_pParent;
-
-	if (DYNAMIC_DOWNCAST(CXTPRibbonGroupPopupToolBar, m_pParent))
-		return ((CXTPRibbonGroupPopupToolBar*)m_pParent)->m_pRibbonBar;
-
-	if (DYNAMIC_DOWNCAST(CXTPRibbonTabPopupToolBar, m_pParent))
-		return ((CXTPRibbonTabPopupToolBar*)m_pParent)->m_pRibbonBar;
-
-	if (DYNAMIC_DOWNCAST(CXTPRibbonBarMorePopupToolBar, m_pParent))
-		return ((CXTPRibbonBarMorePopupToolBar*)m_pParent)->m_pRibbonBar;
-
-	ASSERT(FALSE);
-	return NULL;
-}
-
-void CXTPRibbonGroupControlPopup::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	CXTPControlButton::Copy(pControl, bRecursive);
-
-	if (m_pParent && pControl->GetParent() && GetRibbonBar() != ((CXTPRibbonGroupControlPopup*)pControl)->GetRibbonBar())
-	{
-		m_pPopupGroup = GetRibbonBar()->FindGroup(GetID());
-	}
-	else
-	{
-		m_pPopupGroup = ((CXTPRibbonGroupControlPopup*)pControl)->m_pPopupGroup;
-	}
-}
-
-void CXTPRibbonGroupControlPopup::GenerateCommandBarList(DWORD& /*nID*/, CXTPCommandBarList* /*pCommandBarList*/, XTP_COMMANDBARS_PROPEXCHANGE_PARAM* /*pParam*/)
-{
-}
-
-void CXTPRibbonGroupControlPopup::OnLButtonUp(CPoint /*point*/)
-{
-
-}
-
-BOOL CXTPRibbonGroupControlPopup::IsVisible(DWORD dwSkipFlags /*= 0*/) const
-{
-	return CXTPControlPopup::IsVisible(dwSkipFlags) &&
-		(!m_pPopupGroup || m_pPopupGroup->m_bVisible);
-}
-
-IMPLEMENT_XTP_CONTROL(CXTPRibbonGroupControlPopup, CXTPControlPopup)
-
-BOOL CXTPRibbonGroupControlPopup::OnSetPopup(BOOL bPopup)
-{
-	m_bPopup = bPopup;
-	if (bPopup)
-	{
-		CMDTARGET_RELEASE(m_pCommandBar);
-
-		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
-		ASSERT(pCommandBars);
-
-		if (!m_pPopupGroup)
-		{
-			m_pCommandBar = new CXTPPopupToolBar();
-			m_pCommandBar->SetCommandBars(pCommandBars);
-			m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
-		}
-		else
-		{
-
-			m_pCommandBar = new CXTPRibbonGroupPopupToolBar(m_pPopupGroup);
-			m_pCommandBar->SetCommandBars(pCommandBars);
-
-			m_pCommandBar->EnableCustomization(FALSE);
-			m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected()));
-		}
-	}
-	else
-	{
-		ASSERT(m_pCommandBar);
-		if (m_pCommandBar) m_pCommandBar->SetTrackingMode(FALSE);
-
-	}
-	RedrawParent();
-	return TRUE;
-}
-
-
-CXTPRibbonGroup::CXTPRibbonGroup()
-{
-	m_nIndex = -1;
-	m_pGroups = NULL;
-	m_pParent = NULL;
-	m_pRibbonBar = NULL;
-	m_rcGroup.SetRectEmpty();
-	m_nId = -1;
-	m_nIconId = -1;
-	m_bReduced = FALSE;
-	m_bVisible = TRUE;
-	m_bControlsCentering = FALSE;
-
-
-	m_pControlGroupOption = new CXTPRibbonGroupOption();
-	m_pControlGroupOption->m_pRibbonGroup = this;
-
-	m_pControlGroupPopup = new CXTPRibbonGroupControlPopup(this);
-
-	m_pControlGroupPopup->m_buttonRibbonStyle = xtpButtonIconAndCaptionBelow;
-
-	m_bShowOptionButton = FALSE;
-
-	m_pLayoutInfo = NULL;
-
-	m_nRowCount = 2;
-	m_bControlsGrouping = FALSE;
-}
-
-CXTPRibbonGroup::~CXTPRibbonGroup()
-{
-	RemoveAll();
-
-	CMDTARGET_RELEASE(m_pControlGroupOption);
-	CMDTARGET_RELEASE(m_pControlGroupPopup);
-}
-
-void CXTPRibbonGroup::SetID(int nId)
-{
-	m_nId = nId;
-	m_pControlGroupOption->SetID(m_nId);
-	m_pControlGroupPopup->SetID(m_nId);
-}
-
-void CXTPRibbonGroup::Copy(CXTPRibbonGroup* pGroup)
-{
-	m_nId = pGroup->m_nId;
-	m_nIconId = pGroup->m_nIconId;
-	m_bShowOptionButton = pGroup->m_bShowOptionButton;
-	m_strCaption = pGroup->m_strCaption;
-	m_pGroups = pGroup->m_pGroups;
-	m_bControlsGrouping = pGroup->m_bControlsGrouping;
-	m_bControlsCentering = pGroup->m_bControlsCentering;
-	m_bVisible = pGroup->m_bVisible;
-
-	int nControlPos = m_pControlGroupOption->GetIndex();
-
-	for (int i = 0; i < pGroup->GetCount(); i++)
-	{
-		CXTPControl* pControl = pGroup->GetAt(i);
-
-		CXTPControl* pClone = m_pParent->GetControls()->AddClone(pControl, nControlPos + i);
-		pClone->m_pRibbonGroup = this;
-		pClone->SetHideFlag(xtpHideRibbonTab, FALSE);
-		m_arrControls.Add(pClone);
-		pClone->InternalAddRef();
-	}
-
-	m_pControlGroupOption->Copy(pGroup->m_pControlGroupOption, FALSE);
-	m_pControlGroupOption->SetHideFlag(xtpHideRibbonTab, FALSE);
-
-	m_pControlGroupPopup->Copy(pGroup->m_pControlGroupPopup, FALSE);
-	m_pControlGroupPopup->SetHideFlag(xtpHideRibbonTab, FALSE);
-}
-
-void CXTPRibbonGroup::Remove(CXTPControl* pControl)
-{
-	for (int nIndex = 0; nIndex < m_arrControls.GetSize(); nIndex++)
-	{
-		if (m_arrControls.GetAt(nIndex) == pControl)
-		{
-			RemoveAt(nIndex);
-			return;
-		}
-	}
-}
-
-void CXTPRibbonGroup::RemoveAt(int nIndex)
-{
-	if (nIndex >= 0 && nIndex < GetCount())
-	{
-		CXTPControl* pControl = m_arrControls.GetAt(nIndex);
-		pControl->m_pRibbonGroup = NULL;
-		m_arrControls.RemoveAt(nIndex);
-
-		GetRibbonBar()->GetControls()->Remove(pControl);
-		pControl->InternalRelease();
-	}
-}
-
-void CXTPRibbonGroup::RemoveAll()
-{
-	for (int nIndex = (int)m_arrControls.GetSize() - 1; nIndex >= 0; nIndex--)
-	{
-		CXTPControl* pControl = m_arrControls.GetAt(nIndex);
-		pControl->m_pRibbonGroup = NULL;
-		m_arrControls.RemoveAt(nIndex);
-
-		m_pParent->GetControls()->Remove(pControl);
-		pControl->InternalRelease();
-	}
-}
-
-CXTPRibbonTab* CXTPRibbonGroup::GetParentTab() const
-{
-	return m_pGroups->GetParentTab();
-}
-
-BOOL CXTPRibbonGroup::IsHighlighted() const
-{
-	CXTPRibbonScrollableBar* pScrollableBar = GetScrollableBar(m_pParent);
-
-	return pScrollableBar && pScrollableBar->GetHighlightedGroup() == this;
-}
-
-int CXTPRibbonGroup::GetMinimumWidth(CDC* pDC)
-{
-	CXTPFontDC fnt(pDC, &GetRibbonBar()->GetRibbonPaintManager()->m_fontGroupCaption);
-	CSize sz = pDC->GetTextExtent(m_strCaption);
-
-	if (m_bShowOptionButton)
-		sz.cx += GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight();
-
-	return sz.cx;
-}
-
-BOOL CXTPRibbonGroup::IsOptionButtonVisible() const
-{
-	return !m_bReduced && m_bShowOptionButton;
-}
-
-void CXTPRibbonGroup::SetRect(CRect rc)
-{
-	m_rcGroup = rc;
-
-	if (m_bReduced)
-	{
-		CRect rcEntry(rc.left, rc.top, rc.right, rc.bottom);
-		m_pControlGroupPopup->SetHideFlag(xtpHideWrap, FALSE);
-		m_pControlGroupPopup->SetRect(rcEntry);
-		m_pControlGroupPopup->SetWrap(TRUE);
-	}
-	else
-	{
-		m_pControlGroupPopup->SetHideFlag(xtpHideWrap, TRUE);
-	}
-
-	if (!m_bShowOptionButton)
-	{
-		m_pControlGroupOption->SetHideFlag(xtpHideGeneric, TRUE);
-	}
-	else if (m_bReduced)
-	{
-		m_pControlGroupOption->SetHideFlag(xtpHideWrap, TRUE);
-
-	}
-	else
-	{
-		int nHeight = GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight();
-		m_pControlGroupOption->SetWrap(TRUE);
-		m_pControlGroupOption->SetHideFlag(xtpHideGeneric, FALSE);
-		m_pControlGroupOption->SetHideFlag(xtpHideWrap, FALSE);
-		m_pControlGroupOption->SetRect(CRect(rc.right - nHeight - 1, rc.bottom - nHeight, rc.right - 3, rc.bottom - 3));
-	}
-}
-
-void CXTPRibbonGroup::RepositionControls(CDC* pDC)
-{
-	CXTPRibbonTheme* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
-
-	int x = m_rcGroup.left + 4;
-	int y = m_rcGroup.top + pPaintManager->GetGroupCaptionHeight();
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		if (!pControl->IsVisible())
-			continue;
-
-		CSize sz = pControl->GetSize(pDC);
-		pControl->SetRect(CRect(x, y, x + sz.cx, y + sz.cy));
-
-		x += sz.cx;
-	}
-}
-
-
-void CXTPRibbonGroup::Draw(CDC* pDC, CRect rcClipBox)
-{
-	GetRibbonBar()->GetRibbonPaintManager()->DrawGroup(pDC, this);
-
-	BOOL bFirst = TRUE;
-
-	for (int i = 0; i < GetCount(); i++)
-	{
-		CXTPControl* pControl = GetAt(i);
-		if (!pControl->IsVisible())
-			continue;
-
-		if (!m_bControlsGrouping && pControl->GetBeginGroup() && !bFirst)
-		{
-			GetRibbonBar()->GetPaintManager()->
-				DrawCommandBarSeparator(pDC, GetRibbonBar(), pControl);
-		}
-
-		if (CRect().IntersectRect(rcClipBox, pControl->GetRect()))
-		{
-			pControl->Draw(pDC);
-		}
-
-		bFirst = FALSE;
-	}
-
-	if (m_pControlGroupPopup->IsVisible())
-	{
-		m_pControlGroupPopup->Draw(pDC);
-	}
-
-	if (m_pControlGroupOption->IsVisible())
-	{
-		m_pControlGroupOption->Draw(pDC);
-	}
-}
-
-int CXTPRibbonGroup::IndexOf(CXTPControl* pControl) const
-{
-	if (pControl->GetRibbonGroup() != this)
-		return -1;
-
-	return pControl->GetIndex() + GetCount() - m_pControlGroupOption->GetIndex();
-}
-
-
-CXTPControl* CXTPRibbonGroup::AddClone(CXTPControl* pClone, int nBefore, BOOL bRecursive)
-{
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	CXTPControl* pControl = (CXTPControl*)pClone->GetRuntimeClass()->CreateObject();
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	GetRibbonBar()->GetControls()->InsertAt(pControl, nControlPos);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->Copy(pClone, bRecursive);
-
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
-}
-
-CXTPControl* CXTPRibbonGroup::Add(XTPControlType controlType, int nId, LPCTSTR lpszParameter, int nBefore, BOOL bTemporary)
-{
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	CXTPControl* pControl = GetRibbonBar()->GetControls()->Add(controlType, nId, lpszParameter, nControlPos, bTemporary);
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
-}
-
-void CXTPRibbonGroup::SetVisible(BOOL bVisible)
-{
-	if (m_bVisible != bVisible)
-	{
-		m_bVisible = bVisible;
-
-		GetRibbonBar()->RebuildControls(GetRibbonBar()->GetSelectedTab());
-		GetRibbonBar()->OnRecalcLayout();
-	}
-}
-
-BOOL CXTPRibbonGroup::IsVisible() const
-{
-	if (m_pRibbonBar != m_pParent)
-		return m_bVisible;
-
-	return GetRibbonBar()->GetSelectedTab() == GetParentTab() && m_bVisible;
-}
-
-void CXTPRibbonGroup::OnGroupAdded()
-{
-	CXTPControl* pGroupOption = GetControlGroupOption();
-
-	m_pParent->GetControls()->Add(pGroupOption);
-	pGroupOption->InternalAddRef();
-
-	pGroupOption->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-
-	pGroupOption->SetID(GetID());
-
-	CXTPControl* pGroupPopup = (CXTPControl*)GetControlGroupPopup();
-	m_pParent->GetControls()->Add(pGroupPopup);
-	pGroupPopup->SetCaption(GetCaption());
-	pGroupPopup->SetDescription(NULL);
-
-	pGroupPopup->InternalAddRef();
-
-	pGroupPopup->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	CXTPCommandBars* pCommandBars = m_pRibbonBar->GetCommandBars();
-	ASSERT(pCommandBars);
-
-	if (pCommandBars && pCommandBars->IsActionsEnabled())
-	{
-		CXTPControlAction* pAction = pCommandBars->CreateAction(GetID());
-		if (pAction->GetCaption().IsEmpty()) pAction->SetCaption(GetCaption());
-
-		pGroupPopup->SetAction(pAction);
-		pGroupOption->SetAction(pAction);
-	}
-}
-
-void CXTPRibbonGroup::OnGroupRemoved()
-{
-	RemoveAll();
-
-	if (m_pParent == m_pRibbonBar)
-	{
-		GetControlGroupPopup()->m_pRibbonGroup = NULL;
-		m_pParent->GetControls()->Remove(GetControlGroupPopup());
-
-		if (m_pRibbonBar->m_pHighlightedGroup == this)
-		{
-			m_pRibbonBar->m_pHighlightedGroup = NULL;
-		}
-	}
-
-	GetControlGroupOption()->m_pRibbonGroup = NULL;
-	m_pParent->GetControls()->Remove(GetControlGroupOption());
-}
-
-
-BOOL CXTPRibbonGroup::SetButtons(UINT* pButtons, int nCount)
-{
-	BOOL bSeparator = FALSE;
-
-	CXTPRibbonBar* pRibbonBar = GetRibbonBar();
-	CWnd* pSite = pRibbonBar->GetSite();
-
-	for (int i = 0; i < nCount; i++)
-	{
-		if (pButtons[i] == 0)
-			bSeparator = TRUE;
-		else
-		{
-			XTPControlType controlType = xtpControlButton;
-			XTPButtonStyle buttonStyle = xtpButtonAutomatic;
-			CXTPControl* pControl = NULL;
-			UINT nID = pButtons[i];
-
-			XTP_COMMANDBARS_CREATECONTROL cs;
-
-			if (pSite)
-			{
-				cs.nID = nID;
-				cs.pControl = NULL;
-				cs.bToolBar = TRUE;
-				cs.pMenu = NULL;
-				cs.nIndex = i;
-				cs.strCaption = pRibbonBar->GetTitle();
-				cs.controlType = controlType;
-				cs.pCommandBar = pRibbonBar;
-				cs.buttonStyle = buttonStyle;
-
-				if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
-				{
-					pControl = cs.pControl;
-					controlType = cs.controlType;
-					buttonStyle = cs.buttonStyle;
-					nID = cs.nID;
-				}
-			}
-
-			int nControlPos = m_pControlGroupOption->GetIndex();
-
-			if (pControl == NULL)
-			{
-				pControl = pRibbonBar->GetControls()->Add(controlType, nID, NULL, nControlPos);
-				if (pControl)
-				{
-					pControl->SetStyle(buttonStyle);
-					if (controlType == xtpControlPopup) pControl->SetIconId(nID);
-				}
-			}
-			else pRibbonBar->GetControls()->Add(pControl, nID, NULL, nControlPos);
-
-			if (!pControl)
-				continue;
-
-			if (bSeparator)
-			{
-				pControl->SetBeginGroup(TRUE);
-				bSeparator = FALSE;
-			}
-
-			m_arrControls.InsertAt(GetCount(), pControl);
-			pControl->InternalAddRef();
-
-			pControl->m_pRibbonGroup = this;
-			pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-			if (pSite)
-			{
-				cs.pControl = pControl;
-				pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
-			}
-		}
-	}
-	return TRUE;
-}
-
-CXTPControl* CXTPRibbonGroup::Add(CXTPControl* pControl, int nId, LPCTSTR lpszParameter, int nBefore, BOOL bTemporary)
-{
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	GetRibbonBar()->GetControls()->Add(pControl, nId, lpszParameter, nControlPos, bTemporary);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
-}
-
-CXTPControl* CXTPRibbonGroup::InsertAt(CXTPControl* pControl, int nBefore)
-{
-	ASSERT(pControl);
-	if (!pControl)
-		return NULL;
-
-	if (nBefore < 0 || nBefore >= GetCount())
-		nBefore = (int)GetCount();
-
-	int nControlPos = m_pControlGroupOption->GetIndex() - GetCount() + nBefore;
-
-	GetRibbonBar()->GetControls()->InsertAt(pControl, nControlPos);
-
-	m_arrControls.InsertAt(nBefore, pControl);
-	pControl->InternalAddRef();
-
-	pControl->m_pRibbonGroup = this;
-	pControl->SetHideFlag(xtpHideRibbonTab, !IsVisible());
-
-	return pControl;
-}
-
-BOOL CXTPRibbonGroup::LoadToolBar(UINT nIDResource, BOOL bLoadIcons)
-{
-	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
-
-	struct CToolBarData
-	{
-		WORD wVersion;
-		WORD wWidth;
-		WORD wHeight;
-		WORD wItemCount;
-		WORD* items()
-		{ return (WORD*)(this + 1); }
-	};
-
-	ASSERT_VALID(this);
-	ASSERT(lpszResourceName != NULL);
-	if (!lpszResourceName)
-		return FALSE;
-
-	// determine location of the bitmap in resource fork
-	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
-	if (!hInst)
-		return FALSE;
-
-	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
-	if (hRsrc == NULL)
-		return FALSE;
-
-	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
-	if (hGlobal == NULL)
-		return FALSE;
-
-	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
-	if (pData == NULL)
-		return FALSE;
-
-	ASSERT(pData->wVersion == 1);
-
-	int i;
-	UINT* pItems = new UINT[pData->wItemCount];
-
-	for (i = 0; i < pData->wItemCount; i++)
-		pItems[i] = pData->items()[i];
-
-	BOOL bResult = SetButtons(pItems, pData->wItemCount);
-
-	if (bLoadIcons)
-	{
-		CXTPImageManager* pImageManager = GetRibbonBar()->GetImageManager();
-
-		if (!pImageManager->SetIcons(nIDResource, pItems,
-			pData->wItemCount, CSize(pData->wWidth, pData->wHeight)))
-			bResult = FALSE;
-	}
-
-	delete[] pItems;
-
-	UnlockResource(hGlobal);
-	FreeResource(hGlobal);
-
-
-	return bResult;
-}
-

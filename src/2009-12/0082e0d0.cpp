@@ -1,931 +1,241 @@
+// roc 2009-12 0082e0d0  unit: VCXTPReportRows::?$CXTPHeapObjectT  size: 722 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0082e0d0
+//
+// 0082e0d0  6aff                 push -1
+// 0082e0d2  68b3bd9500           push 0x95bdb3
+// 0082e0d7  64a100000000         mov eax, dword ptr fs:[0]
+// 0082e0dd  50                   push eax
+// 0082e0de  83ec3c               sub esp, 0x3c
+// 0082e0e1  53                   push ebx
+// 0082e0e2  55                   push ebp
+// 0082e0e3  56                   push esi
+// 0082e0e4  57                   push edi
+// 0082e0e5  a10052b600           mov eax, dword ptr [0xb65200]
+// 0082e0ea  33c4                 xor eax, esp
+// 0082e0ec  50                   push eax
+// 0082e0ed  8d442450             lea eax, [esp + 0x50]
+// 0082e0f1  64a300000000         mov dword ptr fs:[0], eax
+// 0082e0f7  8be9                 mov ebp, ecx
+// 0082e0f9  896c2420             mov dword ptr [esp + 0x20], ebp
+// 0082e0fd  8b442464             mov eax, dword ptr [esp + 0x64]
+// 0082e101  33db                 xor ebx, ebx
+// 0082e103  895c2414             mov dword ptr [esp + 0x14], ebx
+// 0082e107  33ff                 xor edi, edi
+// 0082e109  8918                 mov dword ptr [eax], ebx
+// 0082e10b  395d28               cmp dword ptr [ebp + 0x28], ebx
+// 0082e10e  895c2418             mov dword ptr [esp + 0x18], ebx
+// 0082e112  897c241c             mov dword ptr [esp + 0x1c], edi
+// 0082e116  0f8e91010000         jle 0x82e2ad
+// 0082e11c  8d642400             lea esp, [esp]
+// 0082e120  3bfb                 cmp edi, ebx
+// 0082e122  0f8c75020000         jl 0x82e39d
+// 0082e128  3b7d28               cmp edi, dword ptr [ebp + 0x28]
+// 0082e12b  0f8d6c020000         jge 0x82e39d
+// 0082e131  8b4d24               mov ecx, dword ptr [ebp + 0x24]
+// 0082e134  8b34b9               mov esi, dword ptr [ecx + edi*4]
+// 0082e137  8b16                 mov edx, dword ptr [esi]
+// 0082e139  8d04b9               lea eax, [ecx + edi*4]
+// 0082e13c  8b8288000000         mov eax, dword ptr [edx + 0x88]
+// 0082e142  8bce                 mov ecx, esi
+// 0082e144  8974242c             mov dword ptr [esp + 0x2c], esi
+// 0082e148  ffd0                 call eax
+// 0082e14a  85c0                 test eax, eax
+// 0082e14c  0f84a1010000         je 0x82e2f3
+// 0082e152  8b6c2460             mov ebp, dword ptr [esp + 0x60]
+// 0082e156  8b5500               mov edx, dword ptr [ebp]
+// 0082e159  8b4260               mov eax, dword ptr [edx + 0x60]
+// 0082e15c  8bcd                 mov ecx, ebp
+// 0082e15e  ffd0                 call eax
+// 0082e160  8bf8                 mov edi, eax
+// 0082e162  8b4524               mov eax, dword ptr [ebp + 0x24]
+// 0082e165  8b80ec000000         mov eax, dword ptr [eax + 0xec]
+// 0082e16b  3bfb                 cmp edi, ebx
+// 0082e16d  0f8424010000         je 0x82e297
+// 0082e173  3bc3                 cmp eax, ebx
+// 0082e175  0f841c010000         je 0x82e297
+// 0082e17b  8b16                 mov edx, dword ptr [esi]
+// 0082e17d  8b6820               mov ebp, dword ptr [eax + 0x20]
+// 0082e180  8b82dc000000         mov eax, dword ptr [edx + 0xdc]
+// 0082e186  8bce                 mov ecx, esi
+// 0082e188  ffd0                 call eax
+// 0082e18a  50                   push eax
+// 0082e18b  8bcd                 mov ecx, ebp
+// 0082e18d  e81ef40300           call 0x86d5b0
+// 0082e192  8be8                 mov ebp, eax
+// 0082e194  55                   push ebp
+// 0082e195  8bcf                 mov ecx, edi
+// 0082e197  e8a4cbffff           call 0x82ad40
+// 0082e19c  3bc3                 cmp eax, ebx
+// 0082e19e  7422                 je 0x82e1c2
+// 0082e1a0  8b10                 mov edx, dword ptr [eax]
+// 0082e1a2  8b5274               mov edx, dword ptr [edx + 0x74]
+// 0082e1a5  55                   push ebp
+// 0082e1a6  8d4c2428             lea ecx, [esp + 0x28]
+// 0082e1aa  51                   push ecx
+// 0082e1ab  8bc8                 mov ecx, eax
+// 0082e1ad  ffd2                 call edx
+// 0082e1af  834c241401           or dword ptr [esp + 0x14], 1
+// 0082e1b4  8bc8                 mov ecx, eax
+// 0082e1b6  895c2458             mov dword ptr [esp + 0x58], ebx
+// 0082e1ba  ff1580de9800         call dword ptr [0x98de80]
+// 0082e1c0  eb05                 jmp 0x82e1c7
+// 0082e1c2  b856fd9900           mov eax, 0x99fd56
+// 0082e1c7  33c9                 xor ecx, ecx
+// 0082e1c9  66894c2440           mov word ptr [esp + 0x40], cx
+// 0082e1ce  50                   push eax
+// 0082e1cf  8d4c2444             lea ecx, [esp + 0x44]
+// 0082e1d3  e8bc840f00           call 0x926694
+// 0082e1d8  f644241401           test byte ptr [esp + 0x14], 1
+// 0082e1dd  c744245802000000     mov dword ptr [esp + 0x58], 2
+// 0082e1e5  740f                 je 0x82e1f6
+// 0082e1e7  83642414fe           and dword ptr [esp + 0x14], 0xfffffffe
+// 0082e1ec  8d4c2424             lea ecx, [esp + 0x24]
+// 0082e1f0  ff15c0de9800         call dword ptr [0x98dec0]
+// 0082e1f6  8b16                 mov edx, dword ptr [esi]
+// 0082e1f8  8b92fc000000         mov edx, dword ptr [edx + 0xfc]
+// 0082e1fe  8d442428             lea eax, [esp + 0x28]
+// 0082e202  50                   push eax
+// 0082e203  8bce                 mov ecx, esi
+// 0082e205  ffd2                 call edx
+// 0082e207  8bc8                 mov ecx, eax
+// 0082e209  c644245803           mov byte ptr [esp + 0x58], 3
+// 0082e20e  ff1580de9800         call dword ptr [0x98de80]
+// 0082e214  33c9                 xor ecx, ecx
+// 0082e216  66894c2430           mov word ptr [esp + 0x30], cx
+// 0082e21b  50                   push eax
+// 0082e21c  8d4c2434             lea ecx, [esp + 0x34]
+// 0082e220  e86f840f00           call 0x926694
+// 0082e225  8d4c2428             lea ecx, [esp + 0x28]
+// 0082e229  c644245805           mov byte ptr [esp + 0x58], 5
+// 0082e22e  ff15c0de9800         call dword ptr [0x98dec0]
+// 0082e234  8b4750               mov eax, dword ptr [edi + 0x50]
+// 0082e237  8b4040               mov eax, dword ptr [eax + 0x40]
+// 0082e23a  33d2                 xor edx, edx
+// 0082e23c  3bc3                 cmp eax, ebx
+// 0082e23e  a1d464b600           mov eax, dword ptr [0xb664d4]
+// 0082e243  0f94c2               sete dl
+// 0082e246  8bfa                 mov edi, edx
+// 0082e248  3d00040000           cmp eax, 0x400
+// 0082e24d  7505                 jne 0x82e254
+// 0082e24f  e87ce0feff           call 0x81c2d0
+// 0082e254  57                   push edi
+// 0082e255  50                   push eax
+// 0082e256  8d442438             lea eax, [esp + 0x38]
+// 0082e25a  50                   push eax
+// 0082e25b  8d4c244c             lea ecx, [esp + 0x4c]
+// 0082e25f  51                   push ecx
+// 0082e260  e85f8c0f00           call 0x926ec4
+// 0082e265  8b6d40               mov ebp, dword ptr [ebp + 0x40]
+// 0082e268  8bf8                 mov edi, eax
+// 0082e26a  4f                   dec edi
+// 0082e26b  3beb                 cmp ebp, ebx
+// 0082e26d  7408                 je 0x82e277
+// 0082e26f  3bfb                 cmp edi, ebx
+// 0082e271  7f08                 jg 0x82e27b
+// 0082e273  3beb                 cmp ebp, ebx
+// 0082e275  7550                 jne 0x82e2c7
+// 0082e277  3bfb                 cmp edi, ebx
+// 0082e279  7d4c                 jge 0x82e2c7
+// 0082e27b  8b3534ba9800         mov esi, dword ptr [0x98ba34]
+// 0082e281  8d542430             lea edx, [esp + 0x30]
+// 0082e285  52                   push edx
+// 0082e286  ffd6                 call esi
+// 0082e288  8d442440             lea eax, [esp + 0x40]
+// 0082e28c  c7442458ffffffff     mov dword ptr [esp + 0x58], 0xffffffff
+// 0082e294  50                   push eax
+// 0082e295  ffd6                 call esi
+// 0082e297  8b6c2420             mov ebp, dword ptr [esp + 0x20]
+// 0082e29b  8b7c241c             mov edi, dword ptr [esp + 0x1c]
+// 0082e29f  47                   inc edi
+// 0082e2a0  3b7d28               cmp edi, dword ptr [ebp + 0x28]
+// 0082e2a3  897c241c             mov dword ptr [esp + 0x1c], edi
+// 0082e2a7  0f8c73feffff         jl 0x82e120
+// 0082e2ad  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0082e2b1  8b4c2450             mov ecx, dword ptr [esp + 0x50]
+// 0082e2b5  64890d00000000       mov dword ptr fs:[0], ecx
+// 0082e2bc  59                   pop ecx
+// 0082e2bd  5f                   pop edi
+// 0082e2be  5e                   pop esi
+// 0082e2bf  5d                   pop ebp
+// 0082e2c0  5b                   pop ebx
+// 0082e2c1  83c448               add esp, 0x48
+// 0082e2c4  c20800               ret 8
+// 0082e2c7  8b16                 mov edx, dword ptr [esi]
+// 0082e2c9  8b82b8000000         mov eax, dword ptr [edx + 0xb8]
+// 0082e2cf  8bce                 mov ecx, esi
+// 0082e2d1  ffd0                 call eax
+// 0082e2d3  85c0                 test eax, eax
+// 0082e2d5  7538                 jne 0x82e30f
+// 0082e2d7  8b3534ba9800         mov esi, dword ptr [0x98ba34]
+// 0082e2dd  8d4c2430             lea ecx, [esp + 0x30]
+// 0082e2e1  51                   push ecx
+// 0082e2e2  ffd6                 call esi
+// 0082e2e4  8d542440             lea edx, [esp + 0x40]
+// 0082e2e8  c7442458ffffffff     mov dword ptr [esp + 0x58], 0xffffffff
+// 0082e2f0  52                   push edx
+// 0082e2f1  eba2                 jmp 0x82e295
+// 0082e2f3  8d44242c             lea eax, [esp + 0x2c]
+// 0082e2f7  50                   push eax
+// 0082e2f8  8d4c2464             lea ecx, [esp + 0x64]
+// 0082e2fc  51                   push ecx
+// 0082e2fd  e87efbffff           call 0x82de80
+// 0082e302  83c408               add esp, 8
+// 0082e305  85c0                 test eax, eax
+// 0082e307  7f96                 jg 0x82e29f
+// 0082e309  89742418             mov dword ptr [esp + 0x18], esi
+// 0082e30d  eb9e                 jmp 0x82e2ad
+// 0082e30f  3bfb                 cmp edi, ebx
+// 0082e311  0f8580000000         jne 0x82e397
+// 0082e317  8b16                 mov edx, dword ptr [esi]
+// 0082e319  8b82b8000000         mov eax, dword ptr [edx + 0xb8]
+// 0082e31f  8bce                 mov ecx, esi
+// 0082e321  ffd0                 call eax
+// 0082e323  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 0082e327  8b10                 mov edx, dword ptr [eax]
+// 0082e329  8b9284000000         mov edx, dword ptr [edx + 0x84]
+// 0082e32f  51                   push ecx
+// 0082e330  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 0082e334  51                   push ecx
+// 0082e335  8bc8                 mov ecx, eax
+// 0082e337  ffd2                 call edx
+// 0082e339  89442418             mov dword ptr [esp + 0x18], eax
+// 0082e33d  3bc3                 cmp eax, ebx
+// 0082e33f  753d                 jne 0x82e37e
+// 0082e341  8b06                 mov eax, dword ptr [esi]
+// 0082e343  8b90b8000000         mov edx, dword ptr [eax + 0xb8]
+// 0082e349  8bce                 mov ecx, esi
+// 0082e34b  ffd2                 call edx
+// 0082e34d  8be8                 mov ebp, eax
+// 0082e34f  8b06                 mov eax, dword ptr [esi]
+// 0082e351  8b7d00               mov edi, dword ptr [ebp]
+// 0082e354  8b90b8000000         mov edx, dword ptr [eax + 0xb8]
+// 0082e35a  8bce                 mov ecx, esi
+// 0082e35c  83c75c               add edi, 0x5c
+// 0082e35f  ffd2                 call edx
+// 0082e361  8bc8                 mov ecx, eax
+// 0082e363  e8b8e8ffff           call 0x82cc20
+// 0082e368  48                   dec eax
+// 0082e369  50                   push eax
+// 0082e36a  8b07                 mov eax, dword ptr [edi]
+// 0082e36c  8bcd                 mov ecx, ebp
+// 0082e36e  ffd0                 call eax
+// 0082e370  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 0082e374  89442418             mov dword ptr [esp + 0x18], eax
+// 0082e378  c70101000000         mov dword ptr [ecx], 1
+// 0082e37e  8b3534ba9800         mov esi, dword ptr [0x98ba34]
+// 0082e384  8d542430             lea edx, [esp + 0x30]
+// 0082e388  52                   push edx
+// 0082e389  ffd6                 call esi
+// 0082e38b  8d442440             lea eax, [esp + 0x40]
+// 0082e38f  50                   push eax
+// 0082e390  ffd6                 call esi
+// 0082e392  e916ffffff           jmp 0x82e2ad
+// 0082e397  89742418             mov dword ptr [esp + 0x18], esi
+// 0082e39b  ebe1                 jmp 0x82e37e
+// 0082e39d  e86a57fcff           call 0x7f3b0c
+// copied from an identical function in another client (function ?FindInsertionPos@CXTPReportRows@@UAEPAVCXTPReportRow@@PAV2@AAH@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportRows.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPReportRows.cpp : implementation of the CXTPReportRows class.
-//
-// This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPVc50Helpers.h"
-
-#include "XTPReportRow.h"
-#include "XTPReportGroupRow.h"
-#include "XTPReportRecord.h"
-#include "XTPReportRecords.h"
-#include "XTPReportRecordItem.h"
-#include "XTPReportRecordItemText.h"
-#include "XTPReportControl.h"
-#include "XTPReportColumns.h"
-#include "XTPReportColumn.h"
-#include "XTPReportInplaceControls.h"
-#include "XTPReportRows.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportRows
-
-CXTPReportRows::CXTPReportRows()
-{
-	m_pVirtualRow = 0;
-	m_nVirtualRowsCount = 0;
-}
-
-CXTPReportRows::~CXTPReportRows()
-{
-	Clear();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportRows member functions
-
-void CXTPReportRows::Clear(BOOL bResetRow)
-{
-	// array cleanup
-	for (int nRow = (int)m_arrRows.GetSize() - 1; nRow >= 0; nRow--)
-	{
-		CXTPReportRow* pRow = m_arrRows.GetAt(nRow);
-		if (bResetRow)
-		{
-			pRow->m_bVisible = FALSE;
-			pRow->m_nIndex = -1;
-		}
-		pRow->InternalRelease();
-	}
-
-	m_arrRows.RemoveAll();
-
-	if (m_pVirtualRow)
-	{
-		m_pVirtualRow->InternalRelease();
-		m_pVirtualRow = 0;
-	}
-
-}
-
-CXTPReportRow* CXTPReportRows::GetNext(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
-{
-	if (pRow)
-	{
-		int index = pRow->GetIndex();
-
-		while (index < GetCount() - 1)
-		{
-			index++;
-			pRow = GetAt(index);
-
-			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
-				return pRow;
-		}
-	}
-	else if (GetCount() > 0)
-	{
-		return GetAt(0);
-	}
-	return pRow;
-}
-
-CXTPReportRow* CXTPReportRows::GetPrev(CXTPReportRow* pRow, BOOL bSkipGroupFocus)
-{
-	if (pRow)
-	{
-		int index = pRow->GetIndex();
-
-		while (index > 0)
-		{
-			index--;
-			pRow = GetAt(index);
-
-			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded())
-				return pRow;
-
-		}
-	}
-	else if (GetCount() > 0)
-	{
-		return GetAt(0);
-	}
-	return pRow;
-}
-
-void CXTPReportRows::InsertAt(int nIndex, CXTPReportRow* pRow)
-{
-	m_arrRows.InsertAt(nIndex, pRow);
-}
-
-int CXTPReportRows::Add(CXTPReportRow* pRow)
-{
-	int nIndex = (int)m_arrRows.Add(pRow);
-
-	pRow->m_nChildIndex = nIndex;
-	pRow->m_pParentRows = this;
-
-	return nIndex;
-}
-
-void CXTPReportRows::RemoveAt(int nIndex)
-{
-	m_arrRows.GetAt(nIndex)->InternalRelease();
-	m_arrRows.RemoveAt(nIndex);
-}
-
-int CXTPReportRows::RemoveRow(CXTPReportRow* pRow)
-{
-	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		if (m_arrRows.GetAt(i) == pRow)
-		{
-			RemoveAt(i);
-			return i;
-		}
-	}
-	return -1;
-}
-
-void CXTPReportRows::SetVirtualMode(CXTPReportRow* pRow, int nCount)
-{
-	ASSERT(m_pVirtualRow == NULL);
-
-	m_pVirtualRow = pRow;
-	m_nVirtualRowsCount = nCount;
-}
-
-
-int _cdecl CXTPReportRows::CompareRows(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
-{
-	CXTPReportColumns* pColumns = (**ppRow1).GetControl()->GetColumns();
-
-	CXTPReportRecord* pRecord1 = (**ppRow1).GetRecord();
-	CXTPReportRecord* pRecord2 = (**ppRow2).GetRecord();
-
-	ASSERT(pColumns);
-	ASSERT(pRecord1 && pRecord2 || !pRecord1 && !pRecord2);
-
-	if (pRecord1 == pRecord2 && pRecord1)
-		return 0;
-
-	if (!pRecord1 && !pRecord2)
-	{
-		// compare groupRows by its first not group child rows
-		if ((*ppRow1)->HasChildren() && (*ppRow2)->HasChildren())
-		{
-			CXTPReportRow* pRow1a = (CXTPReportRow*)(*ppRow1);
-			CXTPReportRow* pRow2a = (CXTPReportRow*)(*ppRow2);
-
-			if (pRow1a->GetChilds() && pRow1a->GetChilds()->GetCount() &&
-				pRow2a->GetChilds() && pRow2a->GetChilds()->GetCount())
-			{
-				pRow1a = pRow1a->GetChilds()->GetAt(0);
-				pRow2a = pRow2a->GetChilds()->GetAt(0);
-
-				return CompareRows((const CXTPReportRow**)&pRow1a, (const CXTPReportRow**)&pRow2a);
-			}
-		}
-	}
-
-	if (!pRecord1 || !pRecord2)
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-
-	for (int nGroupOrder = 0; nGroupOrder < pColumns->GetGroupsOrder()->GetCount(); nGroupOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(nGroupOrder);
-		if (!pColumn->m_bAutoSortWhenGrouped)
-			continue;
-
-		BOOL bIncreasing = pColumn->m_bSortIncreasing;
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->CompareGroupCaption(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-			return nCompareResult * (bIncreasing ? 1 : -1);
-	}
-
-
-	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetSortOrder()->GetAt(nSortOrder);
-		BOOL bIncreasing = pColumn->IsSortedIncreasing();
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->Compare(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-			return nCompareResult * (bIncreasing ? 1 : -1);
-	}
-
-	return pRecord1->GetIndex() > pRecord2->GetIndex() ? 1 : -1;
-}
-
-int _cdecl CXTPReportRows::CompareRows2(const CXTPReportRow** ppRow1, const CXTPReportRow** ppRow2)
-{
-	CXTPReportColumns* pColumns = (**ppRow1).GetControl()->GetColumns();
-
-	CXTPReportRecord* pRecord1 = (**ppRow1).GetRecord();
-	CXTPReportRecord* pRecord2 = (**ppRow2).GetRecord();
-
-	ASSERT(pColumns);
-	ASSERT(pRecord1 && pRecord2 || !pRecord1 && !pRecord2);
-
-	if (pRecord1 == pRecord2 && pRecord1)
-		return 0;
-
-	if (!pRecord1 && !pRecord2)
-	{
-		// compare groupRows by its first not group child rows
-		if ((*ppRow1)->HasChildren() && (*ppRow2)->HasChildren())
-		{
-			CXTPReportRow* pRow1a = (CXTPReportRow*)(*ppRow1);
-			CXTPReportRow* pRow2a = (CXTPReportRow*)(*ppRow2);
-
-			if (pRow1a->GetChilds() && pRow1a->GetChilds()->GetCount() &&
-				pRow2a->GetChilds() && pRow2a->GetChilds()->GetCount())
-			{
-				pRow1a = pRow1a->GetChilds()->GetAt(0);
-				pRow2a = pRow2a->GetChilds()->GetAt(0);
-
-				return CompareRows((const CXTPReportRow**)&pRow1a, (const CXTPReportRow**)&pRow2a);
-			}
-		}
-	}
-
-	if (!pRecord1 || !pRecord2)
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-
-	for (int nGroupOrder = 0; nGroupOrder < pColumns->GetGroupsOrder()->GetCount(); nGroupOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(nGroupOrder);
-		if (!pColumn->m_bAutoSortWhenGrouped)
-			continue;
-
-		BOOL bIncreasing = pColumn->m_bSortIncreasing;
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->CompareGroupCaption(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-		{
-			if(nGroupOrder > 0)
-				nCompareResult = bIncreasing ? -1 : 1;
-			return nCompareResult * (bIncreasing ? 1 : -1);
-		}
-	}
-
-
-	for (int nSortOrder = 0; nSortOrder < pColumns->GetSortOrder()->GetCount(); nSortOrder++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetSortOrder()->GetAt(nSortOrder);
-		BOOL bIncreasing = pColumn->IsSortedIncreasing();
-
-		CXTPReportRecordItem* pItem1 = pRecord1->GetItem(pColumn);
-		CXTPReportRecordItem* pItem2 = pRecord2->GetItem(pColumn);
-
-		if (!pItem1 || !pItem2)
-			continue;
-
-		int nCompareResult = pItem1->Compare(pColumn, pItem2);
-
-		if (nCompareResult != 0)
-			return nCompareResult * (bIncreasing ? 1 : -1);
-	}
-
-	return 0;
-}
-
-void CXTPReportRows::SortEx(T_CompareFunc pCompareFunc)
-{
-	typedef int (_cdecl *GENERICCOMPAREFUNC)(const void *, const void*);
-
-	qsort(m_arrRows.GetData(), (size_t)m_arrRows.GetSize(), sizeof(CXTPReportRow*), (GENERICCOMPAREFUNC)pCompareFunc);
-}
-
-void CXTPReportRows::Sort()
-{
-	SortEx(CompareRows);
-}
-
-int CXTPReportRows::GetCount() const
-{
-	if (m_pVirtualRow)
-		return m_nVirtualRowsCount;
-
-	return (int)m_arrRows.GetSize();
-}
-
-CXTPReportRow* CXTPReportRows::GetAt(int nIndex) const
-{
-	if (m_pVirtualRow)
-	{
-		m_pVirtualRow->m_nIndex = nIndex;
-		return m_pVirtualRow;
-	}
-
-	return (nIndex >= 0) && (nIndex < GetCount()) ? m_arrRows.GetAt(nIndex) : NULL;
-}
-
-CXTPReportRow* CXTPReportRows::Find(CXTPReportRecord* pRecord)
-{
-	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
-			return m_arrRows.GetAt(i);
-	}
-	return 0;
-}
-
-CXTPReportRow* CXTPReportRows::FindInTree(CXTPReportRecord* pRecord)
-{
-	for (int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		if (m_arrRows.GetAt(i)->GetRecord() == pRecord)
-			return m_arrRows.GetAt(i);
-
-		if (m_arrRows.GetAt(i)->HasChildren())
-		{
-			CXTPReportRow* pRow = m_arrRows.GetAt(i)->GetChilds()->FindInTree(pRecord);
-			if (pRow)
-				return pRow;
-		}
-	}
-	return 0;
-}
-
-CXTPReportRow* CXTPReportRows::FindInsertionPos(CXTPReportRow* pRow, BOOL& bInsertAfter)
-{
-	CXTPReportRow* pInsertionRowPos = NULL;
-	bInsertAfter = FALSE;
-
-	for(int i = 0; i < (int)m_arrRows.GetSize(); i++)
-	{
-		CXTPReportRow* pCurRow = m_arrRows.GetAt(i);
-		if(pCurRow->IsGroupRow())
-		{
-			// compare group caption
-			CXTPReportRecord* pRecord = pRow->GetRecord();
-			CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
-			if(!(pRecord && pColumns))
-				continue;
-			CXTPReportColumn* pColumn = pColumns->GetGroupsOrder()->GetAt(pCurRow->GetGroupLevel());
-			CXTPReportRecordItem* pItem = pRecord->GetItem(pColumn);
-			COleVariant varGroup(pItem ? (LPCTSTR)pItem->GetGroupCaption(pColumn) : _T(""));
-			COleVariant varGroupRowCaption((LPCTSTR)((CXTPReportGroupRow*)pCurRow)->GetCaption());
-			ULONG dwFlags = pRecord->GetRecords()->IsCaseSensitive() ? 0 : NORM_IGNORECASE;
-			LCID lcidnSortLocale = CXTPReportRecordItemVariant::m_nSortLocale;
-			if (lcidnSortLocale == LOCALE_USER_DEFAULT)
-			{
-				lcidnSortLocale = CXTPReportControlLocale::GetActiveLCID();
-			}
-			int nCompareResult = VARCMP_S(varGroup, varGroupRowCaption, lcidnSortLocale, dwFlags) - VARCMP_EQ;
-			if(pColumn->m_bSortIncreasing && nCompareResult > 0 || !pColumn->m_bSortIncreasing && nCompareResult < 0)
-				continue;
-			// find in children
-			if(!pCurRow->GetChilds())
-				continue;
-			if(nCompareResult == 0)
-				pInsertionRowPos = pCurRow->GetChilds()->FindInsertionPos(pRow, bInsertAfter);
-			if(!pInsertionRowPos)
-			{
-				if(nCompareResult != 0)
-					pInsertionRowPos = pCurRow;
-				else
-				{
-					pInsertionRowPos = pCurRow->GetChilds()->GetAt(pCurRow->GetChilds()->GetCount() - 1);
-					bInsertAfter = TRUE;
-				}
-			}
-			break;
-		}
-		if(CompareRows2((const CXTPReportRow**)&pRow, (const CXTPReportRow**)&pCurRow) <= 0)
-		{
-			pInsertionRowPos = pCurRow;
-			break;
-		}
-	}
-
-	return pInsertionRowPos;
-}
-
-void CXTPReportRows::RefreshChildIndices(BOOL bRunInChildren)
-{
-	for(int nIndex = 0; nIndex < GetCount(); nIndex++)
-	{
-		CXTPReportRow* pRow = GetAt(nIndex);
-		pRow->m_nChildIndex = nIndex;
-		ASSERT(pRow->m_pParentRows == this);
-		if(bRunInChildren && pRow->HasChildren() && pRow->GetChilds())
-			pRow->GetChilds()->RefreshChildIndices(bRunInChildren);
-	}
-}
-
-void CXTPReportRows::SetSize(INT_PTR nNewSize, INT_PTR nGrowBy)
-{
-	int nSize = GetCount();
-	if (nNewSize < nSize)
-	{
-		for (int i = (int)nNewSize; i < nSize; i++)
-		{
-			CXTPReportRow* pRow = GetAt(i);
-			if (pRow)
-				pRow->InternalRelease();
-		}
-	}
-
-	m_arrRows.SetSize(nNewSize, nGrowBy);
-}
-
-void CXTPReportRows::ReserveSize(INT_PTR nNewSize, INT_PTR nGrowBy)
-{
-	m_arrRows.ReserveSize(nNewSize, nGrowBy);
-}
-
-
-void CXTPReportRows::SetAt(INT_PTR nIndex, CXTPReportRow* pRow)
-{
-	ASSERT(pRow);
-	ASSERT(nIndex >= 0 && nIndex < GetCount());
-
-	if (!pRow || nIndex < 0 || nIndex >= GetCount())
-		return;
-
-	CXTPReportRow* pRow_prev = GetAt((int)nIndex);
-	if (pRow_prev)
-		pRow_prev->InternalRelease();
-
-	pRow->m_nChildIndex = (int)nIndex;
-	pRow->m_pParentRows = this;
-
-	m_arrRows.SetAt(nIndex, pRow);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportSelectedRows
-
-CXTPReportSelectedRows::CXTPReportSelectedRows(CXTPReportControl* pControl)
-	: m_pControl(pControl)
-{
-
-
-	m_nRowBlockBegin = -1;
-	m_nPosSelected = 0;
-	m_bChanged = FALSE;
-	m_nRowType = xtpRowTypeBody;
-}
-
-void CXTPReportSelectedRows::Clear()
-{
-	if (m_arrSelectedBlocks.GetSize() > 0)
-	{
-		m_bChanged = TRUE;
-
-		_NotifySelChanging(xtpReportSelectionClear);
-	}
-
-	m_arrSelectedBlocks.RemoveAll();
-	m_nRowBlockBegin = -1;
-	m_nRowType = xtpRowTypeBody;
-	m_pControl->RedrawControl();
-}
-
-void CXTPReportSelectedRows::_InsertBlock(int nIndexInsert, int nIndexBegin, int nIndexEnd)
-{
-	SELECTED_BLOCK block;
-	block.nIndexBegin = nIndexBegin;
-	block.nIndexEnd = nIndexEnd;
-	m_arrSelectedBlocks.InsertAt(nIndexInsert, block);
-}
-
-
-void CXTPReportSelectedRows::_OnCollapsed(int nIndex, int nCount)
-{
-	ASSERT(nCount > 0);
-
-	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
-	{
-		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if (nIndexBegin <= nIndex && nIndexEnd > nIndex + 1)
-		{
-			nIndexEnd = max(nIndexBegin + 1, nIndexEnd - nCount);
-
-		}
-		else if (nIndexBegin > nIndex + nCount)
-		{
-			nIndexBegin -= nCount;
-			nIndexEnd -= nCount;
-		}
-		else if (nIndexEnd < nIndex)
-			break;
-		else if (nIndexBegin > nIndex)
-		{
-			nIndexBegin = nIndex;
-			nIndexEnd = max(nIndexBegin + 1, nIndexEnd - nCount);
-		}
-	}
-}
-
-void CXTPReportSelectedRows::_OnExpanded(int nIndex, int nCount)
-{
-	ASSERT(nCount > 0);
-
-	for (int i = (int)m_arrSelectedBlocks.GetSize() - 1; i >= 0 ; i--)
-	{
-		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if (nIndexBegin <= nIndex && nIndexEnd > nIndex + 1)
-		{
-			_InsertBlock(i + 1, nIndex + 1 + nCount, nIndexEnd + nCount);
-			m_arrSelectedBlocks[i].nIndexEnd = nIndex + 1;
-
-		}
-		else if (nIndexBegin > nIndex)
-		{
-			nIndexBegin += nCount;
-			nIndexEnd += nCount;
-		}
-		else if (nIndexEnd < nIndex)
-			break;
-
-	}
-}
-
-void CXTPReportSelectedRows::AddBlock(int ib, int ie)
-{
-	int i = 0;
-	int nCount = (int)m_arrSelectedBlocks.GetSize();
-
-	if (nCount > 0)
-	{
-		int& nIndexEnd = m_arrSelectedBlocks[nCount - 1].nIndexEnd;
-
-		if (nIndexEnd == ib)
-		{
-			nIndexEnd = ie + 1;
-			m_pControl->RedrawControl();
-			return;
-		}
-
-		if (nIndexEnd < ib)
-		{
-			i = nCount;
-		}
-	}
-
-	for (; i < nCount; i++)
-	{
-		int& nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int& nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if ((nIndexBegin <= ib) && (nIndexEnd > ie))
-		{
-			return;
-		}
-
-		if (nIndexEnd == ib)
-		{
-			nIndexEnd = ie + 1;
-			if (i + 1 < nCount && m_arrSelectedBlocks[i + 1].nIndexBegin == nIndexEnd)
-			{
-				nIndexEnd = m_arrSelectedBlocks[i + 1].nIndexEnd;
-				m_arrSelectedBlocks.RemoveAt(i + 1);
-			}
-
-			m_pControl->RedrawControl();
-			return;
-		}
-		if (nIndexBegin == ie + 1)
-		{
-			nIndexBegin = ib;
-			m_pControl->RedrawControl();
-			return;
-		}
-
-		if (nIndexBegin > ie)
-			break;
-	}
-
-	_InsertBlock(i, ib, ie + 1);
-	m_pControl->RedrawControl();
-}
-
-void CXTPReportSelectedRows::Add(CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return;
-
-	_NotifySelChanging(xtpReportSelectionAdd, pRow);
-
-	int nIndex = pRow->GetIndex();
-
-	if (nIndex != -1)
-	{
-		AddBlock(nIndex, nIndex);
-	}
-}
-
-void CXTPReportSelectedRows::Remove(CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return;
-
-	_NotifySelChanging(xtpReportSelectionRemove, pRow);
-
-	int nIndex = pRow->GetIndex();
-
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
-	{
-		int nIndexBegin = m_arrSelectedBlocks[i].nIndexBegin;
-		int nIndexEnd = m_arrSelectedBlocks[i].nIndexEnd;
-
-		if ((nIndexBegin <= nIndex) && (nIndexEnd > nIndex))
-		{
-			if (nIndexBegin != nIndex)
-			{
-				_InsertBlock(i, nIndexBegin, nIndex);
-				i++;
-			}
-
-			if (nIndexEnd - 1 != nIndex)
-			{
-				_InsertBlock(i + 1, nIndex + 1, nIndexEnd);
-			}
-
-			m_arrSelectedBlocks.RemoveAt(i);
-			m_pControl->RedrawControl();
-			return;
-		}
-	}
-
-}
-
-void CXTPReportSelectedRows::Select(CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return;
-
-	// If new selected row belongs to the other type - clear previous selection.
-	if (m_nRowType != pRow->GetType())
-		Clear();
-
-	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin ==
-		m_arrSelectedBlocks[0].nIndexEnd - 1 && m_arrSelectedBlocks[0].nIndexBegin == pRow->GetIndex())
-	{
-
-	}
-	else
-	{
-		Clear();
-		Add(pRow);
-		m_bChanged = TRUE;
-		m_nRowType = pRow->GetType();
-	}
-}
-
-void CXTPReportSelectedRows::SelectBlock(int nBlockBegin, int nEnd)
-{
-	CXTPReportRows* pRows;
-	switch(m_nRowType)
-	{
-		case xtpRowTypeHeader : pRows = m_pControl->GetHeaderRows(); break;
-		case xtpRowTypeFooter : pRows = m_pControl->GetFooterRows(); break;
-		default : pRows = m_pControl->GetRows(); break;
-	}
-	ASSERT(nBlockBegin >= 0 && nBlockBegin < pRows->GetCount() && nEnd < pRows->GetCount() );
-
-	nBlockBegin = m_nRowBlockBegin != -1 ? m_nRowBlockBegin : nBlockBegin;
-
-	int nBegin = nBlockBegin;
-
-	if (nBegin == -1 || nEnd == -1)
-		return;
-
-	if (nBegin > nEnd)
-	{
-		nBegin = nEnd;
-		nEnd = nBlockBegin;
-	}
-
-	if (m_arrSelectedBlocks.GetSize() == 1 && m_arrSelectedBlocks[0].nIndexBegin == nBegin &&
-		m_arrSelectedBlocks[0].nIndexEnd == nEnd + 1)
-	{
-		return;
-	}
-
-	XTPReportRowType nRowType = m_nRowType;
-	Clear();
-	m_nRowType = nRowType;
-	if (m_nRowBlockBegin == -1) m_nRowBlockBegin = nBlockBegin;
-
-
-	BOOL bSkipGroupFocus = m_pControl->IsSkipGroupsFocusEnabled();
-	BOOL bHasGroups = m_pControl->GetColumns()->GetGroupsOrder()->GetCount() != 0;
-
-	if (!bHasGroups || !bSkipGroupFocus)
-	{
-		_InsertBlock(0, nBegin, nEnd + 1);
-	}
-	else
-	{
-		for (int i = nBegin; i <= nEnd; i++)
-		{
-			CXTPReportRow* pRow = pRows->GetAt(i);
-			if (!pRow)
-				continue;
-
-			if (!bSkipGroupFocus || !pRow->IsGroupRow() || !pRow->IsExpanded() || (i == nBegin) || (i == nEnd))
-			{
-				Add(pRow);
-			}
-		}
-	}
-}
-
-BOOL CXTPReportSelectedRows::Contains(const CXTPReportRow* pRow)
-{
-	if (!pRow)
-		return FALSE;
-
-	if (m_nRowType != pRow->GetType())
-		return FALSE;
-
-	int nIndex = pRow->GetIndex();
-
-	int nCount = (int)m_arrSelectedBlocks.GetSize();
-	if (nCount == 0)
-		return FALSE;
-
-	if (m_arrSelectedBlocks[0].nIndexBegin > nIndex)
-		return FALSE;
-
-	if (m_arrSelectedBlocks[nCount - 1].nIndexEnd <= nIndex)
-		return FALSE;
-
-	for (int i = 0; i < nCount; i++)
-	{
-		if ((m_arrSelectedBlocks[i].nIndexBegin <= nIndex) &&
-			(m_arrSelectedBlocks[i].nIndexEnd > nIndex))
-		{
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-void CXTPReportSelectedRows::Invert(CXTPReportRow* pRow)
-{
-	if(pRow->GetType() != m_nRowType)
-		return;
-
-	if (Contains(pRow))
-		Remove (pRow);
-	else Add(pRow);
-
-	m_nRowBlockBegin = -1;
-	m_bChanged = TRUE;
-}
-
-
-int CXTPReportSelectedRows::GetCount()
-{
-	int nCount = 0;
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
-	{
-		nCount += m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
-	}
-	return nCount;
-}
-
-
-POSITION CXTPReportSelectedRows::GetFirstSelectedRowPosition()
-{
-	if (m_arrSelectedBlocks.GetSize() == 0)
-		return 0;
-
-	m_nPosSelected = 0;
-
-	POSITION pos = 0;
-	pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[0].nIndexBegin + 1);
-	return pos;
-}
-
-CXTPReportRow* CXTPReportSelectedRows::GetNextSelectedRow(POSITION& pos)
-{
-	ASSERT(m_nPosSelected < m_arrSelectedBlocks.GetSize());
-
-	int nIndex = (int)(DWORD_PTR)pos - 1;
-	CXTPReportRow* pRow;
-	switch(m_nRowType)
-	{
-		case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(nIndex); break;
-		case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(nIndex); break;
-		default : pRow = m_pControl->GetRows()->GetAt(nIndex); break;
-	}
-
-	if (nIndex < m_arrSelectedBlocks[m_nPosSelected].nIndexEnd - 1)
-	{
-		(int)(DWORD_PTR)pos++;
-	}
-	else
-	{
-		if (m_nPosSelected >= m_arrSelectedBlocks.GetSize() - 1)
-		{
-			pos = NULL;
-		}
-		else
-		{
-			m_nPosSelected++;
-			pos = (POSITION)(DWORD_PTR)(m_arrSelectedBlocks[m_nPosSelected].nIndexBegin + 1);
-		}
-	}
-
-	return pRow;
-}
-
-
-
-CXTPReportRow* CXTPReportSelectedRows::GetAt (int nIndex)
-{
-	for (int i = 0; i < (int)m_arrSelectedBlocks.GetSize(); i++)
-	{
-		int nCount = m_arrSelectedBlocks[i].nIndexEnd - m_arrSelectedBlocks[i].nIndexBegin;
-		if (nCount <= nIndex)
-		{
-			nIndex -= nCount;
-			continue;
-		}
-
-		CXTPReportRow* pRow;
-		switch(m_nRowType)
-		{
-			case xtpRowTypeHeader : pRow = m_pControl->GetHeaderRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
-			case xtpRowTypeFooter : pRow = m_pControl->GetFooterRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
-			default : pRow = m_pControl->GetRows()->GetAt(m_arrSelectedBlocks[i].nIndexBegin + nIndex); break;
-		}
-		return pRow;
-	}
-
-	return 0;
-}
-
-void CXTPReportSelectedRows::_NotifySelChanging(XTPReportSelectionChangeType nType, CXTPReportRow* pRow)
-{
-	ASSERT(m_pControl);
-	if (!m_pControl)
-		return;
-
-	XTP_NM_SELECTION_CHANGING nm;
-	::ZeroMemory(&nm, sizeof(nm));
-
-	nm.pRow = pRow;
-	nm.nType = nType;
-
-	m_pControl->SendNotifyMessage(XTP_NM_REPORT_SELCHANGING,(NMHDR*)&nm);
-}
-

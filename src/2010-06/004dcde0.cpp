@@ -1,262 +1,32 @@
+// roc 2010-06 004dcde0  unit: RBX::VInstance::?$GuidItem::VRegistry::?$sp_counted_impl_p  size: 61 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 004dcde0
+//
+// 004dcde0  56                   push esi
+// 004dcde1  8bf1                 mov esi, ecx
+// 004dcde3  8b4608               mov eax, dword ptr [esi + 8]
+// 004dcde6  8d4801               lea ecx, [eax + 1]
+// 004dcde9  3b0e                 cmp ecx, dword ptr [esi]
+// 004dcdeb  7606                 jbe 0x4dcdf3
+// 004dcded  32c0                 xor al, al
+// 004dcdef  5e                   pop esi
+// 004dcdf0  c20400               ret 4
+// 004dcdf3  8bc8                 mov ecx, eax
+// 004dcdf5  83e107               and ecx, 7
+// 004dcdf8  ba80000000           mov edx, 0x80
+// 004dcdfd  d3fa                 sar edx, cl
+// 004dcdff  8b4e0c               mov ecx, dword ptr [esi + 0xc]
+// 004dce02  c1e803               shr eax, 3
+// 004dce05  841408               test byte ptr [eax + ecx], dl
+// 004dce08  8b442408             mov eax, dword ptr [esp + 8]
+// 004dce0c  0f95c2               setne dl
+// 004dce0f  8810                 mov byte ptr [eax], dl
+// 004dce11  b801000000           mov eax, 1
+// 004dce16  014608               add dword ptr [esi + 8], eax
+// 004dce19  5e                   pop esi
+// 004dce1a  c20400               ret 4
+// copied from an identical function in another client (function ??$Read@_N@BitStream@RakNet@@QAE_NAA_N@Z)
+
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: raknet-4.081 CloudClient.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
- *  Copyright (c) 2014, Oculus VR, Inc.
- *  All rights reserved.
- *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
- */
-
-#include "NativeFeatureIncludes.h"
-#if _RAKNET_SUPPORT_CloudClient==1
-
-#include "CloudClient.h"
-#include "GetTime.h"
-#include "MessageIdentifiers.h"
-#include "BitStream.h"
-#include "RakPeerInterface.h"
-
-using namespace RakNet;
-
-STATIC_FACTORY_DEFINITIONS(CloudClient,CloudClient);
-
-CloudClient::CloudClient()
-{
-	callback=0;
-	allocator=&unsetDefaultAllocator;
-}
-CloudClient::~CloudClient()
-{
-}
-void CloudClient::SetDefaultCallbacks(CloudAllocator *_allocator, CloudClientCallback *_callback)
-{
-	callback=_callback;
-	allocator=_allocator;
-}
-void CloudClient::Post(CloudKey *cloudKey, const unsigned char *data, uint32_t dataLengthBytes, RakNetGUID systemIdentifier)
-{
-	RakAssert(cloudKey);
-	
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_POST_REQUEST);
-	cloudKey->Serialize(true,&bsOut);
-	if (data==0)
-		dataLengthBytes=0;
-	bsOut.Write(dataLengthBytes);
-	if (dataLengthBytes>0)
-		bsOut.WriteAlignedBytes((const unsigned char*) data, dataLengthBytes);
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-}
-void CloudClient::Release(DataStructures::List<CloudKey> &keys, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_RELEASE_REQUEST);
-	RakAssert(keys.Size() < (uint16_t)-1 );
-	bsOut.WriteCasted<uint16_t>(keys.Size());
-	for (uint16_t i=0; i < keys.Size(); i++)	
-	{
-		keys[i].Serialize(true,&bsOut);
-	}
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-}
-bool CloudClient::Get(CloudQuery *keyQuery, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_GET_REQUEST);
-	keyQuery->Serialize(true, &bsOut);
-	bsOut.WriteCasted<uint16_t>(0); // Specific systems
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-	return true;
-}
-bool CloudClient::Get(CloudQuery *keyQuery, DataStructures::List<RakNetGUID> &specificSystems, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_GET_REQUEST);
-	keyQuery->Serialize(true, &bsOut);
-	bsOut.WriteCasted<uint16_t>(specificSystems.Size());
-	RakAssert(specificSystems.Size() < (uint16_t)-1 );
-	for (uint16_t i=0; i < specificSystems.Size(); i++)
-	{
-		bsOut.Write(specificSystems[i]);
-	}
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-	return true;
-}
-bool CloudClient::Get(CloudQuery *keyQuery, DataStructures::List<CloudQueryRow*> &specificSystems, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_GET_REQUEST);
-	keyQuery->Serialize(true, &bsOut);
-	bsOut.WriteCasted<uint16_t>(specificSystems.Size());
-	RakAssert(specificSystems.Size() < (uint16_t)-1 );
-	for (uint16_t i=0; i < specificSystems.Size(); i++)
-	{
-		if (specificSystems[i]->clientGUID!=UNASSIGNED_RAKNET_GUID)
-		{
-			bsOut.Write(true);
-			bsOut.Write(specificSystems[i]->clientGUID);
-		}
-		else
-		{
-			bsOut.Write(false);
-			bsOut.Write(specificSystems[i]->clientSystemAddress);
-		}
-	}
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-	return true;
-}
-void CloudClient::Unsubscribe(DataStructures::List<CloudKey> &keys, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_UNSUBSCRIBE_REQUEST);
-	RakAssert(keys.Size() < (uint16_t)-1 );
-	bsOut.WriteCasted<uint16_t>(keys.Size());
-	for (uint16_t i=0; i < keys.Size(); i++)	
-	{
-		keys[i].Serialize(true,&bsOut);
-	}
-	bsOut.WriteCasted<uint16_t>(0);
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-}
-void CloudClient::Unsubscribe(DataStructures::List<CloudKey> &keys, DataStructures::List<RakNetGUID> &specificSystems, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_UNSUBSCRIBE_REQUEST);
-	RakAssert(keys.Size() < (uint16_t)-1 );
-	bsOut.WriteCasted<uint16_t>(keys.Size());
-	for (uint16_t i=0; i < keys.Size(); i++)	
-	{
-		keys[i].Serialize(true,&bsOut);
-	}
-	bsOut.WriteCasted<uint16_t>(specificSystems.Size());
-	RakAssert(specificSystems.Size() < (uint16_t)-1 );
-	for (uint16_t i=0; i < specificSystems.Size(); i++)
-	{
-		bsOut.Write(specificSystems[i]);
-	}
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-}
-void CloudClient::Unsubscribe(DataStructures::List<CloudKey> &keys, DataStructures::List<CloudQueryRow*> &specificSystems, RakNetGUID systemIdentifier)
-{
-	RakNet::BitStream bsOut;
-	bsOut.Write((MessageID)ID_CLOUD_UNSUBSCRIBE_REQUEST);
-	RakAssert(keys.Size() < (uint16_t)-1 );
-	bsOut.WriteCasted<uint16_t>(keys.Size());
-	for (uint16_t i=0; i < keys.Size(); i++)	
-	{
-		keys[i].Serialize(true,&bsOut);
-	}
-	bsOut.WriteCasted<uint16_t>(specificSystems.Size());
-	RakAssert(specificSystems.Size() < (uint16_t)-1 );
-	for (uint16_t i=0; i < specificSystems.Size(); i++)
-	{
-		if (specificSystems[i]->clientGUID!=UNASSIGNED_RAKNET_GUID)
-		{
-			bsOut.Write(true);
-			bsOut.Write(specificSystems[i]->clientGUID);
-		}
-		else
-		{
-			bsOut.Write(false);
-			bsOut.Write(specificSystems[i]->clientSystemAddress);
-		}
-	}
-	SendUnified(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, systemIdentifier, false);
-}
-PluginReceiveResult CloudClient::OnReceive(Packet *packet)
-{
-	(void) packet;
-
-	return RR_CONTINUE_PROCESSING;
-}
-void CloudClient::OnGetReponse(Packet *packet, CloudClientCallback *_callback, CloudAllocator *_allocator)
-{
-	if (_callback==0)
-		_callback=callback;
-	if (_allocator==0)
-		_allocator=allocator;
-
-	CloudQueryResult cloudQueryResult;
-
-	RakNet::BitStream bsIn(packet->data, packet->length, false);
-	bsIn.IgnoreBytes(sizeof(MessageID));
-	cloudQueryResult.Serialize(false,&bsIn,_allocator);
-	bool deallocateRowsAfterReturn=true;
-	_callback->OnGet(&cloudQueryResult, &deallocateRowsAfterReturn);
-	if (deallocateRowsAfterReturn)
-	{
-		unsigned int i;
-		for (i=0; i < cloudQueryResult.rowsReturned.Size(); i++)
-		{
-			_allocator->DeallocateRowData(cloudQueryResult.rowsReturned[i]->data);
-			_allocator->DeallocateCloudQueryRow(cloudQueryResult.rowsReturned[i]);
-		}
-	}
-}
-void CloudClient::OnGetReponse(CloudQueryResult *cloudQueryResult, Packet *packet, CloudAllocator *_allocator)
-{
-	if (_allocator==0)
-		_allocator=allocator;
-
-	RakNet::BitStream bsIn(packet->data, packet->length, false);
-	bsIn.IgnoreBytes(sizeof(MessageID));
-	cloudQueryResult->Serialize(false,&bsIn,_allocator);
-}
-void CloudClient::OnSubscriptionNotification(Packet *packet, CloudClientCallback *_callback, CloudAllocator *_allocator)
-{
-	if (_callback==0)
-		_callback=callback;
-	if (_allocator==0)
-		_allocator=allocator;
-
-	bool wasUpdated=false;
-	CloudQueryRow row;
-
-	RakNet::BitStream bsIn(packet->data, packet->length, false);
-	bsIn.IgnoreBytes(sizeof(MessageID));
-	bsIn.Read(wasUpdated);
-	row.Serialize(false,&bsIn,_allocator);
-	bool deallocateRowAfterReturn=true;
-	_callback->OnSubscriptionNotification(&row, wasUpdated, &deallocateRowAfterReturn);
-	if (deallocateRowAfterReturn)
-	{
-		_allocator->DeallocateRowData(row.data);
-	}
-}
-void CloudClient::OnSubscriptionNotification(bool *wasUpdated, CloudQueryRow *row, Packet *packet, CloudAllocator *_allocator)
-{
-	if (_allocator==0)
-		_allocator=allocator;
-
-	RakNet::BitStream bsIn(packet->data, packet->length, false);
-	bsIn.IgnoreBytes(sizeof(MessageID));
-	bool b=false;
-	bsIn.Read(b);
-	*wasUpdated=b;
-	row->Serialize(false,&bsIn,_allocator);
-}
-void CloudClient::DeallocateWithDefaultAllocator(CloudQueryResult *cloudQueryResult)
-{
-	unsigned int i;
-	for (i=0; i < cloudQueryResult->rowsReturned.Size(); i++)
-	{
-		allocator->DeallocateRowData(cloudQueryResult->rowsReturned[i]->data);
-		allocator->DeallocateCloudQueryRow(cloudQueryResult->rowsReturned[i]);
-	}
-
-	cloudQueryResult->rowsReturned.Clear(false, _FILE_AND_LINE_);
-	cloudQueryResult->resultKeyIndices.Clear(false, _FILE_AND_LINE_);
-	cloudQueryResult->cloudQuery.keys.Clear(false, _FILE_AND_LINE_);
-}
-void CloudClient::DeallocateWithDefaultAllocator(CloudQueryRow *row)
-{
-	allocator->DeallocateRowData(row->data);
-}
-#endif

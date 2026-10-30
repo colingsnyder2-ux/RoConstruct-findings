@@ -1,854 +1,158 @@
+// roc 2009-12 008e0e00  unit: CXTPOffice2007Image  size: 477 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008e0e00
+//
+// 008e0e00  6aff                 push -1
+// 008e0e02  68005b9600           push 0x965b00
+// 008e0e07  64a100000000         mov eax, dword ptr fs:[0]
+// 008e0e0d  50                   push eax
+// 008e0e0e  83ec2c               sub esp, 0x2c
+// 008e0e11  53                   push ebx
+// 008e0e12  55                   push ebp
+// 008e0e13  56                   push esi
+// 008e0e14  57                   push edi
+// 008e0e15  a10052b600           mov eax, dword ptr [0xb65200]
+// 008e0e1a  33c4                 xor eax, esp
+// 008e0e1c  50                   push eax
+// 008e0e1d  8d442440             lea eax, [esp + 0x40]
+// 008e0e21  64a300000000         mov dword ptr fs:[0], eax
+// 008e0e27  8bd9                 mov ebx, ecx
+// 008e0e29  33c0                 xor eax, eax
+// 008e0e2b  3bd8                 cmp ebx, eax
+// 008e0e2d  0f8494010000         je 0x8e0fc7
+// 008e0e33  394320               cmp dword ptr [ebx + 0x20], eax
+// 008e0e36  0f848b010000         je 0x8e0fc7
+// 008e0e3c  8b7c2468             mov edi, dword ptr [esp + 0x68]
+// 008e0e40  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 008e0e44  8b770c               mov esi, dword ptr [edi + 0xc]
+// 008e0e47  8b54245c             mov edx, dword ptr [esp + 0x5c]
+// 008e0e4b  037704               add esi, dword ptr [edi + 4]
+// 008e0e4e  8be9                 mov ebp, ecx
+// 008e0e50  2bea                 sub ebp, edx
+// 008e0e52  3bf5                 cmp esi, ebp
+// 008e0e54  0f8f6d010000         jg 0x8e0fc7
+// 008e0e5a  837c246cff           cmp dword ptr [esp + 0x6c], -1
+// 008e0e5f  0f841b010000         je 0x8e0f80
+// 008e0e65  394324               cmp dword ptr [ebx + 0x24], eax
+// 008e0e68  0f8512010000         jne 0x8e0f80
+// 008e0e6e  89442418             mov dword ptr [esp + 0x18], eax
+// 008e0e72  c744241418229a00     mov dword ptr [esp + 0x14], 0x9a2218
+// 008e0e7a  8b742454             mov esi, dword ptr [esp + 0x54]
+// 008e0e7e  8b4e08               mov ecx, dword ptr [esi + 8]
+// 008e0e81  2b0e                 sub ecx, dword ptr [esi]
+// 008e0e83  8b6c2450             mov ebp, dword ptr [esp + 0x50]
+// 008e0e87  89442448             mov dword ptr [esp + 0x48], eax
+// 008e0e8b  8b460c               mov eax, dword ptr [esi + 0xc]
+// 008e0e8e  2b4604               sub eax, dword ptr [esi + 4]
+// 008e0e91  50                   push eax
+// 008e0e92  51                   push ecx
+// 008e0e93  55                   push ebp
+// 008e0e94  8d4c2420             lea ecx, [esp + 0x20]
+// 008e0e98  e8b38df2ff           call 0x809c50
+// 008e0e9d  8d542414             lea edx, [esp + 0x14]
+// 008e0ea1  52                   push edx
+// 008e0ea2  55                   push ebp
+// 008e0ea3  8d4c2434             lea ecx, [esp + 0x34]
+// 008e0ea7  e8d4a9f6ff           call 0x84b880
+// 008e0eac  8b460c               mov eax, dword ptr [esi + 0xc]
+// 008e0eaf  2b4604               sub eax, dword ptr [esi + 4]
+// 008e0eb2  8b4e08               mov ecx, dword ptr [esi + 8]
+// 008e0eb5  2b0e                 sub ecx, dword ptr [esi]
+// 008e0eb7  89442428             mov dword ptr [esp + 0x28], eax
+// 008e0ebb  8b44246c             mov eax, dword ptr [esp + 0x6c]
+// 008e0ebf  894c2424             mov dword ptr [esp + 0x24], ecx
+// 008e0ec3  50                   push eax
+// 008e0ec4  8d4c2420             lea ecx, [esp + 0x20]
+// 008e0ec8  33d2                 xor edx, edx
+// 008e0eca  51                   push ecx
+// 008e0ecb  8d4c2434             lea ecx, [esp + 0x34]
+// 008e0ecf  c644245001           mov byte ptr [esp + 0x50], 1
+// 008e0ed4  89542424             mov dword ptr [esp + 0x24], edx
+// 008e0ed8  89542428             mov dword ptr [esp + 0x28], edx
+// 008e0edc  e81d37f1ff           call 0x7f45fe
+// 008e0ee1  8b17                 mov edx, dword ptr [edi]
+// 008e0ee3  8b4f04               mov ecx, dword ptr [edi + 4]
+// 008e0ee6  83ec10               sub esp, 0x10
+// 008e0ee9  8bc4                 mov eax, esp
+// 008e0eeb  8910                 mov dword ptr [eax], edx
+// 008e0eed  8b5708               mov edx, dword ptr [edi + 8]
+// 008e0ef0  894804               mov dword ptr [eax + 4], ecx
+// 008e0ef3  8b4f0c               mov ecx, dword ptr [edi + 0xc]
+// 008e0ef6  895008               mov dword ptr [eax + 8], edx
+// 008e0ef9  8b542468             mov edx, dword ptr [esp + 0x68]
+// 008e0efd  89480c               mov dword ptr [eax + 0xc], ecx
+// 008e0f00  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
+// 008e0f04  83ec10               sub esp, 0x10
+// 008e0f07  8bc4                 mov eax, esp
+// 008e0f09  8910                 mov dword ptr [eax], edx
+// 008e0f0b  8b942480000000       mov edx, dword ptr [esp + 0x80]
+// 008e0f12  894804               mov dword ptr [eax + 4], ecx
+// 008e0f15  8b8c2484000000       mov ecx, dword ptr [esp + 0x84]
+// 008e0f1c  895008               mov dword ptr [eax + 8], edx
+// 008e0f1f  89480c               mov dword ptr [eax + 0xc], ecx
+// 008e0f22  8d54243c             lea edx, [esp + 0x3c]
+// 008e0f26  52                   push edx
+// 008e0f27  8d442450             lea eax, [esp + 0x50]
+// 008e0f2b  50                   push eax
+// 008e0f2c  8bcb                 mov ecx, ebx
+// 008e0f2e  e85df2ffff           call 0x8e0190
+// 008e0f33  85ed                 test ebp, ebp
+// 008e0f35  7403                 je 0x8e0f3a
+// 008e0f37  8b6d04               mov ebp, dword ptr [ebp + 4]
+// 008e0f3a  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
+// 008e0f3e  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008e0f42  51                   push ecx
+// 008e0f43  8d542420             lea edx, [esp + 0x20]
+// 008e0f47  52                   push edx
+// 008e0f48  50                   push eax
+// 008e0f49  56                   push esi
+// 008e0f4a  55                   push ebp
+// 008e0f4b  e860f5f2ff           call 0x8104b0
+// 008e0f50  8bc8                 mov ecx, eax
+// 008e0f52  e8c98ff2ff           call 0x809f20
+// 008e0f57  8d4c242c             lea ecx, [esp + 0x2c]
+// 008e0f5b  c644244800           mov byte ptr [esp + 0x48], 0
+// 008e0f60  e82baaf6ff           call 0x84b990
+// 008e0f65  8d4c2414             lea ecx, [esp + 0x14]
+// 008e0f69  c7442448ffffffff     mov dword ptr [esp + 0x48], 0xffffffff
+// 008e0f71  c744241418229a00     mov dword ptr [esp + 0x14], 0x9a2218
+// 008e0f79  e8b2e2b2ff           call 0x40f230
+// 008e0f7e  eb47                 jmp 0x8e0fc7
+// 008e0f80  8b37                 mov esi, dword ptr [edi]
+// 008e0f82  83ec10               sub esp, 0x10
+// 008e0f85  8bc4                 mov eax, esp
+// 008e0f87  8930                 mov dword ptr [eax], esi
+// 008e0f89  8b7704               mov esi, dword ptr [edi + 4]
+// 008e0f8c  897004               mov dword ptr [eax + 4], esi
+// 008e0f8f  8b7708               mov esi, dword ptr [edi + 8]
+// 008e0f92  897008               mov dword ptr [eax + 8], esi
+// 008e0f95  8b770c               mov esi, dword ptr [edi + 0xc]
+// 008e0f98  89700c               mov dword ptr [eax + 0xc], esi
+// 008e0f9b  8b742468             mov esi, dword ptr [esp + 0x68]
+// 008e0f9f  83ec10               sub esp, 0x10
+// 008e0fa2  8bc4                 mov eax, esp
+// 008e0fa4  8930                 mov dword ptr [eax], esi
+// 008e0fa6  895004               mov dword ptr [eax + 4], edx
+// 008e0fa9  8b942480000000       mov edx, dword ptr [esp + 0x80]
+// 008e0fb0  895008               mov dword ptr [eax + 8], edx
+// 008e0fb3  89480c               mov dword ptr [eax + 0xc], ecx
+// 008e0fb6  8b442474             mov eax, dword ptr [esp + 0x74]
+// 008e0fba  8b4c2470             mov ecx, dword ptr [esp + 0x70]
+// 008e0fbe  50                   push eax
+// 008e0fbf  51                   push ecx
+// 008e0fc0  8bcb                 mov ecx, ebx
+// 008e0fc2  e8c9f1ffff           call 0x8e0190
+// 008e0fc7  8b4c2440             mov ecx, dword ptr [esp + 0x40]
+// 008e0fcb  64890d00000000       mov dword ptr fs:[0], ecx
+// 008e0fd2  59                   pop ecx
+// 008e0fd3  5f                   pop edi
+// 008e0fd4  5e                   pop esi
+// 008e0fd5  5d                   pop ebp
+// 008e0fd6  5b                   pop ebx
+// 008e0fd7  83c438               add esp, 0x38
+// 008e0fda  c22000               ret 0x20
+// copied from an identical function in another client (function ?DrawImage@CXTPOffice2007Image@@QAEXPAVCDC@@ABVCRect@@V3@1K@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPOffice2007Image.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPOffice2007Image.cpp: implementation of the CXTPOffice2007Image class.
-//
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTPImageManager.h"
-#include "XTPColorManager.h"
-#include "XTPResourceManager.h"
-#include "XTPDrawHelpers.h"
-#include "XTPVC50Helpers.h"
-#include "XTPVC80Helpers.h"
-
-#include "XTPOffice2007Image.h"
-
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-#define TILE_VERTICAL     1
-#define TILE_HORIZONTAL   2
-#define TILE_ALL          3
-
-//---------------------------------------------------------------------------
-//    Should be a prime number:
-// 37, 53, 79 , 101, 127, 199, 503, 1021, 1511, 2003, 3001, 4001, 5003, 6007, 8009, 12007, 16001, 32003, 48017, 64007
-#define XTP_OFFICE2007_IMAGES_HASH_TABLE_SIZE 199
-
-IMPLEMENT_DYNCREATE(CXTPOffice2007ImageList, CCmdTarget)
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CXTPOffice2007Image::CXTPOffice2007Image()
-{
-	m_hBitmap = NULL;
-	m_bAlpha = FALSE;
-	m_bInvert = FALSE;
-
-	m_bImageOrientaionPreserved = FALSE;
-	m_pCS = 0;
-}
-
-CXTPOffice2007Image::~CXTPOffice2007Image()
-{
-	if (m_hBitmap != NULL)
-	{
-		DeleteObject(m_hBitmap);
-	}
-}
-
-HBITMAP CXTPOffice2007Image::GetBitmap() const
-{
-	return m_hBitmap;
-}
-
-void CXTPOffice2007Image::SetBitmap(HBITMAP hBitmap, BOOL bAlpha /*= FALSE*/)
-{
-	ASSERT(m_hBitmap == NULL);
-
-	m_hBitmap = hBitmap;
-	m_bAlpha = bAlpha;
-	m_bInvert = FALSE;
-}
-
-BOOL CXTPOffice2007Image::LoadFile(HMODULE hModule, LPCTSTR lpszBitmapFileName)
-{
-	m_bMultiply = FALSE;
-	m_bInvert = FALSE;
-
-	if (m_hBitmap)
-	{
-		DeleteObject(m_hBitmap);
-		m_hBitmap = NULL;
-	}
-
-	if (!hModule)
-		return FALSE;
-
-	m_bAlpha = FALSE;
-
-	ASSERT(m_hBitmap == NULL);
-
-	BOOL bAlpha = FALSE;
-
-	HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromResource(hModule, lpszBitmapFileName, &bAlpha);
-
-	if (!hBmp)
-		return FALSE;
-
-	if (bAlpha)
-	{
-		m_hBitmap = hBmp;
-		m_bAlpha = TRUE;
-	}
-	else
-	{
-		m_hBitmap = hBmp;
-	}
-
-	return m_hBitmap != NULL;
-}
-
-void CXTPOffice2007Image::Premultiply()
-{
-	if (!m_bAlpha || !m_hBitmap || m_bMultiply)
-		return;
-
-	HBITMAP hBitmap = m_hBitmap;
-	m_hBitmap = CXTPImageManagerIcon::PreMultiplyAlphaBitmap(m_hBitmap);
-	DeleteObject(hBitmap);
-	m_bMultiply = TRUE;
-}
-
-void CXTPOffice2007Image::InvertBitmap()
-{
-	if (!m_bAlpha)
-		return;
-
-	HBITMAP hBitmap = m_hBitmap;
-	m_hBitmap = CXTPImageManagerIcon::InvertAlphaBitmap(m_hBitmap);
-	DeleteObject(hBitmap);
-
-	m_bInvert = !m_bInvert;
-}
-
-BOOL CXTPOffice2007Image::DrawImagePart(CDC* pDCDest, const CRect& rcDest, CDC* pDCSrc, const CRect& rcSrc) const
-{
-	if (rcDest.Width() <= 0 || rcDest.Height() <= 0 || rcSrc.Width() <= 0 || rcSrc.Height() <= 0)
-		return TRUE;
-
-	BOOL bResult = TRUE;
-
-	if (m_bAlpha)
-	{
-		bResult = XTPImageManager()->AlphaBlend(pDCDest->GetSafeHdc(), rcDest, pDCSrc->GetSafeHdc(), rcSrc);
-	}
-	else if ((rcSrc.Width() == rcDest.Width()) && (rcSrc.Height() == rcDest.Height()))
-	{
-		bResult = pDCDest->BitBlt(rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
-			pDCSrc, rcSrc.left, rcSrc.top, SRCCOPY);
-	}
-	else
-	{
-		bResult = pDCDest->StretchBlt(rcDest.left, rcDest.top, rcDest.Width(), rcDest.Height(),
-			pDCSrc, rcSrc.left, rcSrc.top, rcSrc.Width(), rcSrc.Height(), SRCCOPY);
-	}
-
-	return bResult;
-}
-
-
-void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc, const CRect& rcSizingMargins, COLORREF clrTransparent, DWORD dwFlags)
-{
-	if (this == NULL)
-		return;
-
-	if (m_hBitmap == NULL)
-		return;
-
-	if (rcSizingMargins.top + rcSizingMargins.bottom > rcSrc.Height())
-		return;
-
-	if ((dwFlags & XTP_DI_COMPOSITE) == 0)
-	{
-		DrawImage(pDC, rcDest, rcSrc, rcSizingMargins, clrTransparent);
-		return;
-	}
-
-	if (m_bAlpha)
-	{
-		DrawImage(pDC, rcDest, rcSrc, rcSizingMargins);
-		return;
-	}
-
-	CSize sz(rcDest.Width(), rcDest.Height());
-	CBitmap bmp;
-	LPDWORD lpBits;
-	bmp.Attach(CXTPImageManager::Create32BPPDIBSection(pDC->GetSafeHdc(), sz.cx, sz.cy, (LPBYTE*)&lpBits));
-
-	CXTPCompatibleDC dc(pDC, &bmp);
-
-	CRect rcDestOrig(0, 0, sz.cx, sz.cy);
-
-	if (clrTransparent != COLORREF_NULL) dc.FillSolidRect(rcDestOrig, clrTransparent);
-	DrawImage(&dc, rcDestOrig, rcSrc, rcSizingMargins);
-
-	for (int i = 0; i < sz.cx * sz.cy; i++)
-	{
-		if (clrTransparent != COLORREF_NULL && lpBits[0] == clrTransparent)
-		{
-			lpBits[0] = 0;
-		}
-		else
-		{
-			lpBits[0] |= 0xFF000000;
-		}
-		lpBits++;
-	}
-
-	XTPImageManager()->AlphaBlend(*pDC, rcDest, dc, rcDestOrig);
-}
-
-void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc, const CRect& rcSizingMargins, COLORREF clrTransparent)
-{
-	if (this == NULL)
-		return;
-
-	if (m_hBitmap == NULL)
-		return;
-
-	if (rcSizingMargins.top + rcSizingMargins.bottom > rcSrc.Height())
-		return;
-
-	if (clrTransparent == COLORREF_NULL || m_bAlpha)
-	{
-		DrawImage(pDC, rcDest, rcSrc, rcSizingMargins);
-		return;
-	}
-
-	CBitmap bmp;
-	bmp.CreateCompatibleBitmap(pDC, rcDest.Width(), rcDest.Height());
-
-	CXTPCompatibleDC dc(pDC, &bmp);
-	//dc.SetLayout(0);
-
-	CRect rcDestOrig(0, 0, rcDest.Width(), rcDest.Height());
-
-	dc.FillSolidRect(rcDestOrig, clrTransparent);
-	DrawImage(&dc, rcDestOrig, rcSrc, rcSizingMargins);
-
-	XTPImageManager()->TransparentBlt(*pDC, rcDest, dc, rcDestOrig, clrTransparent);
-
-}
-
-void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc)
-{
-	DrawImage(pDC, rcDest, rcSrc, CRect(0, 0, 0, 0));
-}
-
-void CXTPOffice2007Image::DrawImage(CDC* pDC, const CRect& rcDest, CRect rcSrc, CRect rcSizingMargins)
-{
-	if (this == NULL)
-		return;
-
-	if (m_hBitmap == NULL)
-		return;
-
-	if (rcSizingMargins.top + rcSizingMargins.bottom > rcSrc.Height())
-		return;
-
-	ASSERT(m_pCS);
-	if (!m_pCS)
-		return;
-	CXTPLockGuard lock(*m_pCS);
-
-	if (rcDest.Width() == rcSrc.Width())
-	{
-		rcSizingMargins.left = 0;
-		rcSizingMargins.right = 0;
-	}
-
-	if (rcDest.Height() == rcSrc.Height())
-	{
-		rcSizingMargins.top = 0;
-		rcSizingMargins.bottom = 0;
-	}
-
-	pDC->SetStretchBltMode(COLORONCOLOR);
-
-	CRect rcDestSizingMargins = rcSizingMargins;
-
-	if (rcDest.left >= rcDest.right || rcDest.top >= rcDest.bottom)
-		return;
-
-	BOOL bRtl = CXTPDrawHelpers::IsContextRTL(pDC);
-
-	if (m_bAlpha && m_bImageOrientaionPreserved)
-	{
-		if ((bRtl && !m_bInvert) || (!bRtl && m_bInvert))
-		{
-			InvertBitmap();
-		}
-	}
-
-	CXTPCompatibleDC dcSrc(pDC, m_hBitmap);
-
-	if (bRtl && !m_bAlpha && !m_bImageOrientaionPreserved)
-	{
-		CXTPDrawHelpers::SetContextRTL(&dcSrc, FALSE);
-	}
-
-
-
-	if (rcSizingMargins.IsRectNull())
-	{
-		DrawImagePart(pDC, rcDest, &dcSrc, rcSrc);
-		return;
-	}
-
-	if ((rcDest.Height() <= rcSizingMargins.top + rcSizingMargins.bottom) || (rcSrc.Height() == rcSizingMargins.top + rcSizingMargins.bottom))
-	{
-		rcDestSizingMargins.top = MulDiv(rcDest.Height(), rcSizingMargins.top, (rcSizingMargins.top + rcSizingMargins.bottom));
-		rcDestSizingMargins.bottom = rcDest.Height() - rcDestSizingMargins.top;
-
-		if (rcDestSizingMargins.bottom > 0 && (rcDestSizingMargins.bottom % 2 != rcSizingMargins.bottom % 2))
-			rcDestSizingMargins.bottom++;
-	}
-
-	if ((rcDest.Width() <= rcSizingMargins.left + rcSizingMargins.right) || (rcSrc.Width() == rcSizingMargins.left + rcSizingMargins.right))
-	{
-		rcDestSizingMargins.left= rcDest.Width() * rcSizingMargins.left / (rcSizingMargins.left + rcSizingMargins.right);
-		rcDestSizingMargins.right = rcDest.Width() - rcDestSizingMargins.left;
-	}
-
-	DrawImagePart(pDC, CRect(rcDest.left, rcDest.top, rcDest.left + rcDestSizingMargins.left, rcDest.top + rcDestSizingMargins.top),
-		&dcSrc, CRect(rcSrc.left, rcSrc.top, rcSrc.left + rcSizingMargins.left, rcSrc.top + rcSizingMargins.top ));
-	DrawImagePart(pDC, CRect(rcDest.left + rcDestSizingMargins.left, rcDest.top, rcDest.right - rcDestSizingMargins.right, rcDest.top + rcDestSizingMargins.top),
-		&dcSrc, CRect(rcSrc.left + rcSizingMargins.left, rcSrc.top, rcSrc.right - rcSizingMargins.right, rcSrc.top + rcSizingMargins.top ));
-	DrawImagePart(pDC, CRect(rcDest.right - rcDestSizingMargins.right, rcDest.top, rcDest.right, rcDest.top + rcDestSizingMargins.top),
-		&dcSrc, CRect(rcSrc.right - rcSizingMargins.right, rcSrc.top , rcSrc.right, rcSrc.top + rcSizingMargins.top ));
-
-	DrawImagePart(pDC, CRect(rcDest.left, rcDest.top + rcDestSizingMargins.top, rcDest.left + rcDestSizingMargins.left, rcDest.bottom - rcDestSizingMargins.bottom),
-		&dcSrc, CRect(rcSrc.left, rcSrc.top + rcSizingMargins.top , rcSrc.left + rcSizingMargins.left, rcSrc.bottom - rcSizingMargins.bottom ));
-
-	DrawImagePart(pDC, CRect(rcDest.left + rcDestSizingMargins.left, rcDest.top + rcDestSizingMargins.top, rcDest.right - rcDestSizingMargins.right, rcDest.bottom - rcDestSizingMargins.bottom),
-		&dcSrc, CRect(rcSrc.left + rcSizingMargins.left, rcSrc.top + rcSizingMargins.top , rcSrc.right - rcSizingMargins.right, rcSrc.bottom - rcSizingMargins.bottom ));
-
-	DrawImagePart(pDC, CRect(rcDest.right - rcDestSizingMargins.right , rcDest.top + rcDestSizingMargins.top, rcDest.right, rcDest.bottom - rcDestSizingMargins.bottom),
-		&dcSrc, CRect(rcSrc.right - rcSizingMargins.right, rcSrc.top + rcSizingMargins.top , rcSrc.right, rcSrc.bottom - rcSizingMargins.bottom));
-
-	DrawImagePart(pDC, CRect(rcDest.left, rcDest.bottom - rcDestSizingMargins.bottom, rcDest.left + rcDestSizingMargins.left, rcDest.bottom),
-		&dcSrc, CRect(rcSrc.left, rcSrc.bottom - rcSizingMargins.bottom , rcSrc.left + rcSizingMargins.left, rcSrc.bottom ));
-	DrawImagePart(pDC, CRect(rcDest.left + rcDestSizingMargins.left, rcDest.bottom - rcDestSizingMargins.bottom, rcDest.right - rcDestSizingMargins.right, rcDest.bottom),
-		&dcSrc, CRect(rcSrc.left + rcSizingMargins.left, rcSrc.bottom - rcSizingMargins.bottom  , rcSrc.right - rcSizingMargins.right, rcSrc.bottom ));
-	DrawImagePart(pDC, CRect(rcDest.right - rcDestSizingMargins.right, rcDest.bottom - rcDestSizingMargins.bottom, rcDest.right, rcDest.bottom),
-		&dcSrc, CRect(rcSrc.right - rcSizingMargins.right, rcSrc.bottom - rcSizingMargins.bottom , rcSrc.right, rcSrc.bottom));
-
-}
-
-CSize CXTPOffice2007Image::GetExtent() const
-{
-	if (!m_hBitmap)
-		return CSize(0, 0);
-
-	BITMAP bmpInfo;
-	GetObject(m_hBitmap, sizeof(BITMAP), &bmpInfo);
-
-	return CSize(bmpInfo.bmWidth, bmpInfo.bmHeight);
-}
-
-CRect CXTPOffice2007Image::GetSource(int nState, int nCount) const
-{
-	if (this == NULL)
-		return CRect(0, 0, 0, 0);
-
-	CSize szExtent = GetExtent();
-	CRect rcImage(0, 0, szExtent.cx, szExtent.cy / nCount);
-	rcImage.OffsetRect(0, nState * rcImage.Height());
-
-	return rcImage;
-}
-
-
-DWORD CXTPOffice2007Image::GetHeight() const
-{
-	return GetExtent().cy;
-}
-
-DWORD CXTPOffice2007Image::GetWidth() const
-{
-	return GetExtent().cx;
-}
-
-BOOL CXTPOffice2007Image::IsAlphaImage() const
-{
-	return m_bAlpha;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-CXTPOffice2007Images::CXTPOffice2007Images()
-{
-	m_mapImages.InitHashTable(XTP_OFFICE2007_IMAGES_HASH_TABLE_SIZE, FALSE);
-
-	m_bFreeOnRelease = FALSE;
-	m_hResource = 0;
-	m_lpTextFile = 0;
-	m_lpTextFileEnd = 0;
-
-	SetHandle(AfxGetInstanceHandle());
-}
-
-CXTPOffice2007Images* AFX_CDECL XTPOffice2007Images()
-{
-	static CXTPOffice2007Images images;
-	return &images;
-}
-
-
-
-CXTPOffice2007Images::~CXTPOffice2007Images()
-{
-	RemoveAll();
-
-	if (m_hResource && m_bFreeOnRelease)
-	{
-		FreeLibrary(m_hResource);
-	}
-}
-
-void CXTPOffice2007Images::RemoveAll()
-{
-	CString strImageFile;
-	CXTPOffice2007Image* pImage;
-
-	POSITION pos = m_mapImages.GetStartPosition();
-	while (pos != NULL)
-	{
-		m_mapImages.GetNextAssoc( pos, strImageFile, (void*&)pImage);
-		CMDTARGET_RELEASE(pImage);
-	}
-	m_mapImages.RemoveAll();
-}
-
-CString CXTPOffice2007Images::_ImageNameToResourceName(CString strImageFile)
-{
-	CString strImage = GetImageString(_T("Images"), strImageFile);
-
-	if (!strImage.IsEmpty())
-	{
-		strImageFile = strImage;
-	}
-
-	REPLACE_S(strImageFile, _T('.'), _T('_'));
-	REPLACE_S(strImageFile, _T('\\'), _T('_'));
-
-	return strImageFile;
-}
-
-CXTPOffice2007Image* CXTPOffice2007Images::LoadImage(CString strImageFile)
-{
-	strImageFile = _ImageNameToResourceName(strImageFile);
-
-	CXTPOffice2007Image* pImage = new CXTPOffice2007Image();
-
-	if (!pImage->LoadFile(m_hResource, strImageFile))
-	{
-		delete pImage;
-		return NULL;
-	}
-
-	return pImage;
-}
-
-CXTPOffice2007Image* CXTPOffice2007Images::LoadFile(LPCTSTR lpszImageFile)
-{
-	CXTPLockGuard lock(m_cs);
-
-	if (!m_hResource)
-		return NULL;
-
-	if (lpszImageFile == NULL)
-		return NULL;
-
-	CXTPOffice2007Image* pImage = 0;
-	if (m_mapImages.Lookup(lpszImageFile, (void*&)pImage))
-		return pImage;
-
-	pImage = LoadImage(lpszImageFile);
-	if (!pImage)
-		return NULL;
-
-	m_mapImages.SetAt(lpszImageFile, pImage);
-	pImage->m_pCS = &m_cs;
-
-	return pImage;
-}
-
-BOOL CXTPOffice2007Images::SetHandle(LPCTSTR lpszFile, LPCTSTR lpszIniFileName)
-{
-	HMODULE hModule = LoadLibrary(lpszFile);
-
-	if (hModule)
-	{
-		m_strHandle = lpszFile;
-		return SetHandle(hModule, lpszIniFileName, TRUE);
-	}
-
-	return SetHandle(AfxGetInstanceHandle(), lpszIniFileName);
-}
-
-BOOL CXTPOffice2007Images::IsValid() const
-{
-	return m_lpTextFile != NULL;
-}
-
-BOOL CALLBACK CXTPOffice2007Images::EnumResNameProc(HMODULE /*hModule*/,
-	LPCTSTR /*lpszType*/, LPTSTR lpszName, LONG_PTR lParam)
-{
-	CString* pIniFileName = (CString*)lParam;
-	*pIniFileName = lpszName;
-
-	return FALSE;
-}
-
-HRSRC CXTPOffice2007Images::FindResourceIniFile(HMODULE hResource)
-{
-	CString strIniFileName;
-	EnumResourceNames(hResource, _T("TEXTFILE"), &CXTPOffice2007Images::EnumResNameProc, (LONG_PTR)&strIniFileName);
-
-	if (strIniFileName.IsEmpty())
-		return 0;
-
-	return FindResource(m_hResource, strIniFileName, _T("TEXTFILE"));
-}
-
-BOOL CXTPOffice2007Images::SetHandle(HMODULE hResource, LPCTSTR lpszIniFileName, BOOL bFreeOnRelease)
-{
-	if (m_hResource && m_bFreeOnRelease)
-	{
-		FreeLibrary(m_hResource);
-	}
-	CString strIniFileName(lpszIniFileName);
-
-	if (strIniFileName.IsEmpty())
-		strIniFileName = _T("OFFICE2007BLUE_INI");
-
-	REPLACE_S(strIniFileName, _T('.'), _T('_'));
-
-	m_hResource = hResource;
-	m_bFreeOnRelease = bFreeOnRelease;
-
-	m_lpTextFile = m_lpTextFileEnd = NULL;
-	RemoveAll();
-
-	HRSRC hRsrc = FindResource(m_hResource, strIniFileName, _T("TEXTFILE"));
-
-	if (!hRsrc && lpszIniFileName == NULL)
-	{
-		hRsrc = FindResourceIniFile(hResource);
-	}
-
-	if (!hRsrc)
-		return FALSE;
-
-	HGLOBAL hResData = LoadResource(m_hResource, hRsrc);
-	if (!hResData)
-		return FALSE;
-
-	m_lpTextFile = (LPSTR)LockResource(hResData);
-	m_lpTextFileEnd = m_lpTextFile + SizeofResource(m_hResource, hRsrc);
-
-	return TRUE;
-}
-
-BOOL CXTPOffice2007Images::InitResourceHandle(LPCTSTR lpszTestImageFile, LPCTSTR lpResType)
-{
-	CString strResourceName = _ImageNameToResourceName(lpszTestImageFile);
-
-	HMODULE hResource = XTPResourceManager()->GetResourceHandle();
-	if (hResource == 0)
-		hResource = AfxGetInstanceHandle();
-
-	if (!::FindResource(hResource, strResourceName, lpResType))
-	{
-		hResource = AfxFindResourceHandle(strResourceName, lpResType);
-		if (!hResource)
-			return FALSE;
-	}
-
-	SetHandle(hResource);
-	return TRUE;
-}
-
-BOOL CXTPOffice2007Images::ReadString(CString& str, LPSTR& lpTextFile)
-{
-	ASSERT(lpTextFile);
-	if (!lpTextFile)
-		return FALSE;
-
-	LPSTR pNextLine = strchr(lpTextFile, '\r');
-
-	if (pNextLine == NULL || pNextLine > m_lpTextFileEnd)
-		return FALSE;
-
-	str = CONSTRUCT_S(lpTextFile, (int)(pNextLine - lpTextFile));
-	lpTextFile = pNextLine + 1;
-	if (lpTextFile[0] == '\n') lpTextFile = lpTextFile + 1;
-
-	return TRUE;
-}
-
-
-COLORREF CXTPOffice2007Images::GetImageColor(CString strSectionName, CString strKeyName)
-{
-	CString strValue = GetImageValue(strSectionName, strKeyName);
-	if (strValue.IsEmpty())
-		return COLORREF_NULL;
-
-	int r = 0, g = 0, b = 0;
-	SCANF_S(strValue, _T("%i %i %i"), &r, &g, &b);
-	COLORREF clrVal = RGB(r, g, b);
-	return clrVal;
-
-}
-
-CString CXTPOffice2007Images::GetImageString(CString strSectionName, CString strKeyName)
-{
-	return GetImageValue(strSectionName, strKeyName);
-}
-
-CString CXTPOffice2007Images::GetImageValue(CString strSectionName, CString strKeyName)
-{
-	if (m_lpTextFile == NULL)
-		return _T("");
-
-	strSectionName.MakeUpper();
-	strKeyName.MakeUpper();
-
-	LPSTR lpTextFile = m_lpTextFile;
-	CString str;
-
-	BOOL bSectionFound = FALSE;
-
-	while (ReadString(str, lpTextFile))
-	{
-		str.TrimLeft();
-
-		int nCommentIndex = str.Find(_T(';'));
-
-		if (nCommentIndex == 0)
-			continue;
-
-		if (nCommentIndex > 0)
-		{
-			str = str.Left(nCommentIndex);
-		}
-
-		if (str.IsEmpty())
-			continue;
-
-		str.MakeUpper();
-
-		if (str[0] == _T('['))
-		{
-			if (bSectionFound)
-			{
-				return _T("");
-			}
-
-			CString strSchemaPart = str.Mid(1, str.GetLength() - 2);
-			if (strSchemaPart == strSectionName)
-			{
-				bSectionFound = TRUE;
-			}
-		}
-		else if (bSectionFound)
-		{
-			int nPos = str.Find(_T('='));
-			if (nPos <= 0)
-				continue;
-
-			CString strProperty = str.Left(nPos);
-			strProperty.TrimRight();
-
-			if (strProperty != strKeyName)
-				continue;
-
-			CString strValue = str.Mid(nPos + 1);
-			strValue.TrimLeft();
-			strValue.TrimRight();
-
-			return strValue;
-		}
-	}
-
-	return _T("");
-}
-
-
-void CXTPOffice2007Images::RefreshSettings()
-{
-	CString str;
-
-	LPSTR lpTextFile = m_lpTextFile;
-
-	while (ReadString(str, lpTextFile))
-	{
-		str.TrimLeft();
-
-		int nCommentIndex = str.Find(_T(';'));
-
-		if (nCommentIndex == 0)
-			continue;
-
-		if (nCommentIndex > 0)
-		{
-			str = str.Left(nCommentIndex);
-		}
-
-		if (str.IsEmpty())
-			continue;
-
-		str.MakeUpper();
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-CXTPOffice2007ImageList::CXTPOffice2007ImageList()
-{
-
-}
-
-CXTPOffice2007ImageList::~CXTPOffice2007ImageList()
-{
-	RemoveAll();
-}
-
-CXTPOffice2007Image* CXTPOffice2007ImageList::SetBitmap(HBITMAP hBitmap, UINT nID, BOOL bAlptha, BOOL bCopyBitmap)
-{
-	ASSERT(hBitmap);
-	if (!hBitmap)
-		return NULL;
-
-	HBITMAP hBmp2 = hBitmap;
-	if (bCopyBitmap)
-	{
-		// HBITMAP CXTPImageManagerIcon::CopyAlphaBitmap(HBITMAP hBitmap)
-		hBmp2 = (HBITMAP)::CopyImage(hBitmap, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-		ASSERT(hBmp2);
-		if (!hBmp2)
-			return NULL;
-	}
-
-	BITMAP bmpinfo;
-	if (!::GetObject(hBmp2, sizeof(bmpinfo), &bmpinfo))
-	{
-		ASSERT(FALSE);
-		::DeleteObject(hBmp2);
-		return NULL;
-	}
-
-	CXTPOffice2007Image* pImage = new CXTPOffice2007Image();
-	if (!pImage)
-		return NULL;
-
-	pImage->SetBitmap(hBmp2, bAlptha);
-
-	SetBitmap(pImage, nID, FALSE);
-
-	return pImage;
-}
-
-BOOL CXTPOffice2007ImageList::SetBitmap(CXTPOffice2007Image* pImage, UINT nID, BOOL bCallAddRef)
-{
-	ASSERT(pImage);
-	if (!pImage)
-		return FALSE;
-
-	if (bCallAddRef)
-		CMDTARGET_ADDREF(pImage);
-
-	// free prev. image if such exists
-	CXTPOffice2007Image* pImage_old = GetBitmap(nID);
-	CMDTARGET_RELEASE(pImage_old);
-
-	m_mapID2Image.SetAt(nID, pImage);
-
-	pImage->m_pCS = &m_cs;
-
-	return TRUE;
-}
-
-CXTPOffice2007Image* CXTPOffice2007ImageList::GetBitmap(UINT nID)
-{
-	CXTPOffice2007Image* pImage = NULL;
-	if (!m_mapID2Image.Lookup(nID, pImage))
-		return NULL;
-
-	return pImage;
-}
-
-BOOL CXTPOffice2007ImageList::Remove(UINT nID)
-{
-	CString strImageFile;
-	CXTPOffice2007Image* pImage = NULL;
-
-	//-------------------------------------------------
-	if (!m_mapID2Image.Lookup(nID, pImage))
-		return FALSE;
-
-	m_mapID2Image.RemoveKey(nID);
-	CMDTARGET_RELEASE(pImage);
-
-	return TRUE;
-}
-
-void CXTPOffice2007ImageList::RemoveAll()
-{
-	UINT nID;
-	CXTPOffice2007Image* pImage;
-
-	POSITION pos = m_mapID2Image.GetStartPosition();
-	while (pos != NULL)
-	{
-		m_mapID2Image.GetNextAssoc( pos, nID, pImage);
-		CMDTARGET_RELEASE(pImage);
-	}
-	m_mapID2Image.RemoveAll();
-}
-
-BOOL CXTPOffice2007ImageList::LoadBitmap(LPCTSTR lpcszPath, UINT nID)
-{
-	BOOL bAlphaBitmap = FALSE;
-	HBITMAP hBmp = CXTPImageManagerIcon::LoadBitmapFromFile(lpcszPath, &bAlphaBitmap);
-
-	CXTPOffice2007Image* pImage = NULL;
-	if (hBmp)
-	{
-		pImage = SetBitmap(hBmp, nID, bAlphaBitmap, FALSE);
-	}
-
-	return !!pImage;
-}
-
-/////////////////////////////////////////////////////////////////////////////

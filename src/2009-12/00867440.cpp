@@ -1,286 +1,99 @@
+// roc 2009-12 00867440  unit: CPropertyGridItemBrickColor  size: 289 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00867440
+//
+// 00867440  6aff                 push -1
+// 00867442  68f0f19500           push 0x95f1f0
+// 00867447  64a100000000         mov eax, dword ptr fs:[0]
+// 0086744d  50                   push eax
+// 0086744e  83ec48               sub esp, 0x48
+// 00867451  53                   push ebx
+// 00867452  55                   push ebp
+// 00867453  56                   push esi
+// 00867454  57                   push edi
+// 00867455  a10052b600           mov eax, dword ptr [0xb65200]
+// 0086745a  33c4                 xor eax, esp
+// 0086745c  50                   push eax
+// 0086745d  8d44245c             lea eax, [esp + 0x5c]
+// 00867461  64a300000000         mov dword ptr fs:[0], eax
+// 00867467  8bf9                 mov edi, ecx
+// 00867469  8b74246c             mov esi, dword ptr [esp + 0x6c]
+// 0086746d  8b4608               mov eax, dword ptr [esi + 8]
+// 00867470  50                   push eax
+// 00867471  ff1524b19800         call dword ptr [0x98b124]
+// 00867477  8b4c2470             mov ecx, dword ptr [esp + 0x70]
+// 0086747b  8b5c2474             mov ebx, dword ptr [esp + 0x74]
+// 0086747f  8d69fe               lea ebp, [ecx - 2]
+// 00867482  83c112               add ecx, 0x12
+// 00867485  894c242c             mov dword ptr [esp + 0x2c], ecx
+// 00867489  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
+// 0086748d  49                   dec ecx
+// 0086748e  894c2430             mov dword ptr [esp + 0x30], ecx
+// 00867492  8b4e04               mov ecx, dword ptr [esi + 4]
+// 00867495  50                   push eax
+// 00867496  51                   push ecx
+// 00867497  8d4c2450             lea ecx, [esp + 0x50]
+// 0086749b  43                   inc ebx
+// 0086749c  e85f42feff           call 0x84b700
+// 008674a1  8b970c010000         mov edx, dword ptr [edi + 0x10c]
+// 008674a7  8b4604               mov eax, dword ptr [esi + 4]
+// 008674aa  52                   push edx
+// 008674ab  50                   push eax
+// 008674ac  8d4c243c             lea ecx, [esp + 0x3c]
+// 008674b0  c744246c00000000     mov dword ptr [esp + 0x6c], 0
+// 008674b8  e80343feff           call 0x84b7c0
+// 008674bd  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008674c1  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 008674c5  8b5604               mov edx, dword ptr [esi + 4]
+// 008674c8  50                   push eax
+// 008674c9  51                   push ecx
+// 008674ca  53                   push ebx
+// 008674cb  55                   push ebp
+// 008674cc  52                   push edx
+// 008674cd  c644247801           mov byte ptr [esp + 0x78], 1
+// 008674d2  ff15c0b09800         call dword ptr [0x98b0c0]
+// 008674d8  8b4c2474             mov ecx, dword ptr [esp + 0x74]
+// 008674dc  8b542478             mov edx, dword ptr [esp + 0x78]
+// 008674e0  8b442470             mov eax, dword ptr [esp + 0x70]
+// 008674e4  8b1e                 mov ebx, dword ptr [esi]
+// 008674e6  894c2418             mov dword ptr [esp + 0x18], ecx
+// 008674ea  8b4c247c             mov ecx, dword ptr [esp + 0x7c]
+// 008674ee  89442414             mov dword ptr [esp + 0x14], eax
+// 008674f2  8954241c             mov dword ptr [esp + 0x1c], edx
+// 008674f6  6a24                 push 0x24
+// 008674f8  8d542418             lea edx, [esp + 0x18]
+// 008674fc  894c2424             mov dword ptr [esp + 0x24], ecx
+// 00867500  83c019               add eax, 0x19
+// 00867503  81c7a4000000         add edi, 0xa4
+// 00867509  52                   push edx
+// 0086750a  8bcf                 mov ecx, edi
+// 0086750c  8944241c             mov dword ptr [esp + 0x1c], eax
+// 00867510  ff15b4dd9800         call dword ptr [0x98ddb4]
+// 00867516  50                   push eax
+// 00867517  8bcf                 mov ecx, edi
+// 00867519  ff1580de9800         call dword ptr [0x98de80]
+// 0086751f  50                   push eax
+// 00867520  8b4370               mov eax, dword ptr [ebx + 0x70]
+// 00867523  8bce                 mov ecx, esi
+// 00867525  ffd0                 call eax
+// 00867527  8d4c2434             lea ecx, [esp + 0x34]
+// 0086752b  c644246400           mov byte ptr [esp + 0x64], 0
+// 00867530  e81b43feff           call 0x84b850
+// 00867535  8d4c2448             lea ecx, [esp + 0x48]
+// 00867539  c7442464ffffffff     mov dword ptr [esp + 0x64], 0xffffffff
+// 00867541  e84a42feff           call 0x84b790
+// 00867546  b801000000           mov eax, 1
+// 0086754b  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 0086754f  64890d00000000       mov dword ptr fs:[0], ecx
+// 00867556  59                   pop ecx
+// 00867557  5f                   pop edi
+// 00867558  5e                   pop esi
+// 00867559  5d                   pop ebp
+// 0086755a  5b                   pop ebx
+// 0086755b  83c454               add esp, 0x54
+// 0086755e  c21400               ret 0x14
+// copied from an identical function in another client (function ?OnDrawItemValue@CXTPPropertyGridItemColor@@MAEHAAVCDC@@VCRect@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\PropertyGrid\XTPPropertyGridItemColor.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPPropertyGridItemColor.cpp : implementation of the CXTPPropertyGridItemColor class.
-//
-// This file is a part of the XTREME PROPERTYGRID MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "StdAfx.h"
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPPropertyGridInplaceEdit.h"
-#include "XTPPropertyGridInplaceButton.h"
-#include "XTPPropertyGridInplaceList.h"
-#include "XTPPropertyGridItem.h"
-#include "XTPPropertyGridItemColor.h"
-#include "XTPPropertyGrid.h"
-#include "XTPPropertyGridDefines.h"
-
-#ifdef _XTP_INCLUDE_CONTROLS
-#include "Controls/XTColorDialog.h"
-#include "Controls/XTColorSelectorCtrl.h"
-#include "Controls/XTColorPopup.h"
-#include "Controls/XTNotify.h"
-#include "Controls/XTGlobal.h"
-#endif
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridItemColor
-
-IMPLEMENT_DYNAMIC(CXTPPropertyGridItemColor, CXTPPropertyGridItem)
-
-CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(LPCTSTR strCaption, COLORREF clr, COLORREF* pBindColor)
-	: CXTPPropertyGridItem(strCaption)
-{
-	m_pBindColor = pBindColor;
-	SetColor(clr);
-	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
-	m_strDefaultValue = m_strValue;
-	m_colorEditor = xtpGridItemColorExtendedDialog;
-}
-
-CXTPPropertyGridItemColor::CXTPPropertyGridItemColor(UINT nID, COLORREF clr, COLORREF* pBindColor)
-	: CXTPPropertyGridItem(nID)
-{
-	m_pBindColor = pBindColor;
-	SetColor(clr);
-	m_nFlags = xtpGridItemHasEdit | xtpGridItemHasExpandButton;
-	m_strDefaultValue = m_strValue;
-	m_colorEditor = xtpGridItemColorExtendedDialog;
-}
-
-CXTPPropertyGridItemColor::~CXTPPropertyGridItemColor()
-{
-}
-
-/////////////////////////////////////////////////////////////////////////////
-//
-
-BOOL CXTPPropertyGridItemColor::OnDrawItemValue(CDC& dc, CRect rcValue)
-{
-	COLORREF clr = dc.GetTextColor();
-	CRect rcSample(rcValue.left - 2, rcValue.top + 1, rcValue.left + 18, rcValue.bottom - 1);
-	CXTPPenDC pen(dc, clr);
-	CXTPBrushDC brush(dc, m_clrValue);
-	dc.Rectangle(rcSample);
-
-	CRect rcText(rcValue);
-	rcText.left += 25;
-
-	dc.DrawText(m_strValue, rcText, DT_SINGLELINE | DT_VCENTER);
-
-	return TRUE;
-}
-
-CRect CXTPPropertyGridItemColor::GetValueRect()
-{
-	CRect rcValue(CXTPPropertyGridItem::GetValueRect());
-	rcValue.left += 25;
-	return rcValue;
-}
-
-COLORREF AFX_CDECL CXTPPropertyGridItemColor::StringToRGB(LPCTSTR str)
-{
-	CString strRed, strGreen, strBlue;
-
-	AfxExtractSubString(strRed, str, 0, ';');
-	AfxExtractSubString(strGreen, str, 1, ';');
-	AfxExtractSubString(strBlue, str, 2, ';');
-
-	return RGB(__min(_ttoi(strRed), 255), __min(_ttoi(strGreen), 255), __min(_ttoi(strBlue), 255));
-}
-
-CString AFX_CDECL CXTPPropertyGridItemColor::RGBToString(COLORREF clr)
-{
-	CString str;
-	str.Format(_T("%i; %i; %i"), GetRValue(clr), GetGValue(clr), GetBValue(clr));
-	return str;
-}
-
-void CXTPPropertyGridItemColor::SetValue(CString strValue)
-{
-	SetColor(StringToRGB(strValue));
-}
-
-void CXTPPropertyGridItemColor::SetColor(COLORREF clr)
-{
-	m_clrValue = clr;
-
-	if (m_pBindColor)
-	{
-		*m_pBindColor = clr;
-	}
-
-	CXTPPropertyGridItem::SetValue(RGBToString(clr));
-}
-
-void CXTPPropertyGridItemColor::BindToColor(COLORREF* pBindColor)
-{
-	m_pBindColor = pBindColor;
-	if (m_pBindColor)
-	{
-		*m_pBindColor = m_clrValue;
-	}
-}
-
-
-void CXTPPropertyGridItemColor::OnBeforeInsert()
-{
-	if (m_pBindColor && *m_pBindColor != m_clrValue)
-	{
-		SetColor(*m_pBindColor);
-	}
-}
-
-void CXTPPropertyGridItemColor::SetEditorStyle(XTPPropertyGridItemColorEditor editor)
-{
-	m_colorEditor = editor;
-
-	if (m_colorEditor == xtpGridItemColorPopup)
-		SetFlags(xtpGridItemHasEdit | xtpGridItemHasComboButton);
-	else
-		SetFlags(xtpGridItemHasEdit | xtpGridItemHasExpandButton);
-}
-
-XTPPropertyGridItemColorEditor CXTPPropertyGridItemColor::GetEditorStyle()
-{
-	return m_colorEditor;
-}
-
-
-void CXTPPropertyGridItemColor::OnInplaceButtonDown(CXTPPropertyGridInplaceButton* pButton)
-{
-	if (m_pGrid->SendNotifyMessage(XTP_PGN_INPLACEBUTTONDOWN, (LPARAM)pButton) == TRUE)
-		return;
-
-	if (!OnRequestEdit())
-		return;
-
-	CWnd* pGrid = m_pGrid;
-
-#ifdef _XTP_INCLUDE_CONTROLS
-	if (m_colorEditor == xtpGridItemColorPopup)
-	{
-		class CPropertyGridItemColorColorPopup: public CXTColorPopup
-		{
-		public:
-			CPropertyGridItemColorColorPopup()
-				: CXTColorPopup(TRUE)
-			{
-				m_pItem = NULL;
-			}
-
-			BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-			{
-				if (message == CPN_XT_SELENDOK)
-				{
-					CString strValue = m_pItem->RGBToString((COLORREF)wParam);
-					if (m_pItem->OnAfterEdit(strValue))
-					{
-						m_pItem->OnValueChanged(strValue);
-					}
-					*pResult = 0;
-					return TRUE;
-				}
-				if (message == CPN_XT_SELENDCANCEL)
-				{
-					m_pItem->OnCancelEdit();
-				}
-				return CXTColorPopup::OnWndMsg(message, wParam, lParam, pResult);\
-			}
-
-			CXTPPropertyGridItemColor* m_pItem;
-		};
-
-
-		CPropertyGridItemColorColorPopup *pColorPopup = new CPropertyGridItemColorColorPopup();
-
-		CRect rcItem= GetItemRect();
-		m_pGrid->ClientToScreen(&rcItem);
-		rcItem.left = rcItem.right - 158; // small hack. need to add CPS_XT_LEFTALLIGN
-
-		COLORREF clrDefault = StringToRGB(m_strDefaultValue);
-		pColorPopup->Create(rcItem, m_pGrid, CPS_XT_USERCOLORS|CPS_XT_EXTENDED|CPS_XT_MORECOLORS|CPS_XT_SHOW3DSELECTION|CPS_XT_SHOWHEXVALUE, GetColor(), clrDefault);
-		pColorPopup->SetOwner(m_pGrid);
-		pColorPopup->SetFocus();
-		pColorPopup->AddListener(pColorPopup->GetSafeHwnd());
-		pColorPopup->m_pItem = this;
-	}
-	else if (m_colorEditor == xtpGridItemColorExtendedDialog)
-	{
-		InternalAddRef();
-
-		CXTColorDialog dlg(m_clrValue, m_clrValue, 0, m_pGrid);
-
-		if (dlg.DoModal() == IDOK)
-		{
-			CString strValue = RGBToString(dlg.GetColor());
-
-			if (OnAfterEdit(strValue))
-			{
-				OnValueChanged(strValue);
-				SAFE_INVALIDATE(pGrid);
-			}
-		}
-		else
-		{
-			OnCancelEdit();
-		}
-
-		InternalRelease();
-	}
-	else
-#endif
-	{
-		InternalAddRef();
-
-		CColorDialog dlg(m_clrValue, 0, m_pGrid);
-
-		if (dlg.DoModal() == IDOK)
-		{
-			CString strValue = RGBToString(dlg.GetColor());
-
-			if (OnAfterEdit(strValue))
-			{
-				OnValueChanged(strValue);
-				SAFE_INVALIDATE(pGrid);
-			}
-		}
-		else
-		{
-			OnCancelEdit();
-		}
-
-		InternalRelease();
-	}
-}
-
-
-

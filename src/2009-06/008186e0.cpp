@@ -1,194 +1,44 @@
+// roc 2009-06 008186e0  unit: CXTColorSelectorCtrlThemeOfficeXP  size: 112 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 008186e0
+//
+// 008186e0  56                   push esi
+// 008186e1  8bf1                 mov esi, ecx
+// 008186e3  e868ffffff           call 0x818650
+// 008186e8  e833c4f3ff           call 0x754b20
+// 008186ed  6a20                 push 0x20
+// 008186ef  8bc8                 mov ecx, eax
+// 008186f1  e8aabbf3ff           call 0x7542a0
+// 008186f6  894614               mov dword ptr [esi + 0x14], eax
+// 008186f9  e822c4f3ff           call 0x754b20
+// 008186fe  6a20                 push 0x20
+// 00818700  8bc8                 mov ecx, eax
+// 00818702  e899bbf3ff           call 0x7542a0
+// 00818707  894618               mov dword ptr [esi + 0x18], eax
+// 0081870a  e811c4f3ff           call 0x754b20
+// 0081870f  6a29                 push 0x29
+// 00818711  8bc8                 mov ecx, eax
+// 00818713  e888bbf3ff           call 0x7542a0
+// 00818718  89461c               mov dword ptr [esi + 0x1c], eax
+// 0081871b  e800c4f3ff           call 0x754b20
+// 00818720  6a21                 push 0x21
+// 00818722  8bc8                 mov ecx, eax
+// 00818724  e877bbf3ff           call 0x7542a0
+// 00818729  894620               mov dword ptr [esi + 0x20], eax
+// 0081872c  e8efc3f3ff           call 0x754b20
+// 00818731  6a1f                 push 0x1f
+// 00818733  8bc8                 mov ecx, eax
+// 00818735  e866bbf3ff           call 0x7542a0
+// 0081873a  894624               mov dword ptr [esi + 0x24], eax
+// 0081873d  e8dec3f3ff           call 0x754b20
+// 00818742  6a24                 push 0x24
+// 00818744  8bc8                 mov ecx, eax
+// 00818746  e855bbf3ff           call 0x7542a0
+// 0081874b  894628               mov dword ptr [esi + 0x28], eax
+// 0081874e  5e                   pop esi
+// 0081874f  c3                   ret 
+// library xtp-11.2.2/Source\Controls\XTColorSelectorCtrlTheme.cpp (function ?RefreshMetrics@CXTColorSelectorCtrlThemeOfficeXP@@UAEXXZ)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTColorSelectorCtrlTheme.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTColorSelectorCtrlTheme.cpp: implementation of the XTColorSelectorCtrlTheme class.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPColorManager.h"
-#include "XTColorSelectorCtrl.h"
-#include "XTColorSelectorCtrlTheme.h"
-#include "XTGlobal.h"
-#include "XTFunctions.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlTheme
-
-IMPLEMENT_THEME_FACTORY(CXTColorSelectorCtrlTheme)
-
-CXTColorSelectorCtrlTheme::CXTColorSelectorCtrlTheme()
-: m_crBorderHilight(COLORREF_NULL)
-, m_crBorderShadow(COLORREF_NULL)
-, m_crBack(COLORREF_NULL)
-, m_crPressed(COLORREF_NULL)
-, m_crHilight(COLORREF_NULL)
-, m_crChecked(COLORREF_NULL)
-{
-}
-
-void CXTColorSelectorCtrlTheme::RefreshMetrics()
-{
-	CXTThemeManagerStyle::RefreshMetrics();
-
-	m_crBack = GetXtremeColor(COLOR_3DFACE);
-	m_crBorderHilight = GetXtremeColor(COLOR_3DHILIGHT);
-	m_crBorderShadow = GetXtremeColor(COLOR_3DSHADOW);
-	m_crText = GetXtremeColor(COLOR_BTNTEXT);
-}
-
-void CXTColorSelectorCtrlTheme::FillBackground(CDC* pDC, const CRect& rect, CXTColorSelectorCtrl* /*pOwner*/)
-{
-	pDC->FillSolidRect(&rect, m_crBack);
-}
-
-void CXTColorSelectorCtrlTheme::DrawColorCell(CXTColorSelectorCtrl::COLOR_CELL* pColorCell, CDC* pDC, BOOL bHilite, BOOL bPressed)
-{
-	pDC->SetBkMode(TRANSPARENT);
-	CFont* pOldFont = pDC->SelectObject(&XTAuxData().font);
-
-	CRect rcItem = pColorCell->rect;
-
-	bool bChecked = pColorCell->bChecked;
-
-	if (bChecked || bHilite || bPressed)
-	{
-		if (bPressed)
-		{
-			if (m_crPressed != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crPressed);
-			}
-		}
-		else if (bHilite)
-		{
-			if (m_crHilight != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crHilight);
-			}
-		}
-		else if (bChecked)
-		{
-			if (m_crChecked != COLORREF_NULL)
-			{
-				pDC->FillSolidRect(&rcItem, m_crChecked);
-			}
-			else
-			{
-				XTFuncDrawShadedRect(pDC, rcItem);
-			}
-		}
-
-		pDC->Draw3dRect(rcItem, (bPressed || bChecked) ? m_crBorderShadow : m_crBorderHilight,
-			(bPressed || bChecked) ? m_crBorderHilight : m_crBorderShadow);
-	}
-
-	int nLen = (int)_tcslen(pColorCell->szText);
-	if (nLen)
-	{
-		pDC->SetTextColor(m_crText);
-		pDC->DrawText(pColorCell->szText, nLen, rcItem, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-	}
-
-	if (pColorCell->dwStyle != CPS_XT_MORECOLORS)
-	{
-		rcItem.DeflateRect(3, 3);
-
-		if ((pColorCell->dwStyle & CPS_XT_PICKBOX) == 0)
-		{
-			if ((pColorCell->dwStyle & CPS_XT_NOFILL) == 0)
-			{
-				rcItem.DeflateRect(3, 3);
-				rcItem.right = rcItem.left + 12;
-				rcItem.bottom = rcItem.top + 11;
-				rcItem.OffsetRect(1, 0);
-				pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-				rcItem.DeflateRect(1, 1);
-				pDC->FillSolidRect(rcItem, pColorCell->clr);
-			}
-		}
-		else
-		{
-			pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-			rcItem.DeflateRect(1, 1);
-			pDC->FillSolidRect(rcItem, pColorCell->clr);
-		}
-	}
-	else
-	{
-		if (pColorCell->bChecked)
-		{
-			rcItem = pColorCell->rect;
-			rcItem.DeflateRect(5, 6);
-			rcItem.left = rcItem.right - 12;
-			pDC->Draw3dRect(rcItem, m_crBorderShadow, m_crBorderShadow);
-			rcItem.DeflateRect(1, 1);
-			pDC->FillSolidRect(rcItem, pColorCell->clr);
-		}
-	}
-
-	pDC->SelectObject(pOldFont);
-}
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlThemeOfficeXP
-
-CXTColorSelectorCtrlThemeOfficeXP::CXTColorSelectorCtrlThemeOfficeXP()
-{
-}
-
-void CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics()
-{
-	CXTColorSelectorCtrlTheme::RefreshMetrics();
-
-	m_crBorderHilight = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBorderShadow = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBack = GetXtremeColor(XPCOLOR_MENUBAR_FACE);
-	m_crPressed = GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED);
-	m_crHilight = GetXtremeColor(XPCOLOR_HIGHLIGHT);
-	m_crChecked = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED);
-}
-
-//////////////////////////////////////////////////////////////////////
-// CXTColorSelectorCtrlThemeOffice2003
-
-CXTColorSelectorCtrlThemeOffice2003::CXTColorSelectorCtrlThemeOffice2003()
-{
-}
-
-void CXTColorSelectorCtrlThemeOffice2003::RefreshMetrics()
-{
-	CXTColorSelectorCtrlThemeOfficeXP::RefreshMetrics();
-
-	m_crBorderHilight = GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBorderShadow = GetMSO2003Color(XPCOLOR_HIGHLIGHT_BORDER);
-	m_crBack = GetMSO2003Color(XPCOLOR_MENUBAR_FACE);
-	m_crPressed = GetMSO2003Color(XPCOLOR_HIGHLIGHT_PUSHED);
-	m_crHilight = GetMSO2003Color(XPCOLOR_HIGHLIGHT);
-	m_crChecked = GetMSO2003Color(XPCOLOR_HIGHLIGHT_CHECKED);
-}

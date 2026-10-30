@@ -1,322 +1,69 @@
+// roc 2009-12 008a6ff0  unit: CXTPReportHeaderDragWnd  size: 239 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008a6ff0
+//
+// 008a6ff0  6aff                 push -1
+// 008a6ff2  68a35d9600           push 0x965da3
+// 008a6ff7  64a100000000         mov eax, dword ptr fs:[0]
+// 008a6ffd  50                   push eax
+// 008a6ffe  81ec98000000         sub esp, 0x98
+// 008a7004  a10052b600           mov eax, dword ptr [0xb65200]
+// 008a7009  33c4                 xor eax, esp
+// 008a700b  89842494000000       mov dword ptr [esp + 0x94], eax
+// 008a7012  56                   push esi
+// 008a7013  a10052b600           mov eax, dword ptr [0xb65200]
+// 008a7018  33c4                 xor eax, esp
+// 008a701a  50                   push eax
+// 008a701b  8d8424a0000000       lea eax, [esp + 0xa0]
+// 008a7022  64a300000000         mov dword ptr fs:[0], eax
+// 008a7028  8bf1                 mov esi, ecx
+// 008a702a  56                   push esi
+// 008a702b  8d4c244c             lea ecx, [esp + 0x4c]
+// 008a702f  e8bcd1f4ff           call 0x7f41f0
+// 008a7034  56                   push esi
+// 008a7035  8d4c240c             lea ecx, [esp + 0xc]
+// 008a7039  c78424ac00000000000000 mov dword ptr [esp + 0xac], 0
+// 008a7044  e88742faff           call 0x84b2d0
+// 008a7049  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008a704d  8d442408             lea eax, [esp + 8]
+// 008a7051  50                   push eax
+// 008a7052  51                   push ecx
+// 008a7053  8d4c2420             lea ecx, [esp + 0x20]
+// 008a7057  e8d442faff           call 0x84b330
+// 008a705c  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 008a7060  8b16                 mov edx, dword ptr [esi]
+// 008a7062  8b9248010000         mov edx, dword ptr [edx + 0x148]
+// 008a7068  83ec10               sub esp, 0x10
+// 008a706b  8bc4                 mov eax, esp
+// 008a706d  8908                 mov dword ptr [eax], ecx
+// 008a706f  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008a7073  894804               mov dword ptr [eax + 4], ecx
+// 008a7076  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 008a707a  894808               mov dword ptr [eax + 8], ecx
+// 008a707d  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008a7081  89480c               mov dword ptr [eax + 0xc], ecx
+// 008a7084  8d442428             lea eax, [esp + 0x28]
+// 008a7088  50                   push eax
+// 008a7089  8bce                 mov ecx, esi
+// 008a708b  c68424bc00000001     mov byte ptr [esp + 0xbc], 1
+// 008a7093  ffd2                 call edx
+// 008a7095  8d4c2418             lea ecx, [esp + 0x18]
+// 008a7099  c68424a800000000     mov byte ptr [esp + 0xa8], 0
+// 008a70a1  e89a44faff           call 0x84b540
+// 008a70a6  8d4c2448             lea ecx, [esp + 0x48]
+// 008a70aa  c78424a8000000ffffffff mov dword ptr [esp + 0xa8], 0xffffffff
+// 008a70b5  e830d1f4ff           call 0x7f41ea
+// 008a70ba  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
+// 008a70c1  64890d00000000       mov dword ptr fs:[0], ecx
+// 008a70c8  59                   pop ecx
+// 008a70c9  5e                   pop esi
+// 008a70ca  8b8c2494000000       mov ecx, dword ptr [esp + 0x94]
+// 008a70d1  33cc                 xor ecx, esp
+// 008a70d3  e8c2e2f4ff           call 0x7f539a
+// 008a70d8  81c4a4000000         add esp, 0xa4
+// 008a70de  c3                   ret 
+// copied from an identical function in another client (function ?OnPaint@CXTPReportHeaderDragWnd@@IAEXXZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportDragDrop.cpp
-
-// Candidate translation unit (score above; library headers required).
-// CXTPReportDragDrop.cpp : implementation of the CXTPReportHeaderDropWnd class.
-//
-// This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPReportDefines.h"
-#include "XTPReportHeader.h"
-#include "XTPReportPaintManager.h"
-#include "XTPReportColumn.h"
-#include "XTPReportDragDrop.h"
-#include "XTPReportControl.h"
-#include "XTPReportColumn.h"
-#include "XTPReportColumns.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportHeaderDragWnd
-
-CXTPReportHeaderDragWnd::CXTPReportHeaderDragWnd()
-{
-	m_pHeader = NULL;
-	m_pPaintManager = NULL;
-	m_pColumn = NULL;
-}
-
-CXTPReportHeaderDragWnd::~CXTPReportHeaderDragWnd()
-{
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPReportHeaderDragWnd, CWnd)
-	//{{AFX_MSG_MAP(CXTPReportHeaderDragWnd)
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_TIMER()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportHeaderDragWnd message handlers
-
-BOOL CXTPReportHeaderDragWnd::Create(CRect rect, CXTPReportHeader* pHeader, CXTPReportPaintManager* pPaintManager, CXTPReportColumn* pColumn)
-{
-	m_pHeader = pHeader;
-	m_pPaintManager = pPaintManager;
-	m_pColumn = pColumn;
-	if (rect.Height() == 0)
-		rect.bottom = rect.top + pPaintManager->GetHeaderHeight();
-
-	DWORD dwStyle = WS_POPUP | WS_DISABLED;
-	DWORD dwExStyle = WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
-
-	BOOL bCreated = CreateEx(dwExStyle, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle,
-		rect.left, rect.top, rect.Width(), rect.Height(),
-		NULL, NULL, NULL);
-
-	if (bCreated && m_pHeader && m_pHeader->GetControl() &&
-		m_pHeader->GetControl()->m_bHScrollBarVisible )
-	{
-		SetTimer(1, 100, NULL);
-	}
-	return bCreated;
-}
-
-
-void CXTPReportHeaderDragWnd::OnPaint()
-{
-	CPaintDC dc(this);
-	CXTPClientRect rc(this);
-	CXTPBufferDC memDC(dc, rc);
-	OnDraw(&memDC, rc);
-}
-
-BOOL CXTPReportHeaderDragWnd::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTPReportHeaderDragWnd::OnDraw(CDC* pDC, CRect rcClient)
-{
-	if (!m_pPaintManager)
-		return;
-
-	// draw background
-	m_pPaintManager->FillHeaderControl(pDC, rcClient);
-	// draw column header
-	m_pPaintManager->DrawColumn(pDC, m_pColumn, m_pHeader, rcClient, TRUE);
-}
-
-void CXTPReportHeaderDragWnd::PostNcDestroy()
-{
-	CWnd::PostNcDestroy();
-	delete this;
-}
-
-void CXTPReportHeaderDragWnd::OnTimer(UINT_PTR nIDEvent)
-{
-	UNREFERENCED_PARAMETER(nIDEvent);
-
-	if (!m_pHeader || !m_pHeader->GetControl())
-	{
-		return;
-	}
-	CXTPReportControl* pControl = m_pHeader->GetControl();
-
-	ASSERT(pControl->m_bHScrollBarVisible);
-
-	CRect rcHeaderScreen = m_pHeader->m_rcHeader;
-	pControl->ClientToScreen(&rcHeaderScreen);
-
-	CRect rcControlScreen(0,0,0,0);
-	CRect rcDragScreen(0,0,0,0);
-
-	pControl->GetWindowRect(&rcControlScreen);
-	GetWindowRect(&rcDragScreen);
-
-
-	CPoint ptMouseScreen(0, 0);
-	if (!GetCursorPos(&ptMouseScreen) ||
-		ptMouseScreen.y < rcHeaderScreen.top || ptMouseScreen.y > rcHeaderScreen.bottom)
-	{
-		return;
-	}
-
-	BOOL bScrolled = FALSE;
-	BOOL bLayoutRTL = pControl->GetExStyle() & WS_EX_LAYOUTRTL;
-
-	int nDiffRight = bLayoutRTL ? rcControlScreen.left - rcDragScreen.left :
-		rcDragScreen.right - rcControlScreen.right;
-
-	if (nDiffRight > 0)
-	{
-		int nStep = max(min(7, nDiffRight/10), CXTPReportHeader::s_nMinAutoScrollStep);
-		UINT uTimer = max(10, 100 - nDiffRight);
-		SCROLLINFO scrollInfo;
-
-		BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
-		if (bRes)
-		{
-			if (scrollInfo.nPos < scrollInfo.nMax)
-			{
-				pControl->SetLeftOffset(scrollInfo.nPos + nStep);
-				SetTimer(1, uTimer, NULL);
-				bScrolled = TRUE;
-			}
-		}
-	}
-	else
-	{
-		int nLeftBorderX = bLayoutRTL ? rcControlScreen.right : rcControlScreen.left;
-
-		int nFreezCols = pControl->GetFreezeColumnsCount();
-		if (nFreezCols && pControl->GetColumns())
-		{
-			CXTPReportColumn* pLastFCol = pControl->GetColumns()->GetVisibleAt(nFreezCols - 1);
-			if (pLastFCol)
-			{
-				CRect rcLastFCol = pLastFCol->GetRect();
-				pControl->ClientToScreen(&rcLastFCol);
-
-				int nLastFCol_middleX = rcLastFCol.left + rcLastFCol.Width() / 2;
-				if (rcDragScreen.left < rcLastFCol.right &&
-					ptMouseScreen.x > nLastFCol_middleX )
-				{
-					nLeftBorderX = rcLastFCol.right;
-				}
-			}
-		}
-
-		int nDiffLeft = bLayoutRTL ? rcDragScreen.right - nLeftBorderX : nLeftBorderX - rcDragScreen.left;
-
-		if (nDiffLeft > 0)
-		{
-			int nStep = max(min(7, nDiffLeft/10), CXTPReportHeader::s_nMinAutoScrollStep);
-			UINT uTimer = max(10, 100 - nDiffLeft);
-			SCROLLINFO scrollInfo;
-
-			BOOL bRes = pControl->GetScrollInfo(SB_HORZ, &scrollInfo);
-			if (bRes)
-			{
-				if (scrollInfo.nPos > scrollInfo.nMin)
-				{
-					pControl->SetLeftOffset(scrollInfo.nPos - nStep);
-					SetTimer(1, uTimer, NULL);
-					bScrolled = TRUE;
-				}
-			}
-		}
-	}
-
-	//-------------------------------------------------------------------------
-	if (bScrolled)
-	{
-		CPoint ptMouse = ptMouseScreen;
-		pControl->ScreenToClient(&ptMouse);
-
-		pControl->RedrawControl();
-		pControl->UpdateWindow();
-
-		m_pHeader->OnMouseMove(0, ptMouse);
-	}
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportHeaderDropWnd
-
-CXTPReportHeaderDropWnd::CXTPReportHeaderDropWnd(COLORREF crColor)
-	: m_clr(crColor)
-{
-	m_nHeight = 0;
-}
-
-CXTPReportHeaderDropWnd::~CXTPReportHeaderDropWnd()
-{
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPReportHeaderDropWnd, CWnd)
-	//{{AFX_MSG_MAP(CXTPReportHeaderDropWnd)
-	ON_WM_ERASEBKGND()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportHeaderDropWnd message handlers
-
-BOOL CXTPReportHeaderDropWnd::Create(int nHeight)
-{
-	m_nHeight = nHeight + 20;
-
-	DWORD dwStyle = WS_POPUP | WS_DISABLED;
-	DWORD dwExStyle = WS_EX_TOOLWINDOW ;
-
-	BOOL bResult = CreateEx(dwExStyle, AfxRegisterWndClass(0, AfxGetApp()->LoadStandardCursor(IDC_ARROW)), NULL, dwStyle,
-		0, 0, 12, m_nHeight,
-		NULL, NULL, NULL);
-
-	CRgn rgn1, rgn2;
-	POINT ptArrow[7];
-
-	ptArrow[0].x = 8;   ptArrow[0].y = 0;
-	ptArrow[1].x = 8;   ptArrow[1].y = 4;
-	ptArrow[2].x = 11;  ptArrow[2].y = 4;
-	ptArrow[3].x = 6;   ptArrow[3].y = 9;
-	ptArrow[4].x = 1;   ptArrow[4].y = 4;
-	ptArrow[5].x = 4;   ptArrow[5].y = 4;
-	ptArrow[6].x = 4;   ptArrow[6].y = 0;
-	rgn1.CreatePolygonRgn(ptArrow, 7, ALTERNATE);
-
-
-	ptArrow[0].x = 4;   ptArrow[0].y = m_nHeight;
-	ptArrow[1].x = 4;   ptArrow[1].y = m_nHeight-4;
-	ptArrow[2].x = 0;   ptArrow[2].y = m_nHeight-4;
-	ptArrow[3].x = 6;   ptArrow[3].y = m_nHeight-10;
-	ptArrow[4].x = 12;  ptArrow[4].y = m_nHeight-4;
-	ptArrow[5].x = 8;   ptArrow[5].y = m_nHeight-4;
-	ptArrow[6].x = 8;   ptArrow[6].y = m_nHeight;
-	rgn2.CreatePolygonRgn(ptArrow, 7, ALTERNATE);
-
-	m_rgn.CreateRectRgn(0, 0, 12, nHeight);
-	m_rgn.CombineRgn(&rgn1, &rgn2, RGN_OR);
-	SetWindowRgn(m_rgn, FALSE);
-
-	rgn1.DeleteObject();
-	rgn2.DeleteObject();
-
-	return bResult;
-}
-
-
-void CXTPReportHeaderDropWnd::PostNcDestroy()
-{
-	m_rgn.DeleteObject();
-
-	CWnd::PostNcDestroy();
-	delete this;
-}
-
-BOOL CXTPReportHeaderDropWnd::OnEraseBkgnd(CDC* pDC)
-{
-	pDC->FillSolidRect(0, 0, 12, m_nHeight, m_clr);
-	return TRUE;
-}
-
-void CXTPReportHeaderDropWnd::SetWindowPos(int x, int y)
-{
-	CWnd::SetWindowPos(&wndTop,
-		x - 6, y - (m_nHeight / 2), 0, 0,
-		SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE);
-}

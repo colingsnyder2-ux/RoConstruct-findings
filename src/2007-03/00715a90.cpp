@@ -1,279 +1,39 @@
+// roc 2007-03 00715a90  unit: seg_00710000  size: 66 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00715a90
+//
+// 00715a90  53                   push ebx
+// 00715a91  56                   push esi
+// 00715a92  57                   push edi
+// 00715a93  8b3d50ee7700         mov edi, dword ptr [0x77ee50]
+// 00715a99  6a00                 push 0
+// 00715a9b  6a00                 push 0
+// 00715a9d  8bf1                 mov esi, ecx
+// 00715a9f  8b4620               mov eax, dword ptr [esi + 0x20]
+// 00715aa2  6a0b                 push 0xb
+// 00715aa4  50                   push eax
+// 00715aa5  ffd7                 call edi
+// 00715aa7  8bce                 mov ecx, esi
+// 00715aa9  e8248cf0ff           call 0x61e6d2
+// 00715aae  8b4e20               mov ecx, dword ptr [esi + 0x20]
+// 00715ab1  6a00                 push 0
+// 00715ab3  6a01                 push 1
+// 00715ab5  6a0b                 push 0xb
+// 00715ab7  51                   push ecx
+// 00715ab8  8bd8                 mov ebx, eax
+// 00715aba  ffd7                 call edi
+// 00715abc  8b5620               mov edx, dword ptr [esi + 0x20]
+// 00715abf  6a00                 push 0
+// 00715ac1  6a00                 push 0
+// 00715ac3  52                   push edx
+// 00715ac4  ff1554ee7700         call dword ptr [0x77ee54]
+// 00715aca  5f                   pop edi
+// 00715acb  5e                   pop esi
+// 00715acc  8bc3                 mov eax, ebx
+// 00715ace  5b                   pop ebx
+// 00715acf  c20800               ret 8
+// library xtp-11.2.2/Source\SkinFramework\XTPSkinObjectMenu.cpp (function ?OnSelectItem@CXTPSkinObjectMenu@@IAEJIJ@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/SkinFramework/XTPSkinObjectMenu.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPSkinObjectMDI.cpp: implementation of the CXTPSkinObjectMDI class.
-//
-// This file is a part of the XTREME SKINFRAMEWORK MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPSkinObjectMenu.h"
-#include "XTPSkinManager.h"
-#include "XTPSkinDrawTools.h"
-
-#define MN_SELECTITEM 0x01E5
-#define MN_GETHMENU   0x01E1
-
-POINT CXTPSkinObjectFrame::m_sMenuOffset = {0, 0};
-
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-IMPLEMENT_DYNCREATE(CXTPSkinObjectMenu, CXTPSkinObjectFrame)
-
-CXTPSkinObjectMenu::CXTPSkinObjectMenu()
-{
-}
-
-CXTPSkinObjectMenu::~CXTPSkinObjectMenu()
-{
-
-}
-
-BEGIN_MESSAGE_MAP(CXTPSkinObjectMenu, CXTPSkinObjectFrame)
-	//{{AFX_MSG_MAP(CXTPSkinObjectMenu)
-	ON_WM_NCPAINT()
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_MESSAGE(WM_PRINT, OnPrint)
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_MESSAGE(MN_SELECTITEM, OnSelectItem)
-
-	ON_MESSAGE(WM_KEYDOWN, OnKeyDown)
-	ON_MESSAGE(WM_SYSKEYDOWN, OnKeyDown)
-	ON_MESSAGE(WM_CHAR, OnChar)
-	ON_WM_WINDOWPOSCHANGING()
-
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CXTPSkinObjectMenu::OnWindowPosChanging(WINDOWPOS FAR* lpwndpos)
-{
-	lpwndpos->y += m_sMenuOffset.y;
-	lpwndpos->x += m_sMenuOffset.x;
-
-	CXTPSkinObjectFrame::OnWindowPosChanging(lpwndpos);
-}
-
-void CXTPSkinObjectMenu::OnPaint()
-{
-	CXTPSkinObjectPaintDC dc(this); // device context for painting
-	OnDraw(&dc);
-}
-
-#define MIIM_BITMAP      0x00000080
-struct MENUITEMINFO98
-{
-	UINT    cbSize;
-	UINT    fMask;
-	UINT    fType;          // used if MIIM_TYPE (4.0) or MIIM_FTYPE (>4.0)
-	UINT    fState;         // used if MIIM_STATE
-	UINT    wID;            // used if MIIM_ID
-	HMENU   hSubMenu;       // used if MIIM_SUBMENU
-	HBITMAP hbmpChecked;    // used if MIIM_CHECKMARKS
-	HBITMAP hbmpUnchecked;  // used if MIIM_CHECKMARKS
-	DWORD   dwItemData;     // used if MIIM_DATA
-	LPWSTR  dwTypeData;     // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
-	UINT    cch;            // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
-	HBITMAP hbmpItem;       // used if MIIM_BITMAP
-};
-
-void CXTPSkinObjectMenu::OnDraw(CDC* pDC)
-{
-
-	/*NONCLIENTMETRICS nm;
-	::ZeroMemory(&nm, sizeof(NONCLIENTMETRICS));
-	nm.cbSize = sizeof(NONCLIENTMETRICS);
-	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
-		sizeof(NONCLIENTMETRICS), &nm, 0));
-	CFont fnt;
-	fnt.CreateFontIndirect(&nm.lfMenuFont);
-
-	CXTPFontDC fntDc(pDC, &fnt);
-	TEXTMETRIC tm;
-	pDC->GetTextMetrics(&tm);
-
-	CXTPClientRect rc(this);
-
-	pDC->FillSolidRect(rc, GetColor(COLOR_MENU));
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	HMENU hMenu = (HMENU)SendMessage(MN_GETHMENU);
-	if (!hMenu)
-		return;
-
-
-
-	int nCount = GetMenuItemCount(hMenu);
-	int y = 0;
-	int x = 0;
-
-	for (int i = 0; i < nCount; i++)
-	{
-		MENUITEMINFO98 info = { sizeof(MENUITEMINFO98), MIIM_TYPE | MIIM_STATE | MIIM_BITMAP};
-		::GetMenuItemInfo(hMenu, i, TRUE, (MENUITEMINFO*)&info);
-
-		if ((info.fType & MFT_SEPARATOR) == MFT_SEPARATOR)
-		{
-			int nHeight = GetSystemMetrics(SM_CYMENUSIZE) / 2;
-
-			int yT = y + (nHeight / 2) - 1;
-			RECT rcItem;
-
-			rcItem.left     = x + 1;
-			rcItem.top      = yT;
-			rcItem.right    = rc.right - 1;
-			rcItem.bottom   = yT + GetSystemMetrics(SM_CYEDGE);
-
-			DrawEdge(pDC->GetSafeHdc(), &rcItem, BDR_SUNKENOUTER, BF_TOP | BF_BOTTOM);
-
-			y += nHeight;
-		}
-		else
-		{
-			int nHeight = 0;
-			nHeight = max(nHeight, tm.tmHeight + tm.tmExternalLeading + GetSystemMetrics(SM_CYEDGE));
-
-			nHeight += 2;
-
-
-			CRect rcItem(0, y, rc.right, y + nHeight);
-
-			if (info.fState & MFS_HILITE)
-			{
-				pDC->FillSolidRect(rcItem, GetColor(COLOR_HIGHLIGHT));
-			}
-
-			y += nHeight;
-		}
-	}*/
-
-
-	CXTPClientRect rc(this);
-	CXTPBufferDC dc(pDC->GetSafeHdc(), rc);
-
-	dc.FillSolidRect(rc, GetColor(COLOR_MENU));
-
-	dc.SetBkMode(TRANSPARENT);
-	DefWindowProc(WM_PRINTCLIENT, (WPARAM)dc.GetSafeHdc(), 0);
-
-	//GetMenuBarInfo();
-}
-
-void CXTPSkinObjectMenu::OnDrawNonCLient(CDC* pDC)
-{
-	CRect rcBorders = m_rcBorders;
-	CXTPWindowRect rc(this);
-	rc.OffsetRect(-rc.TopLeft());
-
-	XTPSkinFrameworkDrawFrame(pDC->GetSafeHdc(), rc, 1, GetSysColor(COLOR_3DSHADOW));
-	rc.DeflateRect(1, 1);
-	XTPSkinFrameworkDrawFrame(pDC->GetSafeHdc(), rc, rcBorders.left - 1, GetSysColor(COLOR_MENU));
-}
-
-BOOL CXTPSkinObjectMenu::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTPSkinObjectMenu::OnNcPaint()
-{
-	CWindowDC dc(this);
-	OnDrawNonCLient(&dc);
-}
-
-LRESULT CXTPSkinObjectMenu::OnPrint(WPARAM wParam, LPARAM lParam)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (lParam & PRF_NONCLIENT)
-	{
-		OnDrawNonCLient(pDC);
-	}
-	if (lParam & PRF_CLIENT)
-	{
-		CPoint pt = pDC->SetWindowOrg(-m_rcBorders.left, -m_rcBorders.top);
-		OnDraw(pDC);
-		pDC->SetWindowOrg(pt);
-	}
-	return 1;
-}
-
-LRESULT CXTPSkinObjectMenu::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	OnDraw(pDC);
-	return 1;
-}
-
-LRESULT CXTPSkinObjectMenu::OnSelectItem(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	SetRedraw(FALSE);
-	LRESULT lResult = Default();
-	SetRedraw(TRUE);
-
-	Invalidate(FALSE);
-
-	return lResult;
-}
-
-LRESULT CXTPSkinObjectMenu::OnKeyDown(WPARAM wParam, LPARAM /*lParam*/)
-{
-	if (wParam == VK_UP || wParam == VK_DOWN)
-	{
-		SetRedraw(FALSE);
-		LRESULT lResult = Default();
-
-		if (IsWindow(m_hWnd))
-		{
-			SetRedraw(TRUE);
-			Invalidate(FALSE);
-		}
-
-		return lResult;
-	}
-	else
-	{
-		return Default();
-	}
-}
-
-LRESULT CXTPSkinObjectMenu::OnChar(WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-	LRESULT lResult = Default();
-
-	if (IsWindow(m_hWnd))
-	{
-		Invalidate(FALSE);
-	}
-
-	return lResult;
-}

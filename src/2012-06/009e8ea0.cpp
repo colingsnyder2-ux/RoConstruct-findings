@@ -1,361 +1,101 @@
+// roc 2012-06 009e8ea0  unit: CXTColorDialog  size: 327 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 009e8ea0
+//
+// 009e8ea0  6aff                 push -1
+// 009e8ea2  68d312ae00           push 0xae12d3
+// 009e8ea7  64a100000000         mov eax, dword ptr fs:[0]
+// 009e8ead  50                   push eax
+// 009e8eae  83ec08               sub esp, 8
+// 009e8eb1  56                   push esi
+// 009e8eb2  57                   push edi
+// 009e8eb3  a1d027e000           mov eax, dword ptr [0xe027d0]
+// 009e8eb8  33c4                 xor eax, esp
+// 009e8eba  50                   push eax
+// 009e8ebb  8d442414             lea eax, [esp + 0x14]
+// 009e8ebf  64a300000000         mov dword ptr fs:[0], eax
+// 009e8ec5  8bf1                 mov esi, ecx
+// 009e8ec7  89742410             mov dword ptr [esp + 0x10], esi
+// 009e8ecb  e8080d0b00           call 0xa99bd8
+// 009e8ed0  8dbeb0000000         lea edi, [esi + 0xb0]
+// 009e8ed6  8bcf                 mov ecx, edi
+// 009e8ed8  c744241c00000000     mov dword ptr [esp + 0x1c], 0
+// 009e8ee0  c706d47dc100         mov dword ptr [esi], 0xc17dd4
+// 009e8ee6  e8db9af9ff           call 0x9829c6
+// 009e8eeb  c7076cdac000         mov dword ptr [edi], 0xc0da6c
+// 009e8ef1  8d4c240c             lea ecx, [esp + 0xc]
+// 009e8ef5  ff158447b200         call dword ptr [0xb24784]
+// 009e8efb  c644241c02           mov byte ptr [esp + 0x1c], 2
+// 009e8f00  e8ebf50000           call 0x9f84f0
+// 009e8f05  8b10                 mov edx, dword ptr [eax]
+// 009e8f07  8b5208               mov edx, dword ptr [edx + 8]
+// 009e8f0a  6887240000           push 0x2487
+// 009e8f0f  8d4c2410             lea ecx, [esp + 0x10]
+// 009e8f13  51                   push ecx
+// 009e8f14  8bc8                 mov ecx, eax
+// 009e8f16  ffd2                 call edx
+// 009e8f18  8b442430             mov eax, dword ptr [esp + 0x30]
+// 009e8f1c  6a00                 push 0
+// 009e8f1e  50                   push eax
+// 009e8f1f  8d4c2414             lea ecx, [esp + 0x14]
+// 009e8f23  ff159847b200         call dword ptr [0xb24798]
+// 009e8f29  50                   push eax
+// 009e8f2a  8bce                 mov ecx, esi
+// 009e8f2c  e8a10c0b00           call 0xa99bd2
+// 009e8f31  8b4e58               mov ecx, dword ptr [esi + 0x58]
+// 009e8f34  8b542424             mov edx, dword ptr [esp + 0x24]
+// 009e8f38  8b442428             mov eax, dword ptr [esp + 0x28]
+// 009e8f3c  81e1fffdffff         and ecx, 0xfffffdff
+// 009e8f42  81c980000000         or ecx, 0x80
+// 009e8f48  894e58               mov dword ptr [esi + 0x58], ecx
+// 009e8f4b  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 009e8f4f  681c010000           push 0x11c
+// 009e8f54  899624010000         mov dword ptr [esi + 0x124], edx
+// 009e8f5a  898628010000         mov dword ptr [esi + 0x128], eax
+// 009e8f60  898eac000000         mov dword ptr [esi + 0xac], ecx
+// 009e8f66  e8af91f9ff           call 0x98211a
+// 009e8f6b  83c404               add esp, 4
+// 009e8f6e  89442430             mov dword ptr [esp + 0x30], eax
+// 009e8f72  c644241c03           mov byte ptr [esp + 0x1c], 3
+// 009e8f77  85c0                 test eax, eax
+// 009e8f79  740a                 je 0x9e8f85
+// 009e8f7b  56                   push esi
+// 009e8f7c  8bc8                 mov ecx, eax
+// 009e8f7e  e8cd710700           call 0xa60150
+// 009e8f83  eb02                 jmp 0x9e8f87
+// 009e8f85  33c0                 xor eax, eax
+// 009e8f87  50                   push eax
+// 009e8f88  8bce                 mov ecx, esi
+// 009e8f8a  c644242002           mov byte ptr [esp + 0x20], 2
+// 009e8f8f  e8ccfdffff           call 0x9e8d60
+// 009e8f94  6888070000           push 0x788
+// 009e8f99  e87c91f9ff           call 0x98211a
+// 009e8f9e  83c404               add esp, 4
+// 009e8fa1  89442430             mov dword ptr [esp + 0x30], eax
+// 009e8fa5  c644241c04           mov byte ptr [esp + 0x1c], 4
+// 009e8faa  85c0                 test eax, eax
+// 009e8fac  740a                 je 0x9e8fb8
+// 009e8fae  56                   push esi
+// 009e8faf  8bc8                 mov ecx, eax
+// 009e8fb1  e8caa70700           call 0xa63780
+// 009e8fb6  eb02                 jmp 0x9e8fba
+// 009e8fb8  33c0                 xor eax, eax
+// 009e8fba  50                   push eax
+// 009e8fbb  8bce                 mov ecx, esi
+// 009e8fbd  c644242002           mov byte ptr [esp + 0x20], 2
+// 009e8fc2  e899fdffff           call 0x9e8d60
+// 009e8fc7  8d4c240c             lea ecx, [esp + 0xc]
+// 009e8fcb  ff15d047b200         call dword ptr [0xb247d0]
+// 009e8fd1  8bc6                 mov eax, esi
+// 009e8fd3  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 009e8fd7  64890d00000000       mov dword ptr fs:[0], ecx
+// 009e8fde  59                   pop ecx
+// 009e8fdf  5f                   pop edi
+// 009e8fe0  5e                   pop esi
+// 009e8fe1  83c414               add esp, 0x14
+// 009e8fe4  c21000               ret 0x10
+// copied from an identical function in another client (function ??0CXTColorDialog@@QAE@KKKPAVCWnd@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTColorDialog.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTColorDialog.cpp : implementation file
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTDefines.h"
-#include "XTColorDialog.h"
-#include "XTColorPageCustom.h"
-#include "XTColorPageStandard.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorDialog
-
-IMPLEMENT_DYNAMIC(CXTColorDialog, CPropertySheet)
-
-CXTColorDialog::CXTColorDialog(COLORREF clrNew, COLORREF clrCurrent,
-	DWORD dwFlags/*= 0L*/, CWnd* pWndParent/*= NULL*/)
-{
-	CString strCaption;
-	XTPResourceManager()->LoadString(&strCaption, XT_IDS_COLOR_CAPTION);
-
-	Construct(strCaption, pWndParent);
-
-	m_psh.dwFlags = (m_psh.dwFlags & ~PSH_HASHELP) | PSH_NOAPPLYNOW;
-
-	m_clrNew = clrNew;
-	m_clrCurrent = clrCurrent;
-	m_dwStyle = dwFlags;
-
-	AddPage(new CXTColorPageStandard(this));
-	AddPage(new CXTColorPageCustom(this));
-
-}
-
-void CXTColorDialog::AddPage(CPropertyPage* pPage)
-{
-	CPropertySheet::AddPage(pPage);
-
-	LPCDLGTEMPLATE pResource = XTPResourceManager()->LoadDialogTemplate((UINT)(UINT_PTR)pPage->m_psp.pszTemplate);
-
-	if (pResource)
-	{
-		pPage->m_psp.pResource = pResource;
-		pPage->m_psp.dwFlags |= PSP_DLGINDIRECT;
-	}
-}
-
-CXTColorDialog::~CXTColorDialog()
-{
-	int iPage;
-	for (iPage = 0; iPage < GetPageCount(); ++iPage)
-	{
-		CPropertyPage* pPage = GetPage(iPage);
-		SAFE_DELETE (pPage);
-	}
-}
-
-
-BEGIN_MESSAGE_MAP(CXTColorDialog, CPropertySheet)
-	//{{AFX_MSG_MAP(CXTColorDialog)
-	ON_WM_PAINT()
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorDialog message handlers
-
-void CXTColorDialog::CalculateRects()
-{
-	CRect rcBtnOK;
-	CRect rcBtnCancel;
-	CRect rcTabCtrl;
-	CRect rcItem;
-
-	// get the tab control size.
-	CTabCtrl* pTabCtrl = GetTabControl();
-	pTabCtrl->GetWindowRect(&rcTabCtrl);
-	ScreenToClient(&rcTabCtrl);
-
-	// get the size of the first tab item.
-	pTabCtrl->GetItemRect(0, &rcItem);
-
-	// get the OK button size.
-	CButton* pBtnOK = (CButton*)GetDlgItem(IDOK);
-	pBtnOK->GetWindowRect(&rcBtnOK);
-	ScreenToClient(&rcBtnOK);
-
-	// get the Cancel button size.
-	CButton* pBtnCancel = (CButton*)GetDlgItem(IDCANCEL);
-	pBtnCancel->GetWindowRect(&rcBtnCancel);
-	ScreenToClient(&rcBtnCancel);
-	rcBtnCancel.OffsetRect(-15, 0);
-
-	// resize the tab control
-	rcTabCtrl.right = rcBtnCancel.left - 5;
-	rcTabCtrl.bottom = rcBtnCancel.top - 15;
-	pTabCtrl->MoveWindow(&rcTabCtrl);
-
-	// reposition the OK button.
-	rcBtnOK = rcBtnCancel;
-	rcBtnOK.top = rcTabCtrl.top + rcItem.Height() + 1;
-	rcBtnOK.bottom = rcBtnOK.top + rcBtnCancel.Height();
-	pBtnOK->MoveWindow(&rcBtnOK);
-
-	// reposition the Cancel button.
-	rcBtnCancel = rcBtnOK;
-	rcBtnCancel.top = rcBtnOK.bottom + 5;
-	rcBtnCancel.bottom = rcBtnCancel.top + rcBtnOK.Height();
-	pBtnCancel->MoveWindow(&rcBtnCancel);
-
-	// reposition the hex display
-	if (::IsWindow(m_editHex.m_hWnd))
-	{
-		CRect rcHex;
-		rcHex = rcBtnCancel;
-		rcHex.top = rcBtnCancel.bottom + 5;
-		rcHex.bottom = rcHex.top + 18;
-		m_editHex.MoveWindow(&rcHex);
-	}
-
-	// resize the property sheet.
-	CXTPWindowRect rcWindow(this);
-	ClientToScreen(&rcTabCtrl);
-	rcWindow.bottom = rcTabCtrl.bottom + 10;
-	rcWindow.right -= 15;
-	MoveWindow(&rcWindow);
-}
-
-BOOL CXTColorDialog::OnInitDialog()
-{
-	BOOL bResult = CPropertySheet::OnInitDialog();
-
-	CalculateRects();
-	SetActivePage(0);
-
-	if (m_editHex.GetSafeHwnd())
-	{
-		m_editHex.SetFont(GetFont());
-	}
-
-
-	return bResult;
-}
-
-void CXTColorDialog::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	dc.SetBkMode(TRANSPARENT);
-	dc.SetTextColor(GetXtremeColor(COLOR_WINDOWTEXT));
-
-	CXTPFontDC fontDC(&dc, GetFont());
-
-	// get the Cancel button size.
-	CXTPWindowRect rcBtnCancel(GetDlgItem(IDCANCEL));
-	ScreenToClient(&rcBtnCancel);
-
-	// construct the size for the the new / current color box.
-	CXTPClientRect rect(this);
-	rect.right = rcBtnCancel.right;
-	rect.left = rcBtnCancel.left;
-	rect.bottom -= 32;
-	rect.top = rect.bottom - 66;
-
-	// draw the borders for teh new / current color box.
-	if (m_dwStyle & CPS_XT_SHOW3DSELECTION)
-	{
-		rect.InflateRect(3, 3);
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_3DHILIGHT),
-			GetXtremeColor(COLOR_3DDKSHADOW));
-
-		rect.DeflateRect(3, 3);
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_3DSHADOW),
-			GetXtremeColor(COLOR_3DHILIGHT));
-	}
-	else
-	{
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_WINDOWFRAME),
-			GetXtremeColor(COLOR_WINDOWFRAME));
-	}
-
-	// draw the new text string.
-	CRect rcText = rect;
-	rcText = rect;
-	rcText.top -= 22;
-	rcText.bottom = rcText.top + 22;
-
-	CString strText;
-	VERIFY(XTPResourceManager()->LoadString(&strText, XT_IDS_NEW));
-	dc.DrawText(strText, rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	// draw the current text string.
-	rcText = rect;
-	rcText.top = rcText.bottom;
-	rcText.bottom = rcText.top + 22;
-
-	VERIFY(XTPResourceManager()->LoadString(&strText, XT_IDS_CURRENT));
-	dc.DrawText(strText, rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	rect.DeflateRect(1, 1);
-	int cy = rect.Height()/2;
-
-	// fill the new color box.
-	m_rcNew = rect;
-	m_rcNew.bottom = rect.top + cy;
-	dc.FillSolidRect(&m_rcNew, m_clrNew);
-
-	// fill the current color box.
-	m_rcCurrent = rect;
-	m_rcCurrent.top = rect.bottom - cy;
-	dc.FillSolidRect(&m_rcCurrent, m_clrCurrent);
-}
-
-void CXTColorDialog::SetNewColor(COLORREF clr, BOOL bNotify/*= TRUE*/)
-{
-	m_clrNew = clr;
-
-	if (IsWindowVisible())
-	{
-		CClientDC dc(this);
-		dc.FillSolidRect(&m_rcNew, m_clrNew);
-
-		if (m_dwStyle & CPS_XT_SHOWHEXVALUE)
-		{
-			m_editHex.SetWindowText(RGBtoHex(m_clrNew));
-		}
-	}
-
-	if (bNotify && GetTabControl() && GetTabControl()->GetSafeHwnd())
-	{
-		int iPage;
-		for (iPage = 0; iPage < GetPageCount(); ++iPage)
-		{
-			GetPage(iPage)->SendMessage(XTWM_UPDATECOLOR,
-				(WPARAM)(COLORREF)m_clrNew);
-		}
-	}
-}
-
-void CXTColorDialog::SetCurrentColor(COLORREF clr)
-{
-	m_clrCurrent = clr;
-
-	if (IsWindowVisible())
-	{
-		CClientDC dc(this);
-		dc.FillSolidRect(&m_rcCurrent, m_clrCurrent);
-	}
-}
-
-BOOL CXTColorDialog::CopyToClipboard(const CString& strText)
-{
-	if (::OpenClipboard(m_hWnd))
-	{
-		::EmptyClipboard();
-
-		HGLOBAL hGlobalBuff = ::GlobalAlloc(GMEM_MOVEABLE, strText.GetLength() + 1);
-		if (!hGlobalBuff)
-		{
-			::CloseClipboard();
-			return FALSE;
-		}
-
-		CHAR* szBuffer = (CHAR*)::GlobalLock(hGlobalBuff);
-
-		WCSTOMBS_S(szBuffer, strText, strText.GetLength() + 1);
-		::GlobalUnlock(hGlobalBuff);
-
-		if (::SetClipboardData(CF_TEXT, hGlobalBuff) == NULL)
-			return FALSE;
-
-		::CloseClipboard();
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-CString CXTColorDialog::RGBtoHex(COLORREF clr)
-{
-	int r = GetRValue(clr);
-	int g = GetGValue(clr);
-	int b = GetBValue(clr);
-
-	CString strHex;
-
-	if (r < 16 && g < 16 && b < 16)
-		strHex.Format(_T("Hex= 0%X0%X0%X"), r, g, b);
-	else if (r < 16 && g < 16)
-		strHex.Format(_T("Hex= 0%X0%X%X"), r, g, b);
-	else if (r < 16 && b < 16)
-		strHex.Format(_T("Hex= 0%X%X0%X"), r, g, b);
-	else if (g < 16 && b < 16)
-		strHex.Format(_T("Hex=%X0%X0%X"), r, g, b);
-	else if (r < 16)
-		strHex.Format(_T("Hex= 0%X%X%X"), r, g, b);
-	else if (g < 16)
-		strHex.Format(_T("Hex=%X0%X%X"), r, g, b);
-	else if (b < 16)
-		strHex.Format(_T("Hex=%X%X0%X"), r, g, b);
-	else
-		strHex.Format(_T("Hex=%X%X%X"), r, g, b);
-
-	return strHex;
-}
-
-int CXTColorDialog::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CPropertySheet::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	if (m_dwStyle & CPS_XT_SHOWHEXVALUE)
-	{
-		if (!m_editHex.CreateEx(WS_EX_STATICEDGE, _T("EDIT"), RGBtoHex(m_clrNew),
-			WS_CHILD | WS_VISIBLE | ES_READONLY, CRect(0, 0, 0, 0), this, AFX_IDC_CHANGE))
-		{
-			TRACE0("Failed to create edit control.\n");
-			return -1;
-		}
-	}
-
-	((CXTColorPageStandard*)GetPage(0))->SetColor(m_clrNew);
-
-	return 0;
-}

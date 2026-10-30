@@ -1,457 +1,63 @@
+// roc 2009-06 0074cd60  unit: CXTPReportColumn  size: 162 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0074cd60
+//
+// 0074cd60  56                   push esi
+// 0074cd61  57                   push edi
+// 0074cd62  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 0074cd66  8bf1                 mov esi, ecx
+// 0074cd68  6a01                 push 1
+// 0074cd6a  8d4640               lea eax, [esi + 0x40]
+// 0074cd6d  50                   push eax
+// 0074cd6e  682c538f00           push 0x8f532c
+// 0074cd73  57                   push edi
+// 0074cd74  e8878f0200           call 0x775d00
+// 0074cd79  6a01                 push 1
+// 0074cd7b  8d4e60               lea ecx, [esi + 0x60]
+// 0074cd7e  51                   push ecx
+// 0074cd7f  68c4ff8b00           push 0x8bffc4
+// 0074cd84  57                   push edi
+// 0074cd85  e8768f0200           call 0x775d00
+// 0074cd8a  6a00                 push 0
+// 0074cd8c  8d9694000000         lea edx, [esi + 0x94]
+// 0074cd92  52                   push edx
+// 0074cd93  6820538f00           push 0x8f5320
+// 0074cd98  57                   push edi
+// 0074cd99  e8028f0200           call 0x775ca0
+// 0074cd9e  6a00                 push 0
+// 0074cda0  8d86a4000000         lea eax, [esi + 0xa4]
+// 0074cda6  50                   push eax
+// 0074cda7  6814538f00           push 0x8f5314
+// 0074cdac  57                   push edi
+// 0074cdad  e8ee8e0200           call 0x775ca0
+// 0074cdb2  83c440               add esp, 0x40
+// 0074cdb5  6a00                 push 0
+// 0074cdb7  8d8ea0000000         lea ecx, [esi + 0xa0]
+// 0074cdbd  51                   push ecx
+// 0074cdbe  6808538f00           push 0x8f5308
+// 0074cdc3  57                   push edi
+// 0074cdc4  e8d78e0200           call 0x775ca0
+// 0074cdc9  83c410               add esp, 0x10
+// 0074cdcc  837f2c15             cmp dword ptr [edi + 0x2c], 0x15
+// 0074cdd0  762b                 jbe 0x74cdfd
+// 0074cdd2  6aff                 push -1
+// 0074cdd4  8d9698000000         lea edx, [esi + 0x98]
+// 0074cdda  52                   push edx
+// 0074cddb  68f8528f00           push 0x8f52f8
+// 0074cde0  57                   push edi
+// 0074cde1  e8ba8e0200           call 0x775ca0
+// 0074cde6  6aff                 push -1
+// 0074cde8  81c69c000000         add esi, 0x9c
+// 0074cdee  56                   push esi
+// 0074cdef  68e8528f00           push 0x8f52e8
+// 0074cdf4  57                   push edi
+// 0074cdf5  e8a68e0200           call 0x775ca0
+// 0074cdfa  83c420               add esp, 0x20
+// 0074cdfd  5f                   pop edi
+// 0074cdfe  5e                   pop esi
+// 0074cdff  c20400               ret 4
+// library xtp-11.2.2/Source\ReportControl\XTPReportColumn.cpp (function ?DoPropExchange@CXTPReportColumn@@UAEXPAVCXTPPropExchange@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportColumn.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPReportColumn.cpp : implementation of the CXTPReportColumn class.
-//
-// This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPReportColumn.h"
-#include "XTPReportColumns.h"
-#include "XTPReportSubListControl.h"
-#include "XTPReportRecord.h"
-#include "XTPReportRecordItem.h"
-#include "XTPReportControl.h"
-#include "XTPReportInplaceControls.h"
-#include "XTPReportHeader.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPReportColumn
-
-CXTPReportColumn::CXTPReportColumn(int nItemIndex, LPCTSTR strDisplayName, int nWidth,
-									BOOL bAutoSize, int nIconID, BOOL bSortable, BOOL bVisible)
-{
-	_initData(nItemIndex, strDisplayName, _T(""), nWidth, bAutoSize,
-			  nIconID, bSortable, bVisible);
-}
-
-CXTPReportColumn::CXTPReportColumn(int nItemIndex, LPCTSTR strDisplayName, LPCTSTR strInternalName, int nWidth, BOOL bAutoSize, int nIconID, BOOL bSortable, BOOL bVisible)
-{
-	_initData(nItemIndex, strDisplayName, strInternalName, nWidth, bAutoSize,
-			  nIconID, bSortable, bVisible);
-}
-
-void CXTPReportColumn::_initData(int nItemIndex, LPCTSTR strDisplayName, LPCTSTR strInternalName, int nWidth, BOOL bAutoSize, int nIconID, BOOL bSortable, BOOL bVisible)
-
-{
-	m_nItemIndex = nItemIndex;
-	m_strInternalName = strInternalName;
-	m_strName = strDisplayName;
-
-	m_nIconID = nIconID;
-	m_nMinWidth = 10;
-
-	m_bVisible = bVisible;
-	m_bSortable = bSortable;
-	m_bGroupable = TRUE;
-	m_bAutoSortWhenGrouped = TRUE;
-
-	m_bFiltrable = TRUE;
-	m_bIsResizable = bAutoSize;
-	m_rcColumn.SetRectEmpty();
-
-	m_pColumns = NULL;
-	m_bSortIncreasing = TRUE;
-
-	m_bAllowRemove = TRUE;
-	m_bAllowDrag = TRUE;
-
-	m_nMaxItemWidth = 0;
-	m_nAlignment = DT_LEFT;
-	m_nHeaderAlignment = -1;
-	m_nFooterAlignment = -1;
-
-	m_bDrawFooterDivider = TRUE;
-
-	m_bAutoSize = bAutoSize;
-
-	m_nColumnStaticWidth = m_nColumnAutoWidth = nWidth;
-
-	m_bShowInFieldChooser = TRUE;
-	m_bEditable = TRUE;
-
-	m_bDrawHeaderRowsVGrid = TRUE;
-	m_bDrawFooterRowsVGrid = TRUE;
-
-	m_nBestFitMode = xtpColumnBestFitModeVisibleData;
-
-	m_pEditOptions = new CXTPReportRecordItemEditOptions();
-}
-
-CXTPReportColumn::~CXTPReportColumn()
-{
-	if (m_pEditOptions)
-	{
-		m_pEditOptions->InternalRelease();
-	}
-}
-
-void CXTPReportColumn::SetCaption(LPCTSTR strCaption)
-{
-	m_strName = strCaption;
-	m_pColumns->GetReportHeader()->OnColumnsChanged();
-}
-
-void CXTPReportColumn::SetFooterText(LPCTSTR strFooter)
-{
-	m_strFooterText = strFooter;
-	m_pColumns->GetReportHeader()->GetControl()->AdjustLayout();
-	m_pColumns->GetReportHeader()->GetControl()->AdjustScrollBars();
-}
-
-void CXTPReportColumn::SetFooterFont(CFont* pFont)
-{
-	m_fontFooter.DeleteObject(); // set default
-
-	CFont* pFontDefault = &m_pColumns->GetReportHeader()->GetControl()->GetPaintManager()->m_fontCaption;
-
-	if (pFont && pFont->m_hObject && pFont->m_hObject != pFontDefault->m_hObject)
-	{
-		LOGFONT lfFooter;
-		pFont->GetLogFont(&lfFooter);
-
-		VERIFY(m_fontFooter.CreateFontIndirect(&lfFooter));
-	}
-
-	m_pColumns->GetReportHeader()->GetControl()->AdjustLayout();
-	m_pColumns->GetReportHeader()->GetControl()->AdjustScrollBars();
-}
-
-void CXTPReportColumn::SetDrawFooterDivider(BOOL bSet)
-{
-	m_bDrawFooterDivider = bSet;
-
-	m_pColumns->GetReportHeader()->GetControl()->RedrawControl();
-}
-
-CFont* CXTPReportColumn::GetFooterFont()
-{
-	if (m_fontFooter.m_hObject != NULL)
-		return &m_fontFooter;
-
-	return &m_pColumns->GetReportHeader()->GetControl()->GetPaintManager()->m_fontCaption;
-}
-
-int CXTPReportColumn::GetNormAlignment(int nAlignment) const
-{
-	if (!GetColumns()->GetReportHeader()->GetPaintManager()->m_bRevertAlignment)
-		return nAlignment;
-
-	return nAlignment & DT_RIGHT ? (nAlignment - DT_RIGHT) : (nAlignment + DT_RIGHT);
-
-}
-
-int CXTPReportColumn::GetAlignment() const
-{
-	return GetNormAlignment(m_nAlignment);
-}
-
-int CXTPReportColumn::GetHeaderAlignment() const
-{
-	if (m_nHeaderAlignment != -1)
-		return m_nHeaderAlignment;
-
-	if (GetColumns()->GetReportHeader()->GetPaintManager()->m_bUseColumnTextAlignment)
-		return GetAlignment();
-
-	return GetNormAlignment(DT_LEFT);
-}
-
-int CXTPReportColumn::GetFooterAlignment() const
-{
-	if (m_nFooterAlignment != -1)
-		return m_nFooterAlignment;
-
-	if (GetColumns()->GetReportHeader()->GetPaintManager()->m_bUseColumnTextAlignment)
-		return GetAlignment();
-
-	return GetNormAlignment(DT_LEFT);
-}
-
-void CXTPReportColumn::SetFooterAlignment(int nAlignment)
-{
-	m_nFooterAlignment = nAlignment;
-
-	m_pColumns->GetReportHeader()->GetControl()->AdjustLayout();
-	m_pColumns->GetReportHeader()->GetControl()->AdjustScrollBars();
-}
-
-int CXTPReportColumn::GetWidth() const
-{
-	return m_nColumnStaticWidth + (!m_bIsResizable ? GetIndent() : 0);
-}
-
-CRect CXTPReportColumn::GetRect() const
-{
-	return m_rcColumn;
-}
-
-
-int CXTPReportColumn::SetWidth(int nNewWidth)
-{
-	int nOldWidth = m_nColumnStaticWidth;
-	m_nColumnStaticWidth = m_nColumnAutoWidth = nNewWidth;
-
-	m_pColumns->GetReportHeader()->OnColumnsChanged();
-	return nOldWidth;
-}
-
-BOOL CXTPReportColumn::IsSortedIncreasing() const
-{
-	return m_bSortIncreasing;
-}
-BOOL CXTPReportColumn::IsSortedDecreasing() const
-{
-	return !m_bSortIncreasing;
-}
-
-BOOL CXTPReportColumn::IsSorted() const
-{
-	return (m_pColumns->GetSortOrder()->IndexOf(this) != -1);
-}
-
-void CXTPReportColumn::SetTreeColumn(BOOL bIsTreeColumn)
-{
-	if (bIsTreeColumn)
-	{
-		m_pColumns->m_pTreeColumn = this;
-	}
-	else if (IsTreeColumn())
-	{
-		m_pColumns->m_pTreeColumn = NULL;
-	}
-}
-
-BOOL CXTPReportColumn::IsTreeColumn() const
-{
-	return m_pColumns->m_pTreeColumn == this;
-}
-
-BOOL CXTPReportColumn::IsVisible() const
-{
-	return m_bVisible;
-}
-
-
-void CXTPReportColumn::DoPropExchange(CXTPPropExchange* pPX)
-{
-	PX_Bool(pPX, _T("SortIncreasing"), m_bSortIncreasing, TRUE);
-	PX_Bool(pPX, _T("Visible"), m_bVisible, TRUE);
-	PX_Int(pPX, _T("Alignment"), m_nAlignment, DT_LEFT);
-	PX_Int(pPX, _T("StaticWidth"), m_nColumnStaticWidth, 0);
-	PX_Int(pPX, _T("AutoWidth"), m_nColumnAutoWidth, 0);
-
-	if (pPX->GetSchema() > _XTP_SCHEMA_1041)
-	{
-		PX_Int(pPX, _T("HeaderAlignment"), m_nHeaderAlignment, -1);
-		PX_Int(pPX, _T("FooterAlignment"), m_nFooterAlignment, -1);
-	}
-}
-
-BOOL CXTPReportColumn::HasSortTriangle() const
-{
-	if (m_pColumns->GetSortOrder()->IndexOf(this) != -1)
-		return TRUE;
-
-	if (m_pColumns->GetGroupsOrder()->IndexOf(this) != -1 && m_bAutoSortWhenGrouped)
-		return TRUE;
-
-	return FALSE;
-}
-
-int CXTPReportColumn::GetCaptionWidth(CDC* pDC) const
-{
-	return pDC->GetTextExtent(m_strName).cx;
-}
-
-BOOL CXTPReportColumn::IsDragging() const
-{
-	return m_pColumns && m_pColumns->GetReportHeader() && m_pColumns->GetReportHeader()->m_pDragColumn == this;
-}
-
-int CXTPReportColumn::GetIndent() const
-{
-	if (!m_pColumns->GetReportHeader())
-		return 0;
-
-	if (m_pColumns->GetVisibleAt(0) == this)
-		return GetControl()->GetHeaderIndent();
-
-	return 0;
-}
-
-int CXTPReportColumn::GetMinWidth() const
-{
-	return (m_bIsResizable || m_bAutoSize ? m_nMinWidth : m_nColumnStaticWidth) + GetIndent();
-}
-
-void CXTPReportColumn::SetVisible(BOOL bVisible)
-{
-	if (bVisible != m_bVisible)
-	{
-		m_bVisible = bVisible;
-		m_pColumns->GetReportHeader()->OnColumnsChanged();
-	}
-}
-
-int CXTPReportColumn::GetItemIndex() const
-{
-	return m_nItemIndex;
-}
-
-int CXTPReportColumn::GetIndex() const
-{
-	return m_pColumns->IndexOf(this);
-}
-
-CXTPReportControl* CXTPReportColumn::GetControl() const
-{
-	return m_pColumns->GetReportHeader()->GetControl();
-}
-
-void CXTPReportColumn::SetShowInFieldChooser(BOOL bShow)
-{
-	if (bShow != m_bShowInFieldChooser)
-	{
-		m_bShowInFieldChooser = bShow;
-
-		CXTPReportSubListControl* pSubList = m_pColumns->GetReportHeader()->GetSubListCtrl();
-		if (pSubList)
-		{
-			pSubList->UpdateList();
-		}
-	}
-}
-
-BOOL CXTPReportColumn::IsHotTracking() const
-{
-	return m_pColumns->GetReportHeader()->GetHotTrackingColumn() == this;
-}
-
-BOOL CXTPReportColumn::IsShowInFieldChooser() const
-{
-	return m_bShowInFieldChooser;
-}
-
-
-int CXTPReportColumn::GetPrintWidth(int nTotalWidth) const
-{
-	CXTPReportColumns* pColumns = m_pColumns;
-
-	int nColumnsWidth = 0;
-	CXTPReportColumn* pLastAutoColumn = NULL;
-
-	for (int nColumn = 0; nColumn < pColumns->GetCount(); nColumn++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
-		if (!pColumn->IsVisible())
-			continue;
-
-		if (pColumn->IsAutoSize())
-		{
-			pLastAutoColumn = pColumn;
-			nColumnsWidth += pColumn->GetWidth();
-		}
-		else
-		{
-			nTotalWidth -= pColumn->GetWidth();
-		}
-	}
-
-	for (int i = 0; i < pColumns->GetCount(); i++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(i);
-		if (!pColumn->IsVisible())
-			continue;
-
-		int nWidth = pColumn->GetWidth();
-
-		if (pColumn->IsAutoSize())
-		{
-			if (pColumn == pLastAutoColumn)
-			{
-				nWidth = max(nTotalWidth, pColumn->GetMinWidth());
-			}
-			else
-			{
-				nColumnsWidth = max(1, nColumnsWidth);
-
-				nWidth =
-					max(int(pColumn->GetWidth() * nTotalWidth / nColumnsWidth), pColumn->GetMinWidth());
-
-				nTotalWidth -= nWidth;
-				nColumnsWidth -= pColumn->GetWidth();
-			}
-		}
-
-		if (pColumn == this)
-			return nWidth;
-	}
-
-	return 0;
-}
-
-
-int CXTPReportColumn::GetBestFitWidth()
-{
-	CXTPReportControl* pControl = GetControl();
-	CXTPReportPaintManager* pPaintManager = pControl->GetPaintManager();
-	int nBestColumnWidth = 0;
-
-	CClientDC dc(pControl);
-	CXTPFontDC font(&dc, &pPaintManager->m_fontCaption);
-	nBestColumnWidth = 6 + GetCaptionWidth(&dc);
-
-	if (GetIconID() != XTP_REPORT_NOICON)
-	{
-		nBestColumnWidth += pPaintManager->DrawBitmap(NULL, pControl, GetRect(), nBestColumnWidth) + 2;
-	}
-	if (HasSortTriangle())
-	{
-		nBestColumnWidth += 27;
-	}
-
-	int nDataWidth = pControl->OnGetColumnDataBestFitWidth(this);
-
-	nBestColumnWidth = max(nBestColumnWidth, nDataWidth);
-	nBestColumnWidth = max(nBestColumnWidth, m_nMaxItemWidth);
-
-	return nBestColumnWidth;
-}
-
-void CXTPReportColumn::EnsureVisible()
-{
-	CXTPReportControl* pControl = GetControl();
-	pControl->EnsureVisible(this);
-}
-

@@ -1,2516 +1,526 @@
+// roc 2009-12 008a0070  unit: CXTPReportPaintManager  size: 2184 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008a0070
+//
+// 008a0070  83ec50               sub esp, 0x50
+// 008a0073  a10052b600           mov eax, dword ptr [0xb65200]
+// 008a0078  33c4                 xor eax, esp
+// 008a007a  8944244c             mov dword ptr [esp + 0x4c], eax
+// 008a007e  53                   push ebx
+// 008a007f  55                   push ebp
+// 008a0080  56                   push esi
+// 008a0081  57                   push edi
+// 008a0082  8bf1                 mov esi, ecx
+// 008a0084  e81715f9ff           call 0x8315a0
+// 008a0089  e842f9f8ff           call 0x82f9d0
+// 008a008e  6a0f                 push 0xf
+// 008a0090  8bc8                 mov ecx, eax
+// 008a0092  e869f0f8ff           call 0x82f100
+// 008a0097  89861c010000         mov dword ptr [esi + 0x11c], eax
+// 008a009d  e82ef9f8ff           call 0x82f9d0
+// 008a00a2  6a12                 push 0x12
+// 008a00a4  8bc8                 mov ecx, eax
+// 008a00a6  e855f0f8ff           call 0x82f100
+// 008a00ab  898628010000         mov dword ptr [esi + 0x128], eax
+// 008a00b1  e81af9f8ff           call 0x82f9d0
+// 008a00b6  6a10                 push 0x10
+// 008a00b8  8bc8                 mov ecx, eax
+// 008a00ba  e841f0f8ff           call 0x82f100
+// 008a00bf  8986d4000000         mov dword ptr [esi + 0xd4], eax
+// 008a00c5  e806f9f8ff           call 0x82f9d0
+// 008a00ca  6a0d                 push 0xd
+// 008a00cc  8bc8                 mov ecx, eax
+// 008a00ce  e82df0f8ff           call 0x82f100
+// 008a00d3  894644               mov dword ptr [esi + 0x44], eax
+// 008a00d6  e8f5f8f8ff           call 0x82f9d0
+// 008a00db  6a0e                 push 0xe
+// 008a00dd  8bc8                 mov ecx, eax
+// 008a00df  e81cf0f8ff           call 0x82f100
+// 008a00e4  894668               mov dword ptr [esi + 0x68], eax
+// 008a00e7  e8e4f8f8ff           call 0x82f9d0
+// 008a00ec  6a08                 push 8
+// 008a00ee  8bc8                 mov ecx, eax
+// 008a00f0  e80bf0f8ff           call 0x82f100
+// 008a00f5  89465c               mov dword ptr [esi + 0x5c], eax
+// 008a00f8  e8d3f8f8ff           call 0x82f9d0
+// 008a00fd  6a14                 push 0x14
+// 008a00ff  8bc8                 mov ecx, eax
+// 008a0101  e8faeff8ff           call 0x82f100
+// 008a0106  8986e0000000         mov dword ptr [esi + 0xe0], eax
+// 008a010c  e8bff8f8ff           call 0x82f9d0
+// 008a0111  6a05                 push 5
+// 008a0113  8bc8                 mov ecx, eax
+// 008a0115  e8e6eff8ff           call 0x82f100
+// 008a011a  89868c000000         mov dword ptr [esi + 0x8c], eax
+// 008a0120  8b8620010000         mov eax, dword ptr [esi + 0x120]
+// 008a0126  83f8ff               cmp eax, -1
+// 008a0129  7506                 jne 0x8a0131
+// 008a012b  8b861c010000         mov eax, dword ptr [esi + 0x11c]
+// 008a0131  898604010000         mov dword ptr [esi + 0x104], eax
+// 008a0137  8b862c010000         mov eax, dword ptr [esi + 0x12c]
+// 008a013d  83f8ff               cmp eax, -1
+// 008a0140  7506                 jne 0x8a0148
+// 008a0142  8b8628010000         mov eax, dword ptr [esi + 0x128]
+// 008a0148  898680000000         mov dword ptr [esi + 0x80], eax
+// 008a014e  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 008a0154  83f8ff               cmp eax, -1
+// 008a0157  7506                 jne 0x8a015f
+// 008a0159  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
+// 008a015f  894650               mov dword ptr [esi + 0x50], eax
+// 008a0162  8b8620010000         mov eax, dword ptr [esi + 0x120]
+// 008a0168  83f8ff               cmp eax, -1
+// 008a016b  7506                 jne 0x8a0173
+// 008a016d  8b861c010000         mov eax, dword ptr [esi + 0x11c]
+// 008a0173  894674               mov dword ptr [esi + 0x74], eax
+// 008a0176  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 008a017c  83f8ff               cmp eax, -1
+// 008a017f  7506                 jne 0x8a0187
+// 008a0181  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
+// 008a0187  8986bc000000         mov dword ptr [esi + 0xbc], eax
+// 008a018d  8b8620010000         mov eax, dword ptr [esi + 0x120]
+// 008a0193  83f8ff               cmp eax, -1
+// 008a0196  7506                 jne 0x8a019e
+// 008a0198  8b861c010000         mov eax, dword ptr [esi + 0x11c]
+// 008a019e  8986a4000000         mov dword ptr [esi + 0xa4], eax
+// 008a01a4  8b862c010000         mov eax, dword ptr [esi + 0x12c]
+// 008a01aa  83f8ff               cmp eax, -1
+// 008a01ad  7506                 jne 0x8a01b5
+// 008a01af  8b8628010000         mov eax, dword ptr [esi + 0x128]
+// 008a01b5  8986b0000000         mov dword ptr [esi + 0xb0], eax
+// 008a01bb  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 008a01c1  83f8ff               cmp eax, -1
+// 008a01c4  7506                 jne 0x8a01cc
+// 008a01c6  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
+// 008a01cc  898698000000         mov dword ptr [esi + 0x98], eax
+// 008a01d2  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 008a01d8  83f8ff               cmp eax, -1
+// 008a01db  7506                 jne 0x8a01e3
+// 008a01dd  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
+// 008a01e3  8986c8000000         mov dword ptr [esi + 0xc8], eax
+// 008a01e9  8b8620010000         mov eax, dword ptr [esi + 0x120]
+// 008a01ef  83f8ff               cmp eax, -1
+// 008a01f2  7506                 jne 0x8a01fa
+// 008a01f4  8b861c010000         mov eax, dword ptr [esi + 0x11c]
+// 008a01fa  898640010000         mov dword ptr [esi + 0x140], eax
+// 008a0200  8b862c010000         mov eax, dword ptr [esi + 0x12c]
+// 008a0206  83f8ff               cmp eax, -1
+// 008a0209  7506                 jne 0x8a0211
+// 008a020b  8b8628010000         mov eax, dword ptr [esi + 0x128]
+// 008a0211  89864c010000         mov dword ptr [esi + 0x14c], eax
+// 008a0217  c786f80000000000ff00 mov dword ptr [esi + 0xf8], 0xff0000
+// 008a0221  c78610010000f5f5f500 mov dword ptr [esi + 0x110], 0xf5f5f5
+// 008a022b  c786ec000000ff000000 mov dword ptr [esi + 0xec], 0xff
+// 008a0235  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 008a023b  83f8ff               cmp eax, -1
+// 008a023e  7506                 jne 0x8a0246
+// 008a0240  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
+// 008a0246  8986d0010000         mov dword ptr [esi + 0x1d0], eax
+// 008a024c  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 008a0252  83f8ff               cmp eax, -1
+// 008a0255  7506                 jne 0x8a025d
+// 008a0257  8b86d4000000         mov eax, dword ptr [esi + 0xd4]
+// 008a025d  68b053a000           push 0xa053b0
+// 008a0262  6a00                 push 0
+// 008a0264  8d8ec0020000         lea ecx, [esi + 0x2c0]
+// 008a026a  8986c4010000         mov dword ptr [esi + 0x1c4], eax
+// 008a0270  e88bbafcff           call 0x86bd00
+// 008a0275  6820299f00           push 0x9f2920
+// 008a027a  6a00                 push 0
+// 008a027c  8d8ecc020000         lea ecx, [esi + 0x2cc]
+// 008a0282  e879bafcff           call 0x86bd00
+// 008a0287  68c42ba000           push 0xa02bc4
+// 008a028c  6a00                 push 0
+// 008a028e  8d8ed8020000         lea ecx, [esi + 0x2d8]
+// 008a0294  e867bafcff           call 0x86bd00
+// 008a0299  e832f7f8ff           call 0x82f9d0
+// 008a029e  8bc8                 mov ecx, eax
+// 008a02a0  e83bf1f8ff           call 0x82f3e0
+// 008a02a5  bbafba9100           mov ebx, 0x91baaf
+// 008a02aa  bfe5e5eb00           mov edi, 0xebe5e5
+// 008a02af  bdbedafb00           mov ebp, 0xfbdabe
+// 008a02b4  85c0                 test eax, eax
+// 008a02b6  0f8586000000         jne 0x8a0342
+// 008a02bc  e80ff7f8ff           call 0x82f9d0
+// 008a02c1  8bc8                 mov ecx, eax
+// 008a02c3  e868f4f8ff           call 0x82f730
+// 008a02c8  48                   dec eax
+// 008a02c9  83f804               cmp eax, 4
+// 008a02cc  7774                 ja 0x8a0342
+// 008a02ce  ff2485d0088a00       jmp dword ptr [eax*4 + 0x8a08d0]
+// 008a02d5  c786bc0000007ba4e000 mov dword ptr [esi + 0xbc], 0xe0a47b
+// 008a02df  89aea4000000         mov dword ptr [esi + 0xa4], ebp
+// 008a02e5  c786980000003768b900 mov dword ptr [esi + 0x98], 0xb96837
+// 008a02ef  c74650eae9e100       mov dword ptr [esi + 0x50], 0xe1e9ea
+// 008a02f6  eb40                 jmp 0x8a0338
+// 008a02f8  c786bc000000b5c48f00 mov dword ptr [esi + 0xbc], 0x8fc4b5
+// 008a0302  899ea4000000         mov dword ptr [esi + 0xa4], ebx
+// 008a0308  c7869800000073895400 mov dword ptr [esi + 0x98], 0x548973
+// 008a0312  c74650eae9e100       mov dword ptr [esi + 0x50], 0xe1e9ea
+// 008a0319  eb1d                 jmp 0x8a0338
+// 008a031b  c786bc000000a5a4bd00 mov dword ptr [esi + 0xbc], 0xbda4a5
+// 008a0325  89bea4000000         mov dword ptr [esi + 0xa4], edi
+// 008a032b  c78698000000706f9100 mov dword ptr [esi + 0x98], 0x916f70
+// 008a0335  897e50               mov dword ptr [esi + 0x50], edi
+// 008a0338  c78604010000fdeec900 mov dword ptr [esi + 0x104], 0xc9eefd
+// 008a0342  8b86bc020000         mov eax, dword ptr [esi + 0x2bc]
+// 008a0348  83f804               cmp eax, 4
+// 008a034b  0f8565030000         jne 0x8a06b6
+// 008a0351  83befc010000ff       cmp dword ptr [esi + 0x1fc], -1
+// 008a0358  0f84d8010000         je 0x8a0536
+// 008a035e  e83dcffaff           call 0x84d2a0
+// 008a0363  8b86fc010000         mov eax, dword ptr [esi + 0x1fc]
+// 008a0369  50                   push eax
+// 008a036a  e821a1faff           call 0x84a490
+// 008a036f  8bd8                 mov ebx, eax
+// 008a0371  89442418             mov dword ptr [esp + 0x18], eax
+// 008a0375  c1eb08               shr ebx, 8
+// 008a0378  e823cffaff           call 0x84d2a0
+// 008a037d  e81ecffaff           call 0x84d2a0
+// 008a0382  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a0388  0fb6fb               movzx edi, bl
+// 008a038b  d91c24               fstp dword ptr [esp]
+// 008a038e  0fb65c2418           movzx ebx, byte ptr [esp + 0x18]
+// 008a0393  8bef                 mov ebp, edi
+// 008a0395  81cd00ef0000         or ebp, 0xef00
+// 008a039b  8bc7                 mov eax, edi
+// 008a039d  0d00d40000           or eax, 0xd400
+// 008a03a2  c1e508               shl ebp, 8
+// 008a03a5  c1e008               shl eax, 8
+// 008a03a8  0beb                 or ebp, ebx
+// 008a03aa  0bc3                 or eax, ebx
+// 008a03ac  55                   push ebp
+// 008a03ad  897c2418             mov dword ptr [esp + 0x18], edi
+// 008a03b1  8944241c             mov dword ptr [esp + 0x1c], eax
+// 008a03b5  e816a3faff           call 0x84a6d0
+// 008a03ba  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008a03be  83c404               add esp, 4
+// 008a03c1  50                   push eax
+// 008a03c2  51                   push ecx
+// 008a03c3  e808a3faff           call 0x84a6d0
+// 008a03c8  83c404               add esp, 4
+// 008a03cb  50                   push eax
+// 008a03cc  8d8e94010000         lea ecx, [esi + 0x194]
+// 008a03d2  e889eaf8ff           call 0x82ee60
+// 008a03d7  e8c4cefaff           call 0x84d2a0
+// 008a03dc  e8bfcefaff           call 0x84d2a0
+// 008a03e1  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a03e7  8b542414             mov edx, dword ptr [esp + 0x14]
+// 008a03eb  51                   push ecx
+// 008a03ec  d91c24               fstp dword ptr [esp]
+// 008a03ef  52                   push edx
+// 008a03f0  e8dba2faff           call 0x84a6d0
+// 008a03f5  83c404               add esp, 4
+// 008a03f8  50                   push eax
+// 008a03f9  55                   push ebp
+// 008a03fa  e8d1a2faff           call 0x84a6d0
+// 008a03ff  83c404               add esp, 4
+// 008a0402  50                   push eax
+// 008a0403  8d8e54010000         lea ecx, [esi + 0x154]
+// 008a0409  e852eaf8ff           call 0x82ee60
+// 008a040e  e88dcefaff           call 0x84d2a0
+// 008a0413  db442410             fild dword ptr [esp + 0x10]
+// 008a0417  d97c2414             fnstcw word ptr [esp + 0x14]
+// 008a041b  0fb7442414           movzx eax, word ptr [esp + 0x14]
+// 008a0420  dd542418             fst qword ptr [esp + 0x18]
+// 008a0424  dc0da853a000         fmul qword ptr [0xa053a8]
+// 008a042a  0d000c0000           or eax, 0xc00
+// 008a042f  89442410             mov dword ptr [esp + 0x10], eax
+// 008a0433  d96c2410             fldcw word ptr [esp + 0x10]
+// 008a0437  db5c2410             fistp dword ptr [esp + 0x10]
+// 008a043b  0fb6442410           movzx eax, byte ptr [esp + 0x10]
+// 008a0440  0fb6c8               movzx ecx, al
+// 008a0443  d96c2414             fldcw word ptr [esp + 0x14]
+// 008a0447  81c900910000         or ecx, 0x9100
+// 008a044d  c1e108               shl ecx, 8
+// 008a0450  0bcb                 or ecx, ebx
+// 008a0452  51                   push ecx
+// 008a0453  e878a2faff           call 0x84a6d0
+// 008a0458  8986b8010000         mov dword ptr [esi + 0x1b8], eax
+// 008a045e  e83dcefaff           call 0x84d2a0
+// 008a0463  8bd7                 mov edx, edi
+// 008a0465  81ca00c00000         or edx, 0xc000
+// 008a046b  c1e208               shl edx, 8
+// 008a046e  0bd3                 or edx, ebx
+// 008a0470  52                   push edx
+// 008a0471  e85aa2faff           call 0x84a6d0
+// 008a0476  8986c4010000         mov dword ptr [esi + 0x1c4], eax
+// 008a047c  e81fcefaff           call 0x84d2a0
+// 008a0481  81cf00e30000         or edi, 0xe300
+// 008a0487  c1e708               shl edi, 8
+// 008a048a  0bfb                 or edi, ebx
+// 008a048c  57                   push edi
+// 008a048d  e83ea2faff           call 0x84a6d0
+// 008a0492  8986c8000000         mov dword ptr [esi + 0xc8], eax
+// 008a0498  e803cefaff           call 0x84d2a0
+// 008a049d  dd442424             fld qword ptr [esp + 0x24]
+// 008a04a1  dc0d78329f00         fmul qword ptr [0x9f3278]
+// 008a04a7  d97c2420             fnstcw word ptr [esp + 0x20]
+// 008a04ab  0fb7442420           movzx eax, word ptr [esp + 0x20]
+// 008a04b0  0d000c0000           or eax, 0xc00
+// 008a04b5  8944241c             mov dword ptr [esp + 0x1c], eax
+// 008a04b9  d96c241c             fldcw word ptr [esp + 0x1c]
+// 008a04bd  db5c241c             fistp dword ptr [esp + 0x1c]
+// 008a04c1  0fb644241c           movzx eax, byte ptr [esp + 0x1c]
+// 008a04c6  0fb6c8               movzx ecx, al
+// 008a04c9  d96c2420             fldcw word ptr [esp + 0x20]
+// 008a04cd  81c9004f0000         or ecx, 0x4f00
+// 008a04d3  c1e108               shl ecx, 8
+// 008a04d6  0bcb                 or ecx, ebx
+// 008a04d8  51                   push ecx
+// 008a04d9  e8f2a1faff           call 0x84a6d0
+// 008a04de  8986d0010000         mov dword ptr [esi + 0x1d0], eax
+// 008a04e4  e8b7cdfaff           call 0x84d2a0
+// 008a04e9  dd442428             fld qword ptr [esp + 0x28]
+// 008a04ed  dc0da053a000         fmul qword ptr [0xa053a0]
+// 008a04f3  d97c2424             fnstcw word ptr [esp + 0x24]
+// 008a04f7  0fb7442424           movzx eax, word ptr [esp + 0x24]
+// 008a04fc  0d000c0000           or eax, 0xc00
+// 008a0501  89442420             mov dword ptr [esp + 0x20], eax
+// 008a0505  d96c2420             fldcw word ptr [esp + 0x20]
+// 008a0509  db5c2420             fistp dword ptr [esp + 0x20]
+// 008a050d  8a542420             mov dl, byte ptr [esp + 0x20]
+// 008a0511  0fb6c2               movzx eax, dl
+// 008a0514  0d00d00000           or eax, 0xd000
+// 008a0519  d96c2424             fldcw word ptr [esp + 0x24]
+// 008a051d  c1e008               shl eax, 8
+// 008a0520  0bc3                 or eax, ebx
+// 008a0522  50                   push eax
+// 008a0523  e8a8a1faff           call 0x84a6d0
+// 008a0528  83c414               add esp, 0x14
+// 008a052b  8986a4000000         mov dword ptr [esi + 0xa4], eax
+// 008a0531  e93b010000           jmp 0x8a0671
+// 008a0536  e895f4f8ff           call 0x82f9d0
+// 008a053b  8bc8                 mov ecx, eax
+// 008a053d  e8eef1f8ff           call 0x82f730
+// 008a0542  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a0548  83e802               sub eax, 2
+// 008a054b  51                   push ecx
+// 008a054c  d91c24               fstp dword ptr [esp]
+// 008a054f  8d8e94010000         lea ecx, [esi + 0x194]
+// 008a0555  0f84ba000000         je 0x8a0615
+// 008a055b  83e801               sub eax, 1
+// 008a055e  7461                 je 0x8a05c1
+// 008a0560  68fcfdff00           push 0xfffdfc
+// 008a0565  68c4ddff00           push 0xffddc4
+// 008a056a  e8f1e8f8ff           call 0x82ee60
+// 008a056f  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a0575  8d8e54010000         lea ecx, [esi + 0x154]
+// 008a057b  51                   push ecx
+// 008a057c  d91c24               fstp dword ptr [esp]
+// 008a057f  68c4ddff00           push 0xffddc4
+// 008a0584  68fcfdff00           push 0xfffdfc
+// 008a0589  e8d2e8f8ff           call 0x82ee60
+// 008a058e  c786b80100006593cf00 mov dword ptr [esi + 0x1b8], 0xcf9365
+// 008a0598  c786c40100009ac6ff00 mov dword ptr [esi + 0x1c4], 0xffc69a
+// 008a05a2  c786c8000000e3efff00 mov dword ptr [esi + 0xc8], 0xffefe3
+// 008a05ac  c786d0010000324b2c00 mov dword ptr [esi + 0x1d0], 0x2c4b32
+// 008a05b6  89aea4000000         mov dword ptr [esi + 0xa4], ebp
+// 008a05bc  e9b0000000           jmp 0x8a0671
+// 008a05c1  68fdfdfd00           push 0xfdfdfd
+// 008a05c6  68dddddd00           push 0xdddddd
+// 008a05cb  e890e8f8ff           call 0x82ee60
+// 008a05d0  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a05d6  8d8e54010000         lea ecx, [esi + 0x154]
+// 008a05dc  51                   push ecx
+// 008a05dd  d91c24               fstp dword ptr [esp]
+// 008a05e0  68dddddd00           push 0xdddddd
+// 008a05e5  68fdfdfd00           push 0xfdfdfd
+// 008a05ea  e871e8f8ff           call 0x82ee60
+// 008a05ef  c786b801000093939300 mov dword ptr [esi + 0x1b8], 0x939393
+// 008a05f9  c786c4010000c6c6c600 mov dword ptr [esi + 0x1c4], 0xc6c6c6
+// 008a0603  c786c8000000efefef00 mov dword ptr [esi + 0xc8], 0xefefef
+// 008a060d  89bea4000000         mov dword ptr [esi + 0xa4], edi
+// 008a0613  eb52                 jmp 0x8a0667
+// 008a0615  68fdfdfd00           push 0xfdfdfd
+// 008a061a  68a5b87200           push 0x72b8a5
+// 008a061f  e83ce8f8ff           call 0x82ee60
+// 008a0624  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a062a  8d8e54010000         lea ecx, [esi + 0x154]
+// 008a0630  51                   push ecx
+// 008a0631  d91c24               fstp dword ptr [esp]
+// 008a0634  68a5b87200           push 0x72b8a5
+// 008a0639  68fdfdfd00           push 0xfdfdfd
+// 008a063e  e81de8f8ff           call 0x82ee60
+// 008a0643  c786b801000060805800 mov dword ptr [esi + 0x1b8], 0x588060
+// 008a064d  c786c401000078b76800 mov dword ptr [esi + 0x1c4], 0x68b778
+// 008a0657  c786c8000000d8e1bb00 mov dword ptr [esi + 0xc8], 0xbbe1d8
+// 008a0661  899ea4000000         mov dword ptr [esi + 0xa4], ebx
+// 008a0667  c786d00100004a4a4a00 mov dword ptr [esi + 0x1d0], 0x4a4a4a
+// 008a0671  8d8654010000         lea eax, [esi + 0x154]
+// 008a0677  50                   push eax
+// 008a0678  8d8e74010000         lea ecx, [esi + 0x174]
+// 008a067e  e8fde7f8ff           call 0x82ee80
+// 008a0683  8b86d4010000         mov eax, dword ptr [esi + 0x1d4]
+// 008a0689  83f8ff               cmp eax, -1
+// 008a068c  7506                 jne 0x8a0694
+// 008a068e  8b86d0010000         mov eax, dword ptr [esi + 0x1d0]
+// 008a0694  898698000000         mov dword ptr [esi + 0x98], eax
+// 008a069a  8b86c8010000         mov eax, dword ptr [esi + 0x1c8]
+// 008a06a0  83f8ff               cmp eax, -1
+// 008a06a3  7506                 jne 0x8a06ab
+// 008a06a5  8b86c4010000         mov eax, dword ptr [esi + 0x1c4]
+// 008a06ab  8986bc000000         mov dword ptr [esi + 0xbc], eax
+// 008a06b1  e9ac010000           jmp 0x8a0862
+// 008a06b6  83f803               cmp eax, 3
+// 008a06b9  0f85a3010000         jne 0x8a0862
+// 008a06bf  e80cf3f8ff           call 0x82f9d0
+// 008a06c4  6a0f                 push 0xf
+// 008a06c6  8bc8                 mov ecx, eax
+// 008a06c8  e833eaf8ff           call 0x82f100
+// 008a06cd  8bd8                 mov ebx, eax
+// 008a06cf  e8fcf2f8ff           call 0x82f9d0
+// 008a06d4  6a05                 push 5
+// 008a06d6  8bc8                 mov ecx, eax
+// 008a06d8  e823eaf8ff           call 0x82f100
+// 008a06dd  8be8                 mov ebp, eax
+// 008a06df  e8ecf2f8ff           call 0x82f9d0
+// 008a06e4  6a0f                 push 0xf
+// 008a06e6  8bc8                 mov ecx, eax
+// 008a06e8  e813eaf8ff           call 0x82f100
+// 008a06ed  89442410             mov dword ptr [esp + 0x10], eax
+// 008a06f1  e8daf2f8ff           call 0x82f9d0
+// 008a06f6  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a06fc  51                   push ecx
+// 008a06fd  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008a0701  d91c24               fstp dword ptr [esp]
+// 008a0704  53                   push ebx
+// 008a0705  68cd000000           push 0xcd
+// 008a070a  55                   push ebp
+// 008a070b  51                   push ecx
+// 008a070c  8bc8                 mov ecx, eax
+// 008a070e  8dbe54010000         lea edi, [esi + 0x154]
+// 008a0714  e837e9f8ff           call 0x82f050
+// 008a0719  50                   push eax
+// 008a071a  8bcf                 mov ecx, edi
+// 008a071c  e83fe7f8ff           call 0x82ee60
+// 008a0721  e8aaf2f8ff           call 0x82f9d0
+// 008a0726  6a1f                 push 0x1f
+// 008a0728  8bc8                 mov ecx, eax
+// 008a072a  8d9e74010000         lea ebx, [esi + 0x174]
+// 008a0730  e8cbe9f8ff           call 0x82f100
+// 008a0735  50                   push eax
+// 008a0736  8bcb                 mov ecx, ebx
+// 008a0738  e8e3f1f8ff           call 0x82f920
+// 008a073d  e88ef2f8ff           call 0x82f9d0
+// 008a0742  6a21                 push 0x21
+// 008a0744  8bc8                 mov ecx, eax
+// 008a0746  8dae94010000         lea ebp, [esi + 0x194]
+// 008a074c  e8afe9f8ff           call 0x82f100
+// 008a0751  50                   push eax
+// 008a0752  8bcd                 mov ecx, ebp
+// 008a0754  e8c7f1f8ff           call 0x82f920
+// 008a0759  e872f2f8ff           call 0x82f9d0
+// 008a075e  6a1e                 push 0x1e
+// 008a0760  8bc8                 mov ecx, eax
+// 008a0762  e899e9f8ff           call 0x82f100
+// 008a0767  8986b8010000         mov dword ptr [esi + 0x1b8], eax
+// 008a076d  e85ef2f8ff           call 0x82f9d0
+// 008a0772  6a27                 push 0x27
+// 008a0774  8bc8                 mov ecx, eax
+// 008a0776  e885e9f8ff           call 0x82f100
+// 008a077b  8986c4010000         mov dword ptr [esi + 0x1c4], eax
+// 008a0781  e84af2f8ff           call 0x82f9d0
+// 008a0786  8bc8                 mov ecx, eax
+// 008a0788  e8a3eff8ff           call 0x82f730
+// 008a078d  48                   dec eax
+// 008a078e  83f804               cmp eax, 4
+// 008a0791  0f87cb000000         ja 0x8a0862
+// 008a0797  ff2485e4088a00       jmp dword ptr [eax*4 + 0x8a08e4]
+// 008a079e  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a07a4  51                   push ecx
+// 008a07a5  d91c24               fstp dword ptr [esp]
+// 008a07a8  6881a9e200           push 0xe2a981
+// 008a07ad  68ddecfe00           push 0xfeecdd
+// 008a07b2  8bcf                 mov ecx, edi
+// 008a07b4  e8a7e6f8ff           call 0x82ee60
+// 008a07b9  c786b80100003b619c00 mov dword ptr [esi + 0x1b8], 0x9c613b
+// 008a07c3  c786c40100006a8ccb00 mov dword ptr [esi + 0x1c4], 0xcb8c6a
+// 008a07cd  eb5d                 jmp 0x8a082c
+// 008a07cf  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a07d5  51                   push ecx
+// 008a07d6  d91c24               fstp dword ptr [esp]
+// 008a07d9  68b7c69100           push 0x91c6b7
+// 008a07de  68f4f7de00           push 0xdef7f4
+// 008a07e3  8bcf                 mov ecx, edi
+// 008a07e5  e876e6f8ff           call 0x82ee60
+// 008a07ea  b860805800           mov eax, 0x588060
+// 008a07ef  8986b8010000         mov dword ptr [esi + 0x1b8], eax
+// 008a07f5  8986c4010000         mov dword ptr [esi + 0x1c4], eax
+// 008a07fb  eb2f                 jmp 0x8a082c
+// 008a07fd  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a0803  51                   push ecx
+// 008a0804  d91c24               fstp dword ptr [esp]
+// 008a0807  689997b500           push 0xb59799
+// 008a080c  68f3f4fa00           push 0xfaf4f3
+// 008a0811  8bcf                 mov ecx, edi
+// 008a0813  e848e6f8ff           call 0x82ee60
+// 008a0818  c786b80100007c7c9400 mov dword ptr [esi + 0x1b8], 0x947c7c
+// 008a0822  c786c40100006e6d8f00 mov dword ptr [esi + 0x1c4], 0x8f6d6e
+// 008a082c  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a0832  51                   push ecx
+// 008a0833  d91c24               fstp dword ptr [esp]
+// 008a0836  68ffcf8b00           push 0x8bcfff
+// 008a083b  68fe8e4b00           push 0x4b8efe
+// 008a0840  8bcd                 mov ecx, ebp
+// 008a0842  e819e6f8ff           call 0x82ee60
+// 008a0847  d905dcf29a00         fld dword ptr [0x9af2dc]
+// 008a084d  51                   push ecx
+// 008a084e  d91c24               fstp dword ptr [esp]
+// 008a0851  68ffd49700           push 0x97d4ff
+// 008a0856  68fff2c800           push 0xc8f2ff
+// 008a085b  8bcb                 mov ecx, ebx
+// 008a085d  e8fee5f8ff           call 0x82ee60
+// 008a0862  8d8e8c020000         lea ecx, [esi + 0x28c]
+// 008a0868  e8b135f5ff           call 0x7f3e1e
+// 008a086d  8d8e94020000         lea ecx, [esi + 0x294]
+// 008a0873  e8a635f5ff           call 0x7f3e1e
+// 008a0878  8d8e9c020000         lea ecx, [esi + 0x29c]
+// 008a087e  e89b35f5ff           call 0x7f3e1e
+// 008a0883  b80f000000           mov eax, 0xf
+// 008a0888  8d542420             lea edx, [esp + 0x20]
+// 008a088c  52                   push edx
+// 008a088d  8986e8010000         mov dword ptr [esi + 0x1e8], eax
+// 008a0893  8986f4010000         mov dword ptr [esi + 0x1f4], eax
+// 008a0899  8b4634               mov eax, dword ptr [esi + 0x34]
+// 008a089c  6a3c                 push 0x3c
+// 008a089e  50                   push eax
+// 008a089f  c786dc0100000000de00 mov dword ptr [esi + 0x1dc], 0xde0000
+// 008a08a9  ff155cb19800         call dword ptr [0x98b15c]
+// 008a08af  8d4c2420             lea ecx, [esp + 0x20]
+// 008a08b3  51                   push ecx
+// 008a08b4  8bce                 mov ecx, esi
+// 008a08b6  e895d2ffff           call 0x89db50
+// 008a08bb  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 008a08bf  5f                   pop edi
+// 008a08c0  5e                   pop esi
+// 008a08c1  5d                   pop ebp
+// 008a08c2  5b                   pop ebx
+// 008a08c3  33cc                 xor ecx, esp
+// 008a08c5  e8d04af5ff           call 0x7f539a
+// 008a08ca  83c450               add esp, 0x50
+// 008a08cd  c3                   ret 
+// 008a08ce  8bff                 mov edi, edi
+// 008a08d0  d502                 aad 2
+// 008a08d2  8a00                 mov al, byte ptr [eax]
+// 008a08d4  f8                   clc 
+// 008a08d5  028a001b038a         add cl, byte ptr [edx - 0x75fce500]
+// 008a08db  00d5                 add ch, dl
+// 008a08dd  028a00d5028a         add cl, byte ptr [edx - 0x75fd2b00]
+// 008a08e3  009e078a00cf         add byte ptr [esi - 0x30ff75f9], bl
+// 008a08e9  07                   pop es
+// 008a08ea  8a00                 mov al, byte ptr [eax]
+// 008a08ec  fd                   std 
+// 008a08ed  07                   pop es
+// 008a08ee  8a00                 mov al, byte ptr [eax]
+// 008a08f0  9e                   sahf 
+// 008a08f1  07                   pop es
+// 008a08f2  8a00                 mov al, byte ptr [eax]
+// 008a08f4  9e                   sahf 
+// 008a08f5  07                   pop es
+// 008a08f6  8a00                 mov al, byte ptr [eax]
+// copied from an identical function in another client (function ?RefreshMetrics@CXTPReportPaintManager@@UAEXXZ)
+
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportPaintManager.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPReportPaintManager.cpp : implementation of the CXTPReportPaintManager class.
-//
-// This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPVC50Helpers.h"
-
-#include "XTPReportPaintManager.h"
-#include "XTPReportRow.h"
-#include "XTPReportGroupRow.h"
-#include "XTPReportColumn.h"
-#include "XTPReportHeader.h"
-#include "XTPReportControl.h"
-#include "XTPReportInplaceControls.h"
-#include "XTPReportColumns.h"
-#include "XTPReportRecord.h"
-#include "XTPReportHyperlink.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
-#define XTP_HLINK_SPACE_X   ((TCHAR)1)
-
-AFX_INLINE int GetTextExtentX(CDC* pDC, const CString& strString)
-{
-	CString str(strString);
-	REPLACE_S(str, XTP_HLINK_SPACE_X, _T(' '));
-
-	int nExt1 = pDC->GetTextExtent(str).cx;
-	if (pDC->IsPrinting())
-	{
-		int nExt2 = pDC->GetOutputTextExtent(str).cx;
-		return max(nExt1, nExt2);
-	}
-	return nExt1;
-}
-
-AFX_INLINE int GetTextExtentX(CDC* pDC, LPTSTR pszString, int nCount)
-{
-	CString str(pszString, nCount);
-	REPLACE_S(str, XTP_HLINK_SPACE_X, _T(' '));
-
-	int nExt1 = pDC->GetTextExtent(str).cx;
-	if (pDC->IsPrinting())
-	{
-		int nExt2 = pDC->GetOutputTextExtent(str).cx;
-		return max(nExt1, nExt2);
-	}
-	return nExt1;
-}
-/////////////////////////////////////////////////////////////////////////////
-// class CXTPFormulaMulDivC
-
-CXTPFormulaMulDivC::CXTPFormulaMulDivC()
-{
-	m_nMultiplier = 1;
-	m_nDivisor = 1;
-	m_nConstant = 0;
-
-}
-
-CXTPFormulaMulDivC::~CXTPFormulaMulDivC()
-{
-}
-
-int CXTPFormulaMulDivC::Calculate(int nY) const
-{
-	ASSERT((int)m_nDivisor);
-
-	int nDiv = (int)m_nDivisor ? (int)m_nDivisor : (int)1;
-
-	int nResult = nY * m_nMultiplier / nDiv + m_nConstant;
-
-	return nResult;
-}
-
-void CXTPFormulaMulDivC::SetStandardValue(int nMul, int nDiv, int nC)
-{
-	m_nMultiplier = nMul;
-	m_nDivisor = nDiv;
-	m_nConstant = nC;
-}
-
-void CXTPFormulaMulDivC::GetStandardValue(int& rnMul, int& rnDiv, int& rnC)
-{
-	rnMul = m_nMultiplier;
-	rnDiv = m_nDivisor;
-	rnC = m_nConstant;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// CXTPReportPaintManager
-
-CXTPReportPaintManager::CXTPReportPaintManager()
-{
-	m_pHeaderHeightFormula = new CXTPFormulaMulDivC;
-	m_pHeaderHeightFormula->SetStandardValue(11, 10, 8);
-
-	m_clrPreviewText.SetStandardValue(RGB(0, 0, 255));
-	//m_clrColumnOffice2007CustomTheme.SetStandardValue(RGB(196, 221, 255));
-	m_clrColumnOffice2007CustomTheme = COLORREF_NULL;
-	m_nMaxPreviewLines = 3;
-	m_szGlyph = CSize(12, 12);
-
-	m_bThemedInplaceButtons = TRUE;
-
-	// defaults
-	m_nGroupGridLineHeight = 2;
-	m_nResizingWidth = 1;
-	m_bIsPreviewMode = FALSE;
-	m_bShadeGroupHeadings = FALSE;
-	m_bGroupRowTextBold = FALSE;
-	m_bShadeSortColumn = TRUE;
-	m_columnStyle = xtpReportColumnShaded;
-
-	m_treeStructureStyle = xtpReportTreeStructureSolid;
-	m_HeaderRowsDividerStyle = xtpReportFixedRowsDividerThin;
-	m_FooterRowsDividerStyle = xtpReportFixedRowsDividerThin;
-
-	m_verticalGridStyle = xtpReportGridNoLines;
-	m_horizontalGridStyle = xtpReportGridSolid;
-
-	m_bRevertAlignment = FALSE;
-	m_bUseEditTextAlignment = TRUE;
-	m_bUseColumnTextAlignment = FALSE;
-	m_bHotTracking = TRUE;
-	m_bInvertColumnOnClick = TRUE;
-
-	XTPResourceManager()->LoadString(&m_strNoItems, XTP_IDS_REPORT_NOITEMS);
-	XTPResourceManager()->LoadString(&m_strNoGroupBy, XTP_IDS_REPORT_NOGROUPBY);
-	XTPResourceManager()->LoadString(&m_strNoFieldsAvailable, XTP_IDS_REPORT_NOFIELDSAVAILABLE);
-	if (XTPResourceManager()->LoadString(&m_strSortBy, XTP_IDS_REPORT_SORTBY))
-	{
-		m_strSortBy += _T(" ");
-	}
-
-	m_bHideSelection = FALSE;
-
-	m_rcPreviewIndent.SetRect(10, 0, 10, 2);
-
-	m_nTreeIndent = 20;
-	m_bDrawSortTriangleAlways = TRUE;
-
-
-	// get system parameters
-	LOGFONT lfIcon;
-	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
-
-	VERIFY(m_fontPreview.CreateFontIndirect(&lfIcon));
-
-	SetCaptionFont(lfIcon);
-	SetTextFont(lfIcon);
-
-	VERIFY(m_ilGlyphs.Create(12, 12, ILC_COLOR24 | ILC_MASK, 0, 1));
-	CBitmap bmp;
-	VERIFY(XTPResourceManager()->LoadBitmap(&bmp, XTP_IDB_REPORT_GLYPHS));
-	m_ilGlyphs.Add(&bmp, RGB(255, 0, 255));
-
-	m_bFixedRowHeight = TRUE;
-	m_bDrawGridForEmptySpace = FALSE;
-
-	m_bFixedInplaceButtonHeight = FALSE;
-	m_nFreezeColsDividerStyle = xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerShade | xtpReportFreezeColsDividerHeader;
-	m_HeaderRowsDividerStyle = xtpReportFixedRowsDividerThin;
-	m_FooterRowsDividerStyle = xtpReportFixedRowsDividerThin;
-
-	m_nTreeStructureStyle = 0;
-
-	RefreshMetrics();
-
-}
-
-CXTPReportPaintManager::~CXTPReportPaintManager()
-{
-	CMDTARGET_RELEASE(m_pHeaderHeightFormula);
-}
-
-COLORREF CXTPReportPaintManager::GetControlBackColor(CXTPReportControl* /*pControl*/)
-{
-	return m_clrControlBack;
-}
-
-
-void CXTPReportPaintManager::RefreshMetrics()
-{
-	RefreshXtremeColors();
-
-	m_clrBtnFace.SetStandardValue(GetXtremeColor(COLOR_BTNFACE));
-	m_clrBtnText.SetStandardValue(GetXtremeColor(COLOR_BTNTEXT));
-	m_clrControlDark.SetStandardValue(GetXtremeColor(COLOR_3DSHADOW));
-	m_clrHighlight.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHT));
-	m_clrHighlightText.SetStandardValue(GetXtremeColor(COLOR_HIGHLIGHTTEXT));
-	m_clrWindowText.SetStandardValue(GetXtremeColor(COLOR_WINDOWTEXT));
-	m_clrControlLightLight.SetStandardValue(GetXtremeColor(COLOR_3DHIGHLIGHT));
-	m_clrControlBack.SetStandardValue(GetXtremeColor(COLOR_WINDOW));
-
-	m_clrIndentControl.SetStandardValue(m_clrBtnFace);
-	m_clrCaptionText.SetStandardValue(m_clrBtnText);
-	m_clrGridLine.SetStandardValue(m_clrControlDark);
-	m_clrHeaderControl.SetStandardValue(m_clrBtnFace);
-	m_clrGroupShadeBorder.SetStandardValue(m_clrControlDark);
-	m_clrGroupShadeBack.SetStandardValue(m_clrBtnFace);
-	m_clrGroupShadeText.SetStandardValue(m_clrBtnText);
-	m_clrGroupRowText.SetStandardValue(m_clrControlDark);
-	m_clrGroupBoxBack.SetStandardValue(m_clrControlDark);
-
-	m_clrSelectedRow.SetStandardValue(m_clrBtnFace);
-	m_clrSelectedRowText.SetStandardValue(m_clrBtnText);
-
-	m_clrHyper.SetStandardValue(RGB(0, 0, 0xFF));
-	m_clrItemShade.SetStandardValue(RGB(245, 245, 245));
-	m_clrHotDivider.SetStandardValue(RGB(0xFF, 0, 0));
-
-	m_crlNoGroupByText.SetStandardValue(m_clrControlDark);
-
-	m_clrGradientColumnSeparator.SetStandardValue(m_clrControlDark);
-
-	m_themeWrapper.OpenThemeData(0, L"HEADER");
-	m_themeButton.OpenThemeData(0, L"BUTTON");
-	m_themeCombo.OpenThemeData(0, L"COMBOBOX");
-
-
-	if (!XTPColorManager()->IsLunaColorsDisabled())
-	{
-
-		XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
-
-		switch (systemTheme)
-		{
-			case xtpSystemThemeBlue:
-			case xtpSystemThemeRoyale:
-			case xtpSystemThemeAero:
-				m_clrGroupShadeBorder.SetStandardValue(RGB(123, 164, 224));
-				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
-				m_clrGroupShadeBack.SetStandardValue(RGB(190, 218, 251));
-				m_clrGroupRowText.SetStandardValue(RGB(55, 104, 185));
-				m_clrGridLine.SetStandardValue(RGB(234, 233, 225));
-				break;
-
-			case xtpSystemThemeOlive:
-				m_clrGroupShadeBorder.SetStandardValue(RGB(181, 196, 143));
-				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
-				m_clrGroupShadeBack.SetStandardValue(RGB(175, 186, 145));
-				m_clrGroupRowText.SetStandardValue(RGB(115, 137, 84));
-				m_clrGridLine.SetStandardValue(RGB(234, 233, 225));
-				break;
-
-			case xtpSystemThemeSilver:
-				m_clrGroupShadeBorder.SetStandardValue(RGB(165, 164, 189));
-				m_clrIndentControl.SetStandardValue(RGB(253, 238, 201));
-				m_clrGroupShadeBack.SetStandardValue(RGB(229, 229, 235));
-				m_clrGroupRowText.SetStandardValue(RGB(112, 111, 145));
-				m_clrGridLine.SetStandardValue(RGB(229, 229, 235));
-				break;
-		}
-	}
-
-	if (m_columnStyle == xtpReportColumnOffice2007)
-	{
-		//if (m_clrColumnOffice2007CustomTheme.IsCustomValue())
-		if (m_clrColumnOffice2007CustomTheme != COLORREF_NULL)
-		{
-			COLORREF clrHsl = XTPDrawHelpers()->RGBtoHSL(m_clrColumnOffice2007CustomTheme);
-			BYTE Hue = GetRValue(clrHsl);
-			BYTE Sat = GetGValue(clrHsl);
-
-			m_grcGradientColumnPushed.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 212)), XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 239)));
-			m_grcGradientColumn.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 239)), XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 212)));
-			m_clrGradientColumnShadow.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, (BYTE)(Sat * 0.525f), 145)));
-			m_clrGradientColumnSeparator.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 192)));
-			m_clrGroupBoxBack.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, Sat, 227)));
-			m_crlNoGroupByText.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, (BYTE)(Sat * 0.75f), 79)));
-			m_clrGroupShadeBack.SetStandardValue(XTPDrawHelpers()->HSLtoRGB(RGB(Hue, (BYTE)(Sat * 0.88f), 208)));
-		}
-		else
-		{
-			switch (XTPColorManager()->GetCurrentSystemTheme())
-			{
-				case xtpSystemThemeSilver:
-				{
-					m_grcGradientColumnPushed.SetStandardValue(RGB(221, 221, 221), RGB(253, 253, 253));
-					m_grcGradientColumn.SetStandardValue(RGB(253, 253,253), RGB(221, 221, 221));
-					m_clrGradientColumnShadow.SetStandardValue(RGB(147, 147, 147));
-					m_clrGradientColumnSeparator.SetStandardValue(RGB(198, 198, 198));
-					m_clrGroupBoxBack.SetStandardValue(RGB(239, 239, 239));
-					m_crlNoGroupByText.SetStandardValue(RGB(74, 74, 74));
-					m_clrGroupShadeBack.SetStandardValue(RGB(229, 229, 235));
-					break;
-				}
-				case xtpSystemThemeOlive:
-				{
-					m_grcGradientColumnPushed.SetStandardValue(RGB(165, 184, 114), RGB(253, 253, 253));
-					m_grcGradientColumn.SetStandardValue(RGB(253, 253,253), RGB(165, 184, 114));
-					m_clrGradientColumnShadow.SetStandardValue(RGB(96, 128, 88));
-					m_clrGradientColumnSeparator.SetStandardValue(RGB(120, 183, 104));
-					m_clrGroupBoxBack.SetStandardValue(RGB(216, 225, 187));
-					m_crlNoGroupByText.SetStandardValue(RGB(74, 74, 74));
-					m_clrGroupShadeBack.SetStandardValue(RGB(175, 186, 145));
-					break;
-				}
-				case xtpSystemThemeBlue:
-				case xtpSystemThemeRoyale:
-				case xtpSystemThemeAero:
-				//case xtpSystemThemeAuto:
-				//case xtpSystemThemeDefault:
-				default :
-				{
-					m_grcGradientColumnPushed.SetStandardValue(RGB(196, 221, 255), RGB(252, 253, 255));
-					m_grcGradientColumn.SetStandardValue(RGB(252, 253,255), RGB(196, 221, 255));
-					m_clrGradientColumnShadow.SetStandardValue(RGB(101, 147, 207));
-					m_clrGradientColumnSeparator.SetStandardValue(RGB(154, 198, 255));
-					m_clrGroupBoxBack.SetStandardValue(RGB(227, 239, 255));
-					m_crlNoGroupByText.SetStandardValue(RGB(50, 75, 44));
-					m_clrGroupShadeBack.SetStandardValue(RGB(190, 218, 251));
-					break;
-				}
-			}
-
-		}
-		m_grcGradientColumnHot.SetStandardValue(m_grcGradientColumn);
-		m_clrGroupRowText.SetStandardValue(m_crlNoGroupByText);
-		m_clrGroupShadeBorder.SetStandardValue(m_clrGradientColumnSeparator);
-	}
-	else if (m_columnStyle == xtpReportColumnOffice2003)
-	{
-		m_grcGradientColumn.SetStandardValue(XTPColorManager()->LightColor(GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_WINDOW), 0xcd), GetXtremeColor(COLOR_3DFACE));
-		m_grcGradientColumnHot.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT));
-		m_grcGradientColumnPushed.SetStandardValue(GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED));
-		m_clrGradientColumnShadow.SetStandardValue(GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
-		m_clrGradientColumnSeparator.SetStandardValue(GetXtremeColor(XPCOLOR_SEPARATOR));
-
-		switch (XTPColorManager()->GetCurrentSystemTheme())
-		{
-		case xtpSystemThemeBlue:
-		case xtpSystemThemeRoyale:
-		case xtpSystemThemeAero:
-			m_grcGradientColumn.SetStandardValue(RGB(221, 236, 254), RGB(129, 169, 226));
-			m_clrGradientColumnShadow.SetStandardValue(RGB(59, 97, 156));
-			m_clrGradientColumnSeparator.SetStandardValue(RGB(106, 140, 203));
-			m_grcGradientColumnPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
-			m_grcGradientColumnHot.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
-			break;
-
-		case xtpSystemThemeOlive:
-			m_grcGradientColumn.SetStandardValue(RGB(244, 247, 222), RGB(183, 198, 145));
-			m_clrGradientColumnShadow.SetStandardValue(RGB(96, 128, 88));
-			m_clrGradientColumnSeparator.SetStandardValue(RGB(96, 128, 88));
-			m_grcGradientColumnPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
-			m_grcGradientColumnHot.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
-			break;
-
-		case xtpSystemThemeSilver:
-			m_grcGradientColumn.SetStandardValue(RGB(243, 244, 250), RGB(153, 151, 181));
-			m_clrGradientColumnShadow.SetStandardValue(RGB(124, 124, 148));
-			m_clrGradientColumnSeparator.SetStandardValue(RGB(110, 109, 143));
-			m_grcGradientColumnPushed.SetStandardValue(RGB(254, 142, 75), RGB(255, 207, 139));
-			m_grcGradientColumnHot.SetStandardValue(RGB(255, 242, 200), RGB(255, 212, 151));
-			break;
-		}
-	}
-
-	m_brushVeriticalGrid.DeleteObject();
-	m_brushHorizontalGrid.DeleteObject();
-	m_brushTreeStructure.DeleteObject();
-
-	m_clrFreezeColsDivider.SetStandardValue(RGB(0, 0, 222));
-	m_clrHeaderRowsDivider.SetStandardValue(COLOR_BTNFACE);
-	m_clrFooterRowsDivider.SetStandardValue(COLOR_BTNFACE);
-
-	LOGFONT lf;
-	m_fontCaption.GetLogFont(&lf);
-	SetCaptionFont(lf);
-}
-
-
-void CXTPReportPaintManager::FillRow(CDC* /*pDC*/, CXTPReportRow* /*pRow*/, CRect /*rcRow*/)
-{
-}
-
-void CXTPReportPaintManager::DrawGridPat(CDC* pDC, CBrush* pBrush, CRect rc, CONST VOID*pPattern, COLORREF clr)
-{
-	if (pBrush->GetSafeHandle() == 0)
-	{
-		CBitmap bmp;
-		bmp.CreateBitmap(8, 8, 1, 1, pPattern);
-		pBrush->CreatePatternBrush(&bmp);
-	}
-	CBrush* pOldBrush = (CBrush*)pDC->SelectObject(pBrush);
-
-	pDC->SetTextColor(m_clrControlBack);
-	pDC->SetBkColor(clr);
-	PatBlt(pDC->GetSafeHdc(), rc.left, rc.top, rc.Width(), rc.Height(), PATCOPY);
-
-	pDC->SelectObject(pOldBrush);
-}
-
-void CXTPReportPaintManager::SetGridStyle(BOOL bVertical, XTPReportGridStyle gridStyle)
-{
-	if (bVertical)
-	{
-		m_verticalGridStyle = gridStyle;
-		m_brushVeriticalGrid.DeleteObject();
-	}
-	else
-	{
-		m_horizontalGridStyle = gridStyle;
-		m_brushHorizontalGrid.DeleteObject();
-	}
-}
-
-void CXTPReportPaintManager::DrawGrid(CDC* pDC, BOOL bVertical, CRect rc)
-{
-	if (!bVertical)
-	{
-		switch (m_horizontalGridStyle)
-		{
-			case xtpReportGridSolid:
-				DrawHorizontalLine(pDC, rc.left, rc.bottom, rc.Width(), m_clrGridLine);
-				break;
-			case xtpReportGridSmallDots:
-				{
-					const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
-					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
-					break;
-				}
-			case xtpReportGridLargeDots:
-				{
-					const unsigned short _cb[] = {0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33, 0xcc, 0x33};
-					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
-					break;
-				}
-			case xtpReportGridDashes:
-				{
-					const unsigned short _cb[] = {0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0, 0xe0};
-					DrawGridPat(pDC, &m_brushHorizontalGrid, CRect(rc.left, rc.bottom, rc.right, rc.bottom + 1), _cb, m_clrGridLine);
-					break;
-
-				}
-
-		}
-	}
-	else
-	{
-		int nPos = rc.right - 1;
-		switch (m_verticalGridStyle)
-		{
-			case xtpReportGridSolid:
-				DrawVerticalLine(pDC, nPos, rc.top, rc.Height(), m_clrGridLine);
-				break;
-			case xtpReportGridSmallDots:
-				{
-					const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
-					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
-					break;
-				}
-			case xtpReportGridLargeDots:
-				{
-					const unsigned short _cb[] = {0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0x33, 0x33};
-					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
-					break;
-				}
-			case xtpReportGridDashes:
-				{
-					const unsigned short _cb[] = {0xf0, 0xf0, 0xf0, 0xf0, 0xf, 0xf, 0xf, 0xf};
-					DrawGridPat(pDC, &m_brushVeriticalGrid, CRect(nPos, rc.top, nPos + 1, rc.bottom), _cb, m_clrGridLine);
-					break;
-
-				}
-
-		}
-
-	}
-}
-
-void CXTPReportPaintManager::DrawFreezeColsDivider(CDC* pDC, const CRect& rc, CXTPReportControl* pControl, CXTPReportRow* pRow)
-{
-	if (pControl->GetReportHeader()->IsAutoColumnSizing() ||
-		(m_nFreezeColsDividerStyle == 0))
-		return;
-
-	CRect rcDvX = rc;
-
-	if ((m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerShade) &&
-		pControl->GetScrollPos(SB_HORZ) && !pControl->IsFullColumnScrolling())
-	{
-		rcDvX.left = rcDvX.right-1;
-		rcDvX.right = rcDvX.left + 4;
-		XTPDrawHelpers()->GradientFill(pDC, rcDvX, m_clrFreezeColsDivider,
-									   RGB(255, 255, 255), TRUE);
-	}
-	else if (m_nFreezeColsDividerStyle & (xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerBold))
-	{
-		int nWidth = (m_nFreezeColsDividerStyle & xtpReportFreezeColsDividerBold) ? 2 : 1;
-		rcDvX.left = rcDvX.right-nWidth;
-		pDC->FillSolidRect(&rcDvX, m_clrFreezeColsDivider);
-	}
-
-	int nMask = (xtpReportFreezeColsDividerThin | xtpReportFreezeColsDividerBold | xtpReportFreezeColsDividerShade);
-	if (pRow && pRow->IsSelected() && (m_nFreezeColsDividerStyle & nMask))
-	{
-		pDC->InvertRect(&rcDvX);
-	}
-}
-
-void CXTPReportPaintManager::FillGroupRowMetrics(CXTPReportGroupRow* pRow,
-						XTP_REPORTRECORDITEM_METRICS* pMetrics, BOOL bPrinting)
-{
-	ASSERT(pRow && pMetrics);
-	if (!pRow || !pRow->GetControl() || !pMetrics)
-	{
-		return;
-	}
-
-	BOOL bControlFocused = pRow->GetControl()->HasFocus();
-
-	pMetrics->clrForeground = m_clrGroupRowText;
-	pMetrics->clrBackground = XTP_REPORT_COLOR_DEFAULT;
-
-	if (pRow->IsSelected() && bControlFocused && !bPrinting)
-	{
-		pMetrics->clrForeground = m_clrHighlightText;
-		pMetrics->clrBackground = m_clrHighlight;
-	}
-	else if (m_bShadeGroupHeadings)
-	{
-		pMetrics->clrForeground = m_clrGroupShadeText;
-		pMetrics->clrBackground = m_clrGroupShadeBack;
-	}
-
-	//--------------------------------
-	pMetrics->pFont = m_bGroupRowTextBold ? &m_fontBoldText : &m_fontText;
-}
-
-void CXTPReportPaintManager::DrawGroupRow(CDC* pDC, CXTPReportGroupRow* pRow, CRect rcRow,
-	XTP_REPORTRECORDITEM_METRICS* pMetrics)
-{
-	BOOL bControlFocused = pRow->GetControl()->HasFocus();
-
-	if (pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT)
-	{
-		pDC->FillSolidRect(rcRow, pMetrics->clrBackground);
-	}
-	pDC->SetTextColor(pMetrics->clrForeground);
-
-	//--------------------------------
-	ASSERT(pMetrics->pFont);
-	CXTPFontDC font(pDC, pMetrics->pFont);
-
-	int nRowLevel = pRow->GetTreeDepth();
-	int nIndent = pRow->GetControl()->GetIndent(nRowLevel + 1);
-
-	pDC->FillSolidRect(rcRow.left, rcRow.bottom - m_nGroupGridLineHeight, rcRow.Width(), m_nGroupGridLineHeight, m_clrGroupShadeBorder);
-
-	if (pRow->IsFocused() && bControlFocused && !pDC->IsPrinting() && pRow->GetControl()->IsRowFocusVisible())
-	{
-		DrawFocusedRow(pDC, CRect(rcRow.left + nIndent, rcRow.top, rcRow.right, rcRow.bottom - 1));
-	}
-
-	if (nIndent > 0)
-	{
-		FillIndent(pDC, CRect(rcRow.left, rcRow.top, rcRow.left + nIndent, rcRow.bottom));
-	}
-	rcRow.left += nIndent;
-
-	//-----------------------------------------------------------------------
-	int nBitmapOffset = 0;
-	int nTextOffset = 0;
-	CSize szIcon(0, 0);
-
-	int nGroupRowIconAlignment = pMetrics->nGroupRowIconAlignment;
-
-	// check and set defaults if need
-	if ((nGroupRowIconAlignment & xtpGroupRowIconHmask) == 0)
-	{
-		nGroupRowIconAlignment |= xtpGroupRowIconLeft;
-	}
-	if ((nGroupRowIconAlignment & xtpGroupRowIconVmask) == 0)
-	{
-		nGroupRowIconAlignment |= xtpGroupRowIconVCenter;
-	}
-
-	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON)
-	{
-		CXTPImageManagerIcon* pIcon = pRow->GetControl()->GetImageManager()->
-										GetImage(pMetrics->nGroupRowIcon, 0);
-		if (pIcon)
-		{
-			szIcon = CSize(pIcon->GetWidth(), pIcon->GetHeight());
-		}
-
-		if (nGroupRowIconAlignment & xtpGroupRowIconLeft)
-		{
-			nBitmapOffset = szIcon.cx + 5;
-		}
-		if (nGroupRowIconAlignment & xtpGroupRowIconBeforeText)
-		{
-			nTextOffset = szIcon.cx + 5 + 5;
-		}
-	}
-
-	//-----------------------------------------------------------------------
-	CRect rcBitmap(rcRow);
-	rcBitmap.top = rcBitmap.bottom - m_nRowHeight - 12;
-	rcBitmap.top = rcBitmap.CenterPoint().y - m_szGlyph.cy / 2;
-	rcBitmap.left += nBitmapOffset;
-
-	int nBitmapWidth = DrawCollapsedBitmap(pDC, pRow, rcBitmap).cx;
-
-	if (!pDC->IsPrinting())
-		pRow->SetCollapseRect(rcBitmap);
-
-	//-----------------------------------------------------------------------
-	CRect rcText(rcBitmap.left + nBitmapWidth + 5, rcRow.top, rcRow.right, rcRow.bottom);
-	rcText.top = rcText.bottom - m_nRowHeight - 6;
-	rcText.left += nTextOffset;
-
-	int nRightMask = (xtpGroupRowIconAfterText | xtpGroupRowIconRight);
-	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON &&
-		(nGroupRowIconAlignment & nRightMask))
-	{
-		rcText.right -= szIcon.cx;
-	}
-
-	UINT nFlags = DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
-	pDC->DrawText(pMetrics->strText, rcText, nFlags);
-	int nTextWidth = pDC->GetTextExtent(pMetrics->strText).cx;
-
-	//-----------------------------------------------------------------------
-	if (pMetrics->nGroupRowIcon != XTP_REPORT_NOICON)
-	{
-		CRect rcIcon(rcRow);
-
-		if (nGroupRowIconAlignment & xtpGroupRowIconBeforeText)
-		{
-			rcIcon.left = rcBitmap.left + nBitmapWidth + 5;
-		}
-		else if (nGroupRowIconAlignment & xtpGroupRowIconAfterText)
-		{
-			rcIcon.left = rcText.left + nTextWidth + 5;
-			rcIcon.left = min(rcIcon.left, rcRow.right - szIcon.cx - 1);
-		}
-		else if (nGroupRowIconAlignment & xtpGroupRowIconRight)
-		{
-			rcIcon.left = rcRow.right - szIcon.cx - 1;
-		}
-		else
-		{
-			// xtpGroupRowIconLeft
-		}
-
-		// ***
-		if (nGroupRowIconAlignment & xtpGroupRowIconVTop)
-		{
-			rcIcon.bottom = rcIcon.top + szIcon.cy + 1;
-		}
-		else if (nGroupRowIconAlignment & xtpGroupRowIconVCenterToText)
-		{
-			rcIcon.top = rcText.CenterPoint().y - szIcon.cy / 2;
-			rcIcon.bottom = rcIcon.top + szIcon.cy + 1;
-		}
-		else if (nGroupRowIconAlignment & xtpGroupRowIconVBottom)
-		{
-			rcIcon.top = rcIcon.bottom - szIcon.cy - 1;
-		}
-		else
-		{
-			// xtpGroupRowIconVCenter
-		}
-
-		//-------------------------------------------------------------------
-		COLORREF clrBk = pMetrics->clrBackground != XTP_REPORT_COLOR_DEFAULT ?
-							pMetrics->clrBackground : RGB(255, 255, 255);
-
-		COLORREF clrBkPrev = pDC->SetBkColor(clrBk);
-
-		DrawBitmap(pDC, pRow->GetControl(), rcIcon, pMetrics->nGroupRowIcon);
-
-		pDC->SetBkColor(clrBkPrev);
-	}
-}
-
-CSize CXTPReportPaintManager::DrawCollapsedBitmap(CDC* pDC, const CXTPReportRow* pRow, CRect& rcBitmap)
-{
-	rcBitmap.left += 2;
-
-	CSize sizeGlyph = DrawGlyph(pDC, rcBitmap, pRow->IsExpanded() ? 0 : 1);
-
-	if (sizeGlyph.cx != 0 && pDC)
-	{
-		rcBitmap.right = rcBitmap.left + sizeGlyph.cx;
-	}
-	return CSize(2 + sizeGlyph.cx, 2 + sizeGlyph.cy);
-}
-
-void CXTPReportPaintManager::FillIndent(CDC* pDC, CRect rcRow)
-{
-	pDC->FillSolidRect(&rcRow, m_clrIndentControl);
-}
-
-void CXTPReportPaintManager::FillItemShade(CDC* pDC, CRect rcItem)
-{
-	// fill item background shade (for example when sorted by this column)
-	if (!m_bShadeSortColumn)
-		return;
-
-	if (pDC)
-	{
-		pDC->FillSolidRect(rcItem, m_clrItemShade);
-	}
-}
-
-void CXTPReportPaintManager::FillHeaderControl(CDC* pDC, CRect rcHeader)
-{
-	pDC->FillSolidRect(rcHeader, m_clrHeaderControl);
-}
-
-void CXTPReportPaintManager::DrawNoGroupByText(CDC* pDC, CRect rcItem)
-{
-	int nWidth = max(55, pDC->GetTextExtent(m_strNoGroupBy).cx + 8);
-	rcItem.right = rcItem.left + nWidth;
-
-	pDC->SetTextColor(m_crlNoGroupByText);
-
-	if (m_columnStyle != xtpReportColumnOffice2007)
-		FillHeaderControl(pDC, rcItem);
-
-	pDC->DrawText(m_strNoGroupBy, rcItem, DT_END_ELLIPSIS | DT_CENTER | DT_NOPREFIX);
-
-}
-
-void CXTPReportPaintManager::FillFooter(CDC* pDC, CRect rcFooter)
-{
-	if (m_columnStyle == xtpReportColumnOffice2007)
-	{
-		XTPDrawHelpers()->GradientFill(pDC, rcFooter,
-			m_grcGradientColumn.clrDark, m_grcGradientColumn.clrLight, FALSE);
-
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top, rcFooter.Width(), m_clrGroupBoxBack);
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 1, rcFooter.Width(), m_clrGradientColumnShadow);
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 2, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.25));
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 3, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.1));
-
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.bottom - 1, rcFooter.Width(), m_clrGradientColumnShadow);
-	}
-	else if (m_columnStyle == xtpReportColumnOffice2003)
-	{
-		XTPDrawHelpers()->GradientFill(pDC, rcFooter,
-			m_grcGradientColumn.clrDark, m_grcGradientColumn.clrLight, FALSE);
-
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top, rcFooter.Width(), m_clrControlBack);
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 1, rcFooter.Width(), m_clrGradientColumnShadow);
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 2, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.25));
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 3, rcFooter.Width(), MixColor(m_grcGradientColumn.clrDark, m_clrGradientColumnShadow, 0.1));
-
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.bottom - 1, rcFooter.Width(), m_clrGradientColumnShadow);
-	}
-	else
-	{
-		pDC->FillSolidRect(rcFooter, m_clrHeaderControl);
-
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top, rcFooter.Width(), m_clrControlBack);
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 1, rcFooter.Width(), m_clrControlDark);
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 2, rcFooter.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.top + 3, rcFooter.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.25));
-
-		DrawHorizontalLine(pDC, rcFooter.left, rcFooter.bottom - 1, rcFooter.Width(), m_clrControlDark);
-	}
-}
-
-void CXTPReportPaintManager::DrawHorizontalLine(CDC* pDC, int x, int y, int cx, COLORREF clr)
-{
-	pDC->FillSolidRect(x, y, cx, 1, clr);
-}
-
-void CXTPReportPaintManager::DrawVerticalLine(CDC* pDC, int x, int y, int cy, COLORREF clr)
-{
-	pDC->FillSolidRect(x, y, 1, cy, clr);
-}
-
-void CXTPReportPaintManager::DrawTriangle(CDC* pDC, CRect rcTriangle, BOOL bToDown)
-{
-	CRect rcTRect;
-
-	if (rcTriangle.Width() > 15)
-	{
-		CPoint pt(rcTriangle.left + 10, rcTriangle.CenterPoint().y);
-
-		if (m_columnStyle == xtpReportColumnOffice2007 || m_columnStyle == xtpReportColumnExplorer)
-		{
-			if (bToDown)
-			{
-				CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 4, pt.y - 2),
-					CPoint(pt.x, pt.y + 2), CPoint(pt.x + 4, pt.y  - 2), m_clrGradientColumnSeparator);
-			}
-			else
-			{
-				CXTPDrawHelpers::Triangle(pDC, CPoint(pt.x - 4, pt.y + 2),
-					CPoint(pt.x, pt.y - 2), CPoint(pt.x + 4, pt.y  + 2), m_clrGradientColumnSeparator);
-			}
-			return;
-		}
-
-		// Set up pens to use for drawing the triangle
-		CPen penLight(PS_SOLID, 1, m_clrControlLightLight);
-		CPen penShadow(PS_SOLID, 1, m_clrControlDark);
-
-		if (bToDown)
-		{
-			Line(pDC, pt.x, pt.y - 3 + 6, 3, -6, &penLight);
-			Line(pDC, pt.x, pt.y - 2 + 6, 3, -6, &penLight);
-			Line(pDC, pt.x - 4, pt.y - 2, 3, +6, &penShadow);
-			Line(pDC, pt.x - 1, pt.y - 2 + 6, -4, -7, &penShadow);
-			Line(pDC, pt.x - 4, pt.y - 2, 8, 0, &penShadow);
-		}
-		else
-		{
-			Line(pDC, pt.x, pt.y - 3, 3, 6, &penLight);
-			Line(pDC, pt.x, pt.y - 2, 3, 6, &penLight);
-			Line(pDC, pt.x - 3, pt.y + 3, 6, 0, &penLight);
-			Line(pDC, pt.x - 1, pt.y - 3, -3, 6, &penShadow);
-			Line(pDC, pt.x - 2, pt.y - 2, -3, 6, &penShadow);
-		}
-	}
-}
-
-void CXTPReportPaintManager::DrawItemBitmap(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CRect& rcItem, int nImage)
-{
-	ASSERT(pDrawArgs->pControl);
-	if (!pDrawArgs->pControl)
-		return;
-
-	POINT ptIcon;
-
-	CXTPImageManagerIcon* pIcon = pDrawArgs->pControl->GetImageManager()->GetImage(nImage, 0);
-
-	if (!pIcon)
-		return;
-
-	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
-	CSize szColumn(rcItem.Size());
-
-	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
-
-	if (szImage.cx < szColumn.cx && szImage.cy < szColumn.cy && pDrawArgs->pDC)
-	{
-		// calculate image position
-		if (nIconAlign & xtpColumnIconRight)
-		{
-			ptIcon.x = rcItem.right - szImage.cx - 1;
-			rcItem.right -= (1 + szImage.cx); // shift text box to the left
-		}
-		else if (nIconAlign & xtpColumnIconCenter)
-		{
-			ptIcon.x = rcItem.left + szColumn.cx / 2 - szImage.cx / 2 - 1;
-		}
-		else //xtpColumnIconLeft : by default
-		{
-			ptIcon.x = rcItem.left + 1;
-			rcItem.left += 1 + szImage.cx; // shift text box to the right
-		}
-
-		// vertically align
-		if (nIconAlign & xtpColumnIconTop)
-		{
-			ptIcon.y = rcItem.top;
-		}
-		else if (nIconAlign & xtpColumnIconBottom)
-		{
-
-			ptIcon.y = rcItem.bottom - szImage.cy - 1;
-		}
-		else // xtpColumnIconVCenter - by default
-		{
-			ptIcon.y = rcItem.top + (szColumn.cy - szImage.cy) /2;
-		}
-
-		// draw image
-		if (pDrawArgs->pDC->IsPrinting())
-		{
-			CBitmap bmp;
-			bmp.CreateCompatibleBitmap(pDrawArgs->pDC, szImage.cx, szImage.cy);
-			CXTPCompatibleDC dcMem(NULL, &bmp);
-			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDrawArgs->pDC->GetBkColor());
-
-			pIcon->Draw(&dcMem, CPoint(0, 0), pIcon->GetIcon());
-			pDrawArgs->pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
-		}
-		else
-		{
-			pIcon->Draw(pDrawArgs->pDC, ptIcon, pIcon->GetIcon());
-		}
-	}
-}
-
-int CXTPReportPaintManager::DrawColumnIcon(CDC* pDC, CXTPReportColumn* pColumn,
-										   CRect rcColumn, CRect rcIcon, int iIcon)
-{
-	if (!pColumn || !pColumn->GetControl())
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-
-	POINT ptIcon;
-
-	CXTPImageManagerIcon* pIcon = pColumn->GetControl()->GetImageManager()->GetImage(iIcon, 0);
-
-	if (!pIcon)
-		return 0;
-
-	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
-	CSize szColumn(rcIcon.Size());
-
-	if (szImage.cx < szColumn.cx && szImage.cy < szColumn.cy && pDC)
-	{
-		ptIcon.x = rcIcon.left + 1;
-		ptIcon.y = rcIcon.top + (szColumn.cy - szImage.cy) /2;
-
-		if (pDC->IsPrinting())
-		{
-			CPoint ptIconOffset(ptIcon.x - rcColumn.left, ptIcon.y - rcColumn.top);
-			CRect rcColumn2(0, 0, rcColumn.Width(), rcColumn.Height());
-
-			CBitmap bmp;
-			bmp.CreateCompatibleBitmap(pDC, rcColumn2.Width(), rcColumn2.Height());
-
-			CXTPCompatibleDC dcMem(NULL, &bmp);
-
-			// Fill background
-			dcMem.FillSolidRect(&rcColumn2, pDC->GetBkColor());
-			BOOL bColumnPressed = FALSE;
-			DrawColumnBackground(&dcMem, pColumn, rcColumn2, bColumnPressed);
-
-
-			pIcon->Draw(&dcMem, ptIconOffset, pIcon->GetIcon());
-
-			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem,
-						ptIconOffset.x, ptIconOffset.y, SRCCOPY);
-		}
-		else
-		{
-			pIcon->Draw(pDC, ptIcon, pIcon->GetIcon());
-		}
-	}
-
-	return 1 + szImage.cx;
-}
-
-int CXTPReportPaintManager::DrawBitmap(CDC* pDC, CXTPReportControl* pControl, CRect rcColumn, int iIcon)
-{
-	ASSERT(pControl);
-	if (!pControl)
-		return 0;
-
-	POINT ptIcon;
-
-	CXTPImageManagerIcon* pIcon = pControl->GetImageManager()->GetImage(iIcon, 0);
-
-	if (!pIcon)
-		return 0;
-
-	CSize szImage(pIcon->GetWidth(), pIcon->GetHeight());
-	CSize szColumn(rcColumn.Size());
-
-	if (szImage.cx < szColumn.cx && szImage.cy < szColumn.cy && pDC)
-	{
-		ptIcon.x = rcColumn.left + 1;
-		ptIcon.y = rcColumn.top + (szColumn.cy - szImage.cy) /2;
-
-		if (pDC->IsPrinting())
-		{
-			CBitmap bmp;
-			bmp.CreateCompatibleBitmap(pDC, szImage.cx, szImage.cy);
-			CXTPCompatibleDC dcMem(NULL, &bmp);
-			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDC->GetBkColor());
-
-			pIcon->Draw(&dcMem, CPoint(0, 0), pIcon->GetIcon());
-			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
-
-		}
-		else
-		{
-			pIcon->Draw(pDC, ptIcon, pIcon->GetIcon());
-		}
-	}
-
-	return 1 + szImage.cx;
-}
-
-CSize CXTPReportPaintManager::DrawGlyph(CDC* pDC, CRect rcColumn, int iIcon)
-{
-	CImageList* pImageList = &m_ilGlyphs;
-
-	IMAGEINFO imgInf;
-
-	if (!pImageList->GetImageInfo(iIcon, &imgInf))
-		return CSize(0, 0);
-
-	CSize szImage(imgInf.rcImage.right - imgInf.rcImage.left, imgInf.rcImage.bottom - imgInf.rcImage.top);
-	CSize szColumn(rcColumn.Size());
-
-	if (szImage.cy < szColumn.cy && pDC)
-	{
-		POINT ptIcon;
-
-		ptIcon.x = rcColumn.left + 1;
-		ptIcon.y = rcColumn.top + (szColumn.cy - szImage.cy) /2;
-
-		if (pDC->IsPrinting())
-		{
-			CBitmap bmp;
-			bmp.CreateCompatibleBitmap(pDC, szImage.cx, szImage.cy);
-			CXTPCompatibleDC dcMem(NULL, &bmp);
-			dcMem.FillSolidRect(0, 0, szImage.cx, szImage.cy, pDC->GetBkColor());
-
-			pImageList->Draw(&dcMem, iIcon, CPoint(0, 0), ILD_TRANSPARENT);
-			pDC->BitBlt(ptIcon.x, ptIcon.y, szImage.cx, szImage.cy, &dcMem, 0, 0, SRCCOPY);
-
-		}
-		else if (CXTPDrawHelpers::IsContextRTL(pDC))  // Revert Icon
-		{
-			HICON hIcon = pImageList->ExtractIcon(iIcon);
-			DrawIconEx(pDC->GetSafeHdc(), ptIcon.x + szImage.cx, ptIcon.y, hIcon, -szImage.cx, szImage.cy, 0, 0, DI_NORMAL);
-			DestroyIcon(hIcon);
-		}
-		else
-		{
-			pImageList->Draw(pDC, iIcon, ptIcon, ILD_TRANSPARENT);
-		}
-	}
-
-	return CSize(1 + szImage.cx, 1 + szImage.cy);
-}
-
-int CXTPReportPaintManager::GetRowHeight(CDC* pDC, CXTPReportRow* pRow, int nTotalWidth)
-{
-	if (m_bFixedRowHeight || pRow->IsGroupRow() || !pRow->IsItemsVisible())
-		return GetRowHeight(pDC, pRow);
-
-	CXTPReportColumns* pColumns = pRow->GetControl()->GetColumns();
-	int nColumnCount = pColumns->GetCount();
-
-	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
-	drawArgs.pControl = pRow->GetControl();
-	drawArgs.pDC = pDC;
-	drawArgs.pRow = pRow;
-
-	XTP_REPORTRECORDITEM_METRICS* pItemMetrics = new XTP_REPORTRECORDITEM_METRICS;
-	int nHeight = 0;
-
-	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
-		if (pColumn && pColumn->IsVisible())
-		{
-			CXTPReportRecordItem* pItem = pRow->GetRecord()->GetItem(pColumn);
-			if (!pItem)
-				continue;
-
-			drawArgs.pItem = pItem;
-			drawArgs.nTextAlign = pColumn->GetAlignment();
-
-			pItemMetrics->Reset();
-
-			pRow->GetItemMetrics(&drawArgs, pItemMetrics);
-
-			CXTPFontDC fnt(pDC, pItemMetrics->pFont);
-
-			int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
-
-			CRect rcItem(0, 0, nWidth - 4, 0);
-			pRow->ShiftTreeIndent(rcItem, pColumn);
-
-			pItem->GetCaptionRect(&drawArgs, rcItem);
-
-			BOOL bWordBreak = !!(pItemMetrics->nColumnAlignment & DT_WORDBREAK);
-			CString strText = pItem->GetCaption(pColumn);
-			ReplaceInHyperLinks(pItem, strText, XTP_HLINK_SPACE_X);
-			int nCalculatedHeight = CalculateRowHeight(pDC, strText, rcItem.Width(), bWordBreak);
-
-			nHeight = max(nHeight, nCalculatedHeight);
-
-			if (pItem->GetIconIndex() != -1)
-			{
-				CXTPImageManagerIcon* pIcon = pRow->GetControl()->
-					GetImageManager()->GetImage(pItem->GetIconIndex(), 0);
-
-				if (pIcon)
-				{
-					nHeight = max(nHeight, pIcon->GetHeight());
-				}
-			}
-		}
-	}
-
-	CMDTARGET_RELEASE(pItemMetrics);
-
-	return max(nHeight + 5, m_nRowHeight) + (IsGridVisible(FALSE) ? 1 : 0);
-}
-
-int CXTPReportPaintManager::GetRowHeight(CDC* /*pDC*/, CXTPReportRow* pRow)
-{
-	if (!pRow->IsGroupRow())
-	{
-		return m_nRowHeight + (IsGridVisible(FALSE) ? 1 : 0);
-	}
-
-	if (m_bShadeGroupHeadings)
-		return m_nRowHeight + 6;
-
-	return m_nRowHeight + 16;
-}
-
-BOOL CXTPReportPaintManager::IsColumHotTrackingEnabled() const
-{
-	return m_bHotTracking && ((m_columnStyle == xtpReportColumnOffice2003) || ((m_columnStyle == xtpReportColumnExplorer) && m_themeWrapper.IsAppThemed()));
-}
-
-void CXTPReportPaintManager::DrawColumnBackground(CDC* pDC, CXTPReportColumn* pColumn, CRect rcColumn, BOOL& bColumnPressed)
-{
-	if (m_columnStyle == xtpReportColumnShaded)
-	{
-		int nShadowWidth = 4;
-
-		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlDark);
-
-		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 3, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.25));
-		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 2, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.4));
-		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 1, rcColumn.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
-
-		DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 2, rcColumn.Height() - 2 - nShadowWidth, m_clrControlLightLight);
-	}
-	else if (m_columnStyle == xtpReportColumnOffice2003 || m_columnStyle == xtpReportColumnOffice2007)
-	{
-
-		XTPDrawHelpers()->GradientFill(pDC, rcColumn,
-			bColumnPressed ? m_grcGradientColumnPushed: pColumn->IsHotTracking() ? m_grcGradientColumnHot : m_grcGradientColumn, FALSE);
-
-		DrawHorizontalLine(pDC, rcColumn.left, rcColumn.bottom - 1, rcColumn.Width(), m_clrGradientColumnShadow);
-
-		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 2, rcColumn.Height() - 2 - 4, m_clrGradientColumnSeparator);
-
-		if (m_columnStyle == xtpReportColumnOffice2003)
-			DrawVerticalLine(pDC, rcColumn.left, rcColumn.top + 3, rcColumn.Height() - 2 - 4, m_clrControlLightLight);
-
-		if (pColumn->GetControl()->IsGroupByVisible())
-			DrawHorizontalLine(pDC, rcColumn.left, rcColumn.top, rcColumn.Width(), m_clrGradientColumnShadow);
-
-		bColumnPressed = FALSE;
-	}
-	else if (m_columnStyle == xtpReportColumnExplorer)
-	{
-		if (m_themeWrapper.IsAppThemed())
-		{
-			int iState = bColumnPressed ? HIS_PRESSED: pColumn->IsHotTracking() ? HIS_HOT : HIS_NORMAL;
-
-			m_themeWrapper.DrawThemeBackground(pDC->GetSafeHdc(), HP_HEADERITEM, iState, &rcColumn, NULL);
-		}
-		else
-		{
-			if (bColumnPressed)
-			{
-				pDC->Draw3dRect(rcColumn, m_clrControlDark, m_clrControlDark);
-			}
-			else
-			{
-				pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrBtnText);
-				rcColumn.DeflateRect(1, 1);
-				pDC->Draw3dRect(rcColumn, m_clrHeaderControl, m_clrControlDark);
-			}
-		}
-		bColumnPressed = FALSE;
-
-	}
-	else
-	{
-		pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrControlDark);
-	}
-}
-
-void CXTPReportPaintManager::DrawColumnFooter(CDC* pDC, CXTPReportColumn* pColumn, CXTPReportHeader* /*pHeader*/, CRect rcColumn)
-{
-	if (pColumn->GetDrawFooterDivider())
-	{
-		DrawVerticalLine(pDC, rcColumn.right, rcColumn.top + 6, rcColumn.Height() - 9, m_clrControlLightLight);
-		DrawVerticalLine(pDC, rcColumn.right - 1, rcColumn.top + 5, rcColumn.Height() - 9,
-			m_columnStyle == xtpReportColumnOffice2003 || m_columnStyle == xtpReportColumnOffice2007 ? m_clrGradientColumnSeparator : m_clrControlDark);
-	}
-
-	pDC->SetBkMode(TRANSPARENT);
-	CXTPFontDC font(pDC, pColumn->GetFooterFont(), m_clrCaptionText);
-
-	CString strCaption = pColumn->GetFooterText();
-	CSize sizeText = pDC->GetTextExtent(strCaption);
-	CRect rcText(rcColumn);
-
-	rcText.DeflateRect(3, 2, 3, 2);
-
-	if (pColumn->GetFooterAlignment() != DT_LEFT)
-	{
-		int nLength = 6 + sizeText.cx;
-
-		if (rcText.Width() > nLength)
-		{
-			if (pColumn->GetFooterAlignment() & DT_RIGHT)
-				rcText.left = rcText.right - nLength;
-			if (pColumn->GetFooterAlignment() & DT_CENTER)
-				rcText.left = (rcText.left + rcText.right - nLength) / 2;
-		}
-	}
-
-	UINT uFlags = DT_END_ELLIPSIS | DT_NOPREFIX;
-
-	if (!m_bFixedRowHeight && (pColumn->GetFooterAlignment() & DT_WORDBREAK))
-	{
-		uFlags |= DT_WORDBREAK;
-
-		// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
-		CRect rcTextReal = rcText;
-		pDC->DrawText(strCaption, rcTextReal, uFlags | DT_CALCRECT);
-
-		int nHeightDiff = rcText.Height() - rcTextReal.Height();
-		if (nHeightDiff > 1)
-		{
-			rcText.top += nHeightDiff/2;
-		}
-	}
-	else
-	{
-		uFlags |= DT_SINGLELINE | DT_VCENTER;
-	}
-
-	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
-	{
-		pDC->DrawText(strCaption, rcText, uFlags);
-	}
-}
-
-
-void CXTPReportPaintManager::DrawColumn(CDC* pDC, CXTPReportColumn* pColumn, CXTPReportHeader* pHeader, CRect rcColumn, BOOL bDrawExternal)
-{
-	// save column parameter for future use in drawing
-
-	BOOL bDraggingFromHeader = bDrawExternal && pColumn->IsDragging() &&
-						rcColumn.left == 0 && rcColumn.top == 0 && pHeader->IsDragHeader();
-
-	BOOL bPlainColumn = bDrawExternal && !bDraggingFromHeader;
-	BOOL bColumnPressed = pColumn->IsDragging() && !bDrawExternal && pHeader->IsDragHeader();
-
-
-	CRect rcColumn0 = rcColumn;
-	// draw
-	int nIconID = pColumn->GetIconID();
-	CString strCaption = pColumn->GetCaption();
-	int nShadowWidth = !bPlainColumn && m_columnStyle == xtpReportColumnShaded ? 4 : 0;
-
-	if (bPlainColumn)
-	{
-		if (m_columnStyle == xtpReportColumnOffice2007)
-		{
-			XTPDrawHelpers()->GradientFill(pDC, rcColumn, m_grcGradientColumn, FALSE);
-			pDC->Draw3dRect(rcColumn, m_clrGradientColumnShadow, m_clrGradientColumnShadow);
-		}
-		else
-		{
-			pDC->Draw3dRect(rcColumn, m_clrControlLightLight, m_clrControlDark);
-			pDC->MoveTo(rcColumn.left, rcColumn.bottom);
-			pDC->LineTo(rcColumn.right, rcColumn.bottom);
-			pDC->LineTo(rcColumn.right, rcColumn.top-1);
-		}
-	}
-	else
-	{
-		DrawColumnBackground(pDC, pColumn, rcColumn, bColumnPressed);
-	}
-
-	pDC->SetBkColor(m_clrHeaderControl);
-
-
-	rcColumn.bottom = rcColumn.bottom - 1 - nShadowWidth;
-
-	CRect rcText(rcColumn);
-
-	if (!pColumn->IsAutoSize() && !bPlainColumn)
-	{
-		rcText.left += pColumn->GetIndent();
-	}
-
-	BOOL bHasSortTriangle = pColumn->HasSortTriangle() && !pDC->IsPrinting();
-
-	CXTPFontDC font(pDC, &m_fontCaption);
-	CSize sizeText = pDC->GetTextExtent(strCaption);
-
-	if (pColumn->GetHeaderAlignment() != DT_LEFT && !bPlainColumn)
-	{
-		int nLength = 6 + sizeText.cx;
-
-		if (nIconID != XTP_REPORT_NOICON)
-		{
-			nLength += DrawBitmap(NULL, pColumn->GetControl(), rcText, nIconID) + 2;
-		}
-		if (bHasSortTriangle)
-			nLength += 27;
-
-		if (rcText.Width() > nLength)
-		{
-			if (pColumn->GetHeaderAlignment() & DT_RIGHT)
-				rcText.left = rcText.right - nLength;
-			if (pColumn->GetHeaderAlignment() & DT_CENTER)
-				rcText.left = (rcText.left + rcText.right - nLength) / 2;
-
-		}
-
-	}
-
-	if (nIconID != XTP_REPORT_NOICON && !bPlainColumn)
-	{
-		CRect rcIcon(rcText);
-		rcIcon.bottom += nShadowWidth;
-		// shift column left by bitmap drawing place
-
-		//rcText.left += DrawBitmap(pDC, pColumn->GetControl(), rcIcon, nIconID);
-		rcText.left += DrawColumnIcon(pDC, pColumn, rcColumn0, rcIcon, nIconID);
-
-		// shift column left to the column right to disallow drawing text on Bitmap column headers
-		rcText.left += 2;
-	}
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	rcText.DeflateRect(3, 0, 3, 0);
-	CRect rcTriangle(rcText);
-
-	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
-	{
-		pDC->SetTextColor(m_clrCaptionText);
-
-		if (m_bDrawSortTriangleAlways && bHasSortTriangle)
-		{
-			sizeText.cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
-			rcText.right = min(rcText.right, rcText.left + sizeText.cx + 8);
-		}
-
-		UINT uFlags = DT_END_ELLIPSIS | DT_NOPREFIX;
-
-		if (pColumn->GetHeaderAlignment() & DT_WORDBREAK)
-		{
-			uFlags |= DT_WORDBREAK;
-
-			// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
-			CRect rcTextReal = rcText;
-			pDC->DrawText(strCaption, rcTextReal, uFlags | DT_CALCRECT);
-
-			int nHeightDiff = rcText.Height() - rcTextReal.Height();
-			if (nHeightDiff > 1)
-			{
-				rcText.top += nHeightDiff/2;
-			}
-		}
-		else
-		{
-			uFlags |= DT_SINGLELINE | DT_VCENTER;
-		}
-
-		pDC->DrawText(strCaption, rcText, uFlags);
-
-
-		rcTriangle.left += sizeText.cx;
-	}
-
-
-	if (bHasSortTriangle)
-	{
-		rcTriangle.left += (bPlainColumn ? 17 : 10);
-		DrawTriangle(pDC, rcTriangle, pColumn->IsSortedDecreasing());
-	}
-
-	if (bColumnPressed && m_bInvertColumnOnClick)
-	{
-		rcColumn.bottom += nShadowWidth;
-		pDC->InvertRect(&rcColumn);
-	}
-}
-
-int CXTPReportPaintManager::CalcColumnHeight(CDC* pDC, CXTPReportColumn* pColumn,
-	int nTotalWidth)
-{
-	int nIconID = pColumn->GetIconID();
-	CString strCaption = pColumn->GetCaption();
-
-	int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
-	CRect rcColumn = pColumn->GetRect();
-	rcColumn.right = rcColumn.left + nWidth;
-
-	CRect rcText(rcColumn);
-
-	if (!pColumn->IsAutoSize())
-	{
-		rcText.left += pColumn->GetIndent();
-	}
-
-	BOOL bHasSortTriangle = pColumn->HasSortTriangle() && !pDC->IsPrinting();
-
-	CXTPFontDC font(pDC, &m_fontCaption);
-	CSize sizeText = pDC->GetTextExtent(strCaption);
-
-	if (nIconID != XTP_REPORT_NOICON)
-	{
-		// shift column left by bitmap drawing place
-		rcText.left += DrawBitmap(NULL, pColumn->GetControl(), rcText, nIconID);
-		// shift column left to the column right to disallow drawing text on Bitmap column headers
-		rcText.left += 2;
-	}
-
-	rcText.DeflateRect(3, 0, 3, 0);
-
-	if (strCaption.GetLength() > 0 && rcText.right > rcText.left)
-	{
-		if (m_bDrawSortTriangleAlways && bHasSortTriangle)
-		{
-			sizeText.cx = max(-5, min(sizeText.cx, rcText.Width() - 27));
-			rcText.right = min(rcText.right, rcText.left + sizeText.cx + 8);
-		}
-
-		UINT uFlags = DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
-		uFlags |= (pColumn->GetHeaderAlignment() & DT_WORDBREAK) ? DT_WORDBREAK : DT_SINGLELINE;
-		uFlags |= DT_CALCRECT;
-
-		pDC->DrawText(strCaption, rcText, uFlags);
-
-		return m_pHeaderHeightFormula->Calculate(rcText.Height());
-	}
-
-	return 8;
-}
-
-void CXTPReportPaintManager::FillGroupByControl(CDC* pDC, CRect& rcGroupBy)
-{
-	pDC->FillSolidRect(rcGroupBy, m_clrGroupBoxBack);
-}
-
-void CXTPReportPaintManager::DrawConnector(CDC* pDC, CPoint ptFrom, CPoint ptTo)
-{
-	COLORREF crConnector = RGB(0, 0, 0);
-	DrawVerticalLine(pDC, ptFrom.x, ptFrom.y, ptTo.y - ptFrom.y, crConnector);
-	DrawHorizontalLine(pDC, ptFrom.x, ptTo.y, ptTo.x - ptFrom.x, crConnector);
-}
-
-void CXTPReportPaintManager::DrawFocusedRow(CDC* pDC, CRect rcRow)
-{
-	COLORREF clrTextColor = pDC->SetTextColor(m_clrControlBack);
-	COLORREF clrBkColor = pDC->SetBkColor(m_clrWindowText);
-	pDC->DrawFocusRect(rcRow);
-	pDC->SetTextColor(clrTextColor);
-	pDC->SetBkColor(clrBkColor);
-}
-
-
-int CXTPReportPaintManager::GetPreviewLinesCount(CDC* pDC, CRect& rcText, const CString& strText)
-{
-	if (rcText.Width() < 1)
-		return 0;
-
-	if (pDC->GetTextExtent(strText).cx / rcText.Width() > m_nMaxPreviewLines)
-		return m_nMaxPreviewLines;
-
-	CRect rcCalc(rcText.left, 0, rcText.right, 0);
-	pDC->DrawText(strText, rcCalc, DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
-
-	return min(rcCalc.Height() / pDC->GetTextExtent(_T(" "), 1).cy, m_nMaxPreviewLines);
-
-}
-
-
-void CXTPReportPaintManager::SetTextFont(LOGFONT& lf)
-{
-	m_fontText.DeleteObject();
-	m_fontBoldText.DeleteObject();
-
-	m_fontText.CreateFontIndirect(&lf);
-
-	lf.lfWeight = FW_BOLD;
-	m_fontBoldText.CreateFontIndirect(&lf);
-
-	CWindowDC dc (NULL);
-	CXTPFontDC font(&dc, &m_fontText);
-
-	int nFontHeight = dc.GetTextExtent(_T(" "), 1).cy;
-	m_nRowHeight = max(18, nFontHeight + 4);
-
-}
-
-void CXTPReportPaintManager::SetCaptionFont(LOGFONT& lf)
-{
-	m_fontCaption.DeleteObject();
-	VERIFY(m_fontCaption.CreateFontIndirect(&lf));
-
-	CWindowDC dc (NULL);
-	CXTPFontDC font(&dc, &m_fontCaption);
-
-	font.SetFont(&m_fontCaption);
-	int nFontHeight = dc.GetTextExtent(_T(" "), 1).cy;
-	m_nHeaderHeight = m_pHeaderHeightFormula->Calculate(nFontHeight);
-	m_nFooterHeight = m_nHeaderHeight;
-}
-
-int CXTPReportPaintManager::GetFooterHeight(CXTPReportControl* pControl, CDC* pDC, int nTotalWidth)
-{
-	ASSERT(pControl && pDC);
-
-	if (!pControl || !pDC)
-	{
-		return m_nFooterHeight;
-	}
-
-	CXTPReportColumns* pColumns = pControl->GetColumns();
-	int nColumnCount = pColumns->GetCount();
-	int nHeight = 22;
-
-	CXTPFontDC font(pDC);
-
-	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
-		if (pColumn && pColumn->IsVisible())
-		{
-			CString strCaption = pColumn->GetFooterText();
-
-			int nWidth = pDC->IsPrinting() ? pColumn->GetPrintWidth(nTotalWidth) : pColumn->GetWidth();
-			CRect rcText(0, 0, nWidth, 22);
-			rcText.DeflateRect(3, 0, 3, 0);
-
-			UINT uFlags = DT_CALCRECT | DT_END_ELLIPSIS | DT_VCENTER | DT_NOPREFIX;
-			if (!m_bFixedRowHeight && (pColumn->GetFooterAlignment() & DT_WORDBREAK))
-				uFlags |= DT_WORDBREAK;
-			else
-				uFlags |= DT_SINGLELINE;
-
-			font.SetFont(pColumn->GetFooterFont());
-			pDC->DrawText(strCaption, rcText, uFlags);
-
-			nHeight = max(nHeight, rcText.Height() + 8);
-		}
-	}
-	return  nHeight;
-}
-
-int CXTPReportPaintManager::GetHeaderHeight(CXTPReportControl* pControl,
-											CDC* pDC, int nTotalWidth)
-{
-	ASSERT(pControl && pDC);
-
-	if (m_bFixedRowHeight || !pControl || !pDC)
-	{
-		return GetHeaderHeight();
-	}
-
-	CXTPReportColumns* pColumns = pControl->GetColumns();
-	int nColumnCount = pColumns->GetCount();
-	int nHeight = m_nHeaderHeight;
-
-	for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
-		if (pColumn && pColumn->IsVisible())
-		{
-			if (pColumn->GetHeaderAlignment() & DT_WORDBREAK)
-			{
-				int nColHeight = CalcColumnHeight(pDC, pColumn, nTotalWidth);
-
-				nHeight = max(nHeight, nColHeight);
-			}
-
-			// calculate icon height.
-			int nIconID = pColumn->GetIconID();
-			if (nIconID != XTP_REPORT_NOICON)
-			{
-				CXTPImageManagerIcon* pIcon = pColumn->GetControl()->
-										GetImageManager()->GetImage(nIconID, 0);
-
-				if (pIcon)
-				{
-					nHeight = max(nHeight, pIcon->GetHeight() + 2);
-				}
-			}
-		}
-	}
-
-	return nHeight;
-}
-
-void CXTPReportPaintManager::SetPreviewIndent(int nLeft, int nTop, int nRight, int nBottom)
-{
-	m_rcPreviewIndent.SetRect(nLeft, nTop, nRight, nBottom);
-}
-
-void CXTPReportPaintManager::DrawInplaceButton(CDC* pDC, CXTPReportInplaceButton* pButton)
-{
-	CXTPClientRect rect((CWnd*)pButton);
-
-	if (m_bThemedInplaceButtons)
-	{
-		if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON && m_themeCombo.IsAppThemed())
-		{
-			m_themeCombo.DrawThemeBackground(*pDC, CP_DROPDOWNBUTTON,
-				pButton->IsPressed() ? CBXS_PRESSED:  CBXS_NORMAL, rect, 0);
-
-			return;
-		}
-
-		if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON  && m_themeButton.IsAppThemed())
-		{
-			pDC->FillSolidRect(rect, GetXtremeColor(COLOR_3DFACE));
-
-			m_themeButton.DrawThemeBackground(*pDC, BP_PUSHBUTTON, pButton->IsPressed() ? PBS_PRESSED :
-				CWnd::GetFocus() == pButton ? PBS_DEFAULTED : PBS_NORMAL, rect, 0);
-
-			pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
-			pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
-			pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
-
-			return;
-		}
-	}
-	DrawInplaceButtonFrame(pDC, pButton);
-
-	CXTPPenDC pen (*pDC, GetXtremeColor(COLOR_BTNTEXT));
-	CXTPBrushDC brush (*pDC, GetXtremeColor(COLOR_BTNTEXT));
-
-	if (pButton->GetID() == XTP_ID_REPORT_COMBOBUTTON)
-	{
-		CPoint pt = rect.CenterPoint();
-
-		CPoint pts[3];
-		pts[0] = CPoint(pt.x -3, pt.y -1);
-		pts[1] = CPoint(pt.x + 3, pt.y -1);
-		pts[2] = CPoint(pt.x, pt.y +2);
-		pDC->Polygon(pts, 3);
-	}
-
-	if (pButton->GetID() == XTP_ID_REPORT_EXPANDBUTTON)
-	{
-		pDC->Rectangle(rect.left + 3, rect.bottom -5, rect.left + 5, rect.bottom -3);
-		pDC->Rectangle(rect.left + 7, rect.bottom -5, rect.left + 9, rect.bottom -3);
-		pDC->Rectangle(rect.left + 11, rect.bottom -5, rect.left + 13, rect.bottom -3);
-	}
-
-}
-
-void CXTPReportPaintManager::DrawInplaceButtonFrame(CDC* pDC, CXTPReportInplaceButton* pButton)
-{
-	CXTPClientRect rect((CWnd*)pButton);
-
-	pDC->FillSolidRect(rect, GetXtremeColor(COLOR_3DFACE));
-
-	if (pButton->IsPressed())
-	{
-		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DDKSHADOW), GetXtremeColor(COLOR_WINDOW));
-	}
-	else
-	{
-		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DDKSHADOW));
-		rect.DeflateRect(1, 1);
-		pDC->Draw3dRect(rect, GetXtremeColor(COLOR_WINDOW), GetXtremeColor(COLOR_3DSHADOW));
-	}
-}
-
-void CXTPReportPaintManager::DrawTreeStructureLine(CDC* pDC, int x, int y, int cx, int cy, COLORREF clr)
-{
-	if (m_treeStructureStyle == xtpReportTreeStructureDots)
-	{
-		const unsigned short _cb[] = {0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55};
-		DrawGridPat(pDC, &m_brushTreeStructure, CRect(x, y, x + cx, y + cy), _cb, m_clrControlDark);
-	}
-	else
-	{
-		pDC->FillSolidRect(x, y, cx, cy, clr);
-	}
-}
-
-void CXTPReportPaintManager::DrawTreeStructure(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics, CRect rcItem, CSize sizeGlyph)
-{
-	if (m_treeStructureStyle == xtpReportTreeStructureNone)
-		return;
-
-	CDC* pDC = pDrawArgs->pDC;
-	CXTPReportRow* pRow = pDrawArgs->pRow;
-	COLORREF clrTreeStructure = pMetrics->clrForeground;
-
-	if (pRow->IsGroupRow() || (m_nTreeStructureStyle == 0 && (!pRow->GetParentRow() || pRow->GetParentRow()->IsGroupRow())))
-		return;
-
-	int nTreeIndent = pDrawArgs->pControl->GetPaintManager()->m_nTreeIndent;
-	int nHeight = rcItem.Height();
-
-	LONG lHorLineOffset = nHeight / 2;
-	int nIconAlign = pDrawArgs->nTextAlign & xtpColumnIconMask;
-	switch(nIconAlign)
-	{
-	case xtpColumnIconTop:
-		lHorLineOffset = sizeGlyph.cy / 2;
-		break;
-	case xtpColumnIconBottom:
-		lHorLineOffset = rcItem.bottom - rcItem.top - 2 - sizeGlyph.cy / 2;
-		break;
-	}
-
-	if(m_nTreeStructureStyle > 0)
-		rcItem.OffsetRect((sizeGlyph.cy + 1) / 2 + 2, 0);
-	if (!pRow->GetNextSiblingRow())
-	{
-		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, lHorLineOffset + 1, clrTreeStructure);
-	}
-	else
-	{
-		DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, nHeight + 1, clrTreeStructure);
-	}
-
-	DrawTreeStructureLine(pDC, rcItem.left, rcItem.top + lHorLineOffset, sizeGlyph.cx / 2 + 1, 1, clrTreeStructure);
-
-	for (;;)
-	{
-		pRow = pRow->GetParentRow();
-
-		if (pRow == NULL || pRow->IsGroupRow() || (m_nTreeStructureStyle == 0 && (pRow->GetParentRow() == 0 || pRow->GetParentRow()->IsGroupRow())))
-			break;
-
-		rcItem.OffsetRect(-nTreeIndent, 0);
-
-		if (pRow->GetNextSiblingRow())
-		{
-			DrawTreeStructureLine(pDC, rcItem.left, rcItem.top - 1, 1, rcItem.Height() + 1, clrTreeStructure);
-		}
-	}
-
-}
-
-int CXTPReportPaintManager::DrawString(int* pnCurrDrawPos, CDC* pDC, const CString& strDraw, CRect rcDraw, UINT nFormat)
-{
-	int nCharCount = 0;
-
-
-	switch (nFormat)
-	{
-		case DT_END_ELLIPSIS:
-		{
-			// in this case char count only for identify if string printed partially
-			*pnCurrDrawPos += GetTextExtentX(pDC,strDraw);
-			if (*pnCurrDrawPos >= rcDraw.right)
-				nCharCount = - 1;
-			else
-				nCharCount = strDraw.GetLength();
-
-			pDC->DrawText(strDraw, rcDraw, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
-			break;
-		}
-		case DT_WORDBREAK:
-		{
-			const TCHAR seps[] = _T(" \t\n");
-			TCHAR* lpszContext = 0;
-			CString strOut = _T("");
-			CString strSrc = strDraw;
-			TCHAR* szWord = STRTOK_S(strSrc.GetBuffer(strSrc.GetLength()), seps, &lpszContext);
-			int nRightStrMargin = GetTextExtentX(pDC, CString(szWord));
-
-			if (nRightStrMargin > rcDraw.Width())
-			{
-				strOut = szWord;
-
-			}
-			else
-			{
-				while (szWord != NULL && nRightStrMargin < rcDraw.Width())
-				{
-					strOut = strOut + szWord + _T(" ");
-						szWord = STRTOK_S(NULL, seps, &lpszContext);
-						nRightStrMargin = GetTextExtentX(pDC,strOut + szWord);
-				}
-			}
-
-			nCharCount = strOut.GetLength();
-			*pnCurrDrawPos += GetTextExtentX(pDC,strOut);
-			pDC->DrawText(strOut, rcDraw, DT_LEFT | DT_NOPREFIX);
-			break;
-		}
-		case DT_LEFT:
-		case DT_RIGHT:
-		case DT_CENTER:
-		{
-			*pnCurrDrawPos += GetTextExtentX(pDC,strDraw);
-			if (*pnCurrDrawPos >= rcDraw.right)
-				nCharCount = - 1;
-			else
-				nCharCount = strDraw.GetLength();
-
-			pDC->DrawText(strDraw, rcDraw, nFormat  | DT_NOPREFIX);
-			break;
-		}
-
-	} // switch
-
-	return nCharCount;
-}
-
-int CXTPReportPaintManager::DrawLink(int* pnCurrDrawPos, XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CXTPReportHyperlink* pHyperlink,
-	CString strText, CRect rcLink, int nFlag)
-{
-	return DrawLink2(pnCurrDrawPos, pDrawArgs, pHyperlink, strText, rcLink, nFlag);
-}
-
-void CXTPReportPaintManager::DrawTextLine(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, const CString& strText,
-	CRect rcItem, int nFlag, int& nCharCounter, int& nHyperlikCounter)
-{
-	CDC* pDC = pDrawArgs->pDC;
-	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
-	UINT nAlingFlag = 0;
-	int nHyperlink = nHyperlikCounter; // Hyperlink index
-	int nCharCount = nCharCounter; // Number of actually printed chars
-	CXTPReportHyperlink* pHl = NULL;
-	int nHyperlinks = pItem->GetHyperlinksCount();
-
-	int nCurrStrPos = nCharCount;
-	CRect rcText;
-	rcText.CopyRect(&rcItem);
-
-	if (nHyperlinks == 0)
-	{
-		pDC->DrawText(strText, rcText, pDrawArgs->nTextAlign | nFlag | DT_NOPREFIX | DT_SINGLELINE);
-		return;
-	}
-
-	// calculate rect for drawing text for text alignment feature
-	pDC->DrawText(strText, rcText, DT_CALCRECT | DT_NOPREFIX | DT_SINGLELINE);
-
-	if (rcText.Width() < rcItem.Width())
-	{
-		switch (pDrawArgs->nTextAlign & (DT_RIGHT|DT_CENTER))
-		{
-			case DT_RIGHT :
-				rcText.left = rcItem.right - rcText.Width();
-				break;
-			case DT_CENTER :
-				rcText.left = rcItem.left + (rcItem.Width() - rcText.Width())/2;
-				break;
-		}
-	}
-	rcText.right = rcItem.right;
-
-	int nCurrDrawPos = rcText.left;
-
-	while (strText.GetLength() > nCurrStrPos && nCurrDrawPos < rcText.right)
-	{
-		CString strOut;
-		if (nHyperlinks > nHyperlink)
-		{
-			pHl = pItem->GetHyperlinkAt(nHyperlink);
-			strOut = strText.Mid(nCurrStrPos, pHl->m_nHyperTextBegin - nCurrStrPos);
-			if (strOut.GetLength() > 0) // print str
-			{
-				// replace LF, CR characters (if any)
-				REMOVE_S(strOut, _T('\n'));
-				REMOVE_S(strOut, _T('\r'));
-
-				nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
-				rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
-
-				// if previous string was cut - stop draw
-				if (nCharCount < strOut.GetLength())
-				{
-					nCharCount += nCurrStrPos;
-					break;
-				}
-			}
-
-			// print link
-			nCharCount = DrawLink(&nCurrDrawPos, pDrawArgs, pHl, strText, rcText, nFlag);
-			rcText.left = nCurrDrawPos > rcText.right ? rcText.right : nCurrDrawPos;
-
-			// update current position in string
-			nCurrStrPos = pHl->m_nHyperTextBegin + pHl->m_nHyperTextLen;
-			nHyperlink++;
-
-			// if previous string was cut - stop draw
-			if (nCharCount < (pHl->m_nHyperTextLen))
-			{
-				nCharCount += nCurrStrPos;
-				break;
-			}
-		}
-		else
-		{
-
-			// print whole string without links or tail of string
-			strOut = strText.Mid(nCurrStrPos, strText.GetLength() - nCurrStrPos);
-			nCharCount = DrawString(&nCurrDrawPos, pDC, strOut, rcText, nFlag);
-			nCharCount += nCurrStrPos;
-			break; // all was drawn!
-		}
-	}
-
-	pDC->SetTextAlign(nAlingFlag);
-	nCharCounter = nCharCount;
-}
-
-void CXTPReportPaintManager::DrawItemCaption(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, XTP_REPORTRECORDITEM_METRICS* pMetrics)
-{
-	CString strText = pMetrics->strText;
-
-	CRect& rcItem = pDrawArgs->rcItem;
-
-	rcItem.DeflateRect(2, 1, 2, 0);
-
-	// draw item text
-	if (!strText.IsEmpty())
-	{
-		if (!m_bFixedRowHeight)// && (pDrawArgs->nTextAlign & DT_WORDBREAK))
-		{
-			BOOL bWordBreak = !!(pDrawArgs->nTextAlign & DT_WORDBREAK);
-
-			if (pDrawArgs->nTextAlign & DT_VCENTER)
-			{
-				// try to center vertically because DT_VCENTER works only for DT_SINGLELINE;
-
-				ReplaceInHyperLinks(pDrawArgs->pItem, strText, XTP_HLINK_SPACE_X);
-				int nHeightRequired = CalculateRowHeight(pDrawArgs->pDC, strText, rcItem.Width(), bWordBreak);
-				int nHeightDiff = rcItem.Height() - nHeightRequired;
-
-				if (nHeightDiff >= 4)
-				{
-					rcItem.top += nHeightDiff/2 - 2;
-				}
-
-				strText = pMetrics->strText;
-			}
-
-			DrawMultiLineText(pDrawArgs, strText, rcItem, bWordBreak);
-		}
-		else
-		{
-			int nCharCount = 0;
-			int nHyperlink = 0;
-			DrawTextLine(pDrawArgs, strText, rcItem, DT_END_ELLIPSIS, nCharCount, nHyperlink);
-		}
-	}
-}
-
-void CXTPReportPaintManager::ReplaceInHyperLinks(CXTPReportRecordItem* pItem, CString& rstrText, TCHAR chReplace )
-{
-	ASSERT(pItem);
-	if (!pItem)
-		return;
-
-	int nHyperlinks = pItem->GetHyperlinksCount();
-	for (int nHLink = 0; nHLink < nHyperlinks; nHLink++)
-	{
-		CXTPReportHyperlink* pHLink = pItem->GetHyperlinkAt(nHLink);
-		ASSERT(pHLink);
-		if (!pHLink)
-			continue;
-
-		int nI0 = max(0, min(pHLink->m_nHyperTextBegin, rstrText.GetLength()-1));
-		int nI1 = max(0, min(pHLink->m_nHyperTextBegin + pHLink->m_nHyperTextLen, rstrText.GetLength()));
-		for (int i = nI0; i < nI1; i++)
-		{
-			if(rstrText.GetAt(i) == _T(' '))
-			{
-				rstrText.SetAt(i, chReplace);
-			}
-		}
-	}
-}
-
-void CXTPReportPaintManager::DrawMultiLineText(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, const CString& strText,
-												CRect rcItem, BOOL bWordBreak)
-{
-	CDC* pDC = pDrawArgs->pDC;
-	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
-
-	int nCurrStrPos = 0, nStringWidth = 0, nWordWidth = 0;
-	int nStartString = -1, nEndString = -1;
-
-	CRect rcText;
-	rcText.CopyRect(&rcItem);
-
-	if (0 == pItem->GetHyperlinksCount())
-	{
-		// no hyperlinks
-		pDC->DrawText(strText, rcText, DT_NOPREFIX | pDrawArgs->nTextAlign | DT_WORD_ELLIPSIS | (bWordBreak ?  DT_WORDBREAK : 0));
-		return;
-	}
-
-	int nLineHeight = pDC->GetTextExtent(_T(" "), 1).cy;
-	CString strSrc = strText + _T(" ");
-	REPLACE_S(strSrc, _T('\r'), _T(' '));
-
-	ReplaceInHyperLinks(pItem, strSrc, XTP_HLINK_SPACE_X);
-
-	CString strWord, strString;
-	int nTextLength = strSrc.GetLength();
-
-	TCHAR* lpszBuff = strSrc.GetBuffer(nTextLength + 1);
-	TCHAR  cChar = lpszBuff[nCurrStrPos];
-
-	int     nWordLength = 0;
-	TCHAR*  lpszWord = strWord.GetBuffer(nTextLength + 1);
-
-	// parsing for the words (tokens)
-	while (_T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
-	{
-		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
-		{
-			if (lpszWord[0] == _T('\0') && cChar != _T('\n'))
-				continue;
-
-			if (strString.IsEmpty())
-			{
-				nStartString = nCurrStrPos - nWordLength;
-				nEndString = nCurrStrPos;
-			}
-			nWordWidth = GetTextExtentX(pDC, lpszWord, nWordLength);
-
-			if (nWordWidth > rcItem.Width() && bWordBreak || cChar == _T('\n'))
-			{
-				if (!strString.IsEmpty())
-				{
-					DrawSingleLineText(pDrawArgs,  strSrc , rcText, nStartString-1, nEndString-1,
-						GetTextExtentX(pDC,strString));
-
-					rcText.top += nLineHeight;
-					rcText.left = rcItem.left;
-				}
-
-				// the word exceeds the cell's width
-				DrawSingleLineText(pDrawArgs, strSrc , rcText, nCurrStrPos - nWordLength -1, nCurrStrPos -1, nWordWidth);
-
-				if((nCurrStrPos - nWordLength) != nCurrStrPos)
-				{
-					rcText.top += nLineHeight;
-					rcText.left = rcItem.left;
-				}
-
-				strString.Empty();
-
-				lpszWord[0] = _T('\0');
-				nWordLength = 0;
-				continue;
-			}
-
-			int nPrevStringWidth = GetTextExtentX(pDC,strString);
-
-			if (!strString.IsEmpty())
-				strString += _T(" ");
-
-			strString += lpszWord;
-			nStringWidth = GetTextExtentX(pDC,strString);
-
-			if (nStringWidth > rcItem.Width() && bWordBreak)
-			{
-				DrawSingleLineText(pDrawArgs,  strSrc , rcText, nStartString-1, nEndString-1,
-					nPrevStringWidth);
-
-				rcText.top += nLineHeight;
-				rcText.left = rcItem.left;
-
-
-				nStartString = nCurrStrPos - nWordLength;
-				strString = lpszWord;
-			}
-
-			nEndString = nCurrStrPos;
-			lpszWord[0] = _T('\0');
-			nWordLength = 0;
-			continue;
-		}
-
-		ASSERT(nWordLength <= nTextLength);
-		lpszWord[nWordLength] = cChar;
-		lpszWord[nWordLength + 1] = _T('\0');
-
-		++nWordLength;
-	}
-
-	// the rest of the string
-	if (strString.GetLength())
-	{
-		DrawSingleLineText(pDrawArgs,  strSrc , rcText, nStartString-1, strText.GetLength(),
-			GetTextExtentX(pDC,strString));
-	}
-
-}
-
-void CXTPReportPaintManager::DrawSingleLineText(XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs,const CString& strText,
-		CRect rcItem, int nStartPos, int nEndPos,int nActualWidth )
-{
-
-	CDC* pDC = pDrawArgs->pDC;
-	CXTPReportRecordItem* pItem = pDrawArgs->pItem;
-	CXTPReportHyperlink* pHl = NULL;
-
-	// alignment
-	CRect   rcText(rcItem);
-	int nFlag = pDrawArgs->nTextAlign & (DT_LEFT | DT_RIGHT | DT_CENTER);
-
-	if (nFlag & DT_RIGHT)
-		rcText.left = rcText.right - nActualWidth;
-	else
-		if (nFlag & DT_CENTER)
-			rcText.left += (rcText.Width() - nActualWidth) / 2;
-
-	// Left align the string, that exceeds the cell's width.
-	rcText.left = max(rcText.left, rcItem.left);
-
-	int nCurrDrawPos = rcText.left;
-	int nHyperlink = 0; // Hyperlink index
-	int nCurrStrPos = nStartPos;
-	int nBeginHyperlink = 0xFFFF;
-	int nHyperlinks = pItem->GetHyperlinksCount();
-
-	CString strWord, strPre, strPost, strSrc = strText + _T(" ");
-	TCHAR* lpszBuff = strSrc.GetBuffer(strSrc.GetLength());
-	TCHAR  cChar = lpszBuff[nCurrStrPos];
-	BOOL  bNeedsBlank = FALSE;
-
-	int   nBlankWidth = GetTextExtentX(pDC, _T(" "), 1);
-
-	while (nCurrStrPos <= nEndPos && _T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
-	{
-		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
-		{
-			if (strWord.IsEmpty())
-				continue;
-
-			if (bNeedsBlank)
-			{
-				// between words
-				pDC->DrawText(_T(" "), rcText, DT_LEFT);
-				rcText.left += nBlankWidth;
-			}
-
-			// as hyperlinks are not sorted in the array, check all
-			for (nHyperlink = 0; nHyperlink < nHyperlinks; ++nHyperlink)
-			{
-				pHl = pItem->GetHyperlinkAt(nHyperlink);
-				nBeginHyperlink = pHl->m_nHyperTextBegin;
-
-				// validate the hyperlink
-				if (nBeginHyperlink >= 0 &&
-					nBeginHyperlink <= strText.GetLength() - 1                  &&
-					pHl->m_nHyperTextLen > 1                                    &&
-					nBeginHyperlink + pHl->m_nHyperTextLen <= strText.GetLength())
-				{
-					// particular case: hyperlink begins with blank(s)
-					BOOL bInclude = FALSE;
-					if (nStartPos > nBeginHyperlink )
-					{
-						CString strExtracted = strText.Mid(nBeginHyperlink, nStartPos - nBeginHyperlink);
-						if (_tcsspnp(strExtracted.GetBuffer(strExtracted.GetLength()),_T(" ")) == NULL)
-							bInclude = TRUE;
-					}
-
-					// does the hyperlink belong to the string
-					if (nBeginHyperlink >= nStartPos &&
-						nBeginHyperlink + pHl->m_nHyperTextLen <= nEndPos ||
-						bInclude)
-					{
-
-						// does the word contain the hyperlink
-						CString strExtracted = strText.Mid(nBeginHyperlink,pHl->m_nHyperTextLen);
-						strExtracted.TrimLeft();
-						if (strWord.Find(strExtracted) != -1)
-						{
-							if (nBeginHyperlink < nCurrStrPos)
-							{
-								// before hyperlink
-								strPre = strWord.Mid(0,strWord.GetLength() - (nCurrStrPos - nBeginHyperlink - 1));
-								if (!strPre.IsEmpty())
-								{
-									pDC->DrawText(strPre, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
-									rcText.left += GetTextExtentX(pDC,strPre);
-								}
-
-								// the hyperlink
-								nCurrDrawPos = rcText.left;
-								DrawLink2(&nCurrDrawPos,pDrawArgs,pHl,strText,rcText, DT_LEFT | DT_END_ELLIPSIS, TRUE);
-								rcText.left = nCurrDrawPos;
-
-								// after hyperlink
-								int n = strWord.GetLength() - (nCurrStrPos - (nBeginHyperlink+pHl->m_nHyperTextLen +1));
-								if (n >=0 && (strWord.GetLength() - n) > 0)
-								{
-									strPost = strWord.Mid(n,strWord.GetLength() - n);
-									if (!strPost.IsEmpty())
-									{
-										pDC->DrawText(strPost, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
-										rcText.left += GetTextExtentX(pDC,strPost);
-									}
-								}
-
-								strWord.Empty();
-								bNeedsBlank = TRUE;
-								continue;
-							}
-						}
-					}
-				}
-			} // the hyperlink validation
-
-			// non-hyperlink words
-			pDC->DrawText(strWord, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
-			rcText.left += GetTextExtentX(pDC,strWord);
-
-			strWord.Empty();
-			bNeedsBlank = TRUE;
-			continue;
-		}
-
-		strWord += cChar;
-	}
-}
-
-int CXTPReportPaintManager::CalculateRowHeight(CDC* pDC, const CString& strText, int nMaxWidth, BOOL bWordBreak)
-{
-	CString strWord, strBuff(strText);
-	strBuff += _T(" ");
-
-	int     nLineHeight = pDC->GetTextExtent(_T(" "),1).cy;
-	int     nRowHeight = 0;
-	int     nCurrXPos = 0;
-	int     nCurrStrPos = 0;
-	int     nBlanksWidth = 0;
-
-
-	// just calculate new line characters
-	if (!bWordBreak)
-	{
-		int nCount = 0, nPos = -1;
-
-		do
-		{
-			nCount++;
-			nPos = FIND_S(strBuff, _T('\n'), nPos + 1);
-		}
-		while(nPos != -1);
-
-		return nLineHeight * nCount;
-	}
-
-	int     nWordLength = 0;
-	BOOL    bNeedsLine = TRUE;
-	int     nBlankWidth = GetTextExtentX(pDC, _T(" "), 1);
-	int     nTextLength = strBuff.GetLength();
-
-	TCHAR*  lpszBuff = strBuff.GetBuffer(nTextLength + 1);
-	TCHAR   cChar = lpszBuff[nCurrStrPos];
-
-	TCHAR*  lpszWord = strWord.GetBuffer(nTextLength + 1);
-
-	// breaking the text by words
-	while (_T('\0') != (cChar = lpszBuff[nCurrStrPos++]))
-	{
-		if (cChar == _T(' ') || cChar == _T('\t') || cChar == _T('\n'))
-		{
-			nBlanksWidth += nBlankWidth;
-
-			if (lpszWord[0] == _T('\0') && cChar != _T('\n'))
-				continue;
-
-			int nWordWidth = GetTextExtentX(pDC, lpszWord, nWordLength);
-
-			if (nWordWidth >= nMaxWidth)
-			{
-				// the word exceeds the cell's width
-				nRowHeight += nLineHeight;
-
-				if (nCurrXPos > 0)
-					nRowHeight += nLineHeight; // for the preceding line (regardless of its size)
-
-				bNeedsLine = FALSE;
-				nCurrXPos = 0;
-				nBlanksWidth = 0;
-
-				lpszWord[0] = _T('\0');
-				nWordLength = 0;
-				continue;
-			}
-
-			if (nCurrXPos + nWordWidth >= nMaxWidth)
-			{
-				nCurrXPos = nWordWidth + nBlanksWidth;
-				nRowHeight += nLineHeight;
-			}
-			else
-			{
-				nCurrXPos += nWordWidth + nBlanksWidth;
-				bNeedsLine = TRUE;
-			}
-
-			if (cChar == _T('\n')) // a new line is forced
-			{
-				nRowHeight += nLineHeight;
-				nCurrXPos = 0;
-			}
-
-			nBlanksWidth = 0;
-			lpszWord[0] = _T('\0');
-			nWordLength = 0;
-			continue;
-		}
-
-		ASSERT(nWordLength <= nTextLength);
-		lpszWord[nWordLength] = cChar;
-		lpszWord[nWordLength+1] = _T('\0');
-
-		++nWordLength;
-	}
-
-	if (bNeedsLine)
-		nRowHeight += nLineHeight;
-
-	return nRowHeight;
-}
-
-int CXTPReportPaintManager::DrawLink2(int* pnCurrDrawPos, XTP_REPORTRECORDITEM_DRAWARGS* pDrawArgs, CXTPReportHyperlink* pHyperlink,
-	CString strText, CRect rcLink, int nFlag, BOOL bTrim )
-{
-	int nCount = pHyperlink->m_nHyperTextLen;
-
-	int nDiff = pHyperlink->m_nHyperTextBegin + pHyperlink->m_nHyperTextLen - strText.GetLength();
-	if (nDiff > 0)
-		nCount = max(0, pHyperlink->m_nHyperTextLen - nDiff);
-
-	if (pHyperlink->m_nHyperTextBegin < 0 || pHyperlink->m_nHyperTextBegin >= strText.GetLength() ||
-		nCount <= 0)
-		return 0;
-
-	CDC* pDC = pDrawArgs->pDC;
-	CString strOut = strText.Mid(pHyperlink->m_nHyperTextBegin, nCount);
-
-	if (bTrim)
-	{
-		strOut.TrimLeft();
-		strOut.TrimRight();
-	}
-	REPLACE_S(strOut, XTP_HLINK_SPACE_X, _T(' '));
-
-	BOOL bSelected = pDrawArgs->pRow->IsSelected() && pDrawArgs->pRow->GetControl()->HasFocus() &&
-		(!pDrawArgs->pColumn || !pDrawArgs->pRow->GetControl()->GetFocusedColumn() ||
-		  pDrawArgs->pColumn != pDrawArgs->pRow->GetControl()->GetFocusedColumn());
-
-	COLORREF clrPrev = pDC->SetTextColor(bSelected ? m_clrHighlightText : m_clrHyper);
-
-	TEXTMETRIC textMetrics;
-	pDC->GetTextMetrics(&textMetrics);
-	int nCharCount = 0;
-	//!pHyperlink->m_rcHyperSpot.left = pDC->GetCurrentPosition().x; // update hyperlink left bound before drawing
-	pHyperlink->m_rcHyperSpot.left = *pnCurrDrawPos;
-	nCharCount = DrawString(pnCurrDrawPos, pDC, strOut, rcLink, nFlag);
-
-	// update hyperlink spot
-	pHyperlink->m_rcHyperSpot.top = rcLink.top;
-	//!pHyperlink->m_rcHyperSpot.right = pDC->GetCurrentPosition().x;
-	pHyperlink->m_rcHyperSpot.right = *pnCurrDrawPos;
-	pHyperlink->m_rcHyperSpot.bottom = rcLink.top + textMetrics.tmHeight;
-
-	pDC->SetTextColor(clrPrev);
-
-	return nCharCount;
-}
-
-void CXTPReportPaintManager::DrawFixedRowsDivider(CDC* pDC, const CRect& rc, CXTPReportControl* pControl, BOOL bHeaderRows, BOOL bVScrollBarVisible)
-{
-	int nDividerStyle = bHeaderRows ? m_HeaderRowsDividerStyle : m_FooterRowsDividerStyle;
-	COLORREF clr =  bHeaderRows ? m_clrHeaderRowsDivider : m_clrFooterRowsDivider;
-
-	if (nDividerStyle == xtpReportFixedRowsDividerNone)
-		return;
-
-	if (nDividerStyle & xtpReportFixedRowsDividerOutlook)
-	{
-		if (m_columnStyle == xtpReportColumnShaded)
-		{
-			pDC->FillSolidRect(rc, m_clrHeaderControl);
-			DrawHorizontalLine(pDC, rc.left, rc.bottom - 2, rc.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.4));
-			DrawHorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), MixColor(m_clrHeaderControl, m_clrControlDark, 0.6));
-		}
-		else if (m_columnStyle == xtpReportColumnOffice2003)
-		{
-			XTPDrawHelpers()->GradientFill(pDC, rc,m_grcGradientColumn.clrLight, m_grcGradientColumn.clrDark,FALSE);
-			DrawHorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), m_clrGradientColumnShadow);
-		}
-		else if (m_columnStyle == xtpReportColumnOffice2007)
-		{
-			pDC->FillSolidRect(rc,  MixColor(m_grcGradientColumn.clrLight, m_grcGradientColumn.clrDark, 0.4));
-			DrawHorizontalLine(pDC, rc.left, rc.top, rc.Width(), RGB(255, 255, 255));
-			DrawHorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), m_clrGradientColumnSeparator);
-		}
-		else if (m_columnStyle == xtpReportColumnExplorer)
-		{
-			pDC->FillSolidRect(rc, m_clrHeaderControl);
-			pDC->Draw3dRect(rc, m_clrControlLightLight, m_clrBtnText);
-
-			CRect rcTmp(rc);
-			rcTmp.DeflateRect(1, 1);
-			pDC->Draw3dRect(rcTmp, m_clrHeaderControl, m_clrControlDark);
-		}
-		else
-		{
-			pDC->FillSolidRect(rc, m_clrHeaderControl);
-			pDC->Draw3dRect(rc, m_clrControlLightLight, m_clrControlDark);
-		}
-	}
-	else
-	{
-		if (nDividerStyle & xtpReportFixedRowsDividerThin || nDividerStyle & xtpReportFixedRowsDividerBold)
-		{
-			pDC->FillSolidRect(rc, clr);
-		}
-	}
-
-	// draw shade (if necessary)
-	int nScrollPos = pControl->GetScrollPos(SB_VERT);
-	int nScrollLimit = pControl->GetScrollLimit(SB_VERT);
-
-	SCROLLINFO si;
-	pControl->GetScrollInfo(SB_VERT,&si);
-
-	if (nDividerStyle & xtpReportFixedRowsDividerShade)
-	{
-		if (bHeaderRows)
-		{
-			// header rows
-			if (nScrollPos)
-			{
-				CRect rcShade(rc);
-				rcShade.top = rcShade.bottom;
-				rcShade.bottom += 4;
-
-				XTPDrawHelpers()->GradientFill(pDC, rcShade, clr, RGB(255, 255, 255), FALSE);
-			}
-		}
-		else
-			// footer rows
-			if (bVScrollBarVisible && nScrollPos != nScrollLimit) // && (UINT)si.nMax != si.nPage)
-			{
-				CRect rcShade(rc);
-				rcShade.bottom = rcShade.top;
-				rcShade.top -= 4;
-
-				XTPDrawHelpers()->GradientFill(pDC, rcShade, RGB(255, 255, 255), clr, FALSE);
-			}
-	}
-}
-
-int CXTPReportPaintManager::GetHeaderRowsDividerHeight()
-{
-	int nHeight = 0;
-
-	switch(m_HeaderRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
-	{
-		case xtpReportFixedRowsDividerNone:     nHeight = 0; break;
-		case xtpReportFixedRowsDividerThin:     nHeight = 1; break;
-		case xtpReportFixedRowsDividerBold:     nHeight = 2; break;
-		case xtpReportFixedRowsDividerOutlook:  nHeight = 8; break;
-	}
-
-	return nHeight;
-}
-
-int CXTPReportPaintManager::GetFooterRowsDividerHeight()
-{
-	int nHeight = 0;
-
-	switch(m_FooterRowsDividerStyle & ~xtpReportFixedRowsDividerShade)
-	{
-		case xtpReportFixedRowsDividerNone:     nHeight = 0; break;
-		case xtpReportFixedRowsDividerThin:     nHeight = 1; break;
-		case xtpReportFixedRowsDividerBold:     nHeight = 2; break;
-		case xtpReportFixedRowsDividerOutlook:  nHeight = 8; break;
-	}
-
-	return nHeight;
-}
-

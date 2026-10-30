@@ -7853,5 +7853,68 @@
     "unit": "RBX::ToolMouseCommand",
     "updated": 1793355137.2938848,
     "user": "colin"
+  },
+  {
+    "created": 1793356219.952438,
+    "id": "26b7c9e626724057a1d3d40166076e56",
+    "model": "GPT-5",
+    "patches": {
+      "App/gui/GUI.cpp": {
+        "after": [
+          [
+            "",
+            "\n#include \"gui/Button.h\"\n\nnamespace RBX\n{\n\t// 0064ef90: KeyButton tracks its declared keyCode/keyIsDown fields then defers to Widget.\n\tGuiResponse KeyButton::process(const GuiEvent& event)\n\t{\n\t\tif (event.eventType == UIEvent::KEY_DOWN && event.key == keyCode)\n\t\t\tkeyIsDown = true;\n\t\tif (event.eventType == UIEvent::KEY_UP && event.key == keyCode)\n\t\t\tkeyIsDown = false;\n\t\treturn Widget::process(event);\n\t}\n}\n"
+          ],
+          [
+            "#include \"gui/Gui.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+          ],
+          [
+            "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+            "\t\treturn processNonFocus(event);"
+          ]
+        ],
+        "before": [
+          [
+            "#include \"gui/Gui.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"gui/Gui.h\"\n"
+          ],
+          [
+            "\t\tRBXASSERT(!focus);\n\t\treturn processNonFocus(event);",
+            "\t\treturn processNonFocus(event);"
+          ]
+        ]
+      },
+      "App/v8datamodel/ToolMouseCommand.cpp": {
+        "after": [
+          [
+            "\t\ttool->activate();\n",
+            "\t\ttool.get()->activate();\n"
+          ],
+          [
+            "\t\ttool->deactivate();\n",
+            "\t\ttool.get()->deactivate();\n"
+          ],
+          [
+            "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+          ]
+        ],
+        "before": [
+          [
+            "#include \"v8datamodel/ToolMouseCommand.h\"\n",
+            "#pragma float_control(precise, off)\n#include \"v8datamodel/ToolMouseCommand.h\"\n"
+          ]
+        ]
+      }
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": false
+    },
+    "state": "rejected",
+    "unit": "RBX::KeyButton",
+    "updated": 1793356219.9777966,
+    "user": "colin"
   }
 ]

@@ -1,362 +1,66 @@
+// roc 2009-12 0085f230  unit: CXTColorDialog  size: 177 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0085f230
+//
+// 0085f230  6aff                 push -1
+// 0085f232  68f6e69500           push 0x95e6f6
+// 0085f237  64a100000000         mov eax, dword ptr fs:[0]
+// 0085f23d  50                   push eax
+// 0085f23e  51                   push ecx
+// 0085f23f  56                   push esi
+// 0085f240  57                   push edi
+// 0085f241  a10052b600           mov eax, dword ptr [0xb65200]
+// 0085f246  33c4                 xor eax, esp
+// 0085f248  50                   push eax
+// 0085f249  8d442410             lea eax, [esp + 0x10]
+// 0085f24d  64a300000000         mov dword ptr fs:[0], eax
+// 0085f253  8bf9                 mov edi, ecx
+// 0085f255  897c240c             mov dword ptr [esp + 0xc], edi
+// 0085f259  c70744db9f00         mov dword ptr [edi], 0x9fdb44
+// 0085f25f  c744241801000000     mov dword ptr [esp + 0x18], 1
+// 0085f267  33f6                 xor esi, esi
+// 0085f269  e8b4790c00           call 0x926c22
+// 0085f26e  85c0                 test eax, eax
+// 0085f270  7e39                 jle 0x85f2ab
+// 0085f272  85f6                 test esi, esi
+// 0085f274  7c66                 jl 0x85f2dc
+// 0085f276  3bb790000000         cmp esi, dword ptr [edi + 0x90]
+// 0085f27c  7d5e                 jge 0x85f2dc
+// 0085f27e  8b878c000000         mov eax, dword ptr [edi + 0x8c]
+// 0085f284  8b0cb0               mov ecx, dword ptr [eax + esi*4]
+// 0085f287  33c0                 xor eax, eax
+// 0085f289  85c9                 test ecx, ecx
+// 0085f28b  0f95c0               setne al
+// 0085f28e  85c0                 test eax, eax
+// 0085f290  744a                 je 0x85f2dc
+// 0085f292  85c9                 test ecx, ecx
+// 0085f294  7409                 je 0x85f29f
+// 0085f296  8b11                 mov edx, dword ptr [ecx]
+// 0085f298  8b4204               mov eax, dword ptr [edx + 4]
+// 0085f29b  6a01                 push 1
+// 0085f29d  ffd0                 call eax
+// 0085f29f  8bcf                 mov ecx, edi
+// 0085f2a1  46                   inc esi
+// 0085f2a2  e87b790c00           call 0x926c22
+// 0085f2a7  3bf0                 cmp esi, eax
+// 0085f2a9  7cc7                 jl 0x85f272
+// 0085f2ab  8d8fb0000000         lea ecx, [edi + 0xb0]
+// 0085f2b1  c644241800           mov byte ptr [esp + 0x18], 0
+// 0085f2b6  e899710c00           call 0x926454
+// 0085f2bb  8bcf                 mov ecx, edi
+// 0085f2bd  c7442418ffffffff     mov dword ptr [esp + 0x18], 0xffffffff
+// 0085f2c5  e814750c00           call 0x9267de
+// 0085f2ca  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 0085f2ce  64890d00000000       mov dword ptr fs:[0], ecx
+// 0085f2d5  59                   pop ecx
+// 0085f2d6  5f                   pop edi
+// 0085f2d7  5e                   pop esi
+// 0085f2d8  83c410               add esp, 0x10
+// 0085f2db  c3                   ret 
+// 0085f2dc  e82b48f9ff           call 0x7f3b0c
+// copied from an identical function in another client (function ??1CXTColorDialog@@UAE@XZ)
+
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTColorDialog.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTColorDialog.cpp : implementation file
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTDefines.h"
-#include "XTColorDialog.h"
-#include "XTColorPageCustom.h"
-#include "XTColorPageStandard.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorDialog
-
-IMPLEMENT_DYNAMIC(CXTColorDialog, CPropertySheet)
-
-CXTColorDialog::CXTColorDialog(COLORREF clrNew, COLORREF clrCurrent,
-	DWORD dwFlags/*= 0L*/, CWnd* pWndParent/*= NULL*/)
-{
-	CString strCaption;
-	XTPResourceManager()->LoadString(&strCaption, XT_IDS_COLOR_CAPTION);
-
-	Construct(strCaption, pWndParent);
-
-	m_psh.dwFlags = (m_psh.dwFlags & ~PSH_HASHELP) | PSH_NOAPPLYNOW;
-
-	m_clrNew = clrNew;
-	m_clrCurrent = clrCurrent;
-	m_dwStyle = dwFlags;
-
-	AddPage(new CXTColorPageStandard(this));
-	AddPage(new CXTColorPageCustom(this));
-
-}
-
-void CXTColorDialog::AddPage(CPropertyPage* pPage)
-{
-	CPropertySheet::AddPage(pPage);
-
-	LPCDLGTEMPLATE pResource = XTPResourceManager()->LoadDialogTemplate((UINT)(UINT_PTR)pPage->m_psp.pszTemplate);
-
-	if (pResource)
-	{
-		pPage->m_psp.pResource = pResource;
-		pPage->m_psp.dwFlags |= PSP_DLGINDIRECT;
-	}
-}
-
-CXTColorDialog::~CXTColorDialog()
-{
-	int iPage;
-	for (iPage = 0; iPage < GetPageCount(); ++iPage)
-	{
-		CPropertyPage* pPage = GetPage(iPage);
-		SAFE_DELETE (pPage);
-	}
-}
-
-
-BEGIN_MESSAGE_MAP(CXTColorDialog, CPropertySheet)
-	//{{AFX_MSG_MAP(CXTColorDialog)
-	ON_WM_PAINT()
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorDialog message handlers
-
-void CXTColorDialog::CalculateRects()
-{
-	CRect rcBtnOK;
-	CRect rcBtnCancel;
-	CRect rcTabCtrl;
-	CRect rcItem;
-
-	// get the tab control size.
-	CTabCtrl* pTabCtrl = GetTabControl();
-	pTabCtrl->GetWindowRect(&rcTabCtrl);
-	ScreenToClient(&rcTabCtrl);
-
-	// get the size of the first tab item.
-	pTabCtrl->GetItemRect(0, &rcItem);
-
-	// get the OK button size.
-	CButton* pBtnOK = (CButton*)GetDlgItem(IDOK);
-	pBtnOK->GetWindowRect(&rcBtnOK);
-	ScreenToClient(&rcBtnOK);
-
-	// get the Cancel button size.
-	CButton* pBtnCancel = (CButton*)GetDlgItem(IDCANCEL);
-	pBtnCancel->GetWindowRect(&rcBtnCancel);
-	ScreenToClient(&rcBtnCancel);
-	rcBtnCancel.OffsetRect(-15, 0);
-
-	// resize the tab control
-	rcTabCtrl.right = rcBtnCancel.left - 5;
-	rcTabCtrl.bottom = rcBtnCancel.top - 15;
-	pTabCtrl->MoveWindow(&rcTabCtrl);
-
-	// reposition the OK button.
-	rcBtnOK = rcBtnCancel;
-	rcBtnOK.top = rcTabCtrl.top + rcItem.Height() + 1;
-	rcBtnOK.bottom = rcBtnOK.top + rcBtnCancel.Height();
-	pBtnOK->MoveWindow(&rcBtnOK);
-
-	// reposition the Cancel button.
-	rcBtnCancel = rcBtnOK;
-	rcBtnCancel.top = rcBtnOK.bottom + 5;
-	rcBtnCancel.bottom = rcBtnCancel.top + rcBtnOK.Height();
-	pBtnCancel->MoveWindow(&rcBtnCancel);
-
-	// reposition the hex display
-	if (::IsWindow(m_editHex.m_hWnd))
-	{
-		CRect rcHex;
-		rcHex = rcBtnCancel;
-		rcHex.top = rcBtnCancel.bottom + 5;
-		rcHex.bottom = rcHex.top + 18;
-		m_editHex.MoveWindow(&rcHex);
-	}
-
-	// resize the property sheet.
-	CXTPWindowRect rcWindow(this);
-	ClientToScreen(&rcTabCtrl);
-	rcWindow.bottom = rcTabCtrl.bottom + 10;
-	rcWindow.right -= 15;
-	MoveWindow(&rcWindow);
-}
-
-BOOL CXTColorDialog::OnInitDialog()
-{
-	BOOL bResult = CPropertySheet::OnInitDialog();
-
-	CalculateRects();
-	SetActivePage(0);
-
-	if (m_editHex.GetSafeHwnd())
-	{
-		m_editHex.SetFont(GetFont());
-	}
-
-
-	return bResult;
-}
-
-void CXTColorDialog::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	dc.SetBkMode(TRANSPARENT);
-	dc.SetTextColor(GetXtremeColor(COLOR_WINDOWTEXT));
-
-	CXTPFontDC fontDC(&dc, GetFont());
-
-	// get the Cancel button size.
-	CXTPWindowRect rcBtnCancel(GetDlgItem(IDCANCEL));
-	ScreenToClient(&rcBtnCancel);
-
-	// construct the size for the the new / current color box.
-	CXTPClientRect rect(this);
-	rect.right = rcBtnCancel.right;
-	rect.left = rcBtnCancel.left;
-	rect.bottom -= 32;
-	rect.top = rect.bottom - 66;
-
-	// draw the borders for teh new / current color box.
-	if (m_dwStyle & CPS_XT_SHOW3DSELECTION)
-	{
-		rect.InflateRect(3, 3);
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_3DHILIGHT),
-			GetXtremeColor(COLOR_3DDKSHADOW));
-
-		rect.DeflateRect(3, 3);
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_3DSHADOW),
-			GetXtremeColor(COLOR_3DHILIGHT));
-	}
-	else
-	{
-		dc.Draw3dRect(&rect, GetXtremeColor(COLOR_WINDOWFRAME),
-			GetXtremeColor(COLOR_WINDOWFRAME));
-	}
-
-	// draw the new text string.
-	CRect rcText = rect;
-	rcText = rect;
-	rcText.top -= 22;
-	rcText.bottom = rcText.top + 22;
-
-	CString strText;
-	VERIFY(XTPResourceManager()->LoadString(&strText, XT_IDS_NEW));
-	dc.DrawText(strText, rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	// draw the current text string.
-	rcText = rect;
-	rcText.top = rcText.bottom;
-	rcText.bottom = rcText.top + 22;
-
-	VERIFY(XTPResourceManager()->LoadString(&strText, XT_IDS_CURRENT));
-	dc.DrawText(strText, rcText, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	rect.DeflateRect(1, 1);
-	int cy = rect.Height()/2;
-
-	// fill the new color box.
-	m_rcNew = rect;
-	m_rcNew.bottom = rect.top + cy;
-	dc.FillSolidRect(&m_rcNew, m_clrNew);
-
-	// fill the current color box.
-	m_rcCurrent = rect;
-	m_rcCurrent.top = rect.bottom - cy;
-	dc.FillSolidRect(&m_rcCurrent, m_clrCurrent);
-}
-
-void CXTColorDialog::SetNewColor(COLORREF clr, BOOL bNotify/*= TRUE*/)
-{
-	m_clrNew = clr;
-
-	if (IsWindowVisible())
-	{
-		CClientDC dc(this);
-		dc.FillSolidRect(&m_rcNew, m_clrNew);
-
-		if (m_dwStyle & CPS_XT_SHOWHEXVALUE)
-		{
-			m_editHex.SetWindowText(RGBtoHex(m_clrNew));
-		}
-	}
-
-	if (bNotify && GetTabControl() && GetTabControl()->GetSafeHwnd())
-	{
-		int iPage;
-		for (iPage = 0; iPage < GetPageCount(); ++iPage)
-		{
-			GetPage(iPage)->SendMessage(XTWM_UPDATECOLOR,
-				(WPARAM)(COLORREF)m_clrNew);
-		}
-	}
-}
-
-void CXTColorDialog::SetCurrentColor(COLORREF clr)
-{
-	m_clrCurrent = clr;
-
-	if (IsWindowVisible())
-	{
-		CClientDC dc(this);
-		dc.FillSolidRect(&m_rcCurrent, m_clrCurrent);
-	}
-}
-
-BOOL CXTColorDialog::CopyToClipboard(const CString& strText)
-{
-	if (::OpenClipboard(m_hWnd))
-	{
-		::EmptyClipboard();
-
-		HGLOBAL hGlobalBuff = ::GlobalAlloc(GMEM_MOVEABLE, strText.GetLength() + 1);
-		if (!hGlobalBuff)
-		{
-			::CloseClipboard();
-			return FALSE;
-		}
-
-		CHAR* szBuffer = (CHAR*)::GlobalLock(hGlobalBuff);
-
-		WCSTOMBS_S(szBuffer, strText, strText.GetLength() + 1);
-		::GlobalUnlock(hGlobalBuff);
-
-		if (::SetClipboardData(CF_TEXT, hGlobalBuff) == NULL)
-			return FALSE;
-
-		::CloseClipboard();
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-CString CXTColorDialog::RGBtoHex(COLORREF clr)
-{
-	int r = GetRValue(clr);
-	int g = GetGValue(clr);
-	int b = GetBValue(clr);
-
-	CString strHex;
-
-	if (r < 16 && g < 16 && b < 16)
-		strHex.Format(_T("Hex= 0%X0%X0%X"), r, g, b);
-	else if (r < 16 && g < 16)
-		strHex.Format(_T("Hex= 0%X0%X%X"), r, g, b);
-	else if (r < 16 && b < 16)
-		strHex.Format(_T("Hex= 0%X%X0%X"), r, g, b);
-	else if (g < 16 && b < 16)
-		strHex.Format(_T("Hex=%X0%X0%X"), r, g, b);
-	else if (r < 16)
-		strHex.Format(_T("Hex= 0%X%X%X"), r, g, b);
-	else if (g < 16)
-		strHex.Format(_T("Hex=%X0%X%X"), r, g, b);
-	else if (b < 16)
-		strHex.Format(_T("Hex=%X%X0%X"), r, g, b);
-	else
-		strHex.Format(_T("Hex=%X%X%X"), r, g, b);
-
-	return strHex;
-}
-
-int CXTColorDialog::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CPropertySheet::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	if (m_dwStyle & CPS_XT_SHOWHEXVALUE)
-	{
-		if (!m_editHex.CreateEx(WS_EX_STATICEDGE, _T("EDIT"), RGBtoHex(m_clrNew),
-			WS_CHILD | WS_VISIBLE | ES_READONLY, CRect(0, 0, 0, 0), this, AFX_IDC_CHANGE))
-		{
-			TRACE0("Failed to create edit control.\n");
-			return -1;
-		}
-	}
-
-	((CXTColorPageStandard*)GetPage(0))->SetColor(m_clrNew);
-
-	return 0;
-}

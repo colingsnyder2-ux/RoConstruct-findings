@@ -1,1142 +1,143 @@
+// roc 2011-06 008c0670  unit: CXTPDockingPaneMiniWnd  size: 430 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 008c0670
+//
+// 008c0670  6aff                 push -1
+// 008c0672  68a9bfa000           push 0xa0bfa9
+// 008c0677  64a100000000         mov eax, dword ptr fs:[0]
+// 008c067d  50                   push eax
+// 008c067e  83ec30               sub esp, 0x30
+// 008c0681  53                   push ebx
+// 008c0682  55                   push ebp
+// 008c0683  56                   push esi
+// 008c0684  57                   push edi
+// 008c0685  a12058c900           mov eax, dword ptr [0xc95820]
+// 008c068a  33c4                 xor eax, esp
+// 008c068c  50                   push eax
+// 008c068d  8d442444             lea eax, [esp + 0x44]
+// 008c0691  64a300000000         mov dword ptr fs:[0], eax
+// 008c0697  8bf1                 mov esi, ecx
+// 008c0699  89742418             mov dword ptr [esp + 0x18], esi
+// 008c069d  e87ef5ffff           call 0x8bfc20
+// 008c06a2  85c0                 test eax, eax
+// 008c06a4  0f84c7000000         je 0x8c0771
+// 008c06aa  56                   push esi
+// 008c06ab  8d4c2438             lea ecx, [esp + 0x38]
+// 008c06af  e87cc6f9ff           call 0x85cd30
+// 008c06b4  8b442434             mov eax, dword ptr [esp + 0x34]
+// 008c06b8  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 008c06bc  8d54241c             lea edx, [esp + 0x1c]
+// 008c06c0  8944241c             mov dword ptr [esp + 0x1c], eax
+// 008c06c4  8b4620               mov eax, dword ptr [esi + 0x20]
+// 008c06c7  52                   push edx
+// 008c06c8  50                   push eax
+// 008c06c9  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008c06cd  ff15f419a400         call dword ptr [0xa419f4]
+// 008c06d3  8bce                 mov ecx, esi
+// 008c06d5  e844bf1000           call 0x9cc61e
+// 008c06da  a900004000           test eax, 0x400000
+// 008c06df  740c                 je 0x8c06ed
+// 008c06e1  8b4c2434             mov ecx, dword ptr [esp + 0x34]
+// 008c06e5  2b4c243c             sub ecx, dword ptr [esp + 0x3c]
+// 008c06e9  014c241c             add dword ptr [esp + 0x1c], ecx
+// 008c06ed  8b8624010000         mov eax, dword ptr [esi + 0x124]
+// 008c06f3  33ff                 xor edi, edi
+// 008c06f5  397808               cmp dword ptr [eax + 8], edi
+// 008c06f8  7e77                 jle 0x8c0771
+// 008c06fa  8b1d601ca400         mov ebx, dword ptr [0xa41c60]
+// 008c0700  8b2d101ca400         mov ebp, dword ptr [0xa41c10]
+// 008c0706  85ff                 test edi, edi
+// 008c0708  0f8c0b010000         jl 0x8c0819
+// 008c070e  3b7808               cmp edi, dword ptr [eax + 8]
+// 008c0711  0f8d02010000         jge 0x8c0819
+// 008c0717  8b5004               mov edx, dword ptr [eax + 4]
+// 008c071a  8b34ba               mov esi, dword ptr [edx + edi*4]
+// 008c071d  8d04ba               lea eax, [edx + edi*4]
+// 008c0720  8b06                 mov eax, dword ptr [esi]
+// 008c0722  89442424             mov dword ptr [esp + 0x24], eax
+// 008c0726  8b4e04               mov ecx, dword ptr [esi + 4]
+// 008c0729  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008c072d  8b5608               mov edx, dword ptr [esi + 8]
+// 008c0730  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 008c0734  8954242c             mov dword ptr [esp + 0x2c], edx
+// 008c0738  8b460c               mov eax, dword ptr [esi + 0xc]
+// 008c073b  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 008c073f  51                   push ecx
+// 008c0740  89442434             mov dword ptr [esp + 0x34], eax
+// 008c0744  52                   push edx
+// 008c0745  8d44242c             lea eax, [esp + 0x2c]
+// 008c0749  50                   push eax
+// 008c074a  ffd3                 call ebx
+// 008c074c  8b4c2458             mov ecx, dword ptr [esp + 0x58]
+// 008c0750  8b542454             mov edx, dword ptr [esp + 0x54]
+// 008c0754  51                   push ecx
+// 008c0755  52                   push edx
+// 008c0756  8d44242c             lea eax, [esp + 0x2c]
+// 008c075a  50                   push eax
+// 008c075b  ffd5                 call ebp
+// 008c075d  85c0                 test eax, eax
+// 008c075f  7529                 jne 0x8c078a
+// 008c0761  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 008c0765  8b8124010000         mov eax, dword ptr [ecx + 0x124]
+// 008c076b  47                   inc edi
+// 008c076c  3b7808               cmp edi, dword ptr [eax + 8]
+// 008c076f  7c95                 jl 0x8c0706
+// 008c0771  83c8ff               or eax, 0xffffffff
+// 008c0774  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 008c0778  64890d00000000       mov dword ptr fs:[0], ecx
+// 008c077f  59                   pop ecx
+// 008c0780  5f                   pop edi
+// 008c0781  5e                   pop esi
+// 008c0782  5d                   pop ebp
+// 008c0783  5b                   pop ebx
+// 008c0784  83c43c               add esp, 0x3c
+// 008c0787  c20c00               ret 0xc
+// 008c078a  8b7614               mov esi, dword ptr [esi + 0x14]
+// 008c078d  8d4c2414             lea ecx, [esp + 0x14]
+// 008c0791  ff15b42da400         call dword ptr [0xa42db4]
+// 008c0797  c744244c00000000     mov dword ptr [esp + 0x4c], 0
+// 008c079f  e89cf7fbff           call 0x87ff40
+// 008c07a4  8b10                 mov edx, dword ptr [eax]
+// 008c07a6  8b5208               mov edx, dword ptr [edx + 8]
+// 008c07a9  56                   push esi
+// 008c07aa  8d4c2418             lea ecx, [esp + 0x18]
+// 008c07ae  51                   push ecx
+// 008c07af  8bc8                 mov ecx, eax
+// 008c07b1  ffd2                 call edx
+// 008c07b3  8d4c2414             lea ecx, [esp + 0x14]
+// 008c07b7  ff15a826a400         call dword ptr [0xa426a8]
+// 008c07bd  85c0                 test eax, eax
+// 008c07bf  750c                 jne 0x8c07cd
+// 008c07c1  8d4c2414             lea ecx, [esp + 0x14]
+// 008c07c5  ff15082ea400         call dword ptr [0xa42e08]
+// 008c07cb  eba4                 jmp 0x8c0771
+// 008c07cd  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008c07d1  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008c07d5  8d442414             lea eax, [esp + 0x14]
+// 008c07d9  50                   push eax
+// 008c07da  56                   push esi
+// 008c07db  83ec10               sub esp, 0x10
+// 008c07de  8bc4                 mov eax, esp
+// 008c07e0  8908                 mov dword ptr [eax], ecx
+// 008c07e2  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 008c07e6  895004               mov dword ptr [eax + 4], edx
+// 008c07e9  8b542448             mov edx, dword ptr [esp + 0x48]
+// 008c07ed  894808               mov dword ptr [eax + 8], ecx
+// 008c07f0  89500c               mov dword ptr [eax + 0xc], edx
+// 008c07f3  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008c07f7  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 008c07fa  8b542474             mov edx, dword ptr [esp + 0x74]
+// 008c07fe  51                   push ecx
+// 008c07ff  52                   push edx
+// 008c0800  e89b10fbff           call 0x8718a0
+// 008c0805  83c420               add esp, 0x20
+// 008c0808  8d4c2414             lea ecx, [esp + 0x14]
+// 008c080c  ff15082ea400         call dword ptr [0xa42e08]
+// 008c0812  8bc6                 mov eax, esi
+// 008c0814  e95bffffff           jmp 0x8c0774
+// 008c0819  e8ec9af4ff           call 0x80a30a
+// copied from an identical function in another client (function ?OnToolHitTest@CXTPDockingPaneMiniWnd@@MBEHVCPoint@@PAUtagTOOLINFOA@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\DockingPane\XTPDockingPaneMiniWnd.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPDockingPaneMiniWnd.cpp : implementation of the CXTPDockingPaneMiniWnd class.
-//
-// This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPToolTipContext.h"
-#include "Common/XTPResourceManager.h"
-#include "TabManager/XTPTabManager.h"
-
-
-#include "XTPDockingPaneMiniWnd.h"
-#include "XTPDockingPane.h"
-#include "XTPDockingPaneSplitterContainer.h"
-#include "XTPDockingPaneTabbedContainer.h"
-#include "XTPDockingPaneContext.h"
-#include "XTPDockingPaneManager.h"
-#include "XTPDockingPaneLayout.h"
-#include "XTPDockingPaneAutoHidePanel.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-BOOL CXTPDockingPaneMiniWnd::m_bShowPinButton = TRUE;
-
-#define TID_NCLEAVE 2345
-
-#define TID_CHECKACTIVE 1
-#define TID_SLIDEIN 2
-#define TID_SLIDEOUT 3
-
-#ifndef LWA_ALPHA
-#define LWA_ALPHA               0x00000002
-#endif
-#ifndef WS_EX_LAYERED
-#define WS_EX_LAYERED           0x00080000
-#endif
-
-
-IMPLEMENT_DYNAMIC(CXTPDockingPaneMiniWnd, CMiniFrameWnd)
-
-AFX_INLINE int ResetStepsCount()
-{
-	if (CXTPDockingPaneAutoHideWnd::m_nAnimationInterval == 0)
-		return 1;
-
-	return max(1, CXTPDockingPaneAutoHideWnd::m_nAnimationDuration / CXTPDockingPaneAutoHideWnd::m_nAnimationInterval);
-}
-
-CXTPDockingPaneMiniWnd::CXTPDockingPaneMiniWnd(CXTPDockingPaneLayout* pLayout)
-	: CXTPDockingPaneBase(xtpPaneTypeMiniWnd, pLayout)
-{
-	m_pTopContainer = NULL;
-
-	m_pCaptionButtons = new CXTPDockingPaneCaptionButtons();
-	m_pCaptionButtons->Add(new CXTPDockingPaneCaptionButton(XTP_IDS_DOCKINGPANE_CLOSE, this));
-	m_pCaptionButtons->Add(new CXTPDockingPaneCaptionButton(XTP_IDS_DOCKINGPANE_AUTOHIDE, this));
-	m_pCaptionButtons->Add(new CXTPDockingPaneCaptionButton(XTP_IDS_DOCKINGPANE_MENU, this));
-
-	m_bSlideOut = m_bExpanded = m_bCollapsed = FALSE;
-	m_nExpandedHeight = 0;
-
-	m_nSlideStep = 0;
-	m_nStepsCount = ResetStepsCount();
-
-	m_bDelayInvalidate = FALSE;
-	m_nDeactivationCount = 0;
-
-}
-
-void CXTPDockingPaneMiniWnd::Init(CXTPDockingPaneBase* pPane, CRect rc)
-{
-	m_rcWindow = rc;
-	CreateContainer();
-
-	if (pPane->GetType() == xtpPaneTypeDockingPane)
-	{
-		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)GetDockingPaneManager()->
-			OnCreatePane(xtpPaneTypeTabbedContainer, m_pLayout);
-		pContainer->Init((CXTPDockingPane*)pPane, this);
-
-		pPane = pContainer;
-
-	}
-
-	m_pTopContainer = (CXTPDockingPaneSplitterContainer*)GetDockingPaneManager()->
-		OnCreatePane(xtpPaneTypeSplitterContainer, m_pLayout);
-	m_pTopContainer->Init(pPane, TRUE, this);
-
-	m_pTopContainer->m_pParentContainer = this;
-
-	m_bDelayInvalidate = TRUE;
-	PostMessage(WM_IDLEUPDATECMDUI);
-	DelayRecalcLayout();
-
-	OnFocusChanged();
-}
-
-CXTPDockingPaneMiniWnd::~CXTPDockingPaneMiniWnd()
-{
-	DestroyWindow();
-}
-
-void CXTPDockingPaneMiniWnd::Copy(CXTPDockingPaneMiniWnd* pClone, CXTPPaneToPaneMap* pMap)
-{
-	ASSERT(pMap);
-
-	m_pTopContainer = (CXTPDockingPaneSplitterContainer*)pClone->m_pTopContainer->Clone(m_pLayout, pMap);
-	m_pTopContainer->m_pParentContainer = this;
-	m_pTopContainer->m_pDockingSite = this;
-
-	m_rcWindow = pClone->m_rcWindow;
-	if (pClone->m_hWnd) ::GetWindowRect(pClone->m_hWnd, &m_rcWindow);
-
-	m_bCollapsed = ((CXTPDockingPaneMiniWnd*)pClone)->m_bCollapsed;
-	m_nExpandedHeight = ((CXTPDockingPaneMiniWnd*)pClone)->m_nExpandedHeight;
-
-	if (m_bCollapsed)
-	{
-		m_rcWindow.bottom = m_rcWindow.top + GetPaintManager()->GetCaptionHeight() + 8;
-	}
-
-	if (!m_pLayout->IsUserLayout())
-	{
-		CreateContainer();
-		m_pTopContainer->OnParentContainerChanged(m_pTopContainer);
-		OnChildContainerChanged(m_pTopContainer);
-	}
-}
-
-
-CXTPDockingPaneBase* CXTPDockingPaneMiniWnd::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
-{
-	ASSERT(pMap);
-
-	CXTPDockingPaneMiniWnd* pPane = (CXTPDockingPaneMiniWnd*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
-
-	pPane->Copy(this, pMap);
-
-	SAFE_CALLPTR(pMap, SetAt(this, pPane));
-
-	return pPane;
-
-
-}
-
-void CXTPDockingPaneMiniWnd::RemovePane(CXTPDockingPaneBase* pPane)
-{
-	ASSERT(pPane == m_pTopContainer);
-
-	pPane->m_pParentContainer = NULL;
-	m_pTopContainer = NULL;
-
-	if (m_hWnd) ShowWindow(SW_HIDE);
-
-	if (m_bCollapsed)
-		OnPinButtonClick();
-
-}
-
-void CXTPDockingPaneMiniWnd::InvalidatePane(BOOL /*bSelectionChanged*/)
-{
-	if (!m_pTopContainer)
-		return;
-
-	if (!m_hWnd)
-		return;
-
-	CXTPDockingPaneBaseList lstTabbed;
-
-	FindPane(xtpPaneTypeTabbedContainer, &lstTabbed);
-	int nCount = (int)lstTabbed.GetCount();
-
-	POSITION pos = lstTabbed.GetHeadPosition();
-	while (pos)
-	{
-		CXTPDockingPaneBase* pPane = lstTabbed.GetNext(pos);
-		ASSERT(pPane->GetType() == xtpPaneTypeTabbedContainer);
-		((CXTPDockingPaneTabbedContainer*)pPane)->ShowTitle(nCount != 1);
-	}
-	CString strTitle = (nCount != 1) ? GetDockingPaneManager()->m_strFloatingFrameCaption : ((CXTPDockingPaneTabbedContainer*)lstTabbed.GetHead())->GetTitle();
-	SetWindowText(strTitle);
-
-	if ((GetStyle() & WS_VISIBLE) == 0 && nCount > 0 && m_hWnd)
-		ShowWindow(SW_SHOWNOACTIVATE);
-
-	if (nCount > 0)
-	{
-		BOOL bEnabled = FALSE;
-
-		CXTPDockingPaneBaseList lstChilds;
-
-		FindPane(xtpPaneTypeDockingPane, &lstChilds);
-		pos = lstChilds.GetHeadPosition();
-
-		while (pos)
-		{
-			CXTPDockingPaneBase* pPane = lstChilds.GetNext(pos);
-
-			if ((((CXTPDockingPane*)pPane)->GetOptions() & xtpPaneNoCloseable) == 0)
-				bEnabled = TRUE;
-		}
-
-		if (!bEnabled || !m_bCloseEnabled)
-		{
-			CMenu* pSysMenu = GetSystemMenu(FALSE);
-			pSysMenu->EnableMenuItem(SC_CLOSE, MF_BYCOMMAND | (bEnabled ? MF_ENABLED : MF_DISABLED));
-			m_bCloseEnabled = bEnabled;
-		}
-		if ((GetStyle() & WS_CHILD) == 0) MoveWindow(CXTPWindowRect(this));
-	}
-	SendMessage(WM_NCPAINT);
-
-	OnFocusChanged();
-}
-
-void CXTPDockingPaneMiniWnd::CreateContainer()
-{
-	if (!m_hWnd)
-	{
-		Create(m_rcWindow);
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnChildContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
-{
-	if (!m_hWnd)
-		return;
-
-	if (m_pTopContainer == NULL || m_pTopContainer->IsEmpty())
-	{
-		DestroyWindow();
-	}
-	else
-	{
-		m_bDelayInvalidate = TRUE;
-		PostMessage(WM_IDLEUPDATECMDUI);
-	}
-}
-
-
-void CXTPDockingPaneMiniWnd::RecalcLayout(BOOL /*bNotify*/)
-{
-	if (m_pTopContainer == NULL)
-		return;
-
-	if (m_bInRecalcLayout)
-		return;
-
-	m_bInRecalcLayout = TRUE;
-
-	m_nIdleFlags &= ~(idleLayout | idleNotify);
-
-	if (m_pTopContainer->IsEmpty())
-	{
-		ShowWindow(SW_HIDE);
-
-		if (m_bCollapsed)
-			OnPinButtonClick();
-	}
-	else
-	{
-		//ShowWindow(SW_SHOW);
-
-		AFX_SIZEPARENTPARAMS layout;
-		layout.bStretch = TRUE;
-		GetClientRect(&layout.rect);
-		layout.hDWP = ::BeginDeferWindowPos(8); // reasonable guess
-
-		m_pTopContainer->OnSizeParent(this, layout.rect, &layout);
-
-		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
-			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
-
-		CWnd::GetWindowRect(&m_pTopContainer->m_rcWindow);
-		ScreenToClient(&m_pTopContainer->m_rcWindow);
-	}
-
-	GetDockingPaneManager()->SyncPanesState();
-
-	m_bInRecalcLayout = FALSE;
-}
-
-
-BOOL CXTPDockingPaneMiniWnd::Create(CRect rc)
-{
-	DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_BORDER |
-		MFS_BLOCKSYSMENU | WS_THICKFRAME | (GetDockingPaneManager()->m_bSyncActiveFloatingFrames ? MFS_SYNCACTIVE : 0);
-
-	DWORD dwExStyle = 0;
-
-	if (GetDockingPaneManager()->IsLayoutRTL())
-	{
-		dwExStyle = WS_EX_LAYOUTRTL;
-	}
-
-	CXTPDockingPaneContext::EnsureVisible(rc);
-
-
-	if (!CMiniFrameWnd::CreateEx(dwExStyle,
-		_T("XTPDockingPaneMiniWnd"), _T(""), dwStyle, rc, GetDockingPaneManager()->GetSite()))
-	{
-		return FALSE;
-	}
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	pSysMenu->DeleteMenu(SC_MINIMIZE, MF_BYCOMMAND);
-	pSysMenu->DeleteMenu(SC_MAXIMIZE, MF_BYCOMMAND);
-	pSysMenu->DeleteMenu(SC_RESTORE, MF_BYCOMMAND);
-	CString strHide;
-	if (strHide.LoadString(AFX_IDS_HIDE))
-	{
-		pSysMenu->DeleteMenu(SC_CLOSE, MF_BYCOMMAND);
-		pSysMenu->AppendMenu(MF_STRING | MF_ENABLED, SC_CLOSE, strHide);
-	}
-	m_bCloseEnabled = TRUE;
-
-	if (IsThemed())
-	{
-		ModifyStyle(WS_BORDER | WS_THICKFRAME, 0, SWP_FRAMECHANGED);
-	}
-
-	SetWindowPos(0, rc.left, rc.top, rc.Width(), rc.Height(), SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-
-	UpdateWindowOpacity();
-
-	return TRUE;
-
-
-}
-
-BEGIN_MESSAGE_MAP(CXTPDockingPaneMiniWnd, CMiniFrameWnd)
-	ON_WM_CLOSE()
-	ON_WM_NCLBUTTONDOWN()
-	ON_WM_NCRBUTTONDOWN()
-	ON_WM_NCLBUTTONDBLCLK()
-	ON_WM_DESTROY()
-
-	ON_WM_NCHITTEST_EX()
-	ON_WM_NCPAINT()
-	ON_WM_NCCALCSIZE()
-	ON_WM_NCMOUSEMOVE()
-	ON_WM_TIMER()
-	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
-	ON_WM_GETMINMAXINFO()
-	ON_WM_SETFOCUS()
-	ON_WM_NCACTIVATE()
-	ON_WM_SIZING()
-END_MESSAGE_MAP()
-
-void CXTPDockingPaneMiniWnd::OnSizing(UINT nSide, LPRECT lpRect)
-{
-	CMiniFrameWnd::OnSizing(nSide, lpRect);
-
-	GetDockingPaneManager()->GetDockingContext()->OnSizingFloatingFrame(this, nSide, lpRect);
-}
-
-void CXTPDockingPaneMiniWnd::UpdateWindowOpacity()
-{
-	if (!GetSafeHwnd())
-		return;
-
-	CXTPDockingPaneManager::PFNSETLAYEREDWINDOWATTRIBUTES pfnSetLayeredWindowAttributes =
-		GetDockingPaneManager()->m_pfnSetLayeredWindowAttributes;
-
-	if (!pfnSetLayeredWindowAttributes)
-		return;
-
-	int nFloatingFramesOpacity = GetDockingPaneManager()->m_nFloatingFramesOpacity;
-	if (nFloatingFramesOpacity == 255)
-	{
-		ModifyStyleEx(WS_EX_LAYERED, 0);
-		return;
-	}
-
-	if (!m_bActive)
-	{
-		ModifyStyleEx(0, WS_EX_LAYERED);
-		pfnSetLayeredWindowAttributes(m_hWnd, 0x00, (BYTE)nFloatingFramesOpacity, LWA_ALPHA);
-	}
-	else
-	{
-		pfnSetLayeredWindowAttributes(m_hWnd, 0x00, (BYTE)255, LWA_ALPHA);
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnFocusChanged()
-{
-	if (GetSafeHwnd())
-	{
-		CWnd* pFocus = GetFocus();
-		BOOL bActive = (pFocus->GetSafeHwnd() && (pFocus == this || IsChild(pFocus) ||
-			(pFocus->GetOwner()->GetSafeHwnd() && IsChild(pFocus->GetOwner()))));
-
-		if (bActive != m_bActive)
-		{
-			m_bActive = bActive;
-
-			if (IsThemed())
-			{
-				SendMessage(WM_NCPAINT);
-			}
-			UpdateWindowOpacity();
-		}
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnIdleUpdateCmdUI()
-{
-	if (!GetSafeHwnd())
-		return;
-
-	if (m_bDelayInvalidate)
-	{
-		m_bDelayInvalidate = FALSE;
-		InvalidatePane(FALSE);
-	}
-
-	CMiniFrameWnd::OnIdleUpdateCmdUI();
-}
-
-
-void CXTPDockingPaneMiniWnd::OnClose()
-{
-	if (m_pTopContainer)
-	{
-		CXTPDockingPaneManager* pManager = GetDockingPaneManager();
-
-		CXTPDockingPaneBaseList lst;
-		FindPane(xtpPaneTypeDockingPane, &lst);
-
-		POSITION pos = lst.GetHeadPosition();
-		while (pos)
-		{
-			CXTPDockingPane* pPane = (CXTPDockingPane*)lst.GetNext(pos);
-
-			if ((pPane->GetOptions() & xtpPaneNoCloseable) != 0)
-				continue;
-
-			pPane->InternalAddRef();
-
-			if (!pManager->_OnAction(xtpPaneActionClosing, pPane))
-			{
-				pPane->Close();
-				pManager->_OnAction(xtpPaneActionClosed, pPane);
-			}
-
-			pPane->InternalRelease();
-		}
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnSetFocus(CWnd* pOldWnd)
-{
-	CMiniFrameWnd::OnSetFocus(pOldWnd);
-
-	if (m_pTopContainer == 0)
-		return;
-
-	if (!m_pLayout || !m_pLayout->IsValid())
-		return;
-
-	CXTPDockingPaneBaseList lst;
-	FindPane(xtpPaneTypeTabbedContainer, &lst);
-
-	if (lst.GetCount() == 1)
-	{
-		CXTPDockingPane* pPane =
-			((CXTPDockingPaneTabbedContainer*)lst.GetHead())->GetSelected();
-		if (pPane)
-		{
-			pPane->SetFocus();
-		}
-	}
-
-	GetDockingPaneManager()->UpdatePanes();
-}
-
-void CXTPDockingPaneMiniWnd::PostNcDestroy()
-{
-	// prevent auto deleting
-}
-
-void CXTPDockingPaneMiniWnd::FindPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
-{
-	if (GetType() == type)
-	{
-		pList->AddTail((CXTPDockingPaneBase*)this);
-	}
-	else if (m_pTopContainer)
-	{
-		m_pTopContainer->FindPane(type, pList);
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnNcRButtonDown(UINT nHitTest, CPoint point)
-{
-	if (nHitTest == HTCAPTION)
-	{
-		CXTPDockingPaneBaseList lst;
-		FindPane(xtpPaneTypeTabbedContainer, &lst);
-
-		CXTPDockingPane* pSelectedPane = 0;
-		if (lst.GetCount() == 1)
-		{
-			pSelectedPane = ((CXTPDockingPaneTabbedContainer*)lst.GetHead())->GetSelected();
-		}
-		else
-		{
-			POSITION pos = lst.GetHeadPosition();
-			while (pos)
-			{
-				CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)lst.GetNext(pos);
-				if (pContainer->IsActive())
-				{
-					pSelectedPane = pContainer->GetSelected();
-					break;
-				}
-			}
-		}
-
-		if (pSelectedPane)
-		{
-			pSelectedPane->SetFocus();
-			XTP_DOCKINGPANE_CLICK menu;
-			menu.pPane = pSelectedPane;
-			menu.pt = point;
-			menu.rcExclude.SetRectEmpty();
-
-			if (GetDockingPaneManager()->NotifyOwner(XTP_DPN_PANEMENUCLICK, (LPARAM)&menu))
-				return;
-		}
-	}
-
-	CMiniFrameWnd::OnNcRButtonDown(nHitTest, point);
-}
-
-void CXTPDockingPaneMiniWnd::OnNcLButtonDblClk(UINT nHitTest, CPoint /*point*/)
-{
-	if (nHitTest == HTCAPTION)
-	{
-		if (m_bCollapsed)
-			OnPinButtonClick();
-		else
-			GetDockingPaneManager()->ToggleDocking(m_pTopContainer);
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnDestroy()
-{
-	::GetWindowRect(m_hWnd, &m_rcWindow);
-	CWnd::OnDestroy();
-}
-
-
-BOOL CXTPDockingPaneMiniWnd::IsThemed() const
-{
-	return GetDockingPaneManager()->IsThemedFloatingFrames();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Themed methods.
-
-LRESULT CXTPDockingPaneMiniWnd::OnNcHitTest(CPoint point)
-{
-	LRESULT nHitTest = (LRESULT)CMiniFrameWnd::OnNcHitTest(point);
-
-	if (!IsThemed())
-		return nHitTest;
-
-	CXTPWindowRect rcWindow(this);
-	CRect rcBorders = rcWindow;
-	rcBorders.DeflateRect(3, 3);
-
-	if (rcWindow.PtInRect(point) && !rcBorders.PtInRect(point))
-	{
-		int ht = 0;
-
-		if (point.y < rcBorders.top)
-			ht = (HTTOP - HTSIZEFIRST + 1);
-		else if (point.y >= rcBorders.bottom)
-			ht = (HTBOTTOM - HTSIZEFIRST + 1);
-
-		if (point.x < rcBorders.left)
-			ht += (HTLEFT - HTSIZEFIRST + 1);
-		else if (point.x >= rcBorders.right)
-			ht += (HTRIGHT - HTSIZEFIRST + 1);
-
-		return (LRESULT)(ht + HTSIZEFIRST - 1);
-	}
-
-
-	if (nHitTest == HTNOWHERE)
-	{
-		int nPoint = point.y - rcWindow.top;
-		if (nPoint < GetPaintManager()->GetCaptionHeight() + 4)
-			return HTCAPTION;
-	}
-
-	return nHitTest;
-}
-
-void CXTPDockingPaneMiniWnd::RedrawPane()
-{
-	if (!IsThemed())
-		return;
-
-	if (GetSafeHwnd())
-		::InvalidateRect(GetSafeHwnd(), 0, FALSE);
-
-	SendMessage(WM_NCPAINT);
-}
-
-void CXTPDockingPaneMiniWnd::OnNcPaint()
-{
-	if (IsThemed())
-	{
-		CXTPWindowRect rc(this);
-		rc.OffsetRect(-rc.TopLeft());
-		CWindowDC dc(this);
-
-		CXTPDockingPanePaintManager* pPaintManager = GetPaintManager();
-		pPaintManager->DrawFloatingFrame(dc, this, rc);
-	}
-	else
-	{
-		Default();
-	}
-}
-
-BOOL CXTPDockingPaneMiniWnd::OnNcActivate(BOOL bActive)
-{
-	if (IsThemed())
-	{
-		return TRUE;
-	}
-
-	return CMiniFrameWnd::OnNcActivate(bActive);
-}
-
-void CXTPDockingPaneMiniWnd::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
-{
-	if (IsThemed())
-	{
-		int nSize = 3;
-
-		lpncsp->rgrc[0].left += nSize;
-		lpncsp->rgrc[0].top += nSize;
-		lpncsp->rgrc[0].right -= nSize;
-		lpncsp->rgrc[0].bottom -= nSize;
-
-		int nTitleFont = GetPaintManager()->GetCaptionHeight();
-		lpncsp->rgrc[0].top += nTitleFont + 2;
-		return;
-	}
-
-	CMiniFrameWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
-}
-
-void CXTPDockingPaneMiniWnd::OnNcMouseMove(UINT nHitTest, CPoint point)
-{
-	CMiniFrameWnd::OnNcMouseMove(nHitTest, point);
-
-	if (IsThemed())
-	{
-		CXTPDrawHelpers::ScreenToWindow(this, &point);
-
-		if (m_pCaptionButtons->CheckForMouseOver(point))
-		{
-			SetTimer (TID_NCLEAVE, 100, NULL);
-		}
-
-		Expand();
-	}
-}
-
-void CXTPDockingPaneMiniWnd::Collapse(BOOL bDelay)
-{
-	m_nSlideStep = m_nStepsCount = ResetStepsCount();
-
-	CWnd::GetWindowRect(&m_rcWindow);
-
-	m_nExpandedHeight = m_rcWindow.Height();
-
-	m_bCollapsed = TRUE;
-	m_bExpanded = TRUE;
-
-	if (!bDelay)
-	{
-		if (!OnAction(xtpPaneActionCollapsing))
-		{
-			m_nSlideStep = 0;
-			DoSlideStep(FALSE);
-			KillTimer(TID_SLIDEOUT);
-			KillTimer(TID_CHECKACTIVE);
-			OnAction(xtpPaneActionCollapsed);
-			return;
-		}
-	}
-
-	if (m_bSlideOut)
-	{
-		m_bSlideOut = FALSE;
-		KillTimer(TID_SLIDEOUT);
-		OnAction(xtpPaneActionCollapsed);
-	}
-
-	m_nDeactivationCount = 6;
-	SetTimer(TID_CHECKACTIVE, 100, NULL);
-}
-
-void CXTPDockingPaneMiniWnd::OnCaptionButtonClick(CXTPDockingPaneCaptionButton* pButton)
-{
-	if (pButton->GetID() == XTP_IDS_DOCKINGPANE_CLOSE)
-	{
-		OnClose();
-		return;
-	}
-	if (pButton->GetID() == XTP_IDS_DOCKINGPANE_AUTOHIDE)
-	{
-		OnPinButtonClick();
-		return;
-	}
-	if (pButton->GetID() == XTP_IDS_DOCKINGPANE_MENU)
-	{
-
-	}
-}
-
-BOOL CXTPDockingPaneMiniWnd::OnCaptionButtonDown(CXTPDockingPaneCaptionButton* pButton)
-{
-	switch (pButton->GetID())
-	{
-	case XTP_IDS_DOCKINGPANE_MENU:
-		CXTPDockingPane* pSelectedPane = GetSelectedPane();
-		if (pSelectedPane)
-		{
-			m_bActive = TRUE;
-
-			CXTPDockingPaneManager* pManager = GetDockingPaneManager();
-			XTP_DOCKINGPANE_CLICK menu;
-
-			menu.rcExclude = pButton->GetRect();
-			CXTPWindowRect rcWindow(this);
-
-			if (GetExStyle() & WS_EX_LAYOUTRTL)
-			{
-				menu.rcExclude.OffsetRect(-menu.rcExclude.left + rcWindow.right - menu.rcExclude.right, rcWindow.top);
-				menu.pt = CPoint(menu.rcExclude.right, menu.rcExclude.bottom);
-			}
-			else
-			{
-				menu.rcExclude.OffsetRect(rcWindow.left, rcWindow.top);
-				menu.pt = CPoint(menu.rcExclude.left, menu.rcExclude.bottom);
-			}
-
-			menu.pPane = pSelectedPane;
-			pButton->m_bPressed = TRUE;
-			SendMessage(WM_NCPAINT);
-
-			pManager->NotifyOwner(XTP_DPN_PANEMENUCLICK, (LPARAM)&menu);
-
-			pButton->m_bPressed = FALSE;
-			if (m_hWnd) SendMessage(WM_NCPAINT);
-		}
-		return TRUE;
-
-	}
-	return FALSE;
-}
-
-BOOL CXTPDockingPaneMiniWnd::OnAction(XTPDockingPaneAction action)
-{
-	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
-	CXTPDockingPaneBaseList lstChilds;
-
-	FindPane(xtpPaneTypeDockingPane, &lstChilds);
-	POSITION pos = lstChilds.GetHeadPosition();
-
-	while (pos)
-	{
-		CXTPDockingPane* pPane = (CXTPDockingPane*)lstChilds.GetNext(pos);
-
-		if (pManager->_OnAction(action, pPane))
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
-void CXTPDockingPaneMiniWnd::OnPinButtonClick()
-{
-	if (!m_hWnd)
-		return;
-
-	BOOL bPinning = m_bCollapsed;
-
-	if (OnAction(bPinning ? xtpPaneActionPinning : xtpPaneActionUnpinning))
-		return;
-
-	if (!m_bCollapsed)
-	{
-		Collapse(TRUE);
-	}
-	else
-	{
-		if (m_nStepsCount != m_nSlideStep)
-		{
-			CXTPWindowRect rcWindow(this);
-			SetWindowPos(0, 0, 0, rcWindow.Width(), m_nExpandedHeight, SWP_NOZORDER | SWP_NOMOVE);
-		}
-		m_bCollapsed = FALSE;
-		m_bExpanded = FALSE;
-
-		KillTimer(TID_CHECKACTIVE);
-		KillTimer(TID_SLIDEOUT);
-
-	}
-	SendMessage(WM_NCPAINT);
-
-	OnAction(bPinning ? xtpPaneActionPinned : xtpPaneActionUnpinned);
-}
-
-void CXTPDockingPaneMiniWnd::DoSlideStep(BOOL bActivate)
-{
-	int nMinHeight = GetPaintManager()->GetCaptionHeight() + 8;
-
-	CXTPWindowRect rc(this);
-	rc.bottom = rc.top + max(nMinHeight, m_nSlideStep * m_nExpandedHeight / m_nStepsCount);
-
-	SetWindowPos(&CWnd::wndTop, rc.left, rc.top, rc.Width(), rc.Height(), (!bActivate ? SWP_NOZORDER | SWP_NOACTIVATE : SWP_NOACTIVATE));
-	Invalidate(FALSE);
-}
-
-CXTPDockingPane* CXTPDockingPaneMiniWnd::GetSelectedPane() const
-{
-	if (!m_pTopContainer)
-		return 0;
-
-	CXTPDockingPaneBaseList lst;
-	FindPane(xtpPaneTypeTabbedContainer, &lst);
-	int nCount = (int)lst.GetCount();
-	if (nCount != 1)
-		return 0;
-
-	return ((CXTPDockingPaneTabbedContainer*)lst.GetHead())->GetSelected();
-}
-
-BOOL CXTPDockingPaneMiniWnd::IsCaptionButtonVisible(CXTPDockingPaneCaptionButton* pButton)
-{
-	if (pButton->GetID() == XTP_IDS_DOCKINGPANE_CLOSE)
-		return m_bCloseEnabled;
-
-	if (pButton->GetID() == XTP_IDS_DOCKINGPANE_AUTOHIDE)
-	{
-		pButton->SetState(m_bCollapsed ? xtpPanePinPushed : 0);
-		return m_bShowPinButton;
-	}
-	if (pButton->GetID() == XTP_IDS_DOCKINGPANE_MENU)
-	{
-		CXTPDockingPane* pSelectedPane = GetSelectedPane();
-		return pSelectedPane && (pSelectedPane->GetOptions() & xtpPaneHasMenuButton);
-	}
-
-	return TRUE;
-}
-
-
-void CXTPDockingPaneMiniWnd::OnNcLButtonDown(UINT nHitTest, CPoint point)
-{
-	if (IsThemed())
-	{
-		CPoint ptClick(point);
-		CXTPDrawHelpers::ScreenToWindow(this, &ptClick);
-
-		for (int i = 0; i < m_pCaptionButtons->GetSize(); i++)
-		{
-			CXTPDockingPaneCaptionButton* pButton = m_pCaptionButtons->GetAt(i);
-			if (pButton->PtInRect(ptClick))
-			{
-				if (!pButton->IsEnabled())
-					return;
-
-				if (OnCaptionButtonDown(pButton))
-					return;
-
-				if (pButton->Click(this, ptClick, FALSE))
-				{
-					OnCaptionButtonClick(pButton);
-				}
-				return;
-			}
-		}
-	}
-
-	if (nHitTest == HTCAPTION)
-	{
-		// special activation for floating toolbars
-		ActivateTopParent();
-		BringWindowToTop();
-
-		CXTPDockingPaneContext* pContext = GetDockingPaneManager()->GetDockingContext();
-		pContext->Drag(m_pTopContainer, point);
-
-		return;
-	}
-
-	CMiniFrameWnd::OnNcLButtonDown(nHitTest, point);
-
-}
-
-void CXTPDockingPaneMiniWnd::OnTimer(UINT_PTR nIDEvent)
-{
-	if (nIDEvent == TID_NCLEAVE)
-	{
-		CPoint pt;
-		::GetCursorPos (&pt);
-
-		CXTPWindowRect rcCaption(this);
-		rcCaption.bottom = rcCaption.top + GetPaintManager()->GetCaptionHeight() + 4;
-
-		if (!rcCaption.PtInRect(pt))
-		{
-			m_pCaptionButtons->CheckForMouseOver(CPoint(-1, -1));
-
-			KillTimer(TID_NCLEAVE);
-		}
-	}
-
-	if (nIDEvent == TID_SLIDEOUT && m_bSlideOut)
-	{
-		m_nSlideStep--;
-
-		if (m_nSlideStep > -1)
-			DoSlideStep();
-		else
-		{
-			m_bSlideOut = FALSE;
-			m_bExpanded = FALSE;
-			KillTimer(TID_SLIDEOUT);
-			OnAction(xtpPaneActionCollapsed);
-		}
-	}
-
-	if (nIDEvent == TID_CHECKACTIVE)
-	{
-		CPoint pt;
-		GetCursorPos(&pt);
-
-		CWnd* pFocus = GetFocus();
-		BOOL bActive = (pFocus->GetSafeHwnd() && (pFocus == this || IsChild(pFocus)));
-
-		if (!bActive && !m_bSlideOut && !CXTPWindowRect(this).PtInRect(pt) && ::GetCapture() == NULL)
-		{
-			if (--m_nDeactivationCount <= 0)
-			{
-				if (OnAction(xtpPaneActionCollapsing))
-				{
-					m_nDeactivationCount = 6;
-					return;
-				}
-
-				if (m_nSlideStep == m_nStepsCount)
-				{
-					m_nExpandedHeight = CXTPWindowRect(this).Height();
-				}
-
-				m_bSlideOut = TRUE;
-				SetTimer(TID_SLIDEOUT, CXTPDockingPaneAutoHideWnd::m_nAnimationInterval, NULL);
-
-				KillTimer(TID_CHECKACTIVE);
-			}
-		}
-	}
-
-	CMiniFrameWnd::OnTimer(nIDEvent);
-}
-
-
-
-void CXTPDockingPaneMiniWnd::OnThemedChanged()
-{
-	if (!m_hWnd)
-		return;
-
-	ModifyStyle(IsThemed() ? WS_BORDER | WS_THICKFRAME: 0, IsThemed() ? 0 : WS_BORDER | WS_THICKFRAME, SWP_FRAMECHANGED);
-
-	if (!IsThemed() && m_bCollapsed)
-	{
-		OnPinButtonClick();
-	}
-
-	SetWindowPos(0, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-
-	if (m_bCollapsed && IsThemed())
-	{
-		DoSlideStep();
-	}
-}
-
-
-
-void CXTPDockingPaneMiniWnd::Expand()
-{
-	if (m_bCollapsed && m_nSlideStep <= 0)
-	{
-		if (m_bSlideOut)
-		{
-			m_bSlideOut = FALSE;
-			m_bExpanded = FALSE;
-			KillTimer(TID_SLIDEOUT);
-			OnAction(xtpPaneActionCollapsed);
-		}
-
-		if (OnAction(xtpPaneActionExpanding))
-			return;
-
-		m_bExpanded = TRUE;
-		m_nSlideStep = m_nStepsCount = ResetStepsCount();
-		DoSlideStep(TRUE);
-
-		m_nDeactivationCount = 8;
-		SetTimer(TID_CHECKACTIVE, 100, NULL);
-
-		OnAction(xtpPaneActionExpanded);
-	}
-}
-
-void CXTPDockingPaneMiniWnd::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
-{
-	CMiniFrameWnd::OnGetMinMaxInfo(lpMMI);
-
-	if (m_pTopContainer && ((!m_bCollapsed || m_bExpanded) && !m_bSlideOut))
-	{
-		CXTPWindowRect rcWindow(this);
-		CXTPClientRect rcClient(this);
-		CSize szBorder = rcWindow.Size() - rcClient.Size();
-
-		MINMAXINFO mInfo;
-		m_pTopContainer->GetMinMaxInfo(&mInfo);
-
-		lpMMI->ptMinTrackSize.x = max(lpMMI->ptMinTrackSize.x, mInfo.ptMinTrackSize.x + szBorder.cx);
-		lpMMI->ptMinTrackSize.y = max(lpMMI->ptMinTrackSize.y, mInfo.ptMinTrackSize.y + szBorder.cy);
-
-		lpMMI->ptMaxTrackSize.x = min(lpMMI->ptMaxTrackSize.x, mInfo.ptMaxTrackSize.x + szBorder.cx);
-		lpMMI->ptMaxTrackSize.y = min(lpMMI->ptMaxTrackSize.y, mInfo.ptMaxTrackSize.y + szBorder.cy);
-	}
-}
-
-BOOL CXTPDockingPaneMiniWnd::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
-
-	if (pManager)
-	{
-		pManager->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
-	}
-
-	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
-}
-
-INT_PTR CXTPDockingPaneMiniWnd::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-
-	ASSERT_VALID(this);
-	ASSERT(::IsWindow(m_hWnd));
-
-	if (!IsThemed())
-		return -1;
-
-	CXTPWindowRect rcWindow(this);
-	CPoint ptTopLeft(rcWindow.TopLeft());
-	ScreenToClient(&ptTopLeft);
-
-	if (GetExStyle() & WS_EX_LAYOUTRTL)
-		ptTopLeft.x -= rcWindow.Width();
-
-	for (int i = 0; i < m_pCaptionButtons->GetSize(); i++)
-	{
-		CXTPDockingPaneCaptionButton* pButton = m_pCaptionButtons->GetAt(i);
-		CRect rc = pButton->GetRect();
-		rc.OffsetRect(ptTopLeft);
-
-		if (rc.PtInRect(point))
-		{
-			INT_PTR nHit = (INT_PTR)pButton->GetID();
-
-			CString strTip;
-			XTPResourceManager()->LoadString(&strTip, (UINT)nHit);
-
-			if (strTip.GetLength() == 0)
-				return -1;
-
-			CXTPToolTipContext::FillInToolInfo(pTI, m_hWnd, rc, nHit, strTip);
-			return nHit;
-		}
-	}
-
-	return -1;
-}
-
-void CXTPDockingPaneMiniWnd::DeletePane()
-{
-	InternalRelease();
-}
-
-void CXTPDockingPaneMiniWnd::OnFinalRelease()
-{
-	if (m_hWnd != NULL)
-		DestroyWindow();
-
-	CCmdTarget::OnFinalRelease();
-}
-
-

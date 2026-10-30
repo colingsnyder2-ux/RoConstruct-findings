@@ -1,294 +1,129 @@
 // from server: 100% by auto
+// roc 2009-06 006c4160  unit: lua_exception  size: 309 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006c4160
+//
+// 006c4160  81ec10020000         sub esp, 0x210
+// 006c4166  53                   push ebx
+// 006c4167  55                   push ebp
+// 006c4168  56                   push esi
+// 006c4169  8bb42420020000       mov esi, dword ptr [esp + 0x220]
+// 006c4170  57                   push edi
+// 006c4171  8d442410             lea eax, [esp + 0x10]
+// 006c4175  50                   push eax
+// 006c4176  6816d28a00           push 0x8ad216
+// 006c417b  6a02                 push 2
+// 006c417d  56                   push esi
+// 006c417e  e89d6bffff           call 0x6bad20
+// 006c4183  6a05                 push 5
+// 006c4185  6a01                 push 1
+// 006c4187  56                   push esi
+// 006c4188  8be8                 mov ebp, eax
+// 006c418a  e8b16affff           call 0x6bac40
+// 006c418f  6a01                 push 1
+// 006c4191  6a03                 push 3
+// 006c4193  56                   push esi
+// 006c4194  e8d76cffff           call 0x6bae70
+// 006c4199  6a04                 push 4
+// 006c419b  56                   push esi
+// 006c419c  8bf8                 mov edi, eax
+// 006c419e  e8cd4dffff           call 0x6b8f70
+// 006c41a3  83c430               add esp, 0x30
+// 006c41a6  85c0                 test eax, eax
+// 006c41a8  7f0a                 jg 0x6c41b4
+// 006c41aa  6a01                 push 1
+// 006c41ac  56                   push esi
+// 006c41ad  e83e50ffff           call 0x6b91f0
+// 006c41b2  eb08                 jmp 0x6c41bc
+// 006c41b4  6a04                 push 4
+// 006c41b6  56                   push esi
+// 006c41b7  e8446cffff           call 0x6bae00
+// 006c41bc  83c408               add esp, 8
+// 006c41bf  8d4c2414             lea ecx, [esp + 0x14]
+// 006c41c3  51                   push ecx
+// 006c41c4  56                   push esi
+// 006c41c5  8bd8                 mov ebx, eax
+// 006c41c7  e8b464ffff           call 0x6ba680
+// 006c41cc  83c408               add esp, 8
+// 006c41cf  3bfb                 cmp edi, ebx
+// 006c41d1  7d5c                 jge 0x6c422f
+// 006c41d3  57                   push edi
+// 006c41d4  6a01                 push 1
+// 006c41d6  56                   push esi
+// 006c41d7  e89454ffff           call 0x6b9670
+// 006c41dc  6aff                 push -1
+// 006c41de  56                   push esi
+// 006c41df  e83c4effff           call 0x6b9020
+// 006c41e4  83c414               add esp, 0x14
+// 006c41e7  85c0                 test eax, eax
+// 006c41e9  7522                 jne 0x6c420d
+// 006c41eb  57                   push edi
+// 006c41ec  6aff                 push -1
+// 006c41ee  56                   push esi
+// 006c41ef  e87c4dffff           call 0x6b8f70
+// 006c41f4  50                   push eax
+// 006c41f5  56                   push esi
+// 006c41f6  e8954dffff           call 0x6b8f90
+// 006c41fb  83c410               add esp, 0x10
+// 006c41fe  50                   push eax
+// 006c41ff  6814b88e00           push 0x8eb814
+// 006c4204  56                   push esi
+// 006c4205  e83660ffff           call 0x6ba240
+// 006c420a  83c410               add esp, 0x10
+// 006c420d  8d542414             lea edx, [esp + 0x14]
+// 006c4211  52                   push edx
+// 006c4212  e8e963ffff           call 0x6ba600
+// 006c4217  8b442414             mov eax, dword ptr [esp + 0x14]
+// 006c421b  50                   push eax
+// 006c421c  8d4c241c             lea ecx, [esp + 0x1c]
+// 006c4220  55                   push ebp
+// 006c4221  51                   push ecx
+// 006c4222  e83963ffff           call 0x6ba560
+// 006c4227  47                   inc edi
+// 006c4228  83c410               add esp, 0x10
+// 006c422b  3bfb                 cmp edi, ebx
+// 006c422d  7ca4                 jl 0x6c41d3
+// 006c422f  7547                 jne 0x6c4278
+// 006c4231  57                   push edi
+// 006c4232  6a01                 push 1
+// 006c4234  56                   push esi
+// 006c4235  e83654ffff           call 0x6b9670
+// 006c423a  6aff                 push -1
+// 006c423c  56                   push esi
+// 006c423d  e8de4dffff           call 0x6b9020
+// 006c4242  83c414               add esp, 0x14
+// 006c4245  85c0                 test eax, eax
+// 006c4247  7522                 jne 0x6c426b
+// 006c4249  57                   push edi
+// 006c424a  6aff                 push -1
+// 006c424c  56                   push esi
+// 006c424d  e81e4dffff           call 0x6b8f70
+// 006c4252  50                   push eax
+// 006c4253  56                   push esi
+// 006c4254  e8374dffff           call 0x6b8f90
+// 006c4259  83c410               add esp, 0x10
+// 006c425c  50                   push eax
+// 006c425d  6814b88e00           push 0x8eb814
+// 006c4262  56                   push esi
+// 006c4263  e8d85fffff           call 0x6ba240
+// 006c4268  83c410               add esp, 0x10
+// 006c426b  8d542414             lea edx, [esp + 0x14]
+// 006c426f  52                   push edx
+// 006c4270  e88b63ffff           call 0x6ba600
+// 006c4275  83c404               add esp, 4
+// 006c4278  8d442414             lea eax, [esp + 0x14]
+// 006c427c  50                   push eax
+// 006c427d  e83e63ffff           call 0x6ba5c0
+// 006c4282  83c404               add esp, 4
+// 006c4285  5f                   pop edi
+// 006c4286  5e                   pop esi
+// 006c4287  5d                   pop ebp
+// 006c4288  b801000000           mov eax, 1
+// 006c428d  5b                   pop ebx
+// 006c428e  81c410020000         add esp, 0x210
+// 006c4294  c3                   ret 
+// library lua-5.1.4/ltablib.c (function _tconcat)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 ltablib.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: ltablib.c,v 1.38.1.3 2008/02/14 16:46:58 roberto Exp $
-** Library for Table Manipulation
-** See Copyright Notice in lua.h
-*/
-
-
-#include <stddef.h>
-
-#define ltablib_c
-#define LUA_LIB
-
-#include "lua.h"
-
-#include "lauxlib.h"
-#include "lualib.h"
-
-
-#define aux_getn(L,n)	(luaL_checktype(L, n, LUA_TTABLE), luaL_getn(L, n))
-
-
-static int foreachi (lua_State *L) {
-  int i;
-  int n = aux_getn(L, 1);
-  luaL_checktype(L, 2, LUA_TFUNCTION);
-  for (i=1; i <= n; i++) {
-    lua_pushvalue(L, 2);  /* function */
-    lua_pushinteger(L, i);  /* 1st argument */
-    lua_rawgeti(L, 1, i);  /* 2nd argument */
-    lua_call(L, 2, 1);
-    if (!lua_isnil(L, -1))
-      return 1;
-    lua_pop(L, 1);  /* remove nil result */
-  }
-  return 0;
-}
-
-
-static int foreach (lua_State *L) {
-  luaL_checktype(L, 1, LUA_TTABLE);
-  luaL_checktype(L, 2, LUA_TFUNCTION);
-  lua_pushnil(L);  /* first key */
-  while (lua_next(L, 1)) {
-    lua_pushvalue(L, 2);  /* function */
-    lua_pushvalue(L, -3);  /* key */
-    lua_pushvalue(L, -3);  /* value */
-    lua_call(L, 2, 1);
-    if (!lua_isnil(L, -1))
-      return 1;
-    lua_pop(L, 2);  /* remove value and result */
-  }
-  return 0;
-}
-
-
-static int maxn (lua_State *L) {
-  lua_Number max = 0;
-  luaL_checktype(L, 1, LUA_TTABLE);
-  lua_pushnil(L);  /* first key */
-  while (lua_next(L, 1)) {
-    lua_pop(L, 1);  /* remove value */
-    if (lua_type(L, -1) == LUA_TNUMBER) {
-      lua_Number v = lua_tonumber(L, -1);
-      if (v > max) max = v;
-    }
-  }
-  lua_pushnumber(L, max);
-  return 1;
-}
-
-
-static int getn (lua_State *L) {
-  lua_pushinteger(L, aux_getn(L, 1));
-  return 1;
-}
-
-
-static int setn (lua_State *L) {
-  luaL_checktype(L, 1, LUA_TTABLE);
-#ifndef luaL_setn
-  luaL_setn(L, 1, luaL_checkint(L, 2));
-#else
-  luaL_error(L, LUA_QL("setn") " is obsolete");
-#endif
-  lua_pushvalue(L, 1);
-  return 1;
-}
-
-
-static int tinsert (lua_State *L) {
-  int e = aux_getn(L, 1) + 1;  /* first empty element */
-  int pos;  /* where to insert new element */
-  switch (lua_gettop(L)) {
-    case 2: {  /* called with only 2 arguments */
-      pos = e;  /* insert new element at the end */
-      break;
-    }
-    case 3: {
-      int i;
-      pos = luaL_checkint(L, 2);  /* 2nd argument is the position */
-      if (pos > e) e = pos;  /* `grow' array if necessary */
-      for (i = e; i > pos; i--) {  /* move up elements */
-        lua_rawgeti(L, 1, i-1);
-        lua_rawseti(L, 1, i);  /* t[i] = t[i-1] */
-      }
-      break;
-    }
-    default: {
-      return luaL_error(L, "wrong number of arguments to " LUA_QL("insert"));
-    }
-  }
-  luaL_setn(L, 1, e);  /* new size */
-  lua_rawseti(L, 1, pos);  /* t[pos] = v */
-  return 0;
-}
-
-
-static int tremove (lua_State *L) {
-  int e = aux_getn(L, 1);
-  int pos = luaL_optint(L, 2, e);
-  if (!(1 <= pos && pos <= e))  /* position is outside bounds? */
-   return 0;  /* nothing to remove */
-  luaL_setn(L, 1, e - 1);  /* t.n = n-1 */
-  lua_rawgeti(L, 1, pos);  /* result = t[pos] */
-  for ( ;pos<e; pos++) {
-    lua_rawgeti(L, 1, pos+1);
-    lua_rawseti(L, 1, pos);  /* t[pos] = t[pos+1] */
-  }
-  lua_pushnil(L);
-  lua_rawseti(L, 1, e);  /* t[e] = nil */
-  return 1;
-}
-
-
-static void addfield (lua_State *L, luaL_Buffer *b, int i) {
-  lua_rawgeti(L, 1, i);
-  if (!lua_isstring(L, -1))
-    luaL_error(L, "invalid value (%s) at index %d in table for "
-                  LUA_QL("concat"), luaL_typename(L, -1), i);
-    luaL_addvalue(b);
-}
-
-
-static int tconcat (lua_State *L) {
-  luaL_Buffer b;
-  size_t lsep;
-  int i, last;
-  const char *sep = luaL_optlstring(L, 2, "", &lsep);
-  luaL_checktype(L, 1, LUA_TTABLE);
-  i = luaL_optint(L, 3, 1);
-  last = luaL_opt(L, luaL_checkint, 4, luaL_getn(L, 1));
-  luaL_buffinit(L, &b);
-  for (; i < last; i++) {
-    addfield(L, &b, i);
-    luaL_addlstring(&b, sep, lsep);
-  }
-  if (i == last)  /* add last value (if interval was not empty) */
-    addfield(L, &b, i);
-  luaL_pushresult(&b);
-  return 1;
-}
-
-
-
-/*
-** {======================================================
-** Quicksort
-** (based on `Algorithms in MODULA-3', Robert Sedgewick;
-**  Addison-Wesley, 1993.)
-*/
-
-
-static void set2 (lua_State *L, int i, int j) {
-  lua_rawseti(L, 1, i);
-  lua_rawseti(L, 1, j);
-}
-
-static int sort_comp (lua_State *L, int a, int b) {
-  if (!lua_isnil(L, 2)) {  /* function? */
-    int res;
-    lua_pushvalue(L, 2);
-    lua_pushvalue(L, a-1);  /* -1 to compensate function */
-    lua_pushvalue(L, b-2);  /* -2 to compensate function and `a' */
-    lua_call(L, 2, 1);
-    res = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return res;
-  }
-  else  /* a < b? */
-    return lua_lessthan(L, a, b);
-}
-
-static void auxsort (lua_State *L, int l, int u) {
-  while (l < u) {  /* for tail recursion */
-    int i, j;
-    /* sort elements a[l], a[(l+u)/2] and a[u] */
-    lua_rawgeti(L, 1, l);
-    lua_rawgeti(L, 1, u);
-    if (sort_comp(L, -1, -2))  /* a[u] < a[l]? */
-      set2(L, l, u);  /* swap a[l] - a[u] */
-    else
-      lua_pop(L, 2);
-    if (u-l == 1) break;  /* only 2 elements */
-    i = (l+u)/2;
-    lua_rawgeti(L, 1, i);
-    lua_rawgeti(L, 1, l);
-    if (sort_comp(L, -2, -1))  /* a[i]<a[l]? */
-      set2(L, i, l);
-    else {
-      lua_pop(L, 1);  /* remove a[l] */
-      lua_rawgeti(L, 1, u);
-      if (sort_comp(L, -1, -2))  /* a[u]<a[i]? */
-        set2(L, i, u);
-      else
-        lua_pop(L, 2);
-    }
-    if (u-l == 2) break;  /* only 3 elements */
-    lua_rawgeti(L, 1, i);  /* Pivot */
-    lua_pushvalue(L, -1);
-    lua_rawgeti(L, 1, u-1);
-    set2(L, i, u-1);
-    /* a[l] <= P == a[u-1] <= a[u], only need to sort from l+1 to u-2 */
-    i = l; j = u-1;
-    for (;;) {  /* invariant: a[l..i] <= P <= a[j..u] */
-      /* repeat ++i until a[i] >= P */
-      while (lua_rawgeti(L, 1, ++i), sort_comp(L, -1, -2)) {
-        if (i>u) luaL_error(L, "invalid order function for sorting");
-        lua_pop(L, 1);  /* remove a[i] */
-      }
-      /* repeat --j until a[j] <= P */
-      while (lua_rawgeti(L, 1, --j), sort_comp(L, -3, -1)) {
-        if (j<l) luaL_error(L, "invalid order function for sorting");
-        lua_pop(L, 1);  /* remove a[j] */
-      }
-      if (j<i) {
-        lua_pop(L, 3);  /* pop pivot, a[i], a[j] */
-        break;
-      }
-      set2(L, i, j);
-    }
-    lua_rawgeti(L, 1, u-1);
-    lua_rawgeti(L, 1, i);
-    set2(L, u-1, i);  /* swap pivot (a[u-1]) with a[i] */
-    /* a[l..i-1] <= a[i] == P <= a[i+1..u] */
-    /* adjust so that smaller half is in [j..i] and larger one in [l..u] */
-    if (i-l < u-i) {
-      j=l; i=i-1; l=i+2;
-    }
-    else {
-      j=i+1; i=u; u=j-2;
-    }
-    auxsort(L, j, i);  /* call recursively the smaller one */
-  }  /* repeat the routine for the larger one */
-}
-
-static int sort (lua_State *L) {
-  int n = aux_getn(L, 1);
-  luaL_checkstack(L, 40, "");  /* assume array is smaller than 2^40 */
-  if (!lua_isnoneornil(L, 2))  /* is there a 2nd argument? */
-    luaL_checktype(L, 2, LUA_TFUNCTION);
-  lua_settop(L, 2);  /* make sure there is two arguments */
-  auxsort(L, 1, n);
-  return 0;
-}
-
-/* }====================================================== */
-
-
-static const luaL_Reg tab_funcs[] = {
-  {"concat", tconcat},
-  {"foreach", foreach},
-  {"foreachi", foreachi},
-  {"getn", getn},
-  {"maxn", maxn},
-  {"insert", tinsert},
-  {"remove", tremove},
-  {"setn", setn},
-  {"sort", sort},
-  {NULL, NULL}
-};
-
-
-LUALIB_API int luaopen_table (lua_State *L) {
-  luaL_register(L, LUA_TABLIBNAME, tab_funcs);
-  return 1;
-}
-

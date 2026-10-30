@@ -1,526 +1,116 @@
+// roc 2010-06 007f52d0  unit: PAUXTP_COMMANDBARS_CATEGORYINFO::?$CArray  size: 328 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 007f52d0
+//
+// 007f52d0  6aff                 push -1
+// 007f52d2  68d42c9b00           push 0x9b2cd4
+// 007f52d7  64a100000000         mov eax, dword ptr fs:[0]
+// 007f52dd  50                   push eax
+// 007f52de  83ec08               sub esp, 8
+// 007f52e1  53                   push ebx
+// 007f52e2  55                   push ebp
+// 007f52e3  56                   push esi
+// 007f52e4  57                   push edi
+// 007f52e5  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
+// 007f52ea  33c4                 xor eax, esp
+// 007f52ec  50                   push eax
+// 007f52ed  8d44241c             lea eax, [esp + 0x1c]
+// 007f52f1  64a300000000         mov dword ptr fs:[0], eax
+// 007f52f7  8bf9                 mov edi, ecx
+// 007f52f9  897c2414             mov dword ptr [esp + 0x14], edi
+// 007f52fd  8d4c2418             lea ecx, [esp + 0x18]
+// 007f5301  ff15a4ce9e00         call dword ptr [0x9ecea4]
+// 007f5307  33db                 xor ebx, ebx
+// 007f5309  895c2424             mov dword ptr [esp + 0x24], ebx
+// 007f530d  e89ed50200           call 0x8228b0
+// 007f5312  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 007f5316  8b10                 mov edx, dword ptr [eax]
+// 007f5318  8b5208               mov edx, dword ptr [edx + 8]
+// 007f531b  51                   push ecx
+// 007f531c  8d4c241c             lea ecx, [esp + 0x1c]
+// 007f5320  51                   push ecx
+// 007f5321  8bc8                 mov ecx, eax
+// 007f5323  ffd2                 call edx
+// 007f5325  6a08                 push 8
+// 007f5327  e87426fbff           call 0x7a79a0
+// 007f532c  8bf0                 mov esi, eax
+// 007f532e  83c404               add esp, 4
+// 007f5331  8974242c             mov dword ptr [esp + 0x2c], esi
+// 007f5335  c644242401           mov byte ptr [esp + 0x24], 1
+// 007f533a  3bf3                 cmp esi, ebx
+// 007f533c  7423                 je 0x7f5361
+// 007f533e  8b8738010000         mov eax, dword ptr [edi + 0x138]
+// 007f5344  8b80b8000000         mov eax, dword ptr [eax + 0xb8]
+// 007f534a  50                   push eax
+// 007f534b  8d4c241c             lea ecx, [esp + 0x1c]
+// 007f534f  ff15b0ce9e00         call dword ptr [0x9eceb0]
+// 007f5355  50                   push eax
+// 007f5356  8bce                 mov ecx, esi
+// 007f5358  e853f5ffff           call 0x7f48b0
+// 007f535d  8be8                 mov ebp, eax
+// 007f535f  eb02                 jmp 0x7f5363
+// 007f5361  33ed                 xor ebp, ebp
+// 007f5363  83bf4401000000       cmp dword ptr [edi + 0x144], 0
+// 007f536a  c644242400           mov byte ptr [esp + 0x24], 0
+// 007f536f  7e64                 jle 0x7f53d5
+// 007f5371  85db                 test ebx, ebx
+// 007f5373  0f8c9a000000         jl 0x7f5413
+// 007f5379  3b9f44010000         cmp ebx, dword ptr [edi + 0x144]
+// 007f537f  0f8d8e000000         jge 0x7f5413
+// 007f5385  8b8f40010000         mov ecx, dword ptr [edi + 0x140]
+// 007f538b  8b1499               mov edx, dword ptr [ecx + ebx*4]
+// 007f538e  8b7a04               mov edi, dword ptr [edx + 4]
+// 007f5391  8b472c               mov eax, dword ptr [edi + 0x2c]
+// 007f5394  33f6                 xor esi, esi
+// 007f5396  85c0                 test eax, eax
+// 007f5398  7e2c                 jle 0x7f53c6
+// 007f539a  85f6                 test esi, esi
+// 007f539c  7c11                 jl 0x7f53af
+// 007f539e  3bf0                 cmp esi, eax
+// 007f53a0  7d0d                 jge 0x7f53af
+// 007f53a2  3b772c               cmp esi, dword ptr [edi + 0x2c]
+// 007f53a5  7d6c                 jge 0x7f5413
+// 007f53a7  8b4728               mov eax, dword ptr [edi + 0x28]
+// 007f53aa  8b04b0               mov eax, dword ptr [eax + esi*4]
+// 007f53ad  eb02                 jmp 0x7f53b1
+// 007f53af  33c0                 xor eax, eax
+// 007f53b1  8b4d04               mov ecx, dword ptr [ebp + 4]
+// 007f53b4  6a00                 push 0
+// 007f53b6  6aff                 push -1
+// 007f53b8  50                   push eax
+// 007f53b9  e8925f0000           call 0x7fb350
+// 007f53be  8b472c               mov eax, dword ptr [edi + 0x2c]
+// 007f53c1  46                   inc esi
+// 007f53c2  3bf0                 cmp esi, eax
+// 007f53c4  7cd4                 jl 0x7f539a
+// 007f53c6  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 007f53ca  43                   inc ebx
+// 007f53cb  3b9944010000         cmp ebx, dword ptr [ecx + 0x144]
+// 007f53d1  8bf9                 mov edi, ecx
+// 007f53d3  7c9c                 jl 0x7f5371
+// 007f53d5  8b442430             mov eax, dword ptr [esp + 0x30]
+// 007f53d9  83f8ff               cmp eax, -1
+// 007f53dc  7506                 jne 0x7f53e4
+// 007f53de  8b8744010000         mov eax, dword ptr [edi + 0x144]
+// 007f53e4  6a01                 push 1
+// 007f53e6  55                   push ebp
+// 007f53e7  50                   push eax
+// 007f53e8  8d8f3c010000         lea ecx, [edi + 0x13c]
+// 007f53ee  e8cd65fbff           call 0x7ab9c0
+// 007f53f3  8d4c2418             lea ecx, [esp + 0x18]
+// 007f53f7  ff15f0ce9e00         call dword ptr [0x9ecef0]
+// 007f53fd  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 007f5401  64890d00000000       mov dword ptr fs:[0], ecx
+// 007f5408  59                   pop ecx
+// 007f5409  5f                   pop edi
+// 007f540a  5e                   pop esi
+// 007f540b  5d                   pop ebp
+// 007f540c  5b                   pop ebx
+// 007f540d  83c414               add esp, 0x14
+// 007f5410  c20800               ret 8
+// 007f5413  e83428fbff           call 0x7a7c4c
+// copied from an identical function in another client (function ?InsertAllCommandsCategory@CXTPCustomizeCommandsPage@@QAEXIH@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\CommandBars\XTPCustomizeCommandsPage.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPCustomizeCommandsPage.cpp : implementation of the CXTPCustomizeCommandsPage class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPControlPopup.h"
-#include "XTPPaintManager.h"
-#include "XTPCustomizeTools.h"
-#include "XTPCustomizeSheet.h"
-#include "XTPCommandBar.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPCustomizeCommandsPage.h"
-#include "XTPMouseManager.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-XTP_COMMANDBARS_CATEGORYINFO::XTP_COMMANDBARS_CATEGORYINFO(LPCTSTR _strCategory, CXTPCommandBars* pCommandBars)
-{
-	strCategory = _strCategory;
-	pControls = new CXTPControls;
-	pControls->SetCommandBars(pCommandBars);
-}
-XTP_COMMANDBARS_CATEGORYINFO::~XTP_COMMANDBARS_CATEGORYINFO()
-{
-	pControls->InternalRelease();
-}
-
-
-
-void CXTPCustomizeCommandsListBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
-{
-	CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
-	CRect rc(lpDrawItemStruct->rcItem);
-	CXTPControl* pControl = (CXTPControl*)lpDrawItemStruct->itemData;
-	if (pControl)
-	{
-		BOOL bSelected = (lpDrawItemStruct->itemState & ODS_SELECTED);
-		CXTPCommandBars* pCommandBars = m_pCommandBars;
-		pCommandBars->GetPaintManager()->DrawListBoxControl(pDC, pControl, rc, bSelected, TRUE, pCommandBars);
-	}
-}
-
-BEGIN_MESSAGE_MAP(CXTPCustomizeCommandsListBox, CListBox)
-	//{{AFX_MSG_MAP(CXTPCustomizeCommandsPage)
-	ON_WM_LBUTTONDOWN()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-LRESULT CXTPCustomizeCommandsListBox::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-	case WM_PAINT:
-		{
-			CPaintDC dc(this);
-			CXTPClientRect rc(this);
-			CXTPBufferDC memDC(dc, rc);
-
-			m_pCommandBars->GetPaintManager()->DrawListBoxControl(&memDC, NULL, CXTPClientRect(this), FALSE, TRUE, m_pCommandBars);
-
-			return CListBox::DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
-		}
-
-	case WM_ERASEBKGND:
-		CDC* pDC = CDC::FromHandle((HDC)wParam);
-
-		m_pCommandBars->GetPaintManager()->DrawListBoxControl(pDC, NULL, CXTPClientRect(this), FALSE, TRUE, m_pCommandBars);
-		return TRUE;
-	}
-
-	return CListBox::WindowProc(message, wParam, lParam);
-}
-
-
-void CXTPCustomizeCommandsListBox::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CXTPCommandBars* pCommandBars = m_pCommandBars;
-	ASSERT(pCommandBars);
-	if (!pCommandBars)
-		return;
-
-	pCommandBars->SetDragControl(NULL);
-
-	BOOL bOutside;
-	int nIndex = (int)ItemFromPoint(point, bOutside);
-	CXTPControl* pControl = NULL;
-	if (!bOutside && m_bDragable)
-	{
-		if (SetCurSel(nIndex) != LB_ERR)
-		{
-			// Already selected, start drag operation
-			pControl = (CXTPControl*)GetItemData(nIndex);
-
-			// since we are eating the message, if the selection has changed, notify the owner.
-			CWnd* pWndOwner = GetOwner();
-			if (pWndOwner)
-			{
-				SetFocus();
-
-				pWndOwner->PostMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
-					LBN_SELCHANGE), (LPARAM)m_hWnd);
-			}
-
-			// Special case for New Menu
-			if (pControl && pControl->GetCommandBar() &&
-				pControl->GetCommandBar()->GetControlCount() == 0)
-			{
-				pControl = pControl->Clone(TRUE);
-
-				CXTPCustomizeDropSource* pDropSource = pCommandBars->GetDropSource();
-				pDropSource->DoDragDrop(pControl, TRUE);
-
-				pControl->InternalRelease();
-				return;
-			}
-
-			if (pControl)
-			{
-
-				CXTPCustomizeDropSource* pDropSource = pCommandBars->GetDropSource();
-				pDropSource->DoDragDrop(pControl, TRUE);
-
-				return;
-			}
-		}
-	}
-
-	// process as a click first
-	CListBox::OnLButtonDown(nFlags, point);
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCustomizeCommandsPage property page
-
-IMPLEMENT_DYNCREATE(CXTPCustomizeCommandsPage, CPropertyPage)
-
-CXTPCustomizeCommandsPage::CXTPCustomizeCommandsPage(CXTPCustomizeSheet* pSheet)
-	: CPropertyPage(XTP_IDD_PAGE_COMMANDS), m_pSheet(pSheet)
-{
-	//{{AFX_DATA_INIT(CXTPCustomizeCommandsPage)
-		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
-}
-
-CXTPCustomizeCommandsPage::~CXTPCustomizeCommandsPage()
-{
-	for (int i = 0; i < m_arrCategories.GetSize(); i++)
-	{
-		delete m_arrCategories[i];
-	}
-}
-
-void CXTPCustomizeCommandsPage::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTPCustomizeCommandsPage)
-	DDX_Control(pDX, XTP_IDC_LIST_COMMANDS, m_lstCommands);
-	DDX_Control(pDX, XTP_IDC_LIST_CATEGORIES, m_lstCategories);
-	//}}AFX_DATA_MAP
-}
-
-XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::FindCategory(LPCTSTR strCategory) const
-{
-	for (int i = 0; i < m_arrCategories.GetSize(); i++)
-	{
-		if (m_arrCategories[i]->strCategory.Compare(strCategory) == 0)
-			return m_arrCategories[i];
-	}
-	return NULL;
-}
-
-XTP_COMMANDBARS_CATEGORYINFO* CXTPCustomizeCommandsPage::GetCategoryInfo(int nIndex)
-{
-	if (nIndex >= 0 && nIndex < m_arrCategories.GetSize())
-		return m_arrCategories[nIndex];
-	return NULL;
-}
-
-BOOL CXTPCustomizeCommandsPage::AddCategory(LPCTSTR strCategory, CMenu* pMenu, BOOL bListSubItems)
-{
-	CXTPControls* pCategoryControls = InsertCategory(strCategory);
-
-	int nCount = pMenu->GetMenuItemCount();
-
-	for (int i = 0; i < nCount; i++)
-	{
-		if (pMenu->GetMenuItemID(i) > 0)
-		{
-			CXTPControlPopup* pControl = DYNAMIC_DOWNCAST(CXTPControlPopup,
-				pCategoryControls->AddMenuItem(pMenu, i));
-
-			if (pControl && bListSubItems)
-			{
-				CXTPControls* pControls = pControl->GetCommandBar()->GetControls();
-				for (int j = 0; j < pControls->GetCount(); j++)
-				{
-					pCategoryControls->AddClone(pControls->GetAt(j));
-				}
-			}
-		}
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPCustomizeCommandsPage::_LoadToolBar(CXTPCommandBar* pCommandBar, UINT nIDResource)
-{
-	LPCTSTR lpszResourceName = MAKEINTRESOURCE(nIDResource);
-
-	struct CToolBarData
-	{
-		WORD wVersion;
-		WORD wWidth;
-		WORD wHeight;
-		WORD wItemCount;
-		WORD* items()
-		{ return (WORD*)(this + 1); }
-	};
-
-	ASSERT(lpszResourceName != NULL);
-	if (!lpszResourceName)
-		return FALSE;
-
-	// determine location of the bitmap in resource fork
-	HINSTANCE hInst = AfxFindResourceHandle(lpszResourceName, RT_TOOLBAR);
-	if (!hInst)
-		return FALSE;
-
-	HRSRC hRsrc = ::FindResource(hInst, lpszResourceName, RT_TOOLBAR);
-	if (!hRsrc)
-		return FALSE;
-
-	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
-	if (!hGlobal)
-		return FALSE;
-
-	CToolBarData* pData = (CToolBarData*)LockResource(hGlobal);
-	if (!pData)
-		return FALSE;
-
-	ASSERT(pData->wVersion == 1);
-	ASSERT(pData->wWidth == 16);
-
-	int i;
-	UINT* pItems = new UINT[pData->wItemCount];
-
-	for (i = 0; i < pData->wItemCount; i++)
-		pItems[i] = pData->items()[i];
-
-	BOOL bResult = pCommandBar->SetButtons(pItems, pData->wItemCount);
-
-	delete[] pItems;
-
-	UnlockResource(hGlobal);
-	FreeResource(hGlobal);
-
-	return bResult;
-}
-
-BOOL CXTPCustomizeCommandsPage::AddToolbarCategory(LPCTSTR strCategory, UINT nIDResource)
-{
-	CXTPControls* pCategoryControls = InsertCategory(strCategory);
-	ASSERT(pCategoryControls);
-	if (!pCategoryControls)
-		return FALSE;
-
-	CXTPCommandBar* pCommandBar = (CXTPCommandBar*)CXTPCommandBar::CreateObject();
-	pCommandBar->SetCommandBars(m_pSheet->GetCommandBars());
-
-	if (!_LoadToolBar(pCommandBar, nIDResource))
-	{
-		pCommandBar->InternalRelease();
-		return FALSE;
-	}
-
-	for (int i = 0; i < pCommandBar->GetControlCount(); i++)
-	{
-		pCategoryControls->AddClone(pCommandBar->GetControl(i));
-	}
-	pCommandBar->InternalRelease();
-
-	return TRUE;
-}
-
-
-BOOL CXTPCustomizeCommandsPage::AddCategories(UINT nIDResource, BOOL bListSubItems)
-{
-	CMenu menu;
-	if (!XTPResourceManager()->LoadMenu(&menu, nIDResource))
-		return FALSE;
-
-	int nCount = menu.GetMenuItemCount();
-
-	for (int i = 0; i < nCount; i++)
-	{
-		CString strCategory;
-		if (XTPResourceManager()->GetMenuLocaleString(&menu, i, strCategory, MF_BYPOSITION) > 0)
-		{
-			CMenu* pMenu = menu.GetSubMenu(i);
-			if (pMenu)
-			{
-				CXTPPaintManager::StripMnemonics(strCategory);
-
-				int iPos = strCategory.Find(_T('\t'));
-				if (iPos > 0)
-				{
-					strCategory.ReleaseBuffer(iPos);
-				}
-
-				if (!AddCategory(strCategory, pMenu, bListSubItems))
-					return FALSE;
-			}
-		}
-
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPCustomizeCommandsPage::AddCategories(CXTPControls* pControls)
-{
-	for (int i = 0; i < pControls->GetCount(); i++)
-	{
-		CXTPControl* pControl = pControls->GetAt(i);
-		CString strCategory = pControl->GetCategory();
-
-		if (!strCategory.IsEmpty())
-		{
-			CXTPControls* pCategoryControls = InsertCategory(strCategory);
-			pCategoryControls->AddClone(pControl);
-		}
-	}
-	return TRUE;
-}
-
-
-BOOL CXTPCustomizeCommandsPage::InsertBuiltInMenus(UINT nIDResourceMenu, UINT nIDResourceCategory, int nIndex)
-{
-	CMenu menu;
-	if (!XTPResourceManager()->LoadMenu(&menu, nIDResourceMenu))
-		return FALSE;
-
-	CString strCategory;
-	XTPResourceManager()->LoadString(&strCategory, nIDResourceCategory);
-
-	ASSERT(FindCategory(strCategory) == NULL);
-
-	XTP_COMMANDBARS_CATEGORYINFO* pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
-	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
-
-	int nCount = menu.GetMenuItemCount();
-
-	for (int i = 0; i < nCount; i++)
-	{
-		pInfo->pControls->AddMenuItem(&menu, i);
-	}
-	return TRUE;
-}
-
-void CXTPCustomizeCommandsPage::InsertNewMenuCategory(UINT nIDResource, int nIndex)
-{
-	CString strCategory;
-	XTPResourceManager()->LoadString(&strCategory, nIDResource);
-
-	ASSERT(FindCategory(strCategory) == NULL);
-
-	XTP_COMMANDBARS_CATEGORYINFO* pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
-	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
-
-	CXTPControl* pControl = pInfo->pControls->Add(xtpControlPopup, 0);
-	pControl->SetCaption(strCategory);
-}
-
-CXTPControls* CXTPCustomizeCommandsPage::InsertCategory(LPCTSTR strCategory, int nIndex)
-{
-	XTP_COMMANDBARS_CATEGORYINFO* pInfo = FindCategory(strCategory);
-	if (!pInfo)
-	{
-		pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
-		m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
-	}
-	return pInfo->pControls;
-}
-
-CXTPControls* CXTPCustomizeCommandsPage::GetControls(LPCTSTR strCategory)
-{
-	XTP_COMMANDBARS_CATEGORYINFO* pInfo = FindCategory(strCategory);
-	return pInfo ? pInfo->pControls : NULL;
-}
-
-
-void CXTPCustomizeCommandsPage::InsertAllCommandsCategory(UINT nIDResource, int nIndex)
-{
-	CString strCategory;
-	XTPResourceManager()->LoadString(&strCategory, nIDResource);
-
-	ASSERT(FindCategory(strCategory) == NULL);
-
-	XTP_COMMANDBARS_CATEGORYINFO* pInfo = new XTP_COMMANDBARS_CATEGORYINFO(strCategory, m_pSheet->GetCommandBars());
-
-	for (int i = 0; i < m_arrCategories.GetSize(); i++)
-	{
-		CXTPControls* pControls = m_arrCategories[i]->pControls;
-		for (int j = 0; j < pControls->GetCount(); j++)
-		{
-			pInfo->pControls->AddClone(pControls->GetAt(j));
-		}
-	}
-
-
-	m_arrCategories.InsertAt(nIndex == -1 ? m_arrCategories.GetSize() : nIndex, pInfo);
-
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPCustomizeCommandsPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CXTPCustomizeCommandsPage)
-	ON_LBN_SELCHANGE(XTP_IDC_LIST_CATEGORIES, OnCategoriesSelectionChanged)
-	ON_WM_DESTROY()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCustomizeCommandsPage message handlers
-
-
-BOOL CXTPCustomizeCommandsPage::OnInitDialog()
-{
-	CPropertyPage::OnInitDialog();
-
-
-	for (int i = 0; i < m_arrCategories.GetSize(); i++)
-	{
-		int nIndex = m_lstCategories.AddString(m_arrCategories[i]->strCategory);
-		m_lstCategories.SetItemData(nIndex, i);
-
-		if (i == 0) m_lstCategories.SetCurSel(0);
-	}
-
-	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
-	CSize sz = pCommandBars->GetPaintManager()->DrawListBoxControl(NULL, NULL, CRect(0, 0, 0, 0), FALSE, FALSE, pCommandBars);
-	m_lstCommands.SetItemHeight(-1, sz.cy);
-
-	m_lstCommands.m_pCommandBars = m_pSheet->GetCommandBars();
-	m_lstCommands.m_bDragable = TRUE;
-
-	if (pCommandBars->IsLayoutRTL())
-	{
-		m_lstCommands.ModifyStyleEx(0, WS_EX_LAYOUTRTL);
-		m_lstCategories.ModifyStyleEx(0, WS_EX_RIGHT | WS_EX_LEFTSCROLLBAR | WS_EX_RTLREADING);
-	}
-
-	pCommandBars->GetMouseManager()->AddTrustedWindow(m_hWnd);
-
-
-	OnCategoriesSelectionChanged();
-
-	return FALSE;
-}
-
-void CXTPCustomizeCommandsPage::OnDestroy()
-{
-	CXTPCommandBars* pCommandBars = m_pSheet->GetCommandBars();
-
-	pCommandBars->GetMouseManager()->RemoveTrustedWindow(m_hWnd);
-
-	CPropertyPage::OnDestroy();
-}
-
-void CXTPCustomizeCommandsPage::OnCategoriesSelectionChanged()
-{
-
-	m_lstCommands.ResetContent();
-
-	int nIndex = m_lstCategories.GetCurSel();
-
-	if (nIndex == LB_ERR)
-		return;
-
-	XTP_COMMANDBARS_CATEGORYINFO* pInfo = GetCategoryInfo((int)m_lstCategories.GetItemData(nIndex));
-
-	if (pInfo == NULL)
-		return;
-
-	for (int i = 0; i < pInfo->pControls->GetCount(); i++)
-	{
-		CXTPControl* pControl = pInfo->pControls->GetAt(i);
-		m_lstCommands.SendMessage(LB_INSERTSTRING, m_lstCommands.GetCount(), (LPARAM)pControl);
-	}
-}

@@ -1,1624 +1,727 @@
+// roc 2011-06 008e83e0  unit: CXTColorHex  size: 2329 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 008e83e0
+//
+// 008e83e0  6aff                 push -1
+// 008e83e2  68d8dfa000           push 0xa0dfd8
+// 008e83e7  64a100000000         mov eax, dword ptr fs:[0]
+// 008e83ed  50                   push eax
+// 008e83ee  83ec20               sub esp, 0x20
+// 008e83f1  53                   push ebx
+// 008e83f2  55                   push ebp
+// 008e83f3  56                   push esi
+// 008e83f4  57                   push edi
+// 008e83f5  a12058c900           mov eax, dword ptr [0xc95820]
+// 008e83fa  33c4                 xor eax, esp
+// 008e83fc  50                   push eax
+// 008e83fd  8d442434             lea eax, [esp + 0x34]
+// 008e8401  64a300000000         mov dword ptr fs:[0], eax
+// 008e8407  8bf1                 mov esi, ecx
+// 008e8409  6a1c                 push 0x1c
+// 008e840b  e84e1cf2ff           call 0x80a05e
+// 008e8410  8b5c2454             mov ebx, dword ptr [esp + 0x54]
+// 008e8414  83c404               add esp, 4
+// 008e8417  53                   push ebx
+// 008e8418  6a01                 push 1
+// 008e841a  6a00                 push 0
+// 008e841c  8d4c2438             lea ecx, [esp + 0x38]
+// 008e8420  8bf8                 mov edi, eax
+// 008e8422  e8cd470e00           call 0x9ccbf4
+// 008e8427  8b6c2444             mov ebp, dword ptr [esp + 0x44]
+// 008e842b  8d44242c             lea eax, [esp + 0x2c]
+// 008e842f  50                   push eax
+// 008e8430  8bcd                 mov ecx, ebp
+// 008e8432  c744244000000000     mov dword ptr [esp + 0x40], 0
+// 008e843a  e8af470e00           call 0x9ccbee
+// 008e843f  6898150000           push 0x1598
+// 008e8444  89442448             mov dword ptr [esp + 0x48], eax
+// 008e8448  895f18               mov dword ptr [edi + 0x18], ebx
+// 008e844b  c7471000000000       mov dword ptr [edi + 0x10], 0
+// 008e8452  e8e91ef2ff           call 0x80a340
+// 008e8457  8b4c2458             mov ecx, dword ptr [esp + 0x58]
+// 008e845b  8b54245c             mov edx, dword ptr [esp + 0x5c]
+// 008e845f  890f                 mov dword ptr [edi], ecx
+// 008e8461  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 008e8465  83c404               add esp, 4
+// 008e8468  894714               mov dword ptr [edi + 0x14], eax
+// 008e846b  8b44245c             mov eax, dword ptr [esp + 0x5c]
+// 008e846f  894f0c               mov dword ptr [edi + 0xc], ecx
+// 008e8472  57                   push edi
+// 008e8473  8d4e74               lea ecx, [esi + 0x74]
+// 008e8476  895704               mov dword ptr [edi + 4], edx
+// 008e8479  894708               mov dword ptr [edi + 8], eax
+// 008e847c  e8ef800000           call 0x8f0570
+// 008e8481  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8485  3b5e70               cmp ebx, dword ptr [esi + 0x70]
+// 008e8488  750a                 jne 0x8e8494
+// 008e848a  8b54244c             mov edx, dword ptr [esp + 0x4c]
+// 008e848e  894668               mov dword ptr [esi + 0x68], eax
+// 008e8491  89566c               mov dword ptr [esi + 0x6c], edx
+// 008e8494  33f6                 xor esi, esi
+// 008e8496  89742450             mov dword ptr [esp + 0x50], esi
+// 008e849a  eb08                 jmp 0x8e84a4
+// 008e849c  8d642400             lea esp, [esp]
+// 008e84a0  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e84a4  8b54244c             mov edx, dword ptr [esp + 0x4c]
+// 008e84a8  8b4c2450             mov ecx, dword ptr [esp + 0x50]
+// 008e84ac  53                   push ebx
+// 008e84ad  03ca                 add ecx, edx
+// 008e84af  51                   push ecx
+// 008e84b0  50                   push eax
+// 008e84b1  89442420             mov dword ptr [esp + 0x20], eax
+// 008e84b5  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e84b8  50                   push eax
+// 008e84b9  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e84bd  ff150c01a400         call dword ptr [0xa4010c]
+// 008e84c3  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e84c6  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e84ca  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e84ce  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e84d1  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e84d5  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e84d9  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e84dd  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e84e1  53                   push ebx
+// 008e84e2  03ca                 add ecx, edx
+// 008e84e4  40                   inc eax
+// 008e84e5  51                   push ecx
+// 008e84e6  50                   push eax
+// 008e84e7  89442428             mov dword ptr [esp + 0x28], eax
+// 008e84eb  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e84ee  50                   push eax
+// 008e84ef  46                   inc esi
+// 008e84f0  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e84f4  ff150c01a400         call dword ptr [0xa4010c]
+// 008e84fa  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e84fd  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8501  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8505  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8508  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e850c  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8510  40                   inc eax
+// 008e8511  46                   inc esi
+// 008e8512  83f811               cmp eax, 0x11
+// 008e8515  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8519  7c85                 jl 0x8e84a0
+// 008e851b  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8523  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8527  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e852b  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e852f  53                   push ebx
+// 008e8530  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e8534  83c002               add eax, 2
+// 008e8537  51                   push ecx
+// 008e8538  50                   push eax
+// 008e8539  89442428             mov dword ptr [esp + 0x28], eax
+// 008e853d  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8540  50                   push eax
+// 008e8541  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8545  ff150c01a400         call dword ptr [0xa4010c]
+// 008e854b  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e854e  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8552  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8556  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8559  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e855d  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8561  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8565  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8569  53                   push ebx
+// 008e856a  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e856e  83c003               add eax, 3
+// 008e8571  51                   push ecx
+// 008e8572  50                   push eax
+// 008e8573  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8577  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e857a  50                   push eax
+// 008e857b  46                   inc esi
+// 008e857c  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e8580  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8586  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8589  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e858d  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e8591  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8594  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8598  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e859c  40                   inc eax
+// 008e859d  46                   inc esi
+// 008e859e  83f813               cmp eax, 0x13
+// 008e85a1  89442450             mov dword ptr [esp + 0x50], eax
+// 008e85a5  0f8c78ffffff         jl 0x8e8523
+// 008e85ab  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e85b3  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e85b7  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e85bb  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e85bf  53                   push ebx
+// 008e85c0  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e85c4  83c004               add eax, 4
+// 008e85c7  51                   push ecx
+// 008e85c8  50                   push eax
+// 008e85c9  89442428             mov dword ptr [esp + 0x28], eax
+// 008e85cd  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e85d0  50                   push eax
+// 008e85d1  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e85d5  ff150c01a400         call dword ptr [0xa4010c]
+// 008e85db  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e85de  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e85e2  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e85e6  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e85e9  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e85ed  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e85f1  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e85f5  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e85f9  53                   push ebx
+// 008e85fa  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e85fe  83c005               add eax, 5
+// 008e8601  51                   push ecx
+// 008e8602  50                   push eax
+// 008e8603  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8607  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e860a  50                   push eax
+// 008e860b  46                   inc esi
+// 008e860c  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e8610  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8616  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8619  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e861d  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e8621  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8624  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8628  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e862c  40                   inc eax
+// 008e862d  46                   inc esi
+// 008e862e  83f815               cmp eax, 0x15
+// 008e8631  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8635  0f8c78ffffff         jl 0x8e85b3
+// 008e863b  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8643  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8647  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e864b  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e864f  53                   push ebx
+// 008e8650  8d4c0afd             lea ecx, [edx + ecx - 3]
+// 008e8654  83c006               add eax, 6
+// 008e8657  51                   push ecx
+// 008e8658  50                   push eax
+// 008e8659  89442428             mov dword ptr [esp + 0x28], eax
+// 008e865d  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8660  50                   push eax
+// 008e8661  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8665  ff150c01a400         call dword ptr [0xa4010c]
+// 008e866b  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e866e  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8672  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8676  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8679  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e867d  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8681  40                   inc eax
+// 008e8682  46                   inc esi
+// 008e8683  83f817               cmp eax, 0x17
+// 008e8686  89442450             mov dword ptr [esp + 0x50], eax
+// 008e868a  7cb7                 jl 0x8e8643
+// 008e868c  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8694  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8698  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e869c  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e86a0  53                   push ebx
+// 008e86a1  8d4c0afc             lea ecx, [edx + ecx - 4]
+// 008e86a5  83c007               add eax, 7
+// 008e86a8  51                   push ecx
+// 008e86a9  50                   push eax
+// 008e86aa  89442428             mov dword ptr [esp + 0x28], eax
+// 008e86ae  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e86b1  50                   push eax
+// 008e86b2  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e86b6  ff150c01a400         call dword ptr [0xa4010c]
+// 008e86bc  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e86bf  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e86c3  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e86c7  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e86ca  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e86ce  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e86d2  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e86d6  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e86da  53                   push ebx
+// 008e86db  8d4c0afc             lea ecx, [edx + ecx - 4]
+// 008e86df  83c008               add eax, 8
+// 008e86e2  51                   push ecx
+// 008e86e3  50                   push eax
+// 008e86e4  89442420             mov dword ptr [esp + 0x20], eax
+// 008e86e8  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e86eb  50                   push eax
+// 008e86ec  46                   inc esi
+// 008e86ed  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e86f1  ff150c01a400         call dword ptr [0xa4010c]
+// 008e86f7  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e86fa  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e86fe  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e8702  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8705  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8709  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e870d  40                   inc eax
+// 008e870e  46                   inc esi
+// 008e870f  83f819               cmp eax, 0x19
+// 008e8712  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8716  0f8c78ffffff         jl 0x8e8694
+// 008e871c  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8724  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8728  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e872c  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8730  53                   push ebx
+// 008e8731  8d4c0afb             lea ecx, [edx + ecx - 5]
+// 008e8735  83c009               add eax, 9
+// 008e8738  51                   push ecx
+// 008e8739  50                   push eax
+// 008e873a  89442428             mov dword ptr [esp + 0x28], eax
+// 008e873e  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8741  50                   push eax
+// 008e8742  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8746  ff150c01a400         call dword ptr [0xa4010c]
+// 008e874c  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e874f  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8753  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8757  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e875a  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e875e  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8762  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8766  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e876a  53                   push ebx
+// 008e876b  8d4c0afb             lea ecx, [edx + ecx - 5]
+// 008e876f  83c00a               add eax, 0xa
+// 008e8772  51                   push ecx
+// 008e8773  50                   push eax
+// 008e8774  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8778  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e877b  50                   push eax
+// 008e877c  46                   inc esi
+// 008e877d  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e8781  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8787  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e878a  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e878e  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e8792  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8795  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8799  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e879d  40                   inc eax
+// 008e879e  46                   inc esi
+// 008e879f  83f81b               cmp eax, 0x1b
+// 008e87a2  89442450             mov dword ptr [esp + 0x50], eax
+// 008e87a6  0f8c78ffffff         jl 0x8e8724
+// 008e87ac  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e87b4  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e87b8  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e87bc  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e87c0  53                   push ebx
+// 008e87c1  8d4c0afa             lea ecx, [edx + ecx - 6]
+// 008e87c5  83c00b               add eax, 0xb
+// 008e87c8  51                   push ecx
+// 008e87c9  50                   push eax
+// 008e87ca  89442428             mov dword ptr [esp + 0x28], eax
+// 008e87ce  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e87d1  50                   push eax
+// 008e87d2  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e87d6  ff150c01a400         call dword ptr [0xa4010c]
+// 008e87dc  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e87df  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e87e3  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e87e7  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e87ea  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e87ee  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e87f2  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e87f6  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e87fa  53                   push ebx
+// 008e87fb  8d4c0afa             lea ecx, [edx + ecx - 6]
+// 008e87ff  83c00c               add eax, 0xc
+// 008e8802  51                   push ecx
+// 008e8803  50                   push eax
+// 008e8804  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8808  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e880b  50                   push eax
+// 008e880c  46                   inc esi
+// 008e880d  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e8811  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8817  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e881a  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e881e  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e8822  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8825  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8829  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e882d  40                   inc eax
+// 008e882e  46                   inc esi
+// 008e882f  83f81d               cmp eax, 0x1d
+// 008e8832  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8836  0f8c78ffffff         jl 0x8e87b4
+// 008e883c  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8844  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8848  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e884c  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8850  53                   push ebx
+// 008e8851  8d4c0af9             lea ecx, [edx + ecx - 7]
+// 008e8855  83c00d               add eax, 0xd
+// 008e8858  51                   push ecx
+// 008e8859  50                   push eax
+// 008e885a  89442428             mov dword ptr [esp + 0x28], eax
+// 008e885e  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8861  50                   push eax
+// 008e8862  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8866  ff150c01a400         call dword ptr [0xa4010c]
+// 008e886c  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e886f  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8873  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8877  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e887a  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e887e  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8882  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8886  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e888a  53                   push ebx
+// 008e888b  8d4c0af9             lea ecx, [edx + ecx - 7]
+// 008e888f  83c00e               add eax, 0xe
+// 008e8892  51                   push ecx
+// 008e8893  50                   push eax
+// 008e8894  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8898  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e889b  50                   push eax
+// 008e889c  46                   inc esi
+// 008e889d  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e88a1  ff150c01a400         call dword ptr [0xa4010c]
+// 008e88a7  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e88aa  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e88ae  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e88b2  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e88b5  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e88b9  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e88bd  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e88c1  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e88c5  53                   push ebx
+// 008e88c6  8d4c0af9             lea ecx, [edx + ecx - 7]
+// 008e88ca  83c00f               add eax, 0xf
+// 008e88cd  51                   push ecx
+// 008e88ce  50                   push eax
+// 008e88cf  89442430             mov dword ptr [esp + 0x30], eax
+// 008e88d3  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e88d6  50                   push eax
+// 008e88d7  46                   inc esi
+// 008e88d8  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e88dc  ff150c01a400         call dword ptr [0xa4010c]
+// 008e88e2  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e88e5  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e88e9  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e88ed  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e88f0  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e88f4  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e88f8  40                   inc eax
+// 008e88f9  46                   inc esi
+// 008e88fa  83f81f               cmp eax, 0x1f
+// 008e88fd  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8901  0f8c3dffffff         jl 0x8e8844
+// 008e8907  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e890f  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8913  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8917  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e891b  53                   push ebx
+// 008e891c  8d4c0afa             lea ecx, [edx + ecx - 6]
+// 008e8920  83c010               add eax, 0x10
+// 008e8923  51                   push ecx
+// 008e8924  50                   push eax
+// 008e8925  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8929  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e892c  50                   push eax
+// 008e892d  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8931  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8937  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e893a  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e893e  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8942  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8945  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8949  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e894d  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8951  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8955  53                   push ebx
+// 008e8956  8d4c0afa             lea ecx, [edx + ecx - 6]
+// 008e895a  83c011               add eax, 0x11
+// 008e895d  51                   push ecx
+// 008e895e  50                   push eax
+// 008e895f  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8963  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8966  50                   push eax
+// 008e8967  46                   inc esi
+// 008e8968  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e896c  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8972  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8975  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8979  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e897d  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8980  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8984  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8988  40                   inc eax
+// 008e8989  46                   inc esi
+// 008e898a  83f81d               cmp eax, 0x1d
+// 008e898d  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8991  0f8c78ffffff         jl 0x8e890f
+// 008e8997  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e899f  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e89a3  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e89a7  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e89ab  53                   push ebx
+// 008e89ac  8d4c0afb             lea ecx, [edx + ecx - 5]
+// 008e89b0  83c012               add eax, 0x12
+// 008e89b3  51                   push ecx
+// 008e89b4  50                   push eax
+// 008e89b5  89442430             mov dword ptr [esp + 0x30], eax
+// 008e89b9  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e89bc  50                   push eax
+// 008e89bd  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e89c1  ff150c01a400         call dword ptr [0xa4010c]
+// 008e89c7  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e89ca  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e89ce  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e89d2  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e89d5  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e89d9  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e89dd  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e89e1  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e89e5  53                   push ebx
+// 008e89e6  8d4c0afb             lea ecx, [edx + ecx - 5]
+// 008e89ea  83c013               add eax, 0x13
+// 008e89ed  51                   push ecx
+// 008e89ee  50                   push eax
+// 008e89ef  89442428             mov dword ptr [esp + 0x28], eax
+// 008e89f3  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e89f6  50                   push eax
+// 008e89f7  46                   inc esi
+// 008e89f8  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e89fc  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8a02  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8a05  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8a09  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8a0d  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8a10  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8a14  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8a18  40                   inc eax
+// 008e8a19  46                   inc esi
+// 008e8a1a  83f81b               cmp eax, 0x1b
+// 008e8a1d  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8a21  0f8c78ffffff         jl 0x8e899f
+// 008e8a27  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8a2f  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8a33  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8a37  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8a3b  53                   push ebx
+// 008e8a3c  8d4c0afc             lea ecx, [edx + ecx - 4]
+// 008e8a40  83c014               add eax, 0x14
+// 008e8a43  51                   push ecx
+// 008e8a44  50                   push eax
+// 008e8a45  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8a49  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8a4c  50                   push eax
+// 008e8a4d  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8a51  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8a57  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8a5a  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8a5e  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8a62  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8a65  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8a69  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8a6d  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8a71  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8a75  53                   push ebx
+// 008e8a76  8d4c0afc             lea ecx, [edx + ecx - 4]
+// 008e8a7a  83c015               add eax, 0x15
+// 008e8a7d  51                   push ecx
+// 008e8a7e  50                   push eax
+// 008e8a7f  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8a83  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8a86  50                   push eax
+// 008e8a87  46                   inc esi
+// 008e8a88  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8a8c  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8a92  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8a95  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8a99  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8a9d  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8aa0  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8aa4  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8aa8  40                   inc eax
+// 008e8aa9  46                   inc esi
+// 008e8aaa  83f819               cmp eax, 0x19
+// 008e8aad  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8ab1  0f8c78ffffff         jl 0x8e8a2f
+// 008e8ab7  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8abf  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8ac3  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8ac7  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8acb  53                   push ebx
+// 008e8acc  8d4c0afd             lea ecx, [edx + ecx - 3]
+// 008e8ad0  83c016               add eax, 0x16
+// 008e8ad3  51                   push ecx
+// 008e8ad4  50                   push eax
+// 008e8ad5  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8ad9  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8adc  50                   push eax
+// 008e8add  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8ae1  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8ae7  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8aea  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8aee  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8af2  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8af5  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8af9  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8afd  40                   inc eax
+// 008e8afe  46                   inc esi
+// 008e8aff  83f817               cmp eax, 0x17
+// 008e8b02  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8b06  7cb7                 jl 0x8e8abf
+// 008e8b08  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8b10  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8b14  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8b18  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8b1c  53                   push ebx
+// 008e8b1d  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e8b21  83c017               add eax, 0x17
+// 008e8b24  51                   push ecx
+// 008e8b25  50                   push eax
+// 008e8b26  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8b2a  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8b2d  50                   push eax
+// 008e8b2e  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8b32  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8b38  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8b3b  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8b3f  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8b43  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8b46  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8b4a  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8b4e  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8b52  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8b56  53                   push ebx
+// 008e8b57  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e8b5b  83c018               add eax, 0x18
+// 008e8b5e  51                   push ecx
+// 008e8b5f  50                   push eax
+// 008e8b60  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8b64  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8b67  50                   push eax
+// 008e8b68  46                   inc esi
+// 008e8b69  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8b6d  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8b73  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8b76  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8b7a  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8b7e  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8b81  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8b85  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8b89  40                   inc eax
+// 008e8b8a  46                   inc esi
+// 008e8b8b  83f815               cmp eax, 0x15
+// 008e8b8e  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8b92  0f8c78ffffff         jl 0x8e8b10
+// 008e8b98  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8ba0  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8ba4  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8ba8  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8bac  53                   push ebx
+// 008e8bad  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e8bb1  83c019               add eax, 0x19
+// 008e8bb4  51                   push ecx
+// 008e8bb5  50                   push eax
+// 008e8bb6  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8bba  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8bbd  50                   push eax
+// 008e8bbe  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8bc2  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8bc8  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8bcb  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8bcf  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8bd3  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8bd6  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8bda  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8bde  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8be2  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8be6  53                   push ebx
+// 008e8be7  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e8beb  83c01a               add eax, 0x1a
+// 008e8bee  51                   push ecx
+// 008e8bef  50                   push eax
+// 008e8bf0  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8bf4  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8bf7  50                   push eax
+// 008e8bf8  46                   inc esi
+// 008e8bf9  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8bfd  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8c03  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8c06  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8c0a  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8c0e  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8c11  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8c15  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8c19  40                   inc eax
+// 008e8c1a  46                   inc esi
+// 008e8c1b  83f813               cmp eax, 0x13
+// 008e8c1e  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8c22  0f8c78ffffff         jl 0x8e8ba0
+// 008e8c28  03f6                 add esi, esi
+// 008e8c2a  03f6                 add esi, esi
+// 008e8c2c  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8c34  03f6                 add esi, esi
+// 008e8c36  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8c3a  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8c3e  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8c42  53                   push ebx
+// 008e8c43  03ca                 add ecx, edx
+// 008e8c45  83c01b               add eax, 0x1b
+// 008e8c48  51                   push ecx
+// 008e8c49  50                   push eax
+// 008e8c4a  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8c4e  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8c51  50                   push eax
+// 008e8c52  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8c56  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8c5c  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8c5f  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8c63  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8c67  890c06               mov dword ptr [esi + eax], ecx
+// 008e8c6a  89540604             mov dword ptr [esi + eax + 4], edx
+// 008e8c6e  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8c72  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8c76  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8c7a  53                   push ebx
+// 008e8c7b  03ca                 add ecx, edx
+// 008e8c7d  83c01c               add eax, 0x1c
+// 008e8c80  51                   push ecx
+// 008e8c81  50                   push eax
+// 008e8c82  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8c86  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8c89  50                   push eax
+// 008e8c8a  83c608               add esi, 8
+// 008e8c8d  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8c91  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8c97  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8c9a  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8c9e  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8ca2  890c06               mov dword ptr [esi + eax], ecx
+// 008e8ca5  89540604             mov dword ptr [esi + eax + 4], edx
+// 008e8ca9  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8cad  40                   inc eax
+// 008e8cae  83c608               add esi, 8
+// 008e8cb1  83f811               cmp eax, 0x11
+// 008e8cb4  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8cb8  0f8c78ffffff         jl 0x8e8c36
+// 008e8cbe  8b442444             mov eax, dword ptr [esp + 0x44]
+// 008e8cc2  50                   push eax
+// 008e8cc3  8bcd                 mov ecx, ebp
+// 008e8cc5  e8243f0e00           call 0x9ccbee
+// 008e8cca  8d4c242c             lea ecx, [esp + 0x2c]
+// 008e8cce  c744243cffffffff     mov dword ptr [esp + 0x3c], 0xffffffff
+// 008e8cd6  c744242cb8a6ac00     mov dword ptr [esp + 0x2c], 0xaca6b8
+// 008e8cde  e84dacb2ff           call 0x413930
+// 008e8ce3  8b4c2434             mov ecx, dword ptr [esp + 0x34]
+// 008e8ce7  64890d00000000       mov dword ptr fs:[0], ecx
+// 008e8cee  59                   pop ecx
+// 008e8cef  5f                   pop edi
+// 008e8cf0  5e                   pop esi
+// 008e8cf1  5d                   pop ebp
+// 008e8cf2  5b                   pop ebx
+// 008e8cf3  83c42c               add esp, 0x2c
+// 008e8cf6  c22000               ret 0x20
+// copied from an identical function in another client (function ?DrawLargeCell@CXTColorHex@@IAEXPAVCDC@@VCPoint@@KHHHH@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageStandard.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTColorPageStandard.cpp : implementation file
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTDefines.h"
-#include "XTColorDialog.h"
-#include "XTColorPageStandard.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-const COLORREF CXTColorHex::clrSelArray[] =
-{
-	RGB(0x00, 0x33, 0x66), // row 1
-	RGB(0x33, 0x66, 0x99),
-	RGB(0x33, 0x66, 0xCC),
-	RGB(0x00, 0x33, 0x99),
-	RGB(0x00, 0x00, 0x99),
-	RGB(0x00, 0x00, 0xCC),
-	RGB(0x00, 0x00, 0x66),
-
-	RGB(0x00, 0x66, 0x66), // row 2
-	RGB(0x00, 0x66, 0x99),
-	RGB(0x00, 0x99, 0xCC),
-	RGB(0x00, 0x66, 0xCC),
-	RGB(0x00, 0x33, 0xCC),
-	RGB(0x00, 0x00, 0xFF),
-	RGB(0x33, 0x33, 0xFF),
-	RGB(0x33, 0x33, 0x99),
-
-	RGB(0x00, 0x80, 0x80), // row 3
-	RGB(0x00, 0x99, 0x99),
-	RGB(0x33, 0xCC, 0xCC),
-	RGB(0x00, 0xCC, 0xFF),
-	RGB(0x00, 0x99, 0xFF),
-	RGB(0x00, 0x66, 0xFF),
-	RGB(0x33, 0x66, 0xFF),
-	RGB(0x33, 0x33, 0xCC),
-	RGB(0x66, 0x66, 0x99),
-
-	RGB(0x33, 0x99, 0x66), // row 4
-	RGB(0x00, 0xCC, 0x99),
-	RGB(0x00, 0xFF, 0xCC),
-	RGB(0x00, 0xFF, 0xFF),
-	RGB(0x33, 0xCC, 0xFF),
-	RGB(0x33, 0x99, 0xFF),
-	RGB(0x66, 0x99, 0xFF),
-	RGB(0x66, 0x66, 0xFF),
-	RGB(0x66, 0x00, 0xFF),
-	RGB(0x66, 0x00, 0xCC),
-
-	RGB(0x33, 0x99, 0x33), // row 5
-	RGB(0x00, 0xCC, 0x66),
-	RGB(0x00, 0xFF, 0x99),
-	RGB(0x66, 0xFF, 0xCC),
-	RGB(0x66, 0xFF, 0xFF),
-	RGB(0x66, 0xCC, 0xFF),
-	RGB(0x99, 0xCC, 0xFF),
-	RGB(0x99, 0x99, 0xFF),
-	RGB(0x99, 0x66, 0xFF),
-	RGB(0x99, 0x33, 0xFF),
-	RGB(0x99, 0x00, 0xFF),
-
-	RGB(0x00, 0x66, 0x00), // row 6
-	RGB(0x00, 0xCC, 0x00),
-	RGB(0x00, 0xFF, 0x00),
-	RGB(0x66, 0xFF, 0x99),
-	RGB(0x99, 0xFF, 0xCC),
-	RGB(0xCC, 0xFF, 0xFF),
-	RGB(0xCC, 0xEC, 0xFF),
-	RGB(0xCC, 0xCC, 0xFF),
-	RGB(0xCC, 0x99, 0xFF),
-	RGB(0xCC, 0x66, 0xFF),
-	RGB(0xCC, 0x00, 0xFF),
-	RGB(0x99, 0x00, 0xCC),
-
-	RGB(0x00, 0x33, 0x00), // row 7
-	RGB(0x00, 0x80, 0x00),
-	RGB(0x33, 0xCC, 0x33),
-	RGB(0x66, 0xFF, 0x66),
-	RGB(0x99, 0xFF, 0x99),
-	RGB(0xCC, 0xFF, 0xCC),
-	RGB(0xFF, 0xFF, 0xFF),
-	RGB(0xFF, 0xCC, 0xFF),
-	RGB(0xFF, 0x99, 0xFF),
-	RGB(0xFF, 0x66, 0xFF),
-	RGB(0xFF, 0x00, 0xFF),
-	RGB(0xCC, 0x00, 0xCC),
-	RGB(0x66, 0x00, 0x66),
-
-	RGB(0x33, 0x66, 0x00), // row 8
-	RGB(0x00, 0x99, 0x00),
-	RGB(0x66, 0xFF, 0x33),
-	RGB(0x99, 0xFF, 0x66),
-	RGB(0xCC, 0xFF, 0x99),
-	RGB(0xFF, 0xFF, 0xCC),
-	RGB(0xFF, 0xCC, 0xCC),
-	RGB(0xFF, 0x99, 0xCC),
-	RGB(0xFF, 0x66, 0xCC),
-	RGB(0xFF, 0x33, 0xCC),
-	RGB(0xCC, 0x00, 0x99),
-	RGB(0x80, 0x00, 0x80),
-
-	RGB(0x33, 0x33, 0x00), // row 9
-	RGB(0x66, 0x99, 0x00),
-	RGB(0x99, 0xFF, 0x33),
-	RGB(0xCC, 0xFF, 0x66),
-	RGB(0xFF, 0xFF, 0x99),
-	RGB(0xFF, 0xCC, 0x99),
-	RGB(0xFF, 0x99, 0x99),
-	RGB(0xFF, 0x66, 0x99),
-	RGB(0xFF, 0x33, 0x99),
-	RGB(0xCC, 0x33, 0x99),
-	RGB(0x99, 0x00, 0x99),
-
-	RGB(0x66, 0x66, 0x33), // row 10
-	RGB(0x99, 0xCC, 0x00),
-	RGB(0xCC, 0xFF, 0x33),
-	RGB(0xFF, 0xFF, 0x66),
-	RGB(0xFF, 0xCC, 0x66),
-	RGB(0xFF, 0x99, 0x66),
-	RGB(0xFF, 0x7C, 0x80),
-	RGB(0xFF, 0x00, 0x66),
-	RGB(0xD6, 0x00, 0x93),
-	RGB(0x99, 0x33, 0x66),
-
-	RGB(0x80, 0x80, 0x00), // row 11
-	RGB(0xCC, 0xCC, 0x00),
-	RGB(0xFF, 0xFF, 0x00),
-	RGB(0xFF, 0xCC, 0x00),
-	RGB(0xFF, 0x99, 0x33),
-	RGB(0xFF, 0x66, 0x00),
-	RGB(0xFF, 0x50, 0x50),
-	RGB(0xCC, 0x00, 0x66),
-	RGB(0x66, 0x00, 0x33),
-
-	RGB(0x99, 0x66, 0x33), // row 12
-	RGB(0xCC, 0x99, 0x00),
-	RGB(0xFF, 0x99, 0x00),
-	RGB(0xCC, 0x66, 0x00),
-	RGB(0xFF, 0x33, 0x00),
-	RGB(0xFF, 0x00, 0x00),
-	RGB(0xCC, 0x00, 0x00),
-	RGB(0x99, 0x00, 0x33),
-
-	RGB(0x66, 0x33, 0x00), // row 13
-	RGB(0x99, 0x66, 0x00),
-	RGB(0xCC, 0x33, 0x00),
-	RGB(0x99, 0x33, 0x00),
-	RGB(0x99, 0x00, 0x00),
-	RGB(0x80, 0x00, 0x00),
-	RGB(0xA5, 0x00, 0x21),
-
-	RGB(0xF8, 0xF8, 0xF8), // row 1 (gray scale)
-	RGB(0xDD, 0xDD, 0xDD),
-	RGB(0xB2, 0xB2, 0xB2),
-	RGB(0x80, 0x80, 0x80),
-	RGB(0x5F, 0x5F, 0x5F),
-	RGB(0x33, 0x33, 0x33),
-	RGB(0x1C, 0x1C, 0x1C),
-	RGB(0x08, 0x08, 0x08),
-
-	RGB(0xEA, 0xEA, 0xEA), // row 2 (gray scale)
-	RGB(0xC0, 0xC0, 0xC0),
-	RGB(0x96, 0x96, 0x96),
-	RGB(0x77, 0x77, 0x77),
-	RGB(0x4D, 0x4D, 0x4D),
-	RGB(0x29, 0x29, 0x29),
-	RGB(0x11, 0x11, 0x11),
-
-	RGB(0xFF, 0xFF, 0xFF), // large white cell
-	RGB(0x00, 0x00, 0x00)   // large black cell
-};
-
-bool CXTColorHex::IsValidColor(COLORREF cr) const
-{
-	int i;
-	for (i = 0; i < _countof(clrSelArray); ++i)
-	{
-		if (cr == clrSelArray[i])
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorHex
-
-CXTColorHex::CXTColorHex()
-{
-	m_bSmallCell = TRUE;
-	m_clrColor = (COLORREF)-1;
-	m_bLBtnDown = FALSE;
-	m_bPreSubclassInit = true;
-}
-
-CXTColorHex::~CXTColorHex()
-{
-	while (!m_arCells.IsEmpty())
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.RemoveHead();
-		SAFE_DELETE_AR (pCI->pPoint);
-		SAFE_DELETE (pCI);
-	}
-}
-
-BEGIN_MESSAGE_MAP(CXTColorHex, CStatic)
-	//{{AFX_MSG_MAP(CXTColorHex)
-	ON_WM_PAINT()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
-	ON_WM_ERASEBKGND()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-#define CX_ANCHOR   42
-#define CY_ANCHOR   3
-#define CX_HEXDISP  182
-#define CY_HEXDISP  196
-
-void CXTColorHex::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	CXTPClientRect rc(this);
-	CXTPBufferDC memDC(dc);
-
-	if (m_bmpPicker.GetSafeHandle() == NULL)
-	{
-		// create bitmap
-		m_bmpPicker.DeleteObject();
-		m_bmpPicker.CreateCompatibleBitmap(&memDC,
-			rc.Width(), rc.Height());
-
-		// create picker DC
-		CDC dcPicker;
-		dcPicker.CreateCompatibleDC(&memDC);
-		CBitmap* pOldBitmap = dcPicker.SelectObject(&m_bmpPicker);
-
-		dcPicker.SetBkMode(TRANSPARENT);
-
-		HBRUSH hBrush = (HBRUSH)GetParent()->SendMessage(WM_CTLCOLORSTATIC, (WPARAM)dcPicker.GetSafeHdc(), (LPARAM)m_hWnd);
-		if (hBrush)
-		{
-			::FillRect(dcPicker.GetSafeHdc(), rc, hBrush);
-		}
-		else
-		{
-			dcPicker.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-		}
-
-		DrawColorSelector(&dcPicker);
-		dcPicker.SelectObject(pOldBitmap);
-	}
-
-	memDC.DrawState(CPoint(0, 0), rc.Size(), &m_bmpPicker, DSS_NORMAL, 0);
-	SelectColorCell(&memDC);
-}
-
-BOOL CXTColorHex::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTColorHex::SelectColorCell(CDC* pDC)
-{
-	CXTColorDialog* pParentWnd = (CXTColorDialog*)GetParent()->GetParent();
-	ASSERT(pParentWnd);
-	if (!pParentWnd)
-		return;
-	if (pParentWnd->GetColor() == m_clrColor)
-	{
-		if (m_clrColor == RGB(0xff, 0xff, 0xff))
-		{
-			CXTPClientRect rcClient(this);
-			CPoint ptCurrent = m_ptCurrent;
-
-			m_ptCurrent.x = (rcClient.Width()-14)/2;
-			m_ptCurrent.y = 74 + CY_ANCHOR;
-			DrawSelectCell(pDC);
-
-			m_ptCurrent.x = (rcClient.Width()-CX_HEXDISP)/2;
-			m_ptCurrent.y = 171 + CY_ANCHOR;
-			DrawLargeSelectCell(pDC);
-
-			m_ptCurrent = ptCurrent;
-		}
-		else if (m_clrColor == RGB(0x00, 0x00, 0x00))
-		{
-			DrawLargeSelectCell(pDC);
-		}
-		else if (IsValidColor(m_clrColor))
-		{
-			if (m_bSmallCell)
-			{
-				DrawSelectCell(pDC);
-			}
-			else
-			{
-				DrawLargeSelectCell(pDC);
-			}
-		}
-	}
-}
-
-void CXTColorHex::DrawLargeSelectCell(CDC* pDC)
-{
-	int x = m_ptCurrent.x;
-	int y = m_ptCurrent.y;
-	x -= 2;
-
-	COLORREF clr = RGB(0x00, 0x00, 0x00);
-
-	// outer border
-	int i;
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + i, y-i, clr);
-
-	pDC->SetPixel(x + 3, y-2, clr);
-	pDC->SetPixel(x + 4, y-3, clr);
-	pDC->SetPixel(x + 5, y-3, clr);
-	pDC->SetPixel(x + 6, y-4, clr);
-	pDC->SetPixel(x + 7, y-4, clr);
-	pDC->SetPixel(x + 8, y-5, clr);
-	pDC->SetPixel(x + 9, y-5, clr);
-	pDC->SetPixel(x + 10, y-6, clr);
-	pDC->SetPixel(x + 11, y-6, clr);
-	pDC->SetPixel(x + 12, y-7, clr);
-	pDC->SetPixel(x + 13, y-7, clr);
-	pDC->SetPixel(x + 14, y-8, clr);
-	pDC->SetPixel(x + 15, y-8, clr);
-	pDC->SetPixel(x + 16, y-8, clr);
-	pDC->SetPixel(x + 17, y-8, clr);
-	pDC->SetPixel(x + 18, y-8, clr);
-	pDC->SetPixel(x + 19, y-7, clr);
-	pDC->SetPixel(x + 20, y-7, clr);
-	pDC->SetPixel(x + 21, y-6, clr);
-	pDC->SetPixel(x + 22, y-6, clr);
-	pDC->SetPixel(x + 23, y-5, clr);
-	pDC->SetPixel(x + 24, y-5, clr);
-	pDC->SetPixel(x + 25, y-4, clr);
-	pDC->SetPixel(x + 26, y-4, clr);
-	pDC->SetPixel(x + 27, y-3, clr);
-	pDC->SetPixel(x + 28, y-3, clr);
-	pDC->SetPixel(x + 29, y-2, clr);
-	pDC->SetPixel(x + 30, y-2, clr);
-	pDC->SetPixel(x + 31, y-1, clr);
-
-	for (i = 0; i < 17; ++i)
-		pDC->SetPixel(x + 32, y + i, clr);
-
-	pDC->SetPixel(x + 31, y + 17, clr);
-	pDC->SetPixel(x + 30, y + 18, clr);
-	pDC->SetPixel(x + 29, y + 18, clr);
-	pDC->SetPixel(x + 28, y + 19, clr);
-	pDC->SetPixel(x + 27, y + 19, clr);
-	pDC->SetPixel(x + 26, y + 20, clr);
-	pDC->SetPixel(x + 25, y + 20, clr);
-	pDC->SetPixel(x + 24, y + 21, clr);
-	pDC->SetPixel(x + 23, y + 21, clr);
-	pDC->SetPixel(x + 22, y + 22, clr);
-	pDC->SetPixel(x + 21, y + 22, clr);
-	pDC->SetPixel(x + 20, y + 23, clr);
-	pDC->SetPixel(x + 19, y + 23, clr);
-	pDC->SetPixel(x + 18, y + 24, clr);
-	pDC->SetPixel(x + 17, y + 24, clr);
-	pDC->SetPixel(x + 16, y + 24, clr);
-	pDC->SetPixel(x + 15, y + 24, clr);
-	pDC->SetPixel(x + 14, y + 24, clr);
-	pDC->SetPixel(x + 13, y + 23, clr);
-	pDC->SetPixel(x + 12, y + 23, clr);
-	pDC->SetPixel(x + 11, y + 22, clr);
-	pDC->SetPixel(x + 10, y + 22, clr);
-	pDC->SetPixel(x + 9, y + 21, clr);
-	pDC->SetPixel(x + 8, y + 21, clr);
-	pDC->SetPixel(x + 7, y + 20, clr);
-	pDC->SetPixel(x + 6, y + 20, clr);
-	pDC->SetPixel(x + 5, y + 19, clr);
-	pDC->SetPixel(x + 4, y + 19, clr);
-	pDC->SetPixel(x + 3, y + 18, clr);
-	pDC->SetPixel(x + 2, y + 18, clr);
-	pDC->SetPixel(x + 1, y + 17, clr);
-
-	for (i = 0; i < 17; ++i)
-		pDC->SetPixel(x, y + i, clr);
-
-	// inner border
-	for (i = 0; i < 15; ++i)
-		pDC->SetPixel(x + 4, y + 1 + i, clr);
-
-	pDC->SetPixel(x + 5, y + 16, clr);
-	pDC->SetPixel(x + 6, y + 16, clr);
-	pDC->SetPixel(x + 7, y + 17, clr);
-	pDC->SetPixel(x + 8, y + 17, clr);
-	pDC->SetPixel(x + 9, y + 18, clr);
-	pDC->SetPixel(x + 10, y + 18, clr);
-	pDC->SetPixel(x + 11, y + 19, clr);
-	pDC->SetPixel(x + 12, y + 19, clr);
-	pDC->SetPixel(x + 13, y + 20, clr);
-	pDC->SetPixel(x + 14, y + 20, clr);
-	pDC->SetPixel(x + 15, y + 21, clr);
-	pDC->SetPixel(x + 16, y + 21, clr);
-	pDC->SetPixel(x + 17, y + 21, clr);
-	pDC->SetPixel(x + 18, y + 20, clr);
-	pDC->SetPixel(x + 19, y + 20, clr);
-	pDC->SetPixel(x + 20, y + 19, clr);
-	pDC->SetPixel(x + 21, y + 19, clr);
-	pDC->SetPixel(x + 22, y + 18, clr);
-	pDC->SetPixel(x + 23, y + 18, clr);
-	pDC->SetPixel(x + 24, y + 17, clr);
-	pDC->SetPixel(x + 25, y + 17, clr);
-	pDC->SetPixel(x + 26, y + 16, clr);
-	pDC->SetPixel(x + 27, y + 16, clr);
-
-	for (i = 0; i < 15; ++i)
-		pDC->SetPixel(x + 28, y + 1 + i, clr);
-
-	pDC->SetPixel(x + 27, y, clr);
-	pDC->SetPixel(x + 26, y, clr);
-	pDC->SetPixel(x + 25, y-1, clr);
-	pDC->SetPixel(x + 24, y-1, clr);
-	pDC->SetPixel(x + 23, y-2, clr);
-	pDC->SetPixel(x + 22, y-2, clr);
-	pDC->SetPixel(x + 21, y-3, clr);
-	pDC->SetPixel(x + 20, y-3, clr);
-	pDC->SetPixel(x + 19, y-4, clr);
-	pDC->SetPixel(x + 18, y-4, clr);
-	pDC->SetPixel(x + 17, y-5, clr);
-	pDC->SetPixel(x + 16, y-5, clr);
-	pDC->SetPixel(x + 15, y-5, clr);
-	pDC->SetPixel(x + 14, y-4, clr);
-	pDC->SetPixel(x + 13, y-4, clr);
-	pDC->SetPixel(x + 12, y-3, clr);
-	pDC->SetPixel(x + 11, y-3, clr);
-	pDC->SetPixel(x + 10, y-2, clr);
-	pDC->SetPixel(x + 9, y-2, clr);
-	pDC->SetPixel(x + 8, y-1, clr);
-	pDC->SetPixel(x + 7, y-1, clr);
-	pDC->SetPixel(x + 6, y, clr);
-	pDC->SetPixel(x + 5, y, clr);
-
-	// fill inside.
-	clr = RGB(0xff, 0xff, 0xff);
-
-	for (i = 0; i < 17; ++i)
-	{
-		pDC->SetPixel(x + 1, y + i, clr);
-		pDC->SetPixel(x + 2, y + i, clr);
-		pDC->SetPixel(x + 3, y + i, clr);
-	}
-
-	pDC->SetPixel(x + 4, y, clr);
-	pDC->SetPixel(x + 4, y + 16, clr);
-
-	for (i = 0; i < 17; ++i)
-	{
-		pDC->SetPixel(x + 29, y + i, clr);
-		pDC->SetPixel(x + 30, y + i, clr);
-		pDC->SetPixel(x + 31, y + i, clr);
-	}
-
-	pDC->SetPixel(x + 28, y, clr);
-	pDC->SetPixel(x + 28, y + 16, clr);
-
-	for (i = 0; i < 5; ++i)
-	{
-		pDC->SetPixel(x + 2 + i, y-1, clr);
-		pDC->SetPixel(x + 4 + i, y-2, clr);
-		pDC->SetPixel(x + 6 + i, y-3, clr);
-		pDC->SetPixel(x + 8 + i, y-4, clr);
-		pDC->SetPixel(x + 10 + i, y-5, clr);
-		pDC->SetPixel(x + 12 + i, y-6, clr);
-		pDC->SetPixel(x + 16 + i, y-6, clr);
-		pDC->SetPixel(x + 14 + i, y-7, clr);
-		pDC->SetPixel(x + 18 + i, y-5, clr);
-		pDC->SetPixel(x + 20 + i, y-4, clr);
-		pDC->SetPixel(x + 22 + i, y-3, clr);
-		pDC->SetPixel(x + 24 + i, y-2, clr);
-		pDC->SetPixel(x + 26 + i, y-1, clr);
-		pDC->SetPixel(x + 26 + i, y + 17, clr);
-		pDC->SetPixel(x + 24 + i, y + 18, clr);
-		pDC->SetPixel(x + 22 + i, y + 19, clr);
-		pDC->SetPixel(x + 20 + i, y + 20, clr);
-		pDC->SetPixel(x + 18 + i, y + 21, clr);
-		pDC->SetPixel(x + 14 + i, y + 23, clr);
-		pDC->SetPixel(x + 16 + i, y + 22, clr);
-		pDC->SetPixel(x + 12 + i, y + 22, clr);
-		pDC->SetPixel(x + 10 + i, y + 21, clr);
-		pDC->SetPixel(x + 8 + i, y + 20, clr);
-		pDC->SetPixel(x + 6 + i, y + 19, clr);
-		pDC->SetPixel(x + 4 + i, y + 18, clr);
-		pDC->SetPixel(x + 2 + i, y + 17, clr);
-	}
-}
-
-void CXTColorHex::DrawSelectCell(CDC* pDC)
-{
-	COLORREF clr = RGB(0x00, 0x00, 0x00);
-	int x = m_ptCurrent.x;
-	int y = m_ptCurrent.y;
-	x -= 2;
-	y -= 1;
-
-	// outer border
-	int i;
-	for (i = 0; i < 11; ++i)
-		pDC->SetPixel(x, y + i, clr);
-
-	pDC->SetPixel(x + 1, y + 11, clr);
-	pDC->SetPixel(x + 2, y + 11, clr);
-	pDC->SetPixel(x + 3, y + 12, clr);
-	pDC->SetPixel(x + 4, y + 12, clr);
-	pDC->SetPixel(x + 5, y + 13, clr);
-	pDC->SetPixel(x + 6, y + 13, clr);
-
-	for (i = 0; i < 5; ++i)
-		pDC->SetPixel(x + 7 + i, y + 14, clr);
-
-	pDC->SetPixel(x + 12, y + 13, clr);
-	pDC->SetPixel(x + 13, y + 13, clr);
-	pDC->SetPixel(x + 14, y + 12, clr);
-	pDC->SetPixel(x + 15, y + 12, clr);
-	pDC->SetPixel(x + 16, y + 11, clr);
-	pDC->SetPixel(x + 17, y + 11, clr);
-
-	for (i = 0; i < 11; ++i)
-		pDC->SetPixel(x + 18, y + i, clr);
-
-	pDC->SetPixel(x + 16, y-1, clr);
-	pDC->SetPixel(x + 17, y-1, clr);
-	pDC->SetPixel(x + 14, y-2, clr);
-	pDC->SetPixel(x + 15, y-2, clr);
-	pDC->SetPixel(x + 12, y-3, clr);
-	pDC->SetPixel(x + 13, y-3, clr);
-
-	for (i = 0; i < 5; ++i)
-		pDC->SetPixel(x + 7 + i, y-4, clr);
-
-	pDC->SetPixel(x + 5, y-3, clr);
-	pDC->SetPixel(x + 6, y-3, clr);
-	pDC->SetPixel(x + 3, y-2, clr);
-	pDC->SetPixel(x + 4, y-2, clr);
-	pDC->SetPixel(x + 1, y-1, clr);
-	pDC->SetPixel(x + 2, y-1, clr);
-
-	// inner border
-	for (i = 0; i < 7; ++i)
-		pDC->SetPixel(x + 3, y + 2 + i, clr);
-
-	pDC->SetPixel(x + 4, y + 9, clr);
-	pDC->SetPixel(x + 5, y + 9, clr);
-	pDC->SetPixel(x + 6, y + 10, clr);
-	pDC->SetPixel(x + 7, y + 10, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 8 + i, y + 11, clr);
-
-	pDC->SetPixel(x + 11, y + 10, clr);
-	pDC->SetPixel(x + 12, y + 10, clr);
-	pDC->SetPixel(x + 13, y + 9, clr);
-	pDC->SetPixel(x + 14, y + 9, clr);
-
-	for (i = 0; i < 7; ++i)
-		pDC->SetPixel(x + 15, y + 2 + i, clr);
-
-	pDC->SetPixel(x + 13, y + 1, clr);
-	pDC->SetPixel(x + 14, y + 1, clr);
-	pDC->SetPixel(x + 11, y, clr);
-	pDC->SetPixel(x + 12, y, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 8 + i, y-1, clr);
-
-	pDC->SetPixel(x + 6, y, clr);
-	pDC->SetPixel(x + 7, y, clr);
-	pDC->SetPixel(x + 4, y + 1, clr);
-	pDC->SetPixel(x + 5, y + 1, clr);
-
-	// fill inside.
-	clr = RGB(0xff, 0xff, 0xff);
-	x++;
-
-	for (i = 0; i < 11; ++i)
-	{
-		pDC->SetPixel(x, y + i, clr);
-		pDC->SetPixel(x + 1, y + i, clr);
-	}
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 2, y + 9 + i, clr);
-
-	pDC->SetPixel(x + 3, y + 10, clr);
-	pDC->SetPixel(x + 3, y + 11, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 4, y + 10 + i, clr);
-
-	pDC->SetPixel(x + 5, y + 11, clr);
-	pDC->SetPixel(x + 5, y + 12, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 6, y + 11 + i, clr);
-
-	pDC->SetPixel(x + 7, y + 12, clr);
-	pDC->SetPixel(x + 7, y + 13, clr);
-	pDC->SetPixel(x + 8, y + 12, clr);
-	pDC->SetPixel(x + 8, y + 13, clr);
-	pDC->SetPixel(x + 9, y + 12, clr);
-	pDC->SetPixel(x + 9, y + 13, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 10, y + 11 + i, clr);
-
-	pDC->SetPixel(x + 11, y + 11, clr);
-	pDC->SetPixel(x + 11, y + 12, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 12, y + 10 + i, clr);
-
-	pDC->SetPixel(x + 13, y + 10, clr);
-	pDC->SetPixel(x + 13, y + 11, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 14, y + 9 + i, clr);
-
-	for (i = 0; i < 11; ++i)
-	{
-		pDC->SetPixel(x + 15, y + i, clr);
-		pDC->SetPixel(x + 16, y + i, clr);
-	}
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 14, y-1 + i, clr);
-
-	pDC->SetPixel(x + 13, y, clr);
-	pDC->SetPixel(x + 13, y-1, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 12, y-2 + i, clr);
-
-	pDC->SetPixel(x + 11, y-1, clr);
-	pDC->SetPixel(x + 11, y-2, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 10, y-3 + i, clr);
-
-	pDC->SetPixel(x + 7, y-2, clr);
-	pDC->SetPixel(x + 7, y-3, clr);
-	pDC->SetPixel(x + 8, y-2, clr);
-	pDC->SetPixel(x + 8, y-3, clr);
-	pDC->SetPixel(x + 9, y-2, clr);
-	pDC->SetPixel(x + 9, y-3, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 6, y-3 + i, clr);
-
-	pDC->SetPixel(x + 5, y-1, clr);
-	pDC->SetPixel(x + 5, y-2, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 4, y-2 + i, clr);
-
-	pDC->SetPixel(x + 3, y, clr);
-	pDC->SetPixel(x + 3, y-1, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 2, y-1 + i, clr);
-}
-
-void CXTColorHex::DrawCell(CDC* pDC, CPoint point, COLORREF clr, int l, int u, int r, int d)
-{
-	HEXCOLOR_CELL* pCI = new HEXCOLOR_CELL;
-
-	CPen penNew(PS_SOLID, 1, clr);
-	CPen* pOldPen = pDC->SelectObject(&penNew);
-
-	pCI->clr = clr;
-	pCI->bSmall = TRUE;
-	pCI->pPoint = new CPoint[168];
-	pCI->direction[0] = l;
-	pCI->direction[1] = u;
-	pCI->direction[2] = r;
-	pCI->direction[3] = d;
-
-	m_arCells.AddTail(pCI);
-
-	if (clr == m_clrColor)
-	{
-		m_ptCurrent.x = point.x;
-		m_ptCurrent.y = point.y;
-	}
-
-	int idx = 0;
-	int i;
-	for (i = 0; i < 9; ++i)
-	{
-		CPoint point1(point.x, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 1, point.y + i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 11; ++i)
-	{
-		CPoint point1(point.x + 2, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 3, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 13; ++i)
-	{
-		CPoint point1(point.x + 4, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 5, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 15; ++i)
-	{
-		CPoint point1(point.x + 6, (point.y-3)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 7, (point.y-3)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-		CPoint point3(point.x + 8, (point.y-3)+i);
-		pDC->SetPixel(point3, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point3;
-			idx++;
-		}
-	}
-	for (i = 0; i < 13; ++i)
-	{
-		CPoint point1(point.x + 9, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 10, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 11; ++i)
-	{
-		CPoint point1(point.x + 11, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 12, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 9; ++i)
-	{
-		CPoint point1(point.x + 13, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-	}
-
-	pDC->SelectObject(pOldPen);
-}
-
-void CXTColorHex::DrawLargeCell(CDC* pDC, CPoint point, COLORREF clr, int l, int u, int r, int d)
-{
-	HEXCOLOR_CELL* pCI = new HEXCOLOR_CELL;
-
-	CPen penNew(PS_SOLID, 1, clr);
-	CPen* pOldPen = pDC->SelectObject(&penNew);
-
-	pCI->clr = clr;
-	pCI->bSmall = FALSE;
-	pCI->pPoint = new CPoint[691];
-	pCI->direction[0] = l;
-	pCI->direction[1] = u;
-	pCI->direction[2] = r;
-	pCI->direction[3] = d;
-
-	m_arCells.AddTail(pCI);
-
-	if (clr == m_clrColor)
-	{
-		m_ptCurrent.x = point.x;
-		m_ptCurrent.y = point.y;
-	}
-
-	int idx = 0;
-	int i;
-	for (i = 0; i < 17; ++i)
-	{
-		CPoint point1(point.x, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 1, point.y + i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 19; ++i)
-	{
-		CPoint point1(point.x + 2, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 3, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 21; ++i)
-	{
-		CPoint point1(point.x + 4, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 5, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 23; ++i)
-	{
-		CPoint point1(point.x + 6, (point.y-3)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-	}
-	for (i = 0; i < 25; ++i)
-	{
-		CPoint point1(point.x + 7, (point.y-4)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 8, (point.y-4)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 27; ++i)
-	{
-		CPoint point1(point.x + 9, (point.y-5)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 10, (point.y-5)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 29; ++i)
-	{
-		CPoint point1(point.x + 11, (point.y-6)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 12, (point.y-6)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 31; ++i)
-	{
-		CPoint point1(point.x + 13, (point.y-7)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 14, (point.y-7)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-		CPoint point3(point.x + 15, (point.y-7)+i);
-		pDC->SetPixel(point3, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point3;
-			idx++;
-		}
-	}
-	for (i = 0; i < 29; ++i)
-	{
-		CPoint point1(point.x + 16, (point.y-6)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 17, (point.y-6)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 27; ++i)
-	{
-		CPoint point1(point.x + 18, (point.y-5)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 19, (point.y-5)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 25; ++i)
-	{
-		CPoint point1(point.x + 20, (point.y-4)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 21, (point.y-4)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 23; ++i)
-	{
-		CPoint point1(point.x + 22, (point.y-3)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-	}
-	for (i = 0; i < 21; ++i)
-	{
-		CPoint point1(point.x + 23, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 24, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 19; ++i)
-	{
-		CPoint point1(point.x + 25, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 26, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 17; ++i)
-	{
-		CPoint point1(point.x + 27, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 28, point.y + i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-
-	pDC->SelectObject(pOldPen);
-}
-
-void CXTColorHex::DrawColorSelector(CDC* pDC)
-{
-	CXTPClientRect rcClient(this);
-
-	int x = ((rcClient.Width()-CX_HEXDISP)/2)+CX_ANCHOR;
-	int y = CY_ANCHOR;
-
-	int i = -1;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], -1, -1, 1, 8);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 0, -1, 2, 9);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 1, -1, 3, 10);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 2, -1, 4, 11);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 3, -1, 5, 12);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 4, -1, 6, 13);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 5, -1, 7, 14);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 6, -1, 8, 16);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 7, 0, 9, 17);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 8, 1, 10, 18);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 9, 2, 11, 19);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 10, 3, 12, 20);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 11, 4, 13, 21);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 12, 5, 14, 22);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 13, 6, 15, 23);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 14, 6, 16, 25);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 15, 7, 17, 26);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 16, 8, 18, 27);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 17, 9, 19, 28);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 18, 10, 20, 29);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 19, 11, 21, 30);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 20, 12, 22, 31);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 21, 13, 23, 32);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 22, 14, 24, 33);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 23, 14, 25, 35);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 24, 15, 26, 36);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 25, 16, 27, 37);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 26, 17, 28, 38);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 27, 18, 29, 39);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 28, 19, 30, 40);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 29, 20, 31, 41);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 30, 21, 32, 42);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 31, 22, 33, 43);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 32, 23, 34, 44);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 33, 23, 35, 46);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 34, 24, 36, 47);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 35, 25, 37, 48);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 36, 26, 38, 49);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 37, 27, 39, 50);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 38, 28, 40, 51);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 39, 29, 41, 52);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 40, 30, 42, 53);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 41, 31, 43, 54);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 42, 32, 44, 55);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 43, 33, 45, 56);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 44, 33, 46, 58);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 45, 34, 47, 59);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 46, 35, 48, 60);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 47, 36, 49, 61);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 48, 37, 50, 62);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 49, 38, 51, 63);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 50, 39, 52, 64);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 51, 40, 53, 65);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 52, 41, 54, 66);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 53, 42, 55, 67);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 54, 43, 56, 68);
-	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 55, 44, 57, 69);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 56, 44, 58, 70);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 57, 45, 59, 71);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 58, 46, 60, 72);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 59, 47, 61, 73);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 60, 48, 62, 74);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 61, 49, 63, 75);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 62, 50, 64, 76);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 63, 51, 65, 77);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 64, 52, 66, 78);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 65, 53, 67, 79);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 66, 54, 68, 80);
-	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 67, 55, 69, 81);
-	DrawCell(pDC, CPoint(x + 168, y), clrSelArray[++i], 68, 56, 70, 82);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 69, 57, 71, 82);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 70, 58, 72, 83);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 71, 59, 73, 84);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 72, 60, 74, 85);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 73, 61, 75, 86);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 74, 62, 76, 87);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 75, 63, 77, 88);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 76, 64, 78, 89);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 77, 65, 79, 90);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 78, 66, 80, 91);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 79, 67, 81, 92);
-	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 80, 68, 82, 93);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 81, 70, 83, 93);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 82, 71, 84, 94);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 83, 72, 85, 95);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 84, 73, 86, 96);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 85, 74, 87, 97);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 86, 75, 88, 98);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 87, 76, 89, 99);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 88, 77, 90, 100);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 89, 78, 91, 101);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 90, 79, 92, 102);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 91, 80, 93, 103);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 92, 82, 94, 103);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 93, 83, 95, 104);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 94, 84, 96, 105);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 95, 85, 97, 106);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 96, 86, 98, 107);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 97, 87, 99, 108);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 98, 88, 100, 109);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 99, 89, 101, 110);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 100, 90, 102, 111);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 101, 91, 103, 112);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 102, 93, 104, 112);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 103, 94, 105, 113);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 104, 95, 106, 114);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 105, 96, 107, 115);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 106, 97, 108, 116);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 107, 98, 109, 117);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 108, 99, 110, 118);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 109, 100, 111, 119);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 110, 101, 112, 120);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 111, 103, 113, 120);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 112, 104, 114, 121);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 113, 105, 115, 122);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 114, 106, 116, 123);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 115, 107, 117, 124);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 116, 108, 118, 125);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 117, 109, 119, 126);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 118, 110, 120, 142);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 119, 112, 121, 121);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 120, 113, 122, 122);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 121, 114, 123, 123);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 122, 115, 124, 124);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 123, 116, 125, 125);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 124, 117, 126, 126);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 125, 118, 142, 142);
-
-	// Grey scale colors.
-	x -= 7;
-	y += 25;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 142, 142, 135, 135);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 135, 135, 136, 136);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 136, 136, 137, 137);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 137, 137, 138, 138);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 138, 138, 139, 139);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 139, 139, 140, 140);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 140, 140, 141, 141);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 141, 141, 143, 143);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 127, 127, 128, 128);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 128, 128, 129, 129);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 129, 129, 130, 130);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 130, 130, 131, 131);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 131, 131, 132, 132);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 132, 132, 133, 133);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 133, 133, 134, 134);
-
-	x = (rcClient.Width() - CX_HEXDISP)/2;
-	DrawLargeCell(pDC, CPoint(x, y-12), clrSelArray[++i], 126, 126, 127, 127);
-
-	x = ((rcClient.Width() - CX_HEXDISP)/2) + (CX_HEXDISP-29);
-	DrawLargeCell(pDC, CPoint(x, y - 12), clrSelArray[++i], 134, 134, -1, -1);
-}
-
-void CXTColorHex::UpdateSelection(CPoint point)
-{
-	COLORREF clr = ColorFromPoint(point);
-
-	if ((clr != (COLORREF)-1) && (m_clrColor != clr))
-	{
-		m_clrColor = clr;
-		GetParent()->SendMessage(XTWM_UPDATECOLOR,
-			(WPARAM)(COLORREF)m_clrColor);
-
-		CRect rc;
-		GetClientRect(&rc);
-
-		CClientDC dc(this);
-		CXTPBufferDC memDC(dc, rc);
-
-		memDC.DrawState(CPoint(0, 0), rc.Size(), &m_bmpPicker, DSS_NORMAL, 0);
-		SelectColorCell(&memDC);
-	}
-}
-
-void CXTColorHex::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (GetFocus() != this)
-		SetFocus();
-
-	UpdateSelection(point);
-	m_bLBtnDown = TRUE;
-
-	CWnd::OnLButtonDown(nFlags, point);
-}
-
-
-void CXTColorHex::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	CStatic::OnLButtonDblClk(nFlags, point);
-
-	if (GetFocus() != this)
-		SetFocus();
-
-	COLORREF clr = ColorFromPoint(point);
-
-	if (clr != (COLORREF)-1)
-	{
-		UpdateSelection(point);
-		m_bLBtnDown = TRUE;
-
-		CPropertyPage* pParentPage = (CPropertyPage*)GetParent();
-		ASSERT_VALID(pParentPage);
-
-		CPropertySheet* pParentSheet = (CPropertySheet*)pParentPage->GetParent();
-		ASSERT_VALID(pParentSheet);
-
-		pParentSheet->EndDialog(IDOK);
-	}
-}
-
-COLORREF CXTColorHex::ColorFromPoint(CPoint point)
-{
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
-		ASSERT(pCI != NULL);
-
-		if (pCI == NULL)
-			return (COLORREF)-1;
-
-		int nPixelCount = pCI->bSmall ? 168 : 691;
-		int i;
-		for (i = 0; i < nPixelCount; ++i)
-		{
-			if (point == pCI->pPoint[i])
-			{
-				m_ptCurrent = pCI->pPoint[0];
-				m_bSmallCell = pCI->bSmall;
-				return pCI->clr;
-			}
-		}
-	}
-
-	return (COLORREF)-1;
-}
-
-void CXTColorHex::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	m_bLBtnDown = FALSE;
-	CWnd::OnLButtonUp(nFlags, point);
-}
-
-void CXTColorHex::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_bLBtnDown)
-	{
-		UpdateSelection(point);
-	}
-
-	CWnd::OnMouseMove(nFlags, point);
-}
-
-bool CXTColorHex::Init()
-{
-	if (::IsWindow(m_hWnd))
-	{
-		ModifyStyle(NULL, SS_NOTIFY);
-		return true;
-	}
-
-	return false;
-}
-
-void CXTColorHex::PreSubclassWindow()
-{
-	CWnd::PreSubclassWindow();
-
-	if (m_bPreSubclassInit)
-	{
-		// Initialize the control.
-		Init();
-	}
-}
-
-int CXTColorHex::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	// Initialize the control.
-	Init();
-
-	return 0;
-}
-
-BOOL CXTColorHex::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	// When creating controls dynamically Init() must
-	// be called from OnCreate() and not from
-	// PreSubclassWindow().
-
-	m_bPreSubclassInit = false;
-
-	return TRUE;
-}
-
-CXTColorHex::HEXCOLOR_CELL* CXTColorHex::GetColorCell(COLORREF clr)
-{
-	bool bWhite = false;
-
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
-		ASSERT(pCI != NULL);
-		if (!pCI)
-			continue;
-
-		if (clr == pCI->clr)
-		{
-			if (clr == RGB(0xff, 0xff, 0xff) && bWhite == false)
-			{
-				if (m_ptCurrent.y >= 176) // big hex selected
-				{
-					bWhite = true;
-					continue;
-				}
-			}
-			return pCI;
-		}
-	}
-
-	return NULL;
-}
-
-void CXTColorHex::SetSelectedColor(int iIndex)
-{
-	if (iIndex != -1)
-	{
-		POSITION pos2 = m_arCells.FindIndex(iIndex);
-		ASSERT(pos2 != NULL);
-
-		HEXCOLOR_CELL* pClrCell = m_arCells.GetAt(pos2);
-		ASSERT(pClrCell != NULL);
-
-		if (pClrCell)
-			UpdateSelection(pClrCell->pPoint[0]);
-	}
-}
-
-void CXTColorHex::SetSelectedColor(COLORREF clr)
-{
-	m_clrColor = clr;
-	int iIndex = -1;
-
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos), ++iIndex)
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
-		ASSERT(pCI != NULL);
-
-		if (pCI && (clr == pCI->clr))
-		{
-			SetSelectedColor(iIndex);
-		}
-	}
-}
-
-BOOL CXTColorHex::PreTranslateMessage(MSG* pMsg)
-{
-	switch (pMsg->message)
-	{
-	case WM_KEYDOWN:
-		{
-			HEXCOLOR_CELL* pClrCell = GetColorCell(m_clrColor);
-			if (pClrCell == NULL)
-				pClrCell = GetColorCell(RGB(0x00, 0x00, 0x00));
-
-			TCHAR vkey = (TCHAR)pMsg->wParam;
-			switch (vkey)
-			{
-			case VK_LEFT:
-				SetSelectedColor(pClrCell->direction[0]);
-				break;
-			case VK_UP:
-				SetSelectedColor(pClrCell->direction[1]);
-				break;
-			case VK_RIGHT:
-				SetSelectedColor(pClrCell->direction[2]);
-				break;
-			case VK_DOWN:
-				SetSelectedColor(pClrCell->direction[3]);
-				break;
-			case VK_RETURN:
-			case VK_SPACE:
-				CPropertyPage* pParentPage = (CPropertyPage*)GetParent();
-				ASSERT_VALID(pParentPage);
-
-				CPropertySheet* pParentSheet = (CPropertySheet*)pParentPage->GetParent();
-				ASSERT_VALID(pParentSheet);
-
-				pParentSheet->EndDialog(IDOK);
-				break;
-			}
-		}
-		break;
-	}
-
-	return CStatic::PreTranslateMessage(pMsg);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorPageStandard
-
-BEGIN_MESSAGE_MAP(CXTColorPageStandard, CPropertyPage)
-	//{{AFX_MSG_MAP(CXTColorPageStandard)
-	//ON_WM_PAINT()
-	//ON_WM_ERASEBKGND()
-	//}}AFX_MSG_MAP
-	ON_MESSAGE(XTWM_UPDATECOLOR, OnUpdateColor)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorPageStandard construction/destruction
-
-CXTColorPageStandard::CXTColorPageStandard(CXTColorDialog* pParentSheet)
-: CPropertyPage(CXTColorPageStandard::IDD)
-{
-	m_psp.dwFlags &= ~PSP_HASHELP;
-	m_pParentSheet = pParentSheet;
-
-	//{{AFX_DATA_INIT(CXTColorPageStandard)
-	//}}AFX_DATA_INIT
-}
-
-CXTColorPageStandard::~CXTColorPageStandard()
-{
-}
-
-void CXTColorPageStandard::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTColorPageStandard)
-	DDX_Control(pDX, XT_IDC_CLR_HEX, m_colorHex);
-	//}}AFX_DATA_MAP
-}
-
-LRESULT CXTColorPageStandard::OnUpdateColor(WPARAM wParam, LPARAM /*lParam*/)
-{
-	m_pParentSheet->SetNewColor((COLORREF)wParam, FALSE);
-	return 0;
-}

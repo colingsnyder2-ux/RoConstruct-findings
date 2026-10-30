@@ -1,269 +1,103 @@
+// roc 2007-08 005c9990  unit: seg_005c0000  size: 271 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 005c9990
+//
+// 005c9990  55                   push ebp
+// 005c9991  8bec                 mov ebp, esp
+// 005c9993  83e4c0               and esp, 0xffffffc0
+// 005c9996  83ec34               sub esp, 0x34
+// 005c9999  53                   push ebx
+// 005c999a  56                   push esi
+// 005c999b  57                   push edi
+// 005c999c  ff15f4e87700         call dword ptr [0x77e8f4]
+// 005c99a2  99                   cdq 
+// 005c99a3  b9ff7f0000           mov ecx, 0x7fff
+// 005c99a8  f7f9                 idiv ecx
+// 005c99aa  8b7d08               mov edi, dword ptr [ebp + 8]
+// 005c99ad  57                   push edi
+// 005c99ae  89542434             mov dword ptr [esp + 0x34], edx
+// 005c99b2  db442434             fild dword ptr [esp + 0x34]
+// 005c99b6  dc0d689d7b00         fmul qword ptr [0x7b9d68]
+// 005c99bc  dd5c243c             fstp qword ptr [esp + 0x3c]
+// 005c99c0  e8bb3bffff           call 0x5bd580
+// 005c99c5  83c404               add esp, 4
+// 005c99c8  83e800               sub eax, 0
+// 005c99cb  0f84af000000         je 0x5c9a80
+// 005c99d1  83e801               sub eax, 1
+// 005c99d4  746b                 je 0x5c9a41
+// 005c99d6  83e801               sub eax, 1
+// 005c99d9  7415                 je 0x5c99f0
+// 005c99db  684c9d7b00           push 0x7b9d4c
+// 005c99e0  57                   push edi
+// 005c99e1  e8fa4effff           call 0x5be8e0
+// 005c99e6  83c408               add esp, 8
+// 005c99e9  5f                   pop edi
+// 005c99ea  5e                   pop esi
+// 005c99eb  5b                   pop ebx
+// 005c99ec  8be5                 mov esp, ebp
+// 005c99ee  5d                   pop ebp
+// 005c99ef  c3                   ret 
+// 005c99f0  6a01                 push 1
+// 005c99f2  57                   push edi
+// 005c99f3  e8985affff           call 0x5bf490
+// 005c99f8  8bd8                 mov ebx, eax
+// 005c99fa  6a02                 push 2
+// 005c99fc  57                   push edi
+// 005c99fd  895c2444             mov dword ptr [esp + 0x44], ebx
+// 005c9a01  e88a5affff           call 0x5bf490
+// 005c9a06  8bf0                 mov esi, eax
+// 005c9a08  83c410               add esp, 0x10
+// 005c9a0b  3bde                 cmp ebx, esi
+// 005c9a0d  7e10                 jle 0x5c9a1f
+// 005c9a0f  68389d7b00           push 0x7b9d38
+// 005c9a14  6a02                 push 2
+// 005c9a16  57                   push edi
+// 005c9a17  e86457ffff           call 0x5bf180
+// 005c9a1c  83c40c               add esp, 0xc
+// 005c9a1f  2bf3                 sub esi, ebx
+// 005c9a21  83c601               add esi, 1
+// 005c9a24  89742430             mov dword ptr [esp + 0x30], esi
+// 005c9a28  db442430             fild dword ptr [esp + 0x30]
+// 005c9a2c  83ec08               sub esp, 8
+// 005c9a2f  dc4c2440             fmul qword ptr [esp + 0x40]
+// 005c9a33  dd1c24               fstp qword ptr [esp]
+// 005c9a36  e8ed760600           call 0x631128
+// 005c9a3b  da44243c             fiadd dword ptr [esp + 0x3c]
+// 005c9a3f  eb46                 jmp 0x5c9a87
+// 005c9a41  6a01                 push 1
+// 005c9a43  57                   push edi
+// 005c9a44  e8475affff           call 0x5bf490
+// 005c9a49  83c408               add esp, 8
+// 005c9a4c  83f801               cmp eax, 1
+// 005c9a4f  89442434             mov dword ptr [esp + 0x34], eax
+// 005c9a53  7d10                 jge 0x5c9a65
+// 005c9a55  68389d7b00           push 0x7b9d38
+// 005c9a5a  6a01                 push 1
+// 005c9a5c  57                   push edi
+// 005c9a5d  e81e57ffff           call 0x5bf180
+// 005c9a62  83c40c               add esp, 0xc
+// 005c9a65  db442434             fild dword ptr [esp + 0x34]
+// 005c9a69  83ec08               sub esp, 8
+// 005c9a6c  dc4c2440             fmul qword ptr [esp + 0x40]
+// 005c9a70  dd1c24               fstp qword ptr [esp]
+// 005c9a73  e8b0760600           call 0x631128
+// 005c9a78  dc0598317900         fadd qword ptr [0x793198]
+// 005c9a7e  eb07                 jmp 0x5c9a87
+// 005c9a80  dd442438             fld qword ptr [esp + 0x38]
+// 005c9a84  83ec08               sub esp, 8
+// 005c9a87  dd1c24               fstp qword ptr [esp]
+// 005c9a8a  57                   push edi
+// 005c9a8b  e8e040ffff           call 0x5bdb70
+// 005c9a90  83c40c               add esp, 0xc
+// 005c9a93  5f                   pop edi
+// 005c9a94  5e                   pop esi
+// 005c9a95  b801000000           mov eax, 1
+// 005c9a9a  5b                   pop ebx
+// 005c9a9b  8be5                 mov esp, ebp
+// 005c9a9d  5d                   pop ebp
+// 005c9a9e  c3                   ret 
+// copied from an identical function in another client (function _math_random)
+
 // roc-cl: 50727
 // roc-lang: c
 // roc-flags: /O2 /GS- /MD /fp:fast
 // roc-lib: lua-5.1.2-dll lmathlib.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: lmathlib.c,v 1.67 2005/08/26 17:36:32 roberto Exp $
-** Standard mathematical library
-** See Copyright Notice in lua.h
-*/
-
-
-#include <stdlib.h>
-#include <math.h>
-
-#define lmathlib_c
-#define LUA_LIB
-
-#include "lua.h"
-
-#include "lauxlib.h"
-#include "lualib.h"
-
-
-#undef PI
-#define PI (3.14159265358979323846)
-#define RADIANS_PER_DEGREE (PI/180.0)
-
-
-
-static int math_abs (lua_State *L) {
-  lua_pushnumber(L, fabs(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_sin (lua_State *L) {
-  lua_pushnumber(L, sin(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_sinh (lua_State *L) {
-  lua_pushnumber(L, sinh(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_cos (lua_State *L) {
-  lua_pushnumber(L, cos(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_cosh (lua_State *L) {
-  lua_pushnumber(L, cosh(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_tan (lua_State *L) {
-  lua_pushnumber(L, tan(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_tanh (lua_State *L) {
-  lua_pushnumber(L, tanh(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_asin (lua_State *L) {
-  lua_pushnumber(L, asin(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_acos (lua_State *L) {
-  lua_pushnumber(L, acos(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_atan (lua_State *L) {
-  lua_pushnumber(L, atan(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_atan2 (lua_State *L) {
-  lua_pushnumber(L, atan2(luaL_checknumber(L, 1), luaL_checknumber(L, 2)));
-  return 1;
-}
-
-static int math_ceil (lua_State *L) {
-  lua_pushnumber(L, ceil(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_floor (lua_State *L) {
-  lua_pushnumber(L, floor(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_fmod (lua_State *L) {
-  lua_pushnumber(L, fmod(luaL_checknumber(L, 1), luaL_checknumber(L, 2)));
-  return 1;
-}
-
-static int math_modf (lua_State *L) {
-  double ip;
-  double fp = modf(luaL_checknumber(L, 1), &ip);
-  lua_pushnumber(L, ip);
-  lua_pushnumber(L, fp);
-  return 2;
-}
-
-static int math_sqrt (lua_State *L) {
-  lua_pushnumber(L, sqrt(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_pow (lua_State *L) {
-  lua_pushnumber(L, pow(luaL_checknumber(L, 1), luaL_checknumber(L, 2)));
-  return 1;
-}
-
-static int math_log (lua_State *L) {
-  lua_pushnumber(L, log(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_log10 (lua_State *L) {
-  lua_pushnumber(L, log10(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_exp (lua_State *L) {
-  lua_pushnumber(L, exp(luaL_checknumber(L, 1)));
-  return 1;
-}
-
-static int math_deg (lua_State *L) {
-  lua_pushnumber(L, luaL_checknumber(L, 1)/RADIANS_PER_DEGREE);
-  return 1;
-}
-
-static int math_rad (lua_State *L) {
-  lua_pushnumber(L, luaL_checknumber(L, 1)*RADIANS_PER_DEGREE);
-  return 1;
-}
-
-static int math_frexp (lua_State *L) {
-  int e;
-  lua_pushnumber(L, frexp(luaL_checknumber(L, 1), &e));
-  lua_pushinteger(L, e);
-  return 2;
-}
-
-static int math_ldexp (lua_State *L) {
-  lua_pushnumber(L, ldexp(luaL_checknumber(L, 1), luaL_checkint(L, 2)));
-  return 1;
-}
-
-
-
-static int math_min (lua_State *L) {
-  int n = lua_gettop(L);  /* number of arguments */
-  lua_Number dmin = luaL_checknumber(L, 1);
-  int i;
-  for (i=2; i<=n; i++) {
-    lua_Number d = luaL_checknumber(L, i);
-    if (d < dmin)
-      dmin = d;
-  }
-  lua_pushnumber(L, dmin);
-  return 1;
-}
-
-
-static int math_max (lua_State *L) {
-  int n = lua_gettop(L);  /* number of arguments */
-  lua_Number dmax = luaL_checknumber(L, 1);
-  int i;
-  for (i=2; i<=n; i++) {
-    lua_Number d = luaL_checknumber(L, i);
-    if (d > dmax)
-      dmax = d;
-  }
-  lua_pushnumber(L, dmax);
-  return 1;
-}
-
-
-static int math_random (lua_State *L) {
-  /* the `%' avoids the (rare) case of r==1, and is needed also because on
-     some systems (SunOS!) `rand()' may return a value larger than RAND_MAX */
-  lua_Number r = (lua_Number)(rand()%RAND_MAX) / (lua_Number)RAND_MAX;
-  switch (lua_gettop(L)) {  /* check number of arguments */
-    case 0: {  /* no arguments */
-      lua_pushnumber(L, r);  /* Number between 0 and 1 */
-      break;
-    }
-    case 1: {  /* only upper limit */
-      int u = luaL_checkint(L, 1);
-      luaL_argcheck(L, 1<=u, 1, "interval is empty");
-      lua_pushnumber(L, floor(r*u)+1);  /* int between 1 and `u' */
-      break;
-    }
-    case 2: {  /* lower and upper limits */
-      int l = luaL_checkint(L, 1);
-      int u = luaL_checkint(L, 2);
-      luaL_argcheck(L, l<=u, 2, "interval is empty");
-      lua_pushnumber(L, floor(r*(u-l+1))+l);  /* int between `l' and `u' */
-      break;
-    }
-    default: return luaL_error(L, "wrong number of arguments");
-  }
-  return 1;
-}
-
-
-static int math_randomseed (lua_State *L) {
-  srand(luaL_checkint(L, 1));
-  return 0;
-}
-
-
-static const luaL_Reg mathlib[] = {
-  {"abs",   math_abs},
-  {"acos",  math_acos},
-  {"asin",  math_asin},
-  {"atan2", math_atan2},
-  {"atan",  math_atan},
-  {"ceil",  math_ceil},
-  {"cosh",   math_cosh},
-  {"cos",   math_cos},
-  {"deg",   math_deg},
-  {"exp",   math_exp},
-  {"floor", math_floor},
-  {"fmod",   math_fmod},
-  {"frexp", math_frexp},
-  {"ldexp", math_ldexp},
-  {"log10", math_log10},
-  {"log",   math_log},
-  {"max",   math_max},
-  {"min",   math_min},
-  {"modf",   math_modf},
-  {"pow",   math_pow},
-  {"rad",   math_rad},
-  {"random",     math_random},
-  {"randomseed", math_randomseed},
-  {"sinh",   math_sinh},
-  {"sin",   math_sin},
-  {"sqrt",  math_sqrt},
-  {"tanh",   math_tanh},
-  {"tan",   math_tan},
-  {NULL, NULL}
-};
-
-
-/*
-** Open math library
-*/
-LUALIB_API int luaopen_math (lua_State *L) {
-  luaL_register(L, LUA_MATHLIBNAME, mathlib);
-  lua_pushnumber(L, PI);
-  lua_setfield(L, -2, "pi");
-  lua_pushnumber(L, HUGE_VAL);
-  lua_setfield(L, -2, "huge");
-#if defined(LUA_COMPAT_MOD)
-  lua_getfield(L, -1, "fmod");
-  lua_setfield(L, -2, "mod");
-#endif
-  return 1;
-}
-

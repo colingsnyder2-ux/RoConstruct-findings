@@ -1,1020 +1,233 @@
+// roc 2012-06 00a08f70  unit: CXTPOffice2007Theme  size: 773 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 00a08f70
+//
+// 00a08f70  6aff                 push -1
+// 00a08f72  68c832ae00           push 0xae32c8
+// 00a08f77  64a100000000         mov eax, dword ptr fs:[0]
+// 00a08f7d  50                   push eax
+// 00a08f7e  83ec2c               sub esp, 0x2c
+// 00a08f81  53                   push ebx
+// 00a08f82  55                   push ebp
+// 00a08f83  56                   push esi
+// 00a08f84  57                   push edi
+// 00a08f85  a1d027e000           mov eax, dword ptr [0xe027d0]
+// 00a08f8a  33c4                 xor eax, esp
+// 00a08f8c  50                   push eax
+// 00a08f8d  8d442440             lea eax, [esp + 0x40]
+// 00a08f91  64a300000000         mov dword ptr fs:[0], eax
+// 00a08f97  8bf9                 mov edi, ecx
+// 00a08f99  897c242c             mov dword ptr [esp + 0x2c], edi
+// 00a08f9d  33db                 xor ebx, ebx
+// 00a08f9f  8d4c2414             lea ecx, [esp + 0x14]
+// 00a08fa3  895c2418             mov dword ptr [esp + 0x18], ebx
+// 00a08fa7  ff158447b200         call dword ptr [0xb24784]
+// 00a08fad  8b6c2464             mov ebp, dword ptr [esp + 0x64]
+// 00a08fb1  8d442414             lea eax, [esp + 0x14]
+// 00a08fb5  50                   push eax
+// 00a08fb6  8bcd                 mov ecx, ebp
+// 00a08fb8  895c244c             mov dword ptr [esp + 0x4c], ebx
+// 00a08fbc  e83597f7ff           call 0x9826f6
+// 00a08fc1  8b742450             mov esi, dword ptr [esp + 0x50]
+// 00a08fc5  6a01                 push 1
+// 00a08fc7  8bce                 mov ecx, esi
+// 00a08fc9  e8da050900           call 0xa995a8
+// 00a08fce  8d8fb4050000         lea ecx, [edi + 0x5b4]
+// 00a08fd4  51                   push ecx
+// 00a08fd5  56                   push esi
+// 00a08fd6  8d4c2438             lea ecx, [esp + 0x38]
+// 00a08fda  e851c5fcff           call 0x9d5530
+// 00a08fdf  c644244801           mov byte ptr [esp + 0x48], 1
+// 00a08fe4  395c2468             cmp dword ptr [esp + 0x68], ebx
+// 00a08fe8  7508                 jne 0xa08ff2
+// 00a08fea  8bbff0050000         mov edi, dword ptr [edi + 0x5f0]
+// 00a08ff0  eb06                 jmp 0xa08ff8
+// 00a08ff2  8bbfec050000         mov edi, dword ptr [edi + 0x5ec]
+// 00a08ff8  8b16                 mov edx, dword ptr [esi]
+// 00a08ffa  8b4238               mov eax, dword ptr [edx + 0x38]
+// 00a08ffd  57                   push edi
+// 00a08ffe  8bce                 mov ecx, esi
+// 00a09000  ffd0                 call eax
+// 00a09002  8bcd                 mov ecx, ebp
+// 00a09004  e8c9050900           call 0xa995d2
+// 00a09009  a900400000           test eax, 0x4000
+// 00a0900e  0f840a020000         je 0xa0921e
+// 00a09014  8b5500               mov edx, dword ptr [ebp]
+// 00a09017  8b8230010000         mov eax, dword ptr [edx + 0x130]
+// 00a0901d  8bcd                 mov ecx, ebp
+// 00a0901f  ffd0                 call eax
+// 00a09021  f7d8                 neg eax
+// 00a09023  1bc0                 sbb eax, eax
+// 00a09025  23c5                 and eax, ebp
+// 00a09027  7418                 je 0xa09041
+// 00a09029  8d4c2420             lea ecx, [esp + 0x20]
+// 00a0902d  51                   push ecx
+// 00a0902e  8bc8                 mov ecx, eax
+// 00a09030  e8fbe9ffff           call 0xa07a30
+// 00a09035  c644244802           mov byte ptr [esp + 0x48], 2
+// 00a0903a  bb01000000           mov ebx, 1
+// 00a0903f  eb1c                 jmp 0xa0905d
+// 00a09041  68e83bb400           push 0xb43be8
+// 00a09046  8d4c2420             lea ecx, [esp + 0x20]
+// 00a0904a  ff15c847b200         call dword ptr [0xb247c8]
+// 00a09050  c744244803000000     mov dword ptr [esp + 0x48], 3
+// 00a09058  bb02000000           mov ebx, 2
+// 00a0905d  50                   push eax
+// 00a0905e  8d4c2454             lea ecx, [esp + 0x54]
+// 00a09062  895c241c             mov dword ptr [esp + 0x1c], ebx
+// 00a09066  ff158047b200         call dword ptr [0xb24780]
+// 00a0906c  c744244804000000     mov dword ptr [esp + 0x48], 4
+// 00a09074  f6c302               test bl, 2
+// 00a09077  740d                 je 0xa09086
+// 00a09079  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a0907d  83e3fd               and ebx, 0xfffffffd
+// 00a09080  ff15d047b200         call dword ptr [0xb247d0]
+// 00a09086  c644244806           mov byte ptr [esp + 0x48], 6
+// 00a0908b  f6c301               test bl, 1
+// 00a0908e  740d                 je 0xa0909d
+// 00a09090  8d4c2420             lea ecx, [esp + 0x20]
+// 00a09094  83e3fe               and ebx, 0xfffffffe
+// 00a09097  ff15d047b200         call dword ptr [0xb247d0]
+// 00a0909d  8d4c2450             lea ecx, [esp + 0x50]
+// 00a090a1  ff156046b200         call dword ptr [0xb24660]
+// 00a090a7  84c0                 test al, al
+// 00a090a9  755f                 jne 0xa0910a
+// 00a090ab  8d4c2450             lea ecx, [esp + 0x50]
+// 00a090af  ff155846b200         call dword ptr [0xb24658]
+// 00a090b5  50                   push eax
+// 00a090b6  8d542428             lea edx, [esp + 0x28]
+// 00a090ba  52                   push edx
+// 00a090bb  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a090bf  ff15ec49b200         call dword ptr [0xb249ec]
+// 00a090c5  8bf8                 mov edi, eax
+// 00a090c7  83cb04               or ebx, 4
+// 00a090ca  8d4c2450             lea ecx, [esp + 0x50]
+// 00a090ce  c644244807           mov byte ptr [esp + 0x48], 7
+// 00a090d3  895c2418             mov dword ptr [esp + 0x18], ebx
+// 00a090d7  ff159847b200         call dword ptr [0xb24798]
+// 00a090dd  50                   push eax
+// 00a090de  8bcf                 mov ecx, edi
+// 00a090e0  ff159c47b200         call dword ptr [0xb2479c]
+// 00a090e6  85c0                 test eax, eax
+// 00a090e8  8bcd                 mov ecx, ebp
+// 00a090ea  0f94442464           sete byte ptr [esp + 0x64]
+// 00a090ef  e8e4040900           call 0xa995d8
+// 00a090f4  0fb64c2464           movzx ecx, byte ptr [esp + 0x64]
+// 00a090f9  c1e816               shr eax, 0x16
+// 00a090fc  f7d0                 not eax
+// 00a090fe  83e101               and ecx, 1
+// 00a09101  c644246401           mov byte ptr [esp + 0x64], 1
+// 00a09106  84c1                 test cl, al
+// 00a09108  7505                 jne 0xa0910f
+// 00a0910a  c644246400           mov byte ptr [esp + 0x64], 0
+// 00a0910f  c744244806000000     mov dword ptr [esp + 0x48], 6
+// 00a09117  f6c304               test bl, 4
+// 00a0911a  740a                 je 0xa09126
+// 00a0911c  8d4c2424             lea ecx, [esp + 0x24]
+// 00a09120  ff15d047b200         call dword ptr [0xb247d0]
+// 00a09126  807c246400           cmp byte ptr [esp + 0x64], 0
+// 00a0912b  0f84b8000000         je 0xa091e9
+// 00a09131  8d4c2450             lea ecx, [esp + 0x50]
+// 00a09135  ff155846b200         call dword ptr [0xb24658]
+// 00a0913b  50                   push eax
+// 00a0913c  8d4c2454             lea ecx, [esp + 0x54]
+// 00a09140  ff155846b200         call dword ptr [0xb24658]
+// 00a09146  8d4c2418             lea ecx, [esp + 0x18]
+// 00a0914a  8bf8                 mov edi, eax
+// 00a0914c  ff155846b200         call dword ptr [0xb24658]
+// 00a09152  2bc7                 sub eax, edi
+// 00a09154  50                   push eax
+// 00a09155  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a09159  ff15644ab200         call dword ptr [0xb24a64]
+// 00a0915f  8b3e                 mov edi, dword ptr [esi]
+// 00a09161  6824880000           push 0x8824
+// 00a09166  8d542458             lea edx, [esp + 0x58]
+// 00a0916a  52                   push edx
+// 00a0916b  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a0916f  ff155846b200         call dword ptr [0xb24658]
+// 00a09175  50                   push eax
+// 00a09176  8d4c2420             lea ecx, [esp + 0x20]
+// 00a0917a  ff159847b200         call dword ptr [0xb24798]
+// 00a09180  50                   push eax
+// 00a09181  8b4770               mov eax, dword ptr [edi + 0x70]
+// 00a09184  8bce                 mov ecx, esi
+// 00a09186  ffd0                 call eax
+// 00a09188  8d4c2414             lea ecx, [esp + 0x14]
+// 00a0918c  51                   push ecx
+// 00a0918d  8d542428             lea edx, [esp + 0x28]
+// 00a09191  52                   push edx
+// 00a09192  8bce                 mov ecx, esi
+// 00a09194  e84753a9ff           call 0x49e4e0
+// 00a09199  8b00                 mov eax, dword ptr [eax]
+// 00a0919b  8b4c2454             mov ecx, dword ptr [esp + 0x54]
+// 00a0919f  8b54245c             mov edx, dword ptr [esp + 0x5c]
+// 00a091a3  8d440102             lea eax, [ecx + eax + 2]
+// 00a091a7  83c2fb               add edx, -5
+// 00a091aa  3bc2                 cmp eax, edx
+// 00a091ac  89442454             mov dword ptr [esp + 0x54], eax
+// 00a091b0  7d60                 jge 0xa09212
+// 00a091b2  837c246800           cmp dword ptr [esp + 0x68], 0
+// 00a091b7  7414                 je 0xa091cd
+// 00a091b9  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 00a091bd  8b91f4050000         mov edx, dword ptr [ecx + 0x5f4]
+// 00a091c3  8b06                 mov eax, dword ptr [esi]
+// 00a091c5  8b4038               mov eax, dword ptr [eax + 0x38]
+// 00a091c8  52                   push edx
+// 00a091c9  8bce                 mov ecx, esi
+// 00a091cb  ffd0                 call eax
+// 00a091cd  8b3e                 mov edi, dword ptr [esi]
+// 00a091cf  6824880000           push 0x8824
+// 00a091d4  8d4c2458             lea ecx, [esp + 0x58]
+// 00a091d8  51                   push ecx
+// 00a091d9  8d4c2458             lea ecx, [esp + 0x58]
+// 00a091dd  ff155846b200         call dword ptr [0xb24658]
+// 00a091e3  8d4c2458             lea ecx, [esp + 0x58]
+// 00a091e7  eb1a                 jmp 0xa09203
+// 00a091e9  8b3e                 mov edi, dword ptr [esi]
+// 00a091eb  6824880000           push 0x8824
+// 00a091f0  8d442458             lea eax, [esp + 0x58]
+// 00a091f4  50                   push eax
+// 00a091f5  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a091f9  ff155846b200         call dword ptr [0xb24658]
+// 00a091ff  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a09203  50                   push eax
+// 00a09204  ff159847b200         call dword ptr [0xb24798]
+// 00a0920a  8b5770               mov edx, dword ptr [edi + 0x70]
+// 00a0920d  50                   push eax
+// 00a0920e  8bce                 mov ecx, esi
+// 00a09210  ffd2                 call edx
+// 00a09212  8d4c2450             lea ecx, [esp + 0x50]
+// 00a09216  ff15d047b200         call dword ptr [0xb247d0]
+// 00a0921c  eb29                 jmp 0xa09247
+// 00a0921e  8b3e                 mov edi, dword ptr [esi]
+// 00a09220  6824880000           push 0x8824
+// 00a09225  8d442458             lea eax, [esp + 0x58]
+// 00a09229  50                   push eax
+// 00a0922a  8d4c241c             lea ecx, [esp + 0x1c]
+// 00a0922e  ff155846b200         call dword ptr [0xb24658]
+// 00a09234  50                   push eax
+// 00a09235  8d4c2420             lea ecx, [esp + 0x20]
+// 00a09239  ff159847b200         call dword ptr [0xb24798]
+// 00a0923f  8b5770               mov edx, dword ptr [edi + 0x70]
+// 00a09242  50                   push eax
+// 00a09243  8bce                 mov ecx, esi
+// 00a09245  ffd2                 call edx
+// 00a09247  8d4c2430             lea ecx, [esp + 0x30]
+// 00a0924b  c644244800           mov byte ptr [esp + 0x48], 0
+// 00a09250  e85bc3fcff           call 0x9d55b0
+// 00a09255  8d4c2414             lea ecx, [esp + 0x14]
+// 00a09259  ff15d047b200         call dword ptr [0xb247d0]
+// 00a0925f  8b4c2440             mov ecx, dword ptr [esp + 0x40]
+// 00a09263  64890d00000000       mov dword ptr fs:[0], ecx
+// 00a0926a  59                   pop ecx
+// 00a0926b  5f                   pop edi
+// 00a0926c  5e                   pop esi
+// 00a0926d  5d                   pop ebp
+// 00a0926e  5b                   pop ebx
+// 00a0926f  83c438               add esp, 0x38
+// 00a09272  c21c00               ret 0x1c
+// copied from an identical function in another client (function ?DrawCaptionText@CXTPOffice2007Theme@@MAEXPAVCDC@@VCRect@@PAVCWnd@@H@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPOffice2007Theme.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPOffice2007Theme.cpp : implementation of the CXTPOffice2007Theme class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPOffice2007Image.h"
-#include "Common/XTPVc80Helpers.h"
-
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPControlPopup.h"
-#include "XTPCommandBar.h"
-#include "XTPPopupBar.h"
-#include "XTPControlGallery.h"
-#include "XTPStatusBar.h"
-
-#include "XTPOffice2007Theme.h"
-
-#include "XTPOffice2007FrameHook.h"
-
-#ifndef OIC_WINLOGO
-#define OIC_WINLOGO 32517
-#endif
-
-#ifndef LAYOUT_BITMAPORIENTATIONPRESERVED
-#define LAYOUT_BITMAPORIENTATIONPRESERVED 0x00000008
-#endif
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-using namespace XTPPaintThemes;
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-class _XTP_EXT_CLASS CXTPControlGalleryOffice2007Theme : public CXTPControlGalleryPaintManager
-{
-public:
-	CXTPControlGalleryOffice2007Theme(CXTPPaintManager* pPaintManager)
-		: CXTPControlGalleryPaintManager(pPaintManager)
-	{
-
-	}
-
-public:
-	virtual void FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rc);
-	virtual void DrawPopupScrollBar(CDC* pDC, CXTPControlGallery* pGallery);
-	virtual void DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery);
-	virtual void DrawLabel(CDC* pDC, CXTPControlGalleryItem* pLabel, CRect rc);
-	virtual void RefreshMetrics();
-
-protected:
-	COLORREF m_clrControlGallerySelected;
-	COLORREF m_clrControlGalleryNormal;
-	COLORREF m_clrControlGalleryBorder;
-
-};
-
-
-CXTPOffice2007Theme::CXTPOffice2007Theme()
-{
-	m_nShadowOptions = xtpShadowOfficeAlpha;
-	m_systemTheme = xtpSystemThemeUnknown;
-	m_bThemedStatusBar = TRUE;
-	m_bFrameStatusBar = FALSE;
-	m_bOffice2007Padding = TRUE;
-
-	delete m_pGalleryPaintManager;
-	m_pGalleryPaintManager = new CXTPControlGalleryOffice2007Theme(this);
-
-	m_pImages = XTPOffice2007Images();
-}
-
-CXTPOffice2007Theme::~CXTPOffice2007Theme()
-{
-	m_pImages->RemoveAll();
-}
-
-CXTPOffice2007Images* CXTPOffice2007Theme::GetImages() const
-{
-	return m_pImages;
-}
-
-void CXTPOffice2007Theme::SetImages(CXTPOffice2007Images* pImages)
-{
-	m_pImages = pImages;
-}
-
-void CXTPOffice2007Theme::SetImageHandle(HMODULE hResource, LPCTSTR lpszIniFileName)
-{
-	GetImages()->SetHandle(hResource, lpszIniFileName);
-	RefreshMetrics();
-}
-
-CXTPOffice2007Image* CXTPOffice2007Theme::LoadImage(LPCTSTR lpszFileName)
-{
-	return GetImages()->LoadFile(lpszFileName);
-}
-
-BOOL CXTPOffice2007Theme::IsImagesAvailable()
-{
-	return TRUE;
-}
-
-COLORREF CXTPOffice2007Theme::GetRectangleTextColor(BOOL bSelected, BOOL bPressed, BOOL bEnabled, BOOL bChecked, BOOL bPopuped, XTPBarType barType, XTPBarPosition barPosition)
-{
-	if (barType == xtpBarTypeMenuBar && !bSelected && bEnabled && !bPressed && !bChecked && !bPopuped)
-	{
-		return m_clrMenuBarText;
-	}
-	return CXTPOffice2003Theme::GetRectangleTextColor(bSelected, bPressed, bEnabled, bChecked, bPopuped, barType, barPosition);
-}
-
-void CXTPOffice2007Theme::RefreshMetrics()
-{
-	CXTPOffice2003Theme::RefreshMetrics();
-
-//////////////////////////////////////////////////////////////////////////
-
-	CXTPPaintManager::CNonClientMetrics ncm;
-	ncm.lfSmCaptionFont.lfWeight = FW_NORMAL;
-
-	if (m_bClearTypeTextQuality &&
-		XTPSystemVersion()->IsClearTypeTextQualitySupported())
-	{
-		ncm.lfCaptionFont.lfQuality = 5;
-	}
-
-	ncm.lfCaptionFont.lfWeight = FW_NORMAL;
-	if (m_bUseOfficeFont && FontExists(m_strOfficeFont))
-		STRCPY_S(ncm.lfCaptionFont.lfFaceName, LF_FACESIZE, m_strOfficeFont);
-
-	if (ncm.lfCaptionFont.lfHeight < 0)
-		ncm.lfCaptionFont.lfHeight = min(-11, ncm.lfCaptionFont.lfHeight);
-
-	m_fontFrameCaption.SetStandardFont(&ncm.lfCaptionFont);
-
-	int nBorderSize = 1;
-	SystemParametersInfo(SPI_GETBORDER, 0, &nBorderSize, FALSE);
-
-	m_nFrameCaptionHeight = GetSystemMetrics(SM_CYCAPTION);
-	m_nFrameCaptionHeight = max(m_nFrameCaptionHeight, 17);
-
-	m_nRibbonCaptionHeight = GetSystemMetrics(SM_CYCAPTION) + 1;
-	m_nRibbonCaptionHeight = max(m_nRibbonCaptionHeight, 18);
-
-//////////////////////////////////////////////////////////////////////////
-
-	m_clrStatusTextColor = GetImages()->GetImageColor(_T("StatusBar"), _T("StatusBarText"));
-	m_clrStatusBarShadow = GetImages()->GetImageColor(_T("StatusBar"), _T("StatusBarShadow"));
-
-	m_clrStatusBarTop.SetStandardValue(GetImages()->GetImageColor(_T("StatusBar"), _T("StatusBarFaceTopLight")),
-		GetImages()->GetImageColor(_T("StatusBar"), _T("StatusBarFaceTopDark")));
-	m_clrStatusBarBottom.SetStandardValue(GetImages()->GetImageColor(_T("StatusBar"), _T("StatusBarFaceBottomLight")),
-		GetImages()->GetImageColor(_T("StatusBar"), _T("StatusBarFaceBottomDark")));
-
-
-
-	m_clrDockBar.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("DockBarFace")));
-	m_clrCommandBar.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ToolbarFaceLight")),
-		GetImages()->GetImageColor(_T("Toolbar"), _T("ToolbarFaceDark")), 0.75f);
-
-	m_clrToolbarShadow.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ToolbarFaceShadow")));
-
-	m_clrToolbarExpand.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlToolbarExpandLight")),
-		GetImages()->GetImageColor(_T("Toolbar"), _T("ControlToolbarExpandDark")), 0.75f);
-
-
-	m_clrPopupControl.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlHighlightPopupedLight")),
-		GetImages()->GetImageColor(_T("Toolbar"), _T("ControlHighlightPopupedDark")));
-	m_clrMenuExpandedGripper.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupExpandedGripperLight")),
-		GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupExpandedGripperDark")));
-	m_clrMenuExpand = m_clrPopupControl;
-
-	m_clrShadowFactor = 0;
-	m_clrTearOffGripper.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupTearOffGripper")));
-
-	m_clrMenuBarText = GetImages()->GetImageColor(_T("Toolbar"), _T("MenuBarText"));
-
-	m_arrColor[XPCOLOR_MENUBAR_FACE].SetStandardValue(RGB(246, 246, 246));
-	m_arrColor[XPCOLOR_MENUBAR_BORDER].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("MenuPopupBorder")));
-	m_arrColor[XPCOLOR_TOOLBAR_GRIPPER].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ToolbarGripper")));
-	m_arrColor[XPCOLOR_MENUBAR_TEXT].SetStandardValue(0);
-	m_arrColor[XPCOLOR_HIGHLIGHT_TEXT].SetStandardValue(0);
-	m_arrColor[XPCOLOR_TOOLBAR_TEXT].SetStandardValue(0);
-
-	m_arrColor[XPCOLOR_TOOLBAR_GRAYTEXT].SetStandardValue(RGB(141, 141, 141));
-	m_arrColor[XPCOLOR_HIGHLIGHT_DISABLED_BORDER].SetStandardValue(RGB(141, 141, 141));
-	m_arrColor[XPCOLOR_MENUBAR_GRAYTEXT].SetStandardValue(RGB(141, 141, 141));
-
-	m_arrColor[XPCOLOR_FRAME].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("WindowFrame")));
-
-	m_clrFloatingGripper.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("FloatingBarGripper")));
-	m_clrFloatingGripperText.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("FloatingBarGripperText")));
-	m_arrColor[XPCOLOR_FLOATBAR_BORDER].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("FloatingBarBorder")));
-
-	m_arrColor[COLOR_APPWORKSPACE].SetStandardValue(GetImages()->GetImageColor(_T("Workspace"), _T("AppWorkspace")));
-	m_arrColor[XPCOLOR_3DFACE].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("ButtonFace")));
-	m_arrColor[XPCOLOR_3DSHADOW].SetStandardValue(m_clrToolbarShadow);
-
-	m_arrColor[XPCOLOR_TOOLBAR_FACE].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ToolbarFace")));
-	m_arrColor[XPCOLOR_SEPARATOR].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ToolbarSeparator")));
-	m_arrColor[XPCOLOR_DISABLED].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlDisabledIcon")));
-
-	m_clrWorkspaceClientTop = GetImages()->GetImageColor(_T("Workspace"), _T("WorkspaceClientTop"));
-	m_clrWorkspaceClientMiddle = GetImages()->GetImageColor(_T("Workspace"), _T("WorkspaceClientMiddle"));
-	m_clrWorkspaceClientBottom =  GetImages()->GetImageColor(_T("Workspace"), _T("WorkspaceClientBottom"));
-
-
-	m_arrColor[XPCOLOR_HIGHLIGHT].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightSelected")));
-	m_arrColor[XPCOLOR_HIGHLIGHT_BORDER].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightSelectedBorder")));
-
-	m_arrColor[XPCOLOR_HIGHLIGHT_PUSHED].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightPressed")));
-	m_arrColor[XPCOLOR_HIGHLIGHT_PUSHED_BORDER].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightPressedBorder")));
-
-	m_arrColor[XPCOLOR_HIGHLIGHT_CHECKED].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightChecked")));
-	m_arrColor[XPCOLOR_HIGHLIGHT_CHECKED_BORDER].SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightCheckedBorder")));
-
-	m_arrColor[XPCOLOR_PUSHED_TEXT].SetStandardValue(0);
-
-	m_bLunaTheme = TRUE;
-
-	m_grcLunaSelected.SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightSelectedLight")),
-		GetImages()->GetImageColor(_T("Window"), _T("HighlightSelectedDark")));
-	m_grcLunaChecked.SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightCheckedLight")),
-		GetImages()->GetImageColor(_T("Window"), _T("HighlightCheckedDark")));
-	m_grcLunaPushed.SetStandardValue(GetImages()->GetImageColor(_T("Window"), _T("HighlightPressedLight")),
-		GetImages()->GetImageColor(_T("Window"), _T("HighlightPressedDark")));
-
-	m_clrFrameBorderActive0 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive0"));
-	m_clrFrameBorderActive1 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive1"));
-	m_clrFrameBorderActive2 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive2"));
-	m_clrFrameBorderActive3 = GetImages()->GetImageColor(_T("Window"), _T("BorderActive3"));
-	m_clrFrameBorderInactive0 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive0"));
-	m_clrFrameBorderInactive1 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive1"));
-	m_clrFrameBorderInactive2 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive2"));
-	m_clrFrameBorderInactive3 = GetImages()->GetImageColor(_T("Window"), _T("BorderInactive3"));
-
-	m_clrFrameCaptionTextActiveTitle = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextActiveTitle"));
-	m_clrFrameCaptionTextInActive = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextInActive"));
-	m_clrFrameCaptionTextActive = GetImages()->GetImageColor(_T("Window"), _T("CaptionTextActive"));
-
-	m_arrColor[XPCOLOR_LABEL].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlLabel")));
-	m_arrColor[XPCOLOR_EDITCTRLBORDER].SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlEditBorder")));
-
-	m_clrDisabledIcon.SetStandardValue(GetImages()->GetImageColor(_T("Toolbar"), _T("ControlDisabledIconLight")),
-		GetImages()->GetImageColor(_T("Toolbar"), _T("ControlDisabledIconDark")));
-
-	CreateGradientCircle();
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-void CXTPOffice2007Theme::DrawCaptionText(CDC* pDC, CRect rcCaptionText, CWnd* pSite, BOOL bActive)
-{
-	CString strWindowText;
-	pSite->GetWindowText(strWindowText);
-
-	pDC->SetBkMode(TRANSPARENT);
-	CXTPFontDC font(pDC, &m_fontFrameCaption);
-
-	pDC->SetTextColor(!bActive ? m_clrFrameCaptionTextInActive : m_clrFrameCaptionTextActive); //RGB(62, 106, 170));
-
-	if (pSite->GetStyle() & FWS_PREFIXTITLE)
-	{
-#if _MSC_VER >= 1200
-		CFrameWnd* pFrame = pSite->IsFrameWnd() ? (CFrameWnd*)pSite : NULL;
-		CString strTitle = pFrame ? pFrame->GetTitle() : _T("");
-
-		if (!strTitle.IsEmpty() && strWindowText.Right(strTitle.GetLength()) == strTitle & ((pSite->GetExStyle() & WS_EX_LAYOUTRTL) == 0))
-		{
-			strWindowText.Delete(strWindowText.GetLength() - strTitle.GetLength(), strTitle.GetLength());
-			pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-
-			int nExtent = pDC->GetTextExtent(strWindowText).cx;
-			rcCaptionText.left += nExtent + 2;
-
-			if (rcCaptionText.left < rcCaptionText.right - 5)
-			{
-				if (bActive) pDC->SetTextColor(m_clrFrameCaptionTextActiveTitle);
-				pDC->DrawText(strTitle, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-			}
-
-		}
-		else
-#endif
-		{
-			pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-		}
-	}
-	else
-	{
-		pDC->DrawText(strWindowText, rcCaptionText, DT_VCENTER | DT_LEFT| DT_END_ELLIPSIS | DT_SINGLELINE | DT_NOPREFIX);
-	}
-}
-
-
-
-HICON CXTPOffice2007Theme::GetFrameSmallIcon(CWnd* pFrame)
-{
-	if (!pFrame)
-		return NULL;
-
-	DWORD dwStyle = pFrame->GetStyle();
-	DWORD dwExStyle = pFrame->GetExStyle();
-
-	if (dwExStyle & WS_EX_TOOLWINDOW)
-		return NULL;
-
-	if ((dwStyle & WS_SYSMENU) == 0)
-		return NULL;
-
-	HICON hIcon = (HICON)(DWORD_PTR)::SendMessage(pFrame->m_hWnd, WM_GETICON, ICON_SMALL, 0);
-	if (hIcon)
-		return hIcon;
-
-	hIcon = (HICON)(DWORD_PTR)::GetClassLongPtr(pFrame->m_hWnd, GCLP_HICONSM);
-	if (hIcon)
-		return hIcon;
-
-	if (((dwStyle & (WS_BORDER | WS_DLGFRAME)) != WS_DLGFRAME) && ((dwExStyle & WS_EX_DLGMODALFRAME) == 0))
-	{
-		ULONG_PTR dwResult;
-
-		if (SendMessageTimeout(pFrame->GetSafeHwnd(),
-			WM_QUERYDRAGICON,
-			0,
-			0,
-			SMTO_NORMAL,
-			100,
-			&dwResult))
-		{
-			hIcon = (HICON)dwResult;
-		}
-
-		if (hIcon == NULL)
-		{
-			hIcon = AfxGetApp()->LoadOEMIcon(OIC_WINLOGO);
-		}
-	}
-
-	return hIcon;
-}
-
-HICON CXTPOffice2007Theme::GetFrameLargeIcon(CWnd* pFrame)
-{
-	if (!pFrame)
-		return NULL;
-
-	HICON hIcon = (HICON)(DWORD_PTR)::SendMessage(pFrame->m_hWnd, WM_GETICON, ICON_BIG, 0);
-	if (hIcon)
-		return hIcon;
-
-	hIcon = (HICON)(DWORD_PTR)::GetClassLongPtr(pFrame->m_hWnd, GCLP_HICON);
-	if (hIcon)
-		return hIcon;
-
-	return hIcon;
-}
-
-
-
-void CXTPOffice2007Theme::DrawRibbonFrame(CDC* pDC, CXTPOffice2007FrameHook* pFrameHook)
-{
-	CWnd* pSite = pFrameHook->GetSite();
-	BOOL bActive = pFrameHook->IsFrameActive();
-
-	CXTPClientRect rcBorders(pSite);
-	pSite->ClientToScreen(rcBorders);
-
-	CXTPWindowRect rc(pSite);
-
-	int nRightBorder = rcBorders.left - rc.left, nLeftBorder = rcBorders.left - rc.left;
-	int nBottomBorder = rc.bottom - rcBorders.bottom;
-
-	rc.OffsetRect(-rc.TopLeft());
-	CRect rcFrame(rc);
-
-	int nCaptionHeight = pFrameHook->GetCaptionHeight();
-	rcFrame.top += nCaptionHeight;
-
-	int nStatusHeight = 0;
-	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar(&nStatusHeight);
-
-	int nBordersHeight = bHasStatusBar ? rcFrame.Height() - nStatusHeight - 1 : rcFrame.Height();
-
-
-	if (nLeftBorder > 0) pDC->FillSolidRect(rc.left + 0, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-	if (nLeftBorder > 1) pDC->FillSolidRect(rc.left + 1, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
-	if (nLeftBorder > 2) pDC->FillSolidRect(rc.left + 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-	if (nLeftBorder > 3) pDC->FillSolidRect(rc.left + 3, rcFrame.top, nLeftBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-	if (nRightBorder > 0) pDC->FillSolidRect(rc.right - 1, rcFrame.top, 1, rcFrame.Height(), bActive ? m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-	if (nRightBorder > 1) pDC->FillSolidRect(rc.right - 2, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive1 : m_clrFrameBorderInactive1);
-	if (nRightBorder > 2) pDC->FillSolidRect(rc.right - 3, rcFrame.top, 1, nBordersHeight, bActive ? m_clrFrameBorderActive2 : m_clrFrameBorderInactive2);
-	if (nRightBorder > 3) pDC->FillSolidRect(rc.right - nRightBorder, rcFrame.top, nRightBorder - 3, nBordersHeight, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-
-	pDC->FillSolidRect(rc.left, rc.bottom - 1, rc.Width(), 1,
-		bActive ? pSite->GetStyle() & WS_MAXIMIZE ? m_clrFrameBorderActive3 : m_clrFrameBorderActive0 : m_clrFrameBorderInactive0);
-
-	if (nBottomBorder > 1)
-	{
-		pDC->FillSolidRect(rc.left + 1, rc.bottom - nBottomBorder, rc.Width() - 2, nBottomBorder - 1, bActive ? m_clrFrameBorderActive3 : m_clrFrameBorderInactive3);
-	}
-
-	//////////////////////////////////////////////////////////////////////////
-	CRect rcCaption(rc.left, rc.top, rc.right, rc.top + nCaptionHeight);
-
-	if (pFrameHook->IsCaptionVisible())
-	{
-		CXTPBufferDC dc(*pDC, rcCaption);
-
-		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMETOPLEFT"));
-		CRect rcSrcTopLeft(pImage->GetSource(bActive ? 0 : 1, 2));
-
-		CRect rcTopLeft(rc.left, rc.top, rc.left + rcSrcTopLeft.Width(), rcCaption.bottom);
-		pImage->DrawImage(&dc, rcTopLeft, rcSrcTopLeft, CRect(0, 5, 0, 3));
-
-		//
-
-		pImage = LoadImage(_T("FRAMETOPRIGHT"));
-		CRect rcSrcTopRight(pImage->GetSource(bActive ? 0 : 1, 2));
-
-		CRect rcTopRight(rc.right - rcSrcTopRight.Width(), rc.top, rc.right, rcCaption.bottom);
-		pImage->DrawImage(&dc, rcTopRight, rcSrcTopRight, CRect(0, 5, 0, 3));
-
-		pImage = LoadImage(_T("FRAMETOPCENTER"));
-
-		CRect rcTopCenter(rc.left + rcTopLeft.Width(), rc.top, rc.right - rcSrcTopRight.Width(), rcCaption.bottom);
-		pImage->DrawImage(&dc, rcTopCenter, pImage->GetSource(bActive ? 0 : 1, 2), CRect(0, 5, 0, 3));
-
-		CRect rcCaptionText(rcCaption);
-		rcCaptionText.left = 7;
-		rcCaptionText.DeflateRect(0, pFrameHook->GetFrameBorder(), 0, 3);
-
-		HICON hIcon = GetFrameSmallIcon(pSite);
-		if (hIcon)
-		{
-			CSize szIcon(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-
-			int cBorders = pFrameHook->GetFrameBorder() - 1;
-			int cxySlot = rcCaption.Height() - cBorders;
-			int nTop = cBorders + (cxySlot - szIcon.cy)/2;
-
-			DWORD dwLayout = XTPDrawHelpers()->IsContextRTL(&dc);
-			if (dwLayout & LAYOUT_RTL)
-				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout | LAYOUT_BITMAPORIENTATIONPRESERVED);
-
-			DrawIconEx(dc.m_hDC, rcCaptionText.left, nTop, hIcon,
-				szIcon.cx, szIcon.cy, 0, NULL, DI_NORMAL);
-
-			if (dwLayout & LAYOUT_RTL)
-				XTPDrawHelpers()->SetContextRTL(&dc, dwLayout);
-
-
-			rcCaptionText.left = 7 + szIcon.cx + 5;
-		}
-
-		CXTPControls* pCaptionButtons = pFrameHook->GetCaptionButtons();
-		for (int i = 0; i < pCaptionButtons->GetCount(); i++)
-		{
-			CXTPControl* pControl = pCaptionButtons->GetAt(i);
-			if (!pControl->IsVisible())
-				continue;
-
-			DrawRibbonFrameCaptionButton(&dc, pControl->GetRect(), pControl->GetID(), pControl->GetSelected(), pControl->GetPressed(), pControl->GetEnabled() && bActive);
-
-			rcCaptionText.right = min(rcCaptionText.right, pControl->GetRect().left);
-		}
-
-		rcCaptionText.right -= nRightBorder;
-
-
-		DrawCaptionText(&dc, rcCaptionText, pSite, bActive);
-	}
-	else
-	{
-
-		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMETOPLEFT"));
-		CRect rcSrc(pImage->GetSource(bActive ? 0 : 1, 2));
-		rcSrc.right = nLeftBorder;
-
-		CRect rcTopLeft(rc.left, rcCaption.top, rc.left + nLeftBorder, rcCaption.bottom);
-		pImage->DrawImage(pDC, rcTopLeft, rcSrc, CRect(0, 5, 0, 3));
-
-		//////////////////////////////////////////////////////////////////////////
-
-		pImage = LoadImage(_T("FRAMETOPRIGHT"));
-		rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-		rcSrc.left = rcSrc.right - nRightBorder;
-
-		CRect rcTopRight(rc.right - nRightBorder, rcCaption.top, rc.right, rcCaption.bottom);
-		pImage->DrawImage(pDC, rcTopRight, rcSrc, CRect(0, 5, 0, 3));
-	}
-
-	if (bHasStatusBar)
-	{
-		CXTPOffice2007Image* pImage = LoadImage(_T("STATUSBARLIGHT"));
-		CRect rcSrc(0, 0, nLeftBorder - 1, pImage->GetHeight());
-		CRect rcLight(rc.left + 1, rc.bottom - nStatusHeight - nBottomBorder, rc.left + nLeftBorder, rc.bottom - nBottomBorder);
-		pImage->DrawImage(pDC, rcLight, rcSrc, CRect(0, 0, 0, 0));
-
-		pImage = LoadImage(_T("STATUSBARDARK"));
-		rcSrc.SetRect(0, 0, nRightBorder - 1, pImage->GetHeight());
-		CRect rcDark(rc.right - nRightBorder, rc.bottom - nStatusHeight - nBottomBorder, rc.right - 1, rc.bottom - nBottomBorder);
-		pImage->DrawImage(pDC, rcDark, rcSrc, CRect(0, 0, 0, 0));
-
-		if (nLeftBorder > 3)
-		{
-			pImage = LoadImage(_T("FRAMEBOTTOMLEFT"));
-			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-			CRect rcBottomLeft(rc.left, rc.bottom - rcSrc.Height(), rc.left + rcSrc.Width(), rc.bottom);
-			pImage->DrawImage(pDC, rcBottomLeft, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-		}
-
-		if (nRightBorder > 3)
-		{
-			pImage = LoadImage(_T("FRAMEBOTTOMRIGHT"));
-			rcSrc = pImage->GetSource(bActive ? 0 : 1, 2);
-			CRect rcBottomRight(rc.right - rcSrc.Width(), rc.bottom - rcSrc.Height(), rc.right, rc.bottom);
-			pImage->DrawImage(pDC, rcBottomRight, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-		}
-	}
-}
-
-void CXTPOffice2007Theme::DrawRibbonFrameCaptionButton(CDC* pDC, CRect rc, int nId, BOOL bSelected, BOOL bPressed, BOOL bActive)
-{
-	int nState = !bActive ? 3 : bPressed && bSelected ? 2 : bSelected || bPressed ? 1 : 0;
-
-	if (bSelected || bPressed)
-	{
-		CXTPOffice2007Image* pImage = LoadImage(_T("FRAMECAPTIONBUTTON"));
-		pImage->DrawImage(pDC, rc, pImage->GetSource(bPressed && bSelected ? 1 : 0, 2), CRect(3, 3, 3, 3), 0xFF00FF);
-	}
-
-	int nGlyphSize = 23;
-	if (rc.Width() < 27) nGlyphSize = 17;
-	if (rc.Width() < 15) nGlyphSize = 13;
-
-	LPCTSTR lpszButton = nId == SC_CLOSE ? _T("CLOSE") : nId == SC_MINIMIZE ? _T("MINIMIZE") :
-		nId == SC_MAXIMIZE ? _T("MAXIMIZE") : _T("RESTORE");
-
-	CString strImage;
-	strImage.Format(_T("FRAMECAPTION%s%i"), lpszButton, nGlyphSize);
-	CXTPOffice2007Image* pImage = LoadImage(strImage);
-
-	CRect rcSrc(pImage->GetSource(nState, 5));
-
-	CRect rcGlyph(CPoint((rc.right + rc.left - rcSrc.Width()) / 2, (rc.top + rc.bottom - rcSrc.Height()) / 2), rcSrc.Size());
-
-	pImage->DrawImage(pDC, rcGlyph, rcSrc, CRect(0, 0, 0, 0), 0xFF00FF);
-}
-
-void CXTPOffice2007Theme::FillWorkspace(CDC* pDC, CRect rc, CRect rcExclude)
-{
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rc);
-	pDC->SelectClipRgn(&rgn);
-
-	pDC->ExcludeClipRect(rcExclude);
-
-	CXTPOffice2007Image* pImage = LoadImage(_T("WORKSPACETOPLEFT"));
-	ASSERT(pImage);
-	if (!pImage)
-		return;
-
-	CRect rcSrc(pImage->GetSource());
-	CRect rcTopLeft(rc);
-	rcTopLeft.bottom = rcTopLeft.top + rcSrc.Height();
-	rcTopLeft.right = rcTopLeft.left + max(rcTopLeft.Width(), rcSrc.Width());
-
-	pImage->DrawImage(pDC, rcTopLeft, rcSrc, CRect(rcSrc.Width() - 1, 0, 0, 0));
-
-	CRect rcFill(rc.left, rc.top + rcSrc.Height(), rc.right, rc.bottom);
-	CRect rcFillTop(rcFill.left, rcFill.top, rcFill.right, rcFill.top + rcFill.Height() * 2 / 3);
-	CRect rcFillBottom(rcFill.left, rcFillTop.bottom, rcFill.right, rcFill.bottom);
-
-	XTPDrawHelpers()->GradientFill(pDC, rcFillTop, m_clrWorkspaceClientTop, m_clrWorkspaceClientMiddle, FALSE);
-	XTPDrawHelpers()->GradientFill(pDC, rcFillBottom, m_clrWorkspaceClientMiddle, m_clrWorkspaceClientBottom, FALSE);
-
-	pDC->SelectClipRgn(NULL);
-}
-
-HRGN CXTPOffice2007Theme::CalcRibbonFrameRegion(CXTPOffice2007FrameHook* pFrameHook, CSize sz)
-{
-	if (pFrameHook->GetSite()->GetStyle() & WS_MAXIMIZE)
-	{
-		return NULL;
-	}
-
-	int cx = sz.cx, cy = sz.cy;
-
-	RECT rgnTopFrame[] =
-	{
-		{4, 0, cx - 4, 1}, {2, 1, cx - 2, 2}, {1, 2, cx - 1, 3}, {1, 3, cx - 1, 4}, {0, 4, cx, cy - 4}
-	};
-
-	RECT rgnRibbonBottomFrame[] =
-	{
-		{1, cy - 4, cx - 1, cy - 2}, {2, cy - 2, cx - 2, cy - 1}, {4, cy - 1, cx - 4, cy - 0}
-	};
-
-	RECT rgnSimpleBottomFrame[] =
-	{
-		{0, cy - 4, cx, cy}
-	};
-
-	BOOL bHasStatusBar = pFrameHook->IsFrameHasStatusBar() && pFrameHook->GetFrameBorder() > 3;
-
-	int nSizeTopRect = sizeof(rgnTopFrame);
-	int nSizeBottomRect = bHasStatusBar ? sizeof(rgnRibbonBottomFrame) : sizeof(rgnSimpleBottomFrame);
-
-	int nSizeData = sizeof(RGNDATAHEADER) + nSizeTopRect + nSizeBottomRect;
-
-	RGNDATA* pRgnData = (RGNDATA*)malloc(nSizeData);
-	if (!pRgnData)
-		return NULL;
-
-	memcpy(&pRgnData->Buffer, (void*)&rgnTopFrame, nSizeTopRect);
-	memcpy(&pRgnData->Buffer + nSizeTopRect, bHasStatusBar ? (void*)&rgnRibbonBottomFrame : (void*)&rgnSimpleBottomFrame, nSizeBottomRect);
-
-	pRgnData->rdh.dwSize = sizeof(RGNDATAHEADER);
-	pRgnData->rdh.iType = RDH_RECTANGLES;
-	pRgnData->rdh.nCount = (nSizeTopRect + nSizeBottomRect) / sizeof(RECT);
-	pRgnData->rdh.nRgnSize = 0;
-	pRgnData->rdh.rcBound = CRect(0, 0, cx, cy);
-
-	CRgn rgnResult;
-	VERIFY(rgnResult.CreateFromData(NULL, nSizeData, pRgnData));
-
-	free(pRgnData);
-
-	return (HRGN)rgnResult.Detach();
-}
-
-void CXTPOffice2007Theme::FillStatusBar(CDC* pDC, CXTPStatusBar* pBar)
-{
-	CXTPClientRect rc(pBar);
-
-	pDC->FillSolidRect(rc.left, rc.top, rc.Width(), 1, m_clrStatusBarShadow);
-	XTPDrawHelpers()->GradientFill(pDC, CRect(rc.left, rc.top + 1, rc.right, rc.top + 9),
-		m_clrStatusBarTop, FALSE);
-	XTPDrawHelpers()->GradientFill(pDC, CRect(rc.left, rc.top + 9, rc.right, rc.bottom),
-		m_clrStatusBarBottom, FALSE);
-
-}
-
-void CXTPOffice2007Theme::DrawStatusBarPaneBorder(CDC* pDC, CRect rc, CXTPStatusBarPane* /*pPane*/, BOOL bGripperPane)
-{
-	if (!bGripperPane)
-	{
-		pDC->FillSolidRect(rc.right - 1, rc.top, 1, rc.Height() - 2, GetXtremeColor(XPCOLOR_SEPARATOR));
-		pDC->FillSolidRect(rc.right, rc.top, 1, rc.Height() - 2, RGB(255, 255, 255));
-	}
-}
-
-void CXTPOffice2007Theme::DrawStatusBarGripper(CDC* pDC, CRect rcClient)
-{
-	CPoint pt(rcClient.right - 3, rcClient.bottom - 3);
-
-	for (int y = 0; y < 3; y++)
-	{
-		for (int x = 0; x < 3 - y; x++)
-		{
-			pDC->FillSolidRect(pt.x + 1 - x * 4, pt.y + 1 - y * 4, 2, 2, RGB(255, 255, 255));
-			pDC->FillSolidRect(pt.x + 0 - x * 4, pt.y + 0 - y * 4, 2, 2, GetXtremeColor(XPCOLOR_SEPARATOR));
-		}
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-void CXTPControlGalleryOffice2007Theme::FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rcControl)
-{
-	pDC->FillSolidRect(rcControl,
-		pGallery->GetParent()->GetPosition() == xtpBarPopup  && pGallery->GetParent()->GetType() == xtpBarTypePopup?
-		m_pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_FACE) :
-		pGallery->GetSelected() && pGallery->GetEnabled() ? m_clrControlGallerySelected : m_clrControlGalleryNormal);
-
-	if (pGallery->IsShowBorders())
-	{
-		pDC->Draw3dRect(rcControl, m_clrControlGalleryBorder, m_clrControlGalleryBorder);
-	}
-
-	if (pGallery->HasBottomSeparator())
-	{
-		pDC->FillSolidRect(rcControl.left, rcControl.bottom - 2, rcControl.Width(), 1, RGB(197, 197, 197));
-	}
-}
-
-void CXTPControlGalleryOffice2007Theme::RefreshMetrics()
-{
-	CXTPControlGalleryPaintManager::RefreshMetrics();
-
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	m_cyPopupUp = 21;
-	m_cyPopupDown = 19;
-
-	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)m_pPaintManager;
-
-	m_clrControlGallerySelected = pPaintManager->GetImages()->GetImageColor(_T("Toolbar"), _T("ControlGallerySelected"));
-	m_clrControlGalleryNormal = pPaintManager->GetImages()->GetImageColor(_T("Toolbar"), _T("ControlGalleryNormal"));
-	m_clrControlGalleryBorder = pPaintManager->GetImages()->GetImageColor(_T("Toolbar"), _T("ControlGalleryBorder"));
-}
-
-void CXTPControlGalleryOffice2007Theme::DrawLabel(CDC* pDC, CXTPControlGalleryItem* pLabel, CRect rcItem)
-{
-	CXTPPaintManager* pPaintManager = m_pPaintManager;
-	pDC->FillSolidRect(rcItem, pPaintManager->GetXtremeColor(XPCOLOR_LABEL));
-
-	pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, RGB(197, 197, 197));
-
-	CXTPFontDC fnt(pDC, pPaintManager->GetRegularBoldFont());
-
-	CRect rcText(rcItem);
-	rcText.DeflateRect(10, 0);
-	pDC->SetTextColor(pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_TEXT));
-	pDC->DrawText(pLabel->GetCaption(), rcText, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
-}
-
-void CXTPControlGalleryOffice2007Theme::DrawPopupScrollBar(CDC* pDC, CXTPControlGallery* pGallery)
-{
-	#define GETPARTSTATE3(ht, bEnabled) \
-	(!bEnabled ? 4 : nPressetHt == ht ? 3 : nHotHt == ht ? 2 : nHotHt > 0 || nPressetHt > 0 ? 1 : 0)
-
-	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	CRect rcControl = pGallery->GetRect();
-	CRect rcScroll(rcControl.right - 15, rcControl.top, rcControl.right, rcControl.bottom);
-
-	CRect rcScrollUp(rcScroll.left, rcScroll.top, rcScroll.right, rcScroll.top + m_cyPopupUp);
-	CRect rcScrollDown(rcScroll.left, rcScrollUp.bottom, rcScroll.right, rcScrollUp.bottom + m_cyPopupDown);
-	CRect rcScrollPopup(rcScroll.left, rcScrollDown.bottom, rcScroll.right, rcScroll.bottom);
-
-	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)m_pPaintManager;
-
-	CXTPOffice2007Image* pImage = pPaintManager->LoadImage(_T("CONTROLGALLERYUP"));
-	ASSERT(pImage);
-	if (!pImage)
-		return;
-
-	BOOL bControlEnabled = pGallery->GetEnabled();
-	BOOL nPressetHt = pSBTrack ? pSBInfo->ht : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-	int nState = GETPARTSTATE3(XTP_HTSCROLLUP, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLUP)));
-	pImage->DrawImage(pDC, rcScrollUp, pImage->GetSource(nState, 5), CRect(3, 3, 3, 3), 0xFF00FF);
-
-
-	nState = GETPARTSTATE3(XTP_HTSCROLLDOWN, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLDOWN)));
-	pImage = pPaintManager->LoadImage(_T("CONTROLGALLERYDOWN"));
-	pImage->DrawImage(pDC, rcScrollDown, pImage->GetSource(nState, 5), CRect(3, 3, 3, 3), 0xFF00FF);
-
-	nState = GETPARTSTATE3(XTP_HTSCROLLPOPUP, bControlEnabled);
-	pImage = pPaintManager->LoadImage(_T("CONTROLGALLERYPOPUP"));
-	pImage->DrawImage(pDC, rcScrollPopup, pImage->GetSource(nState, 5), CRect(3, 3, 3, 3), 0xFF00FF);
-}
-
-AFX_INLINE CRect OffsetSourceRect(CRect rc, int nState)
-{
-	rc.OffsetRect(0, (nState - 1) * rc.Height());
-	return rc;
-}
-
-void CXTPControlGalleryOffice2007Theme::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
-{
-	XTPScrollBarStyle barStyle = pGallery->GetScrollBarStyle();
-
-	if (barStyle != xtpScrollStyleOffice2007Light && barStyle != xtpScrollStyleOffice2007Dark)
-	{
-		CXTPControlGalleryPaintManager::DrawScrollBar(pDC, pGallery);
-		return;
-	}
-
-	BOOL bLight = (barStyle == xtpScrollStyleOffice2007Light);
-
-
-	#define GETPARTSTATE2(ht) \
-	(!bEnabled ? 0 : nPressetHt == ht ? 3 : nHotHt == ht ? 2 : nHotHt > 0 || nPressetHt > 0 ? 1 : 0)
-
-	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	BOOL nPressetHt = pSBTrack ? pSBInfo->ht : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
-
-	if (cWidth <= 0)
-	{
-		return;
-	}
-
-	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
-
-	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
-	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
-
-	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
-		nBtnTrackPos = nBtnTrackSize = 0;
-
-	CXTPOffice2007Theme* pPaintManager = (CXTPOffice2007Theme*)m_pPaintManager;
-
-	CXTPOffice2007Image* pImageArrowGlyphs = pPaintManager->LoadImage(_T("CONTROLGALLERYSCROLLARROWGLYPHS"));
-	ASSERT(pImageArrowGlyphs);
-	if (!pImageArrowGlyphs)
-		return;
-	CRect rcArrowGripperSrc(0, 0, 9, 9);
-
-	if (pSBInfo->fVert)
-	{
-		CXTPOffice2007Image* pImageBackground = pPaintManager->LoadImage(
-			bLight ? _T("CONTROLGALLERYSCROLLVERTICALLIGHT") : _T("CONTROLGALLERYSCROLLVERTICALDARK"));
-		ASSERT(pImageBackground);
-		if (!pImageBackground)
-			return;
-
-		pImageBackground->DrawImage(pDC, pSBInfo->rc, pImageBackground->GetSource(0, 2), CRect(1, 0, 1, 0));
-
-
-		CRect rcVScroll(pSBInfo->rc);
-		rcVScroll.DeflateRect(1, 0);
-
-		CRect rcArrowUp(rcVScroll.left, rcVScroll.top, rcVScroll.right, pSBInfo->pxUpArrow);
-		CRect rcArrowDown(rcVScroll.left, pSBInfo->pxDownArrow, rcVScroll.right, rcVScroll.bottom);
-
-		CXTPOffice2007Image* pImage =  pPaintManager->LoadImage(
-			bLight ? _T("CONTROLGALLERYSCROLLARROWSVERTICALLIGHT") : _T("CONTROLGALLERYSCROLLARROWSVERTICALDARK"));
-		ASSERT(pImage);
-		if (!pImage)
-			return;
-
-		int nState = GETPARTSTATE2(XTP_HTSCROLLUP);
-		if (nState != 0)
-		{
-			pImage->DrawImage(pDC, rcArrowUp, pImage->GetSource(nState, 4), CRect(3, 3, 3, 3));
-		}
-
-		CRect rcArrowUpGripper(CPoint((rcArrowUp.left + rcArrowUp.right - 9) / 2, (rcArrowUp.top + rcArrowUp.bottom - 9) / 2), CSize(9, 9));
-		pImageArrowGlyphs->DrawImage(pDC, rcArrowUpGripper, OffsetSourceRect(rcArrowGripperSrc, !bEnabled ? ABS_UPDISABLED : nState != 0 ? ABS_UPHOT : ABS_UPNORMAL), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-
-		nState = GETPARTSTATE2(XTP_HTSCROLLDOWN);
-		if (nState != 0)
-		{
-			pImage->DrawImage(pDC, rcArrowDown, pImage->GetSource(nState, 4), CRect(3, 3, 3, 3));
-		}
-
-		CRect rcArrowDownGripper(CPoint((rcArrowDown.left + rcArrowDown.right - 9) / 2, (rcArrowDown.top + rcArrowDown.bottom - 9) / 2), CSize(9, 9));
-		pImageArrowGlyphs->DrawImage(pDC, rcArrowDownGripper, OffsetSourceRect(rcArrowGripperSrc, !bEnabled ? ABS_DOWNDISABLED : nState != 0 ? ABS_DOWNHOT : ABS_DOWNNORMAL), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-
-
-		CRect rcTrack(rcVScroll.left, rcArrowUp.bottom, rcVScroll.right, rcArrowDown.top);
-
-		if (!rcTrack.IsRectEmpty())
-		{
-			CRect rcLowerTrack(rcTrack.left - 1, rcTrack.top, rcTrack.right + 1, rcTrack.top + nBtnTrackPos);
-			CRect rcBtnTrack(rcTrack.left, rcLowerTrack.bottom, rcTrack.right, rcLowerTrack.bottom + nBtnTrackSize);
-			CRect rcUpperTrack(rcTrack.left - 1, rcBtnTrack.bottom, rcTrack.right + 1, rcTrack.bottom);
-
-			if (!rcLowerTrack.IsRectEmpty() && (GETPARTSTATE2(XTP_HTSCROLLUPPAGE) == 3))
-			{
-				pImageBackground->DrawImage(pDC, rcLowerTrack,
-					pImageBackground->GetSource(1, 2), CRect(1, 0, 1, 0));
-			}
-
-			if (!rcBtnTrack.IsRectEmpty())
-			{
-				nState = GETPARTSTATE2(XTP_HTSCROLLTHUMB);
-				if (nState > 0) nState--;
-
-				pImage =  pPaintManager->LoadImage(_T("CONTROLGALLERYSCROLLTHUMBVERTICAL"));
-				ASSERT(pImage);
-				if (!pImage)
-					return;
-
-				pImage->DrawImage(pDC, rcBtnTrack, pImage->GetSource(nState, 3), CRect(5, 5, 5, 5));
-
-
-				if (rcBtnTrack.Height() > 10)
-				{
-					pImage =  pPaintManager->LoadImage(_T("CONTROLGALLERYSCROLLTHUMBGRIPPERVERTICAL"));
-					CRect rcGripper(CPoint(rcBtnTrack.CenterPoint().x - 3, rcBtnTrack.CenterPoint().y - 4), CSize(8, 8));
-
-					pImage->DrawImage(pDC, rcGripper, pImage->GetSource(nState, 3), CRect(0, 0, 0, 0));
-				}
-			}
-
-			if (!rcUpperTrack.IsRectEmpty() && (GETPARTSTATE2(XTP_HTSCROLLDOWNPAGE) == 3))
-			{
-				pImageBackground->DrawImage(pDC, rcUpperTrack,
-					pImageBackground->GetSource(1, 2), CRect(1, 0, 1, 0));
-			}
-		}
-	}
-	else
-	{
-		CXTPOffice2007Image* pImageBackground = pPaintManager->LoadImage(
-			bLight ? _T("CONTROLGALLERYSCROLLHORIZONTALLIGHT") : _T("CONTROLGALLERYSCROLLHORIZONTALDARK"));
-		if (!pImageBackground)
-		{
-			CXTPControlGalleryPaintManager::DrawScrollBar(pDC, pGallery);
-			return;
-		}
-
-		pImageBackground->DrawImage(pDC, pSBInfo->rc, pImageBackground->GetSource(0, 2), CRect(0, 1, 0, 1));
-
-		CRect rcHScroll(pSBInfo->rc);
-		rcHScroll.DeflateRect(0, 1);
-
-		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
-		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
-
-		CXTPOffice2007Image* pImage =  pPaintManager->LoadImage(
-			bLight ? _T("CONTROLGALLERYSCROLLARROWSHORIZONTALLIGHT") : _T("CONTROLGALLERYSCROLLARROWSHORIZONTALDARK"));
-		ASSERT(pImage);
-		if (!pImage)
-			return;
-
-		int nState = GETPARTSTATE2(XTP_HTSCROLLUP);
-		if (nState != 0)
-		{
-			pImage->DrawImage(pDC, rcArrowLeft, pImage->GetSource(nState, 4), CRect(3, 3, 3, 3));
-		}
-
-		CRect rcArrowLeftGripper(CPoint((rcArrowLeft.left + rcArrowLeft.right - 9) / 2, (rcArrowLeft.top + rcArrowLeft.bottom - 9) / 2), CSize(9, 9));
-		pImageArrowGlyphs->DrawImage(pDC, rcArrowLeftGripper, OffsetSourceRect(rcArrowGripperSrc, !bEnabled ? ABS_LEFTDISABLED : nState != 0 ? ABS_LEFTHOT : ABS_LEFTNORMAL), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-
-		nState = GETPARTSTATE2(XTP_HTSCROLLDOWN);
-		if (nState != 0)
-		{
-			pImage->DrawImage(pDC, rcArrowRight, pImage->GetSource(nState, 4), CRect(3, 3, 3, 3));
-		}
-
-		CRect rcArrowRightGripper(CPoint((rcArrowRight.left + rcArrowRight.right - 9) / 2, (rcArrowRight.top + rcArrowRight.bottom - 9) / 2), CSize(9, 9));
-		pImageArrowGlyphs->DrawImage(pDC, rcArrowRightGripper, OffsetSourceRect(rcArrowGripperSrc, !bEnabled ? ABS_RIGHTDISABLED : nState != 0 ? ABS_RIGHTHOT : ABS_RIGHTNORMAL), CRect(0, 0, 0, 0), RGB(255, 0, 255));
-
-
-
-		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
-
-		if (!rcTrack.IsRectEmpty())
-		{
-			CRect rcLowerTrack(rcTrack.left, rcTrack.top - 1, rcTrack.left + nBtnTrackPos, rcTrack.bottom + 1);
-			CRect rcBtnTrack(rcLowerTrack.right, rcTrack.top, rcLowerTrack.right + nBtnTrackSize, rcTrack.bottom);
-			CRect rcUpperTrack(rcBtnTrack.right, rcTrack.top - 1, rcTrack.right, rcTrack.bottom + 1);
-
-			if (!rcLowerTrack.IsRectEmpty() && (GETPARTSTATE2(XTP_HTSCROLLUPPAGE) == 3))
-			{
-				pImageBackground->DrawImage(pDC, rcLowerTrack,
-					pImageBackground->GetSource(1, 2), CRect(0, 1, 0, 1));
-			}
-
-			if (!rcBtnTrack.IsRectEmpty())
-			{
-				nState = GETPARTSTATE2(XTP_HTSCROLLTHUMB);
-				if (nState > 0) nState--;
-
-				pImage =  pPaintManager->LoadImage(_T("CONTROLGALLERYSCROLLTHUMBHORIZONTAL"));
-				ASSERT(pImage);
-				if (!pImage)
-					return;
-
-				pImage->DrawImage(pDC, rcBtnTrack, pImage->GetSource(nState, 3), CRect(5, 5, 5, 5));
-
-
-				if (rcBtnTrack.Width() > 10)
-				{
-					pImage =  pPaintManager->LoadImage(_T("CONTROLGALLERYSCROLLTHUMBGRIPPERHORIZONTAL"));
-					CRect rcGripper(CPoint(rcBtnTrack.CenterPoint().x - 3, rcBtnTrack.CenterPoint().y - 4), CSize(8, 8));
-
-					pImage->DrawImage(pDC, rcGripper, pImage->GetSource(nState, 3), CRect(0, 0, 0, 0));
-				}
-			}
-
-			if (!rcUpperTrack.IsRectEmpty() && (GETPARTSTATE2(XTP_HTSCROLLDOWNPAGE) == 3))
-			{
-				pImageBackground->DrawImage(pDC, rcUpperTrack,
-					pImageBackground->GetSource(1, 2), CRect(0, 1, 0, 1));
-			}
-		}
-	}
-}

@@ -1,671 +1,224 @@
 // from server: 100% by auto
+// roc 2010-06 0057b540  unit: seg_00570000  size: 509 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0057b540
+//
+// 0057b540  53                   push ebx
+// 0057b541  55                   push ebp
+// 0057b542  56                   push esi
+// 0057b543  57                   push edi
+// 0057b544  8bf0                 mov esi, eax
+// 0057b546  68e0000000           push 0xe0
+// 0057b54b  e890f8ffff           call 0x57ade0
+// 0057b550  83c404               add esp, 4
+// 0057b553  bb10000000           mov ebx, 0x10
+// 0057b558  e8f3f8ffff           call 0x57ae50
+// 0057b55d  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b560  8b08                 mov ecx, dword ptr [eax]
+// 0057b562  c6014a               mov byte ptr [ecx], 0x4a
+// 0057b565  ff00                 inc dword ptr [eax]
+// 0057b567  83cfff               or edi, 0xffffffff
+// 0057b56a  017804               add dword ptr [eax + 4], edi
+// 0057b56d  8d6b08               lea ebp, [ebx + 8]
+// 0057b570  751c                 jne 0x57b58e
+// 0057b572  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b575  56                   push esi
+// 0057b576  ffd2                 call edx
+// 0057b578  83c404               add esp, 4
+// 0057b57b  84c0                 test al, al
+// 0057b57d  750f                 jne 0x57b58e
+// 0057b57f  8b06                 mov eax, dword ptr [esi]
+// 0057b581  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b584  8b0e                 mov ecx, dword ptr [esi]
+// 0057b586  8b11                 mov edx, dword ptr [ecx]
+// 0057b588  56                   push esi
+// 0057b589  ffd2                 call edx
+// 0057b58b  83c404               add esp, 4
+// 0057b58e  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b591  8b08                 mov ecx, dword ptr [eax]
+// 0057b593  c60146               mov byte ptr [ecx], 0x46
+// 0057b596  ff00                 inc dword ptr [eax]
+// 0057b598  017804               add dword ptr [eax + 4], edi
+// 0057b59b  751c                 jne 0x57b5b9
+// 0057b59d  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b5a0  56                   push esi
+// 0057b5a1  ffd2                 call edx
+// 0057b5a3  83c404               add esp, 4
+// 0057b5a6  84c0                 test al, al
+// 0057b5a8  750f                 jne 0x57b5b9
+// 0057b5aa  8b06                 mov eax, dword ptr [esi]
+// 0057b5ac  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b5af  8b0e                 mov ecx, dword ptr [esi]
+// 0057b5b1  8b11                 mov edx, dword ptr [ecx]
+// 0057b5b3  56                   push esi
+// 0057b5b4  ffd2                 call edx
+// 0057b5b6  83c404               add esp, 4
+// 0057b5b9  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b5bc  8b08                 mov ecx, dword ptr [eax]
+// 0057b5be  c60149               mov byte ptr [ecx], 0x49
+// 0057b5c1  ff00                 inc dword ptr [eax]
+// 0057b5c3  017804               add dword ptr [eax + 4], edi
+// 0057b5c6  751c                 jne 0x57b5e4
+// 0057b5c8  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b5cb  56                   push esi
+// 0057b5cc  ffd2                 call edx
+// 0057b5ce  83c404               add esp, 4
+// 0057b5d1  84c0                 test al, al
+// 0057b5d3  750f                 jne 0x57b5e4
+// 0057b5d5  8b06                 mov eax, dword ptr [esi]
+// 0057b5d7  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b5da  8b0e                 mov ecx, dword ptr [esi]
+// 0057b5dc  8b11                 mov edx, dword ptr [ecx]
+// 0057b5de  56                   push esi
+// 0057b5df  ffd2                 call edx
+// 0057b5e1  83c404               add esp, 4
+// 0057b5e4  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b5e7  8b08                 mov ecx, dword ptr [eax]
+// 0057b5e9  c60146               mov byte ptr [ecx], 0x46
+// 0057b5ec  ff00                 inc dword ptr [eax]
+// 0057b5ee  017804               add dword ptr [eax + 4], edi
+// 0057b5f1  751c                 jne 0x57b60f
+// 0057b5f3  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b5f6  56                   push esi
+// 0057b5f7  ffd2                 call edx
+// 0057b5f9  83c404               add esp, 4
+// 0057b5fc  84c0                 test al, al
+// 0057b5fe  750f                 jne 0x57b60f
+// 0057b600  8b06                 mov eax, dword ptr [esi]
+// 0057b602  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b605  8b0e                 mov ecx, dword ptr [esi]
+// 0057b607  8b11                 mov edx, dword ptr [ecx]
+// 0057b609  56                   push esi
+// 0057b60a  ffd2                 call edx
+// 0057b60c  83c404               add esp, 4
+// 0057b60f  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b612  8b08                 mov ecx, dword ptr [eax]
+// 0057b614  c60100               mov byte ptr [ecx], 0
+// 0057b617  ff00                 inc dword ptr [eax]
+// 0057b619  017804               add dword ptr [eax + 4], edi
+// 0057b61c  751c                 jne 0x57b63a
+// 0057b61e  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b621  56                   push esi
+// 0057b622  ffd2                 call edx
+// 0057b624  83c404               add esp, 4
+// 0057b627  84c0                 test al, al
+// 0057b629  750f                 jne 0x57b63a
+// 0057b62b  8b06                 mov eax, dword ptr [esi]
+// 0057b62d  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b630  8b0e                 mov ecx, dword ptr [esi]
+// 0057b632  8b11                 mov edx, dword ptr [ecx]
+// 0057b634  56                   push esi
+// 0057b635  ffd2                 call edx
+// 0057b637  83c404               add esp, 4
+// 0057b63a  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b63d  8a96c5000000         mov dl, byte ptr [esi + 0xc5]
+// 0057b643  8b08                 mov ecx, dword ptr [eax]
+// 0057b645  8811                 mov byte ptr [ecx], dl
+// 0057b647  ff00                 inc dword ptr [eax]
+// 0057b649  017804               add dword ptr [eax + 4], edi
+// 0057b64c  751c                 jne 0x57b66a
+// 0057b64e  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0057b651  56                   push esi
+// 0057b652  ffd0                 call eax
+// 0057b654  83c404               add esp, 4
+// 0057b657  84c0                 test al, al
+// 0057b659  750f                 jne 0x57b66a
+// 0057b65b  8b0e                 mov ecx, dword ptr [esi]
+// 0057b65d  896914               mov dword ptr [ecx + 0x14], ebp
+// 0057b660  8b16                 mov edx, dword ptr [esi]
+// 0057b662  8b02                 mov eax, dword ptr [edx]
+// 0057b664  56                   push esi
+// 0057b665  ffd0                 call eax
+// 0057b667  83c404               add esp, 4
+// 0057b66a  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b66d  8a96c6000000         mov dl, byte ptr [esi + 0xc6]
+// 0057b673  8b08                 mov ecx, dword ptr [eax]
+// 0057b675  8811                 mov byte ptr [ecx], dl
+// 0057b677  ff00                 inc dword ptr [eax]
+// 0057b679  017804               add dword ptr [eax + 4], edi
+// 0057b67c  751c                 jne 0x57b69a
+// 0057b67e  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0057b681  56                   push esi
+// 0057b682  ffd0                 call eax
+// 0057b684  83c404               add esp, 4
+// 0057b687  84c0                 test al, al
+// 0057b689  750f                 jne 0x57b69a
+// 0057b68b  8b0e                 mov ecx, dword ptr [esi]
+// 0057b68d  896914               mov dword ptr [ecx + 0x14], ebp
+// 0057b690  8b16                 mov edx, dword ptr [esi]
+// 0057b692  8b02                 mov eax, dword ptr [edx]
+// 0057b694  56                   push esi
+// 0057b695  ffd0                 call eax
+// 0057b697  83c404               add esp, 4
+// 0057b69a  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b69d  8a96c7000000         mov dl, byte ptr [esi + 0xc7]
+// 0057b6a3  8b08                 mov ecx, dword ptr [eax]
+// 0057b6a5  8811                 mov byte ptr [ecx], dl
+// 0057b6a7  ff00                 inc dword ptr [eax]
+// 0057b6a9  017804               add dword ptr [eax + 4], edi
+// 0057b6ac  751c                 jne 0x57b6ca
+// 0057b6ae  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0057b6b1  56                   push esi
+// 0057b6b2  ffd0                 call eax
+// 0057b6b4  83c404               add esp, 4
+// 0057b6b7  84c0                 test al, al
+// 0057b6b9  750f                 jne 0x57b6ca
+// 0057b6bb  8b0e                 mov ecx, dword ptr [esi]
+// 0057b6bd  896914               mov dword ptr [ecx + 0x14], ebp
+// 0057b6c0  8b16                 mov edx, dword ptr [esi]
+// 0057b6c2  8b02                 mov eax, dword ptr [edx]
+// 0057b6c4  56                   push esi
+// 0057b6c5  ffd0                 call eax
+// 0057b6c7  83c404               add esp, 4
+// 0057b6ca  0fb79ec8000000       movzx ebx, word ptr [esi + 0xc8]
+// 0057b6d1  e87af7ffff           call 0x57ae50
+// 0057b6d6  0fb79eca000000       movzx ebx, word ptr [esi + 0xca]
+// 0057b6dd  e86ef7ffff           call 0x57ae50
+// 0057b6e2  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b6e5  8b08                 mov ecx, dword ptr [eax]
+// 0057b6e7  c60100               mov byte ptr [ecx], 0
+// 0057b6ea  ff00                 inc dword ptr [eax]
+// 0057b6ec  017804               add dword ptr [eax + 4], edi
+// 0057b6ef  751c                 jne 0x57b70d
+// 0057b6f1  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b6f4  56                   push esi
+// 0057b6f5  ffd2                 call edx
+// 0057b6f7  83c404               add esp, 4
+// 0057b6fa  84c0                 test al, al
+// 0057b6fc  750f                 jne 0x57b70d
+// 0057b6fe  8b06                 mov eax, dword ptr [esi]
+// 0057b700  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b703  8b0e                 mov ecx, dword ptr [esi]
+// 0057b705  8b11                 mov edx, dword ptr [ecx]
+// 0057b707  56                   push esi
+// 0057b708  ffd2                 call edx
+// 0057b70a  83c404               add esp, 4
+// 0057b70d  8b4618               mov eax, dword ptr [esi + 0x18]
+// 0057b710  8b08                 mov ecx, dword ptr [eax]
+// 0057b712  c60100               mov byte ptr [ecx], 0
+// 0057b715  ff00                 inc dword ptr [eax]
+// 0057b717  017804               add dword ptr [eax + 4], edi
+// 0057b71a  751c                 jne 0x57b738
+// 0057b71c  8b500c               mov edx, dword ptr [eax + 0xc]
+// 0057b71f  56                   push esi
+// 0057b720  ffd2                 call edx
+// 0057b722  83c404               add esp, 4
+// 0057b725  84c0                 test al, al
+// 0057b727  750f                 jne 0x57b738
+// 0057b729  8b06                 mov eax, dword ptr [esi]
+// 0057b72b  896814               mov dword ptr [eax + 0x14], ebp
+// 0057b72e  8b0e                 mov ecx, dword ptr [esi]
+// 0057b730  8b11                 mov edx, dword ptr [ecx]
+// 0057b732  56                   push esi
+// 0057b733  ffd2                 call edx
+// 0057b735  83c404               add esp, 4
+// 0057b738  5f                   pop edi
+// 0057b739  5e                   pop esi
+// 0057b73a  5d                   pop ebp
+// 0057b73b  5b                   pop ebx
+// 0057b73c  c3                   ret 
+// library jpeg-6b/jcmarker.c (function _emit_jfif_app0)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcmarker.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jcmarker.c
- *
- * Copyright (C) 1991-1998, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains routines to write JPEG datastream markers.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-typedef enum {			/* JPEG marker codes */
-  M_SOF0  = 0xc0,
-  M_SOF1  = 0xc1,
-  M_SOF2  = 0xc2,
-  M_SOF3  = 0xc3,
-  
-  M_SOF5  = 0xc5,
-  M_SOF6  = 0xc6,
-  M_SOF7  = 0xc7,
-  
-  M_JPG   = 0xc8,
-  M_SOF9  = 0xc9,
-  M_SOF10 = 0xca,
-  M_SOF11 = 0xcb,
-  
-  M_SOF13 = 0xcd,
-  M_SOF14 = 0xce,
-  M_SOF15 = 0xcf,
-  
-  M_DHT   = 0xc4,
-  
-  M_DAC   = 0xcc,
-  
-  M_RST0  = 0xd0,
-  M_RST1  = 0xd1,
-  M_RST2  = 0xd2,
-  M_RST3  = 0xd3,
-  M_RST4  = 0xd4,
-  M_RST5  = 0xd5,
-  M_RST6  = 0xd6,
-  M_RST7  = 0xd7,
-  
-  M_SOI   = 0xd8,
-  M_EOI   = 0xd9,
-  M_SOS   = 0xda,
-  M_DQT   = 0xdb,
-  M_DNL   = 0xdc,
-  M_DRI   = 0xdd,
-  M_DHP   = 0xde,
-  M_EXP   = 0xdf,
-  
-  M_APP0  = 0xe0,
-  M_APP1  = 0xe1,
-  M_APP2  = 0xe2,
-  M_APP3  = 0xe3,
-  M_APP4  = 0xe4,
-  M_APP5  = 0xe5,
-  M_APP6  = 0xe6,
-  M_APP7  = 0xe7,
-  M_APP8  = 0xe8,
-  M_APP9  = 0xe9,
-  M_APP10 = 0xea,
-  M_APP11 = 0xeb,
-  M_APP12 = 0xec,
-  M_APP13 = 0xed,
-  M_APP14 = 0xee,
-  M_APP15 = 0xef,
-  
-  M_JPG0  = 0xf0,
-  M_JPG13 = 0xfd,
-  M_COM   = 0xfe,
-  
-  M_TEM   = 0x01,
-  
-  M_ERROR = 0x100
-} JPEG_MARKER;
-
-
-/* Private state */
-
-typedef struct {
-  struct jpeg_marker_writer pub; /* public fields */
-
-  unsigned int last_restart_interval; /* last DRI value emitted; 0 after SOI */
-} my_marker_writer;
-
-typedef my_marker_writer * my_marker_ptr;
-
-
-/*
- * Basic output routines.
- *
- * Note that we do not support suspension while writing a marker.
- * Therefore, an application using suspension must ensure that there is
- * enough buffer space for the initial markers (typ. 600-700 bytes) before
- * calling jpeg_start_compress, and enough space to write the trailing EOI
- * (a few bytes) before calling jpeg_finish_compress.  Multipass compression
- * modes are not supported at all with suspension, so those two are the only
- * points where markers will be written.
- */
-
-LOCAL(void)
-emit_byte (j_compress_ptr cinfo, int val)
-/* Emit a byte */
-{
-  struct jpeg_destination_mgr * dest = cinfo->dest;
-
-  *(dest->next_output_byte)++ = (JOCTET) val;
-  if (--dest->free_in_buffer == 0) {
-    if (! (*dest->empty_output_buffer) (cinfo))
-      ERREXIT(cinfo, JERR_CANT_SUSPEND);
-  }
-}
-
-
-LOCAL(void)
-emit_marker (j_compress_ptr cinfo, JPEG_MARKER mark)
-/* Emit a marker code */
-{
-  emit_byte(cinfo, 0xFF);
-  emit_byte(cinfo, (int) mark);
-}
-
-
-LOCAL(void)
-emit_2bytes (j_compress_ptr cinfo, int value)
-/* Emit a 2-byte integer; these are always MSB first in JPEG files */
-{
-  emit_byte(cinfo, (value >> 8) & 0xFF);
-  emit_byte(cinfo, value & 0xFF);
-}
-
-
-/*
- * Routines to write specific marker types.
- */
-
-LOCAL(int)
-emit_dqt (j_compress_ptr cinfo, int index)
-/* Emit a DQT marker */
-/* Returns the precision used (0 = 8bits, 1 = 16bits) for baseline checking */
-{
-  JQUANT_TBL * qtbl = cinfo->quant_tbl_ptrs[index];
-  int prec;
-  int i;
-
-  if (qtbl == NULL)
-    ERREXIT1(cinfo, JERR_NO_QUANT_TABLE, index);
-
-  prec = 0;
-  for (i = 0; i < DCTSIZE2; i++) {
-    if (qtbl->quantval[i] > 255)
-      prec = 1;
-  }
-
-  if (! qtbl->sent_table) {
-    emit_marker(cinfo, M_DQT);
-
-    emit_2bytes(cinfo, prec ? DCTSIZE2*2 + 1 + 2 : DCTSIZE2 + 1 + 2);
-
-    emit_byte(cinfo, index + (prec<<4));
-
-    for (i = 0; i < DCTSIZE2; i++) {
-      /* The table entries must be emitted in zigzag order. */
-      unsigned int qval = qtbl->quantval[jpeg_natural_order[i]];
-      if (prec)
-	emit_byte(cinfo, (int) (qval >> 8));
-      emit_byte(cinfo, (int) (qval & 0xFF));
-    }
-
-    qtbl->sent_table = TRUE;
-  }
-
-  return prec;
-}
-
-
-LOCAL(void)
-emit_dht (j_compress_ptr cinfo, int index, boolean is_ac)
-/* Emit a DHT marker */
-{
-  JHUFF_TBL * htbl;
-  int length, i;
-  
-  if (is_ac) {
-    htbl = cinfo->ac_huff_tbl_ptrs[index];
-    index += 0x10;		/* output index has AC bit set */
-  } else {
-    htbl = cinfo->dc_huff_tbl_ptrs[index];
-  }
-
-  if (htbl == NULL)
-    ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, index);
-  
-  if (! htbl->sent_table) {
-    emit_marker(cinfo, M_DHT);
-    
-    length = 0;
-    for (i = 1; i <= 16; i++)
-      length += htbl->bits[i];
-    
-    emit_2bytes(cinfo, length + 2 + 1 + 16);
-    emit_byte(cinfo, index);
-    
-    for (i = 1; i <= 16; i++)
-      emit_byte(cinfo, htbl->bits[i]);
-    
-    for (i = 0; i < length; i++)
-      emit_byte(cinfo, htbl->huffval[i]);
-    
-    htbl->sent_table = TRUE;
-  }
-}
-
-
-LOCAL(void)
-emit_dac (j_compress_ptr cinfo)
-/* Emit a DAC marker */
-/* Since the useful info is so small, we want to emit all the tables in */
-/* one DAC marker.  Therefore this routine does its own scan of the table. */
-{
-#ifdef C_ARITH_CODING_SUPPORTED
-  char dc_in_use[NUM_ARITH_TBLS];
-  char ac_in_use[NUM_ARITH_TBLS];
-  int length, i;
-  jpeg_component_info *compptr;
-  
-  for (i = 0; i < NUM_ARITH_TBLS; i++)
-    dc_in_use[i] = ac_in_use[i] = 0;
-  
-  for (i = 0; i < cinfo->comps_in_scan; i++) {
-    compptr = cinfo->cur_comp_info[i];
-    dc_in_use[compptr->dc_tbl_no] = 1;
-    ac_in_use[compptr->ac_tbl_no] = 1;
-  }
-  
-  length = 0;
-  for (i = 0; i < NUM_ARITH_TBLS; i++)
-    length += dc_in_use[i] + ac_in_use[i];
-  
-  emit_marker(cinfo, M_DAC);
-  
-  emit_2bytes(cinfo, length*2 + 2);
-  
-  for (i = 0; i < NUM_ARITH_TBLS; i++) {
-    if (dc_in_use[i]) {
-      emit_byte(cinfo, i);
-      emit_byte(cinfo, cinfo->arith_dc_L[i] + (cinfo->arith_dc_U[i]<<4));
-    }
-    if (ac_in_use[i]) {
-      emit_byte(cinfo, i + 0x10);
-      emit_byte(cinfo, cinfo->arith_ac_K[i]);
-    }
-  }
-#endif /* C_ARITH_CODING_SUPPORTED */
-}
-
-
-LOCAL(void)
-emit_dri (j_compress_ptr cinfo)
-/* Emit a DRI marker */
-{
-  emit_marker(cinfo, M_DRI);
-  
-  emit_2bytes(cinfo, 4);	/* fixed length */
-
-  emit_2bytes(cinfo, (int) cinfo->restart_interval);
-}
-
-
-LOCAL(void)
-emit_sof (j_compress_ptr cinfo, JPEG_MARKER code)
-/* Emit a SOF marker */
-{
-  int ci;
-  jpeg_component_info *compptr;
-  
-  emit_marker(cinfo, code);
-  
-  emit_2bytes(cinfo, 3 * cinfo->num_components + 2 + 5 + 1); /* length */
-
-  /* Make sure image isn't bigger than SOF field can handle */
-  if ((long) cinfo->image_height > 65535L ||
-      (long) cinfo->image_width > 65535L)
-    ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int) 65535);
-
-  emit_byte(cinfo, cinfo->data_precision);
-  emit_2bytes(cinfo, (int) cinfo->image_height);
-  emit_2bytes(cinfo, (int) cinfo->image_width);
-
-  emit_byte(cinfo, cinfo->num_components);
-
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    emit_byte(cinfo, compptr->component_id);
-    emit_byte(cinfo, (compptr->h_samp_factor << 4) + compptr->v_samp_factor);
-    emit_byte(cinfo, compptr->quant_tbl_no);
-  }
-}
-
-
-LOCAL(void)
-emit_sos (j_compress_ptr cinfo)
-/* Emit a SOS marker */
-{
-  int i, td, ta;
-  jpeg_component_info *compptr;
-  
-  emit_marker(cinfo, M_SOS);
-  
-  emit_2bytes(cinfo, 2 * cinfo->comps_in_scan + 2 + 1 + 3); /* length */
-  
-  emit_byte(cinfo, cinfo->comps_in_scan);
-  
-  for (i = 0; i < cinfo->comps_in_scan; i++) {
-    compptr = cinfo->cur_comp_info[i];
-    emit_byte(cinfo, compptr->component_id);
-    td = compptr->dc_tbl_no;
-    ta = compptr->ac_tbl_no;
-    if (cinfo->progressive_mode) {
-      /* Progressive mode: only DC or only AC tables are used in one scan;
-       * furthermore, Huffman coding of DC refinement uses no table at all.
-       * We emit 0 for unused field(s); this is recommended by the P&M text
-       * but does not seem to be specified in the standard.
-       */
-      if (cinfo->Ss == 0) {
-	ta = 0;			/* DC scan */
-	if (cinfo->Ah != 0 && !cinfo->arith_code)
-	  td = 0;		/* no DC table either */
-      } else {
-	td = 0;			/* AC scan */
-      }
-    }
-    emit_byte(cinfo, (td << 4) + ta);
-  }
-
-  emit_byte(cinfo, cinfo->Ss);
-  emit_byte(cinfo, cinfo->Se);
-  emit_byte(cinfo, (cinfo->Ah << 4) + cinfo->Al);
-}
-
-
-LOCAL(void)
-emit_jfif_app0 (j_compress_ptr cinfo)
-/* Emit a JFIF-compliant APP0 marker */
-{
-  /*
-   * Length of APP0 block	(2 bytes)
-   * Block ID			(4 bytes - ASCII "JFIF")
-   * Zero byte			(1 byte to terminate the ID string)
-   * Version Major, Minor	(2 bytes - major first)
-   * Units			(1 byte - 0x00 = none, 0x01 = inch, 0x02 = cm)
-   * Xdpu			(2 bytes - dots per unit horizontal)
-   * Ydpu			(2 bytes - dots per unit vertical)
-   * Thumbnail X size		(1 byte)
-   * Thumbnail Y size		(1 byte)
-   */
-  
-  emit_marker(cinfo, M_APP0);
-  
-  emit_2bytes(cinfo, 2 + 4 + 1 + 2 + 1 + 2 + 2 + 1 + 1); /* length */
-
-  emit_byte(cinfo, 0x4A);	/* Identifier: ASCII "JFIF" */
-  emit_byte(cinfo, 0x46);
-  emit_byte(cinfo, 0x49);
-  emit_byte(cinfo, 0x46);
-  emit_byte(cinfo, 0);
-  emit_byte(cinfo, cinfo->JFIF_major_version); /* Version fields */
-  emit_byte(cinfo, cinfo->JFIF_minor_version);
-  emit_byte(cinfo, cinfo->density_unit); /* Pixel size information */
-  emit_2bytes(cinfo, (int) cinfo->X_density);
-  emit_2bytes(cinfo, (int) cinfo->Y_density);
-  emit_byte(cinfo, 0);		/* No thumbnail image */
-  emit_byte(cinfo, 0);
-}
-
-
-LOCAL(void)
-emit_adobe_app14 (j_compress_ptr cinfo)
-/* Emit an Adobe APP14 marker */
-{
-  /*
-   * Length of APP14 block	(2 bytes)
-   * Block ID			(5 bytes - ASCII "Adobe")
-   * Version Number		(2 bytes - currently 100)
-   * Flags0			(2 bytes - currently 0)
-   * Flags1			(2 bytes - currently 0)
-   * Color transform		(1 byte)
-   *
-   * Although Adobe TN 5116 mentions Version = 101, all the Adobe files
-   * now in circulation seem to use Version = 100, so that's what we write.
-   *
-   * We write the color transform byte as 1 if the JPEG color space is
-   * YCbCr, 2 if it's YCCK, 0 otherwise.  Adobe's definition has to do with
-   * whether the encoder performed a transformation, which is pretty useless.
-   */
-  
-  emit_marker(cinfo, M_APP14);
-  
-  emit_2bytes(cinfo, 2 + 5 + 2 + 2 + 2 + 1); /* length */
-
-  emit_byte(cinfo, 0x41);	/* Identifier: ASCII "Adobe" */
-  emit_byte(cinfo, 0x64);
-  emit_byte(cinfo, 0x6F);
-  emit_byte(cinfo, 0x62);
-  emit_byte(cinfo, 0x65);
-  emit_2bytes(cinfo, 100);	/* Version */
-  emit_2bytes(cinfo, 0);	/* Flags0 */
-  emit_2bytes(cinfo, 0);	/* Flags1 */
-  switch (cinfo->jpeg_color_space) {
-  case JCS_YCbCr:
-    emit_byte(cinfo, 1);	/* Color transform = 1 */
-    break;
-  case JCS_YCCK:
-    emit_byte(cinfo, 2);	/* Color transform = 2 */
-    break;
-  default:
-    emit_byte(cinfo, 0);	/* Color transform = 0 */
-    break;
-  }
-}
-
-
-/*
- * These routines allow writing an arbitrary marker with parameters.
- * The only intended use is to emit COM or APPn markers after calling
- * write_file_header and before calling write_frame_header.
- * Other uses are not guaranteed to produce desirable results.
- * Counting the parameter bytes properly is the caller's responsibility.
- */
-
-METHODDEF(void)
-write_marker_header (j_compress_ptr cinfo, int marker, unsigned int datalen)
-/* Emit an arbitrary marker header */
-{
-  if (datalen > (unsigned int) 65533)		/* safety check */
-    ERREXIT(cinfo, JERR_BAD_LENGTH);
-
-  emit_marker(cinfo, (JPEG_MARKER) marker);
-
-  emit_2bytes(cinfo, (int) (datalen + 2));	/* total length */
-}
-
-METHODDEF(void)
-write_marker_byte (j_compress_ptr cinfo, int val)
-/* Emit one byte of marker parameters following write_marker_header */
-{
-  emit_byte(cinfo, val);
-}
-
-
-/*
- * Write datastream header.
- * This consists of an SOI and optional APPn markers.
- * We recommend use of the JFIF marker, but not the Adobe marker,
- * when using YCbCr or grayscale data.  The JFIF marker should NOT
- * be used for any other JPEG colorspace.  The Adobe marker is helpful
- * to distinguish RGB, CMYK, and YCCK colorspaces.
- * Note that an application can write additional header markers after
- * jpeg_start_compress returns.
- */
-
-METHODDEF(void)
-write_file_header (j_compress_ptr cinfo)
-{
-  my_marker_ptr marker = (my_marker_ptr) cinfo->marker;
-
-  emit_marker(cinfo, M_SOI);	/* first the SOI */
-
-  /* SOI is defined to reset restart interval to 0 */
-  marker->last_restart_interval = 0;
-
-  if (cinfo->write_JFIF_header)	/* next an optional JFIF APP0 */
-    emit_jfif_app0(cinfo);
-  if (cinfo->write_Adobe_marker) /* next an optional Adobe APP14 */
-    emit_adobe_app14(cinfo);
-}
-
-
-/*
- * Write frame header.
- * This consists of DQT and SOFn markers.
- * Note that we do not emit the SOF until we have emitted the DQT(s).
- * This avoids compatibility problems with incorrect implementations that
- * try to error-check the quant table numbers as soon as they see the SOF.
- */
-
-METHODDEF(void)
-write_frame_header (j_compress_ptr cinfo)
-{
-  int ci, prec;
-  boolean is_baseline;
-  jpeg_component_info *compptr;
-  
-  /* Emit DQT for each quantization table.
-   * Note that emit_dqt() suppresses any duplicate tables.
-   */
-  prec = 0;
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    prec += emit_dqt(cinfo, compptr->quant_tbl_no);
-  }
-  /* now prec is nonzero iff there are any 16-bit quant tables. */
-
-  /* Check for a non-baseline specification.
-   * Note we assume that Huffman table numbers won't be changed later.
-   */
-  if (cinfo->arith_code || cinfo->progressive_mode ||
-      cinfo->data_precision != 8) {
-    is_baseline = FALSE;
-  } else {
-    is_baseline = TRUE;
-    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-	 ci++, compptr++) {
-      if (compptr->dc_tbl_no > 1 || compptr->ac_tbl_no > 1)
-	is_baseline = FALSE;
-    }
-    if (prec && is_baseline) {
-      is_baseline = FALSE;
-      /* If it's baseline except for quantizer size, warn the user */
-      TRACEMS(cinfo, 0, JTRC_16BIT_TABLES);
-    }
-  }
-
-  /* Emit the proper SOF marker */
-  if (cinfo->arith_code) {
-    emit_sof(cinfo, M_SOF9);	/* SOF code for arithmetic coding */
-  } else {
-    if (cinfo->progressive_mode)
-      emit_sof(cinfo, M_SOF2);	/* SOF code for progressive Huffman */
-    else if (is_baseline)
-      emit_sof(cinfo, M_SOF0);	/* SOF code for baseline implementation */
-    else
-      emit_sof(cinfo, M_SOF1);	/* SOF code for non-baseline Huffman file */
-  }
-}
-
-
-/*
- * Write scan header.
- * This consists of DHT or DAC markers, optional DRI, and SOS.
- * Compressed data will be written following the SOS.
- */
-
-METHODDEF(void)
-write_scan_header (j_compress_ptr cinfo)
-{
-  my_marker_ptr marker = (my_marker_ptr) cinfo->marker;
-  int i;
-  jpeg_component_info *compptr;
-
-  if (cinfo->arith_code) {
-    /* Emit arith conditioning info.  We may have some duplication
-     * if the file has multiple scans, but it's so small it's hardly
-     * worth worrying about.
-     */
-    emit_dac(cinfo);
-  } else {
-    /* Emit Huffman tables.
-     * Note that emit_dht() suppresses any duplicate tables.
-     */
-    for (i = 0; i < cinfo->comps_in_scan; i++) {
-      compptr = cinfo->cur_comp_info[i];
-      if (cinfo->progressive_mode) {
-	/* Progressive mode: only DC or only AC tables are used in one scan */
-	if (cinfo->Ss == 0) {
-	  if (cinfo->Ah == 0)	/* DC needs no table for refinement scan */
-	    emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
-	} else {
-	  emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
-	}
-      } else {
-	/* Sequential mode: need both DC and AC tables */
-	emit_dht(cinfo, compptr->dc_tbl_no, FALSE);
-	emit_dht(cinfo, compptr->ac_tbl_no, TRUE);
-      }
-    }
-  }
-
-  /* Emit DRI if required --- note that DRI value could change for each scan.
-   * We avoid wasting space with unnecessary DRIs, however.
-   */
-  if (cinfo->restart_interval != marker->last_restart_interval) {
-    emit_dri(cinfo);
-    marker->last_restart_interval = cinfo->restart_interval;
-  }
-
-  emit_sos(cinfo);
-}
-
-
-/*
- * Write datastream trailer.
- */
-
-METHODDEF(void)
-write_file_trailer (j_compress_ptr cinfo)
-{
-  emit_marker(cinfo, M_EOI);
-}
-
-
-/*
- * Write an abbreviated table-specification datastream.
- * This consists of SOI, DQT and DHT tables, and EOI.
- * Any table that is defined and not marked sent_table = TRUE will be
- * emitted.  Note that all tables will be marked sent_table = TRUE at exit.
- */
-
-METHODDEF(void)
-write_tables_only (j_compress_ptr cinfo)
-{
-  int i;
-
-  emit_marker(cinfo, M_SOI);
-
-  for (i = 0; i < NUM_QUANT_TBLS; i++) {
-    if (cinfo->quant_tbl_ptrs[i] != NULL)
-      (void) emit_dqt(cinfo, i);
-  }
-
-  if (! cinfo->arith_code) {
-    for (i = 0; i < NUM_HUFF_TBLS; i++) {
-      if (cinfo->dc_huff_tbl_ptrs[i] != NULL)
-	emit_dht(cinfo, i, FALSE);
-      if (cinfo->ac_huff_tbl_ptrs[i] != NULL)
-	emit_dht(cinfo, i, TRUE);
-    }
-  }
-
-  emit_marker(cinfo, M_EOI);
-}
-
-
-/*
- * Initialize the marker writer module.
- */
-
-GLOBAL(void)
-jinit_marker_writer (j_compress_ptr cinfo)
-{
-  my_marker_ptr marker;
-
-  /* Create the subobject */
-  marker = (my_marker_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_marker_writer));
-  cinfo->marker = (struct jpeg_marker_writer *) marker;
-  /* Initialize method pointers */
-  marker->pub.write_file_header = write_file_header;
-  marker->pub.write_frame_header = write_frame_header;
-  marker->pub.write_scan_header = write_scan_header;
-  marker->pub.write_file_trailer = write_file_trailer;
-  marker->pub.write_tables_only = write_tables_only;
-  marker->pub.write_marker_header = write_marker_header;
-  marker->pub.write_marker_byte = write_marker_byte;
-  /* Initialize private state */
-  marker->last_restart_interval = 0;
-}

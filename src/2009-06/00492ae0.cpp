@@ -1,38 +1,35 @@
+// roc 2009-06 00492ae0  unit: Ogre::RbxMaterialAdapter  size: 61 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00492ae0
+//
+// 00492ae0  51                   push ecx
+// 00492ae1  8b542410             mov edx, dword ptr [esp + 0x10]
+// 00492ae5  56                   push esi
+// 00492ae6  8b742410             mov esi, dword ptr [esp + 0x10]
+// 00492aea  57                   push edi
+// 00492aeb  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 00492aef  c644240800           mov byte ptr [esp + 8], 0
+// 00492af4  8b442408             mov eax, dword ptr [esp + 8]
+// 00492af8  50                   push eax
+// 00492af9  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 00492afd  52                   push edx
+// 00492afe  83c108               add ecx, 8
+// 00492b01  51                   push ecx
+// 00492b02  50                   push eax
+// 00492b03  56                   push esi
+// 00492b04  57                   push edi
+// 00492b05  e836fdffff           call 0x492840
+// 00492b0a  8bce                 mov ecx, esi
+// 00492b0c  83c418               add esp, 0x18
+// 00492b0f  c1e104               shl ecx, 4
+// 00492b12  03ce                 add ecx, esi
+// 00492b14  8d048f               lea eax, [edi + ecx*4]
+// 00492b17  5f                   pop edi
+// 00492b18  5e                   pop esi
+// 00492b19  59                   pop ecx
+// 00492b1a  c20c00               ret 0xc
+// copied from an identical function in another client (function ?_Ufill@?$vector@U?$recursion_info@V?$match_results@PBDV?$allocator@U?$sub_match@PBD@boost@@@std@@@boost@@@re_detail@boost@@V?$allocator@U?$recursion_info@V?$match_results@PBDV?$allocator@U?$sub_match@PBD@boost@@@std@@@boost@@@re_detail@boost@@@std@@@std@@IAEPAU?$recursion_info@V?$match_results@PBDV?$allocator@U?$sub_match@PBD@boost@@@std@@@boost@@@re_detail@boost@@PAU345@IABU345@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.44.0 libs/regex/src/instances.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
-
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
-
-#define BOOST_REGEX_SOURCE
-
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
-
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif

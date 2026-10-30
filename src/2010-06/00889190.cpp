@@ -1,1435 +1,341 @@
+// roc 2010-06 00889190  unit: CXTPTabPaintManager::CAppearanceSetPropertyPage  size: 956 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00889190
+//
+// 00889190  83ec20               sub esp, 0x20
+// 00889193  53                   push ebx
+// 00889194  55                   push ebp
+// 00889195  56                   push esi
+// 00889196  57                   push edi
+// 00889197  8b7c2438             mov edi, dword ptr [esp + 0x38]
+// 0088919b  8bf1                 mov esi, ecx
+// 0088919d  8b4c2440             mov ecx, dword ptr [esp + 0x40]
+// 008891a1  8b16                 mov edx, dword ptr [esi]
+// 008891a3  8b5208               mov edx, dword ptr [edx + 8]
+// 008891a6  57                   push edi
+// 008891a7  83ec10               sub esp, 0x10
+// 008891aa  8bc4                 mov eax, esp
+// 008891ac  8908                 mov dword ptr [eax], ecx
+// 008891ae  8b4c2458             mov ecx, dword ptr [esp + 0x58]
+// 008891b2  894804               mov dword ptr [eax + 4], ecx
+// 008891b5  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 008891b9  894808               mov dword ptr [eax + 8], ecx
+// 008891bc  8b4c2460             mov ecx, dword ptr [esp + 0x60]
+// 008891c0  89480c               mov dword ptr [eax + 0xc], ecx
+// 008891c3  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008891c7  50                   push eax
+// 008891c8  8bce                 mov ecx, esi
+// 008891ca  ffd2                 call edx
+// 008891cc  8b07                 mov eax, dword ptr [edi]
+// 008891ce  8b5048               mov edx, dword ptr [eax + 0x48]
+// 008891d1  8bcf                 mov ecx, edi
+// 008891d3  33db                 xor ebx, ebx
+// 008891d5  33ed                 xor ebp, ebp
+// 008891d7  ffd2                 call edx
+// 008891d9  50                   push eax
+// 008891da  83ec10               sub esp, 0x10
+// 008891dd  8bc4                 mov eax, esp
+// 008891df  8918                 mov dword ptr [eax], ebx
+// 008891e1  896804               mov dword ptr [eax + 4], ebp
+// 008891e4  8b6c2448             mov ebp, dword ptr [esp + 0x48]
+// 008891e8  33c9                 xor ecx, ecx
+// 008891ea  894808               mov dword ptr [eax + 8], ecx
+// 008891ed  b901000000           mov ecx, 1
+// 008891f2  55                   push ebp
+// 008891f3  89480c               mov dword ptr [eax + 0xc], ecx
+// 008891f6  e865eeffff           call 0x888060
+// 008891fb  8b461c               mov eax, dword ptr [esi + 0x1c]
+// 008891fe  8b88e4000000         mov ecx, dword ptr [eax + 0xe4]
+// 00889204  8b5d00               mov ebx, dword ptr [ebp]
+// 00889207  8b11                 mov edx, dword ptr [ecx]
+// 00889209  83c418               add esp, 0x18
+// 0088920c  57                   push edi
+// 0088920d  83ec10               sub esp, 0x10
+// 00889210  8bc4                 mov eax, esp
+// 00889212  8918                 mov dword ptr [eax], ebx
+// 00889214  8b5d04               mov ebx, dword ptr [ebp + 4]
+// 00889217  895804               mov dword ptr [eax + 4], ebx
+// 0088921a  8b5d08               mov ebx, dword ptr [ebp + 8]
+// 0088921d  895808               mov dword ptr [eax + 8], ebx
+// 00889220  8b5d0c               mov ebx, dword ptr [ebp + 0xc]
+// 00889223  89580c               mov dword ptr [eax + 0xc], ebx
+// 00889226  8b5c2450             mov ebx, dword ptr [esp + 0x50]
+// 0088922a  8b420c               mov eax, dword ptr [edx + 0xc]
+// 0088922d  53                   push ebx
+// 0088922e  ffd0                 call eax
+// 00889230  8b4c2440             mov ecx, dword ptr [esp + 0x40]
+// 00889234  8b16                 mov edx, dword ptr [esi]
+// 00889236  8b520c               mov edx, dword ptr [edx + 0xc]
+// 00889239  57                   push edi
+// 0088923a  83ec10               sub esp, 0x10
+// 0088923d  8bc4                 mov eax, esp
+// 0088923f  8908                 mov dword ptr [eax], ecx
+// 00889241  8b4c2458             mov ecx, dword ptr [esp + 0x58]
+// 00889245  894804               mov dword ptr [eax + 4], ecx
+// 00889248  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 0088924c  894808               mov dword ptr [eax + 8], ecx
+// 0088924f  8b4c2460             mov ecx, dword ptr [esp + 0x60]
+// 00889253  89480c               mov dword ptr [eax + 0xc], ecx
+// 00889256  8d442424             lea eax, [esp + 0x24]
+// 0088925a  50                   push eax
+// 0088925b  8bce                 mov ecx, esi
+// 0088925d  ffd2                 call edx
+// 0088925f  8b461c               mov eax, dword ptr [esi + 0x1c]
+// 00889262  83783800             cmp dword ptr [eax + 0x38], 0
+// 00889266  0f8526010000         jne 0x889392
+// 0088926c  8b88e4000000         mov ecx, dword ptr [eax + 0xe4]
+// 00889272  8b6c2410             mov ebp, dword ptr [esp + 0x10]
+// 00889276  8b11                 mov edx, dword ptr [ecx]
+// 00889278  57                   push edi
+// 00889279  83ec10               sub esp, 0x10
+// 0088927c  8bc4                 mov eax, esp
+// 0088927e  8928                 mov dword ptr [eax], ebp
+// 00889280  8b6c2428             mov ebp, dword ptr [esp + 0x28]
+// 00889284  896804               mov dword ptr [eax + 4], ebp
+// 00889287  8b6c242c             mov ebp, dword ptr [esp + 0x2c]
+// 0088928b  896808               mov dword ptr [eax + 8], ebp
+// 0088928e  8b6c2430             mov ebp, dword ptr [esp + 0x30]
+// 00889292  89680c               mov dword ptr [eax + 0xc], ebp
+// 00889295  8b4210               mov eax, dword ptr [edx + 0x10]
+// 00889298  53                   push ebx
+// 00889299  ffd0                 call eax
+// 0088929b  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
+// 0088929e  8b81e4000000         mov eax, dword ptr [ecx + 0xe4]
+// 008892a4  8b8840010000         mov ecx, dword ptr [eax + 0x140]
+// 008892aa  83f9ff               cmp ecx, -1
+// 008892ad  7506                 jne 0x8892b5
+// 008892af  8b883c010000         mov ecx, dword ptr [eax + 0x13c]
+// 008892b5  8b9028010000         mov edx, dword ptr [eax + 0x128]
+// 008892bb  83faff               cmp edx, -1
+// 008892be  7506                 jne 0x8892c6
+// 008892c0  8b9024010000         mov edx, dword ptr [eax + 0x124]
+// 008892c6  8b442414             mov eax, dword ptr [esp + 0x14]
+// 008892ca  8b6c2410             mov ebp, dword ptr [esp + 0x10]
+// 008892ce  89442424             mov dword ptr [esp + 0x24], eax
+// 008892d2  8b442418             mov eax, dword ptr [esp + 0x18]
+// 008892d6  89442428             mov dword ptr [esp + 0x28], eax
+// 008892da  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 008892de  896c2420             mov dword ptr [esp + 0x20], ebp
+// 008892e2  8944242c             mov dword ptr [esp + 0x2c], eax
+// 008892e6  83faff               cmp edx, -1
+// 008892e9  741b                 je 0x889306
+// 008892eb  83f9ff               cmp ecx, -1
+// 008892ee  7416                 je 0x889306
+// 008892f0  51                   push ecx
+// 008892f1  52                   push edx
+// 008892f2  8d4c2428             lea ecx, [esp + 0x28]
+// 008892f6  51                   push ecx
+// 008892f7  8bcb                 mov ecx, ebx
+// 008892f9  e83af4f1ff           call 0x7a8738
+// 008892fe  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 00889302  8b6c2410             mov ebp, dword ptr [esp + 0x10]
+// 00889306  8b561c               mov edx, dword ptr [esi + 0x1c]
+// 00889309  8b8ae4000000         mov ecx, dword ptr [edx + 0xe4]
+// 0088930f  8b9134010000         mov edx, dword ptr [ecx + 0x134]
+// 00889315  81c12c010000         add ecx, 0x12c
+// 0088931b  83faff               cmp edx, -1
+// 0088931e  7505                 jne 0x889325
+// 00889320  8b4904               mov ecx, dword ptr [ecx + 4]
+// 00889323  eb02                 jmp 0x889327
+// 00889325  8bca                 mov ecx, edx
+// 00889327  83f9ff               cmp ecx, -1
+// 0088932a  741e                 je 0x88934a
+// 0088932c  51                   push ecx
+// 0088932d  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 00889331  2bcd                 sub ecx, ebp
+// 00889333  6a01                 push 1
+// 00889335  83e902               sub ecx, 2
+// 00889338  51                   push ecx
+// 00889339  83c0fe               add eax, -2
+// 0088933c  50                   push eax
+// 0088933d  45                   inc ebp
+// 0088933e  55                   push ebp
+// 0088933f  8bcb                 mov ecx, ebx
+// 00889341  e8443a0f00           call 0x97cd8a
+// 00889346  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0088934a  8b561c               mov edx, dword ptr [esi + 0x1c]
+// 0088934d  8b8ae4000000         mov ecx, dword ptr [edx + 0xe4]
+// 00889353  8b9134010000         mov edx, dword ptr [ecx + 0x134]
+// 00889359  81c12c010000         add ecx, 0x12c
+// 0088935f  83faff               cmp edx, -1
+// 00889362  7505                 jne 0x889369
+// 00889364  8b4904               mov ecx, dword ptr [ecx + 4]
+// 00889367  eb02                 jmp 0x88936b
+// 00889369  8bca                 mov ecx, edx
+// 0088936b  83f9ff               cmp ecx, -1
+// 0088936e  741e                 je 0x88938e
+// 00889370  51                   push ecx
+// 00889371  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 00889375  2bc1                 sub eax, ecx
+// 00889377  83e802               sub eax, 2
+// 0088937a  50                   push eax
+// 0088937b  8b442420             mov eax, dword ptr [esp + 0x20]
+// 0088937f  6a01                 push 1
+// 00889381  41                   inc ecx
+// 00889382  51                   push ecx
+// 00889383  83c0fe               add eax, -2
+// 00889386  50                   push eax
+// 00889387  8bcb                 mov ecx, ebx
+// 00889389  e8fc390f00           call 0x97cd8a
+// 0088938e  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 00889392  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
+// 00889395  83793801             cmp dword ptr [ecx + 0x38], 1
+// 00889399  0f8590010000         jne 0x88952f
+// 0088939f  8b17                 mov edx, dword ptr [edi]
+// 008893a1  8b4248               mov eax, dword ptr [edx + 0x48]
+// 008893a4  8bcf                 mov ecx, edi
+// 008893a6  ffd0                 call eax
+// 008893a8  83f803               cmp eax, 3
+// 008893ab  0f877e010000         ja 0x88952f
+// 008893b1  ff24853c958800       jmp dword ptr [eax*4 + 0x88953c]
+// 008893b8  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
+// 008893bb  8b81e4000000         mov eax, dword ptr [ecx + 0xe4]
+// 008893c1  8b8828010000         mov ecx, dword ptr [eax + 0x128]
+// 008893c7  0520010000           add eax, 0x120
+// 008893cc  83f9ff               cmp ecx, -1
+// 008893cf  7505                 jne 0x8893d6
+// 008893d1  8b4004               mov eax, dword ptr [eax + 4]
+// 008893d4  eb02                 jmp 0x8893d8
+// 008893d6  8bc1                 mov eax, ecx
+// 008893d8  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008893dc  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008893e0  50                   push eax
+// 008893e1  8b442414             mov eax, dword ptr [esp + 0x14]
+// 008893e5  2bd0                 sub edx, eax
+// 008893e7  52                   push edx
+// 008893e8  51                   push ecx
+// 008893e9  50                   push eax
+// 008893ea  53                   push ebx
+// 008893eb  e830ecffff           call 0x888020
+// 008893f0  83c414               add esp, 0x14
+// 008893f3  8bc5                 mov eax, ebp
+// 008893f5  5f                   pop edi
+// 008893f6  5e                   pop esi
+// 008893f7  5d                   pop ebp
+// 008893f8  5b                   pop ebx
+// 008893f9  83c420               add esp, 0x20
+// 008893fc  c21c00               ret 0x1c
+// 008893ff  8b561c               mov edx, dword ptr [esi + 0x1c]
+// 00889402  8b82e4000000         mov eax, dword ptr [edx + 0xe4]
+// 00889408  8b8828010000         mov ecx, dword ptr [eax + 0x128]
+// 0088940e  0520010000           add eax, 0x120
+// 00889413  83f9ff               cmp ecx, -1
+// 00889416  750c                 jne 0x889424
+// 00889418  8b4004               mov eax, dword ptr [eax + 4]
+// 0088941b  8b542410             mov edx, dword ptr [esp + 0x10]
+// 0088941f  e9f4000000           jmp 0x889518
+// 00889424  8b542410             mov edx, dword ptr [esp + 0x10]
+// 00889428  8bc1                 mov eax, ecx
+// 0088942a  e9e9000000           jmp 0x889518
+// 0088942f  8b461c               mov eax, dword ptr [esi + 0x1c]
+// 00889432  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 00889438  8b8840010000         mov ecx, dword ptr [eax + 0x140]
+// 0088943e  0538010000           add eax, 0x138
+// 00889443  83f9ff               cmp ecx, -1
+// 00889446  7505                 jne 0x88944d
+// 00889448  8b4004               mov eax, dword ptr [eax + 4]
+// 0088944b  eb02                 jmp 0x88944f
+// 0088944d  8bc1                 mov eax, ecx
+// 0088944f  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 00889453  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 00889457  50                   push eax
+// 00889458  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0088945c  2bc8                 sub ecx, eax
+// 0088945e  51                   push ecx
+// 0088945f  4a                   dec edx
+// 00889460  52                   push edx
+// 00889461  50                   push eax
+// 00889462  53                   push ebx
+// 00889463  e8b8ebffff           call 0x888020
+// 00889468  8b461c               mov eax, dword ptr [esi + 0x1c]
+// 0088946b  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 00889471  8b8834010000         mov ecx, dword ptr [eax + 0x134]
+// 00889477  052c010000           add eax, 0x12c
+// 0088947c  83c414               add esp, 0x14
+// 0088947f  83f9ff               cmp ecx, -1
+// 00889482  7505                 jne 0x889489
+// 00889484  8b4004               mov eax, dword ptr [eax + 4]
+// 00889487  eb02                 jmp 0x88948b
+// 00889489  8bc1                 mov eax, ecx
+// 0088948b  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0088948f  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 00889493  50                   push eax
+// 00889494  8b442414             mov eax, dword ptr [esp + 0x14]
+// 00889498  2bc8                 sub ecx, eax
+// 0088949a  51                   push ecx
+// 0088949b  83c2fe               add edx, -2
+// 0088949e  52                   push edx
+// 0088949f  50                   push eax
+// 008894a0  53                   push ebx
+// 008894a1  e87aebffff           call 0x888020
+// 008894a6  83c414               add esp, 0x14
+// 008894a9  8bc5                 mov eax, ebp
+// 008894ab  5f                   pop edi
+// 008894ac  5e                   pop esi
+// 008894ad  5d                   pop ebp
+// 008894ae  5b                   pop ebx
+// 008894af  83c420               add esp, 0x20
+// 008894b2  c21c00               ret 0x1c
+// 008894b5  8b461c               mov eax, dword ptr [esi + 0x1c]
+// 008894b8  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 008894be  8b8840010000         mov ecx, dword ptr [eax + 0x140]
+// 008894c4  0538010000           add eax, 0x138
+// 008894c9  83f9ff               cmp ecx, -1
+// 008894cc  7505                 jne 0x8894d3
+// 008894ce  8b4004               mov eax, dword ptr [eax + 4]
+// 008894d1  eb02                 jmp 0x8894d5
+// 008894d3  8bc1                 mov eax, ecx
+// 008894d5  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008894d9  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008894dd  50                   push eax
+// 008894de  8b442418             mov eax, dword ptr [esp + 0x18]
+// 008894e2  2bc8                 sub ecx, eax
+// 008894e4  51                   push ecx
+// 008894e5  50                   push eax
+// 008894e6  4a                   dec edx
+// 008894e7  52                   push edx
+// 008894e8  53                   push ebx
+// 008894e9  e802ebffff           call 0x887ff0
+// 008894ee  8b461c               mov eax, dword ptr [esi + 0x1c]
+// 008894f1  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 008894f7  8b8834010000         mov ecx, dword ptr [eax + 0x134]
+// 008894fd  052c010000           add eax, 0x12c
+// 00889502  83c414               add esp, 0x14
+// 00889505  83f9ff               cmp ecx, -1
+// 00889508  7505                 jne 0x88950f
+// 0088950a  8b4004               mov eax, dword ptr [eax + 4]
+// 0088950d  eb02                 jmp 0x889511
+// 0088950f  8bc1                 mov eax, ecx
+// 00889511  8b542418             mov edx, dword ptr [esp + 0x18]
+// 00889515  83c2fe               add edx, -2
+// 00889518  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 0088951c  50                   push eax
+// 0088951d  8b442418             mov eax, dword ptr [esp + 0x18]
+// 00889521  2bc8                 sub ecx, eax
+// 00889523  51                   push ecx
+// 00889524  50                   push eax
+// 00889525  52                   push edx
+// 00889526  53                   push ebx
+// 00889527  e8c4eaffff           call 0x887ff0
+// 0088952c  83c414               add esp, 0x14
+// 0088952f  5f                   pop edi
+// 00889530  5e                   pop esi
+// 00889531  8bc5                 mov eax, ebp
+// 00889533  5d                   pop ebp
+// 00889534  5b                   pop ebx
+// 00889535  83c420               add esp, 0x20
+// 00889538  c21c00               ret 0x1c
+// 0088953b  90                   nop 
+// 0088953c  b8938800ff           mov eax, 0xff008893
+// 00889541  93                   xchg ebx, eax
+// 00889542  8800                 mov byte ptr [eax], al
+// 00889544  2f                   das 
+// 00889545  94                   xchg esp, eax
+// 00889546  8800                 mov byte ptr [eax], al
+// 00889548  b594                 mov ch, 0x94
+// 0088954a  8800                 mov byte ptr [eax], al
+// library xtp-11.2.2/Source\TabManager\XTPTabPaintManagerAppearance.cpp (function ?FillTabControl@CAppearanceSetPropertyPage@CXTPTabPaintManager@@UAE?AVCRect@@PAVCXTPTabManager@@PAVCDC@@V3@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/TabManager/XTPTabPaintManagerAppearance.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPTabPaintManager.cpp: implementation of the CXTPTabPaintManager class.
-//
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPOffice2007Image.h"
-
-#include "XTPTabPaintManager.h"
-#include "XTPTabManager.h"
-#include "XTPTabPaintManager.inl"
-
-#ifndef _countof
-#define _countof(array) (sizeof(array)/sizeof(array[0]))
-#endif
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSet
-
-CXTPTabPaintManager::CAppearanceSet::CAppearanceSet()
-{
-	m_pPaintManager = NULL;
-	m_rcHeaderMargin.SetRect(0, 0, 0, 0);
-	m_nRowMargin = -2;
-	m_bButtonsReverseZOrder = FALSE;
-
-}
-CXTPTabPaintManager::CAppearanceSet::~CAppearanceSet()
-{
-}
-
-
-void CXTPTabPaintManager::CAppearanceSet::RefreshMetrics()
-{
-	CWindowDC dc (NULL);
-	CXTPFontDC fnt(&dc, m_pPaintManager->GetFont());
-	CSize szRect = dc.GetTextExtent(_T(" "), 1);
-
-	m_nButtonHeight = max(18, szRect.cy + 3);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSet::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-	rc.InflateRect(2, 2);
-
-	return rc;
-}
-
-int CXTPTabPaintManager::CAppearanceSet::GetButtonHeight(const CXTPTabManager* pTabManager)
-{
-	CSize szButtonMin(0);
-
-	int nMargin = m_pPaintManager->m_rcButtonMargin.top + m_pPaintManager->m_rcButtonMargin.bottom;
-
-	if (pTabManager) pTabManager->GetItemMetrics(NULL, &szButtonMin, NULL);
-	int nButtonHeight = max(m_nButtonHeight + nMargin, szButtonMin.cy);
-
-	if (!m_pPaintManager->m_bShowIcons)
-		return nButtonHeight;
-
-	CSize szIcon(m_pPaintManager->m_szIcon);
-	if (pTabManager) pTabManager->DrawIcon(NULL, 0, NULL, FALSE, szIcon);
-
-	return max(max(szIcon.cx, szIcon.cy) + 4 + nMargin, nButtonHeight);
-
-}
-
-
-void CXTPTabPaintManager::CAppearanceSet::DrawPolyLine(CDC* pDC, COLORREF clr, LPPOINT pts, int nCount)
-{
-	CXTPPenDC pen(*pDC, clr);
-	pDC->MoveTo(pts[0].x, pts[0].y);
-	CPoint pt(pts[0]);
-
-	for (int i = 1; i < nCount; i++)
-	{
-		pt.Offset(pts[i]);
-		pDC->LineTo(pt);
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSet::InflateRectEx(CRect& rc, CRect rcInflate, XTPTabPosition position)
-{
-	switch (position)
-	{
-		case xtpTabPositionTop: rc.top -= rcInflate.top; rc.left -= rcInflate.left; rc.bottom += rcInflate.bottom; rc.right += rcInflate.right; break;
-		case xtpTabPositionLeft: rc.left -= rcInflate.top; rc.bottom += rcInflate.right; rc.right += rcInflate.bottom;  rc.top -= rcInflate.left; break;
-		case xtpTabPositionBottom: rc.bottom += rcInflate.top; rc.right += rcInflate.right; rc.top -= rcInflate.bottom; rc.left -= rcInflate.left; break;
-		case xtpTabPositionRight: rc.right += rcInflate.top; rc.top -= rcInflate.left; rc.left -= rcInflate.bottom; rc.bottom += rcInflate.right; break;
-
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSet::DeflateRectEx(CRect& rc, CRect rcDeflate, XTPTabPosition position)
-{
-	InflateRectEx(rc, CRect(-rcDeflate.left, -rcDeflate.top, -rcDeflate.right, -rcDeflate.bottom), position);
-}
-
-void CXTPTabPaintManager::CAppearanceSet::DrawSingleLineBorder(CDC* pDC, CRect rc, XTPTabPosition position, COLORREF clrTopLeft, COLORREF clrBottomRight)
-{
-	switch (position)
-	{
-		case xtpTabPositionTop: HorizontalLine(pDC, rc.left, rc.top, rc.Width(), clrTopLeft); break;
-		case xtpTabPositionLeft: VerticalLine(pDC, rc.left, rc.top, rc.Height(), clrTopLeft); break;
-		case xtpTabPositionBottom: HorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), clrBottomRight); break;
-		case xtpTabPositionRight: VerticalLine(pDC, rc.right - 1, rc.top, rc.Height(), clrBottomRight); break;
-	}
-}
-
-
-COLORREF CXTPTabPaintManager::CAppearanceSet::FillButton(CDC* pDC, CXTPTabManagerItem* pItem, LPPOINT pts, int nCount, XTPTabPosition /*tabPosition*/, BOOL bAbsoulute)
-{
-	LPPOINT lpPointRgn = new POINT[nCount];
-	CPoint pt(0);
-	for (int i = 0; i < nCount; i++)
-	{
-		if (!bAbsoulute)
-		{
-			pt.Offset(pts[i]);
-			lpPointRgn[i] = pt;
-		}
-		else
-		{
-			lpPointRgn[i] = pts[i];
-		}
-	}
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	CRgn rgnClip;
-	rgnClip.CreateRectRgnIndirect(rcClip);
-
-
-	CRgn rgn;
-	rgn.CreatePolygonRgn(lpPointRgn, nCount, ALTERNATE);
-
-	pDC->SelectClipRgn(&rgn, RGN_AND);
-
-	CRect rcFill;
-	rgn.GetRgnBox(rcFill);
-
-	CBitmap bmp;
-	bmp.CreateCompatibleBitmap(pDC, rcFill.Width(), rcFill.Height());
-	CXTPCompatibleDC dcButton(pDC, &bmp);
-
-	COLORREF clrFill = GetColorSet()->FillPropertyButton(&dcButton, CRect(0, 0, rcFill.Width(), rcFill.Height()), pItem);
-
-	pDC->BitBlt(rcFill.left, rcFill.top, rcFill.Width(), rcFill.Height(), &dcButton, 0, 0, SRCCOPY);
-
-	pDC->SelectClipRgn(&rgnClip);
-	delete[] lpPointRgn;
-
-	return clrFill;
-}
-
-int CXTPTabPaintManager::CAppearanceSet::GetButtonLength(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	return m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, CXTPEmptyRect(), FALSE);
-}
-
-int CXTPTabPaintManager::CAppearanceSet::GetHeaderHeight(CXTPTabManager* pTabManager)
-{
-	int nMargin = m_rcHeaderMargin.top + m_rcHeaderMargin.bottom;
-
-	int nButtonHeight = GetButtonHeight(pTabManager) * pTabManager->GetRowCount() +
-		m_nRowMargin * (pTabManager->GetRowCount() - 1);
-
-	if (pTabManager->GetLayout() == xtpTabLayoutRotated)
-	{
-		for (int i = 0; i < pTabManager->GetItemCount(); i++)
-		{
-			CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-			if (pItem->GetButtonLength() > nButtonHeight)
-				nButtonHeight = pItem->GetButtonLength();
-		}
-
-	}
-
-	return nButtonHeight + nMargin;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSet::GetHeaderRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CRect rcHeader(rcControl);
-	int nHeight = GetHeaderHeight(pTabManager);
-
-	switch (pTabManager->GetPosition())
-	{
-		case xtpTabPositionTop: rcHeader.bottom = rcControl.top + nHeight; break;
-		case xtpTabPositionLeft: rcHeader.right = rcControl.left + nHeight; break;
-		case xtpTabPositionBottom: rcHeader.top = rcControl.bottom - nHeight; break;
-		case xtpTabPositionRight: rcHeader.left = rcControl.right - nHeight; break;
-	}
-	return rcHeader;
-}
-CRect CXTPTabPaintManager::CAppearanceSet::GetClientRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CRect rcClient(rcControl);
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-
-	switch (pTabManager->GetPosition())
-	{
-		case xtpTabPositionTop: rcClient.top = rcHeader.bottom - 1; break;
-		case xtpTabPositionLeft: rcClient.left = rcHeader.right - 1; break;
-		case xtpTabPositionBottom: rcClient.bottom = rcHeader.top + 1; break;
-		case xtpTabPositionRight: rcClient.right = rcHeader.left + 1; break;
-	}
-	return rcClient;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSet::GetClientMargin()
-{
-	return m_pPaintManager->m_rcClientMargin;
-}
-
-
-void CXTPTabPaintManager::CAppearanceSet::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
-{
-	DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-	rcClient = GetClientRect(rcClient, pTabManager);
-
-	DeflateRectEx(rcClient, GetClientMargin(), pTabManager->GetPosition());
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		DeflateRectEx(rcClient, CRect(2, 2, 2, 2), pTabManager->GetPosition());
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DeflateRectEx(rcClient, CRect(0, 2, 0, 0), pTabManager->GetPosition());
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSet::DrawWorkspacePart(CDC* pDC, LPRECT lpRect, XTPTabWorkspacePart workspacePart)
-{
-	if (!m_pPaintManager->m_bStaticFrame)
-	{
-
-		switch (workspacePart)
-		{
-		case xtpTabWorkspacePartBorder:
-			break;
-
-		case xtpTabWorkspacePartWidth:
-			lpRect->top -= 2;
-			lpRect->left -= 2;
-			lpRect->right += 2;
-			lpRect->bottom += 2;
-			break;
-
-		case xtpTabWorkspacePartVSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrHeaderFace.clrLight);
-			break;
-
-		case xtpTabWorkspacePartHSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrHeaderFace.clrLight);
-			break;
-		}
-	}
-	else
-	{
-
-		switch (workspacePart)
-		{
-		case xtpTabWorkspacePartBorder:
-			pDC->Draw3dRect(1, 0, lpRect->right - lpRect->left - 2, lpRect->bottom - lpRect->top - 1, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
-			pDC->Draw3dRect(0, 0, lpRect->right - lpRect->left, lpRect->bottom - lpRect->top, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			break;
-
-		case xtpTabWorkspacePartWidth:
-			lpRect->top -= 1;
-			break;
-
-		case xtpTabWorkspacePartVSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrControlFace);
-			pDC->FillSolidRect(lpRect->right - 1, lpRect->top, 1, lpRect->bottom - lpRect->top, GetColorSet()->m_clrFrameBorder);
-			break;
-
-		case xtpTabWorkspacePartHSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrControlFace);
-			pDC->FillSolidRect(lpRect->left, lpRect->bottom - 1, lpRect->right - lpRect->left, 1, GetColorSet()->m_clrFrameBorder);
-			break;
-		}
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	if (!pItem->IsSelected())
-	{
-		if (!IsHorizontalTabPosition(pItem->GetTabManager()->GetPosition()))
-		{
-			HorizontalLine(pDC, rcItem.left + 2, rcItem.bottom, rcItem.Width() - 4, GetColorSet()->m_clrFrameBorder);
-		}
-		else
-		{
-			VerticalLine(pDC, rcItem.right, rcItem.top + 2, rcItem.Height() - 4, GetColorSet()->m_clrFrameBorder);
-		}
-	}
-	else
-	{
-		GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-		InflateRectEx(rcItem, CRect(0, 0, 0, 1), pItem->GetTabManager()->GetPosition());
-		pDC->Draw3dRect(rcItem, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-
-
-CRect CXTPTabPaintManager::CAppearanceSetVisualStudio::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-
-	return rcHeader;
-}
-
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage::RefreshMetrics()
-{
-	CAppearanceSet::RefreshMetrics();
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-	rc.InflateRect(2, 2);
-
-	return rc;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	InflateRectEx(rcHeader, CRect(0, 0, 0, 1), pTabManager->GetPosition());
-
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		Draw3dRect(pDC, rcClient, GetColorSet()->m_csPropertyPage.clrHighlight, GetColorSet()->m_csPropertyPage.clrDarkShadow);
-
-		HorizontalLine(pDC, rcClient.left + 1, rcClient.bottom - 2, rcClient.Width() - 2, GetColorSet()->m_csPropertyPage.clrShadow);
-		VerticalLine(pDC, rcClient.right - 2, rcClient.top + 1, rcClient.Height() - 2, GetColorSet()->m_csPropertyPage.clrShadow);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		switch (pTabManager->GetPosition())
-		{
-			case xtpTabPositionTop: HorizontalLine(pDC, rcClient.left, rcClient.top, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrHighlight); break;
-			case xtpTabPositionLeft: VerticalLine(pDC, rcClient.left, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrHighlight); break;
-			case xtpTabPositionBottom:
-				HorizontalLine(pDC, rcClient.left, rcClient.bottom - 1, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrDarkShadow);
-				HorizontalLine(pDC, rcClient.left, rcClient.bottom - 2, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrShadow);
-				break;
-			case xtpTabPositionRight:
-				VerticalLine(pDC, rcClient.right - 1, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrDarkShadow);
-				VerticalLine(pDC, rcClient.right - 2, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrShadow);
-				break;
-		}
-
-	}
-
-
-	return rcHeader;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetClientMargin()
-{
-	CRect rc = m_pPaintManager->m_rcClientMargin;
-
-	if (m_pPaintManager->GetColorSet()->IsAppThemed() && m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		if (m_pPaintManager->GetPosition() == xtpTabPositionTop ||
-			m_pPaintManager->GetPosition() == xtpTabPositionLeft)
-		{
-			rc.bottom += 2;
-		}
-		rc.right += 2;
-	}
-
-	return rc;
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrShadow = GetColorSet()->m_csPropertyPage.clrShadow, clrHighlight = GetColorSet()->m_csPropertyPage.clrHighlight, clrDarkShadow = GetColorSet()->m_csPropertyPage.clrDarkShadow;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2, 2, 0);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			VerticalLine(pDC, rc.left, rc.top + 2, rc.Height() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.top + 1, clrHighlight);
-			HorizontalLine(pDC, rc.left + 2, rc.top, rc.Width() - 4, clrHighlight);
-
-			Pixel(pDC, rc.right - 2 , rc.top + 1, clrDarkShadow);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 2, rc.Height() - 3, clrDarkShadow);
-			VerticalLine(pDC, rc.right - 2, rc.top + 2, rc.Height() - 3, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-				HorizontalLine(pDC, rc.left + 1, rc.bottom - 1, rc.Width() - 3, clr);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2, 0, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			HorizontalLine(pDC, rc.left + 2, rc.top, rc.Width() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.top + 1, clrHighlight);
-
-			VerticalLine(pDC, rc.left, rc.top + 2, rc.Height() - 4, clrHighlight);
-
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 2, rc.Width() - 2, clrShadow);
-			HorizontalLine(pDC, rc.left + 2, rc.bottom - 1, rc.Width() - 3, clrDarkShadow);
-
-			Pixel(pDC, rc.left + 2, rc.bottom - 2, clrDarkShadow);
-			Pixel(pDC, rc.left + 2, rc.bottom - 1, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-				VerticalLine(pDC, rc.right - 1, rc.top + 1, rc.Height() - 3, clr);
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			VerticalLine(pDC, rc.left, rc.top + 1, rc.Height() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.bottom - 1, clrHighlight);
-
-			HorizontalLine(pDC, rc.left + 2, rc.bottom -1, rc.Width() - 4, clrShadow);
-			HorizontalLine(pDC, rc.left + 2, rc.bottom, rc.Width() - 4, clrDarkShadow);
-
-			Pixel(pDC, rc.right - 2, rc.bottom - 1, clrDarkShadow);
-
-			VerticalLine(pDC, rc.right - 1, rc.top, rc.Height() - 1, clrDarkShadow);
-			VerticalLine(pDC, rc.right - 2, rc.top, rc.Height() - 1, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-			{
-				HorizontalLine(pDC, rc.left + 1, rc.top + 1, rc.Width() - 1, clr);
-				rc.bottom += 2;
-			}
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			HorizontalLine(pDC, rc.left + 1, rc.top, rc.Width() - 2, clrHighlight);
-			Pixel(pDC, rc.right - 1, rc.top + 1, clrHighlight);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 2, rc.Height() - 4, clrShadow);
-			VerticalLine(pDC, rc.right - 0, rc.top + 2, rc.Height() - 4, clrDarkShadow);
-
-			Pixel(pDC, rc.right - 1, rc.bottom - 2, clrDarkShadow);
-
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 2, rc.Width() - 2, clrShadow);
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 1, rc.Width() - 2, clrDarkShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-			{
-				VerticalLine(pDC, rc.left + 1, rc.top + 1, rc.Height() - 1, clr);
-				rc.right += 2;
-			}
-		}
-		break;
-
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rc, TRUE);
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-void CXTPTabPaintManager::CAppearanceSetPropertyPageSelected::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	if (pItem->IsSelected() || pItem->IsHighlighted())
-	{
-		CAppearanceSetPropertyPage::DrawSingleButton(pDC, pItem);
-	}
-	else
-	{
-		m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-	}
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetStateButtons
-
-CRect CXTPTabPaintManager::CAppearanceSetStateButtons::FillTabControl(CXTPTabManager* pTabManager, CDC* /*pDC*/, CRect rcControl)
-{
-	return GetHeaderRect(rcControl, pTabManager);
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetStateButtons::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	GetColorSet()->FillStateButton(pDC, rcItem, pItem);
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2003
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2003::RefreshMetrics()
-{
-	CAppearanceSet::RefreshMetrics();
-
-
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2003::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height(), rc.top, rc.right + 2, rc.bottom) :
-		CRect(rc.left, rc.top - rc.Width(), rc.right, rc.bottom + 2);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2003::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_csPropertyPage2003.clrFrameBorder, GetColorSet()->m_csPropertyPage2003.clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_csPropertyPage2003.clrFrameBorder, GetColorSet()->m_csPropertyPage2003.clrFrameBorder);
-	}
-
-	return rcHeader;
-}
-
-
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2003::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrBorder = GetColorSet()->m_csPropertyPage2003.clrDarkShadow, clrLeftHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderLeftHighlight, clrTopHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderTopHighlight;
-	if (pItem->IsSelected())
-	{
-		clrBorder = GetColorSet()->m_csPropertyPage2003.clrFrameBorder;
-		clrLeftHighlight = RGB(255, 255, 255);
-		clrTopHighlight = RGB(255, 255, 255);
-	}
-
-	if (pItem->IsHighlighted() && m_bDoubleHighlightedBorder)
-	{
-		clrLeftHighlight = clrTopHighlight = clrBorder = GetColorSet()->m_csStateButton.clrBorder.clrDark;
-	}
-
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			rc.bottom--;
-
-			POINT ptsFill[] = {{rc.right - 1, rc.bottom}, {0, 2 - rc.Height()}, {5 - rc.Width(), 0}, {3 - rc.Height(), rc.Height() - 3}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right, rc.bottom - 1}, {+0, 3 - rc.Height()}, {-2, -2}, {9 - rc.Width(), 0}, {-5, 2}, {3 - rc.Height(), rc.Height() - 3}, {-2, 0}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.bottom - 1}, {+0, 3 - rc.Height()}, {-2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 3, rc.top + 1}, {9 - rc.Width(), 0}, {-5, +3}, {4 - rc.Height(), rc.Height() - 4}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left - rc.Height() + 4, rc.bottom, rc.Width() + rc.Height() - 3, clrDark);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			rc.right--;
-
-			POINT ptsFill[] = {{rc.right, rc.bottom - 1}, {2 - rc.Width(), 0}, {0, 5 - rc.Height()}, {rc.Width() - 2, 2 - rc.Width()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right - 1, rc.bottom}, {3 - rc.Width(), 0}, {-2, -2}, {0, 9 - rc.Height()}, {2, -5}, {rc.Width() - 3, 3 - rc.Width()}, {0, -2}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.bottom - 1}, {3 - rc.Width(), 0}, {-2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.left + 1, rc.bottom - 3}, {0, 9 - rc.Height()}, {+3, -5}, {rc.Width() - 4, 4 - rc.Width()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.right, rc.top - rc.Width() + 4, rc.Width() + rc.Height() - 3, clrDark);
-		}
-
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			POINT ptsFill[] = {{rc.right - 1, rc.top}, {0, rc.Height() - 1}, {5 - rc.Width(), 0}, {3 - rc.Height(), 2 - rc.Height()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right, rc.top + 1}, {+0, rc.Height() - 3}, {-2, 2}, {9 - rc.Width(), 0}, {-5, -2}, {3 - rc.Height(), 3 - rc.Height()}, {-2, 0}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.top + 1}, {+0, rc.Height() - 3}, {-2, 2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 3, rc.bottom - 1}, {9 - rc.Width(), 0}, {-5, -3}, {4 - rc.Height(), 4 - rc.Height()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left - rc.Height() + 4, rc.top, rc.Width() + rc.Height() - 3, clrDark);
-
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			POINT ptsFill[] = {{rc.left + 1, rc.bottom - 1}, {rc.Width() - 2, 0}, {0, 5 - rc.Height()}, {2 - rc.Width(), 2 - rc.Width()}};
-			//POINT ptsFill[] = {{rc.left, rc.bottom - 1}, {rc.Width() - 1, 0}, {0, 5 - rc.Height()}, {2 - rc.Width(), 2 - rc.Width()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.left + 1, rc.bottom}, {rc.Width() -3, 0}, {2, -2}, {0, 9 - rc.Height()}, {-2, -5}, {3 - rc.Width(), 3 - rc.Width()}, {0, -2}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.left + 1, rc.bottom - 1}, {rc.Width() - 3, 0}, {2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 1, rc.bottom - 3}, {0, 9 - rc.Height()}, {-3, -5}, {4 - rc.Width(), 4 - rc.Width()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.left, rc.top - rc.Width() + 4, rc.Width() + rc.Height() - 3, clrDark);
-
-
-		}
-		break;
-
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2007
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::RefreshMetrics()
-{
-	CAppearanceSet::RefreshMetrics();
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2007::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	if (!XTPOffice2007Images()->IsValid())
-		return CAppearanceSet::FillTabControl(pTabManager, pDC, rcControl);
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	pDC->FillSolidRect(rcHeader, GetColorSet()->m_clrHeaderFace.clrLight);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("RIBBONGROUPS"));
-		if (pImage) pImage->DrawImage(pDC, rcClient, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(),
-			GetColorSet()->m_csPropertyPage.clrShadow, GetColorSet()->m_csPropertyPage.clrShadow);
-	}
-
-	return rcHeader;
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawButtonBackground(CDC* pDC, CXTPTabManagerItem* pItem, CRect rc)
-{
-	CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("RIBBONTAB"));
-
-	int nState = 0;
-	if (pItem->IsSelected() && pItem->IsFocused())
-	{
-		nState = 5;
-	}
-	else if (pItem->IsSelected() && pItem->IsHighlighted())
-	{
-		nState = 4;
-	}
-	else if (pItem->IsSelected())
-	{
-		nState = 3;
-	}
-	else if (pItem->IsPressed())
-	{
-		nState = 2;
-	}
-	else if (pItem->IsHighlighted())
-	{
-		nState = 1;
-	}
-
-	if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 6), CRect(5, 5, 5, 5), 0xFF00FF);
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawRotatedButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem, BOOL bSwap, LPFNDRAWROTATEDBITS pfnRotatedProc)
-{
-	const int cx = rcItem.Width();
-	const int cy = rcItem.Height();
-
-	BITMAPINFO BMI;
-	// Fill in the header info.
-	ZeroMemory (&BMI, sizeof(BITMAPINFO));
-	BMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	BMI.bmiHeader.biWidth = bSwap ? cy : cx;
-	BMI.bmiHeader.biHeight = bSwap ? cx : cy;
-	BMI.bmiHeader.biPlanes = 1;
-	BMI.bmiHeader.biBitCount = 32;
-	BMI.bmiHeader.biCompression = BI_RGB;   // No compression
-
-	UINT* pSrcBits = NULL;
-	HBITMAP hbmSrc = CreateDIBSection (NULL, &BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l);
-	if (!pSrcBits)
-		return;
-
-	BMI.bmiHeader.biWidth = cx;
-	BMI.bmiHeader.biHeight = cy;
-	UINT* pDestBits = NULL;
-	HBITMAP hbmDest = CreateDIBSection (NULL, &BMI, DIB_RGB_COLORS, (void **)&pDestBits, 0, 0l);
-	if (!pDestBits)
-		return;
-
-	CDC dc;
-	dc.CreateCompatibleDC(NULL);
-	HGDIOBJ hbmpOld = ::SelectObject(dc, hbmSrc);
-
-	CRect rcDraw(0, 0, bSwap ? cy: cx, bSwap ? cx : cy);
-
-	dc.FillSolidRect(rcDraw, GetColorSet()->m_clrHeaderFace.clrLight);
-
-	DrawButtonBackground(&dc, pItem, rcDraw);
-
-	(*pfnRotatedProc)(cx, cy, pSrcBits, pDestBits);
-
-	pDC->DrawState(rcItem.TopLeft(), rcItem.Size(), hbmDest, DST_BITMAP);
-
-	::SelectObject(dc, hbmpOld);
-
-	DeleteObject(hbmSrc);
-	DeleteObject(hbmDest);
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	if (!XTPOffice2007Images()->IsValid())
-	{
-		CAppearanceSet::DrawSingleButton(pDC, pItem);
-		return;
-	}
-
-	CRect rc = pItem->GetRect();
-
-	if (pItem->IsSelected() || pItem->IsHighlighted())
-	{
-		switch (pItem->GetTabManager()->GetPosition())
-		{
-			case xtpTabPositionTop:
-				DrawButtonBackground(pDC, pItem, rc);
-				break;
-
-			case xtpTabPositionBottom:
-				DrawRotatedButton(pDC, rc, pItem, FALSE, &CColorSetWinXP::DrawRotatedBitsBottom);
-				break;
-
-			case xtpTabPositionLeft:
-				DrawRotatedButton(pDC, rc, pItem, TRUE, &CColorSetWinXP::DrawRotatedBitsLeft);
-				break;
-
-			case xtpTabPositionRight:
-				DrawRotatedButton(pDC, rc, pItem, TRUE, &CColorSetWinXP::DrawRotatedBitsRight);
-				break;
-		}
-
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rc, TRUE);
-}
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio2005
-
-CRect CXTPTabPaintManager::CAppearanceSetVisualStudio2005::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height() / 2, rc.top, rc.right + rc.Height() / 2 , rc.bottom) :
-		CRect(rc.left, rc.top  - rc.Width() / 2, rc.right , rc.bottom  + rc.Width() / 2);
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio2005::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrBorder = GetColorSet()->m_csPropertyPage2003.clrDarkShadow, clrLeftHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderLeftHighlight, clrTopHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderTopHighlight;
-	if (pItem->IsSelected())
-	{
-		clrBorder = GetColorSet()->m_csPropertyPage2003.clrFrameBorder;
-		clrLeftHighlight = RGB(255, 255, 255);
-		clrTopHighlight = RGB(255, 255, 255);
-	}
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionBottom:
-		{
-			int nHeight2 = rc.Height() /2;
-
-			POINT ptsBorder[] = {{rc.right + nHeight2 - 4, rc.top + 1}, {-nHeight2 + 3 , nHeight2 * 2 - 6}, {-4, 4}, {-2, 1}, {-rc.Width() + 14, 0}, {-2, -1}, {-3, -3}, {-nHeight2 + 3 - 1 , -(nHeight2 * 2 - 6 + 2)}};
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right + nHeight2 - 4 - 1, rc.top + 1}, {-nHeight2 + 3 , nHeight2 * 2 - 6}, {-3, 3}, {-2, 1}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 4 + 3 - 4 - 2 - rc.Width() + 14, rc.top + 1 + nHeight2 * 2 - 6 + 4}
-				, {-2, -1}, {-2, -2}, {-nHeight2 + 3 - 1 , -(nHeight2 * 2 - 6 + 2)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-
-		}
-		break;
-
-	case xtpTabPositionTop:
-		{
-			int nHeight2 = rc.Height() /2;
-
-			POINT ptsBorder[] = {{rc.right + nHeight2 - 4, rc.bottom - 1}, {-nHeight2 + 3 , - nHeight2 * 2 + 6}, {-4, -4}, {-3, -1}, {-rc.Width() + 16, 0}, {-3, 1}, {-3, 3}, {-nHeight2 + 3 - 1 , (nHeight2 * 2 - 6 + 2)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right + nHeight2 - 4 - 1, rc.bottom - 1}, {-nHeight2 + 3 , - nHeight2 * 2 + 6}, {-3, -3}, {-3, -1}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 4 + 3 - 4 -2, rc.bottom - nHeight2 * 2 + 6 - 1-4}, {-rc.Width() + 16 -1, 0}, {-3, 1}, {-2, 2}, {-nHeight2 + 3 - 1 , (nHeight2 * 2 - 6 + 2)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			int nHeight2 = rc.Width() /2;
-
-			POINT ptsBorder[] = {{rc.left, rc.bottom + nHeight2 - 4}, {nHeight2 * 2 -6 + 1 , -nHeight2 + 3}, {4, -4}, {+1, -3}, {0, -rc.Height() + 16}, {-1, -3}, {-3, -3}, {-nHeight2 * 2 + 6 - 2, (- nHeight2 +3 -1)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.left, rc.bottom + nHeight2 - 5}, {nHeight2 * 2 -6 + 1 , -nHeight2 + 3}, {3, -3}, {+1, -3}, {0, -rc.Height() + 14}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.left + nHeight2 * 2 -6 + 2 + 4 -2 , rc.bottom - 4 -4 -rc.Height() + 16 -3}, {-2, -2}, {-nHeight2 * 2 + 6 - 2, (- nHeight2 +3 -1)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			int nHeight2 = rc.Width() /2;
-
-			POINT ptsBorder[] = {{rc.right - 1, rc.bottom + nHeight2 - 4}, {-(nHeight2 * 2 -6), -nHeight2 + 3}, {-4, -4}, {-1, -3}, {0, -rc.Height() + 16}, {1, -3}, {3, -3}, {nHeight2 * 2 - 6 + 2, (- nHeight2 +3 -1)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right - 1, rc.bottom + nHeight2 - 5}, {-(nHeight2 * 2 -6), -nHeight2 + 3}, {-3, -3}, {-1, -3}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 1-(nHeight2 * 2 -6)-4-1 + 1, rc.bottom + nHeight2 - 4 -nHeight2 + 3 -4 -3}, {0, -rc.Height() + 16}, {1, -3}, {2, -2}, {nHeight2 * 2 - 6 + 2, (- nHeight2 +3 -1)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-		}
-		break;
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetFlat
-
-void CXTPTabPaintManager::CAppearanceSetFlat::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-
-	InflateRectEx(rcItem, CRect(0, 0, 1, 0), pItem->GetTabManager()->GetPosition());
-
-	GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-	if (pItem->IsSelected())
-		InflateRectEx(rcItem, CRect(0, 0, 0, 1), pItem->GetTabManager()->GetPosition());
-
-	pDC->Draw3dRect(rcItem, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetFlat::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-
-
-	return rcHeader;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPageFlat
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageFlat::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-	XTPTabPosition tabPosition = pItem->GetTabManager()->GetPosition();
-
-	InflateRectEx(rcItem, CRect(0, 0, 1, 0), tabPosition);
-
-	CRect rcTab(rcItem);
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rcClip);
-	InflateRectEx(rcTab, CRect(0, 0, 0, 1), tabPosition);
-	XTPDrawHelpers()->ExcludeCorners(pDC, rcTab);
-
-	CRect rcEntry(rcItem);
-	InflateRectEx(rcEntry, CRect(-1, -1, -1, 0), tabPosition);
-
-	if (m_bVisualStudio2005Style)
-	{
-		if (pItem->IsSelected())
-		{
-			GetColorSet()->FillPropertyButton(pDC, rcEntry, pItem);
-			if (!pItem->IsSelected())
-				DrawSingleLineBorder(pDC, rcItem, XTPTabPosition((tabPosition + 2) % 4), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			InflateRectEx(rcItem, CRect(0, 0, 0, 2), tabPosition);
-
-			CXTPPenDC pen(*pDC, GetColorSet()->m_clrFrameBorder);
-			CGdiObject* pOldBrush = pDC->SelectStockObject(NULL_BRUSH);
-			pDC->RoundRect(rcItem, CPoint(6, 6));
-			pDC->SelectObject(pOldBrush);
-		}
-		else
-		{
-			if (pItem->GetIndex() < pItem->GetTabManager()->GetItemCount() - 1)
-			{
-				if (IsHorizontalTabPosition(tabPosition))
-					pDC->FillSolidRect(rcItem.right - 1, rcItem.top + 3, 1, rcItem.Height() - 6, GetColorSet()->m_clrFrameBorder);
-				else
-					pDC->FillSolidRect(rcItem.left + 3, rcItem.bottom - 1, rcItem.Width() - 6, 1, GetColorSet()->m_clrFrameBorder);
-			}
-		}
-
-	}
-	else
-	{
-
-		GetColorSet()->FillPropertyButton(pDC, rcEntry, pItem);
-
-		if (m_bBlurPoints)
-		{
-			if (pItem->IsSelected())
-				InflateRectEx(rcItem, CRect(0, 0, 0, 1), tabPosition);
-			pDC->Draw3dRect(rcItem, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-		}
-		else
-		{
-			if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-			{
-				if (!pItem->IsSelected())
-					DrawSingleLineBorder(pDC, rcItem, XTPTabPosition((tabPosition + 2) % 4), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			}
-
-			InflateRectEx(rcItem, CRect(0, 0, 0, 2), tabPosition);
-
-			CXTPPenDC pen(*pDC, GetColorSet()->m_clrFrameBorder);
-			CGdiObject* pOldBrush = pDC->SelectStockObject(NULL_BRUSH);
-			pDC->RoundRect(rcItem, CPoint(6, 6));
-			pDC->SelectObject(pOldBrush);
-		}
-	}
-
-	pDC->SelectClipRgn(&rgn);
-
-	if (m_bBlurPoints)
-	switch (tabPosition)
-	{
-	case xtpTabPositionTop:
-		{
-			POINT pts[] =
-			{
-				{rcTab.left, rcTab.top + 1}, {0, -1}, {rcTab.left + 1, rcTab.top}, {-1, 0},
-				{rcTab.right - 2, rcTab.top}, {+1, 0}, {rcTab.right - 1, rcTab.top + 1}, {0, -1},
-				{rcTab.left + 1, rcTab.top + 1}, {-1, 0}, {rcTab.right - 2, rcTab.top + 1}, {+1, 0},
-				{rcTab.left + 2, rcTab.top + 1}, {-1, 0}, {rcTab.left + 1, rcTab.top +2}, {0, -1},
-				{rcTab.right - 3, rcTab.top + 1}, {+1, 0}, {rcTab.right - 2, rcTab.top + 2}, {0, -1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			POINT pts[] =
-			{
-				{rcTab.left, rcTab.top + 1}, {0, -1}, {rcTab.left + 1, rcTab.top}, {-1, 0},
-				{rcTab.left, rcTab.bottom - 2}, {0, +1}, {rcTab.left + 1, rcTab.bottom}, {-1, 0},
-				{rcTab.left + 1, rcTab.top + 1}, {-1, 0}, {rcTab.left + 1, rcTab.bottom - 2}, {-1, 0},
-				{rcTab.left + 2, rcTab.top + 1}, {-1, 0}, {rcTab.left + 1, rcTab.top +2}, {0, -1},
-				{rcTab.left + 2, rcTab.bottom - 2}, {-1, 0}, {rcTab.left + 1, rcTab.bottom - 3}, {0, +1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			POINT pts[] =
-			{
-				{rcTab.left, rcTab.bottom - 2}, {0, +1}, {rcTab.left + 1, rcTab.bottom -1}, {-1, 0},
-				{rcTab.right - 1, rcTab.bottom - 2}, {0, +1}, {rcTab.right - 2, rcTab.bottom - 1}, {+1, 0},
-				{rcTab.left + 1, rcTab.bottom - 2}, {0, +1}, {rcTab.right - 2, rcTab.bottom - 2}, {+1, 0},
-				{rcTab.left + 2, rcTab.bottom - 2}, {-1, 0}, {rcTab.left + 1, rcTab.bottom - 3}, {0, +1},
-				{rcTab.right - 3, rcTab.bottom - 2}, {+1, 0}, {rcTab.right - 2, rcTab.bottom - 3}, {0, +1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			POINT pts[] =
-			{
-				{rcTab.right - 1, rcTab.top + 1}, {0, -1}, {rcTab.right - 2, rcTab.top}, {+1, 0},
-				{rcTab.right - 1, rcTab.bottom - 2}, {0, +1}, {rcTab.right - 2, rcTab.bottom}, {+1, 0},
-				{rcTab.right - 2, rcTab.top + 1}, {+1, 0}, {rcTab.right - 2, rcTab.bottom - 2}, {+1, 0},
-				{rcTab.right - 3, rcTab.top + 1}, {+1, 0}, {rcTab.right - 2, rcTab.top +2}, {0, -1},
-				{rcTab.right - 3, rcTab.bottom - 2}, {+1, 0}, {rcTab.right - 2, rcTab.bottom - 3}, {0, +1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceExcel
-
-void CXTPTabPaintManager::CAppearanceSetExcel::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc(pItem->GetRect());
-
-	CXTPTabPaintManager::CColorSet::COLORSET_TAB_EXCEL& cs = pItem->IsSelected() ? GetColorSet()->m_csExcelSelected : GetColorSet()->m_csExcelNormal;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			rc.bottom -= 1;
-			int nMargin = rc.Height() / 2;
-			rc.OffsetRect(- nMargin / 2 , 0);
-
-			POINT ptsFill[] = {{rc.left, rc.bottom}, {nMargin, - nMargin * 2}, {rc.Width() - nMargin, 0}, {nMargin, nMargin * 2}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.bottom - 1, rc.left + nMargin + 1, rc.top);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + nMargin, rc.top + 1, rc.right, rc.top + 1);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right - 1, rc.top, rc.right + nMargin - 1, rc.bottom);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.bottom - 1, rc.left + nMargin, rc.top);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left + nMargin, rc.top, rc.right, rc.top);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.top, rc.right + nMargin, rc.bottom);
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left, rc.bottom, rc.Width() + nMargin, clrDark);
-
-		}
-		break;
-	case xtpTabPositionLeft:
-		{
-			rc.right -= 1;
-			int nMargin = rc.Width() / 2;
-			rc.OffsetRect(0, - nMargin / 2);
-
-			POINT ptsFill[] = {{rc.right, rc.top}, {-nMargin * 2, nMargin}, {0, rc.Height() - nMargin}, {nMargin * 2, nMargin}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.right - 1, rc.top + 1, rc.left, rc.top + nMargin + 1);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + nMargin, rc.left + 1, rc.bottom);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.left , rc.bottom - 1, rc.right, rc.bottom + nMargin - 1);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.right - 1, rc.top, rc.left, rc.top + nMargin);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.top + nMargin, rc.left, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.left, rc.bottom, rc.right, rc.bottom + nMargin);
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.right, rc.top, rc.Height() + nMargin, clrDark);
-
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			rc.bottom -= 1;
-			int nMargin = rc.Height() / 2;
-			rc.OffsetRect(- nMargin /2 , 0);
-
-			POINT ptsFill[] = {{rc.left, rc.top + 1}, {nMargin, nMargin * 2}, {rc.Width() - nMargin, 0}, {nMargin, - nMargin * 2}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + 1, rc.left + nMargin + 1, rc.bottom);
-			LineEx(pDC, cs.clrTopOuterBorder, rc.left + nMargin, rc.bottom - 1, rc.right, rc.bottom - 1);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right - 1, rc.bottom, rc.right + nMargin - 1, rc.top);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.top + 1, rc.left + nMargin, rc.bottom);
-			LineEx(pDC, cs.clrTopInnerBorder, rc.left + nMargin, rc.bottom, rc.right, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.bottom, rc.right + nMargin, rc.top);
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left, rc.top, rc.Width() + nMargin, clrDark);
-		}
-
-		break;
-
-	case xtpTabPositionRight:
-		{
-			rc.right -= 1;
-			int nMargin = rc.Width() / 2;
-			rc.OffsetRect(0, - nMargin / 2);
-
-			POINT ptsFill[] = {{rc.left + 1, rc.top}, {nMargin * 2, nMargin}, {0, rc.Height() - nMargin}, {- nMargin * 2, nMargin}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + 1, rc.right, rc.top + nMargin + 1);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.right - 1, rc.top + nMargin, rc.right - 1, rc.bottom);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right , rc.bottom - 1, rc.left, rc.bottom + nMargin - 1);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left + 1, rc.top, rc.right, rc.top + nMargin);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.right, rc.top + nMargin, rc.right, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.bottom, rc.left, rc.bottom + nMargin);
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.left, rc.top, rc.Height() + nMargin, clrDark);
-		}
-		break;
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetExcel::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height() / 2, rc.top, rc.right + rc.Height() / 2 , rc.bottom) :
-		CRect(rc.left, rc.top  - rc.Width() / 2, rc.right, rc.bottom  + rc.Width() / 2);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisio
-
-
-void CXTPTabPaintManager::CAppearanceSetVisio::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
-{
-	DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	rcClient = GetClientRect(rcClient, pTabManager);
-
-	DeflateRectEx(rcClient, GetClientMargin(), pTabManager->GetPosition());
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisio::RepositionTabControl(CXTPTabManager* pTabManager, CDC* /*pDC*/, CRect rcClient)
-{
-
-	CAppearanceSet::DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	if (pTabManager->GetItemCount() == 0)
-		return;
-
-	int nButtonHeight = GetButtonHeight(pTabManager);
-
-	CRect rc(rcClient);
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		rc.left++;
-	}
-
-	rc.top++;
-
-	CRect rcItem(rc.left, rc.top, rc.right, rc.top);
-
-	for (int i = 0; i < pTabManager->GetItemCount(); i++)
-	{
-		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-		rcItem.bottom = rcItem.top + nButtonHeight;
-
-		pItem->SetRect(rcItem);
-
-		rcItem.top += nButtonHeight;
-
-		if (pItem->IsSelected())
-		{
-			int nBottom = max(rcItem.top + nButtonHeight, rc.bottom - (pTabManager->GetItemCount() - i - 1) * nButtonHeight);
-			nBottom = max(rcItem.top, min(nBottom, rc.bottom - 1));
-			rcItem.top = nBottom;
-		}
-	}
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetVisio::GetHeaderRect(CRect /*rcControl*/, CXTPTabManager* /*pTabManager*/)
-{
-	return CXTPEmptyRect();
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetVisio::GetClientRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CXTPTabManagerItem* pItem = pTabManager->GetSelectedItem();
-
-	if (pItem)
-	{
-		int nButtonHeight = GetButtonHeight(pTabManager);
-
-		rcControl.top += (pItem->GetIndex() + 1) * nButtonHeight + 1;
-
-		rcControl.bottom -= (pTabManager->GetItemCount() - pItem->GetIndex() - 1) * nButtonHeight;
-
-		rcControl.bottom = max(rcControl.top + nButtonHeight, rcControl.bottom);
-
-		if (pItem->GetIndex() == pTabManager->GetItemCount() - 1 &&
-			m_pPaintManager->m_clientFrame != xtpTabFrameNone) rcControl.bottom--;
-	}
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		rcControl.DeflateRect(1, 0, 1, 0);
-	}
-
-
-	return rcControl;
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetVisio::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-	pDC->Draw3dRect(rcItem, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrFrameBorder);
-
-	for (int y = rcItem.top + 4; y < rcItem.bottom - 3; y += 2)
-	{
-		HorizontalLine(pDC, rcItem.right - 7, y, 3, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
-	}
-	rcItem.right -= 7;
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rcItem, TRUE);
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisio::DrawTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
-{
-	pDC->FillSolidRect(rcClient, GetColorSet()->m_clrControlFace);
-
-	CAppearanceSet::DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rcClient);
-	pDC->SelectClipRgn(&rgn);
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	else if (pTabManager->GetItemCount() > 0)
-	{
-		HorizontalLine(pDC, rcClient.left, rcClient.top, rcClient.Width(), GetColorSet()->m_clrFrameBorder);
-	}
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	for (int i = pTabManager->GetItemCount() - 1; i >= 0; i--)
-	{
-		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-		CRect rcItem = pItem->GetRect();
-
-		if (CRect().IntersectRect(rcClient, rcItem) && !rcItem.IsRectEmpty())
-		{
-			DrawSingleButton(pDC, pItem);
-		}
-	}
-
-	pDC->SelectClipRgn(NULL);
-}

@@ -1,1164 +1,238 @@
+// roc 2009-12 008ee0a0  unit: CXTPRibbonGroup  size: 595 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008ee0a0
+//
+// 008ee0a0  83ec1c               sub esp, 0x1c
+// 008ee0a3  53                   push ebx
+// 008ee0a4  55                   push ebp
+// 008ee0a5  8be9                 mov ebp, ecx
+// 008ee0a7  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 008ee0aa  8b808c000000         mov eax, dword ptr [eax + 0x8c]
+// 008ee0b0  56                   push esi
+// 008ee0b1  57                   push edi
+// 008ee0b2  50                   push eax
+// 008ee0b3  e8f8170000           call 0x8ef8b0
+// 008ee0b8  8b5d28               mov ebx, dword ptr [ebp + 0x28]
+// 008ee0bb  83c404               add esp, 4
+// 008ee0be  89442418             mov dword ptr [esp + 0x18], eax
+// 008ee0c2  895c2414             mov dword ptr [esp + 0x14], ebx
+// 008ee0c6  85db                 test ebx, ebx
+// 008ee0c8  7513                 jne 0x8ee0dd
+// 008ee0ca  53                   push ebx
+// 008ee0cb  53                   push ebx
+// 008ee0cc  8bc8                 mov ecx, eax
+// 008ee0ce  e8bd0f0000           call 0x8ef090
+// 008ee0d3  5f                   pop edi
+// 008ee0d4  5e                   pop esi
+// 008ee0d5  5d                   pop ebp
+// 008ee0d6  5b                   pop ebx
+// 008ee0d7  83c41c               add esp, 0x1c
+// 008ee0da  c21000               ret 0x10
+// 008ee0dd  33c9                 xor ecx, ecx
+// 008ee0df  8bc3                 mov eax, ebx
+// 008ee0e1  ba04000000           mov edx, 4
+// 008ee0e6  f7e2                 mul edx
+// 008ee0e8  0f90c1               seto cl
+// 008ee0eb  f7d9                 neg ecx
+// 008ee0ed  0bc8                 or ecx, eax
+// 008ee0ef  51                   push ecx
+// 008ee0f0  e84d5af0ff           call 0x7f3b42
+// 008ee0f5  83c404               add esp, 4
+// 008ee0f8  33f6                 xor esi, esi
+// 008ee0fa  89442410             mov dword ptr [esp + 0x10], eax
+// 008ee0fe  85db                 test ebx, ebx
+// 008ee100  7e31                 jle 0x8ee133
+// 008ee102  85f6                 test esi, esi
+// 008ee104  7c0d                 jl 0x8ee113
+// 008ee106  3b7528               cmp esi, dword ptr [ebp + 0x28]
+// 008ee109  7d08                 jge 0x8ee113
+// 008ee10b  8b4524               mov eax, dword ptr [ebp + 0x24]
+// 008ee10e  8b3cb0               mov edi, dword ptr [eax + esi*4]
+// 008ee111  eb02                 jmp 0x8ee115
+// 008ee113  33ff                 xor edi, edi
+// 008ee115  8bcf                 mov ecx, edi
+// 008ee117  e844b4ffff           call 0x8e9560
+// 008ee11c  85c0                 test eax, eax
+// 008ee11e  740e                 je 0x8ee12e
+// 008ee120  8b17                 mov edx, dword ptr [edi]
+// 008ee122  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008ee126  8b5278               mov edx, dword ptr [edx + 0x78]
+// 008ee129  50                   push eax
+// 008ee12a  8bcf                 mov ecx, edi
+// 008ee12c  ffd2                 call edx
+// 008ee12e  46                   inc esi
+// 008ee12f  3bf3                 cmp esi, ebx
+// 008ee131  7ccf                 jl 0x8ee102
+// 008ee133  33f6                 xor esi, esi
+// 008ee135  85db                 test ebx, ebx
+// 008ee137  7e46                 jle 0x8ee17f
+// 008ee139  8da42400000000       lea esp, [esp]
+// 008ee140  85f6                 test esi, esi
+// 008ee142  7c0d                 jl 0x8ee151
+// 008ee144  3b7528               cmp esi, dword ptr [ebp + 0x28]
+// 008ee147  7d08                 jge 0x8ee151
+// 008ee149  8b4524               mov eax, dword ptr [ebp + 0x24]
+// 008ee14c  8b3cb0               mov edi, dword ptr [eax + esi*4]
+// 008ee14f  eb02                 jmp 0x8ee153
+// 008ee151  33ff                 xor edi, edi
+// 008ee153  8bcf                 mov ecx, edi
+// 008ee155  e806b4ffff           call 0x8e9560
+// 008ee15a  85c0                 test eax, eax
+// 008ee15c  7413                 je 0x8ee171
+// 008ee15e  8b17                 mov edx, dword ptr [edi]
+// 008ee160  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008ee164  8b9280000000         mov edx, dword ptr [edx + 0x80]
+// 008ee16a  50                   push eax
+// 008ee16b  8bcf                 mov ecx, edi
+// 008ee16d  ffd2                 call edx
+// 008ee16f  eb02                 jmp 0x8ee173
+// 008ee171  33c0                 xor eax, eax
+// 008ee173  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 008ee177  8904b1               mov dword ptr [ecx + esi*4], eax
+// 008ee17a  46                   inc esi
+// 008ee17b  3bf3                 cmp esi, ebx
+// 008ee17d  7cc1                 jl 0x8ee140
+// 008ee17f  8b74243c             mov esi, dword ptr [esp + 0x3c]
+// 008ee183  8b7c2434             mov edi, dword ptr [esp + 0x34]
+// 008ee187  2b7e08               sub edi, dword ptr [esi + 8]
+// 008ee18a  8b542410             mov edx, dword ptr [esp + 0x10]
+// 008ee18e  2b3e                 sub edi, dword ptr [esi]
+// 008ee190  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008ee194  57                   push edi
+// 008ee195  52                   push edx
+// 008ee196  50                   push eax
+// 008ee197  8bcd                 mov ecx, ebp
+// 008ee199  e8d2fdffff           call 0x8edf70
+// 008ee19e  8b0e                 mov ecx, dword ptr [esi]
+// 008ee1a0  8b5604               mov edx, dword ptr [esi + 4]
+// 008ee1a3  8b4608               mov eax, dword ptr [esi + 8]
+// 008ee1a6  894c241c             mov dword ptr [esp + 0x1c], ecx
+// 008ee1aa  8b4e0c               mov ecx, dword ptr [esi + 0xc]
+// 008ee1ad  33db                 xor ebx, ebx
+// 008ee1af  395c2414             cmp dword ptr [esp + 0x14], ebx
+// 008ee1b3  89542420             mov dword ptr [esp + 0x20], edx
+// 008ee1b7  89442424             mov dword ptr [esp + 0x24], eax
+// 008ee1bb  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008ee1bf  bef9ffffff           mov esi, 0xfffffff9
+// 008ee1c4  7e2e                 jle 0x8ee1f4
+// 008ee1c6  85db                 test ebx, ebx
+// 008ee1c8  7c0d                 jl 0x8ee1d7
+// 008ee1ca  3b5d28               cmp ebx, dword ptr [ebp + 0x28]
+// 008ee1cd  7d08                 jge 0x8ee1d7
+// 008ee1cf  8b5524               mov edx, dword ptr [ebp + 0x24]
+// 008ee1d2  8b0c9a               mov ecx, dword ptr [edx + ebx*4]
+// 008ee1d5  eb02                 jmp 0x8ee1d9
+// 008ee1d7  33c9                 xor ecx, ecx
+// 008ee1d9  e882b3ffff           call 0x8e9560
+// 008ee1de  85c0                 test eax, eax
+// 008ee1e0  740b                 je 0x8ee1ed
+// 008ee1e2  8b442410             mov eax, dword ptr [esp + 0x10]
+// 008ee1e6  8b0c98               mov ecx, dword ptr [eax + ebx*4]
+// 008ee1e9  8d740e07             lea esi, [esi + ecx + 7]
+// 008ee1ed  43                   inc ebx
+// 008ee1ee  3b5c2414             cmp ebx, dword ptr [esp + 0x14]
+// 008ee1f2  7cd2                 jl 0x8ee1c6
+// 008ee1f4  3bf7                 cmp esi, edi
+// 008ee1f6  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 008ee1fa  8b5904               mov ebx, dword ptr [ecx + 4]
+// 008ee1fd  7e0e                 jle 0x8ee20d
+// 008ee1ff  8bc6                 mov eax, esi
+// 008ee201  2bc7                 sub eax, edi
+// 008ee203  3bd8                 cmp ebx, eax
+// 008ee205  7e02                 jle 0x8ee209
+// 008ee207  8bd8                 mov ebx, eax
+// 008ee209  85db                 test ebx, ebx
+// 008ee20b  7d02                 jge 0x8ee20f
+// 008ee20d  33db                 xor ebx, ebx
+// 008ee20f  2bf3                 sub esi, ebx
+// 008ee211  33d2                 xor edx, edx
+// 008ee213  2bf7                 sub esi, edi
+// 008ee215  85f6                 test esi, esi
+// 008ee217  0f9fc2               setg dl
+// 008ee21a  33c0                 xor eax, eax
+// 008ee21c  85db                 test ebx, ebx
+// 008ee21e  0f9fc0               setg al
+// 008ee221  895d38               mov dword ptr [ebp + 0x38], ebx
+// 008ee224  52                   push edx
+// 008ee225  50                   push eax
+// 008ee226  e8650e0000           call 0x8ef090
+// 008ee22b  295c241c             sub dword ptr [esp + 0x1c], ebx
+// 008ee22f  8b5c2414             mov ebx, dword ptr [esp + 0x14]
+// 008ee233  33ff                 xor edi, edi
+// 008ee235  85db                 test ebx, ebx
+// 008ee237  7e6c                 jle 0x8ee2a5
+// 008ee239  8da42400000000       lea esp, [esp]
+// 008ee240  85ff                 test edi, edi
+// 008ee242  7c0d                 jl 0x8ee251
+// 008ee244  3b7d28               cmp edi, dword ptr [ebp + 0x28]
+// 008ee247  7d08                 jge 0x8ee251
+// 008ee249  8b4d24               mov ecx, dword ptr [ebp + 0x24]
+// 008ee24c  8b34b9               mov esi, dword ptr [ecx + edi*4]
+// 008ee24f  eb02                 jmp 0x8ee253
+// 008ee251  33f6                 xor esi, esi
+// 008ee253  8bce                 mov ecx, esi
+// 008ee255  e806b3ffff           call 0x8e9560
+// 008ee25a  85c0                 test eax, eax
+// 008ee25c  7442                 je 0x8ee2a0
+// 008ee25e  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
+// 008ee262  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008ee266  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008ee26a  83ec10               sub esp, 0x10
+// 008ee26d  8bc4                 mov eax, esp
+// 008ee26f  8918                 mov dword ptr [eax], ebx
+// 008ee271  895004               mov dword ptr [eax + 4], edx
+// 008ee274  8b542438             mov edx, dword ptr [esp + 0x38]
+// 008ee278  894808               mov dword ptr [eax + 8], ecx
+// 008ee27b  89500c               mov dword ptr [eax + 0xc], edx
+// 008ee27e  8b442420             mov eax, dword ptr [esp + 0x20]
+// 008ee282  8b0cb8               mov ecx, dword ptr [eax + edi*4]
+// 008ee285  51                   push ecx
+// 008ee286  8bce                 mov ecx, esi
+// 008ee288  e8b3f6ffff           call 0x8ed940
+// 008ee28d  8b542410             mov edx, dword ptr [esp + 0x10]
+// 008ee291  8b04ba               mov eax, dword ptr [edx + edi*4]
+// 008ee294  8d4c0307             lea ecx, [ebx + eax + 7]
+// 008ee298  8b5c2414             mov ebx, dword ptr [esp + 0x14]
+// 008ee29c  894c241c             mov dword ptr [esp + 0x1c], ecx
+// 008ee2a0  47                   inc edi
+// 008ee2a1  3bfb                 cmp edi, ebx
+// 008ee2a3  7c9b                 jl 0x8ee240
+// 008ee2a5  33f6                 xor esi, esi
+// 008ee2a7  85db                 test ebx, ebx
+// 008ee2a9  7e31                 jle 0x8ee2dc
+// 008ee2ab  eb03                 jmp 0x8ee2b0
+// 008ee2ad  8d4900               lea ecx, [ecx]
+// 008ee2b0  85f6                 test esi, esi
+// 008ee2b2  7c0d                 jl 0x8ee2c1
+// 008ee2b4  3b7528               cmp esi, dword ptr [ebp + 0x28]
+// 008ee2b7  7d08                 jge 0x8ee2c1
+// 008ee2b9  8b5524               mov edx, dword ptr [ebp + 0x24]
+// 008ee2bc  8b3cb2               mov edi, dword ptr [edx + esi*4]
+// 008ee2bf  eb02                 jmp 0x8ee2c3
+// 008ee2c1  33ff                 xor edi, edi
+// 008ee2c3  8bcf                 mov ecx, edi
+// 008ee2c5  e896b2ffff           call 0x8e9560
+// 008ee2ca  85c0                 test eax, eax
+// 008ee2cc  7409                 je 0x8ee2d7
+// 008ee2ce  8b07                 mov eax, dword ptr [edi]
+// 008ee2d0  8b507c               mov edx, dword ptr [eax + 0x7c]
+// 008ee2d3  8bcf                 mov ecx, edi
+// 008ee2d5  ffd2                 call edx
+// 008ee2d7  46                   inc esi
+// 008ee2d8  3bf3                 cmp esi, ebx
+// 008ee2da  7cd4                 jl 0x8ee2b0
+// 008ee2dc  8b442410             mov eax, dword ptr [esp + 0x10]
+// 008ee2e0  50                   push eax
+// 008ee2e1  e82058f0ff           call 0x7f3b06
+// 008ee2e6  83c404               add esp, 4
+// 008ee2e9  5f                   pop edi
+// 008ee2ea  5e                   pop esi
+// 008ee2eb  5d                   pop ebp
+// 008ee2ec  5b                   pop ebx
+// 008ee2ed  83c41c               add esp, 0x1c
+// 008ee2f0  c21000               ret 0x10
+// copied from an identical function in another client (function ?CalcDynamicSize@CXTPRibbonGroups@@QAEXPAVCDC@@HKABVCRect@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonGroups.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPRibbonGroups.cpp: implementation of the CXTPRibbonGroups class.
-//
-// This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPImageManager.h"
-#include "Common/XTPPropExchange.h"
-
-#include "CommandBars/XTPControl.h"
-#include "CommandBars/XTPControlPopup.h"
-#include "CommandBars/XTPControls.h"
-#include "CommandBars/XTPControlGallery.h"
-
-#include "XTPRibbonGroup.h"
-#include "XTPRibbonGroups.h"
-#include "XTPRibbonTab.h"
-#include "XTPRibbonBar.h"
-#include "XTPRibbonTheme.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CXTPRibbonGroups::CXTPRibbonGroups()
-{
-	m_pParentTab = NULL;
-	m_nGroupsScrollPos = 0;
-
-
-}
-
-CXTPRibbonGroups::~CXTPRibbonGroups()
-{
-	RemoveAll();
-}
-
-void CXTPRibbonGroups::RemoveAll()
-{
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(nIndex);
-		pGroup->OnGroupRemoved();
-		pGroup->InternalRelease();
-	}
-	m_arrGroups.RemoveAll();
-	RefreshIndexes();
-}
-
-void CXTPRibbonGroups::RefreshIndexes()
-{
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(nIndex);
-		pGroup->m_nIndex = nIndex;
-	}
-}
-
-CXTPRibbonBar* CXTPRibbonGroups::GetRibbonBar() const
-{
-	return m_pParentTab->GetRibbonBar();
-}
-
-CXTPRibbonGroup* CXTPRibbonGroups::Add(LPCTSTR lpszCaption, int nId)
-{
-	return InsertAt(GetCount(), lpszCaption, nId);
-}
-
-CXTPRibbonGroup* CXTPRibbonGroups::InsertAt(int nIndex, CXTPRibbonGroup* pGroup)
-{
-	pGroup->m_pGroups = this;
-	pGroup->m_pRibbonBar = m_pParentTab->GetRibbonBar();
-	pGroup->m_pParent = m_pParentTab->GetParent();
-
-	m_arrGroups.InsertAt(nIndex, pGroup);
-
-	RefreshIndexes();
-
-	pGroup->OnGroupAdded();
-
-	return pGroup;
-}
-
-CXTPRibbonGroup* CXTPRibbonGroups::InsertAt(int nIndex, LPCTSTR lpszCaption, int nId)
-{
-	CXTPRibbonGroup* pGroup = new CXTPRibbonGroup;
-	pGroup->SetID(nId);
-	pGroup->SetCaption(lpszCaption);
-
-	InsertAt(nIndex, pGroup);
-
-	pGroup->LoadToolBar(nId);
-
-	return pGroup;
-}
-
-void CXTPRibbonGroups::Remove(int nIndex)
-{
-	if ((nIndex >= 0) && (nIndex < GetCount()))
-	{
-		CXTPRibbonGroup* pGroup = GetAt(nIndex);
-		ASSERT(pGroup);
-
-		pGroup->OnGroupRemoved();
-		m_arrGroups.RemoveAt(nIndex);
-		pGroup->InternalRelease();
-		RefreshIndexes();
-	}
-}
-
-CXTPRibbonGroup* CXTPRibbonGroups::HitTest(CPoint point) const
-{
-	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(nIndex);
-		if (pGroup->IsVisible() && pGroup->GetRect().PtInRect(point))
-		{
-			return pGroup;
-		}
-	}
-
-	return NULL;
-
-}
-
-void CXTPRibbonGroups::Copy(CXTPRibbonGroups* pGroups)
-{
-	RemoveAll();
-
-	for (int nIndex = 0; nIndex < pGroups->GetCount(); nIndex++)
-	{
-		CXTPRibbonGroup* pGroup = pGroups->GetAt(nIndex);
-		CXTPRibbonGroup* pClone = (CXTPRibbonGroup*)pGroup->GetRuntimeClass()->CreateObject();
-		InsertAt(nIndex, pClone);
-
-		pClone->Copy(pGroup);
-		pClone->m_pGroups = this;
-	}
-}
-
-
-//
-
-struct CXTPRibbonGroup::CONTROLINFO
-{
-	CRect rcControl;
-	CRect rcRow;
-	CSize szControl;
-	BOOL bHide;
-	BOOL bWrap;
-	BOOL bBeginGroup;
-	BOOL bWrapGroup;
-	XTPButtonStyle buttonStyle;
-	CXTPControl* pControl;
-	int nTailWidth;
-
-	void EnsureButtonSize(CDC* pDC)
-	{
-		if (buttonStyle != pControl->GetStyle())
-		{
-			buttonStyle = pControl->GetStyle();
-			szControl = pControl->GetSize(pDC);
-		}
-	}
-	void Attach(CDC* pDC, CXTPControl* p)
-	{
-		pControl = p;
-		rcRow.SetRectEmpty();
-
-		szControl = pControl->GetSize(pDC);
-		rcControl = pControl->GetRect();
-		bBeginGroup = pControl->GetBeginGroup();
-		bWrapGroup = bBeginGroup || (pControl->GetFlags() & xtpFlagWrapRow);
-		buttonStyle = pControl->GetStyle();
-		bWrap = bHide = FALSE;
-		nTailWidth = 0;
-	}
-
-	void Detach()
-	{
-		pControl->SetHideWrap(bHide);
-		pControl->SetRowRect(rcRow);
-		if (!bHide)
-		pControl->SetRect(rcControl);
-		pControl->SetWrap(bWrap);
-	}
-};
-
-struct CXTPRibbonGroup::LAYOUTINFO
-{
-	CONTROLINFO* pControls;
-	int nControlCount;
-	int nMinWidth;
-	int nWidth;
-	BOOL bOldReduced;
-};
-
-BOOL CXTPRibbonGroup::OnExtendSize(int nWidthAvail)
-{
-	int nDataCount = m_pLayoutInfo->nControlCount;
-	CONTROLINFO* pData = m_pLayoutInfo->pControls;
-
-	for (int i = nDataCount - 1; i >= 0; i--)
-	{
-		if (pData[i].pControl->GetType() == xtpControlGallery &&
-			((CXTPControlGallery*)pData[i].pControl)->IsResizable() & 1)
-		{
-			CXTPControlGallery* pGallery = (CXTPControlGallery*)pData[i].pControl;
-			int cx = pGallery->GetItems() ? pGallery->GetItems()->GetItemSize().cx : 0;
-
-			if (cx > 0 && cx <= nWidthAvail)
-			{
-				int nCount = pGallery->GetItems()->GetItemCount();
-				CRect rcBorders = pGallery->GetBorders();
-				int nMaxWidth = nCount * cx + rcBorders.left + rcBorders.right;
-
-				if (pData[i].szControl.cx + cx <= nMaxWidth)
-				{
-					pData[i].szControl.cx = min(nMaxWidth,
-						 pData[i].szControl.cx + int(nWidthAvail / cx) * cx);
-
-					return TRUE;
-				}
-			}
-
-			return FALSE;
-		}
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPRibbonGroup::OnReduceSize(int nLevel, int nWidthAvail)
-{
-	if (m_pLayoutInfo == NULL)
-		return FALSE;
-
-	if (m_pLayoutInfo->nWidth < m_pLayoutInfo->nMinWidth)
-	{
-		if (nLevel == 2 && m_pLayoutInfo->nWidth > 16)
-		{
-			m_pLayoutInfo->nMinWidth = max(m_pLayoutInfo->nWidth, m_pLayoutInfo->nMinWidth - nWidthAvail);
-			return TRUE;
-		}
-
-		return FALSE;
-	}
-
-	BOOL bReduced = FALSE;
-
-	int nResultHeight = GetRibbonBar()->CalcGroupsHeight() - 2 -
-		GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight() ;
-
-	int nButtonSize = GetRibbonBar()->GetButtonSize().cy;
-
-	int nControlsPerGroup = int(nResultHeight / nButtonSize);
-
-	int nDataCount = m_pLayoutInfo->nControlCount;
-	CONTROLINFO* pData = m_pLayoutInfo->pControls;
-
-
-	bReduced = FALSE;
-
-
-	int* pButtons = new int[nControlsPerGroup];
-
-	if (nLevel == 0 && !m_bControlsGrouping)
-	{
-		if (nControlsPerGroup > 1)
-		{
-			for (int i = nDataCount - 1; i >= 2; i--)
-			{
-				if (pData[i].bWrapGroup)
-					continue;
-
-				int nItems = 0;
-
-				for (int j = i; j  >= 0; j--)
-				{
-					CONTROLINFO* pControl = &pData[j];
-
-					if ((nItems == nControlsPerGroup - 1 || !pControl->bWrapGroup)
-						&& pControl->pControl->m_buttonRibbonStyle == xtpButtonIconAndCaptionBelow
-						&& pControl->pControl->GetType() != xtpControlGallery)
-					{
-						pButtons[nItems] = j;
-						nItems += 1;
-					}
-					else
-					{
-						break;
-					}
-					if (nItems == nControlsPerGroup)
-						break;
-				}
-
-				if (nItems == nControlsPerGroup)
-				{
-					for (int k = 0; k < nItems; k++)
-						pData[pButtons[k]].pControl->m_buttonRibbonStyle = xtpButtonIconAndCaption;
-					bReduced = TRUE;
-					break;
-				}
-			}
-		}
-	}
-
-	if (nLevel == 1 && !m_bControlsGrouping)
-	{
-		if (nControlsPerGroup > 1)
-		{
-
-			for (int i = nDataCount - 1; i >= 2; i--)
-			{
-				if (pData[i].bWrapGroup)
-					continue;
-
-				int nItems = 0;
-				BOOL bFound = FALSE;
-				int j;
-
-				for (j = i; j  >= 0; j--)
-				{
-					CONTROLINFO* pControl = &pData[j];
-
-					if ((nItems == nControlsPerGroup - 1 || !pControl->bWrapGroup)
-						&& pControl->pControl->GetType() != xtpControlGallery)
-					{
-						pButtons[nItems] = j;
-						nItems += 1;
-						bFound = bFound || pControl->pControl->m_buttonRibbonStyle == xtpButtonIconAndCaptionBelow;
-					}
-					else
-					{
-						break;
-					}
-					if (nItems == nControlsPerGroup)
-						break;
-				}
-				i = j;
-				if (nItems == nControlsPerGroup && bFound)
-				{
-					for (int k = 0; k < nItems; k++)
-						pData[pButtons[k]].pControl->m_buttonRibbonStyle = xtpButtonIconAndCaption;
-
-					bReduced = TRUE;
-					break;
-				}
-			}
-		}
-	}
-
-	if (nLevel == 1 && m_bControlsGrouping && m_nRowCount == 2)
-	{
-		m_nRowCount = 3;
-		bReduced = TRUE;
-	}
-
-	if (nLevel == 2 && !bReduced && !m_bControlsGrouping)
-	{
-		if (nControlsPerGroup > 1)
-		{
-			for (int i = nDataCount - 1; i >= 2; i--)
-			{
-				if (pData[i].bWrapGroup)
-					continue;
-
-				int nItems = 0;
-				int nLeft = 0;
-
-				for (int j = i; j  >= 0; j--)
-				{
-					CONTROLINFO* pControl = &pData[j];
-
-					int nOffset = pControl->rcControl.left;
-					if (nItems != 0 && (nOffset != nLeft))
-						break;
-
-					if ((nItems == nControlsPerGroup - 1 || !pControl->bWrapGroup)
-						&& pControl->pControl->m_buttonRibbonStyle == xtpButtonIconAndCaption
-						&& pControl->pControl->GetType() != xtpControlGallery)
-					{
-						pButtons[nItems] = j;
-						nItems += 1;
-						nLeft = nOffset;
-					}
-					else
-					{
-						break;
-					}
-					if (nItems == nControlsPerGroup)
-						break;
-				}
-
-				if (nItems == nControlsPerGroup && GetCount() > nControlsPerGroup)
-				{
-					for (int k = 0; k < nItems; k++)
-						pData[pButtons[k]].pControl->m_buttonRibbonStyle = xtpButtonIcon;
-					bReduced = TRUE;
-					break;
-				}
-			}
-		}
-	}
-
-	if (nLevel == 2 && !bReduced && !m_bControlsGrouping)
-	{
-		for (int i = nDataCount - 1; i >= 0; i--)
-		{
-			if (pData[i].pControl->GetType() == xtpControlGallery &&
-				pData[i].pControl->m_buttonRibbonStyle != xtpButtonIconAndCaptionBelow)
-			{
-				pData[i].pControl->m_buttonRibbonStyle = xtpButtonIconAndCaptionBelow;
-				bReduced = TRUE;
-				break;
-			}
-		}
-	}
-
-	delete[] pButtons;
-
-
-	if (nLevel == 3)
-	{
-		if (nDataCount > 1 && !m_bReduced)
-		{
-			m_bReduced = TRUE;
-
-			for (int j = 0; j < nDataCount; j++)
-			{
-				CONTROLINFO* pControl = &pData[j];
-				pControl->bHide = TRUE;
-			}
-
-			bReduced = TRUE;
-		}
-	}
-
-	return bReduced;
-}
-
-void CXTPRibbonGroup::OnBeforeCalcSize(CDC* pDC)
-{
-	CSize szLargeIcon = GetRibbonBar()->GetLargeIconSize(FALSE);
-
-	m_pLayoutInfo = new LAYOUTINFO;
-	m_pLayoutInfo->pControls = NULL;
-	m_pLayoutInfo->nMinWidth = GetMinimumWidth(pDC);
-	m_pLayoutInfo->bOldReduced = m_bReduced;
-
-	int nVisibleCount = 0;
-	int j;
-
-	for (j = 0; j < GetCount(); j++)
-	{
-		CXTPControl* pControl = GetAt(j);
-
-		if (pControl->IsVisible(xtpHideWrap))
-		{
-			nVisibleCount++;
-		}
-	}
-
-	m_pLayoutInfo->nControlCount = nVisibleCount;
-
-	if (nVisibleCount == 0)
-		return;
-
-	m_pLayoutInfo->pControls = new CONTROLINFO[nVisibleCount];
-
-	int k = 0;
-
-	for (j = 0; j < GetCount(); j++)
-	{
-		CXTPControl* pControl = GetAt(j);
-
-		if (pControl->IsVisible(xtpHideWrap))
-		{
-			pControl->m_buttonRibbonStyle = xtpButtonAutomatic;
-
-			if (!m_bControlsGrouping && pControl->GetStyle() == xtpButtonAutomatic && pControl->GetType() != xtpControlGallery)
-			{
-				BOOL bDrawImage = pControl->GetIconId() > 0 ?
-					pControl->GetImageManager()->IsPrimaryImageExists(pControl->GetIconId(), szLargeIcon.cx) != NULL: FALSE;
-
-				pControl->m_buttonRibbonStyle = bDrawImage? xtpButtonIconAndCaptionBelow : xtpButtonIconAndCaption;
-			}
-
-			m_pLayoutInfo->pControls[k].Attach(pDC, pControl);
-			k++;
-		}
-	}
-
-
-	ASSERT(k == nVisibleCount);
-
-	m_bReduced = FALSE;
-	m_nRowCount = 2;
-}
-
-void CXTPRibbonGroup::OnAfterCalcSize()
-{
-	if (!m_pLayoutInfo)
-		return;
-
-	for (int i = 0; i < m_pLayoutInfo->nControlCount; i++)
-	{
-		if (i == 0)
-			m_pLayoutInfo->pControls[i].bWrap = TRUE;
-
-		m_pLayoutInfo->pControls[i].Detach();
-	}
-
-	if (m_pLayoutInfo->bOldReduced && !m_bReduced)
-	{
-		GetRibbonBar()->m_bGroupReducedChanged = TRUE;
-
-	}
-
-	delete[] m_pLayoutInfo->pControls;
-	delete m_pLayoutInfo;
-}
-
-int CXTPRibbonGroup::_WrapSpecialDynamicSize(int nWidth, BOOL bIncludeTail)
-{
-	int nDataCount = m_pLayoutInfo->nControlCount;
-	CONTROLINFO* pData = m_pLayoutInfo->pControls;
-
-	int nWraps = 0, x = 0;
-
-	for (int i = 0; i < nDataCount; i++)
-	{
-		CONTROLINFO* pControl = &pData[i];
-
-		pControl->bWrap = FALSE;
-		CSize szControl = pControl->szControl;
-		BOOL bBeginGroup = pControl->bBeginGroup && i > 0;
-		BOOL bWrapGroup = pControl->bWrapGroup && i > 0;
-
-		if (bWrapGroup)
-		{
-			if ((bIncludeTail && (x + pControl->nTailWidth >= nWidth))
-				|| (!bIncludeTail && nWraps == 0 && (x + pControl->nTailWidth >= nWidth)))
-			{
-				x = szControl.cx;
-				pControl->bWrap = TRUE;
-				nWraps++;
-				continue;
-			}
-		}
-
-		if (bBeginGroup)
-			x += 3;
-
-		x += szControl.cx;
-	}
-	return nWraps;
-}
-
-int CXTPRibbonGroup::_GetSizeSpecialDynamicSize()
-{
-	int nTotalWidth = 0, x = 0, y = 0, nRowHeight = 0;
-
-	int nDataCount = m_pLayoutInfo->nControlCount;
-	CONTROLINFO* pData = m_pLayoutInfo->pControls;
-
-	for (int i = 0; i < nDataCount; i++)
-	{
-		CONTROLINFO* pControl = &pData[i];
-
-		CSize szControl = pControl->szControl;
-
-		if (pControl->bWrap)
-		{
-			x = 0;
-			y += nRowHeight;
-		}
-		else
-		{
-			BOOL bBeginGroup = pControl->bBeginGroup && i > 0;
-
-			if (bBeginGroup)
-				x += 3;
-		}
-
-		pControl->rcControl.SetRect(2 + x, y, 2 + x + szControl.cx, y + szControl.cy);
-
-		x += szControl.cx;
-		nRowHeight = max(nRowHeight, szControl.cy);
-		nTotalWidth = max(nTotalWidth, x);
-	}
-	return nTotalWidth + 4;
-}
-
-BOOL CXTPRibbonGroup::_FindBestWrapSpecialDynamicSize()
-{
-	int nMax = _GetSizeSpecialDynamicSize();
-	int nMin = 0, nMid = 0;
-
-	int nCurrent = _WrapSpecialDynamicSize(nMin, TRUE);
-	int nTarget = 2;
-	if (nCurrent < nTarget)
-		return FALSE;
-
-	if (nCurrent == nTarget)
-		return TRUE;
-
-	while (nMin < nMax)
-	{
-		nMid = (nMin + nMax) / 2;
-		nCurrent = _WrapSpecialDynamicSize(nMid, TRUE);
-
-		if (nCurrent <= nTarget)
-		{
-			nMax = nMid;
-		}
-		else
-		{
-			if (nMin == nMid)
-			{
-				_WrapSpecialDynamicSize(nMax, TRUE);
-				break;
-			}
-			nMin = nMid;
-		}
-	}
-
-	return TRUE;
-}
-
-int CXTPRibbonGroup::_CalcSpecialDynamicSize(CDC* /*pDC*/)
-{
-	int nResultHeight = GetRibbonBar()->CalcGroupsHeight() - 9 -
-		GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight();
-
-	int i;
-
-	int nDataCount = m_pLayoutInfo->nControlCount;
-	CONTROLINFO* pData = m_pLayoutInfo->pControls;
-
-	int nTailWidth = 0;
-	for (i = nDataCount - 1; i >= 0; i--)
-	{
-		CONTROLINFO* pControl = &pData[i];
-
-		CSize szControl = pControl->szControl;
-
-		nTailWidth += szControl.cx;
-		pControl->nTailWidth = nTailWidth;
-
-		if (pControl->bWrapGroup)
-		{
-			nTailWidth = 0;
-		}
-	}
-
-	int nBaseHeight = GetRibbonBar()->GetRibbonPaintManager()->GetEditHeight();
-
-	_WrapSpecialDynamicSize(32000, FALSE);
-	int nTotalWidth = _GetSizeSpecialDynamicSize();
-	int nRowCount = 3;
-	BOOL bAllow3Row = nResultHeight >= nBaseHeight * 3;
-	BOOL bAllow2Row = nResultHeight >= nBaseHeight * 2 ;
-
-	if (!bAllow2Row)
-	{
-		_WrapSpecialDynamicSize(32000, FALSE);
-		nRowCount = 1;
-
-	}
-	else
-	{
-		if (!(bAllow3Row && m_nRowCount == 3 && _FindBestWrapSpecialDynamicSize()))
-		{
-			nRowCount = _WrapSpecialDynamicSize(nTotalWidth / 2, FALSE) + 1;
-		}
-	}
-	nTotalWidth = _GetSizeSpecialDynamicSize();
-
-	int nOffset = (nResultHeight + 1 - nBaseHeight * nRowCount) / (nRowCount + 1);
-	int nTotalOffset = nOffset;
-	int nRow = 0;
-
-	for (i = 0; i < nDataCount; i++)
-	{
-		CONTROLINFO* pControl = &pData[i];
-
-		if (i > 0 && pControl->bWrap)
-		{
-			nOffset = (nResultHeight - nBaseHeight * nRowCount - nTotalOffset) / (nRowCount - nRow);
-			nTotalOffset += nOffset;
-			nRow++;
-		}
-
-		pControl->rcControl.OffsetRect(0, nTotalOffset);
-
-	}
-
-
-	m_pLayoutInfo->nWidth = nTotalWidth;
-
-	return max(m_pLayoutInfo->nWidth, m_pLayoutInfo->nMinWidth);
-}
-
-int CXTPRibbonGroup::OnCalcDynamicSize(CDC* pDC)
-{
-	if (m_bReduced)
-	{
-		CSize szControl = GetControlGroupPopup()->GetSize(pDC);
-		return m_pLayoutInfo->nWidth = szControl.cx - 5;
-	}
-
-	if (m_bControlsGrouping)
-		return _CalcSpecialDynamicSize(pDC);
-
-	int nResultHeight = GetRibbonBar()->CalcGroupsHeight() - 9 -
-		GetRibbonBar()->GetRibbonPaintManager()->GetGroupCaptionHeight() ;
-
-	CSize sizeResult(0, nResultHeight);
-
-
-	int dyPrev = 0, dxPrev = 0, x = 2;
-
-	int nDataCount = m_pLayoutInfo->nControlCount;
-	CONTROLINFO* pData = m_pLayoutInfo->pControls;
-
-	for (int i = 0; i < nDataCount; i++)
-	{
-		CONTROLINFO* pControl = &pData[i];
-
-		BOOL bFullRow = pControl->pControl->GetStyle() == xtpButtonIconAndCaptionBelow;
-		pControl->EnsureButtonSize(pDC);
-		CSize szControl = pControl->szControl;
-
-		int dx = szControl.cx;
-		int dy = szControl.cy;
-
-		BOOL bBeginGroup = pControl->bBeginGroup && i > 0;
-		BOOL bWrapGroup = pControl->bWrapGroup && i > 0;
-
-		if (bBeginGroup)
-			x += 6;
-
-		if (i > 0 && !bWrapGroup && !bFullRow && dyPrev + dy <= nResultHeight)
-		{
-			pControl->rcControl.SetRect(x, dyPrev, x + dx, dyPrev + dy);
-
-			dxPrev = max(dxPrev, dx);
-		}
-		else
-		{
-			x += dxPrev;
-			pControl->rcControl.SetRect(x, 0, x + dx, dy);
-			dxPrev = dx;
-		}
-		sizeResult.cx = max(x + dx, sizeResult.cx);
-
-		dyPrev = pControl->rcControl.bottom;
-	}
-
-	m_pLayoutInfo->nWidth = sizeResult.cx + 2;
-
-	return max(m_pLayoutInfo->nWidth, m_pLayoutInfo->nMinWidth);
-}
-
-void CXTPRibbonGroups::_ReduceSmartLayoutToolBar(CDC* pDC, int* pWidth, int nWidth)
-{
-	int nResult = _CalcSmartLayoutToolBar(pWidth);
-	if (nResult <= nWidth)
-	{
-		if (nResult == nWidth)
-			return;
-
-		for (int i = GetCount() - 1; i >= 0; i--)
-		{
-			CXTPRibbonGroup* pGroup = GetAt(i);
-			if (!pGroup->IsVisible())
-				continue;
-
-			if (pGroup->OnExtendSize(nWidth - nResult))
-			{
-				pWidth[i] = pGroup->OnCalcDynamicSize(pDC);
-				break;
-			}
-		}
-
-		return;
-	}
-
-	BOOL bReduced = FALSE;
-
-	do
-	{
-		bReduced = FALSE;
-
-		for (int nLevel = 0; nLevel < 4; nLevel++)
-		{
-			for (int i = GetCount() - 1; i >= 0; i--)
-			{
-				CXTPRibbonGroup* pGroup = GetAt(i);
-				if (!pGroup->IsVisible())
-					continue;
-
-				if (pGroup->OnReduceSize(nLevel, nResult - nWidth))
-				{
-					int nGroupWidth = pGroup->OnCalcDynamicSize(pDC);
-
-					nResult -= (pWidth[i] - nGroupWidth);
-					pWidth[i] = nGroupWidth;
-
-					bReduced = TRUE;
-					break;
-				}
-			}
-
-			if (bReduced)
-				break;
-		}
-
-		if (bReduced && nResult <= nWidth)
-		{
-			return;
-		}
-	}
-	while (bReduced);
-}
-
-int CXTPRibbonGroups::_CalcSmartLayoutToolBar(int* pWidth)
-{
-	int nWidth = 0;
-	for (int i = 0; i < GetCount(); i++)
-	{
-		nWidth += pWidth[i];
-
-		if (i != GetCount() - 1 && pWidth[i] != 0)
-		{
-			nWidth += 7;
-		}
-	}
-	return nWidth;
-}
-
-
-void CXTPRibbonGroup::CenterColumn(int nFirstItem, int nLastItem, int nGroupHeight)
-{
-	int nHeight = 0;
-	int i;
-	for (i = nFirstItem; i <= nLastItem; i++)
-	{
-		CONTROLINFO* pControl = &m_pLayoutInfo->pControls[i];
-
-		if (pControl->bHide)
-			continue;
-
-		nHeight +=pControl->rcControl.Height();
-	}
-
-	if (nHeight >= nGroupHeight)
-		return;
-
-	int nItems = nLastItem - nFirstItem + 1;
-	int nOffset = (nGroupHeight - nHeight) / (nItems + 1);
-
-	for (i = nFirstItem; i <= nLastItem; i++)
-	{
-		CONTROLINFO* pControl = &m_pLayoutInfo->pControls[i];
-
-		if (pControl->bHide)
-			continue;
-
-		pControl->rcControl.OffsetRect(0, nOffset);
-		nOffset += nOffset;
-	}
-}
-
-void CXTPRibbonGroup::OnAdjustBorders(int nWidth, CRect rcBorder)
-{
-	CXTPRibbonTheme* pPaintManager = GetRibbonBar()->GetRibbonPaintManager();
-	int nGroupCaptionHeigh = pPaintManager->GetGroupCaptionHeight();
-	int nGroupHeight = GetRibbonBar()->CalcGroupsHeight();
-	int nGroupClientHeight = nGroupHeight - 2 - 3 - 2;
-
-	int i;
-	BOOL bFirstItem = TRUE;
-	int nFirstItem = 0;
-	int nColumn = 0;
-	BOOL bCenterItems = m_bControlsCentering;
-	if (IsControlsGrouping())
-		bCenterItems = FALSE;
-
-	int nControlCount = m_pLayoutInfo ? m_pLayoutInfo->nControlCount : 0;
-
-	int nLeftOffset = 2;
-	if (m_pLayoutInfo && m_bControlsCentering && m_pLayoutInfo->nWidth < m_pLayoutInfo->nMinWidth && nWidth == m_pLayoutInfo->nMinWidth)
-		nLeftOffset = 2 + (m_pLayoutInfo->nMinWidth - m_pLayoutInfo->nWidth) / 2;
-
-	for (i = 0; i < nControlCount; i++)
-	{
-		CONTROLINFO* pControl = &m_pLayoutInfo->pControls[i];
-
-		if (pControl->bHide)
-			continue;
-
-		pControl->rcControl.OffsetRect(rcBorder.left + nLeftOffset, rcBorder.top + 2);
-		pControl->rcRow = CRect(rcBorder.left, rcBorder.top,
-			rcBorder.left + nWidth, rcBorder.top + nGroupClientHeight - nGroupCaptionHeigh);
-
-		if (bCenterItems && !bFirstItem)
-		{
-			if (nColumn != pControl->rcControl.left)
-			{
-				CenterColumn(nFirstItem, i - 1, nGroupClientHeight - nGroupCaptionHeigh - 3);
-				nColumn = pControl->rcControl.left;
-				nFirstItem = i;
-			}
-		}
-		else
-		{
-			bFirstItem = FALSE;
-			nColumn = pControl->rcControl.left;
-		}
-	}
-	if (bCenterItems && nControlCount > 0) CenterColumn(nFirstItem, m_pLayoutInfo->nControlCount - 1, nGroupClientHeight - nGroupCaptionHeigh - 3);
-
-	int nBeginGroup = rcBorder.left;
-	int nEndGroup = nBeginGroup + nWidth + 5;
-
-	SetRect(CRect(nBeginGroup, rcBorder.top, nEndGroup,  rcBorder.top + nGroupClientHeight));
-}
-
-
-void CXTPRibbonGroups::CalcDynamicSize(CDC* pDC, int nLength, DWORD /*dwMode*/, const CRect& rcBorder)
-{
-	CXTPRibbonScrollableBar* pScrollableBar = GetScrollableBar(m_pParentTab->GetParent());
-
-	int nCount = GetCount();
-
-	if (nCount == 0)
-	{
-		pScrollableBar->EnableGroupsScroll(FALSE, FALSE);
-		return;
-	}
-
-	int* pData = new int[nCount];
-	int i;
-
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(i);
-		if (pGroup->IsVisible())
-		{
-			pGroup->OnBeforeCalcSize(pDC);
-		}
-	}
-
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(i);
-		pData[i] = pGroup->IsVisible() ? pGroup->OnCalcDynamicSize(pDC) : 0;
-	}
-
-	int nGroupsLength = nLength - rcBorder.right - rcBorder.left;
-
-	_ReduceSmartLayoutToolBar(pDC, pData, nGroupsLength);
-
-	CRect rcBorders = rcBorder;
-
-	int nTotalWidth = -7;
-
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(i);
-		if (pGroup->IsVisible())
-		{
-			nTotalWidth += pData[i] + 2 + 5;
-		}
-	}
-
-	int nScrollPos = pScrollableBar->m_nGroupsScrollPos;
-
-	if (nTotalWidth > nGroupsLength)
-	{
-		if (nScrollPos > nTotalWidth - nGroupsLength)
-		{
-			nScrollPos = nTotalWidth - nGroupsLength;
-		}
-	}
-	else
-	{
-		nScrollPos = 0;
-	}
-	if (nScrollPos < 0) nScrollPos = 0;
-
-	m_nGroupsScrollPos = nScrollPos;
-
-	pScrollableBar->EnableGroupsScroll(nScrollPos > 0, nTotalWidth - nGroupsLength - nScrollPos > 0);
-
-	rcBorders.left -= nScrollPos;
-
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(i);
-		if (pGroup->IsVisible())
-		{
-			pGroup->OnAdjustBorders(pData[i], rcBorders);
-			rcBorders.left += pData[i] + 2 + 5;
-		}
-	}
-
-	for (i = 0; i < nCount; i++)
-	{
-		CXTPRibbonGroup* pGroup = GetAt(i);
-		if (pGroup->IsVisible())
-		{
-			pGroup->OnAfterCalcSize();
-		}
-	}
-
-	delete[] pData;
-}
-
-void CXTPRibbonGroup::DoPropExchange(CXTPPropExchange* pPX)
-{
-	PX_Int(pPX, _T("Id"), m_nId, 0);
-	PX_Int(pPX, _T("IconId"), m_nIconId, 0);
-	PX_Bool(pPX, _T("ShowOptionButton"), m_bShowOptionButton, FALSE);
-	PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
-	PX_Bool(pPX, _T("ControlsGrouping"), m_bControlsGrouping, FALSE);
-	PX_Bool(pPX, _T("ControlsCentering"), m_bControlsCentering, FALSE);
-	PX_Bool(pPX, _T("Visible"), m_bVisible, TRUE);
-
-	if (pPX->IsStoring())
-	{
-		CXTPPropExchangeSection secControls(pPX->GetSection(_T("Controls")));
-
-		long nCount = 0;
-		int i;
-		for (i = 0; i < m_arrControls.GetSize(); i++)
-		{
-			CXTPControl* pControl = GetAt(i);
-			if (!pControl->IsTemporary()) nCount++;
-		}
-
-		CXTPPropExchangeEnumeratorPtr pEnumerator(secControls->GetEnumerator(_T("Control")));
-		POSITION posEnum = pEnumerator->GetPosition(nCount, FALSE);
-
-		for (i = 0; i < (int)m_arrControls.GetSize(); i++)
-		{
-			CXTPControl* pControl = GetAt(i);
-			if (!pControl->IsTemporary())
-			{
-				CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
-				PX_Object(&secItem, pControl, RUNTIME_CLASS(CXTPControl));
-			}
-		}
-	}
-	else
-	{
-		m_pGroups = (CXTPRibbonGroups*)pPX->m_pOwner;
-		m_pParent = m_pRibbonBar = m_pGroups->GetRibbonBar();
-
-		OnGroupAdded();
-
-		CXTPPropExchangeSection secControls(pPX->GetSection(_T("Controls")));
-
-		CXTPPropExchangeEnumeratorPtr pEnumerator(secControls->GetEnumerator(_T("Control")));
-		POSITION posEnum = pEnumerator->GetPosition(0, FALSE);
-
-		RemoveAll();
-
-		while (posEnum)
-		{
-			CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
-
-			CXTPControl* pControl = NULL;
-			PX_Object(&secItem, pControl, RUNTIME_CLASS(CXTPControl));
-
-			if (!pControl)
-				AfxThrowArchiveException(CArchiveException::badClass);
-
-			pControl->m_pRibbonGroup = this;
-			pControl->InternalAddRef();
-			m_pRibbonBar->GetControls()->InsertAt(pControl, m_pControlGroupOption->GetIndex());
-
-			m_arrControls.Add(pControl);
-		}
-	}
-
-	CXTPPropExchangeSection secControlGroupOption(pPX->GetSection(_T("ControlGroupOption")));
-	m_pControlGroupOption->DoPropExchange(&secControlGroupOption);
-
-	CXTPPropExchangeSection secControlGroupPopup(pPX->GetSection(_T("ControlGroupPopup")));
-	m_pControlGroupPopup->DoPropExchange(&secControlGroupPopup);
-}
-
-void CXTPRibbonGroups::DoPropExchange(CXTPPropExchange* pPX)
-{
-	if (pPX->IsStoring())
-	{
-		long nCount = GetCount();
-		int i;
-
-		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Group")));
-		POSITION posEnum = pEnumerator->GetPosition(nCount, FALSE);
-
-		for (i = 0; i < nCount; i++)
-		{
-			CXTPRibbonGroup* pGroup = GetAt(i);
-
-			CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
-			PX_Object(&secItem, pGroup, RUNTIME_CLASS(CXTPRibbonGroup));
-		}
-	}
-	else
-	{
-		CXTPPropExchangeEnumeratorPtr pEnumerator(pPX->GetEnumerator(_T("Group")));
-		POSITION posEnum = pEnumerator->GetPosition(0, FALSE);
-
-		RemoveAll();
-
-		while (posEnum)
-		{
-			CXTPPropExchangeSection secItem(pEnumerator->GetNext(posEnum));
-			secItem->m_pOwner = this;
-			CXTPRibbonGroup* pGroup = NULL;
-			PX_Object(&secItem, pGroup, RUNTIME_CLASS(CXTPRibbonGroup));
-
-			if (!pGroup)
-				AfxThrowArchiveException(CArchiveException::badClass);
-
-			m_arrGroups.Add(pGroup);
-			RefreshIndexes();
-		}
-	}
-}
-

@@ -1,359 +1,74 @@
 // from server: 100% by auto
+// roc 2010-06 0055afe0  unit: G3D::Plane  size: 282 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0055afe0
+//
+// 0055afe0  b801000000           mov eax, 1
+// 0055afe5  8405bc88c000         test byte ptr [0xc088bc], al
+// 0055afeb  7531                 jne 0x55b01e
+// 0055afed  f30f100578b7a000     movss xmm0, dword ptr [0xa0b778]
+// 0055aff5  0905bc88c000         or dword ptr [0xc088bc], eax
+// 0055affb  0f28f0               movaps xmm6, xmm0
+// 0055affe  0f28e0               movaps xmm4, xmm0
+// 0055b001  0f28d8               movaps xmm3, xmm0
+// 0055b004  f30f1135b088c000     movss dword ptr [0xc088b0], xmm6
+// 0055b00c  f30f1125b488c000     movss dword ptr [0xc088b4], xmm4
+// 0055b014  f30f111db888c000     movss dword ptr [0xc088b8], xmm3
+// 0055b01c  eb18                 jmp 0x55b036
+// 0055b01e  f30f101db888c000     movss xmm3, dword ptr [0xc088b8]
+// 0055b026  f30f1025b488c000     movss xmm4, dword ptr [0xc088b4]
+// 0055b02e  f30f1035b088c000     movss xmm6, dword ptr [0xc088b0]
+// 0055b036  840520a1c000         test byte ptr [0xc0a120], al
+// 0055b03c  752e                 jne 0x55b06c
+// 0055b03e  f30f100598fba100     movss xmm0, dword ptr [0xa1fb98]
+// 0055b046  090520a1c000         or dword ptr [0xc0a120], eax
+// 0055b04c  0f28e8               movaps xmm5, xmm0
+// 0055b04f  0f28d0               movaps xmm2, xmm0
+// 0055b052  f30f112d14a1c000     movss dword ptr [0xc0a114], xmm5
+// 0055b05a  f30f111518a1c000     movss dword ptr [0xc0a118], xmm2
+// 0055b062  f30f11051ca1c000     movss dword ptr [0xc0a11c], xmm0
+// 0055b06a  eb18                 jmp 0x55b084
+// 0055b06c  f30f10051ca1c000     movss xmm0, dword ptr [0xc0a11c]
+// 0055b074  f30f101518a1c000     movss xmm2, dword ptr [0xc0a118]
+// 0055b07c  f30f102d14a1c000     movss xmm5, dword ptr [0xc0a114]
+// 0055b084  f30f104c240c         movss xmm1, dword ptr [esp + 0xc]
+// 0055b08a  0f2fc1               comiss xmm0, xmm1
+// 0055b08d  7205                 jb 0x55b094
+// 0055b08f  0f28c8               movaps xmm1, xmm0
+// 0055b092  eb08                 jmp 0x55b09c
+// 0055b094  0f2fcb               comiss xmm1, xmm3
+// 0055b097  7203                 jb 0x55b09c
+// 0055b099  0f28cb               movaps xmm1, xmm3
+// 0055b09c  f30f10442408         movss xmm0, dword ptr [esp + 8]
+// 0055b0a2  0f2fd0               comiss xmm2, xmm0
+// 0055b0a5  730d                 jae 0x55b0b4
+// 0055b0a7  0f2fc4               comiss xmm0, xmm4
+// 0055b0aa  7205                 jb 0x55b0b1
+// 0055b0ac  0f28d4               movaps xmm2, xmm4
+// 0055b0af  eb03                 jmp 0x55b0b4
+// 0055b0b1  0f28d0               movaps xmm2, xmm0
+// 0055b0b4  f30f10442404         movss xmm0, dword ptr [esp + 4]
+// 0055b0ba  0f2fe8               comiss xmm5, xmm0
+// 0055b0bd  7205                 jb 0x55b0c4
+// 0055b0bf  0f28c5               movaps xmm0, xmm5
+// 0055b0c2  eb08                 jmp 0x55b0cc
+// 0055b0c4  0f2fc6               comiss xmm0, xmm6
+// 0055b0c7  7203                 jb 0x55b0cc
+// 0055b0c9  0f28c6               movaps xmm0, xmm6
+// 0055b0cc  f30f105908           movss xmm3, dword ptr [ecx + 8]
+// 0055b0d1  f30f59da             mulss xmm3, xmm2
+// 0055b0d5  f30f10510c           movss xmm2, dword ptr [ecx + 0xc]
+// 0055b0da  f30f59d1             mulss xmm2, xmm1
+// 0055b0de  f30f104904           movss xmm1, dword ptr [ecx + 4]
+// 0055b0e3  f30f58da             addss xmm3, xmm2
+// 0055b0e7  f30f59c8             mulss xmm1, xmm0
+// 0055b0eb  f30f58d9             addss xmm3, xmm1
+// 0055b0ef  0f2f5910             comiss xmm3, dword ptr [ecx + 0x10]
+// 0055b0f3  7302                 jae 0x55b0f7
+// 0055b0f5  33c0                 xor eax, eax
+// 0055b0f7  c20c00               ret 0xc
+// library rbx2016-g3d/AABox.cpp (function ?halfSpaceContains@Plane@G3D@@QBE_NVVector3@2@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d AABox.cpp
-
-// Candidate translation unit (score above; library headers required).
-/**
-  @file AABox.cpp
-
-  @maintainer Morgan McGuire, http://graphics.cs.williams.edu
-
-  @created 2004-01-10
-  @edited  2006-01-11
-*/
-
-#include "G3D/platform.h"
-#include "G3D/AABox.h"
-#include "G3D/Box.h"
-#include "G3D/Plane.h"
-#include "G3D/Sphere.h"
-
-
-namespace G3D {
-
-const AABox& AABox::maxFinite() {
-    static const AABox b = AABox(Vector3::minFinite(), 
-                                 Vector3::maxFinite());
-    return b;
-}
-
-
-const AABox& AABox::large() {
-    static const AABox b = AABox(Vector3::minFinite() * 0.5f, 
-                                 Vector3::maxFinite() * 0.5f);
-    return b;
-}
-
-
-const AABox& AABox::inf() {
-    static const AABox b = AABox(-Vector3::inf(), Vector3::inf());
-    return b;
-}
-
-
-const AABox& AABox::zero() {
-    static const AABox b = AABox(Vector3::zero(), Vector3::zero());
-    return b;
-}
-
-
-void AABox::split(const Vector3::Axis& axis, float location, AABox& low, AABox& high) const {
-    // Low, medium, and high along the chosen axis
-    float L = G3D::min(location, lo[axis]);
-    float M = G3D::min(G3D::max(location, lo[axis]), hi[axis]);
-    float H = G3D::max(location, hi[axis]);
-
-    // Copy over this box.
-    high = low = *this;
-
-    // Now move the split points along the special axis
-    low.lo[axis] = L;
-    low.hi[axis] = M;
-    high.lo[axis] = M;
-    high.hi[axis] = H;
-}
-
-
-Vector3 AABox::randomSurfacePoint() const {
-    Vector3 extent = hi - lo;
-    float aXY = extent.x * extent.y;
-    float aYZ = extent.y * extent.z;
-    float aZX = extent.z * extent.x;
-
-    float r = (float)uniformRandom(0.0f, aXY + aYZ + aZX);
-
-    // Choose evenly between positive and negative face planes
-    float d = ((float)uniformRandom(0, 1) < 0.5f) ? 0.0f : 1.0f;
-
-    // The probability of choosing a given face is proportional to
-    // its area.
-    if (r < aXY) {
-        return 
-            lo + 
-            Vector3(
-                (float)uniformRandom(0.0f, extent.x),
-                (float)uniformRandom(0.0f, extent.y),
-                d * extent.z);
-    } else if (r < aYZ) {
-        return 
-            lo + 
-            Vector3(
-                d * extent.x,
-                (float)uniformRandom(0, extent.y),
-                (float)uniformRandom(0, extent.z));
-    } else {
-        return 
-            lo + 
-            Vector3(
-                (float)uniformRandom(0, extent.x),
-                d * extent.y,
-                (float)uniformRandom(0, extent.z));
-    }
-}
-
-
-Vector3 AABox::randomInteriorPoint() const {
-    return Vector3(
-        (float)uniformRandom(lo.x, hi.x), 
-        (float)uniformRandom(lo.y, hi.y), 
-        (float)uniformRandom(lo.z, hi.z));
-}
-
-
-bool AABox::intersects(const AABox& other) const {
-    // Must be overlap along all three axes.
-    // Try to find a separating axis.
-
-    for (int a = 0; a < 3; ++a) {
-
-        //     |--------|
-        // |------|
-
-        if ((lo[a] > other.hi[a]) ||
-            (hi[a] < other.lo[a])) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-int AABox::dummy = 0;
-
-bool AABox::culledBy(
-    const Array<Plane>&	plane,
-    int&		cullingPlane,
-    const uint32	_inMask,
-    uint32&             childMask) const {
-
-    uint32 inMask = _inMask;
-    debugAssert(plane.size() < 31);
-
-    childMask = 0;
-
-    const bool finite = 
-        (abs(lo.x) < G3D::finf()) &&
-        (abs(hi.x) < G3D::finf()) &&
-        (abs(lo.y) < G3D::finf()) &&
-        (abs(hi.y) < G3D::finf()) &&
-        (abs(lo.z) < G3D::finf()) &&
-        (abs(hi.z) < G3D::finf());
-
-    // See if there is one plane for which all of the
-	// vertices are in the negative half space.
-    for (int p = 0; p < plane.size(); ++p) {
-
-		// Only test planes that are not masked
-		if ((inMask & 1) != 0) {
-		
-			Vector3 corner;
-
-            int numContained = 0;
-            int v = 0;
-
-            // We can early-out only if we have found one point on each
-            // side of the plane (i.e. if we are straddling).  That
-            // occurs when (numContained < v) && (numContained > 0)
-			for (v = 0; (v < 8) && ((numContained == v) || (numContained == 0)); ++v) {
-                // Unrolling these 3 if's into a switch decreases performance
-                // by about 2x
-				corner.x = (v & 1) ? hi.x : lo.x;
-				corner.y = (v & 2) ? hi.y : lo.y;
-				corner.z = (v & 4) ? hi.z : lo.z;
-        
-                if (finite) { // this branch is highly predictable
-                    if (plane[p].halfSpaceContainsFinite(corner)) {
-                        ++numContained;
-                    }
-                } else {
-                    if (plane[p].halfSpaceContains(corner)) {
-                        ++numContained;
-                    }
-                }
-			}
-
-			if (numContained == 0) {
-				// Plane p culled the box
-				cullingPlane = p;
-
-                // The caller should not recurse into the children,
-                // since the parent is culled.  If they do recurse,
-                // make them only test against this one plane, which
-                // will immediately cull the volume.
-                childMask = 1 << p;
-				return true;
-
-            } else if (numContained < v) {
-                // The bounding volume straddled the plane; we have
-                // to keep testing against this plane
-                childMask |= (1 << p);
-            }
-		}
-
-        // Move on to the next bit.
-		inMask = inMask >> 1;
-    }
-
-    // None of the planes could cull this box
-	cullingPlane = -1;
-    return false;
-}
-
-
-bool AABox::culledBy(
-    const Array<Plane>& plane,
-	int&				cullingPlane,
-	const uint32		_inMask) const {
-
-	uint32 inMask = _inMask;
-	debugAssert(plane.size() < 31);
-    
-    const bool finite = 
-        (abs(lo.x) < G3D::finf()) &&
-        (abs(hi.x) < G3D::finf()) &&
-        (abs(lo.y) < G3D::finf()) &&
-        (abs(hi.y) < G3D::finf()) &&
-        (abs(lo.z) < G3D::finf()) &&
-        (abs(hi.z) < G3D::finf());
-
-    // See if there is one plane for which all of the
-	// vertices are in the negative half space.
-    for (int p = 0; p < plane.size(); ++p) {
-
-		// Only test planes that are not masked
-		if ((inMask & 1) != 0) {
-		
-			bool culled = true;
-			Vector3 corner;
-
-            int v;
-
-			// Assume this plane culls all points.  See if there is a point
-			// not culled by the plane... early out when at least one point
-            // is in the positive half space.
-			for (v = 0; (v < 8) && culled; ++v) {
-
-                // Unrolling these 3 if's into a switch decreases performance
-                // by about 2x
-				corner.x = (v & 1) ? hi.x : lo.x;
-				corner.y = (v & 2) ? hi.y : lo.y;
-				corner.z = (v & 4) ? hi.z : lo.z;
-        
-                if (finite) { // this branch is highly predictable
-                    culled = ! plane[p].halfSpaceContainsFinite(corner);
-                } else {
-                    culled = ! plane[p].halfSpaceContains(corner);
-                }
-			}
-
-			if (culled) {
-				// Plane p culled the box
-				cullingPlane = p;
-
-				return true;
-            }
-		}
-
-        // Move on to the next bit.
-		inMask = inMask >> 1;
-    }
-
-    // None of the planes could cull this box
-	cullingPlane = -1;
-    return false;
-}
-
-
-bool AABox::intersects(const class Sphere& sphere) const {
-    double d = 0; 
-
-    //find the square of the distance
-    //from the sphere to the box
-    for (int i = 0; i < 3; ++i) {
-        if (sphere.center[i] < lo[i]) {
-            d += square(sphere.center[i] - lo[i]);
-        } else if (sphere.center[i] > hi[i]) {
-            d += square(sphere.center[i] - hi[i]);
-        }
-    }
-
-    return d <= square(sphere.radius);
-}
-
-Vector3 AABox::corner(int index) const {
-
-    // default constructor inits all components to 0
-    Vector3 v;
-
-    switch (index)
-    {
-    case 0:
-        v.x = lo.x;
-        v.y = lo.y;
-        v.z = hi.z;
-        break;
-
-    case 1:
-        v.x = hi.x;
-        v.y = lo.y;
-        v.z = hi.z;
-        break;
-
-    case 2:
-        v.x = hi.x;
-        v.y = hi.y;
-        v.z = hi.z;
-        break;
-
-    case 3:
-        v.x = lo.x;
-        v.y = hi.y;
-        v.z = hi.z;
-        break;
-
-    case 4:
-        v.x = lo.x;
-        v.y = lo.y;
-        v.z = lo.z;
-        break;
-
-    case 5:
-        v.x = hi.x;
-        v.y = lo.y;
-        v.z = lo.z;
-        break;
-
-    case 6:
-        v.x = hi.x;
-        v.y = hi.y;
-        v.z = lo.z;
-        break;
-
-    case 7:
-        v.x = lo.x;
-        v.y = hi.y;
-        v.z = lo.z;
-        break;
-
-    default:
-        debugAssertM(false, "Invalid corner index");
-        break;
-    }
-
-    return v;
-}
-
-
-}

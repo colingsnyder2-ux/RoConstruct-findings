@@ -1,389 +1,68 @@
+// roc 2009-12 004ecac0  unit: seg_004e0000  size: 163 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 004ecac0
+//
+// 004ecac0  55                   push ebp
+// 004ecac1  8bec                 mov ebp, esp
+// 004ecac3  83ec0c               sub esp, 0xc
+// 004ecac6  894df4               mov dword ptr [ebp - 0xc], ecx
+// 004ecac9  8b4508               mov eax, dword ptr [ebp + 8]
+// 004ecacc  8b08                 mov ecx, dword ptr [eax]
+// 004ecace  894dfc               mov dword ptr [ebp - 4], ecx
+// 004ecad1  8b5508               mov edx, dword ptr [ebp + 8]
+// 004ecad4  8b45fc               mov eax, dword ptr [ebp - 4]
+// 004ecad7  8b4808               mov ecx, dword ptr [eax + 8]
+// 004ecada  890a                 mov dword ptr [edx], ecx
+// 004ecadc  8b55fc               mov edx, dword ptr [ebp - 4]
+// 004ecadf  8b4208               mov eax, dword ptr [edx + 8]
+// 004ecae2  0fbe482d             movsx ecx, byte ptr [eax + 0x2d]
+// 004ecae6  85c9                 test ecx, ecx
+// 004ecae8  750c                 jne 0x4ecaf6
+// 004ecaea  8b55fc               mov edx, dword ptr [ebp - 4]
+// 004ecaed  8b4208               mov eax, dword ptr [edx + 8]
+// 004ecaf0  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 004ecaf3  894804               mov dword ptr [eax + 4], ecx
+// 004ecaf6  8b55fc               mov edx, dword ptr [ebp - 4]
+// 004ecaf9  8b4508               mov eax, dword ptr [ebp + 8]
+// 004ecafc  8b4804               mov ecx, dword ptr [eax + 4]
+// 004ecaff  894a04               mov dword ptr [edx + 4], ecx
+// 004ecb02  8b55f4               mov edx, dword ptr [ebp - 0xc]
+// 004ecb05  8b4218               mov eax, dword ptr [edx + 0x18]
+// 004ecb08  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 004ecb0b  3b4804               cmp ecx, dword ptr [eax + 4]
+// 004ecb0e  750e                 jne 0x4ecb1e
+// 004ecb10  8b55f4               mov edx, dword ptr [ebp - 0xc]
+// 004ecb13  8b4218               mov eax, dword ptr [edx + 0x18]
+// 004ecb16  8b4dfc               mov ecx, dword ptr [ebp - 4]
+// 004ecb19  894804               mov dword ptr [eax + 4], ecx
+// 004ecb1c  eb2d                 jmp 0x4ecb4b
+// 004ecb1e  8b5508               mov edx, dword ptr [ebp + 8]
+// 004ecb21  8b4204               mov eax, dword ptr [edx + 4]
+// 004ecb24  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 004ecb27  3b4808               cmp ecx, dword ptr [eax + 8]
+// 004ecb2a  750e                 jne 0x4ecb3a
+// 004ecb2c  8b5508               mov edx, dword ptr [ebp + 8]
+// 004ecb2f  8b4204               mov eax, dword ptr [edx + 4]
+// 004ecb32  8b4dfc               mov ecx, dword ptr [ebp - 4]
+// 004ecb35  894808               mov dword ptr [eax + 8], ecx
+// 004ecb38  eb11                 jmp 0x4ecb4b
+// 004ecb3a  8b5508               mov edx, dword ptr [ebp + 8]
+// 004ecb3d  8b4204               mov eax, dword ptr [edx + 4]
+// 004ecb40  8945f8               mov dword ptr [ebp - 8], eax
+// 004ecb43  8b4df8               mov ecx, dword ptr [ebp - 8]
+// 004ecb46  8b55fc               mov edx, dword ptr [ebp - 4]
+// 004ecb49  8911                 mov dword ptr [ecx], edx
+// 004ecb4b  8b45fc               mov eax, dword ptr [ebp - 4]
+// 004ecb4e  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 004ecb51  894808               mov dword ptr [eax + 8], ecx
+// 004ecb54  8b5508               mov edx, dword ptr [ebp + 8]
+// 004ecb57  8b45fc               mov eax, dword ptr [ebp - 4]
+// 004ecb5a  894204               mov dword ptr [edx + 4], eax
+// 004ecb5d  8be5                 mov esp, ebp
+// 004ecb5f  5d                   pop ebp
+// 004ecb60  c20400               ret 4
+// copied from an identical function in another client (function ?_Rrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVAnimationState@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVAnimationState@Ogre@@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVAnimationState@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVAnimationState@Ogre@@@std@@@2@$0A@@std@@@2@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
 // roc-lib: ogre-1.4.5-dll OgreAnimationState.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
------------------------------------------------------------------------------
-This source file is part of OGRE
-    (Object-oriented Graphics Rendering Engine)
-For the latest info, see http://www.ogre3d.org/
-
-Copyright (c) 2000-2006 Torus Knot Software Ltd
-Also see acknowledgements in Readme.html
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free Software
-Foundation; either version 2 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License along with
-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-http://www.gnu.org/copyleft/lesser.txt.
-
-You may alternatively use this source under the terms of a specific version of
-the OGRE Unrestricted License provided you have obtained such a license from
-Torus Knot Software Ltd.
------------------------------------------------------------------------------
-*/
-#include "OgreStableHeaders.h"
-
-#include "OgreAnimationState.h"
-#include "OgreException.h"
-
-namespace Ogre 
-{
-
-	//---------------------------------------------------------------------
-	AnimationState::AnimationState(AnimationStateSet* parent, const AnimationState &rhs)
-        : mAnimationName(rhs.mAnimationName)
-        , mParent(parent)
-        , mTimePos(rhs.mTimePos)
-        , mLength(rhs.mLength)
-        , mWeight(rhs.mWeight)
-        , mEnabled(rhs.mEnabled)
-        , mLoop(rhs.mLoop)
-	{
-		mParent->_notifyDirty();
-	}
-	//---------------------------------------------------------------------
-	AnimationState::~AnimationState()
-	{
-	}
-    //---------------------------------------------------------------------
-    AnimationState::AnimationState(const String& animName, 
-		AnimationStateSet *parent, Real timePos, Real length, Real weight, 
-		bool enabled)
-        : mAnimationName(animName)
-        , mParent(parent)
-        , mTimePos(timePos)
-        , mLength(length)
-        , mWeight(weight)
-        , mEnabled(enabled)
-        , mLoop(true)
-    {
-		mParent->_notifyDirty();
-    }
-    //---------------------------------------------------------------------
-    const String& AnimationState::getAnimationName() const
-    {
-        return mAnimationName;
-    }
-    //---------------------------------------------------------------------
-    Real AnimationState::getTimePosition(void) const
-    {
-        return mTimePos;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setTimePosition(Real timePos)
-    {
-		if (timePos != mTimePos)
-		{
-			mTimePos = timePos;
-			if (mLoop)
-			{
-				// Wrap
-				mTimePos = fmod(mTimePos, mLength);
-				if(mTimePos < 0)
-					mTimePos += mLength;     
-			}
-			else
-			{
-				// Clamp
-				if(mTimePos < 0)
-					mTimePos = 0;
-				else if (mTimePos > mLength)
-					mTimePos = mLength;
-			}
-
-            if (mEnabled)
-                mParent->_notifyDirty();
-        }
-
-    }
-    //---------------------------------------------------------------------
-    Real AnimationState::getLength() const
-    {
-        return mLength;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setLength(Real len)
-    {
-        mLength = len;
-    }
-    //---------------------------------------------------------------------
-    Real AnimationState::getWeight(void) const
-    {
-        return mWeight;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setWeight(Real weight)
-    {
-        mWeight = weight;
-
-        if (mEnabled)
-            mParent->_notifyDirty();
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::addTime(Real offset)
-    {
-        setTimePosition(mTimePos + offset);
-    }
-    //---------------------------------------------------------------------
-	bool AnimationState::hasEnded(void) const
-	{
-		return (mTimePos == mLength && !mLoop);
-	}
-    //---------------------------------------------------------------------
-    bool AnimationState::getEnabled(void) const
-    {
-        return mEnabled;
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::setEnabled(bool enabled)
-    {
-        mEnabled = enabled;
-        mParent->_notifyAnimationStateEnabled(this, enabled);
-    }
-    //---------------------------------------------------------------------
-    bool AnimationState::operator==(const AnimationState& rhs) const
-    {
-        if (mAnimationName == rhs.mAnimationName &&
-            mEnabled == rhs.mEnabled &&
-            mTimePos == rhs.mTimePos &&
-            mWeight == rhs.mWeight &&
-            mLength == rhs.mLength && 
-            mLoop == rhs.mLoop)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    //---------------------------------------------------------------------
-    bool AnimationState::operator!=(const AnimationState& rhs) const
-    {
-        return !(*this == rhs);
-    }
-    //---------------------------------------------------------------------
-    void AnimationState::copyStateFrom(const AnimationState& animState)
-    {
-        mTimePos = animState.mTimePos;
-        mLength = animState.mLength;
-        mWeight = animState.mWeight;
-        mEnabled = animState.mEnabled;
-        mLoop = animState.mLoop;
-		mParent->_notifyDirty();
-
-    }
-	//---------------------------------------------------------------------
-	//---------------------------------------------------------------------
-	AnimationStateSet::AnimationStateSet()
-		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
-	{
-	}
-	//---------------------------------------------------------------------
-	AnimationStateSet::AnimationStateSet(const AnimationStateSet& rhs)
-		: mDirtyFrameNumber(std::numeric_limits<unsigned long>::max())
-	{
-		// lock rhs
-		OGRE_LOCK_MUTEX(rhs.OGRE_AUTO_MUTEX_NAME)
-
-		for (AnimationStateMap::const_iterator i = rhs.mAnimationStates.begin();
-			i != rhs.mAnimationStates.end(); ++i)
-		{
-			AnimationState* src = i->second;
-			mAnimationStates[src->getAnimationName()] = 
-				new AnimationState(this, *src);
-		}
-
-        // Clone enabled animation state list
-        for (EnabledAnimationStateList::const_iterator it = rhs.mEnabledAnimationStates.begin();
-            it != rhs.mEnabledAnimationStates.end(); ++it)
-        {
-            const AnimationState* src = *it;
-            mEnabledAnimationStates.push_back(getAnimationState(src->getAnimationName()));
-        }
-	}
-	//---------------------------------------------------------------------
-	AnimationStateSet::~AnimationStateSet()
-	{
-		// Destroy
-		removeAllAnimationStates();
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateSet::removeAnimationState(const String& name)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::iterator i = mAnimationStates.find(name);
-		if (i != mAnimationStates.end())
-		{
-            mEnabledAnimationStates.remove(i->second);
-
-			delete i->second;
-			mAnimationStates.erase(i);
-		}
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateSet::removeAllAnimationStates(void)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		for (AnimationStateMap::iterator i = mAnimationStates.begin();
-			i != mAnimationStates.end(); ++i)
-		{
-			delete i->second;
-		}
-		mAnimationStates.clear();
-        mEnabledAnimationStates.clear();
-
-	}
-	//---------------------------------------------------------------------
-	AnimationState* AnimationStateSet::createAnimationState(const String& name,  
-		Real timePos, Real length, Real weight, bool enabled)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::iterator i = mAnimationStates.find(name);
-		if (i != mAnimationStates.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, 
-				"State for animation named '" + name + "' already exists.", 
-				"AnimationStateSet::createAnimationState");
-		}
-
-		AnimationState* newState = new AnimationState(name, this, timePos, 
-			length, weight, enabled);
-		mAnimationStates[name] = newState;
-
-		return newState;
-
-	}
-	//---------------------------------------------------------------------
-	AnimationState* AnimationStateSet::getAnimationState(const String& name) const
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::const_iterator i = mAnimationStates.find(name);
-		if (i == mAnimationStates.end())
-		{
-			OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, 
-				"No state found for animation named '" + name + "'", 
-				"AnimationStateSet::getAnimationState");
-		}
-		return i->second;
-	}
-	//---------------------------------------------------------------------
-	bool AnimationStateSet::hasAnimationState(const String& name) const
-	{
-		OGRE_LOCK_AUTO_MUTEX
-
-		return mAnimationStates.find(name) != mAnimationStates.end();
-	}
-	//---------------------------------------------------------------------
-	AnimationStateIterator AnimationStateSet::getAnimationStateIterator(void)
-	{
-		OGRE_LOCK_AUTO_MUTEX
-		// returned iterator not threadsafe, noted in header
-		return AnimationStateIterator(
-			mAnimationStates.begin(), mAnimationStates.end());
-	}
-	//---------------------------------------------------------------------
-	ConstAnimationStateIterator AnimationStateSet::getAnimationStateIterator(void) const
-	{
-		OGRE_LOCK_AUTO_MUTEX
-		// returned iterator not threadsafe, noted in header
-		return ConstAnimationStateIterator(
-			mAnimationStates.begin(), mAnimationStates.end());
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateSet::copyMatchingState(AnimationStateSet* target) const
-	{
-		// lock target
-		OGRE_LOCK_MUTEX(target->OGRE_AUTO_MUTEX_NAME)
-		// lock source
-		OGRE_LOCK_AUTO_MUTEX
-
-		AnimationStateMap::iterator i, iend;
-        iend = target->mAnimationStates.end();
-        for (i = target->mAnimationStates.begin(); i != iend; ++i) {
-            AnimationStateMap::const_iterator iother = mAnimationStates.find(i->first);
-            if (iother == mAnimationStates.end()) {
-                OGRE_EXCEPT(Exception::ERR_ITEM_NOT_FOUND, "No animation entry found named " + i->first, 
-                    "AnimationStateSet::copyMatchingState");
-            } else {
-                i->second->copyStateFrom(*(iother->second));
-            }
-        }
-
-        // Copy matching enabled animation state list
-        target->mEnabledAnimationStates.clear();
-
-        EnabledAnimationStateList::const_iterator it, itend;
-        itend = mEnabledAnimationStates.end();
-        for (it = mEnabledAnimationStates.begin(); it != itend; ++it)
-        {
-            const AnimationState* src = *it;
-            AnimationStateMap::const_iterator itarget = target->mAnimationStates.find(src->getAnimationName());
-            if (itarget != target->mAnimationStates.end())
-            {
-                target->mEnabledAnimationStates.push_back(itarget->second);
-            }
-        }
-
-        target->mDirtyFrameNumber = mDirtyFrameNumber;
-    }
-    //---------------------------------------------------------------------
-    void AnimationStateSet::_notifyDirty(void)
-    {
-		OGRE_LOCK_AUTO_MUTEX
-        ++mDirtyFrameNumber;
-    }
-    //---------------------------------------------------------------------
-    void AnimationStateSet::_notifyAnimationStateEnabled(AnimationState* target, bool enabled)
-    {
-		OGRE_LOCK_AUTO_MUTEX
-		// Remove from enabled animation state list first
-        mEnabledAnimationStates.remove(target);
-
-        // Add to enabled animation state list if need
-        if (enabled)
-        {
-            mEnabledAnimationStates.push_back(target);
-        }
-
-        // Set the dirty frame number
-        _notifyDirty();
-    }
-    //---------------------------------------------------------------------
-    ConstEnabledAnimationStateIterator AnimationStateSet::getEnabledAnimationStateIterator(void) const
-    {
-		OGRE_LOCK_AUTO_MUTEX
-		// returned iterator not threadsafe, noted in header
-        return ConstEnabledAnimationStateIterator(
-            mEnabledAnimationStates.begin(), mEnabledAnimationStates.end());
-    }
-	//---------------------------------------------------------------------
-	//---------------------------------------------------------------------
-	Real AnimationStateControllerValue::getValue(void) const
-	{
-		return mTargetAnimationState->getTimePosition() / mTargetAnimationState->getLength();
-	}
-	//---------------------------------------------------------------------
-	void AnimationStateControllerValue::setValue(Real value)
-	{
-		mTargetAnimationState->setTimePosition(value * mTargetAnimationState->getLength());
-	}
-
-
-}
-

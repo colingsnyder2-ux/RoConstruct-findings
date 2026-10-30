@@ -1,591 +1,74 @@
+// roc 2009-12 0086d220  unit: CSelectionCaption  size: 205 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0086d220
+//
+// 0086d220  56                   push esi
+// 0086d221  8bf1                 mov esi, ecx
+// 0086d223  8b06                 mov eax, dword ptr [esi]
+// 0086d225  8b9058010000         mov edx, dword ptr [eax + 0x158]
+// 0086d22b  57                   push edi
+// 0086d22c  ffd2                 call edx
+// 0086d22e  8b8688000000         mov eax, dword ptr [esi + 0x88]
+// 0086d234  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 0086d237  8dbea8000000         lea edi, [esi + 0xa8]
+// 0086d23d  57                   push edi
+// 0086d23e  51                   push ecx
+// 0086d23f  ff1550cc9800         call dword ptr [0x98cc50]
+// 0086d245  8b17                 mov edx, dword ptr [edi]
+// 0086d247  8b4704               mov eax, dword ptr [edi + 4]
+// 0086d24a  8b4f08               mov ecx, dword ptr [edi + 8]
+// 0086d24d  899698000000         mov dword ptr [esi + 0x98], edx
+// 0086d253  8b570c               mov edx, dword ptr [edi + 0xc]
+// 0086d256  89869c000000         mov dword ptr [esi + 0x9c], eax
+// 0086d25c  8b467c               mov eax, dword ptr [esi + 0x7c]
+// 0086d25f  898ea0000000         mov dword ptr [esi + 0xa0], ecx
+// 0086d265  8996a4000000         mov dword ptr [esi + 0xa4], edx
+// 0086d26b  01869c000000         add dword ptr [esi + 0x9c], eax
+// 0086d271  8b869c000000         mov eax, dword ptr [esi + 0x9c]
+// 0086d277  8b96a4000000         mov edx, dword ptr [esi + 0xa4]
+// 0086d27d  8b8e98000000         mov ecx, dword ptr [esi + 0x98]
+// 0086d283  6a01                 push 1
+// 0086d285  2bd0                 sub edx, eax
+// 0086d287  52                   push edx
+// 0086d288  8b96a0000000         mov edx, dword ptr [esi + 0xa0]
+// 0086d28e  2bd1                 sub edx, ecx
+// 0086d290  52                   push edx
+// 0086d291  50                   push eax
+// 0086d292  51                   push ecx
+// 0086d293  8b8e84000000         mov ecx, dword ptr [esi + 0x84]
+// 0086d299  e89469f8ff           call 0x7f3c32
+// 0086d29e  8b4638               mov eax, dword ptr [esi + 0x38]
+// 0086d2a1  85c0                 test eax, eax
+// 0086d2a3  750a                 jne 0x86d2af
+// 0086d2a5  8b4620               mov eax, dword ptr [esi + 0x20]
+// 0086d2a8  50                   push eax
+// 0086d2a9  ff15bccb9800         call dword ptr [0x98cbbc]
+// 0086d2af  50                   push eax
+// 0086d2b0  e87568f8ff           call 0x7f3b2a
+// 0086d2b5  8bf8                 mov edi, eax
+// 0086d2b7  85ff                 test edi, edi
+// 0086d2b9  7403                 je 0x86d2be
+// 0086d2bb  8b4720               mov eax, dword ptr [edi + 0x20]
+// 0086d2be  50                   push eax
+// 0086d2bf  ff1584cc9800         call dword ptr [0x98cc84]
+// 0086d2c5  85c0                 test eax, eax
+// 0086d2c7  7421                 je 0x86d2ea
+// 0086d2c9  8b4f20               mov ecx, dword ptr [edi + 0x20]
+// 0086d2cc  6a00                 push 0
+// 0086d2ce  6a00                 push 0
+// 0086d2d0  683e270000           push 0x273e
+// 0086d2d5  51                   push ecx
+// 0086d2d6  ff15c4cb9800         call dword ptr [0x98cbc4]
+// 0086d2dc  8b5620               mov edx, dword ptr [esi + 0x20]
+// 0086d2df  6a01                 push 1
+// 0086d2e1  6a00                 push 0
+// 0086d2e3  52                   push edx
+// 0086d2e4  ff15e8cb9800         call dword ptr [0x98cbe8]
+// 0086d2ea  5f                   pop edi
+// 0086d2eb  5e                   pop esi
+// 0086d2ec  c3                   ret 
+// copied from an identical function in another client (function ?OnPushPinButton@CXTCaption@@IAEXXZ)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTCaption.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTCaption.cpp : implementation of the CXTCaption class.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "Resource.h"
-#include "XTDefines.h"
-#include "XTUtil.h"
-#include "XTGlobal.h"
-#include "XTButton.h"
-#include "XTThemeManager.h"
-#include "XTButtonTheme.h"
-#include "XTCaptionTheme.h"
-#include "XTCaption.h"
-#include "XTCaptionPopupWnd.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaptionButton
-
-IMPLEMENT_THEME_HOST(CXTCaptionButton)
-IMPLEMENT_THEME_REFRESH(CXTCaptionButton, CXTButton)
-
-CXTCaptionButton::CXTCaptionButton()
-: CXTButton(GetThemeFactoryClass())
-, m_pCaption(NULL)
-{
-}
-
-DWORD CXTCaptionButton::SetXButtonStyle(DWORD /*dwxStyle*/, BOOL bRedraw/*= TRUE*/)
-{
-	DWORD dwOldStyle = m_dwxStyle;
-
-	CXTCaption* pCaption = DYNAMIC_DOWNCAST(CXTCaption, GetSafeHwnd() ? GetParent() : 0);
-	if (pCaption)
-	{
-		// set the button font and colors.
-		SetColorFace(pCaption->m_clrFace);
-		SetColorText(pCaption->m_clrText);
-		SetColorShadow(GetXtremeColor(COLOR_3DDKSHADOW));
-
-		// set the button font to match caption font.
-		SetFont(pCaption->GetFont());
-
-		// Redraw the button.
-		if (bRedraw)
-			Invalidate();
-	}
-
-	return dwOldStyle;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTCaption
-
-IMPLEMENT_THEME_HOST(CXTCaption)
-IMPLEMENT_THEME_REFRESH(CXTCaption, CStatic)
-
-CXTCaption::CXTCaption()
-: CXTThemeManagerStyleHost(GetThemeFactoryClass())
-{
-	m_bAppCaption = false;
-	m_bUserColors = false;
-	m_strCaption = _T("");
-	m_hIcon = NULL;
-	m_pChildWnd = NULL;
-	m_pParentView = NULL;
-	m_pSplitterWnd = NULL;
-	m_pPopupWnd = NULL;
-	m_nOffset = 0;
-	m_nBorder = 0;
-	m_sizeIcon.cx = __min(XTAuxData().cxSmIcon, 16);
-	m_sizeIcon.cy = __min(XTAuxData().cySmIcon, 16);
-	m_dwExStyle = 0L;
-	m_clrText = ::GetSysColor(COLOR_BTNTEXT);
-	m_clrBorder = ::GetSysColor(COLOR_3DFACE);
-	m_clrFace = ::GetSysColor(COLOR_3DFACE);
-}
-
-CXTCaption::~CXTCaption()
-{
-
-}
-
-IMPLEMENT_DYNAMIC(CXTCaption, CStatic)
-
-BEGIN_MESSAGE_MAP(CXTCaption, CStatic)
-	//{{AFX_MSG_MAP(CXTCaption)
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_WINDOWPOSCHANGED()
-	ON_WM_SYSCOLORCHANGE()
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-
-	ON_BN_CLICKED(XT_IDC_BTN_CLOSE, OnCaptButton)
-	ON_MESSAGE_VOID(CPWN_XT_PUSHPINBUTTON, OnPushPinButton)
-	ON_MESSAGE_VOID(CPWN_XT_PUSHPINCANCEL, OnPushPinCancel)
-
-END_MESSAGE_MAP()
-
-void CXTCaption::OnSize(UINT nType, int cx, int cy)
-{
-	CStatic::OnSize(nType, cx, cy);
-
-	if (m_hIcon != NULL)
-		RedrawWindow();
-}
-
-void CXTCaption::OnPaint()
-{
-	// background is already filled in gray
-	CPaintDC dc(this);
-
-	// Get the client rect.
-	CXTPClientRect rectClient(this);
-
-	// Paint to a memory device context to help
-	// eliminate screen flicker.
-	CXTPBufferDC memDC(dc);
-
-	// If the caption button is a valid window and visible exclude from painting...
-	if (::IsWindow(m_btnCaption.m_hWnd) && m_btnCaption.IsWindowVisible())
-	{
-		CXTPWindowRect rcButton(&m_btnCaption);
-		ScreenToClient(&rcButton);
-		memDC.ExcludeClipRect(&rcButton);
-	}
-
-	// draw the background, text and icon.
-	DrawCaptionBack(&memDC, rectClient);
-	DrawCaptionText(&memDC);
-	DrawCaptionIcon(&memDC, rectClient);
-}
-
-LRESULT CXTCaption::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		CXTPClientRect rectClient(this);
-
-		DrawCaptionBack(pDC, rectClient);
-		DrawCaptionText(pDC);
-		DrawCaptionIcon(pDC, rectClient);
-	}
-	return 1;
-}
-
-BOOL CXTCaption::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTCaption::DrawCaptionBack(CDC* pDC, CRect& rcItem)
-{
-	GetTheme()->DrawCaptionBack(pDC, this, rcItem);
-}
-
-void CXTCaption::DrawCaptionText(CDC* pDC)
-{
-	GetTheme()->DrawCaptionText(pDC, this);
-}
-
-void CXTCaption::DrawCaptionIcon(CDC* pDC, CRect& rcItem)
-{
-	GetTheme()->DrawCaptionIcon(pDC, this, rcItem);
-}
-
-BOOL CXTCaption::Create(CWnd* pParentWnd, LPCTSTR lpszWindowName, DWORD dwExStyle, DWORD dwStyle, const CRect& rect, UINT nID)
-{
-	// Let the base class create the control.
-	if (!CStatic::Create(NULL, dwStyle | WS_CLIPCHILDREN, rect, pParentWnd, nID))
-	{
-		TRACE(_T("Unable to create caption.\n"));
-		return FALSE;
-	}
-
-	SetFont(&XTAuxData().font);
-
-	// save the style.
-	m_dwExStyle = (dwExStyle & (CPWS_EX_GROOVE_EDGE | CPWS_EX_RAISED_EDGE | CPWS_EX_CLOSEBUTTON));
-	ModifyStyleEx(0, (dwExStyle & ~m_dwExStyle));
-
-	// Save the window text.
-	m_strCaption = lpszWindowName;
-
-	if (HasCloseButton())
-	{
-		// Create the caption's close button.
-		if (!m_btnCaption.Create(NULL, WS_VISIBLE | WS_CHILD | BS_ICON | BS_OWNERDRAW | BS_CENTER | BS_VCENTER,
-			CRect(0, 0, 0, 0), this, XT_IDC_BTN_CLOSE))
-		{
-			TRACE0("Unable to create caption button.\n");
-			return -1;
-		}
-
-		// Create the image list used by frame buttons.
-		m_ilButton.Create (XT_IDB_BTN_OUT, 16, 1, RGB(255, 0, 255));
-
-		// and set the icon for the caption's close button
-		m_btnCaption.SetIcon(CSize(16, 15), m_ilButton.ExtractIcon(2));
-	}
-	else
-	{
-		// Create the button to be used with child window.
-		if (!m_btnCaption.Create(m_strCaption, BS_ICON | BS_OWNERDRAW | BS_VCENTER,
-			CRect(0, 0, 0, 0), this, XT_IDC_BTN_CLOSE))
-		{
-			TRACE0("Unable to create caption button.\n");
-			return FALSE;
-		}
-
-		m_bAppCaption = true;
-	}
-
-	m_btnCaption.SetCaption(this);
-	m_btnCaption.SetXButtonStyle(0, FALSE);
-
-	SetWindowPos(NULL, 0, 0, 0, 0,
-		SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
-
-	return TRUE;
-}
-
-void CXTCaption::ModifyCaptionStyle(int nBorderSize, CFont* pFont, LPCTSTR lpszWindText, HICON hIcon)
-{
-	ASSERT(::IsWindow(m_hWnd));
-
-	if (nBorderSize != 0)
-	{
-		m_nBorder = nBorderSize;
-	}
-
-	if (pFont != NULL)
-	{
-		SetFont(pFont);
-
-		// button font should match caption
-		if (::IsWindow(m_btnCaption.m_hWnd))
-			m_btnCaption.SetFont(GetFont());
-	}
-
-	if (lpszWindText != NULL)
-	{
-		m_strCaption = lpszWindText;
-	}
-
-	if (hIcon != NULL)
-	{
-		m_hIcon = hIcon;
-	}
-
-	Invalidate();
-}
-
-void CXTCaption::SetChildWindow(CWnd* pChild, CWnd* pNotifyWnd)
-{
-	ASSERT_VALID (pChild);      // must be valid.
-	ASSERT_VALID (pNotifyWnd);  // must be valid.
-
-	// save window pointers, and show caption button.
-	m_pChildWnd = pChild;
-	SetOwner(pNotifyWnd);
-
-	m_pParentView = pChild->GetParent();
-	ASSERT_KINDOF(CView, m_pParentView);
-
-	m_pSplitterWnd = m_pParentView->GetParent();
-	ASSERT_KINDOF(CSplitterWnd, m_pSplitterWnd);
-
-	// get the size of the child and parent windows.
-	m_pChildWnd->GetClientRect (&m_rcChild);
-	m_pParentView->GetClientRect (&m_rcParent);
-	m_pSplitterWnd->GetClientRect (&m_rcSplitter);
-
-	// save the size of the childs caption area.
-	m_nOffset = (m_rcParent.Height() - m_rcChild.Height());
-
-	// make the caption button visible.
-	m_btnCaption.ShowWindow(SW_SHOW);
-	m_btnCaption.UpdateWindow();
-
-	// inflate the size of the parent to add a border, this will
-	// also be the size of the popup window.
-	int cx = ::GetSystemMetrics (SM_CXEDGE)*2;
-	int cy = ::GetSystemMetrics (SM_CYEDGE)*2;
-	m_rcParent.InflateRect(cx, cy);
-}
-
-void CXTCaption::KillChildWindow()
-{
-	// Hide the caption button.
-	if (::IsWindow(m_btnCaption.m_hWnd))
-	{
-		m_btnCaption.ShowWindow(SW_HIDE);
-		m_btnCaption.SetState(FALSE);
-	}
-
-	// Destroy the pop-up window.
-	if (::IsWindow(m_pPopupWnd->GetSafeHwnd()))
-	{
-		m_pPopupWnd->DestroyWindow();
-	}
-
-	SAFE_DELETE(m_pPopupWnd);
-}
-
-BOOL CXTCaption::ShowPopupWindow()
-{
-	// already visible return TRUE.
-	if (::IsWindowVisible(m_pPopupWnd->GetSafeHwnd()))
-		return TRUE;
-
-	// if not a window yet create it.
-	if (!::IsWindow(m_pPopupWnd->GetSafeHwnd()))
-	{
-		m_pPopupWnd = new CXTCaptionPopupWnd;
-
-		if (!m_pPopupWnd->Create(CRect(0, 0, 0, 0), this, m_pChildWnd))
-		{
-			SAFE_DELETE(m_pPopupWnd);
-			return FALSE;
-		}
-	}
-
-	// view pointer is not valid.
-	if (!::IsWindow(m_pParentView->GetSafeHwnd()))
-		return FALSE;
-
-	// splitter pointer is not valid.
-	if (!::IsWindow(m_pSplitterWnd->GetSafeHwnd()))
-		return FALSE;
-
-	CRect rcPopup(m_rcParent);
-	m_pParentView->ClientToScreen(&rcPopup);
-
-	// get the current size of the splitter window.
-	CRect rcSplitter;
-	m_pSplitterWnd->GetClientRect(&rcSplitter);
-
-	// check to see if the size has changed.
-	if (rcSplitter.Height() > m_rcSplitter.Height())
-	{
-		rcPopup.bottom += (rcSplitter.Height() - m_rcSplitter.Height());
-	}
-	else if (m_rcSplitter.Height() > rcSplitter.Height())
-	{
-		rcPopup.bottom -= (m_rcSplitter.Height() - rcSplitter.Height());
-	}
-
-	// display the popup window.
-	m_pPopupWnd->MoveWindow(&rcPopup);
-	m_pPopupWnd->ShowWindow(SW_SHOW);
-	m_pPopupWnd->RecalcLayout();
-
-	// press the caption button.
-	m_btnCaption.SetState(TRUE);
-
-	return TRUE;
-}
-
-void CXTCaption::OnCaptButton()
-{
-	if (HasCloseButton())
-	{
-		CWnd* pOwner = GetOwner();
-		ASSERT_VALID(pOwner);
-
-		if (pOwner)
-		{
-			// Notify of selection change.
-			pOwner->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(),
-				BN_CLICKED), (LPARAM)m_hWnd);
-		}
-	}
-	else
-	{
-		ShowPopupWindow();
-	}
-}
-
-void CXTCaption::OnPushPinButton()
-{
-	KillChildWindow();
-
-	// get the current size of the child's parent window and
-	// adjust the size of the child accordingly.
-	m_pParentView->GetClientRect (&m_rcParent);
-	m_rcChild = m_rcParent;
-	m_rcChild.top += m_nOffset;
-
-	// move the child window to its correct location.
-	m_pChildWnd->MoveWindow (m_rcChild);
-
-	CWnd* pNotifyWnd = GetOwner();
-	ASSERT_VALID(pNotifyWnd);
-
-	if (::IsWindow(pNotifyWnd->GetSafeHwnd()))
-	{
-		// Notify that push pin button was pressed.
-		pNotifyWnd->SendMessage(CPWN_XT_PUSHPINBUTTON);
-		Invalidate();
-	}
-}
-
-void CXTCaption::OnPushPinCancel()
-{
-	m_btnCaption.SetState(FALSE);
-	m_pPopupWnd->DestroyWindow();
-
-	SAFE_DELETE (m_pPopupWnd);
-
-	CWnd* pNotifyWnd = GetOwner();
-	ASSERT_VALID(pNotifyWnd);
-
-	if (::IsWindow(pNotifyWnd->GetSafeHwnd()))
-	{
-		// Notify that popup window has lost input focus.
-		pNotifyWnd->SendMessage(CPWN_XT_PUSHPINCANCEL);
-		Invalidate();
-	}
-}
-
-void CXTCaption::UpdateCaption(LPCTSTR lpszWindowText, HICON hIcon)
-{
-	ASSERT(::IsWindow(m_hWnd));
-
-	CRect rcClient;
-	GetClientRect(&rcClient);
-	CDC* pDC = GetDC();
-
-	DrawCaptionBack(pDC, rcClient);
-
-	if (lpszWindowText != NULL)
-	{
-		m_strCaption = lpszWindowText;
-		UpdateCaptionText(pDC);
-	}
-
-	if (hIcon != NULL)
-	{
-		m_hIcon = hIcon;
-		DrawCaptionIcon(pDC, rcClient);
-	}
-
-	ReleaseDC(pDC);
-}
-
-void CXTCaption::UpdateCaptionText(CDC* pDC)
-{
-	if (::IsWindow(m_btnCaption.m_hWnd))
-	{
-		m_btnCaption.SetWindowText(m_strCaption);
-		m_btnCaption.MoveWindow(GetButtonRect());
-	}
-
-	DrawCaptionText(pDC);
-}
-
-CRect CXTCaption::GetTextRect() const
-{
-	if (m_strCaption.IsEmpty())
-		return CXTPEmptyRect();
-
-	CXTPClientRect rcClient(this);
-
-	// Use a NULL window dc to get the size the caption button
-	// should be using CDC::GetTextExtent(...).
-	CWindowDC dc(NULL);
-	CXTPFontDC fontDC(&dc, GetFont());
-
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
-
-	// Calculate the button area size.
-	CSize size = dc.GetTextExtent(m_strCaption, m_strCaption.GetLength());
-	size.cx += tm.tmAveCharWidth + 12;
-	size.cy = rcClient.Height();
-
-	int iWidth = rcClient.Width() - (m_hIcon ? 18 : 0);
-	if (size.cx > iWidth)
-		size.cx = iWidth;
-
-	return CRect(m_nBorder, m_nBorder, m_nBorder + size.cx, size.cy - m_nBorder);
-}
-
-CRect CXTCaption::GetButtonRect() const
-{
-	if (!::IsWindow(m_btnCaption.m_hWnd))
-		return CXTPEmptyRect();
-
-	if (!HasCloseButton())
-		return GetTextRect();
-
-	CSize szIcon(16, 15);
-	CXTPClientRect rcClient(this);
-
-	CRect rcButton;
-	rcButton.left = (rcClient.Width() -szIcon.cx)-2;
-	rcButton.top = (rcClient.Height()-szIcon.cy)/2;
-	rcButton.right = rcButton.left + szIcon.cx;
-	rcButton.bottom = rcButton.top + szIcon.cy;
-
-	return rcButton;
-}
-
-void CXTCaption::OnWindowPosChanged(WINDOWPOS FAR* lpwndpos)
-{
-	CStatic::OnWindowPosChanged(lpwndpos);
-
-	if (::IsWindow(m_btnCaption.m_hWnd))
-		m_btnCaption.MoveWindow(GetButtonRect());
-}
-
-void CXTCaption::SetCaptionColors(COLORREF clrBorder, COLORREF clrFace, COLORREF clrText)
-{
-	ASSERT(::IsWindow(m_hWnd));
-
-	m_bUserColors = true;
-
-	m_clrBorder = clrBorder;
-	m_clrFace = clrFace;
-	m_clrText = clrText;
-
-	if (::IsWindow(m_btnCaption.m_hWnd))
-	{
-		m_btnCaption.SetColorFace(m_clrFace);
-		m_btnCaption.SetColorText(m_clrText);
-		m_btnCaption.SetColorShadow(::GetSysColor(COLOR_3DDKSHADOW));
-	}
-}
-
-void CXTCaption::SetOffice2003Colors(bool b2003Colors/*= true*/)
-{
-	m_bUserColors = b2003Colors;
-	SetTheme(b2003Colors ? new CXTCaptionThemeOffice2003() : NULL);
-}
-
-void CXTCaption::OnSysColorChange()
-{
-	CStatic::OnSysColorChange();
-
-	// update caption colors if not user defined.
-	if (m_bUserColors == false)
-	{
-		m_clrText = ::GetSysColor(COLOR_BTNTEXT);
-		m_clrBorder = ::GetSysColor(COLOR_3DFACE);
-		m_clrFace = ::GetSysColor(COLOR_3DFACE);
-
-		if (::IsWindow(m_btnCaption.m_hWnd))
-		{
-			m_btnCaption.SetColorFace(m_clrFace);
-			m_btnCaption.SetColorText(m_clrText);
-			m_btnCaption.SetColorShadow(::GetSysColor(COLOR_3DDKSHADOW));
-		}
-	}
-}

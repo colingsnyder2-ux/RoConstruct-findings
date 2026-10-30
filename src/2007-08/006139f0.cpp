@@ -1,93 +1,45 @@
 // from server: 100% by auto
+// roc 2007-08 006139f0  unit: seg_00610000  size: 75 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 006139f0
+//
+// 006139f0  8b442404             mov eax, dword ptr [esp + 4]
+// 006139f4  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 006139f8  53                   push ebx
+// 006139f9  55                   push ebp
+// 006139fa  8b6c2414             mov ebp, dword ptr [esp + 0x14]
+// 006139fe  56                   push esi
+// 006139ff  8b7010               mov esi, dword ptr [eax + 0x10]
+// 00613a02  8b5610               mov edx, dword ptr [esi + 0x10]
+// 00613a05  8b460c               mov eax, dword ptr [esi + 0xc]
+// 00613a08  57                   push edi
+// 00613a09  8b7c2420             mov edi, dword ptr [esp + 0x20]
+// 00613a0d  57                   push edi
+// 00613a0e  55                   push ebp
+// 00613a0f  51                   push ecx
+// 00613a10  52                   push edx
+// 00613a11  ffd0                 call eax
+// 00613a13  8bd8                 mov ebx, eax
+// 00613a15  83c410               add esp, 0x10
+// 00613a18  85db                 test ebx, ebx
+// 00613a1a  7513                 jne 0x613a2f
+// 00613a1c  85ff                 test edi, edi
+// 00613a1e  760f                 jbe 0x613a2f
+// 00613a20  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 00613a24  6a04                 push 4
+// 00613a26  51                   push ecx
+// 00613a27  e8f425fbff           call 0x5c6020
+// 00613a2c  83c408               add esp, 8
+// 00613a2f  2bfd                 sub edi, ebp
+// 00613a31  017e44               add dword ptr [esi + 0x44], edi
+// 00613a34  5f                   pop edi
+// 00613a35  5e                   pop esi
+// 00613a36  5d                   pop ebp
+// 00613a37  8bc3                 mov eax, ebx
+// 00613a39  5b                   pop ebx
+// 00613a3a  c3                   ret 
+// library lua-5.1.4/lmem.c (function _luaM_realloc_)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 lmem.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: lmem.c,v 1.70.1.1 2007/12/27 13:02:25 roberto Exp $
-** Interface to Memory Manager
-** See Copyright Notice in lua.h
-*/
-
-
-#include <stddef.h>
-
-#define lmem_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "ldebug.h"
-#include "ldo.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-
-
-
-/*
-** About the realloc function:
-** void * frealloc (void *ud, void *ptr, size_t osize, size_t nsize);
-** (`osize' is the old size, `nsize' is the new size)
-**
-** Lua ensures that (ptr == NULL) iff (osize == 0).
-**
-** * frealloc(ud, NULL, 0, x) creates a new block of size `x'
-**
-** * frealloc(ud, p, x, 0) frees the block `p'
-** (in this specific case, frealloc must return NULL).
-** particularly, frealloc(ud, NULL, 0, 0) does nothing
-** (which is equivalent to free(NULL) in ANSI C)
-**
-** frealloc returns NULL if it cannot create or reallocate the area
-** (any reallocation to an equal or smaller size cannot fail!)
-*/
-
-
-
-#define MINSIZEARRAY	4
-
-
-void *luaM_growaux_ (lua_State *L, void *block, int *size, size_t size_elems,
-                     int limit, const char *errormsg) {
-  void *newblock;
-  int newsize;
-  if (*size >= limit/2) {  /* cannot double it? */
-    if (*size >= limit)  /* cannot grow even a little? */
-      luaG_runerror(L, errormsg);
-    newsize = limit;  /* still have at least one free place */
-  }
-  else {
-    newsize = (*size)*2;
-    if (newsize < MINSIZEARRAY)
-      newsize = MINSIZEARRAY;  /* minimum size */
-  }
-  newblock = luaM_reallocv(L, block, *size, newsize, size_elems);
-  *size = newsize;  /* update only when everything else is OK */
-  return newblock;
-}
-
-
-void *luaM_toobig (lua_State *L) {
-  luaG_runerror(L, "memory allocation error: block too big");
-  return NULL;  /* to avoid warnings */
-}
-
-
-
-/*
-** generic allocation routine.
-*/
-void *luaM_realloc_ (lua_State *L, void *block, size_t osize, size_t nsize) {
-  global_State *g = G(L);
-  lua_assert((osize == 0) == (block == NULL));
-  block = (*g->frealloc)(g->ud, block, osize, nsize);
-  if (block == NULL && nsize > 0)
-    luaD_throw(L, LUA_ERRMEM);
-  lua_assert((nsize == 0) == (block == NULL));
-  g->totalbytes = (g->totalbytes - osize) + nsize;
-  return block;
-}
-

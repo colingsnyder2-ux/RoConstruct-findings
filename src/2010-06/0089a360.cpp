@@ -1,617 +1,111 @@
+// roc 2010-06 0089a360  unit: CXTCaptionButton  size: 354 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0089a360
+//
+// 0089a360  6aff                 push -1
+// 0089a362  6838c09b00           push 0x9bc038
+// 0089a367  64a100000000         mov eax, dword ptr fs:[0]
+// 0089a36d  50                   push eax
+// 0089a36e  83ec34               sub esp, 0x34
+// 0089a371  53                   push ebx
+// 0089a372  56                   push esi
+// 0089a373  57                   push edi
+// 0089a374  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
+// 0089a379  33c4                 xor eax, esp
+// 0089a37b  50                   push eax
+// 0089a37c  8d442444             lea eax, [esp + 0x44]
+// 0089a380  64a300000000         mov dword ptr fs:[0], eax
+// 0089a386  8bf9                 mov edi, ecx
+// 0089a388  8d4c2420             lea ecx, [esp + 0x20]
+// 0089a38c  e8ef45f2ff           call 0x7be980
+// 0089a391  0fb74c245c           movzx ecx, word ptr [esp + 0x5c]
+// 0089a396  8d442410             lea eax, [esp + 0x10]
+// 0089a39a  50                   push eax
+// 0089a39b  33db                 xor ebx, ebx
+// 0089a39d  51                   push ecx
+// 0089a39e  895c2454             mov dword ptr [esp + 0x54], ebx
+// 0089a3a2  895c2418             mov dword ptr [esp + 0x18], ebx
+// 0089a3a6  e8e557f2ff           call 0x7bfb90
+// 0089a3ab  83c408               add esp, 8
+// 0089a3ae  3bc3                 cmp eax, ebx
+// 0089a3b0  7528                 jne 0x89a3da
+// 0089a3b2  8d4c2420             lea ecx, [esp + 0x20]
+// 0089a3b6  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
+// 0089a3be  e8bd6af2ff           call 0x7c0e80
+// 0089a3c3  33c0                 xor eax, eax
+// 0089a3c5  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 0089a3c9  64890d00000000       mov dword ptr fs:[0], ecx
+// 0089a3d0  59                   pop ecx
+// 0089a3d1  5f                   pop edi
+// 0089a3d2  5e                   pop esi
+// 0089a3d3  5b                   pop ebx
+// 0089a3d4  83c440               add esp, 0x40
+// 0089a3d7  c21000               ret 0x10
+// 0089a3da  395c2410             cmp dword ptr [esp + 0x10], ebx
+// 0089a3de  740c                 je 0x89a3ec
+// 0089a3e0  50                   push eax
+// 0089a3e1  8d4c2424             lea ecx, [esp + 0x24]
+// 0089a3e5  e8566af2ff           call 0x7c0e40
+// 0089a3ea  eb4c                 jmp 0x89a438
+// 0089a3ec  bea02ea000           mov esi, 0xa02ea0
+// 0089a3f1  895c241c             mov dword ptr [esp + 0x1c], ebx
+// 0089a3f5  89742418             mov dword ptr [esp + 0x18], esi
+// 0089a3f9  50                   push eax
+// 0089a3fa  8d4c241c             lea ecx, [esp + 0x1c]
+// 0089a3fe  c644245001           mov byte ptr [esp + 0x50], 1
+// 0089a403  e862dbf0ff           call 0x7a7f6a
+// 0089a408  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 0089a40c  52                   push edx
+// 0089a40d  8d4c2460             lea ecx, [esp + 0x60]
+// 0089a411  e8aa62d8ff           call 0x6206c0
+// 0089a416  8bc8                 mov ecx, eax
+// 0089a418  e8436df6ff           call 0x801160
+// 0089a41d  50                   push eax
+// 0089a41e  8d4c2424             lea ecx, [esp + 0x24]
+// 0089a422  e8d969f2ff           call 0x7c0e00
+// 0089a427  8d4c2418             lea ecx, [esp + 0x18]
+// 0089a42b  885c244c             mov byte ptr [esp + 0x4c], bl
+// 0089a42f  89742418             mov dword ptr [esp + 0x18], esi
+// 0089a433  e82852b7ff           call 0x40f660
+// 0089a438  8d4c2420             lea ecx, [esp + 0x20]
+// 0089a43c  e8af45f2ff           call 0x7be9f0
+// 0089a441  85c0                 test eax, eax
+// 0089a443  0f8569ffffff         jne 0x89a3b2
+// 0089a449  8b442460             mov eax, dword ptr [esp + 0x60]
+// 0089a44d  50                   push eax
+// 0089a44e  83ec24               sub esp, 0x24
+// 0089a451  8bcc                 mov ecx, esp
+// 0089a453  89a42488000000       mov dword ptr [esp + 0x88], esp
+// 0089a45a  e82145f2ff           call 0x7be980
+// 0089a45f  83ec24               sub esp, 0x24
+// 0089a462  8d54246c             lea edx, [esp + 0x6c]
+// 0089a466  8bcc                 mov ecx, esp
+// 0089a468  89642460             mov dword ptr [esp + 0x60], esp
+// 0089a46c  52                   push edx
+// 0089a46d  c684249c00000002     mov byte ptr [esp + 0x9c], 2
+// 0089a475  e81645f2ff           call 0x7be990
+// 0089a47a  8b8424a4000000       mov eax, dword ptr [esp + 0xa4]
+// 0089a481  8b8c24a0000000       mov ecx, dword ptr [esp + 0xa0]
+// 0089a488  50                   push eax
+// 0089a489  51                   push ecx
+// 0089a48a  8bcf                 mov ecx, edi
+// 0089a48c  889c24a0000000       mov byte ptr [esp + 0xa0], bl
+// 0089a493  e898fdffff           call 0x89a230
+// 0089a498  8d4c2420             lea ecx, [esp + 0x20]
+// 0089a49c  8bf0                 mov esi, eax
+// 0089a49e  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
+// 0089a4a6  e8d569f2ff           call 0x7c0e80
+// 0089a4ab  8bc6                 mov eax, esi
+// 0089a4ad  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 0089a4b1  64890d00000000       mov dword ptr fs:[0], ecx
+// 0089a4b8  59                   pop ecx
+// 0089a4b9  5f                   pop edi
+// 0089a4ba  5e                   pop esi
+// 0089a4bb  5b                   pop ebx
+// 0089a4bc  83c440               add esp, 0x40
+// 0089a4bf  c21000               ret 0x10
+// copied from an identical function in another client (function ?SetBitmap@CXTButton@@UAEHVCSize@@IH@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTButton.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTButton.cpp : implementation of the CXTButton class.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTThemeManager.h"
-#include "XTButtonTheme.h"
-#include "XTButton.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-#ifndef WM_QUERYUISTATE
-#define WM_UPDATEUISTATE    0x0128
-#define WM_QUERYUISTATE     0x0129
-
-#define UISF_HIDEACCEL      0x2
-#define UISF_HIDEFOCUS      0x1
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTButton
-/////////////////////////////////////////////////////////////////////////////
-IMPLEMENT_DYNAMIC(CXTButton, CButton)
-
-IMPLEMENT_THEME_HOST(CXTButton)
-IMPLEMENT_THEME_REFRESH(CXTButton, CButton)
-
-CXTButton::CXTButton(CRuntimeClass* pThemeFactoryClass/*=NULL*/)
-: CXTThemeManagerStyleHost(pThemeFactoryClass ? pThemeFactoryClass : GetThemeFactoryClass())
-, m_nBorderGap(4)
-, m_nImageGap(8)
-, m_bUserPosition(false)
-, m_bChecked(false)
-, m_dwxStyle(BS_XT_FLAT | BS_XT_SHOWFOCUS)
-, m_sizeImage(CSize(0, 0))
-, m_ptImage(CPoint(0, 0))
-, m_ptText(CPoint(0, 0))
-, m_pIcon(NULL)
-, m_bPreSubclassInit(true)
-{
-	m_bOwnerDraw = FALSE;
-	m_bPushed = FALSE;
-	m_bHot = FALSE;
-}
-
-
-CXTButton::~CXTButton()
-{
-	CleanUpGDI();
-
-	CMDTARGET_RELEASE(m_pIcon);
-}
-
-HICON CXTButton::GetNormalIcon()
-{
-	return m_pIcon ? (HICON)m_pIcon->GetIcon() : NULL;
-}
-
-HICON CXTButton::GetSelectedIcon()
-{
-	return m_pIcon ? (HICON)m_pIcon->GetHotIcon() : NULL;
-}
-
-
-BEGIN_MESSAGE_MAP(CXTButton, CButton)
-	//{{AFX_MSG_MAP(CXTButton)
-	ON_WM_ERASEBKGND()
-	ON_WM_MOUSEMOVE()
-	ON_WM_CREATE()
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_PAINT()
-	ON_WM_SYSCOLORCHANGE()
-	//}}AFX_MSG_MAP
-	ON_MESSAGE_VOID(WM_MOUSELEAVE, OnMouseLeave)
-	ON_MESSAGE(BM_SETSTYLE, OnDefaultAndInvalidate)
-	ON_MESSAGE(BM_SETCHECK, OnDefaultAndInvalidate)
-	ON_MESSAGE(WM_CAPTURECHANGED, OnDefaultAndInvalidate)
-	ON_MESSAGE_VOID(WM_ENABLE, OnInvalidate)
-	ON_MESSAGE(WM_UPDATEUISTATE, OnUpdateUIState)
-	ON_MESSAGE(BM_SETSTATE, OnSetState)
-	ON_MESSAGE(WM_SETTEXT, OnSetText)
-	//}}AFX_MSG_MAP
-	ON_WM_GETDLGCODE()
-	ON_MESSAGE(BM_SETSTYLE, OnSetStyle)
-END_MESSAGE_MAP()
-
-void CXTButton::DrawItem(LPDRAWITEMSTRUCT lpDIS)
-{
-	GetTheme()->DrawItem(lpDIS, this);
-}
-
-void CXTButton::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (GetButtonStyle() == BS_GROUPBOX)
-		return;
-
-	CButton::OnMouseMove(nFlags, point);
-
-	CRect rc;
-	GetClientRect(&rc);
-
-	BOOL bHot = rc.PtInRect(point);
-	if (bHot != m_bHot)
-	{
-		m_bHot = bHot;
-		Invalidate(FALSE);
-
-		if (m_bHot)
-		{
-			TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT), TME_LEAVE, m_hWnd, HOVER_DEFAULT};
-			_TrackMouseEvent(&tme);
-		}
-	}
-}
-
-LRESULT CXTButton::OnSetState(WPARAM wParam, LPARAM /*lParam*/)
-{
-	BOOL bVisible = GetStyle() & WS_VISIBLE;
-	if (bVisible) ModifyStyle(WS_VISIBLE, 0);
-	Default();
-	if (bVisible) ModifyStyle(0, WS_VISIBLE);
-
-	m_bPushed = (wParam != 0);
-	Invalidate(FALSE);
-
-	return 0;
-}
-
-void CXTButton::OnSetFocus(CWnd* pOldWnd)
-{
-	CButton::OnSetFocus(pOldWnd);
-	Invalidate(FALSE);
-}
-
-void CXTButton::OnKillFocus(CWnd* pNewWnd)
-{
-	CButton::OnKillFocus(pNewWnd);
-	Invalidate(FALSE);
-}
-
-LRESULT CXTButton::OnDefaultAndInvalidate(WPARAM, LPARAM)
-{
-	LRESULT lResult = Default();
-	Invalidate(FALSE);
-
-	return lResult;
-}
-
-void CXTButton::OnInvalidate()
-{
-	Invalidate(FALSE);
-}
-
-LRESULT CXTButton::OnPrintClient(WPARAM wParam, LPARAM lParam)
-{
-	if ((lParam & PRF_CLIENT) == 0)
-		return Default();
-
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC) OnDraw(pDC);
-	return 1;
-}
-
-void CXTButton::OnPaint()
-{
-	CPaintDC dcPaint(this);
-	CXTPBufferDC dc(dcPaint); // device context for painting
-	OnDraw(&dc);
-}
-
-void CXTButton::OnDraw(CDC* pDC)
-{
-	DRAWITEMSTRUCT dis;
-	ZeroMemory(&dis, sizeof(DRAWITEMSTRUCT));
-
-	dis.CtlType = ODT_BUTTON;
-	dis.CtlID = GetDlgCtrlID();
-	dis.itemState = 0;
-
-	if (::GetFocus() == m_hWnd) dis.itemState |= ODS_FOCUS;
-	if (m_bPushed) dis.itemState |= ODS_SELECTED;
-
-	LRESULT dwState = SendMessage(WM_QUERYUISTATE);
-
-	if (dwState & UISF_HIDEACCEL) dis.itemState |= ODS_NOACCEL;
-	if (dwState & UISF_HIDEFOCUS) dis.itemState |= ODS_NOFOCUSRECT;
-
-	if (!IsWindowEnabled()) dis.itemState |= ODS_DISABLED;
-
-	dis.hwndItem = m_hWnd;
-	dis.hDC = pDC->GetSafeHdc();
-	dis.rcItem = CXTPClientRect(this);
-
-	DrawItem(&dis);
-}
-
-BYTE CXTButton::GetButtonStyle() const
-{
-	BYTE bStyle = BYTE(GetStyle() & 0xF);
-	return bStyle;
-}
-
-LRESULT CXTButton::OnUpdateUIState(WPARAM wParam, LPARAM lParam)
-{
-	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_UPDATEUISTATE, wParam, lParam);
-	Invalidate(FALSE);
-
-	return lResult;
-}
-
-LRESULT CXTButton::OnSetText(WPARAM wParam, LPARAM lParam)
-{
-	LRESULT lResult = ::DefWindowProc(m_hWnd, WM_SETTEXT, wParam, lParam);
-	Invalidate(FALSE);
-
-	return lResult;
-}
-
-BOOL CXTButton::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-bool CXTButton::Init()
-{
-	m_bOwnerDraw = m_hWnd && ((GetStyle() & 0xF) == BS_OWNERDRAW);
-	if (m_hWnd) Invalidate(FALSE);
-
-	return true;
-}
-
-void CXTButton::PreSubclassWindow()
-{
-	CButton::PreSubclassWindow();
-
-	if (m_bPreSubclassInit)
-	{
-		// Initialize the control.
-		Init();
-	}
-}
-
-int CXTButton::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CButton::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	// Initialize the control.
-	Init();
-
-	return 0;
-}
-
-BOOL CXTButton::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CButton::PreCreateWindow(cs))
-		return FALSE;
-
-	// When creating controls dynamically Init() must
-	// be called from OnCreate() and not from
-	// PreSubclassWindow().
-
-	m_bPreSubclassInit = false;
-
-	return TRUE;
-}
-
-
-UINT CXTButton::OnGetDlgCode()
-{
-	if (m_bOwnerDraw)
-	{
-		if (GetFocus() == this)
-			return DLGC_DEFPUSHBUTTON | DLGC_BUTTON;
-
-		return DLGC_BUTTON ;
-	}
-	return CButton::OnGetDlgCode();
-}
-
-LRESULT CXTButton::OnSetStyle(WPARAM wParam, LPARAM lParam)
-{
-	if (m_bOwnerDraw)
-	{
-		DWORD dwOldStyle = GetStyle();
-
-		ModifyStyle(0, (long)wParam | BS_OWNERDRAW,0);
-
-		if ((dwOldStyle != GetStyle()) && LOWORD(lParam))
-			Invalidate();
-
-		return 0;
-	}
-
-	return OnDefaultAndInvalidate(wParam, lParam);
-}
-
-void CXTButton::OnMouseLeave()
-{
-	OnMouseMove(0, CPoint(-1, -1));
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-CSize CXTButton::GetImageSize() const
-{
-	if (!GetTheme()->IsIconVisible())
-		return CSize(0, 0);
-
-	return m_sizeImage;
-}
-
-CPoint CXTButton::GetImagePoint() const
-{
-	if (!GetTheme()->IsIconVisible())
-		return CPoint(0, 0);
-
-	return m_ptImage;
-}
-
-CPoint CXTButton::GetTextPoint() const
-{
-	if (!GetTheme()->IsIconVisible())
-		return CPoint(0, 0);
-
-	return m_ptText;
-}
-
-void CXTButton::CleanUpGDI()
-{
-	if (m_pIcon)
-	{
-		m_pIcon->Refresh();
-	}
-}
-
-BOOL CXTButton::SetIcon(CSize size, UINT nID, UINT nHotID/*= 0*/, BOOL bRedraw/*= TRUE*/)
-{
-	return CXTButton::SetIcon(
-		size, MAKEINTRESOURCE(nID), MAKEINTRESOURCE(nHotID), bRedraw);
-}
-
-BOOL CXTButton::SetIcon(CSize size, LPCTSTR lpszID, LPCTSTR lpszHotID/*= NULL*/, BOOL bRedraw/*= TRUE*/)
-{
-	CXTPImageManagerIconHandle hIcon;
-	CXTPImageManagerIconHandle hIconHot;
-
-	hIcon.CreateIconFromResource(lpszID, size);
-
-	// Return false if the icon handle is NULL.
-	if (hIcon.IsEmpty())
-	{
-		TRACE0("Failed to load Icon resource.\n");
-		return FALSE;
-	}
-
-	// If we are using a pushed image as well...
-	if (lpszHotID)
-	{
-		hIconHot.CreateIconFromResource(lpszHotID, size);
-
-		// Return false if the icon handle is NULL.
-		if (hIconHot.IsEmpty())
-		{
-			TRACE0("Failed to load Icon resource.\n");
-			return FALSE;
-		}
-	}
-
-	return CXTButton::SetIcon(size, hIcon, hIconHot, bRedraw);
-}
-
-BOOL CXTButton::SetIcon(CSize size, CXTPImageManagerIcon* pIcon, BOOL bRedraw/*= TRUE*/)
-{
-	m_sizeImage = size;
-
-	// Construct the icon manager.
-	CMDTARGET_RELEASE(m_pIcon);
-
-	m_pIcon = pIcon;
-
-	// Redraw the button.
-	if (::IsWindow(m_hWnd) && bRedraw)
-		Invalidate();
-
-	return TRUE;
-}
-
-BOOL CXTButton::SetIcon(CSize size, CXTPImageManagerIconHandle hIcon, CXTPImageManagerIconHandle hIconHot, BOOL bRedraw/*= TRUE*/)
-{
-	ASSERT(!hIcon.IsEmpty());
-
-	// Save the image size and set the icon
-	// handles to NULL.
-	size = size != CSize(0) ? size : hIcon.GetExtent();
-
-	CXTPImageManagerIcon* pIcon = new CXTPImageManagerIcon(0, size.cx, size.cy);
-	pIcon->SetIcon(hIcon);
-
-	if (!hIconHot.IsEmpty())
-		pIcon->SetHotIcon(hIconHot);
-
-	return SetIcon(size, pIcon, bRedraw);
-}
-
-
-BOOL CXTButton::SetIcon(CSize size, HICON hIcon, HICON hIconHot/*= NULL*/, BOOL bRedraw/*= TRUE*/)
-{
-	return SetIcon(size, CXTPImageManagerIconHandle(hIcon), CXTPImageManagerIconHandle(hIconHot), bRedraw);
-}
-
-BOOL CXTButton::SetBitmap(CSize size, UINT nID, BOOL bRedraw/*= TRUE*/)
-{
-	// Free previous resources (if any).
-
-	CXTPImageManagerIconHandle hIconHandle;
-
-	BOOL bAlphaBitmap = FALSE;
-	HBITMAP hBitmap = CXTPImageManagerIcon::LoadBitmapFromResource(MAKEINTRESOURCE(nID), &bAlphaBitmap);
-
-	if (!hBitmap)
-		return FALSE;
-
-	if (bAlphaBitmap)
-	{
-		hIconHandle = hBitmap; // Will call DeleteObject;
-	}
-	else
-	{
-		CBitmap bmpIcon;
-		bmpIcon.Attach(hBitmap);
-
-		// convert the bitmap to a transparent icon.
-		HICON hIcon = CXTPTransparentBitmap(bmpIcon).ConvertToIcon();
-
-		hIconHandle = hIcon; // Will call DestoyIcon;
-	}
-
-	if (hIconHandle.IsEmpty())
-		return FALSE;
-
-	return CXTButton::SetIcon(size, hIconHandle, CXTPImageManagerIconHandle(), bRedraw);
-}
-
-BOOL CXTButton::SetTextAndImagePos(CPoint ptImage, CPoint ptText, BOOL bRedraw/*= TRUE*/)
-{
-	m_ptImage = ptImage;
-	m_ptText = ptText;
-
-	// Redraw the button.
-	if (::IsWindow(m_hWnd) && bRedraw)
-		Invalidate();
-
-	m_bUserPosition = TRUE;
-	return TRUE;
-}
-
-DWORD CXTButton::SetXButtonStyle(DWORD dwxStyle, BOOL bRedraw/*= TRUE*/)
-{
-	DWORD dwOldStyle = m_dwxStyle;
-	m_dwxStyle = dwxStyle;
-
-	if ((m_dwxStyle & BS_XT_XPFLAT) == BS_XT_XPFLAT)
-		SetTheme(new CXTButtonThemeOfficeXP());
-	else if ((m_dwxStyle & BS_XT_FLAT) == BS_XT_FLAT)
-		SetTheme(new CXTButtonTheme());
-
-	// Redraw the button.
-	if (::IsWindow(m_hWnd) && bRedraw)
-		Invalidate();
-
-	return dwOldStyle;
-}
-
-
-BOOL CXTButton::IsThemeValid() const
-{
-	return (GetTheme() != NULL);
-}
-
-CXTPImageManagerIcon* CXTButton::GetIcon() const
-{
-	return m_pIcon;
-}
-
-CString CXTButton::GetButtonText(BOOL bRemoveAmpersand)
-{
-	CString strText;
-	GetWindowText(strText);
-
-	if (bRemoveAmpersand)
-		XTPDrawHelpers()->StripMnemonics(strText);
-
-	return strText;
-}
-
-void CXTButton::SetAlternateColors(COLORREF clr3DFace, COLORREF clr3DHilight, COLORREF clr3DShadow, COLORREF clrBtnText)
-{
-	if (IsThemeValid())
-	{
-		GetTheme()->SetAlternateColors(
-			clr3DFace, clr3DHilight, clr3DShadow, clrBtnText);
-	}
-}
-
-void CXTButton::SetColorFace(COLORREF clrFace)
-{
-	if (IsThemeValid())
-	{
-		GetTheme()->SetColorFace(clrFace);
-	}
-}
-
-COLORREF CXTButton::GetColorFace()
-{
-	if (IsThemeValid())
-	{
-		return GetTheme()->GetColorFace();
-	}
-	return GetXtremeColor(COLOR_3DFACE);
-}
-
-void CXTButton::SetColorHilite(COLORREF clrHilite)
-{
-	if (IsThemeValid())
-	{
-		GetTheme()->SetColorHilite(clrHilite);
-	}
-}
-
-void CXTButton::SetColorShadow(COLORREF clrShadow)
-{
-	if (IsThemeValid())
-	{
-		GetTheme()->SetColorShadow(clrShadow);
-	}
-}
-
-void CXTButton::SetColorText(COLORREF clrText)
-{
-	if (IsThemeValid())
-	{
-		GetTheme()->SetColorText(clrText);
-	}
-}
-
-void CXTButton::SetXPFlatColors(COLORREF clrBorder, COLORREF clrHighlight, COLORREF clrPressed)
-{
-	if (IsThemeValid())
-	{
-		CXTButtonTheme* pButtonTheme = GetTheme();
-		if (pButtonTheme->GetTheme() == xtThemeOfficeXP)
-		{
-			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetColorHilite(clrBorder);
-			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetColorShadow(clrBorder);
-			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetBackHiliteColor(clrHighlight);
-			((CXTButtonThemeOfficeXP*)pButtonTheme)->SetBackPushedColor(clrPressed);
-		}
-	}
-}
-
-void CXTButton::ResetImage()
-{
-	if (IsThemeValid())
-	{
-		if (GetTheme()->IsIconVisible())
-		{
-			GetTheme()->ShowIcon(FALSE);
-		}
-		else
-		{
-			GetTheme()->ShowIcon(TRUE);
-		}
-		Invalidate();
-	}
-}
-
-CFont* CXTButton::SetFontEx(CFont* pFont)
-{
-	CFont* pOldFont = GetFont();
-	CButton::SetFont(pFont);
-	return pOldFont;
-}

@@ -1,644 +1,347 @@
+// roc 2009-12 0079ab20  unit: lua_exception  size: 1192 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0079ab20
+//
+// 0079ab20  83ec18               sub esp, 0x18
+// 0079ab23  56                   push esi
+// 0079ab24  8b742420             mov esi, dword ptr [esp + 0x20]
+// 0079ab28  8b462c               mov eax, dword ptr [esi + 0x2c]
+// 0079ab2b  89442410             mov dword ptr [esp + 0x10], eax
+// 0079ab2f  48                   dec eax
+// 0079ab30  8944240c             mov dword ptr [esp + 0xc], eax
+// 0079ab34  8bc6                 mov eax, esi
+// 0079ab36  e805ffffff           call 0x79aa40
+// 0079ab3b  85c0                 test eax, eax
+// 0079ab3d  7505                 jne 0x79ab44
+// 0079ab3f  5e                   pop esi
+// 0079ab40  83c418               add esp, 0x18
+// 0079ab43  c3                   ret 
+// 0079ab44  837c242400           cmp dword ptr [esp + 0x24], 0
+// 0079ab49  53                   push ebx
+// 0079ab4a  55                   push ebp
+// 0079ab4b  57                   push edi
+// 0079ab4c  c744241000000000     mov dword ptr [esp + 0x10], 0
+// 0079ab54  0f8ef9030000         jle 0x79af53
+// 0079ab5a  8b460c               mov eax, dword ptr [esi + 0xc]
+// 0079ab5d  89442420             mov dword ptr [esp + 0x20], eax
+// 0079ab61  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0079ab65  8b542410             mov edx, dword ptr [esp + 0x10]
+// 0079ab69  8b0491               mov eax, dword ptr [ecx + edx*4]
+// 0079ab6c  8be8                 mov ebp, eax
+// 0079ab6e  8bd8                 mov ebx, eax
+// 0079ab70  c1ed06               shr ebp, 6
+// 0079ab73  83e33f               and ebx, 0x3f
+// 0079ab76  33f6                 xor esi, esi
+// 0079ab78  81e5ff000000         and ebp, 0xff
+// 0079ab7e  83fb26               cmp ebx, 0x26
+// 0079ab81  895c2424             mov dword ptr [esp + 0x24], ebx
+// 0079ab85  89742414             mov dword ptr [esp + 0x14], esi
+// 0079ab89  0f8dd3000000         jge 0x79ac62
+// 0079ab8f  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 0079ab93  0fb6494b             movzx ecx, byte ptr [ecx + 0x4b]
+// 0079ab97  3be9                 cmp ebp, ecx
+// 0079ab99  0f8dc3000000         jge 0x79ac62
+// 0079ab9f  8a937cf29e00         mov dl, byte ptr [ebx + 0x9ef27c]
+// 0079aba5  0fb6fa               movzx edi, dl
+// 0079aba8  8bcf                 mov ecx, edi
+// 0079abaa  83e103               and ecx, 3
+// 0079abad  2bce                 sub ecx, esi
+// 0079abaf  0f84cf000000         je 0x79ac84
+// 0079abb5  83e901               sub ecx, 1
+// 0079abb8  0f84ae000000         je 0x79ac6c
+// 0079abbe  83e901               sub ecx, 1
+// 0079abc1  7563                 jne 0x79ac26
+// 0079abc3  c1e80e               shr eax, 0xe
+// 0079abc6  2dffff0100           sub eax, 0x1ffff
+// 0079abcb  80e230               and dl, 0x30
+// 0079abce  8bf0                 mov esi, eax
+// 0079abd0  80fa20               cmp dl, 0x20
+// 0079abd3  7551                 jne 0x79ac26
+// 0079abd5  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 0079abd9  8d443e01             lea eax, [esi + edi + 1]
+// 0079abdd  85c0                 test eax, eax
+// 0079abdf  0f8c7d000000         jl 0x79ac62
+// 0079abe5  3b44241c             cmp eax, dword ptr [esp + 0x1c]
+// 0079abe9  7d77                 jge 0x79ac62
+// 0079abeb  85c0                 test eax, eax
+// 0079abed  0f8ed7000000         jle 0x79acca
+// 0079abf3  33d2                 xor edx, edx
+// 0079abf5  85c0                 test eax, eax
+// 0079abf7  7e28                 jle 0x79ac21
+// 0079abf9  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0079abfd  8d7c81fc             lea edi, [ecx + eax*4 - 4]
+// 0079ac01  8b0f                 mov ecx, dword ptr [edi]
+// 0079ac03  8bd9                 mov ebx, ecx
+// 0079ac05  83e33f               and ebx, 0x3f
+// 0079ac08  80fb22               cmp bl, 0x22
+// 0079ac0b  7510                 jne 0x79ac1d
+// 0079ac0d  f7c100c07f00         test ecx, 0x7fc000
+// 0079ac13  7508                 jne 0x79ac1d
+// 0079ac15  42                   inc edx
+// 0079ac16  83ef04               sub edi, 4
+// 0079ac19  3bd0                 cmp edx, eax
+// 0079ac1b  7ce4                 jl 0x79ac01
+// 0079ac1d  8b5c2424             mov ebx, dword ptr [esp + 0x24]
+// 0079ac21  f6c201               test dl, 1
+// 0079ac24  753c                 jne 0x79ac62
+// 0079ac26  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079ac2a  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 0079ac2e  8a837cf29e00         mov al, byte ptr [ebx + 0x9ef27c]
+// 0079ac34  a840                 test al, 0x40
+// 0079ac36  740a                 je 0x79ac42
+// 0079ac38  3b6c2434             cmp ebp, dword ptr [esp + 0x34]
+// 0079ac3c  7504                 jne 0x79ac42
+// 0079ac3e  897c2418             mov dword ptr [esp + 0x18], edi
+// 0079ac42  84c0                 test al, al
+// 0079ac44  0f8989000000         jns 0x79acd3
+// 0079ac4a  8d4702               lea eax, [edi + 2]
+// 0079ac4d  3b44241c             cmp eax, dword ptr [esp + 0x1c]
+// 0079ac51  7d0f                 jge 0x79ac62
+// 0079ac53  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0079ac57  8b44b904             mov eax, dword ptr [ecx + edi*4 + 4]
+// 0079ac5b  83e03f               and eax, 0x3f
+// 0079ac5e  3c16                 cmp al, 0x16
+// 0079ac60  7475                 je 0x79acd7
+// 0079ac62  5f                   pop edi
+// 0079ac63  5d                   pop ebp
+// 0079ac64  5b                   pop ebx
+// 0079ac65  33c0                 xor eax, eax
+// 0079ac67  5e                   pop esi
+// 0079ac68  83c418               add esp, 0x18
+// 0079ac6b  c3                   ret 
+// 0079ac6c  c1e80e               shr eax, 0xe
+// 0079ac6f  80e230               and dl, 0x30
+// 0079ac72  8bf0                 mov esi, eax
+// 0079ac74  80fa30               cmp dl, 0x30
+// 0079ac77  75ad                 jne 0x79ac26
+// 0079ac79  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079ac7d  3b7228               cmp esi, dword ptr [edx + 0x28]
+// 0079ac80  7de0                 jge 0x79ac62
+// 0079ac82  eba6                 jmp 0x79ac2a
+// 0079ac84  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079ac88  8bf0                 mov esi, eax
+// 0079ac8a  c1e80e               shr eax, 0xe
+// 0079ac8d  25ff010000           and eax, 0x1ff
+// 0079ac92  89442414             mov dword ptr [esp + 0x14], eax
+// 0079ac96  8bc7                 mov eax, edi
+// 0079ac98  c1e804               shr eax, 4
+// 0079ac9b  c1ee17               shr esi, 0x17
+// 0079ac9e  83e003               and eax, 3
+// 0079aca1  8bce                 mov ecx, esi
+// 0079aca3  e828feffff           call 0x79aad0
+// 0079aca8  85c0                 test eax, eax
+// 0079acaa  74b6                 je 0x79ac62
+// 0079acac  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0079acb0  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079acb4  8bc7                 mov eax, edi
+// 0079acb6  c1e802               shr eax, 2
+// 0079acb9  83e003               and eax, 3
+// 0079acbc  e80ffeffff           call 0x79aad0
+// 0079acc1  85c0                 test eax, eax
+// 0079acc3  749d                 je 0x79ac62
+// 0079acc5  e95cffffff           jmp 0x79ac26
+// 0079acca  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079acce  e95bffffff           jmp 0x79ac2e
+// 0079acd3  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0079acd7  83c3fe               add ebx, -2
+// 0079acda  83fb23               cmp ebx, 0x23
+// 0079acdd  0f8759020000         ja 0x79af3c
+// 0079ace3  0fb683a4af7900       movzx eax, byte ptr [ebx + 0x79afa4]
+// 0079acea  ff248568af7900       jmp dword ptr [eax*4 + 0x79af68]
+// 0079acf1  837c241401           cmp dword ptr [esp + 0x14], 1
+// 0079acf6  0f8540020000         jne 0x79af3c
+// 0079acfc  8d5702               lea edx, [edi + 2]
+// 0079acff  3b54241c             cmp edx, dword ptr [esp + 0x1c]
+// 0079ad03  0f8d59ffffff         jge 0x79ac62
+// 0079ad09  8b44b904             mov eax, dword ptr [ecx + edi*4 + 4]
+// 0079ad0d  8bc8                 mov ecx, eax
+// 0079ad0f  83e13f               and ecx, 0x3f
+// 0079ad12  80f922               cmp cl, 0x22
+// 0079ad15  0f8521020000         jne 0x79af3c
+// 0079ad1b  a900c07f00           test eax, 0x7fc000
+// 0079ad20  0f843cffffff         je 0x79ac62
+// 0079ad26  e911020000           jmp 0x79af3c
+// 0079ad2b  8b442434             mov eax, dword ptr [esp + 0x34]
+// 0079ad2f  3be8                 cmp ebp, eax
+// 0079ad31  0f8f05020000         jg 0x79af3c
+// 0079ad37  3bc6                 cmp eax, esi
+// 0079ad39  0f8ffd010000         jg 0x79af3c
+// 0079ad3f  897c2418             mov dword ptr [esp + 0x18], edi
+// 0079ad43  e9f4010000           jmp 0x79af3c
+// 0079ad48  0fb65248             movzx edx, byte ptr [edx + 0x48]
+// 0079ad4c  3bf2                 cmp esi, edx
+// 0079ad4e  e9e3010000           jmp 0x79af36
+// 0079ad53  8b4208               mov eax, dword ptr [edx + 8]
+// 0079ad56  c1e604               shl esi, 4
+// 0079ad59  837c060804           cmp dword ptr [esi + eax + 8], 4
+// 0079ad5e  0f85fefeffff         jne 0x79ac62
+// 0079ad64  e9d3010000           jmp 0x79af3c
+// 0079ad69  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079ad6d  45                   inc ebp
+// 0079ad6e  3be8                 cmp ebp, eax
+// 0079ad70  0f8decfeffff         jge 0x79ac62
+// 0079ad76  396c2434             cmp dword ptr [esp + 0x34], ebp
+// 0079ad7a  0f85bc010000         jne 0x79af3c
+// 0079ad80  897c2418             mov dword ptr [esp + 0x18], edi
+// 0079ad84  e9b3010000           jmp 0x79af3c
+// 0079ad89  3b742414             cmp esi, dword ptr [esp + 0x14]
+// 0079ad8d  e9a4010000           jmp 0x79af36
+// 0079ad92  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0079ad96  83f801               cmp eax, 1
+// 0079ad99  0f8cc3feffff         jl 0x79ac62
+// 0079ad9f  8d4c2802             lea ecx, [eax + ebp + 2]
+// 0079ada3  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079ada7  3bc8                 cmp ecx, eax
+// 0079ada9  0f8db3feffff         jge 0x79ac62
+// 0079adaf  83c502               add ebp, 2
+// 0079adb2  396c2434             cmp dword ptr [esp + 0x34], ebp
+// 0079adb6  0f8c80010000         jl 0x79af3c
+// 0079adbc  897c2418             mov dword ptr [esp + 0x18], edi
+// 0079adc0  e977010000           jmp 0x79af3c
+// 0079adc5  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079adc9  83c503               add ebp, 3
+// 0079adcc  3be8                 cmp ebp, eax
+// 0079adce  0f8d8efeffff         jge 0x79ac62
+// 0079add4  817c2434ff000000     cmp dword ptr [esp + 0x34], 0xff
+// 0079addc  8d443e01             lea eax, [esi + edi + 1]
+// 0079ade0  0f8456010000         je 0x79af3c
+// 0079ade6  3bf8                 cmp edi, eax
+// 0079ade8  0f8d4e010000         jge 0x79af3c
+// 0079adee  3b442430             cmp eax, dword ptr [esp + 0x30]
+// 0079adf2  0f8f44010000         jg 0x79af3c
+// 0079adf8  03f7                 add esi, edi
+// 0079adfa  89742410             mov dword ptr [esp + 0x10], esi
+// 0079adfe  e939010000           jmp 0x79af3c
+// 0079ae03  85f6                 test esi, esi
+// 0079ae05  7410                 je 0x79ae17
+// 0079ae07  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079ae0b  8d742eff             lea esi, [esi + ebp - 1]
+// 0079ae0f  3bf0                 cmp esi, eax
+// 0079ae11  0f8d4bfeffff         jge 0x79ac62
+// 0079ae17  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0079ae1b  48                   dec eax
+// 0079ae1c  83f8ff               cmp eax, -1
+// 0079ae1f  7517                 jne 0x79ae38
+// 0079ae21  8b54b904             mov edx, dword ptr [ecx + edi*4 + 4]
+// 0079ae25  52                   push edx
+// 0079ae26  e875fcffff           call 0x79aaa0
+// 0079ae2b  83c404               add esp, 4
+// 0079ae2e  85c0                 test eax, eax
+// 0079ae30  0f842cfeffff         je 0x79ac62
+// 0079ae36  eb14                 jmp 0x79ae4c
+// 0079ae38  85c0                 test eax, eax
+// 0079ae3a  7410                 je 0x79ae4c
+// 0079ae3c  8d4c28ff             lea ecx, [eax + ebp - 1]
+// 0079ae40  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079ae44  3bc8                 cmp ecx, eax
+// 0079ae46  0f8d16feffff         jge 0x79ac62
+// 0079ae4c  396c2434             cmp dword ptr [esp + 0x34], ebp
+// 0079ae50  0f8ce6000000         jl 0x79af3c
+// 0079ae56  897c2418             mov dword ptr [esp + 0x18], edi
+// 0079ae5a  e9dd000000           jmp 0x79af3c
+// 0079ae5f  4e                   dec esi
+// 0079ae60  85f6                 test esi, esi
+// 0079ae62  0f8ed4000000         jle 0x79af3c
+// 0079ae68  e9bf000000           jmp 0x79af2c
+// 0079ae6d  85f6                 test esi, esi
+// 0079ae6f  7e0e                 jle 0x79ae7f
+// 0079ae71  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079ae75  03f5                 add esi, ebp
+// 0079ae77  3bf0                 cmp esi, eax
+// 0079ae79  0f8de3fdffff         jge 0x79ac62
+// 0079ae7f  837c241400           cmp dword ptr [esp + 0x14], 0
+// 0079ae84  0f85b2000000         jne 0x79af3c
+// 0079ae8a  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0079ae8e  47                   inc edi
+// 0079ae8f  48                   dec eax
+// 0079ae90  897c2410             mov dword ptr [esp + 0x10], edi
+// 0079ae94  3bf8                 cmp edi, eax
+// 0079ae96  e99b000000           jmp 0x79af36
+// 0079ae9b  3b7234               cmp esi, dword ptr [edx + 0x34]
+// 0079ae9e  0f8dbefdffff         jge 0x79ac62
+// 0079aea4  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079aea8  8b4210               mov eax, dword ptr [edx + 0x10]
+// 0079aeab  8b0cb0               mov ecx, dword ptr [eax + esi*4]
+// 0079aeae  0fb65148             movzx edx, byte ptr [ecx + 0x48]
+// 0079aeb2  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0079aeb6  8d3c02               lea edi, [edx + eax]
+// 0079aeb9  3b7c241c             cmp edi, dword ptr [esp + 0x1c]
+// 0079aebd  0f8d9ffdffff         jge 0x79ac62
+// 0079aec3  be01000000           mov esi, 1
+// 0079aec8  3bd6                 cmp edx, esi
+// 0079aeca  7c22                 jl 0x79aeee
+// 0079aecc  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0079aed0  8d4c8104             lea ecx, [ecx + eax*4 + 4]
+// 0079aed4  8b01                 mov eax, dword ptr [ecx]
+// 0079aed6  83e03f               and eax, 0x3f
+// 0079aed9  83f804               cmp eax, 4
+// 0079aedc  7408                 je 0x79aee6
+// 0079aede  85c0                 test eax, eax
+// 0079aee0  0f857cfdffff         jne 0x79ac62
+// 0079aee6  46                   inc esi
+// 0079aee7  83c104               add ecx, 4
+// 0079aeea  3bf2                 cmp esi, edx
+// 0079aeec  7ee6                 jle 0x79aed4
+// 0079aeee  817c2434ff000000     cmp dword ptr [esp + 0x34], 0xff
+// 0079aef6  7444                 je 0x79af3c
+// 0079aef8  897c2410             mov dword ptr [esp + 0x10], edi
+// 0079aefc  eb3e                 jmp 0x79af3c
+// 0079aefe  8a424a               mov al, byte ptr [edx + 0x4a]
+// 0079af01  a802                 test al, 2
+// 0079af03  0f8459fdffff         je 0x79ac62
+// 0079af09  a804                 test al, 4
+// 0079af0b  0f8551fdffff         jne 0x79ac62
+// 0079af11  4e                   dec esi
+// 0079af12  83feff               cmp esi, -1
+// 0079af15  7515                 jne 0x79af2c
+// 0079af17  8b44b904             mov eax, dword ptr [ecx + edi*4 + 4]
+// 0079af1b  50                   push eax
+// 0079af1c  e87ffbffff           call 0x79aaa0
+// 0079af21  83c404               add esp, 4
+// 0079af24  85c0                 test eax, eax
+// 0079af26  0f8436fdffff         je 0x79ac62
+// 0079af2c  0fb6424b             movzx eax, byte ptr [edx + 0x4b]
+// 0079af30  8d4c2eff             lea ecx, [esi + ebp - 1]
+// 0079af34  3bc8                 cmp ecx, eax
+// 0079af36  0f8d26fdffff         jge 0x79ac62
+// 0079af3c  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0079af40  40                   inc eax
+// 0079af41  3b442430             cmp eax, dword ptr [esp + 0x30]
+// 0079af45  89442410             mov dword ptr [esp + 0x10], eax
+// 0079af49  0f8c12fcffff         jl 0x79ab61
+// 0079af4f  8b74242c             mov esi, dword ptr [esp + 0x2c]
+// 0079af53  8b560c               mov edx, dword ptr [esi + 0xc]
+// 0079af56  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0079af5a  8b0482               mov eax, dword ptr [edx + eax*4]
+// 0079af5d  5f                   pop edi
+// 0079af5e  5d                   pop ebp
+// 0079af5f  5b                   pop ebx
+// 0079af60  5e                   pop esi
+// 0079af61  83c418               add esp, 0x18
+// 0079af64  c3                   ret 
+// 0079af65  8d4900               lea ecx, [ecx]
+// 0079af68  f1                   int1 
+// 0079af69  ac                   lodsb al, byte ptr [esi]
+// 0079af6a  7900                 jns 0x79af6c
+// 0079af6c  2bad790048ad         sub ebp, dword ptr [ebp - 0x52b7ff87]
+// 0079af72  7900                 jns 0x79af74
+// 0079af74  53                   push ebx
+// 0079af75  ad                   lodsd eax, dword ptr [esi]
+// 0079af76  7900                 jns 0x79af78
+// 0079af78  69ad790089ad7900d4ad imul ebp, dword ptr [ebp - 0x5276ff87], 0xadd40079
+// 0079af82  7900                 jns 0x79af84
+// 0079af84  03ae79005fae         add ebp, dword ptr [esi - 0x51a0ff87]
+// 0079af8a  7900                 jns 0x79af8c
+// 0079af8c  c5ad790092ad         lds ebp, ptr [ebp - 0x526dff87]
+// 0079af92  7900                 jns 0x79af94
+// 0079af94  6d                   insd dword ptr es:[edi], dx
+// 0079af95  ae                   scasb al, byte ptr es:[edi]
+// 0079af96  7900                 jns 0x79af98
+// 0079af98  9b                   wait 
+// 0079af99  ae                   scasb al, byte ptr es:[edi]
+// 0079af9a  7900                 jns 0x79af9c
+// library lua-5.1.4/ldebug.c (function _symbexec)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 ldebug.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: ldebug.c,v 2.29.1.6 2008/05/08 16:56:26 roberto Exp $
-** Debug Interface
-** See Copyright Notice in lua.h
-*/
-
-
-#include <stdarg.h>
-#include <stddef.h>
-#include <string.h>
-
-
-#define ldebug_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "lapi.h"
-#include "lcode.h"
-#include "ldebug.h"
-#include "ldo.h"
-#include "lfunc.h"
-#include "lobject.h"
-#include "lopcodes.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "ltable.h"
-#include "ltm.h"
-#include "lvm.h"
-
-
-
-static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);
-
-
-static int currentpc (lua_State *L, CallInfo *ci) {
-  if (!isLua(ci)) return -1;  /* function is not a Lua function? */
-  if (ci == L->ci)
-    ci->savedpc = L->savedpc;
-  return pcRel(ci->savedpc, ci_func(ci)->l.p);
-}
-
-
-static int currentline (lua_State *L, CallInfo *ci) {
-  int pc = currentpc(L, ci);
-  if (pc < 0)
-    return -1;  /* only active lua functions have current-line information */
-  else
-    return getline(ci_func(ci)->l.p, pc);
-}
-
-
-/*
-** this function can be called asynchronous (e.g. during a signal)
-*/
-LUA_API int lua_sethook (lua_State *L, lua_Hook func, int mask, int count) {
-  if (func == NULL || mask == 0) {  /* turn off hooks? */
-    mask = 0;
-    func = NULL;
-  }
-  L->hook = func;
-  L->basehookcount = count;
-  resethookcount(L);
-  L->hookmask = cast_byte(mask);
-  return 1;
-}
-
-
-LUA_API lua_Hook lua_gethook (lua_State *L) {
-  return L->hook;
-}
-
-
-LUA_API int lua_gethookmask (lua_State *L) {
-  return L->hookmask;
-}
-
-
-LUA_API int lua_gethookcount (lua_State *L) {
-  return L->basehookcount;
-}
-
-
-LUA_API int lua_getstack (lua_State *L, int level, lua_Debug *ar) {
-  int status;
-  CallInfo *ci;
-  lua_lock(L);
-  for (ci = L->ci; level > 0 && ci > L->base_ci; ci--) {
-    level--;
-    if (f_isLua(ci))  /* Lua function? */
-      level -= ci->tailcalls;  /* skip lost tail calls */
-  }
-  if (level == 0 && ci > L->base_ci) {  /* level found? */
-    status = 1;
-    ar->i_ci = cast_int(ci - L->base_ci);
-  }
-  else if (level < 0) {  /* level is of a lost tail call? */
-    status = 1;
-    ar->i_ci = 0;
-  }
-  else status = 0;  /* no such level */
-  lua_unlock(L);
-  return status;
-}
-
-
-static Proto *getluaproto (CallInfo *ci) {
-  return (isLua(ci) ? ci_func(ci)->l.p : NULL);
-}
-
-
-static const char *findlocal (lua_State *L, CallInfo *ci, int n) {
-  const char *name;
-  Proto *fp = getluaproto(ci);
-  if (fp && (name = luaF_getlocalname(fp, n, currentpc(L, ci))) != NULL)
-    return name;  /* is a local variable in a Lua function */
-  else {
-    StkId limit = (ci == L->ci) ? L->top : (ci+1)->func;
-    if (limit - ci->base >= n && n > 0)  /* is 'n' inside 'ci' stack? */
-      return "(*temporary)";
-    else
-      return NULL;
-  }
-}
-
-
-LUA_API const char *lua_getlocal (lua_State *L, const lua_Debug *ar, int n) {
-  CallInfo *ci = L->base_ci + ar->i_ci;
-  const char *name = findlocal(L, ci, n);
-  lua_lock(L);
-  if (name)
-      luaA_pushobject(L, ci->base + (n - 1));
-  lua_unlock(L);
-  return name;
-}
-
-
-LUA_API const char *lua_setlocal (lua_State *L, const lua_Debug *ar, int n) {
-  CallInfo *ci = L->base_ci + ar->i_ci;
-  const char *name = findlocal(L, ci, n);
-  lua_lock(L);
-  if (name)
-      setobjs2s(L, ci->base + (n - 1), L->top - 1);
-  L->top--;  /* pop value */
-  lua_unlock(L);
-  return name;
-}
-
-
-static void funcinfo (lua_Debug *ar, Closure *cl) {
-  if (cl->c.isC) {
-    ar->source = "=[C]";
-    ar->linedefined = -1;
-    ar->lastlinedefined = -1;
-    ar->what = "C";
-  }
-  else {
-    ar->source = getstr(cl->l.p->source);
-    ar->linedefined = cl->l.p->linedefined;
-    ar->lastlinedefined = cl->l.p->lastlinedefined;
-    ar->what = (ar->linedefined == 0) ? "main" : "Lua";
-  }
-  luaO_chunkid(ar->short_src, ar->source, LUA_IDSIZE);
-}
-
-
-static void info_tailcall (lua_Debug *ar) {
-  ar->name = ar->namewhat = "";
-  ar->what = "tail";
-  ar->lastlinedefined = ar->linedefined = ar->currentline = -1;
-  ar->source = "=(tail call)";
-  luaO_chunkid(ar->short_src, ar->source, LUA_IDSIZE);
-  ar->nups = 0;
-}
-
-
-static void collectvalidlines (lua_State *L, Closure *f) {
-  if (f == NULL || f->c.isC) {
-    setnilvalue(L->top);
-  }
-  else {
-    Table *t = luaH_new(L, 0, 0);
-    int *lineinfo = f->l.p->lineinfo;
-    int i;
-    for (i=0; i<f->l.p->sizelineinfo; i++)
-      setbvalue(luaH_setnum(L, t, lineinfo[i]), 1);
-    sethvalue(L, L->top, t); 
-  }
-  incr_top(L);
-}
-
-
-static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
-                    Closure *f, CallInfo *ci) {
-  int status = 1;
-  if (f == NULL) {
-    info_tailcall(ar);
-    return status;
-  }
-  for (; *what; what++) {
-    switch (*what) {
-      case 'S': {
-        funcinfo(ar, f);
-        break;
-      }
-      case 'l': {
-        ar->currentline = (ci) ? currentline(L, ci) : -1;
-        break;
-      }
-      case 'u': {
-        ar->nups = f->c.nupvalues;
-        break;
-      }
-      case 'n': {
-        ar->namewhat = (ci) ? getfuncname(L, ci, &ar->name) : NULL;
-        if (ar->namewhat == NULL) {
-          ar->namewhat = "";  /* not found */
-          ar->name = NULL;
-        }
-        break;
-      }
-      case 'L':
-      case 'f':  /* handled by lua_getinfo */
-        break;
-      default: status = 0;  /* invalid option */
-    }
-  }
-  return status;
-}
-
-
-LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
-  int status;
-  Closure *f = NULL;
-  CallInfo *ci = NULL;
-  lua_lock(L);
-  if (*what == '>') {
-    StkId func = L->top - 1;
-    luai_apicheck(L, ttisfunction(func));
-    what++;  /* skip the '>' */
-    f = clvalue(func);
-    L->top--;  /* pop function */
-  }
-  else if (ar->i_ci != 0) {  /* no tail call? */
-    ci = L->base_ci + ar->i_ci;
-    lua_assert(ttisfunction(ci->func));
-    f = clvalue(ci->func);
-  }
-  status = auxgetinfo(L, what, ar, f, ci);
-  if (strchr(what, 'f')) {
-    if (f == NULL) setnilvalue(L->top);
-    else setclvalue(L, L->top, f);
-    incr_top(L);
-  }
-  if (strchr(what, 'L'))
-    collectvalidlines(L, f);
-  lua_unlock(L);
-  return status;
-}
-
-
-/*
-** {======================================================
-** Symbolic Execution and code checker
-** =======================================================
-*/
-
-#define check(x)		if (!(x)) return 0;
-
-#define checkjump(pt,pc)	check(0 <= pc && pc < pt->sizecode)
-
-#define checkreg(pt,reg)	check((reg) < (pt)->maxstacksize)
-
-
-
-static int precheck (const Proto *pt) {
-  check(pt->maxstacksize <= MAXSTACK);
-  check(pt->numparams+(pt->is_vararg & VARARG_HASARG) <= pt->maxstacksize);
-  check(!(pt->is_vararg & VARARG_NEEDSARG) ||
-              (pt->is_vararg & VARARG_HASARG));
-  check(pt->sizeupvalues <= pt->nups);
-  check(pt->sizelineinfo == pt->sizecode || pt->sizelineinfo == 0);
-  check(pt->sizecode > 0 && GET_OPCODE(pt->code[pt->sizecode-1]) == OP_RETURN);
-  return 1;
-}
-
-
-#define checkopenop(pt,pc)	luaG_checkopenop((pt)->code[(pc)+1])
-
-int luaG_checkopenop (Instruction i) {
-  switch (GET_OPCODE(i)) {
-    case OP_CALL:
-    case OP_TAILCALL:
-    case OP_RETURN:
-    case OP_SETLIST: {
-      check(GETARG_B(i) == 0);
-      return 1;
-    }
-    default: return 0;  /* invalid instruction after an open call */
-  }
-}
-
-
-static int checkArgMode (const Proto *pt, int r, enum OpArgMask mode) {
-  switch (mode) {
-    case OpArgN: check(r == 0); break;
-    case OpArgU: break;
-    case OpArgR: checkreg(pt, r); break;
-    case OpArgK:
-      check(ISK(r) ? INDEXK(r) < pt->sizek : r < pt->maxstacksize);
-      break;
-  }
-  return 1;
-}
-
-
-static Instruction symbexec (const Proto *pt, int lastpc, int reg) {
-  int pc;
-  int last;  /* stores position of last instruction that changed `reg' */
-  last = pt->sizecode-1;  /* points to final return (a `neutral' instruction) */
-  check(precheck(pt));
-  for (pc = 0; pc < lastpc; pc++) {
-    Instruction i = pt->code[pc];
-    OpCode op = GET_OPCODE(i);
-    int a = GETARG_A(i);
-    int b = 0;
-    int c = 0;
-    check(op < NUM_OPCODES);
-    checkreg(pt, a);
-    switch (getOpMode(op)) {
-      case iABC: {
-        b = GETARG_B(i);
-        c = GETARG_C(i);
-        check(checkArgMode(pt, b, getBMode(op)));
-        check(checkArgMode(pt, c, getCMode(op)));
-        break;
-      }
-      case iABx: {
-        b = GETARG_Bx(i);
-        if (getBMode(op) == OpArgK) check(b < pt->sizek);
-        break;
-      }
-      case iAsBx: {
-        b = GETARG_sBx(i);
-        if (getBMode(op) == OpArgR) {
-          int dest = pc+1+b;
-          check(0 <= dest && dest < pt->sizecode);
-          if (dest > 0) {
-            int j;
-            /* check that it does not jump to a setlist count; this
-               is tricky, because the count from a previous setlist may
-               have the same value of an invalid setlist; so, we must
-               go all the way back to the first of them (if any) */
-            for (j = 0; j < dest; j++) {
-              Instruction d = pt->code[dest-1-j];
-              if (!(GET_OPCODE(d) == OP_SETLIST && GETARG_C(d) == 0)) break;
-            }
-            /* if 'j' is even, previous value is not a setlist (even if
-               it looks like one) */
-            check((j&1) == 0);
-          }
-        }
-        break;
-      }
-    }
-    if (testAMode(op)) {
-      if (a == reg) last = pc;  /* change register `a' */
-    }
-    if (testTMode(op)) {
-      check(pc+2 < pt->sizecode);  /* check skip */
-      check(GET_OPCODE(pt->code[pc+1]) == OP_JMP);
-    }
-    switch (op) {
-      case OP_LOADBOOL: {
-        if (c == 1) {  /* does it jump? */
-          check(pc+2 < pt->sizecode);  /* check its jump */
-          check(GET_OPCODE(pt->code[pc+1]) != OP_SETLIST ||
-                GETARG_C(pt->code[pc+1]) != 0);
-        }
-        break;
-      }
-      case OP_LOADNIL: {
-        if (a <= reg && reg <= b)
-          last = pc;  /* set registers from `a' to `b' */
-        break;
-      }
-      case OP_GETUPVAL:
-      case OP_SETUPVAL: {
-        check(b < pt->nups);
-        break;
-      }
-      case OP_GETGLOBAL:
-      case OP_SETGLOBAL: {
-        check(ttisstring(&pt->k[b]));
-        break;
-      }
-      case OP_SELF: {
-        checkreg(pt, a+1);
-        if (reg == a+1) last = pc;
-        break;
-      }
-      case OP_CONCAT: {
-        check(b < c);  /* at least two operands */
-        break;
-      }
-      case OP_TFORLOOP: {
-        check(c >= 1);  /* at least one result (control variable) */
-        checkreg(pt, a+2+c);  /* space for results */
-        if (reg >= a+2) last = pc;  /* affect all regs above its base */
-        break;
-      }
-      case OP_FORLOOP:
-      case OP_FORPREP:
-        checkreg(pt, a+3);
-        /* go through */
-      case OP_JMP: {
-        int dest = pc+1+b;
-        /* not full check and jump is forward and do not skip `lastpc'? */
-        if (reg != NO_REG && pc < dest && dest <= lastpc)
-          pc += b;  /* do the jump */
-        break;
-      }
-      case OP_CALL:
-      case OP_TAILCALL: {
-        if (b != 0) {
-          checkreg(pt, a+b-1);
-        }
-        c--;  /* c = num. returns */
-        if (c == LUA_MULTRET) {
-          check(checkopenop(pt, pc));
-        }
-        else if (c != 0)
-          checkreg(pt, a+c-1);
-        if (reg >= a) last = pc;  /* affect all registers above base */
-        break;
-      }
-      case OP_RETURN: {
-        b--;  /* b = num. returns */
-        if (b > 0) checkreg(pt, a+b-1);
-        break;
-      }
-      case OP_SETLIST: {
-        if (b > 0) checkreg(pt, a + b);
-        if (c == 0) {
-          pc++;
-          check(pc < pt->sizecode - 1);
-        }
-        break;
-      }
-      case OP_CLOSURE: {
-        int nup, j;
-        check(b < pt->sizep);
-        nup = pt->p[b]->nups;
-        check(pc + nup < pt->sizecode);
-        for (j = 1; j <= nup; j++) {
-          OpCode op1 = GET_OPCODE(pt->code[pc + j]);
-          check(op1 == OP_GETUPVAL || op1 == OP_MOVE);
-        }
-        if (reg != NO_REG)  /* tracing? */
-          pc += nup;  /* do not 'execute' these pseudo-instructions */
-        break;
-      }
-      case OP_VARARG: {
-        check((pt->is_vararg & VARARG_ISVARARG) &&
-             !(pt->is_vararg & VARARG_NEEDSARG));
-        b--;
-        if (b == LUA_MULTRET) check(checkopenop(pt, pc));
-        checkreg(pt, a+b-1);
-        break;
-      }
-      default: break;
-    }
-  }
-  return pt->code[last];
-}
-
-#undef check
-#undef checkjump
-#undef checkreg
-
-/* }====================================================== */
-
-
-int luaG_checkcode (const Proto *pt) {
-  return (symbexec(pt, pt->sizecode, NO_REG) != 0);
-}
-
-
-static const char *kname (Proto *p, int c) {
-  if (ISK(c) && ttisstring(&p->k[INDEXK(c)]))
-    return svalue(&p->k[INDEXK(c)]);
-  else
-    return "?";
-}
-
-
-static const char *getobjname (lua_State *L, CallInfo *ci, int stackpos,
-                               const char **name) {
-  if (isLua(ci)) {  /* a Lua function? */
-    Proto *p = ci_func(ci)->l.p;
-    int pc = currentpc(L, ci);
-    Instruction i;
-    *name = luaF_getlocalname(p, stackpos+1, pc);
-    if (*name)  /* is a local? */
-      return "local";
-    i = symbexec(p, pc, stackpos);  /* try symbolic execution */
-    lua_assert(pc != -1);
-    switch (GET_OPCODE(i)) {
-      case OP_GETGLOBAL: {
-        int g = GETARG_Bx(i);  /* global index */
-        lua_assert(ttisstring(&p->k[g]));
-        *name = svalue(&p->k[g]);
-        return "global";
-      }
-      case OP_MOVE: {
-        int a = GETARG_A(i);
-        int b = GETARG_B(i);  /* move from `b' to `a' */
-        if (b < a)
-          return getobjname(L, ci, b, name);  /* get name for `b' */
-        break;
-      }
-      case OP_GETTABLE: {
-        int k = GETARG_C(i);  /* key index */
-        *name = kname(p, k);
-        return "field";
-      }
-      case OP_GETUPVAL: {
-        int u = GETARG_B(i);  /* upvalue index */
-        *name = p->upvalues ? getstr(p->upvalues[u]) : "?";
-        return "upvalue";
-      }
-      case OP_SELF: {
-        int k = GETARG_C(i);  /* key index */
-        *name = kname(p, k);
-        return "method";
-      }
-      default: break;
-    }
-  }
-  return NULL;  /* no useful name found */
-}
-
-
-static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name) {
-  Instruction i;
-  if ((isLua(ci) && ci->tailcalls > 0) || !isLua(ci - 1))
-    return NULL;  /* calling function is not Lua (or is unknown) */
-  ci--;  /* calling function */
-  i = ci_func(ci)->l.p->code[currentpc(L, ci)];
-  if (GET_OPCODE(i) == OP_CALL || GET_OPCODE(i) == OP_TAILCALL ||
-      GET_OPCODE(i) == OP_TFORLOOP)
-    return getobjname(L, ci, GETARG_A(i), name);
-  else
-    return NULL;  /* no useful name can be found */
-}
-
-
-/* only ANSI way to check whether a pointer points to an array */
-static int isinstack (CallInfo *ci, const TValue *o) {
-  StkId p;
-  for (p = ci->base; p < ci->top; p++)
-    if (o == p) return 1;
-  return 0;
-}
-
-
-void luaG_typeerror (lua_State *L, const TValue *o, const char *op) {
-  const char *name = NULL;
-  const char *t = luaT_typenames[ttype(o)];
-  const char *kind = (isinstack(L->ci, o)) ?
-                         getobjname(L, L->ci, cast_int(o - L->base), &name) :
-                         NULL;
-  if (kind)
-    luaG_runerror(L, "attempt to %s %s " LUA_QS " (a %s value)",
-                op, kind, name, t);
-  else
-    luaG_runerror(L, "attempt to %s a %s value", op, t);
-}
-
-
-void luaG_concaterror (lua_State *L, StkId p1, StkId p2) {
-  if (ttisstring(p1) || ttisnumber(p1)) p1 = p2;
-  lua_assert(!ttisstring(p1) && !ttisnumber(p1));
-  luaG_typeerror(L, p1, "concatenate");
-}
-
-
-void luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2) {
-  TValue temp;
-  if (luaV_tonumber(p1, &temp) == NULL)
-    p2 = p1;  /* first operand is wrong */
-  luaG_typeerror(L, p2, "perform arithmetic on");
-}
-
-
-int luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
-  const char *t1 = luaT_typenames[ttype(p1)];
-  const char *t2 = luaT_typenames[ttype(p2)];
-  if (t1[2] == t2[2])
-    luaG_runerror(L, "attempt to compare two %s values", t1);
-  else
-    luaG_runerror(L, "attempt to compare %s with %s", t1, t2);
-  return 0;
-}
-
-
-static void addinfo (lua_State *L, const char *msg) {
-  CallInfo *ci = L->ci;
-  if (isLua(ci)) {  /* is Lua code? */
-    char buff[LUA_IDSIZE];  /* add file:line information */
-    int line = currentline(L, ci);
-    luaO_chunkid(buff, getstr(getluaproto(ci)->source), LUA_IDSIZE);
-    luaO_pushfstring(L, "%s:%d: %s", buff, line, msg);
-  }
-}
-
-
-void luaG_errormsg (lua_State *L) {
-  if (L->errfunc != 0) {  /* is there an error handling function? */
-    StkId errfunc = restorestack(L, L->errfunc);
-    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
-    setobjs2s(L, L->top, L->top - 1);  /* move argument */
-    setobjs2s(L, L->top - 1, errfunc);  /* push function */
-    incr_top(L);
-    luaD_call(L, L->top - 2, 1);  /* call it */
-  }
-  luaD_throw(L, LUA_ERRRUN);
-}
-
-
-void luaG_runerror (lua_State *L, const char *fmt, ...) {
-  va_list argp;
-  va_start(argp, fmt);
-  addinfo(L, luaO_pushvfstring(L, fmt, argp));
-  va_end(argp);
-  luaG_errormsg(L);
-}
-

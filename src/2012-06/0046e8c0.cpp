@@ -1,508 +1,270 @@
+// roc 2012-06 0046e8c0  unit: RBX::Security::VContext::?$thread_specific_ptr::delete_data  size: 757 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 0046e8c0
+//
+// 0046e8c0  55                   push ebp
+// 0046e8c1  8bec                 mov ebp, esp
+// 0046e8c3  8b4d10               mov ecx, dword ptr [ebp + 0x10]
+// 0046e8c6  81ec1c010000         sub esp, 0x11c
+// 0046e8cc  53                   push ebx
+// 0046e8cd  56                   push esi
+// 0046e8ce  57                   push edi
+// 0046e8cf  85c9                 test ecx, ecx
+// 0046e8d1  0f84ca020000         je 0x46eba1
+// 0046e8d7  8b4514               mov eax, dword ptr [ebp + 0x14]
+// 0046e8da  85c0                 test eax, eax
+// 0046e8dc  0f84bf020000         je 0x46eba1
+// 0046e8e2  c70100000000         mov dword ptr [ecx], 0
+// 0046e8e8  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 0046e8eb  c70000000000         mov dword ptr [eax], 0
+// 0046e8f1  6804010000           push 0x104
+// 0046e8f6  8d85e4feffff         lea eax, [ebp - 0x11c]
+// 0046e8fc  50                   push eax
+// 0046e8fd  51                   push ecx
+// 0046e8fe  c745fc00000000       mov dword ptr [ebp - 4], 0
+// 0046e905  ff159021b200         call dword ptr [0xb22190]
+// 0046e90b  8bf8                 mov edi, eax
+// 0046e90d  85ff                 test edi, edi
+// 0046e90f  7520                 jne 0x46e931
+// 0046e911  e87a59f9ff           call 0x404290
+// 0046e916  8d4dfc               lea ecx, [ebp - 4]
+// 0046e919  8bf0                 mov esi, eax
+// 0046e91b  e84061f9ff           call 0x404a60
+// 0046e920  8bc6                 mov eax, esi
+// 0046e922  8da5d8feffff         lea esp, [ebp - 0x128]
+// 0046e928  5f                   pop edi
+// 0046e929  5e                   pop esi
+// 0046e92a  5b                   pop ebx
+// 0046e92b  8be5                 mov esp, ebp
+// 0046e92d  5d                   pop ebp
+// 0046e92e  c21000               ret 0x10
+// 0046e931  81ff04010000         cmp edi, 0x104
+// 0046e937  751c                 jne 0x46e955
+// 0046e939  8d4dfc               lea ecx, [ebp - 4]
+// 0046e93c  e81f61f9ff           call 0x404a60
+// 0046e941  b87a000780           mov eax, 0x8007007a
+// 0046e946  8da5d8feffff         lea esp, [ebp - 0x128]
+// 0046e94c  5f                   pop edi
+// 0046e94d  5e                   pop esi
+// 0046e94e  5b                   pop ebx
+// 0046e94f  8be5                 mov esp, ebp
+// 0046e951  5d                   pop ebp
+// 0046e952  c21000               ret 0x10
+// 0046e955  8d85e4feffff         lea eax, [ebp - 0x11c]
+// 0046e95b  e8e0ddffff           call 0x46c740
+// 0046e960  8b750c               mov esi, dword ptr [ebp + 0xc]
+// 0046e963  8bd8                 mov ebx, eax
+// 0046e965  895df4               mov dword ptr [ebp - 0xc], ebx
+// 0046e968  85f6                 test esi, esi
+// 0046e96a  0f84ac000000         je 0x46ea1c
+// 0046e970  56                   push esi
+// 0046e971  ff15c421b200         call dword ptr [0xb221c4]
+// 0046e977  40                   inc eax
+// 0046e978  6a02                 push 2
+// 0046e97a  50                   push eax
+// 0046e97b  8d5508               lea edx, [ebp + 8]
+// 0046e97e  52                   push edx
+// 0046e97f  894508               mov dword ptr [ebp + 8], eax
+// 0046e982  e82957f9ff           call 0x4040b0
+// 0046e987  83c40c               add esp, 0xc
+// 0046e98a  85c0                 test eax, eax
+// 0046e98c  7c3c                 jl 0x46e9ca
+// 0046e98e  8b5d08               mov ebx, dword ptr [ebp + 8]
+// 0046e991  81fb00040000         cmp ebx, 0x400
+// 0046e997  7f18                 jg 0x46e9b1
+// 0046e999  53                   push ebx
+// 0046e99a  e8d163f9ff           call 0x404d70
+// 0046e99f  83c404               add esp, 4
+// 0046e9a2  84c0                 test al, al
+// 0046e9a4  740b                 je 0x46e9b1
+// 0046e9a6  8bc3                 mov eax, ebx
+// 0046e9a8  e863495100           call 0x983310
+// 0046e9ad  8bc4                 mov eax, esp
+// 0046e9af  eb09                 jmp 0x46e9ba
+// 0046e9b1  53                   push ebx
+// 0046e9b2  8d4dfc               lea ecx, [ebp - 4]
+// 0046e9b5  e86668f9ff           call 0x405220
+// 0046e9ba  6a03                 push 3
+// 0046e9bc  53                   push ebx
+// 0046e9bd  56                   push esi
+// 0046e9be  50                   push eax
+// 0046e9bf  e87c57f9ff           call 0x404140
+// 0046e9c4  8bf0                 mov esi, eax
+// 0046e9c6  85f6                 test esi, esi
+// 0046e9c8  751c                 jne 0x46e9e6
+// 0046e9ca  8d4dfc               lea ecx, [ebp - 4]
+// 0046e9cd  e88e60f9ff           call 0x404a60
+// 0046e9d2  b80e000780           mov eax, 0x8007000e
+// 0046e9d7  8da5d8feffff         lea esp, [ebp - 0x128]
+// 0046e9dd  5f                   pop edi
+// 0046e9de  5e                   pop esi
+// 0046e9df  5b                   pop ebx
+// 0046e9e0  8be5                 mov esp, ebp
+// 0046e9e2  5d                   pop ebp
+// 0046e9e3  c21000               ret 0x10
+// 0046e9e6  56                   push esi
+// 0046e9e7  ff15a821b200         call dword ptr [0xb221a8]
+// 0046e9ed  8d0c38               lea ecx, [eax + edi]
+// 0046e9f0  3bcf                 cmp ecx, edi
+// 0046e9f2  726f                 jb 0x46ea63
+// 0046e9f4  3bc8                 cmp ecx, eax
+// 0046e9f6  726b                 jb 0x46ea63
+// 0046e9f8  81f90e010000         cmp ecx, 0x10e
+// 0046e9fe  7363                 jae 0x46ea63
+// 0046ea00  b80e010000           mov eax, 0x10e
+// 0046ea05  56                   push esi
+// 0046ea06  2bc7                 sub eax, edi
+// 0046ea08  50                   push eax
+// 0046ea09  8d8c3de4feffff       lea ecx, [ebp + edi - 0x11c]
+// 0046ea10  51                   push ecx
+// 0046ea11  e8dadaffff           call 0x46c4f0
+// 0046ea16  8b5df4               mov ebx, dword ptr [ebp - 0xc]
+// 0046ea19  83c40c               add esp, 0xc
+// 0046ea1c  8d95e4feffff         lea edx, [ebp - 0x11c]
+// 0046ea22  52                   push edx
+// 0046ea23  ff15a821b200         call dword ptr [0xb221a8]
+// 0046ea29  40                   inc eax
+// 0046ea2a  6a02                 push 2
+// 0046ea2c  50                   push eax
+// 0046ea2d  894508               mov dword ptr [ebp + 8], eax
+// 0046ea30  8d4508               lea eax, [ebp + 8]
+// 0046ea33  50                   push eax
+// 0046ea34  e87756f9ff           call 0x4040b0
+// 0046ea39  83c40c               add esp, 0xc
+// 0046ea3c  85c0                 test eax, eax
+// 0046ea3e  7c8a                 jl 0x46e9ca
+// 0046ea40  8b7508               mov esi, dword ptr [ebp + 8]
+// 0046ea43  81fe00040000         cmp esi, 0x400
+// 0046ea49  7f34                 jg 0x46ea7f
+// 0046ea4b  56                   push esi
+// 0046ea4c  e81f63f9ff           call 0x404d70
+// 0046ea51  83c404               add esp, 4
+// 0046ea54  84c0                 test al, al
+// 0046ea56  7427                 je 0x46ea7f
+// 0046ea58  8bc6                 mov eax, esi
+// 0046ea5a  e8b1485100           call 0x983310
+// 0046ea5f  8bc4                 mov eax, esp
+// 0046ea61  eb25                 jmp 0x46ea88
+// 0046ea63  8d4dfc               lea ecx, [ebp - 4]
+// 0046ea66  e8f55ff9ff           call 0x404a60
+// 0046ea6b  b805400080           mov eax, 0x80004005
+// 0046ea70  8da5d8feffff         lea esp, [ebp - 0x128]
+// 0046ea76  5f                   pop edi
+// 0046ea77  5e                   pop esi
+// 0046ea78  5b                   pop ebx
+// 0046ea79  8be5                 mov esp, ebp
+// 0046ea7b  5d                   pop ebp
+// 0046ea7c  c21000               ret 0x10
+// 0046ea7f  56                   push esi
+// 0046ea80  8d4dfc               lea ecx, [ebp - 4]
+// 0046ea83  e89867f9ff           call 0x405220
+// 0046ea88  6a03                 push 3
+// 0046ea8a  d1ee                 shr esi, 1
+// 0046ea8c  56                   push esi
+// 0046ea8d  8d8de4feffff         lea ecx, [ebp - 0x11c]
+// 0046ea93  51                   push ecx
+// 0046ea94  50                   push eax
+// 0046ea95  e86656f9ff           call 0x404100
+// 0046ea9a  8bf0                 mov esi, eax
+// 0046ea9c  85f6                 test esi, esi
+// 0046ea9e  0f8426ffffff         je 0x46e9ca
+// 0046eaa4  8b5514               mov edx, dword ptr [ebp + 0x14]
+// 0046eaa7  52                   push edx
+// 0046eaa8  56                   push esi
+// 0046eaa9  ff15202bb200         call dword ptr [0xb22b20]
+// 0046eaaf  8bf8                 mov edi, eax
+// 0046eab1  85ff                 test edi, edi
+// 0046eab3  0f8dba000000         jge 0x46eb73
+// 0046eab9  a1589eb500           mov eax, dword ptr [0xb59e58]
+// 0046eabe  8a0d5c9eb500         mov cl, byte ptr [0xb59e5c]
+// 0046eac4  8945f4               mov dword ptr [ebp - 0xc], eax
+// 0046eac7  8bd3                 mov edx, ebx
+// 0046eac9  8d85e4feffff         lea eax, [ebp - 0x11c]
+// 0046eacf  2bd0                 sub edx, eax
+// 0046ead1  83c205               add edx, 5
+// 0046ead4  884df8               mov byte ptr [ebp - 8], cl
+// 0046ead7  81fa04010000         cmp edx, 0x104
+// 0046eadd  7784                 ja 0x46ea63
+// 0046eadf  8d4df4               lea ecx, [ebp - 0xc]
+// 0046eae2  51                   push ecx
+// 0046eae3  8d55f2               lea edx, [ebp - 0xe]
+// 0046eae6  2bd3                 sub edx, ebx
+// 0046eae8  52                   push edx
+// 0046eae9  53                   push ebx
+// 0046eaea  e801daffff           call 0x46c4f0
+// 0046eaef  83c40c               add esp, 0xc
+// 0046eaf2  8d85e4feffff         lea eax, [ebp - 0x11c]
+// 0046eaf8  50                   push eax
+// 0046eaf9  ff15a821b200         call dword ptr [0xb221a8]
+// 0046eaff  40                   inc eax
+// 0046eb00  6a02                 push 2
+// 0046eb02  50                   push eax
+// 0046eb03  8d4d08               lea ecx, [ebp + 8]
+// 0046eb06  51                   push ecx
+// 0046eb07  894508               mov dword ptr [ebp + 8], eax
+// 0046eb0a  e8a155f9ff           call 0x4040b0
+// 0046eb0f  83c40c               add esp, 0xc
+// 0046eb12  85c0                 test eax, eax
+// 0046eb14  0f8cb0feffff         jl 0x46e9ca
+// 0046eb1a  8b7508               mov esi, dword ptr [ebp + 8]
+// 0046eb1d  81fe00040000         cmp esi, 0x400
+// 0046eb23  7f18                 jg 0x46eb3d
+// 0046eb25  56                   push esi
+// 0046eb26  e84562f9ff           call 0x404d70
+// 0046eb2b  83c404               add esp, 4
+// 0046eb2e  84c0                 test al, al
+// 0046eb30  740b                 je 0x46eb3d
+// 0046eb32  8bc6                 mov eax, esi
+// 0046eb34  e8d7475100           call 0x983310
+// 0046eb39  8bc4                 mov eax, esp
+// 0046eb3b  eb09                 jmp 0x46eb46
+// 0046eb3d  56                   push esi
+// 0046eb3e  8d4dfc               lea ecx, [ebp - 4]
+// 0046eb41  e8da66f9ff           call 0x405220
+// 0046eb46  6a03                 push 3
+// 0046eb48  d1ee                 shr esi, 1
+// 0046eb4a  56                   push esi
+// 0046eb4b  8d95e4feffff         lea edx, [ebp - 0x11c]
+// 0046eb51  52                   push edx
+// 0046eb52  50                   push eax
+// 0046eb53  e8a855f9ff           call 0x404100
+// 0046eb58  8bf0                 mov esi, eax
+// 0046eb5a  85f6                 test esi, esi
+// 0046eb5c  0f8468feffff         je 0x46e9ca
+// 0046eb62  8b4514               mov eax, dword ptr [ebp + 0x14]
+// 0046eb65  50                   push eax
+// 0046eb66  56                   push esi
+// 0046eb67  ff15202bb200         call dword ptr [0xb22b20]
+// 0046eb6d  8bf8                 mov edi, eax
+// 0046eb6f  85ff                 test edi, edi
+// 0046eb71  7c15                 jl 0x46eb88
+// 0046eb73  56                   push esi
+// 0046eb74  ff15482bb200         call dword ptr [0xb22b48]
+// 0046eb7a  8b4d10               mov ecx, dword ptr [ebp + 0x10]
+// 0046eb7d  8901                 mov dword ptr [ecx], eax
+// 0046eb7f  85c0                 test eax, eax
+// 0046eb81  7505                 jne 0x46eb88
+// 0046eb83  bf0e000780           mov edi, 0x8007000e
+// 0046eb88  8d4dfc               lea ecx, [ebp - 4]
+// 0046eb8b  e8d05ef9ff           call 0x404a60
+// 0046eb90  8bc7                 mov eax, edi
+// 0046eb92  8da5d8feffff         lea esp, [ebp - 0x128]
+// 0046eb98  5f                   pop edi
+// 0046eb99  5e                   pop esi
+// 0046eb9a  5b                   pop ebx
+// 0046eb9b  8be5                 mov esp, ebp
+// 0046eb9d  5d                   pop ebp
+// 0046eb9e  c21000               ret 0x10
+// 0046eba1  b803400080           mov eax, 0x80004003
+// 0046eba6  8da5d8feffff         lea esp, [ebp - 0x128]
+// 0046ebac  5f                   pop edi
+// 0046ebad  5e                   pop esi
+// 0046ebae  5b                   pop ebx
+// 0046ebaf  8be5                 mov esp, ebp
+// 0046ebb1  5d                   pop ebp
+// 0046ebb2  c21000               ret 0x10
+// copied from an identical function in another client (function _AtlLoadTypeLib@16)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: atl-9.0-dll atl.cpp
-
-// Candidate translation unit (score above; library headers required).
-// This is a part of the Active Template Library.
-// Copyright (C) Microsoft Corporation
-// All rights reserved.
-//
-// This source code is only intended as a supplement to the
-// Active Template Library Reference and related
-// electronic documentation provided with the library.
-// See these sources for detailed information regarding the	
-// Active Template Library product.
-
-// atl.cpp : Implementation of DLL Exports.
-
-#include "stdafx.h"
-#include "resource.h"
-#include "RegObj.h"
-#include "AtlAssem.h"
-#include <io.h>
-
-#define _ATL_DLL_FILENAME_UPPERCASE "ATL" _ATL_FILENAME_VER ".DLL"
-#define _ATL_DLL_FILENAME_UPPERCASE_T _T("ATL") _T(_ATL_FILENAME_VER) _T(".DLL")
-
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_Registrar, CDLLRegObject)
-	OBJECT_ENTRY_NON_CREATEABLE(CAxHostWindow)
-END_OBJECT_MAP()
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle);  /* local function */
-
-/////////////////////////////////////////////////////////////////////////////
-// DLL Entry Point
-
-extern "C"
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
-{
-	if (dwReason == DLL_PROCESS_ATTACH)
-	{
-		bAtlAxWinInitialized = false;
-#ifndef _UNICODE
-		OutputDebugString(_T("Slight Performance loss due to running ANSI version of ") _ATL_DLL_FILENAME_UPPERCASE_T _T(" on Windows NT, Windows 2000, Windows XP or Windows Server 2003 \nPlease install the Unicode version.\n"));
-#endif
-#ifdef _DEBUG
-		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF);
-		int n = 0;
-		_CrtSetBreakAlloc(n);
-#endif
-		_Module.Init(ObjectMap, hInstance, &LIBID_ATLLib);
-#ifdef _ATL_DEBUG_INTERFACES
-		int ni = 0;
-		_Module.m_nIndexBreakAt = ni;
-#endif // _ATL_DEBUG_INTERFACES
-
-#if defined(_ATL_CHECK_MANIFEST)
-#define _ATL_ABSENT_MANIFEST_ERROR_MSG	"R6034\n" \
-										"An application has made an attempt to load " _ATL_DLL_FILENAME_UPPERCASE " incorrectly.\n" \
-										"Please contact the application's support team for more information.\n"
-#define _ATL_ABSENT_MANIFEST_ERROR_DBGMSG	"R6034\n" \
-											"An application has made an attempt to load " _ATL_DLL_FILENAME_UPPERCASE " without using a manifest.\n" \
-											"This is an unsupported way to load Visual C++ DLLs. You need to modify your application to build with a manifest.\n" \
-											"For more information, see the \"Visual C++ Libraries as Shared Side-by-Side Assemblies\" topic in the product documentation.\n"
-
-		if (!_atl_check_manifest(hInstance))
-		{
-			__try
-			{
-				MessageBoxA(NULL, _ATL_ABSENT_MANIFEST_ERROR_MSG, "Microsoft Visual C++ Runtime Library", MB_ICONSTOP|MB_OK);
-			}
-			__except( EXCEPTION_EXECUTE_HANDLER )
-			{
-				OutputDebugStringA(_ATL_ABSENT_MANIFEST_ERROR_DBGMSG);
-				DebugBreak();
-			}
-			return FALSE;
-		}
-#endif
-
-		DisableThreadLibraryCalls(hInstance);
-	}
-	else if (dwReason == DLL_PROCESS_DETACH)
-	{
-#ifdef _DEBUG
-		::OutputDebugString(_ATL_DLL_FILENAME_UPPERCASE_T _T(" exiting.\n"));
-#endif
-		_Module.Term();
-		if (bAtlAxWinInitialized)
-			AtlAxWinTerm();
-#ifdef _DEBUG
-		if (_CrtDumpMemoryLeaks())
-			::MessageBeep(MB_ICONEXCLAMATION);
-#endif
-	}
-	return TRUE;    // ok
-}
-
-namespace ATL
-{
-STDAPI AtlCreateRegistrar(IRegistrar** ppReg)
-{
-	if (ppReg == NULL)
-		return E_POINTER;
-	*ppReg = NULL;
-
-	return( CDLLRegObject::_CreatorClass::CreateInstance(NULL, IID_IRegistrar, (void**)ppReg) );
-}
-
-STDAPI AtlUpdateRegistryFromResourceD(HINSTANCE hInst, LPCOLESTR lpszRes,
-	BOOL bRegister, struct _ATL_REGMAP_ENTRY* pMapEntries, IRegistrar* pReg)
-{
-	ATLASSERT(hInst != NULL);
-	if (hInst == NULL)
-		return E_INVALIDARG;
-
-	HRESULT hRes = S_OK;
-	CComPtr<IRegistrar> p;
-
-	if (pReg != NULL)
-		p = pReg;
-	else
-	{
-		hRes = AtlCreateRegistrar(&p);
-	}
-	if (NULL != pMapEntries)
-	{
-		while (NULL != pMapEntries->szKey)
-		{
-			ATLASSERT(NULL != pMapEntries->szData);
-			p->AddReplacement(pMapEntries->szKey, pMapEntries->szData);
-			pMapEntries++;
-		}
-	}
-	if (SUCCEEDED(hRes))
-	{
-		TCHAR szModule[_MAX_PATH];
-		int nRet = GetModuleFileName(hInst, szModule, _MAX_PATH);
-		if(nRet == _MAX_PATH)
-			return AtlHresultFromWin32(ERROR_BUFFER_OVERFLOW);
-		
-		if(nRet == 0)
-			return AtlHresultFromLastError();
-
-		USES_CONVERSION_EX;
-		LPOLESTR pszModule = T2OLE_EX(szModule, _ATL_SAFE_ALLOCA_DEF_THRESHOLD);
-#ifndef _UNICODE
-		if(pszModule == NULL) 
-			return E_OUTOFMEMORY;
-#endif
-		
-		// Buffer Size is Multiplied by 2 because we are calling ReplaceSingleQuote
-		OLECHAR pszModuleUnquoted[_MAX_PATH * 2];
-		CAtlModule::EscapeSingleQuote(pszModuleUnquoted, _countof(pszModuleUnquoted), pszModule);
-		if (hInst == GetModuleHandle(NULL)) // register as EXE
-		{
-			// If Registering as an EXE, then we quote the resultant path.
-			// We don't do it for a DLL, because LoadLibrary fails if the path is
-			// quoted
-			OLECHAR pszModuleQuote[(_MAX_PATH + _ATL_QUOTES_SPACE)*2];
-			pszModuleQuote[0] = OLESTR('\"');			
-			if(!ocscpy_s(pszModuleQuote + 1, ((_MAX_PATH + _ATL_QUOTES_SPACE)*2)-1, pszModuleUnquoted))
-			{
-				return E_FAIL;
-			}
-			size_t nLen = ocslen(pszModuleQuote);
-			pszModuleQuote[nLen] = OLESTR('\"');
-			pszModuleQuote[nLen + 1] = 0;
-			
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleQuote);			
-		}
-		else
-		{
-			hRes = p->AddReplacement(OLESTR("Module"), pszModuleUnquoted);
-		}
-		
-		if(FAILED(hRes))
-			return hRes;
-	
-		hRes = p->AddReplacement(OLESTR("Module_Raw"), pszModuleUnquoted);
-		if(FAILED(hRes))
-			return hRes;
-	
-		LPCOLESTR szType = OLESTR("REGISTRY");
-		if (IS_INTRESOURCE(lpszRes))
-		{
-			if (bRegister)
-				hRes = p->ResourceRegister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
-			else
-				hRes = p->ResourceUnregister(pszModule, ((UINT)LOWORD((DWORD_PTR)lpszRes)), szType);
-		}
-		else
-		{
-			if (bRegister)
-				hRes = p->ResourceRegisterSz(pszModule, lpszRes, szType);
-			else
-				hRes = p->ResourceUnregisterSz(pszModule, lpszRes, szType);
-		}
-
-	}
-	return hRes;
-}
-
-// Cannot pull these in from the static lib. The functions they reference are decorated
-// with C++ calling convention. The functions are exported from the DLL with the 
-// C calling convention
-#ifdef _DEBUG
-CAtlComModule _AtlComModule;
-#endif
-
-}
-
-/////////////////////////////////////////////////////////////////////////////
-/* used in _ATL_CHECK_MANIFEST */
-#define _PATH_LEN 8000
-#define _WINSXS_FOLDER _T("WinSxS\\")
-
-#ifdef _UNICODE
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringW"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryW"
-#define _TCSRCHR wcsrchr
-#define _TCSNCAT_S wcsncat_s
-#else
-#define _FINDACTCTXSECTIONSTRING "FindActCtxSectionStringA"
-#define _GETSYSTEMWINDOWSDIRECTORY "GetSystemWindowsDirectoryA"
-#define _TCSRCHR strrchr
-#define _TCSNCAT_S strncat_s
-#endif
-
-#define _MANIFEST_FILENAME _T(__LIBRARIES_ASSEMBLY_NAME_PREFIX)_T(".ATL.manifest")
-#define _ATL_DLL_FILENAME _T("atl") _T(_ATL_FILENAME_VER) _T(".dll")
-
-typedef BOOL (WINAPI * PFN_FINDAC)(DWORD dwFlags, const GUID *lpExtensionGuid,ULONG ulSectionId,LPCTSTR lpStringToFind,PACTCTX_SECTION_KEYED_DATA ReturnedData);
-typedef UINT (WINAPI * PFN_GETSYSTEMWINDOWSDIRECTORY)(LPTSTR lpBuffer,  UINT uSize);
-
-
-static BOOL __cdecl _atl_check_manifest(HMODULE hDllHandle)
-{
-	/* We check that the dll is loaded through a manifest.
-	 *
-	 * We check several conditions and exceptions:
-	 *
-	 * (1)  if (pre-fusion OS)
-	 *         return TRUE; [no need to check]
-	 *
-	 * (2)  if (dll is loaded from system32)
-	 *          return FALSE;
-	 *
-	 * (3)  if (!(loaded through a manifest))
-	 *          return FALSE;
-	 *
-	 * (4)  if (loaded from %SystemRoot%\WinSxS)
-	 *          return TRUE; [loaded from the WinSxS cache]
-	 *
-	 * (5)  if (manifest is in the same folder as the dll)
-	 *          return TRUE;
-	 *
-	 * (6)  return FALSE; [loaded with another manifest]
-	 *
-	 * In general, when we encounter an error condition or something
-	 * which blocks us from checking if the dll is loaded through a
-	 * manifest, we do not return an error, but we let the dll to be
-	 * loaded. Notice that this is not a security feature: it's an helper
-	 * which will try (as much as possible) to discourage the practice
-	 * of not using a manifest to load the ATL dll.
-	 */
-
-	TCHAR moduleFilePath[_PATH_LEN];
-	TCHAR systemRoot[MAX_PATH];
-	size_t moduleFilePathLen = 0;
-	size_t systemRootLen = 0;
-
-	PFN_FINDAC pfnFindActCtxSectionString =NULL;
-	/* check condition (1) */
-	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
-
-		pfnFindActCtxSectionString = (PFN_FINDAC) GetProcAddress(hKernel32, _FINDACTCTXSECTIONSTRING);
-
-		if (pfnFindActCtxSectionString == NULL) 
-		{
-			/* pre-fusion OS, so no more checking.*/
-			return TRUE;
-		}
-	}
-
-	///* retrieve moduleFilePath and systemRoot */
-	{
-		TCHAR tempPath[_PATH_LEN];
-		TCHAR *myTestModuleName = NULL;
-		DWORD ret = GetModuleFileName(hDllHandle, tempPath, _countof(tempPath));
-		if (ret == 0 || ret >= _countof(tempPath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		ret = GetLongPathName(tempPath, moduleFilePath, _countof(moduleFilePath));
-		if (ret == 0 || ret >= _countof(moduleFilePath))
-		{
-		 	/* error or filename longer than _PATH_LEN: we just let
-		 	  * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-
-		myTestModuleName = const_cast<TCHAR*>(_TCSRCHR(moduleFilePath, L'\\'));
-
-		if (myTestModuleName == NULL)
-		{
-			/* error: we could not find a backslash in moduleFilePath */
-			return TRUE;
-		}
-		myTestModuleName++;
-		*myTestModuleName = 0;
-		/* moduleFilePath now contains only the path of the module ending with a backslash */
-		moduleFilePathLen = _tcsnlen(moduleFilePath, _countof(moduleFilePath));
-
-		ret = GetSystemDirectory(systemRoot, _countof(systemRoot));
-		if (ret == 0 || ret >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		systemRootLen = ret;
-		if (systemRoot[systemRootLen - 1] != _T('\\'))
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\"), _TRUNCATE) != 0)
-			{
-				/* error or not enough space */
-				return TRUE;
-			}
-		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
-	}
-
-	/* check condition (2) */
-	if (moduleFilePathLen == systemRootLen)
-	{
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)moduleFilePathLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			return FALSE; /* dll loaded from system32 */
-		}
-	}
-
-	/* check condition (3) */
-	{
-		ACTCTX_SECTION_KEYED_DATA askd = { sizeof(askd) };
-		if (!(*pfnFindActCtxSectionString)(0, NULL, ACTIVATION_CONTEXT_SECTION_DLL_REDIRECTION, _ATL_DLL_FILENAME, &askd))
-		{
-			/* no activation context used to load ATL DLL, means no manifest present in the process */
-			return FALSE;
-		}
-	}
-
-	/* check condition (4) */
-	{
-		HINSTANCE hKernel32 = GetModuleHandle(_T("kernel32.dll"));
-		PFN_GETSYSTEMWINDOWSDIRECTORY pfnGetSystemWindowsDirectory = NULL;
-		if (hKernel32 == NULL) 
-		{
-			/* unexpected condition, probably some strange loader lock situation */
-			return TRUE;
-		}
-
-		pfnGetSystemWindowsDirectory = (PFN_GETSYSTEMWINDOWSDIRECTORY) GetProcAddress(hKernel32, _GETSYSTEMWINDOWSDIRECTORY);
-
-		if (pfnGetSystemWindowsDirectory == NULL) 
-		{
-			/* pre-win2k OS, so no more checking. We shouldn't get to here because we checked OS version earlier */
-			return TRUE;
-		}
-
-		/* retrieves the windows folder */
-		systemRootLen = pfnGetSystemWindowsDirectory(systemRoot, _countof(systemRoot));
-		if (systemRootLen == 0 || systemRootLen >= _countof(systemRoot))
-		{
-			/* error or path longer than MAX_PATH: we just let
-			 * the user load the dll, without checking the manifest */
-			return TRUE;
-		}
-		/* add a trailing backslash if not there already */
-		if (systemRoot[systemRootLen - 1] != L'\\')
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _T("\\") _WINSXS_FOLDER, _TRUNCATE) != 0)
-			{
-				/* error or not enough space */
-				return TRUE;
-			}
-		}
-		else
-		{
-			if (_TCSNCAT_S(systemRoot, _countof(systemRoot), _WINSXS_FOLDER, _TRUNCATE) != 0)
-			{
-				/* error or not enough space */
-				return TRUE;
-			}
-		}
-		systemRootLen = _tcsnlen(systemRoot, _countof(systemRoot));
-
-		size_t nRet = CompareString( LOCALE_INVARIANT, NORM_IGNORECASE, 
-									 moduleFilePath, (DWORD)systemRootLen, 
-									 systemRoot, (DWORD)systemRootLen);
-		if( 0 == nRet )
-		{
-			/* error comparing the strings */
-			return TRUE;
-		}
-		if( CSTR_EQUAL == nRet )
-		{
-			/* moduleFileName begins with %SYSTEMROOT%\WinSxS\ */
-			return TRUE; /* dll has been loaded from the WinSxS cache */
-		}
-	}
-
-	/* check condition (5) */
-	{
-		WIN32_FIND_DATA findData = { 0 };
-		HANDLE hFind = INVALID_HANDLE_VALUE;
-
-		if (_TCSNCAT_S(moduleFilePath, _countof(moduleFilePath), _MANIFEST_FILENAME, _TRUNCATE) != 0)
-		{
-			/* error or truncation */
-			return TRUE;
-		}
-
-		hFind = FindFirstFile(moduleFilePath, &findData);
-		if (hFind != INVALID_HANDLE_VALUE) 
-		{
-			FindClose(hFind);
-			return TRUE; /* manifest is in the same folder as the dll */
-		} 
-		/* we could not find the manifest in the same folder as the dll */
-		moduleFilePath[moduleFilePathLen] = 0;
-		/* restore moduleFilePath so that it contains only the path of the module with final backslash */
-	}
-
-	/* case (6): loaded with another manifest */
-	return FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-/*
-STDAPI DllCanUnloadNow(void)
-{
-	return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-	return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	return _Module.RegisterServer(TRUE);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-	//No need to unregister typelib since ATL is a system component.
-	return S_OK;
-}
-*/
-
-#include <delayimp.h>
-
-extern "C"
-{
-FARPROC
-WINAPI
-Downlevel_DelayLoadFailureHook(
-	UINT unReason,
-	PDelayLoadInfo pDelayInfo
-	);
-
-PfnDliHook __pfnDliFailureHook2 = Downlevel_DelayLoadFailureHook;
-
-}

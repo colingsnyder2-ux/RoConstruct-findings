@@ -1,234 +1,77 @@
 // from server: 100% by auto
+// roc 2007-08 006169e0  unit: seg_00610000  size: 164 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 006169e0
+//
+// 006169e0  51                   push ecx
+// 006169e1  8b4e04               mov ecx, dword ptr [esi + 4]
+// 006169e4  6a04                 push 4
+// 006169e6  8d442404             lea eax, [esp + 4]
+// 006169ea  50                   push eax
+// 006169eb  51                   push ecx
+// 006169ec  e8cfc9ffff           call 0x6133c0
+// 006169f1  83c40c               add esp, 0xc
+// 006169f4  85c0                 test eax, eax
+// 006169f6  7423                 je 0x616a1b
+// 006169f8  8b560c               mov edx, dword ptr [esi + 0xc]
+// 006169fb  8b06                 mov eax, dword ptr [esi]
+// 006169fd  68e0357c00           push 0x7c35e0
+// 00616a02  52                   push edx
+// 00616a03  68c4357c00           push 0x7c35c4
+// 00616a08  50                   push eax
+// 00616a09  e88284ffff           call 0x60ee90
+// 00616a0e  8b0e                 mov ecx, dword ptr [esi]
+// 00616a10  6a03                 push 3
+// 00616a12  51                   push ecx
+// 00616a13  e808f6faff           call 0x5c6020
+// 00616a18  83c418               add esp, 0x18
+// 00616a1b  8b0424               mov eax, dword ptr [esp]
+// 00616a1e  85c0                 test eax, eax
+// 00616a20  7502                 jne 0x616a24
+// 00616a22  59                   pop ecx
+// 00616a23  c3                   ret 
+// 00616a24  8b5608               mov edx, dword ptr [esi + 8]
+// 00616a27  57                   push edi
+// 00616a28  50                   push eax
+// 00616a29  8b06                 mov eax, dword ptr [esi]
+// 00616a2b  52                   push edx
+// 00616a2c  50                   push eax
+// 00616a2d  e82ecaffff           call 0x613460
+// 00616a32  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 00616a36  8b5604               mov edx, dword ptr [esi + 4]
+// 00616a39  51                   push ecx
+// 00616a3a  8bf8                 mov edi, eax
+// 00616a3c  57                   push edi
+// 00616a3d  52                   push edx
+// 00616a3e  e87dc9ffff           call 0x6133c0
+// 00616a43  83c418               add esp, 0x18
+// 00616a46  85c0                 test eax, eax
+// 00616a48  7423                 je 0x616a6d
+// 00616a4a  8b460c               mov eax, dword ptr [esi + 0xc]
+// 00616a4d  8b0e                 mov ecx, dword ptr [esi]
+// 00616a4f  68e0357c00           push 0x7c35e0
+// 00616a54  50                   push eax
+// 00616a55  68c4357c00           push 0x7c35c4
+// 00616a5a  51                   push ecx
+// 00616a5b  e83084ffff           call 0x60ee90
+// 00616a60  8b16                 mov edx, dword ptr [esi]
+// 00616a62  6a03                 push 3
+// 00616a64  52                   push edx
+// 00616a65  e8b6f5faff           call 0x5c6020
+// 00616a6a  83c418               add esp, 0x18
+// 00616a6d  8b442404             mov eax, dword ptr [esp + 4]
+// 00616a71  8b0e                 mov ecx, dword ptr [esi]
+// 00616a73  83c0ff               add eax, -1
+// 00616a76  50                   push eax
+// 00616a77  57                   push edi
+// 00616a78  51                   push ecx
+// 00616a79  e8f2c2ffff           call 0x612d70
+// 00616a7e  83c40c               add esp, 0xc
+// 00616a81  5f                   pop edi
+// 00616a82  59                   pop ecx
+// 00616a83  c3                   ret 
+// library lua-5.1.4/lundump.c (function _LoadString)
+
 // roc-lang: c
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 lundump.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: lundump.c,v 2.7.1.4 2008/04/04 19:51:41 roberto Exp $
-** load precompiled Lua chunks
-** See Copyright Notice in lua.h
-*/
-
-#include <string.h>
-
-#define lundump_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "ldebug.h"
-#include "ldo.h"
-#include "lfunc.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstring.h"
-#include "lundump.h"
-#include "lzio.h"
-
-typedef struct {
- lua_State* L;
- ZIO* Z;
- Mbuffer* b;
- const char* name;
-} LoadState;
-
-#ifdef LUAC_TRUST_BINARIES
-#define IF(c,s)
-#define error(S,s)
-#else
-#define IF(c,s)		if (c) error(S,s)
-
-static void error(LoadState* S, const char* why)
-{
- luaO_pushfstring(S->L,"%s: %s in precompiled chunk",S->name,why);
- luaD_throw(S->L,LUA_ERRSYNTAX);
-}
-#endif
-
-#define LoadMem(S,b,n,size)	LoadBlock(S,b,(n)*(size))
-#define	LoadByte(S)		(lu_byte)LoadChar(S)
-#define LoadVar(S,x)		LoadMem(S,&x,1,sizeof(x))
-#define LoadVector(S,b,n,size)	LoadMem(S,b,n,size)
-
-static void LoadBlock(LoadState* S, void* b, size_t size)
-{
- size_t r=luaZ_read(S->Z,b,size);
- IF (r!=0, "unexpected end");
-}
-
-static int LoadChar(LoadState* S)
-{
- char x;
- LoadVar(S,x);
- return x;
-}
-
-static int LoadInt(LoadState* S)
-{
- int x;
- LoadVar(S,x);
- IF (x<0, "bad integer");
- return x;
-}
-
-static lua_Number LoadNumber(LoadState* S)
-{
- lua_Number x;
- LoadVar(S,x);
- return x;
-}
-
-static TString* LoadString(LoadState* S)
-{
- size_t size;
- LoadVar(S,size);
- if (size==0)
-  return NULL;
- else
- {
-  char* s=luaZ_openspace(S->L,S->b,size);
-  LoadBlock(S,s,size);
-  return luaS_newlstr(S->L,s,size-1);		/* remove trailing '\0' */
- }
-}
-
-static void LoadCode(LoadState* S, Proto* f)
-{
- int n=LoadInt(S);
- f->code=luaM_newvector(S->L,n,Instruction);
- f->sizecode=n;
- LoadVector(S,f->code,n,sizeof(Instruction));
-}
-
-static Proto* LoadFunction(LoadState* S, TString* p);
-
-static void LoadConstants(LoadState* S, Proto* f)
-{
- int i,n;
- n=LoadInt(S);
- f->k=luaM_newvector(S->L,n,TValue);
- f->sizek=n;
- for (i=0; i<n; i++) setnilvalue(&f->k[i]);
- for (i=0; i<n; i++)
- {
-  TValue* o=&f->k[i];
-  int t=LoadChar(S);
-  switch (t)
-  {
-   case LUA_TNIL:
-   	setnilvalue(o);
-	break;
-   case LUA_TBOOLEAN:
-   	setbvalue(o,LoadChar(S)!=0);
-	break;
-   case LUA_TNUMBER:
-	setnvalue(o,LoadNumber(S));
-	break;
-   case LUA_TSTRING:
-	setsvalue2n(S->L,o,LoadString(S));
-	break;
-   default:
-	error(S,"bad constant");
-	break;
-  }
- }
- n=LoadInt(S);
- f->p=luaM_newvector(S->L,n,Proto*);
- f->sizep=n;
- for (i=0; i<n; i++) f->p[i]=NULL;
- for (i=0; i<n; i++) f->p[i]=LoadFunction(S,f->source);
-}
-
-static void LoadDebug(LoadState* S, Proto* f)
-{
- int i,n;
- n=LoadInt(S);
- f->lineinfo=luaM_newvector(S->L,n,int);
- f->sizelineinfo=n;
- LoadVector(S,f->lineinfo,n,sizeof(int));
- n=LoadInt(S);
- f->locvars=luaM_newvector(S->L,n,LocVar);
- f->sizelocvars=n;
- for (i=0; i<n; i++) f->locvars[i].varname=NULL;
- for (i=0; i<n; i++)
- {
-  f->locvars[i].varname=LoadString(S);
-  f->locvars[i].startpc=LoadInt(S);
-  f->locvars[i].endpc=LoadInt(S);
- }
- n=LoadInt(S);
- f->upvalues=luaM_newvector(S->L,n,TString*);
- f->sizeupvalues=n;
- for (i=0; i<n; i++) f->upvalues[i]=NULL;
- for (i=0; i<n; i++) f->upvalues[i]=LoadString(S);
-}
-
-static Proto* LoadFunction(LoadState* S, TString* p)
-{
- Proto* f;
- if (++S->L->nCcalls > LUAI_MAXCCALLS) error(S,"code too deep");
- f=luaF_newproto(S->L);
- setptvalue2s(S->L,S->L->top,f); incr_top(S->L);
- f->source=LoadString(S); if (f->source==NULL) f->source=p;
- f->linedefined=LoadInt(S);
- f->lastlinedefined=LoadInt(S);
- f->nups=LoadByte(S);
- f->numparams=LoadByte(S);
- f->is_vararg=LoadByte(S);
- f->maxstacksize=LoadByte(S);
- LoadCode(S,f);
- LoadConstants(S,f);
- LoadDebug(S,f);
- IF (!luaG_checkcode(f), "bad code");
- S->L->top--;
- S->L->nCcalls--;
- return f;
-}
-
-static void LoadHeader(LoadState* S)
-{
- char h[LUAC_HEADERSIZE];
- char s[LUAC_HEADERSIZE];
- luaU_header(h);
- LoadBlock(S,s,LUAC_HEADERSIZE);
- IF (memcmp(h,s,LUAC_HEADERSIZE)!=0, "bad header");
-}
-
-/*
-** load precompiled chunk
-*/
-Proto* luaU_undump (lua_State* L, ZIO* Z, Mbuffer* buff, const char* name)
-{
- LoadState S;
- if (*name=='@' || *name=='=')
-  S.name=name+1;
- else if (*name==LUA_SIGNATURE[0])
-  S.name="binary string";
- else
-  S.name=name;
- S.L=L;
- S.Z=Z;
- S.b=buff;
- LoadHeader(&S);
- return LoadFunction(&S,luaS_newliteral(L,"=?"));
-}
-
-/*
-* make header
-*/
-void luaU_header (char* h)
-{
- int x=1;
- memcpy(h,LUA_SIGNATURE,sizeof(LUA_SIGNATURE)-1);
- h+=sizeof(LUA_SIGNATURE)-1;
- *h++=(char)LUAC_VERSION;
- *h++=(char)LUAC_FORMAT;
- *h++=(char)*(char*)&x;				/* endianness */
- *h++=(char)sizeof(int);
- *h++=(char)sizeof(size_t);
- *h++=(char)sizeof(Instruction);
- *h++=(char)sizeof(lua_Number);
- *h++=(char)(((lua_Number)0.5)==0);		/* is lua_Number integral? */
-}

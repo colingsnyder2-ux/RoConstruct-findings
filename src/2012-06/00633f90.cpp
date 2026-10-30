@@ -1,137 +1,38 @@
 // from server: 100% by auto
+// roc 2012-06 00633f90  unit: G3D::Random  size: 121 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 00633f90
+//
+// 00633f90  8bc1                 mov eax, ecx
+// 00633f92  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 00633f96  0fb611               movzx edx, byte ptr [ecx]
+// 00633f99  f30f2ac2             cvtsi2ss xmm0, edx
+// 00633f9d  f30f1100             movss dword ptr [eax], xmm0
+// 00633fa1  0fb65101             movzx edx, byte ptr [ecx + 1]
+// 00633fa5  f30f1008             movss xmm1, dword ptr [eax]
+// 00633fa9  f30f2ac2             cvtsi2ss xmm0, edx
+// 00633fad  f30f114004           movss dword ptr [eax + 4], xmm0
+// 00633fb2  0fb65102             movzx edx, byte ptr [ecx + 2]
+// 00633fb6  f30f2ac2             cvtsi2ss xmm0, edx
+// 00633fba  f30f114008           movss dword ptr [eax + 8], xmm0
+// 00633fbf  0fb64903             movzx ecx, byte ptr [ecx + 3]
+// 00633fc3  f30f2ac1             cvtsi2ss xmm0, ecx
+// 00633fc7  f30f11400c           movss dword ptr [eax + 0xc], xmm0
+// 00633fcc  f30f1005303bb500     movss xmm0, dword ptr [0xb53b30]
+// 00633fd4  f30f59c8             mulss xmm1, xmm0
+// 00633fd8  f30f1108             movss dword ptr [eax], xmm1
+// 00633fdc  f30f104804           movss xmm1, dword ptr [eax + 4]
+// 00633fe1  f30f59c8             mulss xmm1, xmm0
+// 00633fe5  f30f114804           movss dword ptr [eax + 4], xmm1
+// 00633fea  f30f104808           movss xmm1, dword ptr [eax + 8]
+// 00633fef  f30f59c8             mulss xmm1, xmm0
+// 00633ff3  f30f114808           movss dword ptr [eax + 8], xmm1
+// 00633ff8  f30f10480c           movss xmm1, dword ptr [eax + 0xc]
+// 00633ffd  f30f59c8             mulss xmm1, xmm0
+// 00634001  f30f11480c           movss dword ptr [eax + 0xc], xmm1
+// 00634006  c20400               ret 4
+// library rbx2016-g3d/Color4.cpp (function ??0Color4@G3D@@QAE@ABVColor4uint8@1@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d Color4.cpp
-
-// Candidate translation unit (score above; library headers required).
-/**
- @file Color4.cpp
-
- Color class.
-
- @author Morgan McGuire, http://graphics.cs.williams.edu
- @cite Portions by Laura Wollstadt, graphics3d.com
- @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
-
-
- @created 2002-06-25
- @edited  2009-11-10
- */
-
-#include <stdlib.h>
-#include "G3D/Color4.h"
-#include "G3D/Color4uint8.h"
-#include "G3D/Vector4.h"
-#include "G3D/format.h"
-#include "G3D/stringutils.h"
-
-namespace G3D {
-
-const Color4& Color4::one() {
-    const static Color4 x(1.0f, 1.0f, 1.0f, 1.0f);
-    return x;
-}
-
-
-const Color4& Color4::zero() {
-    static Color4 c(0.0f, 0.0f, 0.0f, 0.0f);
-    return c;
-}
-
-
-const Color4& Color4::inf() {
-    static Color4 c((float)G3D::finf(), (float)G3D::finf(), (float)G3D::finf(), (float)G3D::finf());
-    return c;
-}
-
-
-const Color4& Color4::nan() {
-    static Color4 c((float)G3D::fnan(), (float)G3D::fnan(), (float)G3D::fnan(), (float)G3D::fnan());
-    return c;
-}
-
-
-const Color4& Color4::clear() {
-    return Color4::zero();
-}
-
-
-Color4::Color4(const Vector4& v) {
-    r = v.x;
-    g = v.y;
-    b = v.z;
-    a = v.w;
-}
-
-
-Color4::Color4(const Color4uint8& c) : r(c.r), g(c.g), b(c.b), a(c.a) {
-    *this /= 255.0f;
-}
-
-size_t Color4::hashCode() const {
-    unsigned int rhash = (*(int*)(void*)(&r));
-    unsigned int ghash = (*(int*)(void*)(&g));
-    unsigned int bhash = (*(int*)(void*)(&b));
-    unsigned int ahash = (*(int*)(void*)(&a));
-
-    return rhash + (ghash * 37) + (bhash * 101) + (ahash * 241);
-}
-
-Color4 Color4::fromARGB(uint32 x) {
-    return Color4(
-        (float)((x >> 16) & 0xFF), 
-        (float)((x >> 8) & 0xFF),
-        (float)(x & 0xFF), 
-        (float)((x >> 24) & 0xFF)) / 255.0;
-}
-
-
-//----------------------------------------------------------------------------
-
-Color4 Color4::operator/ (float fScalar) const {
-    Color4 kQuot;
-
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        kQuot.r = fInvScalar * r;
-        kQuot.g = fInvScalar * g;
-        kQuot.b = fInvScalar * b;
-        kQuot.a = fInvScalar * a;
-        return kQuot;
-
-    } else {
-
-        return Color4::inf();
-    }
-}
-
-//----------------------------------------------------------------------------
-
-Color4& Color4::operator/= (float fScalar) {
-    if (fScalar != 0.0f) {
-		float fInvScalar = 1.0f / fScalar;
-        r *= fInvScalar;
-        g *= fInvScalar;
-        b *= fInvScalar;
-        a *= fInvScalar;
-    } else {
-        r = (float)G3D::finf();
-        g = (float)G3D::finf();
-        b = (float)G3D::finf();
-        a = (float)G3D::finf();
-    }
-
-    return *this;
-}
-
-//----------------------------------------------------------------------------
-
-std::string Color4::toString() const {
-    return G3D::format("(%g, %g, %g, %g)", r, g, b, a);
-}
-
-//----------------------------------------------------------------------------
-
-}; // namespace
-

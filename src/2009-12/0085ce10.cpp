@@ -1,596 +1,74 @@
+// roc 2009-12 0085ce10  unit: CXTPDockingPane  size: 239 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0085ce10
+//
+// 0085ce10  6aff                 push -1
+// 0085ce12  683de59500           push 0x95e53d
+// 0085ce17  64a100000000         mov eax, dword ptr fs:[0]
+// 0085ce1d  50                   push eax
+// 0085ce1e  51                   push ecx
+// 0085ce1f  53                   push ebx
+// 0085ce20  55                   push ebp
+// 0085ce21  56                   push esi
+// 0085ce22  57                   push edi
+// 0085ce23  a10052b600           mov eax, dword ptr [0xb65200]
+// 0085ce28  33c4                 xor eax, esp
+// 0085ce2a  50                   push eax
+// 0085ce2b  8d442418             lea eax, [esp + 0x18]
+// 0085ce2f  64a300000000         mov dword ptr fs:[0], eax
+// 0085ce35  8bf1                 mov esi, ecx
+// 0085ce37  89742414             mov dword ptr [esp + 0x14], esi
+// 0085ce3b  e802960c00           call 0x926442
+// 0085ce40  8b442428             mov eax, dword ptr [esp + 0x28]
+// 0085ce44  33ed                 xor ebp, ebp
+// 0085ce46  50                   push eax
+// 0085ce47  8d7e20               lea edi, [esi + 0x20]
+// 0085ce4a  55                   push ebp
+// 0085ce4b  8bcf                 mov ecx, edi
+// 0085ce4d  896c2428             mov dword ptr [esp + 0x28], ebp
+// 0085ce51  e8da3b0500           call 0x8b0a30
+// 0085ce56  8d5e58               lea ebx, [esi + 0x58]
+// 0085ce59  8bcb                 mov ecx, ebx
+// 0085ce5b  c644242001           mov byte ptr [esp + 0x20], 1
+// 0085ce60  e87bf9fdff           call 0x83c7e0
+// 0085ce65  8d8ec0000000         lea ecx, [esi + 0xc0]
+// 0085ce6b  c70664d79f00         mov dword ptr [esi], 0x9fd764
+// 0085ce71  c70704d79f00         mov dword ptr [edi], 0x9fd704
+// 0085ce77  c703a4d69f00         mov dword ptr [ebx], 0x9fd6a4
+// 0085ce7d  ff1574de9800         call dword ptr [0x98de74]
+// 0085ce83  83c8ff               or eax, 0xffffffff
+// 0085ce86  8986bc000000         mov dword ptr [esi + 0xbc], eax
+// 0085ce8c  8986dc000000         mov dword ptr [esi + 0xdc], eax
+// 0085ce92  33c0                 xor eax, eax
+// 0085ce94  b903000000           mov ecx, 3
+// 0085ce99  8986cc000000         mov dword ptr [esi + 0xcc], eax
+// 0085ce9f  b8007d0000           mov eax, 0x7d00
+// 0085cea4  884c2420             mov byte ptr [esp + 0x20], cl
+// 0085cea8  898ee4000000         mov dword ptr [esi + 0xe4], ecx
+// 0085ceae  8bc8                 mov ecx, eax
+// 0085ceb0  898ed8000000         mov dword ptr [esi + 0xd8], ecx
+// 0085ceb6  8bce                 mov ecx, esi
+// 0085ceb8  89aec4000000         mov dword ptr [esi + 0xc4], ebp
+// 0085cebe  89aeb4000000         mov dword ptr [esi + 0xb4], ebp
+// 0085cec4  89aeb8000000         mov dword ptr [esi + 0xb8], ebp
+// 0085ceca  89aec8000000         mov dword ptr [esi + 0xc8], ebp
+// 0085ced0  89aee0000000         mov dword ptr [esi + 0xe0], ebp
+// 0085ced6  89aed0000000         mov dword ptr [esi + 0xd0], ebp
+// 0085cedc  8986d4000000         mov dword ptr [esi + 0xd4], eax
+// 0085cee2  e861950c00           call 0x926448
+// 0085cee7  8bc6                 mov eax, esi
+// 0085cee9  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0085ceed  64890d00000000       mov dword ptr fs:[0], ecx
+// 0085cef4  59                   pop ecx
+// 0085cef5  5f                   pop edi
+// 0085cef6  5e                   pop esi
+// 0085cef7  5d                   pop ebp
+// 0085cef8  5b                   pop ebx
+// 0085cef9  83c410               add esp, 0x10
+// 0085cefc  c20400               ret 4
+// copied from an identical function in another client (function ??0CXTPDockingPane@@IAE@PAVCXTPDockingPaneLayout@@@Z)
+
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPane.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPDockingPane.cpp : implementation of the CXTPDockingPaneclass.
-//
-// This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "TabManager/XTPTabManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPDockingPane.h"
-#include "XTPDockingPaneContext.h"
-#include "XTPDockingPaneManager.h"
-#include "XTPDockingPaneTabbedContainer.h"
-#include "XTPDockingPaneAutoHidePanel.h"
-#include "XTPDockingPaneMiniWnd.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CXTPDockingPane::CXTPDockingPane(CXTPDockingPaneLayout* pLayout)
-	: CXTPDockingPaneBase(xtpPaneTypeDockingPane, pLayout)
-{
-	m_dwOptions = 0;
-	m_hwndChild = 0;
-	m_nID = 0;
-	m_nIconID = -1;
-	m_dwData = 0;
-	m_clrItemTab = COLORREF_NULL;
-	m_nIDHelp = 0;
-	m_bEnabled = xtpPaneEnabled;
-
-	m_ptMinTrackSize = CPoint(0, 0);
-	m_ptMaxTrackSize = CPoint(32000, 32000);
-
-	EnableAutomation();
-
-
-}
-
-CXTPDockingPane::~CXTPDockingPane()
-{
-
-}
-
-void CXTPDockingPane::SetID(int nID)
-{
-	ASSERT(nID != 0);
-
-	m_nID = nID;
-	CString strTitle;
-	if (strTitle.LoadString(nID))
-	{
-		m_strTitle = strTitle;
-	}
-
-}
-
-void CXTPDockingPane::SetWindowRect(CRect rc)
-{
-	m_rcWindow = rc;
-	m_szDocking = m_rcWindow.Size();
-}
-
-XTPXTPDockingPaneEnableOptions CXTPDockingPane::GetEnabled() const
-{
-	return m_bEnabled;
-}
-
-void CXTPDockingPane::SetEnabled(XTPXTPDockingPaneEnableOptions bEnabled)
-{
-	if (m_bEnabled != bEnabled)
-	{
-		m_bEnabled = bEnabled;
-		InvalidatePane(TRUE);
-	}
-}
-
-void CXTPDockingPane::OnSizeParent(CWnd* pParent, CRect rect, LPVOID lParam)
-{
-	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
-	SetDockingSite(pParent);
-
-	if (lpLayout == 0 || lpLayout->hDWP != NULL)
-	{
-		m_rcWindow = rect;
-
-		if (pParent && m_pParentContainer)
-		{
-			MapWindowPoints(pParent->GetSafeHwnd(), m_pParentContainer->GetPaneHwnd(), (LPPOINT)&rect, 2);
-			if (m_hwndChild) ::MoveWindow(m_hwndChild, rect.left, rect.top, rect.Width(), rect.Height(), TRUE);
-			if (m_hwndChild) ::EnableWindow(m_hwndChild, m_bEnabled & xtpPaneEnableClient ? TRUE : FALSE);
-		}
-	}
-}
-
-void CXTPDockingPane::SetFocus()
-{
-	if (m_hwndChild)
-	{
-		if (!IsChild(m_hwndChild, ::GetFocus()))
-			::SetFocus(m_hwndChild);
-	}
-}
-BOOL CXTPDockingPane::IsFocus() const
-{
-	HWND hwndFocus = ::GetFocus();
-	return (m_hwndChild != 0) && (hwndFocus == m_hwndChild || IsChild(m_hwndChild, hwndFocus));
-
-}
-
-void CXTPDockingPane::SetParentContainer(CXTPDockingPaneBase* pContainer)
-{
-	m_pParentContainer = pContainer;
-
-	if (m_hwndChild == 0)
-		return;
-
-	if (pContainer)
-	{
-		ASSERT(pContainer->GetType() == xtpPaneTypeTabbedContainer);
-		::SetParent(m_hwndChild, pContainer->GetPaneHwnd());
-
-	}
-	else
-	{
-		::ShowWindow(m_hwndChild, SW_HIDE);
-		::SetParent(m_hwndChild, GetDockingPaneManager()->GetSafeHwnd());
-
-		m_pDockingSite = NULL;
-	}
-}
-
-void CXTPDockingPane::ShowWindow(BOOL bShow)
-{
-	if (bShow)
-	{
-		GetDockingPaneManager()->NotifyOwner(XTP_DPN_SHOWWINDOW, (LPARAM)this);
-	}
-	if (m_hwndChild)
-	{
-		::ShowWindow(m_hwndChild, bShow ? SW_SHOW : SW_HIDE);
-	}
-}
-
-void CXTPDockingPane::Close()
-{
-	GetDockingPaneManager()->ClosePane(this);
-}
-
-void CXTPDockingPane::Hide()
-{
-	GetDockingPaneManager()->HidePane(this);
-}
-
-void CXTPDockingPane::Select()
-{
-	GetDockingPaneManager()->ShowPane(this);
-}
-
-CWnd* CXTPDockingPane::GetDockingSite() const
-{
-	return m_pParentContainer ? m_pParentContainer->m_pDockingSite : 0;
-
-}
-
-CFrameWnd* CXTPDockingPane::GetParentFrame() const
-{
-	CWnd* pSite = GetDockingSite();
-
-	return pSite && pSite->IsFrameWnd() ? (CFrameWnd*)pSite : NULL;
-}
-
-void CXTPDockingPane::Copy(CXTPDockingPane* pClone)
-{
-	m_szDocking = pClone->m_szDocking;
-	m_strTitle = pClone->m_strTitle;
-	m_nIconID = pClone->m_nIconID;
-	m_dwOptions = pClone->m_dwOptions;
-	m_dwData = pClone->m_dwData;
-	m_nID = pClone->m_nID;
-	m_bEnabled = pClone->m_bEnabled;
-
-	m_ptMinTrackSize = pClone->m_ptMinTrackSize;
-	m_ptMaxTrackSize = pClone->m_ptMaxTrackSize;
-
-	m_hwndChild = 0;
-}
-
-CXTPDockingPaneBase* CXTPDockingPane::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
-{
-	ASSERT(pMap);
-
-	CXTPDockingPane* pPane = (CXTPDockingPane*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
-
-	pPane->Copy(this);
-
-	if (pMap) pMap->SetAt(this, pPane);
-
-	return pPane;
-}
-
-
-BOOL CXTPDockingPane::IsValid() const
-{
-	return m_hwndChild != NULL;
-
-}
-void CXTPDockingPane::Attach(CWnd* pWnd)
-{
-	if (pWnd)
-	{
-		m_hwndChild = pWnd->GetSafeHwnd();
-		GetDockingPaneManager()->_Redraw();
-		if (m_pParentContainer)
-		{
-			::SetParent(m_hwndChild, m_pParentContainer->GetPaneHwnd());
-		}
-
-		if (GetDockingPaneManager()->m_bInitialUpdateCalled)
-		{
-			pWnd->SendMessage(WM_INITIALUPDATE, 0, 0);
-			pWnd->SendMessageToDescendants(WM_INITIALUPDATE, 0, 0, TRUE, TRUE);
-		}
-	}
-}
-
-CWnd* CXTPDockingPane::AttachView(CWnd* pParentWnd, CRuntimeClass* pViewClass, CDocument* pDocument/*= NULL*/, CCreateContext* pContext/*= NULL*/)
-{
-	if (!pContext && !pViewClass)
-		return NULL;
-
-#ifdef _DEBUG
-	ASSERT(pContext != NULL || pViewClass != NULL);
-	ASSERT(pContext != NULL || pViewClass->IsDerivedFrom(RUNTIME_CLASS(CWnd)));
-	ASSERT(pContext != NULL || AfxIsValidAddress(pViewClass, sizeof(CRuntimeClass), FALSE));
-#endif
-
-	CCreateContext contextT;
-	if (pContext == NULL)
-	{
-		// if no context specified, generate one from the
-		// currently selected client if possible.
-		contextT.m_pLastView = NULL;
-		contextT.m_pCurrentFrame = NULL;
-		contextT.m_pNewDocTemplate = NULL;
-		contextT.m_pCurrentDoc = pDocument;
-		contextT.m_pNewViewClass = pViewClass;
-
-		if (pDocument != NULL)
-			contextT.m_pNewDocTemplate = pDocument->GetDocTemplate();
-
-		pContext = &contextT;
-	}
-
-	CFrameWnd* pFrame = new CFrameWnd;
-
-	pFrame->Create(NULL, NULL, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-		CRect(0, 0, 0, 0), pParentWnd, NULL, 0, pContext);
-
-	pFrame->ModifyStyleEx(WS_EX_CLIENTEDGE, 0);
-
-	Attach(pFrame);
-
-	CWnd* pView = pFrame->GetDescendantWindow(AFX_IDW_PANE_FIRST, TRUE);
-
-	if (DYNAMIC_DOWNCAST(CView, pView))
-	{
-		pFrame->SetActiveView((CView*)pView);
-	}
-
-	return pView;
-}
-
-void CXTPDockingPane::Detach()
-{
-	if (m_hwndChild)
-	{
-		::ShowWindow(m_hwndChild, SW_HIDE);
-		::SetParent(m_hwndChild, GetDockingPaneManager()->GetSite()->GetSafeHwnd());
-		m_hwndChild = 0;
-	}
-	GetDockingPaneManager()->_Redraw();
-}
-
-CString CXTPDockingPane::GetTitle() const
-{
-	int nIndex = m_strTitle.Find('\n');
-	if (nIndex == -1)
-		return m_strTitle;
-	return m_strTitle.Left(nIndex);
-}
-
-CString CXTPDockingPane::GetShortTitle() const
-{
-	int nIndex = m_strTitle.Find('\n');
-	if (nIndex == -1)
-		return m_strTitle;
-	return m_strTitle.Mid(nIndex + 1);
-}
-
-void CXTPDockingPane::SetTitle(LPCTSTR lpszTitle)
-{
-	m_strTitle = lpszTitle;
-	InvalidatePane(FALSE);
-}
-
-BOOL CXTPDockingPane::IsClosed() const
-{
-	return m_pParentContainer == NULL;
-}
-
-BOOL CXTPDockingPane::IsHidden() const
-{
-	if (m_pParentContainer == NULL)
-		return FALSE;
-
-	return m_pParentContainer->IsHidden();
-}
-
-BOOL CXTPDockingPane::IsSelected() const
-{
-	if (m_pParentContainer == NULL) return FALSE;
-	ASSERT(m_pParentContainer->GetType() == xtpPaneTypeTabbedContainer);
-	return ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetSelected() == this;
-}
-
-BOOL CXTPDockingPane::IsFloating() const
-{
-	if (m_pParentContainer == NULL) return FALSE;
-	if (IsHidden()) return FALSE;
-	ASSERT(m_pParentContainer->GetType() == xtpPaneTypeTabbedContainer);
-
-	if (m_pParentContainer->GetPaneHwnd() == 0) return FALSE;
-
-	CWnd* pFrame = m_pParentContainer->GetDockingSite();
-	return pFrame && pFrame->IsKindOf(RUNTIME_CLASS(CXTPDockingPaneMiniWnd));
-}
-
-
-CXTPImageManagerIcon* CXTPDockingPane::GetIcon(int nWidth) const
-{
-	return GetDockingPaneManager()->GetIcon(GetIconID(), nWidth);
-}
-
-
-void CXTPDockingPane::SetItemColor(COLORREF clr)
-{
-	m_clrItemTab = clr;
-	InvalidatePane(FALSE);
-}
-
-COLORREF CXTPDockingPane::GetItemColor() const
-{
-	if (m_clrItemTab != COLORREF_NULL)
-		return m_clrItemTab;
-
-	if (m_hwndChild)
-	{
-		COLORREF clr = (COLORREF)::SendMessage(m_hwndChild, WM_XTP_GETTABCOLOR, 0, 0);
-		if (clr != 0)
-			return clr;
-	}
-	return xtpTabColorBlue + GetID() % 8;
-}
-
-void CXTPDockingPane::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
-{
-	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
-	pMinMaxInfo->ptMinTrackSize = m_ptMinTrackSize;
-	pMinMaxInfo->ptMaxTrackSize = m_ptMaxTrackSize;
-}
-
-DWORD CXTPDockingPane::GetOptions() const
-{
-	return GetDockingPaneManager()->m_dwDefaultPaneOptions | m_dwOptions;
-}
-
-void CXTPDockingPane::DeletePane()
-{
-	InternalRelease();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Accessible
-
-CCmdTarget* CXTPDockingPane::GetAccessible()
-{
-	return this;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleParent(IDispatch* FAR* ppdispParent)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	*ppdispParent = NULL;
-
-	if (m_pParentContainer)
-	{
-		*ppdispParent = ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetIDispatch(TRUE);
-		return S_OK;
-	}
-	return E_FAIL;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleChildCount(long FAR* pChildCount)
-{
-	if (pChildCount == 0)
-		return E_INVALIDARG;
-
-	*pChildCount = m_hwndChild ? 1 : 0;
-
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleChild(VARIANT varChild, IDispatch* FAR* ppdispChild)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	*ppdispChild = NULL;
-
-	if (GetChildIndex(&varChild) == 1)
-	{
-		return AccessibleObjectFromWindow(m_hwndChild, OBJID_WINDOW, IID_IDispatch, (void**)ppdispChild);
-	}
-
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleName(VARIANT varChild, BSTR* pszName)
-{
-	if (GetChildIndex(&varChild) != CHILDID_SELF)
-		return E_INVALIDARG;
-
-	*pszName = GetShortTitle().AllocSysString();
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleDescription(VARIANT varChild, BSTR* pszDescription)
-{
-	if (GetChildIndex(&varChild) != CHILDID_SELF)
-		return E_INVALIDARG;
-
-	*pszDescription = GetTitle().AllocSysString();
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
-{
-	pvarRole->vt = VT_EMPTY;
-
-	if (GetChildIndex(&varChild) == CHILDID_SELF)
-	{
-		pvarRole->vt = VT_I4;
-		pvarRole->lVal = ROLE_SYSTEM_PAGETAB;
-		return S_OK;
-	}
-
-	return E_INVALIDARG;
-}
-
-HRESULT CXTPDockingPane::AccessibleSelect(long /*flagsSelect*/, VARIANT varChild)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	if (GetChildIndex(&varChild) != CHILDID_SELF)
-		return E_INVALIDARG;
-
-	Select();
-
-	return S_OK;
-}
-
-
-HRESULT CXTPDockingPane::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
-{
-	if (GetChildIndex(&varChild) != CHILDID_SELF)
-		return E_INVALIDARG;
-
-	pvarState->vt = VT_I4;
-	pvarState->lVal = STATE_SYSTEM_SELECTABLE;
-
-	if (!m_pParentContainer)
-		pvarState->lVal |= STATE_SYSTEM_INVISIBLE;
-
-	if (m_pParentContainer && ((CXTPDockingPaneTabbedContainer*)m_pParentContainer)->GetSelected() == this)
-		pvarState->lVal |= STATE_SYSTEM_SELECTED;
-
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
-{
-	if (GetChildIndex(&varChild) != CHILDID_SELF)
-		return E_INVALIDARG;
-
-	*pszDefaultAction = SysAllocString(L"Switch");
-
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::AccessibleDoDefaultAction(VARIANT varChild)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	if (GetChildIndex(&varChild) != CHILDID_SELF)
-		return E_INVALIDARG;
-
-	Select();
-
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
-{
-	CRect rc;
-
-	if (GetChildIndex(&varChild) == 1)
-	{
-		GetWindowRect(m_hwndChild, &rc);
-	}
-	else if (GetChildIndex(&varChild) != CHILDID_SELF)
-	{
-		return E_INVALIDARG;
-	}
-	else
-	{
-		CXTPDockingPaneTabbedContainer* pContainer = (CXTPDockingPaneTabbedContainer*)m_pParentContainer;
-		if (!pContainer)
-			return S_FALSE;
-
-		pContainer->GetWindowRect(&rc);
-
-		if (pContainer->GetItemCount() > 1)
-		{
-			for (int i = 0; i < pContainer->GetItemCount(); i++)
-			{
-				CXTPTabManagerItem* pItem = pContainer->GetItem(i);
-				if (pItem->GetData() == (DWORD_PTR)this)
-				{
-					CRect rcItem = pItem->GetRect();
-					rc = CRect(CPoint(rc.left + rcItem.left, rc.top + rcItem.top), rcItem.Size());
-					break;
-				}
-			}
-		}
-	}
-
-
-	*pxLeft = rc.left;
-	*pyTop = rc.top;
-	*pcxWidth = rc.Width();
-	*pcyHeight = rc.Height();
-
-	return S_OK;
-}
-
-HRESULT CXTPDockingPane::AccessibleHitTest(long /*xLeft*/, long /*yTop*/, VARIANT* pvarID)
-{
-	pvarID->vt = VT_I4;
-	pvarID->lVal = 0;
-
-	return S_OK;
-}
-
-
-
-
-
-BEGIN_INTERFACE_MAP(CXTPDockingPane, CCmdTarget)
-	INTERFACE_PART(CXTPDockingPane, IID_IAccessible, ExternalAccessible)
-END_INTERFACE_MAP()

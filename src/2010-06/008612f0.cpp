@@ -1,927 +1,213 @@
 // from server: 100% by tester
+// roc 2008-06 00759e80  unit: CXTPDockingPaneWindowSelect  size: 604 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00759e80
+//
+// 00759e80  83ec1c               sub esp, 0x1c
+// 00759e83  53                   push ebx
+// 00759e84  55                   push ebp
+// 00759e85  56                   push esi
+// 00759e86  8bf1                 mov esi, ecx
+// 00759e88  8b86f8000000         mov eax, dword ptr [esi + 0xf8]
+// 00759e8e  8b80cc000000         mov eax, dword ptr [eax + 0xcc]
+// 00759e94  33ed                 xor ebp, ebp
+// 00759e96  57                   push edi
+// 00759e97  89442414             mov dword ptr [esp + 0x14], eax
+// 00759e9b  3bc5                 cmp eax, ebp
+// 00759e9d  7506                 jne 0x759ea5
+// 00759e9f  896c2410             mov dword ptr [esp + 0x10], ebp
+// 00759ea3  eb07                 jmp 0x759eac
+// 00759ea5  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 00759ea8  894c2410             mov dword ptr [esp + 0x10], ecx
+// 00759eac  ff15102e8000         call dword ptr [0x802e10]
+// 00759eb2  8b8ef8000000         mov ecx, dword ptr [esi + 0xf8]
+// 00759eb8  89442418             mov dword ptr [esp + 0x18], eax
+// 00759ebc  e8cfb1f8ff           call 0x6e5090
+// 00759ec1  8bf8                 mov edi, eax
+// 00759ec3  8bdf                 mov ebx, edi
+// 00759ec5  f7db                 neg ebx
+// 00759ec7  1bdb                 sbb ebx, ebx
+// 00759ec9  81e3e0f7ffff         and ebx, 0xfffff7e0
+// 00759ecf  81c320080000         add ebx, 0x820
+// 00759ed5  e856e1f8ff           call 0x6e8030
+// 00759eda  8bc8                 mov ecx, eax
+// 00759edc  e84feaf8ff           call 0x6e8930
+// 00759ee1  84c0                 test al, al
+// 00759ee3  7406                 je 0x759eeb
+// 00759ee5  81cb00000200         or ebx, 0x20000
+// 00759eeb  8b542414             mov edx, dword ptr [esp + 0x14]
+// 00759eef  8b8e2c010000         mov ecx, dword ptr [esi + 0x12c]
+// 00759ef5  6a00                 push 0
+// 00759ef7  52                   push edx
+// 00759ef8  8d442424             lea eax, [esp + 0x24]
+// 00759efc  50                   push eax
+// 00759efd  6800010080           push 0x80000100
+// 00759f02  6a00                 push 0
+// 00759f04  6a00                 push 0
+// 00759f06  6a00                 push 0
+// 00759f08  51                   push ecx
+// 00759f09  896c243c             mov dword ptr [esp + 0x3c], ebp
+// 00759f0d  896c2440             mov dword ptr [esp + 0x40], ebp
+// 00759f11  896c2444             mov dword ptr [esp + 0x44], ebp
+// 00759f15  896c2448             mov dword ptr [esp + 0x48], ebp
+// 00759f19  8b2e                 mov ebp, dword ptr [esi]
+// 00759f1b  53                   push ebx
+// 00759f1c  e86b70f4ff           call 0x6a0f8c
+// 00759f21  8b95a0010000         mov edx, dword ptr [ebp + 0x1a0]
+// 00759f27  f7df                 neg edi
+// 00759f29  1bff                 sbb edi, edi
+// 00759f2b  81e700004000         and edi, 0x400000
+// 00759f31  50                   push eax
+// 00759f32  81cf80000000         or edi, 0x80
+// 00759f38  57                   push edi
+// 00759f39  8bce                 mov ecx, esi
+// 00759f3b  ffd2                 call edx
+// 00759f3d  85c0                 test eax, eax
+// 00759f3f  7419                 je 0x759f5a
+// 00759f41  8b06                 mov eax, dword ptr [esi]
+// 00759f43  8b90b0010000         mov edx, dword ptr [eax + 0x1b0]
+// 00759f49  8bce                 mov ecx, esi
+// 00759f4b  ffd2                 call edx
+// 00759f4d  8bce                 mov ecx, esi
+// 00759f4f  85c0                 test eax, eax
+// 00759f51  7511                 jne 0x759f64
+// 00759f53  8b06                 mov eax, dword ptr [esi]
+// 00759f55  8b5068               mov edx, dword ptr [eax + 0x68]
+// 00759f58  ffd2                 call edx
+// 00759f5a  5f                   pop edi
+// 00759f5b  5e                   pop esi
+// 00759f5c  5d                   pop ebp
+// 00759f5d  33c0                 xor eax, eax
+// 00759f5f  5b                   pop ebx
+// 00759f60  83c41c               add esp, 0x1c
+// 00759f63  c3                   ret 
+// 00759f64  e8bf6af4ff           call 0x6a0a28
+// 00759f69  8b4620               mov eax, dword ptr [esi + 0x20]
+// 00759f6c  50                   push eax
+// 00759f6d  ff15a82d8000         call dword ptr [0x802da8]
+// 00759f73  50                   push eax
+// 00759f74  e8656cf4ff           call 0x6a0bde
+// 00759f79  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 00759f7d  33db                 xor ebx, ebx
+// 00759f7f  85ff                 test edi, edi
+// 00759f81  741d                 je 0x759fa0
+// 00759f83  57                   push edi
+// 00759f84  ff15cc2b8000         call dword ptr [0x802bcc]
+// 00759f8a  85c0                 test eax, eax
+// 00759f8c  7412                 je 0x759fa0
+// 00759f8e  53                   push ebx
+// 00759f8f  6800000008           push 0x8000000
+// 00759f94  53                   push ebx
+// 00759f95  57                   push edi
+// 00759f96  e811270600           call 0x7bc6ac
+// 00759f9b  bb01000000           mov ebx, 1
+// 00759fa0  834e3c10             or dword ptr [esi + 0x3c], 0x10
+// 00759fa4  f6463c10             test byte ptr [esi + 0x3c], 0x10
+// 00759fa8  7409                 je 0x759fb3
+// 00759faa  6a04                 push 4
+// 00759fac  8bce                 mov ecx, esi
+// 00759fae  e871240600           call 0x7bc424
+// 00759fb3  837e2000             cmp dword ptr [esi + 0x20], 0
+// 00759fb7  7416                 je 0x759fcf
+// 00759fb9  6897000000           push 0x97
+// 00759fbe  6a00                 push 0
+// 00759fc0  6a00                 push 0
+// 00759fc2  6a00                 push 0
+// 00759fc4  6a00                 push 0
+// 00759fc6  6a00                 push 0
+// 00759fc8  8bce                 mov ecx, esi
+// 00759fca  e8776af4ff           call 0x6a0a46
+// 00759fcf  85db                 test ebx, ebx
+// 00759fd1  740f                 je 0x759fe2
+// 00759fd3  6a00                 push 0
+// 00759fd5  6a00                 push 0
+// 00759fd7  6800000008           push 0x8000000
+// 00759fdc  57                   push edi
+// 00759fdd  e8ca260600           call 0x7bc6ac
+// 00759fe2  85ff                 test edi, edi
+// 00759fe4  7412                 je 0x759ff8
+// 00759fe6  ff15d02b8000         call dword ptr [0x802bd0]
+// 00759fec  3b4620               cmp eax, dword ptr [esi + 0x20]
+// 00759fef  7507                 jne 0x759ff8
+// 00759ff1  57                   push edi
+// 00759ff2  ff150c2d8000         call dword ptr [0x802d0c]
+// 00759ff8  837e4401             cmp dword ptr [esi + 0x44], 1
+// 00759ffc  0f85b9000000         jne 0x75a0bb
+// 0075a002  8b8624010000         mov eax, dword ptr [esi + 0x124]
+// 0075a008  85c0                 test eax, eax
+// 0075a00a  0f84ab000000         je 0x75a0bb
+// 0075a010  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 0075a013  85c9                 test ecx, ecx
+// 0075a015  7516                 jne 0x75a02d
+// 0075a017  8b4810               mov ecx, dword ptr [eax + 0x10]
+// 0075a01a  6a01                 push 1
+// 0075a01c  51                   push ecx
+// 0075a01d  8b8ef8000000         mov ecx, dword ptr [esi + 0xf8]
+// 0075a023  e838b9f8ff           call 0x6e5960
+// 0075a028  e999000000           jmp 0x75a0c6
+// 0075a02d  83f901               cmp ecx, 1
+// 0075a030  0f8590000000         jne 0x75a0c6
+// 0075a036  8bce                 mov ecx, esi
+// 0075a038  e803f0ffff           call 0x759040
+// 0075a03d  8b9624010000         mov edx, dword ptr [esi + 0x124]
+// 0075a043  8b4a10               mov ecx, dword ptr [edx + 0x10]
+// 0075a046  6a00                 push 0
+// 0075a048  51                   push ecx
+// 0075a049  6822020000           push 0x222
+// 0075a04e  50                   push eax
+// 0075a04f  ff15142e8000         call dword ptr [0x802e14]
+// 0075a055  8b9624010000         mov edx, dword ptr [esi + 0x124]
+// 0075a05b  8b4210               mov eax, dword ptr [edx + 0x10]
+// 0075a05e  50                   push eax
+// 0075a05f  e87a6bf4ff           call 0x6a0bde
+// 0075a064  8bd8                 mov ebx, eax
+// 0075a066  ff15102e8000         call dword ptr [0x802e10]
+// 0075a06c  50                   push eax
+// 0075a06d  e86c6bf4ff           call 0x6a0bde
+// 0075a072  8bf8                 mov edi, eax
+// 0075a074  85ff                 test edi, edi
+// 0075a076  743a                 je 0x75a0b2
+// 0075a078  837f2000             cmp dword ptr [edi + 0x20], 0
+// 0075a07c  7434                 je 0x75a0b2
+// 0075a07e  3bfb                 cmp edi, ebx
+// 0075a080  7444                 je 0x75a0c6
+// 0075a082  57                   push edi
+// 0075a083  8bcb                 mov ecx, ebx
+// 0075a085  e8867dfaff           call 0x701e10
+// 0075a08a  85c0                 test eax, eax
+// 0075a08c  7538                 jne 0x75a0c6
+// 0075a08e  8bcf                 mov ecx, edi
+// 0075a090  e87bcbf5ff           call 0x6b6c10
+// 0075a095  85c0                 test eax, eax
+// 0075a097  7419                 je 0x75a0b2
+// 0075a099  83782000             cmp dword ptr [eax + 0x20], 0
+// 0075a09d  7413                 je 0x75a0b2
+// 0075a09f  8bcf                 mov ecx, edi
+// 0075a0a1  e86acbf5ff           call 0x6b6c10
+// 0075a0a6  50                   push eax
+// 0075a0a7  8bcb                 mov ecx, ebx
+// 0075a0a9  e8627dfaff           call 0x701e10
+// 0075a0ae  85c0                 test eax, eax
+// 0075a0b0  7514                 jne 0x75a0c6
+// 0075a0b2  8bcb                 mov ecx, ebx
+// 0075a0b4  e86f69f4ff           call 0x6a0a28
+// 0075a0b9  eb0b                 jmp 0x75a0c6
+// 0075a0bb  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0075a0bf  51                   push ecx
+// 0075a0c0  ff15242e8000         call dword ptr [0x802e24]
+// 0075a0c6  8b16                 mov edx, dword ptr [esi]
+// 0075a0c8  8b4268               mov eax, dword ptr [edx + 0x68]
+// 0075a0cb  8bce                 mov ecx, esi
+// 0075a0cd  ffd0                 call eax
+// 0075a0cf  5f                   pop edi
+// 0075a0d0  5e                   pop esi
+// 0075a0d1  5d                   pop ebp
+// 0075a0d2  b801000000           mov eax, 1
+// 0075a0d7  5b                   pop ebx
+// 0075a0d8  83c41c               add esp, 0x1c
+// 0075a0db  c3                   ret 
+// library xtp-11.2.2-shared-mfc/Source\DockingPane\XTPDockingPaneKeyboardHook.cpp (function ?DoModal@CXTPDockingPaneWindowSelect@@AAEHXZ)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPaneKeyboardHook.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPDockingPaneKeyboardHook.cpp : implementation of the CXTPDockingPaneKeyboardHook class.
-//
-// This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/Resource.h"
-#include "Resource.h"
-
-#include "TabManager/XTPTabPaintManager.h"
-#include "TabManager/XTPTabManager.h"
-
-#include "XTPDockingPaneKeyboardHook.h"
-#include "XTPDockingPane.h"
-#include "XTPDockingPanePaintManager.h"
-#include "XTPDockingPaneManager.h"
-#include "XTPDockingPaneMiniWnd.h"
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneWindowSelect
-IMPLEMENT_DYNCREATE(CXTPDockingPaneWindowSelect, CMiniFrameWnd)
-
-CXTPDockingPaneWindowSelect::CXTPDockingPaneWindowSelect()
-{
-	LOGFONT lfIcon;
-	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
-
-	lfIcon.lfWeight = FW_NORMAL;
-	m_fnt.CreateFontIndirect(&lfIcon);
-
-	lfIcon.lfWeight = FW_BOLD;
-	m_fntBold.CreateFontIndirect(&lfIcon);
-
-	XTPResourceManager()->LoadString(&m_strActiveTools, XTP_IDS_DOCKINGPANE_SELECTWINDOW_ACTIVETOOLS);
-	XTPResourceManager()->LoadString(&m_strActiveFiles, XTP_IDS_DOCKINGPANE_SELECTWINDOW_ACTIVEFILES);
-
-	m_pSelected = NULL;
-	m_pManager = NULL;
-	m_bActivatePanes = FALSE;
-
-	m_nPaneCount = 0;
-	m_nFirstFile = 0;
-
-	m_hHandCursor = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
-
-	if (m_hHandCursor == 0)
-		m_hHandCursor = XTPResourceManager()->LoadCursor(XTP_IDC_HAND);
-
-	m_hArrowCursor = AfxGetApp()->LoadStandardCursor(IDC_ARROW);
-}
-
-CXTPDockingPaneWindowSelect::~CXTPDockingPaneWindowSelect()
-{
-	for (int i = 0; i < (int)m_arrItems.GetSize(); i++)
-	{
-		delete m_arrItems[i];
-	}
-	m_arrItems.RemoveAll();
-}
-
-int CXTPDockingPaneWindowSelect::CalcItemHeight(CDC* pDC)
-{
-	CXTPFontDC font(pDC, &m_fnt);
-	CSize szFont = pDC->GetTextExtent(_T(" "), 1);
-
-	CSize szIcon = m_pManager->GetPaintManager()->GetTabPaintManager()->m_szIcon;
-
-	return max(szIcon.cy + 4, szFont.cy + 4);
-}
-
-CXTPDockingPaneWindowSelect::CItem* CXTPDockingPaneWindowSelect::HitTest(CPoint point) const
-{
-	for (int i = 0; i < (int)m_arrItems.GetSize(); i++)
-	{
-		CItem* pItem = m_arrItems[i];
-		if (pItem->rc.PtInRect(point))
-		{
-			return pItem;
-		}
-	}
-	return 0;
-}
-
-CString CXTPDockingPaneWindowSelect::GetItemCaption(CItem* pItem) const
-{
-	if (pItem->type == itemPane)
-	{
-		return pItem->pPane->GetTitle();
-	}
-	else
-	{
-		CString strCaption;
-		CFrameWnd* pChild = DYNAMIC_DOWNCAST(CFrameWnd, CWnd::FromHandle(pItem->hWndFrame));
-		if (pChild && pChild->GetActiveDocument())
-		{
-			strCaption = pChild->GetActiveDocument()->GetTitle();
-		}
-		else
-		{
-			CWnd::FromHandle(pItem->hWndFrame)->GetWindowText(strCaption);
-		}
-		return strCaption;
-	}
-}
-
-
-CString CXTPDockingPaneWindowSelect::GetItemDescription(CItem* pItem) const
-{
-	if (pItem->type == itemPane)
-		return _T("");
-
-	CFrameWnd* pChild = DYNAMIC_DOWNCAST(CFrameWnd, CWnd::FromHandle(pItem->hWndFrame));
-
-	if (!pChild)
-		return _T("");
-
-	CDocument* pDocument = pChild->GetActiveDocument();
-	if (!pDocument)
-		return _T("");
-
-	CString strTypeName;
-	if (pDocument->GetDocTemplate() != NULL) pDocument->GetDocTemplate()->GetDocString(strTypeName, CDocTemplate::regFileTypeName);
-
-	return strTypeName;
-}
-
-CString CXTPDockingPaneWindowSelect::GetItemPath(CItem* pItem) const
-{
-	if (pItem->type == itemPane)
-		return _T("");
-
-	CFrameWnd* pChild = DYNAMIC_DOWNCAST(CFrameWnd, CWnd::FromHandle(pItem->hWndFrame));
-
-	if (!pChild)
-		return _T("");
-
-	CDocument* pDocument = pChild->GetActiveDocument();
-	if (!pDocument)
-		return  _T("");
-
-	return pDocument->GetPathName();
-}
-
-
-HWND CXTPDockingPaneWindowSelect::GetMDIClient() const
-{
-	CMDIFrameWnd* pFrame = DYNAMIC_DOWNCAST(CMDIFrameWnd, m_pManager->GetSite());
-	HWND hWndClient = pFrame ? pFrame->m_hWndMDIClient : NULL;
-	return hWndClient;
-}
-
-BOOL CXTPDockingPaneWindowSelect::Reposition()
-{
-	CClientDC dc(this);
-	int nItemHeight = CalcItemHeight(&dc);
-	int nItemWidth = 163;
-
-	int y = nItemHeight + 13;
-	int x = 9;
-	int nRow = 0;
-	int nColumn = 0;
-
-	m_pSelected = 0;
-
-	CXTPDockingPaneInfoList& paneList = m_pManager->GetPaneList();
-	POSITION pos = paneList.GetHeadPosition();
-	while (pos)
-	{
-		CXTPDockingPane* pPane = paneList.GetNext(pos);
-		if ((pPane->GetEnabled() & xtpPaneEnableClient) == 0)
-			continue;
-
-		CItem* pItem = new CItem;
-		pItem->pPane = pPane;
-		pItem->type = itemPane;
-
-		pItem->rc = CRect(x, y, x + nItemWidth, y + nItemHeight);
-		y += nItemHeight + 1;
-
-		pItem->nIndex = (int)m_arrItems.Add(pItem);
-		pItem->nColumn = nColumn;
-		pItem->nRow = nRow;
-
-		if (m_pManager->GetActivePane() == pPane)
-			m_pSelected = pItem;
-
-		nRow++;
-	}
-	m_nPaneCount = nRow;
-
-	if (m_bActivatePanes && m_nPaneCount > 0)
-	{
-		if (m_pSelected == 0)
-		{
-			m_pSelected = m_arrItems[GetKeyState(VK_SHIFT) >= 0 ? 0 : nRow - 1];
-		}
-		else
-		{
-			if (GetKeyState(VK_SHIFT) >= 0)
-			{
-				m_pSelected = m_arrItems[m_pSelected->nIndex >= nRow - 1 ? 0 : m_pSelected->nIndex + 1];
-			}
-			else
-			{
-				m_pSelected = m_arrItems[m_pSelected->nIndex > 0 ? m_pSelected->nIndex - 1 : nRow - 1];
-			}
-		}
-	}
-
-
-	int nTotalRow = nRow;
-
-	if (m_nPaneCount > 0)
-	{
-		CColumn col;
-		col.nFirst = 0;
-		col.nLast = nRow - 1;
-		m_arrColumns.Add(col);
-	}
-	else
-	{
-		m_bActivatePanes = FALSE;
-	}
-
-	m_nFirstFile = (int)m_arrItems.GetSize();
-	int nFirstColumn = m_nFirstFile;
-
-	nRow = 0;
-	if (m_nPaneCount > 0)
-	{
-		nColumn++;
-		x += nItemWidth + 12;
-		y = nItemHeight + 13;
-	}
-
-	HWND hWndClient = GetMDIClient();
-	HWND hWndActive = hWndClient ? (HWND)::SendMessage(hWndClient, WM_MDIGETACTIVE, 0, 0) : 0;
-	if (hWndActive)
-	{
-		HWND hWndFrame = hWndActive;
-		while (hWndFrame)
-		{
-			DWORD dwStyle = GetWindowLong(hWndFrame, GWL_STYLE);
-			if (((dwStyle & WS_VISIBLE) != 0) && ((dwStyle & WS_DISABLED) == 0))
-			{
-				if (nRow > 14)
-				{
-					CColumn colNext;
-					colNext.nFirst = nFirstColumn;
-					colNext.nLast = (int)m_arrItems.GetSize() - 1;
-					m_arrColumns.Add(colNext);
-
-					nTotalRow = max(nRow, nTotalRow);
-					nFirstColumn = (int)m_arrItems.GetSize();
-					nRow = 0;
-					nColumn++;
-					y = nItemHeight + 13;
-					x += nItemWidth + 12;
-				}
-				CItem* pItem = new CItem;
-				pItem->hWndFrame = hWndFrame;
-				pItem->type = itemMDIFrame;
-
-				pItem->rc = CRect(x, y, x + nItemWidth, y + nItemHeight);
-				y += nItemHeight + 1;
-
-				pItem->nIndex = (int)m_arrItems.Add(pItem);
-				pItem->nColumn = nColumn;
-				pItem->nRow = nRow;
-
-				if (hWndActive == hWndFrame && !m_bActivatePanes)
-					m_pSelected = pItem;
-
-				nRow++;
-			}
-
-			hWndFrame = ::GetWindow(hWndFrame, GW_HWNDNEXT);
-		}
-	}
-	else if (!hWndClient)
-	{
-		CItem* pItem = new CItem;
-		pItem->hWndFrame = m_pManager->GetSite()->GetSafeHwnd();
-		pItem->type = itemSDIFrame;
-
-		pItem->rc = CRect(x, y, x + nItemWidth, y + nItemHeight);
-
-		pItem->nIndex = (int)m_arrItems.Add(pItem);
-		pItem->nColumn = nColumn;
-		pItem->nRow = nRow;
-
-		if (m_pSelected == NULL)
-			m_pSelected = pItem;
-
-		m_nFirstFile++;
-	}
-
-	if (nFirstColumn < m_arrItems.GetSize())
-	{
-		CColumn colNext;
-		colNext.nFirst = nFirstColumn;
-		colNext.nLast = (int)m_arrItems.GetSize() - 1;
-		m_arrColumns.Add(colNext);
-	}
-
-	if (m_nFirstFile < m_arrItems.GetSize() - 1 && !m_bActivatePanes)
-	{
-		if (GetKeyState(VK_SHIFT) >= 0)
-			m_pSelected = m_arrItems[m_nFirstFile + 1];
-		else
-			m_pSelected = m_arrItems[ m_arrItems.GetSize() - 1];
-	}
-
-	nTotalRow = max(nRow, nTotalRow);
-	int nTotalColumns = max(2, (int)m_arrColumns.GetSize());
-
-	CSize sz(4 + (nItemWidth + 12) * nTotalColumns,
-		nItemHeight + 13 + nTotalRow * (nItemHeight + 1) + 110);
-
-	CXTPWindowRect rcWindow(m_pManager->GetSite());
-	CPoint ptCenter = rcWindow.CenterPoint();
-
-	CRect rect(CPoint(ptCenter.x - sz.cx / 2, ptCenter.y - sz.cy /2), sz);
-	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(),
-		SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-
-	return TRUE;
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPDockingPaneWindowSelect, CMiniFrameWnd)
-	//{{AFX_MSG_MAP(CXTPDockingPaneWindowSelect)
-	ON_WM_KILLFOCUS()
-	ON_WM_CAPTURECHANGED()
-	ON_WM_PAINT()
-	ON_WM_KEYDOWN()
-	ON_WM_SYSKEYDOWN()
-	ON_WM_KEYUP()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
-	ON_WM_CHAR()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-#define CS_DROPSHADOW       0x00020000
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneWindowSelect message handlers
-
-BOOL CXTPDockingPaneWindowSelect::DoModal()
-{
-	CWnd* pSite = m_pManager->GetSite();
-	HWND hWndParent = pSite->GetSafeHwnd();
-	HWND hwndFocus = ::GetFocus();
-
-	BOOL bLayoutRTL = m_pManager->IsLayoutRTL();
-	UINT nClassStyle = bLayoutRTL ? 0 : CS_SAVEBITS | CS_OWNDC;
-
-	if (XTPSystemVersion()->IsWinXPOrGreater()) // Windows XP only
-	{
-		nClassStyle |= CS_DROPSHADOW;
-	}
-
-	if (!CreateEx(WS_EX_TOOLWINDOW | (bLayoutRTL ? WS_EX_LAYOUTRTL : 0),
-		AfxRegisterWndClass(nClassStyle, m_hArrowCursor), 0,
-		WS_POPUP | MFS_SYNCACTIVE, CRect(0, 0, 0, 0), pSite, 0))
-		return FALSE;
-
-	if (!Reposition())
-	{
-		DestroyWindow();
-		return FALSE;
-	}
-
-	SetFocus();
-	SetCapture();
-
-	BOOL bEnableParent = FALSE;
-	if (hWndParent != NULL && ::IsWindowEnabled(hWndParent))
-	{
-		CWnd::ModifyStyle(hWndParent, 0, WS_DISABLED, 0);
-		bEnableParent = TRUE;
-	}
-
-	m_nFlags |= WF_CONTINUEMODAL;
-
-	if (m_nFlags & WF_CONTINUEMODAL)
-	{
-		// enter modal loop
-		DWORD dwFlags = MLF_SHOWONIDLE;
-
-		VERIFY(RunModalLoop(dwFlags) == m_nModalResult);
-	}
-
-	// hide the window before enabling the parent, etc.
-	if (m_hWnd != NULL)
-		SetWindowPos(NULL, 0, 0, 0, 0, SWP_HIDEWINDOW|
-		SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
-
-	if (bEnableParent)
-		CWnd::ModifyStyle(hWndParent, WS_DISABLED, 0, 0);
-	if (hWndParent != NULL && ::GetActiveWindow() == m_hWnd)
-		::SetActiveWindow(hWndParent);
-
-	if (m_nModalResult == IDOK && m_pSelected)
-	{
-		if (m_pSelected->type == itemPane)
-		{
-			m_pManager->ShowPane(m_pSelected->pPane);
-		}
-		else if (m_pSelected->type == itemMDIFrame)
-		{
-			HWND hWndClient = GetMDIClient();
-			::SendMessage(hWndClient, WM_MDIACTIVATE, (WPARAM)m_pSelected->hWndFrame, 0);
-
-			CWnd* pWnd = CWnd::FromHandle(m_pSelected->hWndFrame);
-			CWnd* pFocus = GetFocus();
-
-			BOOL bHasFocus = pFocus->GetSafeHwnd() &&
-				(pFocus == pWnd || pWnd->IsChild(pFocus) || (pFocus->GetOwner()->GetSafeHwnd() && pWnd->IsChild(pFocus->GetOwner())));
-
-			if (!bHasFocus)
-				pWnd->SetFocus();
-		}
-	}
-	else
-	{
-		::SetFocus(hwndFocus);
-	}
-
-	DestroyWindow();
-	return TRUE;
-}
-
-void CXTPDockingPaneWindowSelect::OnKillFocus(CWnd* pNewWnd)
-{
-	CWnd::OnKillFocus(pNewWnd);
-
-	if (m_nFlags & WF_CONTINUEMODAL) EndModalLoop(IDCANCEL);
-}
-
-void CXTPDockingPaneWindowSelect::OnCaptureChanged(CWnd *pWnd)
-{
-	if (m_nFlags & WF_CONTINUEMODAL) EndModalLoop(IDCANCEL);
-
-	CWnd::OnCaptureChanged(pWnd);
-}
-
-void CXTPDockingPaneWindowSelect::OnPaint()
-{
-	CPaintDC dcPaint(this); // device context for painting
-	CXTPClientRect rc(this);
-
-	CXTPBufferDC dc(dcPaint);
-
-	dc.FillSolidRect(rc, GetSysColor(COLOR_3DFACE));
-
-	dc.Draw3dRect(rc, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER), GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
-
-	int nItemHeight = CalcItemHeight(&dc);
-
-	CXTPFontDC font(&dc, &m_fntBold);
-	dc.SetBkMode(TRANSPARENT);
-	dc.SetTextColor(COLOR_BTNTEXT);
-	if (m_nPaneCount > 0)
-	{
-		CRect rcActiveTools(9, 0, 9 + 163, nItemHeight + 12);
-		dc.DrawText(m_strActiveTools, rcActiveTools, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-
-		CRect rcActiveFiles( 9 + 13 + 163, 0, 9 + 13 + 2 * 163, nItemHeight + 12);
-		dc.DrawText(m_strActiveFiles, rcActiveFiles, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-	}
-	else
-	{
-		CRect rcActiveFiles( 9, 0, 9 + 2 * 163, nItemHeight + 12);
-		dc.DrawText(m_strActiveFiles, rcActiveFiles, DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-	}
-
-	font.SetFont(&m_fnt);
-
-	CSize szIcon = m_pManager->GetPaintManager()->GetTabPaintManager()->m_szIcon;
-
-	for (int i = 0; i < (int)m_arrItems.GetSize(); i++)
-	{
-		CItem* pItem = m_arrItems[i];
-
-		if (m_pSelected == pItem)
-		{
-			dc.FillSolidRect(pItem->rc, GetXtremeColor(XPCOLOR_HIGHLIGHT));
-			dc.Draw3dRect(pItem->rc, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER), GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
-
-		}
-
-		if (pItem->type == itemPane)
-		{
-			CPoint ptIcon(pItem->rc.left + 2, pItem->rc.CenterPoint().y - szIcon.cy/2);
-
-			CXTPImageManagerIcon* pImage = pItem->pPane->GetIcon(szIcon.cx);
-			if (pImage) pImage->Draw(&dc, ptIcon, szIcon);
-		}
-		else
-		{
-			CPoint ptIcon(pItem->rc.left + 2, pItem->rc.CenterPoint().y - szIcon.cy/2);
-
-			HICON hIcon = (HICON)::SendMessage(pItem->hWndFrame, WM_GETICON, ICON_SMALL, 0);
-			if (hIcon == NULL) hIcon = (HICON)::SendMessage(pItem->hWndFrame, WM_GETICON, ICON_BIG, 0);
-			if (hIcon == NULL) hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(pItem->hWndFrame, GCLP_HICONSM);
-
-			if (hIcon)
-			{
-				if (GetExStyle() & WS_EX_LAYOUTRTL)
-					::DrawIconEx(dc, ptIcon.x + szIcon.cx, ptIcon.y, hIcon, -szIcon.cx, szIcon.cy, 0, 0, DI_NORMAL);
-				else
-					::DrawIconEx(dc, ptIcon.x, ptIcon.y, hIcon, szIcon.cx, szIcon.cy, 0, 0, DI_NORMAL);
-			}
-		}
-
-		CRect rcText(pItem->rc);
-		rcText.left += 5 + szIcon.cx;
-		dc.DrawText(GetItemCaption(pItem), rcText, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
-	}
-
-	CRect rcInfoPane(11, rc.bottom - 100, rc.right - 11, rc.bottom - 10);
-	dc.Draw3dRect(rcInfoPane, GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER), GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER));
-
-	if (!m_pSelected)
-		return;
-
-	rcInfoPane.DeflateRect(15, 13, 15, 13);
-
-	font.SetFont(&m_fntBold);
-
-	CRect rcCaption(rcInfoPane.left, rcInfoPane.top, rcInfoPane.right, rcInfoPane.top + rcInfoPane.Height() / 3);
-	dc.DrawText(GetItemCaption(m_pSelected), rcCaption, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
-
-	font.SetFont(&m_fnt);
-
-	CRect rcTypeName(rcInfoPane.left, rcCaption.bottom, rcInfoPane.right, rcCaption.bottom + rcInfoPane.Height() / 3);
-	dc.DrawText(GetItemDescription(m_pSelected), rcTypeName, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
-
-	CRect rcPathName(rcInfoPane.left, rcTypeName.bottom, rcInfoPane.right, rcInfoPane.bottom);
-	dc.DrawText(GetItemPath(m_pSelected), rcPathName, DT_SINGLELINE | DT_VCENTER | DT_PATH_ELLIPSIS | DT_NOPREFIX);
-}
-
-void CXTPDockingPaneWindowSelect::Select(int nItem)
-{
-	Select(nItem >= 0 && nItem < m_arrItems.GetSize() ? m_arrItems[nItem] : NULL);
-}
-
-
-void CXTPDockingPaneWindowSelect::Select(CItem* pItem)
-{
-	if (m_pSelected != pItem)
-	{
-		m_pSelected = pItem;
-		Invalidate(FALSE);
-	}
-}
-
-void CXTPDockingPaneWindowSelect::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	CMiniFrameWnd::OnChar(nChar, nRepCnt, nFlags);
-}
-
-void CXTPDockingPaneWindowSelect::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPDockingPaneWindowSelect::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
-{
-	XTPDrawHelpers()->KeyToLayout(this, nChar);
-
-	if (nChar == VK_TAB)
-	{
-		if (GetKeyState(VK_SHIFT) >= 0)
-		{
-			int nSelected = m_pSelected ? m_pSelected->nIndex + 1: 0;
-			if (nSelected >= m_arrItems.GetSize())
-				nSelected = m_nFirstFile == m_arrItems.GetSize() ? 0 : m_nFirstFile;
-			else if (nSelected == m_nFirstFile)
-				nSelected = 0;
-			Select(nSelected);
-
-		}
-		else
-		{
-			int nSelected = m_pSelected ? m_pSelected->nIndex - 1: (int)m_arrItems.GetSize() - 1;
-			if (nSelected < 0)
-				nSelected = m_nFirstFile == 0 ? (int)m_arrItems.GetSize() - 1 : m_nFirstFile - 1;
-			else if (nSelected == m_nFirstFile - 1)
-				nSelected = (int)m_arrItems.GetSize() - 1;
-			Select(nSelected);
-		}
-	}
-	else if (nChar == VK_LEFT)
-	{
-		if (m_arrColumns.GetSize() > 1 && m_pSelected)
-		{
-			int nColumn = m_pSelected->nColumn;
-			int nRow = m_pSelected->nRow;
-			CColumn& col = m_arrColumns[nColumn > 0 ? nColumn - 1 : m_arrColumns.GetSize() - 1];
-			int nItem = col.nFirst + nRow > col.nLast ? col.nLast : col.nFirst + nRow;
-			Select(nItem);
-		}
-
-	}
-	else if (nChar == VK_RIGHT)
-	{
-		if (m_arrColumns.GetSize() > 1 && m_pSelected)
-		{
-			int nColumn = m_pSelected->nColumn;
-			int nRow = m_pSelected->nRow;
-			CColumn& col = m_arrColumns[nColumn < m_arrColumns.GetSize() - 1 ? nColumn + 1 : 0];
-			int nItem = col.nFirst + nRow > col.nLast ? col.nLast : col.nFirst + nRow;
-			Select(nItem);
-
-		}
-	}
-	else if (nChar == VK_DOWN)
-	{
-		int nSelected = m_pSelected ? m_pSelected->nIndex + 1 : 0;
-		Select(nSelected < m_arrItems.GetSize() ? nSelected : 0);
-	}
-	else if (nChar == VK_UP)
-	{
-		int nSelected = m_pSelected ? m_pSelected->nIndex - 1 : -1;
-		Select(nSelected >= 0 ? nSelected : (int)m_arrItems.GetSize() - 1);
-	}
-	else if (nChar == VK_SHIFT)
-	{
-
-	}
-	else
-	{
-		EndModalLoop(IDOK);
-	}
-}
-
-void CXTPDockingPaneWindowSelect::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (::GetKeyState(VK_CONTROL) >= 0)
-	{
-		EndModalLoop(IDOK);
-	}
-
-	CWnd::OnKeyUp(nChar, nRepCnt, nFlags);
-}
-
-void CXTPDockingPaneWindowSelect::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	CXTPClientRect rc(this);
-	if (!rc.PtInRect(point))
-		EndModalLoop(IDCANCEL);
-
-	CItem* pItem = HitTest(point);
-	if (pItem)
-	{
-		Select(pItem);
-	}
-
-	CWnd::OnLButtonDown(nFlags, point);
-}
-
-void CXTPDockingPaneWindowSelect::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	CItem* pItem = HitTest(point);
-	if (pItem)
-	{
-		m_pSelected = pItem;
-		EndModalLoop(IDOK);
-	}
-
-	CWnd::OnLButtonUp(nFlags, point);
-}
-
-void CXTPDockingPaneWindowSelect::OnMouseMove(UINT /*nFlags*/, CPoint point)
-{
-	CItem* pItem = HitTest(point);
-	::SetCursor(pItem ? m_hHandCursor : m_hArrowCursor);
-}
-
-void CXTPDockingPaneWindowSelect::PostNcDestroy()
-{
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneKeyboardHook
-
-CThreadLocal<CXTPDockingPaneKeyboardHook> CXTPDockingPaneKeyboardHook::_xtpKeyboardThreadState;
-
-
-
-CXTPDockingPaneKeyboardHook::CXTPDockingPaneKeyboardHook()
-{
-	m_pWindowSelect = 0;
-
-	m_hHookKeyboard = 0;
-
-#ifdef _AFXDLL
-	m_pModuleState = 0;
-#endif
-}
-
-CXTPDockingPaneKeyboardHook::~CXTPDockingPaneKeyboardHook()
-{
-	ASSERT(m_mapSites.IsEmpty());
-	ASSERT(m_hHookKeyboard == 0);
-}
-
-CXTPDockingPaneManager* CXTPDockingPaneKeyboardHook::FindFocusedManager()
-{
-	HWND hWnd = GetFocus();
-	while (hWnd)
-	{
-		CXTPDockingPaneManager* pManager = Lookup(hWnd);
-		if (pManager)
-		{
-			if (!pManager->GetSite()->IsWindowEnabled())
-				return FALSE;
-
-			return pManager;
-		}
-
-		LONG dwStyle = ::GetWindowLong(hWnd, GWL_STYLE);
-
-		if (dwStyle & WS_CHILD)
-		{
-			hWnd = ::GetParent(hWnd);
-		}
-		else if (::GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW)
-		{
-			CXTPDockingPaneMiniWnd* pMinWnd = DYNAMIC_DOWNCAST(CXTPDockingPaneMiniWnd,
-				CWnd::FromHandle(hWnd));
-
-			if (pMinWnd != NULL)
-				return pMinWnd->GetDockingPaneManager();
-
-			return NULL;
-		}
-		else return NULL;
-	}
-	return NULL;
-}
-
-LRESULT CALLBACK CXTPDockingPaneKeyboardHook::KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
-{
-	CXTPDockingPaneKeyboardHook* pKeyboardManager = GetThreadState();
-
-	if (code != HC_ACTION)
-		return CallNextHookEx(pKeyboardManager->m_hHookKeyboard, code, wParam, lParam);
-
-	if ((!(HIWORD(lParam) & KF_UP)))
-	{
-		if (wParam == VK_TAB && GetKeyState(VK_CONTROL) < 0 && !(HIWORD(lParam) & KF_ALTDOWN))
-		{
-			SAFE_MANAGE_STATE(pKeyboardManager->m_pModuleState);
-
-			CXTPDockingPaneWindowSelect*& pWindowSelect = pKeyboardManager->m_pWindowSelect;
-
-			if (pWindowSelect)
-			{
-				pWindowSelect->OnKeyDown(VK_TAB, 0, 0);
-				return TRUE;
-			}
-
-			CXTPDockingPaneManager* pManager = pKeyboardManager->FindFocusedManager();
-			if (pManager && (pManager->IsKeyboardNavigateEnabled() & xtpPaneKeyboardUseCtrlTab))
-			{
-				pWindowSelect = (CXTPDockingPaneWindowSelect*)pManager->GetKeyboardWindowSelectClass()->CreateObject();
-				pWindowSelect->m_pManager = pManager;
-				pWindowSelect->m_bActivatePanes = FALSE;
-
-				BOOL bResult = pWindowSelect->DoModal();
-
-				delete pWindowSelect;
-				pWindowSelect = 0;
-
-				if (bResult)
-					return TRUE;
-			}
-		}
-
-		if ((HIWORD(lParam) & KF_ALTDOWN) && (wParam == VK_F7) && GetKeyState(VK_CONTROL) >= 0)
-		{
-			SAFE_MANAGE_STATE(pKeyboardManager->m_pModuleState);
-
-			CXTPDockingPaneWindowSelect*& pWindowSelect = pKeyboardManager->m_pWindowSelect;
-
-			if (pWindowSelect)
-			{
-				pWindowSelect->OnKeyDown(VK_TAB, 0, 0);
-				return TRUE;
-			}
-
-			CXTPDockingPaneManager* pManager = pKeyboardManager->FindFocusedManager();
-			if (pManager && (pManager->IsKeyboardNavigateEnabled() & xtpPaneKeyboardUseAltF7))
-			{
-				pWindowSelect = (CXTPDockingPaneWindowSelect*)pManager->GetKeyboardWindowSelectClass()->CreateObject();
-				pWindowSelect->m_pManager = pManager;
-				pWindowSelect->m_bActivatePanes = TRUE;
-
-				BOOL bResult = pWindowSelect->DoModal();
-
-				delete pWindowSelect;
-				pWindowSelect = 0;
-
-				if (bResult)
-					return TRUE;
-			}
-		}
-
-		if ((HIWORD(lParam) & KF_ALTDOWN) && (wParam == VK_F6) && GetKeyState(VK_CONTROL) >= 0) // Alt + F6
-		{
-			SAFE_MANAGE_STATE(pKeyboardManager->m_pModuleState);
-
-			CXTPDockingPaneManager* pManager = pKeyboardManager->FindFocusedManager();
-			if (pManager && (pManager->IsKeyboardNavigateEnabled() & xtpPaneKeyboardUseAltF6))
-			{
-				pManager->PostMessage(WM_SYSCOMMAND,
-					(UINT)(GetKeyState(VK_SHIFT) >= 0 ? SC_NEXTWINDOW : SC_PREVWINDOW), 0);
-				return TRUE;
-			}
-		}
-
-		if ((HIWORD(lParam) & KF_ALTDOWN) && ((wParam == 0xBD || wParam == VK_SUBTRACT)) &&
-			GetKeyState(VK_CONTROL) >= 0 && GetKeyState(VK_SHIFT) >= 0) //  Alt + '-'
-		{
-			SAFE_MANAGE_STATE(pKeyboardManager->m_pModuleState);
-
-			CXTPDockingPaneManager* pManager = pKeyboardManager->FindFocusedManager();
-			if (pManager && (pManager->IsKeyboardNavigateEnabled() & xtpPaneKeyboardUseAltMinus))
-			{
-				CXTPDockingPane* pPane = pManager->GetActivePane();
-				if (pPane)
-				{
-					if (!pPane->IsClosed() && !pPane->IsHidden())
-						pManager->PostMessage(WM_SYSCOMMAND, SC_KEYMENU, MAKELONG(TEXT('-'), 0));
-					return TRUE;
-				}
-			}
-		}
-	}
-
-	return CallNextHookEx(pKeyboardManager->m_hHookKeyboard, code, wParam, lParam);
-}
-
-CXTPDockingPaneManager* CXTPDockingPaneKeyboardHook::Lookup(HWND hSite) const
-{
-	CXTPDockingPaneManager* pManager = NULL;
-	if (m_mapSites.Lookup(hSite, pManager))
-		return pManager;
-
-	return NULL;
-}
-
-void CXTPDockingPaneKeyboardHook::SetupKeyboardHook(CXTPDockingPaneManager* pManager, BOOL bSetup)
-{
-	if (!pManager->GetSite())
-		return;
-
-	if (bSetup)
-	{
-		if (Lookup(pManager->GetSite()->GetSafeHwnd()))
-			return;
-
-		if (m_hHookKeyboard == 0)
-		{
-			m_hHookKeyboard = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, AfxGetInstanceHandle(), GetCurrentThreadId());
-		}
-
-
-#ifdef _AFXDLL
-		m_pModuleState = AfxGetModuleState();
-#endif
-
-		m_mapSites.SetAt(pManager->GetSite()->GetSafeHwnd(), pManager);
-	}
-	else
-	{
-		if (Lookup(pManager->GetSite()->GetSafeHwnd()))
-		{
-			m_mapSites.RemoveKey(pManager->GetSite()->GetSafeHwnd());
-		}
-
-		if (m_hHookKeyboard && m_mapSites.IsEmpty())
-		{
-			UnhookWindowsHookEx(m_hHookKeyboard);
-			m_hHookKeyboard = 0;
-		}
-	}
-}

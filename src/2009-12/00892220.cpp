@@ -1,769 +1,164 @@
+// roc 2009-12 00892220  unit: CXTPDockBar  size: 437 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00892220
+//
+// 00892220  6aff                 push -1
+// 00892222  6868139600           push 0x961368
+// 00892227  64a100000000         mov eax, dword ptr fs:[0]
+// 0089222d  50                   push eax
+// 0089222e  83ec3c               sub esp, 0x3c
+// 00892231  53                   push ebx
+// 00892232  55                   push ebp
+// 00892233  56                   push esi
+// 00892234  57                   push edi
+// 00892235  a10052b600           mov eax, dword ptr [0xb65200]
+// 0089223a  33c4                 xor eax, esp
+// 0089223c  50                   push eax
+// 0089223d  8d442450             lea eax, [esp + 0x50]
+// 00892241  64a300000000         mov dword ptr fs:[0], eax
+// 00892247  8be9                 mov ebp, ecx
+// 00892249  8b442468             mov eax, dword ptr [esp + 0x68]
+// 0089224d  8bc8                 mov ecx, eax
+// 0089224f  83e102               and ecx, 2
+// 00892252  83e001               and eax, 1
+// 00892255  894c2468             mov dword ptr [esp + 0x68], ecx
+// 00892259  740d                 je 0x892268
+// 0089225b  33db                 xor ebx, ebx
+// 0089225d  3bcb                 cmp ecx, ebx
+// 0089225f  7507                 jne 0x892268
+// 00892261  baff7f0000           mov edx, 0x7fff
+// 00892266  eb04                 jmp 0x89226c
+// 00892268  33db                 xor ebx, ebx
+// 0089226a  33d2                 xor edx, edx
+// 0089226c  3bc3                 cmp eax, ebx
+// 0089226e  740b                 je 0x89227b
+// 00892270  3bcb                 cmp ecx, ebx
+// 00892272  7407                 je 0x89227b
+// 00892274  b8ff7f0000           mov eax, 0x7fff
+// 00892279  eb02                 jmp 0x89227d
+// 0089227b  33c0                 xor eax, eax
+// 0089227d  8b742460             mov esi, dword ptr [esp + 0x60]
+// 00892281  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
+// 00892285  8906                 mov dword ptr [esi], eax
+// 00892287  33c0                 xor eax, eax
+// 00892289  3919                 cmp dword ptr [ecx], ebx
+// 0089228b  895604               mov dword ptr [esi + 4], edx
+// 0089228e  0f94c0               sete al
+// 00892291  8bf8                 mov edi, eax
+// 00892293  897c246c             mov dword ptr [esp + 0x6c], edi
+// 00892297  3bfb                 cmp edi, ebx
+// 00892299  7404                 je 0x89229f
+// 0089229b  33c0                 xor eax, eax
+// 0089229d  eb0a                 jmp 0x8922a9
+// 0089229f  8b4560               mov eax, dword ptr [ebp + 0x60]
+// 008922a2  50                   push eax
+// 008922a3  ff1574cb9800         call dword ptr [0x98cb74]
+// 008922a9  837d6000             cmp dword ptr [ebp + 0x60], 0
+// 008922ad  89442430             mov dword ptr [esp + 0x30], eax
+// 008922b1  895c2414             mov dword ptr [esp + 0x14], ebx
+// 008922b5  895c2418             mov dword ptr [esp + 0x18], ebx
+// 008922b9  0f8eef000000         jle 0x8923ae
+// 008922bf  8d4c241c             lea ecx, [esp + 0x1c]
+// 008922c3  e85824f8ff           call 0x814720
+// 008922c8  33ff                 xor edi, edi
+// 008922ca  53                   push ebx
+// 008922cb  8bcd                 mov ecx, ebp
+// 008922cd  897c245c             mov dword ptr [esp + 0x5c], edi
+// 008922d1  e85af3ffff           call 0x891630
+// 008922d6  8bf0                 mov esi, eax
+// 008922d8  3bf7                 cmp esi, edi
+// 008922da  7432                 je 0x89230e
+// 008922dc  8d642400             lea esp, [esp]
+// 008922e0  8b16                 mov edx, dword ptr [esi]
+// 008922e2  8b8268010000         mov eax, dword ptr [edx + 0x168]
+// 008922e8  8bce                 mov ecx, esi
+// 008922ea  ffd0                 call eax
+// 008922ec  85c0                 test eax, eax
+// 008922ee  740f                 je 0x8922ff
+// 008922f0  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008922f4  56                   push esi
+// 008922f5  51                   push ecx
+// 008922f6  8d4c2424             lea ecx, [esp + 0x24]
+// 008922fa  e87189fdff           call 0x86ac70
+// 008922ff  43                   inc ebx
+// 00892300  53                   push ebx
+// 00892301  8bcd                 mov ecx, ebp
+// 00892303  e828f3ffff           call 0x891630
+// 00892308  8bf0                 mov esi, eax
+// 0089230a  3bf7                 cmp esi, edi
+// 0089230c  75d2                 jne 0x8922e0
+// 0089230e  837c242400           cmp dword ptr [esp + 0x24], 0
+// 00892313  7434                 je 0x892349
+// 00892315  8b442468             mov eax, dword ptr [esp + 0x68]
+// 00892319  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 0089231d  8d542430             lea edx, [esp + 0x30]
+// 00892321  52                   push edx
+// 00892322  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 00892326  50                   push eax
+// 00892327  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0089232b  51                   push ecx
+// 0089232c  52                   push edx
+// 0089232d  50                   push eax
+// 0089232e  8d4c2430             lea ecx, [esp + 0x30]
+// 00892332  51                   push ecx
+// 00892333  8bcd                 mov ecx, ebp
+// 00892335  e8d6fdffff           call 0x892110
+// 0089233a  6aff                 push -1
+// 0089233c  6a00                 push 0
+// 0089233e  8d4c2424             lea ecx, [esp + 0x24]
+// 00892342  8bf8                 mov edi, eax
+// 00892344  e85730fcff           call 0x8553a0
+// 00892349  85f6                 test esi, esi
+// 0089234b  753a                 jne 0x892387
+// 0089234d  85ff                 test edi, edi
+// 0089234f  7436                 je 0x892387
+// 00892351  8b542460             mov edx, dword ptr [esp + 0x60]
+// 00892355  39742468             cmp dword ptr [esp + 0x68], esi
+// 00892359  7418                 je 0x892373
+// 0089235b  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0089235f  8b4a04               mov ecx, dword ptr [edx + 4]
+// 00892362  03c7                 add eax, edi
+// 00892364  3bc8                 cmp ecx, eax
+// 00892366  89442418             mov dword ptr [esp + 0x18], eax
+// 0089236a  7e02                 jle 0x89236e
+// 0089236c  8bc1                 mov eax, ecx
+// 0089236e  894204               mov dword ptr [edx + 4], eax
+// 00892371  eb14                 jmp 0x892387
+// 00892373  8b442414             mov eax, dword ptr [esp + 0x14]
+// 00892377  8b0a                 mov ecx, dword ptr [edx]
+// 00892379  03c7                 add eax, edi
+// 0089237b  3bc8                 cmp ecx, eax
+// 0089237d  89442414             mov dword ptr [esp + 0x14], eax
+// 00892381  7e02                 jle 0x892385
+// 00892383  8bc1                 mov eax, ecx
+// 00892385  8902                 mov dword ptr [edx], eax
+// 00892387  8d4c241c             lea ecx, [esp + 0x1c]
+// 0089238b  c7442458ffffffff     mov dword ptr [esp + 0x58], 0xffffffff
+// 00892393  e8a823f8ff           call 0x814740
+// 00892398  43                   inc ebx
+// 00892399  3b5d60               cmp ebx, dword ptr [ebp + 0x60]
+// 0089239c  0f8c1dffffff         jl 0x8922bf
+// 008923a2  8b442430             mov eax, dword ptr [esp + 0x30]
+// 008923a6  8b742460             mov esi, dword ptr [esp + 0x60]
+// 008923aa  8b7c246c             mov edi, dword ptr [esp + 0x6c]
+// 008923ae  85ff                 test edi, edi
+// 008923b0  750b                 jne 0x8923bd
+// 008923b2  85c0                 test eax, eax
+// 008923b4  7407                 je 0x8923bd
+// 008923b6  50                   push eax
+// 008923b7  ff156ccb9800         call dword ptr [0x98cb6c]
+// 008923bd  8bc6                 mov eax, esi
+// 008923bf  8b4c2450             mov ecx, dword ptr [esp + 0x50]
+// 008923c3  64890d00000000       mov dword ptr fs:[0], ecx
+// 008923ca  59                   pop ecx
+// 008923cb  5f                   pop edi
+// 008923cc  5e                   pop esi
+// 008923cd  5d                   pop ebp
+// 008923ce  5b                   pop ebx
+// 008923cf  83c448               add esp, 0x48
+// 008923d2  c21000               ret 0x10
+// copied from an identical function in another client (function ?CalcDynamicLayout@CXTPDockBar@@IAE?AVCSize@@HKPAUAFX_SIZEPARENTPARAMS@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPDockBar.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPDockBar.cpp : implementation of the CXTPDockBar class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include <afxpriv.h>
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPDockBar.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPDockContext.h"
-#include "XTPPaintManager.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-// CXTPDockBar
-
-IMPLEMENT_DYNCREATE(CXTPDockBar, CWnd)
-
-CXTPDockBar::CXTPDockBar()
-{
-	m_arrBars.Add(NULL);
-	m_dwStyle = 0;
-	m_pCommandBars = NULL;
-
-	CXTPDrawHelpers::RegisterWndClass(0, _T("XTPDockBar"), 0);
-}
-
-CXTPDockBar::~CXTPDockBar()
-{
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPDockBar, CWnd)
-	ON_MESSAGE(WM_SIZEPARENT, OnSizeParent)
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_ERASEBKGND()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_NCHITTEST_EX()
-END_MESSAGE_MAP()
-
-
-
-// CXTPDockBar message handlers
-
-LRESULT CXTPDockBar::OnNcHitTest(CPoint point)
-{
-	if (GetPosition() == xtpBarTop && m_pCommandBars->GetMenuBar() != NULL && m_pCommandBars->GetMenuBar()->IsRibbonBar() &&
-		FindBar(m_pCommandBars->GetMenuBar()) != -1)
-	{
-		return HTTRANSPARENT;
-	}
-
-	return (LRESULT)CWnd::OnNcHitTest(point);
-}
-
-BOOL CXTPDockBar::Create(CWnd* pParentWnd, DWORD dwStyle, UINT nID)
-{
-	ASSERT(pParentWnd != NULL);
-
-	// save the xtp
-	m_dwStyle = (dwStyle & CBRS_ALL);
-
-	XTPBarPosition barPosition = GetPosition();
-	CString strWindowName = barPosition == xtpBarTop ? _T("xtpBarTop") :
-		barPosition == xtpBarLeft ? _T("xtpBarLeft") :
-		barPosition == xtpBarBottom ? _T("xtpBarBottom") : _T("xtpBarRight");
-
-	return CWnd::Create(_T("XTPDockBar"), strWindowName, dwStyle, CXTPEmptyRect(), pParentWnd, nID);
-}
-
-BOOL CXTPDockBar::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	// force clipsliblings (otherwise will cause repaint problems)
-	cs.style |= WS_CLIPSIBLINGS;
-	return TRUE;
-}
-
-
-
-CSize CXTPDockBar::CalcFixedLayout(BOOL /*bStretch*/, BOOL /*bHorz*/, AFX_SIZEPARENTPARAMS* /*lpLayout*/)
-{
-	return 0;
-}
-
-
-struct CXTPDockBar::DOCK_INFO
-{
-	DOCK_INFO(CXTPToolBar* p = 0, CRect rc = 0, int n = 0)
-	{
-		pBar = p;
-		rcMRUPos = rcBar = rc;
-		nIndex = n;
-		nMinWidth = 0;
-		nTotlaMinWidth = 0;
-	}
-
-	CXTPToolBar* pBar;
-	CRect rcBar;
-	CRect rcMRUPos;
-	int nIndex;
-	int nMinWidth;
-	int nTotlaMinWidth;
-};
-
-class CXTPDockBar::CDockInfoArray : public CArray<DOCK_INFO, DOCK_INFO&>
-{
-public:
-	void Sort()
-	{
-		qsort(GetData(), GetSize(), sizeof(DOCK_INFO), CompareFunc);
-	}
-	static int _cdecl CompareFunc(const void* elem1, const void* elem2)
-	{
-		return ((DOCK_INFO*)elem1)->rcBar.left < ((DOCK_INFO*)elem2)->rcBar.left ? -1 : 1;
-	}
-	void _swap(LONG& A, LONG& B)
-	{
-		int C = B;
-		B = A;
-		A = C;
-	}
-	void InvertRects()
-	{
-		for (int nPos = 0; nPos < GetSize(); nPos++)
-		{
-			CRect& rect = ElementAt(nPos).rcBar;
-			_swap(rect.left, rect.top);
-			_swap(rect.right, rect.bottom);
-		}
-	}
-};
-
-int CXTPDockBar::_GetMode(BOOL bHorz, CXTPToolBar* pBar)
-{
-	DWORD dwMode = bHorz ? LM_HORZ | LM_HORZDOCK : LM_VERTDOCK;
-
-	if (pBar->GetFlags() & xtpFlagStretched) dwMode |= LM_STRETCH;
-	if ((!m_pCommandBars->IsCustomizeMode() || m_pCommandBars->IsQuickCustomizeMode()) && pBar->GetFlags() & xtpFlagHideWrap)
-		return dwMode | LM_HIDEWRAP;
-
-	return dwMode;
-}
-
-int CXTPDockBar::_AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout, int& nRemove)
-{
-	CDockInfoArray arrInfo;
-
-	int nPos;
-
-	// Step 1. Getting maximum available size;
-	for (nPos = 0; nPos < arrRow.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrRow[nPos];
-		CSize sizeBar = pBar->CalcDockingLayout(nLength, _GetMode(bHorz, pBar));
-
-		CPoint p = bHorz ? CPoint(pBar->m_pDockContext->m_rectMRUDockPos.left, pt.y) :
-			CPoint(pt.x, pBar->m_pDockContext->m_rectMRUDockPos.top);
-
-		DOCK_INFO dockInfo(pBar, CRect(p, sizeBar), nPos);
-		arrInfo.Add(dockInfo);
-	}
-
-	ASSERT(arrInfo.GetSize() == arrRow.GetSize());
-
-	if (!bHorz) arrInfo.InvertRects();
-	arrInfo.Sort();
-
-	// Step 2. if Total length is more than available, fill empty area.
-	int nIndex = -1;
-	int nLen = 0;
-	BOOL bMove = TRUE;
-
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-
-		bMove = (rect.left < nLen && (nIndex < arrInfo[nPos].nIndex || bMove));
-		if (bMove) rect.OffsetRect(nLen - rect.left, 0);
-		nLen = rect.right;
-
-		nIndex = arrInfo[nPos].nIndex;
-	}
-
-	nLen = nLength;
-	nIndex = -1;
-	bMove = TRUE;
-
-	for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-		bMove = (rect.right - nLen > 0 && (nIndex < arrInfo[nPos].nIndex || bMove));
-		if (bMove) rect.OffsetRect(nLen - rect.right, 0);
-
-		nLen = rect.left;
-		nIndex = arrInfo[nPos].nIndex;
-	}
-
-	nLen = 0;
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CRect& rect = arrInfo[nPos].rcBar;
-		if (rect.left < nLen)
-			rect.OffsetRect(nLen - rect.left, 0);
-
-		nLen = rect.left + rect.Width();
-	}
-
-	// Step 3. if Total length is more than available, make it expandable.
-	if (nLen > nLength)
-	{
-		int nSum = 0;
-		for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-		{
-			CXTPToolBar* pBar = arrInfo[nPos].pBar;
-
-			if (!(_GetMode(bHorz, pBar) & LM_HIDEWRAP))
-				arrInfo[nPos].nMinWidth = nLength;
-			else
-			{
-				CSize sz = pBar->CalcDockingLayout(1, _GetMode(bHorz, pBar));
-				arrInfo[nPos].nMinWidth = bHorz ? sz.cx : sz.cy;
-			}
-
-			arrInfo[nPos].nTotlaMinWidth = nSum;
-			nSum += arrInfo[nPos].nMinWidth;
-		}
-
-		nLen = nLength;
-		for (nPos = (int)arrInfo.GetSize() - 1; nPos >= 0; nPos--)
-		{
-			CRect& rect = arrInfo[nPos].rcBar;
-			int nLeft = bHorz ? arrInfo[nPos].rcMRUPos.left : arrInfo[nPos].rcMRUPos.top;
-
-			if (nLeft > rect.left) nLeft = rect.left;
-			if (nLeft < nLen - rect.Width()) nLeft = nLen - rect.Width();
-
-			if (nLeft < arrInfo[nPos].nTotlaMinWidth) nLeft = arrInfo[nPos].nTotlaMinWidth;
-			if (nLen - nLeft < arrInfo[nPos].nMinWidth) nLeft = nLen - arrInfo[nPos].nMinWidth;
-
-			if ((nLen - nLeft < arrInfo[nPos].nMinWidth || nLeft < arrInfo[nPos].nTotlaMinWidth)
-				&& arrInfo.GetSize() != 1)
-			{
-				nRemove = arrInfo[arrInfo.GetSize() - 1].nIndex;
-				return -1;
-			}
-
-			rect.right = nLen;
-			nLen = rect.left = max(0, nLeft);
-		}
-	}
-
-	if (!bHorz) arrInfo.InvertRects();
-
-
-	int nWidth = 0;
-	// Calculate total width
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrInfo[nPos].pBar;
-		CRect& rect = arrInfo[nPos].rcBar;
-		CSize sizeBar = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), _GetMode(bHorz, pBar));
-		nWidth = max(nWidth, bHorz ? sizeBar.cy : sizeBar.cx);
-	}
-
-	if (lpLayout->hDWP == 0)
-		return nWidth;
-
-	// Step 4. Move it.
-	for (nPos = 0; nPos < arrInfo.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = arrInfo[nPos].pBar;
-		CRect& rect = arrInfo[nPos].rcBar;
-		int nMode = _GetMode(bHorz, pBar) | LM_COMMIT;
-
-		if (pBar->GetFlags() & xtpFlagStretchedShared)
-		{
-			if (bHorz)
-			{
-				rect.right = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.left;
-				rect.left = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.right, rect.left);
-			}
-			else
-			{
-				rect.bottom = nPos == arrInfo.GetSize() - 1 ? nLength : arrInfo[nPos + 1].rcBar.top;
-				rect.top = nPos == 0 ? 0 : min(arrInfo[nPos - 1].rcBar.bottom, rect.top);
-			}
-
-			nMode |= LM_STRETCH;
-		}
-
-		CSize sz = pBar->CalcDockingLayout(bHorz ? rect.Width() : rect.Height(), nMode, nWidth);
-		rect = CRect(rect.TopLeft(), sz);
-
-		pBar->m_pDockContext->m_uMRUDockPosition = GetPosition();
-
-		CXTPWindowRect rectOld(pBar);
-		ScreenToClient(&rectOld);
-
-		if (!::EqualRect(rectOld, rect))
-		{
-			AfxRepositionWindow(lpLayout, pBar->m_hWnd, &rect);
-			pBar->Redraw();
-		}
-	}
-	return nWidth;
-}
-
-int CXTPDockBar::AdjustRow(CToolBarArray& arrRow, CPoint pt, int nLength, BOOL bHorz, AFX_SIZEPARENTPARAMS* lpLayout)
-{
-	int nTotalWidth = 0;
-	CToolBarArray arrNext;
-
-	for (;;)
-	{
-		int nRemove = -1;
-		ASSERT(arrRow.GetSize() > 0);
-		int nWidth = _AdjustRow(arrRow, pt, nLength, bHorz, lpLayout, nRemove);
-
-		if (nWidth == -1)
-		{
-			ASSERT(nRemove != -1);
-			arrNext.Add(arrRow[nRemove]);
-			arrRow.RemoveAt(nRemove);
-		}
-		else
-		{
-			nTotalWidth += nWidth;
-
-			if (bHorz)
-				pt.y += nWidth;
-			else
-				pt.x += nWidth;
-
-			if (arrNext.GetSize() > 0)
-			{
-				arrRow.Copy(arrNext);
-				arrNext.RemoveAll();
-				continue;
-			}
-			break;
-		}
-	}
-	return nTotalWidth;
-}
-
-
-CSize CXTPDockBar::CalcDynamicLayout(int nLength, DWORD nMode, AFX_SIZEPARENTPARAMS* lpLayout)
-{
-	BOOL bHorz = nMode & LM_HORZ;
-	BOOL bStretch = nMode & LM_STRETCH;
-
-	CSize sizeFixed (bStretch && bHorz ? 32767 : 0, bStretch && !bHorz ? 32767 : 0);
-
-	BOOL bLayoutQuery = (lpLayout->hDWP == NULL);
-
-	// prepare for layout
-	AFX_SIZEPARENTPARAMS layout;
-	layout.hDWP = bLayoutQuery ? 0 : ::BeginDeferWindowPos((int)m_arrBars.GetSize());
-
-	CPoint pt(0, 0);
-	// layout all the control bars
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		CToolBarArray lst;
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-
-		while (pBar)
-		{
-			if (pBar->IsVisible()) lst.Add(pBar);
-			pBar = GetDockedCommandBar(++nPos);
-		}
-
-		int nWidth = 0;
-
-		if (lst.GetSize() != 0)
-		{
-			nWidth = AdjustRow(lst, pt, nLength, bHorz, &layout);
-			lst.RemoveAll();
-		}
-		if (pBar == NULL && nWidth != 0)
-		{
-			// end of row because pBar == NULL
-			if (bHorz)
-			{
-				pt.y += nWidth;
-				sizeFixed.cy = max(sizeFixed.cy, pt.y);
-			}
-			else
-			{
-				pt.x += nWidth;
-				sizeFixed.cx = max(sizeFixed.cx, pt.x);
-			}
-		}
-	}
-	if (!bLayoutQuery)
-	{
-		// move and resize all the windows at once!
-		if (layout.hDWP == NULL || !::EndDeferWindowPos(layout.hDWP))
-			TRACE0("Warning: DeferWindowPos failed - low system resources.\n");
-	}
-
-	return sizeFixed;
-}
-
-
-
-LRESULT CXTPDockBar::OnSizeParent(WPARAM, LPARAM lParam)
-{
-	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
-
-	DWORD dwStyle = GetStyle();
-	if (dwStyle & WS_VISIBLE)
-	{
-		// align the control bar
-		CRect rect;
-		rect.CopyRect(&lpLayout->rect);
-
-		CSize sizeAvail = rect.Size();  // maximum size available
-
-		// get maximum requested size
-		DWORD dwMode = lpLayout->bStretch ? LM_STRETCH : 0;
-		if ((m_dwStyle & CBRS_SIZE_DYNAMIC) && m_dwStyle & CBRS_FLOATING)
-			dwMode |= LM_HORZ | LM_MRUWIDTH;
-		else if (dwStyle & CBRS_ORIENT_HORZ)
-			dwMode |= LM_HORZ | LM_HORZDOCK;
-		else
-			dwMode |= LM_VERTDOCK;
-
-
-		int nLength = (dwStyle & CBRS_ORIENT_HORZ ? sizeAvail.cx : sizeAvail.cy) /*- 2 * GetSystemMetrics(SM_CXBORDER)*/;
-
-		CSize size = CalcDynamicLayout(nLength, dwMode, lpLayout);
-
-		size.cx = min(size.cx, sizeAvail.cx);
-		size.cy = min(size.cy, sizeAvail.cy);
-
-		if (dwStyle & CBRS_ORIENT_HORZ)
-		{
-			lpLayout->sizeTotal.cy += size.cy;
-			lpLayout->sizeTotal.cx = max(lpLayout->sizeTotal.cx, size.cx);
-			if (dwStyle & CBRS_ALIGN_TOP)
-				lpLayout->rect.top += size.cy;
-			else if (dwStyle & CBRS_ALIGN_BOTTOM)
-			{
-				rect.top = rect.bottom - size.cy;
-				lpLayout->rect.bottom -= size.cy;
-			}
-		}
-		else
-		{
-			lpLayout->sizeTotal.cx += size.cx;
-			lpLayout->sizeTotal.cy = max(lpLayout->sizeTotal.cy, size.cy);
-			if (dwStyle & CBRS_ALIGN_LEFT)
-				lpLayout->rect.left += size.cx;
-			else if (dwStyle & CBRS_ALIGN_RIGHT)
-			{
-				rect.left = rect.right - size.cx;
-				lpLayout->rect.right -= size.cx;
-			}
-		}
-
-		rect.right = rect.left + size.cx;
-		rect.bottom = rect.top + size.cy;
-
-		// only resize the window if doing layout and not just rect query
-		if (lpLayout->hDWP != NULL)
-			AfxRepositionWindow(lpLayout, m_hWnd, &rect);
-		Invalidate(FALSE);
-	}
-	return 0;
-}
-
-
-
-
-void CXTPDockBar::OnPaint()
-{
-	CPaintDC dc(this);
-	m_pCommandBars->GetPaintManager()->FillDockBar(&dc, this);
-}
-
-LRESULT CXTPDockBar::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		m_pCommandBars->GetPaintManager()->FillDockBar(pDC, this);
-	}
-
-	return TRUE;
-}
-
-
-BOOL CXTPDockBar::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTPDockBar::AdjustStretchBars()
-{
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-		if (pBar && pBar->GetFlags() & xtpFlagStretched)
-		{
-			if (nPos > 0 && GetDockedCommandBar(nPos - 1) != NULL)
-			{
-				m_arrBars.InsertAt(nPos, (CXTPToolBar*)NULL);
-				nPos++;
-			}
-			if (nPos < m_arrBars.GetSize() -1 && GetDockedCommandBar(nPos + 1) != NULL)
-			{
-				m_arrBars.InsertAt(nPos + 1, (CXTPToolBar*)NULL);
-				nPos++;
-			}
-		}
-	}
-}
-
-void CXTPDockBar::DockCommandBar(CXTPToolBar* pBar, LPCRECT lpRect)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pBar);
-	ASSERT_KINDOF(CXTPToolBar, pBar);
-
-	CRect rectBar;
-	pBar->GetWindowRect(&rectBar);
-	if (pBar->m_pDockBar == this && (lpRect == NULL || rectBar == *lpRect))
-	{
-		// already docked and no change in position
-		return;
-	}
-
-	int nPos = -1;
-	if (lpRect != NULL)
-	{
-		// insert into appropriate row
-		CRect rect(lpRect);
-		ScreenToClient(&rect);
-		CPoint ptMid(rect.left + rect.Width()/2, rect.top + rect.Height()/2);
-		nPos = Insert(pBar, rect, ptMid);
-
-		pBar->m_pDockContext->m_rectMRUDockPos = rect;
-	}
-	else
-	{
-		// always add on current row, then create new one
-		m_arrBars.Add(pBar);
-		m_arrBars.Add(NULL);
-
-		pBar->m_pDockContext->m_rectMRUDockPos.SetRectEmpty();
-	}
-
-	// attach it to the docking site
-	if (pBar->GetParent() != this)
-		pBar->SetParent(this);
-	if (pBar->m_pDockBar == this)
-		pBar->m_pDockBar->RemoveCommandBar(pBar, nPos);
-	else if (pBar->m_pDockBar != NULL)
-		pBar->m_pDockBar->RemoveCommandBar(pBar, -1);
-	pBar->m_pDockBar = this;
-
-	AdjustStretchBars();
-
-	// get parent frame for recalc layout
-	m_pCommandBars->RecalcFrameLayout(TRUE);
-}
-
-BOOL CXTPDockBar::RemoveCommandBar(CXTPToolBar* pBar, int nPosExclude)
-{
-	ASSERT_VALID(this);
-	ASSERT(pBar != NULL);
-	if (!pBar)
-		return FALSE;
-
-	int nPos = FindBar(pBar, nPosExclude);
-	ASSERT(nPos > 0);
-	if (nPos <= 0)
-		return FALSE;
-
-	m_arrBars.RemoveAt(nPos);
-	if (m_arrBars[nPos-1] == NULL && m_arrBars[nPos] == NULL)
-		m_arrBars.RemoveAt(nPos);
-
-	pBar->m_pDockBar = NULL;
-
-	// get parent frame for recalc layout/frame destroy
-	m_pCommandBars->RecalcFrameLayout(TRUE);
-
-	return TRUE;
-}
-
-
-
-CXTPToolBar* CXTPDockBar::GetDockedCommandBar(int nPos) const
-{
-	CXTPToolBar* pResult = (CXTPToolBar*)m_arrBars[nPos];
-	ASSERT(pResult == 0 || HIWORD(pResult) != 0); // XTPLibrary don't use placeholder
-	return pResult;
-}
-int CXTPDockBar::GetDockedCount() const
-{
-	int nCount = 0;
-	for (int i = 0; i < m_arrBars.GetSize(); i++)
-	{
-		if (GetDockedCommandBar(i) != NULL)
-			nCount++;
-	}
-	return nCount;
-}
-
-int CXTPDockBar::GetDockedVisibleCount() const
-{
-	int nCount = 0;
-	for (int i = 0; i < m_arrBars.GetSize(); i++)
-	{
-		CXTPToolBar* pBar = GetDockedCommandBar(i);
-		if (pBar != NULL && pBar->IsVisible())
-			nCount++;
-	}
-	return nCount;
-}
-
-int CXTPDockBar::FindBar(CXTPToolBar* pBar, int nPosExclude)
-{
-	for (int nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		if (nPos != nPosExclude && m_arrBars[nPos] == pBar)
-			return nPos;
-	}
-	return -1;
-}
-
-int CXTPDockBar::Insert(CXTPToolBar* pBarIns, CRect /*rect*/, CPoint ptMid)
-{
-	ASSERT_VALID(this);
-	ASSERT(pBarIns != NULL);
-
-	int nPos = 0;
-	int nPosInsAfter = 0;
-	int nWidth = 0;
-	int nTotalWidth = 0;
-	//int nPosInsBefore = 0;
-	BOOL bHorz = m_dwStyle & CBRS_ORIENT_HORZ;
-	BOOL bAllowTopMost = m_pCommandBars->GetMenuBar() == NULL ||
-		!m_pCommandBars->GetMenuBar()->IsRibbonBar() || FindBar(m_pCommandBars->GetMenuBar()) == -1;
-
-	for (nPos = 0; nPos < m_arrBars.GetSize(); nPos++)
-	{
-		CXTPToolBar* pBar = GetDockedCommandBar(nPos);
-		if (pBar && !pBar->IsVisible())
-			continue;
-
-		if (pBar != NULL)
-		{
-			CRect rectBar;
-			pBar->GetWindowRect(&rectBar);
-			ScreenToClient(&rectBar);
-			nWidth = max(nWidth,
-				bHorz ? rectBar.bottom : rectBar.right);
-		}
-		else // end of row because pBar == NULL
-		{
-			if ((bHorz ? ptMid.y : ptMid.x) < nWidth && (bAllowTopMost || nPosInsAfter > 1))
-			{
-				if (nPos == 0 || ((bHorz ? ptMid.y : ptMid.x) == nTotalWidth)) // first section
-					m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
-				m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
-
-				return nPosInsAfter + 1;
-			}
-			nTotalWidth = nWidth;
-			nWidth = 0;
-			nPosInsAfter = nPos;
-		}
-	}
-
-	// create a new row
-	m_arrBars.InsertAt(nPosInsAfter + 1, (CXTPToolBar*)NULL);
-	m_arrBars.InsertAt(nPosInsAfter + 1, pBarIns);
-
-	return nPosInsAfter + 1;
-}
-
-
-XTPBarPosition CXTPDockBar::GetPosition() const
-{
-	if (m_dwStyle & CBRS_TOP) return xtpBarTop;
-	if (m_dwStyle & CBRS_BOTTOM) return xtpBarBottom;
-	if (m_dwStyle & CBRS_LEFT) return xtpBarLeft;
-	return xtpBarRight;
-}
-
-BOOL CXTPDockBar::IsVerticalPosition() const
-{
-	return !(m_dwStyle & CBRS_ORIENT_HORZ);
-}
-
-void CXTPDockBar::OnRButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	ClientToScreen(&point);
-	m_pCommandBars->ContextMenu(NULL, point);
-}
-
-
-void CXTPDockBar::GetVisibleToolbars(int nPos, CToolBarArray& arrBars)
-{
-	ASSERT(nPos != -1);
-	ASSERT(m_arrBars[nPos]);
-
-	while (m_arrBars[nPos] != NULL && nPos > 0)
-	{
-		nPos--;
-	}
-	nPos++;
-
-	CDockInfoArray arrInfo;
-
-	while (m_arrBars[nPos] != NULL)
-	{
-		CXTPToolBar* pBar = m_arrBars[nPos++];
-		if (pBar->IsVisible())
-		{
-			DOCK_INFO dockInfo(pBar, CXTPWindowRect(pBar), nPos);
-			arrInfo.Add(dockInfo);
-		}
-	}
-
-	if (m_dwStyle & CBRS_LEFT || m_dwStyle & CBRS_RIGHT) arrInfo.InvertRects();
-	arrInfo.Sort();
-
-	for (int i = 0; i < arrInfo.GetSize(); i++)
-	{
-		arrBars.Add(arrInfo[i].pBar);
-	}
-
-}

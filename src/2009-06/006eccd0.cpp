@@ -1,181 +1,46 @@
 // from server: 100% by auto
+// roc 2009-06 006eccd0  unit: RBX::PartDropTool  size: 86 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 006eccd0
+//
+// 006eccd0  53                   push ebx
+// 006eccd1  8b5c240c             mov ebx, dword ptr [esp + 0xc]
+// 006eccd5  55                   push ebp
+// 006eccd6  8b6c240c             mov ebp, dword ptr [esp + 0xc]
+// 006eccda  56                   push esi
+// 006eccdb  57                   push edi
+// 006eccdc  8d3c9d14000000       lea edi, [ebx*4 + 0x14]
+// 006ecce3  57                   push edi
+// 006ecce4  6a00                 push 0
+// 006ecce6  6a00                 push 0
+// 006ecce8  55                   push ebp
+// 006ecce9  e8720a0000           call 0x6ed760
+// 006eccee  8bf0                 mov esi, eax
+// 006eccf0  6a06                 push 6
+// 006eccf2  56                   push esi
+// 006eccf3  55                   push ebp
+// 006eccf4  e817d0ffff           call 0x6e9d10
+// 006eccf9  8b442438             mov eax, dword ptr [esp + 0x38]
+// 006eccfd  83c41c               add esp, 0x1c
+// 006ecd00  c6460600             mov byte ptr [esi + 6], 0
+// 006ecd04  89460c               mov dword ptr [esi + 0xc], eax
+// 006ecd07  885e07               mov byte ptr [esi + 7], bl
+// 006ecd0a  85db                 test ebx, ebx
+// 006ecd0c  7411                 je 0x6ecd1f
+// 006ecd0e  8d0437               lea eax, [edi + esi]
+// 006ecd11  4b                   dec ebx
+// 006ecd12  83e804               sub eax, 4
+// 006ecd15  c70000000000         mov dword ptr [eax], 0
+// 006ecd1b  85db                 test ebx, ebx
+// 006ecd1d  75f2                 jne 0x6ecd11
+// 006ecd1f  5f                   pop edi
+// 006ecd20  8bc6                 mov eax, esi
+// 006ecd22  5e                   pop esi
+// 006ecd23  5d                   pop ebp
+// 006ecd24  5b                   pop ebx
+// 006ecd25  c3                   ret 
+// library lua-5.1.4/lfunc.c (function _luaF_newLclosure)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 lfunc.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: lfunc.c,v 2.12.1.2 2007/12/28 14:58:43 roberto Exp $
-** Auxiliary functions to manipulate prototypes and closures
-** See Copyright Notice in lua.h
-*/
-
-
-#include <stddef.h>
-
-#define lfunc_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "lfunc.h"
-#include "lgc.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-
-
-
-Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
-  Closure *c = cast(Closure *, luaM_malloc(L, sizeCclosure(nelems)));
-  luaC_link(L, obj2gco(c), LUA_TFUNCTION);
-  c->c.isC = 1;
-  c->c.env = e;
-  c->c.nupvalues = cast_byte(nelems);
-  return c;
-}
-
-
-Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
-  Closure *c = cast(Closure *, luaM_malloc(L, sizeLclosure(nelems)));
-  luaC_link(L, obj2gco(c), LUA_TFUNCTION);
-  c->l.isC = 0;
-  c->l.env = e;
-  c->l.nupvalues = cast_byte(nelems);
-  while (nelems--) c->l.upvals[nelems] = NULL;
-  return c;
-}
-
-
-UpVal *luaF_newupval (lua_State *L) {
-  UpVal *uv = luaM_new(L, UpVal);
-  luaC_link(L, obj2gco(uv), LUA_TUPVAL);
-  uv->v = &uv->u.value;
-  setnilvalue(uv->v);
-  return uv;
-}
-
-
-UpVal *luaF_findupval (lua_State *L, StkId level) {
-  global_State *g = G(L);
-  GCObject **pp = &L->openupval;
-  UpVal *p;
-  UpVal *uv;
-  while (*pp != NULL && (p = ngcotouv(*pp))->v >= level) {
-    lua_assert(p->v != &p->u.value);
-    if (p->v == level) {  /* found a corresponding upvalue? */
-      if (isdead(g, obj2gco(p)))  /* is it dead? */
-        changewhite(obj2gco(p));  /* ressurect it */
-      return p;
-    }
-    pp = &p->next;
-  }
-  uv = luaM_new(L, UpVal);  /* not found: create a new one */
-  uv->tt = LUA_TUPVAL;
-  uv->marked = luaC_white(g);
-  uv->v = level;  /* current value lives in the stack */
-  uv->next = *pp;  /* chain it in the proper position */
-  *pp = obj2gco(uv);
-  uv->u.l.prev = &g->uvhead;  /* double link it in `uvhead' list */
-  uv->u.l.next = g->uvhead.u.l.next;
-  uv->u.l.next->u.l.prev = uv;
-  g->uvhead.u.l.next = uv;
-  lua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
-  return uv;
-}
-
-
-static void unlinkupval (UpVal *uv) {
-  lua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
-  uv->u.l.next->u.l.prev = uv->u.l.prev;  /* remove from `uvhead' list */
-  uv->u.l.prev->u.l.next = uv->u.l.next;
-}
-
-
-void luaF_freeupval (lua_State *L, UpVal *uv) {
-  if (uv->v != &uv->u.value)  /* is it open? */
-    unlinkupval(uv);  /* remove from open list */
-  luaM_free(L, uv);  /* free upvalue */
-}
-
-
-void luaF_close (lua_State *L, StkId level) {
-  UpVal *uv;
-  global_State *g = G(L);
-  while (L->openupval != NULL && (uv = ngcotouv(L->openupval))->v >= level) {
-    GCObject *o = obj2gco(uv);
-    lua_assert(!isblack(o) && uv->v != &uv->u.value);
-    L->openupval = uv->next;  /* remove from `open' list */
-    if (isdead(g, o))
-      luaF_freeupval(L, uv);  /* free upvalue */
-    else {
-      unlinkupval(uv);
-      setobj(L, &uv->u.value, uv->v);
-      uv->v = &uv->u.value;  /* now current value lives here */
-      luaC_linkupval(L, uv);  /* link upvalue into `gcroot' list */
-    }
-  }
-}
-
-
-Proto *luaF_newproto (lua_State *L) {
-  Proto *f = luaM_new(L, Proto);
-  luaC_link(L, obj2gco(f), LUA_TPROTO);
-  f->k = NULL;
-  f->sizek = 0;
-  f->p = NULL;
-  f->sizep = 0;
-  f->code = NULL;
-  f->sizecode = 0;
-  f->sizelineinfo = 0;
-  f->sizeupvalues = 0;
-  f->nups = 0;
-  f->upvalues = NULL;
-  f->numparams = 0;
-  f->is_vararg = 0;
-  f->maxstacksize = 0;
-  f->lineinfo = NULL;
-  f->sizelocvars = 0;
-  f->locvars = NULL;
-  f->linedefined = 0;
-  f->lastlinedefined = 0;
-  f->source = NULL;
-  return f;
-}
-
-
-void luaF_freeproto (lua_State *L, Proto *f) {
-  luaM_freearray(L, f->code, f->sizecode, Instruction);
-  luaM_freearray(L, f->p, f->sizep, Proto *);
-  luaM_freearray(L, f->k, f->sizek, TValue);
-  luaM_freearray(L, f->lineinfo, f->sizelineinfo, int);
-  luaM_freearray(L, f->locvars, f->sizelocvars, struct LocVar);
-  luaM_freearray(L, f->upvalues, f->sizeupvalues, TString *);
-  luaM_free(L, f);
-}
-
-
-void luaF_freeclosure (lua_State *L, Closure *c) {
-  int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues) :
-                          sizeLclosure(c->l.nupvalues);
-  luaM_freemem(L, c, size);
-}
-
-
-/*
-** Look for n-th local variable at line `line' in function `func'.
-** Returns NULL if not found.
-*/
-const char *luaF_getlocalname (const Proto *f, int local_number, int pc) {
-  int i;
-  for (i = 0; i<f->sizelocvars && f->locvars[i].startpc <= pc; i++) {
-    if (pc < f->locvars[i].endpc) {  /* is variable active? */
-      local_number--;
-      if (local_number == 0)
-        return getstr(f->locvars[i].varname);
-    }
-  }
-  return NULL;  /* not found */
-}
-

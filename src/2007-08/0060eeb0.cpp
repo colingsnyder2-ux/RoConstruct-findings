@@ -1,220 +1,140 @@
+// roc 2007-08 0060eeb0  unit: RBX::Ball  size: 339 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 0060eeb0
+//
+// 0060eeb0  56                   push esi
+// 0060eeb1  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 0060eeb5  8a06                 mov al, byte ptr [esi]
+// 0060eeb7  3c3d                 cmp al, 0x3d
+// 0060eeb9  57                   push edi
+// 0060eeba  751f                 jne 0x60eedb
+// 0060eebc  8b7c2414             mov edi, dword ptr [esp + 0x14]
+// 0060eec0  57                   push edi
+// 0060eec1  83c601               add esi, 1
+// 0060eec4  56                   push esi
+// 0060eec5  8b742414             mov esi, dword ptr [esp + 0x14]
+// 0060eec9  56                   push esi
+// 0060eeca  ff1578e97700         call dword ptr [0x77e978]
+// 0060eed0  83c40c               add esp, 0xc
+// 0060eed3  c6443eff00           mov byte ptr [esi + edi - 1], 0
+// 0060eed8  5f                   pop edi
+// 0060eed9  5e                   pop esi
+// 0060eeda  c3                   ret 
+// 0060eedb  3c40                 cmp al, 0x40
+// 0060eedd  756f                 jne 0x60ef4e
+// 0060eedf  8b542414             mov edx, dword ptr [esp + 0x14]
+// 0060eee3  83c601               add esi, 1
+// 0060eee6  8bc6                 mov eax, esi
+// 0060eee8  83ea08               sub edx, 8
+// 0060eeeb  8d7801               lea edi, [eax + 1]
+// 0060eeee  8bff                 mov edi, edi
+// 0060eef0  8a08                 mov cl, byte ptr [eax]
+// 0060eef2  83c001               add eax, 1
+// 0060eef5  84c9                 test cl, cl
+// 0060eef7  75f7                 jne 0x60eef0
+// 0060eef9  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 0060eefd  2bc7                 sub eax, edi
+// 0060eeff  3bc2                 cmp eax, edx
+// 0060ef01  c60100               mov byte ptr [ecx], 0
+// 0060ef04  761b                 jbe 0x60ef21
+// 0060ef06  2bc2                 sub eax, edx
+// 0060ef08  8bf9                 mov edi, ecx
+// 0060ef0a  03f0                 add esi, eax
+// 0060ef0c  83c7ff               add edi, -1
+// 0060ef0f  90                   nop 
+// 0060ef10  8a4701               mov al, byte ptr [edi + 1]
+// 0060ef13  83c701               add edi, 1
+// 0060ef16  84c0                 test al, al
+// 0060ef18  75f6                 jne 0x60ef10
+// 0060ef1a  a118317c00           mov eax, dword ptr [0x7c3118]
+// 0060ef1f  8907                 mov dword ptr [edi], eax
+// 0060ef21  8bc6                 mov eax, esi
+// 0060ef23  8a10                 mov dl, byte ptr [eax]
+// 0060ef25  83c001               add eax, 1
+// 0060ef28  84d2                 test dl, dl
+// 0060ef2a  75f7                 jne 0x60ef23
+// 0060ef2c  2bc6                 sub eax, esi
+// 0060ef2e  83c1ff               add ecx, -1
+// 0060ef31  8a5101               mov dl, byte ptr [ecx + 1]
+// 0060ef34  83c101               add ecx, 1
+// 0060ef37  84d2                 test dl, dl
+// 0060ef39  75f6                 jne 0x60ef31
+// 0060ef3b  8bf9                 mov edi, ecx
+// 0060ef3d  8bc8                 mov ecx, eax
+// 0060ef3f  c1e902               shr ecx, 2
+// 0060ef42  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 0060ef44  8bc8                 mov ecx, eax
+// 0060ef46  83e103               and ecx, 3
+// 0060ef49  f3a4                 rep movsb byte ptr es:[edi], byte ptr [esi]
+// 0060ef4b  5f                   pop edi
+// 0060ef4c  5e                   pop esi
+// 0060ef4d  c3                   ret 
+// 0060ef4e  688c447900           push 0x79448c
+// 0060ef53  56                   push esi
+// 0060ef54  ff15e0e77700         call dword ptr [0x77e7e0]
+// 0060ef5a  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 0060ef5e  83e911               sub ecx, 0x11
+// 0060ef61  83c408               add esp, 8
+// 0060ef64  3bc1                 cmp eax, ecx
+// 0060ef66  7602                 jbe 0x60ef6a
+// 0060ef68  8bc1                 mov eax, ecx
+// 0060ef6a  8b0d0c317c00         mov ecx, dword ptr [0x7c310c]
+// 0060ef70  53                   push ebx
+// 0060ef71  8b5c2410             mov ebx, dword ptr [esp + 0x10]
+// 0060ef75  890b                 mov dword ptr [ebx], ecx
+// 0060ef77  8b1510317c00         mov edx, dword ptr [0x7c3110]
+// 0060ef7d  895304               mov dword ptr [ebx + 4], edx
+// 0060ef80  668b0d14317c00       mov cx, word ptr [0x7c3114]
+// 0060ef87  66894b08             mov word ptr [ebx + 8], cx
+// 0060ef8b  803c3000             cmp byte ptr [eax + esi], 0
+// 0060ef8f  7425                 je 0x60efb6
+// 0060ef91  50                   push eax
+// 0060ef92  56                   push esi
+// 0060ef93  53                   push ebx
+// 0060ef94  ff15e4e77700         call dword ptr [0x77e7e4]
+// 0060ef9a  8bfb                 mov edi, ebx
+// 0060ef9c  83c40c               add esp, 0xc
+// 0060ef9f  83c7ff               add edi, -1
+// 0060efa2  8a4701               mov al, byte ptr [edi + 1]
+// 0060efa5  83c701               add edi, 1
+// 0060efa8  84c0                 test al, al
+// 0060efaa  75f6                 jne 0x60efa2
+// 0060efac  8b1518317c00         mov edx, dword ptr [0x7c3118]
+// 0060efb2  8917                 mov dword ptr [edi], edx
+// 0060efb4  eb2a                 jmp 0x60efe0
+// 0060efb6  8bc6                 mov eax, esi
+// 0060efb8  8a08                 mov cl, byte ptr [eax]
+// 0060efba  83c001               add eax, 1
+// 0060efbd  84c9                 test cl, cl
+// 0060efbf  75f7                 jne 0x60efb8
+// 0060efc1  8bfb                 mov edi, ebx
+// 0060efc3  2bc6                 sub eax, esi
+// 0060efc5  83c7ff               add edi, -1
+// 0060efc8  8a4f01               mov cl, byte ptr [edi + 1]
+// 0060efcb  83c701               add edi, 1
+// 0060efce  84c9                 test cl, cl
+// 0060efd0  75f6                 jne 0x60efc8
+// 0060efd2  8bc8                 mov ecx, eax
+// 0060efd4  c1e902               shr ecx, 2
+// 0060efd7  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 0060efd9  8bc8                 mov ecx, eax
+// 0060efdb  83e103               and ecx, 3
+// 0060efde  f3a4                 rep movsb byte ptr es:[edi], byte ptr [esi]
+// 0060efe0  83c3ff               add ebx, -1
+// 0060efe3  8a4301               mov al, byte ptr [ebx + 1]
+// 0060efe6  83c301               add ebx, 1
+// 0060efe9  84c0                 test al, al
+// 0060efeb  75f6                 jne 0x60efe3
+// 0060efed  66a108317c00         mov ax, word ptr [0x7c3108]
+// 0060eff3  668903               mov word ptr [ebx], ax
+// 0060eff6  8a0d0a317c00         mov cl, byte ptr [0x7c310a]
+// 0060effc  884b02               mov byte ptr [ebx + 2], cl
+// 0060efff  5b                   pop ebx
+// 0060f000  5f                   pop edi
+// 0060f001  5e                   pop esi
+// 0060f002  c3                   ret 
+// copied from an identical function in another client (function _luaO_chunkid)
+
 // roc-lang: c
 // roc-cl: 50727
 // roc-flags: /O2 /Ob1 /GS- /MD
 // roc-lib: lua-5.1-dll lobject.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: lobject.c,v 2.22 2006/02/10 17:43:52 roberto Exp $
-** Some generic functions over Lua objects
-** See Copyright Notice in lua.h
-*/
-
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define lobject_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "ldo.h"
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "lvm.h"
-
-
-
-const TValue luaO_nilobject_ = {{NULL}, LUA_TNIL};
-
-
-/*
-** converts an integer to a "floating point byte", represented as
-** (eeeeexxx), where the real value is (1xxx) * 2^(eeeee - 1) if
-** eeeee != 0 and (xxx) otherwise.
-*/
-int luaO_int2fb (unsigned int x) {
-  int e = 0;  /* expoent */
-  while (x >= 16) {
-    x = (x+1) >> 1;
-    e++;
-  }
-  if (x < 8) return x;
-  else return ((e+1) << 3) | (cast_int(x) - 8);
-}
-
-
-/* converts back */
-int luaO_fb2int (int x) {
-  int e = (x >> 3) & 31;
-  if (e == 0) return x;
-  else return ((x & 7)+8) << (e - 1);
-}
-
-
-int luaO_log2 (unsigned int x) {
-  static const lu_byte log_2[256] = {
-    0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
-    6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,
-    7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-    7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
-    8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
-    8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
-    8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
-    8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-  };
-  int l = -1;
-  while (x >= 256) { l += 8; x >>= 8; }
-  return l + log_2[x];
-
-}
-
-
-int luaO_rawequalObj (const TValue *t1, const TValue *t2) {
-  if (ttype(t1) != ttype(t2)) return 0;
-  else switch (ttype(t1)) {
-    case LUA_TNIL:
-      return 1;
-    case LUA_TNUMBER:
-      return luai_numeq(nvalue(t1), nvalue(t2));
-    case LUA_TBOOLEAN:
-      return bvalue(t1) == bvalue(t2);  /* boolean true must be 1 !! */
-    case LUA_TLIGHTUSERDATA:
-      return pvalue(t1) == pvalue(t2);
-    default:
-      lua_assert(iscollectable(t1));
-      return gcvalue(t1) == gcvalue(t2);
-  }
-}
-
-
-int luaO_str2d (const char *s, lua_Number *result) {
-  char *endptr;
-  *result = lua_str2number(s, &endptr);
-  if (endptr == s) return 0;  /* conversion failed */
-  if (*endptr == 'x' || *endptr == 'X')  /* maybe an hexadecimal constant? */
-    *result = cast_num(strtoul(s, &endptr, 16));
-  if (*endptr == '\0') return 1;  /* most common case */
-  while (isspace(cast(unsigned char, *endptr))) endptr++;
-  if (*endptr != '\0') return 0;  /* invalid trailing characters? */
-  return 1;
-}
-
-
-
-static void pushstr (lua_State *L, const char *str) {
-  setsvalue2s(L, L->top, luaS_new(L, str));
-  incr_top(L);
-}
-
-
-/* this function handles only `%d', `%c', %f, %p, and `%s' formats */
-const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
-  int n = 1;
-  pushstr(L, "");
-  for (;;) {
-    const char *e = strchr(fmt, '%');
-    if (e == NULL) break;
-    setsvalue2s(L, L->top, luaS_newlstr(L, fmt, e-fmt));
-    incr_top(L);
-    switch (*(e+1)) {
-      case 's': {
-        const char *s = va_arg(argp, char *);
-        if (s == NULL) s = "(null)";
-        pushstr(L, s);
-        break;
-      }
-      case 'c': {
-        char buff[2];
-        buff[0] = cast(char, va_arg(argp, int));
-        buff[1] = '\0';
-        pushstr(L, buff);
-        break;
-      }
-      case 'd': {
-        setnvalue(L->top, cast_num(va_arg(argp, int)));
-        incr_top(L);
-        break;
-      }
-      case 'f': {
-        setnvalue(L->top, cast_num(va_arg(argp, l_uacNumber)));
-        incr_top(L);
-        break;
-      }
-      case 'p': {
-        char buff[4*sizeof(void *) + 8]; /* should be enough space for a `%p' */
-        sprintf(buff, "%p", va_arg(argp, void *));
-        pushstr(L, buff);
-        break;
-      }
-      case '%': {
-        pushstr(L, "%");
-        break;
-      }
-      default: {
-        char buff[3];
-        buff[0] = '%';
-        buff[1] = *(e+1);
-        buff[2] = '\0';
-        pushstr(L, buff);
-        break;
-      }
-    }
-    n += 2;
-    fmt = e+2;
-  }
-  pushstr(L, fmt);
-  luaV_concat(L, n+1, cast_int(L->top - L->base) - 1);
-  L->top -= n;
-  return svalue(L->top - 1);
-}
-
-
-const char *luaO_pushfstring (lua_State *L, const char *fmt, ...) {
-  const char *msg;
-  va_list argp;
-  va_start(argp, fmt);
-  msg = luaO_pushvfstring(L, fmt, argp);
-  va_end(argp);
-  return msg;
-}
-
-
-void luaO_chunkid (char *out, const char *source, size_t bufflen) {
-  if (*source == '=') {
-    strncpy(out, source+1, bufflen);  /* remove first char */
-    out[bufflen-1] = '\0';  /* ensures null termination */
-  }
-  else {  /* out = "source", or "...source" */
-    if (*source == '@') {
-      size_t l;
-      source++;  /* skip the `@' */
-      bufflen -= sizeof(" '...' ");
-      l = strlen(source);
-      strcpy(out, "");
-      if (l > bufflen) {
-        source += (l-bufflen);  /* get last part of file name */
-        strcat(out, "...");
-      }
-      strcat(out, source);
-    }
-    else {  /* out = [string "string"] */
-      size_t len = strcspn(source, "\n\r");  /* stop at first newline */
-      bufflen -= sizeof(" [string \"...\"] ");
-      if (len > bufflen) len = bufflen;
-      strcpy(out, "[string \"");
-      if (source[len] != '\0') {  /* must truncate? */
-        strncat(out, source, len);
-        strcat(out, "...");
-      }
-      else
-        strcat(out, source);
-      strcat(out, "\"]");
-    }
-  }
-}

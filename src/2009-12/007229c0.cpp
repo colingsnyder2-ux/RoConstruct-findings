@@ -1,11 +1,19 @@
+// roc 2009-12 007229c0  unit: UString_sink::?$stream_buffer  size: 31 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 007229c0
+//
+// 007229c0  8d4424d8             lea eax, [esp - 0x28]
+// 007229c4  83ec28               sub esp, 0x28
+// 007229c7  50                   push eax
+// 007229c8  e823fbffff           call 0x7224f0
+// 007229cd  83c404               add esp, 4
+// 007229d0  68e87cac00           push 0xac7ce8
+// 007229d5  8d4c2404             lea ecx, [esp + 4]
+// 007229d9  51                   push ecx
+// 007229da  e8991e0d00           call 0x7f4878
+// copied from an identical function in another client (function ??$read@V?$back_insert_device@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@iostreams@boost@@V?$linked_streambuf@DU?$char_traits@D@std@@@detail@23@@?$device_wrapper_impl@Uoutput@iostreams@boost@@@detail@iostreams@boost@@SAHAAV?$back_insert_device@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@PAV?$linked_streambuf@DU?$char_traits@D@std@@@123@PADH@Z)
+
 // from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp
-
-// Candidate translation unit (score above; library headers required).
-#include <string>
-#include <boost/iostreams/device/back_inserter.hpp>
-#include <boost/iostreams/stream_buffer.hpp>
-template class boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::string> >;

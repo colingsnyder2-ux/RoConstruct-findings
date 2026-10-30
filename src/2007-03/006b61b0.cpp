@@ -1,753 +1,84 @@
+// roc 2007-03 006b61b0  unit: seg_006b0000  size: 243 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 006b61b0
+//
+// 006b61b0  83ec08               sub esp, 8
+// 006b61b3  8b54240c             mov edx, dword ptr [esp + 0xc]
+// 006b61b7  53                   push ebx
+// 006b61b8  56                   push esi
+// 006b61b9  0fb6ce               movzx ecx, dh
+// 006b61bc  0fb6f2               movzx esi, dl
+// 006b61bf  8bc2                 mov eax, edx
+// 006b61c1  8b542418             mov edx, dword ptr [esp + 0x18]
+// 006b61c5  c1e810               shr eax, 0x10
+// 006b61c8  0fb6c0               movzx eax, al
+// 006b61cb  89442414             mov dword ptr [esp + 0x14], eax
+// 006b61cf  8bda                 mov ebx, edx
+// 006b61d1  c1eb10               shr ebx, 0x10
+// 006b61d4  db442414             fild dword ptr [esp + 0x14]
+// 006b61d8  57                   push edi
+// 006b61d9  0fb6fb               movzx edi, bl
+// 006b61dc  2bc7                 sub eax, edi
+// 006b61de  89442418             mov dword ptr [esp + 0x18], eax
+// 006b61e2  33db                 xor ebx, ebx
+// 006b61e4  894c240c             mov dword ptr [esp + 0xc], ecx
+// 006b61e8  db442418             fild dword ptr [esp + 0x18]
+// 006b61ec  89742410             mov dword ptr [esp + 0x10], esi
+// 006b61f0  dd442420             fld qword ptr [esp + 0x20]
+// 006b61f4  5f                   pop edi
+// 006b61f5  d97c2414             fnstcw word ptr [esp + 0x14]
+// 006b61f9  0fb7442414           movzx eax, word ptr [esp + 0x14]
+// 006b61fe  dcc9                 fmul st(1), st(0)
+// 006b6200  d9ca                 fxch st(2)
+// 006b6202  0d000c0000           or eax, 0xc00
+// 006b6207  89442418             mov dword ptr [esp + 0x18], eax
+// 006b620b  dee1                 fsubrp st(1)
+// 006b620d  d96c2418             fldcw word ptr [esp + 0x18]
+// 006b6211  db5c2418             fistp dword ptr [esp + 0x18]
+// 006b6215  0fb6442418           movzx eax, byte ptr [esp + 0x18]
+// 006b621a  8af8                 mov bh, al
+// 006b621c  0fb6c6               movzx eax, dh
+// 006b621f  d96c2414             fldcw word ptr [esp + 0x14]
+// 006b6223  2bc8                 sub ecx, eax
+// 006b6225  894c2414             mov dword ptr [esp + 0x14], ecx
+// 006b6229  0fb6d2               movzx edx, dl
+// 006b622c  db442408             fild dword ptr [esp + 8]
+// 006b6230  2bf2                 sub esi, edx
+// 006b6232  db442414             fild dword ptr [esp + 0x14]
+// 006b6236  d97c2414             fnstcw word ptr [esp + 0x14]
+// 006b623a  d8ca                 fmul st(2)
+// 006b623c  0fb7442414           movzx eax, word ptr [esp + 0x14]
+// 006b6241  0d000c0000           or eax, 0xc00
+// 006b6246  89442418             mov dword ptr [esp + 0x18], eax
+// 006b624a  dee9                 fsubp st(1)
+// 006b624c  d96c2418             fldcw word ptr [esp + 0x18]
+// 006b6250  db5c2418             fistp dword ptr [esp + 0x18]
+// 006b6254  8a4c2418             mov cl, byte ptr [esp + 0x18]
+// 006b6258  8ad9                 mov bl, cl
+// 006b625a  d96c2414             fldcw word ptr [esp + 0x14]
+// 006b625e  89742414             mov dword ptr [esp + 0x14], esi
+// 006b6262  5e                   pop esi
+// 006b6263  c1e308               shl ebx, 8
+// 006b6266  db442408             fild dword ptr [esp + 8]
+// 006b626a  db442410             fild dword ptr [esp + 0x10]
+// 006b626e  d97c2410             fnstcw word ptr [esp + 0x10]
+// 006b6272  deca                 fmulp st(2)
+// 006b6274  0fb7442410           movzx eax, word ptr [esp + 0x10]
+// 006b6279  0d000c0000           or eax, 0xc00
+// 006b627e  89442414             mov dword ptr [esp + 0x14], eax
+// 006b6282  dee1                 fsubrp st(1)
+// 006b6284  d96c2414             fldcw word ptr [esp + 0x14]
+// 006b6288  db5c2414             fistp dword ptr [esp + 0x14]
+// 006b628c  0fb6442414           movzx eax, byte ptr [esp + 0x14]
+// 006b6291  0fb6c8               movzx ecx, al
+// 006b6294  d96c2410             fldcw word ptr [esp + 0x10]
+// 006b6298  0bd9                 or ebx, ecx
+// 006b629a  8bc3                 mov eax, ebx
+// 006b629c  5b                   pop ebx
+// 006b629d  83c408               add esp, 8
+// 006b62a0  c21000               ret 0x10
+// library xtp-11.2.2-vc8/Source\Controls\XTHeaderCtrlTheme.cpp (function ?MixColor@CXTHeaderCtrlThemeOffice2003@@AAEKKKN@Z)
+
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/Controls/XTHeaderCtrlTheme.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTHeaderCtrlTheme.cpp: implementation of the CXTHeaderCtrlTheme class.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPWinThemeWrapper.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPImageManager.h"
-
-#include "XTVC50Helpers.h"
-#include "XTHeaderCtrl.h"
-#include "XTThemeManager.h"
-#include "XTHeaderCtrlTheme.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
-IMPLEMENT_THEME_FACTORY(CXTHeaderCtrlTheme)
-
-//=============================================================================
-// CXTHeaderCtrlTheme
-//=============================================================================
-
-CXTHeaderCtrlTheme::CXTHeaderCtrlTheme()
-: m_sizePadding(6, 0)
-, m_sizeArrow(8, 7)
-, m_dwDrawStyle(0)
-, m_iArrowPadding(10)
-, m_bUseWinThemes(false)
-{
-	m_dwDrawStyle = XTTHEME_WINXPTHEMES | XTTHEME_HOTTRACKING | XTTHEME_SORTARROW;
-}
-
-CXTHeaderCtrlTheme::~CXTHeaderCtrlTheme()
-{
-
-}
-
-void CXTHeaderCtrlTheme::RefreshMetrics()
-{
-	CXTThemeManagerStyle ::RefreshMetrics();
-
-	m_crText = GetXtremeColor(COLOR_BTNTEXT);
-	m_cr3DFace = GetXtremeColor(COLOR_3DFACE);
-	m_cr3DShadow = GetXtremeColor(COLOR_3DSHADOW);
-	m_cr3DDkShadow = GetXtremeColor(COLOR_3DDKSHADOW);
-	m_cr3DHighLight = GetXtremeColor(COLOR_3DHIGHLIGHT);
-
-	m_themeWrapper.OpenThemeData(0, L"HEADER");
-}
-
-void CXTHeaderCtrlTheme::OnDrawBackground(LPDRAWITEMSTRUCT lpDIS)
-{
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-	CRect rcItem = lpDIS->rcItem;
-
-	// fill background
-	pDC->FillSolidRect(&rcItem, m_cr3DFace);
-	rcItem.right += 2;
-
-	// draw 3D borders.
-	pDC->Draw3dRect(&rcItem, m_cr3DHighLight, m_cr3DDkShadow);
-	rcItem.DeflateRect(1, 1);
-	pDC->Draw3dRect(&rcItem, m_cr3DFace, m_cr3DShadow);
-}
-
-void CXTHeaderCtrlTheme::OnDrawItemBackground(LPDRAWITEMSTRUCT lpDIS)
-{
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-
-	if (lpDIS->itemState == ODS_SELECTED)
-	{
-		pDC->Draw3dRect(&lpDIS->rcItem, m_cr3DShadow, m_cr3DShadow);
-
-		CXTPPenDC penDC(pDC->m_hDC, m_cr3DHighLight);
-		pDC->MoveTo(lpDIS->rcItem.right, 1);
-		pDC->LineTo(lpDIS->rcItem.right, lpDIS->rcItem.bottom-1);
-
-		penDC.Color(m_cr3DFace);
-		pDC->MoveTo(lpDIS->rcItem.left+1, lpDIS->rcItem.bottom-2);
-		pDC->LineTo(lpDIS->rcItem.right-1, lpDIS->rcItem.bottom-2);
-	}
-	else
-	{
-		CXTPPenDC penDC(pDC->m_hDC, m_cr3DShadow);
-		pDC->MoveTo(lpDIS->rcItem.right-2, 1);
-		pDC->LineTo(lpDIS->rcItem.right-2, lpDIS->rcItem.bottom-1);
-
-		penDC.Color(m_cr3DDkShadow);
-		pDC->MoveTo(lpDIS->rcItem.right-1, 0);
-		pDC->LineTo(lpDIS->rcItem.right-1, lpDIS->rcItem.bottom-1);
-
-		penDC.Color(m_cr3DHighLight);
-		pDC->MoveTo(lpDIS->rcItem.right, 1);
-		pDC->LineTo(lpDIS->rcItem.right, lpDIS->rcItem.bottom-1);
-	}
-}
-
-BOOL CXTHeaderCtrlTheme::OnDrawBackgroundWinThemed(LPDRAWITEMSTRUCT lpDIS)
-{
-	if ((GetDrawStyle() & XTTHEME_HOTTRACKING) == 0)
-		return FALSE;
-
-	if (m_themeWrapper.DrawThemeBackground(lpDIS->hDC,
-		0, HIS_NORMAL, &lpDIS->rcItem, NULL) != S_OK)
-	{
-		TRACE0("Error drawing background using WinTheme API.\n");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-BOOL CXTHeaderCtrlTheme::OnDrawItemBackgroundWinThemed(LPDRAWITEMSTRUCT lpDIS)
-{
-	int iState = HIS_NORMAL;
-
-	if (lpDIS->itemState & ODS_HOTLIGHT)
-		iState = HIS_HOT;
-
-	if (lpDIS->itemState & ODS_SELECTED)
-		iState = HIS_PRESSED;
-
-	if (m_themeWrapper.DrawThemeBackground(lpDIS->hDC,
-		HP_HEADERITEM, iState, &lpDIS->rcItem, NULL) != S_OK)
-	{
-		TRACE0("Error drawing background using WinTheme API.\n");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-void CXTHeaderCtrlTheme::DrawSortArrow(CDC* pDC, LPPOINT ptsArrow, BOOL bAscending)
-{
-	CXTPPenDC dcPen(pDC->m_hDC, bAscending ? m_cr3DHighLight : m_cr3DShadow);
-	pDC->MoveTo(ptsArrow[2]);
-	pDC->LineTo(ptsArrow[bAscending ? 1 : 0]);
-	pDC->LineTo(ptsArrow[bAscending ? 0 : 1]);
-
-	dcPen.Color(bAscending ? m_cr3DShadow : m_cr3DHighLight);
-	pDC->MoveTo(ptsArrow[bAscending ? 0 : 2]);
-	pDC->LineTo(ptsArrow[bAscending ? 2 : 1]);
-}
-
-void CXTHeaderCtrlTheme::OnDrawItemSortArrow(LPDRAWITEMSTRUCT lpDIS, BOOL bAscending)
-{
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-	CRect rcItem = lpDIS->rcItem;
-
-	CPoint point;
-	point.x = rcItem.right + m_iArrowPadding;
-	point.y = (rcItem.top - 1) + (rcItem.Height() - m_sizeArrow.cy) / 2;
-
-	if (point.x < rcItem.left)
-		return;
-
-	if (lpDIS->itemState == ODS_SELECTED)
-		point.Offset(1, 1);
-
-	CRect rcArrow;
-	rcArrow.left = point.x;
-	rcArrow.top = point.y;
-	rcArrow.right = point.x + m_sizeArrow.cx;
-	rcArrow.bottom = point.y + m_sizeArrow.cy;
-
-	int x = point.x + (m_sizeArrow.cx/2);
-//  int y = point.y + (m_sizeArrow.cy/2);
-
-	POINT ptsArrow[3];
-	ptsArrow[0].x = x-m_sizeArrow.cx/2;
-	ptsArrow[0].y = bAscending ? rcArrow.bottom : rcArrow.top;
-	ptsArrow[1].x = x+m_sizeArrow.cx/2;
-	ptsArrow[1].y = bAscending ? rcArrow.bottom : rcArrow.top;
-	ptsArrow[2].x = x;
-	ptsArrow[2].y = bAscending ? rcArrow.top : rcArrow.bottom;
-
-	DrawSortArrow(pDC, ptsArrow, bAscending);
-}
-
-void CXTHeaderCtrlTheme::OnDrawItemText(LPDRAWITEMSTRUCT lpDIS, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-	LPHDITEM lpHDI = (LPHDITEM)lpDIS->itemData;
-
-	// prepare the device context to draw text.
-	CXTPFontDC fontDC(pDC, pHeaderCtrl->GetFont());
-
-	// construct text size.
-	CRect rcItem(lpDIS->rcItem);
-	rcItem.DeflateRect(m_sizePadding.cx, 0);
-
-	BOOL bSortAsc;
-	UINT nSortItem = pHeaderCtrl->GetSortedCol(&bSortAsc);
-	if (nSortItem == lpDIS->itemID)
-		rcItem.right -= m_sizeArrow.cx + m_iArrowPadding*2;
-
-	CRect rcText(rcItem);
-	CSize sizeText = pDC->GetTextExtent(lpHDI->pszText);
-
-	rcText.top = (m_sizePadding.cy > 0) ?
-		m_sizePadding.cy : (rcItem.Height()-sizeText.cy)/2;
-	rcText.bottom = rcText.top + sizeText.cy;
-
-	if ((lpHDI->fmt & HDF_BITMAP && lpHDI->hbm != NULL) || (lpHDI->fmt & HDF_IMAGE))
-		OnDrawItemBitmap(lpDIS, rcText, pHeaderCtrl);
-
-	// determine justification for text.
-	switch (lpHDI->fmt & HDF_JUSTIFYMASK)
-	{
-	case HDF_LEFT:
-		rcText.right = rcText.left + sizeText.cx;
-		break;
-	case HDF_CENTER:
-		rcText.left += (rcItem.Width()-sizeText.cx)/2;
-		rcText.right = rcText.left + sizeText.cx;
-		break;
-	case HDF_RIGHT:
-		rcText.left = rcText.right - sizeText.cx;
-		break;
-	}
-
-	// size text to fit available display area.
-	rcText.left = __max(rcText.left, rcItem.left);
-	rcText.right = __min(rcText.right, rcItem.right);
-
-	// check if we are sorting.
-	if (HasSortArrow() && nSortItem == lpDIS->itemID)
-	{
-		lpDIS->rcItem = rcText;
-		OnDrawItemSortArrow(lpDIS, bSortAsc);
-	}
-
-	if (rcText.Width() > 0)
-	{
-		if (lpDIS->itemState == ODS_SELECTED)
-			rcText.OffsetRect(1, 1);
-
-		// draw text.
-		pDC->DrawText(lpHDI->pszText, &rcText,
-			DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
-	}
-}
-
-void CXTHeaderCtrlTheme::DrawHeader(CDC* pDC, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	CXTPClientRect rcClient(pHeaderCtrl);
-
-	DRAWITEMSTRUCT dis;
-	dis.CtlType = ODT_BUTTON;
-	dis.CtlID = 0;
-	dis.itemID = 0;
-	dis.itemAction = ODA_DRAWENTIRE;
-	dis.itemState = 0;
-	dis.hwndItem = pHeaderCtrl->m_hWnd;
-	dis.hDC = pDC->m_hDC;
-	dis.rcItem = rcClient;
-	dis.itemData = 0;
-
-	// draw background.
-	if (!m_bUseWinThemes || !OnDrawBackgroundWinThemed(&dis))
-		OnDrawBackground(&dis);
-
-	// set text attributes.
-	CXTPFontDC fontDC(pDC, pHeaderCtrl->GetFont());
-	pDC->SetBkColor(m_cr3DFace);
-	pDC->SetTextColor(m_crText);
-	pDC->SetBkMode(TRANSPARENT);
-
-	// Set up the header item order array.
-	HD_ITEM hdi;
-	::ZeroMemory(&hdi, sizeof(HD_ITEM));
-
-	hdi.fmt = HDF_STRING | HDF_LEFT | HDF_BITMAP;
-	hdi.mask = HDI_WIDTH | HDI_TEXT | HDI_FORMAT | HDI_ORDER | HDI_BITMAP | HDI_LPARAM;
-
-	int cxy = 0;
-	int iItem = 0;
-	int iItemCount = pHeaderCtrl->GetItemCount();
-	int *plItems = new int[iItemCount];
-
-	for (iItem = 0; iItem < iItemCount; iItem++)
-	{
-		pHeaderCtrl->GetItem(iItem, &hdi);
-		plItems[hdi.iOrder] = iItem;
-	}
-
-	hdi.fmt = HDF_STRING | HDF_LEFT | HDF_BITMAP;
-	hdi.mask = HDI_WIDTH | HDI_TEXT | HDI_FORMAT | HDI_BITMAP | HDI_LPARAM;
-
-	// get cursor position.
-	CPoint point;
-	::GetCursorPos(&point);
-	pHeaderCtrl->ScreenToClient(&point);
-
-	// Draw each header item
-	for (iItem = 0; iItem < iItemCount; ++iItem)
-	{
-		// Get the header item text and format
-		TCHAR szBuffer[256];
-		hdi.pszText = szBuffer;
-		hdi.cchTextMax = 255;
-		pHeaderCtrl->GetItem(plItems[iItem], &hdi);
-
-		// initialize draw item structure.
-		dis.itemID = plItems[iItem];
-		dis.itemState = 0;
-		dis.rcItem = rcClient;
-		dis.rcItem.left = cxy;
-		dis.rcItem.right = dis.rcItem.left + hdi.cxy;
-		dis.itemData = (DWORD_PTR)&hdi;
-
-		// if hot tracking is enabled, set the state.
-		if (GetDrawStyle() & XTTHEME_HOTTRACKING)
-		{
-			if (pHeaderCtrl->HitTest(point) == plItems[iItem])
-				dis.itemState = ODS_HOTLIGHT;
-		}
-
-		// check if the item is selected
-		if (pHeaderCtrl->ItemPressed(plItems[iItem]))
-			dis.itemState = ODS_SELECTED;
-
-		// draw the item background.
-		if (!m_bUseWinThemes || !OnDrawItemBackgroundWinThemed(&dis))
-			OnDrawItemBackground(&dis);
-
-		// draw the item text.
-		OnDrawItemText(&dis, pHeaderCtrl);
-		cxy += hdi.cxy;
-	}
-
-	delete [] plItems;
-}
-
-BOOL CXTHeaderCtrlTheme::UseWinXPThemes(CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	// if windows xp themes are not allowed, return FALSE.
-	if ((GetDrawStyle() & XTTHEME_WINXPTHEMES) == 0)
-		return FALSE;
-
-	// if we got this far then we try to load the theme data for
-	// this control if it is not currently open.
-	if (!m_themeWrapper.ThemeDataOpen())
-		m_themeWrapper.OpenThemeData(pHeaderCtrl->m_hWnd, L"HEADER");
-
-	// if our application is not "Theme Ready" meaning that we cannot
-	// display Windows XP themes, then return FALSE.
-	if (!m_themeWrapper.IsAppThemeReady())
-		return FALSE;
-	// this will return TRUE if we can display visual styles.
-	return m_themeWrapper.ThemeDataOpen();
-}
-
-void CXTHeaderCtrlTheme::SetDrawStyle(DWORD dwDrawStyle, CXTHeaderCtrl* pHeaderCtrl)
-{
-	m_dwDrawStyle = dwDrawStyle;
-	m_bUseWinThemes = UseWinXPThemes(pHeaderCtrl) && ((m_dwDrawStyle & XTTHEME_WINXPTHEMES) != 0);
-}
-
-DWORD CXTHeaderCtrlTheme::GetDrawStyle() const
-{
-	return m_dwDrawStyle;
-}
-
-BOOL CXTHeaderCtrlTheme::Layout(LPHDLAYOUT lpHDL, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-	return (BOOL)pHeaderCtrl->DefWindowProc(HDM_LAYOUT,
-		(WPARAM)0, (LPARAM)lpHDL);
-}
-
-BOOL CXTHeaderCtrlTheme::SetBitmap(int iCol, UINT uBitmapID, BOOL bRemove, COLORREF crMask, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	// reset header image list
-	HD_ITEM hdi;
-	::ZeroMemory(&hdi, sizeof(HD_ITEM));
-
-	hdi.mask = HDI_BITMAP | HDI_FORMAT;
-	pHeaderCtrl->GetItem(iCol, &hdi);
-
-	// free previous GDI resources.
-	if (hdi.fmt & HDF_BITMAP && hdi.hbm != NULL)
-		::ImageList_Destroy((HIMAGELIST)hdi.hbm);
-
-	hdi.hbm = NULL;
-	hdi.fmt &= ~HDF_BITMAP;
-
-	pHeaderCtrl->SetItem(iCol, &hdi);
-	pHeaderCtrl->RedrawWindow();
-
-	// add new image list
-	if (!bRemove)
-	{
-		HBITMAP hBitmap = (HBITMAP)::LoadImage(AfxGetResourceHandle(),
-			MAKEINTRESOURCE(uBitmapID), IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR);
-
-		if (hBitmap == NULL)
-			return FALSE;
-
-		BITMAP bmpInfo;
-		ZeroMemory(&bmpInfo, sizeof(BITMAP));
-
-		if (::GetObject(hBitmap, sizeof(BITMAP), &bmpInfo) == 0)
-			return FALSE;
-
-		HIMAGELIST hImageList = ::ImageList_Create(bmpInfo.bmWidth,
-			bmpInfo.bmHeight, ILC_MASK | ILC_COLOR24, 0, 1);
-
-		if (hImageList == NULL)
-			return FALSE;
-
-		if (::ImageList_AddMasked(hImageList, hBitmap, crMask) == -1)
-		{
-			::ImageList_Destroy(hImageList);
-			::DeleteObject(hBitmap);
-			return FALSE;
-		}
-
-		// we are actually storing a handle to the image list and
-		// not the bitmap so we can draw using the mask.
-		hdi.hbm = (HBITMAP)hImageList;
-		hdi.fmt = HDF_BITMAP;
-
-		pHeaderCtrl->SetItem(iCol, &hdi);
-		pHeaderCtrl->RedrawWindow();
-
-		::DeleteObject(hBitmap);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-void CXTHeaderCtrlTheme::OnDrawItemBitmap(LPDRAWITEMSTRUCT lpDIS, CRect& rcText, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	HDITEM hdi;
-	hdi.mask = HDI_BITMAP | HDI_FORMAT | HDI_IMAGE;
-	pHeaderCtrl->GetItem(lpDIS->itemID, &hdi);
-
-	HIMAGELIST hImageList = 0;
-	int nIndex = -1;
-
-	if (hdi.fmt & HDF_BITMAP && hdi.hbm != NULL)
-	{
-		hImageList = (HIMAGELIST)hdi.hbm;
-		nIndex = 0;
-	}
-	else if (hdi.fmt & HDF_IMAGE)
-	{
-		hImageList = (HIMAGELIST)pHeaderCtrl->SendMessage(HDM_GETIMAGELIST);
-		nIndex = hdi.iImage;
-	}
-
-	if (nIndex != -1 && (hdi.fmt & HDF_IMAGE) && pHeaderCtrl->GetImageManager())
-	{
-		CXTPImageManagerIcon* pIcon = pHeaderCtrl->GetImageManager()->GetImage(nIndex, 0);
-
-		if (pIcon)
-		{
-			rcText.left += pIcon->GetWidth() + m_sizePadding.cx;
-
-			CRect rcItem(lpDIS->rcItem);
-			CPoint point(rcItem.left + m_sizePadding.cx, (rcItem.Height() - pIcon->GetHeight()) / 2);
-
-			XTPImageState imageState = (lpDIS->itemState & ODS_SELECTED) ? xtpImageChecked :
-				(lpDIS->itemState & ODS_HOTLIGHT) ? xtpImageHot : xtpImageNormal;
-
-			if (lpDIS->itemState == ODS_SELECTED)
-				point.Offset(1, 1);
-
-			if (point.x + pIcon->GetWidth() > lpDIS->rcItem.right)
-				return;
-
-			// draw image transparently.
-			pIcon->Draw(CDC::FromHandle(lpDIS->hDC), point, pIcon->GetIcon(imageState));
-
-			return;
-		}
-	}
-
-	if (hImageList)
-	{
-		int cx, cy;
-		if (::ImageList_GetIconSize(hImageList, &cx, &cy) && (nIndex < ImageList_GetImageCount(hImageList)))
-		{
-			rcText.left += cx + m_sizePadding.cx;
-
-			CRect rcItem(lpDIS->rcItem);
-			CPoint point(rcItem.left+m_sizePadding.cx, (rcItem.Height()-cy)/2);
-
-			if (lpDIS->itemState == ODS_SELECTED)
-				point.Offset(1, 1);
-
-			if (point.x + cx > lpDIS->rcItem.right)
-				return;
-
-			// draw image transparently.
-			::ImageList_Draw(hImageList, nIndex, lpDIS->hDC, point.x, point.y, ILD_TRANSPARENT);
-		}
-	}
-}
-
-void CXTHeaderCtrlTheme::CleanUp(CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	// free GDI resources
-	for (int i = 0; i < pHeaderCtrl->GetItemCount(); ++i)
-	{
-		HDITEM hdi;
-		hdi.mask = HDI_FORMAT | HDI_BITMAP;
-		pHeaderCtrl->GetItem(i, &hdi);
-
-		if (hdi.fmt & HDF_BITMAP && hdi.hbm != NULL)
-		{
-			::ImageList_Destroy((HIMAGELIST)hdi.hbm);
-		}
-	}
-}
-
-//=============================================================================
-// CXTHeaderCtrlThemeOfficeXP
-//=============================================================================
-
-CXTHeaderCtrlThemeOfficeXP::CXTHeaderCtrlThemeOfficeXP()
-{
-	m_dwDrawStyle = XTTHEME_SORTARROW;
-}
-
-CXTHeaderCtrlThemeOfficeXP::~CXTHeaderCtrlThemeOfficeXP()
-{
-
-}
-
-void CXTHeaderCtrlThemeOfficeXP::OnDrawBackground(LPDRAWITEMSTRUCT lpDIS)
-{
-	CRect rcItem(lpDIS->rcItem);
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-
-	// fill background
-	pDC->FillSolidRect(&rcItem, m_cr3DFace);
-	rcItem.right += 2;
-
-	// draw 3D borders.
-	pDC->Draw3dRect(&rcItem, m_cr3DHighLight, m_cr3DShadow);
-}
-
-void CXTHeaderCtrlThemeOfficeXP::OnDrawItemBackground(LPDRAWITEMSTRUCT lpDIS)
-{
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-
-	if (lpDIS->itemState == ODS_SELECTED)
-	{
-		CXTPPenDC penDC(lpDIS->hDC, m_cr3DShadow);
-		pDC->MoveTo(lpDIS->rcItem.right-2, 2);
-		pDC->LineTo(lpDIS->rcItem.right-2, lpDIS->rcItem.bottom-2);
-
-		penDC.Color(m_cr3DHighLight);
-		pDC->MoveTo(lpDIS->rcItem.right-1, 2);
-		pDC->LineTo(lpDIS->rcItem.right-1, lpDIS->rcItem.bottom-2);
-	}
-	else
-	{
-		CXTPPenDC penDC(lpDIS->hDC, m_cr3DShadow);
-		pDC->MoveTo(lpDIS->rcItem.right-2, 2);
-		pDC->LineTo(lpDIS->rcItem.right-2, lpDIS->rcItem.bottom-2);
-
-		penDC.Color(m_cr3DHighLight);
-		pDC->MoveTo(lpDIS->rcItem.right-1, 2);
-		pDC->LineTo(lpDIS->rcItem.right-1, lpDIS->rcItem.bottom-2);
-	}
-}
-
-//=============================================================================
-// CXTHeaderCtrlThemeOffice2003
-//=============================================================================
-
-CXTHeaderCtrlThemeOffice2003::CXTHeaderCtrlThemeOffice2003()
-{
-	m_dwDrawStyle = XTTHEME_SORTARROW;
-	m_sizePadding = CSize(6, 2);
-}
-
-CXTHeaderCtrlThemeOffice2003::~CXTHeaderCtrlThemeOffice2003()
-{
-
-}
-
-void CXTHeaderCtrlThemeOffice2003::OnDrawBackground(LPDRAWITEMSTRUCT lpDIS)
-{
-	CRect rcItem(lpDIS->rcItem);
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-
-	// fill background
-	pDC->FillSolidRect(&rcItem, m_cr3DFace);
-	rcItem.right += 2;
-
-	// draw 3D borders.
-	pDC->Draw3dRect(&rcItem, m_cr3DHighLight, MixColor(m_cr3DFace, m_cr3DShadow, 0.6));
-
-	CXTPPenDC penDC(lpDIS->hDC, MixColor(m_cr3DFace, m_cr3DShadow, 0.4));
-	pDC->MoveTo(rcItem.left, rcItem.bottom-2);
-	pDC->LineTo(rcItem.right, rcItem.bottom-2);
-
-	penDC.Color(MixColor(m_cr3DFace, m_cr3DShadow, 0.25));
-	pDC->MoveTo(rcItem.left, rcItem.bottom-3);
-	pDC->LineTo(rcItem.right, rcItem.bottom-3);
-}
-
-void CXTHeaderCtrlThemeOffice2003::OnDrawItemBackground(LPDRAWITEMSTRUCT lpDIS)
-{
-	CDC* pDC = CDC::FromHandle(lpDIS->hDC);
-
-	if (lpDIS->itemState == ODS_SELECTED)
-	{
-		CXTPPenDC penDC(lpDIS->hDC, m_cr3DShadow);
-		pDC->MoveTo(lpDIS->rcItem.right-2, 2);
-		pDC->LineTo(lpDIS->rcItem.right-2, lpDIS->rcItem.bottom-4);
-
-		penDC.Color(m_cr3DHighLight);
-		pDC->MoveTo(lpDIS->rcItem.right-1, 2);
-		pDC->LineTo(lpDIS->rcItem.right-1, lpDIS->rcItem.bottom-4);
-	}
-	else
-	{
-		CXTPPenDC penDC(lpDIS->hDC, m_cr3DShadow);
-		pDC->MoveTo(lpDIS->rcItem.right-2, 2);
-		pDC->LineTo(lpDIS->rcItem.right-2, lpDIS->rcItem.bottom-4);
-
-		penDC.Color(m_cr3DHighLight);
-		pDC->MoveTo(lpDIS->rcItem.right-1, 2);
-		pDC->LineTo(lpDIS->rcItem.right-1, lpDIS->rcItem.bottom-4);
-	}
-}
-
-BOOL CXTHeaderCtrlThemeOffice2003::Layout(LPHDLAYOUT lpHDL, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	LPRECT      pRC = lpHDL->prc;
-	LPWINDOWPOS pWP = lpHDL->pwpos;
-
-	CWindowDC dc(NULL);
-	CXTPFontDC fontDC(&dc, pHeaderCtrl->GetFont());
-
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
-	int iHeight = tm.tmHeight + 10;
-
-	pWP->hwndInsertAfter = 0;
-	pWP->x = pRC->left;
-	pWP->cx = pRC->right - pRC->left;
-	pWP->cy = iHeight;
-	pWP->y = pRC->top;
-	pRC->top += iHeight;
-	pWP->flags = SWP_NOACTIVATE | SWP_NOZORDER;
-
-	return TRUE;
-}
-
-//=============================================================================
-// CXTHeaderCtrlThemeExplorer
-//=============================================================================
-
-CXTHeaderCtrlThemeExplorer::CXTHeaderCtrlThemeExplorer()
-{
-	m_dwDrawStyle = XTTHEME_WINXPTHEMES | XTTHEME_HOTTRACKING | XTTHEME_SORTARROW;
-	m_sizePadding = CSize(6, 0);
-	m_sizeArrow = CSize(8, 4);
-}
-
-CXTHeaderCtrlThemeExplorer::~CXTHeaderCtrlThemeExplorer()
-{
-
-}
-
-BOOL CXTHeaderCtrlThemeExplorer::OnDrawItemBackgroundWinThemed(LPDRAWITEMSTRUCT lpDIS)
-{
-	return CXTHeaderCtrlTheme::OnDrawItemBackgroundWinThemed(lpDIS);
-}
-
-BOOL CXTHeaderCtrlThemeExplorer::Layout(LPHDLAYOUT lpHDL, CXTHeaderCtrl* pHeaderCtrl)
-{
-	ASSERT_VALID(pHeaderCtrl);
-
-	LPRECT      pRC = lpHDL->prc;
-	LPWINDOWPOS pWP = lpHDL->pwpos;
-
-	CWindowDC dc(NULL);
-	CXTPFontDC fontDC(&dc, pHeaderCtrl->GetFont());
-
-	TEXTMETRIC tm;
-	dc.GetTextMetrics(&tm);
-	int iHeight = tm.tmHeight + 6;
-
-	pWP->hwndInsertAfter = 0;
-	pWP->x = pRC->left;
-	pWP->cx = pRC->right - pRC->left;
-	pWP->cy = iHeight;
-	pWP->y = pRC->top;
-	pRC->top += iHeight;
-	pWP->flags = SWP_NOACTIVATE | SWP_NOZORDER;
-
-	return TRUE;
-}
-
-void CXTHeaderCtrlThemeExplorer::DrawSortArrow(CDC* pDC, LPPOINT ptsArrow, BOOL /*bAscending*/)
-{
-	CXTPPenDC   dcPen(pDC->m_hDC, RGB(172, 168, 153));
-	CXTPBrushDC dcBrush(pDC->m_hDC, RGB(172, 168, 153));
-
-	pDC->SetPolyFillMode(WINDING);
-	pDC->Polygon(ptsArrow, 3);
-}

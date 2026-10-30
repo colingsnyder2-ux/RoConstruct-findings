@@ -1,515 +1,104 @@
+// roc 2009-12 00864310  unit: CXTPToolTipContextToolTip  size: 419 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00864310
+//
+// 00864310  6aff                 push -1
+// 00864312  681ced9500           push 0x95ed1c
+// 00864317  64a100000000         mov eax, dword ptr fs:[0]
+// 0086431d  50                   push eax
+// 0086431e  51                   push ecx
+// 0086431f  56                   push esi
+// 00864320  57                   push edi
+// 00864321  a10052b600           mov eax, dword ptr [0xb65200]
+// 00864326  33c4                 xor eax, esp
+// 00864328  50                   push eax
+// 00864329  8d442410             lea eax, [esp + 0x10]
+// 0086432d  64a300000000         mov dword ptr fs:[0], eax
+// 00864333  8bf1                 mov esi, ecx
+// 00864335  8974240c             mov dword ptr [esp + 0xc], esi
+// 00864339  c70624e99f00         mov dword ptr [esi], 0x9fe924
+// 0086433f  33ff                 xor edi, edi
+// 00864341  b898019b00           mov eax, 0x9b0198
+// 00864346  89bee0000000         mov dword ptr [esi + 0xe0], edi
+// 0086434c  8986dc000000         mov dword ptr [esi + 0xdc], eax
+// 00864352  897c2418             mov dword ptr [esp + 0x18], edi
+// 00864356  89bee8000000         mov dword ptr [esi + 0xe8], edi
+// 0086435c  8986e4000000         mov dword ptr [esi + 0xe4], eax
+// 00864362  89bef0000000         mov dword ptr [esi + 0xf0], edi
+// 00864368  8986ec000000         mov dword ptr [esi + 0xec], eax
+// 0086436e  89bef8000000         mov dword ptr [esi + 0xf8], edi
+// 00864374  8986f4000000         mov dword ptr [esi + 0xf4], eax
+// 0086437a  89be00010000         mov dword ptr [esi + 0x100], edi
+// 00864380  8986fc000000         mov dword ptr [esi + 0xfc], eax
+// 00864386  89be08010000         mov dword ptr [esi + 0x108], edi
+// 0086438c  898604010000         mov dword ptr [esi + 0x104], eax
+// 00864392  89be10010000         mov dword ptr [esi + 0x110], edi
+// 00864398  89860c010000         mov dword ptr [esi + 0x10c], eax
+// 0086439e  89be18010000         mov dword ptr [esi + 0x118], edi
+// 008643a4  898614010000         mov dword ptr [esi + 0x114], eax
+// 008643aa  89be20010000         mov dword ptr [esi + 0x120], edi
+// 008643b0  89861c010000         mov dword ptr [esi + 0x11c], eax
+// 008643b6  89be28010000         mov dword ptr [esi + 0x128], edi
+// 008643bc  898624010000         mov dword ptr [esi + 0x124], eax
+// 008643c2  c644241809           mov byte ptr [esp + 0x18], 9
+// 008643c7  c78650010000ffffffff mov dword ptr [esi + 0x150], 0xffffffff
+// 008643d1  89bea4000000         mov dword ptr [esi + 0xa4], edi
+// 008643d7  89bea8000000         mov dword ptr [esi + 0xa8], edi
+// 008643dd  89beac000000         mov dword ptr [esi + 0xac], edi
+// 008643e3  89beb0000000         mov dword ptr [esi + 0xb0], edi
+// 008643e9  89beb4000000         mov dword ptr [esi + 0xb4], edi
+// 008643ef  89beb8000000         mov dword ptr [esi + 0xb8], edi
+// 008643f5  89bebc000000         mov dword ptr [esi + 0xbc], edi
+// 008643fb  89be40010000         mov dword ptr [esi + 0x140], edi
+// 00864401  89be44010000         mov dword ptr [esi + 0x144], edi
+// 00864407  c7864801000001000000 mov dword ptr [esi + 0x148], 1
+// 00864411  e80a73fdff           call 0x83b720
+// 00864416  8bc8                 mov ecx, eax
+// 00864418  e83373fdff           call 0x83b750
+// 0086441d  0fb6c0               movzx eax, al
+// 00864420  89862c010000         mov dword ptr [esi + 0x12c], eax
+// 00864426  e8f572fdff           call 0x83b720
+// 0086442b  8bc8                 mov ecx, eax
+// 0086442d  e86e7bfdff           call 0x83bfa0
+// 00864432  0fb6c8               movzx ecx, al
+// 00864435  898e30010000         mov dword ptr [esi + 0x130], ecx
+// 0086443b  e8e072fdff           call 0x83b720
+// 00864440  8bc8                 mov ecx, eax
+// 00864442  e8797bfdff           call 0x83bfc0
+// 00864447  0fb6d0               movzx edx, al
+// 0086444a  899634010000         mov dword ptr [esi + 0x134], edx
+// 00864450  e8cb72fdff           call 0x83b720
+// 00864455  8bc8                 mov ecx, eax
+// 00864457  e8847bfdff           call 0x83bfe0
+// 0086445c  0fb6c0               movzx eax, al
+// 0086445f  898638010000         mov dword ptr [esi + 0x138], eax
+// 00864465  e8b672fdff           call 0x83b720
+// 0086446a  8bc8                 mov ecx, eax
+// 0086446c  e88f7bfdff           call 0x83c000
+// 00864471  0fb6c8               movzx ecx, al
+// 00864474  898e3c010000         mov dword ptr [esi + 0x13c], ecx
+// 0086447a  8bce                 mov ecx, esi
+// 0086447c  e83ff6ffff           call 0x863ac0
+// 00864481  8bce                 mov ecx, esi
+// 00864483  e808f3ffff           call 0x863790
+// 00864488  8bce                 mov ecx, esi
+// 0086448a  e8d1f5ffff           call 0x863a60
+// 0086448f  8bce                 mov ecx, esi
+// 00864491  e84af6ffff           call 0x863ae0
+// 00864496  57                   push edi
+// 00864497  57                   push edi
+// 00864498  8bce                 mov ecx, esi
+// 0086449a  e8e1f9ffff           call 0x863e80
+// 0086449f  8bc6                 mov eax, esi
+// 008644a1  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 008644a5  64890d00000000       mov dword ptr fs:[0], ecx
+// 008644ac  59                   pop ecx
+// 008644ad  5f                   pop edi
+// 008644ae  5e                   pop esi
+// 008644af  83c410               add esp, 0x10
+// 008644b2  c3                   ret 
+// copied from an identical function in another client (function ??0CXTAuxData@@AAE@XZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-imports Source/Controls/XTGlobal.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTGlobal.cpp : implementation of the CXTAuxData struct.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/Resource.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPVersion.h"
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPSystemHelpers.h"
-
-#include "XTGlobal.h"
-#include "XTThemeManager.h"
-
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
-
-//=============================================================================
-// CXTNonClientMetrics
-//=============================================================================
-
-CXTNonClientMetrics::CXTNonClientMetrics()
-{
-	::ZeroMemory(this, sizeof(NONCLIENTMETRICS));
-	cbSize = sizeof(NONCLIENTMETRICS);
-
-	VERIFY(::SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
-		sizeof(NONCLIENTMETRICS), this, 0));
-}
-
-//=============================================================================
-// CXTFontManager
-//=============================================================================
-
-CXTLogFont::CXTLogFont()
-: dwType(0)
-{
-	::ZeroMemory(this, sizeof(CXTLogFont));
-}
-
-CXTLogFont::CXTLogFont(LOGFONT& logfont)
-: dwType(0)
-{
-	MEMCPY_S((void*)&*this, (const void*)&logfont, (DWORD)sizeof(LOGFONT));
-}
-
-void CXTLogFont::operator=(LOGFONT& logfont)
-{
-	MEMCPY_S((void*)&*this, (const void*)&logfont, (DWORD)sizeof(LOGFONT));
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTAuxDataTheme
-
-CXTAuxDataTheme::operator BOOL()
-{
-	return XTThemeManager()->GetTheme() == xtThemeDefault ? FALSE : TRUE;
-}
-
-BOOL CXTAuxDataTheme::operator=(BOOL bXPMode)
-{
-	XTThemeManager()->SetTheme(bXPMode ? xtThemeOfficeXP : xtThemeDefault);
-	return bXPMode;
-}
-
-//=============================================================================
-// CXTAuxData
-//=============================================================================
-
-CXTAuxData::CXTAuxData()
-{
-	iComCtlVersion = -1;
-	hcurDragCopy = NULL;
-	hcurDragMove = NULL;
-	hcurDragNone = NULL;
-	hcurHand = NULL;
-	hcurHSplitBar = NULL;
-	hcurVSplitBar = NULL;
-	hcurMove = NULL;
-	bUseOfficeFont = FALSE;
-	bUseSolidShadows = FALSE;
-	bMenuShadows = TRUE;
-
-	bWin95 = XTOSVersionInfo()->IsWin95();
-	bWin98 = XTOSVersionInfo()->IsWin98();
-	bWinNT = XTOSVersionInfo()->IsWinNT4();
-	bWin2K = XTOSVersionInfo()->IsWin2K();
-	bWinXP = XTOSVersionInfo()->IsWinXP();
-
-	// Internet Explorer 4.0 or higher.
-	GetComCtlVersion();
-	VERIFY(IsComCtlValid());
-
-	UpdateSysColors();
-	UpdateSysMetrics();
-
-	// Load cursors and fonts.
-	LoadSysCursors();
-	LoadSysFonts();
-}
-
-CXTAuxData::~CXTAuxData()
-{
-	FreeSysFonts();
-}
-
-// If LoadCursors() returns FALSE and your application is linking to the
-// static version of the library you most likely need to include the following
-// line in your .rc2 file: #include "XTResourcePro.rc".  This name will vary
-// depending on the library you are linking to.
-
-BOOL CXTAuxData::LoadSysCursors()
-{
-	hcurDragNone = XTPResourceManager()->LoadCursor(XT_IDC_DRAGNONE);
-
-	if (hcurDragNone == NULL)
-		return FALSE;
-
-	hcurDragCopy = XTPResourceManager()->LoadCursor(XT_IDC_DRAGCOPY);
-
-	if (hcurDragCopy == NULL)
-		return FALSE;
-
-	hcurDragMove = XTPResourceManager()->LoadCursor(XT_IDC_DRAGMOVE);
-
-	if (hcurDragMove == NULL)
-		return FALSE;
-
-	hcurHand = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
-
-	if (hcurHand == NULL)
-		hcurHand = XTPResourceManager()->LoadCursor(XTP_IDC_HAND);
-
-	if (hcurHand == NULL)
-		return FALSE;
-
-	hcurHSplitBar = XTPResourceManager()->LoadCursor(XTP_IDC_HSPLITBAR);
-
-	if (hcurHSplitBar == NULL)
-		return FALSE;
-
-	hcurVSplitBar = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
-
-	if (hcurVSplitBar == NULL)
-		return FALSE;
-
-	hcurMove = AfxGetApp()->LoadStandardCursor(IDC_SIZEALL);
-
-	if (hcurMove == NULL)
-		return FALSE;
-
-	return TRUE;
-}
-
-void CXTAuxData::UpdateSysColors()
-{
-	RefreshXtremeColors();
-
-	// Initialize standard color for windows components.
-	clr3DFace = GetXtremeColor(COLOR_3DFACE);
-	clr3DShadow = GetXtremeColor(COLOR_3DSHADOW);
-	clr3DDkShadow = GetXtremeColor(COLOR_3DDKSHADOW);
-	clr3DHilight = GetXtremeColor(COLOR_3DHILIGHT);
-	clr3DLight = GetXtremeColor(COLOR_3DLIGHT);
-	clrBtnText = GetXtremeColor(COLOR_BTNTEXT);
-	clrGrayText = GetXtremeColor(COLOR_GRAYTEXT);
-	clrHighlight = GetXtremeColor(COLOR_HIGHLIGHT);
-	clrHighlightText = GetXtremeColor(COLOR_HIGHLIGHTTEXT);
-	clrMenu = GetXtremeColor(COLOR_MENU);
-	clrMenuText = GetXtremeColor(COLOR_MENUTEXT);
-	clrWindow = GetXtremeColor(COLOR_WINDOW);
-	clrWindowFrame = GetXtremeColor(COLOR_WINDOWFRAME);
-	clrWindowText = GetXtremeColor(COLOR_WINDOWTEXT);
-	clrActiveCaption = GetXtremeColor(COLOR_ACTIVECAPTION);
-	clrInActiveCaption = GetXtremeColor(COLOR_INACTIVECAPTION);
-	clrGradActiveCapt = GetXtremeColor(COLOR_GRADIENTACTIVECAPTION);
-	clrGradInActiveCapt = GetXtremeColor(COLOR_GRADIENTINACTIVECAPTION);
-	clrActiveCaptText = GetXtremeColor(COLOR_CAPTIONTEXT);
-	clrInactiveCaptText = GetXtremeColor(COLOR_INACTIVECAPTIONTEXT);
-
-	// Initialize special colors for XP style interfaces.
-	clrXPBarFace = GetXtremeColor(XPCOLOR_TOOLBAR_FACE);
-	clrXPHighlight = GetXtremeColor(XPCOLOR_HIGHLIGHT);
-	clrXPHighlightBorder = GetXtremeColor(XPCOLOR_HIGHLIGHT_BORDER);
-	clrXPHighlightPushed = GetXtremeColor(XPCOLOR_HIGHLIGHT_PUSHED);
-	clrXPIconShadow = GetXtremeColor(XPCOLOR_ICONSHADDOW);
-	clrXPGrayText = GetXtremeColor(XPCOLOR_GRAYTEXT);
-	clrXPHighlightChecked = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED);
-	clrXPHighlightCheckedBorder = GetXtremeColor(XPCOLOR_HIGHLIGHT_CHECKED_BORDER);
-	clrXPGripper = GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER);
-	clrXPSeparator = GetXtremeColor(XPCOLOR_SEPARATOR);
-	clrXPDisabled = GetXtremeColor(XPCOLOR_DISABLED);
-	clrXPMenuTextBack = GetXtremeColor(XPCOLOR_MENUBAR_FACE);
-	clrXPMenuExpanded = GetXtremeColor(XPCOLOR_MENUBAR_EXPANDED);
-	clrXPMenuBorder = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
-	clrXPMenuText = GetXtremeColor(XPCOLOR_MENUBAR_TEXT);
-	clrXPHighlightText = GetXtremeColor(XPCOLOR_HIGHLIGHT_TEXT);
-	clrXPBarText = GetXtremeColor(XPCOLOR_TOOLBAR_TEXT);
-	clrXPBarTextPushed = GetXtremeColor(XPCOLOR_PUSHED_TEXT);
-	clrXPTabInactiveBack = GetXtremeColor(XPCOLOR_TAB_INACTIVE_BACK);
-	clrXPTabInactiveText = GetXtremeColor(XPCOLOR_TAB_INACTIVE_TEXT);
-}
-
-void CXTAuxData::UpdateSysMetrics()
-{
-	cxSmIcon = ::GetSystemMetrics(SM_CXSMICON);
-	cySmIcon = ::GetSystemMetrics(SM_CYSMICON);
-	cxHThumb = ::GetSystemMetrics(SM_CXHTHUMB);
-	cyVThumb = ::GetSystemMetrics(SM_CYVTHUMB);
-	cyMenuItem = ::GetSystemMetrics(SM_CYMENU);
-	cxSize = 18; //::GetSystemMetrics(SM_CXSIZE);
-	cySize = 18; //::GetSystemMetrics(SM_CYSIZE);
-}
-
-BOOL CXTAuxData::LoadSysFonts(LPCTSTR strHorzFaceName/*= _T("")*/, LPCTSTR strVertFaceName/*= _T("")*/)
-{
-	CString strFaceTahoma(_T("Tahoma"));
-	CString strFaceArial(_T("Arial"));
-
-	// Free up any resources previously allocated.
-	FreeSysFonts();
-
-	CXTNonClientMetrics ncm;
-
-	LOGFONT lfMenuFont;
-	MEMCPY_S(&lfMenuFont, &ncm.lfMenuFont, sizeof(LOGFONT));
-
-	if (strHorzFaceName != NULL)
-	{
-		if (FontExists(strHorzFaceName))
-		{
-			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strHorzFaceName);
-			STRCPY_S(ncm.lfStatusFont.lfFaceName, LF_FACESIZE, strHorzFaceName);
-			STRCPY_S(ncm.lfSmCaptionFont.lfFaceName, LF_FACESIZE, strHorzFaceName);
-		}
-	}
-
-	// check to see if we can use the "Tahoma" font.
-	else if (bUseOfficeFont && !(ncm.lfMenuFont.lfCharSet > SYMBOL_CHARSET))
-	{
-		if (FontExists(strFaceTahoma))
-		{
-			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strFaceTahoma);
-		}
-	}
-
-	// create the menu fonts.
-	if (!CreateSysFont(lfMenuFont, font))
-		return FALSE;
-
-	if (!CreateSysFont(lfMenuFont, fontBold, FW_BOLD))
-		return FALSE;
-
-	if (!CreateSysFont(lfMenuFont, fontULine, -1, 1))
-		return FALSE;
-
-	// If the "Tahoma" font is not used see if we can use "Arial" for vertical
-	// fonts because it displays better than MS Sans Serif on older operating
-	// systems...
-
-	if (strVertFaceName != NULL)
-	{
-		if (FontExists(strVertFaceName))
-		{
-			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strVertFaceName);
-		}
-	}
-
-	else if (strFaceTahoma.CompareNoCase(ncm.lfMenuFont.lfFaceName) != 0)
-	{
-		if (FontExists(strFaceArial))
-		{
-			STRCPY_S(lfMenuFont.lfFaceName, LF_FACESIZE, strFaceArial);
-		}
-	}
-
-	// create the vertical menu fonts.
-	if (!CreateSysFont(lfMenuFont, fontVert, -1, -1, 900, 2700))
-		return FALSE;
-
-	if (!CreateSysFont(lfMenuFont, fontVertBold, FW_BOLD, -1, 900, 2700))
-		return FALSE;
-
-	// create the icon title fonts.
-	CXTLogFont lfIconTitleFont;
-	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT,
-		sizeof(LOGFONT), &lfIconTitleFont, 0));
-
-	if (!CreateSysFont(lfIconTitleFont, fontIconTitle))
-		return FALSE;
-
-	if (!CreateSysFont(lfIconTitleFont, fontIconTitleBold, FW_BOLD))
-		return FALSE;
-
-	// Create the status bar font.
-	if (!CreateSysFont(ncm.lfStatusFont, fontStatus))
-		return FALSE;
-
-	// Create the small caption font.
-	if (!CreateSysFont(ncm.lfSmCaptionFont, fontSmCaption))
-		return FALSE;
-
-	// Create the marlett icon font.
-	LOGFONT lfMarlettIcon = {lfIconTitleFont.lfHeight, 0, 0, 0, 0, 0, 0, 0,
-		DEFAULT_CHARSET, 0, 0, 0, 0, _T("Marlett")};
-
-	if (!CreateSysFont(lfMarlettIcon, fontMarlettIcon))
-		return FALSE;
-
-	return TRUE;
-}
-
-void CXTAuxData::FreeSysFonts()
-{
-	if (font.GetSafeHandle())
-		font.DeleteObject();
-	if (fontBold.GetSafeHandle())
-		fontBold.DeleteObject();
-	if (fontULine.GetSafeHandle())
-		fontULine.DeleteObject();
-	if (fontVert.GetSafeHandle())
-		fontVert.DeleteObject();
-	if (fontVertBold.GetSafeHandle())
-		fontVertBold.DeleteObject();
-	if (fontIconTitle.GetSafeHandle())
-		fontIconTitle.DeleteObject();
-	if (fontIconTitleBold.GetSafeHandle())
-		fontIconTitleBold.DeleteObject();
-	if (fontMarlettIcon.GetSafeHandle())
-		fontMarlettIcon.DeleteObject();
-	if (fontStatus.GetSafeHandle())
-		fontStatus.DeleteObject();
-	if (fontSmCaption.GetSafeHandle())
-		fontSmCaption.DeleteObject();
-}
-
-void CXTAuxData::UseOfficeFont(BOOL bOfficeFont)
-{
-	bUseOfficeFont = bOfficeFont;
-	LoadSysFonts();
-}
-
-BOOL CXTAuxData::FontExists(LPCTSTR strFaceName)
-{
-	return CXTPDrawHelpers::FontExists(strFaceName);
-}
-
-BOOL CXTAuxData::CreateSysFont(const CXTLogFont& logFont, CFont& font, long lfWeight/*= -1*/, char lfUnderline/*= -1*/, long lfOrientation/*= -1*/, long lfEscapement/*= -1*/)
-{
-	// delete the font if it has already been created.
-	if (font.GetSafeHandle())
-	{
-		font.DeleteObject();
-	}
-
-	// construct the log font.
-	CXTLogFont lf(logFont);
-
-	// set font weight.
-	if (lfWeight != -1)
-	{
-		lf.lfWeight = lfWeight;
-	}
-
-	// set font orientation.
-	if (lfOrientation != -1)
-	{
-		lf.lfOrientation = lfOrientation;
-	}
-
-	// set font escapement.
-	if (lfEscapement != -1)
-	{
-		lf.lfEscapement = lfEscapement;
-	}
-
-	// set font underline style.
-	if (lfUnderline != -1)
-	{
-		lf.lfUnderline = lfUnderline;
-	}
-
-	// create the font using the log font we constructed.
-	return font.CreateFontIndirect(&lf);
-}
-
-BOOL CXTAuxData::SetGlobalFont(LPCTSTR lpszFaceName, LPCTSTR lpszVertFaceName/*= NULL*/)
-{
-	return LoadSysFonts(lpszFaceName, lpszVertFaceName);
-}
-
-BOOL CXTAuxData::SetGlobalFont(CFont* pHorzFont, CFont* pVertFont/*= NULL*/)
-{
-	if (pHorzFont != NULL && pHorzFont->GetSafeHandle() != NULL)
-	{
-		CXTLogFont lf;
-		pHorzFont->GetLogFont(&lf);
-
-		// create the menu fonts.
-		if (!CreateSysFont(lf, font))
-			return FALSE;
-
-		if (!CreateSysFont(lf, fontBold, FW_BOLD))
-			return FALSE;
-
-		if (!CreateSysFont(lf, fontULine, -1, 1))
-			return FALSE;
-
-		if (!CreateSysFont(lf, fontStatus))
-			return FALSE;
-	}
-
-	if (pVertFont != NULL && pVertFont->GetSafeHandle() != NULL)
-	{
-		CXTLogFont lf;
-		pVertFont->GetLogFont(&lf);
-
-		if (!CreateSysFont(lf, fontVert, -1, -1, 900, 2700))
-			return FALSE;
-
-		if (!CreateSysFont(lf, fontVertBold, FW_BOLD, -1, 900, 2700))
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-
-DWORD CXTAuxData::GetComCtlVersion()
-{
-	iComCtlVersion = XTPSystemVersion()->GetComCtlVersion();
-	return iComCtlVersion;
-}
-
-BOOL CXTAuxData::IsComCtlValid() const
-{
-	return TRUE;
-}
-
-CString CXTAuxData::GetXTVersion(bool bVerNumOnly/*= false*/)
-{
-	CString strVersion;
-	if (bVerNumOnly)
-	{
-		strVersion.Format(_T("%d.%02d"),
-			_XTPLIB_VERSION_MAJOR, _XTPLIB_VERSION_MINOR);
-	}
-	else
-	{
-		strVersion.Format(_T("Xtreme Toolkit v%d.%02d"),
-			_XTPLIB_VERSION_MAJOR, _XTPLIB_VERSION_MINOR);
-	}
-	return strVersion;
-}
-
-void CXTAuxData::InitResources(HINSTANCE hInst)
-{
-	// Set the resource handle used by the library.
-	XTPResourceManager()->SetResourceHandle(hInst);
-
-	LoadSysCursors(); // Load cursors.
-}
-
-_XTP_EXT_CLASS CXTAuxData& AFXAPI XTAuxData()
-{
-	static CXTAuxData instance;
-	return instance;
-}
-
-// CXTTcbItem
-
-CXTTcbItem::CXTTcbItem()
-: uiToolTipId(0)
-, pWnd(0)
-, dwStyle(0)
-, dwExStyle(0)
-, crTabBack(COLORREF_NULL)
-, crTabText(COLORREF_NULL)
-, crTabSelBack(COLORREF_NULL)
-, crTabSelText(COLORREF_NULL)
-{
-
-}

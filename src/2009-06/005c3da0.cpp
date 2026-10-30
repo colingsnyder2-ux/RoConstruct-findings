@@ -1,619 +1,122 @@
+// roc 2009-06 005c3da0  unit: RBX::VChunk::?$WeakReferenceCountedPointer  size: 304 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 005c3da0
+//
+// 005c3da0  55                   push ebp
+// 005c3da1  8bec                 mov ebp, esp
+// 005c3da3  83ec08               sub esp, 8
+// 005c3da6  56                   push esi
+// 005c3da7  894df8               mov dword ptr [ebp - 8], ecx
+// 005c3daa  8b4508               mov eax, dword ptr [ebp + 8]
+// 005c3dad  50                   push eax
+// 005c3dae  e89ddcffff           call 0x5c1a50
+// 005c3db3  83c404               add esp, 4
+// 005c3db6  8b08                 mov ecx, dword ptr [eax]
+// 005c3db8  894dfc               mov dword ptr [ebp - 4], ecx
+// 005c3dbb  8b55fc               mov edx, dword ptr [ebp - 4]
+// 005c3dbe  52                   push edx
+// 005c3dbf  e8acdcffff           call 0x5c1a70
+// 005c3dc4  83c404               add esp, 4
+// 005c3dc7  8bf0                 mov esi, eax
+// 005c3dc9  8b4508               mov eax, dword ptr [ebp + 8]
+// 005c3dcc  50                   push eax
+// 005c3dcd  e87edcffff           call 0x5c1a50
+// 005c3dd2  83c404               add esp, 4
+// 005c3dd5  8b0e                 mov ecx, dword ptr [esi]
+// 005c3dd7  8908                 mov dword ptr [eax], ecx
+// 005c3dd9  8b55fc               mov edx, dword ptr [ebp - 4]
+// 005c3ddc  52                   push edx
+// 005c3ddd  e88edcffff           call 0x5c1a70
+// 005c3de2  83c404               add esp, 4
+// 005c3de5  8b00                 mov eax, dword ptr [eax]
+// 005c3de7  50                   push eax
+// 005c3de8  e853dcffff           call 0x5c1a40
+// 005c3ded  83c404               add esp, 4
+// 005c3df0  0fbe08               movsx ecx, byte ptr [eax]
+// 005c3df3  85c9                 test ecx, ecx
+// 005c3df5  751c                 jne 0x5c3e13
+// 005c3df7  8b55fc               mov edx, dword ptr [ebp - 4]
+// 005c3dfa  52                   push edx
+// 005c3dfb  e870dcffff           call 0x5c1a70
+// 005c3e00  83c404               add esp, 4
+// 005c3e03  8b00                 mov eax, dword ptr [eax]
+// 005c3e05  50                   push eax
+// 005c3e06  e855dcffff           call 0x5c1a60
+// 005c3e0b  83c404               add esp, 4
+// 005c3e0e  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 005c3e11  8908                 mov dword ptr [eax], ecx
+// 005c3e13  8b5508               mov edx, dword ptr [ebp + 8]
+// 005c3e16  52                   push edx
+// 005c3e17  e844dcffff           call 0x5c1a60
+// 005c3e1c  83c404               add esp, 4
+// 005c3e1f  8bf0                 mov esi, eax
+// 005c3e21  8b45fc               mov eax, dword ptr [ebp - 4]
+// 005c3e24  50                   push eax
+// 005c3e25  e836dcffff           call 0x5c1a60
+// 005c3e2a  83c404               add esp, 4
+// 005c3e2d  8b0e                 mov ecx, dword ptr [esi]
+// 005c3e2f  8908                 mov dword ptr [eax], ecx
+// 005c3e31  8b4df8               mov ecx, dword ptr [ebp - 8]
+// 005c3e34  e867d2ffff           call 0x5c10a0
+// 005c3e39  8b5508               mov edx, dword ptr [ebp + 8]
+// 005c3e3c  3b10                 cmp edx, dword ptr [eax]
+// 005c3e3e  750f                 jne 0x5c3e4f
+// 005c3e40  8b4df8               mov ecx, dword ptr [ebp - 8]
+// 005c3e43  e858d2ffff           call 0x5c10a0
+// 005c3e48  8b4dfc               mov ecx, dword ptr [ebp - 4]
+// 005c3e4b  8908                 mov dword ptr [eax], ecx
+// 005c3e4d  eb58                 jmp 0x5c3ea7
+// 005c3e4f  8b5508               mov edx, dword ptr [ebp + 8]
+// 005c3e52  52                   push edx
+// 005c3e53  e808dcffff           call 0x5c1a60
+// 005c3e58  83c404               add esp, 4
+// 005c3e5b  8b00                 mov eax, dword ptr [eax]
+// 005c3e5d  50                   push eax
+// 005c3e5e  e80ddcffff           call 0x5c1a70
+// 005c3e63  83c404               add esp, 4
+// 005c3e66  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 005c3e69  3b08                 cmp ecx, dword ptr [eax]
+// 005c3e6b  751e                 jne 0x5c3e8b
+// 005c3e6d  8b5508               mov edx, dword ptr [ebp + 8]
+// 005c3e70  52                   push edx
+// 005c3e71  e8eadbffff           call 0x5c1a60
+// 005c3e76  83c404               add esp, 4
+// 005c3e79  8b00                 mov eax, dword ptr [eax]
+// 005c3e7b  50                   push eax
+// 005c3e7c  e8efdbffff           call 0x5c1a70
+// 005c3e81  83c404               add esp, 4
+// 005c3e84  8b4dfc               mov ecx, dword ptr [ebp - 4]
+// 005c3e87  8908                 mov dword ptr [eax], ecx
+// 005c3e89  eb1c                 jmp 0x5c3ea7
+// 005c3e8b  8b5508               mov edx, dword ptr [ebp + 8]
+// 005c3e8e  52                   push edx
+// 005c3e8f  e8ccdbffff           call 0x5c1a60
+// 005c3e94  83c404               add esp, 4
+// 005c3e97  8b00                 mov eax, dword ptr [eax]
+// 005c3e99  50                   push eax
+// 005c3e9a  e8b1dbffff           call 0x5c1a50
+// 005c3e9f  83c404               add esp, 4
+// 005c3ea2  8b4dfc               mov ecx, dword ptr [ebp - 4]
+// 005c3ea5  8908                 mov dword ptr [eax], ecx
+// 005c3ea7  8b55fc               mov edx, dword ptr [ebp - 4]
+// 005c3eaa  52                   push edx
+// 005c3eab  e8c0dbffff           call 0x5c1a70
+// 005c3eb0  83c404               add esp, 4
+// 005c3eb3  8b4d08               mov ecx, dword ptr [ebp + 8]
+// 005c3eb6  8908                 mov dword ptr [eax], ecx
+// 005c3eb8  8b5508               mov edx, dword ptr [ebp + 8]
+// 005c3ebb  52                   push edx
+// 005c3ebc  e89fdbffff           call 0x5c1a60
+// 005c3ec1  83c404               add esp, 4
+// 005c3ec4  8b4dfc               mov ecx, dword ptr [ebp - 4]
+// 005c3ec7  8908                 mov dword ptr [eax], ecx
+// 005c3ec9  5e                   pop esi
+// 005c3eca  8be5                 mov esp, ebp
+// 005c3ecc  5d                   pop ebp
+// 005c3ecd  c20400               ret 4
+// copied from an identical function in another client (function ?_Lrotate@?$_Tree@V?$_Tset_traits@HU?$less@H@std@@V?$allocator@H@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tset_traits@HU?$less@H@std@@V?$allocator@H@2@$0A@@std@@@2@@Z)
+
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /Od /Ob0 /GS- /MD
 // roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
-
-// Candidate translation unit (score above; library headers required).
-// Magic Software, Inc.
-// http://www.magic-software.com
-// http://www.wild-magic.com
-// Copyright (c) 2003.  All Rights Reserved
-//
-// The Wild Magic Library (WML) source code is supplied under the terms of
-// the license agreement http://www.magic-software.com/License/WildMagic.pdf
-// and may not be copied or disclosed except in accordance with the terms of
-// that agreement.
-
-#include "WmlConvexClipper.h"
-#include "WmlConvexPolyhedron3.h"
-using namespace Wml;
-
-#include <algorithm>
-#include <fstream>
-#include <map>
-using namespace std;
-
-//----------------------------------------------------------------------------
-template <class Real>
-ConvexClipper<Real>::ConvexClipper (const ConvexPolyhedron3<Real>& rkPoly,
-    Real fEpsilon)
-{
-    m_fEpsilon = fEpsilon;
-
-    const vector<Vector3<Real> >& rakPoint = rkPoly.GetPoints();
-    int iVQuantity = rkPoly.GetVQuantity();
-    m_akVertex.resize(iVQuantity);
-    for (int iV = 0; iV < iVQuantity; iV++)
-        m_akVertex[iV].m_kPoint = rakPoint[iV];
-
-    int iEQuantity = rkPoly.GetEQuantity();
-    m_akEdge.resize(iEQuantity);
-    for (int iE = 0; iE < iEQuantity; iE++)
-    {
-        const MTEdge& rkE = rkPoly.GetEdge(iE);
-        for (int i = 0; i < 2; i++)
-        {
-            m_akEdge[iE].m_aiVertex[i] = rkPoly.GetVLabel(rkE.GetVertex(i));
-            m_akEdge[iE].m_aiFace[i] = rkE.GetTriangle(i);
-        }
-    }
-
-    int iTQuantity = rkPoly.GetTQuantity();
-    m_akFace.resize(iTQuantity);
-    for (int iT = 0; iT < iTQuantity; iT++)
-    {
-        m_akFace[iT].m_kPlane = rkPoly.GetPlane(iT);
-
-        const MTTriangle& rkT = rkPoly.GetTriangle(iT);
-        for (int i = 0; i < 3; i++)
-            m_akFace[iT].m_akEdge.insert(rkT.GetEdge(i));
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-int ConvexClipper<Real>::Clip (const Plane3<Real>& rkPlane)
-{
-    // compute signed distances from vertices to plane
-    int iPositive = 0, iNegative = 0;
-    for (int iV = 0; iV < (int)m_akVertex.size(); iV++)
-    {
-        Vertex& rkV = m_akVertex[iV];
-        if ( rkV.m_bVisible )
-        {
-            rkV.m_fDistance = rkPlane.DistanceTo(rkV.m_kPoint);
-            if ( rkV.m_fDistance >= m_fEpsilon )
-            {
-                iPositive++;
-            }
-            else if ( rkV.m_fDistance <= -m_fEpsilon )
-            {
-                iNegative++;
-                rkV.m_bVisible = false;
-            }
-            else
-            {
-                // The point is on the plane (within floating point
-                // tolerance).
-                rkV.m_fDistance = (Real)0.0;
-            }
-        }
-    }
-
-    if ( iPositive == 0 )
-    {
-        // mesh is in negative half-space, fully clipped
-        return Plane3<Real>::NEGATIVE_SIDE;
-    }
-
-    if ( iNegative == 0 )
-    {
-        // mesh is in positive half-space, fully visible
-        return Plane3<Real>::POSITIVE_SIDE;
-    }
-
-    // clip the visible edges
-    for (int iE = 0; iE < (int)m_akEdge.size(); iE++)
-    {
-        Edge& rkE = m_akEdge[iE];
-        if ( rkE.m_bVisible )
-        {
-            int iV0 = rkE.m_aiVertex[0], iV1 = rkE.m_aiVertex[1];
-            int iF0 = rkE.m_aiFace[0], iF1 = rkE.m_aiFace[1];
-            Face& rkF0 = m_akFace[iF0];
-            Face& rkF1 = m_akFace[iF1];
-            Real fD0 = m_akVertex[iV0].m_fDistance;
-            Real fD1 = m_akVertex[iV1].m_fDistance;
-
-            if ( fD0 <= (Real)0.0 && fD1 <= (Real)0.0 )
-            {
-                // The edge is culled.  If the edge is exactly on the clip
-                // plane, it is possible that a visible triangle shares it.
-                // The edge will be re-added during the face loop.
-                rkF0.m_akEdge.erase(iE);
-                if ( rkF0.m_akEdge.empty() )
-                    rkF0.m_bVisible = false;
-
-                rkF1.m_akEdge.erase(iE);
-                if ( rkF1.m_akEdge.empty() )
-                    rkF1.m_bVisible = false;
-
-                rkE.m_bVisible = false;
-                continue;
-            }
-
-            if ( fD0 >= (Real)0.0 && fD1 >= (Real)0.0 )
-            {
-                // face retains the edge
-                continue;
-            }
-
-            // The edge is split by the plane.  Compute the point of
-            // intersection.  If the old edge is <V0,V1> and I is the
-            // intersection point, the new edge is <V0,I> when d0 > 0 or
-            // <I,V1> when d1 > 0.
-            int iNV = (int)m_akVertex.size();
-            m_akVertex.push_back(Vertex());
-            Vertex& rkNV = m_akVertex[iNV];
-
-            Vector3<Real>& rkP0 = m_akVertex[iV0].m_kPoint;
-            Vector3<Real>& rkP1 = m_akVertex[iV1].m_kPoint;
-            rkNV.m_kPoint = rkP0+(fD0/(fD0-fD1))*(rkP1-rkP0);
-
-            if ( fD0 > (Real)0.0 )
-                rkE.m_aiVertex[1] = iNV;
-            else
-                rkE.m_aiVertex[0] = iNV;
-        }
-    }
-
-    // The mesh straddles the plane.  A new convex polygonal face will be
-    // generated.  Add it now and insert edges when they are visited.
-    int iNF = (int)m_akFace.size();
-    m_akFace.push_back(Face());
-    Face& rkNF = m_akFace[iNF];
-    rkNF.m_kPlane = rkPlane;
-
-    // process the faces
-    for (int iF = 0; iF < iNF; iF++)
-    {
-        Face& rkF = m_akFace[iF];
-        if ( rkF.m_bVisible )
-        {
-            // Determine if the face is on the negative side, the positive
-            // side, or split by the clipping plane.  The m_iOccurs members
-            // are set to zero to help find the end points of the polyline
-            // that results from clipping a face.
-            assert( rkF.m_akEdge.size() >= 2 );
-            set<int>::iterator pkIter = rkF.m_akEdge.begin();
-            while ( pkIter != rkF.m_akEdge.end() )
-            {
-                int iE = *pkIter++;
-                Edge& rkE = m_akEdge[iE];
-                assert( rkE.m_bVisible );
-                m_akVertex[rkE.m_aiVertex[0]].m_iOccurs = 0;
-                m_akVertex[rkE.m_aiVertex[1]].m_iOccurs = 0;
-            }
-
-            int iVStart, iVFinal;
-            if ( GetOpenPolyline(rkF,iVStart,iVFinal) )
-            {
-                // polyline is open, close it up
-                int iNE = (int)m_akEdge.size();
-                m_akEdge.push_back(Edge());
-                Edge& rkNE = m_akEdge[iNE];
-
-                rkNE.m_aiVertex[0] = iVStart;
-                rkNE.m_aiVertex[1] = iVFinal;
-                rkNE.m_aiFace[0] = iF;
-                rkNE.m_aiFace[1] = iNF;
-
-                // add new edge to polygons
-                rkF.m_akEdge.insert(iNE);
-                rkNF.m_akEdge.insert(iNE);
-            }
-        }
-    }
-
-    // Process face rkNF to make sure it is a simple polygon (theoretically
-    // convex, but numerically may be slightly not convex).  Floating point
-    // round-off errors can cause the new face from the last loop to be
-    // needle-like with a collapse of two edges into a single edge.  This
-    // block guarantees the invariant "face always a simple polygon".
-    PostProcess(iNF,rkNF);
-    int iESize = (int)rkNF.m_akEdge.size();
-    if ( iESize < 3 )
-    {
-        // face is completely degenerate, remove it from mesh
-        m_akFace.pop_back();
-    }
-
-    return Plane3<Real>::NO_SIDE;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::PostProcess (int iNF, Face& rkNF)
-{
-    int i = 0, iEQuantity = (int)rkNF.m_akEdge.size();
-    vector<EdgePlus> kEdges(iEQuantity);
-    set<int>::iterator pkIter = rkNF.m_akEdge.begin();
-    while ( pkIter != rkNF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        kEdges[i++] = EdgePlus(iE,m_akEdge[iE]);
-    }
-    assert( i == iEQuantity );
-
-    sort(kEdges.begin(),kEdges.end());
-
-    // process duplicate edges
-    for (int i0 = 0, i1 = 1; i1 < iEQuantity; i0 = i1++)
-    {
-        if ( kEdges[i0] == kEdges[i1] )
-        {
-            // found two equivalent edges (same vertex end points)
-#ifdef _DEBUG
-            int i2 = i1+1;
-            if ( i2 < iEQuantity )
-            {
-                // Make sure an edge occurs at most twice.  If not, then
-                // algorithm needs to be modified to handle it.
-                assert( kEdges[i1] != kEdges[i2] );
-            }
-#endif
-            // Edge E0 has vertices V0, V1 and faces F0, NF.  Edge E1 has
-            // vertices V0, V1 and faces F1, NF.
-            int iE0 = kEdges[i0].m_iE;
-            int iE1 = kEdges[i1].m_iE;
-            Edge& rkE0 = m_akEdge[iE0];
-            Edge& rkE1 = m_akEdge[iE1];
-
-            // remove E0 and E1 from NF
-            rkNF.m_akEdge.erase(iE0);
-            rkNF.m_akEdge.erase(iE1);
-
-            // remove NF from E0
-            if ( rkE0.m_aiFace[0] == iNF )
-            {
-                rkE0.m_aiFace[0] = rkE0.m_aiFace[1];
-            }
-            else
-            {
-                assert( rkE0.m_aiFace[1] == iNF );
-            }
-            rkE0.m_aiFace[1] = -1;
-
-            // remove NF from E1
-            if ( rkE1.m_aiFace[0] == iNF )
-            {
-                rkE1.m_aiFace[0] = rkE1.m_aiFace[1];
-            }
-            else
-            {
-                assert( rkE1.m_aiFace[1] == iNF );
-            }
-            rkE1.m_aiFace[1] = -1;
-
-            // E2 is being booted from the system.  Update the face F1 that
-            // shares it.  Update E1 to share F1.
-            int iF1 = rkE1.m_aiFace[0];
-            Face& rkF1 = m_akFace[iF1];
-            rkF1.m_akEdge.erase(iE1);
-            rkF1.m_akEdge.insert(iE0);
-            rkE0.m_aiFace[1] = iF1;
-            rkE1.m_bVisible = false;
-        }
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexClipper<Real>::GetOpenPolyline (Face& rkF, int& riVStart,
-    int& riVFinal)
-{
-    // count the number of occurrences of each vertex in the polyline
-    bool bOkay = true;
-    set<int>::iterator pkIter = rkF.m_akEdge.begin();
-    while ( pkIter != rkF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        Edge& rkE = m_akEdge[iE];
-
-        int iV0 = rkE.m_aiVertex[0];
-        m_akVertex[iV0].m_iOccurs++;
-        if ( m_akVertex[iV0].m_iOccurs > 2 )
-            bOkay = false;
-
-        int iV1 = rkE.m_aiVertex[1];
-        m_akVertex[iV1].m_iOccurs++;
-        if ( m_akVertex[iV1].m_iOccurs > 2 )
-            bOkay = false;
-    }
-
-    if ( !bOkay )
-    {
-#ifdef _DEBUG
-        // If you reach this block, there is a good chance that floating
-        // point round-off error had caused this face to be needle-like and
-        // what was theoretically a narrow V-shaped portion (a vertex shared
-        // by two edges forming a small angle) has collapsed into a single
-        // line segment.
-        //
-        // NOTE.  Once I added PostProcess, I have not gotten to this block.
-        ofstream kOStr("error.txt");
-        pkIter = rkF.m_akEdge.begin();
-        while ( pkIter != rkF.m_akEdge.end() )
-        {
-            int iE = *pkIter++;
-            Edge& rkE = m_akEdge[iE];
-            kOStr << "e<" << iE << "> = <" << rkE.m_aiVertex[0] << ","
-                  << rkE.m_aiVertex[1] << "|" << rkE.m_aiFace[0] << ","
-                  << rkE.m_aiFace[1] << "> ";
-            if ( rkE.m_bVisible )
-                kOStr << "T" << endl;
-            else
-                kOStr << "F" << endl;
-        }
-        kOStr.close();
-
-        assert( false );
-#else
-        return false;
-#endif
-    }
-
-    // determine if the polyline is open
-    pkIter = rkF.m_akEdge.begin();
-    riVStart = -1;
-    riVFinal = -1;
-    while ( pkIter != rkF.m_akEdge.end() )
-    {
-        int iE = *pkIter++;
-        Edge& rkE = m_akEdge[iE];
-
-        int iV0 = rkE.m_aiVertex[0];
-        if ( m_akVertex[iV0].m_iOccurs == 1 )
-        {
-            if ( riVStart == -1 )
-            {
-                riVStart = iV0;
-            }
-            else if ( riVFinal == -1 )
-            {
-                riVFinal = iV0;
-            }
-            else
-            {
-                // If you reach this assert, there is a good chance that the
-                // polyhedron is not convex.  To check this, use the function
-                // ValidateHalfSpaceProperty() on your polyhedron right after
-                // you construct it.
-                assert( false );
-            }
-        }
-
-        int iV1 = rkE.m_aiVertex[1];
-        if ( m_akVertex[iV1].m_iOccurs == 1 )
-        {
-            if ( riVStart == -1 )
-            {
-                riVStart = iV1;
-            }
-            else if ( riVFinal == -1 )
-            {
-                riVFinal = iV1;
-            }
-            else
-            {
-                // If you reach this assert, there is a good chance that the
-                // polyhedron is not convex.  To check this, use the function
-                // ValidateHalfSpaceProperty() on your polyhedron right after
-                // you construct it.
-                assert( false );
-            }
-        }
-    }
-
-    assert( (riVStart == -1 && riVFinal == -1)
-        ||  (riVStart != -1 && riVFinal != -1) );
-
-    return riVStart != -1;
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::OrderVertices (Face& rkF, vector<int>& aiVOrdered)
-{
-    // copy edge indices into contiguous memory
-    int i = 0, iQuantity = (int)rkF.m_akEdge.size();
-    vector<int> aiEOrdered(iQuantity);
-    set<int>::iterator pkIter = rkF.m_akEdge.begin();
-    while ( pkIter != rkF.m_akEdge.end() )
-        aiEOrdered[i++] = *pkIter++;
-
-    // bubble sort (yes, it is...)
-    for (int i0 = 0, i1 = 1, iChoice = 1; i1 < iQuantity-1; i0 = i1, i1++)
-    {
-        Edge& rkECurr = m_akEdge[aiEOrdered[i0]];
-        int j, iCurr = rkECurr.m_aiVertex[iChoice];
-        for (j = i1; j < iQuantity; j++)
-        {
-            Edge& rkETemp = m_akEdge[aiEOrdered[j]];
-            int iSave;
-            if ( rkETemp.m_aiVertex[0] == iCurr )
-            {
-                iSave = aiEOrdered[i1];
-                aiEOrdered[i1] = aiEOrdered[j];
-                aiEOrdered[j] = iSave;
-                iChoice = 1;
-                break;
-            }
-            if ( rkETemp.m_aiVertex[1] == iCurr )
-            {
-                iSave = aiEOrdered[i1];
-                aiEOrdered[i1] = aiEOrdered[j];
-                aiEOrdered[j] = iSave;
-                iChoice = 0;
-                break;
-            }
-        }
-        assert( j < iQuantity );
-    }
-
-    aiVOrdered[0] = m_akEdge[aiEOrdered[0]].m_aiVertex[0];
-    aiVOrdered[1] = m_akEdge[aiEOrdered[0]].m_aiVertex[1];
-    for (i = 1; i < iQuantity; i++)
-    {
-        Edge& rkE = m_akEdge[aiEOrdered[i]];
-        if ( rkE.m_aiVertex[0] == aiVOrdered[i] )
-            aiVOrdered[i+1] = rkE.m_aiVertex[1];
-        else
-            aiVOrdered[i+1] = rkE.m_aiVertex[0];
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::GetTriangles (vector<int>& raiConnect,
-    vector<Plane3<Real> >& rakPlane)
-{
-    for (int iF = 0; iF < (int)m_akFace.size(); iF++)
-    {
-        Face& rkF = m_akFace[iF];
-        if ( rkF.m_bVisible )
-        {
-            int iQuantity = (int)rkF.m_akEdge.size();
-            assert( iQuantity >= 3 );
-            vector<int> aiOrdered(iQuantity+1);
-            OrderVertices(rkF,aiOrdered);
-
-            int iV0 = aiOrdered[0], iV2 = aiOrdered[iQuantity-1];
-            int iV1 = aiOrdered[(iQuantity-1) >> 1];
-            Vector3<Real> kD1 = m_akVertex[iV1].m_kPoint -
-                m_akVertex[iV0].m_kPoint;
-            Vector3<Real> kD2 = m_akVertex[iV2].m_kPoint -
-                m_akVertex[iV0].m_kPoint;
-            Real fTSP = rkF.m_kPlane.GetNormal().Dot(kD1.Cross(kD2));
-            if ( fTSP > (Real)0.0 )
-            {
-                // clockwise, need to swap
-                for (int i = 1; i+1 < iQuantity; i++)
-                {
-                    raiConnect.push_back(iV0);
-                    raiConnect.push_back(aiOrdered[i+1]);
-                    raiConnect.push_back(aiOrdered[i]);
-                    rakPlane.push_back(rkF.m_kPlane);
-                }
-            }
-            else
-            {
-                // counterclockwise
-                for (int i = 1; i+1 < iQuantity; i++)
-                {
-                    raiConnect.push_back(iV0);
-                    raiConnect.push_back(aiOrdered[i]);
-                    raiConnect.push_back(aiOrdered[i+1]);
-                    rakPlane.push_back(rkF.m_kPlane);
-                }
-            }
-        }
-    }
-}
-//----------------------------------------------------------------------------
-template <class Real>
-void ConvexClipper<Real>::Convert (ConvexPolyhedron3<Real>& rkPoly)
-{
-    // get visible vertices
-    int iVQuantity = (int)m_akVertex.size();
-    vector<Vector3<Real> > akPoint;
-    int* aiVMap = new int[iVQuantity];
-    memset(aiVMap,0xFF,iVQuantity*sizeof(int));
-    for (int iV = 0; iV < iVQuantity; iV++)
-    {
-        const Vertex& rkV = m_akVertex[iV];
-        if ( rkV.m_bVisible )
-        {
-            aiVMap[iV] = (int)akPoint.size();
-            akPoint.push_back(rkV.m_kPoint);
-        }
-    }
-
-    vector<int> aiConnect;
-    vector<Plane3<Real> > akPlane;
-    GetTriangles(aiConnect,akPlane);
-
-    // re-order
-    int iNewVQuantity = (int)akPoint.size();
-    for (int iC = 0; iC < (int)aiConnect.size(); iC++)
-    {
-        int iOldC = aiConnect[iC];
-        assert( 0 <= iOldC && iOldC < iVQuantity );
-        int iNewC = aiVMap[iOldC];
-        assert( 0 <= iNewC && iNewC < iNewVQuantity );
-        aiConnect[iC] = iNewC;
-    }
-
-    delete[] aiVMap;
-
-    rkPoly.Create(akPoint,aiConnect,akPlane);
-}
-//----------------------------------------------------------------------------
-template <class Real>
-bool ConvexClipper<Real>::Print (const char* acFilename) const
-{
-    ofstream kOStr(acFilename);
-    if ( !kOStr )
-        return false;
-
-    int iVQuantity = (int)m_akVertex.size();
-    int iEQuantity = (int)m_akEdge.size();
-    int iFQuantity = (int)m_akFace.size();
-    int iVDigits = (int)(ceil(log10((double)iVQuantity)));
-    int iEDigits = (int)(ceil(log10((double)iEQuantity)));
-    int iFDigits = (int)(ceil(log10((double)iFQuantity)));
-    char acMsg[1024];
-
-    kOStr << iVQuantity << " vertices" << endl;
-    for (int iV = 0; iV < iVQuantity; iV++)
-    {
-        const Vertex& rkV = m_akVertex[iV];
-        sprintf(acMsg,"v<%*d> %c: (%f,%f,%f)",
-            iVDigits,iV,(rkV.m_bVisible ? 'T' : 'F'),
-            rkV.m_kPoint.X(),
-            rkV.m_kPoint.Y(),
-            rkV.m_kPoint.Z());
-        kOStr << acMsg << endl;
-    }
-    kOStr << endl;
-
-    kOStr << iEQuantity << " edges" << endl;
-    for (int iE = 0; iE < iEQuantity; iE++)
-    {
-        const Edge& rkE = m_akEdge[iE];
-        sprintf(acMsg,"e<%*d> %c: v[%*d,%*d], t[%*d,%*d]",
-            iEDigits,iE,(rkE.m_bVisible ? 'T' : 'F'),
-            iVDigits,rkE.m_aiVertex[0],
-            iVDigits,rkE.m_aiVertex[1],
-            iFDigits,rkE.m_aiFace[0],
-            iFDigits,rkE.m_aiFace[1]);
-        kOStr << acMsg << endl;
-    }
-    kOStr << endl;
-
-    kOStr << iFQuantity << " faces" << endl;
-    for (int iF = 0; iF < iFQuantity; iF++)
-    {
-        const Face& rkF = m_akFace[iF];
-        sprintf(acMsg,"t<%*d> %d: e = ",
-            iFDigits,iF,(rkF.m_bVisible ? 'T' : 'F'));
-        kOStr << acMsg;
-
-        set<int>::const_iterator pkIter = rkF.m_akEdge.begin();
-        while ( pkIter != rkF.m_akEdge.end() )
-        {
-            kOStr << *pkIter << ' ';
-            pkIter++;
-        }
-        kOStr << endl;
-    }
-
-    return true;
-}
-//----------------------------------------------------------------------------
-
-//----------------------------------------------------------------------------
-// explicit instantiation
-//----------------------------------------------------------------------------
-namespace Wml
-{
-template class WML_ITEM ConvexClipper<float>;
-template class WML_ITEM ConvexClipper<double>;
-}
-//----------------------------------------------------------------------------

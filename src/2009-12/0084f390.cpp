@@ -1,1454 +1,200 @@
+// roc 2009-12 0084f390  unit: PAVCXTPPropertyGridVerb::?$CArray  size: 692 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0084f390
+//
+// 0084f390  6aff                 push -1
+// 0084f392  6860d79500           push 0x95d760
+// 0084f397  64a100000000         mov eax, dword ptr fs:[0]
+// 0084f39d  50                   push eax
+// 0084f39e  83ec48               sub esp, 0x48
+// 0084f3a1  a10052b600           mov eax, dword ptr [0xb65200]
+// 0084f3a6  33c4                 xor eax, esp
+// 0084f3a8  89442444             mov dword ptr [esp + 0x44], eax
+// 0084f3ac  53                   push ebx
+// 0084f3ad  55                   push ebp
+// 0084f3ae  56                   push esi
+// 0084f3af  57                   push edi
+// 0084f3b0  a10052b600           mov eax, dword ptr [0xb65200]
+// 0084f3b5  33c4                 xor eax, esp
+// 0084f3b7  50                   push eax
+// 0084f3b8  8d44245c             lea eax, [esp + 0x5c]
+// 0084f3bc  64a300000000         mov dword ptr fs:[0], eax
+// 0084f3c2  8bf1                 mov esi, ecx
+// 0084f3c4  89742418             mov dword ptr [esp + 0x18], esi
+// 0084f3c8  e87b4dfaff           call 0x7f4148
+// 0084f3cd  33db                 xor ebx, ebx
+// 0084f3cf  bf01000000           mov edi, 1
+// 0084f3d4  8d4e70               lea ecx, [esi + 0x70]
+// 0084f3d7  895c2464             mov dword ptr [esp + 0x64], ebx
+// 0084f3db  c70644be9f00         mov dword ptr [esi], 0x9fbe44
+// 0084f3e1  c746543a000000       mov dword ptr [esi + 0x54], 0x3a
+// 0084f3e8  897e60               mov dword ptr [esi + 0x60], edi
+// 0084f3eb  895e6c               mov dword ptr [esi + 0x6c], ebx
+// 0084f3ee  e83de5ffff           call 0x84d930
+// 0084f3f3  53                   push ebx
+// 0084f3f4  8bce                 mov ecx, esi
+// 0084f3f6  c644246801           mov byte ptr [esp + 0x68], 1
+// 0084f3fb  89be5c010000         mov dword ptr [esi + 0x15c], edi
+// 0084f401  e85ae5ffff           call 0x84d960
+// 0084f406  899e4c010000         mov dword ptr [esi + 0x14c], ebx
+// 0084f40c  e88ff40100           call 0x86e8a0
+// 0084f411  8b10                 mov edx, dword ptr [eax]
+// 0084f413  8bc8                 mov ecx, eax
+// 0084f415  8b4218               mov eax, dword ptr [edx + 0x18]
+// 0084f418  68f3260000           push 0x26f3
+// 0084f41d  ffd0                 call eax
+// 0084f41f  89862c010000         mov dword ptr [esi + 0x12c], eax
+// 0084f425  e8f446faff           call 0x7f3b1e
+// 0084f42a  68897f0000           push 0x7f89
+// 0084f42f  53                   push ebx
+// 0084f430  ff1548ca9800         call dword ptr [0x98ca48]
+// 0084f436  898630010000         mov dword ptr [esi + 0x130], eax
+// 0084f43c  3bc3                 cmp eax, ebx
+// 0084f43e  7519                 jne 0x84f459
+// 0084f440  e85bf40100           call 0x86e8a0
+// 0084f445  8b10                 mov edx, dword ptr [eax]
+// 0084f447  8bc8                 mov ecx, eax
+// 0084f449  8b4218               mov eax, dword ptr [edx + 0x18]
+// 0084f44c  68f5260000           push 0x26f5
+// 0084f451  ffd0                 call eax
+// 0084f453  898630010000         mov dword ptr [esi + 0x130], eax
+// 0084f459  6a78                 push 0x78
+// 0084f45b  e80044faff           call 0x7f3860
+// 0084f460  83c404               add esp, 4
+// 0084f463  89442414             mov dword ptr [esp + 0x14], eax
+// 0084f467  c644246402           mov byte ptr [esp + 0x64], 2
+// 0084f46c  3bc3                 cmp eax, ebx
+// 0084f46e  740a                 je 0x84f47a
+// 0084f470  56                   push esi
+// 0084f471  8bc8                 mov ecx, eax
+// 0084f473  e878a60700           call 0x8c9af0
+// 0084f478  eb02                 jmp 0x84f47c
+// 0084f47a  33c0                 xor eax, eax
+// 0084f47c  898644010000         mov dword ptr [esi + 0x144], eax
+// 0084f482  8b10                 mov edx, dword ptr [eax]
+// 0084f484  8bc8                 mov ecx, eax
+// 0084f486  8b4234               mov eax, dword ptr [edx + 0x34]
+// 0084f489  c644246401           mov byte ptr [esp + 0x64], 1
+// 0084f48e  ffd0                 call eax
+// 0084f490  6a38                 push 0x38
+// 0084f492  899e40010000         mov dword ptr [esi + 0x140], ebx
+// 0084f498  e8c343faff           call 0x7f3860
+// 0084f49d  83c404               add esp, 4
+// 0084f4a0  89442414             mov dword ptr [esp + 0x14], eax
+// 0084f4a4  c644246403           mov byte ptr [esp + 0x64], 3
+// 0084f4a9  3bc3                 cmp eax, ebx
+// 0084f4ab  7409                 je 0x84f4b6
+// 0084f4ad  8bc8                 mov ecx, eax
+// 0084f4af  e8fcfdffff           call 0x84f2b0
+// 0084f4b4  eb02                 jmp 0x84f4b8
+// 0084f4b6  33c0                 xor eax, eax
+// 0084f4b8  53                   push ebx
+// 0084f4b9  8d4c2420             lea ecx, [esp + 0x20]
+// 0084f4bd  51                   push ecx
+// 0084f4be  6a3c                 push 0x3c
+// 0084f4c0  898638010000         mov dword ptr [esi + 0x138], eax
+// 0084f4c6  897034               mov dword ptr [eax + 0x34], esi
+// 0084f4c9  6a1f                 push 0x1f
+// 0084f4cb  c644247401           mov byte ptr [esp + 0x74], 1
+// 0084f4d0  c7465819000000       mov dword ptr [esi + 0x58], 0x19
+// 0084f4d7  c78648010000ffffffff mov dword ptr [esi + 0x148], 0xffffffff
+// 0084f4e1  899e80010000         mov dword ptr [esi + 0x180], ebx
+// 0084f4e7  899e3c010000         mov dword ptr [esi + 0x13c], ebx
+// 0084f4ed  897e64               mov dword ptr [esi + 0x64], edi
+// 0084f4f0  899e34010000         mov dword ptr [esi + 0x134], ebx
+// 0084f4f6  899e58010000         mov dword ptr [esi + 0x158], ebx
+// 0084f4fc  c7868401000002000000 mov dword ptr [esi + 0x184], 2
+// 0084f506  899e68010000         mov dword ptr [esi + 0x168], ebx
+// 0084f50c  ff1500cc9800         call dword ptr [0x98cc00]
+// 0084f512  8b9644010000         mov edx, dword ptr [esi + 0x144]
+// 0084f518  8b2d28b19800         mov ebp, dword ptr [0x98b128]
+// 0084f51e  8d44241c             lea eax, [esp + 0x1c]
+// 0084f522  c744242c90010000     mov dword ptr [esp + 0x2c], 0x190
+// 0084f52a  885c2430             mov byte ptr [esp + 0x30], bl
+// 0084f52e  8b7a74               mov edi, dword ptr [edx + 0x74]
+// 0084f531  50                   push eax
+// 0084f532  ffd5                 call ebp
+// 0084f534  50                   push eax
+// 0084f535  8d4f20               lea ecx, [edi + 0x20]
+// 0084f538  e8ed48faff           call 0x7f3e2a
+// 0084f53d  8b8e44010000         mov ecx, dword ptr [esi + 0x144]
+// 0084f543  8d54241c             lea edx, [esp + 0x1c]
+// 0084f547  c744242cbc020000     mov dword ptr [esp + 0x2c], 0x2bc
+// 0084f54f  8b7974               mov edi, dword ptr [ecx + 0x74]
+// 0084f552  52                   push edx
+// 0084f553  ffd5                 call ebp
+// 0084f555  50                   push eax
+// 0084f556  8d4f28               lea ecx, [edi + 0x28]
+// 0084f559  e8cc48faff           call 0x7f3e2a
+// 0084f55e  6a7c                 push 0x7c
+// 0084f560  899e50010000         mov dword ptr [esi + 0x150], ebx
+// 0084f566  e8f542faff           call 0x7f3860
+// 0084f56b  83c404               add esp, 4
+// 0084f56e  89442414             mov dword ptr [esp + 0x14], eax
+// 0084f572  c644246404           mov byte ptr [esp + 0x64], 4
+// 0084f577  3bc3                 cmp eax, ebx
+// 0084f579  7409                 je 0x84f584
+// 0084f57b  8bc8                 mov ecx, eax
+// 0084f57d  e89ed2fbff           call 0x80c820
+// 0084f582  eb02                 jmp 0x84f586
+// 0084f584  33c0                 xor eax, eax
+// 0084f586  68bc000000           push 0xbc
+// 0084f58b  c644246801           mov byte ptr [esp + 0x68], 1
+// 0084f590  898654010000         mov dword ptr [esi + 0x154], eax
+// 0084f596  e8c542faff           call 0x7f3860
+// 0084f59b  83c404               add esp, 4
+// 0084f59e  89442414             mov dword ptr [esp + 0x14], eax
+// 0084f5a2  c644246405           mov byte ptr [esp + 0x64], 5
+// 0084f5a7  3bc3                 cmp eax, ebx
+// 0084f5a9  7409                 je 0x84f5b4
+// 0084f5ab  8bc8                 mov ecx, eax
+// 0084f5ad  e8be830700           call 0x8c7970
+// 0084f5b2  eb02                 jmp 0x84f5b6
+// 0084f5b4  33c0                 xor eax, eax
+// 0084f5b6  6a58                 push 0x58
+// 0084f5b8  c644246801           mov byte ptr [esp + 0x68], 1
+// 0084f5bd  898660010000         mov dword ptr [esi + 0x160], eax
+// 0084f5c3  e89842faff           call 0x7f3860
+// 0084f5c8  83c404               add esp, 4
+// 0084f5cb  89442414             mov dword ptr [esp + 0x14], eax
+// 0084f5cf  c644246406           mov byte ptr [esp + 0x64], 6
+// 0084f5d4  3bc3                 cmp eax, ebx
+// 0084f5d6  7409                 je 0x84f5e1
+// 0084f5d8  8bc8                 mov ecx, eax
+// 0084f5da  e841e10700           call 0x8cd720
+// 0084f5df  eb02                 jmp 0x84f5e3
+// 0084f5e1  33c0                 xor eax, eax
+// 0084f5e3  68a8000000           push 0xa8
+// 0084f5e8  c644246801           mov byte ptr [esp + 0x68], 1
+// 0084f5ed  898664010000         mov dword ptr [esi + 0x164], eax
+// 0084f5f3  c7466801000000       mov dword ptr [esi + 0x68], 1
+// 0084f5fa  e86142faff           call 0x7f3860
+// 0084f5ff  83c404               add esp, 4
+// 0084f602  89442414             mov dword ptr [esp + 0x14], eax
+// 0084f606  c644246407           mov byte ptr [esp + 0x64], 7
+// 0084f60b  3bc3                 cmp eax, ebx
+// 0084f60d  7409                 je 0x84f618
+// 0084f60f  8bc8                 mov ecx, eax
+// 0084f611  e8da230100           call 0x8619f0
+// 0084f616  eb02                 jmp 0x84f61a
+// 0084f618  33c0                 xor eax, eax
+// 0084f61a  89866c010000         mov dword ptr [esi + 0x16c], eax
+// 0084f620  895e5c               mov dword ptr [esi + 0x5c], ebx
+// 0084f623  8bc6                 mov eax, esi
+// 0084f625  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 0084f629  64890d00000000       mov dword ptr fs:[0], ecx
+// 0084f630  59                   pop ecx
+// 0084f631  5f                   pop edi
+// 0084f632  5e                   pop esi
+// 0084f633  5d                   pop ebp
+// 0084f634  5b                   pop ebx
+// 0084f635  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 0084f639  33cc                 xor ecx, esp
+// 0084f63b  e85a5dfaff           call 0x7f539a
+// 0084f640  83c454               add esp, 0x54
+// 0084f643  c3                   ret 
+// copied from an identical function in another client (function ??0CXTPPropertyGrid@@QAE@XZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\PropertyGrid\XTPPropertyGrid.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPPropertyGrid.cpp : implementation of the CXTPPropertyGrid class.
-//
-// This file is a part of the XTREME PROPERTYGRID MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-#include "Common/Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPImageManager.h"
-#include "Common/XTPToolTipContext.h"
-
-#include "XTPPropertyGridInplaceEdit.h"
-#include "XTPPropertyGridInplaceButton.h"
-#include "XTPPropertyGridInplaceList.h"
-#include "XTPPropertyGridItem.h"
-#include "XTPPropertyGrid.h"
-#include "XTPPropertyGridDefines.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-const int SPLITTER_HEIGHT = 3;
-const int TOOLBAR_HEIGHT = 25;
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridUpdateContext
-
-CXTPPropertyGridUpdateContext::CXTPPropertyGridUpdateContext()
-{
-	m_nSelected = 0;
-	m_nTopIndex = 0;
-	m_propertySort = xtpGridSortAlphabetical;
-
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridVerb
-
-CXTPPropertyGridVerb::CXTPPropertyGridVerb()
-{
-	m_nID = 0;
-	m_nIndex = -1;
-	m_pVerbs = 0;
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridVerbs
-
-CXTPPropertyGridVerbs::CXTPPropertyGridVerbs()
-{
-	m_pGrid = 0;
-
-
-}
-
-CXTPPropertyGridVerbs::~CXTPPropertyGridVerbs()
-{
-	for (int i = 0; i < m_arrVerbs.GetSize(); i++)
-		m_arrVerbs[i]->InternalRelease();
-}
-
-void CXTPPropertyGridVerbs::RemoveAll()
-{
-	if (IsEmpty())
-		return;
-
-	for (int i = 0; i < m_arrVerbs.GetSize(); i++)
-		m_arrVerbs[i]->InternalRelease();
-
-	m_arrVerbs.RemoveAll();
-
-	m_pGrid->OnVerbsChanged();
-}
-
-int CXTPPropertyGridVerbs::GetCount() const
-{
-	return (int)m_arrVerbs.GetSize();
-}
-
-void CXTPPropertyGridVerbs::Add(LPCTSTR strCaption, UINT nID)
-{
-	CXTPPropertyGridVerb* pVerb = new CXTPPropertyGridVerb();
-
-	pVerb->m_nID = nID;
-	pVerb->m_strCaption = strCaption;
-	pVerb->m_pVerbs = this;
-	pVerb->m_rcPart.SetRectEmpty();
-	pVerb->m_ptClick = CPoint(0);
-
-	pVerb->m_nIndex = (UINT)m_arrVerbs.Add(pVerb);
-
-	m_pGrid->OnVerbsChanged();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGridToolBar
-
-CXTPPropertyGridToolBar::CXTPPropertyGridToolBar()
-{
-	m_cxLeftBorder = m_cxRightBorder = m_cyBottomBorder = m_cyTopBorder = 0;
-}
-
-CXTPPropertyGridToolBar::~CXTPPropertyGridToolBar()
-{
-}
-
-BEGIN_MESSAGE_MAP(CXTPPropertyGridToolBar, CToolBar)
-	//{{AFX_MSG_MAP(CToolBar)
-	ON_WM_PAINT()
-	ON_WM_ERASEBKGND()
-	ON_WM_NCCALCSIZE()
-	ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-void CXTPPropertyGridToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	NMLVCUSTOMDRAW* lpLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
-	*pResult = CDRF_DODEFAULT;
-
-	switch (lpLVCD->nmcd.dwDrawStage)
-	{
-	case CDDS_PREPAINT:
-		CWnd* pGrid = GetParent();
-		HBRUSH hBrush = (HBRUSH)pGrid->GetParent()->SendMessage(WM_CTLCOLORSTATIC,
-			(WPARAM)lpLVCD->nmcd.hdc, (LPARAM)pGrid->m_hWnd);
-
-		::FillRect(lpLVCD->nmcd.hdc, &lpLVCD->nmcd.rc, hBrush ? hBrush : GetSysColorBrush(COLOR_3DFACE));
-		break;
-	}
-}
-
-
-BOOL CXTPPropertyGridToolBar::OnEraseBkgnd(CDC*)
-{
-	return TRUE;
-}
-
-void CXTPPropertyGridToolBar::OnNcCalcSize(BOOL /*bCalcValidRects*/, NCCALCSIZE_PARAMS* /*lpncsp*/)
-{
-}
-
-void CXTPPropertyGridToolBar::OnPaint()
-{
-	CPaintDC dc(this);
-
-	CXTPClientRect rc(this);
-	CXTPBufferDC memDC(dc, rc);
-	memDC.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-
-	CToolBar::DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
-}
-
-void CXTPPropertyGridToolBar::OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL /*bDisableIfNoHndler*/)
-{
-}
-
-BOOL CXTPPropertyGridToolBar::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	CXTPPropertyGrid* pGrid = (CXTPPropertyGrid*)GetParent();
-	if (pGrid->GetToolTipContext())
-	{
-		pGrid->GetToolTipContext()->FilterToolTipMessage(this, message, wParam, lParam);
-	}
-
-	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGrid
-
-CXTPPropertyGrid::CXTPPropertyGrid()
-: m_bHelpVisible(TRUE)
-, m_bToolBarVisible(FALSE)
-, m_nHelpHeight(58)
-, m_bPreSubclassWindow(TRUE)
-{
-	RegisterWindowClass();
-
-	m_pView = 0;
-
-	m_hCursorSplit = XTPResourceManager()->LoadCursor(XTP_IDC_VSPLITBAR);
-
-	m_hCursorHand = AfxGetApp()->LoadStandardCursor(MAKEINTRESOURCE(32649));
-
-	if (m_hCursorHand == 0)
-		m_hCursorHand = XTPResourceManager()->LoadCursor(XTP_IDC_HAND);
-
-
-	m_pPaintManager = new CXTPPropertyGridPaintManager(this);
-	m_pPaintManager->RefreshMetrics();
-
-	m_themeCurrent = xtpGridThemeDefault;
-
-	m_pVerbs = new CXTPPropertyGridVerbs;
-	m_pVerbs->m_pGrid = this;
-
-	m_nVerbsHeight = 25;
-	m_nFocusedVerb = -1;
-	m_bVerbActivate = FALSE;
-	m_bVerbsVisible = FALSE;
-	m_bEnableTooltips = TRUE;
-
-	m_bTabItems = FALSE;
-	m_bVariableItemsHeight = FALSE;
-
-	m_borderStyle = xtpGridBorderStaticEdge;
-
-	m_bShowInplaceButtonsAlways = FALSE;
-
-	LOGFONT lfIcon;
-	VERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(lfIcon), &lfIcon, 0));
-	lfIcon.lfWeight = FW_NORMAL;
-	lfIcon.lfItalic = FALSE;
-	VERIFY(m_pPaintManager->GetItemMetrics()->m_fontNormal.CreateFontIndirect(&lfIcon));
-
-	lfIcon.lfWeight = FW_BOLD;
-	VERIFY(m_pPaintManager->GetItemMetrics()->m_fontBold.CreateFontIndirect(&lfIcon));
-
-	m_bHighlightChanged = FALSE;
-
-	m_pImageManager = new CXTPImageManager;
-
-	m_pInplaceEdit = new CXTPPropertyGridInplaceEdit;
-	m_pInplaceListBox = new CXTPPropertyGridInplaceList;
-
-	m_bVariableHelpHeight = TRUE;
-
-	m_pToolTipContext = new CXTPToolTipContext;
-
-	m_bHideSelection = FALSE;
-
-
-
-}
-
-BOOL CXTPPropertyGrid::RegisterWindowClass(HINSTANCE hInstance /*= NULL*/)
-{
-	return XTPDrawHelpers()->RegisterWndClass(hInstance, XTPPROPERTYGRID_CLASSNAME, 0);
-}
-
-CXTPPropertyGrid::~CXTPPropertyGrid()
-{
-	if (m_pView)
-	{
-		delete m_pView;
-	}
-
-	CMDTARGET_RELEASE(m_pVerbs);
-	CMDTARGET_RELEASE(m_pImageManager);
-
-	SAFE_DELETE(m_pInplaceEdit);
-	SAFE_DELETE(m_pInplaceListBox);
-
-	delete m_pPaintManager;
-
-	CMDTARGET_RELEASE(m_pToolTipContext);
-}
-
-void CXTPPropertyGrid::SetInplaceEdit(CXTPPropertyGridInplaceEdit*  pInplaceEdit)
-{
-	ASSERT(pInplaceEdit);
-
-	SAFE_DELETE(m_pInplaceEdit);
-	m_pInplaceEdit = pInplaceEdit;
-}
-
-void CXTPPropertyGrid::SetInplaceList(CXTPPropertyGridInplaceList*  pInplaceList)
-{
-	ASSERT(pInplaceList);
-
-	SAFE_DELETE(m_pInplaceListBox);
-	m_pInplaceListBox = pInplaceList;
-}
-
-
-CXTPPropertyGridView* CXTPPropertyGrid::CreateView() const
-{
-	return new CXTPPropertyGridView();
-}
-
-CXTPPropertyGridView& CXTPPropertyGrid::GetGridView() const
-{
-	if (m_pView == 0)
-	{
-		m_pView = CreateView();
-		m_pView->m_pGrid = (CXTPPropertyGrid*)this;
-	}
-
-	return *m_pView;
-}
-
-IMPLEMENT_DYNAMIC(CXTPPropertyGrid, CWnd)
-
-BEGIN_MESSAGE_MAP(CXTPPropertyGrid, CWnd)
-	//{{AFX_MSG_MAP(CXTPPropertyGrid)
-	ON_WM_ERASEBKGND()
-	ON_WM_PAINT()
-	ON_MESSAGE(WM_PRINTCLIENT, OnPrintClient)
-	ON_WM_SETFOCUS()
-	ON_WM_KILLFOCUS()
-	ON_WM_SIZE()
-	ON_WM_SETCURSOR()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_COMMAND(XTP_IDC_PROPERTYGRID_ALPHABETIC, OnSortAlphabetic)
-	ON_COMMAND(XTP_IDC_PROPERTYGRID_CATEGORIZED, OnSortCategorized)
-	ON_WM_SYSCOLORCHANGE()
-	ON_WM_KEYDOWN()
-	ON_WM_GETDLGCODE()
-	//}}AFX_MSG_MAP
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTW, 0, 0xFFFF, OnToolTipText)
-	ON_NOTIFY_EX_RANGE(TTN_NEEDTEXTA, 0, 0xFFFF, OnToolTipText)
-END_MESSAGE_MAP()
-
-UINT CXTPPropertyGrid::OnGetDlgCode()
-{
-	return DLGC_WANTALLKEYS;
-}
-
-BOOL CXTPPropertyGrid::CreateGridView(DWORD dwListStyle)
-{
-	CXTPEmptyRect rect;
-
-	if (dwListStyle == NULL)
-	{
-		dwListStyle = m_bVariableItemsHeight ? LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT :
-			LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT;
-	}
-
-	// Must be owner draw.
-	ASSERT((dwListStyle & (LBS_OWNERDRAWVARIABLE|LBS_OWNERDRAWFIXED)) != 0);
-
-	m_bVariableItemsHeight = (dwListStyle & LBS_OWNERDRAWVARIABLE) != 0;
-
-	if (!GetGridView().CreateEx(0, _T("LISTBOX"), NULL,
-		WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE |
-		LBS_NOTIFY | WS_VSCROLL | WS_TABSTOP | dwListStyle, rect, this, 0))
-	{
-		TRACE0("Error creating property grid view.\n");
-		return FALSE;
-	}
-
-	GetGridView().ResetContent();
-	SetStandardColors();
-
-	return TRUE;
-}
-
-BOOL CXTPPropertyGrid::Create(const RECT& rect, CWnd* pParentWnd, UINT nID, DWORD dwListStyle /*= LBS_OWNERDRAWFIXED|LBS_NOINTEGRALHEIGHT*/)
-{
-	if (!CreateEx(0, XTPPROPERTYGRID_CLASSNAME, _T(""),
-		WS_TABSTOP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_GROUP, rect, pParentWnd, nID))
-	{
-		TRACE0("Error creating property grid.\n");
-		return FALSE;
-	}
-
-	if (!CreateGridView(dwListStyle))
-		return FALSE;
-
-	Reposition(rect.right - rect.left, rect.bottom - rect.top);
-
-	SetWindowPos(NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-		SWP_SHOWWINDOW|SWP_NOZORDER);
-
-	return TRUE;
-}
-
-BOOL CXTPPropertyGrid::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	//
-	// PreCreateWindow is called when a control is dynamically
-	// created. We want to set m_bPreSubclassWindow to FALSE
-	// here so the control is initialized from CWnd::Create and
-	// not CWnd::PreSubclassWindow.
-	//
-
-	m_bPreSubclassWindow = FALSE;
-
-	return TRUE;
-}
-
-void CXTPPropertyGrid::PreSubclassWindow()
-{
-	CWnd::PreSubclassWindow();
-
-	if (m_bPreSubclassWindow)
-	{
-		// Initialize the control.
-		VERIFY(CreateGridView(NULL));
-
-		Reposition();
-	}
-}
-
-void CXTPPropertyGrid::SetVariableItemsHeight(BOOL bVariable /*= TRUE*/)
-{
-	if (m_bVariableItemsHeight == bVariable)
-		return;
-
-	m_bVariableItemsHeight = bVariable;
-
-	CXTPPropertyGridView& wndView = GetGridView();
-	if (!wndView.GetSafeHwnd())
-		return;
-
-	wndView.ResetContent();
-	wndView.DestroyWindow();
-
-	DWORD dwListStyle = bVariable ? LBS_OWNERDRAWVARIABLE | LBS_NOINTEGRALHEIGHT : LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT;
-
-	VERIFY(GetGridView().CreateEx(0, _T("LISTBOX"), NULL, WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_CHILD | WS_VISIBLE | LBS_NOTIFY | WS_VSCROLL | WS_TABSTOP | dwListStyle, CXTPEmptyRect(), this, 0));
-
-	wndView.Refresh();
-
-	Reposition();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPPropertyGrid message handlers
-
-BOOL CXTPPropertyGrid::OnEraseBkgnd(CDC*)
-{
-	return TRUE;
-}
-
-void CXTPPropertyGrid::OnPaint()
-{
-	CPaintDC dcPaint(this);
-	CXTPBufferDC dc(dcPaint);
-
-	m_pPaintManager->FillPropertyGrid(&dc);
-}
-
-LRESULT CXTPPropertyGrid::OnPrintClient(WPARAM wParam, LPARAM /*lParam*/)
-{
-	CDC* pDC = CDC::FromHandle((HDC)wParam);
-	if (pDC)
-	{
-		m_pPaintManager->FillPropertyGrid(pDC);
-	}
-
-	return TRUE;
-}
-
-CWnd* CXTPPropertyGrid::GetNextGridTabItem(BOOL bForward)
-{
-	CWnd* pThis = this;
-	CWnd* pParent = pThis->GetParent();
-
-	if (!pThis || !pParent)
-	{
-		ASSERT(FALSE);
-		return 0 ;
-	}
-
-	if ((pParent->GetExStyle() & WS_EX_CONTROLPARENT) && (pParent->GetStyle() & WS_CHILD))
-	{
-		pParent = pParent->GetParent();
-	}
-
-	CWnd* pNextItem = pParent->GetNextDlgTabItem(pThis, bForward);
-
-	if (pNextItem == pThis)
-		return NULL;
-
-	return pNextItem;
-}
-
-void CXTPPropertyGrid::OnNavigate(XTPPropertyGridUI nUIElement, BOOL bForward, CXTPPropertyGridItem* pItem)
-{
-	int nNextElement = bForward ? +1 : -1;
-	int nUI = nUIElement + nNextElement;
-
-	CXTPPropertyGridView& wndView = GetGridView();
-
-	if (pItem == NULL)
-		pItem = wndView.GetSelectedItem();
-
-	while (nUI != nUIElement)
-	{
-		if (nUI == xtpGridUIViewPrev)
-		{
-			nUI += nNextElement;
-
-			if (m_bTabItems)
-			{
-				int nIndex = !bForward && pItem ? pItem->m_nIndex - 1 : 0;
-				if (nIndex >= 0)
-				{
-					wndView.SetFocus();
-					wndView.SetCurSel(nIndex);
-					wndView.OnSelectionChanged();
-
-					if (bForward)
-						return;
-
-					nUI = xtpGridUIInplaceButton;
-					pItem = wndView.GetSelectedItem();
-				}
-			}
-		}
-		if (nUI == xtpGridUIView)
-		{
-			wndView.SetFocus();
-			wndView.FocusInplaceButton(NULL);
-			return;
-		}
-		if (nUI == xtpGridUIInplaceEdit)
-		{
-			if (pItem && pItem->GetFlags() & xtpGridItemHasEdit)
-			{
-				pItem->OnSelect();
-				pItem->SetFocusToInplaceControl();
-				return;
-			}
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIInplaceControl)
-		{
-			if (pItem && pItem->GetInplaceControls()->GetCount() > 0)
-			{
-				CWnd* pWnd = pItem->GetInplaceControls()->GetAt(0);
-				if (pWnd && pWnd->GetSafeHwnd() && pWnd->GetStyle() & WS_TABSTOP)
-				{
-					pWnd->SetFocus();
-					return;
-				}
-			}
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIInplaceButton)
-		{
-			if (pItem && pItem->IsInplaceButtonsVisible())
-			{
-				CXTPPropertyGridInplaceButtons* pButtons = pItem->GetInplaceButtons();
-
-				if (wndView.m_pFocusedButton && wndView.m_pFocusedButton->GetItem() == pItem)
-				{
-					int nIndex = wndView.m_pFocusedButton->GetIndex();
-					if (bForward && nIndex < pButtons->GetCount() -1)
-					{
-						wndView.FocusInplaceButton(pButtons->GetAt(nIndex + 1));
-						return;
-					}
-					else if (!bForward && nIndex > 0)
-					{
-						wndView.FocusInplaceButton(pButtons->GetAt(nIndex - 1));
-						return;
-					}
-				}
-				else
-				{
-					wndView.FocusInplaceButton(pButtons->GetAt(bForward ? 0 : pButtons->GetCount() - 1));
-					return;
-				}
-			}
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIViewNext)
-		{
-			if (m_bTabItems)
-			{
-				int nIndex = bForward ? (pItem ? pItem->m_nIndex + 1 : 0) : wndView.GetCount() - 1;
-				if (nIndex < wndView.GetCount())
-				{
-					wndView.SetFocus();
-					wndView.SetCurSel(nIndex);
-					wndView.OnSelectionChanged();
-					if (bForward)
-						return;
-					pItem = wndView.GetSelectedItem();
-				}
-			}
-
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIVerb)
-		{
-			if (IsVerbsVisible())
-			{
-				m_nFocusedVerb = bForward ? 0 : m_pVerbs->GetCount() - 1;
-				m_bVerbActivate = TRUE;
-				SetFocus();
-				m_bVerbActivate = FALSE;
-				Invalidate(FALSE);
-				return;
-			}
-			nUI += nNextElement;
-		}
-		if (nUI == xtpGridUIParentNext || nUI == xtpGridUIParentPrev)
-		{
-
-			CWnd* pWndNext = GetNextGridTabItem(!bForward);
-
-			if (pWndNext != NULL)
-			{
-				pWndNext->SetFocus();
-				return;
-			}
-
-			nUI = (nUI == xtpGridUIParentNext) ? xtpGridUIViewPrev : xtpGridUIVerb;
-		}
-		if (nUI < xtpGridUIParentPrev || nUI > xtpGridUIParentNext)
-		{
-			ASSERT(FALSE);
-			return;
-		}
-	}
-}
-
-void CXTPPropertyGrid::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (m_nFocusedVerb != -1 && IsVerbsVisible())
-	{
-		if (m_nFocusedVerb >= m_pVerbs->GetCount())
-			m_nFocusedVerb = m_pVerbs->GetCount() -1;
-
-		BOOL bForward = GetKeyState(VK_SHIFT) >= 0;
-		CXTPDrawHelpers::KeyToLayout(this, nChar);
-
-		if ((nChar == VK_TAB) && bForward && (m_nFocusedVerb == m_pVerbs->GetCount() -1))
-		{
-			OnNavigate(xtpGridUIVerb, TRUE, NULL);
-			return;
-
-		}
-		else if ((nChar == VK_TAB) && !bForward && (m_nFocusedVerb == 0))
-		{
-			OnNavigate(xtpGridUIVerb, FALSE, NULL);
-			return;
-		}
-		else if (nChar == VK_RIGHT || nChar == VK_DOWN || ((nChar == VK_TAB) && bForward))
-		{
-			m_nFocusedVerb++;
-			if (m_nFocusedVerb >= m_pVerbs->GetCount())
-				m_nFocusedVerb = 0;
-			Invalidate(FALSE);
-		}
-		else if (nChar == VK_LEFT || nChar == VK_UP || nChar == VK_TAB)
-		{
-			m_nFocusedVerb--;
-			if (m_nFocusedVerb < 0)
-				m_nFocusedVerb = m_pVerbs->GetCount() -1;
-			Invalidate(FALSE);
-		}
-		else if (nChar == VK_RETURN)
-		{
-			CRect rcPart = m_pVerbs->GetAt(m_nFocusedVerb)->GetPart();
-			OnVerbClick(m_nFocusedVerb, CPoint(rcPart.left, rcPart.bottom));
-		}
-	}
-
-	CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
-}
-
-void CXTPPropertyGrid::OnKillFocus(CWnd* pNewWnd)
-{
-	if (m_nFocusedVerb != -1)
-	{
-		m_nFocusedVerb = -1;
-		Invalidate(FALSE);
-	}
-	CWnd::OnKillFocus(pNewWnd);
-}
-
-void CXTPPropertyGrid::OnSetFocus(CWnd* pOldWnd)
-{
-	if (!m_bVerbActivate)
-	{
-		if (pOldWnd && pOldWnd == GetNextGridTabItem(FALSE) && GetKeyState(VK_SHIFT) < 0)
-		{
-			OnNavigate(xtpGridUIParentNext, FALSE, NULL);
-		}
-		else if (pOldWnd && pOldWnd == GetNextGridTabItem(TRUE) && GetKeyState(VK_SHIFT) >= 0)
-		{
-			OnNavigate(xtpGridUIParentPrev, TRUE, NULL);
-		}
-		else
-		{
-			GetGridView().SetFocus();
-		}
-	}
-	else
-	{
-		CWnd::OnSetFocus(pOldWnd);
-	}
-}
-
-void CXTPPropertyGrid::OnSize(UINT nType, int cx, int cy)
-{
-	CWnd::OnSize(nType, cx, cy);
-
-	if (!GetGridView().GetSafeHwnd())
-		return;
-
-	Reposition(cx, cy);
-}
-
-int CXTPPropertyGrid::HitTest(CPoint pt)
-{
-	CXTPClientRect rc(this);
-
-	if (m_bHelpVisible)
-	{
-		CRect rcSplitter(CPoint(rc.left, rc.bottom - SPLITTER_HEIGHT - m_nHelpHeight), CSize(rc.Width(), SPLITTER_HEIGHT));
-
-		if (m_bVariableHelpHeight && rcSplitter.PtInRect(pt))
-			return xtpGridHitHelpSplitter;
-
-		rc.bottom -= SPLITTER_HEIGHT + m_nHelpHeight;
-	}
-	if (IsVerbsVisible())
-	{
-		CRect rcSplitter(CPoint(rc.left, rc.bottom - SPLITTER_HEIGHT - m_nVerbsHeight), CSize(rc.Width(), SPLITTER_HEIGHT));
-
-		if (rcSplitter.PtInRect(pt))
-			return xtpGridHitVerbsSplitter;
-
-		CRect rcVerbs(rc);
-		rcVerbs.top = rc.bottom - m_nVerbsHeight;
-
-		if (rcVerbs.PtInRect(pt))
-		{
-			CWindowDC dc(this);
-			int nIndex = m_pPaintManager->HitTestVerbs(&dc, rcVerbs, pt);
-			if (nIndex != -1)
-			{
-				return xtpGridHitFirstVerb + nIndex;
-			}
-		}
-	}
-
-	return xtpGridHitError;
-}
-
-BOOL CXTPPropertyGrid::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-	if (nHitTest == HTCLIENT)
-	{
-		CPoint point;
-
-		GetCursorPos(&point);
-		ScreenToClient(&point);
-
-		int nHit = HitTest(point);
-
-		if (nHit == xtpGridHitHelpSplitter || nHit == xtpGridHitVerbsSplitter)
-		{
-			SetCursor(m_hCursorSplit);
-			return TRUE;
-		}
-		if ((nHit != -1) && (nHit >= xtpGridHitFirstVerb))
-		{
-			SetCursor(m_hCursorHand);
-			return TRUE;
-		}
-	}
-
-	return CWnd::OnSetCursor(pWnd, nHitTest, message);
-}
-
-void CXTPPropertyGrid::OnInvertTracker(CRect rect)
-{
-	ASSERT_VALID(this);
-	ASSERT(!rect.IsRectEmpty());
-	ASSERT((GetStyle() & WS_CLIPCHILDREN) == 0);
-
-	// pat-blt without clip children on
-	CDC* pDC = GetDC();
-
-	CBrush brush(GetXtremeColor(COLOR_3DFACE));
-	CBrush* pBrush = (CBrush*)pDC->SelectObject(&brush);
-	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
-	pDC->SelectObject(pBrush);
-
-	ReleaseDC(pDC);
-}
-
-void CXTPPropertyGrid::OnSelectionChanged(CXTPPropertyGridItem* pItem)
-{
-	if (!m_hWnd)
-		return;
-
-	CXTPClientRect rc(this);
-	CRect rcHelp(rc);
-	rcHelp.top = rc.bottom - m_nHelpHeight;
-
-	if (pItem) SendNotifyMessage(XTP_PGN_SELECTION_CHANGED, (LPARAM)pItem);
-
-	InvalidateRect(rcHelp, FALSE);
-}
-
-void CXTPPropertyGrid::OnVerbsChanged()
-{
-	if (m_bVerbsVisible != IsVerbsVisible() && GetGridView().m_nLockUpdate == 0)
-	{
-		Reposition();
-	}
-	else if (GetSafeHwnd() && GetGridView().m_nLockUpdate == 0)
-	{
-		Invalidate(FALSE);
-	}
-}
-
-void CXTPPropertyGrid::OnVerbClick(int nIndex, CPoint pt)
-{
-	ClientToScreen(&pt);
-	ASSERT(nIndex < m_pVerbs->GetCount());
-
-	CXTPPropertyGridVerb* pVerb = m_pVerbs->GetAt(nIndex);
-	pVerb->m_ptClick = pt;
-
-	SendNotifyMessage(XTP_PGN_VERB_CLICK, (LPARAM)pVerb);
-}
-
-void CXTPPropertyGrid::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if ((m_nFocusedVerb != -1) && (m_nFocusedVerb == HitTest(point) - xtpGridHitFirstVerb))
-	{
-		OnVerbClick(m_nFocusedVerb, point);
-	}
-	else
-	{
-		CWnd::OnLButtonUp(nFlags, point);
-	}
-
-}
-
-void CXTPPropertyGrid::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	int nHitTest = HitTest(point);
-
-	if ((nHitTest != -1) && (nHitTest >= xtpGridHitFirstVerb))
-	{
-		m_nFocusedVerb = nHitTest - xtpGridHitFirstVerb;
-		m_bVerbActivate = TRUE;
-		SetFocus();
-		m_bVerbActivate = FALSE;
-		Invalidate(FALSE);
-		return;
-
-	}
-	SetFocus();
-
-	if ((nHitTest == xtpGridHitHelpSplitter) || (nHitTest == xtpGridHitVerbsSplitter))
-	{
-		SetCapture();
-		CXTPClientRect rc(this);
-		BOOL bHelpHitTest = nHitTest == xtpGridHitHelpSplitter;
-
-		CRect rcAvail = bHelpHitTest ? CRect(0, 20 + TOOLBAR_HEIGHT, rc.right, rc.bottom) :
-			CRect(0, 20 + TOOLBAR_HEIGHT, rc.right, rc.bottom - (IsHelpVisible() ? m_nHelpHeight + SPLITTER_HEIGHT : 0));
-
-		ModifyStyle(WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0, FALSE);
-
-		m_rectTracker.SetRect(0, point.y, rc.Width(), point.y + 3);
-
-		OnInvertTracker(m_rectTracker);
-
-		BOOL bAccept = FALSE;
-		while (GetCapture() == this)
-		{
-			MSG msg;
-			if (!GetMessage(&msg, NULL, 0, 0))
-				break;
-
-			if (msg.message == WM_MOUSEMOVE)
-			{
-				point = CPoint(msg.lParam);
-				point.y = __min(point.y, rcAvail.bottom - 20);
-				point.y = __max((int)point.y, int(rcAvail.top));
-
-				if (m_rectTracker.top != point.y)
-				{
-					OnInvertTracker(m_rectTracker);
-					m_rectTracker.OffsetRect(0, point.y - m_rectTracker.top);
-					OnInvertTracker(m_rectTracker);
-				}
-			}
-			else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) break;
-			else if (msg.message == WM_LBUTTONUP)
-			{
-				bAccept = TRUE;
-				break;
-			}
-			else  ::DispatchMessage(&msg);
-		}
-
-		ReleaseCapture();
-
-		if (bAccept)
-		{
-			if (bHelpHitTest) m_nHelpHeight = rcAvail.bottom - m_rectTracker.top -2; else
-				m_nVerbsHeight = rcAvail.bottom - m_rectTracker.top -2;
-			Reposition(rc.Width(), rc.Height());
-		}
-		Invalidate(FALSE);
-		ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, FALSE);
-		return;
-	}
-
-	CWnd::OnLButtonDown(nFlags, point);
-}
-
-void CXTPPropertyGrid::Reposition()
-{
-	if (GetSafeHwnd() == 0)
-		return;
-
-	CXTPClientRect rc(this);
-	Reposition(rc.Width(), rc.Height());
-}
-
-void CXTPPropertyGrid::Reposition(int cx, int cy)
-{
-	if (GetGridView().m_nLockUpdate > 0)
-		return;
-
-	if (GetSafeHwnd() == 0)
-		return;
-
-	CRect rcView(0, 0, cx, cy);
-
-	int nMinViewHeight = 20 + (m_bToolBarVisible ? TOOLBAR_HEIGHT : 0);
-
-	if (m_bHelpVisible)
-	{
-		if (cy > nMinViewHeight && cy - m_nHelpHeight - SPLITTER_HEIGHT < nMinViewHeight && m_bVariableHelpHeight)
-		{
-			m_nHelpHeight = max(0, cy - SPLITTER_HEIGHT - nMinViewHeight);
-		}
-
-		rcView.bottom -= m_nHelpHeight + SPLITTER_HEIGHT;
-	}
-
-	if (IsVerbsVisible())
-	{
-		rcView.bottom -= m_nVerbsHeight + SPLITTER_HEIGHT;
-	}
-
-	m_bVerbsVisible = IsVerbsVisible();
-
-	if (m_bToolBarVisible)
-	{
-		ASSERT(m_wndToolbar.GetSafeHwnd());
-		CRect rcToolBar(0, 0, cx, TOOLBAR_HEIGHT);
-		m_wndToolbar.MoveWindow(rcToolBar);
-
-		rcView.top += TOOLBAR_HEIGHT;
-	}
-
-	GetGridView().MoveWindow(rcView);
-	GetGridView().Invalidate(FALSE);
-	Invalidate(FALSE);
-}
-
-void CXTPPropertyGrid::CreateToolbar()
-{
-#if _MSC_VER < 1200
-	m_wndToolbar.Create(this, TBSTYLE_TRANSPARENT | TBSTYLE_FLAT | WS_CHILD | WS_VISIBLE | WS_BORDER, 0);
-#else
-	m_wndToolbar.CreateEx(this, TBSTYLE_TRANSPARENT | TBSTYLE_FLAT, WS_BORDER | WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP);
-#endif
-
-	VERIFY(XTPResourceManager()->LoadToolBar(&m_wndToolbar, XTP_IDR_PROPERTYGRID_TOOLBAR));
-}
-
-void CXTPPropertyGrid::ShowToolBar(BOOL bShow)
-{
-	if (bShow && !m_wndToolbar.GetSafeHwnd())
-	{
-		CreateToolbar();
-	}
-	else
-	{
-		if (m_wndToolbar.GetSafeHwnd())
-			m_wndToolbar.ShowWindow(bShow ? SW_SHOW : SW_HIDE);
-	}
-
-	m_bToolBarVisible = bShow;
-
-	Reposition();
-	RefreshToolBarButtons();
-}
-
-void CXTPPropertyGrid::RefreshToolBarButtons()
-{
-	if (m_bToolBarVisible)
-	{
-		m_wndToolbar.GetToolBarCtrl().SetState(XTP_IDC_PROPERTYGRID_CATEGORIZED, TBSTATE_ENABLED | (GetGridView().m_properetySort == xtpGridSortCategorized ? TBSTATE_CHECKED : 0));
-		m_wndToolbar.GetToolBarCtrl().SetState(XTP_IDC_PROPERTYGRID_ALPHABETIC, TBSTATE_ENABLED | (GetGridView().m_properetySort == xtpGridSortAlphabetical ? TBSTATE_CHECKED : 0));
-	}
-}
-
-void CXTPPropertyGrid::ShowHelp(BOOL bShow)
-{
-	m_bHelpVisible = bShow;
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::OnSortAlphabetic()
-{
-	SetPropertySort(xtpGridSortAlphabetical);
-}
-
-void CXTPPropertyGrid::OnSortCategorized()
-{
-	SetPropertySort(xtpGridSortCategorized);
-}
-
-void CXTPPropertyGrid::OnSortChanged()
-{
-	RefreshToolBarButtons();
-	OnSelectionChanged(NULL);
-	SendNotifyMessage(XTP_PGN_SORTORDER_CHANGED, (LPARAM)GetDlgCtrlID());
-}
-
-LRESULT CXTPPropertyGrid::SendNotifyMessage(WPARAM wParam /*= 0*/, LPARAM lParam /*= 0*/)
-{
-	return GetOwner()->SendMessage(XTPWM_PROPERTYGRID_NOTIFY, wParam, lParam);
-}
-
-void CXTPPropertyGrid::SetStandardColors()
-{
-	m_pPaintManager->GetItemMetrics()->SetDefaultValues();
-
-	m_pPaintManager->RefreshMetrics();
-	RedrawControl();
-}
-
-void CXTPPropertyGrid::RedrawControl()
-{
-	if (GetSafeHwnd())
-	{
-		RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE | RDW_ERASE);
-	}
-}
-
-void CXTPPropertyGrid::SetCustomColors(
-	COLORREF clrHelpBack, COLORREF clrHelpFore, COLORREF clrViewLine,
-	COLORREF clrViewBack, COLORREF clrViewFore, COLORREF clrCategoryFore)
-{
-	CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->GetItemMetrics();
-
-	pMetrics->m_clrHelpBack.SetCustomValue(clrHelpBack);
-	pMetrics->m_clrHelpFore.SetCustomValue(clrHelpFore);
-	pMetrics->m_clrLine.SetCustomValue(clrViewLine);
-	pMetrics->m_clrBack.SetCustomValue(clrViewBack);
-	pMetrics->m_clrFore.SetCustomValue(clrViewFore);
-	pMetrics->m_clrCategoryFore.SetCustomValue(clrCategoryFore);
-
-	RedrawControl();
-}
-
-void CXTPPropertyGrid::ResetContent()
-{
-	m_pVerbs->RemoveAll();
-	GetGridView().ResetContent();
-
-	GetGridView().m_nLockUpdate++;
-	GetGridView().m_pCategories->Clear();
-	GetGridView().m_nLockUpdate--;
-}
-
-CXTPPropertyGridItems* CXTPPropertyGrid::GetCategories() const
-{
-	return GetGridView().m_pCategories;
-}
-
-CXTPPropertyGridItem* CXTPPropertyGrid::AddCategory(int nID)
-{
-	CString strCaption;
-	VERIFY(strCaption.LoadString(nID));
-	CXTPPropertyGridItem* pItem = GetGridView().AddCategory(strCaption);
-	pItem->SetID(nID);
-	return pItem;
-}
-
-CXTPPropertyGridItem* CXTPPropertyGrid::InsertCategory(int nIndex, int nID)
-{
-	CString strCaption;
-	VERIFY(strCaption.LoadString(nID));
-	CXTPPropertyGridItem* pItem = GetGridView().InsertCategory(nIndex, strCaption);
-	pItem->SetID(nID);
-	return pItem;
-}
-
-
-void CXTPPropertyGrid::SetFont(CFont* pFont)
-{
-	LOGFONT lf;
-	if (pFont->GetLogFont(&lf))
-	{
-		CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->GetItemMetrics();
-
-		pMetrics->m_fontNormal.DeleteObject();
-		pMetrics->m_fontBold.DeleteObject();
-
-		lf.lfWeight = FW_NORMAL;
-		VERIFY(pMetrics->m_fontNormal.CreateFontIndirect(&lf));
-
-		lf.lfWeight = FW_BOLD;
-		VERIFY(pMetrics->m_fontBold.CreateFontIndirect(&lf));
-
-		if (m_pInplaceEdit->GetSafeHwnd())
-		{
-			m_pInplaceEdit->SetFont(&pMetrics->m_fontNormal);
-		}
-
-		Refresh();
-	}
-}
-
-void CXTPPropertyGrid::Refresh()
-{
-	GetGridView().SetPropertySort(GetPropertySort(), TRUE);
-}
-
-
-void CXTPPropertyGrid::SaveExpandingState(CXTPPropertyGridItems* pItems, CXTPPropertyGridUpdateContext& context)
-{
-	int nTopIndex = GetGridView().GetTopIndex();
-
-	for (int nItem = 0; nItem < pItems->GetCount(); nItem++)
-	{
-		CXTPPropertyGridItem* pItem = pItems->GetAt(nItem);
-
-		if (pItem->GetID() != 0)
-		{
-			if (pItem->HasChilds())
-			{
-				BOOL bExpanded = pItem->IsExpanded();
-				context.m_mapState.SetAt(pItem->GetID(), bExpanded);
-			}
-
-			if (pItem->IsSelected()) context.m_nSelected = pItem->GetID();
-			if (pItem->GetIndex() == nTopIndex) context.m_nTopIndex= pItem->GetID();
-		}
-		SaveExpandingState(pItem->GetChilds(), context);
-	}
-}
-
-void CXTPPropertyGrid::RestoreExpandingState(CXTPPropertyGridItems* pItems, CXTPPropertyGridUpdateContext& context)
-{
-	for (int nItem = 0; nItem < pItems->GetCount(); nItem++)
-	{
-		CXTPPropertyGridItem* pItem = pItems->GetAt(nItem);
-
-		BOOL bExpanded;
-		if (pItem->GetID() != 0 && context.m_mapState.Lookup(pItem->GetID(), bExpanded))
-		{
-			if (bExpanded)
-				pItem->Expand();
-			else
-				pItem->Collapse();
-		}
-		RestoreExpandingState(pItem->GetChilds(), context);
-	}
-}
-
-void CXTPPropertyGrid::BeginUpdate(CXTPPropertyGridUpdateContext& context)
-{
-	GetGridView().m_nLockUpdate = 1;
-	GetGridView().SetRedraw(FALSE);
-
-	context.m_nSelected = 0;
-	context.m_nTopIndex = 0;
-
-	SaveExpandingState(GetCategories(), context);
-	context.m_propertySort = GetPropertySort();
-
-	ResetContent();
-}
-
-void CXTPPropertyGrid::EndUpdate(CXTPPropertyGridUpdateContext& context)
-{
-	RestoreExpandingState(GetCategories(), context);
-	GetGridView().m_nLockUpdate = 0;
-
-	GetGridView().SetPropertySort(context.m_propertySort, TRUE, FALSE);
-	if (context.m_nSelected > 0 || context.m_nTopIndex > 0)
-	{
-		for (int i = 0; i < GetGridView().GetCount(); i++)
-		{
-			CXTPPropertyGridItem* pItem = GetGridView().GetItem(i);
-
-			if (context.m_nTopIndex > 0 && pItem && pItem->GetID() == context.m_nTopIndex)
-			{
-				SetTopIndex(pItem->GetIndex());
-				context.m_nTopIndex = 0;
-				if (context.m_nSelected == 0)
-					break;
-			}
-
-			if (context.m_nSelected > 0 && pItem && pItem->GetID() == context.m_nSelected)
-			{
-				pItem->Select();
-				break;
-			}
-		}
-	}
-
-	GetGridView().SetRedraw(TRUE);
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::SetVerbsHeight(int nHeight)
-{
-	ASSERT(nHeight > 0);
-	m_nVerbsHeight = nHeight;
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::SetHelpHeight(int nHeight)
-{
-
-	ASSERT(nHeight > 0);
-	m_nHelpHeight = nHeight;
-
-	Reposition();
-}
-
-void CXTPPropertyGrid::SetViewDivider(double dDivider)
-{
-	ASSERT(dDivider > 0 && dDivider < 1);
-	GetGridView().m_dDivider = dDivider;
-
-	Reposition();
-}
-
-double CXTPPropertyGrid::GetViewDivider() const
-{
-	return GetGridView().m_dDivider;
-}
-
-void CXTPPropertyGrid::SetViewDividerPos(int nDivider, BOOL bLockDivider /*= FALSE*/)
-{
-	if (bLockDivider)
-	{
-		GetGridView().LockDivider();
-	}
-
-	GetGridView().SetDividerPos(nDivider);
-
-	Reposition();
-}
-
-CXTPPropertyGridItem* CXTPPropertyGrid::GetSelectedItem() const
-{
-	return GetGridView().GetSelectedItem();
-}
-
-int CXTPPropertyGrid::GetTopIndex() const
-{
-	return GetGridView().GetTopIndex();
-}
-
-void CXTPPropertyGrid::SetTopIndex(int nIndex)
-{
-	GetGridView().SetTopIndex(nIndex);
-}
-
-void CXTPPropertyGrid::SetTheme(XTPPropertyGridPaintTheme paintTheme)
-{
-	if (paintTheme == xtpGridThemeDefault) SetCustomTheme(new CXTPPropertyGridPaintManager(this));
-	else if (paintTheme == xtpGridThemeCool) SetCustomTheme(new CXTPPropertyGridCoolTheme(this));
-	else if (paintTheme == xtpGridThemeDelphi) SetCustomTheme(new CXTPPropertyGridDelphiTheme(this));
-	else if (paintTheme == xtpGridThemeNativeWinXP) SetCustomTheme(new CXTPPropertyGridNativeXPTheme(this));
-	else if (paintTheme == xtpGridThemeOffice2003) SetCustomTheme(new CXTPPropertyGridOffice2003Theme(this));
-	else if (paintTheme == xtpGridThemeSimple) SetCustomTheme(new CXTPPropertyGridSimpleTheme(this));
-	else if (paintTheme == xtpGridThemeWhidbey) SetCustomTheme(new CXTPPropertyGridWhidbeyTheme(this));
-	else if (paintTheme == xtpGridThemeOfficeXP) SetCustomTheme(new CXTPPropertyGridOfficeXPTheme(this));
-	else if (paintTheme == xtpGridThemeOffice2007) SetCustomTheme(new CXTPPropertyGridOffice2007Theme(this));
-	else
-	{
-		ASSERT(FALSE);
-	}
-
-	m_themeCurrent = paintTheme;
-}
-
-void CXTPPropertyGrid::SetCustomTheme(CXTPPropertyGridPaintManager* pPaintManager)
-{
-	CXTPPropertyGridItemMetrics* pMetrics = m_pPaintManager->m_pMetrics;
-	m_pPaintManager->m_pMetrics = 0;
-
-	ASSERT(m_pPaintManager);
-	delete m_pPaintManager;
-
-	m_pPaintManager = pPaintManager;
-
-	CMDTARGET_RELEASE(m_pPaintManager->m_pMetrics);
-	m_pPaintManager->m_pMetrics = pMetrics;
-	m_pPaintManager->RefreshMetrics();
-
-	RedrawControl();
-}
-
-CXTPImageManager* CXTPPropertyGrid::GetImageManager() const
-{
-	return m_pImageManager ? m_pImageManager : XTPImageManager();
-}
-
-void CXTPPropertyGrid::SetImageManager(CXTPImageManager* pImageManager)
-{
-	if (m_pImageManager)
-		m_pImageManager->InternalRelease();
-
-	m_pImageManager = pImageManager;
-}
-
-void CXTPPropertyGrid::OnSysColorChange()
-{
-	CWnd::OnSysColorChange();
-
-	m_pPaintManager->RefreshMetrics();
-	RedrawControl();
-}
-
-BOOL CXTPPropertyGrid::OnToolTipText(UINT, NMHDR* pNMHDR, LRESULT* pResult)
-{
-	ASSERT(pNMHDR->code == TTN_NEEDTEXTA || pNMHDR->code == TTN_NEEDTEXTW);
-
-	// need to handle both ANSI and UNICODE versions of the message
-	TOOLTIPTEXTA* pTTTA = (TOOLTIPTEXTA*)pNMHDR;
-	TOOLTIPTEXTW* pTTTW = (TOOLTIPTEXTW*)pNMHDR;
-
-	CString strTipText;
-
-	// don't handle the message if no string resource found
-	if (!XTPResourceManager()->LoadString(&strTipText, (UINT)pNMHDR->idFrom))
-		return FALSE;
-
-#ifndef _UNICODE
-	if (pNMHDR->code == TTN_NEEDTEXTA)
-		lstrcpyn(pTTTA->szText, strTipText, _countof(pTTTA->szText));
-	else
-		_mbstowcsz(pTTTW->szText, strTipText, _countof(pTTTW->szText));
-#else
-	if (pNMHDR->code == TTN_NEEDTEXTA)
-		_wcstombsz(pTTTA->szText, strTipText, _countof(pTTTA->szText));
-	else
-		lstrcpyn(pTTTW->szText, strTipText, _countof(pTTTW->szText));
-#endif
-	*pResult = 0;
-
-	// bring the tooltip window above other popup windows
-	::SetWindowPos(pNMHDR->hwndFrom, HWND_TOP, 0, 0, 0, 0,
-		SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_NOOWNERZORDER);
-
-	return TRUE;    // message was handled
-}
-
-
-BOOL CXTPPropertyGrid::IsLayoutRTL() const
-{
-	return GetExStyle() & WS_EX_LAYOUTRTL ? TRUE : FALSE;
-}
-
-void CXTPPropertyGrid::SetLayoutRTL(CWnd* pWnd, BOOL bRTLLayout)
-{
-	pWnd->ModifyStyleEx(bRTLLayout ? 0 : WS_EX_LAYOUTRTL, !bRTLLayout ? 0 : WS_EX_LAYOUTRTL);
-
-	// walk through HWNDs to avoid creating temporary CWnd objects
-	// unless we need to call this function recursively
-	for (CWnd* pChild = pWnd->GetWindow(GW_CHILD); pChild != NULL;
-		pChild = pChild->GetWindow(GW_HWNDNEXT))
-	{
-
-		// send to child windows after parent
-		SetLayoutRTL(pChild, bRTLLayout);
-	}
-}
-
-
-void CXTPPropertyGrid::SetLayoutRTL(BOOL bRightToLeft)
-{
-	if (!XTPSystemVersion()->IsLayoutRTLSupported())
-		return;
-
-	SetLayoutRTL(this, bRightToLeft);
-
-	if (m_pInplaceEdit && m_pInplaceEdit->GetSafeHwnd())
-	{
-		m_pInplaceEdit->HideWindow();
-		m_pInplaceEdit->m_bDelayCreate = TRUE;
-	}
-
-	if (GetSelectedItem()) GetSelectedItem()->OnSelect();
-
-	Reposition();
-	RedrawWindow(NULL, NULL, RDW_ALLCHILDREN | RDW_UPDATENOW | RDW_INVALIDATE | RDW_ERASE);
-}
-
-
-void CXTPPropertyGrid::SetBorderStyle(XTPPropertyGridBorderStyle borderStyle)
-{
-	m_borderStyle = borderStyle;
-
-	Reposition();
-
-	if (GetGridView().GetSafeHwnd())
-	{
-		GetGridView().SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-	}
-}
-
-XTPPropertyGridBorderStyle CXTPPropertyGrid::GetBorderStyle() const
-{
-	return m_borderStyle;
-}
-
-

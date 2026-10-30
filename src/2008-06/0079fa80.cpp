@@ -1,445 +1,79 @@
 // from server: 100% by auto
+// roc 2008-06 0079fa80  unit: CXTPDialogBar  size: 177 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0079fa80
+//
+// 0079fa80  53                   push ebx
+// 0079fa81  56                   push esi
+// 0079fa82  57                   push edi
+// 0079fa83  8bf9                 mov edi, ecx
+// 0079fa85  ff15102e8000         call dword ptr [0x802e10]
+// 0079fa8b  50                   push eax
+// 0079fa8c  e84d11f0ff           call 0x6a0bde
+// 0079fa91  8bf0                 mov esi, eax
+// 0079fa93  85f6                 test esi, esi
+// 0079fa95  7463                 je 0x79fafa
+// 0079fa97  8b4620               mov eax, dword ptr [esi + 0x20]
+// 0079fa9a  85c0                 test eax, eax
+// 0079fa9c  745c                 je 0x79fafa
+// 0079fa9e  3bf7                 cmp esi, edi
+// 0079faa0  7451                 je 0x79faf3
+// 0079faa2  50                   push eax
+// 0079faa3  8b4720               mov eax, dword ptr [edi + 0x20]
+// 0079faa6  50                   push eax
+// 0079faa7  ff15742b8000         call dword ptr [0x802b74]
+// 0079faad  85c0                 test eax, eax
+// 0079faaf  7542                 jne 0x79faf3
+// 0079fab1  8b4638               mov eax, dword ptr [esi + 0x38]
+// 0079fab4  8b1df82d8000         mov ebx, dword ptr [0x802df8]
+// 0079faba  85c0                 test eax, eax
+// 0079fabc  7506                 jne 0x79fac4
+// 0079fabe  8b4e20               mov ecx, dword ptr [esi + 0x20]
+// 0079fac1  51                   push ecx
+// 0079fac2  ffd3                 call ebx
+// 0079fac4  50                   push eax
+// 0079fac5  e81411f0ff           call 0x6a0bde
+// 0079faca  85c0                 test eax, eax
+// 0079facc  742c                 je 0x79fafa
+// 0079face  83782000             cmp dword ptr [eax + 0x20], 0
+// 0079fad2  7426                 je 0x79fafa
+// 0079fad4  8b4638               mov eax, dword ptr [esi + 0x38]
+// 0079fad7  85c0                 test eax, eax
+// 0079fad9  7506                 jne 0x79fae1
+// 0079fadb  8b5620               mov edx, dword ptr [esi + 0x20]
+// 0079fade  52                   push edx
+// 0079fadf  ffd3                 call ebx
+// 0079fae1  50                   push eax
+// 0079fae2  e8f710f0ff           call 0x6a0bde
+// 0079fae7  50                   push eax
+// 0079fae8  8bcf                 mov ecx, edi
+// 0079faea  e82123f6ff           call 0x701e10
+// 0079faef  85c0                 test eax, eax
+// 0079faf1  7407                 je 0x79fafa
+// 0079faf3  b801000000           mov eax, 1
+// 0079faf8  eb02                 jmp 0x79fafc
+// 0079fafa  33c0                 xor eax, eax
+// 0079fafc  3b87ec010000         cmp eax, dword ptr [edi + 0x1ec]
+// 0079fb02  7416                 je 0x79fb1a
+// 0079fb04  8987ec010000         mov dword ptr [edi + 0x1ec], eax
+// 0079fb0a  8b07                 mov eax, dword ptr [edi]
+// 0079fb0c  8b90ac010000         mov edx, dword ptr [eax + 0x1ac]
+// 0079fb12  6a01                 push 1
+// 0079fb14  6a00                 push 0
+// 0079fb16  8bcf                 mov ecx, edi
+// 0079fb18  ffd2                 call edx
+// 0079fb1a  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0079fb1e  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 0079fb22  50                   push eax
+// 0079fb23  51                   push ecx
+// 0079fb24  8bcf                 mov ecx, edi
+// 0079fb26  e8058ef1ff           call 0x6b8930
+// 0079fb2b  5f                   pop edi
+// 0079fb2c  5e                   pop esi
+// 0079fb2d  5b                   pop ebx
+// 0079fb2e  c20800               ret 8
+// library xtp-11.2.2-shared-mfc/Source\CommandBars\XTPDialogBar.cpp (function ?OnIdleUpdateCmdUI@CXTPDialogBar@@MAEJIJ@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPDialogBar.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPDialogBar.cpp : implementation of the CXTPDialogBar class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "XTPDialogBar.h"
-#include "XTPControls.h"
-#include "XTPControl.h"
-#include "XTPPaintManager.h"
-#include "XTPMouseManager.h"
-#include "XTPControlPopup.h"
-#include "XTPControlButton.h"
-#include "XTPPopupBar.h"
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-IMPLEMENT_XTP_COMMANDBAR(CXTPDialogBar, CXTPToolBar)
-
-
-class CXTPDialogBar::CControlButtonHide: public CXTPControlButton
-{
-public:
-	CControlButtonHide()
-	{
-		m_dwFlags = xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable;
-	}
-	void Draw(CDC* pDC);
-	void SetBeginGroup(BOOL /*bBeginGroup*/)
-	{
-	}
-	void OnExecute()
-	{
-		ASSERT(m_pParent);
-		if (m_pParent) ((CXTPToolBar*)m_pParent)->SetVisible(FALSE);
-	}
-};
-
-void CXTPDialogBar::CControlButtonHide::Draw(CDC* pDC)
-{
-	CFont font;
-	font.CreatePointFont(MulDiv(80, 96, pDC->GetDeviceCaps(LOGPIXELSX)), _T("Marlett"));
-	CFont* pFont = pDC->SelectObject(&font);
-	GetPaintManager()->DrawControlEntry(pDC, this);
-	pDC->SetTextColor(GetPaintManager()->GetControlTextColor(this));
-	pDC->SetBkMode(TRANSPARENT);
-	pDC->DrawText(_T("r"), 1, m_rcControl, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-	pDC->SelectObject(pFont);
-}
-
-class CXTPDialogBar::CControlCaptionPopup: public CXTPControlPopup
-{
-public:
-	CControlCaptionPopup()
-	{
-		m_dwFlags = xtpFlagLeftPopup | xtpFlagManualUpdate | xtpFlagSkipFocus | xtpFlagNoMovable;
-		m_bCaptionPopup = FALSE;
-	}
-	void Draw(CDC* pDC);
-
-	void AdjustExcludeRect(CRect& rc, BOOL /*bVertical*/)
-	{
-		GetPaintManager()->AdjustExcludeRect(rc, this, FALSE);
-	}
-	BOOL OnSetPopup(BOOL bPopup)
-	{
-		if (m_bCaptionPopup)
-			return CXTPControlPopup::OnSetPopup(bPopup);
-		return TRUE;
-	}
-
-public:
-	BOOL m_bCaptionPopup;
-};
-
-void CXTPDialogBar::CControlCaptionPopup::Draw(CDC* pDC)
-{
-	CXTPPaintManager* pPaintManager = GetPaintManager();
-	CXTPFontDC font(pDC, pPaintManager->GetSmCaptionFont());
-
-	CRect rcButton = GetRect();
-
-	if (m_bCaptionPopup)
-	{
-		pPaintManager->DrawControlEntry(pDC, this);
-	}
-
-	pDC->SetTextColor(m_bCaptionPopup ? pPaintManager->GetControlTextColor(this) :
-		GetXtremeColor(COLOR_BTNTEXT));
-
-	CRect rcText(rcButton);
-	rcText.DeflateRect(2, 0, m_bCaptionPopup ? 15 : 2, 0);
-	pDC->DrawText(GetCaption(), rcText, DT_SINGLELINE | DT_VCENTER);
-
-	COLORREF clrText = pDC->GetTextColor();
-
-	if (m_bCaptionPopup)
-	{
-		CPoint pt = CPoint(rcButton.right - 9, rcButton.top + rcButton.Height()/2);
-		pPaintManager->Triangle(pDC, CPoint(pt.x -4 , pt.y - 2), CPoint(pt.x + 4, pt.y - 2), CPoint (pt.x, pt.y + 2), clrText);
-	}
-}
-
-class CXTPDialogBar::CCaptionPopupBar: public CXTPPopupBar
-{
-public:
-	CCaptionPopupBar()
-	{
-		m_popupFlags = xtpPopupDown;
-	}
-	void UpdateFlags()
-	{
-		CXTPPopupBar::UpdateFlags();
-		m_popupFlags = xtpPopupDown | xtpPopupLeft;
-
-		m_ptPopup.x = (m_popupFlags & xtpPopupDown) ? m_rcExclude.left : m_rcExclude.right;
-		m_ptPopup.y = (m_popupFlags & xtpPopupDown) ? m_rcExclude.bottom : m_rcExclude.top;
-
-
-	}
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPDialogBar
-
-CXTPDialogBar::CXTPDialogBar()
-{
-	m_rcBorders = CRect(3, 3, 3, 3);
-	m_bResizable = TRUE;
-	m_bCaptionVisible = TRUE;
-
-	m_szDockingClient = m_szFloatingClient = CSize(200, 200);
-	m_szMinTrackRect = CSize(50, 50);
-	m_bCaptionPopup = TRUE;
-
-	m_hwndChild = 0;
-
-	m_pPopupBar = new CCaptionPopupBar();
-	m_nCaptionHeight = 0;
-
-	m_bCustomizable = FALSE;
-
-	m_bActive = FALSE;
-
-	EnableAutomation();
-}
-
-CXTPDialogBar::~CXTPDialogBar()
-{
-	m_pPopupBar->InternalRelease();
-
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPDialogBar, CXTPToolBar)
-	//{{AFX_MSG_MAP(CXTPDialogBar)
-	ON_WM_NCHITTEST_EX()
-	ON_WM_SIZE()
-	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPDialogBar message handlers
-
-CSize CXTPDialogBar::CalcDockingLayout(int nLength, DWORD dwMode, int /*nWidth*/)
-{
-	return CalcSize(nLength, dwMode, m_szDockingClient);
-}
-
-
-CRect CXTPDialogBar::GetMargins()
-{
-	CRect rcBorder = m_rcBorders;
-
-	CClientDC dc(this);
-	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
-	CSize szGripper = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE);
-	int nTitleSize = szGripper.cy;
-
-	rcBorder.top += nTitleSize;
-	return rcBorder;
-}
-
-CSize CXTPDialogBar::CalcSize(int nLength, DWORD dwMode, CSize szClient)
-{
-	CRect rcBorder = m_rcBorders;
-	CSize sizeResult = szClient;
-
-	sizeResult.cx += rcBorder.left + rcBorder.right;
-	sizeResult.cy += rcBorder.top + rcBorder.bottom;
-
-	if (!m_bCaptionVisible)
-	{
-		return sizeResult;
-	}
-
-	CClientDC dc(this);
-	CXTPFontDC font(&dc, GetPaintManager()->GetCommandBarFont(this));
-	CSize szGripper = GetPaintManager()->DrawCommandBarGripper(&dc, this, FALSE);
-	int nTitleSize = szGripper.cy;
-	m_nCaptionHeight = szGripper.cy + rcBorder.top;
-
-	sizeResult.cy += nTitleSize;
-
-
-
-	if (dwMode & LM_STRETCH)
-	{
-		if (dwMode & LM_VERTDOCK)
-			sizeResult.cy = max(nLength, sizeResult.cy);
-		else
-			sizeResult.cx = max(nLength, sizeResult.cx);
-	}
-
-	if (dwMode & LM_HORZ)
-		sizeResult.cx = min(nLength, sizeResult.cx);
-	else
-		sizeResult.cy = min(nLength, sizeResult.cy);
-
-	int nRightBorder = sizeResult.cx - rcBorder.right;
-
-	CXTPControl* pHide = m_pControls->FindControl(XTP_ID_TOOLBAR_HIDE);
-	if (!pHide && IsCloseable())
-	{
-		pHide = (CXTPControlPopup*)m_pControls->Add(new CControlButtonHide(), XTP_ID_TOOLBAR_HIDE, _T(""), -1, TRUE);
-	}
-	if (pHide && !IsCloseable())
-	{
-		pHide->SetHideFlags(xtpHideGeneric);
-	}
-	else if (pHide)
-	{
-		pHide->SetRect(CRect(CPoint(nRightBorder - 16, m_rcBorders.top + nTitleSize/2 - 8), CSize(16, 16)));
-		nRightBorder -= 16;
-	}
-
-	CControlCaptionPopup* pCaption = (CControlCaptionPopup*)m_pControls->FindControl(XTP_ID_DIALOGBAR_CAPTION);
-	if (!pCaption)
-	{
-		pCaption = (CControlCaptionPopup*)m_pControls->Add(new CControlCaptionPopup(), XTP_ID_DIALOGBAR_CAPTION, _T(""), -1, TRUE);
-		pCaption->SetCommandBar(m_pPopupBar);
-	}
-	pCaption->m_bCaptionPopup = m_bCaptionPopup && (m_pPopupBar->GetControlCount() != 0);
-
-	int nCaptionHeight = 16;
-	int nCaptionTop = m_rcBorders.top + nTitleSize/2 - nCaptionHeight / 2;
-	pCaption->SetRect(CRect(m_rcBorders.left + szGripper.cx, nCaptionTop, nRightBorder, nCaptionTop + nCaptionHeight));
-	pCaption->SetCaption(m_strCaption.IsEmpty() ? GetTitle() : m_strCaption);
-
-
-	return sizeResult;
-}
-
-CSize CXTPDialogBar::CalcDynamicLayout(int /*nLength*/, DWORD dwMode)
-{
-	return CalcSize(32000, dwMode, m_szFloatingClient);
-}
-
-
-LRESULT CXTPDialogBar::OnNcHitTest(CPoint point)
-{
-	if (!m_bResizable)
-		return CXTPCommandBar::OnNcHitTest(point);
-
-	CRect rectWindow;
-	GetWindowRect(&rectWindow);
-	rectWindow.InflateRect(-3, -3);
-
-	if (m_barPosition != xtpBarFloating)
-	{
-		if (m_barPosition == xtpBarBottom)
-		{
-			if (point.y <= rectWindow.top) return HTTOP;
-		}
-		else
-		{
-			if ((point.y >= rectWindow.bottom) && (((m_dwFlags & xtpFlagStretched) == 0) || !IsVerticalPosition(GetPosition()))) return HTBOTTOM;
-		}
-
-		if (m_barPosition == xtpBarRight)
-		{
-			if (point.x <= rectWindow.left) return HTLEFT;
-		}
-		else
-		{
-			if ((point.x >= rectWindow.right) && (((m_dwFlags & xtpFlagStretched) == 0) || IsVerticalPosition(GetPosition()))) return HTRIGHT;
-		}
-	}
-	else
-	{
-		if ((point.y < rectWindow.top) && (point.x < rectWindow.left)) return HTTOPLEFT;
-		if ((point.y < rectWindow.top) && (point.x >= rectWindow.right)) return HTTOPRIGHT;
-		if ((point.y >= rectWindow.bottom) && (point.x < rectWindow.left)) return HTBOTTOMLEFT;
-		if ((point.y >= rectWindow.bottom) && (point.x >= rectWindow.right)) return HTBOTTOMRIGHT;
-		if (point.y < rectWindow.top) return HTTOP;
-		if (point.y >= rectWindow.bottom) return HTBOTTOM;
-		if (point.x < rectWindow.left) return HTLEFT;
-		if (point.x >= rectWindow.right) return HTRIGHT;
-	}
-
-	return CXTPCommandBar::OnNcHitTest(point);
-}
-
-
-void CXTPDialogBar::OnResize(CRect rcWindow, int nHitTest)
-{
-	CRect rcMargins = GetMargins();
-
-	if (rcWindow.Width() < m_szMinTrackRect.cx || rcWindow.Height() < m_szMinTrackRect.cy)
-		return;
-
-	if (GetPosition() == xtpBarFloating)
-	{
-		m_szFloatingClient = CSize(rcWindow.Width() - rcMargins.left - rcMargins.right, rcWindow.Height() - rcMargins.top - rcMargins.bottom);
-
-		CalcDynamicLayout(0, 0);
-		MoveWindow(rcWindow);
-		Redraw();
-	}
-	else
-	{
-		CSize szDockingClient = CSize(rcWindow.Width() - rcMargins.left - rcMargins.right, rcWindow.Height() - rcMargins.top - rcMargins.bottom);
-
-		if (nHitTest == HTRIGHT || nHitTest == HTLEFT)
-			m_szDockingClient.cx = szDockingClient.cx;
-		else
-			m_szDockingClient.cy = szDockingClient.cy;
-
-		OnRecalcLayout();
-	}
-}
-
-int CXTPDialogBar::OnMouseHitTest(CPoint pt)
-{
-	CXTPWindowRect rc(this);
-	rc.bottom = rc.top + m_nCaptionHeight;
-
-	return rc.PtInRect(pt) ? HTCLIENT : HTERROR;
-}
-
-void CXTPDialogBar::MoveChildWindow(CRect rc)
-{
-	if (m_hwndChild)
-	{
-		CRect rcMargins = GetMargins();
-		CRect rcChild(rcMargins.left, rcMargins.top, rc.Width() - rcMargins.right, rc.Height() - rcMargins.bottom);
-
-		::SetWindowPos(m_hwndChild, 0, rcChild.left, rcChild.top, rcChild.Width(), rcChild.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
-		::InvalidateRect(m_hwndChild, 0, FALSE);
-	}
-}
-
-void CXTPDialogBar::OnSize(UINT nType, int cx, int cy)
-{
-	CXTPToolBar::OnSize(nType, cx, cy);
-
-	MoveChildWindow(CRect(0, 0, cx, cy));
-}
-
-void CXTPDialogBar::SetChild(CWnd* pChildWnd)
-{
-	m_hwndChild = pChildWnd->m_hWnd;
-
-	MoveChildWindow(CXTPClientRect(this));
-	DelayLayout();
-}
-
-void CXTPDialogBar::SetCaption(LPCTSTR strCaption)
-{
-	m_strCaption = strCaption;
-	DelayLayout();
-}
-
-void CXTPDialogBar::SetCaptionPopup(int nMenuResourceID)
-{
-	CMenu menu;
-	VERIFY(menu.LoadMenu(nMenuResourceID));
-	m_pPopupBar->LoadMenu(menu.GetSubMenu(0));
-}
-
-void CXTPDialogBar::SetSize(CSize sz)
-{
-	m_szDockingClient = m_szFloatingClient = sz;
-	DelayLayout();
-}
-
-CString CXTPDialogBar::GetCaption() const
-{
-	return m_strCaption;
-}
-
-void CXTPDialogBar::SetCaptionVisible(BOOL bVisible)
-{
-	m_bCaptionVisible = bVisible;
-	DelayLayout();
-}
-
-LRESULT CXTPDialogBar::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
-{
-	CWnd* pFocus = GetFocus();
-	BOOL bActive = (pFocus->GetSafeHwnd() && (pFocus == this || IsChild(pFocus) ||
-		(pFocus->GetOwner()->GetSafeHwnd() && IsChild(pFocus->GetOwner()))));
-
-	if (bActive != m_bActive)
-	{
-		m_bActive = bActive;
-		Redraw();
-	}
-
-	return CXTPToolBar::OnIdleUpdateCmdUI(wParam, lParam);
-}
-
-

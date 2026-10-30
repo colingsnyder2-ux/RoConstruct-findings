@@ -1,864 +1,229 @@
+// roc 2009-12 0088c730  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 745 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0088c730
+//
+// 0088c730  6aff                 push -1
+// 0088c732  68a98e9500           push 0x958ea9
+// 0088c737  64a100000000         mov eax, dword ptr fs:[0]
+// 0088c73d  50                   push eax
+// 0088c73e  51                   push ecx
+// 0088c73f  53                   push ebx
+// 0088c740  56                   push esi
+// 0088c741  57                   push edi
+// 0088c742  a10052b600           mov eax, dword ptr [0xb65200]
+// 0088c747  33c4                 xor eax, esp
+// 0088c749  50                   push eax
+// 0088c74a  8d442414             lea eax, [esp + 0x14]
+// 0088c74e  64a300000000         mov dword ptr fs:[0], eax
+// 0088c754  8bf1                 mov esi, ecx
+// 0088c756  8d442410             lea eax, [esp + 0x10]
+// 0088c75a  50                   push eax
+// 0088c75b  e890fcffff           call 0x88c3f0
+// 0088c760  83be7401000000       cmp dword ptr [esi + 0x174], 0
+// 0088c767  c744241c00000000     mov dword ptr [esp + 0x1c], 0
+// 0088c76f  7515                 jne 0x88c786
+// 0088c771  8b16                 mov edx, dword ptr [esi]
+// 0088c773  8b8248010000         mov eax, dword ptr [edx + 0x148]
+// 0088c779  8bce                 mov ecx, esi
+// 0088c77b  ffd0                 call eax
+// 0088c77d  898674010000         mov dword ptr [esi + 0x174], eax
+// 0088c783  897060               mov dword ptr [eax + 0x60], esi
+// 0088c786  83be8801000000       cmp dword ptr [esi + 0x188], 0
+// 0088c78d  7421                 je 0x88c7b0
+// 0088c78f  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c795  85c9                 test ecx, ecx
+// 0088c797  7417                 je 0x88c7b0
+// 0088c799  83792000             cmp dword ptr [ecx + 0x20], 0
+// 0088c79d  7411                 je 0x88c7b0
+// 0088c79f  8b11                 mov edx, dword ptr [ecx]
+// 0088c7a1  8b4268               mov eax, dword ptr [edx + 0x68]
+// 0088c7a4  ffd0                 call eax
+// 0088c7a6  c7868801000000000000 mov dword ptr [esi + 0x188], 0
+// 0088c7b0  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c7b6  85c9                 test ecx, ecx
+// 0088c7b8  741f                 je 0x88c7d9
+// 0088c7ba  83792000             cmp dword ptr [ecx + 0x20], 0
+// 0088c7be  7419                 je 0x88c7d9
+// 0088c7c0  e8b39c0900           call 0x926478
+// 0088c7c5  a900004000           test eax, 0x400000
+// 0088c7ca  740d                 je 0x88c7d9
+// 0088c7cc  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c7d2  8b11                 mov edx, dword ptr [ecx]
+// 0088c7d4  8b4268               mov eax, dword ptr [edx + 0x68]
+// 0088c7d7  ffd0                 call eax
+// 0088c7d9  8b8674010000         mov eax, dword ptr [esi + 0x174]
+// 0088c7df  8b1dbccb9800         mov ebx, dword ptr [0x98cbbc]
+// 0088c7e5  85c0                 test eax, eax
+// 0088c7e7  7427                 je 0x88c810
+// 0088c7e9  83782000             cmp dword ptr [eax + 0x20], 0
+// 0088c7ed  7421                 je 0x88c810
+// 0088c7ef  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 0088c7f2  51                   push ecx
+// 0088c7f3  ffd3                 call ebx
+// 0088c7f5  50                   push eax
+// 0088c7f6  e82f73f6ff           call 0x7f3b2a
+// 0088c7fb  3b8600010000         cmp eax, dword ptr [esi + 0x100]
+// 0088c801  740d                 je 0x88c810
+// 0088c803  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c809  8b11                 mov edx, dword ptr [ecx]
+// 0088c80b  8b4268               mov eax, dword ptr [edx + 0x68]
+// 0088c80e  ffd0                 call eax
+// 0088c810  8d4c2424             lea ecx, [esp + 0x24]
+// 0088c814  51                   push ecx
+// 0088c815  8dbec0000000         lea edi, [esi + 0xc0]
+// 0088c81b  57                   push edi
+// 0088c81c  ff15bcca9800         call dword ptr [0x98cabc]
+// 0088c822  85c0                 test eax, eax
+// 0088c824  7443                 je 0x88c869
+// 0088c826  8b8674010000         mov eax, dword ptr [esi + 0x174]
+// 0088c82c  85c0                 test eax, eax
+// 0088c82e  7406                 je 0x88c836
+// 0088c830  83782000             cmp dword ptr [eax + 0x20], 0
+// 0088c834  7433                 je 0x88c869
+// 0088c836  83be8401000000       cmp dword ptr [esi + 0x184], 0
+// 0088c83d  752a                 jne 0x88c869
+// 0088c83f  85c0                 test eax, eax
+// 0088c841  0f84b3010000         je 0x88c9fa
+// 0088c847  83782000             cmp dword ptr [eax + 0x20], 0
+// 0088c84b  0f84a9010000         je 0x88c9fa
+// 0088c851  8b5020               mov edx, dword ptr [eax + 0x20]
+// 0088c854  52                   push edx
+// 0088c855  ffd3                 call ebx
+// 0088c857  50                   push eax
+// 0088c858  e8cd72f6ff           call 0x7f3b2a
+// 0088c85d  3b8600010000         cmp eax, dword ptr [esi + 0x100]
+// 0088c863  0f8491010000         je 0x88c9fa
+// 0088c869  8b442424             mov eax, dword ptr [esp + 0x24]
+// 0088c86d  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 0088c871  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0088c875  8907                 mov dword ptr [edi], eax
+// 0088c877  8b442430             mov eax, dword ptr [esp + 0x30]
+// 0088c87b  894f04               mov dword ptr [edi + 4], ecx
+// 0088c87e  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c884  895708               mov dword ptr [edi + 8], edx
+// 0088c887  89470c               mov dword ptr [edi + 0xc], eax
+// 0088c88a  85c9                 test ecx, ecx
+// 0088c88c  0f845e010000         je 0x88c9f0
+// 0088c892  83792000             cmp dword ptr [ecx + 0x20], 0
+// 0088c896  7559                 jne 0x88c8f1
+// 0088c898  8b8600010000         mov eax, dword ptr [esi + 0x100]
+// 0088c89e  8b11                 mov edx, dword ptr [ecx]
+// 0088c8a0  8b9248010000         mov edx, dword ptr [edx + 0x148]
+// 0088c8a6  50                   push eax
+// 0088c8a7  8b86a8010000         mov eax, dword ptr [esi + 0x1a8]
+// 0088c8ad  0d80000040           or eax, 0x40000080
+// 0088c8b2  50                   push eax
+// 0088c8b3  ffd2                 call edx
+// 0088c8b5  8b869c000000         mov eax, dword ptr [esi + 0x9c]
+// 0088c8bb  83f8ff               cmp eax, -1
+// 0088c8be  750f                 jne 0x88c8cf
+// 0088c8c0  8b8e5c010000         mov ecx, dword ptr [esi + 0x15c]
+// 0088c8c6  85c9                 test ecx, ecx
+// 0088c8c8  7405                 je 0x88c8cf
+// 0088c8ca  e8e19cf6ff           call 0x7f65b0
+// 0088c8cf  85c0                 test eax, eax
+// 0088c8d1  750c                 jne 0x88c8df
+// 0088c8d3  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c8d9  50                   push eax
+// 0088c8da  e8ff75f6ff           call 0x7f3ede
+// 0088c8df  8b86a4010000         mov eax, dword ptr [esi + 0x1a4]
+// 0088c8e5  85c0                 test eax, eax
+// 0088c8e7  7408                 je 0x88c8f1
+// 0088c8e9  50                   push eax
+// 0088c8ea  8bce                 mov ecx, esi
+// 0088c8ec  e86fedffff           call 0x88b660
+// 0088c8f1  8bce                 mov ecx, esi
+// 0088c8f3  e84896f6ff           call 0x7f5f40
+// 0088c8f8  05a4000000           add eax, 0xa4
+// 0088c8fd  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c903  7504                 jne 0x88c909
+// 0088c905  33c0                 xor eax, eax
+// 0088c907  eb03                 jmp 0x88c90c
+// 0088c909  8b4004               mov eax, dword ptr [eax + 4]
+// 0088c90c  8b3dc4cb9800         mov edi, dword ptr [0x98cbc4]
+// 0088c912  6a00                 push 0
+// 0088c914  50                   push eax
+// 0088c915  8b4120               mov eax, dword ptr [ecx + 0x20]
+// 0088c918  6a30                 push 0x30
+// 0088c91a  50                   push eax
+// 0088c91b  ffd7                 call edi
+// 0088c91d  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c923  8b5120               mov edx, dword ptr [ecx + 0x20]
+// 0088c926  6a00                 push 0
+// 0088c928  6a03                 push 3
+// 0088c92a  68d3000000           push 0xd3
+// 0088c92f  52                   push edx
+// 0088c930  ffd7                 call edi
+// 0088c932  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c938  e883eaffff           call 0x88b3c0
+// 0088c93d  8b8674010000         mov eax, dword ptr [esi + 0x174]
+// 0088c943  85c0                 test eax, eax
+// 0088c945  7504                 jne 0x88c94b
+// 0088c947  33db                 xor ebx, ebx
+// 0088c949  eb03                 jmp 0x88c94e
+// 0088c94b  8b5820               mov ebx, dword ptr [eax + 0x20]
+// 0088c94e  ff15eccb9800         call dword ptr [0x98cbec]
+// 0088c954  3bd8                 cmp ebx, eax
+// 0088c956  740c                 je 0x88c964
+// 0088c958  8d442410             lea eax, [esp + 0x10]
+// 0088c95c  50                   push eax
+// 0088c95d  8bce                 mov ecx, esi
+// 0088c95f  e83cfbffff           call 0x88c4a0
+// 0088c964  8bce                 mov ecx, esi
+// 0088c966  e85554feff           call 0x871dc0
+// 0088c96b  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c971  894158               mov dword ptr [ecx + 0x58], eax
+// 0088c974  8b967c010000         mov edx, dword ptr [esi + 0x17c]
+// 0088c97a  8b8674010000         mov eax, dword ptr [esi + 0x174]
+// 0088c980  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 0088c983  6a00                 push 0
+// 0088c985  52                   push edx
+// 0088c986  68cf000000           push 0xcf
+// 0088c98b  51                   push ecx
+// 0088c98c  ffd7                 call edi
+// 0088c98e  8b7c2428             mov edi, dword ptr [esp + 0x28]
+// 0088c992  8b8eac010000         mov ecx, dword ptr [esi + 0x1ac]
+// 0088c998  8b442424             mov eax, dword ptr [esp + 0x24]
+// 0088c99c  8b9680010000         mov edx, dword ptr [esi + 0x180]
+// 0088c9a2  83c703               add edi, 3
+// 0088c9a5  f7d9                 neg ecx
+// 0088c9a7  1bc9                 sbb ecx, ecx
+// 0088c9a9  83e111               and ecx, 0x11
+// 0088c9ac  8d541004             lea edx, [eax + edx + 4]
+// 0088c9b0  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 0088c9b4  bbfdffffff           mov ebx, 0xfffffffd
+// 0088c9b9  2bd9                 sub ebx, ecx
+// 0088c9bb  8b4c2430             mov ecx, dword ptr [esp + 0x30]
+// 0088c9bf  83e903               sub ecx, 3
+// 0088c9c2  6a01                 push 1
+// 0088c9c4  03c3                 add eax, ebx
+// 0088c9c6  894c2434             mov dword ptr [esp + 0x34], ecx
+// 0088c9ca  2bcf                 sub ecx, edi
+// 0088c9cc  51                   push ecx
+// 0088c9cd  8b8e74010000         mov ecx, dword ptr [esi + 0x174]
+// 0088c9d3  89442434             mov dword ptr [esp + 0x34], eax
+// 0088c9d7  2bc2                 sub eax, edx
+// 0088c9d9  50                   push eax
+// 0088c9da  57                   push edi
+// 0088c9db  52                   push edx
+// 0088c9dc  89542438             mov dword ptr [esp + 0x38], edx
+// 0088c9e0  897c243c             mov dword ptr [esp + 0x3c], edi
+// 0088c9e4  e84972f6ff           call 0x7f3c32
+// 0088c9e9  8bce                 mov ecx, esi
+// 0088c9eb  e880edffff           call 0x88b770
+// 0088c9f0  c7868401000000000000 mov dword ptr [esi + 0x184], 0
+// 0088c9fa  8d4c2410             lea ecx, [esp + 0x10]
+// 0088c9fe  ff15c0de9800         call dword ptr [0x98dec0]
+// 0088ca04  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0088ca08  64890d00000000       mov dword ptr fs:[0], ecx
+// 0088ca0f  59                   pop ecx
+// 0088ca10  5f                   pop edi
+// 0088ca11  5e                   pop esi
+// 0088ca12  5b                   pop ebx
+// 0088ca13  83c410               add esp, 0x10
+// 0088ca16  c21000               ret 0x10
+// copied from an identical function in another client (function ?SetRect@CXTPControlEdit@@MAEXVCRect@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\CommandBars\XTPControlEdit.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPControlEdit.cpp : implementation of the CXTPControlEdit class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPToolTipContext.h"
-
-#include "XTPControlEdit.h"
-#include "XTPCommandBar.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPPaintManager.h"
-#include "XTPMouseManager.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-// CXTPControlEdit
-
-IMPLEMENT_XTP_CONTROL(CXTPControlEdit, CXTPControl)
-
-CXTPControlEdit::CXTPControlEdit()
-{
-	EnableAutomation();
-
-	m_controlType = xtpControlEdit;
-	m_nWidth = 100;
-	m_nLabelWidth = 0;
-	m_bLabel = FALSE;
-	m_strEditText = _T("");
-	m_pEdit = NULL;
-	m_bReadOnly = FALSE;
-	m_bDelayReposition = FALSE;
-	m_bDelayDestroy = FALSE;
-	m_bFocused = FALSE;
-
-	m_pAutoCompleteWnd = NULL;
-	m_dwShellAutoCompleteFlags = 0;
-	m_bEditChanged = TRUE;
-	m_dwEditStyle = 0;
-
-	m_bShowSpinButtons = FALSE;
-}
-
-CXTPControlEdit::~CXTPControlEdit()
-{
-	if (m_pEdit)
-	{
-		m_pEdit->m_pControl = NULL;
-		delete m_pEdit;
-	}
-	SAFE_DELETE(m_pAutoCompleteWnd);
-}
-
-void CXTPControlEdit::OnEditChanged()
-{
-	NotifySite(EN_CHANGE);
-}
-
-CString CXTPControlEdit::GetEditText() const
-{
-	CString strEditText = _GetEditText();
-
-	return strEditText == GetEditHint() ? _T("") : strEditText;
-}
-
-CString CXTPControlEdit::_GetEditText() const
-{
-	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_bEditChanged)
-	{
-		m_pEdit->GetWindowTextEx(m_strEditText);
-		m_bEditChanged = FALSE;
-	}
-	return m_strEditText;
-}
-
-
-void CXTPControlEdit::SetEditText(const CString& strText)
-{
-	_SetEditText(strText.IsEmpty() ? GetEditHint() : strText);
-}
-
-void CXTPControlEdit::_SetEditText(const CString& strText)
-{
-	if (m_pEdit && m_pEdit->GetSafeHwnd() && _GetEditText() != strText)
-	{
-		m_pEdit->SetWindowTextEx(strText);
-	}
-	m_strEditText = strText;
-	m_bEditChanged = FALSE;
-}
-
-BOOL CXTPControlEdit::OnHookKeyDown(UINT nChar, LPARAM lParam)
-{
-	ASSERT(IsFocused());
-
-	if (!IsFocused() || !m_pEdit->GetSafeHwnd())
-		return FALSE;
-
-	if (m_pEdit && m_pEdit->m_bImeMode)
-		return FALSE_EXIT;
-
-	if (nChar == VK_RETURN || nChar == VK_TAB)
-		return FALSE;
-
-	if (nChar == VK_ESCAPE)
-	{
-		SetEditText(m_strLastText);
-		SetFocused(FALSE);
-
-		return GetParent()->GetType() == xtpBarTypePopup;
-	}
-
-	if (m_pEdit && m_pEdit->GetSafeHwnd() && GetKeyState(VK_MENU) < 0 && GetKeyState(VK_CONTROL) >= 0)
-	{
-		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
-		if (pCommandBars && pCommandBars->OnFrameAccel((TCHAR)nChar))
-			return TRUE;
-	}
-
-	if (IsSpinButtonsVisible() && (nChar == VK_UP || nChar == VK_DOWN))
-	{
-		NotifySpinChanged(1, nChar == VK_UP ? +1 : -1);
-		if (m_pEdit && ::GetFocus() == m_pEdit->GetSafeHwnd()) m_pEdit->SetSel(0, -1);
-		return TRUE;
-	}
-
-	if (m_pAutoCompleteWnd && m_pAutoCompleteWnd->IsDialogCode(nChar, lParam))
-		return TRUE;
-
-	if (m_pEdit->IsDialogCode(nChar, lParam))
-		return TRUE;
-
-	return FALSE_EXIT;
-}
-
-CXTPControlEditCtrl* CXTPControlEdit::CreateEditControl()
-{
-	return new CXTPControlEditCtrl();
-}
-
-void CXTPControlEdit::EnableShellAutoComplete(DWORD dwFlags /*= SHACF_FILESYSTEM | SHACF_URLALL*/)
-{
-	m_dwShellAutoCompleteFlags = dwFlags;
-	SAFE_DELETE(m_pAutoCompleteWnd);
-
-	if (m_pEdit->GetSafeHwnd() && dwFlags)
-	{
-		m_pAutoCompleteWnd = new CXTPControlComboBoxAutoCompleteWnd();
-
-		if (FAILED(m_pAutoCompleteWnd->ShellAutoComplete(m_pEdit->GetSafeHwnd(), m_dwShellAutoCompleteFlags)))
-		{
-			SAFE_DELETE(m_pAutoCompleteWnd);
-		}
-	}
-}
-
-BOOL CXTPControlEdit::HasFocus() const
-{
-	return IsFocused();
-}
-
-BOOL CXTPControlEdit::IsFocusable() const
-{
-	return m_pEdit && m_pEdit->GetSafeHwnd();
-}
-
-void CXTPControlEdit::SetRect(CRect rcControl)
-{
-	CString strEditText = GetEditText();
-
-	if (!m_pEdit)
-	{
-		m_pEdit = CreateEditControl();
-		m_pEdit->m_pControl = this;
-	}
-
-	if (m_bDelayDestroy && m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->DestroyWindow();
-		m_bDelayDestroy = FALSE;
-	}
-	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetExStyle() & WS_EX_LAYOUTRTL)
-	{
-		m_pEdit->DestroyWindow();
-	}
-
-	if (m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent)
-	{
-		m_pEdit->DestroyWindow();
-	}
-
-	if (m_rcControl == rcControl && !(m_pEdit && !m_pEdit->GetSafeHwnd()) && (m_bDelayReposition == FALSE))
-	{
-		if (!(m_pEdit && m_pEdit->GetSafeHwnd() && m_pEdit->GetParent() != m_pParent))
-			return;
-	}
-
-	m_rcControl = rcControl;
-
-	if (m_pEdit)
-	{
-		if (!m_pEdit->GetSafeHwnd())
-		{
-			m_pEdit->CreateEdit(WS_CHILD | ES_AUTOHSCROLL | m_dwEditStyle, m_pParent);
-
-			if (!GetEnabled()) m_pEdit->EnableWindow(FALSE);
-
-			if (m_dwShellAutoCompleteFlags != 0) EnableShellAutoComplete(m_dwShellAutoCompleteFlags);
-		}
-
-		m_pEdit->SetFont(GetPaintManager()->GetIconFont(), FALSE);
-		m_pEdit->SetMargins(0, 0);
-		m_pEdit->UpdateCharFormat();
-		if (m_pEdit->GetSafeHwnd() != ::GetFocus()) SetEditText(strEditText);
-		m_pEdit->m_bComposited = HasDwmCompositedRect();
-
-		m_pEdit->SetReadOnly(m_bReadOnly);
-		rcControl.DeflateRect(m_nLabelWidth + 1 + 3, 3, 3 + (m_bShowSpinButtons ? 17 : 0), 3);
-		m_pEdit->MoveWindow(rcControl);
-		ShowHideEditControl();
-	}
-	m_bDelayReposition = FALSE;
-}
-
-void CXTPControlEdit::ShowHideEditControl()
-{
-	if (m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->SetWindowPos(0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
-			| (m_pParent && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
-	}
-}
-
-void CXTPControlEdit::OnRemoved()
-{
-	ShowHideEditControl();
-
-	CXTPControl::OnRemoved();
-}
-
-void CXTPControlEdit::SetReadOnly(BOOL bReadOnly /* = TRUE */)
-{
-	m_bReadOnly = bReadOnly;
-
-	if (m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->SetReadOnly(bReadOnly);
-	}
-}
-
-BOOL CXTPControlEdit::GetReadOnly() const
-{
-	return m_bReadOnly;
-}
-
-void CXTPControlEdit::SetEnabled(BOOL bEnabled)
-{
-	if (bEnabled != m_bEnabled)
-	{
-		m_bEnabled = bEnabled;
-		if (m_pEdit && m_pEdit->GetSafeHwnd())
-		{
-			m_pEdit->EnableWindow(GetEnabled());
-			m_pEdit->UpdateCharFormat();
-		}
-		RedrawParent();
-	}
-}
-void CXTPControlEdit::SetParent(CXTPCommandBar* pParent)
-{
-	CXTPControl::SetParent(pParent);
-
-	if (!pParent && m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->DestroyWindow();
-	}
-}
-
-BOOL  CXTPControlEdit::OnSetSelected(int bSelected)
-{
-	if (!CXTPControl::OnSetSelected(bSelected))
-		return FALSE;
-
-	if (!bSelected)
-	{
-		SetFocused(FALSE);
-	}
-
-	if (m_pEdit->GetSafeHwnd())
-	{
-		m_pEdit->UpdateCharFormat();
-	}
-
-	return TRUE;
-}
-
-void CXTPControlEdit::OnUnderlineActivate()
-{
-	m_pParent->HideKeyboardTips();
-	SetFocused(TRUE);
-}
-
-void CXTPControlEdit::OnClick(BOOL bKeyboard, CPoint pt)
-{
-	if (IsCustomizeMode())
-	{
-		m_pParent->SetPopuped(-1);
-		m_pParent->SetSelected(-1);
-		CustomizeStartDrag(pt);
-	}
-	else
-	{
-		if (bKeyboard && CWnd::GetFocus() == m_pEdit)
-		{
-			OnExecute();
-		}
-		else if (!bKeyboard && GetSpinButtonsRect().PtInRect(pt))
-		{
-			TrackSpinButton(pt);
-		}
-		else
-		{
-			m_pEdit->SetFocus();
-		}
-	}
-}
-
-void CXTPControlEdit::NotifySpinChanged(int increment, int direction)
-{
-	NMXTPUPDOWN nm;
-	nm.iDelta = increment * direction;
-
-	if (NotifySite(direction > 0 ? XTP_FN_SPINUP : XTP_FN_SPINDOWN, &nm) != 0)
-		return;
-
-	int nPos = _ttoi(GetEditText());
-	nPos += nm.iDelta;
-
-	while (nPos % increment)
-	{
-		nPos += direction;
-	}
-
-	CString strEditText;
-	strEditText.Format(_T("%i"), nPos);
-	SetEditText(strEditText);
-
-	NotifySite(CBN_XTP_EXECUTE);
-}
-
-void CXTPControlEdit::TrackSpinButton(CPoint pt)
-{
-	m_pParent->SetSelected(-1);
-	m_pParent->SetSelected(GetIndex(), FALSE);
-	#define TID_TIMER 435
-
-	CRect rc = GetSpinButtonsRect();
-	CRect rcTop(rc.left, rc.top, rc.right, rc.CenterPoint().y);
-	CRect rcBottom(rc.left, rcTop.bottom, rc.right, rc.bottom);
-
-	const BOOL bTop = rcTop.PtInRect(pt);
-	const CRect rcActiveRect = bTop ? rcTop : rcBottom;
-	const int direction = bTop ? +1 : -1;
-	int increment = 1;
-
-	m_bSelected = m_bPressed = bTop ? 3 : 4;
-	RedrawParent(FALSE);
-
-	NotifySpinChanged(increment, direction);
-
-	m_pParent->SetCapture();
-
-	m_pParent->SetTimer(TID_TIMER, 530, NULL);
-	BOOL bFirst = TRUE;
-	DWORD dwStart = GetTickCount();
-
-	for (;;)
-	{
-		MSG msg;
-		VERIFY(::GetMessage(&msg, NULL, 0, 0));
-
-		if (msg.message == WM_LBUTTONUP)
-		{
-			break;
-		}
-
-		if (msg.message == WM_MOUSEMOVE)
-		{
-			pt = CPoint(LOWORD(msg.lParam), HIWORD(msg.lParam));
-
-			if (OnSetSelected(rcActiveRect.PtInRect(pt)))
-			{
-				dwStart = GetTickCount();
-				RedrawParent();
-			}
-			continue;
-		}
-		if (msg.message == WM_TIMER && msg.wParam == TID_TIMER)
-		{
-			if (m_bSelected)
-			{
-				UINT uElapsed = (UINT)((GetTickCount() - dwStart) / 1024);
-
-				increment = 1;
-				if (uElapsed >= 5)
-					increment = 20;
-				else if (uElapsed >= 2)
-					increment = 5;
-
-				NotifySpinChanged(increment, direction);
-			}
-
-			if (bFirst)
-			{
-				m_pParent->SetTimer(TID_TIMER, 100, NULL);
-			}
-			bFirst = FALSE;
-		}
-
-		DispatchMessage (&msg);
-
-		if (CWnd::GetCapture() != m_pParent)
-			break;
-	}
-
-	m_pParent->KillTimer(TID_TIMER);
-	m_bPressed = FALSE;
-	ReleaseCapture();
-
-	RedrawParent(FALSE);
-
-	if (GetParent()->GetPosition() != xtpBarPopup)
-		GetParent()->SetTrackingMode(FALSE);
-}
-
-CRect CXTPControlEdit::GetSpinButtonsRect() const
-{
-	if (!IsSpinButtonsVisible())
-		return CRect(0, 0, 0, 0);
-
-	CRect rc(GetRect());
-	return CRect(rc.right - 18, rc.top + 1, rc.right - 1, rc.bottom - 1);
-}
-
-void CXTPControlEdit::OnMouseMove(CPoint point)
-{
-	CXTPControl::OnMouseMove(point);
-
-	if (GetEnabled() && IsSpinButtonsVisible() && m_bSelected)
-	{
-		CRect rc(GetSpinButtonsRect());
-
-		CRect rcTop(rc.left, rc.top, rc.right, rc.CenterPoint().y);
-		CRect rcBottom(rc.left, rcTop.bottom, rc.right, rc.bottom);
-
-		if (rcTop.PtInRect(point) && m_bSelected != 3)
-		{
-			m_bSelected = 3;
-			RedrawParent(FALSE);
-		}
-		else if (rcBottom.PtInRect(point) && m_bSelected != 4)
-		{
-			m_bSelected = 4;
-			RedrawParent(FALSE);
-		}
-		else if ((m_bSelected == 3 || m_bSelected == 4) && !rc.PtInRect(point))
-		{
-			m_bSelected = 1;
-			RedrawParent(FALSE);
-		}
-	}
-}
-
-void CXTPControlEdit::OnMouseHover()
-{
-	if (!XTPMouseManager()->IsMouseLocked())
-		CXTPControl::OnMouseHover();
-}
-
-
-void CXTPControlEdit::SetHideFlags(DWORD dwFlags)
-{
-	if (m_dwHideFlags != dwFlags)
-	{
-		m_dwHideFlags = dwFlags;
-
-		ShowHideEditControl();
-		DelayLayoutParent();
-	}
-}
-
-
-void CXTPControlEdit::OnActionChanged(int nProperty)
-{
-	if (nProperty == 2)
-	{
-		ShowHideEditControl();
-	}
-
-	if (nProperty == 0 && m_pEdit && m_pEdit->GetSafeHwnd())    // Enabled
-	{
-		m_pEdit->EnableWindow(GetEnabled());
-		m_pEdit->UpdateCharFormat();
-	}
-
-	if (nProperty == 4)
-	{
-		if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
-		{
-			_SetEditText(GetEditHint());
-		}
-	}
-}
-
-void CXTPControlEdit::OnActionChanging(int nProperty)
-{
-	if (nProperty == 4 && !GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
-	{
-		_SetEditText(_T(""));
-	}
-}
-
-void CXTPControlEdit::OnCalcDynamicSize(DWORD dwMode)
-{
-	if (dwMode & LM_VERTDOCK) SetHideFlags(m_dwHideFlags | xtpHideDockingPosition);
-	else SetHideFlags(m_dwHideFlags & ~xtpHideDockingPosition);
-}
-
-void CXTPControlEdit::SetEditHint(LPCTSTR lpszEditHint)
-{
-	if (!GetEditHint().IsEmpty() && _GetEditText() == GetEditHint())
-	{
-		_SetEditText(_T(""));
-	}
-
-	m_strEditHint = lpszEditHint;
-
-	if (_GetEditText().IsEmpty() && !GetEditHint().IsEmpty())
-	{
-		_SetEditText(GetEditHint());
-	}
-}
-
-CString CXTPControlEdit::GetEditHint() const
-{
-	return !m_strEditHint.IsEmpty() ? m_strEditHint : m_pAction ? m_pAction->GetEditHint() : _T("");
-}
-
-DWORD CXTPControlEdit::GetEditStyle() const
-{
-	return m_dwEditStyle;
-}
-
-void CXTPControlEdit::SetEditStyle(DWORD dwStyle)
-{
-	m_dwEditStyle = dwStyle;
-
-	if (m_pEdit && m_pEdit->GetSafeHwnd())
-	{
-		m_bDelayDestroy = TRUE;
-		DelayLayoutParent();
-	}
-}
-
-void CXTPControlEdit::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	CXTPControl::Copy(pControl, bRecursive);
-
-	CXTPControlEdit* pControlEdit = DYNAMIC_DOWNCAST(CXTPControlEdit, pControl);
-	if (!pControlEdit)
-		return;
-
-	m_dwEditStyle = pControlEdit->m_dwEditStyle;
-	SetEditText(pControlEdit->GetEditText());
-	m_bLabel = pControlEdit->m_bLabel;
-	SetReadOnly(pControlEdit->m_bReadOnly);
-	SetEditHint(pControlEdit->m_strEditHint);
-	EnableShellAutoComplete(pControlEdit->m_dwShellAutoCompleteFlags);
-	m_bShowSpinButtons = pControlEdit->m_bShowSpinButtons;
-}
-
-BOOL CXTPControlEdit::Compare(CXTPControl* pOther)
-{
-	if (!CXTPControl ::Compare(pOther))
-		return FALSE;
-
-	if (!pOther->IsKindOf(RUNTIME_CLASS(CXTPControlEdit)))
-		return FALSE;
-
-
-	return TRUE;
-}
-
-
-BOOL CXTPControlEdit::IsFocused() const
-{
-	return m_bFocused;
-}
-
-void CXTPControlEdit::SetFocused(BOOL bFocused)
-{
-	if (m_bFocused == bFocused)
-		return;
-
-	m_bFocused = bFocused;
-
-	if (bFocused)
-	{
-		if (m_pEdit->GetSafeHwnd() && ::GetFocus() != m_pEdit->GetSafeHwnd())
-			m_pEdit->SetFocus();
-
-		m_pParent->SetTrackingMode(TRUE, FALSE);
-		m_pParent->SetSelected(m_nIndex);
-
-		XTPMouseManager()->LockMouseMove();
-
-		NotifySite(EN_SETFOCUS);
-	}
-	else
-	{
-		if (m_pEdit->GetSafeHwnd() && ::GetFocus() == m_pEdit->GetSafeHwnd())
-			::SetFocus(m_pParent->GetTrackFocus());
-
-		XTPMouseManager()->UnlockMouseMove();
-
-		NotifySite(EN_KILLFOCUS);
-	}
-
-	RedrawParent();
-}
-
-
-void CXTPControlEdit::OnSetFocus(CWnd* pOldWnd)
-{
-	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && GetEditHint() == _GetEditText())
-	{
-		_SetEditText(_T(""));
-	}
-
-	m_strLastText = GetEditText();
-
-	if (m_pParent->GetTrackFocus() == 0)
-		m_pParent->SetTrackFocus(pOldWnd ? pOldWnd->GetSafeHwnd() : m_pParent->GetSite()->GetSafeHwnd());
-
-	m_pParent->SetPopuped(-1);
-
-	SetFocused(TRUE);
-	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(TRUE);
-}
-
-void CXTPControlEdit::OnKillFocus()
-{
-	if (!GetEditHint().IsEmpty() && m_pEdit->GetSafeHwnd() && _GetEditText().IsEmpty())
-	{
-		_SetEditText(GetEditHint());
-	}
-
-	SetFocused(FALSE);
-	if (m_pAutoCompleteWnd) m_pAutoCompleteWnd->SetupMessageHook(FALSE);
-}
-
-BOOL CXTPControlEdit::IsImageVisible() const
-{
-	if (GetParent()->GetType() == xtpBarTypePopup)
-		return GetImage(0) != NULL;
-
-	BOOL bImageVisible = (CXTPControl::GetStyle() == xtpButtonIcon || CXTPControl::GetStyle() == xtpButtonIconAndCaption)
-		&& (GetImage(0) != NULL);
-
-	return bImageVisible;
-}
-
-BOOL CXTPControlEdit::IsCaptionVisible() const
-{
-	if (GetParent()->GetType() == xtpBarTypePopup)
-		return TRUE;
-
-	if (GetCaption().IsEmpty())
-		return FALSE;
-
-	XTPButtonStyle buttonStyle = GetStyle();
-
-	if ((buttonStyle == xtpButtonCaption) || (buttonStyle == xtpButtonIconAndCaption) || (buttonStyle == xtpButtonIconAndCaptionBelow))
-		return TRUE;
-
-	return m_bLabel;
-}
-
-BEGIN_MESSAGE_MAP(CXTPControlEditCtrl, CXTPEdit)
-	ON_WM_SETFOCUS()
-	ON_WM_MOUSEMOVE()
-	ON_WM_KILLFOCUS()
-	ON_WM_DESTROY()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_RBUTTONDOWN()
-	ON_WM_CONTEXTMENU()
-	ON_MESSAGE(XTP_TTM_WINDOWFROMPOINT, OnWindowFromPoint)
-	ON_CONTROL_REFLECT(EN_CHANGE, OnEditChanged)
-END_MESSAGE_MAP()
-
-CXTPControlEditCtrl::CXTPControlEditCtrl()
-{
-	m_pControl = NULL;
-}
-
-void CXTPControlEditCtrl::OnEditChanged()
-{
-	m_pControl->m_bEditChanged = TRUE;
-
-	if (::GetFocus() == m_hWnd && !m_bIgonoreEditChanged)
-		m_pControl->OnEditChanged();
-
-	SetMargins(0, 0);
-	UpdateCharFormat();
-}
-
-void CXTPControlEditCtrl::UpdateCharFormat()
-{
-	CHARFORMAT2 cf = m_pControl->GetDefaultCharFormat();
-	cf.cbSize = GetRichEditContext().m_bRichEdit2 ? sizeof(CHARFORMAT2) : sizeof(CHARFORMAT);
-
-	::SendMessage(m_hWnd, EM_SETCHARFORMAT, 0, (LPARAM)&cf);
-	::SendMessage(m_hWnd, EM_SETBKGNDCOLOR, FALSE, cf.crBackColor);
-}
-
-void CXTPControlEditCtrl::OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/)
-{
-}
-
-
-void CXTPControlEditCtrl::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (m_pControl->IsCustomizeMode())
-	{
-		if (m_pControl->IsCustomizeMovable())
-			m_pControl->OnClick();
-	}
-	else CEdit::OnLButtonDown(nFlags, point);
-}
-
-void CXTPControlEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
-{
-	if (m_pControl->IsCustomizeMode())
-	{
-		ClientToScreen(&point);
-		m_pControl->GetParent()->ScreenToClient(&point);
-
-		m_pControl->GetParent()->OnRButtonDown(nFlags, point);
-		return;
-	}
-
-	m_pControl->SetFocused(TRUE);
-
-	if (!ShowContextMenu(m_pControl, point))
-		CXTPEdit::OnRButtonDown(nFlags, point);
-}
-
-void CXTPControlEditCtrl::OnDestroy()
-{
-	if (m_pControl) GetWindowTextEx(m_pControl->m_strEditText);
-	CEdit::OnDestroy();
-}
-
-
-void CXTPControlEditCtrl::OnSetFocus(CWnd* pOldWnd)
-{
-	if (!m_pControl->IsCustomizeMode())
-	{
-		m_pControl->OnSetFocus(pOldWnd);
-		CEdit::OnSetFocus(pOldWnd);
-
-		SetSel(0, 0);
-		::PostMessage(m_hWnd, EM_SETSEL, 0, -1);
-	}
-}
-
-void CXTPControlEditCtrl::OnKillFocus(CWnd* pNewWnd)
-{
-	CXTPEdit::OnKillFocus(pNewWnd);
-	m_pControl->OnKillFocus();
-}
-
-void CXTPControlEditCtrl::OnMouseMove(UINT nFlags, CPoint point)
-{
-	CEdit::OnMouseMove(nFlags, point);
-
-	MapWindowPoints(m_pControl->GetParent(), &point, 1);
-	m_pControl->GetParent()->OnMouseMove(nFlags, point);
-}
-
-
-CHARFORMAT2 CXTPControlEdit::GetDefaultCharFormat()
-{
-	CHARFORMAT2 cf;
-	ZeroMemory(&cf, sizeof(CHARFORMAT2));
-	cf.dwMask = CFM_COLOR | CFM_BACKCOLOR;
-
-	if (GetEnabled())
-	{
-		cf.crTextColor = GetXtremeColor(COLOR_WINDOWTEXT);
-
-		if (!GetEditHint().IsEmpty() && GetEditHint() == _GetEditText())
-		{
-			cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
-		}
-	}
-	else
-	{
-		cf.crTextColor = GetXtremeColor(COLOR_GRAYTEXT);
-	}
-
-	cf.crBackColor = GetPaintManager()->GetControlEditBackColor(this);
-
-	return cf;
-}
-
-BOOL CXTPControlEditCtrl::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	CXTPCommandBar* pCommandBar = m_pControl->GetParent();
-
-	if (pCommandBar)
-	{
-		pCommandBar->FilterToolTipMessage(message, wParam, lParam);
-	}
-
-	return CWnd::OnWndMsg(message, wParam, lParam, pResult);
-}
-
-LRESULT CXTPControlEditCtrl::OnWindowFromPoint(WPARAM, LPARAM)
-{
-	return 1;
-}
-
-
-
-

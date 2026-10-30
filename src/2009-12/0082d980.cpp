@@ -1,465 +1,72 @@
+// roc 2009-12 0082d980  unit: CXTPReportSelectedRows::USELECTED_BLOCK::?$CArray  size: 161 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0082d980
+//
+// 0082d980  55                   push ebp
+// 0082d981  8b6c240c             mov ebp, dword ptr [esp + 0xc]
+// 0082d985  57                   push edi
+// 0082d986  8b7c2414             mov edi, dword ptr [esp + 0x14]
+// 0082d98a  85ff                 test edi, edi
+// 0082d98c  7409                 je 0x82d997
+// 0082d98e  85ed                 test ebp, ebp
+// 0082d990  7505                 jne 0x82d997
+// 0082d992  e87561fcff           call 0x7f3b0c
+// 0082d997  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 0082d99b  8b4818               mov ecx, dword ptr [eax + 0x18]
+// 0082d99e  f7d1                 not ecx
+// 0082d9a0  53                   push ebx
+// 0082d9a1  56                   push esi
+// 0082d9a2  f6c101               test cl, 1
+// 0082d9a5  7439                 je 0x82d9e0
+// 0082d9a7  85ff                 test edi, edi
+// 0082d9a9  762e                 jbe 0x82d9d9
+// 0082d9ab  eb03                 jmp 0x82d9b0
+// 0082d9ad  8d4900               lea ecx, [ecx]
+// 0082d9b0  8bdf                 mov ebx, edi
+// 0082d9b2  81ffffffff0f         cmp edi, 0xfffffff
+// 0082d9b8  7205                 jb 0x82d9bf
+// 0082d9ba  bbffffff0f           mov ebx, 0xfffffff
+// 0082d9bf  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0082d9c3  8d34dd00000000       lea esi, [ebx*8]
+// 0082d9ca  56                   push esi
+// 0082d9cb  55                   push ebp
+// 0082d9cc  e80b6afcff           call 0x7f43dc
+// 0082d9d1  2bfb                 sub edi, ebx
+// 0082d9d3  03ee                 add ebp, esi
+// 0082d9d5  85ff                 test edi, edi
+// 0082d9d7  77d7                 ja 0x82d9b0
+// 0082d9d9  5e                   pop esi
+// 0082d9da  5b                   pop ebx
+// 0082d9db  5f                   pop edi
+// 0082d9dc  5d                   pop ebp
+// 0082d9dd  c20c00               ret 0xc
+// 0082d9e0  85ff                 test edi, edi
+// 0082d9e2  76f5                 jbe 0x82d9d9
+// 0082d9e4  8bdf                 mov ebx, edi
+// 0082d9e6  81ffffffff0f         cmp edi, 0xfffffff
+// 0082d9ec  7205                 jb 0x82d9f3
+// 0082d9ee  bbffffff0f           mov ebx, 0xfffffff
+// 0082d9f3  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0082d9f7  8d34dd00000000       lea esi, [ebx*8]
+// 0082d9fe  56                   push esi
+// 0082d9ff  55                   push ebp
+// 0082da00  e8d169fcff           call 0x7f43d6
+// 0082da05  3bc6                 cmp eax, esi
+// 0082da07  750f                 jne 0x82da18
+// 0082da09  2bfb                 sub edi, ebx
+// 0082da0b  03ee                 add ebp, esi
+// 0082da0d  85ff                 test edi, edi
+// 0082da0f  77d3                 ja 0x82d9e4
+// 0082da11  5e                   pop esi
+// 0082da12  5b                   pop ebx
+// 0082da13  5f                   pop edi
+// 0082da14  5d                   pop ebp
+// 0082da15  c20c00               ret 0xc
+// 0082da18  6a00                 push 0
+// 0082da1a  6a03                 push 3
+// 0082da1c  e8af69fcff           call 0x7f43d0
+// copied from an identical function in another client (function ??$SerializeElements@V?$CXTPSmartPtrInternalT@VCXTPCalendarEventLabel@@@@@@YGXAAVCArchive@@PAV?$CXTPSmartPtrInternalT@VCXTPCalendarEventLabel@@@@H@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/Calendar/XTPCalendarEventLabel.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPCalendarEventLabel.cpp: implementation of the CXTPCalendarEventLabel and
-// CXTPCalendarEventLabels classes.
-//
-// This file is a part of the XTREME CALENDAR MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "resource.h"
-
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPVC50Helpers.h"
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPCalendarEventLabel.h"
-#include "XTPCalendarUtils.h"
-#include "XTPCalendarDefines.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-IMPLEMENT_DYNAMIC(CXTPCalendarEventLabel, CCmdTarget)
-IMPLEMENT_DYNAMIC(CXTPCalendarEventLabels, CCmdTarget)
-
-IMPLEMENT_DYNCREATE(CXTPCalendarEventCategory, CCmdTarget)
-IMPLEMENT_DYNCREATE(CXTPCalendarEventCategories, CCmdTarget)
-
-IMPLEMENT_DYNAMIC(CXTPCalendarUIntArray,    CCmdTarget)
-IMPLEMENT_DYNAMIC(CXTPCalendarIconIDs,          CXTPCalendarUIntArray)
-IMPLEMENT_DYNAMIC(CXTPCalendarEventCategoryIDs, CXTPCalendarUIntArray)
-
-////////////////////////////////////////////////////////////////////////////
-CXTPCalendarEventLabel::CXTPCalendarEventLabel(int nID, COLORREF clrColor, LPCTSTR pcszName)
-{
-	m_nLabelID = nID;
-	m_clrColor = clrColor;
-	m_strName = pcszName;
-
-}
-
-////////////////////////////////////////////////////////////////////////////
-CXTPCalendarEventLabels::CXTPCalendarEventLabels()
-{
-
-}
-
-CXTPCalendarEventLabels::~CXTPCalendarEventLabels()
-{
-	RemoveAll();
-}
-
-CXTPCalendarEventLabel* CXTPCalendarEventLabels::Find(int nLabelID) const
-{
-	int nFIdx = FindIndex(nLabelID);
-	if (nFIdx >= 0)
-	{
-		return GetAt(nFIdx);
-	}
-	return NULL;
-}
-
-int CXTPCalendarEventLabels::FindIndex(int nLabelID) const
-{
-	int nCount = GetCount();
-
-	if (nLabelID >= 0 && nLabelID < nCount)
-	{
-		CXTPCalendarEventLabel* pLabel = GetAt(nLabelID);
-
-		if (pLabel && pLabel->m_nLabelID == nLabelID)
-		{
-			return nLabelID;
-		}
-	}
-
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarEventLabel* pLabel = GetAt(i);
-
-		if (pLabel && pLabel->m_nLabelID == nLabelID)
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-void CXTPCalendarEventLabels::InitDefaultValues()
-{
-	RemoveAll();
-
-	//XTP_CALENDAR_NONE_LABEL_ID = 0
-	CXTPCalendarEventLabel* pLabel;
-	pLabel = new CXTPCalendarEventLabel(0, RGB(255, 255, 255), _T("None"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_NONE);
-	InsertAt(0, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(1, RGB(255, 148, 132), _T("Important"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_IMPORTANT);
-	InsertAt(1, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(2, RGB(132, 156, 231), _T("Business"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_BUSINESS);
-	InsertAt(2, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(3, RGB(165, 222, 99), _T("Personal"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_PERSONAL);
-	InsertAt(3, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(4, RGB(231, 231, 214), _T("Vacation"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_VACATION);
-	InsertAt(4, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(5, RGB(255, 181, 115), _T("Must Attend"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_MUSTATTEND);
-	InsertAt(5, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(6, RGB(132, 239, 247), _T("Travel Required"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_TRAVELREQUIRED);
-	InsertAt(6, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(7, RGB(214, 206, 132), _T("Needs Preparation"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_NEEDSPREPARATION);
-	InsertAt(7, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(8, RGB(198, 165, 247), _T("Birthday"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_BIRTHDAY);
-	InsertAt(8, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(9, RGB(165, 206, 198), _T("Anniversary"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_ANNIVERSARY);
-	InsertAt(9, pLabel);
-
-	pLabel = new CXTPCalendarEventLabel(10, RGB(255, 231, 115), _T("Phone Call"));
-	CXTPCalendarUtils::LoadString2(pLabel->m_strName, XTP_IDS_CALENDAR_EVENT_LABEL_PHONECALL);
-	InsertAt(10, pLabel);
-}
-
-//===========================================================================
-// CXTPCalendarEventCategory
-CXTPCalendarEventCategory::CXTPCalendarEventCategory(UINT nID, LPCTSTR pcszName,
-							COLORREF clrBorder, COLORREF clrBkBase)
-{
-	m_nID = nID;
-	m_strName = pcszName;
-
-	m_clrBorder = clrBorder;
-	m_clrBkBase = clrBkBase;
-
-}
-
-CXTPCalendarEventCategory::~CXTPCalendarEventCategory()
-{
-}
-
-CXTPPaintManagerColorGradient& CXTPCalendarEventCategory::GetBackgroundColor()
-{
-	if (m_grclrBackground.IsNull())
-	{
-		m_grclrBackground.clrLight.SetStandardValue(XTPDrawHelpers()->LightenColor(156, m_clrBkBase));// 156 - 242, 178, 179;
-		m_grclrBackground.clrDark.SetStandardValue(XTPDrawHelpers()->LightenColor(56, m_clrBkBase));  // 56  - 229,100, 107
-	}
-
-	return m_grclrBackground;
-}
-
-COLORREF CXTPCalendarEventCategory::GetBkColorAllDayEvents()
-{
-	return m_clrBkBase;
-}
-
-COLORREF CXTPCalendarEventCategory::GetBkColorWorkCell()
-{
-	return XTPDrawHelpers()->LightenColor(185, m_clrBkBase); // 185 - 245, 201, 203
-}
-
-COLORREF CXTPCalendarEventCategory::GetBkColorNonWorkCell()
-{
-	return XTPDrawHelpers()->LightenColor(115, m_clrBkBase); // 115 - 237, 146, 150
-}
-
-COLORREF CXTPCalendarEventCategory::GetColorCellBorder()
-{
-	return XTPDrawHelpers()->LightenColor(45, m_clrBkBase); // 45 - 227, 91, 98
-}
-
-//===========================================================================
-//CXTPCalendarEventCategories::CXTPCalendarEventCategories(BOOL bDefaultColorsSet)
-//{
-//  if (bDefaultColorsSet)
-//  {
-////        m_pDefaultColorsSet = NULL;
-////        InitDefaultColorsSet();
-//  }
-//  else
-//  {
-////        m_pDefaultColorsSet = new CXTPCalendarEventCategories(TRUE);
-//      InitDefaultValues();
-//  }
-//
-//#ifdef _XTP_ACTIVEX
-//  EnableAutomation();
-//  EnableTypeLib();
-//#endif
-//}
-
-CXTPCalendarEventCategories::CXTPCalendarEventCategories()
-{
-//  m_pDefaultColorsSet = new CXTPCalendarEventCategories(TRUE);
-	InitDefaultValues();
-
-}
-
-CXTPCalendarEventCategories::~CXTPCalendarEventCategories()
-{
-	//CMDTARGET_RELEASE(m_pDefaultColorsSet);
-}
-
-CXTPCalendarEventCategory* CXTPCalendarEventCategories::Find(UINT nID) const
-{
-	int nFIdx = FindIndex(nID);
-	if (nFIdx >= 0)
-	{
-		return GetAt(nFIdx);
-	}
-	return NULL;
-}
-
-int CXTPCalendarEventCategories::FindIndex(UINT nID) const
-{
-	int nCount = GetCount();
-
-	//---------------------------------------------------------
-	int nDirectIdx = (int)(nID - 1);
-
-	if (nDirectIdx >= 0 && nDirectIdx < nCount)
-	{
-		CXTPCalendarEventCategory* pEvCat = GetAt(nDirectIdx);
-
-		if (pEvCat && pEvCat->GetID() == nID)
-		{
-			return nDirectIdx;
-		}
-	}
-
-	//---------------------------------------------------------
-	for (int i = 0; i < nCount; i++)
-	{
-		CXTPCalendarEventCategory* pEvCat = GetAt(i);
-
-		if (pEvCat && pEvCat->GetID() == nID)
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-void CXTPCalendarEventCategories::InitDefaultValues()
-{
-	RemoveAll();
-
-	CXTPCalendarEventCategory* pEvCat;
-
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryYellow, _T("Yellow category"),
-		RGB(154, 149, 25), RGB(255, 251, 155));//RGB(255, 252, 179), RGB(255,249, 91));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryGreen, _T("Green category"),
-		RGB(55, 126, 45), RGB(96, 194, 82)); //RGB(196, 232, 190), RGB(136, 210, 127));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryRed, _T("Red category"),
-		RGB(167, 29, 35), RGB(220, 56, 65)); //RGB(242, 178, 179), RGB(229,100, 107));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryPink, _T("Pink category"),
-		RGB(77, 49, 141), RGB(184, 164, 224)); //RGB(202, 187, 232), RGB(150, 125, 210));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryOrange, _T("Orange category"),
-		RGB(173, 77, 13), RGB(247, 187, 137)); //RGB(249, 204, 167), RGB(244, 152, 90));
-	Add(pEvCat);
-	//---------------------------------------
-	pEvCat = new CXTPCalendarEventCategory(xtpCalendarEventCategoryBlue, _T("Blue category"),
-		RGB(40, 81, 142), RGB(159, 183, 232)); // RGB(183, 201, 238), RGB(119, 158, 218));
-	Add(pEvCat);
-
-
-	//---------------------------------------
-	//pEvCat = new CXTPCalendarEventCategory(1, _T(" category"),
-	//  RGB(, , ), RGB(, , ), RGB(, , ));
-	//Add(pEvCat);
-}
-
-//void CXTPCalendarEventCategories::InitDefaultColorsSet()
-//{
-	// TODO:
-//}
-
-//===========================================================================
-int CXTPCalendarUIntArray::Find(UINT uID) const
-{
-	return TBase::FindElement(uID);
-}
-
-BOOL CXTPCalendarUIntArray::RemoveID(UINT uID)
-{
-	return TBase::RemoveElement(uID);
-}
-
-CString CXTPCalendarUIntArray::SaveToString() const
-{
-	CString strData;
-
-	TCHAR szNumber[34];
-
-	int nCount = GetSize();
-	for (int i = 0; i < nCount; i++)
-	{
-		UINT uElement = GetAt(i);
-
-		ITOT_S((int)uElement, szNumber, _countof(szNumber));
-		szNumber[33] = 0;
-
-		if (!strData.IsEmpty())
-		{
-			strData += _T(",");
-		}
-
-		strData += szNumber;
-	}
-
-	return strData;
-}
-
-void CXTPCalendarUIntArray::LoadFromString(LPCTSTR pcszData)
-{
-	RemoveAll();
-
-	CString strData = pcszData;
-
-	while (!strData.IsEmpty())
-	{
-		CString strNumber = strData.SpanExcluding(_T(","));
-
-		UINT uElement = (UINT)_ttoi(strNumber);
-		Add(uElement);
-
-		int nDelCount = strNumber.GetLength() + 1;
-		nDelCount = min(nDelCount, strData.GetLength());
-		DELETE_S(strData, 0, nDelCount);
-	}
-}
-
-void CXTPCalendarUIntArray::DoPropExchange(CXTPPropExchange* pPX, LPCTSTR pcszSection, LPCTSTR pcszElement)
-{
-	if (!pPX || !pcszSection || !pcszElement)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	long nVersion = 1;
-
-	if (pPX->IsStoring())
-	{
-		CXTPPropExchangeSection secArray(pPX->GetSection(pcszSection));
-		secArray->EmptySection();
-
-		PX_Long(&secArray, _T("Version"), nVersion, 1);
-
-		int nCount = GetSize();
-		CXTPPropExchangeEnumeratorPtr pEnumerator(secArray->GetEnumerator(pcszElement));
-		POSITION posStorage = pEnumerator->GetPosition(nCount);
-
-		for (int i = 0; i < nCount; i++)
-		{
-			ULONG ulElement = (ULONG)GetAt(i);
-
-			CXTPPropExchangeSection secElement(pEnumerator->GetNext(posStorage));
-			PX_ULong(&secElement, _T("Value"), ulElement);
-		}
-	}
-	else if (pPX->IsLoading())
-	{
-		RemoveAll();
-
-		CXTPPropExchangeSection secArray(pPX->GetSection(pcszSection));
-
-		PX_Long(&secArray, _T("Version"), nVersion, 1);
-
-		if (nVersion != 1)
-		{
-			TRACE(_T("ERROR! CXTPCalendarIconIDs::DoPropExchange: Unsupported data version: %d \n"), nVersion);
-			return;
-		}
-
-		CXTPPropExchangeEnumeratorPtr pEnumerator(secArray->GetEnumerator(pcszElement));
-		POSITION posStorage = pEnumerator->GetPosition();
-
-		while (posStorage)
-		{
-			ULONG ulElement = 0;
-
-			CXTPPropExchangeSection secElement(pEnumerator->GetNext(posStorage));
-			PX_ULong(&secElement, _T("Value"), ulElement, 0);
-
-			Add((ULONG)ulElement);
-		}
-	}
-	else
-	{
-		ASSERT(FALSE);
-	}
-}
-
-//===========================================================================
-CXTPCalendarIconIDs::CXTPCalendarIconIDs()
-{
-
-}
-
-CXTPCalendarIconIDs::~CXTPCalendarIconIDs()
-{
-}
-
-//===========================================================================
-CXTPCalendarEventCategoryIDs::CXTPCalendarEventCategoryIDs()
-{
-}
-
-CXTPCalendarEventCategoryIDs::~CXTPCalendarEventCategoryIDs()
-{
-}
-
-
-/////////////////////////////////////////////////////////////////////////////

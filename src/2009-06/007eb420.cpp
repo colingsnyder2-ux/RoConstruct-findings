@@ -1,318 +1,77 @@
+// roc 2009-06 007eb420  unit: CXTPControlCustom  size: 182 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 007eb420
+//
+// 007eb420  53                   push ebx
+// 007eb421  55                   push ebp
+// 007eb422  56                   push esi
+// 007eb423  57                   push edi
+// 007eb424  8b7c2414             mov edi, dword ptr [esp + 0x14]
+// 007eb428  57                   push edi
+// 007eb429  8bf1                 mov esi, ecx
+// 007eb42b  e83006f7ff           call 0x75ba60
+// 007eb430  83ec10               sub esp, 0x10
+// 007eb433  8bc4                 mov eax, esp
+// 007eb435  33c9                 xor ecx, ecx
+// 007eb437  8908                 mov dword ptr [eax], ecx
+// 007eb439  33d2                 xor edx, edx
+// 007eb43b  895004               mov dword ptr [eax + 4], edx
+// 007eb43e  33db                 xor ebx, ebx
+// 007eb440  895808               mov dword ptr [eax + 8], ebx
+// 007eb443  33ed                 xor ebp, ebp
+// 007eb445  89680c               mov dword ptr [eax + 0xc], ebp
+// 007eb448  8d8680010000         lea eax, [esi + 0x180]
+// 007eb44e  50                   push eax
+// 007eb44f  68dc768f00           push 0x8f76dc
+// 007eb454  57                   push edi
+// 007eb455  e8c6a9f8ff           call 0x775e20
+// 007eb45a  33c9                 xor ecx, ecx
+// 007eb45c  51                   push ecx
+// 007eb45d  33c0                 xor eax, eax
+// 007eb45f  50                   push eax
+// 007eb460  8d8e94010000         lea ecx, [esi + 0x194]
+// 007eb466  51                   push ecx
+// 007eb467  6818969000           push 0x909618
+// 007eb46c  57                   push edi
+// 007eb46d  e87ea9f8ff           call 0x775df0
+// 007eb472  55                   push ebp
+// 007eb473  8d969c010000         lea edx, [esi + 0x19c]
+// 007eb479  52                   push edx
+// 007eb47a  6808969000           push 0x909608
+// 007eb47f  57                   push edi
+// 007eb480  e81ba8f8ff           call 0x775ca0
+// 007eb485  83c440               add esp, 0x40
+// 007eb488  837f2c05             cmp dword ptr [edi + 0x2c], 5
+// 007eb48c  7616                 jbe 0x7eb4a4
+// 007eb48e  55                   push ebp
+// 007eb48f  8d86a0010000         lea eax, [esi + 0x1a0]
+// 007eb495  50                   push eax
+// 007eb496  68fc959000           push 0x9095fc
+// 007eb49b  57                   push edi
+// 007eb49c  e8ffa7f8ff           call 0x775ca0
+// 007eb4a1  83c410               add esp, 0x10
+// 007eb4a4  395f28               cmp dword ptr [edi + 0x28], ebx
+// 007eb4a7  7426                 je 0x7eb4cf
+// 007eb4a9  8b8ea0010000         mov ecx, dword ptr [esi + 0x1a0]
+// 007eb4af  85c9                 test ecx, ecx
+// 007eb4b1  741c                 je 0x7eb4cf
+// 007eb4b3  8b5720               mov edx, dword ptr [edi + 0x20]
+// 007eb4b6  8b4224               mov eax, dword ptr [edx + 0x24]
+// 007eb4b9  51                   push ecx
+// 007eb4ba  50                   push eax
+// 007eb4bb  8bce                 mov ecx, esi
+// 007eb4bd  e8eefeffff           call 0x7eb3b0
+// 007eb4c2  85c0                 test eax, eax
+// 007eb4c4  7409                 je 0x7eb4cf
+// 007eb4c6  8b4020               mov eax, dword ptr [eax + 0x20]
+// 007eb4c9  89867c010000         mov dword ptr [esi + 0x17c], eax
+// 007eb4cf  5f                   pop edi
+// 007eb4d0  5e                   pop esi
+// 007eb4d1  5d                   pop ebp
+// 007eb4d2  5b                   pop ebx
+// 007eb4d3  c20400               ret 4
+// library xtp-11.2.2/Source\CommandBars\XTPControlCustom.cpp (function ?DoPropExchange@CXTPControlCustom@@MAEXPAVCXTPPropExchange@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/CommandBars/XTPControlCustom.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPControlCustom.cpp : implementation of the CXTPControlCustom class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPPropExchange.h"
-
-#include "XTPCommandBar.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-#include "XTPHookManager.h"
-#include "XTPControlCustom.h"
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
-
-////////////////////////////
-
-
-IMPLEMENT_XTP_CONTROL(CXTPControlCustom, CXTPControlButton)
-
-
-CXTPControlCustom::CXTPControlCustom()
-{
-	m_hwndControl = NULL;
-	m_rcBorders.SetRectEmpty();
-	m_verticalOptions = xtpVerticalHide;
-	m_bControlVisible = TRUE;
-	m_dwFlags = xtpFlagNoMovable;
-	m_nControlID = 0;
-
-	EnableAutomation();
-}
-
-CXTPControlCustom::~CXTPControlCustom()
-{
-	XTPHookManager()->RemoveAll(this);
-}
-
-void CXTPControlCustom::SetControl(CWnd* pWnd)
-{
-	XTPHookManager()->RemoveAll(this);
-
-	m_hwndControl = pWnd->GetSafeHwnd();
-
-	if (m_hwndControl)
-	{
-		XTPHookManager()->SetHook(m_hwndControl, this);
-
-		CXTPWindowRect rc(m_hwndControl);
-		m_szControl = CSize(rc.Width(), rc.Height());
-	}
-}
-
-int CXTPControlCustom::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& /*lResult*/)
-{
-	if (nMessage == WM_MOUSEMOVE)
-	{
-		CPoint point(lParam);
-		MapWindowPoints(hWnd, m_pParent->GetSafeHwnd(), &point, 1);
-		GetParent()->OnMouseMove((UINT)wParam, point);
-	}
-
-	return FALSE;
-}
-
-void CXTPControlCustom::SetSize(CSize szControl)
-{
-	m_szControl = szControl;
-}
-
-CWnd* CXTPControlCustom::GetControl()
-{
-	return CWnd::FromHandle(m_hwndControl);
-}
-
-
-CSize CXTPControlCustom::GetSize(CDC* pDC)
-{
-	if (m_hwndControl && m_bControlVisible)
-	{
-		return CSize(m_szControl.cx + m_rcBorders.left + m_rcBorders.right, m_szControl.cy + m_rcBorders.top + m_rcBorders.bottom);
-
-	}
-	return CXTPControlButton::GetSize(pDC);
-}
-
-
-void CXTPControlCustom::SetRect(CRect rcControl)
-{
-	if (m_rcControl == rcControl && !(m_hwndControl && ::GetParent(m_hwndControl) != m_pParent->GetSafeHwnd()))
-		return;
-
-	m_rcControl = rcControl;
-
-	CWnd* pControlWnd = CWnd::FromHandle(m_hwndControl);
-	if (pControlWnd && pControlWnd->GetSafeHwnd() && ::IsWindow(pControlWnd->GetSafeHwnd()))
-	{
-		pControlWnd->SetParent(m_pParent);
-		pControlWnd->ModifyStyle(WS_POPUP, WS_CHILD);
-		rcControl.DeflateRect(m_rcBorders);
-		pControlWnd->MoveWindow(rcControl);
-
-		ShowHideChildControl();
-	}
-}
-
-void CXTPControlCustom::SetEnabled(BOOL bEnabled)
-{
-	if (bEnabled != m_bEnabled)
-	{
-		m_bEnabled = bEnabled;
-		if (m_hwndControl)
-		{
-			::EnableWindow(m_hwndControl, bEnabled);
-		}
-
-		RedrawParent();
-	}
-}
-
-void CXTPControlCustom::ShowHideChildControl()
-{
-	if (m_pControls && m_pControls->IsOriginalControls())
-		return;
-
-	if (!m_pParent || (::GetParent(m_hwndControl) != m_pParent->GetSafeHwnd()))
-		return;
-
-	if (m_hwndControl)
-	{
-		::SetWindowPos(m_hwndControl, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE
-			| (m_pParent && m_bControlVisible && IsVisible() && m_pParent->GetSafeHwnd() ? SWP_SHOWWINDOW : SWP_HIDEWINDOW));
-	}
-}
-
-void CXTPControlCustom::OnRemoved()
-{
-	m_bControlVisible = FALSE;
-	ShowHideChildControl();
-
-	CXTPControlButton::OnRemoved();
-}
-
-void CXTPControlCustom::SetHideFlags(DWORD dwFlags)
-{
-	if (m_dwHideFlags != dwFlags)
-	{
-		m_dwHideFlags = dwFlags;
-
-		ShowHideChildControl();
-		DelayLayoutParent();
-	}
-}
-
-void CXTPControlCustom::OnActionChanged(int nProperty)
-{
-	if (nProperty == 2 && m_hwndControl)
-	{
-		ShowHideChildControl();
-	}
-}
-
-void CXTPControlCustom::OnCalcDynamicSize(DWORD dwMode)
-{
-	if (m_verticalOptions == xtpVerticalHide)
-	{
-		if (dwMode & LM_VERTDOCK) SetHideFlags(m_dwHideFlags | xtpHideDockingPosition);
-		else SetHideFlags(m_dwHideFlags & ~xtpHideDockingPosition);
-	}
-	if (m_verticalOptions == xtpVerticalButton)
-	{
-		m_bControlVisible = (dwMode & LM_VERTDOCK) == 0;
-		ShowHideChildControl();
-	}
-}
-
-void CXTPControlCustom::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	ASSERT(DYNAMIC_DOWNCAST(CXTPControlCustom, pControl));
-
-	m_rcBorders = ((CXTPControlCustom*)pControl)->m_rcBorders;
-	m_verticalOptions = ((CXTPControlCustom*)pControl)->m_verticalOptions;
-	m_szControl = ((CXTPControlCustom*)pControl)->m_szControl;
-	m_hwndControl = ((CXTPControlCustom*)pControl)->m_hwndControl;
-	m_nControlID = ((CXTPControlCustom*)pControl)->m_nControlID;
-
-	CXTPControl::Copy(pControl, bRecursive);
-}
-
-BOOL CXTPControlCustom::IsCustomizeDragOverAvail(CXTPCommandBar* pCommandBar, CPoint /*point*/, DROPEFFECT& dropEffect)
-{
-	if (pCommandBar->GetType() != xtpBarTypePopup)
-	{
-		dropEffect = DROPEFFECT_NONE;
-		return FALSE;
-	}
-	return TRUE;
-}
-
-void CXTPControlCustom::Draw(CDC* pDC)
-{
-	if (m_hwndControl && ::IsWindowVisible(m_hwndControl))
-		return;
-
-	CXTPControlButton::Draw(pDC);
-}
-
-void CXTPControlCustom::OnClick(BOOL bKeyboard, CPoint pt)
-{
-	if (m_hwndControl && ::IsWindowVisible(m_hwndControl) && !IsCustomizeMode())
-		return;
-
-	CXTPControlButton::OnClick(bKeyboard, pt);
-}
-
-void CXTPControlCustom::SetBorders(int cxRight, int cxTop, int cxLeft, int cxBottom)
-{
-	m_rcBorders.SetRect(cxRight, cxTop, cxLeft, cxBottom);
-}
-
-void CXTPControlCustom::SetVerticalPositionOption(XTPControlCustomVerticalOptions options)
-{
-	m_verticalOptions = options;
-}
-
-CWnd* CXTPControlCustom::FindChildWindow(CXTPCommandBars* pCommandBars, UINT nID)
-{
-	CWnd* pWndSite = pCommandBars->GetSite();
-
-	if (pWndSite->GetDlgItem(nID) != NULL)
-		return pWndSite->GetDlgItem(nID);
-
-	for (int i = 0; i < pCommandBars->GetCount(); i++)
-	{
-		CXTPToolBar* pToolBar = pCommandBars->GetAt(i);
-
-		if (pToolBar->GetDlgItem(nID) != NULL)
-			return pToolBar->GetDlgItem(nID);
-	}
-
-
-	return NULL;
-}
-
-void CXTPControlCustom::DoPropExchange(CXTPPropExchange* pPX)
-{
-	CXTPControlButton::DoPropExchange(pPX);
-
-	PX_Rect(pPX, _T("Borders"), m_rcBorders, CRect(0, 0, 0, 0));
-	PX_Size(pPX, _T("ControlSize"), m_szControl, CSize(0, 0));
-	PX_Enum(pPX, _T("VerticalOptions"), m_verticalOptions, xtpVerticalHide);
-
-	if (pPX->GetSchema() > _XTP_SCHEMA_861)
-	{
-		PX_Int(pPX, _T("ControlId"), m_nControlID, 0);
-	}
-
-	if (pPX->IsLoading() && m_nControlID != 0)
-	{
-		CXTPCommandBars* pCommandBars = ((XTP_COMMANDBARS_PROPEXCHANGE_PARAM*)pPX->m_dwData)->pCommandBars;
-		ASSERT(pCommandBars->IsKindOf(RUNTIME_CLASS(CXTPCommandBars)));
-		ASSERT(pCommandBars && pCommandBars->GetSite());
-
-		CWnd* pWnd = FindChildWindow(pCommandBars, m_nControlID);
-
-		if (pWnd)
-		{
-			m_hwndControl = pWnd->GetSafeHwnd();
-		}
-
-	}
-}
-
-
-
-CXTPControlCustom* CXTPControlCustom::CreateControlCustom(CWnd* pWndChild)
-{
-	CXTPControlCustom* pControlCustom = (CXTPControlCustom*)CreateObject();
-	pControlCustom->SetControl(pWndChild);
-	pControlCustom->m_nControlID = pWndChild->GetDlgCtrlID();
-
-	return pControlCustom;
-}
-
-
-
-

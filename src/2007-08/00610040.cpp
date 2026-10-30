@@ -1,82 +1,26 @@
 // from server: 100% by auto
+// roc 2007-08 00610040  unit: RBX::Ball  size: 40 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00610040
+//
+// 00610040  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 00610044  56                   push esi
+// 00610045  8b742408             mov esi, dword ptr [esp + 8]
+// 00610049  50                   push eax
+// 0061004a  56                   push esi
+// 0061004b  e880240000           call 0x6124d0
+// 00610050  83c408               add esp, 8
+// 00610053  83780800             cmp dword ptr [eax + 8], 0
+// 00610057  750d                 jne 0x610066
+// 00610059  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 0061005d  b201                 mov dl, 1
+// 0061005f  d2e2                 shl dl, cl
+// 00610061  085606               or byte ptr [esi + 6], dl
+// 00610064  33c0                 xor eax, eax
+// 00610066  5e                   pop esi
+// 00610067  c3                   ret 
+// library lua-5.1.4/ltm.c (function _luaT_gettm)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 ltm.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: ltm.c,v 2.8.1.1 2007/12/27 13:02:25 roberto Exp $
-** Tag methods
-** See Copyright Notice in lua.h
-*/
-
-
-#include <string.h>
-
-#define ltm_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "lobject.h"
-#include "lstate.h"
-#include "lstring.h"
-#include "ltable.h"
-#include "ltm.h"
-
-
-
-const char *const luaT_typenames[] = {
-  "nil", "boolean", "userdata", "number",
-  "string", "table", "function", "userdata", "thread",
-  "proto", "upval"
-};
-
-
-void luaT_init (lua_State *L) {
-  static const char *const luaT_eventname[] = {  /* ORDER TM */
-    "__index", "__newindex",
-    "__gc", "__mode", "__eq",
-    "__add", "__sub", "__mul", "__div", "__mod",
-    "__pow", "__unm", "__len", "__lt", "__le",
-    "__concat", "__call"
-  };
-  int i;
-  for (i=0; i<TM_N; i++) {
-    G(L)->tmname[i] = luaS_new(L, luaT_eventname[i]);
-    luaS_fix(G(L)->tmname[i]);  /* never collect these names */
-  }
-}
-
-
-/*
-** function to be used with macro "fasttm": optimized for absence of
-** tag methods
-*/
-const TValue *luaT_gettm (Table *events, TMS event, TString *ename) {
-  const TValue *tm = luaH_getstr(events, ename);
-  lua_assert(event <= TM_EQ);
-  if (ttisnil(tm)) {  /* no tag method? */
-    events->flags |= cast_byte(1u<<event);  /* cache this fact */
-    return NULL;
-  }
-  else return tm;
-}
-
-
-const TValue *luaT_gettmbyobj (lua_State *L, const TValue *o, TMS event) {
-  Table *mt;
-  switch (ttype(o)) {
-    case LUA_TTABLE:
-      mt = hvalue(o)->metatable;
-      break;
-    case LUA_TUSERDATA:
-      mt = uvalue(o)->metatable;
-      break;
-    default:
-      mt = G(L)->mt[ttype(o)];
-  }
-  return (mt ? luaH_getstr(mt, G(L)->tmname[event]) : luaO_nilobject);
-}
-

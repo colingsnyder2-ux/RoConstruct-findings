@@ -1,429 +1,58 @@
 // from server: 100% by auto
+// roc 2008-06 0071a670  unit: CXTPNewToolbarDlg  size: 148 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0071a670
+//
+// 0071a670  56                   push esi
+// 0071a671  8bf1                 mov esi, ecx
+// 0071a673  8b4e34               mov ecx, dword ptr [esi + 0x34]
+// 0071a676  85c9                 test ecx, ecx
+// 0071a678  7506                 jne 0x71a680
+// 0071a67a  33c0                 xor eax, eax
+// 0071a67c  5e                   pop esi
+// 0071a67d  c20800               ret 8
+// 0071a680  8b4614               mov eax, dword ptr [esi + 0x14]
+// 0071a683  85c0                 test eax, eax
+// 0071a685  750a                 jne 0x71a691
+// 0071a687  8b81a0000000         mov eax, dword ptr [ecx + 0xa0]
+// 0071a68d  85c0                 test eax, eax
+// 0071a68f  74e9                 je 0x71a67a
+// 0071a691  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 0071a695  894e04               mov dword ptr [esi + 4], ecx
+// 0071a698  8b4020               mov eax, dword ptr [eax + 0x20]
+// 0071a69b  57                   push edi
+// 0071a69c  50                   push eax
+// 0071a69d  8906                 mov dword ptr [esi], eax
+// 0071a69f  ff15a82d8000         call dword ptr [0x802da8]
+// 0071a6a5  8b542410             mov edx, dword ptr [esp + 0x10]
+// 0071a6a9  8d4618               lea eax, [esi + 0x18]
+// 0071a6ac  50                   push eax
+// 0071a6ad  c7460800000000       mov dword ptr [esi + 8], 0
+// 0071a6b4  c7461000000000       mov dword ptr [esi + 0x10], 0
+// 0071a6bb  89560c               mov dword ptr [esi + 0xc], edx
+// 0071a6be  ff159c2d8000         call dword ptr [0x802d9c]
+// 0071a6c4  8bce                 mov ecx, esi
+// 0071a6c6  e875fcffff           call 0x71a340
+// 0071a6cb  8b4e10               mov ecx, dword ptr [esi + 0x10]
+// 0071a6ce  8bf8                 mov edi, eax
+// 0071a6d0  85c9                 test ecx, ecx
+// 0071a6d2  740a                 je 0x71a6de
+// 0071a6d4  8b11                 mov edx, dword ptr [ecx]
+// 0071a6d6  8b8274010000         mov eax, dword ptr [edx + 0x174]
+// 0071a6dc  ffd0                 call eax
+// 0071a6de  ff15b42d8000         call dword ptr [0x802db4]
+// 0071a6e4  e83d62f8ff           call 0x6a0926
+// 0071a6e9  68007f0000           push 0x7f00
+// 0071a6ee  6a00                 push 0
+// 0071a6f0  ff15d02d8000         call dword ptr [0x802dd0]
+// 0071a6f6  50                   push eax
+// 0071a6f7  ff15042d8000         call dword ptr [0x802d04]
+// 0071a6fd  8bc7                 mov eax, edi
+// 0071a6ff  5f                   pop edi
+// 0071a700  5e                   pop esi
+// 0071a701  c20800               ret 8
+// library xtp-11.2.2-shared-mfc/Source\CommandBars\XTPCustomizeTools.cpp (function ?DoDragDrop@CXTPCustomizeDropSource@@QAEKPAVCXTPControl@@H@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPCustomizeTools.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPCustomizeTools.cpp.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTPCustomizeTools.h"
-#include "XTPCommandBar.h"
-#include "XTPControl.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPCustomizeDropSource
-
-
-CXTPCustomizeDropSource::CXTPCustomizeDropSource(CXTPCommandBars* pCommandBars)
-{
-	m_hcurDelete = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_DRAGDELETE);
-	m_hcurMove = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_DRAGMOVE);
-	m_hcurCopy = XTPResourceManager()->LoadCursor(XTP_IDC_COMMANDBARS_DRAGCOPY);
-	m_pSheet = NULL;
-	m_pCommandBars = pCommandBars;
-
-	m_hwndCapture = 0;
-	m_pControl = 0;
-	m_bMove = FALSE;
-	m_bCopyOnly = FALSE;
-	m_pTarget = NULL;
-}
-
-
-CXTPCustomizeDropSource::~CXTPCustomizeDropSource()
-{
-}
-
-DROPEFFECT CXTPCustomizeDropSource::DoDragDrop(CXTPControl* pControl, BOOL bCopyOnly)
-{
-	ASSERT(m_pCommandBars);
-	if (!m_pCommandBars)
-		return 0;
-
-	CWnd* pWndCapture = m_pSheet ? (CWnd*)m_pSheet : m_pCommandBars->GetSite();
-	ASSERT(pWndCapture);
-	if (!pWndCapture)
-		return 0;
-
-	m_pControl = pControl;
-	m_hwndCapture = pWndCapture->GetSafeHwnd();
-	::SetCapture(m_hwndCapture);
-	m_bMove = FALSE;
-	m_pTarget = NULL;
-	m_bCopyOnly = bCopyOnly;
-
-	GetCursorPos(&m_ptStart);
-
-	DROPEFFECT dropEffect = _DoDragDrop();
-
-	if (m_pTarget) m_pTarget->OnCustomizeDragLeave();
-
-	ReleaseCapture();
-	::SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
-	return dropEffect;
-}
-
-void CXTPCustomizeDropSource::Register(CXTPCommandBar* pCommandBar)
-{
-	m_arrTargets.Add(pCommandBar);
-
-}
-void CXTPCustomizeDropSource::UnRegister(CXTPCommandBar* pCommandBar)
-{
-	for (int i = 0; i < m_arrTargets.GetSize(); i++)
-	{
-		if (pCommandBar == m_arrTargets[i])
-		{
-			m_arrTargets.RemoveAt(i);
-		}
-	}
-}
-
-CXTPCustomizeSheet* CXTPCustomizeDropSource::GetSheet() const
-{
-	return m_pSheet;
-}
-
-
-// picks the current target
-void CXTPCustomizeDropSource::PickTarget(CPoint point)
-{
-	HWND hWndPoint = WindowFromPoint(point);
-
-	BOOL bFound = FALSE;
-
-	for (int i = (int)m_arrTargets.GetSize() - 1; i >= 0; i--)
-	{
-		CXTPCommandBar* pCommandBar = m_arrTargets[i];
-
-		if (pCommandBar->IsVisible() && CXTPWindowRect(pCommandBar).PtInRect(point)
-			&& (pCommandBar->GetSafeHwnd() == hWndPoint || ::IsChild(pCommandBar->GetSafeHwnd(), hWndPoint)))
-		{
-			bFound = TRUE;
-
-			if (m_pTarget == pCommandBar)
-			{
-				m_pTarget->ScreenToClient(&point);
-				m_pTarget->OnCustomizeDragOver(m_pControl, point);
-			}
-			else if (m_pTarget != NULL)
-			{
-				m_pTarget->OnCustomizeDragLeave();
-				m_pTarget = 0;
-			}
-
-			if (m_pTarget == 0)
-			{
-				pCommandBar->ScreenToClient(&point);
-				if (pCommandBar->OnCustomizeDragEnter(m_pControl, point) != DROPEFFECT_NONE)
-				{
-					m_pTarget = pCommandBar;
-				}
-			}
-			break;
-		}
-	}
-
-	if (!bFound && m_pTarget)
-	{
-		m_pTarget->OnCustomizeDragLeave();
-		m_pTarget = 0;
-	}
-
-
-	// set the cursor as appropriate
-	FreshenCursor();
-}
-
-void CXTPCustomizeDropSource::FreshenCursor()
-{
-	HCURSOR hCursor = m_hcurDelete;
-	if (m_pTarget)
-	{
-		hCursor = (m_bMove && !m_bCopyOnly) ? m_hcurMove : m_hcurCopy;
-	}
-	::SetCursor(hCursor);
-}
-
-
-DROPEFFECT CXTPCustomizeDropSource::_DoDragDrop()
-{
-	BOOL bMoved = FALSE;
-
-	DROPEFFECT dropEffect = DROPEFFECT_CANCEL;
-
-	BOOL bDone = FALSE;
-
-	while (!bDone && ::GetCapture() == m_hwndCapture)
-	{
-		MSG msg;
-
-		// assess current state
-		// pump WM_PAINT first for better feedback
-		while (::PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_NOREMOVE))
-		{
-			if (!GetMessage(&msg, NULL, WM_PAINT, WM_PAINT))
-				break;
-			DispatchMessage(&msg);
-		}
-
-		// get a message
-		if (!::GetMessage(&msg, NULL, 0, 0))
-		{
-			AfxPostQuitMessage((int)msg.wParam);
-			return DROPEFFECT_CANCEL;
-		}
-
-		if (::GetCapture() != m_hwndCapture)
-		{
-			// capture was stolen while repainting
-			return DROPEFFECT_CANCEL;
-		}
-
-		switch (msg.message)
-		{
-		case WM_LBUTTONUP:
-			bDone = TRUE;
-			break;
-
-		case WM_MOUSEMOVE:
-			if (!bMoved)
-			{
-				CPoint pt(msg.pt);
-				if (m_pControl && m_pControl->GetParent())
-				{
-					DROPEFFECT dropEffectDragStart = DROPEFFECT_CANCEL;
-					m_pControl->GetParent()->ScreenToClient(&pt);
-					m_pControl->OnCustomizeDragOver(m_pControl, pt, dropEffectDragStart);
-				}
-
-				bMoved = TRUE;
-			}
-			m_bMove = !(msg.wParam & MK_CONTROL);
-			PickTarget(msg.pt);
-
-			// terminate loop if we happen to get mouse move with button up
-			if (!(msg.wParam & MK_LBUTTON))
-				bDone = TRUE;
-
-			dropEffect = DROPEFFECT_NONE;
-			break;
-
-		case WM_KEYDOWN:
-			if (msg.wParam == VK_ESCAPE)
-				return DROPEFFECT_CANCEL;
-
-			if (msg.wParam == VK_CONTROL && m_bMove)
-			{
-				m_bMove = FALSE;
-				FreshenCursor();
-			}
-			break;
-
-		case WM_KEYUP:
-			if (msg.wParam == VK_CONTROL && !m_bMove)
-			{
-				m_bMove = TRUE;
-				FreshenCursor();
-			}
-			break;
-
-		case WM_RBUTTONDOWN:
-			return DROPEFFECT_CANCEL;
-
-		default:
-			::DispatchMessage(&msg);
-		}
-	}
-
-
-	if (m_pTarget)
-	{
-
-		dropEffect = m_bMove ? DROPEFFECT_MOVE : DROPEFFECT_COPY;
-
-		CPoint point;
-		GetCursorPos(&point);
-
-		m_pTarget->ScreenToClient(&point);
-		m_pTarget->ScreenToClient(&m_ptStart);
-
-		m_pTarget->OnCustomizeDrop(m_pControl, dropEffect, point, m_ptStart);
-		m_pTarget = 0;
-	}
-
-	return dropEffect;
-}
-/////////////////////////////////////////////////////////////////////////////
-// CXTPNewToolbarDlg dialog
-
-
-CXTPNewToolbarDlg::CXTPNewToolbarDlg(CWnd* pParent, CXTPCommandBars* pCommandBars, CXTPCommandBar* pCommandBar)
-	: m_pCommandBars(pCommandBars), m_pCommandBar(pCommandBar)
-{
-	InitModalIndirect(XTPResourceManager()->LoadDialogTemplate(XTP_IDD_NEWTOOLBAR), pParent);
-
-	m_strToolbar = _T("");
-	m_nNewID = 0;
-}
-
-
-void CXTPNewToolbarDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTPNewToolbarDlg)
-	DDX_Text(pDX, XTP_IDC_EDIT_TOOLBARNAME, m_strToolbar);
-	//}}AFX_DATA_MAP
-}
-
-
-BEGIN_MESSAGE_MAP(CXTPNewToolbarDlg, CDialog)
-	//{{AFX_MSG_MAP(CXTPNewToolbarDlg)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPNewToolbarDlg message handlers
-
-BOOL CXTPNewToolbarDlg::OnInitDialog()
-{
-	CDialog::OnInitDialog();
-
-	if (m_pCommandBar)
-	{
-		m_strToolbar = m_pCommandBar->GetTitle();
-		UpdateData(FALSE);
-
-		CString strWindowText;
-		XTPResourceManager()->LoadString(&strWindowText, XTP_IDS_RENAMETOOLBAR);
-		SetWindowText(strWindowText);
-
-	}
-	else
-	{
-		SetSuggestedName();
-	}
-
-
-	return TRUE;
-}
-
-void CXTPNewToolbarDlg::SetSuggestedName()
-{
-	CString szMsg;
-	XTPResourceManager()->LoadString(&szMsg, XTP_IDS_CUSTOM_BAR);
-
-	int iNewID = 1;
-	CString strCustom;
-	strCustom.Format(szMsg, iNewID);
-
-	int nCount = m_pCommandBars->GetCount();
-	int nIndex = 0;
-	while (nIndex < nCount)
-	{
-		CXTPToolBar* pBar = m_pCommandBars->GetAt(nIndex);
-		ASSERT(pBar != NULL);
-
-		if (pBar && strCustom.Compare(pBar->GetTitle()) == 0)
-		{
-			strCustom.Format(szMsg, iNewID++);
-			nIndex = 0;
-			continue;
-		}
-		nIndex++;
-	}
-
-	m_strToolbar = strCustom;
-	UpdateData(FALSE);
-}
-
-void CXTPNewToolbarDlg::OnOK()
-{
-	UpdateData();
-
-	// If no text was entered, alert user.
-	if (m_strToolbar.IsEmpty())
-	{
-		XTPResourceManager()->ShowMessageBox(XTP_IDS_ERROR_BLANKNAME, MB_ICONSTOP);
-		return;
-	}
-
-	m_nNewID = AFX_IDW_CONTROLBAR_FIRST;
-
-	// Loop through all of the existing control bars to find
-	// an available ID to use.
-	int nCount = m_pCommandBars->GetCount();
-	int nIndex = 0;
-	while (nIndex < nCount)
-	{
-		CXTPToolBar* pBar = m_pCommandBars->GetAt(nIndex);
-		ASSERT(pBar != NULL);
-
-		// We found a control bar with the same ID as m_nNewID, increment
-		// m_nNewID and reset the position back to the head.
-		if (pBar && m_pCommandBar == NULL && pBar->GetBarID() == m_nNewID)
-		{
-			m_nNewID++;
-
-			// If m_nNewID is greater than the maximum number of allowed
-			// custom commands, alert the user and abort.
-			if ((int)m_nNewID >= AFX_IDW_CONTROLBAR_LAST)
-			{
-				XTPResourceManager()->ShowMessageBox(XTP_IDS_ERROR_LIMIT, MB_ICONSTOP);
-				CDialog::OnCancel();
-				return;
-			}
-
-			nIndex = 0;
-			continue;
-		}
-
-
-		// Now check to see if the title for the toolbar has already
-		// been used, if so, alert the user and return.
-		if (pBar && m_pCommandBar != pBar && m_strToolbar.Compare(pBar->GetTitle()) == 0)
-		{
-			CString strName;
-			strName.Format(XTP_IDS_ERROR_EXISTS, (LPCTSTR)m_strToolbar);
-			AfxMessageBox(strName, MB_ICONSTOP);
-			return;
-		}
-
-		nIndex++;
-	}
-
-	CDialog::OnOK(); // success!
-}

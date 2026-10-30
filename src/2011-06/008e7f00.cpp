@@ -1,1624 +1,394 @@
+// roc 2011-06 008e7f00  unit: CXTColorHex  size: 1240 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 008e7f00
+//
+// 008e7f00  6aff                 push -1
+// 008e7f02  68d8dfa000           push 0xa0dfd8
+// 008e7f07  64a100000000         mov eax, dword ptr fs:[0]
+// 008e7f0d  50                   push eax
+// 008e7f0e  83ec20               sub esp, 0x20
+// 008e7f11  53                   push ebx
+// 008e7f12  55                   push ebp
+// 008e7f13  56                   push esi
+// 008e7f14  57                   push edi
+// 008e7f15  a12058c900           mov eax, dword ptr [0xc95820]
+// 008e7f1a  33c4                 xor eax, esp
+// 008e7f1c  50                   push eax
+// 008e7f1d  8d442434             lea eax, [esp + 0x34]
+// 008e7f21  64a300000000         mov dword ptr fs:[0], eax
+// 008e7f27  8bf1                 mov esi, ecx
+// 008e7f29  6a1c                 push 0x1c
+// 008e7f2b  e82e21f2ff           call 0x80a05e
+// 008e7f30  8b5c2454             mov ebx, dword ptr [esp + 0x54]
+// 008e7f34  83c404               add esp, 4
+// 008e7f37  53                   push ebx
+// 008e7f38  6a01                 push 1
+// 008e7f3a  6a00                 push 0
+// 008e7f3c  8d4c2438             lea ecx, [esp + 0x38]
+// 008e7f40  8bf8                 mov edi, eax
+// 008e7f42  e8ad4c0e00           call 0x9ccbf4
+// 008e7f47  8b6c2444             mov ebp, dword ptr [esp + 0x44]
+// 008e7f4b  8d44242c             lea eax, [esp + 0x2c]
+// 008e7f4f  50                   push eax
+// 008e7f50  8bcd                 mov ecx, ebp
+// 008e7f52  c744244000000000     mov dword ptr [esp + 0x40], 0
+// 008e7f5a  e88f4c0e00           call 0x9ccbee
+// 008e7f5f  6840050000           push 0x540
+// 008e7f64  89442448             mov dword ptr [esp + 0x48], eax
+// 008e7f68  895f18               mov dword ptr [edi + 0x18], ebx
+// 008e7f6b  c7471001000000       mov dword ptr [edi + 0x10], 1
+// 008e7f72  e8c923f2ff           call 0x80a340
+// 008e7f77  8b4c2458             mov ecx, dword ptr [esp + 0x58]
+// 008e7f7b  8b54245c             mov edx, dword ptr [esp + 0x5c]
+// 008e7f7f  890f                 mov dword ptr [edi], ecx
+// 008e7f81  8b4c2464             mov ecx, dword ptr [esp + 0x64]
+// 008e7f85  83c404               add esp, 4
+// 008e7f88  894714               mov dword ptr [edi + 0x14], eax
+// 008e7f8b  8b44245c             mov eax, dword ptr [esp + 0x5c]
+// 008e7f8f  894f0c               mov dword ptr [edi + 0xc], ecx
+// 008e7f92  57                   push edi
+// 008e7f93  8d4e74               lea ecx, [esi + 0x74]
+// 008e7f96  895704               mov dword ptr [edi + 4], edx
+// 008e7f99  894708               mov dword ptr [edi + 8], eax
+// 008e7f9c  e8cf850000           call 0x8f0570
+// 008e7fa1  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e7fa5  3b5e70               cmp ebx, dword ptr [esi + 0x70]
+// 008e7fa8  750a                 jne 0x8e7fb4
+// 008e7faa  8b54244c             mov edx, dword ptr [esp + 0x4c]
+// 008e7fae  894668               mov dword ptr [esi + 0x68], eax
+// 008e7fb1  89566c               mov dword ptr [esi + 0x6c], edx
+// 008e7fb4  33f6                 xor esi, esi
+// 008e7fb6  89742450             mov dword ptr [esp + 0x50], esi
+// 008e7fba  eb08                 jmp 0x8e7fc4
+// 008e7fbc  8d642400             lea esp, [esp]
+// 008e7fc0  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e7fc4  8b54244c             mov edx, dword ptr [esp + 0x4c]
+// 008e7fc8  8b4c2450             mov ecx, dword ptr [esp + 0x50]
+// 008e7fcc  53                   push ebx
+// 008e7fcd  03ca                 add ecx, edx
+// 008e7fcf  51                   push ecx
+// 008e7fd0  50                   push eax
+// 008e7fd1  89442420             mov dword ptr [esp + 0x20], eax
+// 008e7fd5  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e7fd8  50                   push eax
+// 008e7fd9  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e7fdd  ff150c01a400         call dword ptr [0xa4010c]
+// 008e7fe3  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e7fe6  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e7fea  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e7fee  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e7ff1  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e7ff5  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e7ff9  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e7ffd  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8001  53                   push ebx
+// 008e8002  03ca                 add ecx, edx
+// 008e8004  40                   inc eax
+// 008e8005  51                   push ecx
+// 008e8006  50                   push eax
+// 008e8007  89442428             mov dword ptr [esp + 0x28], eax
+// 008e800b  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e800e  50                   push eax
+// 008e800f  46                   inc esi
+// 008e8010  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8014  ff150c01a400         call dword ptr [0xa4010c]
+// 008e801a  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e801d  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8021  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8025  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8028  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e802c  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8030  40                   inc eax
+// 008e8031  46                   inc esi
+// 008e8032  83f809               cmp eax, 9
+// 008e8035  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8039  7c85                 jl 0x8e7fc0
+// 008e803b  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8043  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8047  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e804b  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e804f  53                   push ebx
+// 008e8050  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e8054  83c002               add eax, 2
+// 008e8057  51                   push ecx
+// 008e8058  50                   push eax
+// 008e8059  89442428             mov dword ptr [esp + 0x28], eax
+// 008e805d  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8060  50                   push eax
+// 008e8061  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8065  ff150c01a400         call dword ptr [0xa4010c]
+// 008e806b  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e806e  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8072  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8076  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8079  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e807d  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8081  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8085  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8089  53                   push ebx
+// 008e808a  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e808e  83c003               add eax, 3
+// 008e8091  51                   push ecx
+// 008e8092  50                   push eax
+// 008e8093  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8097  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e809a  50                   push eax
+// 008e809b  46                   inc esi
+// 008e809c  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e80a0  ff150c01a400         call dword ptr [0xa4010c]
+// 008e80a6  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e80a9  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e80ad  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e80b1  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e80b4  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e80b8  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e80bc  40                   inc eax
+// 008e80bd  46                   inc esi
+// 008e80be  83f80b               cmp eax, 0xb
+// 008e80c1  89442450             mov dword ptr [esp + 0x50], eax
+// 008e80c5  0f8c78ffffff         jl 0x8e8043
+// 008e80cb  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e80d3  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e80d7  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e80db  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e80df  53                   push ebx
+// 008e80e0  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e80e4  83c004               add eax, 4
+// 008e80e7  51                   push ecx
+// 008e80e8  50                   push eax
+// 008e80e9  89442428             mov dword ptr [esp + 0x28], eax
+// 008e80ed  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e80f0  50                   push eax
+// 008e80f1  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e80f5  ff150c01a400         call dword ptr [0xa4010c]
+// 008e80fb  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e80fe  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8102  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8106  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8109  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e810d  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8111  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8115  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8119  53                   push ebx
+// 008e811a  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e811e  83c005               add eax, 5
+// 008e8121  51                   push ecx
+// 008e8122  50                   push eax
+// 008e8123  89442420             mov dword ptr [esp + 0x20], eax
+// 008e8127  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e812a  50                   push eax
+// 008e812b  46                   inc esi
+// 008e812c  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e8130  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8136  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8139  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e813d  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e8141  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8144  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8148  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e814c  40                   inc eax
+// 008e814d  46                   inc esi
+// 008e814e  83f80d               cmp eax, 0xd
+// 008e8151  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8155  0f8c78ffffff         jl 0x8e80d3
+// 008e815b  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8163  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8167  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e816b  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e816f  53                   push ebx
+// 008e8170  8d4c0afd             lea ecx, [edx + ecx - 3]
+// 008e8174  83c006               add eax, 6
+// 008e8177  51                   push ecx
+// 008e8178  50                   push eax
+// 008e8179  89442428             mov dword ptr [esp + 0x28], eax
+// 008e817d  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8180  50                   push eax
+// 008e8181  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e8185  ff150c01a400         call dword ptr [0xa4010c]
+// 008e818b  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e818e  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8192  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e8196  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8199  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e819d  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e81a1  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e81a5  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e81a9  53                   push ebx
+// 008e81aa  8d4c0afd             lea ecx, [edx + ecx - 3]
+// 008e81ae  83c007               add eax, 7
+// 008e81b1  51                   push ecx
+// 008e81b2  50                   push eax
+// 008e81b3  89442420             mov dword ptr [esp + 0x20], eax
+// 008e81b7  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e81ba  50                   push eax
+// 008e81bb  46                   inc esi
+// 008e81bc  894c2428             mov dword ptr [esp + 0x28], ecx
+// 008e81c0  ff150c01a400         call dword ptr [0xa4010c]
+// 008e81c6  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e81c9  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 008e81cd  8b542418             mov edx, dword ptr [esp + 0x18]
+// 008e81d1  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e81d4  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e81d8  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e81dc  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e81e0  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e81e4  53                   push ebx
+// 008e81e5  8d4c0afd             lea ecx, [edx + ecx - 3]
+// 008e81e9  83c008               add eax, 8
+// 008e81ec  51                   push ecx
+// 008e81ed  50                   push eax
+// 008e81ee  89442430             mov dword ptr [esp + 0x30], eax
+// 008e81f2  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e81f5  50                   push eax
+// 008e81f6  46                   inc esi
+// 008e81f7  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e81fb  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8201  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8204  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8208  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e820c  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e820f  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8213  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8217  40                   inc eax
+// 008e8218  46                   inc esi
+// 008e8219  83f80f               cmp eax, 0xf
+// 008e821c  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8220  0f8c3dffffff         jl 0x8e8163
+// 008e8226  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e822e  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8232  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8236  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e823a  53                   push ebx
+// 008e823b  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e823f  83c009               add eax, 9
+// 008e8242  51                   push ecx
+// 008e8243  50                   push eax
+// 008e8244  89442430             mov dword ptr [esp + 0x30], eax
+// 008e8248  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e824b  50                   push eax
+// 008e824c  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8250  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8256  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8259  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e825d  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8261  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e8264  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8268  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e826c  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8270  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8274  53                   push ebx
+// 008e8275  8d4c0afe             lea ecx, [edx + ecx - 2]
+// 008e8279  83c00a               add eax, 0xa
+// 008e827c  51                   push ecx
+// 008e827d  50                   push eax
+// 008e827e  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8282  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8285  50                   push eax
+// 008e8286  46                   inc esi
+// 008e8287  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e828b  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8291  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8294  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8298  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e829c  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e829f  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e82a3  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e82a7  40                   inc eax
+// 008e82a8  46                   inc esi
+// 008e82a9  83f80d               cmp eax, 0xd
+// 008e82ac  89442450             mov dword ptr [esp + 0x50], eax
+// 008e82b0  0f8c78ffffff         jl 0x8e822e
+// 008e82b6  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e82be  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e82c2  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e82c6  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e82ca  53                   push ebx
+// 008e82cb  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e82cf  83c00b               add eax, 0xb
+// 008e82d2  51                   push ecx
+// 008e82d3  50                   push eax
+// 008e82d4  89442430             mov dword ptr [esp + 0x30], eax
+// 008e82d8  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e82db  50                   push eax
+// 008e82dc  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e82e0  ff150c01a400         call dword ptr [0xa4010c]
+// 008e82e6  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e82e9  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e82ed  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e82f1  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e82f4  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e82f8  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e82fc  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e8300  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8304  53                   push ebx
+// 008e8305  8d4c0aff             lea ecx, [edx + ecx - 1]
+// 008e8309  83c00c               add eax, 0xc
+// 008e830c  51                   push ecx
+// 008e830d  50                   push eax
+// 008e830e  89442428             mov dword ptr [esp + 0x28], eax
+// 008e8312  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e8315  50                   push eax
+// 008e8316  46                   inc esi
+// 008e8317  894c2430             mov dword ptr [esp + 0x30], ecx
+// 008e831b  ff150c01a400         call dword ptr [0xa4010c]
+// 008e8321  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e8324  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 008e8328  8b542420             mov edx, dword ptr [esp + 0x20]
+// 008e832c  890cf0               mov dword ptr [eax + esi*8], ecx
+// 008e832f  8954f004             mov dword ptr [eax + esi*8 + 4], edx
+// 008e8333  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8337  40                   inc eax
+// 008e8338  46                   inc esi
+// 008e8339  83f80b               cmp eax, 0xb
+// 008e833c  89442450             mov dword ptr [esp + 0x50], eax
+// 008e8340  0f8c78ffffff         jl 0x8e82be
+// 008e8346  03f6                 add esi, esi
+// 008e8348  03f6                 add esi, esi
+// 008e834a  c744245000000000     mov dword ptr [esp + 0x50], 0
+// 008e8352  03f6                 add esi, esi
+// 008e8354  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 008e8358  8b542450             mov edx, dword ptr [esp + 0x50]
+// 008e835c  8b442448             mov eax, dword ptr [esp + 0x48]
+// 008e8360  53                   push ebx
+// 008e8361  03ca                 add ecx, edx
+// 008e8363  83c00d               add eax, 0xd
+// 008e8366  51                   push ecx
+// 008e8367  50                   push eax
+// 008e8368  89442430             mov dword ptr [esp + 0x30], eax
+// 008e836c  8b4504               mov eax, dword ptr [ebp + 4]
+// 008e836f  50                   push eax
+// 008e8370  894c2438             mov dword ptr [esp + 0x38], ecx
+// 008e8374  ff150c01a400         call dword ptr [0xa4010c]
+// 008e837a  8b4714               mov eax, dword ptr [edi + 0x14]
+// 008e837d  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 008e8381  8b542428             mov edx, dword ptr [esp + 0x28]
+// 008e8385  890c06               mov dword ptr [esi + eax], ecx
+// 008e8388  89540604             mov dword ptr [esi + eax + 4], edx
+// 008e838c  8b442450             mov eax, dword ptr [esp + 0x50]
+// 008e8390  40                   inc eax
+// 008e8391  83c608               add esi, 8
+// 008e8394  83f809               cmp eax, 9
+// 008e8397  89442450             mov dword ptr [esp + 0x50], eax
+// 008e839b  7cb7                 jl 0x8e8354
+// 008e839d  8b442444             mov eax, dword ptr [esp + 0x44]
+// 008e83a1  50                   push eax
+// 008e83a2  8bcd                 mov ecx, ebp
+// 008e83a4  e845480e00           call 0x9ccbee
+// 008e83a9  8d4c242c             lea ecx, [esp + 0x2c]
+// 008e83ad  c744243cffffffff     mov dword ptr [esp + 0x3c], 0xffffffff
+// 008e83b5  c744242cb8a6ac00     mov dword ptr [esp + 0x2c], 0xaca6b8
+// 008e83bd  e86eb5b2ff           call 0x413930
+// 008e83c2  8b4c2434             mov ecx, dword ptr [esp + 0x34]
+// 008e83c6  64890d00000000       mov dword ptr fs:[0], ecx
+// 008e83cd  59                   pop ecx
+// 008e83ce  5f                   pop edi
+// 008e83cf  5e                   pop esi
+// 008e83d0  5d                   pop ebp
+// 008e83d1  5b                   pop ebx
+// 008e83d2  83c42c               add esp, 0x2c
+// 008e83d5  c22000               ret 0x20
+// copied from an identical function in another client (function ?DrawCell@CXTColorHex@@IAEXPAVCDC@@VCPoint@@KHHHH@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageStandard.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTColorPageStandard.cpp : implementation file
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-
-#include "XTDefines.h"
-#include "XTColorDialog.h"
-#include "XTColorPageStandard.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-const COLORREF CXTColorHex::clrSelArray[] =
-{
-	RGB(0x00, 0x33, 0x66), // row 1
-	RGB(0x33, 0x66, 0x99),
-	RGB(0x33, 0x66, 0xCC),
-	RGB(0x00, 0x33, 0x99),
-	RGB(0x00, 0x00, 0x99),
-	RGB(0x00, 0x00, 0xCC),
-	RGB(0x00, 0x00, 0x66),
-
-	RGB(0x00, 0x66, 0x66), // row 2
-	RGB(0x00, 0x66, 0x99),
-	RGB(0x00, 0x99, 0xCC),
-	RGB(0x00, 0x66, 0xCC),
-	RGB(0x00, 0x33, 0xCC),
-	RGB(0x00, 0x00, 0xFF),
-	RGB(0x33, 0x33, 0xFF),
-	RGB(0x33, 0x33, 0x99),
-
-	RGB(0x00, 0x80, 0x80), // row 3
-	RGB(0x00, 0x99, 0x99),
-	RGB(0x33, 0xCC, 0xCC),
-	RGB(0x00, 0xCC, 0xFF),
-	RGB(0x00, 0x99, 0xFF),
-	RGB(0x00, 0x66, 0xFF),
-	RGB(0x33, 0x66, 0xFF),
-	RGB(0x33, 0x33, 0xCC),
-	RGB(0x66, 0x66, 0x99),
-
-	RGB(0x33, 0x99, 0x66), // row 4
-	RGB(0x00, 0xCC, 0x99),
-	RGB(0x00, 0xFF, 0xCC),
-	RGB(0x00, 0xFF, 0xFF),
-	RGB(0x33, 0xCC, 0xFF),
-	RGB(0x33, 0x99, 0xFF),
-	RGB(0x66, 0x99, 0xFF),
-	RGB(0x66, 0x66, 0xFF),
-	RGB(0x66, 0x00, 0xFF),
-	RGB(0x66, 0x00, 0xCC),
-
-	RGB(0x33, 0x99, 0x33), // row 5
-	RGB(0x00, 0xCC, 0x66),
-	RGB(0x00, 0xFF, 0x99),
-	RGB(0x66, 0xFF, 0xCC),
-	RGB(0x66, 0xFF, 0xFF),
-	RGB(0x66, 0xCC, 0xFF),
-	RGB(0x99, 0xCC, 0xFF),
-	RGB(0x99, 0x99, 0xFF),
-	RGB(0x99, 0x66, 0xFF),
-	RGB(0x99, 0x33, 0xFF),
-	RGB(0x99, 0x00, 0xFF),
-
-	RGB(0x00, 0x66, 0x00), // row 6
-	RGB(0x00, 0xCC, 0x00),
-	RGB(0x00, 0xFF, 0x00),
-	RGB(0x66, 0xFF, 0x99),
-	RGB(0x99, 0xFF, 0xCC),
-	RGB(0xCC, 0xFF, 0xFF),
-	RGB(0xCC, 0xEC, 0xFF),
-	RGB(0xCC, 0xCC, 0xFF),
-	RGB(0xCC, 0x99, 0xFF),
-	RGB(0xCC, 0x66, 0xFF),
-	RGB(0xCC, 0x00, 0xFF),
-	RGB(0x99, 0x00, 0xCC),
-
-	RGB(0x00, 0x33, 0x00), // row 7
-	RGB(0x00, 0x80, 0x00),
-	RGB(0x33, 0xCC, 0x33),
-	RGB(0x66, 0xFF, 0x66),
-	RGB(0x99, 0xFF, 0x99),
-	RGB(0xCC, 0xFF, 0xCC),
-	RGB(0xFF, 0xFF, 0xFF),
-	RGB(0xFF, 0xCC, 0xFF),
-	RGB(0xFF, 0x99, 0xFF),
-	RGB(0xFF, 0x66, 0xFF),
-	RGB(0xFF, 0x00, 0xFF),
-	RGB(0xCC, 0x00, 0xCC),
-	RGB(0x66, 0x00, 0x66),
-
-	RGB(0x33, 0x66, 0x00), // row 8
-	RGB(0x00, 0x99, 0x00),
-	RGB(0x66, 0xFF, 0x33),
-	RGB(0x99, 0xFF, 0x66),
-	RGB(0xCC, 0xFF, 0x99),
-	RGB(0xFF, 0xFF, 0xCC),
-	RGB(0xFF, 0xCC, 0xCC),
-	RGB(0xFF, 0x99, 0xCC),
-	RGB(0xFF, 0x66, 0xCC),
-	RGB(0xFF, 0x33, 0xCC),
-	RGB(0xCC, 0x00, 0x99),
-	RGB(0x80, 0x00, 0x80),
-
-	RGB(0x33, 0x33, 0x00), // row 9
-	RGB(0x66, 0x99, 0x00),
-	RGB(0x99, 0xFF, 0x33),
-	RGB(0xCC, 0xFF, 0x66),
-	RGB(0xFF, 0xFF, 0x99),
-	RGB(0xFF, 0xCC, 0x99),
-	RGB(0xFF, 0x99, 0x99),
-	RGB(0xFF, 0x66, 0x99),
-	RGB(0xFF, 0x33, 0x99),
-	RGB(0xCC, 0x33, 0x99),
-	RGB(0x99, 0x00, 0x99),
-
-	RGB(0x66, 0x66, 0x33), // row 10
-	RGB(0x99, 0xCC, 0x00),
-	RGB(0xCC, 0xFF, 0x33),
-	RGB(0xFF, 0xFF, 0x66),
-	RGB(0xFF, 0xCC, 0x66),
-	RGB(0xFF, 0x99, 0x66),
-	RGB(0xFF, 0x7C, 0x80),
-	RGB(0xFF, 0x00, 0x66),
-	RGB(0xD6, 0x00, 0x93),
-	RGB(0x99, 0x33, 0x66),
-
-	RGB(0x80, 0x80, 0x00), // row 11
-	RGB(0xCC, 0xCC, 0x00),
-	RGB(0xFF, 0xFF, 0x00),
-	RGB(0xFF, 0xCC, 0x00),
-	RGB(0xFF, 0x99, 0x33),
-	RGB(0xFF, 0x66, 0x00),
-	RGB(0xFF, 0x50, 0x50),
-	RGB(0xCC, 0x00, 0x66),
-	RGB(0x66, 0x00, 0x33),
-
-	RGB(0x99, 0x66, 0x33), // row 12
-	RGB(0xCC, 0x99, 0x00),
-	RGB(0xFF, 0x99, 0x00),
-	RGB(0xCC, 0x66, 0x00),
-	RGB(0xFF, 0x33, 0x00),
-	RGB(0xFF, 0x00, 0x00),
-	RGB(0xCC, 0x00, 0x00),
-	RGB(0x99, 0x00, 0x33),
-
-	RGB(0x66, 0x33, 0x00), // row 13
-	RGB(0x99, 0x66, 0x00),
-	RGB(0xCC, 0x33, 0x00),
-	RGB(0x99, 0x33, 0x00),
-	RGB(0x99, 0x00, 0x00),
-	RGB(0x80, 0x00, 0x00),
-	RGB(0xA5, 0x00, 0x21),
-
-	RGB(0xF8, 0xF8, 0xF8), // row 1 (gray scale)
-	RGB(0xDD, 0xDD, 0xDD),
-	RGB(0xB2, 0xB2, 0xB2),
-	RGB(0x80, 0x80, 0x80),
-	RGB(0x5F, 0x5F, 0x5F),
-	RGB(0x33, 0x33, 0x33),
-	RGB(0x1C, 0x1C, 0x1C),
-	RGB(0x08, 0x08, 0x08),
-
-	RGB(0xEA, 0xEA, 0xEA), // row 2 (gray scale)
-	RGB(0xC0, 0xC0, 0xC0),
-	RGB(0x96, 0x96, 0x96),
-	RGB(0x77, 0x77, 0x77),
-	RGB(0x4D, 0x4D, 0x4D),
-	RGB(0x29, 0x29, 0x29),
-	RGB(0x11, 0x11, 0x11),
-
-	RGB(0xFF, 0xFF, 0xFF), // large white cell
-	RGB(0x00, 0x00, 0x00)   // large black cell
-};
-
-bool CXTColorHex::IsValidColor(COLORREF cr) const
-{
-	int i;
-	for (i = 0; i < _countof(clrSelArray); ++i)
-	{
-		if (cr == clrSelArray[i])
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorHex
-
-CXTColorHex::CXTColorHex()
-{
-	m_bSmallCell = TRUE;
-	m_clrColor = (COLORREF)-1;
-	m_bLBtnDown = FALSE;
-	m_bPreSubclassInit = true;
-}
-
-CXTColorHex::~CXTColorHex()
-{
-	while (!m_arCells.IsEmpty())
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.RemoveHead();
-		SAFE_DELETE_AR (pCI->pPoint);
-		SAFE_DELETE (pCI);
-	}
-}
-
-BEGIN_MESSAGE_MAP(CXTColorHex, CStatic)
-	//{{AFX_MSG_MAP(CXTColorHex)
-	ON_WM_PAINT()
-	ON_WM_LBUTTONDOWN()
-	ON_WM_LBUTTONUP()
-	ON_WM_MOUSEMOVE()
-	ON_WM_ERASEBKGND()
-	ON_WM_LBUTTONDBLCLK()
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-#define CX_ANCHOR   42
-#define CY_ANCHOR   3
-#define CX_HEXDISP  182
-#define CY_HEXDISP  196
-
-void CXTColorHex::OnPaint()
-{
-	CPaintDC dc(this); // device context for painting
-
-	CXTPClientRect rc(this);
-	CXTPBufferDC memDC(dc);
-
-	if (m_bmpPicker.GetSafeHandle() == NULL)
-	{
-		// create bitmap
-		m_bmpPicker.DeleteObject();
-		m_bmpPicker.CreateCompatibleBitmap(&memDC,
-			rc.Width(), rc.Height());
-
-		// create picker DC
-		CDC dcPicker;
-		dcPicker.CreateCompatibleDC(&memDC);
-		CBitmap* pOldBitmap = dcPicker.SelectObject(&m_bmpPicker);
-
-		dcPicker.SetBkMode(TRANSPARENT);
-
-		HBRUSH hBrush = (HBRUSH)GetParent()->SendMessage(WM_CTLCOLORSTATIC, (WPARAM)dcPicker.GetSafeHdc(), (LPARAM)m_hWnd);
-		if (hBrush)
-		{
-			::FillRect(dcPicker.GetSafeHdc(), rc, hBrush);
-		}
-		else
-		{
-			dcPicker.FillSolidRect(rc, GetXtremeColor(COLOR_3DFACE));
-		}
-
-		DrawColorSelector(&dcPicker);
-		dcPicker.SelectObject(pOldBitmap);
-	}
-
-	memDC.DrawState(CPoint(0, 0), rc.Size(), &m_bmpPicker, DSS_NORMAL, 0);
-	SelectColorCell(&memDC);
-}
-
-BOOL CXTColorHex::OnEraseBkgnd(CDC* /*pDC*/)
-{
-	return TRUE;
-}
-
-void CXTColorHex::SelectColorCell(CDC* pDC)
-{
-	CXTColorDialog* pParentWnd = (CXTColorDialog*)GetParent()->GetParent();
-	ASSERT(pParentWnd);
-	if (!pParentWnd)
-		return;
-	if (pParentWnd->GetColor() == m_clrColor)
-	{
-		if (m_clrColor == RGB(0xff, 0xff, 0xff))
-		{
-			CXTPClientRect rcClient(this);
-			CPoint ptCurrent = m_ptCurrent;
-
-			m_ptCurrent.x = (rcClient.Width()-14)/2;
-			m_ptCurrent.y = 74 + CY_ANCHOR;
-			DrawSelectCell(pDC);
-
-			m_ptCurrent.x = (rcClient.Width()-CX_HEXDISP)/2;
-			m_ptCurrent.y = 171 + CY_ANCHOR;
-			DrawLargeSelectCell(pDC);
-
-			m_ptCurrent = ptCurrent;
-		}
-		else if (m_clrColor == RGB(0x00, 0x00, 0x00))
-		{
-			DrawLargeSelectCell(pDC);
-		}
-		else if (IsValidColor(m_clrColor))
-		{
-			if (m_bSmallCell)
-			{
-				DrawSelectCell(pDC);
-			}
-			else
-			{
-				DrawLargeSelectCell(pDC);
-			}
-		}
-	}
-}
-
-void CXTColorHex::DrawLargeSelectCell(CDC* pDC)
-{
-	int x = m_ptCurrent.x;
-	int y = m_ptCurrent.y;
-	x -= 2;
-
-	COLORREF clr = RGB(0x00, 0x00, 0x00);
-
-	// outer border
-	int i;
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + i, y-i, clr);
-
-	pDC->SetPixel(x + 3, y-2, clr);
-	pDC->SetPixel(x + 4, y-3, clr);
-	pDC->SetPixel(x + 5, y-3, clr);
-	pDC->SetPixel(x + 6, y-4, clr);
-	pDC->SetPixel(x + 7, y-4, clr);
-	pDC->SetPixel(x + 8, y-5, clr);
-	pDC->SetPixel(x + 9, y-5, clr);
-	pDC->SetPixel(x + 10, y-6, clr);
-	pDC->SetPixel(x + 11, y-6, clr);
-	pDC->SetPixel(x + 12, y-7, clr);
-	pDC->SetPixel(x + 13, y-7, clr);
-	pDC->SetPixel(x + 14, y-8, clr);
-	pDC->SetPixel(x + 15, y-8, clr);
-	pDC->SetPixel(x + 16, y-8, clr);
-	pDC->SetPixel(x + 17, y-8, clr);
-	pDC->SetPixel(x + 18, y-8, clr);
-	pDC->SetPixel(x + 19, y-7, clr);
-	pDC->SetPixel(x + 20, y-7, clr);
-	pDC->SetPixel(x + 21, y-6, clr);
-	pDC->SetPixel(x + 22, y-6, clr);
-	pDC->SetPixel(x + 23, y-5, clr);
-	pDC->SetPixel(x + 24, y-5, clr);
-	pDC->SetPixel(x + 25, y-4, clr);
-	pDC->SetPixel(x + 26, y-4, clr);
-	pDC->SetPixel(x + 27, y-3, clr);
-	pDC->SetPixel(x + 28, y-3, clr);
-	pDC->SetPixel(x + 29, y-2, clr);
-	pDC->SetPixel(x + 30, y-2, clr);
-	pDC->SetPixel(x + 31, y-1, clr);
-
-	for (i = 0; i < 17; ++i)
-		pDC->SetPixel(x + 32, y + i, clr);
-
-	pDC->SetPixel(x + 31, y + 17, clr);
-	pDC->SetPixel(x + 30, y + 18, clr);
-	pDC->SetPixel(x + 29, y + 18, clr);
-	pDC->SetPixel(x + 28, y + 19, clr);
-	pDC->SetPixel(x + 27, y + 19, clr);
-	pDC->SetPixel(x + 26, y + 20, clr);
-	pDC->SetPixel(x + 25, y + 20, clr);
-	pDC->SetPixel(x + 24, y + 21, clr);
-	pDC->SetPixel(x + 23, y + 21, clr);
-	pDC->SetPixel(x + 22, y + 22, clr);
-	pDC->SetPixel(x + 21, y + 22, clr);
-	pDC->SetPixel(x + 20, y + 23, clr);
-	pDC->SetPixel(x + 19, y + 23, clr);
-	pDC->SetPixel(x + 18, y + 24, clr);
-	pDC->SetPixel(x + 17, y + 24, clr);
-	pDC->SetPixel(x + 16, y + 24, clr);
-	pDC->SetPixel(x + 15, y + 24, clr);
-	pDC->SetPixel(x + 14, y + 24, clr);
-	pDC->SetPixel(x + 13, y + 23, clr);
-	pDC->SetPixel(x + 12, y + 23, clr);
-	pDC->SetPixel(x + 11, y + 22, clr);
-	pDC->SetPixel(x + 10, y + 22, clr);
-	pDC->SetPixel(x + 9, y + 21, clr);
-	pDC->SetPixel(x + 8, y + 21, clr);
-	pDC->SetPixel(x + 7, y + 20, clr);
-	pDC->SetPixel(x + 6, y + 20, clr);
-	pDC->SetPixel(x + 5, y + 19, clr);
-	pDC->SetPixel(x + 4, y + 19, clr);
-	pDC->SetPixel(x + 3, y + 18, clr);
-	pDC->SetPixel(x + 2, y + 18, clr);
-	pDC->SetPixel(x + 1, y + 17, clr);
-
-	for (i = 0; i < 17; ++i)
-		pDC->SetPixel(x, y + i, clr);
-
-	// inner border
-	for (i = 0; i < 15; ++i)
-		pDC->SetPixel(x + 4, y + 1 + i, clr);
-
-	pDC->SetPixel(x + 5, y + 16, clr);
-	pDC->SetPixel(x + 6, y + 16, clr);
-	pDC->SetPixel(x + 7, y + 17, clr);
-	pDC->SetPixel(x + 8, y + 17, clr);
-	pDC->SetPixel(x + 9, y + 18, clr);
-	pDC->SetPixel(x + 10, y + 18, clr);
-	pDC->SetPixel(x + 11, y + 19, clr);
-	pDC->SetPixel(x + 12, y + 19, clr);
-	pDC->SetPixel(x + 13, y + 20, clr);
-	pDC->SetPixel(x + 14, y + 20, clr);
-	pDC->SetPixel(x + 15, y + 21, clr);
-	pDC->SetPixel(x + 16, y + 21, clr);
-	pDC->SetPixel(x + 17, y + 21, clr);
-	pDC->SetPixel(x + 18, y + 20, clr);
-	pDC->SetPixel(x + 19, y + 20, clr);
-	pDC->SetPixel(x + 20, y + 19, clr);
-	pDC->SetPixel(x + 21, y + 19, clr);
-	pDC->SetPixel(x + 22, y + 18, clr);
-	pDC->SetPixel(x + 23, y + 18, clr);
-	pDC->SetPixel(x + 24, y + 17, clr);
-	pDC->SetPixel(x + 25, y + 17, clr);
-	pDC->SetPixel(x + 26, y + 16, clr);
-	pDC->SetPixel(x + 27, y + 16, clr);
-
-	for (i = 0; i < 15; ++i)
-		pDC->SetPixel(x + 28, y + 1 + i, clr);
-
-	pDC->SetPixel(x + 27, y, clr);
-	pDC->SetPixel(x + 26, y, clr);
-	pDC->SetPixel(x + 25, y-1, clr);
-	pDC->SetPixel(x + 24, y-1, clr);
-	pDC->SetPixel(x + 23, y-2, clr);
-	pDC->SetPixel(x + 22, y-2, clr);
-	pDC->SetPixel(x + 21, y-3, clr);
-	pDC->SetPixel(x + 20, y-3, clr);
-	pDC->SetPixel(x + 19, y-4, clr);
-	pDC->SetPixel(x + 18, y-4, clr);
-	pDC->SetPixel(x + 17, y-5, clr);
-	pDC->SetPixel(x + 16, y-5, clr);
-	pDC->SetPixel(x + 15, y-5, clr);
-	pDC->SetPixel(x + 14, y-4, clr);
-	pDC->SetPixel(x + 13, y-4, clr);
-	pDC->SetPixel(x + 12, y-3, clr);
-	pDC->SetPixel(x + 11, y-3, clr);
-	pDC->SetPixel(x + 10, y-2, clr);
-	pDC->SetPixel(x + 9, y-2, clr);
-	pDC->SetPixel(x + 8, y-1, clr);
-	pDC->SetPixel(x + 7, y-1, clr);
-	pDC->SetPixel(x + 6, y, clr);
-	pDC->SetPixel(x + 5, y, clr);
-
-	// fill inside.
-	clr = RGB(0xff, 0xff, 0xff);
-
-	for (i = 0; i < 17; ++i)
-	{
-		pDC->SetPixel(x + 1, y + i, clr);
-		pDC->SetPixel(x + 2, y + i, clr);
-		pDC->SetPixel(x + 3, y + i, clr);
-	}
-
-	pDC->SetPixel(x + 4, y, clr);
-	pDC->SetPixel(x + 4, y + 16, clr);
-
-	for (i = 0; i < 17; ++i)
-	{
-		pDC->SetPixel(x + 29, y + i, clr);
-		pDC->SetPixel(x + 30, y + i, clr);
-		pDC->SetPixel(x + 31, y + i, clr);
-	}
-
-	pDC->SetPixel(x + 28, y, clr);
-	pDC->SetPixel(x + 28, y + 16, clr);
-
-	for (i = 0; i < 5; ++i)
-	{
-		pDC->SetPixel(x + 2 + i, y-1, clr);
-		pDC->SetPixel(x + 4 + i, y-2, clr);
-		pDC->SetPixel(x + 6 + i, y-3, clr);
-		pDC->SetPixel(x + 8 + i, y-4, clr);
-		pDC->SetPixel(x + 10 + i, y-5, clr);
-		pDC->SetPixel(x + 12 + i, y-6, clr);
-		pDC->SetPixel(x + 16 + i, y-6, clr);
-		pDC->SetPixel(x + 14 + i, y-7, clr);
-		pDC->SetPixel(x + 18 + i, y-5, clr);
-		pDC->SetPixel(x + 20 + i, y-4, clr);
-		pDC->SetPixel(x + 22 + i, y-3, clr);
-		pDC->SetPixel(x + 24 + i, y-2, clr);
-		pDC->SetPixel(x + 26 + i, y-1, clr);
-		pDC->SetPixel(x + 26 + i, y + 17, clr);
-		pDC->SetPixel(x + 24 + i, y + 18, clr);
-		pDC->SetPixel(x + 22 + i, y + 19, clr);
-		pDC->SetPixel(x + 20 + i, y + 20, clr);
-		pDC->SetPixel(x + 18 + i, y + 21, clr);
-		pDC->SetPixel(x + 14 + i, y + 23, clr);
-		pDC->SetPixel(x + 16 + i, y + 22, clr);
-		pDC->SetPixel(x + 12 + i, y + 22, clr);
-		pDC->SetPixel(x + 10 + i, y + 21, clr);
-		pDC->SetPixel(x + 8 + i, y + 20, clr);
-		pDC->SetPixel(x + 6 + i, y + 19, clr);
-		pDC->SetPixel(x + 4 + i, y + 18, clr);
-		pDC->SetPixel(x + 2 + i, y + 17, clr);
-	}
-}
-
-void CXTColorHex::DrawSelectCell(CDC* pDC)
-{
-	COLORREF clr = RGB(0x00, 0x00, 0x00);
-	int x = m_ptCurrent.x;
-	int y = m_ptCurrent.y;
-	x -= 2;
-	y -= 1;
-
-	// outer border
-	int i;
-	for (i = 0; i < 11; ++i)
-		pDC->SetPixel(x, y + i, clr);
-
-	pDC->SetPixel(x + 1, y + 11, clr);
-	pDC->SetPixel(x + 2, y + 11, clr);
-	pDC->SetPixel(x + 3, y + 12, clr);
-	pDC->SetPixel(x + 4, y + 12, clr);
-	pDC->SetPixel(x + 5, y + 13, clr);
-	pDC->SetPixel(x + 6, y + 13, clr);
-
-	for (i = 0; i < 5; ++i)
-		pDC->SetPixel(x + 7 + i, y + 14, clr);
-
-	pDC->SetPixel(x + 12, y + 13, clr);
-	pDC->SetPixel(x + 13, y + 13, clr);
-	pDC->SetPixel(x + 14, y + 12, clr);
-	pDC->SetPixel(x + 15, y + 12, clr);
-	pDC->SetPixel(x + 16, y + 11, clr);
-	pDC->SetPixel(x + 17, y + 11, clr);
-
-	for (i = 0; i < 11; ++i)
-		pDC->SetPixel(x + 18, y + i, clr);
-
-	pDC->SetPixel(x + 16, y-1, clr);
-	pDC->SetPixel(x + 17, y-1, clr);
-	pDC->SetPixel(x + 14, y-2, clr);
-	pDC->SetPixel(x + 15, y-2, clr);
-	pDC->SetPixel(x + 12, y-3, clr);
-	pDC->SetPixel(x + 13, y-3, clr);
-
-	for (i = 0; i < 5; ++i)
-		pDC->SetPixel(x + 7 + i, y-4, clr);
-
-	pDC->SetPixel(x + 5, y-3, clr);
-	pDC->SetPixel(x + 6, y-3, clr);
-	pDC->SetPixel(x + 3, y-2, clr);
-	pDC->SetPixel(x + 4, y-2, clr);
-	pDC->SetPixel(x + 1, y-1, clr);
-	pDC->SetPixel(x + 2, y-1, clr);
-
-	// inner border
-	for (i = 0; i < 7; ++i)
-		pDC->SetPixel(x + 3, y + 2 + i, clr);
-
-	pDC->SetPixel(x + 4, y + 9, clr);
-	pDC->SetPixel(x + 5, y + 9, clr);
-	pDC->SetPixel(x + 6, y + 10, clr);
-	pDC->SetPixel(x + 7, y + 10, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 8 + i, y + 11, clr);
-
-	pDC->SetPixel(x + 11, y + 10, clr);
-	pDC->SetPixel(x + 12, y + 10, clr);
-	pDC->SetPixel(x + 13, y + 9, clr);
-	pDC->SetPixel(x + 14, y + 9, clr);
-
-	for (i = 0; i < 7; ++i)
-		pDC->SetPixel(x + 15, y + 2 + i, clr);
-
-	pDC->SetPixel(x + 13, y + 1, clr);
-	pDC->SetPixel(x + 14, y + 1, clr);
-	pDC->SetPixel(x + 11, y, clr);
-	pDC->SetPixel(x + 12, y, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 8 + i, y-1, clr);
-
-	pDC->SetPixel(x + 6, y, clr);
-	pDC->SetPixel(x + 7, y, clr);
-	pDC->SetPixel(x + 4, y + 1, clr);
-	pDC->SetPixel(x + 5, y + 1, clr);
-
-	// fill inside.
-	clr = RGB(0xff, 0xff, 0xff);
-	x++;
-
-	for (i = 0; i < 11; ++i)
-	{
-		pDC->SetPixel(x, y + i, clr);
-		pDC->SetPixel(x + 1, y + i, clr);
-	}
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 2, y + 9 + i, clr);
-
-	pDC->SetPixel(x + 3, y + 10, clr);
-	pDC->SetPixel(x + 3, y + 11, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 4, y + 10 + i, clr);
-
-	pDC->SetPixel(x + 5, y + 11, clr);
-	pDC->SetPixel(x + 5, y + 12, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 6, y + 11 + i, clr);
-
-	pDC->SetPixel(x + 7, y + 12, clr);
-	pDC->SetPixel(x + 7, y + 13, clr);
-	pDC->SetPixel(x + 8, y + 12, clr);
-	pDC->SetPixel(x + 8, y + 13, clr);
-	pDC->SetPixel(x + 9, y + 12, clr);
-	pDC->SetPixel(x + 9, y + 13, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 10, y + 11 + i, clr);
-
-	pDC->SetPixel(x + 11, y + 11, clr);
-	pDC->SetPixel(x + 11, y + 12, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 12, y + 10 + i, clr);
-
-	pDC->SetPixel(x + 13, y + 10, clr);
-	pDC->SetPixel(x + 13, y + 11, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 14, y + 9 + i, clr);
-
-	for (i = 0; i < 11; ++i)
-	{
-		pDC->SetPixel(x + 15, y + i, clr);
-		pDC->SetPixel(x + 16, y + i, clr);
-	}
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 14, y-1 + i, clr);
-
-	pDC->SetPixel(x + 13, y, clr);
-	pDC->SetPixel(x + 13, y-1, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 12, y-2 + i, clr);
-
-	pDC->SetPixel(x + 11, y-1, clr);
-	pDC->SetPixel(x + 11, y-2, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 10, y-3 + i, clr);
-
-	pDC->SetPixel(x + 7, y-2, clr);
-	pDC->SetPixel(x + 7, y-3, clr);
-	pDC->SetPixel(x + 8, y-2, clr);
-	pDC->SetPixel(x + 8, y-3, clr);
-	pDC->SetPixel(x + 9, y-2, clr);
-	pDC->SetPixel(x + 9, y-3, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 6, y-3 + i, clr);
-
-	pDC->SetPixel(x + 5, y-1, clr);
-	pDC->SetPixel(x + 5, y-2, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 4, y-2 + i, clr);
-
-	pDC->SetPixel(x + 3, y, clr);
-	pDC->SetPixel(x + 3, y-1, clr);
-
-	for (i = 0; i < 3; ++i)
-		pDC->SetPixel(x + 2, y-1 + i, clr);
-}
-
-void CXTColorHex::DrawCell(CDC* pDC, CPoint point, COLORREF clr, int l, int u, int r, int d)
-{
-	HEXCOLOR_CELL* pCI = new HEXCOLOR_CELL;
-
-	CPen penNew(PS_SOLID, 1, clr);
-	CPen* pOldPen = pDC->SelectObject(&penNew);
-
-	pCI->clr = clr;
-	pCI->bSmall = TRUE;
-	pCI->pPoint = new CPoint[168];
-	pCI->direction[0] = l;
-	pCI->direction[1] = u;
-	pCI->direction[2] = r;
-	pCI->direction[3] = d;
-
-	m_arCells.AddTail(pCI);
-
-	if (clr == m_clrColor)
-	{
-		m_ptCurrent.x = point.x;
-		m_ptCurrent.y = point.y;
-	}
-
-	int idx = 0;
-	int i;
-	for (i = 0; i < 9; ++i)
-	{
-		CPoint point1(point.x, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 1, point.y + i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 11; ++i)
-	{
-		CPoint point1(point.x + 2, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 3, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 13; ++i)
-	{
-		CPoint point1(point.x + 4, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 5, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 15; ++i)
-	{
-		CPoint point1(point.x + 6, (point.y-3)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 7, (point.y-3)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-		CPoint point3(point.x + 8, (point.y-3)+i);
-		pDC->SetPixel(point3, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point3;
-			idx++;
-		}
-	}
-	for (i = 0; i < 13; ++i)
-	{
-		CPoint point1(point.x + 9, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 10, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 11; ++i)
-	{
-		CPoint point1(point.x + 11, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 12, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 9; ++i)
-	{
-		CPoint point1(point.x + 13, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-	}
-
-	pDC->SelectObject(pOldPen);
-}
-
-void CXTColorHex::DrawLargeCell(CDC* pDC, CPoint point, COLORREF clr, int l, int u, int r, int d)
-{
-	HEXCOLOR_CELL* pCI = new HEXCOLOR_CELL;
-
-	CPen penNew(PS_SOLID, 1, clr);
-	CPen* pOldPen = pDC->SelectObject(&penNew);
-
-	pCI->clr = clr;
-	pCI->bSmall = FALSE;
-	pCI->pPoint = new CPoint[691];
-	pCI->direction[0] = l;
-	pCI->direction[1] = u;
-	pCI->direction[2] = r;
-	pCI->direction[3] = d;
-
-	m_arCells.AddTail(pCI);
-
-	if (clr == m_clrColor)
-	{
-		m_ptCurrent.x = point.x;
-		m_ptCurrent.y = point.y;
-	}
-
-	int idx = 0;
-	int i;
-	for (i = 0; i < 17; ++i)
-	{
-		CPoint point1(point.x, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 1, point.y + i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 19; ++i)
-	{
-		CPoint point1(point.x + 2, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 3, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 21; ++i)
-	{
-		CPoint point1(point.x + 4, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 5, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 23; ++i)
-	{
-		CPoint point1(point.x + 6, (point.y-3)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-	}
-	for (i = 0; i < 25; ++i)
-	{
-		CPoint point1(point.x + 7, (point.y-4)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 8, (point.y-4)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 27; ++i)
-	{
-		CPoint point1(point.x + 9, (point.y-5)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 10, (point.y-5)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 29; ++i)
-	{
-		CPoint point1(point.x + 11, (point.y-6)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 12, (point.y-6)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 31; ++i)
-	{
-		CPoint point1(point.x + 13, (point.y-7)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 14, (point.y-7)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-		CPoint point3(point.x + 15, (point.y-7)+i);
-		pDC->SetPixel(point3, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point3;
-			idx++;
-		}
-	}
-	for (i = 0; i < 29; ++i)
-	{
-		CPoint point1(point.x + 16, (point.y-6)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 17, (point.y-6)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 27; ++i)
-	{
-		CPoint point1(point.x + 18, (point.y-5)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 19, (point.y-5)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 25; ++i)
-	{
-		CPoint point1(point.x + 20, (point.y-4)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 21, (point.y-4)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 23; ++i)
-	{
-		CPoint point1(point.x + 22, (point.y-3)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-	}
-	for (i = 0; i < 21; ++i)
-	{
-		CPoint point1(point.x + 23, (point.y-2)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 24, (point.y-2)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 19; ++i)
-	{
-		CPoint point1(point.x + 25, (point.y-1)+i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 26, (point.y-1)+i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-	for (i = 0; i < 17; ++i)
-	{
-		CPoint point1(point.x + 27, point.y + i);
-		pDC->SetPixel(point1, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point1;
-			idx++;
-		}
-		CPoint point2(point.x + 28, point.y + i);
-		pDC->SetPixel(point2, clr);
-		if (pCI != NULL)
-		{
-			pCI->pPoint[idx] = point2;
-			idx++;
-		}
-	}
-
-	pDC->SelectObject(pOldPen);
-}
-
-void CXTColorHex::DrawColorSelector(CDC* pDC)
-{
-	CXTPClientRect rcClient(this);
-
-	int x = ((rcClient.Width()-CX_HEXDISP)/2)+CX_ANCHOR;
-	int y = CY_ANCHOR;
-
-	int i = -1;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], -1, -1, 1, 8);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 0, -1, 2, 9);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 1, -1, 3, 10);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 2, -1, 4, 11);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 3, -1, 5, 12);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 4, -1, 6, 13);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 5, -1, 7, 14);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 6, -1, 8, 16);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 7, 0, 9, 17);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 8, 1, 10, 18);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 9, 2, 11, 19);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 10, 3, 12, 20);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 11, 4, 13, 21);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 12, 5, 14, 22);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 13, 6, 15, 23);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 14, 6, 16, 25);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 15, 7, 17, 26);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 16, 8, 18, 27);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 17, 9, 19, 28);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 18, 10, 20, 29);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 19, 11, 21, 30);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 20, 12, 22, 31);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 21, 13, 23, 32);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 22, 14, 24, 33);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 23, 14, 25, 35);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 24, 15, 26, 36);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 25, 16, 27, 37);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 26, 17, 28, 38);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 27, 18, 29, 39);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 28, 19, 30, 40);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 29, 20, 31, 41);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 30, 21, 32, 42);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 31, 22, 33, 43);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 32, 23, 34, 44);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 33, 23, 35, 46);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 34, 24, 36, 47);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 35, 25, 37, 48);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 36, 26, 38, 49);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 37, 27, 39, 50);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 38, 28, 40, 51);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 39, 29, 41, 52);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 40, 30, 42, 53);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 41, 31, 43, 54);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 42, 32, 44, 55);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 43, 33, 45, 56);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 44, 33, 46, 58);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 45, 34, 47, 59);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 46, 35, 48, 60);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 47, 36, 49, 61);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 48, 37, 50, 62);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 49, 38, 51, 63);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 50, 39, 52, 64);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 51, 40, 53, 65);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 52, 41, 54, 66);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 53, 42, 55, 67);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 54, 43, 56, 68);
-	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 55, 44, 57, 69);
-
-	x -= 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 56, 44, 58, 70);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 57, 45, 59, 71);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 58, 46, 60, 72);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 59, 47, 61, 73);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 60, 48, 62, 74);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 61, 49, 63, 75);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 62, 50, 64, 76);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 63, 51, 65, 77);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 64, 52, 66, 78);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 65, 53, 67, 79);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 66, 54, 68, 80);
-	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 67, 55, 69, 81);
-	DrawCell(pDC, CPoint(x + 168, y), clrSelArray[++i], 68, 56, 70, 82);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 69, 57, 71, 82);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 70, 58, 72, 83);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 71, 59, 73, 84);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 72, 60, 74, 85);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 73, 61, 75, 86);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 74, 62, 76, 87);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 75, 63, 77, 88);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 76, 64, 78, 89);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 77, 65, 79, 90);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 78, 66, 80, 91);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 79, 67, 81, 92);
-	DrawCell(pDC, CPoint(x + 154, y), clrSelArray[++i], 80, 68, 82, 93);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 81, 70, 83, 93);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 82, 71, 84, 94);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 83, 72, 85, 95);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 84, 73, 86, 96);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 85, 74, 87, 97);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 86, 75, 88, 98);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 87, 76, 89, 99);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 88, 77, 90, 100);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 89, 78, 91, 101);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 90, 79, 92, 102);
-	DrawCell(pDC, CPoint(x + 140, y), clrSelArray[++i], 91, 80, 93, 103);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 92, 82, 94, 103);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 93, 83, 95, 104);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 94, 84, 96, 105);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 95, 85, 97, 106);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 96, 86, 98, 107);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 97, 87, 99, 108);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 98, 88, 100, 109);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 99, 89, 101, 110);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 100, 90, 102, 111);
-	DrawCell(pDC, CPoint(x + 126, y), clrSelArray[++i], 101, 91, 103, 112);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 102, 93, 104, 112);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 103, 94, 105, 113);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 104, 95, 106, 114);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 105, 96, 107, 115);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 106, 97, 108, 116);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 107, 98, 109, 117);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 108, 99, 110, 118);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 109, 100, 111, 119);
-	DrawCell(pDC, CPoint(x + 112, y), clrSelArray[++i], 110, 101, 112, 120);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 111, 103, 113, 120);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 112, 104, 114, 121);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 113, 105, 115, 122);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 114, 106, 116, 123);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 115, 107, 117, 124);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 116, 108, 118, 125);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 117, 109, 119, 126);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 118, 110, 120, 142);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 119, 112, 121, 121);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 120, 113, 122, 122);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 121, 114, 123, 123);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 122, 115, 124, 124);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 123, 116, 125, 125);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 124, 117, 126, 126);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 125, 118, 142, 142);
-
-	// Grey scale colors.
-	x -= 7;
-	y += 25;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 142, 142, 135, 135);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 135, 135, 136, 136);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 136, 136, 137, 137);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 137, 137, 138, 138);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 138, 138, 139, 139);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 139, 139, 140, 140);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 140, 140, 141, 141);
-	DrawCell(pDC, CPoint(x + 98, y), clrSelArray[++i], 141, 141, 143, 143);
-
-	x += 7;
-	y += 12;
-	DrawCell(pDC, CPoint(x, y), clrSelArray[++i], 127, 127, 128, 128);
-	DrawCell(pDC, CPoint(x + 14, y), clrSelArray[++i], 128, 128, 129, 129);
-	DrawCell(pDC, CPoint(x + 28, y), clrSelArray[++i], 129, 129, 130, 130);
-	DrawCell(pDC, CPoint(x + 42, y), clrSelArray[++i], 130, 130, 131, 131);
-	DrawCell(pDC, CPoint(x + 56, y), clrSelArray[++i], 131, 131, 132, 132);
-	DrawCell(pDC, CPoint(x + 70, y), clrSelArray[++i], 132, 132, 133, 133);
-	DrawCell(pDC, CPoint(x + 84, y), clrSelArray[++i], 133, 133, 134, 134);
-
-	x = (rcClient.Width() - CX_HEXDISP)/2;
-	DrawLargeCell(pDC, CPoint(x, y-12), clrSelArray[++i], 126, 126, 127, 127);
-
-	x = ((rcClient.Width() - CX_HEXDISP)/2) + (CX_HEXDISP-29);
-	DrawLargeCell(pDC, CPoint(x, y - 12), clrSelArray[++i], 134, 134, -1, -1);
-}
-
-void CXTColorHex::UpdateSelection(CPoint point)
-{
-	COLORREF clr = ColorFromPoint(point);
-
-	if ((clr != (COLORREF)-1) && (m_clrColor != clr))
-	{
-		m_clrColor = clr;
-		GetParent()->SendMessage(XTWM_UPDATECOLOR,
-			(WPARAM)(COLORREF)m_clrColor);
-
-		CRect rc;
-		GetClientRect(&rc);
-
-		CClientDC dc(this);
-		CXTPBufferDC memDC(dc, rc);
-
-		memDC.DrawState(CPoint(0, 0), rc.Size(), &m_bmpPicker, DSS_NORMAL, 0);
-		SelectColorCell(&memDC);
-	}
-}
-
-void CXTColorHex::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	if (GetFocus() != this)
-		SetFocus();
-
-	UpdateSelection(point);
-	m_bLBtnDown = TRUE;
-
-	CWnd::OnLButtonDown(nFlags, point);
-}
-
-
-void CXTColorHex::OnLButtonDblClk(UINT nFlags, CPoint point)
-{
-	CStatic::OnLButtonDblClk(nFlags, point);
-
-	if (GetFocus() != this)
-		SetFocus();
-
-	COLORREF clr = ColorFromPoint(point);
-
-	if (clr != (COLORREF)-1)
-	{
-		UpdateSelection(point);
-		m_bLBtnDown = TRUE;
-
-		CPropertyPage* pParentPage = (CPropertyPage*)GetParent();
-		ASSERT_VALID(pParentPage);
-
-		CPropertySheet* pParentSheet = (CPropertySheet*)pParentPage->GetParent();
-		ASSERT_VALID(pParentSheet);
-
-		pParentSheet->EndDialog(IDOK);
-	}
-}
-
-COLORREF CXTColorHex::ColorFromPoint(CPoint point)
-{
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
-		ASSERT(pCI != NULL);
-
-		if (pCI == NULL)
-			return (COLORREF)-1;
-
-		int nPixelCount = pCI->bSmall ? 168 : 691;
-		int i;
-		for (i = 0; i < nPixelCount; ++i)
-		{
-			if (point == pCI->pPoint[i])
-			{
-				m_ptCurrent = pCI->pPoint[0];
-				m_bSmallCell = pCI->bSmall;
-				return pCI->clr;
-			}
-		}
-	}
-
-	return (COLORREF)-1;
-}
-
-void CXTColorHex::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	m_bLBtnDown = FALSE;
-	CWnd::OnLButtonUp(nFlags, point);
-}
-
-void CXTColorHex::OnMouseMove(UINT nFlags, CPoint point)
-{
-	if (m_bLBtnDown)
-	{
-		UpdateSelection(point);
-	}
-
-	CWnd::OnMouseMove(nFlags, point);
-}
-
-bool CXTColorHex::Init()
-{
-	if (::IsWindow(m_hWnd))
-	{
-		ModifyStyle(NULL, SS_NOTIFY);
-		return true;
-	}
-
-	return false;
-}
-
-void CXTColorHex::PreSubclassWindow()
-{
-	CWnd::PreSubclassWindow();
-
-	if (m_bPreSubclassInit)
-	{
-		// Initialize the control.
-		Init();
-	}
-}
-
-int CXTColorHex::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CWnd::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	// Initialize the control.
-	Init();
-
-	return 0;
-}
-
-BOOL CXTColorHex::PreCreateWindow(CREATESTRUCT& cs)
-{
-	if (!CWnd::PreCreateWindow(cs))
-		return FALSE;
-
-	// When creating controls dynamically Init() must
-	// be called from OnCreate() and not from
-	// PreSubclassWindow().
-
-	m_bPreSubclassInit = false;
-
-	return TRUE;
-}
-
-CXTColorHex::HEXCOLOR_CELL* CXTColorHex::GetColorCell(COLORREF clr)
-{
-	bool bWhite = false;
-
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos))
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
-		ASSERT(pCI != NULL);
-		if (!pCI)
-			continue;
-
-		if (clr == pCI->clr)
-		{
-			if (clr == RGB(0xff, 0xff, 0xff) && bWhite == false)
-			{
-				if (m_ptCurrent.y >= 176) // big hex selected
-				{
-					bWhite = true;
-					continue;
-				}
-			}
-			return pCI;
-		}
-	}
-
-	return NULL;
-}
-
-void CXTColorHex::SetSelectedColor(int iIndex)
-{
-	if (iIndex != -1)
-	{
-		POSITION pos2 = m_arCells.FindIndex(iIndex);
-		ASSERT(pos2 != NULL);
-
-		HEXCOLOR_CELL* pClrCell = m_arCells.GetAt(pos2);
-		ASSERT(pClrCell != NULL);
-
-		if (pClrCell)
-			UpdateSelection(pClrCell->pPoint[0]);
-	}
-}
-
-void CXTColorHex::SetSelectedColor(COLORREF clr)
-{
-	m_clrColor = clr;
-	int iIndex = -1;
-
-	POSITION pos;
-	for (pos = m_arCells.GetHeadPosition(); pos; m_arCells.GetNext(pos), ++iIndex)
-	{
-		HEXCOLOR_CELL* pCI = m_arCells.GetAt(pos);
-		ASSERT(pCI != NULL);
-
-		if (pCI && (clr == pCI->clr))
-		{
-			SetSelectedColor(iIndex);
-		}
-	}
-}
-
-BOOL CXTColorHex::PreTranslateMessage(MSG* pMsg)
-{
-	switch (pMsg->message)
-	{
-	case WM_KEYDOWN:
-		{
-			HEXCOLOR_CELL* pClrCell = GetColorCell(m_clrColor);
-			if (pClrCell == NULL)
-				pClrCell = GetColorCell(RGB(0x00, 0x00, 0x00));
-
-			TCHAR vkey = (TCHAR)pMsg->wParam;
-			switch (vkey)
-			{
-			case VK_LEFT:
-				SetSelectedColor(pClrCell->direction[0]);
-				break;
-			case VK_UP:
-				SetSelectedColor(pClrCell->direction[1]);
-				break;
-			case VK_RIGHT:
-				SetSelectedColor(pClrCell->direction[2]);
-				break;
-			case VK_DOWN:
-				SetSelectedColor(pClrCell->direction[3]);
-				break;
-			case VK_RETURN:
-			case VK_SPACE:
-				CPropertyPage* pParentPage = (CPropertyPage*)GetParent();
-				ASSERT_VALID(pParentPage);
-
-				CPropertySheet* pParentSheet = (CPropertySheet*)pParentPage->GetParent();
-				ASSERT_VALID(pParentSheet);
-
-				pParentSheet->EndDialog(IDOK);
-				break;
-			}
-		}
-		break;
-	}
-
-	return CStatic::PreTranslateMessage(pMsg);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorPageStandard
-
-BEGIN_MESSAGE_MAP(CXTColorPageStandard, CPropertyPage)
-	//{{AFX_MSG_MAP(CXTColorPageStandard)
-	//ON_WM_PAINT()
-	//ON_WM_ERASEBKGND()
-	//}}AFX_MSG_MAP
-	ON_MESSAGE(XTWM_UPDATECOLOR, OnUpdateColor)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTColorPageStandard construction/destruction
-
-CXTColorPageStandard::CXTColorPageStandard(CXTColorDialog* pParentSheet)
-: CPropertyPage(CXTColorPageStandard::IDD)
-{
-	m_psp.dwFlags &= ~PSP_HASHELP;
-	m_pParentSheet = pParentSheet;
-
-	//{{AFX_DATA_INIT(CXTColorPageStandard)
-	//}}AFX_DATA_INIT
-}
-
-CXTColorPageStandard::~CXTColorPageStandard()
-{
-}
-
-void CXTColorPageStandard::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CXTColorPageStandard)
-	DDX_Control(pDX, XT_IDC_CLR_HEX, m_colorHex);
-	//}}AFX_DATA_MAP
-}
-
-LRESULT CXTColorPageStandard::OnUpdateColor(WPARAM wParam, LPARAM /*lParam*/)
-{
-	m_pParentSheet->SetNewColor((COLORREF)wParam, FALSE);
-	return 0;
-}

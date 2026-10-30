@@ -1,243 +1,43 @@
+// roc 2009-06 0080fc70  unit: CXTPRibbonTab  size: 75 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0080fc70
+//
+// 0080fc70  8b8984000000         mov ecx, dword ptr [ecx + 0x84]
+// 0080fc76  56                   push esi
+// 0080fc77  8b7128               mov esi, dword ptr [ecx + 0x28]
+// 0080fc7a  33c0                 xor eax, eax
+// 0080fc7c  57                   push edi
+// 0080fc7d  85f6                 test esi, esi
+// 0080fc7f  7e20                 jle 0x80fca1
+// 0080fc81  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 0080fc85  85c0                 test eax, eax
+// 0080fc87  7c0c                 jl 0x80fc95
+// 0080fc89  3bc6                 cmp eax, esi
+// 0080fc8b  7d08                 jge 0x80fc95
+// 0080fc8d  8b5124               mov edx, dword ptr [ecx + 0x24]
+// 0080fc90  8b1482               mov edx, dword ptr [edx + eax*4]
+// 0080fc93  eb02                 jmp 0x80fc97
+// 0080fc95  33d2                 xor edx, edx
+// 0080fc97  397a60               cmp dword ptr [edx + 0x60], edi
+// 0080fc9a  740c                 je 0x80fca8
+// 0080fc9c  40                   inc eax
+// 0080fc9d  3bc6                 cmp eax, esi
+// 0080fc9f  7ce4                 jl 0x80fc85
+// 0080fca1  5f                   pop edi
+// 0080fca2  33c0                 xor eax, eax
+// 0080fca4  5e                   pop esi
+// 0080fca5  c20400               ret 4
+// 0080fca8  85c0                 test eax, eax
+// 0080fcaa  7cf5                 jl 0x80fca1
+// 0080fcac  3bc6                 cmp eax, esi
+// 0080fcae  7df1                 jge 0x80fca1
+// 0080fcb0  8b4924               mov ecx, dword ptr [ecx + 0x24]
+// 0080fcb3  8b0481               mov eax, dword ptr [ecx + eax*4]
+// 0080fcb6  5f                   pop edi
+// 0080fcb7  5e                   pop esi
+// 0080fcb8  c20400               ret 4
+// library xtp-11.2.2/Source\Ribbon\XTPRibbonTab.cpp (function ?FindGroup@CXTPRibbonTab@@QBEPAVCXTPRibbonGroup@@H@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Ribbon/XTPRibbonTab.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
-//
-// This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPPropExchange.h"
-
-
-#include "XTPRibbonTab.h"
-#include "XTPRibbonGroup.h"
-#include "XTPRibbonGroups.h"
-#include "XTPRibbonBar.h"
-#include "XTPRibbonControlTab.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-CXTPRibbonTabContextHeader::CXTPRibbonTabContextHeader(CXTPRibbonTab* pFirstTab)
-{
-	ASSERT(pFirstTab);
-	if (!pFirstTab)
-		return;
-	m_pLastTab = m_pFirstTab = pFirstTab;
-	m_color = pFirstTab->GetContextColor();
-	m_strCpation = pFirstTab->GetContextCaption();
-	m_rcRect.SetRectEmpty();
-	pFirstTab->m_pContextHeader = this;
-}
-
-CXTPRibbonTabContextHeaders::CXTPRibbonTabContextHeaders()
-{
-
-}
-
-CXTPRibbonTabContextHeaders::~CXTPRibbonTabContextHeaders()
-{
-	RemoveAll();
-}
-int CXTPRibbonTabContextHeaders::GetCount() const
-{
-	return (int)m_arrHeaders.GetSize();
-}
-
-CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::GetHeader(int nIndex) const
-{
-	return m_arrHeaders.GetAt(nIndex);
-}
-
-void CXTPRibbonTabContextHeaders::RemoveAll()
-{
-	for (int i = 0; i < GetCount(); i++)
-	{
-		delete m_arrHeaders[i];
-	}
-	m_arrHeaders.RemoveAll();
-}
-
-CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::HitTest(CPoint pt) const
-{
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (m_arrHeaders[i]->m_rcRect.PtInRect(pt))
-			return m_arrHeaders[i];
-	}
-	return NULL;
-}
-
-void CXTPRibbonTabContextHeaders::Add(CXTPRibbonTabContextHeader* pHeader)
-{
-	m_arrHeaders.Add(pHeader);
-}
-
-IMPLEMENT_SERIAL(CXTPRibbonTab, CXTPTabManagerItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
-
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CXTPRibbonTab::CXTPRibbonTab()
-{
-	m_nId = 0;
-
-	m_pGroups = new CXTPRibbonGroups;
-	m_pGroups->m_pParentTab = this;
-
-	m_nContextColor = xtpRibbonTabContextColorNone;
-
-	m_pContextHeader = NULL;
-	m_pRibbonBar = NULL;
-	m_pParent = NULL;
-}
-
-CXTPRibbonTab::~CXTPRibbonTab()
-{
-	ASSERT(m_pGroups->GetCount() == 0);
-
-	CMDTARGET_RELEASE(m_pGroups);
-}
-
-void CXTPRibbonTab::Copy(CXTPRibbonTab* pRibbonTab)
-{
-	m_strCaption = pRibbonTab->m_strCaption;
-	m_nContextColor = pRibbonTab->m_nContextColor;
-	m_strContextCaption= pRibbonTab->m_strContextCaption;
-	m_nId = pRibbonTab->m_nId;
-	m_bVisible = pRibbonTab->m_bVisible;
-	m_strToolTip = pRibbonTab->m_strToolTip;
-
-	if (m_pTabManager && pRibbonTab->IsSelected())
-	{
-		Select();
-	}
-
-	m_pGroups->Copy(pRibbonTab->m_pGroups);
-}
-
-void CXTPRibbonTab::OnRemoved()
-{
-	m_pGroups->RemoveAll();
-}
-
-CXTPRibbonBar* CXTPRibbonTab::GetRibbonBar() const
-{
-	return m_pRibbonBar;
-}
-
-CXTPRibbonGroup* CXTPRibbonTab::AddGroup(LPCTSTR lpszCaption)
-{
-	return GetGroups()->Add(lpszCaption);
-}
-
-CXTPRibbonGroup* CXTPRibbonTab::AddGroup(int nID)
-{
-	CString strCaption;
-	if (!strCaption.LoadString(nID))
-	{
-	}
-
-	if (strCaption.Find('\n') != -1)
-	{
-		CString strPrompt = strCaption;
-		AfxExtractSubString(strCaption, strPrompt, 1);
-	}
-
-	return GetGroups()->Add(strCaption, nID);
-}
-
-void CXTPRibbonTab::SetVisible(BOOL bVisible)
-{
-	if (bVisible == IsVisible())
-		return;
-
-	CXTPTabManagerItem::SetVisible(bVisible);
-
-	if (!bVisible && IsSelected())
-	{
-		CXTPTabManagerItem* pItem = GetTabManager()->FindNextFocusable(-1, +1);
-		if (pItem)
-		{
-			pItem->Select();
-		}
-	}
-}
-
-CXTPRibbonGroup* CXTPRibbonTab::FindGroup(int nID) const
-{
-	for (int i = 0 ; i < m_pGroups->GetCount(); i++)
-	{
-		if (m_pGroups->GetAt(i)->GetID() == nID)
-			return m_pGroups->GetAt(i);
-	}
-	return NULL;
-}
-
-void CXTPRibbonTab::DoPropExchange(CXTPPropExchange* pPX)
-{
-	if (pPX->IsLoading())
-	{
-		CXTPRibbonControlTab* pControlTab = ((CXTPRibbonControlTab*)pPX->m_pOwner);
-		m_pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, pControlTab->GetParent());
-		m_pTabManager = pControlTab;
-		m_pParent = m_pRibbonBar;
-	}
-
-	PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
-	PX_String(pPX, _T("ToolTip"), m_strToolTip, _T(""));
-	PX_Enum(pPX, _T("ContextColor"), m_nContextColor, xtpRibbonTabContextColorNone);
-	PX_String(pPX, _T("ContextCaption"), m_strContextCaption, _T(""));
-	PX_Int(pPX, _T("Id"), m_nId, 0);
-	PX_Bool(pPX, _T("Visible"), m_bVisible, TRUE);
-
-	if (pPX->IsStoring())
-	{
-		BOOL bSelected = IsSelected();
-		PX_Bool(pPX, _T("Selected"), bSelected, FALSE);
-	}
-	else
-	{
-		BOOL bSelected = FALSE;
-		PX_Bool(pPX, _T("Selected"), bSelected, 0);
-		if (bSelected)
-		{
-			Select();
-		}
-	}
-
-
-	CXTPPropExchangeSection secGroups(pPX->GetSection(_T("Groups")));
-	m_pGroups->DoPropExchange(&secGroups);
-}
-
-

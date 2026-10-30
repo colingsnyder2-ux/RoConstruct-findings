@@ -1,276 +1,53 @@
 // from server: 100% by auto
+// roc 2009-06 0059dcc0  unit: seg_00590000  size: 111 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0059dcc0
+//
+// 0059dcc0  56                   push esi
+// 0059dcc1  8b742408             mov esi, dword ptr [esp + 8]
+// 0059dcc5  8b4604               mov eax, dword ptr [esi + 4]
+// 0059dcc8  8b08                 mov ecx, dword ptr [eax]
+// 0059dcca  57                   push edi
+// 0059dccb  6a54                 push 0x54
+// 0059dccd  6a01                 push 1
+// 0059dccf  56                   push esi
+// 0059dcd0  ffd1                 call ecx
+// 0059dcd2  89869c010000         mov dword ptr [esi + 0x19c], eax
+// 0059dcd8  c700a0d95900         mov dword ptr [eax], 0x59d9a0
+// 0059dcde  8b8ec4000000         mov ecx, dword ptr [esi + 0xc4]
+// 0059dce4  33ff                 xor edi, edi
+// 0059dce6  83c40c               add esp, 0xc
+// 0059dce9  397e24               cmp dword ptr [esi + 0x24], edi
+// 0059dcec  7e3e                 jle 0x59dd2c
+// 0059dcee  53                   push ebx
+// 0059dcef  55                   push ebp
+// 0059dcf0  8d6950               lea ebp, [ecx + 0x50]
+// 0059dcf3  8d582c               lea ebx, [eax + 0x2c]
+// 0059dcf6  8b5604               mov edx, dword ptr [esi + 4]
+// 0059dcf9  8b02                 mov eax, dword ptr [edx]
+// 0059dcfb  6800010000           push 0x100
+// 0059dd00  6a01                 push 1
+// 0059dd02  56                   push esi
+// 0059dd03  ffd0                 call eax
+// 0059dd05  6800010000           push 0x100
+// 0059dd0a  6a00                 push 0
+// 0059dd0c  50                   push eax
+// 0059dd0d  894500               mov dword ptr [ebp], eax
+// 0059dd10  e85fbf1700           call 0x719c74
+// 0059dd15  c703ffffffff         mov dword ptr [ebx], 0xffffffff
+// 0059dd1b  47                   inc edi
+// 0059dd1c  83c418               add esp, 0x18
+// 0059dd1f  83c304               add ebx, 4
+// 0059dd22  83c554               add ebp, 0x54
+// 0059dd25  3b7e24               cmp edi, dword ptr [esi + 0x24]
+// 0059dd28  7ccc                 jl 0x59dcf6
+// 0059dd2a  5d                   pop ebp
+// 0059dd2b  5b                   pop ebx
+// 0059dd2c  5f                   pop edi
+// 0059dd2d  5e                   pop esi
+// 0059dd2e  c3                   ret 
+// library jpeg-6b/jddctmgr.c (function _jinit_inverse_dct)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jddctmgr.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jddctmgr.c
- *
- * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains the inverse-DCT management logic.
- * This code selects a particular IDCT implementation to be used,
- * and it performs related housekeeping chores.  No code in this file
- * is executed per IDCT step, only during output pass setup.
- *
- * Note that the IDCT routines are responsible for performing coefficient
- * dequantization as well as the IDCT proper.  This module sets up the
- * dequantization multiplier table needed by the IDCT routine.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jdct.h"		/* Private declarations for DCT subsystem */
-
-
-/*
- * The decompressor input side (jdinput.c) saves away the appropriate
- * quantization table for each component at the start of the first scan
- * involving that component.  (This is necessary in order to correctly
- * decode files that reuse Q-table slots.)
- * When we are ready to make an output pass, the saved Q-table is converted
- * to a multiplier table that will actually be used by the IDCT routine.
- * The multiplier table contents are IDCT-method-dependent.  To support
- * application changes in IDCT method between scans, we can remake the
- * multiplier tables if necessary.
- * In buffered-image mode, the first output pass may occur before any data
- * has been seen for some components, and thus before their Q-tables have
- * been saved away.  To handle this case, multiplier tables are preset
- * to zeroes; the result of the IDCT will be a neutral gray level.
- */
-
-
-/* Private subobject for this module */
-
-typedef struct {
-  struct jpeg_inverse_dct pub;	/* public fields */
-
-  /* This array contains the IDCT method code that each multiplier table
-   * is currently set up for, or -1 if it's not yet set up.
-   * The actual multiplier tables are pointed to by dct_table in the
-   * per-component comp_info structures.
-   */
-  int cur_method[MAX_COMPONENTS];
-} my_idct_controller;
-
-typedef my_idct_controller * my_idct_ptr;
-
-
-/* Allocated multiplier tables: big enough for any supported variant */
-
-typedef union {
-  ISLOW_MULT_TYPE islow_array[DCTSIZE2];
-#ifdef DCT_IFAST_SUPPORTED
-  IFAST_MULT_TYPE ifast_array[DCTSIZE2];
-#endif
-#ifdef DCT_FLOAT_SUPPORTED
-  FLOAT_MULT_TYPE float_array[DCTSIZE2];
-#endif
-} multiplier_table;
-
-
-/* The current scaled-IDCT routines require ISLOW-style multiplier tables,
- * so be sure to compile that code if either ISLOW or SCALING is requested.
- */
-#ifdef DCT_ISLOW_SUPPORTED
-#define PROVIDE_ISLOW_TABLES
-#else
-#ifdef IDCT_SCALING_SUPPORTED
-#define PROVIDE_ISLOW_TABLES
-#endif
-#endif
-
-
-/*
- * Prepare for an output pass.
- * Here we select the proper IDCT routine for each component and build
- * a matching multiplier table.
- */
-
-METHODDEF(void)
-start_pass (j_decompress_ptr cinfo)
-{
-  my_idct_ptr idct = (my_idct_ptr) cinfo->idct;
-  int ci, i;
-  jpeg_component_info *compptr;
-  int method = 0;
-  inverse_DCT_method_ptr method_ptr = NULL;
-  JQUANT_TBL * qtbl;
-
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    /* Select the proper IDCT routine for this component's scaling */
-    switch (compptr->DCT_scaled_size) {
-#ifdef IDCT_SCALING_SUPPORTED
-    case 1:
-      method_ptr = jpeg_idct_1x1;
-      method = JDCT_ISLOW;	/* jidctred uses islow-style table */
-      break;
-    case 2:
-      method_ptr = jpeg_idct_2x2;
-      method = JDCT_ISLOW;	/* jidctred uses islow-style table */
-      break;
-    case 4:
-      method_ptr = jpeg_idct_4x4;
-      method = JDCT_ISLOW;	/* jidctred uses islow-style table */
-      break;
-#endif
-    case DCTSIZE:
-      switch (cinfo->dct_method) {
-#ifdef DCT_ISLOW_SUPPORTED
-      case JDCT_ISLOW:
-	method_ptr = jpeg_idct_islow;
-	method = JDCT_ISLOW;
-	break;
-#endif
-#ifdef DCT_IFAST_SUPPORTED
-      case JDCT_IFAST:
-	method_ptr = jpeg_idct_ifast;
-	method = JDCT_IFAST;
-	break;
-#endif
-#ifdef DCT_FLOAT_SUPPORTED
-      case JDCT_FLOAT:
-	method_ptr = jpeg_idct_float;
-	method = JDCT_FLOAT;
-	break;
-#endif
-      default:
-	ERREXIT(cinfo, JERR_NOT_COMPILED);
-	break;
-      }
-      break;
-    default:
-      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->DCT_scaled_size);
-      break;
-    }
-    idct->pub.inverse_DCT[ci] = method_ptr;
-    /* Create multiplier table from quant table.
-     * However, we can skip this if the component is uninteresting
-     * or if we already built the table.  Also, if no quant table
-     * has yet been saved for the component, we leave the
-     * multiplier table all-zero; we'll be reading zeroes from the
-     * coefficient controller's buffer anyway.
-     */
-    if (! compptr->component_needed || idct->cur_method[ci] == method)
-      continue;
-    qtbl = compptr->quant_table;
-    if (qtbl == NULL)		/* happens if no data yet for component */
-      continue;
-    idct->cur_method[ci] = method;
-    switch (method) {
-#ifdef PROVIDE_ISLOW_TABLES
-    case JDCT_ISLOW:
-      {
-	/* For LL&M IDCT method, multipliers are equal to raw quantization
-	 * coefficients, but are stored as ints to ensure access efficiency.
-	 */
-	ISLOW_MULT_TYPE * ismtbl = (ISLOW_MULT_TYPE *) compptr->dct_table;
-	for (i = 0; i < DCTSIZE2; i++) {
-	  ismtbl[i] = (ISLOW_MULT_TYPE) qtbl->quantval[i];
-	}
-      }
-      break;
-#endif
-#ifdef DCT_IFAST_SUPPORTED
-    case JDCT_IFAST:
-      {
-	/* For AA&N IDCT method, multipliers are equal to quantization
-	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
-	 *   scalefactor[0] = 1
-	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
-	 * For integer operation, the multiplier table is to be scaled by
-	 * IFAST_SCALE_BITS.
-	 */
-	IFAST_MULT_TYPE * ifmtbl = (IFAST_MULT_TYPE *) compptr->dct_table;
-#define CONST_BITS 14
-	static const INT16 aanscales[DCTSIZE2] = {
-	  /* precomputed values scaled up by 14 bits */
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
-	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
-	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
-	   8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
-	   4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
-	};
-	SHIFT_TEMPS
-
-	for (i = 0; i < DCTSIZE2; i++) {
-	  ifmtbl[i] = (IFAST_MULT_TYPE)
-	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-				  (INT32) aanscales[i]),
-		    CONST_BITS-IFAST_SCALE_BITS);
-	}
-      }
-      break;
-#endif
-#ifdef DCT_FLOAT_SUPPORTED
-    case JDCT_FLOAT:
-      {
-	/* For float AA&N IDCT method, multipliers are equal to quantization
-	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
-	 *   scalefactor[0] = 1
-	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
-	 */
-	FLOAT_MULT_TYPE * fmtbl = (FLOAT_MULT_TYPE *) compptr->dct_table;
-	int row, col;
-	static const double aanscalefactor[DCTSIZE] = {
-	  1.0, 1.387039845, 1.306562965, 1.175875602,
-	  1.0, 0.785694958, 0.541196100, 0.275899379
-	};
-
-	i = 0;
-	for (row = 0; row < DCTSIZE; row++) {
-	  for (col = 0; col < DCTSIZE; col++) {
-	    fmtbl[i] = (FLOAT_MULT_TYPE)
-	      ((double) qtbl->quantval[i] *
-	       aanscalefactor[row] * aanscalefactor[col]);
-	    i++;
-	  }
-	}
-      }
-      break;
-#endif
-    default:
-      ERREXIT(cinfo, JERR_NOT_COMPILED);
-      break;
-    }
-  }
-}
-
-
-/*
- * Initialize IDCT manager.
- */
-
-GLOBAL(void)
-jinit_inverse_dct (j_decompress_ptr cinfo)
-{
-  my_idct_ptr idct;
-  int ci;
-  jpeg_component_info *compptr;
-
-  idct = (my_idct_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_idct_controller));
-  cinfo->idct = (struct jpeg_inverse_dct *) idct;
-  idct->pub.start_pass = start_pass;
-
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    /* Allocate and pre-zero a multiplier table for each component */
-    compptr->dct_table =
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(multiplier_table));
-    MEMZERO(compptr->dct_table, SIZEOF(multiplier_table));
-    /* Mark multiplier table not yet set up for any method */
-    idct->cur_method[ci] = -1;
-  }
-}

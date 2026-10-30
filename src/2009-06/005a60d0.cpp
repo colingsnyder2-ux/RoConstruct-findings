@@ -1,597 +1,148 @@
 // from server: 100% by auto
+// roc 2009-06 005a60d0  unit: seg_005a0000  size: 450 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 005a60d0
+//
+// 005a60d0  8b86e4000000         mov eax, dword ptr [esi + 0xe4]
+// 005a60d6  83ec08               sub esp, 8
+// 005a60d9  53                   push ebx
+// 005a60da  bb01000000           mov ebx, 1
+// 005a60df  57                   push edi
+// 005a60e0  3bc3                 cmp eax, ebx
+// 005a60e2  7553                 jne 0x5a6137
+// 005a60e4  8b8ee8000000         mov ecx, dword ptr [esi + 0xe8]
+// 005a60ea  8b411c               mov eax, dword ptr [ecx + 0x1c]
+// 005a60ed  8986f8000000         mov dword ptr [esi + 0xf8], eax
+// 005a60f3  8b5120               mov edx, dword ptr [ecx + 0x20]
+// 005a60f6  8996fc000000         mov dword ptr [esi + 0xfc], edx
+// 005a60fc  8b790c               mov edi, dword ptr [ecx + 0xc]
+// 005a60ff  8b4120               mov eax, dword ptr [ecx + 0x20]
+// 005a6102  33d2                 xor edx, edx
+// 005a6104  f7f7                 div edi
+// 005a6106  895934               mov dword ptr [ecx + 0x34], ebx
+// 005a6109  895938               mov dword ptr [ecx + 0x38], ebx
+// 005a610c  89593c               mov dword ptr [ecx + 0x3c], ebx
+// 005a610f  c7414008000000       mov dword ptr [ecx + 0x40], 8
+// 005a6116  895944               mov dword ptr [ecx + 0x44], ebx
+// 005a6119  85d2                 test edx, edx
+// 005a611b  7502                 jne 0x5a611f
+// 005a611d  8bd7                 mov edx, edi
+// 005a611f  895148               mov dword ptr [ecx + 0x48], edx
+// 005a6122  899e00010000         mov dword ptr [esi + 0x100], ebx
+// 005a6128  c7860401000000000000 mov dword ptr [esi + 0x104], 0
+// 005a6132  e930010000           jmp 0x5a6267
+// 005a6137  33ff                 xor edi, edi
+// 005a6139  3bc7                 cmp eax, edi
+// 005a613b  7e05                 jle 0x5a6142
+// 005a613d  83f804               cmp eax, 4
+// 005a6140  7e27                 jle 0x5a6169
+// 005a6142  8b06                 mov eax, dword ptr [esi]
+// 005a6144  c740141a000000       mov dword ptr [eax + 0x14], 0x1a
+// 005a614b  8b0e                 mov ecx, dword ptr [esi]
+// 005a614d  8b96e4000000         mov edx, dword ptr [esi + 0xe4]
+// 005a6153  895118               mov dword ptr [ecx + 0x18], edx
+// 005a6156  8b06                 mov eax, dword ptr [esi]
+// 005a6158  c7401c04000000       mov dword ptr [eax + 0x1c], 4
+// 005a615f  8b0e                 mov ecx, dword ptr [esi]
+// 005a6161  8b11                 mov edx, dword ptr [ecx]
+// 005a6163  56                   push esi
+// 005a6164  ffd2                 call edx
+// 005a6166  83c404               add esp, 4
+// 005a6169  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
+// 005a616f  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
+// 005a6172  03c0                 add eax, eax
+// 005a6174  03c0                 add eax, eax
+// 005a6176  03c0                 add eax, eax
+// 005a6178  50                   push eax
+// 005a6179  51                   push ecx
+// 005a617a  e8913cfeff           call 0x589e10
+// 005a617f  8b96dc000000         mov edx, dword ptr [esi + 0xdc]
+// 005a6185  03d2                 add edx, edx
+// 005a6187  03d2                 add edx, edx
+// 005a6189  03d2                 add edx, edx
+// 005a618b  8986f8000000         mov dword ptr [esi + 0xf8], eax
+// 005a6191  8b4620               mov eax, dword ptr [esi + 0x20]
+// 005a6194  52                   push edx
+// 005a6195  50                   push eax
+// 005a6196  e8753cfeff           call 0x589e10
+// 005a619b  83c410               add esp, 0x10
+// 005a619e  39bee4000000         cmp dword ptr [esi + 0xe4], edi
+// 005a61a4  8986fc000000         mov dword ptr [esi + 0xfc], eax
+// 005a61aa  89be00010000         mov dword ptr [esi + 0x100], edi
+// 005a61b0  897c2408             mov dword ptr [esp + 8], edi
+// 005a61b4  0f8ead000000         jle 0x5a6267
+// 005a61ba  8d8ee8000000         lea ecx, [esi + 0xe8]
+// 005a61c0  894c240c             mov dword ptr [esp + 0xc], ecx
+// 005a61c4  55                   push ebp
+// 005a61c5  8b542410             mov edx, dword ptr [esp + 0x10]
+// 005a61c9  8b0a                 mov ecx, dword ptr [edx]
+// 005a61cb  8b7908               mov edi, dword ptr [ecx + 8]
+// 005a61ce  8d04fd00000000       lea eax, [edi*8]
+// 005a61d5  8b690c               mov ebp, dword ptr [ecx + 0xc]
+// 005a61d8  894140               mov dword ptr [ecx + 0x40], eax
+// 005a61db  8b411c               mov eax, dword ptr [ecx + 0x1c]
+// 005a61de  33d2                 xor edx, edx
+// 005a61e0  f7f7                 div edi
+// 005a61e2  8bdd                 mov ebx, ebp
+// 005a61e4  0fafdf               imul ebx, edi
+// 005a61e7  897934               mov dword ptr [ecx + 0x34], edi
+// 005a61ea  896938               mov dword ptr [ecx + 0x38], ebp
+// 005a61ed  89593c               mov dword ptr [ecx + 0x3c], ebx
+// 005a61f0  85d2                 test edx, edx
+// 005a61f2  7502                 jne 0x5a61f6
+// 005a61f4  8bd7                 mov edx, edi
+// 005a61f6  8b4120               mov eax, dword ptr [ecx + 0x20]
+// 005a61f9  895144               mov dword ptr [ecx + 0x44], edx
+// 005a61fc  33d2                 xor edx, edx
+// 005a61fe  f7f5                 div ebp
+// 005a6200  85d2                 test edx, edx
+// 005a6202  7502                 jne 0x5a6206
+// 005a6204  8bd5                 mov edx, ebp
+// 005a6206  895148               mov dword ptr [ecx + 0x48], edx
+// 005a6209  8b8e00010000         mov ecx, dword ptr [esi + 0x100]
+// 005a620f  8bfb                 mov edi, ebx
+// 005a6211  03cf                 add ecx, edi
+// 005a6213  83f90a               cmp ecx, 0xa
+// 005a6216  7e13                 jle 0x5a622b
+// 005a6218  8b16                 mov edx, dword ptr [esi]
+// 005a621a  c742140d000000       mov dword ptr [edx + 0x14], 0xd
+// 005a6221  8b06                 mov eax, dword ptr [esi]
+// 005a6223  8b08                 mov ecx, dword ptr [eax]
+// 005a6225  56                   push esi
+// 005a6226  ffd1                 call ecx
+// 005a6228  83c404               add esp, 4
+// 005a622b  85ff                 test edi, edi
+// 005a622d  7e1d                 jle 0x5a624c
+// 005a622f  90                   nop 
+// 005a6230  8b9600010000         mov edx, dword ptr [esi + 0x100]
+// 005a6236  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 005a623a  4f                   dec edi
+// 005a623b  89849604010000       mov dword ptr [esi + edx*4 + 0x104], eax
+// 005a6242  ff8600010000         inc dword ptr [esi + 0x100]
+// 005a6248  85ff                 test edi, edi
+// 005a624a  7fe4                 jg 0x5a6230
+// 005a624c  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 005a6250  8344241004           add dword ptr [esp + 0x10], 4
+// 005a6255  40                   inc eax
+// 005a6256  3b86e4000000         cmp eax, dword ptr [esi + 0xe4]
+// 005a625c  8944240c             mov dword ptr [esp + 0xc], eax
+// 005a6260  0f8c5fffffff         jl 0x5a61c5
+// 005a6266  5d                   pop ebp
+// 005a6267  8b8ec0000000         mov ecx, dword ptr [esi + 0xc0]
+// 005a626d  5f                   pop edi
+// 005a626e  5b                   pop ebx
+// 005a626f  85c9                 test ecx, ecx
+// 005a6271  7e1b                 jle 0x5a628e
+// 005a6273  8b86f8000000         mov eax, dword ptr [esi + 0xf8]
+// 005a6279  0fafc1               imul eax, ecx
+// 005a627c  3dffff0000           cmp eax, 0xffff
+// 005a6281  7c05                 jl 0x5a6288
+// 005a6283  b8ffff0000           mov eax, 0xffff
+// 005a6288  8986bc000000         mov dword ptr [esi + 0xbc], eax
+// 005a628e  83c408               add esp, 8
+// 005a6291  c3                   ret 
+// library jpeg-6b/jcmaster.c (function _per_scan_setup)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcmaster.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jcmaster.c
- *
- * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains master control logic for the JPEG compressor.
- * These routines are concerned with parameter validation, initial setup,
- * and inter-pass control (determining the number of passes and the work 
- * to be done in each pass).
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-/* Private state */
-
-typedef enum {
-	main_pass,		/* input data, also do first output step */
-	huff_opt_pass,		/* Huffman code optimization pass */
-	output_pass		/* data output pass */
-} c_pass_type;
-
-typedef struct {
-  struct jpeg_comp_master pub;	/* public fields */
-
-  c_pass_type pass_type;	/* the type of the current pass */
-
-  int pass_number;		/* # of passes completed */
-  int total_passes;		/* total # of passes needed */
-
-  int scan_number;		/* current index in scan_info[] */
-} my_comp_master;
-
-typedef my_comp_master * my_master_ptr;
-
-
-/*
- * Support routines that do various essential calculations.
- */
-
-LOCAL(void)
-initial_setup (j_compress_ptr cinfo)
-/* Do computations that are needed before master selection phase */
-{
-  int ci;
-  jpeg_component_info *compptr;
-  long samplesperrow;
-  JDIMENSION jd_samplesperrow;
-
-  /* Sanity check on image dimensions */
-  if (cinfo->image_height <= 0 || cinfo->image_width <= 0
-      || cinfo->num_components <= 0 || cinfo->input_components <= 0)
-    ERREXIT(cinfo, JERR_EMPTY_IMAGE);
-
-  /* Make sure image isn't bigger than I can handle */
-  if ((long) cinfo->image_height > (long) JPEG_MAX_DIMENSION ||
-      (long) cinfo->image_width > (long) JPEG_MAX_DIMENSION)
-    ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int) JPEG_MAX_DIMENSION);
-
-  /* Width of an input scanline must be representable as JDIMENSION. */
-  samplesperrow = (long) cinfo->image_width * (long) cinfo->input_components;
-  jd_samplesperrow = (JDIMENSION) samplesperrow;
-  if ((long) jd_samplesperrow != samplesperrow)
-    ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
-
-  /* For now, precision must match compiled-in value... */
-  if (cinfo->data_precision != BITS_IN_JSAMPLE)
-    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
-
-  /* Check that number of components won't exceed internal array sizes */
-  if (cinfo->num_components > MAX_COMPONENTS)
-    ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
-	     MAX_COMPONENTS);
-
-  /* Compute maximum sampling factors; check factor validity */
-  cinfo->max_h_samp_factor = 1;
-  cinfo->max_v_samp_factor = 1;
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    if (compptr->h_samp_factor<=0 || compptr->h_samp_factor>MAX_SAMP_FACTOR ||
-	compptr->v_samp_factor<=0 || compptr->v_samp_factor>MAX_SAMP_FACTOR)
-      ERREXIT(cinfo, JERR_BAD_SAMPLING);
-    cinfo->max_h_samp_factor = MAX(cinfo->max_h_samp_factor,
-				   compptr->h_samp_factor);
-    cinfo->max_v_samp_factor = MAX(cinfo->max_v_samp_factor,
-				   compptr->v_samp_factor);
-  }
-
-  /* Compute dimensions of components */
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    /* Fill in the correct component_index value; don't rely on application */
-    compptr->component_index = ci;
-    /* For compression, we never do DCT scaling. */
-    compptr->DCT_scaled_size = DCTSIZE;
-    /* Size in DCT blocks */
-    compptr->width_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
-		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
-    compptr->height_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
-		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
-    /* Size in samples */
-    compptr->downsampled_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
-		    (long) cinfo->max_h_samp_factor);
-    compptr->downsampled_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
-		    (long) cinfo->max_v_samp_factor);
-    /* Mark component needed (this flag isn't actually used for compression) */
-    compptr->component_needed = TRUE;
-  }
-
-  /* Compute number of fully interleaved MCU rows (number of times that
-   * main controller will call coefficient controller).
-   */
-  cinfo->total_iMCU_rows = (JDIMENSION)
-    jdiv_round_up((long) cinfo->image_height,
-		  (long) (cinfo->max_v_samp_factor*DCTSIZE));
-}
-
-
-#ifdef C_MULTISCAN_FILES_SUPPORTED
-
-LOCAL(void)
-validate_script (j_compress_ptr cinfo)
-/* Verify that the scan script in cinfo->scan_info[] is valid; also
- * determine whether it uses progressive JPEG, and set cinfo->progressive_mode.
- */
-{
-  const jpeg_scan_info * scanptr;
-  int scanno, ncomps, ci, coefi, thisi;
-  int Ss, Se, Ah, Al;
-  boolean component_sent[MAX_COMPONENTS];
-#ifdef C_PROGRESSIVE_SUPPORTED
-  int * last_bitpos_ptr;
-  int last_bitpos[MAX_COMPONENTS][DCTSIZE2];
-  /* -1 until that coefficient has been seen; then last Al for it */
-#endif
-
-  if (cinfo->num_scans <= 0)
-    ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, 0);
-
-  /* For sequential JPEG, all scans must have Ss=0, Se=DCTSIZE2-1;
-   * for progressive JPEG, no scan can have this.
-   */
-  scanptr = cinfo->scan_info;
-  if (scanptr->Ss != 0 || scanptr->Se != DCTSIZE2-1) {
-#ifdef C_PROGRESSIVE_SUPPORTED
-    cinfo->progressive_mode = TRUE;
-    last_bitpos_ptr = & last_bitpos[0][0];
-    for (ci = 0; ci < cinfo->num_components; ci++) 
-      for (coefi = 0; coefi < DCTSIZE2; coefi++)
-	*last_bitpos_ptr++ = -1;
-#else
-    ERREXIT(cinfo, JERR_NOT_COMPILED);
-#endif
-  } else {
-    cinfo->progressive_mode = FALSE;
-    for (ci = 0; ci < cinfo->num_components; ci++) 
-      component_sent[ci] = FALSE;
-  }
-
-  for (scanno = 1; scanno <= cinfo->num_scans; scanptr++, scanno++) {
-    /* Validate component indexes */
-    ncomps = scanptr->comps_in_scan;
-    if (ncomps <= 0 || ncomps > MAX_COMPS_IN_SCAN)
-      ERREXIT2(cinfo, JERR_COMPONENT_COUNT, ncomps, MAX_COMPS_IN_SCAN);
-    for (ci = 0; ci < ncomps; ci++) {
-      thisi = scanptr->component_index[ci];
-      if (thisi < 0 || thisi >= cinfo->num_components)
-	ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, scanno);
-      /* Components must appear in SOF order within each scan */
-      if (ci > 0 && thisi <= scanptr->component_index[ci-1])
-	ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, scanno);
-    }
-    /* Validate progression parameters */
-    Ss = scanptr->Ss;
-    Se = scanptr->Se;
-    Ah = scanptr->Ah;
-    Al = scanptr->Al;
-    if (cinfo->progressive_mode) {
-#ifdef C_PROGRESSIVE_SUPPORTED
-      /* The JPEG spec simply gives the ranges 0..13 for Ah and Al, but that
-       * seems wrong: the upper bound ought to depend on data precision.
-       * Perhaps they really meant 0..N+1 for N-bit precision.
-       * Here we allow 0..10 for 8-bit data; Al larger than 10 results in
-       * out-of-range reconstructed DC values during the first DC scan,
-       * which might cause problems for some decoders.
-       */
-#if BITS_IN_JSAMPLE == 8
-#define MAX_AH_AL 10
-#else
-#define MAX_AH_AL 13
-#endif
-      if (Ss < 0 || Ss >= DCTSIZE2 || Se < Ss || Se >= DCTSIZE2 ||
-	  Ah < 0 || Ah > MAX_AH_AL || Al < 0 || Al > MAX_AH_AL)
-	ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-      if (Ss == 0) {
-	if (Se != 0)		/* DC and AC together not OK */
-	  ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-      } else {
-	if (ncomps != 1)	/* AC scans must be for only one component */
-	  ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-      }
-      for (ci = 0; ci < ncomps; ci++) {
-	last_bitpos_ptr = & last_bitpos[scanptr->component_index[ci]][0];
-	if (Ss != 0 && last_bitpos_ptr[0] < 0) /* AC without prior DC scan */
-	  ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-	for (coefi = Ss; coefi <= Se; coefi++) {
-	  if (last_bitpos_ptr[coefi] < 0) {
-	    /* first scan of this coefficient */
-	    if (Ah != 0)
-	      ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-	  } else {
-	    /* not first scan */
-	    if (Ah != last_bitpos_ptr[coefi] || Al != Ah-1)
-	      ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-	  }
-	  last_bitpos_ptr[coefi] = Al;
-	}
-      }
-#endif
-    } else {
-      /* For sequential JPEG, all progression parameters must be these: */
-      if (Ss != 0 || Se != DCTSIZE2-1 || Ah != 0 || Al != 0)
-	ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
-      /* Make sure components are not sent twice */
-      for (ci = 0; ci < ncomps; ci++) {
-	thisi = scanptr->component_index[ci];
-	if (component_sent[thisi])
-	  ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, scanno);
-	component_sent[thisi] = TRUE;
-      }
-    }
-  }
-
-  /* Now verify that everything got sent. */
-  if (cinfo->progressive_mode) {
-#ifdef C_PROGRESSIVE_SUPPORTED
-    /* For progressive mode, we only check that at least some DC data
-     * got sent for each component; the spec does not require that all bits
-     * of all coefficients be transmitted.  Would it be wiser to enforce
-     * transmission of all coefficient bits??
-     */
-    for (ci = 0; ci < cinfo->num_components; ci++) {
-      if (last_bitpos[ci][0] < 0)
-	ERREXIT(cinfo, JERR_MISSING_DATA);
-    }
-#endif
-  } else {
-    for (ci = 0; ci < cinfo->num_components; ci++) {
-      if (! component_sent[ci])
-	ERREXIT(cinfo, JERR_MISSING_DATA);
-    }
-  }
-}
-
-#endif /* C_MULTISCAN_FILES_SUPPORTED */
-
-
-LOCAL(void)
-select_scan_parameters (j_compress_ptr cinfo)
-/* Set up the scan parameters for the current scan */
-{
-  int ci;
-
-#ifdef C_MULTISCAN_FILES_SUPPORTED
-  if (cinfo->scan_info != NULL) {
-    /* Prepare for current scan --- the script is already validated */
-    my_master_ptr master = (my_master_ptr) cinfo->master;
-    const jpeg_scan_info * scanptr = cinfo->scan_info + master->scan_number;
-
-    cinfo->comps_in_scan = scanptr->comps_in_scan;
-    for (ci = 0; ci < scanptr->comps_in_scan; ci++) {
-      cinfo->cur_comp_info[ci] =
-	&cinfo->comp_info[scanptr->component_index[ci]];
-    }
-    cinfo->Ss = scanptr->Ss;
-    cinfo->Se = scanptr->Se;
-    cinfo->Ah = scanptr->Ah;
-    cinfo->Al = scanptr->Al;
-  }
-  else
-#endif
-  {
-    /* Prepare for single sequential-JPEG scan containing all components */
-    if (cinfo->num_components > MAX_COMPS_IN_SCAN)
-      ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
-	       MAX_COMPS_IN_SCAN);
-    cinfo->comps_in_scan = cinfo->num_components;
-    for (ci = 0; ci < cinfo->num_components; ci++) {
-      cinfo->cur_comp_info[ci] = &cinfo->comp_info[ci];
-    }
-    cinfo->Ss = 0;
-    cinfo->Se = DCTSIZE2-1;
-    cinfo->Ah = 0;
-    cinfo->Al = 0;
-  }
-}
-
-
-LOCAL(void)
-per_scan_setup (j_compress_ptr cinfo)
-/* Do computations that are needed before processing a JPEG scan */
-/* cinfo->comps_in_scan and cinfo->cur_comp_info[] are already set */
-{
-  int ci, mcublks, tmp;
-  jpeg_component_info *compptr;
-  
-  if (cinfo->comps_in_scan == 1) {
-    
-    /* Noninterleaved (single-component) scan */
-    compptr = cinfo->cur_comp_info[0];
-    
-    /* Overall image size in MCUs */
-    cinfo->MCUs_per_row = compptr->width_in_blocks;
-    cinfo->MCU_rows_in_scan = compptr->height_in_blocks;
-    
-    /* For noninterleaved scan, always one block per MCU */
-    compptr->MCU_width = 1;
-    compptr->MCU_height = 1;
-    compptr->MCU_blocks = 1;
-    compptr->MCU_sample_width = DCTSIZE;
-    compptr->last_col_width = 1;
-    /* For noninterleaved scans, it is convenient to define last_row_height
-     * as the number of block rows present in the last iMCU row.
-     */
-    tmp = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
-    if (tmp == 0) tmp = compptr->v_samp_factor;
-    compptr->last_row_height = tmp;
-    
-    /* Prepare array describing MCU composition */
-    cinfo->blocks_in_MCU = 1;
-    cinfo->MCU_membership[0] = 0;
-    
-  } else {
-    
-    /* Interleaved (multi-component) scan */
-    if (cinfo->comps_in_scan <= 0 || cinfo->comps_in_scan > MAX_COMPS_IN_SCAN)
-      ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->comps_in_scan,
-	       MAX_COMPS_IN_SCAN);
-    
-    /* Overall image size in MCUs */
-    cinfo->MCUs_per_row = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width,
-		    (long) (cinfo->max_h_samp_factor*DCTSIZE));
-    cinfo->MCU_rows_in_scan = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height,
-		    (long) (cinfo->max_v_samp_factor*DCTSIZE));
-    
-    cinfo->blocks_in_MCU = 0;
-    
-    for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-      compptr = cinfo->cur_comp_info[ci];
-      /* Sampling factors give # of blocks of component in each MCU */
-      compptr->MCU_width = compptr->h_samp_factor;
-      compptr->MCU_height = compptr->v_samp_factor;
-      compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
-      compptr->MCU_sample_width = compptr->MCU_width * DCTSIZE;
-      /* Figure number of non-dummy blocks in last MCU column & row */
-      tmp = (int) (compptr->width_in_blocks % compptr->MCU_width);
-      if (tmp == 0) tmp = compptr->MCU_width;
-      compptr->last_col_width = tmp;
-      tmp = (int) (compptr->height_in_blocks % compptr->MCU_height);
-      if (tmp == 0) tmp = compptr->MCU_height;
-      compptr->last_row_height = tmp;
-      /* Prepare array describing MCU composition */
-      mcublks = compptr->MCU_blocks;
-      if (cinfo->blocks_in_MCU + mcublks > C_MAX_BLOCKS_IN_MCU)
-	ERREXIT(cinfo, JERR_BAD_MCU_SIZE);
-      while (mcublks-- > 0) {
-	cinfo->MCU_membership[cinfo->blocks_in_MCU++] = ci;
-      }
-    }
-    
-  }
-
-  /* Convert restart specified in rows to actual MCU count. */
-  /* Note that count must fit in 16 bits, so we provide limiting. */
-  if (cinfo->restart_in_rows > 0) {
-    long nominal = (long) cinfo->restart_in_rows * (long) cinfo->MCUs_per_row;
-    cinfo->restart_interval = (unsigned int) MIN(nominal, 65535L);
-  }
-}
-
-
-/*
- * Per-pass setup.
- * This is called at the beginning of each pass.  We determine which modules
- * will be active during this pass and give them appropriate start_pass calls.
- * We also set is_last_pass to indicate whether any more passes will be
- * required.
- */
-
-METHODDEF(void)
-prepare_for_pass (j_compress_ptr cinfo)
-{
-  my_master_ptr master = (my_master_ptr) cinfo->master;
-
-  switch (master->pass_type) {
-  case main_pass:
-    /* Initial pass: will collect input data, and do either Huffman
-     * optimization or data output for the first scan.
-     */
-    select_scan_parameters(cinfo);
-    per_scan_setup(cinfo);
-    if (! cinfo->raw_data_in) {
-      (*cinfo->cconvert->start_pass) (cinfo);
-      (*cinfo->downsample->start_pass) (cinfo);
-      (*cinfo->prep->start_pass) (cinfo, JBUF_PASS_THRU);
-    }
-    (*cinfo->fdct->start_pass) (cinfo);
-    (*cinfo->entropy->start_pass) (cinfo, cinfo->optimize_coding);
-    (*cinfo->coef->start_pass) (cinfo,
-				(master->total_passes > 1 ?
-				 JBUF_SAVE_AND_PASS : JBUF_PASS_THRU));
-    (*cinfo->main->start_pass) (cinfo, JBUF_PASS_THRU);
-    if (cinfo->optimize_coding) {
-      /* No immediate data output; postpone writing frame/scan headers */
-      master->pub.call_pass_startup = FALSE;
-    } else {
-      /* Will write frame/scan headers at first jpeg_write_scanlines call */
-      master->pub.call_pass_startup = TRUE;
-    }
-    break;
-#ifdef ENTROPY_OPT_SUPPORTED
-  case huff_opt_pass:
-    /* Do Huffman optimization for a scan after the first one. */
-    select_scan_parameters(cinfo);
-    per_scan_setup(cinfo);
-    if (cinfo->Ss != 0 || cinfo->Ah == 0 || cinfo->arith_code) {
-      (*cinfo->entropy->start_pass) (cinfo, TRUE);
-      (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
-      master->pub.call_pass_startup = FALSE;
-      break;
-    }
-    /* Special case: Huffman DC refinement scans need no Huffman table
-     * and therefore we can skip the optimization pass for them.
-     */
-    master->pass_type = output_pass;
-    master->pass_number++;
-    /*FALLTHROUGH*/
-#endif
-  case output_pass:
-    /* Do a data-output pass. */
-    /* We need not repeat per-scan setup if prior optimization pass did it. */
-    if (! cinfo->optimize_coding) {
-      select_scan_parameters(cinfo);
-      per_scan_setup(cinfo);
-    }
-    (*cinfo->entropy->start_pass) (cinfo, FALSE);
-    (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
-    /* We emit frame/scan headers now */
-    if (master->scan_number == 0)
-      (*cinfo->marker->write_frame_header) (cinfo);
-    (*cinfo->marker->write_scan_header) (cinfo);
-    master->pub.call_pass_startup = FALSE;
-    break;
-  default:
-    ERREXIT(cinfo, JERR_NOT_COMPILED);
-  }
-
-  master->pub.is_last_pass = (master->pass_number == master->total_passes-1);
-
-  /* Set up progress monitor's pass info if present */
-  if (cinfo->progress != NULL) {
-    cinfo->progress->completed_passes = master->pass_number;
-    cinfo->progress->total_passes = master->total_passes;
-  }
-}
-
-
-/*
- * Special start-of-pass hook.
- * This is called by jpeg_write_scanlines if call_pass_startup is TRUE.
- * In single-pass processing, we need this hook because we don't want to
- * write frame/scan headers during jpeg_start_compress; we want to let the
- * application write COM markers etc. between jpeg_start_compress and the
- * jpeg_write_scanlines loop.
- * In multi-pass processing, this routine is not used.
- */
-
-METHODDEF(void)
-pass_startup (j_compress_ptr cinfo)
-{
-  cinfo->master->call_pass_startup = FALSE; /* reset flag so call only once */
-
-  (*cinfo->marker->write_frame_header) (cinfo);
-  (*cinfo->marker->write_scan_header) (cinfo);
-}
-
-
-/*
- * Finish up at end of pass.
- */
-
-METHODDEF(void)
-finish_pass_master (j_compress_ptr cinfo)
-{
-  my_master_ptr master = (my_master_ptr) cinfo->master;
-
-  /* The entropy coder always needs an end-of-pass call,
-   * either to analyze statistics or to flush its output buffer.
-   */
-  (*cinfo->entropy->finish_pass) (cinfo);
-
-  /* Update state for next pass */
-  switch (master->pass_type) {
-  case main_pass:
-    /* next pass is either output of scan 0 (after optimization)
-     * or output of scan 1 (if no optimization).
-     */
-    master->pass_type = output_pass;
-    if (! cinfo->optimize_coding)
-      master->scan_number++;
-    break;
-  case huff_opt_pass:
-    /* next pass is always output of current scan */
-    master->pass_type = output_pass;
-    break;
-  case output_pass:
-    /* next pass is either optimization or output of next scan */
-    if (cinfo->optimize_coding)
-      master->pass_type = huff_opt_pass;
-    master->scan_number++;
-    break;
-  }
-
-  master->pass_number++;
-}
-
-
-/*
- * Initialize master compression control.
- */
-
-GLOBAL(void)
-jinit_c_master_control (j_compress_ptr cinfo, boolean transcode_only)
-{
-  my_master_ptr master;
-
-  master = (my_master_ptr)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(my_comp_master));
-  cinfo->master = (struct jpeg_comp_master *) master;
-  master->pub.prepare_for_pass = prepare_for_pass;
-  master->pub.pass_startup = pass_startup;
-  master->pub.finish_pass = finish_pass_master;
-  master->pub.is_last_pass = FALSE;
-
-  /* Validate parameters, determine derived values */
-  initial_setup(cinfo);
-
-  if (cinfo->scan_info != NULL) {
-#ifdef C_MULTISCAN_FILES_SUPPORTED
-    validate_script(cinfo);
-#else
-    ERREXIT(cinfo, JERR_NOT_COMPILED);
-#endif
-  } else {
-    cinfo->progressive_mode = FALSE;
-    cinfo->num_scans = 1;
-  }
-
-  if (cinfo->progressive_mode)	/*  TEMPORARY HACK ??? */
-    cinfo->optimize_coding = TRUE; /* assume default tables no good for progressive mode */
-
-  /* Initialize my private state */
-  if (transcode_only) {
-    /* no main pass in transcoding */
-    if (cinfo->optimize_coding)
-      master->pass_type = huff_opt_pass;
-    else
-      master->pass_type = output_pass;
-  } else {
-    /* for normal compression, first pass is always this type: */
-    master->pass_type = main_pass;
-  }
-  master->scan_number = 0;
-  master->pass_number = 0;
-  if (cinfo->optimize_coding)
-    master->total_passes = cinfo->num_scans * 2;
-  else
-    master->total_passes = cinfo->num_scans;
-}

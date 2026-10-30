@@ -1,297 +1,71 @@
 // from server: 100% by auto
+// roc 2008-06 00533b80  unit: seg_00530000  size: 151 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00533b80
+//
+// 00533b80  53                   push ebx
+// 00533b81  8b5c2408             mov ebx, dword ptr [esp + 8]
+// 00533b85  55                   push ebp
+// 00533b86  56                   push esi
+// 00533b87  8bb38c010000         mov esi, dword ptr [ebx + 0x18c]
+// 00533b8d  837e1800             cmp dword ptr [esi + 0x18], 0
+// 00533b91  57                   push edi
+// 00533b92  751d                 jne 0x533bb1
+// 00533b94  8b4e10               mov ecx, dword ptr [esi + 0x10]
+// 00533b97  8b5614               mov edx, dword ptr [esi + 0x14]
+// 00533b9a  8b4304               mov eax, dword ptr [ebx + 4]
+// 00533b9d  6a00                 push 0
+// 00533b9f  51                   push ecx
+// 00533ba0  8b4e08               mov ecx, dword ptr [esi + 8]
+// 00533ba3  52                   push edx
+// 00533ba4  8b501c               mov edx, dword ptr [eax + 0x1c]
+// 00533ba7  51                   push ecx
+// 00533ba8  53                   push ebx
+// 00533ba9  ffd2                 call edx
+// 00533bab  83c414               add esp, 0x14
+// 00533bae  89460c               mov dword ptr [esi + 0xc], eax
+// 00533bb1  8b6c2428             mov ebp, dword ptr [esp + 0x28]
+// 00533bb5  8b7e10               mov edi, dword ptr [esi + 0x10]
+// 00533bb8  8b4d00               mov ecx, dword ptr [ebp]
+// 00533bbb  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 00533bbf  2b7e18               sub edi, dword ptr [esi + 0x18]
+// 00533bc2  2bc1                 sub eax, ecx
+// 00533bc4  3bf8                 cmp edi, eax
+// 00533bc6  7602                 jbe 0x533bca
+// 00533bc8  8bf8                 mov edi, eax
+// 00533bca  8b4360               mov eax, dword ptr [ebx + 0x60]
+// 00533bcd  2b4614               sub eax, dword ptr [esi + 0x14]
+// 00533bd0  3bf8                 cmp edi, eax
+// 00533bd2  7602                 jbe 0x533bd6
+// 00533bd4  8bf8                 mov edi, eax
+// 00533bd6  8b542424             mov edx, dword ptr [esp + 0x24]
+// 00533bda  8b83a8010000         mov eax, dword ptr [ebx + 0x1a8]
+// 00533be0  8b4004               mov eax, dword ptr [eax + 4]
+// 00533be3  8d0c8a               lea ecx, [edx + ecx*4]
+// 00533be6  8b5618               mov edx, dword ptr [esi + 0x18]
+// 00533be9  57                   push edi
+// 00533bea  51                   push ecx
+// 00533beb  8b4e0c               mov ecx, dword ptr [esi + 0xc]
+// 00533bee  8d1491               lea edx, [ecx + edx*4]
+// 00533bf1  52                   push edx
+// 00533bf2  53                   push ebx
+// 00533bf3  ffd0                 call eax
+// 00533bf5  017d00               add dword ptr [ebp], edi
+// 00533bf8  017e18               add dword ptr [esi + 0x18], edi
+// 00533bfb  8b4e18               mov ecx, dword ptr [esi + 0x18]
+// 00533bfe  8b4610               mov eax, dword ptr [esi + 0x10]
+// 00533c01  83c410               add esp, 0x10
+// 00533c04  3bc8                 cmp ecx, eax
+// 00533c06  720a                 jb 0x533c12
+// 00533c08  014614               add dword ptr [esi + 0x14], eax
+// 00533c0b  c7461800000000       mov dword ptr [esi + 0x18], 0
+// 00533c12  5f                   pop edi
+// 00533c13  5e                   pop esi
+// 00533c14  5d                   pop ebp
+// 00533c15  5b                   pop ebx
+// 00533c16  c3                   ret 
+// library jpeg-6b/jdpostct.c (function _post_process_2pass)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdpostct.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jdpostct.c
- *
- * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains the decompression postprocessing controller.
- * This controller manages the upsampling, color conversion, and color
- * quantization/reduction steps; specifically, it controls the buffering
- * between upsample/color conversion and color quantization/reduction.
- *
- * If no color quantization/reduction is required, then this module has no
- * work to do, and it just hands off to the upsample/color conversion code.
- * An integrated upsample/convert/quantize process would replace this module
- * entirely.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-/* Private buffer controller object */
-
-typedef struct {
-  struct jpeg_d_post_controller pub; /* public fields */
-
-  /* Color quantization source buffer: this holds output data from
-   * the upsample/color conversion step to be passed to the quantizer.
-   * For two-pass color quantization, we need a full-image buffer;
-   * for one-pass operation, a strip buffer is sufficient.
-   */
-  jvirt_sarray_ptr whole_image;	/* virtual array, or NULL if one-pass */
-  JSAMPARRAY buffer;		/* strip buffer, or current strip of virtual */
-  JDIMENSION strip_height;	/* buffer size in rows */
-  /* for two-pass mode only: */
-  JDIMENSION starting_row;	/* row # of first row in current strip */
-  JDIMENSION next_row;		/* index of next row to fill/empty in strip */
-} my_post_controller;
-
-typedef my_post_controller * my_post_ptr;
-
-
-/* Forward declarations */
-METHODDEF(void) post_process_1pass
-	JPP((j_decompress_ptr cinfo,
-	     JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-	     JDIMENSION in_row_groups_avail,
-	     JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-	     JDIMENSION out_rows_avail));
-#ifdef QUANT_2PASS_SUPPORTED
-METHODDEF(void) post_process_prepass
-	JPP((j_decompress_ptr cinfo,
-	     JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-	     JDIMENSION in_row_groups_avail,
-	     JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-	     JDIMENSION out_rows_avail));
-METHODDEF(void) post_process_2pass
-	JPP((j_decompress_ptr cinfo,
-	     JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-	     JDIMENSION in_row_groups_avail,
-	     JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-	     JDIMENSION out_rows_avail));
-#endif
-
-
-/*
- * Initialize for a processing pass.
- */
-
-METHODDEF(void)
-start_pass_dpost (j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
-{
-  my_post_ptr post = (my_post_ptr) cinfo->post;
-
-  switch (pass_mode) {
-  case JBUF_PASS_THRU:
-    if (cinfo->quantize_colors) {
-      /* Single-pass processing with color quantization. */
-      post->pub.post_process_data = post_process_1pass;
-      /* We could be doing buffered-image output before starting a 2-pass
-       * color quantization; in that case, jinit_d_post_controller did not
-       * allocate a strip buffer.  Use the virtual-array buffer as workspace.
-       */
-      if (post->buffer == NULL) {
-	post->buffer = (*cinfo->mem->access_virt_sarray)
-	  ((j_common_ptr) cinfo, post->whole_image,
-	   (JDIMENSION) 0, post->strip_height, TRUE);
-      }
-    } else {
-      /* For single-pass processing without color quantization,
-       * I have no work to do; just call the upsampler directly.
-       */
-      post->pub.post_process_data = cinfo->upsample->upsample;
-    }
-    break;
-#ifdef QUANT_2PASS_SUPPORTED
-  case JBUF_SAVE_AND_PASS:
-    /* First pass of 2-pass quantization */
-    if (post->whole_image == NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    post->pub.post_process_data = post_process_prepass;
-    break;
-  case JBUF_CRANK_DEST:
-    /* Second pass of 2-pass quantization */
-    if (post->whole_image == NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    post->pub.post_process_data = post_process_2pass;
-    break;
-#endif /* QUANT_2PASS_SUPPORTED */
-  default:
-    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    break;
-  }
-  post->starting_row = post->next_row = 0;
-}
-
-
-/*
- * Process some data in the one-pass (strip buffer) case.
- * This is used for color precision reduction as well as one-pass quantization.
- */
-
-METHODDEF(void)
-post_process_1pass (j_decompress_ptr cinfo,
-		    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-		    JDIMENSION in_row_groups_avail,
-		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-		    JDIMENSION out_rows_avail)
-{
-  my_post_ptr post = (my_post_ptr) cinfo->post;
-  JDIMENSION num_rows, max_rows;
-
-  /* Fill the buffer, but not more than what we can dump out in one go. */
-  /* Note we rely on the upsampler to detect bottom of image. */
-  max_rows = out_rows_avail - *out_row_ctr;
-  if (max_rows > post->strip_height)
-    max_rows = post->strip_height;
-  num_rows = 0;
-  (*cinfo->upsample->upsample) (cinfo,
-		input_buf, in_row_group_ctr, in_row_groups_avail,
-		post->buffer, &num_rows, max_rows);
-  /* Quantize and emit data. */
-  (*cinfo->cquantize->color_quantize) (cinfo,
-		post->buffer, output_buf + *out_row_ctr, (int) num_rows);
-  *out_row_ctr += num_rows;
-}
-
-
-#ifdef QUANT_2PASS_SUPPORTED
-
-/*
- * Process some data in the first pass of 2-pass quantization.
- */
-
-METHODDEF(void)
-post_process_prepass (j_decompress_ptr cinfo,
-		      JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-		      JDIMENSION in_row_groups_avail,
-		      JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-		      JDIMENSION out_rows_avail)
-{
-  my_post_ptr post = (my_post_ptr) cinfo->post;
-  JDIMENSION old_next_row, num_rows;
-
-  /* Reposition virtual buffer if at start of strip. */
-  if (post->next_row == 0) {
-    post->buffer = (*cinfo->mem->access_virt_sarray)
-	((j_common_ptr) cinfo, post->whole_image,
-	 post->starting_row, post->strip_height, TRUE);
-  }
-
-  /* Upsample some data (up to a strip height's worth). */
-  old_next_row = post->next_row;
-  (*cinfo->upsample->upsample) (cinfo,
-		input_buf, in_row_group_ctr, in_row_groups_avail,
-		post->buffer, &post->next_row, post->strip_height);
-
-  /* Allow quantizer to scan new data.  No data is emitted, */
-  /* but we advance out_row_ctr so outer loop can tell when we're done. */
-  if (post->next_row > old_next_row) {
-    num_rows = post->next_row - old_next_row;
-    (*cinfo->cquantize->color_quantize) (cinfo, post->buffer + old_next_row,
-					 (JSAMPARRAY) NULL, (int) num_rows);
-    *out_row_ctr += num_rows;
-  }
-
-  /* Advance if we filled the strip. */
-  if (post->next_row >= post->strip_height) {
-    post->starting_row += post->strip_height;
-    post->next_row = 0;
-  }
-}
-
-
-/*
- * Process some data in the second pass of 2-pass quantization.
- */
-
-METHODDEF(void)
-post_process_2pass (j_decompress_ptr cinfo,
-		    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
-		    JDIMENSION in_row_groups_avail,
-		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
-		    JDIMENSION out_rows_avail)
-{
-  my_post_ptr post = (my_post_ptr) cinfo->post;
-  JDIMENSION num_rows, max_rows;
-
-  /* Reposition virtual buffer if at start of strip. */
-  if (post->next_row == 0) {
-    post->buffer = (*cinfo->mem->access_virt_sarray)
-	((j_common_ptr) cinfo, post->whole_image,
-	 post->starting_row, post->strip_height, FALSE);
-  }
-
-  /* Determine number of rows to emit. */
-  num_rows = post->strip_height - post->next_row; /* available in strip */
-  max_rows = out_rows_avail - *out_row_ctr; /* available in output area */
-  if (num_rows > max_rows)
-    num_rows = max_rows;
-  /* We have to check bottom of image here, can't depend on upsampler. */
-  max_rows = cinfo->output_height - post->starting_row;
-  if (num_rows > max_rows)
-    num_rows = max_rows;
-
-  /* Quantize and emit data. */
-  (*cinfo->cquantize->color_quantize) (cinfo,
-		post->buffer + post->next_row, output_buf + *out_row_ctr,
-		(int) num_rows);
-  *out_row_ctr += num_rows;
-
-  /* Advance if we filled the strip. */
-  post->next_row += num_rows;
-  if (post->next_row >= post->strip_height) {
-    post->starting_row += post->strip_height;
-    post->next_row = 0;
-  }
-}
-
-#endif /* QUANT_2PASS_SUPPORTED */
-
-
-/*
- * Initialize postprocessing controller.
- */
-
-GLOBAL(void)
-jinit_d_post_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
-{
-  my_post_ptr post;
-
-  post = (my_post_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_post_controller));
-  cinfo->post = (struct jpeg_d_post_controller *) post;
-  post->pub.start_pass = start_pass_dpost;
-  post->whole_image = NULL;	/* flag for no virtual arrays */
-  post->buffer = NULL;		/* flag for no strip buffer */
-
-  /* Create the quantization buffer, if needed */
-  if (cinfo->quantize_colors) {
-    /* The buffer strip height is max_v_samp_factor, which is typically
-     * an efficient number of rows for upsampling to return.
-     * (In the presence of output rescaling, we might want to be smarter?)
-     */
-    post->strip_height = (JDIMENSION) cinfo->max_v_samp_factor;
-    if (need_full_buffer) {
-      /* Two-pass color quantization: need full-image storage. */
-      /* We round up the number of rows to a multiple of the strip height. */
-#ifdef QUANT_2PASS_SUPPORTED
-      post->whole_image = (*cinfo->mem->request_virt_sarray)
-	((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
-	 cinfo->output_width * cinfo->out_color_components,
-	 (JDIMENSION) jround_up((long) cinfo->output_height,
-				(long) post->strip_height),
-	 post->strip_height);
-#else
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-#endif /* QUANT_2PASS_SUPPORTED */
-    } else {
-      /* One-pass color quantization: just make a strip buffer. */
-      post->buffer = (*cinfo->mem->alloc_sarray)
-	((j_common_ptr) cinfo, JPOOL_IMAGE,
-	 cinfo->output_width * cinfo->out_color_components,
-	 post->strip_height);
-    }
-  }
-}

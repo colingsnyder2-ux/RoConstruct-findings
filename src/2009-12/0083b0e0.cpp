@@ -1,422 +1,51 @@
+// roc 2009-12 0083b0e0  unit: CXTPToolBar::CControlButtonExpand  size: 125 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 0083b0e0
+//
+// 0083b0e0  56                   push esi
+// 0083b0e1  8bf1                 mov esi, ecx
+// 0083b0e3  8b8e78010000         mov ecx, dword ptr [esi + 0x178]
+// 0083b0e9  85c9                 test ecx, ecx
+// 0083b0eb  746c                 je 0x83b159
+// 0083b0ed  8b01                 mov eax, dword ptr [ecx]
+// 0083b0ef  8b9080010000         mov edx, dword ptr [eax + 0x180]
+// 0083b0f5  ffd2                 call edx
+// 0083b0f7  85c0                 test eax, eax
+// 0083b0f9  745e                 je 0x83b159
+// 0083b0fb  8b442408             mov eax, dword ptr [esp + 8]
+// 0083b0ff  50                   push eax
+// 0083b100  e8bbf9ffff           call 0x83aac0
+// 0083b105  50                   push eax
+// 0083b106  e8338bfbff           call 0x7f3c3e
+// 0083b10b  83c408               add esp, 8
+// 0083b10e  85c0                 test eax, eax
+// 0083b110  7433                 je 0x83b145
+// 0083b112  56                   push esi
+// 0083b113  8bc8                 mov ecx, eax
+// 0083b115  e896feffff           call 0x83afb0
+// 0083b11a  85c0                 test eax, eax
+// 0083b11c  7427                 je 0x83b145
+// 0083b11e  8b8e00010000         mov ecx, dword ptr [esi + 0x100]
+// 0083b124  6a00                 push 0
+// 0083b126  6aff                 push -1
+// 0083b128  e873b4fcff           call 0x8065a0
+// 0083b12d  8b8e00010000         mov ecx, dword ptr [esi + 0x100]
+// 0083b133  8b11                 mov edx, dword ptr [ecx]
+// 0083b135  8b8250010000         mov eax, dword ptr [edx + 0x150]
+// 0083b13b  6a00                 push 0
+// 0083b13d  6aff                 push -1
+// 0083b13f  ffd0                 call eax
+// 0083b141  5e                   pop esi
+// 0083b142  c21000               ret 0x10
+// 0083b145  8b8e80000000         mov ecx, dword ptr [esi + 0x80]
+// 0083b14b  6a00                 push 0
+// 0083b14d  51                   push ecx
+// 0083b14e  8b8e00010000         mov ecx, dword ptr [esi + 0x100]
+// 0083b154  e847b4fcff           call 0x8065a0
+// 0083b159  5e                   pop esi
+// 0083b15a  c21000               ret 0x10
+// copied from an identical function in another client (function ?OnCustomizeDragOver@CXTPControlPopup@@MAEXPAVCXTPControl@@VCPoint@@AAK@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControlPopup.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPControlPopup.cpp : implementation of the CXTPControlPopup class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTPControlPopup.h"
-#include "XTPCommandBar.h"
-#include "XTPControls.h"
-#include "XTPPopupBar.h"
-#include "XTPShadowsManager.h"
-#include "XTPPaintManager.h"
-#include "XTPToolBar.h"
-#include "XTPCommandBars.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-IMPLEMENT_XTP_CONTROL(CXTPControlPopup, CXTPControlButton)
-
-CXTPControlPopup::CXTPControlPopup()
-{
-	EnableAutomation();
-
-	m_controlType = xtpControlPopup;
-	m_bPopup = FALSE;
-	m_pCommandBar = NULL;
-	m_dwCommandBarID = 0;
-	m_bShowShadow = TRUE;
-}
-
-CXTPControlPopup::~CXTPControlPopup()
-{
-	if (m_pCommandBar)
-		m_pCommandBar->InternalRelease();
-
-}
-
-CXTPControlPopup* CXTPControlPopup::CreateControlPopup(XTPControlType controlType)
-{
-	ASSERT(IsPopupControlType(controlType));
-
-	CXTPControlPopup* pControl = (CXTPControlPopup*)CXTPControlPopup::CreateObject();
-	pControl->m_controlType = controlType;
-	return pControl;
-}
-
-void CXTPControlPopup::OnUnderlineActivate()
-{
-	if (m_pCommandBar)
-		m_pParent->SetPopuped(m_nIndex, TRUE);
-	else
-		CXTPControlButton::OnUnderlineActivate();
-}
-
-void CXTPControlPopup::OnClick(BOOL bKeyboard, CPoint pt)
-{
-	if (!GetEnabled())
-		return;
-
-	if (IsCustomizeMode())
-	{
-		ASSERT(m_pParent);
-		if (!m_pParent)
-			return;
-		CXTPCommandBars* pCommandBars = m_pParent->GetCommandBars();
-		ASSERT(pCommandBars);
-		if (!pCommandBars)
-			return;
-
-		pCommandBars->SetDragControl(this);
-	}
-
-	if (m_bPopup && (GetParent()->GetPosition() != xtpBarPopup))
-		m_pParent->SetTrackingMode(FALSE, FALSE);
-	else
-	{
-		if (!IsCustomizeMode() && (m_controlType == xtpControlSplitButtonPopup))
-		{
-			if (bKeyboard)
-			{
-				if (GetEnabled() != TRUE_SPLITDROPDOWN)
-					OnExecute();
-				else
-					m_pParent->SetPopuped(m_nIndex);
-				return;
-			}
-
-			CRect rcCommandRect = GetPaintManager()->GetSplitButtonCommandRect(this);
-
-			if ((m_pParent->GetType() == xtpBarTypePopup) && rcCommandRect.PtInRect(pt))
-			{
-				m_pParent->KillTimer(XTP_TID_HOVER);
-				return;
-			}
-
-			if ((m_pParent->GetType() != xtpBarTypePopup) && rcCommandRect.PtInRect(pt))
-			{
-				if (GetEnabled() != TRUE_SPLITDROPDOWN)
-					ClickToolBarButton(rcCommandRect);
-				return;
-			}
-
-			if (GetEnabled() == TRUE_SPLITCOMMAND)
-				return;
-		}
-
-
-		if (!(IsCustomizeMode() && m_pCommandBar && !m_pCommandBar->IsCustomizable()))
-		{
-			m_pParent->SetPopuped(m_nIndex);
-		}
-	}
-
-	if (IsCustomizeMode())
-	{
-		CustomizeStartDrag(pt);
-	}
-}
-
-void CXTPControlPopup::OnLButtonUp(CPoint point)
-{
-	if (!m_pCommandBar)
-	{
-		CXTPControlButton::OnLButtonUp(point);
-		return;
-	}
-
-	if (GetEnabled() && GetType() == xtpControlSplitButtonPopup && m_pParent->GetType() == xtpBarTypePopup)
-	{
-		if (m_rcControl.right > point.x + GetPaintManager()->m_nSplitButtonPopupWidth && GetEnabled() != TRUE_SPLITDROPDOWN)
-			OnExecute();
-	}
-}
-
-void CXTPControlPopup::OnMouseMove(CPoint point)
-{
-	if (!m_pCommandBar)
-	{
-		CXTPControlButton::OnMouseMove(point);
-		return;
-	}
-
-	if (GetEnabled() && GetType() == xtpControlSplitButtonPopup && m_pParent->GetType() != xtpBarTypePopup && m_bSelected)
-	{
-		CRect rcCommandRect = GetPaintManager()->GetSplitButtonCommandRect(this);
-
-		if (rcCommandRect.PtInRect(point) && m_bSelected != TRUE_SPLITCOMMAND)
-		{
-			m_bSelected = TRUE_SPLITCOMMAND;
-			RedrawParent(FALSE);
-		}
-		else if (!rcCommandRect.PtInRect(point) && m_bSelected != TRUE_SPLITDROPDOWN)
-		{
-			m_bSelected = TRUE_SPLITDROPDOWN;
-			RedrawParent(FALSE);
-		}
-	}
-}
-
-BOOL CXTPControlPopup::OnSetSelected(int bSelected)
-{
-	if (!CXTPControlButton::OnSetSelected(bSelected))
-		return FALSE;
-
-	if (!m_pCommandBar)
-		return TRUE;
-
-	if (m_controlType == xtpControlPopup || m_pParent->GetType() == xtpBarTypePopup)
-	{
-		if (GetEnabled() && bSelected && m_pParent->IsTrackingMode() == TRUE_POPUP && GetParent()->GetPosition() != xtpBarPopup)
-		{
-			m_pParent->SetPopuped(m_nIndex);
-		}
-		else if (!bSelected && m_bPopup && GetParent()->GetPosition() != xtpBarPopup)
-		{
-			m_pParent->SetPopuped(-1);
-		}
-	}
-	else
-	{
-		if (GetEnabled() && IsKeyboardSelected(bSelected) && m_pParent->IsTrackingMode() == TRUE_POPUP)
-		{
-			m_pParent->SetPopuped(m_nIndex);
-		}
-
-	}
-
-	return TRUE;
-}
-
-void CXTPControlPopup::UpdateShadow()
-{
-	if (m_pCommandBar && m_pParent->GetPosition() != xtpBarPopup && IsPopupControlType(m_controlType))
-	{
-		if (m_pParent->GetPosition() == xtpBarFloating && m_pParent->GetType() == xtpBarTypePopup)
-			return;
-
-		CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pCommandBar);
-		if (pPopupBar && pPopupBar->m_bShowShadow && m_bShowShadow)
-			XTPShadowsManager()->SetShadow(this);
-	}
-}
-
-BOOL CXTPControlPopup::OnSetPopup(BOOL bPopup)
-{
-	if (!m_pCommandBar)
-		return FALSE;
-
-	if (GetType() == xtpControlSplitButtonPopup && GetEnabled() == TRUE_SPLITCOMMAND)
-		return FALSE;
-
-	if (m_pParent->GetSafeHwnd() == NULL)
-		return FALSE;
-
-	m_bPopup = bPopup;
-
-	if (bPopup)
-	{
-		RedrawParent(FALSE);
-		m_pParent->GetSite()->UpdateWindow();
-		m_pParent->UpdateWindow();
-
-		if (!m_pCommandBar->IsTrackingMode())
-		{
-			if (!m_pCommandBar->Popup(this, IsKeyboardSelected(GetSelected())))
-				return FALSE;
-
-			UpdateShadow();
-		}
-	}
-	else
-	{
-		m_pCommandBar->SetTrackingMode(FALSE);
-		RedrawParent();
-	}
-
-	return TRUE;
-}
-
-void CXTPControlPopup::ExpandCommandBar()
-{
-	CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pCommandBar);
-	if (m_bPopup && pPopupBar && m_controlType == xtpControlPopup)
-	{
-		pPopupBar->ExpandBar();
-	}
-}
-
-void CXTPControlPopup::OnMouseHover()
-{
-	if (m_pCommandBar && GetEnabled() && (m_pParent->IsTrackingMode() == TRUE_POPUP || GetParent()->GetPosition() == xtpBarPopup))
-		GetParent()->SetPopuped(m_nIndex);
-	else CXTPControlButton::OnMouseHover();
-}
-
-BOOL CXTPControlPopup::OnLButtonDblClk(CPoint point)
-{
-	CXTPPopupBar* pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, m_pCommandBar);
-	if (pPopupBar && (m_controlType == xtpControlPopup || m_controlType == xtpControlButtonPopup))
-	{
-		if (!m_bPopup)
-			m_pParent->OnLButtonDown(0, point);
-
-		if (m_pCommandBar != pPopupBar)
-			return FALSE;
-
-		if (m_bPopup && pPopupBar->GetDefaultItem(0, TRUE) != (UINT)-1)
-		{
-			CXTPControl* pControl = pPopupBar->GetControl(pPopupBar->GetDefaultItem(0, TRUE));
-			pControl->OnExecute();
-			return TRUE;
-		}
-
-		if (m_bPopup && pPopupBar->m_bCollapsed)
-		{
-			pPopupBar->ExpandBar();
-			return TRUE;
-		}
-	}
-	else
-	{
-		return CXTPControlButton::OnLButtonDblClk(point);
-	}
-	return FALSE;
-}
-
-
-
-void CXTPControlPopup::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	ASSERT(DYNAMIC_DOWNCAST(CXTPControlPopup, pControl));
-
-	CXTPControlButton::Copy(pControl, bRecursive);
-
-	if (bRecursive && ((CXTPControlPopup*)pControl)->m_pCommandBar)
-	{
-		CXTPCommandBar* pCommandBar = ((CXTPControlPopup*)pControl)->m_pCommandBar->Clone(bRecursive);
-		SetCommandBar(pCommandBar);
-		pCommandBar->InternalRelease();
-
-	}
-	else
-	{
-		SetCommandBar(((CXTPControlPopup*)pControl)->m_pCommandBar);
-	}
-
-}
-
-void CXTPControlPopup::SetCommandBar(CXTPCommandBar* pBar)
-{
-	if (m_pCommandBar)
-		m_pCommandBar->InternalRelease();
-
-	m_pCommandBar = pBar;
-
-	if (m_pCommandBar)
-		m_pCommandBar->InternalAddRef();
-
-}
-
-void CXTPControlPopup::SetCommandBar(CMenu* pMenu)
-{
-	if (!m_pCommandBar)
-		m_pCommandBar = CXTPPopupBar::CreatePopupBar(m_pParent ? m_pParent->GetCommandBars() : NULL);
-
-	m_pCommandBar->LoadMenu(pMenu);
-}
-
-BOOL CXTPControlPopup::IsContainPopup(CXTPControlPopup* pControlPopup)
-{
-	if (!m_pCommandBar || !pControlPopup->GetCommandBar())
-		return FALSE;
-
-	if (m_pCommandBar == pControlPopup->GetCommandBar()) return TRUE;
-
-	for (int i = 0; i < m_pCommandBar->GetControlCount(); i++)
-	{
-		CXTPControlPopup* pControlChild = DYNAMIC_DOWNCAST(CXTPControlPopup, m_pCommandBar->GetControl(i));
-		if (pControlChild)
-		{
-			if (pControlPopup->IsContainPopup(pControlChild))
-				return TRUE;
-
-			if (pControlChild->IsContainPopup(pControlPopup))
-				return TRUE;
-		}
-
-	}
-	return FALSE;
-}
-
-
-BOOL CXTPControlPopup::Compare(CXTPControl* pOther)
-{
-	if (!CXTPControlButton::Compare(pOther))
-		return FALSE;
-
-	CXTPControlPopup* pPopup = DYNAMIC_DOWNCAST(CXTPControlPopup, pOther);
-	if (!pPopup)
-		return FALSE;
-
-	if (m_pCommandBar != NULL && pPopup->m_pCommandBar != NULL)
-	{
-		if (!m_pCommandBar->GetControls()->Compare(pPopup->m_pCommandBar->GetControls()))
-			return FALSE;
-	}
-
-	return TRUE;
-
-}
-
-void CXTPControlPopup::OnCustomizeDragOver(CXTPControl* pDataObject, CPoint /*point*/, DROPEFFECT& /*dropEffect*/)
-{
-	if (m_pCommandBar && m_pCommandBar->IsCustomizable())
-	{
-		CXTPControlPopup* pControlPopup = DYNAMIC_DOWNCAST(CXTPControlPopup, pDataObject);
-
-		if (!(pControlPopup && pControlPopup->IsContainPopup(this)))
-		{
-			m_pParent->SetPopuped(m_nIndex);
-		}
-		else
-		{
-			m_pParent->SetPopuped(-1);
-			m_pParent->SetSelected(-1);
-		}
-	}
-}
-
-void CXTPControlPopup::AdjustExcludeRect(CRect& rc, BOOL bVertical)
-{
-	GetPaintManager()->AdjustExcludeRect(rc, this, bVertical);
-}
-
-

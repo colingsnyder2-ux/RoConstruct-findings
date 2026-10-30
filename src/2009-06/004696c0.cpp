@@ -1,165 +1,27 @@
 // from server: 100% by auto
+// roc 2009-06 004696c0  unit: CTaskSchedulerPaneView  size: 40 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 004696c0
+//
+// 004696c0  d9ee                 fldz 
+// 004696c2  d9442404             fld dword ptr [esp + 4]
+// 004696c6  d8d1                 fcom st(1)
+// 004696c8  dfe0                 fnstsw ax
+// 004696ca  f6c441               test ah, 0x41
+// 004696cd  7507                 jne 0x4696d6
+// 004696cf  ddd9                 fstp st(1)
+// 004696d1  ddd8                 fstp st(0)
+// 004696d3  d9e8                 fld1 
+// 004696d5  c3                   ret 
+// 004696d6  d8d9                 fcomp st(1)
+// 004696d8  dfe0                 fnstsw ax
+// 004696da  f6c405               test ah, 5
+// 004696dd  7a08                 jp 0x4696e7
+// 004696df  ddd8                 fstp st(0)
+// 004696e1  d90594758b00         fld dword ptr [0x8b7594]
+// 004696e7  c3                   ret 
+// library rbx2016-g3d/Capsule.cpp (function ?sign@G3D@@YAMM@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: rbx2016-g3d Capsule.cpp
-
-// Candidate translation unit (score above; library headers required).
-/**
- @file Capsule.cpp
-  
- @maintainer Morgan McGuire, http://graphics.cs.williams.edu
-
- @created 2003-02-07
- @edited  2005-08-18
-
- Copyright 2000-2009, Morgan McGuire.
- All rights reserved.
- */
-
-#include "G3D/Capsule.h"
-#include "G3D/LineSegment.h"
-#include "G3D/Sphere.h"
-#include "G3D/CoordinateFrame.h"
-#include "G3D/Line.h"
-#include "G3D/AABox.h"
-
-namespace G3D {
-
-Capsule::Capsule() {
-}
-
-
-Capsule::Capsule(const Vector3& _p1, const Vector3& _p2, float _r) 
-	: p1(_p1), p2(_p2), _radius(_r) {
-}
-
-
-Line Capsule::axis() const {
-	return Line::fromTwoPoints(p1, p2);
-}
-
-
-float Capsule::volume() const {
-	return 
-		// Sphere volume
-		pow(_radius, 3) * pi() * 4 / 3 +
-
-		// Cylinder volume
-		pow(_radius, 2) * (p1 - p2).magnitude();
-}
-
-
-float Capsule::area() const {
-
-	return
-		// Sphere area
-		pow(_radius, 2) * 4 * pi() +
-
-		// Cylinder area
-		twoPi() * _radius * (p1 - p2).magnitude();
-}
-
-
-void Capsule::getBounds(AABox& out) const {
-    Vector3 min = p1.min(p2) - (Vector3(1, 1, 1) * _radius);
-    Vector3 max = p1.max(p2) + (Vector3(1, 1, 1) * _radius);
-
-    out = AABox(min, max);
-}
-
-
-bool Capsule::contains(const Vector3& p) const { 
-    return LineSegment::fromTwoPoints(p1, p2).distanceSquared(p) <= square(radius());
-}
-
-
-void Capsule::getRandomSurfacePoint(Vector3& p, Vector3& N) const {
-    float h = height();
-    float r = radius();
-
-    // Create a random point on a standard capsule and then rotate to the global frame.
-
-    // Relative areas
-    float capRelArea  = sqrt(r) / 2.0f;
-    float sideRelArea = r * h;
-
-    float r1 = uniformRandom(0, capRelArea * 2 + sideRelArea);
-
-    if (r1 < capRelArea * 2) {
-
-        // Select a point uniformly at random on a sphere
-        N = Sphere(Vector3::zero(), 1).randomSurfacePoint();
-        p = N * r;
-        p.y += sign(p.y) * h / 2.0f;
-    } else {
-        // Side
-        float a = uniformRandom(0, (float)twoPi());
-        N.x = cos(a);
-        N.y = 0;
-        N.z = sin(a);
-        p.x = N.x * r;
-        p.z = N.y * r;
-        p.y = uniformRandom(-h / 2.0f, h / 2.0f);
-    }
-
-    // Transform to world space
-    CoordinateFrame cframe;
-    getReferenceFrame(cframe);
-    
-    p = cframe.pointToWorldSpace(p);
-    N = cframe.normalToWorldSpace(N);
-}
-
-
-void Capsule::getReferenceFrame(CoordinateFrame& cframe) const {
-    cframe.translation = center();
-
-    Vector3 Y = (p1 - p2).direction();
-    Vector3 X = (abs(Y.dot(Vector3::unitX())) > 0.9) ? Vector3::unitY() : Vector3::unitX();
-    Vector3 Z = X.cross(Y).direction();
-    X = Y.cross(Z);        
-    cframe.rotation.setColumn(0, X);
-    cframe.rotation.setColumn(1, Y);
-    cframe.rotation.setColumn(2, Z);
-}
-
-
-Vector3 Capsule::randomInteriorPoint() const {
-    float h = height();
-    float r = radius();
-
-    // Create a random point in a standard capsule and then rotate to the global frame.
-
-    Vector3 p;
-
-    float hemiVolume = pi() * (r*r*r) * 4 / 6.0;
-    float cylVolume = pi() * square(r) * h;
-    
-    float r1 = uniformRandom(0, 2.0 * hemiVolume + cylVolume);
-
-    if (r1 < 2.0 * hemiVolume) {
-
-        p = Sphere(Vector3::zero(), r).randomInteriorPoint();
-
-        p.y += sign(p.y) * h / 2.0f;
-
-    } else {
-
-        // Select a point uniformly at random on a disk
-        float a = uniformRandom(0, (float)twoPi());
-        float r2 = sqrt(uniformRandom(0, 1)) * r;
-
-        p = Vector3(cos(a) * r2,
-                    uniformRandom(-h / 2.0f, h / 2.0f),
-                    sin(a) * r2);
-    }
-
-    // Transform to world space
-    CoordinateFrame cframe;
-    getReferenceFrame(cframe);
-    
-    return cframe.pointToWorldSpace(p);
-}
-
-} // namespace

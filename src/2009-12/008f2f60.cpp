@@ -1,125 +1,24 @@
+// roc 2009-12 008f2f60  unit: CXTPDockingPaneAutoHidePanel  size: 42 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008f2f60
+//
+// 008f2f60  8b442408             mov eax, dword ptr [esp + 8]
+// 008f2f64  56                   push esi
+// 008f2f65  8bf1                 mov esi, ecx
+// 008f2f67  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 008f2f6b  50                   push eax
+// 008f2f6c  51                   push ecx
+// 008f2f6d  8bce                 mov ecx, esi
+// 008f2f6f  e8bcdafbff           call 0x8b0a30
+// 008f2f74  6a0a                 push 0xa
+// 008f2f76  8d4e38               lea ecx, [esi + 0x38]
+// 008f2f79  c706acf8a000         mov dword ptr [esi], 0xa0f8ac
+// 008f2f7f  e83c67f4ff           call 0x8396c0
+// 008f2f84  8bc6                 mov eax, esi
+// 008f2f86  5e                   pop esi
+// 008f2f87  c20800               ret 8
+// copied from an identical function in another client (function ??0CXTPDockingPaneBaseContainer@@IAE@W4XTPDockingPaneType@@PAVCXTPDockingPaneLayout@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneBaseContainer.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPDockingPaneBase.cpp : implementation of the CXTPDockingPaneBase class.
-//
-// This file is a part of the XTREME DOCKINGPANE MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTPDockingPanePaintManager.h"
-#include "XTPDockingPaneBaseContainer.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPDockingPaneBaseContainer
-
-CXTPDockingPaneBaseContainer::CXTPDockingPaneBaseContainer(XTPDockingPaneType type, CXTPDockingPaneLayout* pLayout)
-	: CXTPDockingPaneBase(type, pLayout)
-{
-}
-
-CXTPDockingPaneBaseContainer::~CXTPDockingPaneBaseContainer()
-{
-}
-
-POSITION CXTPDockingPaneBaseContainer::ContainPane(CXTPDockingPaneBase* pPane) const
-{
-	if (pPane == (CXTPDockingPaneBase*)this)
-		return (POSITION)TRUE;
-
-	POSITION pos = m_lstPanes.GetHeadPosition();
-	while (pos)
-	{
-		POSITION posContain = pos;
-
-		if (m_lstPanes.GetNext(pos)->ContainPane(pPane))
-			return posContain;
-	}
-	return NULL;
-}
-
-void CXTPDockingPaneBaseContainer::FindPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
-{
-	if (GetType() == type)
-	{
-		if (IsEmpty())
-		{
-			return;
-		}
-
-		pList->AddTail((CXTPDockingPaneBase*)this);
-	}
-
-	POSITION pos = m_lstPanes.GetHeadPosition();
-	while (pos)
-	{
-		CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
-		pPane->FindPane(type, pList);
-	}
-}
-
-BOOL CXTPDockingPaneBaseContainer::IsEmpty() const
-{
-	POSITION pos = m_lstPanes.GetHeadPosition();
-	while (pos)
-	{
-		CXTPDockingPaneBase* pPane = m_lstPanes.GetNext(pos);
-
-		if (!pPane->IsEmpty())
-		{
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-POSITION CXTPDockingPaneBaseContainer::GetHeadPosition() const
-{
-	return m_lstPanes.GetHeadPosition();
-}
-
-CXTPDockingPaneBase* CXTPDockingPaneBaseContainer::GetNext(POSITION& pos) const
-{
-	return m_lstPanes.GetNext(pos);
-}
-
-CXTPDockingPaneBase* CXTPDockingPaneBaseContainer::GetFirstPane() const
-{
-	if (m_lstPanes.IsEmpty())
-		return NULL;
-
-	return m_lstPanes.GetHead();
-}
-
-CXTPDockingPaneBase* CXTPDockingPaneBaseContainer::GetLastPane() const
-{
-	if (m_lstPanes.IsEmpty())
-		return NULL;
-
-	return m_lstPanes.GetTail();
-}

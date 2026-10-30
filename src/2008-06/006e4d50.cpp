@@ -1,151 +1,38 @@
 // from server: 100% by auto
+// roc 2008-06 006e4d50  unit: CXTPControls  size: 68 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 006e4d50
+//
+// 006e4d50  56                   push esi
+// 006e4d51  57                   push edi
+// 006e4d52  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 006e4d56  8b4720               mov eax, dword ptr [edi + 0x20]
+// 006e4d59  50                   push eax
+// 006e4d5a  8bf1                 mov esi, ecx
+// 006e4d5c  ff15502d8000         call dword ptr [0x802d50]
+// 006e4d62  85c0                 test eax, eax
+// 006e4d64  7427                 je 0x6e4d8d
+// 006e4d66  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 006e4d6a  8b542410             mov edx, dword ptr [esp + 0x10]
+// 006e4d6e  51                   push ecx
+// 006e4d6f  52                   push edx
+// 006e4d70  8bce                 mov ecx, esi
+// 006e4d72  e879feffff           call 0x6e4bf0
+// 006e4d77  85c0                 test eax, eax
+// 006e4d79  7412                 je 0x6e4d8d
+// 006e4d7b  56                   push esi
+// 006e4d7c  8bcf                 mov ecx, edi
+// 006e4d7e  e811760d00           call 0x7bc394
+// 006e4d83  5f                   pop edi
+// 006e4d84  b801000000           mov eax, 1
+// 006e4d89  5e                   pop esi
+// 006e4d8a  c20c00               ret 0xc
+// 006e4d8d  5f                   pop edi
+// 006e4d8e  33c0                 xor eax, eax
+// 006e4d90  5e                   pop esi
+// 006e4d91  c20c00               ret 0xc
+// library xtp-11.2.2/Source\Controls\XTWindowPos.cpp (function ?LoadWindowPos@CXTWindowPos@@QAEHPAVCWnd@@PBD1@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTWindowPos.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTWindowPos.cpp : implementation of the CXTWindowPos class.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPVC80Helpers.h"  // Visual Studio 2005 helper functions
-#include "Common/XTPResourceManager.h"
-
-#include "XTDefines.h"
-#include "XTGlobal.h"
-#include "XTWindowPos.h"
-#include "XTRegistryManager.h"
-
-#define XT_IDS_REG_SETTINGS _T("Settings")
-#define XT_IDS_REG_WNDPOS   _T("Window Position")
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTWindowPos
-/////////////////////////////////////////////////////////////////////////////
-CXTWindowPos::CXTWindowPos()
-{
-	ASSERT(sizeof(CXTWindowPos) == sizeof(WINDOWPLACEMENT));
-
-	memset((LPWINDOWPLACEMENT)this, 0, sizeof(WINDOWPLACEMENT));
-
-	length = sizeof(WINDOWPLACEMENT);
-	showCmd = SW_SHOW;
-}
-
-BOOL CXTWindowPos::SaveWindowPos(CWnd* pWnd, LPCTSTR lpszWndPos/*=NULL*/, LPCTSTR lpszSection/*=NULL*/)
-{
-	ASSERT(pWnd); // must be valid.
-	if (!pWnd)
-		return FALSE;
-
-	if (::IsWindow(pWnd->m_hWnd))
-	{
-		if (pWnd->GetWindowPlacement(this))
-		{
-			CString strSection;
-			if (lpszSection)
-				strSection = lpszSection;
-			else
-				strSection = XT_IDS_REG_SETTINGS;
-
-			CString strEntry;
-			if (lpszWndPos)
-				strEntry = lpszWndPos;
-			else
-				strEntry = XT_IDS_REG_WNDPOS;
-
-			// Make sure we don't pop up
-			// minimized the next time
-			if (showCmd != SW_SHOWMAXIMIZED)
-			{
-				showCmd = SW_SHOWNORMAL;
-			}
-
-			CXTRegistryManager regManager;
-			regManager.WriteProfileBinary(strSection, strEntry,
-				reinterpret_cast<LPBYTE>((LPWINDOWPLACEMENT)this), sizeof(WINDOWPLACEMENT));
-
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
-BOOL CXTWindowPos::LoadWindowPos(CWnd* pWnd, LPCTSTR lpszWndPos/*=NULL*/, LPCTSTR lpszSection/*=NULL*/)
-{
-	ASSERT_VALID(pWnd); // must be valid.
-
-	if (::IsWindow(pWnd->m_hWnd))
-	{
-		if (LoadWindowPos(lpszWndPos, lpszSection))
-		{
-			pWnd->SetWindowPlacement(this);
-			return TRUE;
-		}
-	}
-
-	return FALSE;
-}
-
-BOOL CXTWindowPos::LoadWindowPos(LPCTSTR lpszWndPos/*=NULL*/, LPCTSTR lpszSection/*=NULL*/)
-{
-	UINT nSize = 0;
-	LPBYTE pbtData = 0;
-
-	CString strSection;
-	if (lpszSection)
-		strSection = lpszSection;
-	else
-		strSection = XT_IDS_REG_SETTINGS;
-
-	CString strEntry;
-	if (lpszWndPos)
-		strEntry = lpszWndPos;
-	else
-		strEntry = XT_IDS_REG_WNDPOS;
-
-	CXTRegistryManager regManager;
-	if (!regManager.GetProfileBinary(strSection, strEntry,
-		&pbtData, &nSize))
-	{
-		return FALSE;
-	}
-
-	BOOL bResult = FALSE;
-
-	if (nSize == sizeof(WINDOWPLACEMENT))
-	{
-		MEMCPY_S((void*)&*((LPWINDOWPLACEMENT)this), pbtData, (DWORD)sizeof(WINDOWPLACEMENT));
-		bResult = TRUE;
-	}
-	delete[] pbtData;
-
-	return bResult;
-}

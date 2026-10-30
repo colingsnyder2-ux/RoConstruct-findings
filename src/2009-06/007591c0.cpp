@@ -1,2017 +1,455 @@
+// roc 2009-06 007591c0  unit: CRobloxTreeCtrl  size: 1544 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 007591c0
+//
+// 007591c0  6aff                 push -1
+// 007591c2  68527c8700           push 0x877c52
+// 007591c7  64a100000000         mov eax, dword ptr fs:[0]
+// 007591cd  50                   push eax
+// 007591ce  81ec78010000         sub esp, 0x178
+// 007591d4  a1304fa200           mov eax, dword ptr [0xa24f30]
+// 007591d9  33c4                 xor eax, esp
+// 007591db  89842474010000       mov dword ptr [esp + 0x174], eax
+// 007591e2  53                   push ebx
+// 007591e3  55                   push ebp
+// 007591e4  56                   push esi
+// 007591e5  57                   push edi
+// 007591e6  a1304fa200           mov eax, dword ptr [0xa24f30]
+// 007591eb  33c4                 xor eax, esp
+// 007591ed  50                   push eax
+// 007591ee  8d84248c010000       lea eax, [esp + 0x18c]
+// 007591f5  64a300000000         mov dword ptr fs:[0], eax
+// 007591fb  8bb4249c010000       mov esi, dword ptr [esp + 0x19c]
+// 00759202  8be9                 mov ebp, ecx
+// 00759204  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 00759207  8b5020               mov edx, dword ptr [eax + 0x20]
+// 0075920a  8d8c24bc000000       lea ecx, [esp + 0xbc]
+// 00759211  51                   push ecx
+// 00759212  52                   push edx
+// 00759213  ff1514ee8900         call dword ptr [0x89ee14]
+// 00759219  8b4500               mov eax, dword ptr [ebp]
+// 0075921c  8b5070               mov edx, dword ptr [eax + 0x70]
+// 0075921f  8bcd                 mov ecx, ebp
+// 00759221  ffd2                 call edx
+// 00759223  8bd8                 mov ebx, eax
+// 00759225  8b4500               mov eax, dword ptr [ebp]
+// 00759228  8b5074               mov edx, dword ptr [eax + 0x74]
+// 0075922b  8bcd                 mov ecx, ebp
+// 0075922d  895c2444             mov dword ptr [esp + 0x44], ebx
+// 00759231  ffd2                 call edx
+// 00759233  33ff                 xor edi, edi
+// 00759235  89442448             mov dword ptr [esp + 0x48], eax
+// 00759239  3bf7                 cmp esi, edi
+// 0075923b  7504                 jne 0x759241
+// 0075923d  33f6                 xor esi, esi
+// 0075923f  eb03                 jmp 0x759244
+// 00759241  8b7604               mov esi, dword ptr [esi + 4]
+// 00759244  8d8424bc000000       lea eax, [esp + 0xbc]
+// 0075924b  50                   push eax
+// 0075924c  56                   push esi
+// 0075924d  8d4c247c             lea ecx, [esp + 0x7c]
+// 00759251  e8da720100           call 0x770530
+// 00759256  53                   push ebx
+// 00759257  8d8c24c0000000       lea ecx, [esp + 0xc0]
+// 0075925e  51                   push ecx
+// 0075925f  8d4c247c             lea ecx, [esp + 0x7c]
+// 00759263  89bc249c010000       mov dword ptr [esp + 0x19c], edi
+// 0075926a  e86105fcff           call 0x7197d0
+// 0075926f  8b4d34               mov ecx, dword ptr [ebp + 0x34]
+// 00759272  8b442478             mov eax, dword ptr [esp + 0x78]
+// 00759276  8b11                 mov edx, dword ptr [ecx]
+// 00759278  8b9220010000         mov edx, dword ptr [edx + 0x120]
+// 0075927e  57                   push edi
+// 0075927f  50                   push eax
+// 00759280  6a0f                 push 0xf
+// 00759282  ffd2                 call edx
+// 00759284  8d4c2474             lea ecx, [esp + 0x74]
+// 00759288  39bc24a0010000       cmp dword ptr [esp + 0x1a0], edi
+// 0075928f  0f84f9040000         je 0x75978e
+// 00759295  e8382d0f00           call 0x84bfd2
+// 0075929a  8bcd                 mov ecx, ebp
+// 0075929c  89442460             mov dword ptr [esp + 0x60], eax
+// 007592a0  e8cbd6ffff           call 0x756970
+// 007592a5  8b3590ee8900         mov esi, dword ptr [0x89ee90]
+// 007592ab  84c0                 test al, al
+// 007592ad  7424                 je 0x7592d3
+// 007592af  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 007592b2  8b4020               mov eax, dword ptr [eax + 0x20]
+// 007592b5  57                   push edi
+// 007592b6  57                   push edi
+// 007592b7  680f110000           push 0x110f
+// 007592bc  50                   push eax
+// 007592bd  ffd6                 call esi
+// 007592bf  50                   push eax
+// 007592c0  e83dfafbff           call 0x718d02
+// 007592c5  85c0                 test eax, eax
+// 007592c7  740a                 je 0x7592d3
+// 007592c9  c744245401000000     mov dword ptr [esp + 0x54], 1
+// 007592d1  eb07                 jmp 0x7592da
+// 007592d3  897c2454             mov dword ptr [esp + 0x54], edi
+// 007592d7  897d10               mov dword ptr [ebp + 0x10], edi
+// 007592da  8b4d34               mov ecx, dword ptr [ebp + 0x34]
+// 007592dd  e8582e0f00           call 0x84c13a
+// 007592e2  89442450             mov dword ptr [esp + 0x50], eax
+// 007592e6  ff1578ee8900         call dword ptr [0x89ee78]
+// 007592ec  50                   push eax
+// 007592ed  e810fafbff           call 0x718d02
+// 007592f2  8b4d34               mov ecx, dword ptr [ebp + 0x34]
+// 007592f5  3bc1                 cmp eax, ecx
+// 007592f7  0f94c2               sete dl
+// 007592fa  8854245c             mov byte ptr [esp + 0x5c], dl
+// 007592fe  e8d92b0f00           call 0x84bedc
+// 00759303  57                   push edi
+// 00759304  89442450             mov dword ptr [esp + 0x50], eax
+// 00759308  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 0075930b  8b4020               mov eax, dword ptr [eax + 0x20]
+// 0075930e  6a05                 push 5
+// 00759310  680a110000           push 0x110a
+// 00759315  50                   push eax
+// 00759316  ffd6                 call esi
+// 00759318  57                   push edi
+// 00759319  8bd8                 mov ebx, eax
+// 0075931b  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 0075931e  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 00759321  57                   push edi
+// 00759322  6810110000           push 0x1110
+// 00759327  51                   push ecx
+// 00759328  ffd6                 call esi
+// 0075932a  6a00                 push 0
+// 0075932c  8bf8                 mov edi, eax
+// 0075932e  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 00759331  8b5020               mov edx, dword ptr [eax + 0x20]
+// 00759334  6a00                 push 0
+// 00759336  6a31                 push 0x31
+// 00759338  52                   push edx
+// 00759339  47                   inc edi
+// 0075933a  ffd6                 call esi
+// 0075933c  50                   push eax
+// 0075933d  e8f401fcff           call 0x719536
+// 00759342  8b5004               mov edx, dword ptr [eax + 4]
+// 00759345  8d8c244c010000       lea ecx, [esp + 0x14c]
+// 0075934c  51                   push ecx
+// 0075934d  6a3c                 push 0x3c
+// 0075934f  52                   push edx
+// 00759350  ff1564e18900         call dword ptr [0x89e164]
+// 00759356  85c0                 test eax, eax
+// 00759358  7519                 jne 0x759373
+// 0075935a  8d84244c010000       lea eax, [esp + 0x14c]
+// 00759361  50                   push eax
+// 00759362  6a3c                 push 0x3c
+// 00759364  6a11                 push 0x11
+// 00759366  ff1534e18900         call dword ptr [0x89e134]
+// 0075936c  50                   push eax
+// 0075936d  ff1564e18900         call dword ptr [0x89e164]
+// 00759373  85db                 test ebx, ebx
+// 00759375  0f8401040000         je 0x75977c
+// 0075937b  eb0d                 jmp 0x75938a
+// 0075937d  8d4900               lea ecx, [ecx]
+// 00759380  8b7c2458             mov edi, dword ptr [esp + 0x58]
+// 00759384  8b3590ee8900         mov esi, dword ptr [0x89ee90]
+// 0075938a  8bcf                 mov ecx, edi
+// 0075938c  4f                   dec edi
+// 0075938d  897c2458             mov dword ptr [esp + 0x58], edi
+// 00759391  85c9                 test ecx, ecx
+// 00759393  0f84e3030000         je 0x75977c
+// 00759399  8b4d34               mov ecx, dword ptr [ebp + 0x34]
+// 0075939c  6a01                 push 1
+// 0075939e  8d542430             lea edx, [esp + 0x30]
+// 007593a2  52                   push edx
+// 007593a3  53                   push ebx
+// 007593a4  e82500fcff           call 0x7193ce
+// 007593a9  8b4c2430             mov ecx, dword ptr [esp + 0x30]
+// 007593ad  8b542434             mov edx, dword ptr [esp + 0x34]
+// 007593b1  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 007593b5  8b7c2444             mov edi, dword ptr [esp + 0x44]
+// 007593b9  898c24a8000000       mov dword ptr [esp + 0xa8], ecx
+// 007593c0  8b8c24c4000000       mov ecx, dword ptr [esp + 0xc4]
+// 007593c7  899424ac000000       mov dword ptr [esp + 0xac], edx
+// 007593ce  898424a4000000       mov dword ptr [esp + 0xa4], eax
+// 007593d5  8b442438             mov eax, dword ptr [esp + 0x38]
+// 007593d9  57                   push edi
+// 007593da  8d9424a8000000       lea edx, [esp + 0xa8]
+// 007593e1  898c24b0000000       mov dword ptr [esp + 0xb0], ecx
+// 007593e8  52                   push edx
+// 007593e9  8d4c247c             lea ecx, [esp + 0x7c]
+// 007593ed  898424b8000000       mov dword ptr [esp + 0xb8], eax
+// 007593f4  e8d703fcff           call 0x7197d0
+// 007593f9  6a0b                 push 0xb
+// 007593fb  53                   push ebx
+// 007593fc  8bcd                 mov ecx, ebp
+// 007593fe  e8fde1ffff           call 0x757600
+// 00759403  6a00                 push 0
+// 00759405  8944241c             mov dword ptr [esp + 0x1c], eax
+// 00759409  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 0075940c  8b4020               mov eax, dword ptr [eax + 0x20]
+// 0075940f  6a08                 push 8
+// 00759411  680a110000           push 0x110a
+// 00759416  50                   push eax
+// 00759417  ffd6                 call esi
+// 00759419  85c0                 test eax, eax
+// 0075941b  7422                 je 0x75943f
+// 0075941d  f644241802           test byte ptr [esp + 0x18], 2
+// 00759422  741b                 je 0x75943f
+// 00759424  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 00759427  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 0075942a  6a00                 push 0
+// 0075942c  6a08                 push 8
+// 0075942e  680a110000           push 0x110a
+// 00759433  51                   push ecx
+// 00759434  ffd6                 call esi
+// 00759436  3bd8                 cmp ebx, eax
+// 00759438  7405                 je 0x75943f
+// 0075943a  8374241802           xor dword ptr [esp + 0x18], 2
+// 0075943f  8b442418             mov eax, dword ptr [esp + 0x18]
+// 00759443  8b74245c             mov esi, dword ptr [esp + 0x5c]
+// 00759447  a80a                 test al, 0xa
+// 00759449  ba00000000           mov edx, 0
+// 0075944e  0f95c2               setne dl
+// 00759451  395d14               cmp dword ptr [ebp + 0x14], ebx
+// 00759454  57                   push edi
+// 00759455  8b7c2450             mov edi, dword ptr [esp + 0x50]
+// 00759459  57                   push edi
+// 0075945a  56                   push esi
+// 0075945b  50                   push eax
+// 0075945c  89542434             mov dword ptr [esp + 0x34], edx
+// 00759460  8b5500               mov edx, dword ptr [ebp]
+// 00759463  8b4238               mov eax, dword ptr [edx + 0x38]
+// 00759466  8bcd                 mov ecx, ebp
+// 00759468  0f94442427           sete byte ptr [esp + 0x27]
+// 0075946d  ffd0                 call eax
+// 0075946f  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 00759473  8b5500               mov edx, dword ptr [ebp]
+// 00759476  8b5278               mov edx, dword ptr [edx + 0x78]
+// 00759479  89442428             mov dword ptr [esp + 0x28], eax
+// 0075947d  8b442448             mov eax, dword ptr [esp + 0x48]
+// 00759481  50                   push eax
+// 00759482  57                   push edi
+// 00759483  56                   push esi
+// 00759484  51                   push ecx
+// 00759485  8bcd                 mov ecx, ebp
+// 00759487  ffd2                 call edx
+// 00759489  89442420             mov dword ptr [esp + 0x20], eax
+// 0075948d  395d10               cmp dword ptr [ebp + 0x10], ebx
+// 00759490  750c                 jne 0x75949e
+// 00759492  8b442444             mov eax, dword ptr [esp + 0x44]
+// 00759496  89442428             mov dword ptr [esp + 0x28], eax
+// 0075949a  89442420             mov dword ptr [esp + 0x20], eax
+// 0075949e  6a3c                 push 0x3c
+// 007594a0  b90f000000           mov ecx, 0xf
+// 007594a5  8db42450010000       lea esi, [esp + 0x150]
+// 007594ac  8dbc2414010000       lea edi, [esp + 0x114]
+// 007594b3  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 007594b5  8d8424d0000000       lea eax, [esp + 0xd0]
+// 007594bc  83ceff               or esi, 0xffffffff
+// 007594bf  6a00                 push 0
+// 007594c1  50                   push eax
+// 007594c2  89b42414010000       mov dword ptr [esp + 0x114], esi
+// 007594c9  89b42418010000       mov dword ptr [esp + 0x118], esi
+// 007594d0  e89f07fcff           call 0x719c74
+// 007594d5  83c40c               add esp, 0xc
+// 007594d8  8d8c24cc000000       lea ecx, [esp + 0xcc]
+// 007594df  51                   push ecx
+// 007594e0  53                   push ebx
+// 007594e1  8d4d18               lea ecx, [ebp + 0x18]
+// 007594e4  e8f7f8ffff           call 0x758de0
+// 007594e9  85c0                 test eax, eax
+// 007594eb  744b                 je 0x759538
+// 007594ed  837c242400           cmp dword ptr [esp + 0x24], 0
+// 007594f2  7525                 jne 0x759519
+// 007594f4  837c245000           cmp dword ptr [esp + 0x50], 0
+// 007594f9  741e                 je 0x759519
+// 007594fb  8b842408010000       mov eax, dword ptr [esp + 0x108]
+// 00759502  3bc6                 cmp eax, esi
+// 00759504  7404                 je 0x75950a
+// 00759506  89442420             mov dword ptr [esp + 0x20], eax
+// 0075950a  8b84240c010000       mov eax, dword ptr [esp + 0x10c]
+// 00759511  3bc6                 cmp eax, esi
+// 00759513  7404                 je 0x759519
+// 00759515  89442428             mov dword ptr [esp + 0x28], eax
+// 00759519  80bc24e800000000     cmp byte ptr [esp + 0xe8], 0
+// 00759521  7415                 je 0x759538
+// 00759523  b90f000000           mov ecx, 0xf
+// 00759528  8db424cc000000       lea esi, [esp + 0xcc]
+// 0075952f  8dbc2410010000       lea edi, [esp + 0x110]
+// 00759536  f3a5                 rep movsd dword ptr es:[edi], dword ptr [esi]
+// 00759538  8b5500               mov edx, dword ptr [ebp]
+// 0075953b  8b4228               mov eax, dword ptr [edx + 0x28]
+// 0075953e  53                   push ebx
+// 0075953f  8bcd                 mov ecx, ebp
+// 00759541  ffd0                 call eax
+// 00759543  85c0                 test eax, eax
+// 00759545  740b                 je 0x759552
+// 00759547  c7842420010000bc020000 mov dword ptr [esp + 0x120], 0x2bc
+// 00759552  f744244c00020000     test dword ptr [esp + 0x4c], 0x200
+// 0075955a  7455                 je 0x7595b1
+// 0075955c  807c241700           cmp byte ptr [esp + 0x17], 0
+// 00759561  0f95c0               setne al
+// 00759564  88842425010000       mov byte ptr [esp + 0x125], al
+// 0075956b  84c0                 test al, al
+// 0075956d  7442                 je 0x7595b1
+// 0075956f  837c242400           cmp dword ptr [esp + 0x24], 0
+// 00759574  753b                 jne 0x7595b1
+// 00759576  e8d5730000           call 0x760950
+// 0075957b  8bc8                 mov ecx, eax
+// 0075957d  e8fe730000           call 0x760980
+// 00759582  84c0                 test al, al
+// 00759584  7519                 jne 0x75959f
+// 00759586  e8c5730000           call 0x760950
+// 0075958b  8bc8                 mov ecx, eax
+// 0075958d  e85e7c0000           call 0x7611f0
+// 00759592  84c0                 test al, al
+// 00759594  7509                 jne 0x75959f
+// 00759596  e885b5ffff           call 0x754b20
+// 0075959b  6a1a                 push 0x1a
+// 0075959d  eb07                 jmp 0x7595a6
+// 0075959f  e87cb5ffff           call 0x754b20
+// 007595a4  6a0d                 push 0xd
+// 007595a6  8bc8                 mov ecx, eax
+// 007595a8  e8f3acffff           call 0x7542a0
+// 007595ad  89442420             mov dword ptr [esp + 0x20], eax
+// 007595b1  c744244000000000     mov dword ptr [esp + 0x40], 0
+// 007595b9  c744243ce8bb8b00     mov dword ptr [esp + 0x3c], 0x8bbbe8
+// 007595c1  8d8c2410010000       lea ecx, [esp + 0x110]
+// 007595c8  51                   push ecx
+// 007595c9  c684249801000001     mov byte ptr [esp + 0x198], 1
+// 007595d1  ff15ece08900         call dword ptr [0x89e0ec]
+// 007595d7  50                   push eax
+// 007595d8  8d4c2440             lea ecx, [esp + 0x40]
+// 007595dc  e821fafbff           call 0x719002
+// 007595e1  8d54243c             lea edx, [esp + 0x3c]
+// 007595e5  52                   push edx
+// 007595e6  8d4c2478             lea ecx, [esp + 0x78]
+// 007595ea  e8f5290f00           call 0x84bfe4
+// 007595ef  8b4d34               mov ecx, dword ptr [ebp + 0x34]
+// 007595f2  8bf8                 mov edi, eax
+// 007595f4  53                   push ebx
+// 007595f5  8d442420             lea eax, [esp + 0x20]
+// 007595f9  50                   push eax
+// 007595fa  e8bf2b0f00           call 0x84c1be
+// 007595ff  8d8c24b4000000       lea ecx, [esp + 0xb4]
+// 00759606  51                   push ecx
+// 00759607  8d4c2420             lea ecx, [esp + 0x20]
+// 0075960b  c684249801000002     mov byte ptr [esp + 0x198], 2
+// 00759613  ff1554fb8900         call dword ptr [0x89fb54]
+// 00759619  50                   push eax
+// 0075961a  8d4c2424             lea ecx, [esp + 0x24]
+// 0075961e  ff15d0fc8900         call dword ptr [0x89fcd0]
+// 00759624  8b942484000000       mov edx, dword ptr [esp + 0x84]
+// 0075962b  50                   push eax
+// 0075962c  52                   push edx
+// 0075962d  ff1550e18900         call dword ptr [0x89e150]
+// 00759633  8b542434             mov edx, dword ptr [esp + 0x34]
+// 00759637  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 0075963b  8b8c24b4000000       mov ecx, dword ptr [esp + 0xb4]
+// 00759642  2bd0                 sub edx, eax
+// 00759644  3bd1                 cmp edx, ecx
+// 00759646  7d08                 jge 0x759650
+// 00759648  8d440102             lea eax, [ecx + eax + 2]
+// 0075964c  89442434             mov dword ptr [esp + 0x34], eax
+// 00759650  8b742428             mov esi, dword ptr [esp + 0x28]
+// 00759654  56                   push esi
+// 00759655  8d4c2478             lea ecx, [esp + 0x78]
+// 00759659  e88c290f00           call 0x84bfea
+// 0075965e  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 00759662  51                   push ecx
+// 00759663  8d4c2478             lea ecx, [esp + 0x78]
+// 00759667  e884290f00           call 0x84bff0
+// 0075966c  837c242400           cmp dword ptr [esp + 0x24], 0
+// 00759671  740f                 je 0x759682
+// 00759673  56                   push esi
+// 00759674  8d542430             lea edx, [esp + 0x30]
+// 00759678  52                   push edx
+// 00759679  8d4c247c             lea ecx, [esp + 0x7c]
+// 0075967d  e84e01fcff           call 0x7197d0
+// 00759682  8b4c2430             mov ecx, dword ptr [esp + 0x30]
+// 00759686  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 0075968a  8b542434             mov edx, dword ptr [esp + 0x34]
+// 0075968e  6a00                 push 0
+// 00759690  894c246c             mov dword ptr [esp + 0x6c], ecx
+// 00759694  89442468             mov dword ptr [esp + 0x68], eax
+// 00759698  8b44243c             mov eax, dword ptr [esp + 0x3c]
+// 0075969c  6a03                 push 3
+// 0075969e  8d4c246c             lea ecx, [esp + 0x6c]
+// 007596a2  51                   push ecx
+// 007596a3  89542478             mov dword ptr [esp + 0x78], edx
+// 007596a7  8944247c             mov dword ptr [esp + 0x7c], eax
+// 007596ab  ff15f8ed8900         call dword ptr [0x89edf8]
+// 007596b1  8b742474             mov esi, dword ptr [esp + 0x74]
+// 007596b5  6824080000           push 0x824
+// 007596ba  8d542468             lea edx, [esp + 0x68]
+// 007596be  52                   push edx
+// 007596bf  8d4c2424             lea ecx, [esp + 0x24]
+// 007596c3  83c670               add esi, 0x70
+// 007596c6  ff1554fb8900         call dword ptr [0x89fb54]
+// 007596cc  50                   push eax
+// 007596cd  8d4c2428             lea ecx, [esp + 0x28]
+// 007596d1  ff15d0fc8900         call dword ptr [0x89fcd0]
+// 007596d7  50                   push eax
+// 007596d8  8b06                 mov eax, dword ptr [esi]
+// 007596da  8d8c2484000000       lea ecx, [esp + 0x84]
+// 007596e1  ffd0                 call eax
+// 007596e3  f644241801           test byte ptr [esp + 0x18], 1
+// 007596e8  743d                 je 0x759727
+// 007596ea  837c245400           cmp dword ptr [esp + 0x54], 0
+// 007596ef  7536                 jne 0x759727
+// 007596f1  837c245000           cmp dword ptr [esp + 0x50], 0
+// 007596f6  742f                 je 0x759727
+// 007596f8  ff1578ee8900         call dword ptr [0x89ee78]
+// 007596fe  50                   push eax
+// 007596ff  e8fef5fbff           call 0x718d02
+// 00759704  3b4534               cmp eax, dword ptr [ebp + 0x34]
+// 00759707  751e                 jne 0x759727
+// 00759709  8b4c2448             mov ecx, dword ptr [esp + 0x48]
+// 0075970d  51                   push ecx
+// 0075970e  8d4c2478             lea ecx, [esp + 0x78]
+// 00759712  e8d9280f00           call 0x84bff0
+// 00759717  8b442478             mov eax, dword ptr [esp + 0x78]
+// 0075971b  8d54242c             lea edx, [esp + 0x2c]
+// 0075971f  52                   push edx
+// 00759720  50                   push eax
+// 00759721  ff15e0ee8900         call dword ptr [0x89eee0]
+// 00759727  57                   push edi
+// 00759728  8d4c2478             lea ecx, [esp + 0x78]
+// 0075972c  e8b3280f00           call 0x84bfe4
+// 00759731  8d4c243c             lea ecx, [esp + 0x3c]
+// 00759735  e8bcf8fbff           call 0x718ff6
+// 0075973a  8b4534               mov eax, dword ptr [ebp + 0x34]
+// 0075973d  8b4820               mov ecx, dword ptr [eax + 0x20]
+// 00759740  53                   push ebx
+// 00759741  6a06                 push 6
+// 00759743  680a110000           push 0x110a
+// 00759748  51                   push ecx
+// 00759749  ff1590ee8900         call dword ptr [0x89ee90]
+// 0075974f  8d4c241c             lea ecx, [esp + 0x1c]
+// 00759753  8bd8                 mov ebx, eax
+// 00759755  ff1510fd8900         call dword ptr [0x89fd10]
+// 0075975b  8d4c243c             lea ecx, [esp + 0x3c]
+// 0075975f  c684249401000000     mov byte ptr [esp + 0x194], 0
+// 00759767  c744243ce8bb8b00     mov dword ptr [esp + 0x3c], 0x8bbbe8
+// 0075976f  e85c5dcbff           call 0x40f4d0
+// 00759774  85db                 test ebx, ebx
+// 00759776  0f8504fcffff         jne 0x759380
+// 0075977c  8b542460             mov edx, dword ptr [esp + 0x60]
+// 00759780  52                   push edx
+// 00759781  8d4c2478             lea ecx, [esp + 0x78]
+// 00759785  e84e280f00           call 0x84bfd8
+// 0075978a  8d4c2474             lea ecx, [esp + 0x74]
+// 0075978e  c7842494010000ffffffff mov dword ptr [esp + 0x194], 0xffffffff
+// 00759799  e8a26f0100           call 0x770740
+// 0075979e  8b8c248c010000       mov ecx, dword ptr [esp + 0x18c]
+// 007597a5  64890d00000000       mov dword ptr fs:[0], ecx
+// 007597ac  59                   pop ecx
+// 007597ad  5f                   pop edi
+// 007597ae  5e                   pop esi
+// 007597af  5d                   pop ebp
+// 007597b0  5b                   pop ebx
+// 007597b1  8b8c2474010000       mov ecx, dword ptr [esp + 0x174]
+// 007597b8  33cc                 xor ecx, esp
+// 007597ba  e8bb0dfcff           call 0x71a57a
+// 007597bf  81c484010000         add esp, 0x184
+// 007597c5  c20800               ret 8
+// copied from an identical function in another client (function ?DoPaint@CXTTreeBase@@MAEXAAVCDC@@H@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTTreeBase.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTTreeBase.cpp : implementation file
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include <windowsx.h>
-#include "Common/XTPColorManager.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPSystemHelpers.h"
-
-#include "XTVC50Helpers.h"
-#include "XTTreeBase.h"
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-#ifndef SCROLL_TIMER_PERIOD
-#define SCROLL_TIMER_PERIOD 75
-#endif
-
-#ifndef HOVER_TIMER_PERIOD
-#define HOVER_TIMER_PERIOD  85
-#endif
-
-#ifndef COLOR_HOTLIGHT
-#define COLOR_HOTLIGHT      26
-#endif // COLOR_HOTLIGHT
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTTreeBase
-
-CXTTreeBase::CXTTreeBase()
-: m_hSelect(NULL)
-, m_bMultiSelect(false)
-, m_bBandLabel(true)
-, m_bActionDone(false)
-, m_bOkToEdit(true)
-, m_htiEdit(NULL)
-, m_htiLast(NULL)
-{
-	m_pTreeCtrl = NULL;
-}
-
-CXTTreeBase::~CXTTreeBase()
-{
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTTreeBase message handlers
-
-void CXTTreeBase::OnLButtonDown(UINT nFlags, CPoint point)
-{
-	// If multiselect control, process possible left
-	// click drag selection.
-	if (m_bMultiSelect)
-	{
-		UINT nHitFlags = 0;
-
-		HTREEITEM hItemHit = m_pTreeCtrl->HitTest(point, &nHitFlags);
-		HTREEITEM hItemSel = m_pTreeCtrl->GetSelectedItem();
-
-		// if expanding/contracting call base class.
-		if ((nHitFlags & (TVHT_ONITEMBUTTON | TVHT_ONITEMSTATEICON)) != 0)
-		{
-			m_pTreeCtrl->Default();
-			return;
-		}
-
-		if (HasEditLabels())
-		{
-			if (!(nFlags & (MK_CONTROL | MK_SHIFT)) && (nHitFlags & TVHT_ONITEMLABEL))
-			{
-				if (m_bOkToEdit && hItemHit == hItemSel)
-				{
-					SelectAll(FALSE);
-					SelectItem(hItemHit);
-
-					m_pTreeCtrl->Default();
-					return;
-				}
-			}
-
-			if ((nHitFlags & TVHT_ONITEM) == 0)
-			{
-				m_bOkToEdit = false;
-			}
-			else if (GetFocusedItem() == hItemSel)
-			{
-				m_bOkToEdit = true;
-			}
-		}
-
-		OnButtonDown(TRUE, nFlags, point);
-	}
-
-	else
-	{
-		m_pTreeCtrl->Default();
-	}
-}
-
-void CXTTreeBase::OnRButtonDown(UINT /*nFlags*/, CPoint point)
-{
-	if (m_pTreeCtrl->GetStyle() & TVS_SINGLEEXPAND)
-	{
-		m_pTreeCtrl->Default();
-		return;
-	}
-
-
-	// hittest to get the tree item under the cursor
-	// and select it.
-	UINT uFlags = 0;
-	HTREEITEM hItem = m_pTreeCtrl->HitTest(point, &uFlags);
-	if (hItem != NULL && (uFlags & TVHT_ONITEM) != 0)
-	{
-		// if the item is not selected, clear previous
-		// selections and select the item under cursor.
-		if (!IsSelected(hItem))
-		{
-			SelectAll(FALSE);
-			SelectItem(hItem);
-		}
-	}
-	else
-	{
-		// clear previous selections.
-		SelectAll(FALSE);
-	}
-
-	// call Default() so correct notification messages are
-	// sent such as TVN_BEGINRDRAG.
-	m_pTreeCtrl->Default();
-
-	// get the owner of the tree control.
-	//HWND hWnd = m_pTreeCtrl->GetOwner()->m_hWnd;
-
-	//if (::IsWindow(hWnd))
-	//{
-		// construct a NMHDR struct...
-		//NMHDR mHDR;
-		//mHDR.hwndFrom = m_pTreeCtrl->m_hWnd;
-		//mHDR.code = NM_RCLICK;
-		//mHDR.idFrom = m_pTreeCtrl->GetDlgCtrlID();
-
-		// and send a WM_NOTIFY message to our owner.
-		//SendNotify(&mHDR);
-	//}
-}
-
-void CXTTreeBase::OnSetFocus(CWnd* /*pOldWnd*/)
-{
-	if (m_bMultiSelect)
-	{
-		//'emulated' selected items will remain greyed
-		// if application gets covered
-		HTREEITEM hItem = GetFirstSelectedItem();
-		while (hItem)
-		{
-			RECT rect;
-			m_pTreeCtrl->GetItemRect(hItem, &rect, TRUE);
-			m_pTreeCtrl->InvalidateRect(&rect);
-			hItem = GetNextSelectedItem(hItem);
-		}
-	}
-
-	m_pTreeCtrl->Default();
-}
-
-void CXTTreeBase::OnKillFocus(CWnd* /*pNewWnd*/)
-{
-	m_pTreeCtrl->Default();
-
-	if (m_bMultiSelect)
-	{
-		//'emulated' selected items may not get
-		// refreshed to grey
-		HTREEITEM hItem = GetFirstSelectedItem();
-		while (hItem)
-		{
-			RECT rect;
-			m_pTreeCtrl->GetItemRect(hItem, &rect, TRUE);
-			m_pTreeCtrl->InvalidateRect(&rect);
-			hItem = GetNextSelectedItem(hItem);
-		}
-	}
-}
-
-void CXTTreeBase::OnKeyDown(UINT nChar, UINT /*nRepCnt*/, UINT /*nFlags*/)
-{
-	if (!m_bMultiSelect)
-	{
-		m_pTreeCtrl->Default();
-		return;
-	}
-
-	BOOL bCtrl = (::GetKeyState(VK_CONTROL) < 0);
-	BOOL bShift = (::GetKeyState(VK_SHIFT) < 0);
-
-
-	if (!bCtrl && !bShift)
-	{
-		UINT uCount = GetSelectedCount();
-
-		if ((uCount > 1) || (uCount == 1 && !IsSelected(GetFocusedItem())))
-			SelectAll(FALSE);
-	}
-
-	HTREEITEM hSel = NULL;
-	switch (nChar)
-	{
-	case VK_UP:
-	case VK_DOWN:
-	case VK_PRIOR:
-	case VK_NEXT:
-		hSel = m_pTreeCtrl->GetSelectedItem();
-		if (!m_hSelect)
-		{
-			m_hSelect = hSel;
-		}
-		if (!bCtrl && !bShift)
-		{
-			m_hSelect = NULL;   //reset
-		}
-		break;
-	}
-
-	BOOL bDir = (nChar == VK_UP) || (nChar == VK_PRIOR);
-
-	m_pTreeCtrl->Default();
-	if (!hSel || (!bCtrl && !bShift))
-	{
-		return;
-	}
-
-	HTREEITEM hNext = (nChar == VK_NEXT) || (nChar == VK_PRIOR) ? GetFocusedItem() :
-		bDir ? m_pTreeCtrl->GetPrevVisibleItem(hSel) : m_pTreeCtrl->GetNextVisibleItem(hSel);
-
-	if (!hNext)
-	{
-		hNext = hSel;
-	}
-	if (bShift)
-	{
-		SelectItems(m_hSelect, hNext, TRUE);
-	}
-	else if (bCtrl)
-	{
-		SetItemState(hNext, TVIS_FOCUSED, TVIS_FOCUSED);
-	}
-}
-
-BOOL CXTTreeBase::OnBeginLabelEdit(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;
-	*pResult = 0;
-
-	// set m_htiEdit equal to pTVDispInfo->item.hItem.
-	m_htiEdit = pTVDispInfo->item.hItem;
-
-	return FALSE;   //pass to parent
-}
-
-BOOL CXTTreeBase::OnEndLabelEdit(NMHDR* /*pNMHDR*/, LRESULT* pResult)
-{
-	*pResult = 0;
-
-	// set m_htiEdit equal to NULL.
-	m_htiEdit = NULL;
-
-	return FALSE;   //pass to parent
-}
-
-BOOL CXTTreeBase::OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	if (!m_bMultiSelect)
-		return FALSE;
-
-	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-	*pResult = 0;
-
-	if ((pNMTreeView->action == TVE_COLLAPSE) || (pNMTreeView->action == TVE_COLLAPSERESET))
-	{
-		// clear selection of children, it would be confusing otherwise
-		// - the notifications can be over-ridden to stop the de-selection
-		// if required.
-		// Unfortunately, the parent window can't over-ride this functionality
-		// because MFC gives this class first crack.  So if changes are required
-		// a derived class will have to be used..
-		ASSERT(pNMTreeView->itemNew.hItem);
-
-		// if a descendent item has focus the parent will get selected as a
-		// consequence of collapsing the tree, so preserve
-		// (if the parent was already selected it will gain focus, but
-		// that's acceptable)
-		BOOL bWasSel = IsSelected(pNMTreeView->itemNew.hItem);
-		BOOL bWasFocus = SelectChildren(pNMTreeView->itemNew.hItem, FALSE, TRUE);
-
-		if (bWasFocus && !bWasSel)
-		{
-			FocusItem(pNMTreeView->itemNew.hItem); // give parent focus.
-		}
-	}
-
-	return FALSE;   //pass to parent
-}
-
-HTREEITEM CXTTreeBase::GetNextItem(HTREEITEM hItem) const
-{
-	HTREEITEM hti = NULL;
-
-	if (m_pTreeCtrl->ItemHasChildren(hItem))
-	{
-		hti = m_pTreeCtrl->GetChildItem(hItem);
-	}
-
-	if (hti == NULL)
-	{
-		while ((hti = m_pTreeCtrl->GetNextSiblingItem(hItem)) == NULL)
-		{
-			if ((hItem = m_pTreeCtrl->GetParentItem(hItem)) == NULL)
-				return NULL;
-		}
-	}
-
-	return hti;
-}
-
-HTREEITEM CXTTreeBase::GetPrevItem(HTREEITEM hItem) const
-{
-	HTREEITEM hti = NULL;
-
-	hti = m_pTreeCtrl->GetPrevSiblingItem(hItem);
-	if (hti == NULL)
-	{
-		hti = m_pTreeCtrl->GetParentItem(hItem);
-	}
-	else
-	{
-		hti = GetLastItem(hti);
-	}
-
-	return hti;
-}
-
-HTREEITEM CXTTreeBase::GetLastItem(HTREEITEM hItem) const
-{
-	// Temporary used variable
-	HTREEITEM htiNext;
-
-	// Get the last item at the top level
-	if (hItem == NULL)
-	{
-		hItem = m_pTreeCtrl->GetRootItem();
-	}
-
-	while (m_pTreeCtrl->ItemHasChildren(hItem) != NULL)
-	{
-		// Find the last child of hItem
-		htiNext = m_pTreeCtrl->GetChildItem(hItem);
-		while (htiNext != NULL)
-		{
-			hItem = htiNext;
-			htiNext = m_pTreeCtrl->GetNextSiblingItem(htiNext);
-		}
-	}
-
-	return hItem;
-
-}
-
-HTREEITEM CXTTreeBase::FindItemInBranch(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALSE*/,
-	BOOL bWholeWord /*= FALSE*/, HTREEITEM htiItem /*= NULL*/)
-{
-	HTREEITEM htiFound = NULL;
-
-	if (!m_pTreeCtrl->ItemHasChildren(htiItem))
-		return NULL;
-
-	CString strSearch = lpszSearch;
-	int iLen = strSearch.GetLength();
-	if (iLen == 0)
-	{
-		return NULL;
-	}
-
-	if (!bCaseSensitive)
-	{
-		strSearch.MakeLower();
-	}
-
-	HTREEITEM htiChild = m_pTreeCtrl->GetChildItem(htiItem);
-	while (htiChild != NULL)
-	{
-		if (m_pTreeCtrl->ItemHasChildren(htiChild))
-		{
-			htiFound = FindItemInBranch(lpszSearch, bCaseSensitive, bWholeWord, htiChild);
-			if (htiFound != NULL)
-				return htiFound;
-		}
-
-		CString strItemText = m_pTreeCtrl->GetItemText(htiChild);
-		if (!bCaseSensitive)
-		{
-			strItemText.MakeLower();
-		}
-
-		int iIndex;
-		while ((iIndex = strItemText.Find(strSearch)) != -1)
-		{
-			// Search string found
-			if (bWholeWord)
-			{
-				// Check preceding char
-				if (iIndex != 0)
-				{
-					if (_istalpha(strItemText[iIndex-1]) || strItemText[iIndex-1] == '_')
-					{
-						// Not whole word
-						strItemText = strItemText.Right(strItemText.GetLength() -
-							iIndex - iLen);
-						continue;
-					}
-				}
-
-				// Check succeeding char
-				if (strItemText.GetLength() > iIndex + iLen &&
-					(_istalpha(strItemText[iIndex + iLen]) ||
-					(strItemText[iIndex + iLen] == '_')))
-				{
-					// Not whole word
-					strItemText = strItemText.Right(strItemText.GetLength() -
-						iIndex - strSearch.GetLength());
-					continue;
-				}
-			}
-
-			if (IsFindValid(htiChild))
-			{
-				return htiChild;
-			}
-
-			else
-			{
-				break;
-			}
-		}
-
-		htiChild = m_pTreeCtrl->GetNextSiblingItem(htiChild);
-	}
-
-	return NULL;
-}
-
-HTREEITEM CXTTreeBase::FindItem(LPCTSTR lpszSearch, BOOL bCaseSensitive /*= FALSE*/,
-	BOOL bDownDir /*= TRUE*/, BOOL bWholeWord /*= FALSE*/, HTREEITEM hItem /*= NULL*/)
-{
-	CString str = lpszSearch;
-
-	int lenSearchStr = str.GetLength();
-	if (lenSearchStr == 0)
-	{
-		return NULL;
-	}
-
-	// For the first pass, set the current item equal to the selection
-	HTREEITEM htiSel = hItem ? hItem : m_pTreeCtrl->GetSelectedItem();
-
-	// If NULL, use root item.
-	if (htiSel == NULL)
-		htiSel = m_pTreeCtrl->GetRootItem();
-
-	HTREEITEM htiCur = htiSel;
-	CString strSearch = str;
-
-	// make sure it ends if we started with no selection
-	if ((htiCur == NULL) && (htiSel != NULL))
-	{
-		if (bDownDir)
-		{
-			htiCur = m_pTreeCtrl->GetRootItem();
-		}
-		else
-		{
-			htiCur = GetLastItem(NULL);
-		}
-	}
-
-	if (!bCaseSensitive)
-	{
-		strSearch.MakeLower();
-	}
-
-	// For the first pass only, we check to see if it
-	// is the item we're looking for.
-	BOOL bFirstPass = TRUE;
-
-	while (htiCur && (htiCur != htiSel || bFirstPass))
-	{
-		bFirstPass = FALSE;
-
-		CString strItemText = m_pTreeCtrl->GetItemText(htiCur);
-		if (!bCaseSensitive)
-		{
-			strItemText.MakeLower();
-		}
-
-		int iIndex;
-		while ((iIndex = strItemText.Find(strSearch)) != -1)
-		{
-			// Search string found
-			if (bWholeWord)
-			{
-				// Check preceding char
-				if (iIndex != 0)
-				{
-					if (_istalpha(strItemText[iIndex-1]) || strItemText[iIndex-1] == '_')
-					{
-						// Not whole word
-						strItemText = strItemText.Right(strItemText.GetLength() -
-							iIndex - lenSearchStr);
-						continue;
-					}
-				}
-
-				// Check succeeding char
-				if (strItemText.GetLength() > iIndex + lenSearchStr &&
-					(_istalpha(strItemText[iIndex + lenSearchStr]) ||
-					(strItemText[iIndex + lenSearchStr] == '_')))
-				{
-					// Not whole word
-					strItemText = strItemText.Right(strItemText.GetLength() -
-						iIndex - strSearch.GetLength());
-					continue;
-				}
-			}
-
-			if (IsFindValid(htiCur))
-			{
-				return htiCur;
-			}
-			else
-			{
-				break;
-			}
-		}
-
-		htiCur = bDownDir ? GetNextItem(htiCur) : GetPrevItem(htiCur);
-		if (htiCur == NULL)
-		{
-			if (bDownDir)
-			{
-				htiCur = m_pTreeCtrl->GetRootItem();
-			}
-			else
-			{
-				htiCur = GetLastItem(NULL);
-			}
-		}
-	}
-
-	return NULL;
-}
-
-BOOL CXTTreeBase::IsFindValid(HTREEITEM)
-{
-	return TRUE;
-}
-
-void CXTTreeBase::SetItemFont(HTREEITEM hItem, LOGFONT& logfont)
-{
-	CLRFONT cf;
-	if (!m_mapColorFont.Lookup(hItem, cf))
-	{
-		cf.color = COLORREF_NULL;
-	}
-
-	cf.logfont = logfont;
-	m_mapColorFont[hItem] = cf;
-}
-
-BOOL CXTTreeBase::GetItemFont(HTREEITEM hItem, LOGFONT* plogfont)
-{
-	CLRFONT cf;
-	if (!m_mapColorFont.Lookup(hItem, cf))
-	{
-		return FALSE;
-	}
-
-	if (cf.logfont.lfFaceName[0] == _T('\0'))
-	{
-		return FALSE;
-	}
-
-	*plogfont = cf.logfont;
-
-	return TRUE;
-
-}
-
-void CXTTreeBase::SetItemBold(HTREEITEM hItem, BOOL bBold)
-{
-	SetItemState(hItem, bBold ? TVIS_BOLD : 0, TVIS_BOLD);
-	m_pTreeCtrl->InvalidateRect(NULL);
-}
-
-BOOL CXTTreeBase::GetItemBold(HTREEITEM hItem)
-{
-	return GetItemState(hItem, TVIS_BOLD) & TVIS_BOLD;
-}
-
-void CXTTreeBase::SetItemColor(HTREEITEM hItem, COLORREF color)
-{
-	CLRFONT cf;
-	m_mapColorFont.Lookup(hItem, cf);
-
-	cf.color = color;
-	m_mapColorFont[hItem] = cf;
-	m_pTreeCtrl->InvalidateRect(NULL);
-}
-
-COLORREF CXTTreeBase::GetItemColor(HTREEITEM hItem)
-{
-	CLRFONT cf;
-	if (m_mapColorFont.Lookup(hItem, cf))
-		return cf.color;
-
-	return COLORREF_NULL;
-}
-
-void CXTTreeBase::SetItemBackColor(HTREEITEM hItem, COLORREF color)
-{
-	CLRFONT cf;
-	m_mapColorFont.Lookup(hItem, cf);
-
-	cf.colorBack = color;
-	m_mapColorFont[hItem] = cf;
-	m_pTreeCtrl->InvalidateRect(NULL);
-}
-
-COLORREF CXTTreeBase::GetItemBackColor(HTREEITEM hItem)
-{
-	CLRFONT cf;
-	if (m_mapColorFont.Lookup(hItem, cf))
-		return cf.colorBack;
-
-	return COLORREF_NULL;
-}
-
-COLORREF CXTTreeBase::GetTreeBackColor() const
-{
-	// if the tree is disabled return disabled back color.
-	if (!m_pTreeCtrl->IsWindowEnabled())
-		return GetXtremeColor(COLOR_3DFACE);
-
-#if _MSC_VER >= 1200 // MFC 6.0
-
-	if (XTPSystemVersion()->GetComCtlVersion() >= MAKELONG(71, 4))
-	{
-		// is there a user defined color available ?
-		COLORREF crBack = m_pTreeCtrl->GetBkColor();
-		if (crBack != COLORREF_NULL)
-			return crBack;
-	}
-
-#endif
-
-	// return the system window color.
-	return GetXtremeColor(COLOR_WINDOW);
-}
-
-COLORREF CXTTreeBase::GetTreeTextColor() const
-{
-	// if the tree is disabled return disabled text color.
-	if (!m_pTreeCtrl->IsWindowEnabled())
-		return GetXtremeColor(COLOR_GRAYTEXT);
-
-#if _MSC_VER >= 1200 // MFC 6.0
-	if (XTPSystemVersion()->GetComCtlVersion() >= MAKELONG(71, 4))
-	{
-		// is ther a user defined color available ?
-		COLORREF crText = m_pTreeCtrl->GetTextColor();
-		if (crText != COLORREF_NULL)
-			return crText;
-	}
-
-#endif
-
-	// return the system window text color.
-	return GetXtremeColor(COLOR_WINDOWTEXT);
-}
-
-COLORREF CXTTreeBase::GetItemBackColor(UINT uState, bool bTreeHasFocus, DWORD dwStyle, COLORREF crBack) const
-{
-	// if the tree item is selected or drop highlighted.
-	if (uState & TVIS_SELECTED || uState & TVIS_DROPHILITED)
-	{
-		// if the tree has focus and draw the text background hilite color.
-		if (bTreeHasFocus || uState & TVIS_DROPHILITED)
-		{
-			if (m_pTreeCtrl->IsWindowEnabled())
-				return GetXtremeColor(COLOR_HIGHLIGHT);
-			else
-				return GetXtremeColor(COLOR_GRAYTEXT);
-		}
-
-		// if the tree does not have focus and the TVS_SHOWSELALWAYS flag is
-		// set draw the text background hilite color.
-		else if (dwStyle & TVS_SHOWSELALWAYS)
-		{
-			if (m_pTreeCtrl->IsWindowEnabled())
-				return GetXtremeColor(COLOR_3DFACE);
-			else
-				return GetXtremeColor(COLOR_GRAYTEXT);
-		}
-	}
-
-	return crBack;
-}
-
-COLORREF CXTTreeBase::GetItemTextColor(UINT uState, bool bTreeHasFocus, DWORD dwStyle, COLORREF crText) const
-{
-	// if the tree item is selected or drop highlighted.
-	if (uState & TVIS_SELECTED || uState & TVIS_DROPHILITED)
-	{
-		// if the tree has focus and draw the text hilite color.
-		if (bTreeHasFocus || uState & TVIS_DROPHILITED)
-		{
-			if (m_pTreeCtrl->IsWindowEnabled())
-				return GetXtremeColor(COLOR_HIGHLIGHTTEXT);
-			else
-				return GetXtremeColor(COLOR_3DFACE);
-		}
-
-		// if the tree does not have focus and the TVS_SHOWSELALWAYS flag is
-		// set draw the text hilite color.
-		else if (dwStyle & TVS_SHOWSELALWAYS)
-		{
-			if (m_pTreeCtrl->IsWindowEnabled())
-				return GetXtremeColor(COLOR_WINDOWTEXT);
-			else
-				return GetXtremeColor(COLOR_3DFACE);
-		}
-	}
-
-	return crText;
-}
-
-
-void CXTTreeBase::DoPaint(CDC& dc, BOOL bInternal)
-{
-	// Get the client rect.
-	CRect rcClient;
-	m_pTreeCtrl->GetClientRect(&rcClient);
-
-	const COLORREF crTreeBack = GetTreeBackColor();
-	const COLORREF crTreeText = GetTreeTextColor();
-
-	// Paint to a memory device context to help
-	// eliminate screen flicker.
-	CXTPBufferDC memDC(dc, rcClient);
-	memDC.FillSolidRect(rcClient, crTreeBack);
-
-	// Now let the window do its default painting...
-	m_pTreeCtrl->DefWindowProc(WM_PAINT, (WPARAM)memDC.m_hDC, 0);
-
-	if (!bInternal)
-		return;
-
-	int nSavedDC = memDC.SaveDC();
-
-	// check to see if a tree label is getting edited.
-	BOOL bEditing = (HasEditLabels() && m_pTreeCtrl->GetEditControl());
-
-	// if not editing, make sure the edit item is set to NULL.
-	if (!bEditing)
-		m_htiEdit = NULL;
-
-	// check to see if the tree is enabled.
-	BOOL bIsEnabled = m_pTreeCtrl->IsWindowEnabled();
-
-	// check to see if the tree has focus.
-	bool bTreeHasFocus = (CWnd::GetFocus() == m_pTreeCtrl);
-
-	// get the style for the tree.
-	DWORD dwStyle = m_pTreeCtrl->GetStyle();
-
-	// get the visible count.
-	HTREEITEM hItem = m_pTreeCtrl->GetFirstVisibleItem();
-	int iVisibleCount = m_pTreeCtrl->GetVisibleCount()+1;
-
-	LOGFONT treefont;
-	if (!m_pTreeCtrl->GetFont()->GetLogFont(&treefont))
-	{
-		::GetObject(::GetStockObject(DEFAULT_GUI_FONT), sizeof(LOGFONT), &treefont);
-	}
-
-
-	while (hItem && iVisibleCount--)
-	{
-		// get the tree item rect.
-		CRect rcItem;
-		m_pTreeCtrl->GetItemRect(hItem, &rcItem, TRUE);
-
-		// refresh the background.
-		CRect rcFill = rcItem;
-		rcFill.right = rcClient.right;
-		memDC.FillSolidRect(&rcFill, crTreeBack);
-
-		// get the state of the tree item.
-		UINT uState = GetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED | TVIS_DROPHILITED);
-
-		if (m_pTreeCtrl->GetDropHilightItem() && uState & TVIS_SELECTED && hItem != m_pTreeCtrl->GetDropHilightItem())
-			uState ^= TVIS_SELECTED;
-
-		BOOL bSelected = ((uState & (TVIS_SELECTED | TVIS_DROPHILITED)) != 0);
-
-		bool bUnderline = m_htiLast == hItem;
-
-		// define the background and text colors.
-		COLORREF crItemBack = GetItemBackColor(
-			uState, bTreeHasFocus, dwStyle, crTreeBack);
-		COLORREF crItemText = GetItemTextColor(
-			uState, bTreeHasFocus, dwStyle, crTreeText);
-
-		// if the item is getting edited paint white.
-		if (m_htiEdit == hItem)
-		{
-			crItemBack = crTreeBack;
-			crItemText = crTreeBack;
-		}
-
-		// create the LOGFONT used by the tree item.
-		LOGFONT logfont;
-		logfont = treefont;
-
-
-		CLRFONT cf;
-		if (m_mapColorFont.Lookup(hItem, cf))
-		{
-			if (!bSelected && bIsEnabled)
-			{
-				if (cf.color != COLORREF_NULL)
-					crItemText = cf.color;
-
-				if (cf.colorBack != COLORREF_NULL)
-					crItemBack = cf.colorBack;
-			}
-
-			if (cf.logfont.lfFaceName[0] != _T('\0'))
-			{
-				logfont = cf.logfont;
-			}
-		}
-
-		if (GetItemBold(hItem))
-		{
-			logfont.lfWeight = FW_BOLD;
-		}
-
-		if (dwStyle & TVS_TRACKSELECT)
-		{
-			logfont.lfUnderline = bUnderline ? (BYTE)1 : (BYTE)0;
-
-			if (logfont.lfUnderline && !bSelected)
-			{
-				if (XTOSVersionInfo()->IsWin95() || XTOSVersionInfo()->IsWinNT4())
-					crItemText = GetXtremeColor(COLOR_HIGHLIGHT);
-				else
-					crItemText = GetXtremeColor(COLOR_HOTLIGHT);
-			}
-		}
-
-		// create a CFont object from the LOGFONT structure and
-		// select it into the current device context.
-		CFont fontDC;
-		fontDC.CreateFontIndirect(&logfont);
-		CFont* pOldFont = memDC.SelectObject(&fontDC);
-
-		// get the text for the tree item and determine its size.
-		CString strItem = m_pTreeCtrl->GetItemText(hItem);
-		CSize sizeText = memDC.GetTextExtent(strItem);
-
-		// if the text is wider than the tree item label, adjust accordingly.
-		if (rcItem.Width() < sizeText.cx)
-		{
-			rcItem.right = rcItem.left + sizeText.cx + 2;
-		}
-
-		// set the font foreground and background colors.
-		memDC.SetBkColor(crItemBack);
-		memDC.SetTextColor(crItemText);
-
-		// draw the label background if selected.
-		if (bSelected)
-		{
-			memDC.FillSolidRect(&rcItem, crItemBack);
-		}
-
-		CRect rcText(rcItem);
-		rcText.OffsetRect(3, 0);
-
-		// draw the text and restore the device context.
-		memDC.DrawText(strItem, &rcText, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_NOPREFIX);
-
-		// draw the focus rect.
-		if ((uState & TVIS_FOCUSED))
-		{
-			if (!bEditing && bIsEnabled && CWnd::GetFocus() == m_pTreeCtrl)
-			{
-				memDC.SetTextColor(crTreeText);
-				memDC.DrawFocusRect(&rcItem);
-			}
-		}
-
-		memDC.SelectObject(pOldFont);
-		fontDC.DeleteObject();
-
-		// move to the next visible item.
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-
-	memDC.RestoreDC(nSavedDC);
-}
-
-
-HTREEITEM CXTTreeBase::GetPrevSelectedItem(HTREEITEM hItem) const
-{
-	for (hItem = m_pTreeCtrl->GetPrevVisibleItem(hItem);
-		hItem != NULL;
-		hItem = m_pTreeCtrl->GetPrevVisibleItem(hItem))
-	{
-		if (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED)
-		{
-			return hItem;
-		}
-	}
-
-	return NULL;
-}
-
-UINT CXTTreeBase::GetSelectedCount() const
-{
-	UINT nCount = 0;
-	HTREEITEM hItem = GetFirstSelectedItem();
-	while (hItem)
-	{
-		nCount++;
-		hItem = GetNextSelectedItem(hItem);
-	}
-	return nCount;
-}
-
-BOOL CXTTreeBase::EnableMultiSelect(BOOL bMultiSelect)
-{
-	BOOL bReturn = m_bMultiSelect;
-	m_bMultiSelect = bMultiSelect;
-
-	if (!m_bMultiSelect)
-	{
-		HTREEITEM hItem = m_pTreeCtrl->GetSelectedItem();
-		if (hItem && !IsSelected(hItem))
-		{
-			hItem = NULL;
-		}
-		SelectAllIgnore(FALSE, hItem);
-		if (hItem)
-		{
-			SelectItem(hItem);
-		}
-	}
-
-	return bReturn;
-}
-
-BOOL CXTTreeBase::SetItemState(HTREEITEM hItem, UINT nState, UINT nStateMask)
-{
-	ASSERT(hItem);
-	if (!hItem)
-		return FALSE;
-
-	if (!m_bMultiSelect)
-	{
-		return m_pTreeCtrl->SetItemState(hItem, nState, nStateMask);
-	}
-
-	HTREEITEM hFocus = m_pTreeCtrl->GetSelectedItem();           // current focus
-	BOOL bWasFocus = (hFocus == hItem);
-	BOOL bFocusWasSel = hFocus && IsSelected(hFocus); // selection state of current focus
-	BOOL bWasSel = IsSelected(hItem);            // select state of acting item
-
-	UINT nS = (nState & ~TVIS_FOCUSED);
-	UINT nSM = (nStateMask & ~TVIS_FOCUSED);
-
-	BOOL bVista = XTPSystemVersion()->IsWinVistaOrGreater();
-
-	if (nStateMask & TVIS_FOCUSED)
-	{
-		//wanted to affect focus
-		if (nState & TVIS_FOCUSED)
-		{
-			if (bVista)
-			{
-				//wanted to set focus
-				if (!bWasFocus && hFocus)
-				{
-					//because SelectItem would de-select the current 'real' selection
-					// (the one with focus), need to make the tree ctrl think there is
-					// no 'real' selection but still keep the the old item selected
-					//it has to be done before the SelectItem call because
-					// otherwise the TVN_SELCHANGING/ED notification handlers
-					// wouldn't be able to get the proper list of selected items
-					m_pTreeCtrl->SelectItem(NULL); //will cause notify, but can be taken as focus change
-					m_pTreeCtrl->SetItemState(hFocus, TVIS_SELECTED, TVIS_SELECTED);
-				}
-
-				if (!m_pTreeCtrl->SelectItem(hItem))    //set focus (will consequently select, if not already focused)
-				{
-					return FALSE;
-				}
-
-				if (!bWasFocus && hFocus)
-				{
-					m_pTreeCtrl->SetItemState(hFocus, bFocusWasSel ? TVIS_SELECTED : 0, TVIS_SELECTED);
-				}
-			}
-			else
-			{
-				//wanted to set focus
-				if (!bWasFocus && bFocusWasSel)
-				{
-					//because SelectItem would de-select the current 'real' selection
-					// (the one with focus), need to make the tree ctrl think there is
-					// no 'real' selection but still keep the the old item selected
-					//it has to be done before the SelectItem call because
-					// otherwise the TVN_SELCHANGING/ED notification handlers
-					// wouldn't be able to get the proper list of selected items
-					m_pTreeCtrl->SelectItem(NULL); //will cause notify, but can be taken as focus change
-					m_pTreeCtrl->SetItemState(hFocus, TVIS_SELECTED, TVIS_SELECTED);
-					m_pTreeCtrl->UpdateWindow();
-				}
-
-				if (!m_pTreeCtrl->SelectItem(hItem))    //set focus (will consequently select, if not already focused)
-				{
-					return FALSE;
-				}
-			}
-
-			if (nStateMask & TVIS_SELECTED)
-			{
-				//wanted to affect select state
-				if (nState & TVIS_SELECTED)
-				{
-					//wanted to select, already done if wasn't focused
-					if (!bVista && (!bWasFocus || bFocusWasSel))
-					{
-						nS &= ~TVIS_SELECTED;
-						nSM &= ~TVIS_SELECTED;
-					}
-				}
-				//else wanted to clear, base call will do that
-			}
-			else
-			{
-				//didn't want to affect select state
-				if (!bWasSel)
-				{
-					//it wasn't previously selected, let base clear (correct)
-					nS &= ~TVIS_SELECTED;
-					nSM |= TVIS_SELECTED;
-				}
-				//else was already selected, no harm done
-			}
-		}
-		else
-		{
-			//wanted to clear focus
-			if (bWasFocus)
-			{
-				//it had the focus
-				m_pTreeCtrl->SelectItem(NULL);  //clear focus
-				if (!(nStateMask & TVIS_SELECTED))
-				{
-					//didn't want to affect select state
-					if (bWasSel)
-					{
-						//it was selected, so restore
-						ASSERT(!(nS & TVIS_SELECTED));
-						ASSERT(!(nSM & TVIS_SELECTED));
-						//set state here, to avoid double-notify
-						m_pTreeCtrl->SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
-						//let base do other states
-					}
-				}
-				else if (nState & TVIS_SELECTED)
-				{
-					//wanted to select (but clear focus)
-					if (bWasSel)
-					{
-						//if was selected, restore
-						m_pTreeCtrl->SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
-					}
-					//don't want to notify, default did it
-					nS &= ~TVIS_SELECTED;
-					nSM &= ~TVIS_SELECTED;
-				}
-			}
-		}
-	}
-
-	if (!nSM)
-	{
-		return TRUE;    //no other states to alter
-	}
-
-	if (nSM & TVIS_SELECTED)
-	{
-		//still need to alter selection state
-		NMTREEVIEW nmtv;
-		nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
-		nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
-		nmtv.hdr.code = TVN_SELCHANGING;
-		nmtv.itemOld.mask = nmtv.itemNew.mask = 0;
-		nmtv.itemOld.hItem = nmtv.itemNew.hItem = NULL;
-
-		TVITEM& item = (nS & TVIS_SELECTED) ? nmtv.itemNew : nmtv.itemOld;
-		item.mask = TVIF_HANDLE | TVIF_PARAM;
-		item.hItem = hItem;
-		item.lParam = m_pTreeCtrl->GetItemData(hItem);
-		item.state = nS;
-		item.stateMask = nSM;
-
-		if (SendNotify(&nmtv.hdr))
-		{
-			return FALSE;   //sel-changing stopped
-		}
-
-		VERIFY(m_pTreeCtrl->SetItemState(hItem, nS, nSM));
-		nmtv.hdr.code = TVN_SELCHANGED;
-		SendNotify(&nmtv.hdr);
-		nS &= ~TVIS_SELECTED;
-		nSM &= ~TVIS_SELECTED;
-	}
-
-	if (!nSM)
-	{
-		return TRUE;
-	}
-
-	return m_pTreeCtrl->SetItemState(hItem, nS, nSM);
-}
-
-UINT CXTTreeBase::GetItemState(HTREEITEM hItem, UINT nStateMask) const
-{
-	UINT n = m_pTreeCtrl->GetItemState(hItem, nStateMask & ~TVIS_FOCUSED);
-	if (nStateMask & TVIS_FOCUSED)
-	{
-		if (m_pTreeCtrl->GetSelectedItem() == hItem)
-		{
-			n |= TVIS_FOCUSED;
-		}
-	}
-	return n;
-}
-
-BOOL CXTTreeBase::SelectItem(HTREEITEM hItem)
-{
-	if (m_bMultiSelect)
-	{
-		return SetItemState(hItem,
-			TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
-	}
-	else
-	{
-		return m_pTreeCtrl->SelectItem(hItem);
-	}
-}
-
-BOOL CXTTreeBase::FocusItem(HTREEITEM hItem)
-{
-	ASSERT(m_bMultiSelect);
-
-	BOOL bRet = FALSE;
-	if (hItem)
-	{
-		bRet = SetItemState(hItem, TVIS_FOCUSED, TVIS_FOCUSED);
-	}
-	else
-	{
-		hItem = m_pTreeCtrl->GetSelectedItem();
-		if (hItem)
-		{
-			bRet = SetItemState(hItem, 0, TVIS_FOCUSED);
-		}
-	}
-	return bRet;
-}
-
-LRESULT CXTTreeBase::SendNotify(LPNMHDR pNMHDR)
-{
-	CWnd* pWndOwner = m_pTreeCtrl->GetOwner();
-	if (pWndOwner->GetSafeHwnd())
-	{
-		return ::SendMessage(pWndOwner->m_hWnd, WM_NOTIFY,
-			(WPARAM)pNMHDR->idFrom, (LPARAM)pNMHDR);
-	}
-
-	return NULL;
-}
-
-HTREEITEM CXTTreeBase::GetFirstSelectedItem() const
-{
-	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
-	while (hItem)
-	{
-		if (IsSelected(hItem))
-		{
-			break;
-		}
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-	return hItem;
-}
-
-HTREEITEM CXTTreeBase::GetNextSelectedItem(HTREEITEM hItem) const
-{
-	hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	while (hItem)
-	{
-		if (IsSelected(hItem))
-		{
-			break;
-		}
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-	return hItem;
-}
-
-void CXTTreeBase::SelectAll(BOOL bSelect /*= TRUE*/, HTREEITEM htItem/*= NULL*/)
-{
-	bSelect = !!bSelect;    //ensure 0 or 1
-	UINT nState = bSelect ? TVIS_SELECTED : 0;
-
-	if (htItem == NULL)
-		htItem = m_pTreeCtrl->GetRootItem();
-
-	while (htItem)
-	{
-		if (IsSelected(htItem) != bSelect)
-		{
-			SetItemState(htItem, nState, TVIS_SELECTED);
-		}
-		htItem = m_pTreeCtrl->GetNextVisibleItem(htItem);
-	}
-}
-
-void CXTTreeBase::SelectAllIgnore(BOOL bSelect, HTREEITEM hIgnore)
-{
-	//special case to avoid multiple notifications for
-	// the same item
-	bSelect = !!bSelect;    //ensure 0 or 1
-	UINT nState = bSelect ? TVIS_SELECTED : 0;
-	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
-	while (hItem)
-	{
-		if (hItem != hIgnore)
-		{
-			if (IsSelected(hItem) != bSelect)
-			{
-				SetItemState(hItem, nState, TVIS_SELECTED);
-			}
-		}
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-}
-
-void CXTTreeBase::SelectItems(HTREEITEM hFirst, HTREEITEM hLast, BOOL bOnly /*= TRUE*/)
-{
-	//locate (and select) either first or last
-	// (so order is arbitrary)
-	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
-	while (hItem)
-	{
-		if ((hItem == hFirst) || (hItem == hLast))
-		{
-			if (hFirst != hLast)
-			{
-				if (!IsSelected(hItem))
-				{
-					SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
-				}
-				hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-			}
-			break;
-		}
-
-		if (bOnly && IsSelected(hItem))
-		{
-			SetItemState(hItem, 0, TVIS_SELECTED);
-		}
-
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-
-	//select rest of range
-	while (hItem)
-	{
-		if (!IsSelected(hItem))
-		{
-			SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
-		}
-		if ((hItem == hFirst) || (hItem == hLast))
-		{
-			hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-			break;
-		}
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-	if (!bOnly)
-	{
-		return;
-	}
-	while (hItem)
-	{
-		if (IsSelected(hItem))
-		{
-			SetItemState(hItem, 0, TVIS_SELECTED);
-		}
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-}
-
-BOOL CXTTreeBase::OnButtonDown(BOOL bLeft, UINT nFlags, CPoint point)
-{
-	UINT      nHF = 0;
-	HTREEITEM hItem = NULL;
-
-	if (!m_bMultiSelect)
-		return TRUE;
-
-	BOOL bBase = FALSE;
-
-	hItem = m_pTreeCtrl->HitTest(point, &nHF);
-	if (hItem)
-	{
-		//base always handles expanding items
-		//(doesn't really mean much to right button, but pass anyway)
-		bBase = (nHF & (TVHT_ONITEMBUTTON));
-		if (!bBase && bLeft && (m_pTreeCtrl->GetStyle() & TVS_CHECKBOXES))
-		{
-			//when the tree has check-boxes, the default handler makes
-			// a quick selection of the clicked item, then re-selects
-			// the previously selected item - to cause a sel-changed
-			// notification.  Fortunately it doesn't affect the multi-
-			// selection, so can pass on.
-			bBase = (nHF & TVHT_ONITEMSTATEICON);
-
-#ifdef _MST_MULTI_CHECK
-			//Use the above define if you want all selected items to
-			// be checked the same when any one of them is checked
-			// - Interestingly this doesn't happen in the listview control
-			//  (LVS_EX_CHECKBOXES)
-			if (bBase)
-			{
-				//the default selection notification would mess
-				// the multi-selection up, so generate the notification
-				// manually
-				// (anyway, this is smoother than the selection flicker
-				//  the default gives)
-				NMTREEVIEW nmtv;
-#ifdef TVN_CHKCHANGE
-				nmtv.hdr.code = TVN_CHKCHANGE;
-#else
-				nmtv.hdr.code = TVN_SELCHANGED;
-#endif
-				nmtv.hdr.hwndFrom = m_hWnd;
-				nmtv.hdr.idFrom = ::GetDlgCtrlID(m_hWnd);
-				nmtv.itemOld.hItem = NULL;
-				nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
-
-				BOOL bChk = !GetCheck(hItem);
-				if (IsSelected(hItem))
-				{
-					HTREEITEM h = GetFirstSelectedItem();
-					while (h)
-					{
-						if (!GetCheck(h) == bChk) //! to ensure 0 or 1
-						{
-							SetCheck(h, bChk);
-#ifdef TVN_CHKCHANGE
-							//only send multiple check-change
-							// notifications (not sel-changed)
-							if (h != hItem) //clicked item will be done last
-							{
-								nmtv.itemNew.hItem = h;
-								nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(h);
-								SendNotify(&nmtv.hdr);
-							}
-#endif
-						}
-						h = GetNextSelectedItem(h);
-					}
-				}
-				else
-				{
-					SetCheck(hItem, bChk);
-				}
-				//notify clicked item
-				nmtv.itemNew.hItem = hItem;
-				nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(hItem);
-				SendNotify(&nmtv.hdr);
-				return TRUE;
-			}
-#endif
-		}
-	}
-
-	if (bBase)
-		return TRUE;
-
-	if (!hItem || (nHF & (TVHT_ONITEMRIGHT | TVHT_NOWHERE | TVHT_ONITEMINDENT)))
-	{
-		//clicked in space, do rubber-banding
-		DoBanding(nFlags, point);
-		return TRUE;
-	}
-
-	ASSERT(nHF & (TVHT_ONITEM | TVHT_ONITEMSTATEICON));   //nothing else left
-
-	DoPreSelection(hItem, bLeft, nFlags);
-	DoAction(hItem, bLeft, nFlags, point);
-
-	return m_bActionDone;  // as set in doaction
-}
-
-void CXTTreeBase::DoPreSelection(HTREEITEM hItem, BOOL bLeft, UINT nFlags)
-{
-	if (bLeft)
-	{
-		//if shift key down, select immediately
-		if ((nFlags & MK_SHIFT))
-		{
-			if (!m_hSelect)
-			{
-				m_hSelect = m_pTreeCtrl->GetSelectedItem(); //focus
-			}
-
-			SetItemState(hItem, TVIS_FOCUSED, TVIS_FOCUSED);    //focus changes to last clicked
-			SelectItems(m_hSelect, hItem, !(nFlags & MK_CONTROL));
-		}
-		else
-		{
-			if (!(nFlags & MK_CONTROL))
-			{
-				//if ctrl was down, then the selection is delayed until
-				// mouse up, otherwise select the one item
-				if (!IsSelected(hItem))
-				{
-					SelectAllIgnore(FALSE, hItem);
-				}
-				SetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
-			}
-			m_hSelect = NULL;   //reset when a non-shift operation occurs
-		}
-		return;
-	}
-
-	//right mouse
-	if (nFlags & (MK_CONTROL | MK_SHIFT))
-	{
-		if (!(nFlags & MK_SHIFT))
-		{
-			m_hSelect = hItem;
-		}
-		return;     //do nothing if shift or ctrl
-	}
-	if (!IsSelected(hItem))
-	{
-		SelectAllIgnore(FALSE, hItem);
-	}
-	SetItemState(hItem, TVIS_SELECTED | TVIS_FOCUSED, TVIS_SELECTED | TVIS_FOCUSED);
-}
-
-void CXTTreeBase::DoAction(HTREEITEM hItem, BOOL bLeft, UINT nFlags, CPoint point)
-{
-	m_bActionDone = false;
-	::SetCapture(m_pTreeCtrl->m_hWnd);
-	ASSERT(::GetCapture() == m_pTreeCtrl->m_hWnd);
-
-	MSG msg;
-	UINT nDone = 0;
-	CPoint pt;
-	CSize sizeDrag(::GetSystemMetrics(SM_CXDRAG), ::GetSystemMetrics(SM_CYDRAG));
-
-	while (!nDone && ::GetMessage(&msg, NULL, 0, 0))
-	{
-		if (::GetCapture() != m_pTreeCtrl->m_hWnd)
-		{
-			break;
-		}
-		switch (msg.message)
-		{
-			case WM_MOUSEMOVE:
-				pt.x = GET_X_LPARAM(msg.lParam);
-				pt.y = GET_Y_LPARAM(msg.lParam);
-				if ((abs(pt.x - point.x) > sizeDrag.cx) ||
-					((abs(pt.y - point.y) > sizeDrag.cy)))
-				{
-					nDone = 2;
-				}
-				//because we exit loop, button up will still be dispatched
-				// which means WM_CONTEXTMENU will be sent after TVN_BEGINRDRAG
-				// - this is the same behavior as original tree
-				break;
-
-			case WM_LBUTTONUP:
-			case WM_RBUTTONUP:
-				nDone = 1;
-				break;
-
-			default:
-				::DispatchMessage(&msg);
-				break;
-		}
-
-	}
-
-	::ReleaseCapture();
-	ASSERT(::GetCapture() != m_pTreeCtrl->m_hWnd);
-
-	//construct tree notification info
-	NMTREEVIEW nmtv;
-	nmtv.hdr.hwndFrom = m_pTreeCtrl->m_hWnd;
-	nmtv.hdr.idFrom = ::GetDlgCtrlID(m_pTreeCtrl->m_hWnd);
-	nmtv.itemNew.mask = TVIF_HANDLE | TVIF_PARAM;
-	nmtv.itemNew.hItem = hItem;
-	nmtv.itemNew.lParam = m_pTreeCtrl->GetItemData(hItem);
-	DWORD dwStyle = m_pTreeCtrl->GetStyle();
-
-	if (nDone == 1)
-	{
-		//click
-		if (!(nFlags & MK_SHIFT) && bLeft)
-		{
-			if ((nFlags & MK_CONTROL))
-			{
-				UINT nState = (GetItemState(hItem, TVIS_SELECTED) & TVIS_SELECTED) ? 0 : TVIS_SELECTED;
-				SetItemState(hItem, TVIS_FOCUSED | nState, TVIS_FOCUSED | TVIS_SELECTED);
-			}
-			else
-			{
-				SelectAllIgnore(FALSE, hItem);
-				SetItemState(hItem, TVIS_FOCUSED | TVIS_SELECTED, TVIS_FOCUSED | TVIS_SELECTED);
-			}
-		}
-		if (::GetFocus() != m_pTreeCtrl->m_hWnd)
-		{
-			::SetFocus(m_pTreeCtrl->m_hWnd);
-		}
-
-		nmtv.hdr.code = bLeft ? NM_CLICK : NM_RCLICK;
-		SendNotify(&nmtv.hdr);
-		m_bActionDone = true;
-	}
-	else if (nDone == 2)
-	{
-		//drag
-		SetItemState(hItem, TVIS_FOCUSED | TVIS_SELECTED, TVIS_FOCUSED | TVIS_SELECTED);
-		if (!(dwStyle & TVS_DISABLEDRAGDROP))
-		{
-			nmtv.hdr.code = bLeft ? TVN_BEGINDRAG : TVN_BEGINRDRAG;
-			nmtv.ptDrag = point;
-			SendNotify(&nmtv.hdr);
-		}
-		m_bActionDone = true;
-	}
-}
-
-void CXTTreeBase::DoBanding(UINT nFlags, CPoint point)
-{
-	if (::GetFocus() != m_pTreeCtrl->m_hWnd)
-	{
-		::SetFocus(m_pTreeCtrl->m_hWnd);
-	}
-
-	::SetCapture(m_pTreeCtrl->m_hWnd);
-
-	CTypedPtrList<CPtrList, HTREEITEM> list;
-	if (nFlags & (MK_SHIFT | MK_CONTROL))
-	{
-		GetSelectedList(list);
-	}
-
-	CClientDC dc(m_pTreeCtrl);
-	CRect rectCli;
-	m_pTreeCtrl->GetClientRect(&rectCli);
-
-	MSG msg;
-	BOOL bDone = FALSE;
-	CPoint pt;
-	CSize sizeDrag(::GetSystemMetrics(SM_CXDRAG), ::GetSystemMetrics(SM_CYDRAG));
-	BOOL bDrag = FALSE;
-	CSize sizeEdge(1, 1);
-
-	UINT_PTR nTimer = m_pTreeCtrl->SetTimer(1, SCROLL_TIMER_PERIOD, NULL);  //for scroll
-	CPoint ptScr(m_pTreeCtrl->GetScrollPos(SB_HORZ), m_pTreeCtrl->GetScrollPos(SB_VERT));
-	CRect rect(0, 0, 0, 0);
-	UINT h = 0;
-	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
-	if (hItem)
-	{
-		m_pTreeCtrl->GetItemRect(hItem, &rect, FALSE);
-		ptScr.y *= (h = rect.Height());     //this assumes equal height items
-	}
-	point += ptScr;
-
-	while (!bDone && ::GetMessage(&msg, NULL, 0, 0))
-	{
-		if (::GetCapture() != m_pTreeCtrl->m_hWnd)
-		{
-			break;
-		}
-
-		switch (msg.message)
-		{
-			case WM_TIMER:
-				{
-					if (msg.wParam == SCROLL_TIMER_PERIOD)
-					{
-						pt = msg.pt;
-						m_pTreeCtrl->ScreenToClient(&pt);
-						if (rectCli.PtInRect(pt))
-						{
-							::DispatchMessage(&msg);
-							break;
-						}
-						msg.lParam = MAKELPARAM(pt.x, pt.y);
-					}
-					else
-					{
-						break;
-					}
-				}
-				//fall through to mouse move
-
-			case WM_MOUSEMOVE:
-				pt.x = GET_X_LPARAM(msg.lParam);
-				pt.y = GET_Y_LPARAM(msg.lParam);
-				if (!bDrag)
-				{
-					if ((abs(pt.x - point.x) <= sizeDrag.cx) &&
-						((abs(pt.y - point.y) <= sizeDrag.cy)))
-					{
-						break;
-					}
-					bDrag = TRUE;
-					if (!(nFlags & (MK_CONTROL | MK_SHIFT)))
-					{
-						SelectAll(FALSE);
-					}
-					m_pTreeCtrl->UpdateWindow();
-					rect.SetRect(point, point);
-					dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);
-				}
-
-				dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);    //delete
-
-				if (pt.y < rectCli.top)
-				{
-					::SendMessage(m_pTreeCtrl->m_hWnd, WM_VSCROLL, SB_LINEUP, 0);
-				}
-				else if (pt.y >= rectCli.bottom)
-				{
-					::SendMessage(m_pTreeCtrl->m_hWnd, WM_VSCROLL, SB_LINEDOWN, 0);
-				}
-				if (pt.x < rectCli.left)
-				{
-					::SendMessage(m_pTreeCtrl->m_hWnd, WM_HSCROLL, SB_LINELEFT, 0);
-				}
-				else if (pt.x >= rectCli.right)
-				{
-					::SendMessage(m_pTreeCtrl->m_hWnd, WM_HSCROLL, SB_LINERIGHT, 0);
-				}
-
-				ptScr = point;
-				ptScr.x -= m_pTreeCtrl->GetScrollPos(SB_HORZ);
-				ptScr.y -= m_pTreeCtrl->GetScrollPos(SB_VERT) * h;
-				rect.SetRect(ptScr, pt);
-				rect.NormalizeRect();
-				UpdateSelectionForRect(rect, nFlags, list);
-				dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);    //draw
-				break;
-
-			case WM_LBUTTONUP:
-			case WM_RBUTTONUP:
-				bDone = TRUE;
-				break;
-
-			case WM_KEYDOWN:
-				if (LOWORD(msg.wParam) == VK_ESCAPE)
-				{
-					SelectAll(FALSE);
-					bDone = TRUE;
-					break;
-				}
-				//dispatch
-
-			default:
-				::DispatchMessage(&msg);
-				break;
-		}
-	}
-	m_pTreeCtrl->KillTimer(nTimer);
-	::ReleaseCapture();
-
-	if (bDrag)
-	{
-		dc.DrawDragRect(rect, sizeEdge, NULL, sizeEdge);
-	}
-	else
-	{
-		if (!(nFlags & (MK_CONTROL | MK_SHIFT)))
-		{
-			SelectAll(FALSE);
-		}
-	}
-}
-
-void CXTTreeBase::UpdateSelectionForRect(LPCRECT pRect, UINT nFlags, CTypedPtrList<CPtrList, HTREEITEM>& list)
-{
-	CRect rect;
-	BOOL bSel;
-	POSITION pos;
-
-	HTREEITEM hItem = m_pTreeCtrl->GetRootItem();
-	while (hItem)
-	{
-		bSel = IsSelected(hItem);
-		m_pTreeCtrl->GetItemRect(hItem, &rect, m_bBandLabel);
-		if (rect.IntersectRect(rect, pRect))
-		{
-			//item in rect
-			pos = list.Find(hItem);
-			if (!bSel && !pos)
-			{
-				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
-			}
-			else if ((nFlags & MK_CONTROL) && pos)
-			{
-				SetItemState(hItem, 0, TVIS_SELECTED);
-			}
-			else if ((nFlags & MK_SHIFT) && pos)
-			{
-				list.RemoveAt(pos);     //if shift and in rect, don't lock anymore
-			}
-		}
-		else
-		{
-			//item not in rect
-			pos = list.Find(hItem);
-			if (bSel && !pos)
-			{
-				SetItemState(hItem, 0, TVIS_SELECTED);
-			}
-			else if (pos)
-			{
-				SetItemState(hItem, TVIS_SELECTED, TVIS_SELECTED);
-			}
-		}
-		hItem = m_pTreeCtrl->GetNextVisibleItem(hItem);
-	}
-	m_pTreeCtrl->UpdateWindow();
-}
-
-BOOL CXTTreeBase::SelectChildren(HTREEITEM hParent, BOOL bSelect /*= TRUE*/, BOOL bRecurse /*= TRUE*/)
-{
-	UINT nS = bSelect ? TVIS_SELECTED : 0;
-
-	BOOL bFocusWasInHere = FALSE;
-
-	HTREEITEM hItem = GetNextItem(hParent, TVGN_CHILD);
-	while (hItem)
-	{
-		UINT nState = GetItemState(hItem, TVIS_SELECTED | TVIS_EXPANDED | TVIS_FOCUSED);
-		if ((nState & TVIS_SELECTED) != nS)
-		{
-			SetItemState(hItem, nS, TVIS_SELECTED);
-		}
-		bFocusWasInHere |= (nState & TVIS_FOCUSED);
-		if (bRecurse && (nState & TVIS_EXPANDED))
-		{
-			bFocusWasInHere |= SelectChildren(hItem, bSelect, bRecurse);
-		}
-		hItem = m_pTreeCtrl->GetNextSiblingItem(hItem);
-	}
-	return bFocusWasInHere;
-}
-
-void CXTTreeBase::GetSelectedList(CTypedPtrList<CPtrList, HTREEITEM>& list) const
-{
-	list.RemoveAll();
-
-	HTREEITEM hItem = GetFirstSelectedItem();
-	while (hItem)
-	{
-		list.AddTail(hItem);
-		hItem = GetNextSelectedItem(hItem);
-	}
-}
-
-BOOL CXTTreeBase::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	NMHDR* pNMHDR = (NMHDR*)lParam;
-
-	switch (pNMHDR->code)
-	{
-	case TTN_SHOW:
-		{
-			// get a pointer to the tooltip control.
-			HWND hWnd = TreeView_GetToolTips(m_pTreeCtrl->m_hWnd);
-			if (hWnd != NULL)
-			{
-				// make sure the tooltip is at the top of the "Z" order, otherwise
-				// it will appear behind popup windows....
-				::SetWindowPos(hWnd, HWND_TOP, 0, 0, 0, 0,
-					SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			}
-		}
-		break;
-	}
-
-	return m_pTreeCtrl->CTreeCtrl::OnNotify(wParam, lParam, pResult);
-}
-
-BOOL CXTTreeBase::PreTranslateMessage(MSG* pMsg)
-{
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		// ensure that keystrokes are handled by the edit control.
-		if (HasEditLabels() && m_pTreeCtrl->GetEditControl())
-		{
-			::TranslateMessage(pMsg);
-			::DispatchMessage(pMsg);
-
-			return TRUE;
-		}
-
-		// toggle expand / contract when return key is hit.
-		if (pMsg->wParam == VK_RETURN)
-		{
-			HTREEITEM htItem = m_pTreeCtrl->GetSelectedItem();
-			if (htItem != NULL)
-			{
-				m_pTreeCtrl->Expand(htItem, TVE_TOGGLE);
-			}
-		}
-	}
-
-	return m_pTreeCtrl->CTreeCtrl::PreTranslateMessage(pMsg);
-}
-
-BOOL CXTTreeBase::OnDeleteItem(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
-
-	// Remove the tree item from the map.
-	m_mapColorFont.RemoveKey(pNMTreeView->itemOld.hItem);
-	*pResult = 0;
-
-	return FALSE;
-}
-
-bool CXTTreeBase::HasEditLabels() const
-{
-	return ((m_pTreeCtrl->GetStyle() & TVS_EDITLABELS) == TVS_EDITLABELS);
-}
-
-void CXTTreeBase::OnSize(UINT /*nType*/, int /*cx*/, int /*cy*/)
-{
-	m_pTreeCtrl->Default();
-
-	// MFCBUG: During label editing if the tree is resized while
-	// there is an edit box open the edit box is not moved to the
-	// new location of the tree item, but is left in it previous
-	// location.
-
-	if (HasEditLabels() && m_htiEdit)
-	{
-		CEdit* pEdit = m_pTreeCtrl->GetEditControl();
-		if (pEdit && ::IsWindow(pEdit->m_hWnd))
-		{
-			CRect rcEdit;
-			pEdit->GetWindowRect(&rcEdit);
-
-			CRect rcItem;
-			m_pTreeCtrl->GetItemRect(m_htiEdit, &rcItem, TRUE);
-
-			rcItem.top -= 1;
-			rcItem.left -= 3;
-			rcItem.right = rcItem.left + rcEdit.Width();
-			rcItem.bottom = rcItem.top + rcEdit.Height();
-
-			pEdit->MoveWindow(&rcItem);
-		}
-	}
-}
-
-void CXTTreeBase::OnMouseMove(UINT /*nFlags*/, CPoint point)
-{
-	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
-	{
-		TV_HITTESTINFO hit;
-		::ZeroMemory(&hit, sizeof(hit));
-
-		hit.pt = point;
-		m_pTreeCtrl->HitTest(&hit);
-
-		HTREEITEM hItem = hit.hItem && hit.flags & TVHT_ONITEM ? hit.hItem : NULL;
-
-		if (m_htiLast != hItem)
-		{
-			m_htiLast = hItem;
-
-			if (m_htiLast)
-			{
-				UINT_PTR uID = m_pTreeCtrl->SetTimer(HOVER_TIMER_PERIOD, 55, NULL);
-				ASSERT(uID == HOVER_TIMER_PERIOD);
-			}
-
-			m_pTreeCtrl->Invalidate(FALSE);
-		}
-	}
-
-
-	m_pTreeCtrl->Default();
-}
-
-void CXTTreeBase::OnTimer(UINT_PTR nIDEvent)
-{
-	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
-	{
-		if (nIDEvent == HOVER_TIMER_PERIOD)
-		{
-			if (m_htiLast != NULL)
-			{
-				CPoint pt(::GetMessagePos());
-				CRect rc;
-				m_pTreeCtrl->GetWindowRect(&rc);
-
-				if (rc.PtInRect(pt) == FALSE)
-				{
-					m_pTreeCtrl->KillTimer(HOVER_TIMER_PERIOD);
-
-					m_htiLast = NULL;
-					m_pTreeCtrl->Invalidate(FALSE);
-				}
-			}
-			else
-			{
-				m_pTreeCtrl->KillTimer(HOVER_TIMER_PERIOD);
-			}
-			return;
-		}
-	}
-
-	m_pTreeCtrl->Default();
-}
-
-void CXTTreeBase::OnNcMouseMove(UINT /*nHitTest*/, CPoint /*point*/)
-{
-	if (m_pTreeCtrl->GetStyle() & TVS_TRACKSELECT)
-	{
-		if (m_htiLast)
-		{
-			m_htiLast = NULL;
-			m_pTreeCtrl->Invalidate(FALSE);
-		}
-	}
-
-	m_pTreeCtrl->Default();
-}
-
-bool CXTTreeBase::Init()
-{
-	if (!::IsWindow(m_pTreeCtrl->GetSafeHwnd()))
-		return false;
-
-	return true;
-}

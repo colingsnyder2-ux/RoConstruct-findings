@@ -1,96 +1,31 @@
+// roc 2009-12 008901f0  unit: CXTPToolBar::CControlButtonHide  size: 73 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008901f0
+//
+// 008901f0  56                   push esi
+// 008901f1  8bf1                 mov esi, ecx
+// 008901f3  8b869c000000         mov eax, dword ptr [esi + 0x9c]
+// 008901f9  83f8ff               cmp eax, -1
+// 008901fc  750f                 jne 0x89020d
+// 008901fe  8b8e5c010000         mov ecx, dword ptr [esi + 0x15c]
+// 00890204  85c9                 test ecx, ecx
+// 00890206  7405                 je 0x89020d
+// 00890208  e8a363f6ff           call 0x7f65b0
+// 0089020d  85c0                 test eax, eax
+// 0089020f  7424                 je 0x890235
+// 00890211  8b8600010000         mov eax, dword ptr [esi + 0x100]
+// 00890217  83b8f800000002       cmp dword ptr [eax + 0xf8], 2
+// 0089021e  7409                 je 0x890229
+// 00890220  83b80001000005       cmp dword ptr [eax + 0x100], 5
+// 00890227  750c                 jne 0x890235
+// 00890229  8b06                 mov eax, dword ptr [esi]
+// 0089022b  8b9098000000         mov edx, dword ptr [eax + 0x98]
+// 00890231  8bce                 mov ecx, esi
+// 00890233  ffd2                 call edx
+// 00890235  5e                   pop esi
+// 00890236  c20800               ret 8
+// copied from an identical function in another client (function ?OnLButtonUp@CXTPControlButton@@MAEXVCPoint@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControlButton.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPControlButton.cpp : implementation of the CXTPControlButton class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "XTPControlButton.h"
-#include "XTPCommandBar.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPControlButton
-
-IMPLEMENT_XTP_CONTROL(CXTPControlButton, CXTPControl)
-
-CXTPControlButton::CXTPControlButton()
-{
-	EnableAutomation();
-
-	m_controlType = xtpControlButton;
-}
-
-CXTPControlButton::~CXTPControlButton()
-{
-}
-
-void CXTPControlButton::OnLButtonUp(CPoint /*point*/)
-{
-	if (GetEnabled() && (m_pParent->GetType() == xtpBarTypePopup || m_pParent->GetPosition() == xtpBarPopup))
-	{
-		OnExecute();
-	}
-}
-
-void CXTPControlButton::OnClick(BOOL bKeyboard, CPoint pt)
-{
-	if (!GetEnabled()) return;
-
-	if (IsCustomizeMode())
-	{
-		m_pParent->SetPopuped(-1);
-		m_pParent->SetSelected(-1);
-		CustomizeStartDrag(pt);
-		return;
-	}
-
-	if (!bKeyboard)
-	{
-		if (m_pParent->GetType() != xtpBarTypePopup)
-			ClickToolBarButton();
-	}
-	else
-	{
-		OnExecute();
-	}
-}
-
-void CXTPControlButton::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	ASSERT(DYNAMIC_DOWNCAST(CXTPControlButton, pControl));
-
-	CXTPControl::Copy(pControl, bRecursive);
-}
-
-
-
-
-
-

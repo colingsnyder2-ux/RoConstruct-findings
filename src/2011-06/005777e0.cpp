@@ -1,275 +1,232 @@
+// roc 2011-06 005777e0  unit: seg_00570000  size: 792 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 005777e0
+//
+// 005777e0  83ec14               sub esp, 0x14
+// 005777e3  53                   push ebx
+// 005777e4  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
+// 005777e8  8b839c010000         mov eax, dword ptr [ebx + 0x19c]
+// 005777ee  8b8bc4000000         mov ecx, dword ptr [ebx + 0xc4]
+// 005777f4  55                   push ebp
+// 005777f5  33ed                 xor ebp, ebp
+// 005777f7  396b24               cmp dword ptr [ebx + 0x24], ebp
+// 005777fa  896c240c             mov dword ptr [esp + 0xc], ebp
+// 005777fe  896c2408             mov dword ptr [esp + 8], ebp
+// 00577802  896c2414             mov dword ptr [esp + 0x14], ebp
+// 00577806  0f8ec4020000         jle 0x577ad0
+// 0057780c  56                   push esi
+// 0057780d  8d702c               lea esi, [eax + 0x2c]
+// 00577810  57                   push edi
+// 00577811  8d7924               lea edi, [ecx + 0x24]
+// 00577814  89742418             mov dword ptr [esp + 0x18], esi
+// 00577818  8b07                 mov eax, dword ptr [edi]
+// 0057781a  48                   dec eax
+// 0057781b  83f807               cmp eax, 7
+// 0057781e  0f8797000000         ja 0x5778bb
+// 00577824  ff2485d87a5700       jmp dword ptr [eax*4 + 0x577ad8]
+// 0057782b  33ed                 xor ebp, ebp
+// 0057782d  c744241040185800     mov dword ptr [esp + 0x10], 0x581840
+// 00577835  896c2414             mov dword ptr [esp + 0x14], ebp
+// 00577839  e997000000           jmp 0x5778d5
+// 0057783e  33ed                 xor ebp, ebp
+// 00577840  c7442410d0135800     mov dword ptr [esp + 0x10], 0x5813d0
+// 00577848  896c2414             mov dword ptr [esp + 0x14], ebp
+// 0057784c  e984000000           jmp 0x5778d5
+// 00577851  33ed                 xor ebp, ebp
+// 00577853  c7442410c0105800     mov dword ptr [esp + 0x10], 0x5810c0
+// 0057785b  896c2414             mov dword ptr [esp + 0x14], ebp
+// 0057785f  eb74                 jmp 0x5778d5
+// 00577861  8b4344               mov eax, dword ptr [ebx + 0x44]
+// 00577864  83e800               sub eax, 0
+// 00577867  7442                 je 0x5778ab
+// 00577869  83e801               sub eax, 1
+// 0057786c  742a                 je 0x577898
+// 0057786e  83e801               sub eax, 1
+// 00577871  7412                 je 0x577885
+// 00577873  8b03                 mov eax, dword ptr [ebx]
+// 00577875  c7401430000000       mov dword ptr [eax + 0x14], 0x30
+// 0057787c  8b0b                 mov ecx, dword ptr [ebx]
+// 0057787e  8b11                 mov edx, dword ptr [ecx]
+// 00577880  53                   push ebx
+// 00577881  ffd2                 call edx
+// 00577883  eb4d                 jmp 0x5778d2
+// 00577885  bd02000000           mov ebp, 2
+// 0057788a  c7442410800c5800     mov dword ptr [esp + 0x10], 0x580c80
+// 00577892  896c2414             mov dword ptr [esp + 0x14], ebp
+// 00577896  eb3d                 jmp 0x5778d5
+// 00577898  bd01000000           mov ebp, 1
+// 0057789d  c7442410a0085800     mov dword ptr [esp + 0x10], 0x5808a0
+// 005778a5  896c2414             mov dword ptr [esp + 0x14], ebp
+// 005778a9  eb2a                 jmp 0x5778d5
+// 005778ab  33ed                 xor ebp, ebp
+// 005778ad  c744241090035800     mov dword ptr [esp + 0x10], 0x580390
+// 005778b5  896c2414             mov dword ptr [esp + 0x14], ebp
+// 005778b9  eb1a                 jmp 0x5778d5
+// 005778bb  8b03                 mov eax, dword ptr [ebx]
+// 005778bd  c7401407000000       mov dword ptr [eax + 0x14], 7
+// 005778c4  8b0b                 mov ecx, dword ptr [ebx]
+// 005778c6  8b17                 mov edx, dword ptr [edi]
+// 005778c8  895118               mov dword ptr [ecx + 0x18], edx
+// 005778cb  8b03                 mov eax, dword ptr [ebx]
+// 005778cd  8b08                 mov ecx, dword ptr [eax]
+// 005778cf  53                   push ebx
+// 005778d0  ffd1                 call ecx
+// 005778d2  83c404               add esp, 4
+// 005778d5  8b542410             mov edx, dword ptr [esp + 0x10]
+// 005778d9  8956d8               mov dword ptr [esi - 0x28], edx
+// 005778dc  807f0c00             cmp byte ptr [edi + 0xc], 0
+// 005778e0  0f84c8010000         je 0x577aae
+// 005778e6  392e                 cmp dword ptr [esi], ebp
+// 005778e8  0f84c0010000         je 0x577aae
+// 005778ee  8b7728               mov esi, dword ptr [edi + 0x28]
+// 005778f1  85f6                 test esi, esi
+// 005778f3  0f84b5010000         je 0x577aae
+// 005778f9  8b442418             mov eax, dword ptr [esp + 0x18]
+// 005778fd  8928                 mov dword ptr [eax], ebp
+// 005778ff  8bc5                 mov eax, ebp
+// 00577901  83e800               sub eax, 0
+// 00577904  0f8492010000         je 0x577a9c
+// 0057790a  83e801               sub eax, 1
+// 0057790d  0f84fa000000         je 0x577a0d
+// 00577913  83e801               sub eax, 1
+// 00577916  7418                 je 0x577930
+// 00577918  8b0b                 mov ecx, dword ptr [ebx]
+// 0057791a  c7411430000000       mov dword ptr [ecx + 0x14], 0x30
+// 00577921  8b13                 mov edx, dword ptr [ebx]
+// 00577923  8b02                 mov eax, dword ptr [edx]
+// 00577925  53                   push ebx
+// 00577926  ffd0                 call eax
+// 00577928  83c404               add esp, 4
+// 0057792b  e97e010000           jmp 0x577aae
+// 00577930  8b4f2c               mov ecx, dword ptr [edi + 0x2c]
+// 00577933  8d5108               lea edx, [ecx + 8]
+// 00577936  b80881a800           mov eax, 0xa88108
+// 0057793b  8d4e04               lea ecx, [esi + 4]
+// 0057793e  8bff                 mov edi, edi
+// 00577940  0fb771fc             movzx esi, word ptr [ecx - 4]
+// 00577944  89742420             mov dword ptr [esp + 0x20], esi
+// 00577948  83c008               add eax, 8
+// 0057794b  83c110               add ecx, 0x10
+// 0057794e  db442420             fild dword ptr [esp + 0x20]
+// 00577952  83c220               add edx, 0x20
+// 00577955  3d4881a800           cmp eax, 0xa88148
+// 0057795a  dc48f8               fmul qword ptr [eax - 8]
+// 0057795d  d95ad8               fstp dword ptr [edx - 0x28]
+// 00577960  0fb771ee             movzx esi, word ptr [ecx - 0x12]
+// 00577964  89742420             mov dword ptr [esp + 0x20], esi
+// 00577968  db442420             fild dword ptr [esp + 0x20]
+// 0057796c  dc48f8               fmul qword ptr [eax - 8]
+// 0057796f  dc0d1081a800         fmul qword ptr [0xa88110]
+// 00577975  d95adc               fstp dword ptr [edx - 0x24]
+// 00577978  0fb771f0             movzx esi, word ptr [ecx - 0x10]
+// 0057797c  89742420             mov dword ptr [esp + 0x20], esi
+// 00577980  db442420             fild dword ptr [esp + 0x20]
+// 00577984  dc48f8               fmul qword ptr [eax - 8]
+// 00577987  dc0d1881a800         fmul qword ptr [0xa88118]
+// 0057798d  d95ae0               fstp dword ptr [edx - 0x20]
+// 00577990  0fb771f2             movzx esi, word ptr [ecx - 0xe]
+// 00577994  89742420             mov dword ptr [esp + 0x20], esi
+// 00577998  db442420             fild dword ptr [esp + 0x20]
+// 0057799c  dc48f8               fmul qword ptr [eax - 8]
+// 0057799f  dc0d2081a800         fmul qword ptr [0xa88120]
+// 005779a5  d95ae4               fstp dword ptr [edx - 0x1c]
+// 005779a8  0fb771f4             movzx esi, word ptr [ecx - 0xc]
+// 005779ac  89742420             mov dword ptr [esp + 0x20], esi
+// 005779b0  db442420             fild dword ptr [esp + 0x20]
+// 005779b4  dc48f8               fmul qword ptr [eax - 8]
+// 005779b7  d95ae8               fstp dword ptr [edx - 0x18]
+// 005779ba  0fb771f6             movzx esi, word ptr [ecx - 0xa]
+// 005779be  89742420             mov dword ptr [esp + 0x20], esi
+// 005779c2  db442420             fild dword ptr [esp + 0x20]
+// 005779c6  dc48f8               fmul qword ptr [eax - 8]
+// 005779c9  dc0d3081a800         fmul qword ptr [0xa88130]
+// 005779cf  d95aec               fstp dword ptr [edx - 0x14]
+// 005779d2  0fb771f8             movzx esi, word ptr [ecx - 8]
+// 005779d6  89742420             mov dword ptr [esp + 0x20], esi
+// 005779da  db442420             fild dword ptr [esp + 0x20]
+// 005779de  dc48f8               fmul qword ptr [eax - 8]
+// 005779e1  dc0d3881a800         fmul qword ptr [0xa88138]
+// 005779e7  d95af0               fstp dword ptr [edx - 0x10]
+// 005779ea  0fb771fa             movzx esi, word ptr [ecx - 6]
+// 005779ee  89742420             mov dword ptr [esp + 0x20], esi
+// 005779f2  db442420             fild dword ptr [esp + 0x20]
+// 005779f6  dc48f8               fmul qword ptr [eax - 8]
+// 005779f9  dc0d4081a800         fmul qword ptr [0xa88140]
+// 005779ff  d95af4               fstp dword ptr [edx - 0xc]
+// 00577a02  0f8c38ffffff         jl 0x577940
+// 00577a08  e9a1000000           jmp 0x577aae
+// 00577a0d  8b472c               mov eax, dword ptr [edi + 0x2c]
+// 00577a10  8d4808               lea ecx, [eax + 8]
+// 00577a13  8d4604               lea eax, [esi + 4]
+// 00577a16  ba8a80a800           mov edx, 0xa8808a
+// 00577a1b  f7de                 neg esi
+// 00577a1d  8d4900               lea ecx, [ecx]
+// 00577a20  0fb768fc             movzx ebp, word ptr [eax - 4]
+// 00577a24  0fbf5afe             movsx ebx, word ptr [edx - 2]
+// 00577a28  0fafdd               imul ebx, ebp
+// 00577a2b  81c300080000         add ebx, 0x800
+// 00577a31  c1fb0c               sar ebx, 0xc
+// 00577a34  8959f8               mov dword ptr [ecx - 8], ebx
+// 00577a37  0fbf2a               movsx ebp, word ptr [edx]
+// 00577a3a  0fb758fe             movzx ebx, word ptr [eax - 2]
+// 00577a3e  0fafdd               imul ebx, ebp
+// 00577a41  81c300080000         add ebx, 0x800
+// 00577a47  c1fb0c               sar ebx, 0xc
+// 00577a4a  8959fc               mov dword ptr [ecx - 4], ebx
+// 00577a4d  0fb728               movzx ebp, word ptr [eax]
+// 00577a50  0fbf9c068880a800     movsx ebx, word ptr [esi + eax + 0xa88088]
+// 00577a58  0fafdd               imul ebx, ebp
+// 00577a5b  81c300080000         add ebx, 0x800
+// 00577a61  c1fb0c               sar ebx, 0xc
+// 00577a64  8919                 mov dword ptr [ecx], ebx
+// 00577a66  0fbf9c068a80a800     movsx ebx, word ptr [esi + eax + 0xa8808a]
+// 00577a6e  0fb76802             movzx ebp, word ptr [eax + 2]
+// 00577a72  0fafdd               imul ebx, ebp
+// 00577a75  81c300080000         add ebx, 0x800
+// 00577a7b  c1fb0c               sar ebx, 0xc
+// 00577a7e  895904               mov dword ptr [ecx + 4], ebx
+// 00577a81  83c208               add edx, 8
+// 00577a84  83c110               add ecx, 0x10
+// 00577a87  83c008               add eax, 8
+// 00577a8a  81fa0a81a800         cmp edx, 0xa8810a
+// 00577a90  7c8e                 jl 0x577a20
+// 00577a92  8b6c2414             mov ebp, dword ptr [esp + 0x14]
+// 00577a96  8b5c2428             mov ebx, dword ptr [esp + 0x28]
+// 00577a9a  eb12                 jmp 0x577aae
+// 00577a9c  8b4f2c               mov ecx, dword ptr [edi + 0x2c]
+// 00577a9f  33c0                 xor eax, eax
+// 00577aa1  0fb71446             movzx edx, word ptr [esi + eax*2]
+// 00577aa5  891481               mov dword ptr [ecx + eax*4], edx
+// 00577aa8  40                   inc eax
+// 00577aa9  83f840               cmp eax, 0x40
+// 00577aac  7cf3                 jl 0x577aa1
+// 00577aae  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 00577ab2  8b742418             mov esi, dword ptr [esp + 0x18]
+// 00577ab6  40                   inc eax
+// 00577ab7  83c604               add esi, 4
+// 00577aba  83c754               add edi, 0x54
+// 00577abd  3b4324               cmp eax, dword ptr [ebx + 0x24]
+// 00577ac0  8944241c             mov dword ptr [esp + 0x1c], eax
+// 00577ac4  89742418             mov dword ptr [esp + 0x18], esi
+// 00577ac8  0f8c4afdffff         jl 0x577818
+// 00577ace  5f                   pop edi
+// 00577acf  5e                   pop esi
+// 00577ad0  5d                   pop ebp
+// 00577ad1  5b                   pop ebx
+// 00577ad2  83c414               add esp, 0x14
+// 00577ad5  c3                   ret 
+// 00577ad6  8bff                 mov edi, edi
+// 00577ad8  2b7857               sub edi, dword ptr [eax + 0x57]
+// 00577adb  003e                 add byte ptr [esi], bh
+// 00577add  7857                 js 0x577b36
+// 00577adf  00bb78570051         add byte ptr [ebx + 0x51005778], bh
+// 00577ae5  7857                 js 0x577b3e
+// 00577ae7  00bb785700bb         add byte ptr [ebx - 0x44ffa888], bh
+// 00577aed  7857                 js 0x577b46
+// 00577aef  00bb78570061         add byte ptr [ebx + 0x61005778], bh
+// 00577af5  7857                 js 0x577b4e
+// library jpeg-6b/jddctmgr.c (function _start_pass)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jddctmgr.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jddctmgr.c
- *
- * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains the inverse-DCT management logic.
- * This code selects a particular IDCT implementation to be used,
- * and it performs related housekeeping chores.  No code in this file
- * is executed per IDCT step, only during output pass setup.
- *
- * Note that the IDCT routines are responsible for performing coefficient
- * dequantization as well as the IDCT proper.  This module sets up the
- * dequantization multiplier table needed by the IDCT routine.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jdct.h"		/* Private declarations for DCT subsystem */
-
-
-/*
- * The decompressor input side (jdinput.c) saves away the appropriate
- * quantization table for each component at the start of the first scan
- * involving that component.  (This is necessary in order to correctly
- * decode files that reuse Q-table slots.)
- * When we are ready to make an output pass, the saved Q-table is converted
- * to a multiplier table that will actually be used by the IDCT routine.
- * The multiplier table contents are IDCT-method-dependent.  To support
- * application changes in IDCT method between scans, we can remake the
- * multiplier tables if necessary.
- * In buffered-image mode, the first output pass may occur before any data
- * has been seen for some components, and thus before their Q-tables have
- * been saved away.  To handle this case, multiplier tables are preset
- * to zeroes; the result of the IDCT will be a neutral gray level.
- */
-
-
-/* Private subobject for this module */
-
-typedef struct {
-  struct jpeg_inverse_dct pub;	/* public fields */
-
-  /* This array contains the IDCT method code that each multiplier table
-   * is currently set up for, or -1 if it's not yet set up.
-   * The actual multiplier tables are pointed to by dct_table in the
-   * per-component comp_info structures.
-   */
-  int cur_method[MAX_COMPONENTS];
-} my_idct_controller;
-
-typedef my_idct_controller * my_idct_ptr;
-
-
-/* Allocated multiplier tables: big enough for any supported variant */
-
-typedef union {
-  ISLOW_MULT_TYPE islow_array[DCTSIZE2];
-#ifdef DCT_IFAST_SUPPORTED
-  IFAST_MULT_TYPE ifast_array[DCTSIZE2];
-#endif
-#ifdef DCT_FLOAT_SUPPORTED
-  FLOAT_MULT_TYPE float_array[DCTSIZE2];
-#endif
-} multiplier_table;
-
-
-/* The current scaled-IDCT routines require ISLOW-style multiplier tables,
- * so be sure to compile that code if either ISLOW or SCALING is requested.
- */
-#ifdef DCT_ISLOW_SUPPORTED
-#define PROVIDE_ISLOW_TABLES
-#else
-#ifdef IDCT_SCALING_SUPPORTED
-#define PROVIDE_ISLOW_TABLES
-#endif
-#endif
-
-
-/*
- * Prepare for an output pass.
- * Here we select the proper IDCT routine for each component and build
- * a matching multiplier table.
- */
-
-METHODDEF(void)
-start_pass (j_decompress_ptr cinfo)
-{
-  my_idct_ptr idct = (my_idct_ptr) cinfo->idct;
-  int ci, i;
-  jpeg_component_info *compptr;
-  int method = 0;
-  inverse_DCT_method_ptr method_ptr = NULL;
-  JQUANT_TBL * qtbl;
-
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    /* Select the proper IDCT routine for this component's scaling */
-    switch (compptr->DCT_scaled_size) {
-#ifdef IDCT_SCALING_SUPPORTED
-    case 1:
-      method_ptr = jpeg_idct_1x1;
-      method = JDCT_ISLOW;	/* jidctred uses islow-style table */
-      break;
-    case 2:
-      method_ptr = jpeg_idct_2x2;
-      method = JDCT_ISLOW;	/* jidctred uses islow-style table */
-      break;
-    case 4:
-      method_ptr = jpeg_idct_4x4;
-      method = JDCT_ISLOW;	/* jidctred uses islow-style table */
-      break;
-#endif
-    case DCTSIZE:
-      switch (cinfo->dct_method) {
-#ifdef DCT_ISLOW_SUPPORTED
-      case JDCT_ISLOW:
-	method_ptr = jpeg_idct_islow;
-	method = JDCT_ISLOW;
-	break;
-#endif
-#ifdef DCT_IFAST_SUPPORTED
-      case JDCT_IFAST:
-	method_ptr = jpeg_idct_ifast;
-	method = JDCT_IFAST;
-	break;
-#endif
-#ifdef DCT_FLOAT_SUPPORTED
-      case JDCT_FLOAT:
-	method_ptr = jpeg_idct_float;
-	method = JDCT_FLOAT;
-	break;
-#endif
-      default:
-	ERREXIT(cinfo, JERR_NOT_COMPILED);
-	break;
-      }
-      break;
-    default:
-      ERREXIT1(cinfo, JERR_BAD_DCTSIZE, compptr->DCT_scaled_size);
-      break;
-    }
-    idct->pub.inverse_DCT[ci] = method_ptr;
-    /* Create multiplier table from quant table.
-     * However, we can skip this if the component is uninteresting
-     * or if we already built the table.  Also, if no quant table
-     * has yet been saved for the component, we leave the
-     * multiplier table all-zero; we'll be reading zeroes from the
-     * coefficient controller's buffer anyway.
-     */
-    if (! compptr->component_needed || idct->cur_method[ci] == method)
-      continue;
-    qtbl = compptr->quant_table;
-    if (qtbl == NULL)		/* happens if no data yet for component */
-      continue;
-    idct->cur_method[ci] = method;
-    switch (method) {
-#ifdef PROVIDE_ISLOW_TABLES
-    case JDCT_ISLOW:
-      {
-	/* For LL&M IDCT method, multipliers are equal to raw quantization
-	 * coefficients, but are stored as ints to ensure access efficiency.
-	 */
-	ISLOW_MULT_TYPE * ismtbl = (ISLOW_MULT_TYPE *) compptr->dct_table;
-	for (i = 0; i < DCTSIZE2; i++) {
-	  ismtbl[i] = (ISLOW_MULT_TYPE) qtbl->quantval[i];
-	}
-      }
-      break;
-#endif
-#ifdef DCT_IFAST_SUPPORTED
-    case JDCT_IFAST:
-      {
-	/* For AA&N IDCT method, multipliers are equal to quantization
-	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
-	 *   scalefactor[0] = 1
-	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
-	 * For integer operation, the multiplier table is to be scaled by
-	 * IFAST_SCALE_BITS.
-	 */
-	IFAST_MULT_TYPE * ifmtbl = (IFAST_MULT_TYPE *) compptr->dct_table;
-#define CONST_BITS 14
-	static const INT16 aanscales[DCTSIZE2] = {
-	  /* precomputed values scaled up by 14 bits */
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
-	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
-	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
-	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
-	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
-	   8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
-	   4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
-	};
-	SHIFT_TEMPS
-
-	for (i = 0; i < DCTSIZE2; i++) {
-	  ifmtbl[i] = (IFAST_MULT_TYPE)
-	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
-				  (INT32) aanscales[i]),
-		    CONST_BITS-IFAST_SCALE_BITS);
-	}
-      }
-      break;
-#endif
-#ifdef DCT_FLOAT_SUPPORTED
-    case JDCT_FLOAT:
-      {
-	/* For float AA&N IDCT method, multipliers are equal to quantization
-	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
-	 *   scalefactor[0] = 1
-	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
-	 */
-	FLOAT_MULT_TYPE * fmtbl = (FLOAT_MULT_TYPE *) compptr->dct_table;
-	int row, col;
-	static const double aanscalefactor[DCTSIZE] = {
-	  1.0, 1.387039845, 1.306562965, 1.175875602,
-	  1.0, 0.785694958, 0.541196100, 0.275899379
-	};
-
-	i = 0;
-	for (row = 0; row < DCTSIZE; row++) {
-	  for (col = 0; col < DCTSIZE; col++) {
-	    fmtbl[i] = (FLOAT_MULT_TYPE)
-	      ((double) qtbl->quantval[i] *
-	       aanscalefactor[row] * aanscalefactor[col]);
-	    i++;
-	  }
-	}
-      }
-      break;
-#endif
-    default:
-      ERREXIT(cinfo, JERR_NOT_COMPILED);
-      break;
-    }
-  }
-}
-
-
-/*
- * Initialize IDCT manager.
- */
-
-GLOBAL(void)
-jinit_inverse_dct (j_decompress_ptr cinfo)
-{
-  my_idct_ptr idct;
-  int ci;
-  jpeg_component_info *compptr;
-
-  idct = (my_idct_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_idct_controller));
-  cinfo->idct = (struct jpeg_inverse_dct *) idct;
-  idct->pub.start_pass = start_pass;
-
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    /* Allocate and pre-zero a multiplier table for each component */
-    compptr->dct_table =
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(multiplier_table));
-    MEMZERO(compptr->dct_table, SIZEOF(multiplier_table));
-    /* Mark multiplier table not yet set up for any method */
-    idct->cur_method[ci] = -1;
-  }
-}

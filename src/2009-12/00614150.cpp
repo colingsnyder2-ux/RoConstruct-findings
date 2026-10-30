@@ -1,387 +1,172 @@
+// roc 2009-12 00614150  unit: seg_00610000  size: 503 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00614150
+//
+// 00614150  b8dcff0000           mov eax, 0xffdc
+// 00614155  394620               cmp dword ptr [esi + 0x20], eax
+// 00614158  7f05                 jg 0x61415f
+// 0061415a  39461c               cmp dword ptr [esi + 0x1c], eax
+// 0061415d  7e18                 jle 0x614177
+// 0061415f  8b0e                 mov ecx, dword ptr [esi]
+// 00614161  c7411429000000       mov dword ptr [ecx + 0x14], 0x29
+// 00614168  8b16                 mov edx, dword ptr [esi]
+// 0061416a  894218               mov dword ptr [edx + 0x18], eax
+// 0061416d  8b06                 mov eax, dword ptr [esi]
+// 0061416f  8b08                 mov ecx, dword ptr [eax]
+// 00614171  56                   push esi
+// 00614172  ffd1                 call ecx
+// 00614174  83c404               add esp, 4
+// 00614177  83bec000000008       cmp dword ptr [esi + 0xc0], 8
+// 0061417e  741e                 je 0x61419e
+// 00614180  8b16                 mov edx, dword ptr [esi]
+// 00614182  c742140f000000       mov dword ptr [edx + 0x14], 0xf
+// 00614189  8b06                 mov eax, dword ptr [esi]
+// 0061418b  8b8ec0000000         mov ecx, dword ptr [esi + 0xc0]
+// 00614191  894818               mov dword ptr [eax + 0x18], ecx
+// 00614194  8b16                 mov edx, dword ptr [esi]
+// 00614196  8b02                 mov eax, dword ptr [edx]
+// 00614198  56                   push esi
+// 00614199  ffd0                 call eax
+// 0061419b  83c404               add esp, 4
+// 0061419e  b80a000000           mov eax, 0xa
+// 006141a3  394624               cmp dword ptr [esi + 0x24], eax
+// 006141a6  7e20                 jle 0x6141c8
+// 006141a8  8b0e                 mov ecx, dword ptr [esi]
+// 006141aa  c741141a000000       mov dword ptr [ecx + 0x14], 0x1a
+// 006141b1  8b16                 mov edx, dword ptr [esi]
+// 006141b3  8b4e24               mov ecx, dword ptr [esi + 0x24]
+// 006141b6  894a18               mov dword ptr [edx + 0x18], ecx
+// 006141b9  8b16                 mov edx, dword ptr [esi]
+// 006141bb  89421c               mov dword ptr [edx + 0x1c], eax
+// 006141be  8b06                 mov eax, dword ptr [esi]
+// 006141c0  8b08                 mov ecx, dword ptr [eax]
+// 006141c2  56                   push esi
+// 006141c3  ffd1                 call ecx
+// 006141c5  83c404               add esp, 4
+// 006141c8  8b86c4000000         mov eax, dword ptr [esi + 0xc4]
+// 006141ce  53                   push ebx
+// 006141cf  55                   push ebp
+// 006141d0  bb01000000           mov ebx, 1
+// 006141d5  33ed                 xor ebp, ebp
+// 006141d7  396e24               cmp dword ptr [esi + 0x24], ebp
+// 006141da  57                   push edi
+// 006141db  899e10010000         mov dword ptr [esi + 0x110], ebx
+// 006141e1  899e14010000         mov dword ptr [esi + 0x114], ebx
+// 006141e7  7e64                 jle 0x61424d
+// 006141e9  8d780c               lea edi, [eax + 0xc]
+// 006141ec  8d642400             lea esp, [esp]
+// 006141f0  8b47fc               mov eax, dword ptr [edi - 4]
+// 006141f3  85c0                 test eax, eax
+// 006141f5  7e10                 jle 0x614207
+// 006141f7  83f804               cmp eax, 4
+// 006141fa  7f0b                 jg 0x614207
+// 006141fc  8b07                 mov eax, dword ptr [edi]
+// 006141fe  85c0                 test eax, eax
+// 00614200  7e05                 jle 0x614207
+// 00614202  83f804               cmp eax, 4
+// 00614205  7e13                 jle 0x61421a
+// 00614207  8b16                 mov edx, dword ptr [esi]
+// 00614209  c7421412000000       mov dword ptr [edx + 0x14], 0x12
+// 00614210  8b06                 mov eax, dword ptr [esi]
+// 00614212  8b08                 mov ecx, dword ptr [eax]
+// 00614214  56                   push esi
+// 00614215  ffd1                 call ecx
+// 00614217  83c404               add esp, 4
+// 0061421a  8b8610010000         mov eax, dword ptr [esi + 0x110]
+// 00614220  8b4ffc               mov ecx, dword ptr [edi - 4]
+// 00614223  3bc1                 cmp eax, ecx
+// 00614225  7f02                 jg 0x614229
+// 00614227  8bc1                 mov eax, ecx
+// 00614229  898610010000         mov dword ptr [esi + 0x110], eax
+// 0061422f  8b8614010000         mov eax, dword ptr [esi + 0x114]
+// 00614235  8b0f                 mov ecx, dword ptr [edi]
+// 00614237  3bc1                 cmp eax, ecx
+// 00614239  7f02                 jg 0x61423d
+// 0061423b  8bc1                 mov eax, ecx
+// 0061423d  03eb                 add ebp, ebx
+// 0061423f  898614010000         mov dword ptr [esi + 0x114], eax
+// 00614245  83c754               add edi, 0x54
+// 00614248  3b6e24               cmp ebp, dword ptr [esi + 0x24]
+// 0061424b  7ca3                 jl 0x6141f0
+// 0061424d  8b86c4000000         mov eax, dword ptr [esi + 0xc4]
+// 00614253  33ed                 xor ebp, ebp
+// 00614255  396e24               cmp dword ptr [esi + 0x24], ebp
+// 00614258  c7861801000008000000 mov dword ptr [esi + 0x118], 8
+// 00614262  0f8e91000000         jle 0x6142f9
+// 00614268  8d781c               lea edi, [eax + 0x1c]
+// 0061426b  eb03                 jmp 0x614270
+// 0061426d  8d4900               lea ecx, [ecx]
+// 00614270  8b47ec               mov eax, dword ptr [edi - 0x14]
+// 00614273  c7470808000000       mov dword ptr [edi + 8], 8
+// 0061427a  0faf461c             imul eax, dword ptr [esi + 0x1c]
+// 0061427e  8b9610010000         mov edx, dword ptr [esi + 0x110]
+// 00614284  03d2                 add edx, edx
+// 00614286  03d2                 add edx, edx
+// 00614288  03d2                 add edx, edx
+// 0061428a  52                   push edx
+// 0061428b  50                   push eax
+// 0061428c  e8cf79ffff           call 0x60bc60
+// 00614291  8b57f0               mov edx, dword ptr [edi - 0x10]
+// 00614294  8907                 mov dword ptr [edi], eax
+// 00614296  0faf5620             imul edx, dword ptr [esi + 0x20]
+// 0061429a  8b8e14010000         mov ecx, dword ptr [esi + 0x114]
+// 006142a0  03c9                 add ecx, ecx
+// 006142a2  03c9                 add ecx, ecx
+// 006142a4  03c9                 add ecx, ecx
+// 006142a6  51                   push ecx
+// 006142a7  52                   push edx
+// 006142a8  e8b379ffff           call 0x60bc60
+// 006142ad  8b4fec               mov ecx, dword ptr [edi - 0x14]
+// 006142b0  894704               mov dword ptr [edi + 4], eax
+// 006142b3  0faf4e1c             imul ecx, dword ptr [esi + 0x1c]
+// 006142b7  8b8610010000         mov eax, dword ptr [esi + 0x110]
+// 006142bd  50                   push eax
+// 006142be  51                   push ecx
+// 006142bf  e89c79ffff           call 0x60bc60
+// 006142c4  89470c               mov dword ptr [edi + 0xc], eax
+// 006142c7  8b47f0               mov eax, dword ptr [edi - 0x10]
+// 006142ca  0faf4620             imul eax, dword ptr [esi + 0x20]
+// 006142ce  8b9614010000         mov edx, dword ptr [esi + 0x114]
+// 006142d4  52                   push edx
+// 006142d5  50                   push eax
+// 006142d6  e88579ffff           call 0x60bc60
+// 006142db  894710               mov dword ptr [edi + 0x10], eax
+// 006142de  885f14               mov byte ptr [edi + 0x14], bl
+// 006142e1  c7473000000000       mov dword ptr [edi + 0x30], 0
+// 006142e8  03eb                 add ebp, ebx
+// 006142ea  83c420               add esp, 0x20
+// 006142ed  83c754               add edi, 0x54
+// 006142f0  3b6e24               cmp ebp, dword ptr [esi + 0x24]
+// 006142f3  0f8c77ffffff         jl 0x614270
+// 006142f9  8b8e14010000         mov ecx, dword ptr [esi + 0x114]
+// 006142ff  8b5620               mov edx, dword ptr [esi + 0x20]
+// 00614302  03c9                 add ecx, ecx
+// 00614304  03c9                 add ecx, ecx
+// 00614306  03c9                 add ecx, ecx
+// 00614308  51                   push ecx
+// 00614309  52                   push edx
+// 0061430a  e85179ffff           call 0x60bc60
+// 0061430f  89861c010000         mov dword ptr [esi + 0x11c], eax
+// 00614315  8b8624010000         mov eax, dword ptr [esi + 0x124]
+// 0061431b  83c408               add esp, 8
+// 0061431e  3b4624               cmp eax, dword ptr [esi + 0x24]
+// 00614321  7c17                 jl 0x61433a
+// 00614323  80bec800000000       cmp byte ptr [esi + 0xc8], 0
+// 0061432a  750e                 jne 0x61433a
+// 0061432c  8b8e90010000         mov ecx, dword ptr [esi + 0x190]
+// 00614332  5f                   pop edi
+// 00614333  5d                   pop ebp
+// 00614334  c6411000             mov byte ptr [ecx + 0x10], 0
+// 00614338  5b                   pop ebx
+// 00614339  c3                   ret 
+// 0061433a  8b9690010000         mov edx, dword ptr [esi + 0x190]
+// 00614340  5f                   pop edi
+// 00614341  5d                   pop ebp
+// 00614342  885a10               mov byte ptr [edx + 0x10], bl
+// 00614345  5b                   pop ebx
+// 00614346  c3                   ret 
+// library jpeg-6b/jdinput.c (function _initial_setup)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdinput.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jdinput.c
- *
- * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains input control logic for the JPEG decompressor.
- * These routines are concerned with controlling the decompressor's input
- * processing (marker reading and coefficient decoding).  The actual input
- * reading is done in jdmarker.c, jdhuff.c, and jdphuff.c.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-/* Private state */
-
-typedef struct {
-  struct jpeg_input_controller pub; /* public fields */
-
-  boolean inheaders;		/* TRUE until first SOS is reached */
-} my_input_controller;
-
-typedef my_input_controller * my_inputctl_ptr;
-
-
-/* Forward declarations */
-METHODDEF(int) consume_markers JPP((j_decompress_ptr cinfo));
-
-
-/*
- * Routines to calculate various quantities related to the size of the image.
- */
-
-LOCAL(void)
-initial_setup (j_decompress_ptr cinfo)
-/* Called once, when first SOS marker is reached */
-{
-  int ci;
-  jpeg_component_info *compptr;
-
-  /* Make sure image isn't bigger than I can handle */
-  if ((long) cinfo->image_height > (long) JPEG_MAX_DIMENSION ||
-      (long) cinfo->image_width > (long) JPEG_MAX_DIMENSION)
-    ERREXIT1(cinfo, JERR_IMAGE_TOO_BIG, (unsigned int) JPEG_MAX_DIMENSION);
-
-  /* For now, precision must match compiled-in value... */
-  if (cinfo->data_precision != BITS_IN_JSAMPLE)
-    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
-
-  /* Check that number of components won't exceed internal array sizes */
-  if (cinfo->num_components > MAX_COMPONENTS)
-    ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
-	     MAX_COMPONENTS);
-
-  /* Compute maximum sampling factors; check factor validity */
-  cinfo->max_h_samp_factor = 1;
-  cinfo->max_v_samp_factor = 1;
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    if (compptr->h_samp_factor<=0 || compptr->h_samp_factor>MAX_SAMP_FACTOR ||
-	compptr->v_samp_factor<=0 || compptr->v_samp_factor>MAX_SAMP_FACTOR)
-      ERREXIT(cinfo, JERR_BAD_SAMPLING);
-    cinfo->max_h_samp_factor = MAX(cinfo->max_h_samp_factor,
-				   compptr->h_samp_factor);
-    cinfo->max_v_samp_factor = MAX(cinfo->max_v_samp_factor,
-				   compptr->v_samp_factor);
-  }
-
-  /* We initialize DCT_scaled_size and min_DCT_scaled_size to DCTSIZE.
-   * In the full decompressor, this will be overridden by jdmaster.c;
-   * but in the transcoder, jdmaster.c is not used, so we must do it here.
-   */
-  cinfo->min_DCT_scaled_size = DCTSIZE;
-
-  /* Compute dimensions of components */
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    compptr->DCT_scaled_size = DCTSIZE;
-    /* Size in DCT blocks */
-    compptr->width_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
-		    (long) (cinfo->max_h_samp_factor * DCTSIZE));
-    compptr->height_in_blocks = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
-		    (long) (cinfo->max_v_samp_factor * DCTSIZE));
-    /* downsampled_width and downsampled_height will also be overridden by
-     * jdmaster.c if we are doing full decompression.  The transcoder library
-     * doesn't use these values, but the calling application might.
-     */
-    /* Size in samples */
-    compptr->downsampled_width = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width * (long) compptr->h_samp_factor,
-		    (long) cinfo->max_h_samp_factor);
-    compptr->downsampled_height = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height * (long) compptr->v_samp_factor,
-		    (long) cinfo->max_v_samp_factor);
-    /* Mark component needed, until color conversion says otherwise */
-    compptr->component_needed = TRUE;
-    /* Mark no quantization table yet saved for component */
-    compptr->quant_table = NULL;
-  }
-
-  /* Compute number of fully interleaved MCU rows. */
-  cinfo->total_iMCU_rows = (JDIMENSION)
-    jdiv_round_up((long) cinfo->image_height,
-		  (long) (cinfo->max_v_samp_factor*DCTSIZE));
-
-  /* Decide whether file contains multiple scans */
-  if (cinfo->comps_in_scan < cinfo->num_components || cinfo->progressive_mode)
-    cinfo->inputctl->has_multiple_scans = TRUE;
-  else
-    cinfo->inputctl->has_multiple_scans = FALSE;
-}
-
-
-LOCAL(void)
-per_scan_setup (j_decompress_ptr cinfo)
-/* Do computations that are needed before processing a JPEG scan */
-/* cinfo->comps_in_scan and cinfo->cur_comp_info[] were set from SOS marker */
-{
-  int ci, mcublks, tmp;
-  jpeg_component_info *compptr;
-  
-  if (cinfo->comps_in_scan == 1) {
-    
-    /* Noninterleaved (single-component) scan */
-    compptr = cinfo->cur_comp_info[0];
-    
-    /* Overall image size in MCUs */
-    cinfo->MCUs_per_row = compptr->width_in_blocks;
-    cinfo->MCU_rows_in_scan = compptr->height_in_blocks;
-    
-    /* For noninterleaved scan, always one block per MCU */
-    compptr->MCU_width = 1;
-    compptr->MCU_height = 1;
-    compptr->MCU_blocks = 1;
-    compptr->MCU_sample_width = compptr->DCT_scaled_size;
-    compptr->last_col_width = 1;
-    /* For noninterleaved scans, it is convenient to define last_row_height
-     * as the number of block rows present in the last iMCU row.
-     */
-    tmp = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
-    if (tmp == 0) tmp = compptr->v_samp_factor;
-    compptr->last_row_height = tmp;
-    
-    /* Prepare array describing MCU composition */
-    cinfo->blocks_in_MCU = 1;
-    cinfo->MCU_membership[0] = 0;
-    
-  } else {
-    
-    /* Interleaved (multi-component) scan */
-    if (cinfo->comps_in_scan <= 0 || cinfo->comps_in_scan > MAX_COMPS_IN_SCAN)
-      ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->comps_in_scan,
-	       MAX_COMPS_IN_SCAN);
-    
-    /* Overall image size in MCUs */
-    cinfo->MCUs_per_row = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_width,
-		    (long) (cinfo->max_h_samp_factor*DCTSIZE));
-    cinfo->MCU_rows_in_scan = (JDIMENSION)
-      jdiv_round_up((long) cinfo->image_height,
-		    (long) (cinfo->max_v_samp_factor*DCTSIZE));
-    
-    cinfo->blocks_in_MCU = 0;
-    
-    for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-      compptr = cinfo->cur_comp_info[ci];
-      /* Sampling factors give # of blocks of component in each MCU */
-      compptr->MCU_width = compptr->h_samp_factor;
-      compptr->MCU_height = compptr->v_samp_factor;
-      compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
-      compptr->MCU_sample_width = compptr->MCU_width * compptr->DCT_scaled_size;
-      /* Figure number of non-dummy blocks in last MCU column & row */
-      tmp = (int) (compptr->width_in_blocks % compptr->MCU_width);
-      if (tmp == 0) tmp = compptr->MCU_width;
-      compptr->last_col_width = tmp;
-      tmp = (int) (compptr->height_in_blocks % compptr->MCU_height);
-      if (tmp == 0) tmp = compptr->MCU_height;
-      compptr->last_row_height = tmp;
-      /* Prepare array describing MCU composition */
-      mcublks = compptr->MCU_blocks;
-      if (cinfo->blocks_in_MCU + mcublks > D_MAX_BLOCKS_IN_MCU)
-	ERREXIT(cinfo, JERR_BAD_MCU_SIZE);
-      while (mcublks-- > 0) {
-	cinfo->MCU_membership[cinfo->blocks_in_MCU++] = ci;
-      }
-    }
-    
-  }
-}
-
-
-/*
- * Save away a copy of the Q-table referenced by each component present
- * in the current scan, unless already saved during a prior scan.
- *
- * In a multiple-scan JPEG file, the encoder could assign different components
- * the same Q-table slot number, but change table definitions between scans
- * so that each component uses a different Q-table.  (The IJG encoder is not
- * currently capable of doing this, but other encoders might.)  Since we want
- * to be able to dequantize all the components at the end of the file, this
- * means that we have to save away the table actually used for each component.
- * We do this by copying the table at the start of the first scan containing
- * the component.
- * The JPEG spec prohibits the encoder from changing the contents of a Q-table
- * slot between scans of a component using that slot.  If the encoder does so
- * anyway, this decoder will simply use the Q-table values that were current
- * at the start of the first scan for the component.
- *
- * The decompressor output side looks only at the saved quant tables,
- * not at the current Q-table slots.
- */
-
-LOCAL(void)
-latch_quant_tables (j_decompress_ptr cinfo)
-{
-  int ci, qtblno;
-  jpeg_component_info *compptr;
-  JQUANT_TBL * qtbl;
-
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    compptr = cinfo->cur_comp_info[ci];
-    /* No work if we already saved Q-table for this component */
-    if (compptr->quant_table != NULL)
-      continue;
-    /* Make sure specified quantization table is present */
-    qtblno = compptr->quant_tbl_no;
-    if (qtblno < 0 || qtblno >= NUM_QUANT_TBLS ||
-	cinfo->quant_tbl_ptrs[qtblno] == NULL)
-      ERREXIT1(cinfo, JERR_NO_QUANT_TABLE, qtblno);
-    /* OK, save away the quantization table */
-    qtbl = (JQUANT_TBL *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(JQUANT_TBL));
-    MEMCOPY(qtbl, cinfo->quant_tbl_ptrs[qtblno], SIZEOF(JQUANT_TBL));
-    compptr->quant_table = qtbl;
-  }
-}
-
-
-/*
- * Initialize the input modules to read a scan of compressed data.
- * The first call to this is done by jdmaster.c after initializing
- * the entire decompressor (during jpeg_start_decompress).
- * Subsequent calls come from consume_markers, below.
- */
-
-METHODDEF(void)
-start_input_pass (j_decompress_ptr cinfo)
-{
-  per_scan_setup(cinfo);
-  latch_quant_tables(cinfo);
-  (*cinfo->entropy->start_pass) (cinfo);
-  (*cinfo->coef->start_input_pass) (cinfo);
-  cinfo->inputctl->consume_input = cinfo->coef->consume_data;
-}
-
-
-/*
- * Finish up after inputting a compressed-data scan.
- * This is called by the coefficient controller after it's read all
- * the expected data of the scan.
- */
-
-METHODDEF(void)
-finish_input_pass (j_decompress_ptr cinfo)
-{
-  cinfo->inputctl->consume_input = consume_markers;
-}
-
-
-/*
- * Read JPEG markers before, between, or after compressed-data scans.
- * Change state as necessary when a new scan is reached.
- * Return value is JPEG_SUSPENDED, JPEG_REACHED_SOS, or JPEG_REACHED_EOI.
- *
- * The consume_input method pointer points either here or to the
- * coefficient controller's consume_data routine, depending on whether
- * we are reading a compressed data segment or inter-segment markers.
- */
-
-METHODDEF(int)
-consume_markers (j_decompress_ptr cinfo)
-{
-  my_inputctl_ptr inputctl = (my_inputctl_ptr) cinfo->inputctl;
-  int val;
-
-  if (inputctl->pub.eoi_reached) /* After hitting EOI, read no further */
-    return JPEG_REACHED_EOI;
-
-  val = (*cinfo->marker->read_markers) (cinfo);
-
-  switch (val) {
-  case JPEG_REACHED_SOS:	/* Found SOS */
-    if (inputctl->inheaders) {	/* 1st SOS */
-      initial_setup(cinfo);
-      inputctl->inheaders = FALSE;
-      /* Note: start_input_pass must be called by jdmaster.c
-       * before any more input can be consumed.  jdapimin.c is
-       * responsible for enforcing this sequencing.
-       */
-    } else {			/* 2nd or later SOS marker */
-      if (! inputctl->pub.has_multiple_scans)
-	ERREXIT(cinfo, JERR_EOI_EXPECTED); /* Oops, I wasn't expecting this! */
-      start_input_pass(cinfo);
-    }
-    break;
-  case JPEG_REACHED_EOI:	/* Found EOI */
-    inputctl->pub.eoi_reached = TRUE;
-    if (inputctl->inheaders) {	/* Tables-only datastream, apparently */
-      if (cinfo->marker->saw_SOF)
-	ERREXIT(cinfo, JERR_SOF_NO_SOS);
-    } else {
-      /* Prevent infinite loop in coef ctlr's decompress_data routine
-       * if user set output_scan_number larger than number of scans.
-       */
-      if (cinfo->output_scan_number > cinfo->input_scan_number)
-	cinfo->output_scan_number = cinfo->input_scan_number;
-    }
-    break;
-  case JPEG_SUSPENDED:
-    break;
-  }
-
-  return val;
-}
-
-
-/*
- * Reset state to begin a fresh datastream.
- */
-
-METHODDEF(void)
-reset_input_controller (j_decompress_ptr cinfo)
-{
-  my_inputctl_ptr inputctl = (my_inputctl_ptr) cinfo->inputctl;
-
-  inputctl->pub.consume_input = consume_markers;
-  inputctl->pub.has_multiple_scans = FALSE; /* "unknown" would be better */
-  inputctl->pub.eoi_reached = FALSE;
-  inputctl->inheaders = TRUE;
-  /* Reset other modules */
-  (*cinfo->err->reset_error_mgr) ((j_common_ptr) cinfo);
-  (*cinfo->marker->reset_marker_reader) (cinfo);
-  /* Reset progression state -- would be cleaner if entropy decoder did this */
-  cinfo->coef_bits = NULL;
-}
-
-
-/*
- * Initialize the input controller module.
- * This is called only once, when the decompression object is created.
- */
-
-GLOBAL(void)
-jinit_input_controller (j_decompress_ptr cinfo)
-{
-  my_inputctl_ptr inputctl;
-
-  /* Create subobject in permanent pool */
-  inputctl = (my_inputctl_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
-				SIZEOF(my_input_controller));
-  cinfo->inputctl = (struct jpeg_input_controller *) inputctl;
-  /* Initialize method pointers */
-  inputctl->pub.consume_input = consume_markers;
-  inputctl->pub.reset_input_controller = reset_input_controller;
-  inputctl->pub.start_input_pass = start_input_pass;
-  inputctl->pub.finish_input_pass = finish_input_pass;
-  /* Initialize state: can't use reset_input_controller since we don't
-   * want to try to reset other modules yet.
-   */
-  inputctl->pub.has_multiple_scans = FALSE; /* "unknown" would be better */
-  inputctl->pub.eoi_reached = FALSE;
-  inputctl->inheaders = TRUE;
-}

@@ -1,243 +1,56 @@
+// roc 2009-06 0080fba0  unit: CXTPRibbonTab  size: 170 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0080fba0
+//
+// 0080fba0  6aff                 push -1
+// 0080fba2  68c1238800           push 0x8823c1
+// 0080fba7  64a100000000         mov eax, dword ptr fs:[0]
+// 0080fbad  50                   push eax
+// 0080fbae  83ec08               sub esp, 8
+// 0080fbb1  56                   push esi
+// 0080fbb2  57                   push edi
+// 0080fbb3  a1304fa200           mov eax, dword ptr [0xa24f30]
+// 0080fbb8  33c4                 xor eax, esp
+// 0080fbba  50                   push eax
+// 0080fbbb  8d442414             lea eax, [esp + 0x14]
+// 0080fbbf  64a300000000         mov dword ptr fs:[0], eax
+// 0080fbc5  8bf1                 mov esi, ecx
+// 0080fbc7  8974240c             mov dword ptr [esp + 0xc], esi
+// 0080fbcb  e8c047feff           call 0x7f4390
+// 0080fbd0  33ff                 xor edi, edi
+// 0080fbd2  8d8e98000000         lea ecx, [esi + 0x98]
+// 0080fbd8  897c241c             mov dword ptr [esp + 0x1c], edi
+// 0080fbdc  c7060ccc9000         mov dword ptr [esi], 0x90cc0c
+// 0080fbe2  ff15bcfc8900         call dword ptr [0x89fcbc]
+// 0080fbe8  6a3c                 push 0x3c
+// 0080fbea  c644242001           mov byte ptr [esp + 0x20], 1
+// 0080fbef  89be90000000         mov dword ptr [esi + 0x90], edi
+// 0080fbf5  e83e8ef0ff           call 0x718a38
+// 0080fbfa  83c404               add esp, 4
+// 0080fbfd  89442410             mov dword ptr [esp + 0x10], eax
+// 0080fc01  c644241c02           mov byte ptr [esp + 0x1c], 2
+// 0080fc06  3bc7                 cmp eax, edi
+// 0080fc08  7409                 je 0x80fc13
+// 0080fc0a  8bc8                 mov ecx, eax
+// 0080fc0c  e8cf240000           call 0x8120e0
+// 0080fc11  eb02                 jmp 0x80fc15
+// 0080fc13  33c0                 xor eax, eax
+// 0080fc15  898684000000         mov dword ptr [esi + 0x84], eax
+// 0080fc1b  897034               mov dword ptr [eax + 0x34], esi
+// 0080fc1e  89be94000000         mov dword ptr [esi + 0x94], edi
+// 0080fc24  89be9c000000         mov dword ptr [esi + 0x9c], edi
+// 0080fc2a  89be88000000         mov dword ptr [esi + 0x88], edi
+// 0080fc30  89be8c000000         mov dword ptr [esi + 0x8c], edi
+// 0080fc36  8bc6                 mov eax, esi
+// 0080fc38  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0080fc3c  64890d00000000       mov dword ptr fs:[0], ecx
+// 0080fc43  59                   pop ecx
+// 0080fc44  5f                   pop edi
+// 0080fc45  5e                   pop esi
+// 0080fc46  83c414               add esp, 0x14
+// 0080fc49  c3                   ret 
+// copied from an identical function in another client (function ??0CXTPRibbonTab@@QAE@XZ)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\Ribbon\XTPRibbonTab.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPRibbonTab.cpp: implementation of the CXTPRibbonTab class.
-//
-// This file is a part of the XTREME RIBBON MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "Common/XTPPropExchange.h"
-
-
-#include "XTPRibbonTab.h"
-#include "XTPRibbonGroup.h"
-#include "XTPRibbonGroups.h"
-#include "XTPRibbonBar.h"
-#include "XTPRibbonControlTab.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-CXTPRibbonTabContextHeader::CXTPRibbonTabContextHeader(CXTPRibbonTab* pFirstTab)
-{
-	ASSERT(pFirstTab);
-	if (!pFirstTab)
-		return;
-	m_pLastTab = m_pFirstTab = pFirstTab;
-	m_color = pFirstTab->GetContextColor();
-	m_strCpation = pFirstTab->GetContextCaption();
-	m_rcRect.SetRectEmpty();
-	pFirstTab->m_pContextHeader = this;
-}
-
-CXTPRibbonTabContextHeaders::CXTPRibbonTabContextHeaders()
-{
-
-}
-
-CXTPRibbonTabContextHeaders::~CXTPRibbonTabContextHeaders()
-{
-	RemoveAll();
-}
-int CXTPRibbonTabContextHeaders::GetCount() const
-{
-	return (int)m_arrHeaders.GetSize();
-}
-
-CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::GetHeader(int nIndex) const
-{
-	return m_arrHeaders.GetAt(nIndex);
-}
-
-void CXTPRibbonTabContextHeaders::RemoveAll()
-{
-	for (int i = 0; i < GetCount(); i++)
-	{
-		delete m_arrHeaders[i];
-	}
-	m_arrHeaders.RemoveAll();
-}
-
-CXTPRibbonTabContextHeader* CXTPRibbonTabContextHeaders::HitTest(CPoint pt) const
-{
-	for (int i = 0; i < GetCount(); i++)
-	{
-		if (m_arrHeaders[i]->m_rcRect.PtInRect(pt))
-			return m_arrHeaders[i];
-	}
-	return NULL;
-}
-
-void CXTPRibbonTabContextHeaders::Add(CXTPRibbonTabContextHeader* pHeader)
-{
-	m_arrHeaders.Add(pHeader);
-}
-
-IMPLEMENT_SERIAL(CXTPRibbonTab, CXTPTabManagerItem, VERSIONABLE_SCHEMA | _XTP_SCHEMA_CURRENT)
-
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CXTPRibbonTab::CXTPRibbonTab()
-{
-	m_nId = 0;
-
-	m_pGroups = new CXTPRibbonGroups;
-	m_pGroups->m_pParentTab = this;
-
-	m_nContextColor = xtpRibbonTabContextColorNone;
-
-	m_pContextHeader = NULL;
-	m_pRibbonBar = NULL;
-	m_pParent = NULL;
-}
-
-CXTPRibbonTab::~CXTPRibbonTab()
-{
-	ASSERT(m_pGroups->GetCount() == 0);
-
-	CMDTARGET_RELEASE(m_pGroups);
-}
-
-void CXTPRibbonTab::Copy(CXTPRibbonTab* pRibbonTab)
-{
-	m_strCaption = pRibbonTab->m_strCaption;
-	m_nContextColor = pRibbonTab->m_nContextColor;
-	m_strContextCaption= pRibbonTab->m_strContextCaption;
-	m_nId = pRibbonTab->m_nId;
-	m_bVisible = pRibbonTab->m_bVisible;
-	m_strToolTip = pRibbonTab->m_strToolTip;
-
-	if (m_pTabManager && pRibbonTab->IsSelected())
-	{
-		Select();
-	}
-
-	m_pGroups->Copy(pRibbonTab->m_pGroups);
-}
-
-void CXTPRibbonTab::OnRemoved()
-{
-	m_pGroups->RemoveAll();
-}
-
-CXTPRibbonBar* CXTPRibbonTab::GetRibbonBar() const
-{
-	return m_pRibbonBar;
-}
-
-CXTPRibbonGroup* CXTPRibbonTab::AddGroup(LPCTSTR lpszCaption)
-{
-	return GetGroups()->Add(lpszCaption);
-}
-
-CXTPRibbonGroup* CXTPRibbonTab::AddGroup(int nID)
-{
-	CString strCaption;
-	if (!strCaption.LoadString(nID))
-	{
-	}
-
-	if (strCaption.Find('\n') != -1)
-	{
-		CString strPrompt = strCaption;
-		AfxExtractSubString(strCaption, strPrompt, 1);
-	}
-
-	return GetGroups()->Add(strCaption, nID);
-}
-
-void CXTPRibbonTab::SetVisible(BOOL bVisible)
-{
-	if (bVisible == IsVisible())
-		return;
-
-	CXTPTabManagerItem::SetVisible(bVisible);
-
-	if (!bVisible && IsSelected())
-	{
-		CXTPTabManagerItem* pItem = GetTabManager()->FindNextFocusable(-1, +1);
-		if (pItem)
-		{
-			pItem->Select();
-		}
-	}
-}
-
-CXTPRibbonGroup* CXTPRibbonTab::FindGroup(int nID) const
-{
-	for (int i = 0 ; i < m_pGroups->GetCount(); i++)
-	{
-		if (m_pGroups->GetAt(i)->GetID() == nID)
-			return m_pGroups->GetAt(i);
-	}
-	return NULL;
-}
-
-void CXTPRibbonTab::DoPropExchange(CXTPPropExchange* pPX)
-{
-	if (pPX->IsLoading())
-	{
-		CXTPRibbonControlTab* pControlTab = ((CXTPRibbonControlTab*)pPX->m_pOwner);
-		m_pRibbonBar = DYNAMIC_DOWNCAST(CXTPRibbonBar, pControlTab->GetParent());
-		m_pTabManager = pControlTab;
-		m_pParent = m_pRibbonBar;
-	}
-
-	PX_String(pPX, _T("Caption"), m_strCaption, _T(""));
-	PX_String(pPX, _T("ToolTip"), m_strToolTip, _T(""));
-	PX_Enum(pPX, _T("ContextColor"), m_nContextColor, xtpRibbonTabContextColorNone);
-	PX_String(pPX, _T("ContextCaption"), m_strContextCaption, _T(""));
-	PX_Int(pPX, _T("Id"), m_nId, 0);
-	PX_Bool(pPX, _T("Visible"), m_bVisible, TRUE);
-
-	if (pPX->IsStoring())
-	{
-		BOOL bSelected = IsSelected();
-		PX_Bool(pPX, _T("Selected"), bSelected, FALSE);
-	}
-	else
-	{
-		BOOL bSelected = FALSE;
-		PX_Bool(pPX, _T("Selected"), bSelected, 0);
-		if (bSelected)
-		{
-			Select();
-		}
-	}
-
-
-	CXTPPropExchangeSection secGroups(pPX->GetSection(_T("Groups")));
-	m_pGroups->DoPropExchange(&secGroups);
-}
-
-

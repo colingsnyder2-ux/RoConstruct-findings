@@ -1,118 +1,67 @@
 // from server: 100% by auto
+// roc 2007-08 00612cd0  unit: seg_00610000  size: 148 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00612cd0
+//
+// 00612cd0  55                   push ebp
+// 00612cd1  8b6c240c             mov ebp, dword ptr [esp + 0xc]
+// 00612cd5  8d4701               lea eax, [edi + 1]
+// 00612cd8  83f8ed               cmp eax, -0x13
+// 00612cdb  56                   push esi
+// 00612cdc  7609                 jbe 0x612ce7
+// 00612cde  53                   push ebx
+// 00612cdf  e8ec0c0000           call 0x6139d0
+// 00612ce4  83c404               add esp, 4
+// 00612ce7  8d4f11               lea ecx, [edi + 0x11]
+// 00612cea  51                   push ecx
+// 00612ceb  6a00                 push 0
+// 00612ced  6a00                 push 0
+// 00612cef  53                   push ebx
+// 00612cf0  e8fb0c0000           call 0x6139f0
+// 00612cf5  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 00612cf9  8bf0                 mov esi, eax
+// 00612cfb  897e0c               mov dword ptr [esi + 0xc], edi
+// 00612cfe  896e08               mov dword ptr [esi + 8], ebp
+// 00612d01  8b5310               mov edx, dword ptr [ebx + 0x10]
+// 00612d04  8a4214               mov al, byte ptr [edx + 0x14]
+// 00612d07  57                   push edi
+// 00612d08  51                   push ecx
+// 00612d09  8d5610               lea edx, [esi + 0x10]
+// 00612d0c  2403                 and al, 3
+// 00612d0e  52                   push edx
+// 00612d0f  884605               mov byte ptr [esi + 5], al
+// 00612d12  c6460404             mov byte ptr [esi + 4], 4
+// 00612d16  c6460600             mov byte ptr [esi + 6], 0
+// 00612d1a  e82de00100           call 0x630d4c
+// 00612d1f  c6443e1000           mov byte ptr [esi + edi + 0x10], 0
+// 00612d24  8b4310               mov eax, dword ptr [ebx + 0x10]
+// 00612d27  8b4808               mov ecx, dword ptr [eax + 8]
+// 00612d2a  8b10                 mov edx, dword ptr [eax]
+// 00612d2c  83e901               sub ecx, 1
+// 00612d2f  23e9                 and ebp, ecx
+// 00612d31  8b0caa               mov ecx, dword ptr [edx + ebp*4]
+// 00612d34  890e                 mov dword ptr [esi], ecx
+// 00612d36  8b10                 mov edx, dword ptr [eax]
+// 00612d38  8934aa               mov dword ptr [edx + ebp*4], esi
+// 00612d3b  83400401             add dword ptr [eax + 4], 1
+// 00612d3f  8b4804               mov ecx, dword ptr [eax + 4]
+// 00612d42  8b4008               mov eax, dword ptr [eax + 8]
+// 00612d45  83c41c               add esp, 0x1c
+// 00612d48  3bc8                 cmp ecx, eax
+// 00612d4a  7613                 jbe 0x612d5f
+// 00612d4c  3dfeffff3f           cmp eax, 0x3ffffffe
+// 00612d51  7f0c                 jg 0x612d5f
+// 00612d53  03c0                 add eax, eax
+// 00612d55  50                   push eax
+// 00612d56  53                   push ebx
+// 00612d57  e8b4feffff           call 0x612c10
+// 00612d5c  83c408               add esp, 8
+// 00612d5f  8bc6                 mov eax, esi
+// 00612d61  5e                   pop esi
+// 00612d62  5d                   pop ebp
+// 00612d63  c3                   ret 
+// library lua-5.1.4/lstring.c (function _newlstr)
+
 // roc-lang: c
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 lstring.c
-
-// Candidate translation unit (score above; library headers required).
-/*
-** $Id: lstring.c,v 2.8.1.1 2007/12/27 13:02:25 roberto Exp $
-** String table (keeps all strings handled by Lua)
-** See Copyright Notice in lua.h
-*/
-
-
-#include <string.h>
-
-#define lstring_c
-#define LUA_CORE
-
-#include "lua.h"
-
-#include "lmem.h"
-#include "lobject.h"
-#include "lstate.h"
-#include "lstring.h"
-
-
-
-void luaS_resize (lua_State *L, int newsize) {
-  GCObject **newhash;
-  stringtable *tb;
-  int i;
-  if (G(L)->gcstate == GCSsweepstring)
-    return;  /* cannot resize during GC traverse */
-  newhash = luaM_newvector(L, newsize, GCObject *);
-  tb = &G(L)->strt;
-  for (i=0; i<newsize; i++) newhash[i] = NULL;
-  /* rehash */
-  for (i=0; i<tb->size; i++) {
-    GCObject *p = tb->hash[i];
-    while (p) {  /* for each node in the list */
-      GCObject *next = p->gch.next;  /* save next */
-      unsigned int h = gco2ts(p)->hash;
-      int h1 = lmod(h, newsize);  /* new position */
-      lua_assert(cast_int(h%newsize) == lmod(h, newsize));
-      p->gch.next = newhash[h1];  /* chain it */
-      newhash[h1] = p;
-      p = next;
-    }
-  }
-  luaM_freearray(L, tb->hash, tb->size, TString *);
-  tb->size = newsize;
-  tb->hash = newhash;
-}
-
-
-static TString *newlstr (lua_State *L, const char *str, size_t l,
-                                       unsigned int h) {
-  TString *ts;
-  stringtable *tb;
-  if (l+1 > (MAX_SIZET - sizeof(TString))/sizeof(char))
-    luaM_toobig(L);
-  ts = cast(TString *, luaM_malloc(L, (l+1)*sizeof(char)+sizeof(TString)));
-  ts->tsv.len = l;
-  ts->tsv.hash = h;
-  ts->tsv.marked = luaC_white(G(L));
-  ts->tsv.tt = LUA_TSTRING;
-  ts->tsv.reserved = 0;
-  memcpy(ts+1, str, l*sizeof(char));
-  ((char *)(ts+1))[l] = '\0';  /* ending 0 */
-  tb = &G(L)->strt;
-  h = lmod(h, tb->size);
-  ts->tsv.next = tb->hash[h];  /* chain new entry */
-  tb->hash[h] = obj2gco(ts);
-  tb->nuse++;
-  if (tb->nuse > cast(lu_int32, tb->size) && tb->size <= MAX_INT/2)
-    luaS_resize(L, tb->size*2);  /* too crowded */
-  return ts;
-}
-
-
-TString *luaS_newlstr (lua_State *L, const char *str, size_t l) {
-  GCObject *o;
-  unsigned int h = cast(unsigned int, l);  /* seed */
-  size_t step = (l>>5)+1;  /* if string is too long, don't hash all its chars */
-  size_t l1;
-  for (l1=l; l1>=step; l1-=step)  /* compute hash */
-    h = h ^ ((h<<5)+(h>>2)+cast(unsigned char, str[l1-1]));
-  for (o = G(L)->strt.hash[lmod(h, G(L)->strt.size)];
-       o != NULL;
-       o = o->gch.next) {
-    TString *ts = rawgco2ts(o);
-    if (ts->tsv.len == l && (memcmp(str, getstr(ts), l) == 0)) {
-      /* string may be dead */
-      if (isdead(G(L), o)) changewhite(o);
-      return ts;
-    }
-  }
-  return newlstr(L, str, l, h);  /* not found */
-}
-
-
-Udata *luaS_newudata (lua_State *L, size_t s, Table *e) {
-  Udata *u;
-  if (s > MAX_SIZET - sizeof(Udata))
-    luaM_toobig(L);
-  u = cast(Udata *, luaM_malloc(L, s + sizeof(Udata)));
-  u->uv.marked = luaC_white(G(L));  /* is not finalized */
-  u->uv.tt = LUA_TUSERDATA;
-  u->uv.len = s;
-  u->uv.metatable = NULL;
-  u->uv.env = e;
-  /* chain it on udata list (after main thread) */
-  u->uv.next = G(L)->mainthread->next;
-  G(L)->mainthread->next = obj2gco(u);
-  return u;
-}
-

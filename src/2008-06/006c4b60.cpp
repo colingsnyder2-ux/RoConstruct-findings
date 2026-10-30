@@ -1,493 +1,122 @@
 // from server: 100% by auto
+// roc 2008-06 006c4b60  unit: CXTPToolBar  size: 305 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 006c4b60
+//
+// 006c4b60  55                   push ebp
+// 006c4b61  8bec                 mov ebp, esp
+// 006c4b63  6aff                 push -1
+// 006c4b65  68f80a7e00           push 0x7e0af8
+// 006c4b6a  64a100000000         mov eax, dword ptr fs:[0]
+// 006c4b70  50                   push eax
+// 006c4b71  83ec34               sub esp, 0x34
+// 006c4b74  53                   push ebx
+// 006c4b75  56                   push esi
+// 006c4b76  57                   push edi
+// 006c4b77  a1c05c9600           mov eax, dword ptr [0x965cc0]
+// 006c4b7c  33c5                 xor eax, ebp
+// 006c4b7e  50                   push eax
+// 006c4b7f  8d45f4               lea eax, [ebp - 0xc]
+// 006c4b82  64a300000000         mov dword ptr fs:[0], eax
+// 006c4b88  8965f0               mov dword ptr [ebp - 0x10], esp
+// 006c4b8b  8b5d14               mov ebx, dword ptr [ebp + 0x14]
+// 006c4b8e  33ff                 xor edi, edi
+// 006c4b90  3bdf                 cmp ebx, edi
+// 006c4b92  7509                 jne 0x6c4b9d
+// 006c4b94  397d0c               cmp dword ptr [ebp + 0xc], edi
+// 006c4b97  0f84de000000         je 0x6c4c7b
+// 006c4b9d  397d1c               cmp dword ptr [ebp + 0x1c], edi
+// 006c4ba0  7506                 jne 0x6c4ba8
+// 006c4ba2  8b4508               mov eax, dword ptr [ebp + 8]
+// 006c4ba5  89451c               mov dword ptr [ebp + 0x1c], eax
+// 006c4ba8  33c0                 xor eax, eax
+// 006c4baa  8945c0               mov dword ptr [ebp - 0x40], eax
+// 006c4bad  8945c4               mov dword ptr [ebp - 0x3c], eax
+// 006c4bb0  8945c8               mov dword ptr [ebp - 0x38], eax
+// 006c4bb3  8945cc               mov dword ptr [ebp - 0x34], eax
+// 006c4bb6  8945d0               mov dword ptr [ebp - 0x30], eax
+// 006c4bb9  3bdf                 cmp ebx, edi
+// 006c4bbb  7522                 jne 0x6c4bdf
+// 006c4bbd  8b4510               mov eax, dword ptr [ebp + 0x10]
+// 006c4bc0  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
+// 006c4bc3  897dcc               mov dword ptr [ebp - 0x34], edi
+// 006c4bc6  897dd0               mov dword ptr [ebp - 0x30], edi
+// 006c4bc9  897dc8               mov dword ptr [ebp - 0x38], edi
+// 006c4bcc  8945c4               mov dword ptr [ebp - 0x3c], eax
+// 006c4bcf  894dc0               mov dword ptr [ebp - 0x40], ecx
+// 006c4bd2  3bc7                 cmp eax, edi
+// 006c4bd4  7406                 je 0x6c4bdc
+// 006c4bd6  8b5028               mov edx, dword ptr [eax + 0x28]
+// 006c4bd9  8955c8               mov dword ptr [ebp - 0x38], edx
+// 006c4bdc  8d5dc0               lea ebx, [ebp - 0x40]
+// 006c4bdf  393b                 cmp dword ptr [ebx], edi
+// 006c4be1  0f8494000000         je 0x6c4c7b
+// 006c4be7  8d4de4               lea ecx, [ebp - 0x1c]
+// 006c4bea  e823750f00           call 0x7bc112
+// 006c4bef  8b0b                 mov ecx, dword ptr [ebx]
+// 006c4bf1  897dfc               mov dword ptr [ebp - 4], edi
+// 006c4bf4  c645fc01             mov byte ptr [ebp - 4], 1
+// 006c4bf8  e8c5c3fdff           call 0x6a0fc2
+// 006c4bfd  8bf0                 mov esi, eax
+// 006c4bff  3bf7                 cmp esi, edi
+// 006c4c01  7505                 jne 0x6c4c08
+// 006c4c03  e87ebafdff           call 0x6a0686
+// 006c4c08  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
+// 006c4c0f  e8ec740f00           call 0x7bc100
+// 006c4c14  8b4d20               mov ecx, dword ptr [ebp + 0x20]
+// 006c4c17  8b5508               mov edx, dword ptr [ebp + 8]
+// 006c4c1a  53                   push ebx
+// 006c4c1b  51                   push ecx
+// 006c4c1c  52                   push edx
+// 006c4c1d  8b5518               mov edx, dword ptr [ebp + 0x18]
+// 006c4c20  8d4dd4               lea ecx, [ebp - 0x2c]
+// 006c4c23  51                   push ecx
+// 006c4c24  52                   push edx
+// 006c4c25  897dd4               mov dword ptr [ebp - 0x2c], edi
+// 006c4c28  897dd8               mov dword ptr [ebp - 0x28], edi
+// 006c4c2b  897ddc               mov dword ptr [ebp - 0x24], edi
+// 006c4c2e  897de0               mov dword ptr [ebp - 0x20], edi
+// 006c4c31  8b06                 mov eax, dword ptr [esi]
+// 006c4c33  8b405c               mov eax, dword ptr [eax + 0x5c]
+// 006c4c36  57                   push edi
+// 006c4c37  57                   push edi
+// 006c4c38  8bce                 mov ecx, esi
+// 006c4c3a  ffd0                 call eax
+// 006c4c3c  85c0                 test eax, eax
+// 006c4c3e  743b                 je 0x6c4c7b
+// 006c4c40  8b451c               mov eax, dword ptr [ebp + 0x1c]
+// 006c4c43  3bc7                 cmp eax, edi
+// 006c4c45  7403                 je 0x6c4c4a
+// 006c4c47  8b7820               mov edi, dword ptr [eax + 0x20]
+// 006c4c4a  897e38               mov dword ptr [esi + 0x38], edi
+// 006c4c4d  8bc6                 mov eax, esi
+// 006c4c4f  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 006c4c52  64890d00000000       mov dword ptr fs:[0], ecx
+// 006c4c59  59                   pop ecx
+// 006c4c5a  5f                   pop edi
+// 006c4c5b  5e                   pop esi
+// 006c4c5c  5b                   pop ebx
+// 006c4c5d  8be5                 mov esp, ebp
+// 006c4c5f  5d                   pop ebp
+// 006c4c60  c21c00               ret 0x1c
+// 006c4c63  8b4dec               mov ecx, dword ptr [ebp - 0x14]
+// 006c4c66  894de8               mov dword ptr [ebp - 0x18], ecx
+// 006c4c69  b86f4c6c00           mov eax, 0x6c4c6f
+// 006c4c6e  c3                   ret 
+// 006c4c6f  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
+// 006c4c76  e885740f00           call 0x7bc100
+// 006c4c7b  33c0                 xor eax, eax
+// 006c4c7d  8b4df4               mov ecx, dword ptr [ebp - 0xc]
+// 006c4c80  64890d00000000       mov dword ptr fs:[0], ecx
+// 006c4c87  59                   pop ecx
+// 006c4c88  5f                   pop edi
+// 006c4c89  5e                   pop esi
+// 006c4c8a  5b                   pop ebx
+// 006c4c8b  8be5                 mov esp, ebp
+// 006c4c8d  5d                   pop ebp
+// 006c4c8e  c21c00               ret 0x1c
+
 // from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\Controls\XTFunctions.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTFunctions.cpp : global functions.
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Resource.h"
-
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPResourceManager.h"
-
-#include "XTHelpers.h"
-
-#ifdef _XTP_INCLUDE_COMMANDBARS
-#include "CommandBars/XTPPaintManager.h"
-#include "CommandBars/XTPCommandBars.h"
-#include "CommandBars/XTPPopupBar.h"
-#include "Common/XTPImageManager.h"
-#endif
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-//-----------------------------------------------------------------------------
-// helper function which sets the font for a window and all its children
-// and also resizes everything according to the new font
-//-----------------------------------------------------------------------------
-
-_XTP_EXT_CLASS void  AFXAPI XTFuncChangeWindowFont(CWnd* pWnd, CFont* pFont)
-{
-	CRect windowRect;
-
-	// grab old and new text metrics
-	TEXTMETRIC tmOld, tmNew;
-	CDC * pDC = pWnd->GetDC();
-	CFont * pSavedFont = pDC->SelectObject(pWnd->GetFont());
-	pDC->GetTextMetrics(&tmOld);
-	pDC->SelectObject(pFont);
-	pDC->GetTextMetrics(&tmNew);
-	pDC->SelectObject(pSavedFont);
-	pWnd->ReleaseDC(pDC);
-
-	long oldHeight = tmOld.tmHeight + tmOld.tmExternalLeading;
-	long newHeight = tmNew.tmHeight + tmNew.tmExternalLeading;
-
-	// calculate new dialog window rectangle
-	CRect clientRect, newClientRect, newWindowRect;
-
-	pWnd->GetWindowRect(windowRect);
-	pWnd->GetClientRect(clientRect);
-	long xDiff = windowRect.Width() - clientRect.Width();
-	long yDiff = windowRect.Height() - clientRect.Height();
-
-	newClientRect.left = newClientRect.top = 0;
-	newClientRect.right = clientRect.right * tmNew.tmAveCharWidth / tmOld.tmAveCharWidth;
-	newClientRect.bottom = clientRect.bottom * newHeight / oldHeight;
-
-	newWindowRect.left = windowRect.left -
-		(newClientRect.right - clientRect.right)/2;
-	newWindowRect.top = windowRect.top -
-		(newClientRect.bottom - clientRect.bottom)/2;
-	newWindowRect.right = newWindowRect.left + newClientRect.right + xDiff;
-	newWindowRect.bottom = newWindowRect.top + newClientRect.bottom + yDiff;
-
-	pWnd->MoveWindow(newWindowRect);
-
-	pWnd->SetFont(pFont);
-
-	// iterate through and move all child windows and change their font.
-	CWnd* pChildWnd = pWnd->GetWindow(GW_CHILD);
-
-	while (pChildWnd)
-	{
-		pChildWnd->SetFont(pFont);
-		pChildWnd->GetWindowRect(windowRect);
-
-		CString strClass;
-		::GetClassName(pChildWnd->m_hWnd, strClass.GetBufferSetLength(32), 31);
-		strClass.MakeUpper();
-		if (strClass == _T("COMBOBOX"))
-		{
-			CRect rect;
-			pChildWnd->SendMessage(CB_GETDROPPEDCONTROLRECT, 0, (LPARAM) &rect);
-			windowRect.right = rect.right;
-			windowRect.bottom = rect.bottom;
-		}
-
-		pWnd->ScreenToClient(windowRect);
-		windowRect.left = windowRect.left * tmNew.tmAveCharWidth / tmOld.tmAveCharWidth;
-		windowRect.right = windowRect.right * tmNew.tmAveCharWidth / tmOld.tmAveCharWidth;
-		windowRect.top = windowRect.top * newHeight / oldHeight;
-		windowRect.bottom = windowRect.bottom * newHeight / oldHeight;
-		pChildWnd->MoveWindow(windowRect);
-
-		pChildWnd = pChildWnd->GetWindow(GW_HWNDNEXT);
-	}
-}
-
-//-----------------------------------------------------------------------------
-// FUNCTION: XTFuncDrawEmbossed
-//-----------------------------------------------------------------------------
-
-_XTP_EXT_CLASS void AFXAPI XTFuncDrawEmbossed(CDC* pDC, CImageList& imageList, int nIndex, CPoint point, BOOL bInColor)
-{
-	IMAGEINFO imgInfo;
-	VERIFY(imageList.GetImageInfo(0, &imgInfo));
-	CRect rcImage = imgInfo.rcImage;
-
-	// create memory dc
-	CDC memDC;
-	memDC.CreateCompatibleDC(pDC);
-
-	// create mono or color bitmap
-	CBitmap bitmap;
-	if (bInColor)
-	{
-		bitmap.CreateCompatibleBitmap(pDC, rcImage.Width(), rcImage.Height());
-	}
-	else
-	{
-		bitmap.CreateBitmap(rcImage.Width(), rcImage.Height(), 1, 1, NULL);
-	}
-
-	// draw image into memory DC--fill BG white first
-	CBitmap* pOldBitmap = memDC.SelectObject(&bitmap);
-	memDC.PatBlt(0, 0, rcImage.Width(), rcImage.Height(), WHITENESS);
-	imageList.Draw(&memDC, nIndex, CPoint(0, 0), ILD_TRANSPARENT);
-
-	// Draw using highlight offset by (1, 1), then shadow
-	CBrush brShadow(GetXtremeColor(COLOR_3DSHADOW));
-	CBrush brHilite(GetXtremeColor(COLOR_3DHIGHLIGHT));
-
-	CBrush* pOldBrush = pDC->SelectObject(&brHilite);
-	pDC->BitBlt(point.x + 1, point.y + 1, rcImage.Width(), rcImage.Height(), &memDC, 0, 0, 0xB8074A);
-
-	pDC->SelectObject(&brShadow);
-	pDC->BitBlt(point.x, point.y, rcImage.Width(), rcImage.Height(), &memDC, 0, 0, 0xB8074A);
-
-	pDC->SelectObject(pOldBrush);
-	memDC.SelectObject(pOldBitmap);
-	bitmap.DeleteObject();
-}
-
-//-----------------------------------------------------------------------------
-// FUNCTION: XTFuncDrawShadedRect
-//-----------------------------------------------------------------------------
-
-_XTP_EXT_CLASS void AFXAPI XTFuncDrawShadedRect(CDC *pDC, CRect& rect)
-{
-	// Bit pattern for a monochrome brush with every
-	// other pixel turned off
-	WORD bits[] =
-	{
-		0x0055, 0x00AA, 0x0055, 0x00AA,
-		0x0055, 0x00AA, 0x0055, 0x00AA
-	};
-
-	// Need a monochrome pattern bitmap
-	CBitmap bitmap;
-	bitmap.CreateBitmap(8, 8, 1, 1, &bits);
-
-	// Create the pattern brush
-	CBrush brush;
-	brush.CreatePatternBrush(&bitmap);
-	CBrush* pOldBrush = pDC->SelectObject(&brush);
-
-	COLORREF crBack = pDC->SetBkColor(GetXtremeColor(COLOR_3DFACE));
-	COLORREF crText = pDC->SetTextColor(GetXtremeColor(COLOR_3DHIGHLIGHT));
-
-	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATCOPY);
-
-	// Restore the device context
-	pDC->SelectObject(pOldBrush);
-	pDC->SetBkColor(crBack);
-	pDC->SetTextColor(crText);
-
-	brush.DeleteObject();
-}
-
-//-----------------------------------------------------------------------------
-//  DIBs use RGBQUAD format:
-//      0xbb 0xgg 0xrr 0x00
-//
-//  Reasonably efficient code to convert a COLORREF into an
-//  RGBQUAD is byte-order-dependent, so we need different
-//  code depending on the byte order we're targeting.
-//-----------------------------------------------------------------------------
-
-#define RGB_TO_RGBQUAD(r, g, b) (RGB(b, g, r))
-#define RGBQUAD_INIT(r, g, b) (RGB_TO_RGBQUAD(r, g, b)), (RGB(r, g, b))
-#define CLR_TO_RGBQUAD(clr) (RGB(GetBValue(clr), GetGValue(clr), GetRValue(clr)))
-
-//-----------------------------------------------------------------------------
-// CXTReplaceColorHandler - Helper object to replace color in a given DC
-//-----------------------------------------------------------------------------
-
-class CXTReplaceColorHandler
-{
-public:
-
-	// Input: pTargetDC - DC in which to replace colors
-	//        nWidth - width of the rectangle to replace (starting from (0, 0))
-	//        nHeight - height of the rectangle to replace the color (starting from (0, 0))
-	// Summary: Constructor takes parameters common for the operation.
-	CXTReplaceColorHandler(CDC* pTargetDC, int nWidth, int nHeight);
-
-	// Summary:
-	virtual ~CXTReplaceColorHandler();
-
-	// Summary: Initialization, returns false if fails to initialize
-	bool Init();
-
-	// Summary: Replaces one color with another
-	bool ReplaceColor(COLORREF clrFrom, COLORREF clrTo);
-
-protected:
-
-	int         m_nWidth;
-	int         m_nHeight;
-	bool        m_bOldBitmap;   // true if m_pOldBitmap was initialized
-	CDC         m_dcMask;       //
-	CDC*        m_pTargetDC;    // a DC to replace colors in place
-	CBitmap     m_bitmapMask;   // monochrome bitmap to work with
-	CBitmap*    m_pOldBitmap;   // previously selected bitmap
-	COLORREF    m_clrOldText;
-	COLORREF    m_clrOldBk;
-};
-
-CXTReplaceColorHandler::CXTReplaceColorHandler(CDC* pTargetDC, int nWidth, int nHeight)
-: m_pOldBitmap(NULL)
-, m_bOldBitmap(false)
-, m_pTargetDC(pTargetDC)
-, m_clrOldBk(pTargetDC->GetBkColor())
-, m_clrOldText(pTargetDC->GetTextColor())
-, m_nWidth(nWidth)
-, m_nHeight(nHeight)
-{
-
-}
-
-CXTReplaceColorHandler::~CXTReplaceColorHandler()
-{
-	if (m_bOldBitmap)
-	{
-		m_dcMask.SelectObject(m_pOldBitmap);
-	}
-	m_pTargetDC->SetBkColor(m_clrOldBk);
-	m_pTargetDC->SetTextColor(m_clrOldText);
-}
-
-bool CXTReplaceColorHandler::Init()
-{
-	if (!m_dcMask.CreateCompatibleDC(m_pTargetDC))
-	{
-		return false;
-	}
-	if (!m_bitmapMask.CreateBitmap(m_nWidth, m_nHeight, 1, 1, NULL))
-	{
-		return false;
-	}
-	m_pOldBitmap = m_dcMask.SelectObject(&m_bitmapMask);
-	m_bOldBitmap = true;
-
-	return true;
-}
-
-bool CXTReplaceColorHandler::ReplaceColor(COLORREF clrFrom, COLORREF clrTo)
-{
-	// filter out trivial case
-	if (clrFrom == clrTo)
-	{
-		return true;
-	}
-
-	// Initialize the mask:
-	// 1. Set the background color of the source DC to the color to translate.
-	// so 1s would be the bits where color match has been found
-	// 2. Create the object mask for the bitmap by performing a BitBlt
-	// from the source bitmap to a monochrome bitmap.
-	m_pTargetDC->SetBkColor(clrFrom);
-	if (!m_dcMask.BitBlt(0, 0, m_nWidth, m_nHeight, m_pTargetDC, 0, 0, SRCCOPY))
-	{
-		return false;
-	}
-
-	// zero out destination pixels we would want to replace with another color
-	m_pTargetDC->SetTextColor(RGB(255, 255, 255));
-	m_pTargetDC->SetBkColor(RGB(0, 0, 0));
-	if (!m_pTargetDC->BitBlt(0, 0, m_nWidth, m_nHeight, &m_dcMask, 0, 0, SRCAND))
-	{
-		return false;
-	}
-
-	// now, replace zeroed pixels with destination color
-	if (clrTo != RGB(0, 0, 0))
-	{
-		m_pTargetDC->SetBkColor(clrTo);
-		m_pTargetDC->SetTextColor(RGB(0, 0, 0));
-		if (!m_pTargetDC->BitBlt(0, 0, m_nWidth, m_nHeight, &m_dcMask, 0, 0, SRCPAINT))
-		{
-			return false;
-		}
-	}
-
-	// done
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// FUNCTION: XTFuncChildWindowFromPoint()
-//-----------------------------------------------------------------------------
-
-_XTP_EXT_CLASS HWND AFXAPI XTFuncChildWindowFromPoint(HWND hWnd, POINT point)
-{
-	ASSERT(hWnd != NULL);
-	if (!hWnd)
-		return 0;
-
-	// check child windows
-	::ClientToScreen(hWnd, &point);
-
-	HWND hWndChild = ::GetWindow(hWnd, GW_CHILD);
-	for (; hWndChild != NULL; hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT))
-	{
-		if ((UINT)(WORD)::GetDlgCtrlID(hWndChild) != (WORD)-1 &&
-			(::GetWindowLong(hWndChild, GWL_STYLE) & WS_VISIBLE))
-		{
-			// see if point hits the child window
-			CRect rect;
-			::GetWindowRect(hWndChild, rect);
-			if (rect.PtInRect(point))
-				return hWndChild;
-		}
-	}
-
-	return NULL;    // not found
-}
-
-//-----------------------------------------------------------------------------
-// FUNCTION: XTFuncPathExists()
-//-----------------------------------------------------------------------------
-
-_XTP_EXT_CLASS BOOL AFXAPI XTFuncPathExists(LPCTSTR lpszFileName)
-{
-	WIN32_FIND_DATA fd;
-	HANDLE hFind = ::FindFirstFile(lpszFileName, &fd);
-
-	if (hFind != INVALID_HANDLE_VALUE)
-	{
-		::FindClose(hFind);
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-//-----------------------------------------------------------------------------
-// FUNCTION: XTFuncCreateView()
-//-----------------------------------------------------------------------------
-
-_XTP_EXT_CLASS CWnd* AFXAPI XTFuncCreateView(CWnd* pParentWnd, CRuntimeClass *pViewClass, CDocument *pDocument/*= NULL*/, CCreateContext *pContext/*= NULL*/, DWORD dwStyle/*= AFX_WS_DEFAULT_VIEW*/, CWnd* pOwnerWnd/*= NULL*/, UINT nID/*= AFX_IDW_PANE_FIRST*/)
-{
-	if (!pContext && !pViewClass)
-		return NULL;
-
-#ifdef _DEBUG
-	ASSERT(pContext != NULL || pViewClass != NULL);
-	ASSERT(pContext != NULL || pViewClass->IsDerivedFrom(RUNTIME_CLASS(CWnd)));
-	ASSERT(pContext != NULL || AfxIsValidAddress(pViewClass, sizeof(CRuntimeClass), FALSE));
-#endif
-
-	if (pOwnerWnd == NULL)
-		pOwnerWnd = pParentWnd;
-
-	CCreateContext contextT;
-	if (pContext == NULL)
-	{
-		// if no context specified, generate one from the
-		// currently selected client if possible.
-		contextT.m_pLastView = NULL;
-		contextT.m_pCurrentFrame = NULL;
-		contextT.m_pNewDocTemplate = NULL;
-		contextT.m_pCurrentDoc = pDocument;
-		contextT.m_pNewViewClass = pViewClass;
-
-		if (pDocument != NULL)
-			contextT.m_pNewDocTemplate = pDocument->GetDocTemplate();
-
-		pContext = &contextT;
-	}
-	if (!pContext->m_pNewViewClass)
-		return NULL;
-
-	CWnd* pWnd = NULL;
-	TRY
-	{
-		pWnd = (CWnd*)pContext->m_pNewViewClass->CreateObject();
-		if (pWnd == NULL)
-			AfxThrowMemoryException();
-	}
-	CATCH_ALL(e)
-	{
-		TRACE0("Out of memory creating a view.\n"); // Note: DELETE_EXCEPTION(e) not required
-		return NULL;
-	}
-	END_CATCH_ALL
-
-	ASSERT_KINDOF(CWnd, pWnd);
-	ASSERT(pWnd->m_hWnd == NULL); // not yet created.
-
-	// Create with the right size (wrong position)
-	CRect rect(0, 0, 0, 0);
-	if (!pWnd->Create(NULL, NULL, dwStyle,
-		rect, pParentWnd, nID, pContext))
-	{
-		TRACE0("Failed to create docking window view.\n");
-		return NULL;
-	}
-
-	pWnd->SetOwner(pOwnerWnd);
-	return pWnd;
-}
-
-
-_XTP_EXT_CLASS BOOL AFXAPI XTFuncContextMenu(CMenu* pPopup, UINT nFlags, int x, int y, CWnd* pWnd, int nIDBitmap, BOOL bNoNotify)
-{
-	BOOL bResult = FALSE;
-	nIDBitmap;
-	bNoNotify;
-
-#ifdef _XTP_INCLUDE_COMMANDBARS
-	if (XTPPaintManager())
-	{
-		CXTPPopupBar* pPopupBar = CXTPPopupBar::CreatePopupBar(NULL);
-
-		if (nIDBitmap > 0)
-		{
-			CXTPImageManager* pImageManager = new CXTPImageManager();
-			pImageManager->SetIcons(nIDBitmap);
-			pPopupBar->SetImageManager(pImageManager);
-		}
-
-
-		if (!pPopupBar->LoadMenu(pPopup))
-		{
-			pPopupBar->InternalRelease();
-			return bResult;
-		}
-
-		bResult = CXTPCommandBars::TrackPopupMenu(pPopupBar, nFlags | (bNoNotify ? TPM_NONOTIFY : 0), x, y, pWnd);
-		pPopupBar->InternalRelease();
-	}
-	else
-	{
-		bResult = pPopup->TrackPopupMenu(nFlags, x, y, pWnd);
-	}
-
-#else // Toolkit Standard
-
-	bResult = pPopup->TrackPopupMenu(nFlags, x, y, pWnd);
-
-#endif
-	return bResult;
-
-}

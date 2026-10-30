@@ -1,167 +1,75 @@
+// roc 2007-03 00513340  unit: seg_00510000  size: 193 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00513340
+//
+// 00513340  56                   push esi
+// 00513341  8b742408             mov esi, dword ptr [esp + 8]
+// 00513345  837e1465             cmp dword ptr [esi + 0x14], 0x65
+// 00513349  741b                 je 0x513366
+// 0051334b  8b06                 mov eax, dword ptr [esi]
+// 0051334d  c7401414000000       mov dword ptr [eax + 0x14], 0x14
+// 00513354  8b0e                 mov ecx, dword ptr [esi]
+// 00513356  8b5614               mov edx, dword ptr [esi + 0x14]
+// 00513359  895118               mov dword ptr [ecx + 0x18], edx
+// 0051335c  8b06                 mov eax, dword ptr [esi]
+// 0051335e  8b08                 mov ecx, dword ptr [eax]
+// 00513360  56                   push esi
+// 00513361  ffd1                 call ecx
+// 00513363  83c404               add esp, 4
+// 00513366  8b96d0000000         mov edx, dword ptr [esi + 0xd0]
+// 0051336c  3b5620               cmp edx, dword ptr [esi + 0x20]
+// 0051336f  7216                 jb 0x513387
+// 00513371  8b06                 mov eax, dword ptr [esi]
+// 00513373  c740147b000000       mov dword ptr [eax + 0x14], 0x7b
+// 0051337a  8b0e                 mov ecx, dword ptr [esi]
+// 0051337c  8b5104               mov edx, dword ptr [ecx + 4]
+// 0051337f  6aff                 push -1
+// 00513381  56                   push esi
+// 00513382  ffd2                 call edx
+// 00513384  83c408               add esp, 8
+// 00513387  8b4608               mov eax, dword ptr [esi + 8]
+// 0051338a  85c0                 test eax, eax
+// 0051338c  741d                 je 0x5133ab
+// 0051338e  8b8ed0000000         mov ecx, dword ptr [esi + 0xd0]
+// 00513394  894804               mov dword ptr [eax + 4], ecx
+// 00513397  8b5608               mov edx, dword ptr [esi + 8]
+// 0051339a  8b4620               mov eax, dword ptr [esi + 0x20]
+// 0051339d  894208               mov dword ptr [edx + 8], eax
+// 005133a0  8b4e08               mov ecx, dword ptr [esi + 8]
+// 005133a3  8b11                 mov edx, dword ptr [ecx]
+// 005133a5  56                   push esi
+// 005133a6  ffd2                 call edx
+// 005133a8  83c404               add esp, 4
+// 005133ab  8b863c010000         mov eax, dword ptr [esi + 0x13c]
+// 005133b1  80780c00             cmp byte ptr [eax + 0xc], 0
+// 005133b5  7409                 je 0x5133c0
+// 005133b7  8b4004               mov eax, dword ptr [eax + 4]
+// 005133ba  56                   push esi
+// 005133bb  ffd0                 call eax
+// 005133bd  83c404               add esp, 4
+// 005133c0  8b4620               mov eax, dword ptr [esi + 0x20]
+// 005133c3  2b86d0000000         sub eax, dword ptr [esi + 0xd0]
+// 005133c9  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 005133cd  3bc8                 cmp ecx, eax
+// 005133cf  7602                 jbe 0x5133d3
+// 005133d1  8bc8                 mov ecx, eax
+// 005133d3  8b9640010000         mov edx, dword ptr [esi + 0x140]
+// 005133d9  51                   push ecx
+// 005133da  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 005133de  8d44240c             lea eax, [esp + 0xc]
+// 005133e2  50                   push eax
+// 005133e3  51                   push ecx
+// 005133e4  c744241400000000     mov dword ptr [esp + 0x14], 0
+// 005133ec  8b5204               mov edx, dword ptr [edx + 4]
+// 005133ef  56                   push esi
+// 005133f0  ffd2                 call edx
+// 005133f2  8b442418             mov eax, dword ptr [esp + 0x18]
+// 005133f6  0186d0000000         add dword ptr [esi + 0xd0], eax
+// 005133fc  83c410               add esp, 0x10
+// 005133ff  5e                   pop esi
+// 00513400  c3                   ret 
+// library jpeg-6b/jcapistd.c (function _jpeg_write_scanlines)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcapistd.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jcapistd.c
- *
- * Copyright (C) 1994-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains application interface code for the compression half
- * of the JPEG library.  These are the "standard" API routines that are
- * used in the normal full-compression case.  They are not used by a
- * transcoding-only application.  Note that if an application links in
- * jpeg_start_compress, it will end up linking in the entire compressor.
- * We thus must separate this file from jcapimin.c to avoid linking the
- * whole compression library into a transcoder.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-/*
- * Compression initialization.
- * Before calling this, all parameters and a data destination must be set up.
- *
- * We require a write_all_tables parameter as a failsafe check when writing
- * multiple datastreams from the same compression object.  Since prior runs
- * will have left all the tables marked sent_table=TRUE, a subsequent run
- * would emit an abbreviated stream (no tables) by default.  This may be what
- * is wanted, but for safety's sake it should not be the default behavior:
- * programmers should have to make a deliberate choice to emit abbreviated
- * images.  Therefore the documentation and examples should encourage people
- * to pass write_all_tables=TRUE; then it will take active thought to do the
- * wrong thing.
- */
-
-GLOBAL(void)
-jpeg_start_compress (j_compress_ptr cinfo, boolean write_all_tables)
-{
-  if (cinfo->global_state != CSTATE_START)
-    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
-
-  if (write_all_tables)
-    jpeg_suppress_tables(cinfo, FALSE);	/* mark all tables to be written */
-
-  /* (Re)initialize error mgr and destination modules */
-  (*cinfo->err->reset_error_mgr) ((j_common_ptr) cinfo);
-  (*cinfo->dest->init_destination) (cinfo);
-  /* Perform master selection of active modules */
-  jinit_compress_master(cinfo);
-  /* Set up for the first pass */
-  (*cinfo->master->prepare_for_pass) (cinfo);
-  /* Ready for application to drive first pass through jpeg_write_scanlines
-   * or jpeg_write_raw_data.
-   */
-  cinfo->next_scanline = 0;
-  cinfo->global_state = (cinfo->raw_data_in ? CSTATE_RAW_OK : CSTATE_SCANNING);
-}
-
-
-/*
- * Write some scanlines of data to the JPEG compressor.
- *
- * The return value will be the number of lines actually written.
- * This should be less than the supplied num_lines only in case that
- * the data destination module has requested suspension of the compressor,
- * or if more than image_height scanlines are passed in.
- *
- * Note: we warn about excess calls to jpeg_write_scanlines() since
- * this likely signals an application programmer error.  However,
- * excess scanlines passed in the last valid call are *silently* ignored,
- * so that the application need not adjust num_lines for end-of-image
- * when using a multiple-scanline buffer.
- */
-
-GLOBAL(JDIMENSION)
-jpeg_write_scanlines (j_compress_ptr cinfo, JSAMPARRAY scanlines,
-		      JDIMENSION num_lines)
-{
-  JDIMENSION row_ctr, rows_left;
-
-  if (cinfo->global_state != CSTATE_SCANNING)
-    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
-  if (cinfo->next_scanline >= cinfo->image_height)
-    WARNMS(cinfo, JWRN_TOO_MUCH_DATA);
-
-  /* Call progress monitor hook if present */
-  if (cinfo->progress != NULL) {
-    cinfo->progress->pass_counter = (long) cinfo->next_scanline;
-    cinfo->progress->pass_limit = (long) cinfo->image_height;
-    (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
-  }
-
-  /* Give master control module another chance if this is first call to
-   * jpeg_write_scanlines.  This lets output of the frame/scan headers be
-   * delayed so that application can write COM, etc, markers between
-   * jpeg_start_compress and jpeg_write_scanlines.
-   */
-  if (cinfo->master->call_pass_startup)
-    (*cinfo->master->pass_startup) (cinfo);
-
-  /* Ignore any extra scanlines at bottom of image. */
-  rows_left = cinfo->image_height - cinfo->next_scanline;
-  if (num_lines > rows_left)
-    num_lines = rows_left;
-
-  row_ctr = 0;
-  (*cinfo->main->process_data) (cinfo, scanlines, &row_ctr, num_lines);
-  cinfo->next_scanline += row_ctr;
-  return row_ctr;
-}
-
-
-/*
- * Alternate entry point to write raw data.
- * Processes exactly one iMCU row per call, unless suspended.
- */
-
-GLOBAL(JDIMENSION)
-jpeg_write_raw_data (j_compress_ptr cinfo, JSAMPIMAGE data,
-		     JDIMENSION num_lines)
-{
-  JDIMENSION lines_per_iMCU_row;
-
-  if (cinfo->global_state != CSTATE_RAW_OK)
-    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
-  if (cinfo->next_scanline >= cinfo->image_height) {
-    WARNMS(cinfo, JWRN_TOO_MUCH_DATA);
-    return 0;
-  }
-
-  /* Call progress monitor hook if present */
-  if (cinfo->progress != NULL) {
-    cinfo->progress->pass_counter = (long) cinfo->next_scanline;
-    cinfo->progress->pass_limit = (long) cinfo->image_height;
-    (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
-  }
-
-  /* Give master control module another chance if this is first call to
-   * jpeg_write_raw_data.  This lets output of the frame/scan headers be
-   * delayed so that application can write COM, etc, markers between
-   * jpeg_start_compress and jpeg_write_raw_data.
-   */
-  if (cinfo->master->call_pass_startup)
-    (*cinfo->master->pass_startup) (cinfo);
-
-  /* Verify that at least one iMCU row has been passed. */
-  lines_per_iMCU_row = cinfo->max_v_samp_factor * DCTSIZE;
-  if (num_lines < lines_per_iMCU_row)
-    ERREXIT(cinfo, JERR_BUFFER_SIZE);
-
-  /* Directly compress the row. */
-  if (! (*cinfo->coef->compress_data) (cinfo, data)) {
-    /* If compressor did not consume the whole row, suspend processing. */
-    return 0;
-  }
-
-  /* OK, we processed one iMCU row. */
-  cinfo->next_scanline += lines_per_iMCU_row;
-  return lines_per_iMCU_row;
-}

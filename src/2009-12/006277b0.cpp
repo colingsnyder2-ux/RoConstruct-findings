@@ -1,465 +1,217 @@
+// roc 2009-12 006277b0  unit: seg_00620000  size: 552 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 006277b0
+//
+// 006277b0  53                   push ebx
+// 006277b1  56                   push esi
+// 006277b2  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 006277b6  8b4604               mov eax, dword ptr [esi + 4]
+// 006277b9  8b08                 mov ecx, dword ptr [eax]
+// 006277bb  57                   push edi
+// 006277bc  6a0c                 push 0xc
+// 006277be  6a01                 push 1
+// 006277c0  56                   push esi
+// 006277c1  ffd1                 call ecx
+// 006277c3  8bf8                 mov edi, eax
+// 006277c5  89be50010000         mov dword ptr [esi + 0x150], edi
+// 006277cb  c707904a8500         mov dword ptr [edi], 0x854a90
+// 006277d1  8b4628               mov eax, dword ptr [esi + 0x28]
+// 006277d4  48                   dec eax
+// 006277d5  bb04000000           mov ebx, 4
+// 006277da  83c40c               add esp, 0xc
+// 006277dd  3bc3                 cmp eax, ebx
+// 006277df  771e                 ja 0x6277ff
+// 006277e1  ff2485b0796200       jmp dword ptr [eax*4 + 0x6279b0]
+// 006277e8  837e2401             cmp dword ptr [esi + 0x24], 1
+// 006277ec  742a                 je 0x627818
+// 006277ee  eb15                 jmp 0x627805
+// 006277f0  837e2403             cmp dword ptr [esi + 0x24], 3
+// 006277f4  7422                 je 0x627818
+// 006277f6  eb0d                 jmp 0x627805
+// 006277f8  395e24               cmp dword ptr [esi + 0x24], ebx
+// 006277fb  741b                 je 0x627818
+// 006277fd  eb06                 jmp 0x627805
+// 006277ff  837e2401             cmp dword ptr [esi + 0x24], 1
+// 00627803  7d13                 jge 0x627818
+// 00627805  8b16                 mov edx, dword ptr [esi]
+// 00627807  c7421409000000       mov dword ptr [edx + 0x14], 9
+// 0062780e  8b06                 mov eax, dword ptr [esi]
+// 00627810  8b08                 mov ecx, dword ptr [eax]
+// 00627812  56                   push esi
+// 00627813  ffd1                 call ecx
+// 00627815  83c404               add esp, 4
+// 00627818  8b4640               mov eax, dword ptr [esi + 0x40]
+// 0062781b  8d48ff               lea ecx, [eax - 1]
+// 0062781e  3bcb                 cmp ecx, ebx
+// 00627820  0f875e010000         ja 0x627984
+// 00627826  ff248dc4796200       jmp dword ptr [ecx*4 + 0x6279c4]
+// 0062782d  837e3c01             cmp dword ptr [esi + 0x3c], 1
+// 00627831  7413                 je 0x627846
+// 00627833  8b16                 mov edx, dword ptr [esi]
+// 00627835  c742140a000000       mov dword ptr [edx + 0x14], 0xa
+// 0062783c  8b06                 mov eax, dword ptr [esi]
+// 0062783e  8b08                 mov ecx, dword ptr [eax]
+// 00627840  56                   push esi
+// 00627841  ffd1                 call ecx
+// 00627843  83c404               add esp, 4
+// 00627846  8b4628               mov eax, dword ptr [esi + 0x28]
+// 00627849  83f801               cmp eax, 1
+// 0062784c  741b                 je 0x627869
+// 0062784e  83f802               cmp eax, 2
+// 00627851  7511                 jne 0x627864
+// 00627853  c707e0726200         mov dword ptr [edi], 0x6272e0
+// 00627859  c74704d0746200       mov dword ptr [edi + 4], 0x6274d0
+// 00627860  5f                   pop edi
+// 00627861  5e                   pop esi
+// 00627862  5b                   pop ebx
+// 00627863  c3                   ret 
+// 00627864  83f803               cmp eax, 3
+// 00627867  752e                 jne 0x627897
+// 00627869  c74704d0766200       mov dword ptr [edi + 4], 0x6276d0
+// 00627870  5f                   pop edi
+// 00627871  5e                   pop esi
+// 00627872  5b                   pop ebx
+// 00627873  c3                   ret 
+// 00627874  837e3c03             cmp dword ptr [esi + 0x3c], 3
+// 00627878  7413                 je 0x62788d
+// 0062787a  8b16                 mov edx, dword ptr [esi]
+// 0062787c  c742140a000000       mov dword ptr [edx + 0x14], 0xa
+// 00627883  8b06                 mov eax, dword ptr [esi]
+// 00627885  8b08                 mov ecx, dword ptr [eax]
+// 00627887  56                   push esi
+// 00627888  ffd1                 call ecx
+// 0062788a  83c404               add esp, 4
+// 0062788d  837e2802             cmp dword ptr [esi + 0x28], 2
+// 00627891  0f840d010000         je 0x6279a4
+// 00627897  8b16                 mov edx, dword ptr [esi]
+// 00627899  c742141b000000       mov dword ptr [edx + 0x14], 0x1b
+// 006278a0  8b06                 mov eax, dword ptr [esi]
+// 006278a2  8b08                 mov ecx, dword ptr [eax]
+// 006278a4  56                   push esi
+// 006278a5  ffd1                 call ecx
+// 006278a7  83c404               add esp, 4
+// 006278aa  5f                   pop edi
+// 006278ab  5e                   pop esi
+// 006278ac  5b                   pop ebx
+// 006278ad  c3                   ret 
+// 006278ae  837e3c03             cmp dword ptr [esi + 0x3c], 3
+// 006278b2  7413                 je 0x6278c7
+// 006278b4  8b16                 mov edx, dword ptr [esi]
+// 006278b6  c742140a000000       mov dword ptr [edx + 0x14], 0xa
+// 006278bd  8b06                 mov eax, dword ptr [esi]
+// 006278bf  8b08                 mov ecx, dword ptr [eax]
+// 006278c1  56                   push esi
+// 006278c2  ffd1                 call ecx
+// 006278c4  83c404               add esp, 4
+// 006278c7  8b4628               mov eax, dword ptr [esi + 0x28]
+// 006278ca  83f802               cmp eax, 2
+// 006278cd  7511                 jne 0x6278e0
+// 006278cf  c707e0726200         mov dword ptr [edi], 0x6272e0
+// 006278d5  c74704c0736200       mov dword ptr [edi + 4], 0x6273c0
+// 006278dc  5f                   pop edi
+// 006278dd  5e                   pop esi
+// 006278de  5b                   pop ebx
+// 006278df  c3                   ret 
+// 006278e0  83f803               cmp eax, 3
+// 006278e3  0f84bb000000         je 0x6279a4
+// 006278e9  8b16                 mov edx, dword ptr [esi]
+// 006278eb  c742141b000000       mov dword ptr [edx + 0x14], 0x1b
+// 006278f2  8b06                 mov eax, dword ptr [esi]
+// 006278f4  8b08                 mov ecx, dword ptr [eax]
+// 006278f6  56                   push esi
+// 006278f7  ffd1                 call ecx
+// 006278f9  83c404               add esp, 4
+// 006278fc  5f                   pop edi
+// 006278fd  5e                   pop esi
+// 006278fe  5b                   pop ebx
+// 006278ff  c3                   ret 
+// 00627900  395e3c               cmp dword ptr [esi + 0x3c], ebx
+// 00627903  7413                 je 0x627918
+// 00627905  8b16                 mov edx, dword ptr [esi]
+// 00627907  c742140a000000       mov dword ptr [edx + 0x14], 0xa
+// 0062790e  8b06                 mov eax, dword ptr [esi]
+// 00627910  8b08                 mov ecx, dword ptr [eax]
+// 00627912  56                   push esi
+// 00627913  ffd1                 call ecx
+// 00627915  83c404               add esp, 4
+// 00627918  395e28               cmp dword ptr [esi + 0x28], ebx
+// 0062791b  0f8483000000         je 0x6279a4
+// 00627921  8b16                 mov edx, dword ptr [esi]
+// 00627923  c742141b000000       mov dword ptr [edx + 0x14], 0x1b
+// 0062792a  8b06                 mov eax, dword ptr [esi]
+// 0062792c  8b08                 mov ecx, dword ptr [eax]
+// 0062792e  56                   push esi
+// 0062792f  ffd1                 call ecx
+// 00627931  83c404               add esp, 4
+// 00627934  5f                   pop edi
+// 00627935  5e                   pop esi
+// 00627936  5b                   pop ebx
+// 00627937  c3                   ret 
+// 00627938  395e3c               cmp dword ptr [esi + 0x3c], ebx
+// 0062793b  7413                 je 0x627950
+// 0062793d  8b16                 mov edx, dword ptr [esi]
+// 0062793f  c742140a000000       mov dword ptr [edx + 0x14], 0xa
+// 00627946  8b06                 mov eax, dword ptr [esi]
+// 00627948  8b08                 mov ecx, dword ptr [eax]
+// 0062794a  56                   push esi
+// 0062794b  ffd1                 call ecx
+// 0062794d  83c404               add esp, 4
+// 00627950  8b4628               mov eax, dword ptr [esi + 0x28]
+// 00627953  3bc3                 cmp eax, ebx
+// 00627955  7511                 jne 0x627968
+// 00627957  c707e0726200         mov dword ptr [edi], 0x6272e0
+// 0062795d  c7470480756200       mov dword ptr [edi + 4], 0x627580
+// 00627964  5f                   pop edi
+// 00627965  5e                   pop esi
+// 00627966  5b                   pop ebx
+// 00627967  c3                   ret 
+// 00627968  83f805               cmp eax, 5
+// 0062796b  7437                 je 0x6279a4
+// 0062796d  8b16                 mov edx, dword ptr [esi]
+// 0062796f  c742141b000000       mov dword ptr [edx + 0x14], 0x1b
+// 00627976  8b06                 mov eax, dword ptr [esi]
+// 00627978  8b08                 mov ecx, dword ptr [eax]
+// 0062797a  56                   push esi
+// 0062797b  ffd1                 call ecx
+// 0062797d  83c404               add esp, 4
+// 00627980  5f                   pop edi
+// 00627981  5e                   pop esi
+// 00627982  5b                   pop ebx
+// 00627983  c3                   ret 
+// 00627984  3b4628               cmp eax, dword ptr [esi + 0x28]
+// 00627987  7508                 jne 0x627991
+// 00627989  8b563c               mov edx, dword ptr [esi + 0x3c]
+// 0062798c  3b5624               cmp edx, dword ptr [esi + 0x24]
+// 0062798f  7413                 je 0x6279a4
+// 00627991  8b06                 mov eax, dword ptr [esi]
+// 00627993  c740141b000000       mov dword ptr [eax + 0x14], 0x1b
+// 0062799a  8b0e                 mov ecx, dword ptr [esi]
+// 0062799c  8b11                 mov edx, dword ptr [ecx]
+// 0062799e  56                   push esi
+// 0062799f  ffd2                 call edx
+// 006279a1  83c404               add esp, 4
+// 006279a4  c7470430776200       mov dword ptr [edi + 4], 0x627730
+// 006279ab  5f                   pop edi
+// 006279ac  5e                   pop esi
+// 006279ad  5b                   pop ebx
+// 006279ae  c3                   ret 
+// 006279af  90                   nop 
+// 006279b0  e8776200f0           call 0xf062dc2c
+// 006279b5  7762                 ja 0x627a19
+// 006279b7  00f0                 add al, dh
+// 006279b9  7762                 ja 0x627a1d
+// 006279bb  00f8                 add al, bh
+// 006279bd  7762                 ja 0x627a21
+// 006279bf  00f8                 add al, bh
+// 006279c1  7762                 ja 0x627a25
+// 006279c3  002d78620074         add byte ptr [0x74006278], ch
+// 006279c9  7862                 js 0x627a2d
+// 006279cb  00ae78620000         add byte ptr [esi + 0x6278], ch
+// 006279d1  7962                 jns 0x627a35
+// 006279d3  0038                 add byte ptr [eax], bh
+// 006279d5  7962                 jns 0x627a39
+// library jpeg-6b/jccolor.c (function _jinit_color_converter)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jccolor.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jccolor.c
- *
- * Copyright (C) 1991-1996, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains input colorspace conversion routines.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-/* Private subobject */
-
-typedef struct {
-  struct jpeg_color_converter pub; /* public fields */
-
-  /* Private state for RGB->YCC conversion */
-  INT32 * rgb_ycc_tab;		/* => table for RGB to YCbCr conversion */
-} my_color_converter;
-
-typedef my_color_converter * my_cconvert_ptr;
-
-
-/**************** RGB -> YCbCr conversion: most common case **************/
-
-/*
- * YCbCr is defined per CCIR 601-1, except that Cb and Cr are
- * normalized to the range 0..MAXJSAMPLE rather than -0.5 .. 0.5.
- * The conversion equations to be implemented are therefore
- *	Y  =  0.29900 * R + 0.58700 * G + 0.11400 * B
- *	Cb = -0.16874 * R - 0.33126 * G + 0.50000 * B  + CENTERJSAMPLE
- *	Cr =  0.50000 * R - 0.41869 * G - 0.08131 * B  + CENTERJSAMPLE
- * (These numbers are derived from TIFF 6.0 section 21, dated 3-June-92.)
- * Note: older versions of the IJG code used a zero offset of MAXJSAMPLE/2,
- * rather than CENTERJSAMPLE, for Cb and Cr.  This gave equal positive and
- * negative swings for Cb/Cr, but meant that grayscale values (Cb=Cr=0)
- * were not represented exactly.  Now we sacrifice exact representation of
- * maximum red and maximum blue in order to get exact grayscales.
- *
- * To avoid floating-point arithmetic, we represent the fractional constants
- * as integers scaled up by 2^16 (about 4 digits precision); we have to divide
- * the products by 2^16, with appropriate rounding, to get the correct answer.
- *
- * For even more speed, we avoid doing any multiplications in the inner loop
- * by precalculating the constants times R,G,B for all possible values.
- * For 8-bit JSAMPLEs this is very reasonable (only 256 entries per table);
- * for 12-bit samples it is still acceptable.  It's not very reasonable for
- * 16-bit samples, but if you want lossless storage you shouldn't be changing
- * colorspace anyway.
- * The CENTERJSAMPLE offsets and the rounding fudge-factor of 0.5 are included
- * in the tables to save adding them separately in the inner loop.
- */
-
-#define SCALEBITS	16	/* speediest right-shift on some machines */
-#define CBCR_OFFSET	((INT32) CENTERJSAMPLE << SCALEBITS)
-#define ONE_HALF	((INT32) 1 << (SCALEBITS-1))
-#define FIX(x)		((INT32) ((x) * (1L<<SCALEBITS) + 0.5))
-
-/* We allocate one big table and divide it up into eight parts, instead of
- * doing eight alloc_small requests.  This lets us use a single table base
- * address, which can be held in a register in the inner loops on many
- * machines (more than can hold all eight addresses, anyway).
- */
-
-#define R_Y_OFF		0			/* offset to R => Y section */
-#define G_Y_OFF		(1*(MAXJSAMPLE+1))	/* offset to G => Y section */
-#define B_Y_OFF		(2*(MAXJSAMPLE+1))	/* etc. */
-#define R_CB_OFF	(3*(MAXJSAMPLE+1))
-#define G_CB_OFF	(4*(MAXJSAMPLE+1))
-#define B_CB_OFF	(5*(MAXJSAMPLE+1))
-#define R_CR_OFF	B_CB_OFF		/* B=>Cb, R=>Cr are the same */
-#define G_CR_OFF	(6*(MAXJSAMPLE+1))
-#define B_CR_OFF	(7*(MAXJSAMPLE+1))
-#define TABLE_SIZE	(8*(MAXJSAMPLE+1))
-
-
-/*
- * Initialize for RGB->YCC colorspace conversion.
- */
-
-METHODDEF(void)
-rgb_ycc_start (j_compress_ptr cinfo)
-{
-  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  INT32 * rgb_ycc_tab;
-  INT32 i;
-
-  /* Allocate and fill in the conversion tables. */
-  cconvert->rgb_ycc_tab = rgb_ycc_tab = (INT32 *)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				(TABLE_SIZE * SIZEOF(INT32)));
-
-  for (i = 0; i <= MAXJSAMPLE; i++) {
-    rgb_ycc_tab[i+R_Y_OFF] = FIX(0.29900) * i;
-    rgb_ycc_tab[i+G_Y_OFF] = FIX(0.58700) * i;
-    rgb_ycc_tab[i+B_Y_OFF] = FIX(0.11400) * i     + ONE_HALF;
-    rgb_ycc_tab[i+R_CB_OFF] = (-FIX(0.16874)) * i;
-    rgb_ycc_tab[i+G_CB_OFF] = (-FIX(0.33126)) * i;
-    /* We use a rounding fudge-factor of 0.5-epsilon for Cb and Cr.
-     * This ensures that the maximum output will round to MAXJSAMPLE
-     * not MAXJSAMPLE+1, and thus that we don't have to range-limit.
-     */
-    rgb_ycc_tab[i+B_CB_OFF] = FIX(0.50000) * i    + CBCR_OFFSET + ONE_HALF-1;
-/*  B=>Cb and R=>Cr tables are the same
-    rgb_ycc_tab[i+R_CR_OFF] = FIX(0.50000) * i    + CBCR_OFFSET + ONE_HALF-1;
-*/
-    rgb_ycc_tab[i+G_CR_OFF] = (-FIX(0.41869)) * i;
-    rgb_ycc_tab[i+B_CR_OFF] = (-FIX(0.08131)) * i;
-  }
-}
-
-
-/*
- * Convert some rows of samples to the JPEG colorspace.
- *
- * Note that we change from the application's interleaved-pixel format
- * to our internal noninterleaved, one-plane-per-component format.
- * The input buffer is therefore three times as wide as the output buffer.
- *
- * A starting row offset is provided only for the output buffer.  The caller
- * can easily adjust the passed input_buf value to accommodate any row
- * offset required on that side.
- */
-
-METHODDEF(void)
-rgb_ycc_convert (j_compress_ptr cinfo,
-		 JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-		 JDIMENSION output_row, int num_rows)
-{
-  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  register int r, g, b;
-  register INT32 * ctab = cconvert->rgb_ycc_tab;
-  register JSAMPROW inptr;
-  register JSAMPROW outptr0, outptr1, outptr2;
-  register JDIMENSION col;
-  JDIMENSION num_cols = cinfo->image_width;
-
-  while (--num_rows >= 0) {
-    inptr = *input_buf++;
-    outptr0 = output_buf[0][output_row];
-    outptr1 = output_buf[1][output_row];
-    outptr2 = output_buf[2][output_row];
-    output_row++;
-    for (col = 0; col < num_cols; col++) {
-      r = GETJSAMPLE(inptr[RGB_RED]);
-      g = GETJSAMPLE(inptr[RGB_GREEN]);
-      b = GETJSAMPLE(inptr[RGB_BLUE]);
-      inptr += RGB_PIXELSIZE;
-      /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
-       * must be too; we do not need an explicit range-limiting operation.
-       * Hence the value being shifted is never negative, and we don't
-       * need the general RIGHT_SHIFT macro.
-       */
-      /* Y */
-      outptr0[col] = (JSAMPLE)
-		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
-		 >> SCALEBITS);
-      /* Cb */
-      outptr1[col] = (JSAMPLE)
-		((ctab[r+R_CB_OFF] + ctab[g+G_CB_OFF] + ctab[b+B_CB_OFF])
-		 >> SCALEBITS);
-      /* Cr */
-      outptr2[col] = (JSAMPLE)
-		((ctab[r+R_CR_OFF] + ctab[g+G_CR_OFF] + ctab[b+B_CR_OFF])
-		 >> SCALEBITS);
-    }
-  }
-}
-
-
-/**************** Cases other than RGB -> YCbCr **************/
-
-
-/*
- * Convert some rows of samples to the JPEG colorspace.
- * This version handles RGB->grayscale conversion, which is the same
- * as the RGB->Y portion of RGB->YCbCr.
- * We assume rgb_ycc_start has been called (we only use the Y tables).
- */
-
-METHODDEF(void)
-rgb_gray_convert (j_compress_ptr cinfo,
-		  JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-		  JDIMENSION output_row, int num_rows)
-{
-  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  register int r, g, b;
-  register INT32 * ctab = cconvert->rgb_ycc_tab;
-  register JSAMPROW inptr;
-  register JSAMPROW outptr;
-  register JDIMENSION col;
-  JDIMENSION num_cols = cinfo->image_width;
-
-  while (--num_rows >= 0) {
-    inptr = *input_buf++;
-    outptr = output_buf[0][output_row];
-    output_row++;
-    for (col = 0; col < num_cols; col++) {
-      r = GETJSAMPLE(inptr[RGB_RED]);
-      g = GETJSAMPLE(inptr[RGB_GREEN]);
-      b = GETJSAMPLE(inptr[RGB_BLUE]);
-      inptr += RGB_PIXELSIZE;
-      /* Y */
-      outptr[col] = (JSAMPLE)
-		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
-		 >> SCALEBITS);
-    }
-  }
-}
-
-
-/*
- * Convert some rows of samples to the JPEG colorspace.
- * This version handles Adobe-style CMYK->YCCK conversion,
- * where we convert R=1-C, G=1-M, and B=1-Y to YCbCr using the same
- * conversion as above, while passing K (black) unchanged.
- * We assume rgb_ycc_start has been called.
- */
-
-METHODDEF(void)
-cmyk_ycck_convert (j_compress_ptr cinfo,
-		   JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-		   JDIMENSION output_row, int num_rows)
-{
-  my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
-  register int r, g, b;
-  register INT32 * ctab = cconvert->rgb_ycc_tab;
-  register JSAMPROW inptr;
-  register JSAMPROW outptr0, outptr1, outptr2, outptr3;
-  register JDIMENSION col;
-  JDIMENSION num_cols = cinfo->image_width;
-
-  while (--num_rows >= 0) {
-    inptr = *input_buf++;
-    outptr0 = output_buf[0][output_row];
-    outptr1 = output_buf[1][output_row];
-    outptr2 = output_buf[2][output_row];
-    outptr3 = output_buf[3][output_row];
-    output_row++;
-    for (col = 0; col < num_cols; col++) {
-      r = MAXJSAMPLE - GETJSAMPLE(inptr[0]);
-      g = MAXJSAMPLE - GETJSAMPLE(inptr[1]);
-      b = MAXJSAMPLE - GETJSAMPLE(inptr[2]);
-      /* K passes through as-is */
-      outptr3[col] = inptr[3];	/* don't need GETJSAMPLE here */
-      inptr += 4;
-      /* If the inputs are 0..MAXJSAMPLE, the outputs of these equations
-       * must be too; we do not need an explicit range-limiting operation.
-       * Hence the value being shifted is never negative, and we don't
-       * need the general RIGHT_SHIFT macro.
-       */
-      /* Y */
-      outptr0[col] = (JSAMPLE)
-		((ctab[r+R_Y_OFF] + ctab[g+G_Y_OFF] + ctab[b+B_Y_OFF])
-		 >> SCALEBITS);
-      /* Cb */
-      outptr1[col] = (JSAMPLE)
-		((ctab[r+R_CB_OFF] + ctab[g+G_CB_OFF] + ctab[b+B_CB_OFF])
-		 >> SCALEBITS);
-      /* Cr */
-      outptr2[col] = (JSAMPLE)
-		((ctab[r+R_CR_OFF] + ctab[g+G_CR_OFF] + ctab[b+B_CR_OFF])
-		 >> SCALEBITS);
-    }
-  }
-}
-
-
-/*
- * Convert some rows of samples to the JPEG colorspace.
- * This version handles grayscale output with no conversion.
- * The source can be either plain grayscale or YCbCr (since Y == gray).
- */
-
-METHODDEF(void)
-grayscale_convert (j_compress_ptr cinfo,
-		   JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-		   JDIMENSION output_row, int num_rows)
-{
-  register JSAMPROW inptr;
-  register JSAMPROW outptr;
-  register JDIMENSION col;
-  JDIMENSION num_cols = cinfo->image_width;
-  int instride = cinfo->input_components;
-
-  while (--num_rows >= 0) {
-    inptr = *input_buf++;
-    outptr = output_buf[0][output_row];
-    output_row++;
-    for (col = 0; col < num_cols; col++) {
-      outptr[col] = inptr[0];	/* don't need GETJSAMPLE() here */
-      inptr += instride;
-    }
-  }
-}
-
-
-/*
- * Convert some rows of samples to the JPEG colorspace.
- * This version handles multi-component colorspaces without conversion.
- * We assume input_components == num_components.
- */
-
-METHODDEF(void)
-null_convert (j_compress_ptr cinfo,
-	      JSAMPARRAY input_buf, JSAMPIMAGE output_buf,
-	      JDIMENSION output_row, int num_rows)
-{
-  register JSAMPROW inptr;
-  register JSAMPROW outptr;
-  register JDIMENSION col;
-  register int ci;
-  int nc = cinfo->num_components;
-  JDIMENSION num_cols = cinfo->image_width;
-
-  while (--num_rows >= 0) {
-    /* It seems fastest to make a separate pass for each component. */
-    for (ci = 0; ci < nc; ci++) {
-      inptr = *input_buf;
-      outptr = output_buf[ci][output_row];
-      for (col = 0; col < num_cols; col++) {
-	outptr[col] = inptr[ci]; /* don't need GETJSAMPLE() here */
-	inptr += nc;
-      }
-    }
-    input_buf++;
-    output_row++;
-  }
-}
-
-
-/*
- * Empty method for start_pass.
- */
-
-METHODDEF(void)
-null_method (j_compress_ptr cinfo)
-{
-  /* no work needed */
-}
-
-
-/*
- * Module initialization routine for input colorspace conversion.
- */
-
-GLOBAL(void)
-jinit_color_converter (j_compress_ptr cinfo)
-{
-  my_cconvert_ptr cconvert;
-
-  cconvert = (my_cconvert_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_color_converter));
-  cinfo->cconvert = (struct jpeg_color_converter *) cconvert;
-  /* set start_pass to null method until we find out differently */
-  cconvert->pub.start_pass = null_method;
-
-  /* Make sure input_components agrees with in_color_space */
-  switch (cinfo->in_color_space) {
-  case JCS_GRAYSCALE:
-    if (cinfo->input_components != 1)
-      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
-    break;
-
-  case JCS_RGB:
-#if RGB_PIXELSIZE != 3
-    if (cinfo->input_components != RGB_PIXELSIZE)
-      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
-    break;
-#endif /* else share code with YCbCr */
-
-  case JCS_YCbCr:
-    if (cinfo->input_components != 3)
-      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
-    break;
-
-  case JCS_CMYK:
-  case JCS_YCCK:
-    if (cinfo->input_components != 4)
-      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
-    break;
-
-  default:			/* JCS_UNKNOWN can be anything */
-    if (cinfo->input_components < 1)
-      ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
-    break;
-  }
-
-  /* Check num_components, set conversion method based on requested space */
-  switch (cinfo->jpeg_color_space) {
-  case JCS_GRAYSCALE:
-    if (cinfo->num_components != 1)
-      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
-    if (cinfo->in_color_space == JCS_GRAYSCALE)
-      cconvert->pub.color_convert = grayscale_convert;
-    else if (cinfo->in_color_space == JCS_RGB) {
-      cconvert->pub.start_pass = rgb_ycc_start;
-      cconvert->pub.color_convert = rgb_gray_convert;
-    } else if (cinfo->in_color_space == JCS_YCbCr)
-      cconvert->pub.color_convert = grayscale_convert;
-    else
-      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    break;
-
-  case JCS_RGB:
-    if (cinfo->num_components != 3)
-      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
-    if (cinfo->in_color_space == JCS_RGB && RGB_PIXELSIZE == 3)
-      cconvert->pub.color_convert = null_convert;
-    else
-      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    break;
-
-  case JCS_YCbCr:
-    if (cinfo->num_components != 3)
-      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
-    if (cinfo->in_color_space == JCS_RGB) {
-      cconvert->pub.start_pass = rgb_ycc_start;
-      cconvert->pub.color_convert = rgb_ycc_convert;
-    } else if (cinfo->in_color_space == JCS_YCbCr)
-      cconvert->pub.color_convert = null_convert;
-    else
-      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    break;
-
-  case JCS_CMYK:
-    if (cinfo->num_components != 4)
-      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
-    if (cinfo->in_color_space == JCS_CMYK)
-      cconvert->pub.color_convert = null_convert;
-    else
-      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    break;
-
-  case JCS_YCCK:
-    if (cinfo->num_components != 4)
-      ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
-    if (cinfo->in_color_space == JCS_CMYK) {
-      cconvert->pub.start_pass = rgb_ycc_start;
-      cconvert->pub.color_convert = cmyk_ycck_convert;
-    } else if (cinfo->in_color_space == JCS_YCCK)
-      cconvert->pub.color_convert = null_convert;
-    else
-      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    break;
-
-  default:			/* allow null conversion of JCS_UNKNOWN */
-    if (cinfo->jpeg_color_space != cinfo->in_color_space ||
-	cinfo->num_components != cinfo->input_components)
-      ERREXIT(cinfo, JERR_CONVERSION_NOTIMPL);
-    cconvert->pub.color_convert = null_convert;
-    break;
-  }
-}

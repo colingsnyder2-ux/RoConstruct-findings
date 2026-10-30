@@ -1,426 +1,154 @@
 // from server: 100% by auto
+// roc 2007-03 004b6880  unit: seg_004b0000  size: 423 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 004b6880
+//
+// 004b6880  83ec20               sub esp, 0x20
+// 004b6883  53                   push ebx
+// 004b6884  55                   push ebp
+// 004b6885  8b6c2430             mov ebp, dword ptr [esp + 0x30]
+// 004b6889  56                   push esi
+// 004b688a  57                   push edi
+// 004b688b  8b7c2434             mov edi, dword ptr [esp + 0x34]
+// 004b688f  8bf1                 mov esi, ecx
+// 004b6891  55                   push ebp
+// 004b6892  57                   push edi
+// 004b6893  c6868000000001       mov byte ptr [esi + 0x80], 1
+// 004b689a  e8b180ffff           call 0x4ae950
+// 004b689f  83c408               add esp, 8
+// 004b68a2  84c0                 test al, al
+// 004b68a4  8d9ef4000000         lea ebx, [esi + 0xf4]
+// 004b68aa  7435                 je 0x4b68e1
+// 004b68ac  8b07                 mov eax, dword ptr [edi]
+// 004b68ae  8903                 mov dword ptr [ebx], eax
+// 004b68b0  8b4f04               mov ecx, dword ptr [edi + 4]
+// 004b68b3  894b04               mov dword ptr [ebx + 4], ecx
+// 004b68b6  8b5708               mov edx, dword ptr [edi + 8]
+// 004b68b9  895308               mov dword ptr [ebx + 8], edx
+// 004b68bc  8b470c               mov eax, dword ptr [edi + 0xc]
+// 004b68bf  89430c               mov dword ptr [ebx + 0xc], eax
+// 004b68c2  8b4d00               mov ecx, dword ptr [ebp]
+// 004b68c5  8dbec4000000         lea edi, [esi + 0xc4]
+// 004b68cb  890f                 mov dword ptr [edi], ecx
+// 004b68cd  8b5504               mov edx, dword ptr [ebp + 4]
+// 004b68d0  895704               mov dword ptr [edi + 4], edx
+// 004b68d3  8b4508               mov eax, dword ptr [ebp + 8]
+// 004b68d6  894708               mov dword ptr [edi + 8], eax
+// 004b68d9  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
+// 004b68dc  894f0c               mov dword ptr [edi + 0xc], ecx
+// 004b68df  eb3b                 jmp 0x4b691c
+// 004b68e1  8b442434             mov eax, dword ptr [esp + 0x34]
+// 004b68e5  8b10                 mov edx, dword ptr [eax]
+// 004b68e7  8996c4000000         mov dword ptr [esi + 0xc4], edx
+// 004b68ed  8b4804               mov ecx, dword ptr [eax + 4]
+// 004b68f0  8dbec4000000         lea edi, [esi + 0xc4]
+// 004b68f6  894f04               mov dword ptr [edi + 4], ecx
+// 004b68f9  8b5008               mov edx, dword ptr [eax + 8]
+// 004b68fc  895708               mov dword ptr [edi + 8], edx
+// 004b68ff  8b400c               mov eax, dword ptr [eax + 0xc]
+// 004b6902  89470c               mov dword ptr [edi + 0xc], eax
+// 004b6905  8b4d00               mov ecx, dword ptr [ebp]
+// 004b6908  890b                 mov dword ptr [ebx], ecx
+// 004b690a  8b5504               mov edx, dword ptr [ebp + 4]
+// 004b690d  895304               mov dword ptr [ebx + 4], edx
+// 004b6910  8b4508               mov eax, dword ptr [ebp + 8]
+// 004b6913  894308               mov dword ptr [ebx + 8], eax
+// 004b6916  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
+// 004b6919  894b0c               mov dword ptr [ebx + 0xc], ecx
+// 004b691c  8b17                 mov edx, dword ptr [edi]
+// 004b691e  8b4f08               mov ecx, dword ptr [edi + 8]
+// 004b6921  8b4704               mov eax, dword ptr [edi + 4]
+// 004b6924  89542420             mov dword ptr [esp + 0x20], edx
+// 004b6928  8b570c               mov edx, dword ptr [edi + 0xc]
+// 004b692b  894c2428             mov dword ptr [esp + 0x28], ecx
+// 004b692f  89442424             mov dword ptr [esp + 0x24], eax
+// 004b6933  8954242c             mov dword ptr [esp + 0x2c], edx
+// 004b6937  33c9                 xor ecx, ecx
+// 004b6939  8da42400000000       lea esp, [esp]
+// 004b6940  8b448c20             mov eax, dword ptr [esp + ecx*4 + 0x20]
+// 004b6944  85c0                 test eax, eax
+// 004b6946  8d50ff               lea edx, [eax - 1]
+// 004b6949  89548c20             mov dword ptr [esp + ecx*4 + 0x20], edx
+// 004b694d  7508                 jne 0x4b6957
+// 004b694f  83c101               add ecx, 1
+// 004b6952  83f904               cmp ecx, 4
+// 004b6955  72e9                 jb 0x4b6940
+// 004b6957  8b03                 mov eax, dword ptr [ebx]
+// 004b6959  8b4b04               mov ecx, dword ptr [ebx + 4]
+// 004b695c  8b5308               mov edx, dword ptr [ebx + 8]
+// 004b695f  89442410             mov dword ptr [esp + 0x10], eax
+// 004b6963  8b430c               mov eax, dword ptr [ebx + 0xc]
+// 004b6966  894c2414             mov dword ptr [esp + 0x14], ecx
+// 004b696a  89542418             mov dword ptr [esp + 0x18], edx
+// 004b696e  8944241c             mov dword ptr [esp + 0x1c], eax
+// 004b6972  33c9                 xor ecx, ecx
+// 004b6974  8b448c10             mov eax, dword ptr [esp + ecx*4 + 0x10]
+// 004b6978  85c0                 test eax, eax
+// 004b697a  8d50ff               lea edx, [eax - 1]
+// 004b697d  89548c10             mov dword ptr [esp + ecx*4 + 0x10], edx
+// 004b6981  7508                 jne 0x4b698b
+// 004b6983  83c101               add ecx, 1
+// 004b6986  83f904               cmp ecx, 4
+// 004b6989  72e9                 jb 0x4b6974
+// 004b698b  8daea4000000         lea ebp, [esi + 0xa4]
+// 004b6991  55                   push ebp
+// 004b6992  8d442414             lea eax, [esp + 0x14]
+// 004b6996  50                   push eax
+// 004b6997  8d4c2428             lea ecx, [esp + 0x28]
+// 004b699b  51                   push ecx
+// 004b699c  e88f94ffff           call 0x4afe30
+// 004b69a1  56                   push esi
+// 004b69a2  55                   push ebp
+// 004b69a3  e8e8beffff           call 0x4b2890
+// 004b69a8  8d9684000000         lea edx, [esi + 0x84]
+// 004b69ae  52                   push edx
+// 004b69af  55                   push ebp
+// 004b69b0  56                   push esi
+// 004b69b1  e86ac8ffff           call 0x4b3220
+// 004b69b6  8d8624010000         lea eax, [esi + 0x124]
+// 004b69bc  50                   push eax
+// 004b69bd  53                   push ebx
+// 004b69be  57                   push edi
+// 004b69bf  e85cc0ffff           call 0x4b2a20
+// 004b69c4  8d6e20               lea ebp, [esi + 0x20]
+// 004b69c7  55                   push ebp
+// 004b69c8  53                   push ebx
+// 004b69c9  57                   push edi
+// 004b69ca  e86194ffff           call 0x4afe30
+// 004b69cf  8d4e40               lea ecx, [esi + 0x40]
+// 004b69d2  51                   push ecx
+// 004b69d3  55                   push ebp
+// 004b69d4  e8d7ebffff           call 0x4b55b0
+// 004b69d9  83c440               add esp, 0x40
+// 004b69dc  8d5660               lea edx, [esi + 0x60]
+// 004b69df  52                   push edx
+// 004b69e0  55                   push ebp
+// 004b69e1  e81abcffff           call 0x4b2600
+// 004b69e6  8d86d4000000         lea eax, [esi + 0xd4]
+// 004b69ec  50                   push eax
+// 004b69ed  57                   push edi
+// 004b69ee  e85defffff           call 0x4b5950
+// 004b69f3  8d8ee4000000         lea ecx, [esi + 0xe4]
+// 004b69f9  51                   push ecx
+// 004b69fa  57                   push edi
+// 004b69fb  e8d0c2ffff           call 0x4b2cd0
+// 004b6a00  8d9604010000         lea edx, [esi + 0x104]
+// 004b6a06  52                   push edx
+// 004b6a07  53                   push ebx
+// 004b6a08  e843efffff           call 0x4b5950
+// 004b6a0d  81c614010000         add esi, 0x114
+// 004b6a13  56                   push esi
+// 004b6a14  53                   push ebx
+// 004b6a15  e8b6c2ffff           call 0x4b2cd0
+// 004b6a1a  83c428               add esp, 0x28
+// 004b6a1d  5f                   pop edi
+// 004b6a1e  5e                   pop esi
+// 004b6a1f  5d                   pop ebp
+// 004b6a20  5b                   pop ebx
+// 004b6a21  83c420               add esp, 0x20
+// 004b6a24  c20800               ret 8
+
 // from server: 27% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: raknet-4.081 MessageFilter.cpp
-
-// Candidate translation unit (score above; library headers required).
-/*
- *  Copyright (c) 2014, Oculus VR, Inc.
- *  All rights reserved.
- *
- *  This source code is licensed under the BSD-style license found in the
- *  LICENSE file in the root directory of this source tree. An additional grant 
- *  of patent rights can be found in the PATENTS file in the same directory.
- *
- */
-
-#include "NativeFeatureIncludes.h"
-#if _RAKNET_SUPPORT_MessageFilter==1
-
-#include "MessageFilter.h"
-#include "RakAssert.h"
-#include "GetTime.h"
-#include "MessageIdentifiers.h"
-#include "RakAssert.h"
-#include "RakPeerInterface.h"
-#include "PacketizedTCP.h"
-#include "BitStream.h"
-
-#ifdef _MSC_VER
-#pragma warning( push )
-#endif
-
-using namespace RakNet;
-
-int RakNet::MessageFilterStrComp( char *const &key,char *const &data )
-{
-	return strcmp(key,data);
-}
-
-int RakNet::FilterSetComp( const int &key, FilterSet * const &data )
-{
-	if (key < data->filterSetID)
-		return -1;
-	else if (key==data->filterSetID)
-		return 0;
-	else
-		return 1;
-}
-STATIC_FACTORY_DEFINITIONS(MessageFilter,MessageFilter);
-
-MessageFilter::MessageFilter()
-{
-		whenLastTimeoutCheck=RakNet::GetTime();
-}
-MessageFilter::~MessageFilter()
-{
-	Clear();
-}
-void MessageFilter::SetAutoAddNewConnectionsToFilter(int filterSetID)
-{
-	autoAddNewConnectionsToFilter=filterSetID;
-}
-void MessageFilter::SetAllowMessageID(bool allow, int messageIDStart, int messageIDEnd,int filterSetID)
-{
-	RakAssert(messageIDStart <= messageIDEnd);
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	int i;
-	for (i=messageIDStart; i <= messageIDEnd; ++i)
-		filterSet->allowedIDs[i]=allow;
-}
-void MessageFilter::SetAllowRPC4(bool allow, const char* uniqueID, int filterSetID)
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	bool objectExists;
-	unsigned int idx = filterSet->allowedRPC4.GetIndexFromKey(uniqueID, &objectExists);
-	if (allow)
-	{
-		if (objectExists==false)
-		{
-			filterSet->allowedRPC4.InsertAtIndex(uniqueID, idx, _FILE_AND_LINE_);
-			filterSet->allowedIDs[ID_RPC_PLUGIN]=true;
-		}
-	}
-	else
-	{
-		if (objectExists==true)
-		{
-			filterSet->allowedRPC4.RemoveAtIndex(idx);
-			if (filterSet->allowedRPC4.Size()==0)
-			{
-				filterSet->allowedIDs[ID_RPC_PLUGIN]=false;
-			}
-		}
-	}
-}
-void MessageFilter::SetActionOnDisallowedMessage(bool kickOnDisallowed, bool banOnDisallowed, RakNet::TimeMS banTimeMS, int filterSetID)
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->kickOnDisallowedMessage=kickOnDisallowed;
-	filterSet->disallowedMessageBanTimeMS=banTimeMS;
-	filterSet->banOnDisallowedMessage=banOnDisallowed;
-}
-void MessageFilter::SetDisallowedMessageCallback(int filterSetID, void *userData, void (*invalidMessageCallback)(RakPeerInterface *peer, AddressOrGUID systemAddress, int filterSetID, void *userData, unsigned char messageID))
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->invalidMessageCallback=invalidMessageCallback;
-	filterSet->disallowedCallbackUserData=userData;
-}
-void MessageFilter::SetTimeoutCallback(int filterSetID, void *userData, void (*invalidMessageCallback)(RakPeerInterface *peer, AddressOrGUID systemAddress, int filterSetID, void *userData))
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->timeoutCallback=invalidMessageCallback;
-	filterSet->timeoutUserData=userData;
-}
-void MessageFilter::SetFilterMaxTime(int allowedTimeMS, bool banOnExceed, RakNet::TimeMS banTimeMS, int filterSetID)
-{
-	FilterSet *filterSet = GetFilterSetByID(filterSetID);
-	filterSet->maxMemberTimeMS=allowedTimeMS;
-	filterSet->banOnFilterTimeExceed=banOnExceed;
-	filterSet->timeExceedBanTimeMS=banTimeMS;
-}
-int MessageFilter::GetSystemFilterSet(AddressOrGUID systemAddress)
-{
-// 	bool objectExists;
-// 	unsigned index = systemList.GetIndexFromKey(systemAddress, &objectExists);
-// 	if (objectExists==false)
-// 		return -1;
-// 	else
-// 		return systemList[index].filter->filterSetID;
-
-	DataStructures::HashIndex index = systemList.GetIndexOf(systemAddress);
-	if (index.IsInvalid())
-		return -1;
-	else
-		return systemList.ItemAtIndex(index).filter->filterSetID;
-}
-void MessageFilter::SetSystemFilterSet(AddressOrGUID addressOrGUID, int filterSetID)
-{
-	// Allocate this filter set if it doesn't exist.
-	RakAssert(addressOrGUID.IsUndefined()==false);
-//	bool objectExists;
-// 	unsigned index = systemList.GetIndexFromKey(addressOrGUID, &objectExists);
-// 	if (objectExists==false)
-	DataStructures::HashIndex index = systemList.GetIndexOf(addressOrGUID);
-	if (index.IsInvalid())
-	{
-		if (filterSetID<0)
-			return;
-
-		FilteredSystem filteredSystem;
-		filteredSystem.filter = GetFilterSetByID(filterSetID);
-	//	filteredSystem.addressOrGUID=addressOrGUID;
-		filteredSystem.timeEnteredThisSet=RakNet::GetTimeMS();
-	//	systemList.Insert(addressOrGUID, filteredSystem, true, _FILE_AND_LINE_);
-		systemList.Push(addressOrGUID,filteredSystem,_FILE_AND_LINE_);
-	}
-	else
-	{
-		if (filterSetID>=0)
-		{
-			FilterSet *filterSet = GetFilterSetByID(filterSetID);
-			systemList.ItemAtIndex(index).timeEnteredThisSet=RakNet::GetTimeMS();
-			systemList.ItemAtIndex(index).filter=filterSet;
-		}
-		else
-		{
-			systemList.RemoveAtIndex(index, _FILE_AND_LINE_);
-		}
-	}	
-}
-unsigned MessageFilter::GetSystemCount(int filterSetID) const
-{
-	if (filterSetID==-1)
-	{
-		return systemList.Size();
-	}
-	else
-	{
-		unsigned i;
-		unsigned count=0;
-		DataStructures::List< FilteredSystem > itemList;
-		DataStructures::List< AddressOrGUID > keyList;
-		systemList.GetAsList(itemList, keyList, _FILE_AND_LINE_);
-		for (i=0; i < itemList.Size(); i++)
-			if (itemList[i].filter->filterSetID==filterSetID)
-				++count;
-		return count;
-	}
-}
-unsigned MessageFilter::GetFilterSetCount(void) const
-{
-	return filterList.Size();
-}
-int MessageFilter::GetFilterSetIDByIndex(unsigned index)
-{
-	return filterList[index]->filterSetID;
-}
-void MessageFilter::DeleteFilterSet(int filterSetID)
-{
-	FilterSet *filterSet;
-	bool objectExists;
-	unsigned i,index;
-	index = filterList.GetIndexFromKey(filterSetID, &objectExists);
-	if (objectExists)
-	{
-		filterSet=filterList[index];
-		DeallocateFilterSet(filterSet);
-		filterList.RemoveAtIndex(index);
-
-		DataStructures::List< FilteredSystem > itemList;
-		DataStructures::List< AddressOrGUID > keyList;
-		systemList.GetAsList(itemList, keyList, _FILE_AND_LINE_);
-		for (i=0; i < itemList.Size(); i++)
-		{
-			if (itemList[i].filter==filterSet)
-			{
-				systemList.Remove(keyList[i], _FILE_AND_LINE_);
-			}
-		}
-
-		/*
-		// Don't reference this pointer any longer
-		i=0;
-		while (i < systemList.Size())
-		{
-			if (systemList[i].filter==filterSet)
-				systemList.RemoveAtIndex(i);
-			else
-				++i;
-		}
-		*/
-	}
-}
-void MessageFilter::Clear(void)
-{
-	unsigned i;
-	systemList.Clear(_FILE_AND_LINE_);
-	for (i=0; i < filterList.Size(); i++)
-		DeallocateFilterSet(filterList[i]);
-	filterList.Clear(false, _FILE_AND_LINE_);
-}
-void MessageFilter::DeallocateFilterSet(FilterSet* filterSet)
-{
-	RakNet::OP_DELETE(filterSet, _FILE_AND_LINE_);
-}
-FilterSet* MessageFilter::GetFilterSetByID(int filterSetID)
-{
-	RakAssert(filterSetID>=0);
-	bool objectExists;
-	unsigned index;
-	index = filterList.GetIndexFromKey(filterSetID, &objectExists);
-	if (objectExists)
-		return filterList[index];
-	else
-	{
-		FilterSet *newFilterSet = RakNet::OP_NEW<FilterSet>( _FILE_AND_LINE_ );
-		memset(newFilterSet->allowedIDs, 0, MESSAGE_FILTER_MAX_MESSAGE_ID * sizeof(bool));
-		newFilterSet->banOnFilterTimeExceed=false;
-		newFilterSet->kickOnDisallowedMessage=false;
-		newFilterSet->banOnDisallowedMessage=false;
-		newFilterSet->disallowedMessageBanTimeMS=0;
-		newFilterSet->timeExceedBanTimeMS=0;
-		newFilterSet->maxMemberTimeMS=0;
-		newFilterSet->filterSetID=filterSetID;
-		newFilterSet->invalidMessageCallback=0;
-		newFilterSet->timeoutCallback=0;
-		newFilterSet->timeoutUserData=0;
-		filterList.Insert(filterSetID, newFilterSet, true, _FILE_AND_LINE_);
-		return newFilterSet;
-	}
-}
-void MessageFilter::OnInvalidMessage(FilterSet *filterSet, AddressOrGUID systemAddress, unsigned char messageID)
-{
-	if (filterSet->invalidMessageCallback)
-		filterSet->invalidMessageCallback(rakPeerInterface, systemAddress, filterSet->filterSetID, filterSet->disallowedCallbackUserData, messageID);
-	if (filterSet->banOnDisallowedMessage && rakPeerInterface)
-	{
-		char str1[64];
-		systemAddress.systemAddress.ToString(false, str1);
-		rakPeerInterface->AddToBanList(str1, filterSet->disallowedMessageBanTimeMS);
-	}
-	if (filterSet->kickOnDisallowedMessage)
-	{
-		if (rakPeerInterface)
-			rakPeerInterface->CloseConnection(systemAddress, true, 0);
-#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
-		else
-			tcpInterface->CloseConnection(systemAddress.systemAddress);
-#endif
-	}
-}
-void MessageFilter::Update(void)
-{
-	// Update all timers for all systems.  If those systems' filter sets are expired, take the appropriate action.
-	RakNet::Time curTime = RakNet::GetTime();
-	if (GreaterThan(curTime - 1000, whenLastTimeoutCheck))
-	{
-		DataStructures::List< FilteredSystem > itemList;
-		DataStructures::List< AddressOrGUID > keyList;
-		systemList.GetAsList(itemList, keyList, _FILE_AND_LINE_);
-
-		unsigned int index;
-		for (index=0; index < itemList.Size(); index++)
-		{
-			if (itemList[index].filter &&
-				itemList[index].filter->maxMemberTimeMS>0 &&
-				curTime-itemList[index].timeEnteredThisSet >= itemList[index].filter->maxMemberTimeMS)
-			{
-				if (itemList[index].filter->timeoutCallback)
-					itemList[index].filter->timeoutCallback(rakPeerInterface, keyList[index], itemList[index].filter->filterSetID, itemList[index].filter->timeoutUserData);
-
-				if (itemList[index].filter->banOnFilterTimeExceed && rakPeerInterface)
-				{
-					char str1[64];
-					keyList[index].ToString(false, str1);
-					rakPeerInterface->AddToBanList(str1, itemList[index].filter->timeExceedBanTimeMS);
-				}
-				if (rakPeerInterface)
-					rakPeerInterface->CloseConnection(keyList[index], true, 0);
-#if _RAKNET_SUPPORT_PacketizedTCP==1 && _RAKNET_SUPPORT_TCPInterface==1
-				else
-					tcpInterface->CloseConnection(keyList[index].systemAddress);
-#endif
-
-				systemList.Remove(keyList[index], _FILE_AND_LINE_);
-			}
-		}
-
-		whenLastTimeoutCheck=curTime+1000;
-	}
-}
-void MessageFilter::OnNewConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, bool isIncoming)
-{
-	(void) systemAddress;
-	(void) rakNetGUID;
-	(void) isIncoming;
-
-	AddressOrGUID aog;
-	aog.rakNetGuid=rakNetGUID;
-	aog.systemAddress=systemAddress;
-
-	// New system, automatically assign to filter set if appropriate
-	if (autoAddNewConnectionsToFilter>=0 && systemList.HasData(aog)==false)
-		SetSystemFilterSet(aog, autoAddNewConnectionsToFilter);
-}
-void MessageFilter::OnClosedConnection(const SystemAddress &systemAddress, RakNetGUID rakNetGUID, PI2_LostConnectionReason lostConnectionReason )
-{
-	(void) rakNetGUID;
-	(void) lostConnectionReason;
-
-	AddressOrGUID aog;
-	aog.rakNetGuid=rakNetGUID;
-	aog.systemAddress=systemAddress;
-
-	// Lost system, remove from the list
-	systemList.Remove(aog, _FILE_AND_LINE_);
-}
- PluginReceiveResult MessageFilter::OnReceive(Packet *packet)
-{
-	DataStructures::HashIndex index;
-	unsigned char messageId;
-
-	switch (packet->data[0]) 
-	{
-	case ID_NEW_INCOMING_CONNECTION:
-	case ID_CONNECTION_REQUEST_ACCEPTED:
-	case ID_CONNECTION_LOST:
-	case ID_DISCONNECTION_NOTIFICATION:
-	case ID_CONNECTION_ATTEMPT_FAILED:
-	case ID_NO_FREE_INCOMING_CONNECTIONS:
-	case ID_IP_RECENTLY_CONNECTED:
-	case ID_CONNECTION_BANNED:
-	case ID_INVALID_PASSWORD:
-	case ID_UNCONNECTED_PONG:
-	case ID_ALREADY_CONNECTED:
-	case ID_ADVERTISE_SYSTEM:
-	case ID_REMOTE_DISCONNECTION_NOTIFICATION:
-	case ID_REMOTE_CONNECTION_LOST:
-	case ID_REMOTE_NEW_INCOMING_CONNECTION:
-	case ID_DOWNLOAD_PROGRESS:
-		break;
-	default:
-		if (packet->data[0]==ID_TIMESTAMP)
-		{
-			if (packet->length<sizeof(MessageID) + sizeof(RakNet::TimeMS))
-				return RR_STOP_PROCESSING_AND_DEALLOCATE; // Invalid message
-			messageId=packet->data[sizeof(MessageID) + sizeof(RakNet::TimeMS)];
-		}
-		else
-			messageId=packet->data[0];
-		// If this system is filtered, check if this message is allowed.  If not allowed, return RR_STOP_PROCESSING_AND_DEALLOCATE
-		// index = systemList.GetIndexFromKey(packet->addressOrGUID, &objectExists);
-		index = systemList.GetIndexOf(packet);
-		if (index.IsInvalid())
-			break;
-		if (systemList.ItemAtIndex(index).filter->allowedIDs[messageId]==false)
-		{
-			OnInvalidMessage(systemList.ItemAtIndex(index).filter, packet, packet->data[0]);
-			return RR_STOP_PROCESSING_AND_DEALLOCATE;
-		}
-		if (packet->data[0]==ID_RPC_PLUGIN)
-		{
-			RakNet::BitStream bsIn(packet->data,packet->length,false);
-			bsIn.IgnoreBytes(2);
-			RakNet::RakString functionName;
-			bsIn.ReadCompressed(functionName);
-			if (systemList.ItemAtIndex(index).filter->allowedRPC4.HasData(functionName)==false)
-			{
-				OnInvalidMessage(systemList.ItemAtIndex(index).filter, packet, packet->data[0]);
-				return RR_STOP_PROCESSING_AND_DEALLOCATE;
-			}
-		}
-		
-		break;
-	}
-	
-	return RR_CONTINUE_PROCESSING;
-}
-
-#ifdef _MSC_VER
-#pragma warning( pop )
-#endif
-
-#endif // _RAKNET_SUPPORT_*

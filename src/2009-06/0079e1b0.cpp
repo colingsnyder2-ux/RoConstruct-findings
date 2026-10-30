@@ -1,2434 +1,1103 @@
+// roc 2009-06 0079e1b0  unit: CXTPControlGalleryPaintManager  size: 3093 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 0079e1b0
+//
+// 0079e1b0  81ec84000000         sub esp, 0x84
+// 0079e1b6  53                   push ebx
+// 0079e1b7  8b9c2490000000       mov ebx, dword ptr [esp + 0x90]
+// 0079e1be  8b4360               mov eax, dword ptr [ebx + 0x60]
+// 0079e1c1  55                   push ebp
+// 0079e1c2  56                   push esi
+// 0079e1c3  57                   push edi
+// 0079e1c4  898c2480000000       mov dword ptr [esp + 0x80], ecx
+// 0079e1cb  85c0                 test eax, eax
+// 0079e1cd  741d                 je 0x79e1ec
+// 0079e1cf  83c9ff               or ecx, 0xffffffff
+// 0079e1d2  83783000             cmp dword ptr [eax + 0x30], 0
+// 0079e1d6  750b                 jne 0x79e1e3
+// 0079e1d8  833800               cmp dword ptr [eax], 0
+// 0079e1db  7506                 jne 0x79e1e3
+// 0079e1dd  894c2410             mov dword ptr [esp + 0x10], ecx
+// 0079e1e1  eb14                 jmp 0x79e1f7
+// 0079e1e3  8b4358               mov eax, dword ptr [ebx + 0x58]
+// 0079e1e6  89442410             mov dword ptr [esp + 0x10], eax
+// 0079e1ea  eb0b                 jmp 0x79e1f7
+// 0079e1ec  8b4b58               mov ecx, dword ptr [ebx + 0x58]
+// 0079e1ef  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
+// 0079e1f7  8b5320               mov edx, dword ptr [ebx + 0x20]
+// 0079e1fa  2b531c               sub edx, dword ptr [ebx + 0x1c]
+// 0079e1fd  894c2414             mov dword ptr [esp + 0x14], ecx
+// 0079e201  85d2                 test edx, edx
+// 0079e203  0f8eaf0b0000         jle 0x79edb8
+// 0079e209  8b4308               mov eax, dword ptr [ebx + 8]
+// 0079e20c  2b430c               sub eax, dword ptr [ebx + 0xc]
+// 0079e20f  2b4304               sub eax, dword ptr [ebx + 4]
+// 0079e212  40                   inc eax
+// 0079e213  85c0                 test eax, eax
+// 0079e215  7e14                 jle 0x79e22b
+// 0079e217  8b13                 mov edx, dword ptr [ebx]
+// 0079e219  8b4204               mov eax, dword ptr [edx + 4]
+// 0079e21c  8bcb                 mov ecx, ebx
+// 0079e21e  ffd0                 call eax
+// 0079e220  85c0                 test eax, eax
+// 0079e222  7407                 je 0x79e22b
+// 0079e224  bf01000000           mov edi, 1
+// 0079e229  eb02                 jmp 0x79e22d
+// 0079e22b  33ff                 xor edi, edi
+// 0079e22d  8b4b34               mov ecx, dword ptr [ebx + 0x34]
+// 0079e230  8b4338               mov eax, dword ptr [ebx + 0x38]
+// 0079e233  8bf1                 mov esi, ecx
+// 0079e235  2bf0                 sub esi, eax
+// 0079e237  2b4328               sub eax, dword ptr [ebx + 0x28]
+// 0079e23a  8944244c             mov dword ptr [esp + 0x4c], eax
+// 0079e23e  85ff                 test edi, edi
+// 0079e240  7405                 je 0x79e247
+// 0079e242  3b4b2c               cmp ecx, dword ptr [ebx + 0x2c]
+// 0079e245  7e06                 jle 0x79e24d
+// 0079e247  33f6                 xor esi, esi
+// 0079e249  8974244c             mov dword ptr [esp + 0x4c], esi
+// 0079e24d  8bcb                 mov ecx, ebx
+// 0079e24f  e8cc230700           call 0x810620
+// 0079e254  837b5c00             cmp dword ptr [ebx + 0x5c], 0
+// 0079e258  89442448             mov dword ptr [esp + 0x48], eax
+// 0079e25c  0f84b1050000         je 0x79e813
+// 0079e262  8d4b48               lea ecx, [ebx + 0x48]
+// 0079e265  51                   push ecx
+// 0079e266  8d942488000000       lea edx, [esp + 0x88]
+// 0079e26d  52                   push edx
+// 0079e26e  ff1500ee8900         call dword ptr [0x89ee00]
+// 0079e274  8b6b2c               mov ebp, dword ptr [ebx + 0x2c]
+// 0079e277  8b842484000000       mov eax, dword ptr [esp + 0x84]
+// 0079e27e  8b5328               mov edx, dword ptr [ebx + 0x28]
+// 0079e281  8b8c2488000000       mov ecx, dword ptr [esp + 0x88]
+// 0079e288  896c241c             mov dword ptr [esp + 0x1c], ebp
+// 0079e28c  8bac2490000000       mov ebp, dword ptr [esp + 0x90]
+// 0079e293  896c2424             mov dword ptr [esp + 0x24], ebp
+// 0079e297  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
+// 0079e29b  896c245c             mov dword ptr [esp + 0x5c], ebp
+// 0079e29f  8b6c244c             mov ebp, dword ptr [esp + 0x4c]
+// 0079e2a3  89542444             mov dword ptr [esp + 0x44], edx
+// 0079e2a7  89542454             mov dword ptr [esp + 0x54], edx
+// 0079e2ab  89542474             mov dword ptr [esp + 0x74], edx
+// 0079e2af  03d5                 add edx, ebp
+// 0079e2b1  03f2                 add esi, edx
+// 0079e2b3  89442438             mov dword ptr [esp + 0x38], eax
+// 0079e2b7  89442418             mov dword ptr [esp + 0x18], eax
+// 0079e2bb  89442450             mov dword ptr [esp + 0x50], eax
+// 0079e2bf  89442470             mov dword ptr [esp + 0x70], eax
+// 0079e2c3  89442428             mov dword ptr [esp + 0x28], eax
+// 0079e2c7  89442460             mov dword ptr [esp + 0x60], eax
+// 0079e2cb  8b442448             mov eax, dword ptr [esp + 0x48]
+// 0079e2cf  894c243c             mov dword ptr [esp + 0x3c], ecx
+// 0079e2d3  8b8c248c000000       mov ecx, dword ptr [esp + 0x8c]
+// 0079e2da  8954247c             mov dword ptr [esp + 0x7c], edx
+// 0079e2de  8954242c             mov dword ptr [esp + 0x2c], edx
+// 0079e2e2  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 0079e2e6  894c2440             mov dword ptr [esp + 0x40], ecx
+// 0079e2ea  894c2420             mov dword ptr [esp + 0x20], ecx
+// 0079e2ee  894c2458             mov dword ptr [esp + 0x58], ecx
+// 0079e2f2  894c2478             mov dword ptr [esp + 0x78], ecx
+// 0079e2f6  894c2430             mov dword ptr [esp + 0x30], ecx
+// 0079e2fa  89742434             mov dword ptr [esp + 0x34], esi
+// 0079e2fe  89742464             mov dword ptr [esp + 0x64], esi
+// 0079e302  894c2468             mov dword ptr [esp + 0x68], ecx
+// 0079e306  8954246c             mov dword ptr [esp + 0x6c], edx
+// 0079e30a  83f803               cmp eax, 3
+// 0079e30d  0f85fc010000         jne 0x79e50f
+// 0079e313  8bb42480000000       mov esi, dword ptr [esp + 0x80]
+// 0079e31a  83c620               add esi, 0x20
+// 0079e31d  8bce                 mov ecx, esi
+// 0079e31f  e87c28ffff           call 0x790ba0
+// 0079e324  85c0                 test eax, eax
+// 0079e326  0f8443030000         je 0x79e66f
+// 0079e32c  85ff                 test edi, edi
+// 0079e32e  7505                 jne 0x79e335
+// 0079e330  8d4f04               lea ecx, [edi + 4]
+// 0079e333  eb1a                 jmp 0x79e34f
+// 0079e335  b83c000000           mov eax, 0x3c
+// 0079e33a  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e33e  7505                 jne 0x79e345
+// 0079e340  8d48c7               lea ecx, [eax - 0x39]
+// 0079e343  eb0a                 jmp 0x79e34f
+// 0079e345  33c9                 xor ecx, ecx
+// 0079e347  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e34b  0f94c1               sete cl
+// 0079e34e  41                   inc ecx
+// 0079e34f  8b9c2498000000       mov ebx, dword ptr [esp + 0x98]
+// 0079e356  85db                 test ebx, ebx
+// 0079e358  7504                 jne 0x79e35e
+// 0079e35a  33c0                 xor eax, eax
+// 0079e35c  eb03                 jmp 0x79e361
+// 0079e35e  8b4304               mov eax, dword ptr [ebx + 4]
+// 0079e361  6a00                 push 0
+// 0079e363  8d54243c             lea edx, [esp + 0x3c]
+// 0079e367  52                   push edx
+// 0079e368  51                   push ecx
+// 0079e369  6a01                 push 1
+// 0079e36b  50                   push eax
+// 0079e36c  8bce                 mov ecx, esi
+// 0079e36e  e8ad24ffff           call 0x790820
+// 0079e373  85ff                 test edi, edi
+// 0079e375  7505                 jne 0x79e37c
+// 0079e377  8d4f08               lea ecx, [edi + 8]
+// 0079e37a  eb1c                 jmp 0x79e398
+// 0079e37c  b83d000000           mov eax, 0x3d
+// 0079e381  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e385  7505                 jne 0x79e38c
+// 0079e387  8d48ca               lea ecx, [eax - 0x36]
+// 0079e38a  eb0c                 jmp 0x79e398
+// 0079e38c  33c9                 xor ecx, ecx
+// 0079e38e  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e392  0f94c1               sete cl
+// 0079e395  83c105               add ecx, 5
+// 0079e398  85db                 test ebx, ebx
+// 0079e39a  7504                 jne 0x79e3a0
+// 0079e39c  33c0                 xor eax, eax
+// 0079e39e  eb03                 jmp 0x79e3a3
+// 0079e3a0  8b4304               mov eax, dword ptr [ebx + 4]
+// 0079e3a3  6a00                 push 0
+// 0079e3a5  8d54241c             lea edx, [esp + 0x1c]
+// 0079e3a9  52                   push edx
+// 0079e3aa  51                   push ecx
+// 0079e3ab  6a01                 push 1
+// 0079e3ad  50                   push eax
+// 0079e3ae  8bce                 mov ecx, esi
+// 0079e3b0  e86b24ffff           call 0x790820
+// 0079e3b5  8b2dfced8900         mov ebp, dword ptr [0x89edfc]
+// 0079e3bb  8d442450             lea eax, [esp + 0x50]
+// 0079e3bf  50                   push eax
+// 0079e3c0  ffd5                 call ebp
+// 0079e3c2  85c0                 test eax, eax
+// 0079e3c4  0f85ee090000         jne 0x79edb8
+// 0079e3ca  8d4c2470             lea ecx, [esp + 0x70]
+// 0079e3ce  51                   push ecx
+// 0079e3cf  ffd5                 call ebp
+// 0079e3d1  85c0                 test eax, eax
+// 0079e3d3  7540                 jne 0x79e415
+// 0079e3d5  85ff                 test edi, edi
+// 0079e3d7  7505                 jne 0x79e3de
+// 0079e3d9  8d4804               lea ecx, [eax + 4]
+// 0079e3dc  eb1a                 jmp 0x79e3f8
+// 0079e3de  b83e000000           mov eax, 0x3e
+// 0079e3e3  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e3e7  7505                 jne 0x79e3ee
+// 0079e3e9  8d48c5               lea ecx, [eax - 0x3b]
+// 0079e3ec  eb0a                 jmp 0x79e3f8
+// 0079e3ee  33c9                 xor ecx, ecx
+// 0079e3f0  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e3f4  0f94c1               sete cl
+// 0079e3f7  41                   inc ecx
+// 0079e3f8  85db                 test ebx, ebx
+// 0079e3fa  7504                 jne 0x79e400
+// 0079e3fc  33c0                 xor eax, eax
+// 0079e3fe  eb03                 jmp 0x79e403
+// 0079e400  8b4304               mov eax, dword ptr [ebx + 4]
+// 0079e403  6a00                 push 0
+// 0079e405  8d542474             lea edx, [esp + 0x74]
+// 0079e409  52                   push edx
+// 0079e40a  51                   push ecx
+// 0079e40b  6a06                 push 6
+// 0079e40d  50                   push eax
+// 0079e40e  8bce                 mov ecx, esi
+// 0079e410  e80b24ffff           call 0x790820
+// 0079e415  8d442428             lea eax, [esp + 0x28]
+// 0079e419  50                   push eax
+// 0079e41a  ffd5                 call ebp
+// 0079e41c  85c0                 test eax, eax
+// 0079e41e  0f858f000000         jne 0x79e4b3
+// 0079e424  b840000000           mov eax, 0x40
+// 0079e429  85ff                 test edi, edi
+// 0079e42b  7505                 jne 0x79e432
+// 0079e42d  8d48c4               lea ecx, [eax - 0x3c]
+// 0079e430  eb17                 jmp 0x79e449
+// 0079e432  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e436  7507                 jne 0x79e43f
+// 0079e438  b903000000           mov ecx, 3
+// 0079e43d  eb0a                 jmp 0x79e449
+// 0079e43f  33c9                 xor ecx, ecx
+// 0079e441  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e445  0f94c1               sete cl
+// 0079e448  41                   inc ecx
+// 0079e449  85db                 test ebx, ebx
+// 0079e44b  7504                 jne 0x79e451
+// 0079e44d  33c0                 xor eax, eax
+// 0079e44f  eb03                 jmp 0x79e454
+// 0079e451  8b4304               mov eax, dword ptr [ebx + 4]
+// 0079e454  6a00                 push 0
+// 0079e456  8d54242c             lea edx, [esp + 0x2c]
+// 0079e45a  52                   push edx
+// 0079e45b  51                   push ecx
+// 0079e45c  6a03                 push 3
+// 0079e45e  50                   push eax
+// 0079e45f  8bce                 mov ecx, esi
+// 0079e461  e8ba23ffff           call 0x790820
+// 0079e466  8b442434             mov eax, dword ptr [esp + 0x34]
+// 0079e46a  2b44242c             sub eax, dword ptr [esp + 0x2c]
+// 0079e46e  83f80d               cmp eax, 0xd
+// 0079e471  7e40                 jle 0x79e4b3
+// 0079e473  85ff                 test edi, edi
+// 0079e475  7505                 jne 0x79e47c
+// 0079e477  8d4f04               lea ecx, [edi + 4]
+// 0079e47a  eb1a                 jmp 0x79e496
+// 0079e47c  b840000000           mov eax, 0x40
+// 0079e481  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e485  7505                 jne 0x79e48c
+// 0079e487  8d48c3               lea ecx, [eax - 0x3d]
+// 0079e48a  eb0a                 jmp 0x79e496
+// 0079e48c  33c9                 xor ecx, ecx
+// 0079e48e  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e492  0f94c1               sete cl
+// 0079e495  41                   inc ecx
+// 0079e496  85db                 test ebx, ebx
+// 0079e498  7504                 jne 0x79e49e
+// 0079e49a  33c0                 xor eax, eax
+// 0079e49c  eb03                 jmp 0x79e4a1
+// 0079e49e  8b4304               mov eax, dword ptr [ebx + 4]
+// 0079e4a1  6a00                 push 0
+// 0079e4a3  8d54242c             lea edx, [esp + 0x2c]
+// 0079e4a7  52                   push edx
+// 0079e4a8  51                   push ecx
+// 0079e4a9  6a09                 push 9
+// 0079e4ab  50                   push eax
+// 0079e4ac  8bce                 mov ecx, esi
+// 0079e4ae  e86d23ffff           call 0x790820
+// 0079e4b3  8d442460             lea eax, [esp + 0x60]
+// 0079e4b7  50                   push eax
+// 0079e4b8  ffd5                 call ebp
+// 0079e4ba  85c0                 test eax, eax
+// 0079e4bc  0f85f6080000         jne 0x79edb8
+// 0079e4c2  85ff                 test edi, edi
+// 0079e4c4  7505                 jne 0x79e4cb
+// 0079e4c6  8d4804               lea ecx, [eax + 4]
+// 0079e4c9  eb1a                 jmp 0x79e4e5
+// 0079e4cb  b83f000000           mov eax, 0x3f
+// 0079e4d0  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e4d4  7505                 jne 0x79e4db
+// 0079e4d6  8d48c4               lea ecx, [eax - 0x3c]
+// 0079e4d9  eb0a                 jmp 0x79e4e5
+// 0079e4db  33c9                 xor ecx, ecx
+// 0079e4dd  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e4e1  0f94c1               sete cl
+// 0079e4e4  41                   inc ecx
+// 0079e4e5  85db                 test ebx, ebx
+// 0079e4e7  7504                 jne 0x79e4ed
+// 0079e4e9  33c0                 xor eax, eax
+// 0079e4eb  eb03                 jmp 0x79e4f0
+// 0079e4ed  8b4304               mov eax, dword ptr [ebx + 4]
+// 0079e4f0  6a00                 push 0
+// 0079e4f2  8d542464             lea edx, [esp + 0x64]
+// 0079e4f6  52                   push edx
+// 0079e4f7  51                   push ecx
+// 0079e4f8  6a07                 push 7
+// 0079e4fa  50                   push eax
+// 0079e4fb  8bce                 mov ecx, esi
+// 0079e4fd  e81e23ffff           call 0x790820
+// 0079e502  5f                   pop edi
+// 0079e503  5e                   pop esi
+// 0079e504  5d                   pop ebp
+// 0079e505  5b                   pop ebx
+// 0079e506  81c484000000         add esp, 0x84
+// 0079e50c  c20800               ret 8
+// 0079e50f  83f802               cmp eax, 2
+// 0079e512  0f8557010000         jne 0x79e66f
+// 0079e518  e80366fbff           call 0x754b20
+// 0079e51d  6a0f                 push 0xf
+// 0079e51f  8bc8                 mov ecx, eax
+// 0079e521  e87a5dfbff           call 0x7542a0
+// 0079e526  8bb42498000000       mov esi, dword ptr [esp + 0x98]
+// 0079e52d  50                   push eax
+// 0079e52e  8d44243c             lea eax, [esp + 0x3c]
+// 0079e532  50                   push eax
+// 0079e533  8bce                 mov ecx, esi
+// 0079e535  e896b2f7ff           call 0x7197d0
+// 0079e53a  85ff                 test edi, edi
+// 0079e53c  742e                 je 0x79e56c
+// 0079e53e  837c24103c           cmp dword ptr [esp + 0x10], 0x3c
+// 0079e543  7527                 jne 0x79e56c
+// 0079e545  e8d665fbff           call 0x754b20
+// 0079e54a  6a14                 push 0x14
+// 0079e54c  8bc8                 mov ecx, eax
+// 0079e54e  e84d5dfbff           call 0x7542a0
+// 0079e553  8be8                 mov ebp, eax
+// 0079e555  e8c665fbff           call 0x754b20
+// 0079e55a  6a10                 push 0x10
+// 0079e55c  8bc8                 mov ecx, eax
+// 0079e55e  e83d5dfbff           call 0x7542a0
+// 0079e563  55                   push ebp
+// 0079e564  50                   push eax
+// 0079e565  8d4c2440             lea ecx, [esp + 0x40]
+// 0079e569  51                   push ecx
+// 0079e56a  eb25                 jmp 0x79e591
+// 0079e56c  e8af65fbff           call 0x754b20
+// 0079e571  6a10                 push 0x10
+// 0079e573  8bc8                 mov ecx, eax
+// 0079e575  e8265dfbff           call 0x7542a0
+// 0079e57a  8be8                 mov ebp, eax
+// 0079e57c  e89f65fbff           call 0x754b20
+// 0079e581  6a14                 push 0x14
+// 0079e583  8bc8                 mov ecx, eax
+// 0079e585  e8165dfbff           call 0x7542a0
+// 0079e58a  55                   push ebp
+// 0079e58b  50                   push eax
+// 0079e58c  8d542440             lea edx, [esp + 0x40]
+// 0079e590  52                   push edx
+// 0079e591  8bce                 mov ecx, esi
+// 0079e593  e832b2f7ff           call 0x7197ca
+// 0079e598  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 0079e59c  8b54243c             mov edx, dword ptr [esp + 0x3c]
+// 0079e5a0  57                   push edi
+// 0079e5a1  6a01                 push 1
+// 0079e5a3  6a00                 push 0
+// 0079e5a5  83ec10               sub esp, 0x10
+// 0079e5a8  8bc4                 mov eax, esp
+// 0079e5aa  8908                 mov dword ptr [eax], ecx
+// 0079e5ac  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 0079e5b0  895004               mov dword ptr [eax + 4], edx
+// 0079e5b3  8b542460             mov edx, dword ptr [esp + 0x60]
+// 0079e5b7  894808               mov dword ptr [eax + 8], ecx
+// 0079e5ba  56                   push esi
+// 0079e5bb  89500c               mov dword ptr [eax + 0xc], edx
+// 0079e5be  e8bdfaffff           call 0x79e080
+// 0079e5c3  83c420               add esp, 0x20
+// 0079e5c6  e85565fbff           call 0x754b20
+// 0079e5cb  6a0f                 push 0xf
+// 0079e5cd  8bc8                 mov ecx, eax
+// 0079e5cf  e8cc5cfbff           call 0x7542a0
+// 0079e5d4  50                   push eax
+// 0079e5d5  8d44241c             lea eax, [esp + 0x1c]
+// 0079e5d9  50                   push eax
+// 0079e5da  8bce                 mov ecx, esi
+// 0079e5dc  e8efb1f7ff           call 0x7197d0
+// 0079e5e1  85ff                 test edi, edi
+// 0079e5e3  742e                 je 0x79e613
+// 0079e5e5  837c24103d           cmp dword ptr [esp + 0x10], 0x3d
+// 0079e5ea  7527                 jne 0x79e613
+// 0079e5ec  e82f65fbff           call 0x754b20
+// 0079e5f1  6a14                 push 0x14
+// 0079e5f3  8bc8                 mov ecx, eax
+// 0079e5f5  e8a65cfbff           call 0x7542a0
+// 0079e5fa  8be8                 mov ebp, eax
+// 0079e5fc  e81f65fbff           call 0x754b20
+// 0079e601  6a10                 push 0x10
+// 0079e603  8bc8                 mov ecx, eax
+// 0079e605  e8965cfbff           call 0x7542a0
+// 0079e60a  55                   push ebp
+// 0079e60b  50                   push eax
+// 0079e60c  8d4c2420             lea ecx, [esp + 0x20]
+// 0079e610  51                   push ecx
+// 0079e611  eb25                 jmp 0x79e638
+// 0079e613  e80865fbff           call 0x754b20
+// 0079e618  6a10                 push 0x10
+// 0079e61a  8bc8                 mov ecx, eax
+// 0079e61c  e87f5cfbff           call 0x7542a0
+// 0079e621  8be8                 mov ebp, eax
+// 0079e623  e8f864fbff           call 0x754b20
+// 0079e628  6a14                 push 0x14
+// 0079e62a  8bc8                 mov ecx, eax
+// 0079e62c  e86f5cfbff           call 0x7542a0
+// 0079e631  55                   push ebp
+// 0079e632  50                   push eax
+// 0079e633  8d542420             lea edx, [esp + 0x20]
+// 0079e637  52                   push edx
+// 0079e638  8bce                 mov ecx, esi
+// 0079e63a  e88bb1f7ff           call 0x7197ca
+// 0079e63f  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0079e643  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 0079e647  57                   push edi
+// 0079e648  6a00                 push 0
+// 0079e64a  6a00                 push 0
+// 0079e64c  83ec10               sub esp, 0x10
+// 0079e64f  8bc4                 mov eax, esp
+// 0079e651  8908                 mov dword ptr [eax], ecx
+// 0079e653  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
+// 0079e657  895004               mov dword ptr [eax + 4], edx
+// 0079e65a  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0079e65e  894808               mov dword ptr [eax + 8], ecx
+// 0079e661  56                   push esi
+// 0079e662  89500c               mov dword ptr [eax + 0xc], edx
+// 0079e665  e816faffff           call 0x79e080
+// 0079e66a  83c420               add esp, 0x20
+// 0079e66d  eb72                 jmp 0x79e6e1
+// 0079e66f  8bb42498000000       mov esi, dword ptr [esp + 0x98]
+// 0079e676  85f6                 test esi, esi
+// 0079e678  7504                 jne 0x79e67e
+// 0079e67a  33c0                 xor eax, eax
+// 0079e67c  eb03                 jmp 0x79e681
+// 0079e67e  8b4604               mov eax, dword ptr [esi + 4]
+// 0079e681  f7df                 neg edi
+// 0079e683  1bff                 sbb edi, edi
+// 0079e685  8b2dcced8900         mov ebp, dword ptr [0x89edcc]
+// 0079e68b  33c9                 xor ecx, ecx
+// 0079e68d  81e700ffffff         and edi, 0xffffff00
+// 0079e693  81c700010000         add edi, 0x100
+// 0079e699  837c24103c           cmp dword ptr [esp + 0x10], 0x3c
+// 0079e69e  8d542438             lea edx, [esp + 0x38]
+// 0079e6a2  0f95c1               setne cl
+// 0079e6a5  49                   dec ecx
+// 0079e6a6  81e100020000         and ecx, 0x200
+// 0079e6ac  0bcf                 or ecx, edi
+// 0079e6ae  51                   push ecx
+// 0079e6af  6a03                 push 3
+// 0079e6b1  52                   push edx
+// 0079e6b2  50                   push eax
+// 0079e6b3  ffd5                 call ebp
+// 0079e6b5  85f6                 test esi, esi
+// 0079e6b7  7504                 jne 0x79e6bd
+// 0079e6b9  33c0                 xor eax, eax
+// 0079e6bb  eb03                 jmp 0x79e6c0
+// 0079e6bd  8b4604               mov eax, dword ptr [esi + 4]
+// 0079e6c0  33c9                 xor ecx, ecx
+// 0079e6c2  837c24103d           cmp dword ptr [esp + 0x10], 0x3d
+// 0079e6c7  8d542418             lea edx, [esp + 0x18]
+// 0079e6cb  0f95c1               setne cl
+// 0079e6ce  49                   dec ecx
+// 0079e6cf  81e100020000         and ecx, 0x200
+// 0079e6d5  0bcf                 or ecx, edi
+// 0079e6d7  83c901               or ecx, 1
+// 0079e6da  51                   push ecx
+// 0079e6db  6a03                 push 3
+// 0079e6dd  52                   push edx
+// 0079e6de  50                   push eax
+// 0079e6df  ffd5                 call ebp
+// 0079e6e1  8b03                 mov eax, dword ptr [ebx]
+// 0079e6e3  8b5008               mov edx, dword ptr [eax + 8]
+// 0079e6e6  8bcb                 mov ecx, ebx
+// 0079e6e8  ffd2                 call edx
+// 0079e6ea  85c0                 test eax, eax
+// 0079e6ec  7504                 jne 0x79e6f2
+// 0079e6ee  33d2                 xor edx, edx
+// 0079e6f0  eb03                 jmp 0x79e6f5
+// 0079e6f2  8b5020               mov edx, dword ptr [eax + 0x20]
+// 0079e6f5  85f6                 test esi, esi
+// 0079e6f7  7504                 jne 0x79e6fd
+// 0079e6f9  33c9                 xor ecx, ecx
+// 0079e6fb  eb03                 jmp 0x79e700
+// 0079e6fd  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0079e700  85c0                 test eax, eax
+// 0079e702  7403                 je 0x79e707
+// 0079e704  8b4020               mov eax, dword ptr [eax + 0x20]
+// 0079e707  52                   push edx
+// 0079e708  51                   push ecx
+// 0079e709  6837010000           push 0x137
+// 0079e70e  50                   push eax
+// 0079e70f  ff155ced8900         call dword ptr [0x89ed5c]
+// 0079e715  85f6                 test esi, esi
+// 0079e717  7504                 jne 0x79e71d
+// 0079e719  33c9                 xor ecx, ecx
+// 0079e71b  eb03                 jmp 0x79e720
+// 0079e71d  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0079e720  50                   push eax
+// 0079e721  8d442454             lea eax, [esp + 0x54]
+// 0079e725  50                   push eax
+// 0079e726  51                   push ecx
+// 0079e727  ff15b4ec8900         call dword ptr [0x89ecb4]
+// 0079e72d  8b5c2410             mov ebx, dword ptr [esp + 0x10]
+// 0079e731  8b2dccee8900         mov ebp, dword ptr [0x89eecc]
+// 0079e737  83fb3e               cmp ebx, 0x3e
+// 0079e73a  7513                 jne 0x79e74f
+// 0079e73c  85f6                 test esi, esi
+// 0079e73e  7504                 jne 0x79e744
+// 0079e740  33c0                 xor eax, eax
+// 0079e742  eb03                 jmp 0x79e747
+// 0079e744  8b4604               mov eax, dword ptr [esi + 4]
+// 0079e747  8d4c2470             lea ecx, [esp + 0x70]
+// 0079e74b  51                   push ecx
+// 0079e74c  50                   push eax
+// 0079e74d  ffd5                 call ebp
+// 0079e74f  8b3dfced8900         mov edi, dword ptr [0x89edfc]
+// 0079e755  8d542450             lea edx, [esp + 0x50]
+// 0079e759  52                   push edx
+// 0079e75a  ffd7                 call edi
+// 0079e75c  85c0                 test eax, eax
+// 0079e75e  7579                 jne 0x79e7d9
+// 0079e760  8d442428             lea eax, [esp + 0x28]
+// 0079e764  50                   push eax
+// 0079e765  ffd7                 call edi
+// 0079e767  85c0                 test eax, eax
+// 0079e769  756e                 jne 0x79e7d9
+// 0079e76b  e8b063fbff           call 0x754b20
+// 0079e770  6a0f                 push 0xf
+// 0079e772  8bc8                 mov ecx, eax
+// 0079e774  e8275bfbff           call 0x7542a0
+// 0079e779  50                   push eax
+// 0079e77a  8d4c242c             lea ecx, [esp + 0x2c]
+// 0079e77e  51                   push ecx
+// 0079e77f  8bce                 mov ecx, esi
+// 0079e781  e84ab0f7ff           call 0x7197d0
+// 0079e786  837c244802           cmp dword ptr [esp + 0x48], 2
+// 0079e78b  752e                 jne 0x79e7bb
+// 0079e78d  e88e63fbff           call 0x754b20
+// 0079e792  6a10                 push 0x10
+// 0079e794  8bc8                 mov ecx, eax
+// 0079e796  e8055bfbff           call 0x7542a0
+// 0079e79b  8bf8                 mov edi, eax
+// 0079e79d  e87e63fbff           call 0x754b20
+// 0079e7a2  6a14                 push 0x14
+// 0079e7a4  8bc8                 mov ecx, eax
+// 0079e7a6  e8f55afbff           call 0x7542a0
+// 0079e7ab  57                   push edi
+// 0079e7ac  50                   push eax
+// 0079e7ad  8d542430             lea edx, [esp + 0x30]
+// 0079e7b1  52                   push edx
+// 0079e7b2  8bce                 mov ecx, esi
+// 0079e7b4  e811b0f7ff           call 0x7197ca
+// 0079e7b9  eb1e                 jmp 0x79e7d9
+// 0079e7bb  85f6                 test esi, esi
+// 0079e7bd  7504                 jne 0x79e7c3
+// 0079e7bf  33c0                 xor eax, eax
+// 0079e7c1  eb03                 jmp 0x79e7c6
+// 0079e7c3  8b4604               mov eax, dword ptr [esi + 4]
+// 0079e7c6  680f200000           push 0x200f
+// 0079e7cb  6a05                 push 5
+// 0079e7cd  8d4c2430             lea ecx, [esp + 0x30]
+// 0079e7d1  51                   push ecx
+// 0079e7d2  50                   push eax
+// 0079e7d3  ff15c8ec8900         call dword ptr [0x89ecc8]
+// 0079e7d9  83fb3f               cmp ebx, 0x3f
+// 0079e7dc  0f85d6050000         jne 0x79edb8
+// 0079e7e2  85f6                 test esi, esi
+// 0079e7e4  7515                 jne 0x79e7fb
+// 0079e7e6  8d542460             lea edx, [esp + 0x60]
+// 0079e7ea  52                   push edx
+// 0079e7eb  56                   push esi
+// 0079e7ec  ffd5                 call ebp
+// 0079e7ee  5f                   pop edi
+// 0079e7ef  5e                   pop esi
+// 0079e7f0  5d                   pop ebp
+// 0079e7f1  5b                   pop ebx
+// 0079e7f2  81c484000000         add esp, 0x84
+// 0079e7f8  c20800               ret 8
+// 0079e7fb  8b7604               mov esi, dword ptr [esi + 4]
+// 0079e7fe  8d542460             lea edx, [esp + 0x60]
+// 0079e802  52                   push edx
+// 0079e803  56                   push esi
+// 0079e804  ffd5                 call ebp
+// 0079e806  5f                   pop edi
+// 0079e807  5e                   pop esi
+// 0079e808  5d                   pop ebp
+// 0079e809  5b                   pop ebx
+// 0079e80a  81c484000000         add esp, 0x84
+// 0079e810  c20800               ret 8
+// 0079e813  8d4348               lea eax, [ebx + 0x48]
+// 0079e816  50                   push eax
+// 0079e817  8d8c2488000000       lea ecx, [esp + 0x88]
+// 0079e81e  51                   push ecx
+// 0079e81f  ff1500ee8900         call dword ptr [0x89ee00]
+// 0079e825  8b6b2c               mov ebp, dword ptr [ebx + 0x2c]
+// 0079e828  8b842488000000       mov eax, dword ptr [esp + 0x88]
+// 0079e82f  8b942484000000       mov edx, dword ptr [esp + 0x84]
+// 0079e836  8b8c2490000000       mov ecx, dword ptr [esp + 0x90]
+// 0079e83d  896c2418             mov dword ptr [esp + 0x18], ebp
+// 0079e841  8bac248c000000       mov ebp, dword ptr [esp + 0x8c]
+// 0079e848  896c2420             mov dword ptr [esp + 0x20], ebp
+// 0079e84c  8b6c2418             mov ebp, dword ptr [esp + 0x18]
+// 0079e850  89542428             mov dword ptr [esp + 0x28], edx
+// 0079e854  8b5328               mov edx, dword ptr [ebx + 0x28]
+// 0079e857  8944242c             mov dword ptr [esp + 0x2c], eax
+// 0079e85b  8944241c             mov dword ptr [esp + 0x1c], eax
+// 0079e85f  89442454             mov dword ptr [esp + 0x54], eax
+// 0079e863  89442464             mov dword ptr [esp + 0x64], eax
+// 0079e867  8944243c             mov dword ptr [esp + 0x3c], eax
+// 0079e86b  89442474             mov dword ptr [esp + 0x74], eax
+// 0079e86f  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0079e873  896c2458             mov dword ptr [esp + 0x58], ebp
+// 0079e877  8b6c244c             mov ebp, dword ptr [esp + 0x4c]
+// 0079e87b  89542430             mov dword ptr [esp + 0x30], edx
+// 0079e87f  89542450             mov dword ptr [esp + 0x50], edx
+// 0079e883  89542460             mov dword ptr [esp + 0x60], edx
+// 0079e887  03d5                 add edx, ebp
+// 0079e889  03f2                 add esi, edx
+// 0079e88b  89442478             mov dword ptr [esp + 0x78], eax
+// 0079e88f  8b442448             mov eax, dword ptr [esp + 0x48]
+// 0079e893  894c2434             mov dword ptr [esp + 0x34], ecx
+// 0079e897  894c2424             mov dword ptr [esp + 0x24], ecx
+// 0079e89b  894c245c             mov dword ptr [esp + 0x5c], ecx
+// 0079e89f  89542468             mov dword ptr [esp + 0x68], edx
+// 0079e8a3  894c246c             mov dword ptr [esp + 0x6c], ecx
+// 0079e8a7  89542438             mov dword ptr [esp + 0x38], edx
+// 0079e8ab  89742440             mov dword ptr [esp + 0x40], esi
+// 0079e8af  894c2444             mov dword ptr [esp + 0x44], ecx
+// 0079e8b3  89742470             mov dword ptr [esp + 0x70], esi
+// 0079e8b7  894c247c             mov dword ptr [esp + 0x7c], ecx
+// 0079e8bb  83f803               cmp eax, 3
+// 0079e8be  0f85fe010000         jne 0x79eac2
+// 0079e8c4  8bb42480000000       mov esi, dword ptr [esp + 0x80]
+// 0079e8cb  83c620               add esi, 0x20
+// 0079e8ce  8bce                 mov ecx, esi
+// 0079e8d0  e8cb22ffff           call 0x790ba0
+// 0079e8d5  85c0                 test eax, eax
+// 0079e8d7  0f8445030000         je 0x79ec22
+// 0079e8dd  85ff                 test edi, edi
+// 0079e8df  7505                 jne 0x79e8e6
+// 0079e8e1  8d4f0c               lea ecx, [edi + 0xc]
+// 0079e8e4  eb1c                 jmp 0x79e902
+// 0079e8e6  b83c000000           mov eax, 0x3c
+// 0079e8eb  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e8ef  7505                 jne 0x79e8f6
+// 0079e8f1  8d48cf               lea ecx, [eax - 0x31]
+// 0079e8f4  eb0c                 jmp 0x79e902
+// 0079e8f6  33c9                 xor ecx, ecx
+// 0079e8f8  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e8fc  0f94c1               sete cl
+// 0079e8ff  83c109               add ecx, 9
+// 0079e902  8bac2498000000       mov ebp, dword ptr [esp + 0x98]
+// 0079e909  85ed                 test ebp, ebp
+// 0079e90b  7504                 jne 0x79e911
+// 0079e90d  33c0                 xor eax, eax
+// 0079e90f  eb03                 jmp 0x79e914
+// 0079e911  8b4504               mov eax, dword ptr [ebp + 4]
+// 0079e914  6a00                 push 0
+// 0079e916  8d54242c             lea edx, [esp + 0x2c]
+// 0079e91a  52                   push edx
+// 0079e91b  51                   push ecx
+// 0079e91c  6a01                 push 1
+// 0079e91e  50                   push eax
+// 0079e91f  8bce                 mov ecx, esi
+// 0079e921  e8fa1effff           call 0x790820
+// 0079e926  85ff                 test edi, edi
+// 0079e928  7505                 jne 0x79e92f
+// 0079e92a  8d4f10               lea ecx, [edi + 0x10]
+// 0079e92d  eb1c                 jmp 0x79e94b
+// 0079e92f  b83d000000           mov eax, 0x3d
+// 0079e934  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e938  7505                 jne 0x79e93f
+// 0079e93a  8d48d2               lea ecx, [eax - 0x2e]
+// 0079e93d  eb0c                 jmp 0x79e94b
+// 0079e93f  33c9                 xor ecx, ecx
+// 0079e941  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e945  0f94c1               sete cl
+// 0079e948  83c10d               add ecx, 0xd
+// 0079e94b  85ed                 test ebp, ebp
+// 0079e94d  7504                 jne 0x79e953
+// 0079e94f  33c0                 xor eax, eax
+// 0079e951  eb03                 jmp 0x79e956
+// 0079e953  8b4504               mov eax, dword ptr [ebp + 4]
+// 0079e956  6a00                 push 0
+// 0079e958  8d54241c             lea edx, [esp + 0x1c]
+// 0079e95c  52                   push edx
+// 0079e95d  51                   push ecx
+// 0079e95e  6a01                 push 1
+// 0079e960  50                   push eax
+// 0079e961  8bce                 mov ecx, esi
+// 0079e963  e8b81effff           call 0x790820
+// 0079e968  8b1dfced8900         mov ebx, dword ptr [0x89edfc]
+// 0079e96e  8d442450             lea eax, [esp + 0x50]
+// 0079e972  50                   push eax
+// 0079e973  ffd3                 call ebx
+// 0079e975  85c0                 test eax, eax
+// 0079e977  0f853b040000         jne 0x79edb8
+// 0079e97d  8d4c2460             lea ecx, [esp + 0x60]
+// 0079e981  51                   push ecx
+// 0079e982  ffd3                 call ebx
+// 0079e984  85c0                 test eax, eax
+// 0079e986  7540                 jne 0x79e9c8
+// 0079e988  85ff                 test edi, edi
+// 0079e98a  7505                 jne 0x79e991
+// 0079e98c  8d4804               lea ecx, [eax + 4]
+// 0079e98f  eb1a                 jmp 0x79e9ab
+// 0079e991  b83e000000           mov eax, 0x3e
+// 0079e996  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e99a  7505                 jne 0x79e9a1
+// 0079e99c  8d48c5               lea ecx, [eax - 0x3b]
+// 0079e99f  eb0a                 jmp 0x79e9ab
+// 0079e9a1  33c9                 xor ecx, ecx
+// 0079e9a3  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e9a7  0f94c1               sete cl
+// 0079e9aa  41                   inc ecx
+// 0079e9ab  85ed                 test ebp, ebp
+// 0079e9ad  7504                 jne 0x79e9b3
+// 0079e9af  33c0                 xor eax, eax
+// 0079e9b1  eb03                 jmp 0x79e9b6
+// 0079e9b3  8b4504               mov eax, dword ptr [ebp + 4]
+// 0079e9b6  6a00                 push 0
+// 0079e9b8  8d542464             lea edx, [esp + 0x64]
+// 0079e9bc  52                   push edx
+// 0079e9bd  51                   push ecx
+// 0079e9be  6a04                 push 4
+// 0079e9c0  50                   push eax
+// 0079e9c1  8bce                 mov ecx, esi
+// 0079e9c3  e8581effff           call 0x790820
+// 0079e9c8  8d442438             lea eax, [esp + 0x38]
+// 0079e9cc  50                   push eax
+// 0079e9cd  ffd3                 call ebx
+// 0079e9cf  85c0                 test eax, eax
+// 0079e9d1  0f858f000000         jne 0x79ea66
+// 0079e9d7  b840000000           mov eax, 0x40
+// 0079e9dc  85ff                 test edi, edi
+// 0079e9de  7505                 jne 0x79e9e5
+// 0079e9e0  8d48c4               lea ecx, [eax - 0x3c]
+// 0079e9e3  eb17                 jmp 0x79e9fc
+// 0079e9e5  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079e9e9  7507                 jne 0x79e9f2
+// 0079e9eb  b903000000           mov ecx, 3
+// 0079e9f0  eb0a                 jmp 0x79e9fc
+// 0079e9f2  33c9                 xor ecx, ecx
+// 0079e9f4  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079e9f8  0f94c1               sete cl
+// 0079e9fb  41                   inc ecx
+// 0079e9fc  85ed                 test ebp, ebp
+// 0079e9fe  7504                 jne 0x79ea04
+// 0079ea00  33c0                 xor eax, eax
+// 0079ea02  eb03                 jmp 0x79ea07
+// 0079ea04  8b4504               mov eax, dword ptr [ebp + 4]
+// 0079ea07  6a00                 push 0
+// 0079ea09  8d54243c             lea edx, [esp + 0x3c]
+// 0079ea0d  52                   push edx
+// 0079ea0e  51                   push ecx
+// 0079ea0f  6a02                 push 2
+// 0079ea11  50                   push eax
+// 0079ea12  8bce                 mov ecx, esi
+// 0079ea14  e8071effff           call 0x790820
+// 0079ea19  8b442440             mov eax, dword ptr [esp + 0x40]
+// 0079ea1d  2b442438             sub eax, dword ptr [esp + 0x38]
+// 0079ea21  83f80d               cmp eax, 0xd
+// 0079ea24  7e40                 jle 0x79ea66
+// 0079ea26  85ff                 test edi, edi
+// 0079ea28  7505                 jne 0x79ea2f
+// 0079ea2a  8d4f04               lea ecx, [edi + 4]
+// 0079ea2d  eb1a                 jmp 0x79ea49
+// 0079ea2f  b840000000           mov eax, 0x40
+// 0079ea34  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079ea38  7505                 jne 0x79ea3f
+// 0079ea3a  8d48c3               lea ecx, [eax - 0x3d]
+// 0079ea3d  eb0a                 jmp 0x79ea49
+// 0079ea3f  33c9                 xor ecx, ecx
+// 0079ea41  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079ea45  0f94c1               sete cl
+// 0079ea48  41                   inc ecx
+// 0079ea49  85ed                 test ebp, ebp
+// 0079ea4b  7504                 jne 0x79ea51
+// 0079ea4d  33c0                 xor eax, eax
+// 0079ea4f  eb03                 jmp 0x79ea54
+// 0079ea51  8b4504               mov eax, dword ptr [ebp + 4]
+// 0079ea54  6a00                 push 0
+// 0079ea56  8d54243c             lea edx, [esp + 0x3c]
+// 0079ea5a  52                   push edx
+// 0079ea5b  51                   push ecx
+// 0079ea5c  6a08                 push 8
+// 0079ea5e  50                   push eax
+// 0079ea5f  8bce                 mov ecx, esi
+// 0079ea61  e8ba1dffff           call 0x790820
+// 0079ea66  8d442470             lea eax, [esp + 0x70]
+// 0079ea6a  50                   push eax
+// 0079ea6b  ffd3                 call ebx
+// 0079ea6d  85c0                 test eax, eax
+// 0079ea6f  0f8543030000         jne 0x79edb8
+// 0079ea75  85ff                 test edi, edi
+// 0079ea77  7505                 jne 0x79ea7e
+// 0079ea79  8d4804               lea ecx, [eax + 4]
+// 0079ea7c  eb1a                 jmp 0x79ea98
+// 0079ea7e  b83f000000           mov eax, 0x3f
+// 0079ea83  39442410             cmp dword ptr [esp + 0x10], eax
+// 0079ea87  7505                 jne 0x79ea8e
+// 0079ea89  8d48c4               lea ecx, [eax - 0x3c]
+// 0079ea8c  eb0a                 jmp 0x79ea98
+// 0079ea8e  33c9                 xor ecx, ecx
+// 0079ea90  39442414             cmp dword ptr [esp + 0x14], eax
+// 0079ea94  0f94c1               sete cl
+// 0079ea97  41                   inc ecx
+// 0079ea98  85ed                 test ebp, ebp
+// 0079ea9a  7504                 jne 0x79eaa0
+// 0079ea9c  33c0                 xor eax, eax
+// 0079ea9e  eb03                 jmp 0x79eaa3
+// 0079eaa0  8b4504               mov eax, dword ptr [ebp + 4]
+// 0079eaa3  6a00                 push 0
+// 0079eaa5  8d542474             lea edx, [esp + 0x74]
+// 0079eaa9  52                   push edx
+// 0079eaaa  51                   push ecx
+// 0079eaab  6a05                 push 5
+// 0079eaad  50                   push eax
+// 0079eaae  8bce                 mov ecx, esi
+// 0079eab0  e86b1dffff           call 0x790820
+// 0079eab5  5f                   pop edi
+// 0079eab6  5e                   pop esi
+// 0079eab7  5d                   pop ebp
+// 0079eab8  5b                   pop ebx
+// 0079eab9  81c484000000         add esp, 0x84
+// 0079eabf  c20800               ret 8
+// 0079eac2  83f802               cmp eax, 2
+// 0079eac5  0f8557010000         jne 0x79ec22
+// 0079eacb  e85060fbff           call 0x754b20
+// 0079ead0  6a0f                 push 0xf
+// 0079ead2  8bc8                 mov ecx, eax
+// 0079ead4  e8c757fbff           call 0x7542a0
+// 0079ead9  8bb42498000000       mov esi, dword ptr [esp + 0x98]
+// 0079eae0  50                   push eax
+// 0079eae1  8d44242c             lea eax, [esp + 0x2c]
+// 0079eae5  50                   push eax
+// 0079eae6  8bce                 mov ecx, esi
+// 0079eae8  e8e3acf7ff           call 0x7197d0
+// 0079eaed  85ff                 test edi, edi
+// 0079eaef  742e                 je 0x79eb1f
+// 0079eaf1  837c24103c           cmp dword ptr [esp + 0x10], 0x3c
+// 0079eaf6  7527                 jne 0x79eb1f
+// 0079eaf8  e82360fbff           call 0x754b20
+// 0079eafd  6a14                 push 0x14
+// 0079eaff  8bc8                 mov ecx, eax
+// 0079eb01  e89a57fbff           call 0x7542a0
+// 0079eb06  8be8                 mov ebp, eax
+// 0079eb08  e81360fbff           call 0x754b20
+// 0079eb0d  6a10                 push 0x10
+// 0079eb0f  8bc8                 mov ecx, eax
+// 0079eb11  e88a57fbff           call 0x7542a0
+// 0079eb16  55                   push ebp
+// 0079eb17  50                   push eax
+// 0079eb18  8d4c2430             lea ecx, [esp + 0x30]
+// 0079eb1c  51                   push ecx
+// 0079eb1d  eb25                 jmp 0x79eb44
+// 0079eb1f  e8fc5ffbff           call 0x754b20
+// 0079eb24  6a10                 push 0x10
+// 0079eb26  8bc8                 mov ecx, eax
+// 0079eb28  e87357fbff           call 0x7542a0
+// 0079eb2d  8be8                 mov ebp, eax
+// 0079eb2f  e8ec5ffbff           call 0x754b20
+// 0079eb34  6a14                 push 0x14
+// 0079eb36  8bc8                 mov ecx, eax
+// 0079eb38  e86357fbff           call 0x7542a0
+// 0079eb3d  55                   push ebp
+// 0079eb3e  50                   push eax
+// 0079eb3f  8d542430             lea edx, [esp + 0x30]
+// 0079eb43  52                   push edx
+// 0079eb44  8bce                 mov ecx, esi
+// 0079eb46  e87facf7ff           call 0x7197ca
+// 0079eb4b  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 0079eb4f  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0079eb53  57                   push edi
+// 0079eb54  6a01                 push 1
+// 0079eb56  6a01                 push 1
+// 0079eb58  83ec10               sub esp, 0x10
+// 0079eb5b  8bc4                 mov eax, esp
+// 0079eb5d  8908                 mov dword ptr [eax], ecx
+// 0079eb5f  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 0079eb63  895004               mov dword ptr [eax + 4], edx
+// 0079eb66  8b542450             mov edx, dword ptr [esp + 0x50]
+// 0079eb6a  894808               mov dword ptr [eax + 8], ecx
+// 0079eb6d  56                   push esi
+// 0079eb6e  89500c               mov dword ptr [eax + 0xc], edx
+// 0079eb71  e80af5ffff           call 0x79e080
+// 0079eb76  83c420               add esp, 0x20
+// 0079eb79  e8a25ffbff           call 0x754b20
+// 0079eb7e  6a0f                 push 0xf
+// 0079eb80  8bc8                 mov ecx, eax
+// 0079eb82  e81957fbff           call 0x7542a0
+// 0079eb87  50                   push eax
+// 0079eb88  8d44241c             lea eax, [esp + 0x1c]
+// 0079eb8c  50                   push eax
+// 0079eb8d  8bce                 mov ecx, esi
+// 0079eb8f  e83cacf7ff           call 0x7197d0
+// 0079eb94  85ff                 test edi, edi
+// 0079eb96  742e                 je 0x79ebc6
+// 0079eb98  837c24103d           cmp dword ptr [esp + 0x10], 0x3d
+// 0079eb9d  7527                 jne 0x79ebc6
+// 0079eb9f  e87c5ffbff           call 0x754b20
+// 0079eba4  6a14                 push 0x14
+// 0079eba6  8bc8                 mov ecx, eax
+// 0079eba8  e8f356fbff           call 0x7542a0
+// 0079ebad  8be8                 mov ebp, eax
+// 0079ebaf  e86c5ffbff           call 0x754b20
+// 0079ebb4  6a10                 push 0x10
+// 0079ebb6  8bc8                 mov ecx, eax
+// 0079ebb8  e8e356fbff           call 0x7542a0
+// 0079ebbd  55                   push ebp
+// 0079ebbe  50                   push eax
+// 0079ebbf  8d4c2420             lea ecx, [esp + 0x20]
+// 0079ebc3  51                   push ecx
+// 0079ebc4  eb25                 jmp 0x79ebeb
+// 0079ebc6  e8555ffbff           call 0x754b20
+// 0079ebcb  6a10                 push 0x10
+// 0079ebcd  8bc8                 mov ecx, eax
+// 0079ebcf  e8cc56fbff           call 0x7542a0
+// 0079ebd4  8be8                 mov ebp, eax
+// 0079ebd6  e8455ffbff           call 0x754b20
+// 0079ebdb  6a14                 push 0x14
+// 0079ebdd  8bc8                 mov ecx, eax
+// 0079ebdf  e8bc56fbff           call 0x7542a0
+// 0079ebe4  55                   push ebp
+// 0079ebe5  50                   push eax
+// 0079ebe6  8d542420             lea edx, [esp + 0x20]
+// 0079ebea  52                   push edx
+// 0079ebeb  8bce                 mov ecx, esi
+// 0079ebed  e8d8abf7ff           call 0x7197ca
+// 0079ebf2  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0079ebf6  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 0079ebfa  57                   push edi
+// 0079ebfb  6a00                 push 0
+// 0079ebfd  6a01                 push 1
+// 0079ebff  83ec10               sub esp, 0x10
+// 0079ec02  8bc4                 mov eax, esp
+// 0079ec04  8908                 mov dword ptr [eax], ecx
+// 0079ec06  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
+// 0079ec0a  895004               mov dword ptr [eax + 4], edx
+// 0079ec0d  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0079ec11  894808               mov dword ptr [eax + 8], ecx
+// 0079ec14  56                   push esi
+// 0079ec15  89500c               mov dword ptr [eax + 0xc], edx
+// 0079ec18  e863f4ffff           call 0x79e080
+// 0079ec1d  83c420               add esp, 0x20
+// 0079ec20  eb75                 jmp 0x79ec97
+// 0079ec22  8bb42498000000       mov esi, dword ptr [esp + 0x98]
+// 0079ec29  85f6                 test esi, esi
+// 0079ec2b  7504                 jne 0x79ec31
+// 0079ec2d  33c0                 xor eax, eax
+// 0079ec2f  eb03                 jmp 0x79ec34
+// 0079ec31  8b4604               mov eax, dword ptr [esi + 4]
+// 0079ec34  f7df                 neg edi
+// 0079ec36  1bff                 sbb edi, edi
+// 0079ec38  33c9                 xor ecx, ecx
+// 0079ec3a  8b2dcced8900         mov ebp, dword ptr [0x89edcc]
+// 0079ec40  81e700ffffff         and edi, 0xffffff00
+// 0079ec46  81c700010000         add edi, 0x100
+// 0079ec4c  837c24103c           cmp dword ptr [esp + 0x10], 0x3c
+// 0079ec51  8d542428             lea edx, [esp + 0x28]
+// 0079ec55  0f95c1               setne cl
+// 0079ec58  49                   dec ecx
+// 0079ec59  81e100020000         and ecx, 0x200
+// 0079ec5f  0bcf                 or ecx, edi
+// 0079ec61  83c902               or ecx, 2
+// 0079ec64  51                   push ecx
+// 0079ec65  6a03                 push 3
+// 0079ec67  52                   push edx
+// 0079ec68  50                   push eax
+// 0079ec69  ffd5                 call ebp
+// 0079ec6b  85f6                 test esi, esi
+// 0079ec6d  7504                 jne 0x79ec73
+// 0079ec6f  33c0                 xor eax, eax
+// 0079ec71  eb03                 jmp 0x79ec76
+// 0079ec73  8b4604               mov eax, dword ptr [esi + 4]
+// 0079ec76  33c9                 xor ecx, ecx
+// 0079ec78  837c24103d           cmp dword ptr [esp + 0x10], 0x3d
+// 0079ec7d  8d542418             lea edx, [esp + 0x18]
+// 0079ec81  0f95c1               setne cl
+// 0079ec84  49                   dec ecx
+// 0079ec85  81e100020000         and ecx, 0x200
+// 0079ec8b  0bcf                 or ecx, edi
+// 0079ec8d  83c903               or ecx, 3
+// 0079ec90  51                   push ecx
+// 0079ec91  6a03                 push 3
+// 0079ec93  52                   push edx
+// 0079ec94  50                   push eax
+// 0079ec95  ffd5                 call ebp
+// 0079ec97  8b03                 mov eax, dword ptr [ebx]
+// 0079ec99  8b5008               mov edx, dword ptr [eax + 8]
+// 0079ec9c  8bcb                 mov ecx, ebx
+// 0079ec9e  ffd2                 call edx
+// 0079eca0  85c0                 test eax, eax
+// 0079eca2  7504                 jne 0x79eca8
+// 0079eca4  33d2                 xor edx, edx
+// 0079eca6  eb03                 jmp 0x79ecab
+// 0079eca8  8b5020               mov edx, dword ptr [eax + 0x20]
+// 0079ecab  85f6                 test esi, esi
+// 0079ecad  7504                 jne 0x79ecb3
+// 0079ecaf  33c9                 xor ecx, ecx
+// 0079ecb1  eb03                 jmp 0x79ecb6
+// 0079ecb3  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0079ecb6  85c0                 test eax, eax
+// 0079ecb8  7403                 je 0x79ecbd
+// 0079ecba  8b4020               mov eax, dword ptr [eax + 0x20]
+// 0079ecbd  52                   push edx
+// 0079ecbe  51                   push ecx
+// 0079ecbf  6837010000           push 0x137
+// 0079ecc4  50                   push eax
+// 0079ecc5  ff155ced8900         call dword ptr [0x89ed5c]
+// 0079eccb  85f6                 test esi, esi
+// 0079eccd  7504                 jne 0x79ecd3
+// 0079eccf  33c9                 xor ecx, ecx
+// 0079ecd1  eb03                 jmp 0x79ecd6
+// 0079ecd3  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0079ecd6  50                   push eax
+// 0079ecd7  8d442454             lea eax, [esp + 0x54]
+// 0079ecdb  50                   push eax
+// 0079ecdc  51                   push ecx
+// 0079ecdd  ff15b4ec8900         call dword ptr [0x89ecb4]
+// 0079ece3  8b5c2410             mov ebx, dword ptr [esp + 0x10]
+// 0079ece7  8b2dccee8900         mov ebp, dword ptr [0x89eecc]
+// 0079eced  83fb3e               cmp ebx, 0x3e
+// 0079ecf0  7513                 jne 0x79ed05
+// 0079ecf2  85f6                 test esi, esi
+// 0079ecf4  7504                 jne 0x79ecfa
+// 0079ecf6  33c0                 xor eax, eax
+// 0079ecf8  eb03                 jmp 0x79ecfd
+// 0079ecfa  8b4604               mov eax, dword ptr [esi + 4]
+// 0079ecfd  8d4c2460             lea ecx, [esp + 0x60]
+// 0079ed01  51                   push ecx
+// 0079ed02  50                   push eax
+// 0079ed03  ffd5                 call ebp
+// 0079ed05  8b3dfced8900         mov edi, dword ptr [0x89edfc]
+// 0079ed0b  8d542450             lea edx, [esp + 0x50]
+// 0079ed0f  52                   push edx
+// 0079ed10  ffd7                 call edi
+// 0079ed12  85c0                 test eax, eax
+// 0079ed14  7579                 jne 0x79ed8f
+// 0079ed16  8d442438             lea eax, [esp + 0x38]
+// 0079ed1a  50                   push eax
+// 0079ed1b  ffd7                 call edi
+// 0079ed1d  85c0                 test eax, eax
+// 0079ed1f  756e                 jne 0x79ed8f
+// 0079ed21  e8fa5dfbff           call 0x754b20
+// 0079ed26  6a0f                 push 0xf
+// 0079ed28  8bc8                 mov ecx, eax
+// 0079ed2a  e87155fbff           call 0x7542a0
+// 0079ed2f  50                   push eax
+// 0079ed30  8d4c243c             lea ecx, [esp + 0x3c]
+// 0079ed34  51                   push ecx
+// 0079ed35  8bce                 mov ecx, esi
+// 0079ed37  e894aaf7ff           call 0x7197d0
+// 0079ed3c  837c244802           cmp dword ptr [esp + 0x48], 2
+// 0079ed41  752e                 jne 0x79ed71
+// 0079ed43  e8d85dfbff           call 0x754b20
+// 0079ed48  6a10                 push 0x10
+// 0079ed4a  8bc8                 mov ecx, eax
+// 0079ed4c  e84f55fbff           call 0x7542a0
+// 0079ed51  8bf8                 mov edi, eax
+// 0079ed53  e8c85dfbff           call 0x754b20
+// 0079ed58  6a14                 push 0x14
+// 0079ed5a  8bc8                 mov ecx, eax
+// 0079ed5c  e83f55fbff           call 0x7542a0
+// 0079ed61  57                   push edi
+// 0079ed62  50                   push eax
+// 0079ed63  8d542440             lea edx, [esp + 0x40]
+// 0079ed67  52                   push edx
+// 0079ed68  8bce                 mov ecx, esi
+// 0079ed6a  e85baaf7ff           call 0x7197ca
+// 0079ed6f  eb1e                 jmp 0x79ed8f
+// 0079ed71  85f6                 test esi, esi
+// 0079ed73  7504                 jne 0x79ed79
+// 0079ed75  33c0                 xor eax, eax
+// 0079ed77  eb03                 jmp 0x79ed7c
+// 0079ed79  8b4604               mov eax, dword ptr [esi + 4]
+// 0079ed7c  680f200000           push 0x200f
+// 0079ed81  6a05                 push 5
+// 0079ed83  8d4c2440             lea ecx, [esp + 0x40]
+// 0079ed87  51                   push ecx
+// 0079ed88  50                   push eax
+// 0079ed89  ff15c8ec8900         call dword ptr [0x89ecc8]
+// 0079ed8f  83fb3f               cmp ebx, 0x3f
+// 0079ed92  7524                 jne 0x79edb8
+// 0079ed94  85f6                 test esi, esi
+// 0079ed96  7515                 jne 0x79edad
+// 0079ed98  8d542470             lea edx, [esp + 0x70]
+// 0079ed9c  52                   push edx
+// 0079ed9d  56                   push esi
+// 0079ed9e  ffd5                 call ebp
+// 0079eda0  5f                   pop edi
+// 0079eda1  5e                   pop esi
+// 0079eda2  5d                   pop ebp
+// 0079eda3  5b                   pop ebx
+// 0079eda4  81c484000000         add esp, 0x84
+// 0079edaa  c20800               ret 8
+// 0079edad  8b7604               mov esi, dword ptr [esi + 4]
+// 0079edb0  8d542470             lea edx, [esp + 0x70]
+// 0079edb4  52                   push edx
+// 0079edb5  56                   push esi
+// 0079edb6  ffd5                 call ebp
+// 0079edb8  5f                   pop edi
+// 0079edb9  5e                   pop esi
+// 0079edba  5d                   pop ebp
+// 0079edbb  5b                   pop ebx
+// 0079edbc  81c484000000         add esp, 0x84
+// 0079edc2  c20800               ret 8
+// library xtp-11.2.2/Source\CommandBars\XTPControlGallery.cpp (function ?DrawScrollBar@CXTPControlGalleryPaintManager@@UAEXPAVCDC@@PAVCXTPScrollBase@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/CommandBars/XTPControlGallery.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPControlGallery.cpp : implementation file.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include <math.h>
-#include "Resource.h"
-
-#include "Common/XTPImageManager.h"
-#include "Common/XTPPropExchange.h"
-#include "Common/XTPToolTipContext.h"
-
-#include "XTPControls.h"
-#include "XTPCommandBar.h"
-#include "XTPControlGallery.h"
-#include "XTPPaintManager.h"
-#include "XTPMouseManager.h"
-#include "XTPCommandBars.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlGalleryItem
-
-CXTPControlGalleryItem::CXTPControlGalleryItem()
-{
-	m_pItems = NULL;
-
-	m_nId = 0;
-	m_nIndex = -1;
-	m_nImage = -1;
-	m_dwData = 0;
-	m_bLabel = FALSE;
-
-	m_szItem = CSize(0, 0);
-
-}
-
-int CXTPControlGalleryItem::GetIndex() const
-{
-	return m_nIndex;
-}
-
-CSize CXTPControlGalleryItem::GetSize()
-{
-	return CSize(m_szItem.cx == 0 ? m_pItems->m_szItem.cx : m_szItem.cx,
-		m_szItem.cy == 0 ? m_pItems->m_szItem.cy : m_szItem.cy);
-}
-
-void CXTPControlGalleryItem::SetSize(CSize szItem)
-{
-	m_szItem = szItem;
-}
-
-void CXTPControlGalleryItem::Draw(CDC* pDC, CXTPControlGallery* pGallery, CRect rcItem, BOOL bEnabled, BOOL bSelected, BOOL bPressed, BOOL bChecked)
-{
-	if (IsLabel())
-	{
-		pGallery->GetGalleryPaintManager()->
-			DrawLabel(pDC, this, rcItem);
-		return;
-	}
-
-	CXTPPaintManager* pPaintManager = pGallery->GetPaintManager();
-
-	CXTPImageManagerIcon* pImage = GetImage();
-
-	BOOL bDrawImgeAndText = (pImage != NULL && !m_strCaption.IsEmpty()) &&
-		(pGallery->GetStyle() == xtpButtonIconAndCaption || pGallery->GetStyle() == xtpButtonCaptionAndDescription);
-
-	if (bDrawImgeAndText)
-	{
-		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
-
-		CSize szImage(pImage->GetWidth(), pImage->GetHeight());
-		int nImageBoxWidth  = max(rcItem.Height() - 4, szImage.cx);
-
-		if (bChecked)
-		{
-			CRect rcCheckBox(rcItem.left + 2, rcItem.top + 2, rcItem.left + 2 + nImageBoxWidth, rcItem.bottom - 2);
-			pPaintManager->DrawRectangle(pDC, rcCheckBox, FALSE, FALSE, bEnabled, TRUE, FALSE, xtpBarTypePopup, xtpBarPopup);
-		}
-
-		CPoint pt(rcItem.left + 2 + (nImageBoxWidth - szImage.cx) / 2, (rcItem.top + rcItem.bottom - szImage.cy) / 2);
-
-		pImage->Draw(pDC, pt, pImage->GetIcon(bEnabled ? xtpImageNormal : xtpImageDisabled), szImage);
-
-		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
-
-		pDC->SetTextColor(clrTextColor);
-
-		CRect rcText(rcItem);
-		rcText.left += 2 + nImageBoxWidth + szImage.cx / 3;
-
-		if (pGallery->GetStyle() == xtpButtonCaptionAndDescription)
-		{
-			CXTPFontDC font(pDC, pPaintManager->GetRegularBoldFont());
-			pDC->DrawText(m_strCaption, rcText, DT_END_ELLIPSIS | DT_SINGLELINE | DT_TOP | DT_NOPREFIX);
-
-			rcText.top += pDC->GetTextExtent(_T("XXX"), 3).cy;
-			font.SetFont(pPaintManager->GetRegularFont());
-			pDC->DrawText(m_strDescriptionText, rcText, DT_WORDBREAK | DT_TOP | DT_NOPREFIX);
-		}
-		else
-		{
-			CXTPFontDC font(pDC, pPaintManager->GetRegularFont());
-			pDC->DrawText(m_strCaption, rcText, DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-		}
-	}
-	else if (pImage)
-	{
-		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, bPressed, bEnabled, bChecked, FALSE, xtpBarTypeNormal, xtpBarPopup);
-		CSize szImage(pImage->GetWidth(), pImage->GetHeight());
-		CPoint pt((rcItem.left + rcItem.right - szImage.cx) / 2, (rcItem.top + rcItem.bottom - szImage.cy) / 2);
-
-		pImage->Draw(pDC, pt, pImage->GetIcon(bEnabled ? xtpImageNormal : xtpImageDisabled), szImage);
-	}
-	else
-	{
-		pPaintManager->DrawRectangle(pDC, rcItem, bSelected, FALSE, bEnabled, bChecked, FALSE, xtpBarTypePopup, xtpBarPopup);
-		COLORREF clrTextColor = pPaintManager->GetRectangleTextColor(bSelected, FALSE, bEnabled, FALSE, FALSE, xtpBarTypePopup, xtpBarPopup);
-
-		pDC->SetTextColor(clrTextColor);
-		CXTPFontDC font(pDC, pPaintManager->GetRegularFont());
-
-		CRect rcText(rcItem);
-		rcText.left += 3;
-
-		pDC->DrawText(m_strCaption, rcText, DT_END_ELLIPSIS | DT_SINGLELINE | DT_VCENTER | DT_NOPREFIX);
-	}
-}
-
-CXTPImageManagerIcon* CXTPControlGalleryItem::GetImage()
-{
-	if (!m_pItems)
-		return NULL;
-
-	return m_pItems->GetImageManager()->GetImage(m_nImage >= 0 ? m_nImage : m_nId, 0);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlGalleryItems
-
-IMPLEMENT_DYNAMIC(CXTPControlGalleryItems, CCmdTarget)
-
-CXTPControlGalleryItems::CXTPControlGalleryItems(CXTPControlAction* pAction)
-	: m_pAction(pAction)
-{
-	m_szItem = CSize(20, 20);
-	m_pImageManager = new CXTPImageManager();
-	m_pImageManager->DrawReverted(2);
-	m_bClipItems = TRUE;
-
-}
-
-CXTPControlGalleryItems::~CXTPControlGalleryItems()
-{
-	m_pAction = NULL;
-
-	RemoveAll();
-	CMDTARGET_RELEASE(m_pImageManager);
-
-}
-
-void CXTPControlGalleryItems::RemoveAll()
-{
-	for (int i = 0; i < m_arrItems.GetSize(); i++)
-	{
-		m_arrItems[i]->InternalRelease();
-	}
-
-	m_arrItems.RemoveAll();
-	OnItemsChanged();
-}
-
-void CXTPControlGalleryItems::Remove(int nIndex)
-{
-	CXTPControlGalleryItem* pItem = GetItem(nIndex);
-	if (!pItem)
-		return;
-
-	m_arrItems.RemoveAt(nIndex);
-	pItem->InternalRelease();
-
-	UpdateIndexes(nIndex);
-	OnItemsChanged();
-}
-
-void CXTPControlGalleryItems::UpdateIndexes(int nStart /*= 0*/)
-{
-	for (int i = nStart; i < GetItemCount(); i++)
-		GetItem(i)->m_nIndex = i;
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::InsertItem(int nIndex, CXTPControlGalleryItem* pItem, int nId, int nImage)
-{
-	if (!pItem)
-		return NULL;
-
-	if (nIndex < 0 || nIndex > GetItemCount())
-		nIndex = GetItemCount();
-
-	m_arrItems.InsertAt(nIndex, pItem);
-	UpdateIndexes(nIndex);
-
-	pItem->m_pItems = this;
-	pItem->m_nImage = nImage;
-
-	if (nId != -1)
-	{
-		pItem->m_nId = nId;
-
-		CString strCaption;
-		if (nId > 0 && strCaption.LoadString(nId))
-		{
-			pItem->m_strCaption = pItem->m_strToolTip = strCaption;
-		}
-	}
-
-	OnItemsChanged();
-
-	return pItem;
-}
-
-void CXTPControlGalleryItems::OnItemsChanged()
-{
-	if (!m_pAction)
-		return;
-
-	for (int i = 0; i < m_pAction->GetCount(); i++)
-	{
-		CXTPControlGallery* pGallery = DYNAMIC_DOWNCAST(CXTPControlGallery, m_pAction->GetControl(i));
-		if (pGallery)
-		{
-			pGallery->m_nSelected = -1;
-			pGallery->m_nScrollPos = 0;
-			pGallery->Reposition();
-
-			if (pGallery->m_bPreview)
-			{
-				pGallery->m_bPreview = FALSE;
-				pGallery->NotifySite(XTP_GN_PREVIEWCANCEL);
-			}
-		}
-	}
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(CXTPControlGalleryItem* pItem, int nId, int nImage)
-{
-	return InsertItem(GetItemCount(), pItem, nId, nImage);
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(int nId, int nImage)
-{
-	return AddItem(new CXTPControlGalleryItem(), nId, nImage);
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(LPCTSTR lpszCaption, int nImage)
-{
-	CXTPControlGalleryItem* pItem = AddItem(new CXTPControlGalleryItem(), -1, nImage);
-	pItem->SetCaption(lpszCaption);
-
-	return pItem;
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::AddItem(LPCTSTR lpszCaption, int nId, int nImage)
-{
-	CXTPControlGalleryItem* pItem = AddItem(nId, nImage);
-	pItem->SetCaption(lpszCaption);
-
-	return pItem;
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::AddLabel(int nId)
-{
-	CXTPControlGalleryItem* pItem = AddItem(new CXTPControlGalleryItem(), nId);
-	pItem->m_bLabel = TRUE;
-
-	return pItem;
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::AddLabel(LPCTSTR lpszCaption)
-{
-	CXTPControlGalleryItem* pItem = AddItem(new CXTPControlGalleryItem());
-	pItem->SetCaption(lpszCaption);
-	pItem->m_bLabel = TRUE;
-
-	return pItem;
-}
-
-int CXTPControlGalleryItems::GetItemCount() const
-{
-	return (int)m_arrItems.GetSize();
-}
-
-CXTPControlGalleryItem* CXTPControlGalleryItems::GetItem(int nIndex) const
-{
-	return nIndex >= 0 && nIndex < GetItemCount() ? m_arrItems.GetAt(nIndex) : NULL;
-}
-
-void CXTPControlGalleryItems::SetImageManager(CXTPImageManager* pImageManager)
-{
-	CMDTARGET_RELEASE(m_pImageManager);
-
-	m_pImageManager = pImageManager;
-}
-
-BOOL CXTPControlGalleryItems::PreDrawItem(CDC* pDC, CXTPControlGallery* pGallery, CXTPControlGalleryItem* pItem, CRect rcItem,
-	BOOL bEnabled, BOOL bSelected, BOOL bPressed, BOOL bChecked)
-{
-	UNREFERENCED_PARAMETER(pDC);
-	UNREFERENCED_PARAMETER(pGallery);
-	UNREFERENCED_PARAMETER(pItem);
-	UNREFERENCED_PARAMETER(rcItem);
-	UNREFERENCED_PARAMETER(bEnabled);
-	UNREFERENCED_PARAMETER(bSelected);
-	UNREFERENCED_PARAMETER(bPressed);
-	UNREFERENCED_PARAMETER(bChecked);
-
-
-	return FALSE;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlGallery
-
-IMPLEMENT_XTP_CONTROL(CXTPControlGallery, CXTPControlPopup)
-
-
-CXTPControlGallery::CXTPControlGallery()
-{
-	m_nChecked = -1;
-	m_nSelected = -1;
-	m_bPressed = FALSE;
-	m_bKeyboardSelected = FALSE;
-	m_bHideSelection = FALSE;
-
-	m_nScrollPos = 0;
-	m_nTotalHeight = 0;
-	m_bShowLabels = TRUE;
-
-	m_nWidth = 120;
-	m_nHeight = 60;
-
-	m_rcMargin.SetRectEmpty();
-	m_ptPressed = CPoint(0, 0);
-
-	m_bShowScrollBar = TRUE;
-
-
-	m_bShowBorders = FALSE;
-	m_bShowShadow = FALSE;
-
-	m_bPreview = FALSE;
-	m_nResizable = 0;
-
-	m_controlType = xtpControlGallery;
-
-	m_bAnimation = FALSE;
-	m_nScrollPosTarget = 0;
-	m_dAnimationStep = 0;
-
-
-	SetFlags(xtpFlagShowPopupBarTip);
-}
-
-CXTPControlGalleryItems* CXTPControlGalleryItems::CreateItems(CXTPCommandBars* pCommandBars, int nId)
-{
-	CXTPControlAction* pAction = pCommandBars->CreateAction(nId);
-
-	if (pAction->m_pTarget == NULL)
-	{
-		pAction->m_pTarget = new CXTPControlGalleryItems(pAction);
-	}
-
-	ASSERT_KINDOF(CXTPControlGalleryItems, pAction->m_pTarget);
-
-	return (CXTPControlGalleryItems*)pAction->m_pTarget;
-}
-
-CXTPControlGalleryItems* CXTPControlGallery::GetItems() const
-{
-	CXTPControlAction* pAction = GetAction();
-	if (!pAction)
-		return NULL;
-
-	return (CXTPControlGalleryItems*)pAction->m_pTarget;
-}
-
-CXTPControlGallery::~CXTPControlGallery()
-{
-}
-
-int CXTPControlGallery::GetCustomizeMinWidth() const
-{
-	if (!m_pParent || !GetItems())
-		return 0;
-
-	if (DYNAMIC_DOWNCAST(CXTPPopupBar, m_pParent))
-	{
-		CXTPControl* pParentControl = ((CXTPPopupBar*)m_pParent)->GetControlPopup();
-		if (pParentControl && pParentControl->GetType() == xtpControlGallery)
-			return pParentControl->GetRect().Width();
-	}
-
-	CRect rcBorders(GetBorders());
-	return max(16, GetItems()->m_szItem.cx) + rcBorders.left + rcBorders.right;
-}
-
-int CXTPControlGallery::GetCustomizeMinHeight() const
-{
-	if (!m_pParent || !GetItems())
-		return 0;
-
-	CRect rcBorders(GetBorders());
-	int nHeight = GetItems()->m_szItem.cy + rcBorders.top + rcBorders.bottom;
-	return max(nHeight, 32);
-}
-
-void CXTPControlGallery::SetAction(CXTPControlAction* pAction)
-{
-	CXTPControlPopup::SetAction(pAction);
-	Reposition();
-}
-
-BOOL CXTPControlGallery::IsShowAsButton() const
-{
-	return GetStyle() == xtpButtonIconAndCaptionBelow || GetStyle() == xtpButtonIcon;
-}
-
-void CXTPControlGallery::SetItems(CXTPControlGalleryItems* pItems)
-{
-	if (pItems)
-	{
-		SetAction(pItems->m_pAction);
-	}
-}
-
-void CXTPControlGallery::Reposition()
-{
-	if (GetParent() == NULL)
-		return;
-
-	if (IsShowAsButton())
-		return;
-
-	CRect rcItems = GetItemsRect();
-
-	int x = rcItems.left;
-	int y = rcItems.top;
-	BOOL bFirstItem = TRUE;
-
-	int nCount = GetItemCount();
-
-	m_arrRects.SetSize(nCount);
-	int nRowHeight = 0;
-
-	for (int i = 0 ; i < nCount; i++)
-	{
-		CXTPControlGalleryItem* pItem = GetItem(i);
-		m_arrRects[i].pItem = pItem;
-		m_arrRects[i].bBeginRow = FALSE;
-
-		if (pItem->IsLabel())
-		{
-			if (!m_bShowLabels)
-			{
-				m_arrRects[i].rcItem = CRect(0, 0, 0, 0);
-				continue;
-			}
-
-			if (!bFirstItem)
-			{
-				y += nRowHeight;
-			}
-
-			CRect rcItem(rcItems.left, y, rcItems.right, y + 19);
-			m_arrRects[i].rcItem = rcItem;
-			m_arrRects[i].bBeginRow = TRUE;
-
-			y += 20;
-			nRowHeight = 0;
-			x = rcItems.left;
-			bFirstItem = TRUE;
-
-		}
-		else
-		{
-			CSize szItem = pItem->GetSize();
-			if (szItem.cx == 0)
-				szItem.cx = rcItems.Width();
-
-			if (bFirstItem)
-			{
-				m_arrRects[i].bBeginRow = TRUE;
-			}
-
-			if (!bFirstItem && x + szItem.cx > rcItems.right)
-			{
-				y += nRowHeight;
-				x = rcItems.left;
-				m_arrRects[i].bBeginRow = TRUE;
-				nRowHeight = 0;
-			}
-
-			CRect rcItem(x, y, x + szItem.cx, y + szItem.cy);
-			m_arrRects[i].rcItem = rcItem;
-
-			nRowHeight = max(nRowHeight, szItem.cy);
-
-			bFirstItem = FALSE;
-			x += szItem.cx;
-		}
-	}
-
-	if (!bFirstItem)
-		y += nRowHeight;
-
-	m_nTotalHeight = y - rcItems.top;
-
-	if (m_nScrollPos > m_nTotalHeight - rcItems.Height())
-		m_nScrollPos = max(0, m_nTotalHeight - rcItems.Height());
-
-	SetupScrollInfo();
-}
-
-void CXTPControlGallery::SetCheckedItem(int nId)
-{
-	if (m_nChecked != nId)
-	{
-		m_nChecked = nId;
-		InvalidateItems();
-	}
-}
-
-int CXTPControlGallery::GetCheckedItem() const
-{
-	return m_nChecked;
-}
-
-int CXTPControlGallery::GetSelectedItem() const
-{
-	return m_nSelected;
-}
-
-int CXTPControlGallery::GetItemCount() const
-{
-	CXTPControlGalleryItems* pItems = GetItems();
-
-	return pItems ? pItems->GetItemCount() : 0;
-}
-
-CXTPControlGalleryItem* CXTPControlGallery::GetItem(int nIndex) const
-{
-	CXTPControlGalleryItems* pItems = GetItems();
-
-	return pItems ? pItems->GetItem(nIndex) : NULL;
-}
-
-void CXTPControlGallery::DrawItems(CDC* pDC)
-{
-	CXTPControlGalleryItems* pItems = GetItems();
-	if (!pItems)
-		return;
-
-	ASSERT(m_arrRects.GetSize() == pItems->GetItemCount());
-
-	CRect rcItems = GetItemsRect();
-
-	CRgn rgn;
-	CPoint point = pDC->GetViewportOrg();
-	CRect rcClipBox(rcItems);
-	rcClipBox.OffsetRect(point);
-
-	rgn.CreateRectRgnIndirect(rcClipBox);
-	pDC->SelectClipRgn(&rgn);
-
-	int nSelected = m_bHideSelection ? -1 : m_nSelected;
-
-	for (int i = 0; i < m_arrRects.GetSize(); i++)
-	{
-		const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-		CRect rcItem = pos.rcItem;
-		rcItem.OffsetRect(0, -m_nScrollPos);
-
-		if (rcItem.bottom < rcItems.top)
-			continue;
-
-		if (!rcItem.IsRectEmpty())
-		{
-			if (!pItems->PreDrawItem(pDC, this, pos.pItem, rcItem, GetEnabled(), nSelected == i, nSelected == i && m_bPressed, m_nChecked == pos.pItem->GetID()))
-			{
-				pos.pItem->Draw(pDC, this, rcItem, GetEnabled(), nSelected == i, nSelected == i && m_bPressed, m_nChecked == pos.pItem->GetID());
-			}
-		}
-
-		if (rcItem.top > rcItems.bottom)
-			break;
-	}
-
-	pDC->SelectClipRgn(NULL);
-}
-
-int CXTPControlGallery::HitTestItem(CPoint point, LPRECT lpRect) const
-{
-	if (!GetEnabled())
-		return -1;
-
-	if (IsShowAsButton())
-		return -1;
-
-	ASSERT(m_arrRects.GetSize() == GetItemCount());
-
-	CRect rcItems = GetItemsRect();
-
-	for (int i = 0; i < m_arrRects.GetSize(); i++)
-	{
-		const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-		CRect rcItem = pos.rcItem;
-		rcItem.OffsetRect(0, -m_nScrollPos);
-
-		if (rcItem.top >= rcItems.bottom)
-			break;
-
-		if (rcItem.PtInRect(point))
-		{
-			if (lpRect)
-			{
-				*lpRect = rcItem;
-			}
-			return pos.pItem->IsLabel() ? -1 : i;
-		}
-	}
-
-	return -1;
-}
-
-void CXTPControlGallery::InvalidateItems(LPCRECT lpRect, BOOL bAnimate)
-{
-	GetParent()->Redraw(lpRect ? lpRect : GetRect(), bAnimate);
-}
-
-void CXTPControlGallery::OnExecute()
-{
-	if (m_bPreview)
-	{
-		NotifySite(XTP_GN_PREVIEWAPPLY);
-		m_bPreview = FALSE;
-	}
-
-	CXTPControlPopup::OnExecute();
-}
-
-BOOL CXTPControlGallery::OnSetPopup(BOOL bPopup)
-{
-	if (m_bPreview)
-	{
-		NotifySite(XTP_GN_PREVIEWCANCEL);
-		m_bPreview = FALSE;
-	}
-
-	return CXTPControlPopup::OnSetPopup(bPopup);
-}
-
-
-void CXTPControlGallery::OnMouseHover()
-{
-	if (IsItemSelected() && !m_bPreview && GetSelected())
-	{
-		m_bPreview = TRUE;
-		NotifySite(XTP_GN_PREVIEWSTART);
-
-		NotifySite(XTP_GN_PREVIEWCHANGE);
-	}
-	if (!m_pParent->m_bTrackOnHover)
-		return;
-
-	CXTPControlPopup::OnMouseHover();
-}
-
-void CXTPControlGallery::PerformMouseMove(CPoint point)
-{
-	int nItem = HitTestItem(point);
-
-	if (nItem == -1 && m_bKeyboardSelected)
-		return;
-
-	if (nItem == -1 && point == CPoint(-1, -1) && m_nSelected != -1)
-	{
-		HideSelection();
-		return;
-	}
-
-	int nSelected = m_nSelected;
-
-	if (nItem != m_nSelected || m_bHideSelection || m_bKeyboardSelected)
-	{
-		m_nSelected = nItem;
-		m_bHideSelection = FALSE;
-		m_bKeyboardSelected = FALSE;
-		m_bPressed = FALSE;
-
-		CXTPControlGalleryItems* pItems = GetItems();
-
-		if (pItems && pItems->m_bClipItems)
-		{
-			if (nSelected != -1)
-			{
-				InvalidateItems(GetItemDrawRect(nSelected), TRUE);
-			}
-
-			if (m_nSelected != -1)
-			{
-				InvalidateItems(GetItemDrawRect(m_nSelected), FALSE);
-			}
-		}
-		else
-		{
-			InvalidateItems();
-		}
-
-		if (!m_bPreview && m_nSelected != -1)
-		{
-			m_pParent->SetTimer(XTP_TID_HOVER, 200, NULL);
-		}
-
-		if (m_bPreview)
-		{
-			NotifySite(XTP_GN_PREVIEWCHANGE);
-		}
-
-		if (m_nSelected == -1 && m_bPreview)
-		{
-			m_bPreview = FALSE;
-			NotifySite(XTP_GN_PREVIEWCANCEL);
-		}
-
-		OnSelectedItemChanged();
-	}
-
-	if (m_bPressed && (m_ptPressed != CPoint(0, 0)) && (m_nSelected != -1) &&
-		(abs(m_ptPressed.x - point.x) > 4 || abs(m_ptPressed.y - point.y) > 4))
-	{
-		m_ptPressed = CPoint(0, 0);
-		NotifySite(XTP_GN_STARTDRAG);
-	}
-}
-void CXTPControlGallery::PerformMouseDown(CPoint point)
-{
-	if (m_nSelected != -1 && !m_bKeyboardSelected)
-	{
-		m_bPressed = TRUE;
-		m_ptPressed = point;
-		InvalidateItems();
-	}
-}
-
-void CXTPControlGallery::PerformMouseUp(CPoint /*point*/)
-{
-	if (m_bPressed || (GetParent()->GetPosition() == xtpBarPopup && IsItemSelected()))
-	{
-		m_bPressed = FALSE;
-		InvalidateItems();
-
-		OnExecute();
-	}
-}
-
-BOOL CXTPControlGallery::HasBottomSeparator() const
-{
-	if (GetParent()->GetType() != xtpBarTypePopup)
-		return FALSE;
-
-	if (m_bShowBorders)
-		return FALSE;
-
-	int nIndex = GetIndex();
-	int nNextIndex = GetParent()->GetControls()->GetNext(nIndex, +1, TRUE);
-
-	return nNextIndex > nIndex;
-}
-
-CRect CXTPControlGallery::GetItemDrawRect(int nIndex)
-{
-	if (nIndex < 0 || nIndex >= m_arrRects.GetSize())
-		return CRect(0, 0, 0, 0);
-
-	CRect rc(m_arrRects[nIndex].rcItem);
-	rc.OffsetRect(0, -m_nScrollPos);
-
-	rc.IntersectRect(rc, GetItemsRect());
-
-	return rc;
-}
-
-CRect CXTPControlGallery::GetBorders() const
-{
-	CRect rcBorders(0, 0, 0, 0);
-	if (m_bShowBorders)
-	{
-		rcBorders.SetRect(1, 1, 1, 1);
-	}
-	if (m_pParent && m_bShowScrollBar)
-	{
-		rcBorders.right += (GetCommandBar() ? GetGalleryPaintManager()->m_cxPopup : GetGalleryPaintManager()->m_cxVScroll);
-	}
-
-	if (m_pParent && HasBottomSeparator())
-	{
-		rcBorders.bottom = 2;
-	}
-
-	rcBorders.DeflateRect(m_rcMargin.left, m_rcMargin.top, -m_rcMargin.right, -m_rcMargin.bottom);
-
-	return rcBorders;
-}
-
-CXTPControlGalleryPaintManager* CXTPControlGallery::GetGalleryPaintManager() const
-{
-	return GetPaintManager()->GetGalleryPaintManager();
-}
-
-void CXTPControlGallery::SetResizable(BOOL bResizeWidth, BOOL bResizeHeight)
-{
-	m_nResizable = (bResizeWidth ? 1 : 0) +  (bResizeHeight ? 2 : 0);
-}
-
-CRect CXTPControlGallery::GetItemsRect() const
-{
-	CRect rc = GetRect();
-	rc.DeflateRect(GetBorders());
-
-	return rc;
-}
-
-void CXTPControlGallery::FillControl(CDC* pDC, CRect rcControl)
-{
-	GetGalleryPaintManager()->FillControl(pDC, this, rcControl);
-}
-
-void CXTPControlGallery::DoAnimate()
-{
-	if (abs(m_nScrollPos - m_nScrollPosTarget) > fabs(m_dAnimationStep))
-	{
-		m_nScrollPos = int((double)m_nScrollPos + m_dAnimationStep);
-	}
-	else
-	{
-		m_bAnimation = FALSE;
-		m_nScrollPos = m_nScrollPosTarget;
-		::KillTimer(GetParent()->GetSafeHwnd(), IDSYS_ANIMATE);
-	}
-	Reposition();
-
-	OnScrollChanged();
-	InvalidateItems(NULL, FALSE);
-	GetParent()->UpdateWindow();
-}
-
-void CXTPControlGallery::StartAnimation(int nScrollPos)
-{
-	CRect rcItems = GetItemsRect();
-
-	if (nScrollPos > m_nTotalHeight - rcItems.Height())
-		nScrollPos = m_nTotalHeight - rcItems.Height();
-
-	if (nScrollPos < 0)
-		nScrollPos = 0;
-
-	if (m_bAnimation && m_nScrollPosTarget == nScrollPos)
-		return;
-
-	if (!m_bAnimation && m_nScrollPos == nScrollPos)
-		return;
-
-	m_bAnimation = TRUE;
-	m_nScrollPosTarget = nScrollPos;
-	m_dAnimationStep = double(m_nScrollPosTarget - m_nScrollPos) / (m_nTimerElapse > 200 ? 8.0 : 3.0);
-	if (m_dAnimationStep > 0 && m_dAnimationStep < 1) m_dAnimationStep = 1;
-	if (m_dAnimationStep < 0 && m_dAnimationStep > -1) m_dAnimationStep = -1;
-
-	UINT nms = 40;
-	SetTimer(GetParent()->GetSafeHwnd(), IDSYS_ANIMATE, nms, NULL);
-	DoAnimate();
-}
-
-void CXTPControlGallery::SetScrollPos(int nScrollPos)
-{
-	CRect rcItems = GetItemsRect();
-
-	if (nScrollPos > m_nTotalHeight - rcItems.Height())
-		nScrollPos = m_nTotalHeight - rcItems.Height();
-
-	if (nScrollPos < 0)
-		nScrollPos = 0;
-
-	if (m_bAnimation)
-	{
-		m_bAnimation = FALSE;
-		::KillTimer(GetParent()->GetSafeHwnd(), IDSYS_ANIMATE);
-		m_nScrollPos = -1;
-	}
-
-	if (m_nScrollPos == nScrollPos)
-		return;
-
-	m_nScrollPos = nScrollPos;
-	Reposition();
-
-	OnScrollChanged();
-	InvalidateItems(NULL, FALSE);
-}
-
-
-void CXTPControlGallery::EnsureVisible(int nIndex)
-{
-	if (!GetParent()->GetSafeHwnd())
-		return;
-
-	if (GetItemCount() == 0 || nIndex == -1 || nIndex >= GetItemCount() || nIndex >= (int)m_arrRects.GetSize())
-		return;
-
-	const GALLERYITEM_POSITION& pos = m_arrRects[nIndex];
-
-	CRect rcItem = pos.rcItem;
-	rcItem.OffsetRect(0, -m_nScrollPos);
-
-	CRect rcItems = GetItemsRect();
-
-	if (rcItem.top < rcItems.top)
-	{
-		int nScrollPos = pos.rcItem.top - rcItems.top;
-
-		if (m_bShowLabels)
-		{
-			for (int i = nIndex - 1; i >= 0; i--)
-			{
-				const GALLERYITEM_POSITION& posLabel = m_arrRects[i];
-
-				if (posLabel.pItem->IsLabel() && pos.rcItem.top - posLabel.rcItem.top <= rcItems.Height() - rcItem.Height())
-				{
-					nScrollPos = posLabel.rcItem.top - rcItems.top;
-					break;
-				}
-
-				if (pos.rcItem.top - posLabel.rcItem.top > rcItems.Height()  - rcItem.Height())
-					break;
-			}
-		}
-
-		SetScrollPos(nScrollPos);
-	}
-	else if (rcItem.bottom > rcItems.bottom)
-	{
-		SetScrollPos(pos.rcItem.bottom - rcItems.bottom);
-	}
-}
-
-long CXTPControlGallery::GetNextInRow(long nIndex, int nDirection) const
-{
-	if (GetItemCount() == 0 || nIndex == -1 || nIndex >= GetItemCount())
-		return -1;
-
-	CRect rcItems = GetItemsRect();
-	CSize szItem = GetItems()->GetItemSize();
-
-	if (szItem.cx * 2 > rcItems.Width() || szItem.cx == 0)
-		return nIndex;
-	int i;
-
-	if (nDirection < 0)
-	{
-		if (!m_arrRects[nIndex].bBeginRow)
-		{
-			for (i = nIndex - 1; i >= 0; i--)
-			{
-				const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-				if (!IsRectEmpty(&pos.rcItem))
-				{
-					return i;
-				}
-			}
-		}
-
-		for (i = nIndex + 1; i < m_arrRects.GetSize(); i++)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (pos.bBeginRow)
-			{
-				return nIndex;
-			}
-
-			if (!IsRectEmpty(&pos.rcItem))
-			{
-				nIndex = i;
-			}
-		}
-		return nIndex;
-	}
-	else
-	{
-		for (i = nIndex + 1; i < GetItemCount(); i++)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (!IsRectEmpty(&pos.rcItem) && !pos.bBeginRow)
-			{
-				return i;
-			}
-
-			if (pos.bBeginRow)
-				break;
-		}
-
-		for (i = nIndex; i >= 0; i--)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (pos.bBeginRow)
-			{
-				return i;
-			}
-		}
-	}
-
-	return nIndex;
-}
-
-long CXTPControlGallery::GetNextInPage(long nIndex, int nDirection) const
-{
-	if (GetItemCount() == 0)
-		return -1;
-
-	if (nIndex == -1 || nIndex >= GetItemCount())
-		nIndex = GetNext(-1, nDirection);
-
-	int i;
-	RECT rcItem = m_arrRects[nIndex].rcItem;
-	CRect rcItems = GetItemsRect();
-
-	if (nDirection < 0)
-	{
-		for (i = nIndex - 1; i >= 0; i--)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (!pos.pItem->IsLabel() &&
-				rcItem.top - pos.rcItem.top< rcItems.Height())
-			{
-				nIndex = i;
-			}
-
-			if (rcItem.top - pos.rcItem.top> rcItems.Height())
-				return nIndex;
-		}
-	}
-	else
-	{
-		for (i = nIndex + 1; i < GetItemCount(); i++)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (!pos.pItem->IsLabel() &&
-				pos.rcItem.bottom - rcItem.bottom < rcItems.Height())
-			{
-				nIndex = i;
-			}
-
-			if (pos.rcItem.bottom - rcItem.bottom > rcItems.Height())
-				return nIndex;
-		}
-	}
-
-	return nIndex;
-
-}
-
-long CXTPControlGallery::GetNextInColumn(long nIndex, int nDirection) const
-{
-	if (GetItemCount() == 0)
-		return -1;
-
-	if (nIndex == -1 || nIndex >= GetItemCount())
-		return GetNext(-1, nDirection);
-
-	int i;
-	RECT rcItem = m_arrRects[nIndex].rcItem;
-
-	if (nDirection < 0)
-	{
-		for (i = nIndex - 1; i >= 0; i--)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (!pos.pItem->IsLabel() && pos.rcItem.left == rcItem.left)
-			{
-				return i;
-			}
-		}
-	}
-	else
-	{
-		for (i = nIndex + 1; i < GetItemCount(); i++)
-		{
-			const GALLERYITEM_POSITION& pos = m_arrRects[i];
-
-			if (!pos.pItem->IsLabel() && pos.rcItem.left == rcItem.left)
-			{
-				return i;
-			}
-		}
-
-	}
-
-	return -1;
-}
-
-long CXTPControlGallery::GetNext(long nIndex, int nDirection) const
-{
-	ASSERT(nDirection == +1 || nDirection == -1);
-	if (GetItemCount() == 0) return -1;
-
-	long nNext = nIndex + nDirection;
-
-	if (nDirection == -1 && nIndex == -1)
-	{
-		nNext = GetItemCount() - 1;
-	}
-
-	BOOL bCircle = FALSE;
-
-	while (nNext != nIndex)
-	{
-		if (nNext >= GetItemCount())
-		{
-			if ((nIndex == -1 && nDirection == +1) || bCircle) return -1;
-			nNext = 0;
-			bCircle = TRUE;
-		}
-		if (nNext < 0)
-		{
-			if ((nIndex == -1 && nDirection == -1) || bCircle) return -1;
-			nNext = GetItemCount() - 1;
-			bCircle = TRUE;
-		}
-
-		if (!GetItem(nNext)->IsLabel())
-		{
-			return nNext;
-		}
-		nNext += nDirection;
-	}
-	return nNext;
-}
-
-void CXTPControlGallery::SetSelectedItem(int nItem)
-{
-	int nSelected = m_nSelected;
-
-	m_bHideSelection = FALSE;
-	m_nSelected = nItem;
-	m_bPressed = FALSE;
-	m_bKeyboardSelected = TRUE;
-
-	CXTPControlGalleryItems* pItems = GetItems();
-
-	if (pItems && pItems->m_bClipItems && nSelected != -1)
-	{
-		InvalidateItems(GetItemDrawRect(nSelected), TRUE);
-	}
-
-	EnsureVisible(m_nSelected);
-
-	if (pItems && pItems->m_bClipItems && m_nSelected != -1)
-	{
-		InvalidateItems(GetItemDrawRect(m_nSelected), FALSE);
-	}
-
-	if (!pItems || !pItems->m_bClipItems)
-	{
-		InvalidateItems();
-	}
-
-	if (m_nSelected != -1)
-	{
-		AccessibleNotifyWinEvent(EVENT_OBJECT_FOCUS , GetParent()->GetSafeHwnd(), GetID(), m_nSelected + 1);
-	}
-
-	if (m_nSelected != -1 && !m_bPreview)
-	{
-		m_bPreview = TRUE;
-		NotifySite(XTP_GN_PREVIEWSTART);
-	}
-
-	if (m_bPreview)
-	{
-		NotifySite(XTP_GN_PREVIEWCHANGE);
-	}
-
-	if (m_nSelected == -1 && m_bPreview)
-	{
-		m_bPreview = FALSE;
-		NotifySite(XTP_GN_PREVIEWCANCEL);
-	}
-
-	OnSelectedItemChanged();
-}
-
-int CXTPControlGallery::FindItem(int nStartAfter, LPCTSTR lpszItem, BOOL bExact) const
-{
-	if (GetItemCount() == 0)
-		return -1;
-
-	UINT len1 = lpszItem ? (UINT)_tcslen(lpszItem) : 0;
-	if (len1 < 1)
-		return -1;
-
-	int nItem = nStartAfter + 1;
-	if (nItem >= GetItemCount())
-		nItem = 0;
-
-	if (nItem < 0)
-		nItem = 0;
-
-	int nStop = nItem;
-
-	do
-	{
-		CXTPControlGalleryItem* pItem = GetItem(nItem);
-
-		if (bExact )
-		{
-			if (pItem->GetCaption().CompareNoCase(lpszItem) == 0)
-				return nItem;
-		}
-		else
-		{
-			UINT len2 = pItem->GetCaption().GetLength();
-
-			int nResult = CompareString(LOCALE_SYSTEM_DEFAULT, NORM_IGNORECASE, lpszItem, min(len1,len2),
-				pItem->GetCaption(), min(len1,len2));
-
-			if (nResult == CSTR_EQUAL)
-			{
-				if (len1 <= len2)
-				{
-					return nItem;
-				}
-			}
-
-
-		}
-
-		if (++nItem == GetItemCount())
-			nItem = 0;
-
-	} while (nItem != nStop);
-
-	return -1;
-}
-
-int CXTPControlGallery::GetScrollPos() const
-{
-	return m_nScrollPos;
-}
-
-int CXTPControlGallery::SetTopIndex(int nIndex)
-{
-	if (nIndex == -1 || nIndex > m_arrRects.GetSize())
-		return -1;
-
-	SetScrollPos(m_arrRects[nIndex].rcItem.top);
-	return 0;
-}
-
-CString CXTPControlGallery::GetItemCaption(int nIndex)
-{
-	CXTPControlGalleryItem* pItem = GetItem(nIndex);
-
-	if (pItem)
-		return pItem->GetCaption();
-
-	return _T("");
-}
-
-void CXTPControlGallery::DoScroll(int cmd, int pos)
-{
-	int y = m_bAnimation ? m_nScrollPosTarget : m_nScrollPos;
-	CRect rcItems = GetItemsRect();
-
-	CXTPControlGalleryItems* pItems = GetItems();
-	if (!pItems)
-		return;
-
-	switch (cmd)
-	{
-	case SB_TOP:
-		y = 0;
-		break;
-	case SB_BOTTOM:
-		y = m_nTotalHeight;
-		break;
-	case SB_LINEUP:
-		y -= pItems->GetItemSize().cy;
-		break;
-	case SB_LINEDOWN:
-		y += pItems->GetItemSize().cy;
-		break;
-	case SB_PAGEUP:
-		y -= rcItems.Height();
-		break;
-	case SB_PAGEDOWN:
-		y += rcItems.Height();
-		break;
-	case SB_THUMBTRACK:
-		y = pos;
-		break;
-	}
-
-	if (GetCommandBar() && (cmd == SB_LINEUP || cmd == SB_LINEDOWN || cmd == SB_ENDSCROLL))
-	{
-		StartAnimation(y);
-	}
-	else
-	{
-		SetScrollPos(y);
-	}
-}
-
-void CXTPControlGallery::GetScrollInfo(SCROLLINFO* pSI)
-{
-	CRect rcItems = GetItemsRect();
-
-	pSI->nMin = 0;
-	pSI->nMax = max(0, m_nTotalHeight - 1);
-	pSI->nPos = m_nScrollPos;
-	pSI->nPage = rcItems.Height();
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-
-CSize CXTPControlGallery::GetSize(CDC* pDC)
-{
-	if (IsShowAsButton())
-	{
-		int nWidth = m_nWidth, nHeight = m_nHeight;
-		m_nWidth = m_nHeight = 0;
-
-		CSize sz = CXTPControlPopup::GetSize(pDC);
-		m_nWidth = nWidth; m_nHeight = nHeight;
-		return sz;
-	}
-
-	return CSize(max(IsResizable() ? GetCustomizeMinWidth() : 0, m_nWidth), m_nHeight);
-}
-
-void CXTPControlGallery::RedrawScrollBar()
-{
-	InvalidateItems(NULL, FALSE);
-}
-
-void CXTPControlGallery::DrawScrollBar(CDC* pDC)
-{
-	if (GetCommandBar())
-		GetGalleryPaintManager()->DrawPopupScrollBar(pDC, this);
-	else
-		GetGalleryPaintManager()->DrawScrollBar(pDC, this);
-}
-
-void CXTPControlGallery::Draw(CDC* pDC)
-{
-	if (IsShowAsButton())
-	{
-		CXTPControlPopup::Draw(pDC);
-		return;
-	}
-	FillControl(pDC, m_rcControl);
-
-	DrawItems(pDC);
-
-	if (m_bShowScrollBar)
-	{
-		DrawScrollBar(pDC);
-	}
-}
-
-void CXTPControlGallery::OnMouseMove(CPoint point)
-{
-	if (IsShowAsButton())
-	{
-		CXTPControlPopup::OnMouseMove(point);
-		return;
-	}
-
-	PerformMouseMove(point);
-
-	int ht = HitTestScrollBar(point);
-
-	if (ht != m_spi.ht)
-	{
-		m_spi.ht = ht;
-		RedrawParent();
-	}
-}
-
-void CXTPControlGallery::HideSelection()
-{
-	m_bHideSelection = TRUE;
-	m_bKeyboardSelected = FALSE;
-
-	if (m_nSelected != -1)
-	{
-		CXTPControlGalleryItems* pItems = GetItems();
-
-		if (pItems && pItems->m_bClipItems)
-		{
-			InvalidateItems(GetItemDrawRect(m_nSelected), FALSE);
-		}
-		else
-		{
-			InvalidateItems();
-		}
-	}
-
-	if (m_bPreview && m_nSelected != -1)
-	{
-		NotifySite(XTP_GN_PREVIEWCHANGE);
-	}
-
-	if (m_bPreview)
-	{
-		m_bPreview = FALSE;
-		NotifySite(XTP_GN_PREVIEWCANCEL);
-	}
-
-	OnSelectedItemChanged();
-}
-
-void CXTPControlGallery::OnSelectedItemChanged()
-{
-	NotifySite(XTP_GN_SELCHANGE);
-}
-
-BOOL CXTPControlGallery::OnSetSelected(int bSelected)
-{
-	if (IsShowAsButton())
-	{
-		return CXTPControlPopup::OnSetSelected(bSelected);
-	}
-
-	if (!bSelected)
-	{
-		m_bPressed = FALSE;
-		m_spi.ht = HTNOWHERE;
-		HideSelection();
-	}
-
-	if (IsKeyboardSelected(bSelected) && !IsItemSelected())
-	{
-		SetSelectedItem(GetNext(-1, bSelected == TRUE_KEYBOARD_PREV ? -1 : +1));
-	}
-
-	return CXTPControl::OnSetSelected(bSelected);
-}
-
-
-BOOL CXTPControlGallery::IsFocused() const
-{
-	return IsShowAsButton() ? FALSE : GetSelected();
-}
-
-
-BOOL CXTPControlGallery::OnHookKeyDown(UINT nChar, LPARAM /*lParam*/)
-{
-	ASSERT(IsFocused());
-
-	if (!IsFocused())
-		return FALSE;
-
-	int nSelected;
-	CXTPDrawHelpers::KeyToLayout(CXTPControl::GetParent(), nChar);
-
-	switch (nChar)
-	{
-	case VK_HOME:
-		SetSelectedItem(GetNext(-1, +1));
-		return TRUE;
-
-	case VK_END:
-		SetSelectedItem(GetNext(-1, -1));
-		return TRUE;
-
-	case VK_LEFT:
-		SetSelectedItem(GetNextInRow(m_nSelected, -1));
-		return TRUE;
-
-	case VK_RIGHT:
-		SetSelectedItem(GetNextInRow(m_nSelected, +1));
-		return TRUE;
-
-	case VK_UP:
-		nSelected = GetNextInColumn(m_nSelected, -1);
-
-		if (nSelected == -1 && GetControls()->GetNext(m_nIndex, -1) == m_nIndex)
-		{
-			nSelected = GetNext(-1, -1);
-		}
-
-		if (nSelected != -1)
-		{
-			SetSelectedItem(nSelected);
-			return TRUE;
-		}
-		return FALSE;
-
-	case VK_PRIOR:
-		SetSelectedItem(GetNextInPage(m_nSelected, -1));
-		return TRUE;
-
-	case VK_NEXT:
-		SetSelectedItem(GetNextInPage(m_nSelected, +1));
-		return TRUE;
-
-	case VK_DOWN:
-		nSelected = GetNextInColumn(m_nSelected, +1);
-
-		if (nSelected == -1 && GetControls()->GetNext(m_nIndex, +1) == m_nIndex)
-		{
-			nSelected = GetNext(-1, +1);
-		}
-
-		if (nSelected != -1)
-		{
-			SetSelectedItem(nSelected);
-			return TRUE;
-		}
-		return FALSE;
-
-	case VK_TAB:
-		if (GetKeyState(VK_SHIFT) >= 0)
-		{
-			nSelected = GetNext(m_nSelected, +1);
-			if (nSelected > m_nSelected)
-			{
-				SetSelectedItem(nSelected);
-				return TRUE;
-			}
-		}
-		else
-		{
-			nSelected = GetNext(m_nSelected, -1);
-			if (nSelected < m_nSelected)
-			{
-				SetSelectedItem(nSelected);
-				return TRUE;
-			}
-		}
-		return FALSE;
-
-	case VK_RETURN:
-		OnExecute();
-		break;
-	}
-
-	return FALSE;
-}
-
-BOOL CXTPControlGallery::OnHookMouseWheel(UINT /*nFlags*/, short zDelta, CPoint /*pt*/)
-{
-	CXTPControlGalleryItems* pItems = GetItems();
-	if (!pItems)
-		return FALSE;
-
-	SetScrollPos(m_nScrollPos + (zDelta < 0 ? 3 * pItems->GetItemSize().cy : -3 * pItems->GetItemSize().cy));
-	return TRUE;
-}
-
-void CXTPControlGallery::OnScrollChanged()
-{
-	SetupScrollInfo();
-}
-
-void CXTPControlGallery::OnClick(BOOL bKeyboard /*= FALSE*/, CPoint point /*= CPoint(0, 0)*/)
-{
-	if (IsShowAsButton())
-	{
-		CXTPControlPopup::OnClick(bKeyboard, point);
-		return;
-	}
-
-	if (IsCustomizeMode())
-	{
-		m_pParent->SetPopuped(-1);
-		m_pParent->SetSelected(-1);
-		CustomizeStartDrag(point);
-		return;
-	}
-
-	if (!GetEnabled())
-		return;
-
-	if (!bKeyboard)
-	{
-		OnMouseMove(point);
-
-		if (m_spi.ht == XTP_HTSCROLLPOPUP)
-		{
-			m_pParent->SetPopuped(m_nIndex);
-		}
-		else if (m_spi.ht != HTNOWHERE)
-		{
-			PerformTrackInit(CXTPControl::GetParent()->GetSafeHwnd(), point, &m_spi, (GetKeyState(VK_SHIFT) < 0) ? TRUE : FALSE);
-		}
-		else
-		{
-			m_pParent->SetPopuped(-1);
-			PerformMouseDown(point);
-		}
-	}
-	else
-	{
-
-	}
-}
-
-void CXTPControlGallery::OnLButtonUp(CPoint point)
-{
-	if (IsShowAsButton())
-	{
-		CXTPControlPopup::OnLButtonUp(point);
-	}
-	else
-	{
-		PerformMouseUp(point);
-	}
-}
-
-
-CRect CXTPControlGallery::GetScrollBarRect()
-{
-	if (!m_bShowScrollBar)
-		return CRect(0, 0, 0, 0);
-
-	CRect rc(m_rcControl);
-
-	rc.left = rc.right - (GetCommandBar() ? GetGalleryPaintManager()->m_cxPopup :
-		GetGalleryPaintManager()->m_cxVScroll);
-
-	if (m_bShowBorders)
-	{
-		rc.top++;
-		rc.bottom--;
-		rc.right--;
-		rc.left--;
-	}
-
-	if (HasBottomSeparator())
-		rc.bottom -= 2;
-
-	return rc;
-}
-
-void CXTPControlGallery::CalcScrollBarInfo(LPRECT lprc, SCROLLBARPOSINFO* pSBInfo, SCROLLINFO* pSI)
-{
-	if (GetCommandBar())
-	{
-		pSBInfo->rc = *lprc;
-		pSBInfo->pxTop = lprc->top;
-		pSBInfo->pxBottom = lprc->bottom;
-		pSBInfo->pxLeft = lprc->left;
-		pSBInfo->pxRight = lprc->right;
-
-		pSBInfo->pos = pSI->nPos;
-		pSBInfo->page = pSI->nPage;
-		pSBInfo->posMin = pSI->nMin;
-		pSBInfo->posMax = pSI->nMax;
-
-		pSBInfo->pxDownArrow = pSBInfo->pxUpArrow  = pSBInfo->pxTop + GetGalleryPaintManager()->m_cyPopupUp;
-		pSBInfo->pxPopup = pSBInfo->pxDownArrow + GetGalleryPaintManager()->m_cyPopupDown;
-	}
-	else
-	{
-		CXTPScrollBase::CalcScrollBarInfo(lprc, pSBInfo, pSI);
-	}
-}
-
-CWnd* CXTPControlGallery::GetParentWindow() const
-{
-	return CXTPControl::GetParent();
-}
-
-void CXTPControlGallery::SetRect(CRect rcControl)
-{
-	if (m_rcControl == rcControl)
-		return;
-
-	CXTPControl::SetRect(rcControl);
-	Reposition();
-}
-
-void CXTPControlGallery::Copy(CXTPControl* pControl, BOOL bRecursive)
-{
-	ASSERT(DYNAMIC_DOWNCAST(CXTPControlGallery, pControl));
-
-	CXTPControlPopup::Copy(pControl, bRecursive);
-
-	CXTPControlGallery* pGallery = (CXTPControlGallery*)pControl;
-
-	m_bShowLabels = pGallery->m_bShowLabels;
-	m_bShowBorders = pGallery->m_bShowBorders;
-	m_bShowScrollBar = pGallery->m_bShowScrollBar;
-
-	m_rcMargin = pGallery->m_rcMargin;
-	m_nResizable = pGallery->m_nResizable;
-}
-
-void CXTPControlGallery::DoPropExchange(CXTPPropExchange* pPX)
-{
-	CXTPControlPopup::DoPropExchange(pPX);
-
-	PX_Bool(pPX, _T("ShowLabels"), m_bShowLabels, TRUE);
-	PX_Bool(pPX, _T("ShowBorders"), m_bShowBorders, TRUE);
-	PX_Bool(pPX, _T("ShowScrollBar"), m_bShowScrollBar, TRUE);
-
-	PX_Rect(pPX, _T("GalleryMargin"), m_rcMargin, CRect(0, 0, 0, 0));
-
-	if (pPX->GetSchema() > _XTP_SCHEMA_110)
-	{
-		PX_Int(pPX, _T("Resizable"), m_nResizable, 0);
-	}
-}
-
-INT_PTR CXTPControlGallery::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	if (IsShowAsButton() || GetItems() == NULL)
-	{
-		return -1;
-	}
-
-	RECT rcItem;
-	int nIndex = HitTestItem(point, &rcItem);
-	if (nIndex != -1)
-	{
-		CXTPControlGalleryItem* pItem = GetItem(nIndex);
-
-		INT_PTR nHit = pItem->m_nImage >= 0 ? pItem->m_nImage : pItem->m_nId;
-
-		CXTPToolTipContext::FillInToolInfo(pTI, GetParent()->GetSafeHwnd(), rcItem, nHit,
-			pItem->GetToolTip(), pItem->GetToolTip(), pItem->GetDescription(), GetItems()->GetImageManager());
-
-		return nHit;
-	}
-	return 0;
-}
-
-BOOL CXTPControlGallery::IsScrollBarEnabled() const
-{
-	return GetEnabled();
-}
-
-BOOL CXTPControlGallery::IsScrollButtonEnabled(int ht)
-{
-	if (!GetEnabled())
-		return FALSE;
-
-	if (!GetCommandBar())
-		return TRUE;
-
-	if (ht == XTP_HTSCROLLUP)
-	{
-		return m_nScrollPos > 0;
-	}
-	else if (ht == XTP_HTSCROLLDOWN)
-	{
-		CRect rcItems = GetItemsRect();
-		return m_nScrollPos < m_nTotalHeight - rcItems.Height();
-	}
-	else
-	{
-		ASSERT(FALSE);
-	}
-
-	return TRUE;
-}
-
-void CXTPControlGallery::SetItemsMargin(int nLeft, int nTop, int nRight, int nBottom)
-{
-	m_rcMargin.SetRect(nLeft, nTop, nRight, nBottom);
-}
-
-void CXTPControlGallery::AdjustExcludeRect(CRect& rc, BOOL bVertical)
-{
-	if (IsShowAsButton())
-	{
-		CXTPControlPopup::AdjustExcludeRect(rc, bVertical);
-	}
-	else
-	{
-		rc.SetRect(m_rcControl.left - 1, m_rcControl.top, m_rcControl.left - 1, m_rcControl.top);
-	}
-}
-
-HRESULT CXTPControlGallery::GetAccessibleChildCount(long FAR* pChildCount)
-{
-	if (pChildCount == 0)
-		return E_INVALIDARG;
-
-	*pChildCount = GetItemCount();
-
-	return S_OK;
-}
-HRESULT CXTPControlGallery::GetAccessibleChild(VARIANT /*varChild*/, IDispatch* FAR* ppdispChild)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	*ppdispChild = NULL;
-	return S_FALSE;
-}
-
-HRESULT CXTPControlGallery::GetAccessibleName(VARIANT varChild, BSTR* pszName)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	int nIndex = GetChildIndex(&varChild);
-
-	if (nIndex == CHILDID_SELF)
-		return CXTPControl::GetAccessibleName(varChild, pszName);
-
-	CXTPControlGalleryItem* pItem = GetItem(nIndex - 1);
-	if (!pItem)
-		return E_INVALIDARG;
-
-	CString strCaption = pItem->GetCaption();
-	CXTPDrawHelpers::StripMnemonics(strCaption);
-
-	if (strCaption.IsEmpty())
-	{
-		strCaption = pItem->GetToolTip();
-	}
-
-	*pszName = strCaption.AllocSysString();
-	return S_OK;
-}
-
-HRESULT CXTPControlGallery::GetAccessibleRole(VARIANT varChild, VARIANT* pvarRole)
-{
-	pvarRole->vt = VT_I4;
-	pvarRole->lVal = GetChildIndex(&varChild) == CHILDID_SELF ? ROLE_SYSTEM_LISTITEM : ROLE_SYSTEM_LIST;
-	return S_OK;
-}
-
-HRESULT CXTPControlGallery::AccessibleSelect(long flagsSelect, VARIANT varChild)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	int nIndex = GetChildIndex(&varChild);
-	if (nIndex == CHILDID_SELF)
-		return CXTPControl::AccessibleSelect(flagsSelect, varChild);
-
-	SetSelectedItem(nIndex - 1);
-
-	return S_OK;
-}
-
-HRESULT CXTPControlGallery::GetAccessibleState(VARIANT varChild, VARIANT* pvarState)
-{
-	int nIndex = GetChildIndex(&varChild);
-
-	if (nIndex == CHILDID_SELF)
-		return CXTPControl::GetAccessibleState(varChild, pvarState);
-
-	CXTPControlGalleryItem* pItem = GetItem(nIndex - 1);
-	if (!pItem)
-		return E_INVALIDARG;
-
-	pvarState->vt = VT_I4;
-	pvarState->lVal = STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_SELECTABLE;
-
-	if (m_nSelected == pItem->GetIndex())
-		pvarState->lVal |= STATE_SYSTEM_FOCUSED;
-
-	if (m_nChecked == pItem->GetID())
-		pvarState->lVal |= STATE_SYSTEM_SELECTED;
-
-	return S_OK;
-}
-
-HRESULT CXTPControlGallery::GetAccessibleDefaultAction(VARIANT varChild, BSTR* pszDefaultAction)
-{
-	if (GetChildIndex(&varChild) == CHILDID_SELF)
-			return CXTPControl::GetAccessibleDefaultAction(varChild, pszDefaultAction);
-
-	*pszDefaultAction = SysAllocString(L"Click");
-
-	return S_OK;
-}
-
-HRESULT CXTPControlGallery::AccessibleDoDefaultAction(VARIANT varChild)
-{
-	SAFE_MANAGE_STATE(m_pModuleState);
-
-	int nIndex = GetChildIndex(&varChild);
-
-	if (nIndex == CHILDID_SELF)
-		return CXTPControl::AccessibleDoDefaultAction(varChild);
-
-	CXTPControlGalleryItem* pItem = GetItem(nIndex - 1);
-	if (!pItem)
-		return E_INVALIDARG;
-
-	SetSelectedItem(nIndex - 1);
-	return S_OK;
-}
-
-
-HRESULT CXTPControlGallery::AccessibleLocation(long* pxLeft, long* pyTop, long* pcxWidth, long* pcyHeight, VARIANT varChild)
-{
-	*pxLeft = *pyTop = *pcxWidth = *pcyHeight = 0;
-
-	int nIndex = GetChildIndex(&varChild);
-
-	if (!m_pParent->GetSafeHwnd())
-		return S_OK;
-
-	if (!IsVisible())
-		return S_OK;
-
-	CRect rcControl = GetRect();
-
-	if (nIndex != CHILDID_SELF)
-	{
-		rcControl = GetItemDrawRect(nIndex - 1);
-	}
-
-	m_pParent->ClientToScreen(&rcControl);
-
-	*pxLeft = rcControl.left;
-	*pyTop = rcControl.top;
-	*pcxWidth = rcControl.Width();
-	*pcyHeight = rcControl.Height();
-
-	return S_OK;
-}
-
-HRESULT CXTPControlGallery::AccessibleHitTest(long xLeft, long yTop, VARIANT* pvarID)
-{
-	if (pvarID == NULL)
-		return E_INVALIDARG;
-
-	pvarID->vt = VT_EMPTY;
-
-	if (!m_pParent->GetSafeHwnd())
-		return S_FALSE;
-
-	if (!CXTPWindowRect(m_pParent).PtInRect(CPoint(xLeft, yTop)))
-		return S_FALSE;
-
-	pvarID->vt = VT_I4;
-	pvarID->lVal = CHILDID_SELF;
-
-	CPoint pt(xLeft, yTop);
-	m_pParent->ScreenToClient(&pt);
-
-	if (!GetRect().PtInRect(pt))
-		return S_FALSE;
-
-	int nIndex = HitTestItem(pt);
-	if (nIndex != -1)
-	{
-		pvarID->lVal = nIndex + 1;
-	}
-
-	return S_OK;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CXTPControlComboBoxGalleryPopupBar
-
-IMPLEMENT_XTP_COMMANDBAR(CXTPControlComboBoxGalleryPopupBar, CXTPControlComboBoxPopupBar)
-
-CXTPControlComboBoxGalleryPopupBar::CXTPControlComboBoxGalleryPopupBar()
-{
-}
-
-CXTPControlComboBoxGalleryPopupBar* AFX_CDECL CXTPControlComboBoxGalleryPopupBar::CreateComboBoxGalleryPopupBar(CXTPCommandBars* pCommandBars)
-{
-	CXTPControlComboBoxGalleryPopupBar* pPopupBar = new CXTPControlComboBoxGalleryPopupBar();
-	pPopupBar->SetCommandBars(pCommandBars);
-	return pPopupBar;
-}
-
-BEGIN_MESSAGE_MAP(CXTPControlComboBoxGalleryPopupBar, CXTPControlComboBoxPopupBar)
-	ON_WM_LBUTTONUP()
-END_MESSAGE_MAP()
-
-CXTPControlGallery* CXTPControlComboBoxGalleryPopupBar::GetGalleryItem() const
-{
-	CXTPControl* pItem = GetControl(0);
-	ASSERT_KINDOF(CXTPControlGallery, pItem);
-
-	return (CXTPControlGallery*)pItem;
-}
-
-void CXTPControlComboBoxGalleryPopupBar::OnLButtonUp(UINT nFlags, CPoint point)
-{
-	if (GetControls()->HitTest(point) == GetGalleryItem())
-	{
-		CXTPControlComboBox* pComboBox = (CXTPControlComboBox*)m_pControlPopup;
-		pComboBox->OnSelChanged();
-		pComboBox->OnExecute();
-		return;
-	}
-
-	CXTPPopupBar::OnLButtonUp(nFlags, point);
-}
-
-BOOL CXTPControlComboBoxGalleryPopupBar::SetTrackingMode(int bMode, BOOL bSelectFirst, BOOL bKeyboard)
-{
-	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
-
-	if (!CXTPPopupBar::SetTrackingMode(bMode, bSelectFirst, bKeyboard))
-		return FALSE;
-
-	if (!bMode)
-	{
-		pComboBox->NotifySite(CBN_CLOSEUP);
-
-	}
-	else
-	{
-		SetSelected(0, TRUE);
-
-		pComboBox->UpdatePopupSelection();
-		pComboBox->NotifySite(CBN_DROPDOWN);
-
-	}
-
-	return TRUE;
-}
-
-BOOL CXTPControlComboBoxGalleryPopupBar::OnHookKeyDown(UINT nChar, LPARAM lParam)
-{
-	ASSERT(m_pControlPopup);
-	CXTPControlComboBox* pComboBox = ((CXTPControlComboBox*)m_pControlPopup);
-	if (!pComboBox)
-		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
-
-	if (nChar == VK_ESCAPE)
-	{
-		if (pComboBox->IsFocused())
-			return FALSE;
-
-		return CXTPCommandBar::OnHookKeyDown(nChar, lParam);
-	}
-
-	if (nChar == VK_TAB) return FALSE;
-
-	if (nChar == VK_RETURN)
-	{
-		if (GetControl(m_nSelected) == GetGalleryItem())
-		{
-			m_pControlPopup->OnExecute();
-			return TRUE;
-		}
-	}
-
-	return ProcessHookKeyDown(pComboBox, nChar, lParam);
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-CXTPControlGalleryPaintManager::CXTPControlGalleryPaintManager(CXTPPaintManager* pPaintManager)
-{
-	m_pPaintManager = pPaintManager;
-
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	m_cyPopupUp = m_cyPopupDown = 19;
-	m_cxPopup = 16;
-}
-
-void CXTPControlGalleryPaintManager::DrawLabel(CDC* pDC, CXTPControlGalleryItem* pLabel, CRect rcItem)
-{
-	CXTPPaintManager* pPaintManager = m_pPaintManager;
-	pDC->FillSolidRect(rcItem, pPaintManager->GetXtremeColor(XPCOLOR_LABEL));
-
-	pDC->FillSolidRect(rcItem.left, rcItem.bottom - 1, rcItem.Width(), 1, pPaintManager->GetXtremeColor(XPCOLOR_3DSHADOW));
-
-	CXTPFontDC fnt(pDC, pPaintManager->GetRegularBoldFont());
-
-	CRect rcText(rcItem);
-	rcText.DeflateRect(10, 0);
-	pDC->SetTextColor(pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_TEXT));
-	pDC->DrawText(pLabel->GetCaption(), rcText, DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
-}
-
-void CXTPControlGalleryPaintManager::FillControl(CDC* pDC, CXTPControlGallery* pGallery, CRect rcControl)
-{
-	pDC->FillSolidRect(rcControl, m_pPaintManager->GetXtremeColor(XPCOLOR_MENUBAR_FACE));
-
-	if (pGallery->IsShowBorders())
-	{
-		pDC->Draw3dRect(rcControl, m_pPaintManager->GetXtremeColor(XPCOLOR_3DSHADOW),
-			m_pPaintManager->GetXtremeColor(XPCOLOR_3DSHADOW));
-	}
-
-	if (pGallery->HasBottomSeparator())
-	{
-		pDC->FillSolidRect(rcControl.left, rcControl.bottom - 2, rcControl.Width(), 1, m_pPaintManager->GetXtremeColor(XPCOLOR_SEPARATOR));
-	}
-}
-
-void CXTPControlGalleryPaintManager::RefreshMetrics()
-{
-	m_cxHScroll = GetSystemMetrics(SM_CXHSCROLL);
-	m_cyHScroll = GetSystemMetrics(SM_CYHSCROLL);
-	m_cxVScroll = GetSystemMetrics(SM_CXVSCROLL);
-	m_cyVScroll = GetSystemMetrics(SM_CYVSCROLL);
-
-	m_themeScrollBar.OpenTheme(0, L"SCROLLBAR");
-
-	m_cyPopupUp = m_cyPopupDown = 19;
-	m_cxPopup = 16;
-}
-
-void DrawArrowGlyph(CDC* pDC, CRect rcArrow, BOOL bHorz, BOOL bUpArrow, BOOL bEnabled)
-{
-	int nHeight = min(rcArrow.Width(), rcArrow.Height());
-	if (nHeight < 6) return;
-
-	int x = rcArrow.left + ((rcArrow.Width() - nHeight) / 2) + 2;
-	int y = rcArrow.top + ((rcArrow.Height() - nHeight) / 2) + 2;
-	nHeight -= 4;
-
-	COLORREF clr = bEnabled ? RGB(0, 0, 0) : GetSysColor(COLOR_3DSHADOW);
-
-	HFONT hFont = CreateFont(nHeight, 0, 0, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, 0, 0, 0, 0, _T("MARLETT"));
-	HFONT hOldFont = (HFONT)SelectObject(pDC->GetSafeHdc(), hFont);
-
-	SetTextColor(pDC->GetSafeHdc(), clr);
-	pDC->SetBkMode(TRANSPARENT);
-	TextOut(pDC->GetSafeHdc(), x, y, bHorz ? (bUpArrow ? _T("3") : _T("4")) : (bUpArrow ? _T("5") : _T("6")), 1);
-
-	SelectObject(pDC->GetSafeHdc(), hOldFont);
-	DeleteObject(hFont);
-}
-
-void CXTPControlGalleryPaintManager::DrawScrollBar(CDC* pDC, CXTPScrollBase* pGallery)
-{
-	#define GETPARTSTATE(ht, pressed, hot, normal, disabled) \
-		(!bEnabled ? disabled : nPressetHt == ht ? pressed : nHotHt == ht ? hot : normal)
-
-	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	BOOL nPressetHt = pSBTrack ? (pSBTrack->bTrackThumb || pSBTrack->fHitOld ? pSBInfo->ht : -1) : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-
-	int cWidth = (pSBInfo->pxRight - pSBInfo->pxLeft);
-
-	if (cWidth <= 0)
-	{
-		return;
-	}
-
-	BOOL bEnabled = (pSBInfo->posMax - pSBInfo->posMin - pSBInfo->page + 1 > 0) && pGallery->IsScrollBarEnabled();
-
-	int nBtnTrackSize =   pSBInfo->pxThumbBottom - pSBInfo->pxThumbTop;
-	int nBtnTrackPos = pSBInfo->pxThumbTop - pSBInfo->pxUpArrow;
-
-	if (!bEnabled || pSBInfo->pxThumbBottom > pSBInfo->pxDownArrow)
-		nBtnTrackPos = nBtnTrackSize = 0;
-	XTPScrollBarStyle style = pGallery->GetScrollBarStyle();
-
-	if (pSBInfo->fVert)
-	{
-		CRect rcVScroll(pSBInfo->rc);
-
-		CRect rcArrowUp(rcVScroll.left, rcVScroll.top, rcVScroll.right, pSBInfo->pxUpArrow);
-		CRect rcArrowDown(rcVScroll.left, pSBInfo->pxDownArrow, rcVScroll.right, rcVScroll.bottom);
-		CRect rcTrack(rcVScroll.left, rcArrowUp.bottom, rcVScroll.right, rcArrowDown.top);
-
-		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.right, rcTrack.top + nBtnTrackPos);
-		CRect rcBtnTrack(rcTrack.left, rcLowerTrack.bottom, rcTrack.right, rcLowerTrack.bottom + nBtnTrackSize);
-		CRect rcUpperTrack(rcTrack.left, rcBtnTrack.bottom, rcTrack.right, rcTrack.bottom);
-
-
-		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
-		{
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_UPPRESSED, ABS_UPHOT, ABS_UPNORMAL, ABS_UPDISABLED),  rcArrowUp, NULL);
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_DOWNPRESSED, ABS_DOWNHOT, ABS_DOWNNORMAL, ABS_DOWNDISABLED),  rcArrowDown, NULL);
-
-			if (!rcTrack.IsRectEmpty())
-			{
-				if (!rcLowerTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
-
-				if (!rcBtnTrack.IsRectEmpty())
-				{
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-					if (rcBtnTrack.Height() > 13)
-						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERVERT, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-				}
-
-				if (!rcUpperTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKVERT, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
-			}
-		}
-		else
-		{
-			if (style == xtpScrollStyleFlat)
-			{
-				pDC->FillSolidRect(rcArrowUp, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
-					pDC->Draw3dRect(rcArrowUp,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowUp, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-
-				DrawArrowGlyph(pDC, rcArrowUp, FALSE, TRUE, bEnabled);
-
-				pDC->FillSolidRect(rcArrowDown, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
-					pDC->Draw3dRect(rcArrowDown,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowDown, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				DrawArrowGlyph(pDC, rcArrowDown, FALSE, FALSE, bEnabled);
-
-			}
-			else
-			{
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowUp, DFC_SCROLL, DFCS_SCROLLUP | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowDown, DFC_SCROLL, DFCS_SCROLLDOWN | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
-			}
-
-			CWnd* pParent = pGallery->GetParentWindow();
-			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
-
-			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
-
-			if (nPressetHt == XTP_HTSCROLLUPPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
-			}
-
-			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
-			{
-				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
-
-				if (style == xtpScrollStyleFlat)
-				{
-					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				}
-				else
-				{
-					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
-				}
-			}
-
-			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
-			}
-		}
-	}
-	else
-	{
-		CRect rcHScroll(pSBInfo->rc);
-
-		CRect rcArrowLeft(rcHScroll.left, rcHScroll.top, pSBInfo->pxUpArrow, rcHScroll.bottom);
-		CRect rcArrowRight(pSBInfo->pxDownArrow, rcHScroll.top, rcHScroll.right, rcHScroll.bottom);
-		CRect rcTrack(rcArrowLeft.right, rcHScroll.top, rcArrowRight.left, rcHScroll.bottom);
-
-		CRect rcLowerTrack(rcTrack.left, rcTrack.top, rcTrack.left + nBtnTrackPos, rcTrack.bottom);
-		CRect rcBtnTrack(rcLowerTrack.right, rcTrack.top, rcLowerTrack.right + nBtnTrackSize, rcTrack.bottom);
-		CRect rcUpperTrack(rcBtnTrack.right, rcTrack.top, rcTrack.right, rcTrack.bottom);
-
-
-		if (style == xtpScrollStyleSystem  && m_themeScrollBar.IsAppThemed())
-		{
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLUP, ABS_LEFTPRESSED, ABS_LEFTHOT, ABS_LEFTNORMAL, ABS_LEFTDISABLED),  rcArrowLeft, NULL);
-			m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_ARROWBTN, GETPARTSTATE(XTP_HTSCROLLDOWN, ABS_RIGHTPRESSED, ABS_RIGHTHOT, ABS_RIGHTNORMAL, ABS_RIGHTDISABLED),  rcArrowRight, NULL);
-
-			if (!rcTrack.IsRectEmpty())
-			{
-				if (!rcLowerTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_LOWERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLUPPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcLowerTrack, NULL);
-
-				if (!rcBtnTrack.IsRectEmpty())
-				{
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_THUMBBTNHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-					if (rcBtnTrack.Width() > 13)
-						m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_GRIPPERHORZ, GETPARTSTATE(XTP_HTSCROLLTHUMB, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcBtnTrack, NULL);
-				}
-
-				if (!rcUpperTrack.IsRectEmpty())
-					m_themeScrollBar.DrawThemeBackground(pDC->GetSafeHdc(), SBP_UPPERTRACKHORZ, GETPARTSTATE(XTP_HTSCROLLDOWNPAGE, SCRBS_PRESSED, SCRBS_HOT, SCRBS_NORMAL, SCRBS_DISABLED),  rcUpperTrack, NULL);
-			}
-		}
-		else
-		{
-			if (style == xtpScrollStyleFlat)
-			{
-				pDC->FillSolidRect(rcArrowLeft, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLUP)
-					pDC->Draw3dRect(rcArrowLeft,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowLeft, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-
-				DrawArrowGlyph(pDC, rcArrowLeft, TRUE, TRUE, bEnabled);
-
-				pDC->FillSolidRect(rcArrowRight, GetXtremeColor(COLOR_3DFACE));
-				if (bEnabled && nPressetHt == XTP_HTSCROLLDOWN)
-					pDC->Draw3dRect(rcArrowRight,GetXtremeColor(COLOR_3DSHADOW), GetXtremeColor(COLOR_3DHIGHLIGHT));
-				else
-					pDC->Draw3dRect(rcArrowRight, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				DrawArrowGlyph(pDC, rcArrowRight, TRUE, FALSE, bEnabled);
-
-			}
-			else
-			{
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowLeft, DFC_SCROLL, DFCS_SCROLLLEFT | (!bEnabled ? DFCS_INACTIVE : 0) | (nPressetHt == XTP_HTSCROLLUP ? DFCS_PUSHED : 0));
-				DrawFrameControl(pDC->GetSafeHdc(), &rcArrowRight, DFC_SCROLL, DFCS_SCROLLRIGHT | (!bEnabled ? DFCS_INACTIVE : 0)  | (nPressetHt == XTP_HTSCROLLDOWN ? DFCS_PUSHED : 0));
-			}
-
-			CWnd* pParent = pGallery->GetParentWindow();
-			HBRUSH hbrRet = (HBRUSH)DefWindowProc(pParent->GetSafeHwnd(), WM_CTLCOLORSCROLLBAR, (WPARAM)pDC->GetSafeHdc(), (LPARAM)pParent->GetSafeHwnd());
-
-			::FillRect(pDC->GetSafeHdc(), &rcTrack, hbrRet);
-
-			if (nPressetHt == XTP_HTSCROLLUPPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcLowerTrack);
-			}
-
-			if (!rcTrack.IsRectEmpty() && !rcBtnTrack.IsRectEmpty())
-			{
-				pDC->FillSolidRect(rcBtnTrack, GetXtremeColor(COLOR_3DFACE));
-
-				if (style == xtpScrollStyleFlat)
-				{
-					pDC->Draw3dRect(rcBtnTrack, GetXtremeColor(COLOR_3DHIGHLIGHT), GetXtremeColor(COLOR_3DSHADOW));
-				}
-				else
-				{
-					DrawEdge(pDC->GetSafeHdc(), &rcBtnTrack, EDGE_RAISED, (UINT)(BF_ADJUST | BF_RECT));
-				}
-			}
-
-			if (nPressetHt == XTP_HTSCROLLDOWNPAGE)
-			{
-				::InvertRect(pDC->GetSafeHdc(), &rcUpperTrack);
-			}
-		}
-	}
-}
-
-void CXTPControlGalleryPaintManager::DrawPopupScrollBar(CDC* pDC, CXTPControlGallery* pGallery)
-{
-	#define GETPARTSTATE3(ht, bEnabled) \
-	(!bEnabled ? 4 : nPressetHt == ht ? 3 : nHotHt == ht ? 2 : 0)
-
-	CXTPControlGallery::SCROLLBARTRACKINFO* pSBTrack = pGallery->GetScrollBarTrackInfo();
-	CXTPControlGallery::SCROLLBARPOSINFO* pSBInfo = pGallery->GetScrollBarPosInfo();
-
-	CRect rcScroll = pSBInfo->rc;
-	pDC->FillSolidRect(rcScroll, m_pPaintManager->GetXtremeColor(XPCOLOR_TOOLBAR_FACE));
-
-	CRect rcScrollUp(rcScroll.left, rcScroll.top, rcScroll.right, rcScroll.top + m_cyPopupUp);
-	CRect rcScrollDown(rcScroll.left, rcScrollUp.bottom, rcScroll.right, rcScrollUp.bottom + m_cyPopupDown);
-	CRect rcScrollPopup(rcScroll.left, rcScrollDown.bottom, rcScroll.right, rcScroll.bottom);
-
-	BOOL bControlEnabled = pGallery->GetEnabled();
-	BOOL nPressetHt = pSBTrack ? pSBInfo->ht : -1;
-	BOOL nHotHt = pSBTrack ? -1 : pSBInfo->ht;
-
-	int nState = GETPARTSTATE3(XTP_HTSCROLLUP, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLUP)));
-	m_pPaintManager->DrawRectangle(pDC, rcScrollUp, nState == 3 || nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
-	COLORREF clr = m_pPaintManager->GetRectangleTextColor(nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
-	CPoint pt = rcScrollUp.CenterPoint();
-	m_pPaintManager->Triangle(pDC, CPoint(pt.x - 4 , pt.y + 2), CPoint(pt.x + 4, pt.y + 2), CPoint (pt.x, pt.y - 2), clr);
-
-	nState = GETPARTSTATE3(XTP_HTSCROLLDOWN, (bControlEnabled && pGallery->IsScrollButtonEnabled(XTP_HTSCROLLDOWN)));
-	m_pPaintManager->DrawRectangle(pDC, rcScrollDown, nState == 3 || nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
-	clr = m_pPaintManager->GetRectangleTextColor(nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
-	pt = rcScrollDown.CenterPoint();
-	m_pPaintManager->Triangle(pDC, CPoint(pt.x - 4 , pt.y - 2), CPoint(pt.x + 4, pt.y - 2), CPoint (pt.x, pt.y + 2), clr);
-
-	nState = GETPARTSTATE3(XTP_HTSCROLLPOPUP, bControlEnabled);
-	m_pPaintManager->DrawRectangle(pDC, rcScrollPopup, nState == 3 || nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
-	clr = m_pPaintManager->GetRectangleTextColor(nState == 2, nState == 3, nState != 4, FALSE, FALSE, xtpBarTypeNormal, xtpBarPopup);
-	pt = rcScrollPopup.CenterPoint();
-	m_pPaintManager->Triangle(pDC, CPoint(pt.x - 4 , pt.y - 1), CPoint(pt.x + 4, pt.y - 1), CPoint (pt.x, pt.y + 3), clr);
-	pDC->FillSolidRect(pt.x - 4, pt.y - 4, 9, 2, clr);
-}
-
-
-

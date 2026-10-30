@@ -1,375 +1,290 @@
 // from server: 100% by auto
+// roc 2012-06 0066bfb0  unit: seg_00660000  size: 983 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 0066bfb0
+//
+// 0066bfb0  81ec24010000         sub esp, 0x124
+// 0066bfb6  8b842428010000       mov eax, dword ptr [esp + 0x128]
+// 0066bfbd  8b8c242c010000       mov ecx, dword ptr [esp + 0x12c]
+// 0066bfc4  8b5150               mov edx, dword ptr [ecx + 0x50]
+// 0066bfc7  53                   push ebx
+// 0066bfc8  55                   push ebp
+// 0066bfc9  8ba820010000         mov ebp, dword ptr [eax + 0x120]
+// 0066bfcf  56                   push esi
+// 0066bfd0  8bb4243c010000       mov esi, dword ptr [esp + 0x13c]
+// 0066bfd7  83ed80               sub ebp, -0x80
+// 0066bfda  57                   push edi
+// 0066bfdb  896c2420             mov dword ptr [esp + 0x20], ebp
+// 0066bfdf  8d4c2434             lea ecx, [esp + 0x34]
+// 0066bfe3  c744241c08000000     mov dword ptr [esp + 0x1c], 8
+// 0066bfeb  eb03                 jmp 0x66bff0
+// 0066bfed  8d4900               lea ecx, [ecx]
+// 0066bff0  0fb74610             movzx eax, word ptr [esi + 0x10]
+// 0066bff4  6685c0               test ax, ax
+// 0066bff7  754f                 jne 0x66c048
+// 0066bff9  66394620             cmp word ptr [esi + 0x20], ax
+// 0066bffd  7549                 jne 0x66c048
+// 0066bfff  66394630             cmp word ptr [esi + 0x30], ax
+// 0066c003  7543                 jne 0x66c048
+// 0066c005  66394640             cmp word ptr [esi + 0x40], ax
+// 0066c009  753d                 jne 0x66c048
+// 0066c00b  66394650             cmp word ptr [esi + 0x50], ax
+// 0066c00f  7537                 jne 0x66c048
+// 0066c011  66394660             cmp word ptr [esi + 0x60], ax
+// 0066c015  7531                 jne 0x66c048
+// 0066c017  66394670             cmp word ptr [esi + 0x70], ax
+// 0066c01b  752b                 jne 0x66c048
+// 0066c01d  0fbf06               movsx eax, word ptr [esi]
+// 0066c020  0faf02               imul eax, dword ptr [edx]
+// 0066c023  8901                 mov dword ptr [ecx], eax
+// 0066c025  894120               mov dword ptr [ecx + 0x20], eax
+// 0066c028  894140               mov dword ptr [ecx + 0x40], eax
+// 0066c02b  898180000000         mov dword ptr [ecx + 0x80], eax
+// 0066c031  8981a0000000         mov dword ptr [ecx + 0xa0], eax
+// 0066c037  8981c0000000         mov dword ptr [ecx + 0xc0], eax
+// 0066c03d  8981e0000000         mov dword ptr [ecx + 0xe0], eax
+// 0066c043  e93e010000           jmp 0x66c186
+// 0066c048  0fbf5e60             movsx ebx, word ptr [esi + 0x60]
+// 0066c04c  0faf9ac0000000       imul ebx, dword ptr [edx + 0xc0]
+// 0066c053  0fbf3e               movsx edi, word ptr [esi]
+// 0066c056  0faf3a               imul edi, dword ptr [edx]
+// 0066c059  0fbf6e40             movsx ebp, word ptr [esi + 0x40]
+// 0066c05d  0fafaa80000000       imul ebp, dword ptr [edx + 0x80]
+// 0066c064  0fbf4620             movsx eax, word ptr [esi + 0x20]
+// 0066c068  0faf4240             imul eax, dword ptr [edx + 0x40]
+// 0066c06c  895c2418             mov dword ptr [esp + 0x18], ebx
+// 0066c070  8d1c2f               lea ebx, [edi + ebp]
+// 0066c073  2bfd                 sub edi, ebp
+// 0066c075  8b6c2418             mov ebp, dword ptr [esp + 0x18]
+// 0066c079  03e8                 add ebp, eax
+// 0066c07b  2b442418             sub eax, dword ptr [esp + 0x18]
+// 0066c07f  896c2410             mov dword ptr [esp + 0x10], ebp
+// 0066c083  69c06a010000         imul eax, eax, 0x16a
+// 0066c089  c1f808               sar eax, 8
+// 0066c08c  2bc5                 sub eax, ebp
+// 0066c08e  89442410             mov dword ptr [esp + 0x10], eax
+// 0066c092  8d042b               lea eax, [ebx + ebp]
+// 0066c095  2bdd                 sub ebx, ebp
+// 0066c097  0fbf6e70             movsx ebp, word ptr [esi + 0x70]
+// 0066c09b  0fafaae0000000       imul ebp, dword ptr [edx + 0xe0]
+// 0066c0a2  89442428             mov dword ptr [esp + 0x28], eax
+// 0066c0a6  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0066c0aa  895c2418             mov dword ptr [esp + 0x18], ebx
+// 0066c0ae  8d1c38               lea ebx, [eax + edi]
+// 0066c0b1  2bf8                 sub edi, eax
+// 0066c0b3  0fb74610             movzx eax, word ptr [esi + 0x10]
+// 0066c0b7  895c242c             mov dword ptr [esp + 0x2c], ebx
+// 0066c0bb  897c2430             mov dword ptr [esp + 0x30], edi
+// 0066c0bf  0fbf7e50             movsx edi, word ptr [esi + 0x50]
+// 0066c0c3  0fafbaa0000000       imul edi, dword ptr [edx + 0xa0]
+// 0066c0ca  0fbfd8               movsx ebx, ax
+// 0066c0cd  0faf5a20             imul ebx, dword ptr [edx + 0x20]
+// 0066c0d1  0fbf4630             movsx eax, word ptr [esi + 0x30]
+// 0066c0d5  0faf4260             imul eax, dword ptr [edx + 0x60]
+// 0066c0d9  896c2414             mov dword ptr [esp + 0x14], ebp
+// 0066c0dd  8d2c07               lea ebp, [edi + eax]
+// 0066c0e0  2bf8                 sub edi, eax
+// 0066c0e2  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0066c0e6  03c3                 add eax, ebx
+// 0066c0e8  2b5c2414             sub ebx, dword ptr [esp + 0x14]
+// 0066c0ec  896c2424             mov dword ptr [esp + 0x24], ebp
+// 0066c0f0  03e8                 add ebp, eax
+// 0066c0f2  2b442424             sub eax, dword ptr [esp + 0x24]
+// 0066c0f6  896c2414             mov dword ptr [esp + 0x14], ebp
+// 0066c0fa  8d2c3b               lea ebp, [ebx + edi]
+// 0066c0fd  69ff63fdffff         imul edi, edi, 0xfffffd63
+// 0066c103  69db15010000         imul ebx, ebx, 0x115
+// 0066c109  69edd9010000         imul ebp, ebp, 0x1d9
+// 0066c10f  69c06a010000         imul eax, eax, 0x16a
+// 0066c115  c1fd08               sar ebp, 8
+// 0066c118  c1ff08               sar edi, 8
+// 0066c11b  2b7c2414             sub edi, dword ptr [esp + 0x14]
+// 0066c11f  c1fb08               sar ebx, 8
+// 0066c122  03fd                 add edi, ebp
+// 0066c124  2bdd                 sub ebx, ebp
+// 0066c126  c1f808               sar eax, 8
+// 0066c129  2bc7                 sub eax, edi
+// 0066c12b  03d8                 add ebx, eax
+// 0066c12d  896c2410             mov dword ptr [esp + 0x10], ebp
+// 0066c131  8b6c2428             mov ebp, dword ptr [esp + 0x28]
+// 0066c135  895c2410             mov dword ptr [esp + 0x10], ebx
+// 0066c139  8b5c2414             mov ebx, dword ptr [esp + 0x14]
+// 0066c13d  03dd                 add ebx, ebp
+// 0066c13f  2b6c2414             sub ebp, dword ptr [esp + 0x14]
+// 0066c143  8919                 mov dword ptr [ecx], ebx
+// 0066c145  89a9e0000000         mov dword ptr [ecx + 0xe0], ebp
+// 0066c14b  8b6c242c             mov ebp, dword ptr [esp + 0x2c]
+// 0066c14f  8d1c2f               lea ebx, [edi + ebp]
+// 0066c152  2bef                 sub ebp, edi
+// 0066c154  8b7c2430             mov edi, dword ptr [esp + 0x30]
+// 0066c158  895920               mov dword ptr [ecx + 0x20], ebx
+// 0066c15b  8d1c38               lea ebx, [eax + edi]
+// 0066c15e  2bf8                 sub edi, eax
+// 0066c160  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0066c164  89b9a0000000         mov dword ptr [ecx + 0xa0], edi
+// 0066c16a  8b7c2410             mov edi, dword ptr [esp + 0x10]
+// 0066c16e  89a9c0000000         mov dword ptr [ecx + 0xc0], ebp
+// 0066c174  895940               mov dword ptr [ecx + 0x40], ebx
+// 0066c177  8b6c2420             mov ebp, dword ptr [esp + 0x20]
+// 0066c17b  8d1c07               lea ebx, [edi + eax]
+// 0066c17e  899980000000         mov dword ptr [ecx + 0x80], ebx
+// 0066c184  2bc7                 sub eax, edi
+// 0066c186  894160               mov dword ptr [ecx + 0x60], eax
+// 0066c189  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0066c18d  48                   dec eax
+// 0066c18e  83c602               add esi, 2
+// 0066c191  83c204               add edx, 4
+// 0066c194  83c104               add ecx, 4
+// 0066c197  8944241c             mov dword ptr [esp + 0x1c], eax
+// 0066c19b  85c0                 test eax, eax
+// 0066c19d  0f8f4dfeffff         jg 0x66bff0
+// 0066c1a3  33f6                 xor esi, esi
+// 0066c1a5  8d542434             lea edx, [esp + 0x34]
+// 0066c1a9  8974241c             mov dword ptr [esp + 0x1c], esi
+// 0066c1ad  8d4900               lea ecx, [ecx]
+// 0066c1b0  8b8c2444010000       mov ecx, dword ptr [esp + 0x144]
+// 0066c1b7  8b04b1               mov eax, dword ptr [ecx + esi*4]
+// 0066c1ba  8b4a04               mov ecx, dword ptr [edx + 4]
+// 0066c1bd  03842448010000       add eax, dword ptr [esp + 0x148]
+// 0066c1c4  85c9                 test ecx, ecx
+// 0066c1c6  7545                 jne 0x66c20d
+// 0066c1c8  394a08               cmp dword ptr [edx + 8], ecx
+// 0066c1cb  7540                 jne 0x66c20d
+// 0066c1cd  394a0c               cmp dword ptr [edx + 0xc], ecx
+// 0066c1d0  753b                 jne 0x66c20d
+// 0066c1d2  394a10               cmp dword ptr [edx + 0x10], ecx
+// 0066c1d5  7536                 jne 0x66c20d
+// 0066c1d7  394a14               cmp dword ptr [edx + 0x14], ecx
+// 0066c1da  7531                 jne 0x66c20d
+// 0066c1dc  394a18               cmp dword ptr [edx + 0x18], ecx
+// 0066c1df  752c                 jne 0x66c20d
+// 0066c1e1  394a1c               cmp dword ptr [edx + 0x1c], ecx
+// 0066c1e4  7527                 jne 0x66c20d
+// 0066c1e6  8b0a                 mov ecx, dword ptr [edx]
+// 0066c1e8  c1f905               sar ecx, 5
+// 0066c1eb  81e1ff030000         and ecx, 0x3ff
+// 0066c1f1  8a0c29               mov cl, byte ptr [ecx + ebp]
+// 0066c1f4  8808                 mov byte ptr [eax], cl
+// 0066c1f6  884801               mov byte ptr [eax + 1], cl
+// 0066c1f9  884802               mov byte ptr [eax + 2], cl
+// 0066c1fc  884804               mov byte ptr [eax + 4], cl
+// 0066c1ff  884805               mov byte ptr [eax + 5], cl
+// 0066c202  884806               mov byte ptr [eax + 6], cl
+// 0066c205  884807               mov byte ptr [eax + 7], cl
+// 0066c208  e95b010000           jmp 0x66c368
+// 0066c20d  8b7a10               mov edi, dword ptr [edx + 0x10]
+// 0066c210  8b0a                 mov ecx, dword ptr [edx]
+// 0066c212  8d3439               lea esi, [ecx + edi]
+// 0066c215  2bcf                 sub ecx, edi
+// 0066c217  8b7a18               mov edi, dword ptr [edx + 0x18]
+// 0066c21a  8bd9                 mov ebx, ecx
+// 0066c21c  8b4a08               mov ecx, dword ptr [edx + 8]
+// 0066c21f  03f9                 add edi, ecx
+// 0066c221  2b4a18               sub ecx, dword ptr [edx + 0x18]
+// 0066c224  897c2410             mov dword ptr [esp + 0x10], edi
+// 0066c228  69c96a010000         imul ecx, ecx, 0x16a
+// 0066c22e  c1f908               sar ecx, 8
+// 0066c231  2bcf                 sub ecx, edi
+// 0066c233  894c2410             mov dword ptr [esp + 0x10], ecx
+// 0066c237  8d0c37               lea ecx, [edi + esi]
+// 0066c23a  2bf7                 sub esi, edi
+// 0066c23c  894c2428             mov dword ptr [esp + 0x28], ecx
+// 0066c240  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 0066c244  89742418             mov dword ptr [esp + 0x18], esi
+// 0066c248  8d3419               lea esi, [ecx + ebx]
+// 0066c24b  2bd9                 sub ebx, ecx
+// 0066c24d  8b4a0c               mov ecx, dword ptr [edx + 0xc]
+// 0066c250  8974242c             mov dword ptr [esp + 0x2c], esi
+// 0066c254  8b7214               mov esi, dword ptr [edx + 0x14]
+// 0066c257  8d3c0e               lea edi, [esi + ecx]
+// 0066c25a  2bf1                 sub esi, ecx
+// 0066c25c  895c2430             mov dword ptr [esp + 0x30], ebx
+// 0066c260  8b5a1c               mov ebx, dword ptr [edx + 0x1c]
+// 0066c263  897c2424             mov dword ptr [esp + 0x24], edi
+// 0066c267  8b7a04               mov edi, dword ptr [edx + 4]
+// 0066c26a  8d0c3b               lea ecx, [ebx + edi]
+// 0066c26d  2bfb                 sub edi, ebx
+// 0066c26f  8b5c2424             mov ebx, dword ptr [esp + 0x24]
+// 0066c273  03d9                 add ebx, ecx
+// 0066c275  2b4c2424             sub ecx, dword ptr [esp + 0x24]
+// 0066c279  895c2414             mov dword ptr [esp + 0x14], ebx
+// 0066c27d  8d1c37               lea ebx, [edi + esi]
+// 0066c280  69f663fdffff         imul esi, esi, 0xfffffd63
+// 0066c286  69c96a010000         imul ecx, ecx, 0x16a
+// 0066c28c  69dbd9010000         imul ebx, ebx, 0x1d9
+// 0066c292  69ff15010000         imul edi, edi, 0x115
+// 0066c298  c1fe08               sar esi, 8
+// 0066c29b  2b742414             sub esi, dword ptr [esp + 0x14]
+// 0066c29f  c1f908               sar ecx, 8
+// 0066c2a2  c1fb08               sar ebx, 8
+// 0066c2a5  03f3                 add esi, ebx
+// 0066c2a7  895c2410             mov dword ptr [esp + 0x10], ebx
+// 0066c2ab  8bde                 mov ebx, esi
+// 0066c2ad  8b742428             mov esi, dword ptr [esp + 0x28]
+// 0066c2b1  2bcb                 sub ecx, ebx
+// 0066c2b3  894c2420             mov dword ptr [esp + 0x20], ecx
+// 0066c2b7  c1ff08               sar edi, 8
+// 0066c2ba  2b7c2410             sub edi, dword ptr [esp + 0x10]
+// 0066c2be  03f9                 add edi, ecx
+// 0066c2c0  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0066c2c4  03ce                 add ecx, esi
+// 0066c2c6  2b742414             sub esi, dword ptr [esp + 0x14]
+// 0066c2ca  c1f905               sar ecx, 5
+// 0066c2cd  81e1ff030000         and ecx, 0x3ff
+// 0066c2d3  0fb60c29             movzx ecx, byte ptr [ecx + ebp]
+// 0066c2d7  c1fe05               sar esi, 5
+// 0066c2da  81e6ff030000         and esi, 0x3ff
+// 0066c2e0  8808                 mov byte ptr [eax], cl
+// 0066c2e2  0fb60c2e             movzx ecx, byte ptr [esi + ebp]
+// 0066c2e6  8b74242c             mov esi, dword ptr [esp + 0x2c]
+// 0066c2ea  884807               mov byte ptr [eax + 7], cl
+// 0066c2ed  8d0c33               lea ecx, [ebx + esi]
+// 0066c2f0  c1f905               sar ecx, 5
+// 0066c2f3  2bf3                 sub esi, ebx
+// 0066c2f5  81e1ff030000         and ecx, 0x3ff
+// 0066c2fb  0fb60c29             movzx ecx, byte ptr [ecx + ebp]
+// 0066c2ff  c1fe05               sar esi, 5
+// 0066c302  81e6ff030000         and esi, 0x3ff
+// 0066c308  884801               mov byte ptr [eax + 1], cl
+// 0066c30b  0fb60c2e             movzx ecx, byte ptr [esi + ebp]
+// 0066c30f  8b742430             mov esi, dword ptr [esp + 0x30]
+// 0066c313  884806               mov byte ptr [eax + 6], cl
+// 0066c316  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0066c31a  8d1c31               lea ebx, [ecx + esi]
+// 0066c31d  c1fb05               sar ebx, 5
+// 0066c320  81e3ff030000         and ebx, 0x3ff
+// 0066c326  8a1c2b               mov bl, byte ptr [ebx + ebp]
+// 0066c329  2bf1                 sub esi, ecx
+// 0066c32b  c1fe05               sar esi, 5
+// 0066c32e  81e6ff030000         and esi, 0x3ff
+// 0066c334  885802               mov byte ptr [eax + 2], bl
+// 0066c337  0fb60c2e             movzx ecx, byte ptr [esi + ebp]
+// 0066c33b  8b742418             mov esi, dword ptr [esp + 0x18]
+// 0066c33f  884805               mov byte ptr [eax + 5], cl
+// 0066c342  8d0c37               lea ecx, [edi + esi]
+// 0066c345  c1f905               sar ecx, 5
+// 0066c348  81e1ff030000         and ecx, 0x3ff
+// 0066c34e  0fb60c29             movzx ecx, byte ptr [ecx + ebp]
+// 0066c352  2bf7                 sub esi, edi
+// 0066c354  c1fe05               sar esi, 5
+// 0066c357  81e6ff030000         and esi, 0x3ff
+// 0066c35d  884804               mov byte ptr [eax + 4], cl
+// 0066c360  0fb60c2e             movzx ecx, byte ptr [esi + ebp]
+// 0066c364  8b74241c             mov esi, dword ptr [esp + 0x1c]
+// 0066c368  46                   inc esi
+// 0066c369  83c220               add edx, 0x20
+// 0066c36c  83fe08               cmp esi, 8
+// 0066c36f  884803               mov byte ptr [eax + 3], cl
+// 0066c372  8974241c             mov dword ptr [esp + 0x1c], esi
+// 0066c376  0f8c34feffff         jl 0x66c1b0
+// 0066c37c  5f                   pop edi
+// 0066c37d  5e                   pop esi
+// 0066c37e  5d                   pop ebp
+// 0066c37f  5b                   pop ebx
+// 0066c380  81c424010000         add esp, 0x124
+// 0066c386  c3                   ret 
+// library jpeg-6b/jidctfst.c (function _jpeg_idct_ifast)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jidctfst.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jidctfst.c
- *
- * Copyright (C) 1994-1998, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains a fast, not so accurate integer implementation of the
- * inverse DCT (Discrete Cosine Transform).  In the IJG code, this routine
- * must also perform dequantization of the input coefficients.
- *
- * A 2-D IDCT can be done by 1-D IDCT on each column followed by 1-D IDCT
- * on each row (or vice versa, but it's more convenient to emit a row at
- * a time).  Direct algorithms are also available, but they are much more
- * complex and seem not to be any faster when reduced to code.
- *
- * This implementation is based on Arai, Agui, and Nakajima's algorithm for
- * scaled DCT.  Their original paper (Trans. IEICE E-71(11):1095) is in
- * Japanese, but the algorithm is described in the Pennebaker & Mitchell
- * JPEG textbook (see REFERENCES section in file README).  The following code
- * is based directly on figure 4-8 in P&M.
- * While an 8-point DCT cannot be done in less than 11 multiplies, it is
- * possible to arrange the computation so that many of the multiplies are
- * simple scalings of the final outputs.  These multiplies can then be
- * folded into the multiplications or divisions by the JPEG quantization
- * table entries.  The AA&N method leaves only 5 multiplies and 29 adds
- * to be done in the DCT itself.
- * The primary disadvantage of this method is that with fixed-point math,
- * accuracy is lost due to imprecise representation of the scaled
- * quantization values.  The smaller the quantization table entry, the less
- * precise the scaled value, so this implementation does worse with high-
- * quality-setting files than with low-quality ones.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jdct.h"		/* Private declarations for DCT subsystem */
-
-#ifdef DCT_IFAST_SUPPORTED
-
-
-/*
- * This module is specialized to the case DCTSIZE = 8.
- */
-
-#if DCTSIZE != 8
-  Sorry, this code only copes with 8x8 DCTs. /* deliberate syntax err */
-#endif
-
-
-/* Scaling decisions are generally the same as in the LL&M algorithm;
- * see jidctint.c for more details.  However, we choose to descale
- * (right shift) multiplication products as soon as they are formed,
- * rather than carrying additional fractional bits into subsequent additions.
- * This compromises accuracy slightly, but it lets us save a few shifts.
- * More importantly, 16-bit arithmetic is then adequate (for 8-bit samples)
- * everywhere except in the multiplications proper; this saves a good deal
- * of work on 16-bit-int machines.
- *
- * The dequantized coefficients are not integers because the AA&N scaling
- * factors have been incorporated.  We represent them scaled up by PASS1_BITS,
- * so that the first and second IDCT rounds have the same input scaling.
- * For 8-bit JSAMPLEs, we choose IFAST_SCALE_BITS = PASS1_BITS so as to
- * avoid a descaling shift; this compromises accuracy rather drastically
- * for small quantization table entries, but it saves a lot of shifts.
- * For 12-bit JSAMPLEs, there's no hope of using 16x16 multiplies anyway,
- * so we use a much larger scaling factor to preserve accuracy.
- *
- * A final compromise is to represent the multiplicative constants to only
- * 8 fractional bits, rather than 13.  This saves some shifting work on some
- * machines, and may also reduce the cost of multiplication (since there
- * are fewer one-bits in the constants).
- */
-
-#if BITS_IN_JSAMPLE == 8
-#define CONST_BITS  8
-#define PASS1_BITS  2
-#else
-#define CONST_BITS  8
-#define PASS1_BITS  1		/* lose a little precision to avoid overflow */
-#endif
-
-/* Some C compilers fail to reduce "FIX(constant)" at compile time, thus
- * causing a lot of useless floating-point operations at run time.
- * To get around this we use the following pre-calculated constants.
- * If you change CONST_BITS you may want to add appropriate values.
- * (With a reasonable C compiler, you can just rely on the FIX() macro...)
- */
-
-#if CONST_BITS == 8
-#define FIX_1_082392200  ((INT32)  277)		/* FIX(1.082392200) */
-#define FIX_1_414213562  ((INT32)  362)		/* FIX(1.414213562) */
-#define FIX_1_847759065  ((INT32)  473)		/* FIX(1.847759065) */
-#define FIX_2_613125930  ((INT32)  669)		/* FIX(2.613125930) */
-#else
-#define FIX_1_082392200  FIX(1.082392200)
-#define FIX_1_414213562  FIX(1.414213562)
-#define FIX_1_847759065  FIX(1.847759065)
-#define FIX_2_613125930  FIX(2.613125930)
-#endif
-
-
-/* We can gain a little more speed, with a further compromise in accuracy,
- * by omitting the addition in a descaling shift.  This yields an incorrectly
- * rounded result half the time...
- */
-
-#ifndef USE_ACCURATE_ROUNDING
-#undef DESCALE
-#define DESCALE(x,n)  RIGHT_SHIFT(x, n)
-#endif
-
-
-/* Multiply a DCTELEM variable by an INT32 constant, and immediately
- * descale to yield a DCTELEM result.
- */
-
-#define MULTIPLY(var,const)  ((DCTELEM) DESCALE((var) * (const), CONST_BITS))
-
-
-/* Dequantize a coefficient by multiplying it by the multiplier-table
- * entry; produce a DCTELEM result.  For 8-bit data a 16x16->16
- * multiplication will do.  For 12-bit data, the multiplier table is
- * declared INT32, so a 32-bit multiply will be used.
- */
-
-#if BITS_IN_JSAMPLE == 8
-#define DEQUANTIZE(coef,quantval)  (((IFAST_MULT_TYPE) (coef)) * (quantval))
-#else
-#define DEQUANTIZE(coef,quantval)  \
-	DESCALE((coef)*(quantval), IFAST_SCALE_BITS-PASS1_BITS)
-#endif
-
-
-/* Like DESCALE, but applies to a DCTELEM and produces an int.
- * We assume that int right shift is unsigned if INT32 right shift is.
- */
-
-#ifdef RIGHT_SHIFT_IS_UNSIGNED
-#define ISHIFT_TEMPS	DCTELEM ishift_temp;
-#if BITS_IN_JSAMPLE == 8
-#define DCTELEMBITS  16		/* DCTELEM may be 16 or 32 bits */
-#else
-#define DCTELEMBITS  32		/* DCTELEM must be 32 bits */
-#endif
-#define IRIGHT_SHIFT(x,shft)  \
-    ((ishift_temp = (x)) < 0 ? \
-     (ishift_temp >> (shft)) | ((~((DCTELEM) 0)) << (DCTELEMBITS-(shft))) : \
-     (ishift_temp >> (shft)))
-#else
-#define ISHIFT_TEMPS
-#define IRIGHT_SHIFT(x,shft)	((x) >> (shft))
-#endif
-
-#ifdef USE_ACCURATE_ROUNDING
-#define IDESCALE(x,n)  ((int) IRIGHT_SHIFT((x) + (1 << ((n)-1)), n))
-#else
-#define IDESCALE(x,n)  ((int) IRIGHT_SHIFT(x, n))
-#endif
-
-
-/*
- * Perform dequantization and inverse DCT on one block of coefficients.
- */
-
-GLOBAL(void)
-jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
-		 JCOEFPTR coef_block,
-		 JSAMPARRAY output_buf, JDIMENSION output_col)
-{
-  DCTELEM tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
-  DCTELEM tmp10, tmp11, tmp12, tmp13;
-  DCTELEM z5, z10, z11, z12, z13;
-  JCOEFPTR inptr;
-  IFAST_MULT_TYPE * quantptr;
-  int * wsptr;
-  JSAMPROW outptr;
-  JSAMPLE *range_limit = IDCT_range_limit(cinfo);
-  int ctr;
-  int workspace[DCTSIZE2];	/* buffers data between passes */
-  SHIFT_TEMPS			/* for DESCALE */
-  ISHIFT_TEMPS			/* for IDESCALE */
-
-  /* Pass 1: process columns from input, store into work array. */
-
-  inptr = coef_block;
-  quantptr = (IFAST_MULT_TYPE *) compptr->dct_table;
-  wsptr = workspace;
-  for (ctr = DCTSIZE; ctr > 0; ctr--) {
-    /* Due to quantization, we will usually find that many of the input
-     * coefficients are zero, especially the AC terms.  We can exploit this
-     * by short-circuiting the IDCT calculation for any column in which all
-     * the AC terms are zero.  In that case each output is equal to the
-     * DC coefficient (with scale factor as needed).
-     * With typical images and quantization tables, half or more of the
-     * column DCT calculations can be simplified this way.
-     */
-    
-    if (inptr[DCTSIZE*1] == 0 && inptr[DCTSIZE*2] == 0 &&
-	inptr[DCTSIZE*3] == 0 && inptr[DCTSIZE*4] == 0 &&
-	inptr[DCTSIZE*5] == 0 && inptr[DCTSIZE*6] == 0 &&
-	inptr[DCTSIZE*7] == 0) {
-      /* AC terms all zero */
-      int dcval = (int) DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]);
-
-      wsptr[DCTSIZE*0] = dcval;
-      wsptr[DCTSIZE*1] = dcval;
-      wsptr[DCTSIZE*2] = dcval;
-      wsptr[DCTSIZE*3] = dcval;
-      wsptr[DCTSIZE*4] = dcval;
-      wsptr[DCTSIZE*5] = dcval;
-      wsptr[DCTSIZE*6] = dcval;
-      wsptr[DCTSIZE*7] = dcval;
-      
-      inptr++;			/* advance pointers to next column */
-      quantptr++;
-      wsptr++;
-      continue;
-    }
-    
-    /* Even part */
-
-    tmp0 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]);
-    tmp1 = DEQUANTIZE(inptr[DCTSIZE*2], quantptr[DCTSIZE*2]);
-    tmp2 = DEQUANTIZE(inptr[DCTSIZE*4], quantptr[DCTSIZE*4]);
-    tmp3 = DEQUANTIZE(inptr[DCTSIZE*6], quantptr[DCTSIZE*6]);
-
-    tmp10 = tmp0 + tmp2;	/* phase 3 */
-    tmp11 = tmp0 - tmp2;
-
-    tmp13 = tmp1 + tmp3;	/* phases 5-3 */
-    tmp12 = MULTIPLY(tmp1 - tmp3, FIX_1_414213562) - tmp13; /* 2*c4 */
-
-    tmp0 = tmp10 + tmp13;	/* phase 2 */
-    tmp3 = tmp10 - tmp13;
-    tmp1 = tmp11 + tmp12;
-    tmp2 = tmp11 - tmp12;
-    
-    /* Odd part */
-
-    tmp4 = DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]);
-    tmp5 = DEQUANTIZE(inptr[DCTSIZE*3], quantptr[DCTSIZE*3]);
-    tmp6 = DEQUANTIZE(inptr[DCTSIZE*5], quantptr[DCTSIZE*5]);
-    tmp7 = DEQUANTIZE(inptr[DCTSIZE*7], quantptr[DCTSIZE*7]);
-
-    z13 = tmp6 + tmp5;		/* phase 6 */
-    z10 = tmp6 - tmp5;
-    z11 = tmp4 + tmp7;
-    z12 = tmp4 - tmp7;
-
-    tmp7 = z11 + z13;		/* phase 5 */
-    tmp11 = MULTIPLY(z11 - z13, FIX_1_414213562); /* 2*c4 */
-
-    z5 = MULTIPLY(z10 + z12, FIX_1_847759065); /* 2*c2 */
-    tmp10 = MULTIPLY(z12, FIX_1_082392200) - z5; /* 2*(c2-c6) */
-    tmp12 = MULTIPLY(z10, - FIX_2_613125930) + z5; /* -2*(c2+c6) */
-
-    tmp6 = tmp12 - tmp7;	/* phase 2 */
-    tmp5 = tmp11 - tmp6;
-    tmp4 = tmp10 + tmp5;
-
-    wsptr[DCTSIZE*0] = (int) (tmp0 + tmp7);
-    wsptr[DCTSIZE*7] = (int) (tmp0 - tmp7);
-    wsptr[DCTSIZE*1] = (int) (tmp1 + tmp6);
-    wsptr[DCTSIZE*6] = (int) (tmp1 - tmp6);
-    wsptr[DCTSIZE*2] = (int) (tmp2 + tmp5);
-    wsptr[DCTSIZE*5] = (int) (tmp2 - tmp5);
-    wsptr[DCTSIZE*4] = (int) (tmp3 + tmp4);
-    wsptr[DCTSIZE*3] = (int) (tmp3 - tmp4);
-
-    inptr++;			/* advance pointers to next column */
-    quantptr++;
-    wsptr++;
-  }
-  
-  /* Pass 2: process rows from work array, store into output array. */
-  /* Note that we must descale the results by a factor of 8 == 2**3, */
-  /* and also undo the PASS1_BITS scaling. */
-
-  wsptr = workspace;
-  for (ctr = 0; ctr < DCTSIZE; ctr++) {
-    outptr = output_buf[ctr] + output_col;
-    /* Rows of zeroes can be exploited in the same way as we did with columns.
-     * However, the column calculation has created many nonzero AC terms, so
-     * the simplification applies less often (typically 5% to 10% of the time).
-     * On machines with very fast multiplication, it's possible that the
-     * test takes more time than it's worth.  In that case this section
-     * may be commented out.
-     */
-    
-#ifndef NO_ZERO_ROW_TEST
-    if (wsptr[1] == 0 && wsptr[2] == 0 && wsptr[3] == 0 && wsptr[4] == 0 &&
-	wsptr[5] == 0 && wsptr[6] == 0 && wsptr[7] == 0) {
-      /* AC terms all zero */
-      JSAMPLE dcval = range_limit[IDESCALE(wsptr[0], PASS1_BITS+3)
-				  & RANGE_MASK];
-      
-      outptr[0] = dcval;
-      outptr[1] = dcval;
-      outptr[2] = dcval;
-      outptr[3] = dcval;
-      outptr[4] = dcval;
-      outptr[5] = dcval;
-      outptr[6] = dcval;
-      outptr[7] = dcval;
-
-      wsptr += DCTSIZE;		/* advance pointer to next row */
-      continue;
-    }
-#endif
-    
-    /* Even part */
-
-    tmp10 = ((DCTELEM) wsptr[0] + (DCTELEM) wsptr[4]);
-    tmp11 = ((DCTELEM) wsptr[0] - (DCTELEM) wsptr[4]);
-
-    tmp13 = ((DCTELEM) wsptr[2] + (DCTELEM) wsptr[6]);
-    tmp12 = MULTIPLY((DCTELEM) wsptr[2] - (DCTELEM) wsptr[6], FIX_1_414213562)
-	    - tmp13;
-
-    tmp0 = tmp10 + tmp13;
-    tmp3 = tmp10 - tmp13;
-    tmp1 = tmp11 + tmp12;
-    tmp2 = tmp11 - tmp12;
-
-    /* Odd part */
-
-    z13 = (DCTELEM) wsptr[5] + (DCTELEM) wsptr[3];
-    z10 = (DCTELEM) wsptr[5] - (DCTELEM) wsptr[3];
-    z11 = (DCTELEM) wsptr[1] + (DCTELEM) wsptr[7];
-    z12 = (DCTELEM) wsptr[1] - (DCTELEM) wsptr[7];
-
-    tmp7 = z11 + z13;		/* phase 5 */
-    tmp11 = MULTIPLY(z11 - z13, FIX_1_414213562); /* 2*c4 */
-
-    z5 = MULTIPLY(z10 + z12, FIX_1_847759065); /* 2*c2 */
-    tmp10 = MULTIPLY(z12, FIX_1_082392200) - z5; /* 2*(c2-c6) */
-    tmp12 = MULTIPLY(z10, - FIX_2_613125930) + z5; /* -2*(c2+c6) */
-
-    tmp6 = tmp12 - tmp7;	/* phase 2 */
-    tmp5 = tmp11 - tmp6;
-    tmp4 = tmp10 + tmp5;
-
-    /* Final output stage: scale down by a factor of 8 and range-limit */
-
-    outptr[0] = range_limit[IDESCALE(tmp0 + tmp7, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[7] = range_limit[IDESCALE(tmp0 - tmp7, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[1] = range_limit[IDESCALE(tmp1 + tmp6, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[6] = range_limit[IDESCALE(tmp1 - tmp6, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[2] = range_limit[IDESCALE(tmp2 + tmp5, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[5] = range_limit[IDESCALE(tmp2 - tmp5, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[4] = range_limit[IDESCALE(tmp3 + tmp4, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[3] = range_limit[IDESCALE(tmp3 - tmp4, PASS1_BITS+3)
-			    & RANGE_MASK];
-
-    wsptr += DCTSIZE;		/* advance pointer to next row */
-  }
-}
-
-#endif /* DCT_IFAST_SUPPORTED */

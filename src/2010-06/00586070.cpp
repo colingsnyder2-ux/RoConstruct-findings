@@ -1,916 +1,176 @@
 // from server: 100% by auto
+// roc 2010-06 00586070  unit: seg_00580000  size: 575 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00586070
+//
+// 00586070  81ec2c080000         sub esp, 0x82c
+// 00586076  53                   push ebx
+// 00586077  33c0                 xor eax, eax
+// 00586079  55                   push ebp
+// 0058607a  56                   push esi
+// 0058607b  57                   push edi
+// 0058607c  6804040000           push 0x404
+// 00586081  50                   push eax
+// 00586082  89442418             mov dword ptr [esp + 0x18], eax
+// 00586086  8944241c             mov dword ptr [esp + 0x1c], eax
+// 0058608a  89442420             mov dword ptr [esp + 0x20], eax
+// 0058608e  89442424             mov dword ptr [esp + 0x24], eax
+// 00586092  89442428             mov dword ptr [esp + 0x28], eax
+// 00586096  8944242c             mov dword ptr [esp + 0x2c], eax
+// 0058609a  89442430             mov dword ptr [esp + 0x30], eax
+// 0058609e  89442434             mov dword ptr [esp + 0x34], eax
+// 005860a2  88442438             mov byte ptr [esp + 0x38], al
+// 005860a6  8d44243c             lea eax, [esp + 0x3c]
+// 005860aa  50                   push eax
+// 005860ab  e8342b2200           call 0x7a8be4
+// 005860b0  8b9c2454080000       mov ebx, dword ptr [esp + 0x854]
+// 005860b7  83c40c               add esp, 0xc
+// 005860ba  b901010000           mov ecx, 0x101
+// 005860bf  83c8ff               or eax, 0xffffffff
+// 005860c2  8dbc2438040000       lea edi, [esp + 0x438]
+// 005860c9  bd01000000           mov ebp, 1
+// 005860ce  f3ab                 rep stosd dword ptr es:[edi], eax
+// 005860d0  89ab00040000         mov dword ptr [ebx + 0x400], ebp
+// 005860d6  83c8ff               or eax, 0xffffffff
+// 005860d9  be00ca9a3b           mov esi, 0x3b9aca00
+// 005860de  33c9                 xor ecx, ecx
+// 005860e0  8b148b               mov edx, dword ptr [ebx + ecx*4]
+// 005860e3  85d2                 test edx, edx
+// 005860e5  7408                 je 0x5860ef
+// 005860e7  3bd6                 cmp edx, esi
+// 005860e9  7f04                 jg 0x5860ef
+// 005860eb  8bf2                 mov esi, edx
+// 005860ed  8bc1                 mov eax, ecx
+// 005860ef  03cd                 add ecx, ebp
+// 005860f1  81f900010000         cmp ecx, 0x100
+// 005860f7  7ee7                 jle 0x5860e0
+// 005860f9  83caff               or edx, 0xffffffff
+// 005860fc  bf00ca9a3b           mov edi, 0x3b9aca00
+// 00586101  33c9                 xor ecx, ecx
+// 00586103  8b348b               mov esi, dword ptr [ebx + ecx*4]
+// 00586106  85f6                 test esi, esi
+// 00586108  740c                 je 0x586116
+// 0058610a  3bf7                 cmp esi, edi
+// 0058610c  7f08                 jg 0x586116
+// 0058610e  3bc8                 cmp ecx, eax
+// 00586110  7404                 je 0x586116
+// 00586112  8bfe                 mov edi, esi
+// 00586114  8bd1                 mov edx, ecx
+// 00586116  03cd                 add ecx, ebp
+// 00586118  81f900010000         cmp ecx, 0x100
+// 0058611e  7ee3                 jle 0x586103
+// 00586120  85d2                 test edx, edx
+// 00586122  0f8c84000000         jl 0x5861ac
+// 00586128  8b0c93               mov ecx, dword ptr [ebx + edx*4]
+// 0058612b  010c83               add dword ptr [ebx + eax*4], ecx
+// 0058612e  016c8434             add dword ptr [esp + eax*4 + 0x34], ebp
+// 00586132  83bc843804000000     cmp dword ptr [esp + eax*4 + 0x438], 0
+// 0058613a  8d8c8438040000       lea ecx, [esp + eax*4 + 0x438]
+// 00586141  c7049300000000       mov dword ptr [ebx + edx*4], 0
+// 00586148  7c1d                 jl 0x586167
+// 0058614a  8d9b00000000         lea ebx, [ebx]
+// 00586150  8b01                 mov eax, dword ptr [ecx]
+// 00586152  016c8434             add dword ptr [esp + eax*4 + 0x34], ebp
+// 00586156  83bc843804000000     cmp dword ptr [esp + eax*4 + 0x438], 0
+// 0058615e  8d8c8438040000       lea ecx, [esp + eax*4 + 0x438]
+// 00586165  7de9                 jge 0x586150
+// 00586167  016c9434             add dword ptr [esp + edx*4 + 0x34], ebp
+// 0058616b  89948438040000       mov dword ptr [esp + eax*4 + 0x438], edx
+// 00586172  83bc943804000000     cmp dword ptr [esp + edx*4 + 0x438], 0
+// 0058617a  8d849438040000       lea eax, [esp + edx*4 + 0x438]
+// 00586181  0f8c4fffffff         jl 0x5860d6
+// 00586187  eb07                 jmp 0x586190
+// 00586189  8da42400000000       lea esp, [esp]
+// 00586190  8b00                 mov eax, dword ptr [eax]
+// 00586192  016c8434             add dword ptr [esp + eax*4 + 0x34], ebp
+// 00586196  83bc843804000000     cmp dword ptr [esp + eax*4 + 0x438], 0
+// 0058619e  8d848438040000       lea eax, [esp + eax*4 + 0x438]
+// 005861a5  7de9                 jge 0x586190
+// 005861a7  e92affffff           jmp 0x5860d6
+// 005861ac  8b9c2440080000       mov ebx, dword ptr [esp + 0x840]
+// 005861b3  33ff                 xor edi, edi
+// 005861b5  8d6f27               lea ebp, [edi + 0x27]
+// 005861b8  8b74bc34             mov esi, dword ptr [esp + edi*4 + 0x34]
+// 005861bc  85f6                 test esi, esi
+// 005861be  741c                 je 0x5861dc
+// 005861c0  83fe20               cmp esi, 0x20
+// 005861c3  7e0f                 jle 0x5861d4
+// 005861c5  8b13                 mov edx, dword ptr [ebx]
+// 005861c7  896a14               mov dword ptr [edx + 0x14], ebp
+// 005861ca  8b03                 mov eax, dword ptr [ebx]
+// 005861cc  8b08                 mov ecx, dword ptr [eax]
+// 005861ce  53                   push ebx
+// 005861cf  ffd1                 call ecx
+// 005861d1  83c404               add esp, 4
+// 005861d4  fe443410             inc byte ptr [esp + esi + 0x10]
+// 005861d8  8d443410             lea eax, [esp + esi + 0x10]
+// 005861dc  47                   inc edi
+// 005861dd  81ff00010000         cmp edi, 0x100
+// 005861e3  7ed3                 jle 0x5861b8
+// 005861e5  be10000000           mov esi, 0x10
+// 005861ea  b91e000000           mov ecx, 0x1e
+// 005861ef  8bd6                 mov edx, esi
+// 005861f1  807c0c1200           cmp byte ptr [esp + ecx + 0x12], 0
+// 005861f6  763d                 jbe 0x586235
+// 005861f8  eb06                 jmp 0x586200
+// 005861fa  8d9b00000000         lea ebx, [ebx]
+// 00586200  807c0c1000           cmp byte ptr [esp + ecx + 0x10], 0
+// 00586205  8bc1                 mov eax, ecx
+// 00586207  750f                 jne 0x586218
+// 00586209  8da42400000000       lea esp, [esp]
+// 00586210  48                   dec eax
+// 00586211  807c041000           cmp byte ptr [esp + eax + 0x10], 0
+// 00586216  74f8                 je 0x586210
+// 00586218  80440c12fe           add byte ptr [esp + ecx + 0x12], 0xfe
+// 0058621d  fe440c11             inc byte ptr [esp + ecx + 0x11]
+// 00586221  8044041102           add byte ptr [esp + eax + 0x11], 2
+// 00586226  fe4c0410             dec byte ptr [esp + eax + 0x10]
+// 0058622a  807c0c1200           cmp byte ptr [esp + ecx + 0x12], 0
+// 0058622f  8d440410             lea eax, [esp + eax + 0x10]
+// 00586233  77cb                 ja 0x586200
+// 00586235  49                   dec ecx
+// 00586236  83ee01               sub esi, 1
+// 00586239  75b6                 jne 0x5861f1
+// 0058623b  807c242000           cmp byte ptr [esp + 0x20], 0
+// 00586240  7508                 jne 0x58624a
+// 00586242  4a                   dec edx
+// 00586243  807c141000           cmp byte ptr [esp + edx + 0x10], 0
+// 00586248  74f8                 je 0x586242
+// 0058624a  fe4c1410             dec byte ptr [esp + edx + 0x10]
+// 0058624e  8b8c2444080000       mov ecx, dword ptr [esp + 0x844]
+// 00586255  8d441410             lea eax, [esp + edx + 0x10]
+// 00586259  8b542410             mov edx, dword ptr [esp + 0x10]
+// 0058625d  8b442414             mov eax, dword ptr [esp + 0x14]
+// 00586261  8911                 mov dword ptr [ecx], edx
+// 00586263  8b542418             mov edx, dword ptr [esp + 0x18]
+// 00586267  894104               mov dword ptr [ecx + 4], eax
+// 0058626a  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0058626e  895108               mov dword ptr [ecx + 8], edx
+// 00586271  8a542420             mov dl, byte ptr [esp + 0x20]
+// 00586275  89410c               mov dword ptr [ecx + 0xc], eax
+// 00586278  885110               mov byte ptr [ecx + 0x10], dl
+// 0058627b  33d2                 xor edx, edx
+// 0058627d  be01000000           mov esi, 1
+// 00586282  33c0                 xor eax, eax
+// 00586284  39748434             cmp dword ptr [esp + eax*4 + 0x34], esi
+// 00586288  7505                 jne 0x58628f
+// 0058628a  88440a11             mov byte ptr [edx + ecx + 0x11], al
+// 0058628e  42                   inc edx
+// 0058628f  40                   inc eax
+// 00586290  3dff000000           cmp eax, 0xff
+// 00586295  7eed                 jle 0x586284
+// 00586297  46                   inc esi
+// 00586298  83fe20               cmp esi, 0x20
+// 0058629b  7ee5                 jle 0x586282
+// 0058629d  5f                   pop edi
+// 0058629e  5e                   pop esi
+// 0058629f  5d                   pop ebp
+// 005862a0  c6811101000000       mov byte ptr [ecx + 0x111], 0
+// 005862a7  5b                   pop ebx
+// 005862a8  81c42c080000         add esp, 0x82c
+// 005862ae  c3                   ret 
+// library jpeg-6b/jchuff.c (function _jpeg_gen_optimal_table)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jchuff.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jchuff.c
- *
- * Copyright (C) 1991-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains Huffman entropy encoding routines.
- *
- * Much of the complexity here has to do with supporting output suspension.
- * If the data destination module demands suspension, we want to be able to
- * back up to the start of the current MCU.  To do this, we copy state
- * variables into local working storage, and update them back to the
- * permanent JPEG objects only upon successful completion of an MCU.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jchuff.h"		/* Declarations shared with jcphuff.c */
-
-
-/* Expanded entropy encoder object for Huffman encoding.
- *
- * The savable_state subrecord contains fields that change within an MCU,
- * but must not be updated permanently until we complete the MCU.
- */
-
-typedef struct {
-  INT32 put_buffer;		/* current bit-accumulation buffer */
-  int put_bits;			/* # of bits now in it */
-  int last_dc_val[MAX_COMPS_IN_SCAN]; /* last DC coef for each component */
-} savable_state;
-
-/* This macro is to work around compilers with missing or broken
- * structure assignment.  You'll need to fix this code if you have
- * such a compiler and you change MAX_COMPS_IN_SCAN.
- */
-
-#ifndef NO_STRUCT_ASSIGN
-#define ASSIGN_STATE(dest,src)  ((dest) = (src))
-#else
-#if MAX_COMPS_IN_SCAN == 4
-#define ASSIGN_STATE(dest,src)  \
-	((dest).put_buffer = (src).put_buffer, \
-	 (dest).put_bits = (src).put_bits, \
-	 (dest).last_dc_val[0] = (src).last_dc_val[0], \
-	 (dest).last_dc_val[1] = (src).last_dc_val[1], \
-	 (dest).last_dc_val[2] = (src).last_dc_val[2], \
-	 (dest).last_dc_val[3] = (src).last_dc_val[3])
-#endif
-#endif
-
-
-typedef struct {
-  struct jpeg_entropy_encoder pub; /* public fields */
-
-  savable_state saved;		/* Bit buffer & DC state at start of MCU */
-
-  /* These fields are NOT loaded into local working state. */
-  unsigned int restarts_to_go;	/* MCUs left in this restart interval */
-  int next_restart_num;		/* next restart number to write (0-7) */
-
-  /* Pointers to derived tables (these workspaces have image lifespan) */
-  c_derived_tbl * dc_derived_tbls[NUM_HUFF_TBLS];
-  c_derived_tbl * ac_derived_tbls[NUM_HUFF_TBLS];
-
-#ifdef ENTROPY_OPT_SUPPORTED	/* Statistics tables for optimization */
-  long * dc_count_ptrs[NUM_HUFF_TBLS];
-  long * ac_count_ptrs[NUM_HUFF_TBLS];
-#endif
-} huff_entropy_encoder;
-
-typedef huff_entropy_encoder * huff_entropy_ptr;
-
-/* Working state while writing an MCU.
- * This struct contains all the fields that are needed by subroutines.
- */
-
-typedef struct {
-  JOCTET * next_output_byte;	/* => next byte to write in buffer */
-  size_t free_in_buffer;	/* # of byte spaces remaining in buffer */
-  savable_state cur;		/* Current bit buffer & DC state */
-  j_compress_ptr cinfo;		/* dump_buffer needs access to this */
-} working_state;
-
-
-/* Forward declarations */
-METHODDEF(boolean) encode_mcu_huff JPP((j_compress_ptr cinfo,
-					JBLOCKROW *MCU_data));
-METHODDEF(void) finish_pass_huff JPP((j_compress_ptr cinfo));
-#ifdef ENTROPY_OPT_SUPPORTED
-METHODDEF(boolean) encode_mcu_gather JPP((j_compress_ptr cinfo,
-					  JBLOCKROW *MCU_data));
-METHODDEF(void) finish_pass_gather JPP((j_compress_ptr cinfo));
-#endif
-
-
-/*
- * Initialize for a Huffman-compressed scan.
- * If gather_statistics is TRUE, we do not output anything during the scan,
- * just count the Huffman symbols used and generate Huffman code tables.
- */
-
-METHODDEF(void)
-start_pass_huff (j_compress_ptr cinfo, boolean gather_statistics)
-{
-  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
-  int ci, dctbl, actbl;
-  jpeg_component_info * compptr;
-
-  if (gather_statistics) {
-#ifdef ENTROPY_OPT_SUPPORTED
-    entropy->pub.encode_mcu = encode_mcu_gather;
-    entropy->pub.finish_pass = finish_pass_gather;
-#else
-    ERREXIT(cinfo, JERR_NOT_COMPILED);
-#endif
-  } else {
-    entropy->pub.encode_mcu = encode_mcu_huff;
-    entropy->pub.finish_pass = finish_pass_huff;
-  }
-
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    compptr = cinfo->cur_comp_info[ci];
-    dctbl = compptr->dc_tbl_no;
-    actbl = compptr->ac_tbl_no;
-    if (gather_statistics) {
-#ifdef ENTROPY_OPT_SUPPORTED
-      /* Check for invalid table indexes */
-      /* (make_c_derived_tbl does this in the other path) */
-      if (dctbl < 0 || dctbl >= NUM_HUFF_TBLS)
-	ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, dctbl);
-      if (actbl < 0 || actbl >= NUM_HUFF_TBLS)
-	ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, actbl);
-      /* Allocate and zero the statistics tables */
-      /* Note that jpeg_gen_optimal_table expects 257 entries in each table! */
-      if (entropy->dc_count_ptrs[dctbl] == NULL)
-	entropy->dc_count_ptrs[dctbl] = (long *)
-	  (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				      257 * SIZEOF(long));
-      MEMZERO(entropy->dc_count_ptrs[dctbl], 257 * SIZEOF(long));
-      if (entropy->ac_count_ptrs[actbl] == NULL)
-	entropy->ac_count_ptrs[actbl] = (long *)
-	  (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				      257 * SIZEOF(long));
-      MEMZERO(entropy->ac_count_ptrs[actbl], 257 * SIZEOF(long));
-#endif
-    } else {
-      /* Compute derived values for Huffman tables */
-      /* We may do this more than once for a table, but it's not expensive */
-      jpeg_make_c_derived_tbl(cinfo, TRUE, dctbl,
-			      & entropy->dc_derived_tbls[dctbl]);
-      jpeg_make_c_derived_tbl(cinfo, FALSE, actbl,
-			      & entropy->ac_derived_tbls[actbl]);
-    }
-    /* Initialize DC predictions to 0 */
-    entropy->saved.last_dc_val[ci] = 0;
-  }
-
-  /* Initialize bit buffer to empty */
-  entropy->saved.put_buffer = 0;
-  entropy->saved.put_bits = 0;
-
-  /* Initialize restart stuff */
-  entropy->restarts_to_go = cinfo->restart_interval;
-  entropy->next_restart_num = 0;
-}
-
-
-/*
- * Compute the derived values for a Huffman table.
- * This routine also performs some validation checks on the table.
- *
- * Note this is also used by jcphuff.c.
- */
-
-GLOBAL(void)
-jpeg_make_c_derived_tbl (j_compress_ptr cinfo, boolean isDC, int tblno,
-			 c_derived_tbl ** pdtbl)
-{
-  JHUFF_TBL *htbl;
-  c_derived_tbl *dtbl;
-  int p, i, l, lastp, si, maxsymbol;
-  char huffsize[257];
-  unsigned int huffcode[257];
-  unsigned int code;
-
-  /* Note that huffsize[] and huffcode[] are filled in code-length order,
-   * paralleling the order of the symbols themselves in htbl->huffval[].
-   */
-
-  /* Find the input Huffman table */
-  if (tblno < 0 || tblno >= NUM_HUFF_TBLS)
-    ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, tblno);
-  htbl =
-    isDC ? cinfo->dc_huff_tbl_ptrs[tblno] : cinfo->ac_huff_tbl_ptrs[tblno];
-  if (htbl == NULL)
-    ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, tblno);
-
-  /* Allocate a workspace if we haven't already done so. */
-  if (*pdtbl == NULL)
-    *pdtbl = (c_derived_tbl *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  SIZEOF(c_derived_tbl));
-  dtbl = *pdtbl;
-  
-  /* Figure C.1: make table of Huffman code length for each symbol */
-
-  p = 0;
-  for (l = 1; l <= 16; l++) {
-    i = (int) htbl->bits[l];
-    if (i < 0 || p + i > 256)	/* protect against table overrun */
-      ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
-    while (i--)
-      huffsize[p++] = (char) l;
-  }
-  huffsize[p] = 0;
-  lastp = p;
-  
-  /* Figure C.2: generate the codes themselves */
-  /* We also validate that the counts represent a legal Huffman code tree. */
-
-  code = 0;
-  si = huffsize[0];
-  p = 0;
-  while (huffsize[p]) {
-    while (((int) huffsize[p]) == si) {
-      huffcode[p++] = code;
-      code++;
-    }
-    /* code is now 1 more than the last code used for codelength si; but
-     * it must still fit in si bits, since no code is allowed to be all ones.
-     */
-    if (((INT32) code) >= (((INT32) 1) << si))
-      ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
-    code <<= 1;
-    si++;
-  }
-  
-  /* Figure C.3: generate encoding tables */
-  /* These are code and size indexed by symbol value */
-
-  /* Set all codeless symbols to have code length 0;
-   * this lets us detect duplicate VAL entries here, and later
-   * allows emit_bits to detect any attempt to emit such symbols.
-   */
-  MEMZERO(dtbl->ehufsi, SIZEOF(dtbl->ehufsi));
-
-  /* This is also a convenient place to check for out-of-range
-   * and duplicated VAL entries.  We allow 0..255 for AC symbols
-   * but only 0..15 for DC.  (We could constrain them further
-   * based on data depth and mode, but this seems enough.)
-   */
-  maxsymbol = isDC ? 15 : 255;
-
-  for (p = 0; p < lastp; p++) {
-    i = htbl->huffval[p];
-    if (i < 0 || i > maxsymbol || dtbl->ehufsi[i])
-      ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
-    dtbl->ehufco[i] = huffcode[p];
-    dtbl->ehufsi[i] = huffsize[p];
-  }
-}
-
-
-/* Outputting bytes to the file */
-
-/* Emit a byte, taking 'action' if must suspend. */
-#define emit_byte(state,val,action)  \
-	{ *(state)->next_output_byte++ = (JOCTET) (val);  \
-	  if (--(state)->free_in_buffer == 0)  \
-	    if (! dump_buffer(state))  \
-	      { action; } }
-
-
-LOCAL(boolean)
-dump_buffer (working_state * state)
-/* Empty the output buffer; return TRUE if successful, FALSE if must suspend */
-{
-  struct jpeg_destination_mgr * dest = state->cinfo->dest;
-
-  if (! (*dest->empty_output_buffer) (state->cinfo))
-    return FALSE;
-  /* After a successful buffer dump, must reset buffer pointers */
-  state->next_output_byte = dest->next_output_byte;
-  state->free_in_buffer = dest->free_in_buffer;
-  return TRUE;
-}
-
-
-/* Outputting bits to the file */
-
-/* Only the right 24 bits of put_buffer are used; the valid bits are
- * left-justified in this part.  At most 16 bits can be passed to emit_bits
- * in one call, and we never retain more than 7 bits in put_buffer
- * between calls, so 24 bits are sufficient.
- */
-
-INLINE
-LOCAL(boolean)
-emit_bits (working_state * state, unsigned int code, int size)
-/* Emit some bits; return TRUE if successful, FALSE if must suspend */
-{
-  /* This routine is heavily used, so it's worth coding tightly. */
-  register INT32 put_buffer = (INT32) code;
-  register int put_bits = state->cur.put_bits;
-
-  /* if size is 0, caller used an invalid Huffman table entry */
-  if (size == 0)
-    ERREXIT(state->cinfo, JERR_HUFF_MISSING_CODE);
-
-  put_buffer &= (((INT32) 1)<<size) - 1; /* mask off any extra bits in code */
-  
-  put_bits += size;		/* new number of bits in buffer */
-  
-  put_buffer <<= 24 - put_bits; /* align incoming bits */
-
-  put_buffer |= state->cur.put_buffer; /* and merge with old buffer contents */
-  
-  while (put_bits >= 8) {
-    int c = (int) ((put_buffer >> 16) & 0xFF);
-    
-    emit_byte(state, c, return FALSE);
-    if (c == 0xFF) {		/* need to stuff a zero byte? */
-      emit_byte(state, 0, return FALSE);
-    }
-    put_buffer <<= 8;
-    put_bits -= 8;
-  }
-
-  state->cur.put_buffer = put_buffer; /* update state variables */
-  state->cur.put_bits = put_bits;
-
-  return TRUE;
-}
-
-
-LOCAL(boolean)
-flush_bits (working_state * state)
-{
-  if (! emit_bits(state, 0x7F, 7)) /* fill any partial byte with ones */
-    return FALSE;
-  state->cur.put_buffer = 0;	/* and reset bit-buffer to empty */
-  state->cur.put_bits = 0;
-  return TRUE;
-}
-
-
-/* Encode a single block's worth of coefficients */
-
-LOCAL(boolean)
-encode_one_block (working_state * state, JCOEFPTR block, int last_dc_val,
-		  c_derived_tbl *dctbl, c_derived_tbl *actbl)
-{
-  register int temp, temp2;
-  register int nbits;
-  register int k, r, i;
-  
-  /* Encode the DC coefficient difference per section F.1.2.1 */
-  
-  temp = temp2 = block[0] - last_dc_val;
-
-  if (temp < 0) {
-    temp = -temp;		/* temp is abs value of input */
-    /* For a negative input, want temp2 = bitwise complement of abs(input) */
-    /* This code assumes we are on a two's complement machine */
-    temp2--;
-  }
-  
-  /* Find the number of bits needed for the magnitude of the coefficient */
-  nbits = 0;
-  while (temp) {
-    nbits++;
-    temp >>= 1;
-  }
-  /* Check for out-of-range coefficient values.
-   * Since we're encoding a difference, the range limit is twice as much.
-   */
-  if (nbits > MAX_COEF_BITS+1)
-    ERREXIT(state->cinfo, JERR_BAD_DCT_COEF);
-  
-  /* Emit the Huffman-coded symbol for the number of bits */
-  if (! emit_bits(state, dctbl->ehufco[nbits], dctbl->ehufsi[nbits]))
-    return FALSE;
-
-  /* Emit that number of bits of the value, if positive, */
-  /* or the complement of its magnitude, if negative. */
-  if (nbits)			/* emit_bits rejects calls with size 0 */
-    if (! emit_bits(state, (unsigned int) temp2, nbits))
-      return FALSE;
-
-  /* Encode the AC coefficients per section F.1.2.2 */
-  
-  r = 0;			/* r = run length of zeros */
-  
-  for (k = 1; k < DCTSIZE2; k++) {
-    if ((temp = block[jpeg_natural_order[k]]) == 0) {
-      r++;
-    } else {
-      /* if run length > 15, must emit special run-length-16 codes (0xF0) */
-      while (r > 15) {
-	if (! emit_bits(state, actbl->ehufco[0xF0], actbl->ehufsi[0xF0]))
-	  return FALSE;
-	r -= 16;
-      }
-
-      temp2 = temp;
-      if (temp < 0) {
-	temp = -temp;		/* temp is abs value of input */
-	/* This code assumes we are on a two's complement machine */
-	temp2--;
-      }
-      
-      /* Find the number of bits needed for the magnitude of the coefficient */
-      nbits = 1;		/* there must be at least one 1 bit */
-      while ((temp >>= 1))
-	nbits++;
-      /* Check for out-of-range coefficient values */
-      if (nbits > MAX_COEF_BITS)
-	ERREXIT(state->cinfo, JERR_BAD_DCT_COEF);
-      
-      /* Emit Huffman symbol for run length / number of bits */
-      i = (r << 4) + nbits;
-      if (! emit_bits(state, actbl->ehufco[i], actbl->ehufsi[i]))
-	return FALSE;
-
-      /* Emit that number of bits of the value, if positive, */
-      /* or the complement of its magnitude, if negative. */
-      if (! emit_bits(state, (unsigned int) temp2, nbits))
-	return FALSE;
-      
-      r = 0;
-    }
-  }
-
-  /* If the last coef(s) were zero, emit an end-of-block code */
-  if (r > 0)
-    if (! emit_bits(state, actbl->ehufco[0], actbl->ehufsi[0]))
-      return FALSE;
-
-  return TRUE;
-}
-
-
-/*
- * Emit a restart marker & resynchronize predictions.
- */
-
-LOCAL(boolean)
-emit_restart (working_state * state, int restart_num)
-{
-  int ci;
-
-  if (! flush_bits(state))
-    return FALSE;
-
-  emit_byte(state, 0xFF, return FALSE);
-  emit_byte(state, JPEG_RST0 + restart_num, return FALSE);
-
-  /* Re-initialize DC predictions to 0 */
-  for (ci = 0; ci < state->cinfo->comps_in_scan; ci++)
-    state->cur.last_dc_val[ci] = 0;
-
-  /* The restart counter is not updated until we successfully write the MCU. */
-
-  return TRUE;
-}
-
-
-/*
- * Encode and output one MCU's worth of Huffman-compressed coefficients.
- */
-
-METHODDEF(boolean)
-encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
-{
-  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
-  working_state state;
-  int blkn, ci;
-  jpeg_component_info * compptr;
-
-  /* Load up working state */
-  state.next_output_byte = cinfo->dest->next_output_byte;
-  state.free_in_buffer = cinfo->dest->free_in_buffer;
-  ASSIGN_STATE(state.cur, entropy->saved);
-  state.cinfo = cinfo;
-
-  /* Emit restart marker if needed */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0)
-      if (! emit_restart(&state, entropy->next_restart_num))
-	return FALSE;
-  }
-
-  /* Encode the MCU data blocks */
-  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    ci = cinfo->MCU_membership[blkn];
-    compptr = cinfo->cur_comp_info[ci];
-    if (! encode_one_block(&state,
-			   MCU_data[blkn][0], state.cur.last_dc_val[ci],
-			   entropy->dc_derived_tbls[compptr->dc_tbl_no],
-			   entropy->ac_derived_tbls[compptr->ac_tbl_no]))
-      return FALSE;
-    /* Update last_dc_val */
-    state.cur.last_dc_val[ci] = MCU_data[blkn][0][0];
-  }
-
-  /* Completed MCU, so update state */
-  cinfo->dest->next_output_byte = state.next_output_byte;
-  cinfo->dest->free_in_buffer = state.free_in_buffer;
-  ASSIGN_STATE(entropy->saved, state.cur);
-
-  /* Update restart-interval state too */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0) {
-      entropy->restarts_to_go = cinfo->restart_interval;
-      entropy->next_restart_num++;
-      entropy->next_restart_num &= 7;
-    }
-    entropy->restarts_to_go--;
-  }
-
-  return TRUE;
-}
-
-
-/*
- * Finish up at the end of a Huffman-compressed scan.
- */
-
-METHODDEF(void)
-finish_pass_huff (j_compress_ptr cinfo)
-{
-  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
-  working_state state;
-
-  /* Load up working state ... flush_bits needs it */
-  state.next_output_byte = cinfo->dest->next_output_byte;
-  state.free_in_buffer = cinfo->dest->free_in_buffer;
-  ASSIGN_STATE(state.cur, entropy->saved);
-  state.cinfo = cinfo;
-
-  /* Flush out the last data */
-  if (! flush_bits(&state))
-    ERREXIT(cinfo, JERR_CANT_SUSPEND);
-
-  /* Update state */
-  cinfo->dest->next_output_byte = state.next_output_byte;
-  cinfo->dest->free_in_buffer = state.free_in_buffer;
-  ASSIGN_STATE(entropy->saved, state.cur);
-}
-
-
-/*
- * Huffman coding optimization.
- *
- * We first scan the supplied data and count the number of uses of each symbol
- * that is to be Huffman-coded. (This process MUST agree with the code above.)
- * Then we build a Huffman coding tree for the observed counts.
- * Symbols which are not needed at all for the particular image are not
- * assigned any code, which saves space in the DHT marker as well as in
- * the compressed data.
- */
-
-#ifdef ENTROPY_OPT_SUPPORTED
-
-
-/* Process a single block's worth of coefficients */
-
-LOCAL(void)
-htest_one_block (j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
-		 long dc_counts[], long ac_counts[])
-{
-  register int temp;
-  register int nbits;
-  register int k, r;
-  
-  /* Encode the DC coefficient difference per section F.1.2.1 */
-  
-  temp = block[0] - last_dc_val;
-  if (temp < 0)
-    temp = -temp;
-  
-  /* Find the number of bits needed for the magnitude of the coefficient */
-  nbits = 0;
-  while (temp) {
-    nbits++;
-    temp >>= 1;
-  }
-  /* Check for out-of-range coefficient values.
-   * Since we're encoding a difference, the range limit is twice as much.
-   */
-  if (nbits > MAX_COEF_BITS+1)
-    ERREXIT(cinfo, JERR_BAD_DCT_COEF);
-
-  /* Count the Huffman symbol for the number of bits */
-  dc_counts[nbits]++;
-  
-  /* Encode the AC coefficients per section F.1.2.2 */
-  
-  r = 0;			/* r = run length of zeros */
-  
-  for (k = 1; k < DCTSIZE2; k++) {
-    if ((temp = block[jpeg_natural_order[k]]) == 0) {
-      r++;
-    } else {
-      /* if run length > 15, must emit special run-length-16 codes (0xF0) */
-      while (r > 15) {
-	ac_counts[0xF0]++;
-	r -= 16;
-      }
-      
-      /* Find the number of bits needed for the magnitude of the coefficient */
-      if (temp < 0)
-	temp = -temp;
-      
-      /* Find the number of bits needed for the magnitude of the coefficient */
-      nbits = 1;		/* there must be at least one 1 bit */
-      while ((temp >>= 1))
-	nbits++;
-      /* Check for out-of-range coefficient values */
-      if (nbits > MAX_COEF_BITS)
-	ERREXIT(cinfo, JERR_BAD_DCT_COEF);
-      
-      /* Count Huffman symbol for run length / number of bits */
-      ac_counts[(r << 4) + nbits]++;
-      
-      r = 0;
-    }
-  }
-
-  /* If the last coef(s) were zero, emit an end-of-block code */
-  if (r > 0)
-    ac_counts[0]++;
-}
-
-
-/*
- * Trial-encode one MCU's worth of Huffman-compressed coefficients.
- * No data is actually output, so no suspension return is possible.
- */
-
-METHODDEF(boolean)
-encode_mcu_gather (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
-{
-  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
-  int blkn, ci;
-  jpeg_component_info * compptr;
-
-  /* Take care of restart intervals if needed */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0) {
-      /* Re-initialize DC predictions to 0 */
-      for (ci = 0; ci < cinfo->comps_in_scan; ci++)
-	entropy->saved.last_dc_val[ci] = 0;
-      /* Update restart state */
-      entropy->restarts_to_go = cinfo->restart_interval;
-    }
-    entropy->restarts_to_go--;
-  }
-
-  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    ci = cinfo->MCU_membership[blkn];
-    compptr = cinfo->cur_comp_info[ci];
-    htest_one_block(cinfo, MCU_data[blkn][0], entropy->saved.last_dc_val[ci],
-		    entropy->dc_count_ptrs[compptr->dc_tbl_no],
-		    entropy->ac_count_ptrs[compptr->ac_tbl_no]);
-    entropy->saved.last_dc_val[ci] = MCU_data[blkn][0][0];
-  }
-
-  return TRUE;
-}
-
-
-/*
- * Generate the best Huffman code table for the given counts, fill htbl.
- * Note this is also used by jcphuff.c.
- *
- * The JPEG standard requires that no symbol be assigned a codeword of all
- * one bits (so that padding bits added at the end of a compressed segment
- * can't look like a valid code).  Because of the canonical ordering of
- * codewords, this just means that there must be an unused slot in the
- * longest codeword length category.  Section K.2 of the JPEG spec suggests
- * reserving such a slot by pretending that symbol 256 is a valid symbol
- * with count 1.  In theory that's not optimal; giving it count zero but
- * including it in the symbol set anyway should give a better Huffman code.
- * But the theoretically better code actually seems to come out worse in
- * practice, because it produces more all-ones bytes (which incur stuffed
- * zero bytes in the final file).  In any case the difference is tiny.
- *
- * The JPEG standard requires Huffman codes to be no more than 16 bits long.
- * If some symbols have a very small but nonzero probability, the Huffman tree
- * must be adjusted to meet the code length restriction.  We currently use
- * the adjustment method suggested in JPEG section K.2.  This method is *not*
- * optimal; it may not choose the best possible limited-length code.  But
- * typically only very-low-frequency symbols will be given less-than-optimal
- * lengths, so the code is almost optimal.  Experimental comparisons against
- * an optimal limited-length-code algorithm indicate that the difference is
- * microscopic --- usually less than a hundredth of a percent of total size.
- * So the extra complexity of an optimal algorithm doesn't seem worthwhile.
- */
-
-GLOBAL(void)
-jpeg_gen_optimal_table (j_compress_ptr cinfo, JHUFF_TBL * htbl, long freq[])
-{
-#define MAX_CLEN 32		/* assumed maximum initial code length */
-  UINT8 bits[MAX_CLEN+1];	/* bits[k] = # of symbols with code length k */
-  int codesize[257];		/* codesize[k] = code length of symbol k */
-  int others[257];		/* next symbol in current branch of tree */
-  int c1, c2;
-  int p, i, j;
-  long v;
-
-  /* This algorithm is explained in section K.2 of the JPEG standard */
-
-  MEMZERO(bits, SIZEOF(bits));
-  MEMZERO(codesize, SIZEOF(codesize));
-  for (i = 0; i < 257; i++)
-    others[i] = -1;		/* init links to empty */
-  
-  freq[256] = 1;		/* make sure 256 has a nonzero count */
-  /* Including the pseudo-symbol 256 in the Huffman procedure guarantees
-   * that no real symbol is given code-value of all ones, because 256
-   * will be placed last in the largest codeword category.
-   */
-
-  /* Huffman's basic algorithm to assign optimal code lengths to symbols */
-
-  for (;;) {
-    /* Find the smallest nonzero frequency, set c1 = its symbol */
-    /* In case of ties, take the larger symbol number */
-    c1 = -1;
-    v = 1000000000L;
-    for (i = 0; i <= 256; i++) {
-      if (freq[i] && freq[i] <= v) {
-	v = freq[i];
-	c1 = i;
-      }
-    }
-
-    /* Find the next smallest nonzero frequency, set c2 = its symbol */
-    /* In case of ties, take the larger symbol number */
-    c2 = -1;
-    v = 1000000000L;
-    for (i = 0; i <= 256; i++) {
-      if (freq[i] && freq[i] <= v && i != c1) {
-	v = freq[i];
-	c2 = i;
-      }
-    }
-
-    /* Done if we've merged everything into one frequency */
-    if (c2 < 0)
-      break;
-    
-    /* Else merge the two counts/trees */
-    freq[c1] += freq[c2];
-    freq[c2] = 0;
-
-    /* Increment the codesize of everything in c1's tree branch */
-    codesize[c1]++;
-    while (others[c1] >= 0) {
-      c1 = others[c1];
-      codesize[c1]++;
-    }
-    
-    others[c1] = c2;		/* chain c2 onto c1's tree branch */
-    
-    /* Increment the codesize of everything in c2's tree branch */
-    codesize[c2]++;
-    while (others[c2] >= 0) {
-      c2 = others[c2];
-      codesize[c2]++;
-    }
-  }
-
-  /* Now count the number of symbols of each code length */
-  for (i = 0; i <= 256; i++) {
-    if (codesize[i]) {
-      /* The JPEG standard seems to think that this can't happen, */
-      /* but I'm paranoid... */
-      if (codesize[i] > MAX_CLEN)
-	ERREXIT(cinfo, JERR_HUFF_CLEN_OVERFLOW);
-
-      bits[codesize[i]]++;
-    }
-  }
-
-  /* JPEG doesn't allow symbols with code lengths over 16 bits, so if the pure
-   * Huffman procedure assigned any such lengths, we must adjust the coding.
-   * Here is what the JPEG spec says about how this next bit works:
-   * Since symbols are paired for the longest Huffman code, the symbols are
-   * removed from this length category two at a time.  The prefix for the pair
-   * (which is one bit shorter) is allocated to one of the pair; then,
-   * skipping the BITS entry for that prefix length, a code word from the next
-   * shortest nonzero BITS entry is converted into a prefix for two code words
-   * one bit longer.
-   */
-  
-  for (i = MAX_CLEN; i > 16; i--) {
-    while (bits[i] > 0) {
-      j = i - 2;		/* find length of new prefix to be used */
-      while (bits[j] == 0)
-	j--;
-      
-      bits[i] -= 2;		/* remove two symbols */
-      bits[i-1]++;		/* one goes in this length */
-      bits[j+1] += 2;		/* two new symbols in this length */
-      bits[j]--;		/* symbol of this length is now a prefix */
-    }
-  }
-
-  /* Remove the count for the pseudo-symbol 256 from the largest codelength */
-  while (bits[i] == 0)		/* find largest codelength still in use */
-    i--;
-  bits[i]--;
-  
-  /* Return final symbol counts (only for lengths 0..16) */
-  MEMCOPY(htbl->bits, bits, SIZEOF(htbl->bits));
-  
-  /* Return a list of the symbols sorted by code length */
-  /* It's not real clear to me why we don't need to consider the codelength
-   * changes made above, but the JPEG spec seems to think this works.
-   */
-  p = 0;
-  for (i = 1; i <= MAX_CLEN; i++) {
-    for (j = 0; j <= 255; j++) {
-      if (codesize[j] == i) {
-	htbl->huffval[p] = (UINT8) j;
-	p++;
-      }
-    }
-  }
-
-  /* Set sent_table FALSE so updated table will be written to JPEG file. */
-  htbl->sent_table = FALSE;
-}
-
-
-/*
- * Finish up a statistics-gathering pass and create the new Huffman tables.
- */
-
-METHODDEF(void)
-finish_pass_gather (j_compress_ptr cinfo)
-{
-  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
-  int ci, dctbl, actbl;
-  jpeg_component_info * compptr;
-  JHUFF_TBL **htblptr;
-  boolean did_dc[NUM_HUFF_TBLS];
-  boolean did_ac[NUM_HUFF_TBLS];
-
-  /* It's important not to apply jpeg_gen_optimal_table more than once
-   * per table, because it clobbers the input frequency counts!
-   */
-  MEMZERO(did_dc, SIZEOF(did_dc));
-  MEMZERO(did_ac, SIZEOF(did_ac));
-
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    compptr = cinfo->cur_comp_info[ci];
-    dctbl = compptr->dc_tbl_no;
-    actbl = compptr->ac_tbl_no;
-    if (! did_dc[dctbl]) {
-      htblptr = & cinfo->dc_huff_tbl_ptrs[dctbl];
-      if (*htblptr == NULL)
-	*htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
-      jpeg_gen_optimal_table(cinfo, *htblptr, entropy->dc_count_ptrs[dctbl]);
-      did_dc[dctbl] = TRUE;
-    }
-    if (! did_ac[actbl]) {
-      htblptr = & cinfo->ac_huff_tbl_ptrs[actbl];
-      if (*htblptr == NULL)
-	*htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
-      jpeg_gen_optimal_table(cinfo, *htblptr, entropy->ac_count_ptrs[actbl]);
-      did_ac[actbl] = TRUE;
-    }
-  }
-}
-
-
-#endif /* ENTROPY_OPT_SUPPORTED */
-
-
-/*
- * Module initialization routine for Huffman entropy encoding.
- */
-
-GLOBAL(void)
-jinit_huff_encoder (j_compress_ptr cinfo)
-{
-  huff_entropy_ptr entropy;
-  int i;
-
-  entropy = (huff_entropy_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(huff_entropy_encoder));
-  cinfo->entropy = (struct jpeg_entropy_encoder *) entropy;
-  entropy->pub.start_pass = start_pass_huff;
-
-  /* Mark tables unallocated */
-  for (i = 0; i < NUM_HUFF_TBLS; i++) {
-    entropy->dc_derived_tbls[i] = entropy->ac_derived_tbls[i] = NULL;
-#ifdef ENTROPY_OPT_SUPPORTED
-    entropy->dc_count_ptrs[i] = entropy->ac_count_ptrs[i] = NULL;
-#endif
-  }
-}

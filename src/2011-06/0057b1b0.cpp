@@ -1,456 +1,220 @@
 // from server: 100% by auto
+// roc 2011-06 0057b1b0  unit: seg_00570000  size: 649 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0057b1b0
+//
+// 0057b1b0  83ec2c               sub esp, 0x2c
+// 0057b1b3  53                   push ebx
+// 0057b1b4  55                   push ebp
+// 0057b1b5  56                   push esi
+// 0057b1b6  8b74243c             mov esi, dword ptr [esp + 0x3c]
+// 0057b1ba  8b86e0000000         mov eax, dword ptr [esi + 0xe0]
+// 0057b1c0  8bae48010000         mov ebp, dword ptr [esi + 0x148]
+// 0057b1c6  8b8ef8000000         mov ecx, dword ptr [esi + 0xf8]
+// 0057b1cc  48                   dec eax
+// 0057b1cd  89442430             mov dword ptr [esp + 0x30], eax
+// 0057b1d1  8b4510               mov eax, dword ptr [ebp + 0x10]
+// 0057b1d4  49                   dec ecx
+// 0057b1d5  3b4514               cmp eax, dword ptr [ebp + 0x14]
+// 0057b1d8  57                   push edi
+// 0057b1d9  894c2420             mov dword ptr [esp + 0x20], ecx
+// 0057b1dd  89442410             mov dword ptr [esp + 0x10], eax
+// 0057b1e1  7c33                 jl 0x57b216
+// 0057b1e3  ff4508               inc dword ptr [ebp + 8]
+// 0057b1e6  83bee400000001       cmp dword ptr [esi + 0xe4], 1
+// 0057b1ed  8b8648010000         mov eax, dword ptr [esi + 0x148]
+// 0057b1f3  0f8e11020000         jle 0x57b40a
+// 0057b1f9  5f                   pop edi
+// 0057b1fa  5e                   pop esi
+// 0057b1fb  33c9                 xor ecx, ecx
+// 0057b1fd  5d                   pop ebp
+// 0057b1fe  c7401401000000       mov dword ptr [eax + 0x14], 1
+// 0057b205  89480c               mov dword ptr [eax + 0xc], ecx
+// 0057b208  894810               mov dword ptr [eax + 0x10], ecx
+// 0057b20b  b001                 mov al, 1
+// 0057b20d  5b                   pop ebx
+// 0057b20e  83c42c               add esp, 0x2c
+// 0057b211  c3                   ret 
+// 0057b212  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0057b216  8b5d0c               mov ebx, dword ptr [ebp + 0xc]
+// 0057b219  895c2414             mov dword ptr [esp + 0x14], ebx
+// 0057b21d  3bd9                 cmp ebx, ecx
+// 0057b21f  0f87b7010000         ja 0x57b3dc
+// 0057b225  eb09                 jmp 0x57b230
+// 0057b227  8da42400000000       lea esp, [esp]
+// 0057b22e  8bff                 mov edi, edi
+// 0057b230  33ff                 xor edi, edi
+// 0057b232  39bee4000000         cmp dword ptr [esi + 0xe4], edi
+// 0057b238  897c242c             mov dword ptr [esp + 0x2c], edi
+// 0057b23c  0f8e70010000         jle 0x57b3b2
+// 0057b242  81c6e8000000         add esi, 0xe8
+// 0057b248  89742430             mov dword ptr [esp + 0x30], esi
+// 0057b24c  8d642400             lea esp, [esp]
+// 0057b250  8b36                 mov esi, dword ptr [esi]
+// 0057b252  3b5c2420             cmp ebx, dword ptr [esp + 0x20]
+// 0057b256  7305                 jae 0x57b25d
+// 0057b258  8b5e34               mov ebx, dword ptr [esi + 0x34]
+// 0057b25b  eb03                 jmp 0x57b260
+// 0057b25d  8b5e44               mov ebx, dword ptr [esi + 0x44]
+// 0057b260  8b4640               mov eax, dword ptr [esi + 0x40]
+// 0057b263  0faf442414           imul eax, dword ptr [esp + 0x14]
+// 0057b268  89442438             mov dword ptr [esp + 0x38], eax
+// 0057b26c  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0057b270  03c0                 add eax, eax
+// 0057b272  03c0                 add eax, eax
+// 0057b274  03c0                 add eax, eax
+// 0057b276  837e3800             cmp dword ptr [esi + 0x38], 0
+// 0057b27a  895c2424             mov dword ptr [esp + 0x24], ebx
+// 0057b27e  89442418             mov dword ptr [esp + 0x18], eax
+// 0057b282  c744241c00000000     mov dword ptr [esp + 0x1c], 0
+// 0057b28a  0f8ef8000000         jle 0x57b388
+// 0057b290  8b4634               mov eax, dword ptr [esi + 0x34]
+// 0057b293  8b4c2434             mov ecx, dword ptr [esp + 0x34]
+// 0057b297  394d08               cmp dword ptr [ebp + 8], ecx
+// 0057b29a  7252                 jb 0x57b2ee
+// 0057b29c  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 0057b2a0  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 0057b2a4  03d1                 add edx, ecx
+// 0057b2a6  3b5648               cmp edx, dword ptr [esi + 0x48]
+// 0057b2a9  7c43                 jl 0x57b2ee
+// 0057b2ab  8b54bd18             mov edx, dword ptr [ebp + edi*4 + 0x18]
+// 0057b2af  c1e007               shl eax, 7
+// 0057b2b2  50                   push eax
+// 0057b2b3  52                   push edx
+// 0057b2b4  e887cbfeff           call 0x567e40
+// 0057b2b9  33c0                 xor eax, eax
+// 0057b2bb  83c408               add esp, 8
+// 0057b2be  394634               cmp dword ptr [esi + 0x34], eax
+// 0057b2c1  0f8ea5000000         jle 0x57b36c
+// 0057b2c7  8d4cbd18             lea ecx, [ebp + edi*4 + 0x18]
+// 0057b2cb  eb03                 jmp 0x57b2d0
+// 0057b2cd  8d4900               lea ecx, [ecx]
+// 0057b2d0  8b54bd14             mov edx, dword ptr [ebp + edi*4 + 0x14]
+// 0057b2d4  8b19                 mov ebx, dword ptr [ecx]
+// 0057b2d6  668b12               mov dx, word ptr [edx]
+// 0057b2d9  40                   inc eax
+// 0057b2da  668913               mov word ptr [ebx], dx
+// 0057b2dd  83c104               add ecx, 4
+// 0057b2e0  3b4634               cmp eax, dword ptr [esi + 0x34]
+// 0057b2e3  7ceb                 jl 0x57b2d0
+// 0057b2e5  8b5c2424             mov ebx, dword ptr [esp + 0x24]
+// 0057b2e9  e97e000000           jmp 0x57b36c
+// 0057b2ee  8b442440             mov eax, dword ptr [esp + 0x40]
+// 0057b2f2  8b8858010000         mov ecx, dword ptr [eax + 0x158]
+// 0057b2f8  8b542438             mov edx, dword ptr [esp + 0x38]
+// 0057b2fc  8b442418             mov eax, dword ptr [esp + 0x18]
+// 0057b300  53                   push ebx
+// 0057b301  52                   push edx
+// 0057b302  8b54bd18             mov edx, dword ptr [ebp + edi*4 + 0x18]
+// 0057b306  50                   push eax
+// 0057b307  8b4604               mov eax, dword ptr [esi + 4]
+// 0057b30a  52                   push edx
+// 0057b30b  8b542454             mov edx, dword ptr [esp + 0x54]
+// 0057b30f  8b0482               mov eax, dword ptr [edx + eax*4]
+// 0057b312  8b542450             mov edx, dword ptr [esp + 0x50]
+// 0057b316  50                   push eax
+// 0057b317  8b4104               mov eax, dword ptr [ecx + 4]
+// 0057b31a  56                   push esi
+// 0057b31b  52                   push edx
+// 0057b31c  ffd0                 call eax
+// 0057b31e  8b4634               mov eax, dword ptr [esi + 0x34]
+// 0057b321  83c41c               add esp, 0x1c
+// 0057b324  3bd8                 cmp ebx, eax
+// 0057b326  7d44                 jge 0x57b36c
+// 0057b328  2bc3                 sub eax, ebx
+// 0057b32a  c1e007               shl eax, 7
+// 0057b32d  8d0c3b               lea ecx, [ebx + edi]
+// 0057b330  8b548d18             mov edx, dword ptr [ebp + ecx*4 + 0x18]
+// 0057b334  50                   push eax
+// 0057b335  52                   push edx
+// 0057b336  e805cbfeff           call 0x567e40
+// 0057b33b  83c408               add esp, 8
+// 0057b33e  3b5e34               cmp ebx, dword ptr [esi + 0x34]
+// 0057b341  895c2428             mov dword ptr [esp + 0x28], ebx
+// 0057b345  7d25                 jge 0x57b36c
+// 0057b347  8d043b               lea eax, [ebx + edi]
+// 0057b34a  8d448518             lea eax, [ebp + eax*4 + 0x18]
+// 0057b34e  8bff                 mov edi, edi
+// 0057b350  8b48fc               mov ecx, dword ptr [eax - 4]
+// 0057b353  668b09               mov cx, word ptr [ecx]
+// 0057b356  8b10                 mov edx, dword ptr [eax]
+// 0057b358  66890a               mov word ptr [edx], cx
+// 0057b35b  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 0057b35f  41                   inc ecx
+// 0057b360  83c004               add eax, 4
+// 0057b363  3b4e34               cmp ecx, dword ptr [esi + 0x34]
+// 0057b366  894c2428             mov dword ptr [esp + 0x28], ecx
+// 0057b36a  7ce4                 jl 0x57b350
+// 0057b36c  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 0057b370  8b4634               mov eax, dword ptr [esi + 0x34]
+// 0057b373  8344241808           add dword ptr [esp + 0x18], 8
+// 0057b378  41                   inc ecx
+// 0057b379  03f8                 add edi, eax
+// 0057b37b  3b4e38               cmp ecx, dword ptr [esi + 0x38]
+// 0057b37e  894c241c             mov dword ptr [esp + 0x1c], ecx
+// 0057b382  0f8c0bffffff         jl 0x57b293
+// 0057b388  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 0057b38c  8b742430             mov esi, dword ptr [esp + 0x30]
+// 0057b390  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0057b394  8b5c2414             mov ebx, dword ptr [esp + 0x14]
+// 0057b398  40                   inc eax
+// 0057b399  83c604               add esi, 4
+// 0057b39c  3b82e4000000         cmp eax, dword ptr [edx + 0xe4]
+// 0057b3a2  8944242c             mov dword ptr [esp + 0x2c], eax
+// 0057b3a6  89742430             mov dword ptr [esp + 0x30], esi
+// 0057b3aa  0f8ca0feffff         jl 0x57b250
+// 0057b3b0  8bf2                 mov esi, edx
+// 0057b3b2  8b8e5c010000         mov ecx, dword ptr [esi + 0x15c]
+// 0057b3b8  8b5104               mov edx, dword ptr [ecx + 4]
+// 0057b3bb  8d4518               lea eax, [ebp + 0x18]
+// 0057b3be  50                   push eax
+// 0057b3bf  56                   push esi
+// 0057b3c0  ffd2                 call edx
+// 0057b3c2  83c408               add esp, 8
+// 0057b3c5  84c0                 test al, al
+// 0057b3c7  742d                 je 0x57b3f6
+// 0057b3c9  43                   inc ebx
+// 0057b3ca  895c2414             mov dword ptr [esp + 0x14], ebx
+// 0057b3ce  3b5c2420             cmp ebx, dword ptr [esp + 0x20]
+// 0057b3d2  0f8658feffff         jbe 0x57b230
+// 0057b3d8  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0057b3dc  40                   inc eax
+// 0057b3dd  c7450c00000000       mov dword ptr [ebp + 0xc], 0
+// 0057b3e4  3b4514               cmp eax, dword ptr [ebp + 0x14]
+// 0057b3e7  89442410             mov dword ptr [esp + 0x10], eax
+// 0057b3eb  0f8c21feffff         jl 0x57b212
+// 0057b3f1  e9edfdffff           jmp 0x57b1e3
+// 0057b3f6  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0057b3fa  5f                   pop edi
+// 0057b3fb  5e                   pop esi
+// 0057b3fc  894510               mov dword ptr [ebp + 0x10], eax
+// 0057b3ff  895d0c               mov dword ptr [ebp + 0xc], ebx
+// 0057b402  5d                   pop ebp
+// 0057b403  32c0                 xor al, al
+// 0057b405  5b                   pop ebx
+// 0057b406  83c42c               add esp, 0x2c
+// 0057b409  c3                   ret 
+// 0057b40a  8b8ee0000000         mov ecx, dword ptr [esi + 0xe0]
+// 0057b410  8b96e8000000         mov edx, dword ptr [esi + 0xe8]
+// 0057b416  49                   dec ecx
+// 0057b417  394808               cmp dword ptr [eax + 8], ecx
+// 0057b41a  7305                 jae 0x57b421
+// 0057b41c  8b4a0c               mov ecx, dword ptr [edx + 0xc]
+// 0057b41f  eb03                 jmp 0x57b424
+// 0057b421  8b4a48               mov ecx, dword ptr [edx + 0x48]
+// 0057b424  5f                   pop edi
+// 0057b425  894814               mov dword ptr [eax + 0x14], ecx
+// 0057b428  5e                   pop esi
+// 0057b429  33c9                 xor ecx, ecx
+// 0057b42b  5d                   pop ebp
+// 0057b42c  89480c               mov dword ptr [eax + 0xc], ecx
+// 0057b42f  894810               mov dword ptr [eax + 0x10], ecx
+// 0057b432  b001                 mov al, 1
+// 0057b434  5b                   pop ebx
+// 0057b435  83c42c               add esp, 0x2c
+// 0057b438  c3                   ret 
+// library jpeg-6b/jccoefct.c (function _compress_data)
+
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jccoefct.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jccoefct.c
- *
- * Copyright (C) 1994-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains the coefficient buffer controller for compression.
- * This controller is the top level of the JPEG compressor proper.
- * The coefficient buffer lies between forward-DCT and entropy encoding steps.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-
-
-/* We use a full-image coefficient buffer when doing Huffman optimization,
- * and also for writing multiple-scan JPEG files.  In all cases, the DCT
- * step is run during the first pass, and subsequent passes need only read
- * the buffered coefficients.
- */
-#ifdef ENTROPY_OPT_SUPPORTED
-#define FULL_COEF_BUFFER_SUPPORTED
-#else
-#ifdef C_MULTISCAN_FILES_SUPPORTED
-#define FULL_COEF_BUFFER_SUPPORTED
-#endif
-#endif
-
-
-/* Private buffer controller object */
-
-typedef struct {
-  struct jpeg_c_coef_controller pub; /* public fields */
-
-  JDIMENSION iMCU_row_num;	/* iMCU row # within image */
-  JDIMENSION mcu_ctr;		/* counts MCUs processed in current row */
-  int MCU_vert_offset;		/* counts MCU rows within iMCU row */
-  int MCU_rows_per_iMCU_row;	/* number of such rows needed */
-
-  /* For single-pass compression, it's sufficient to buffer just one MCU
-   * (although this may prove a bit slow in practice).  We allocate a
-   * workspace of C_MAX_BLOCKS_IN_MCU coefficient blocks, and reuse it for each
-   * MCU constructed and sent.  (On 80x86, the workspace is FAR even though
-   * it's not really very big; this is to keep the module interfaces unchanged
-   * when a large coefficient buffer is necessary.)
-   * In multi-pass modes, this array points to the current MCU's blocks
-   * within the virtual arrays.
-   */
-  JBLOCKROW MCU_buffer[C_MAX_BLOCKS_IN_MCU];
-
-  /* In multi-pass modes, we need a virtual block array for each component. */
-  jvirt_barray_ptr whole_image[MAX_COMPONENTS];
-} my_coef_controller;
-
-typedef my_coef_controller * my_coef_ptr;
-
-
-/* Forward declarations */
-METHODDEF(boolean) compress_data
-    JPP((j_compress_ptr cinfo, JSAMPIMAGE input_buf));
-#ifdef FULL_COEF_BUFFER_SUPPORTED
-METHODDEF(boolean) compress_first_pass
-    JPP((j_compress_ptr cinfo, JSAMPIMAGE input_buf));
-METHODDEF(boolean) compress_output
-    JPP((j_compress_ptr cinfo, JSAMPIMAGE input_buf));
-#endif
-
-
-LOCAL(void)
-start_iMCU_row (j_compress_ptr cinfo)
-/* Reset within-iMCU-row counters for a new row */
-{
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
-
-  /* In an interleaved scan, an MCU row is the same as an iMCU row.
-   * In a noninterleaved scan, an iMCU row has v_samp_factor MCU rows.
-   * But at the bottom of the image, process only what's left.
-   */
-  if (cinfo->comps_in_scan > 1) {
-    coef->MCU_rows_per_iMCU_row = 1;
-  } else {
-    if (coef->iMCU_row_num < (cinfo->total_iMCU_rows-1))
-      coef->MCU_rows_per_iMCU_row = cinfo->cur_comp_info[0]->v_samp_factor;
-    else
-      coef->MCU_rows_per_iMCU_row = cinfo->cur_comp_info[0]->last_row_height;
-  }
-
-  coef->mcu_ctr = 0;
-  coef->MCU_vert_offset = 0;
-}
-
-
-/*
- * Initialize for a processing pass.
- */
-
-METHODDEF(void)
-start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
-{
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
-
-  coef->iMCU_row_num = 0;
-  start_iMCU_row(cinfo);
-
-  switch (pass_mode) {
-  case JBUF_PASS_THRU:
-    if (coef->whole_image[0] != NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    coef->pub.compress_data = compress_data;
-    break;
-#ifdef FULL_COEF_BUFFER_SUPPORTED
-  case JBUF_SAVE_AND_PASS:
-    if (coef->whole_image[0] == NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    coef->pub.compress_data = compress_first_pass;
-    break;
-  case JBUF_CRANK_DEST:
-    if (coef->whole_image[0] == NULL)
-      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    coef->pub.compress_data = compress_output;
-    break;
-#endif
-  default:
-    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-    break;
-  }
-}
-
-
-/*
- * Process some data in the single-pass case.
- * We process the equivalent of one fully interleaved MCU row ("iMCU" row)
- * per call, ie, v_samp_factor block rows for each component in the image.
- * Returns TRUE if the iMCU row is completed, FALSE if suspended.
- *
- * NB: input_buf contains a plane for each component in image,
- * which we index according to the component's SOF position.
- */
-
-METHODDEF(boolean)
-compress_data (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
-{
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
-  JDIMENSION MCU_col_num;	/* index of current MCU within row */
-  JDIMENSION last_MCU_col = cinfo->MCUs_per_row - 1;
-  JDIMENSION last_iMCU_row = cinfo->total_iMCU_rows - 1;
-  int blkn, bi, ci, yindex, yoffset, blockcnt;
-  JDIMENSION ypos, xpos;
-  jpeg_component_info *compptr;
-
-  /* Loop to write as much as one whole iMCU row */
-  for (yoffset = coef->MCU_vert_offset; yoffset < coef->MCU_rows_per_iMCU_row;
-       yoffset++) {
-    for (MCU_col_num = coef->mcu_ctr; MCU_col_num <= last_MCU_col;
-	 MCU_col_num++) {
-      /* Determine where data comes from in input_buf and do the DCT thing.
-       * Each call on forward_DCT processes a horizontal row of DCT blocks
-       * as wide as an MCU; we rely on having allocated the MCU_buffer[] blocks
-       * sequentially.  Dummy blocks at the right or bottom edge are filled in
-       * specially.  The data in them does not matter for image reconstruction,
-       * so we fill them with values that will encode to the smallest amount of
-       * data, viz: all zeroes in the AC entries, DC entries equal to previous
-       * block's DC value.  (Thanks to Thomas Kinsman for this idea.)
-       */
-      blkn = 0;
-      for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-	compptr = cinfo->cur_comp_info[ci];
-	blockcnt = (MCU_col_num < last_MCU_col) ? compptr->MCU_width
-						: compptr->last_col_width;
-	xpos = MCU_col_num * compptr->MCU_sample_width;
-	ypos = yoffset * DCTSIZE; /* ypos == (yoffset+yindex) * DCTSIZE */
-	for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
-	  if (coef->iMCU_row_num < last_iMCU_row ||
-	      yoffset+yindex < compptr->last_row_height) {
-	    (*cinfo->fdct->forward_DCT) (cinfo, compptr,
-					 input_buf[compptr->component_index],
-					 coef->MCU_buffer[blkn],
-					 ypos, xpos, (JDIMENSION) blockcnt);
-	    if (blockcnt < compptr->MCU_width) {
-	      /* Create some dummy blocks at the right edge of the image. */
-	      jzero_far((void FAR *) coef->MCU_buffer[blkn + blockcnt],
-			(compptr->MCU_width - blockcnt) * SIZEOF(JBLOCK));
-	      for (bi = blockcnt; bi < compptr->MCU_width; bi++) {
-		coef->MCU_buffer[blkn+bi][0][0] = coef->MCU_buffer[blkn+bi-1][0][0];
-	      }
-	    }
-	  } else {
-	    /* Create a row of dummy blocks at the bottom of the image. */
-	    jzero_far((void FAR *) coef->MCU_buffer[blkn],
-		      compptr->MCU_width * SIZEOF(JBLOCK));
-	    for (bi = 0; bi < compptr->MCU_width; bi++) {
-	      coef->MCU_buffer[blkn+bi][0][0] = coef->MCU_buffer[blkn-1][0][0];
-	    }
-	  }
-	  blkn += compptr->MCU_width;
-	  ypos += DCTSIZE;
-	}
-      }
-      /* Try to write the MCU.  In event of a suspension failure, we will
-       * re-DCT the MCU on restart (a bit inefficient, could be fixed...)
-       */
-      if (! (*cinfo->entropy->encode_mcu) (cinfo, coef->MCU_buffer)) {
-	/* Suspension forced; update state counters and exit */
-	coef->MCU_vert_offset = yoffset;
-	coef->mcu_ctr = MCU_col_num;
-	return FALSE;
-      }
-    }
-    /* Completed an MCU row, but perhaps not an iMCU row */
-    coef->mcu_ctr = 0;
-  }
-  /* Completed the iMCU row, advance counters for next one */
-  coef->iMCU_row_num++;
-  start_iMCU_row(cinfo);
-  return TRUE;
-}
-
-
-#ifdef FULL_COEF_BUFFER_SUPPORTED
-
-/*
- * Process some data in the first pass of a multi-pass case.
- * We process the equivalent of one fully interleaved MCU row ("iMCU" row)
- * per call, ie, v_samp_factor block rows for each component in the image.
- * This amount of data is read from the source buffer, DCT'd and quantized,
- * and saved into the virtual arrays.  We also generate suitable dummy blocks
- * as needed at the right and lower edges.  (The dummy blocks are constructed
- * in the virtual arrays, which have been padded appropriately.)  This makes
- * it possible for subsequent passes not to worry about real vs. dummy blocks.
- *
- * We must also emit the data to the entropy encoder.  This is conveniently
- * done by calling compress_output() after we've loaded the current strip
- * of the virtual arrays.
- *
- * NB: input_buf contains a plane for each component in image.  All
- * components are DCT'd and loaded into the virtual arrays in this pass.
- * However, it may be that only a subset of the components are emitted to
- * the entropy encoder during this first pass; be careful about looking
- * at the scan-dependent variables (MCU dimensions, etc).
- */
-
-METHODDEF(boolean)
-compress_first_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
-{
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
-  JDIMENSION last_iMCU_row = cinfo->total_iMCU_rows - 1;
-  JDIMENSION blocks_across, MCUs_across, MCUindex;
-  int bi, ci, h_samp_factor, block_row, block_rows, ndummy;
-  JCOEF lastDC;
-  jpeg_component_info *compptr;
-  JBLOCKARRAY buffer;
-  JBLOCKROW thisblockrow, lastblockrow;
-
-  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-       ci++, compptr++) {
-    /* Align the virtual buffer for this component. */
-    buffer = (*cinfo->mem->access_virt_barray)
-      ((j_common_ptr) cinfo, coef->whole_image[ci],
-       coef->iMCU_row_num * compptr->v_samp_factor,
-       (JDIMENSION) compptr->v_samp_factor, TRUE);
-    /* Count non-dummy DCT block rows in this iMCU row. */
-    if (coef->iMCU_row_num < last_iMCU_row)
-      block_rows = compptr->v_samp_factor;
-    else {
-      /* NB: can't use last_row_height here, since may not be set! */
-      block_rows = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
-      if (block_rows == 0) block_rows = compptr->v_samp_factor;
-    }
-    blocks_across = compptr->width_in_blocks;
-    h_samp_factor = compptr->h_samp_factor;
-    /* Count number of dummy blocks to be added at the right margin. */
-    ndummy = (int) (blocks_across % h_samp_factor);
-    if (ndummy > 0)
-      ndummy = h_samp_factor - ndummy;
-    /* Perform DCT for all non-dummy blocks in this iMCU row.  Each call
-     * on forward_DCT processes a complete horizontal row of DCT blocks.
-     */
-    for (block_row = 0; block_row < block_rows; block_row++) {
-      thisblockrow = buffer[block_row];
-      (*cinfo->fdct->forward_DCT) (cinfo, compptr,
-				   input_buf[ci], thisblockrow,
-				   (JDIMENSION) (block_row * DCTSIZE),
-				   (JDIMENSION) 0, blocks_across);
-      if (ndummy > 0) {
-	/* Create dummy blocks at the right edge of the image. */
-	thisblockrow += blocks_across; /* => first dummy block */
-	jzero_far((void FAR *) thisblockrow, ndummy * SIZEOF(JBLOCK));
-	lastDC = thisblockrow[-1][0];
-	for (bi = 0; bi < ndummy; bi++) {
-	  thisblockrow[bi][0] = lastDC;
-	}
-      }
-    }
-    /* If at end of image, create dummy block rows as needed.
-     * The tricky part here is that within each MCU, we want the DC values
-     * of the dummy blocks to match the last real block's DC value.
-     * This squeezes a few more bytes out of the resulting file...
-     */
-    if (coef->iMCU_row_num == last_iMCU_row) {
-      blocks_across += ndummy;	/* include lower right corner */
-      MCUs_across = blocks_across / h_samp_factor;
-      for (block_row = block_rows; block_row < compptr->v_samp_factor;
-	   block_row++) {
-	thisblockrow = buffer[block_row];
-	lastblockrow = buffer[block_row-1];
-	jzero_far((void FAR *) thisblockrow,
-		  (size_t) (blocks_across * SIZEOF(JBLOCK)));
-	for (MCUindex = 0; MCUindex < MCUs_across; MCUindex++) {
-	  lastDC = lastblockrow[h_samp_factor-1][0];
-	  for (bi = 0; bi < h_samp_factor; bi++) {
-	    thisblockrow[bi][0] = lastDC;
-	  }
-	  thisblockrow += h_samp_factor; /* advance to next MCU in row */
-	  lastblockrow += h_samp_factor;
-	}
-      }
-    }
-  }
-  /* NB: compress_output will increment iMCU_row_num if successful.
-   * A suspension return will result in redoing all the work above next time.
-   */
-
-  /* Emit data to the entropy encoder, sharing code with subsequent passes */
-  return compress_output(cinfo, input_buf);
-}
-
-
-/*
- * Process some data in subsequent passes of a multi-pass case.
- * We process the equivalent of one fully interleaved MCU row ("iMCU" row)
- * per call, ie, v_samp_factor block rows for each component in the scan.
- * The data is obtained from the virtual arrays and fed to the entropy coder.
- * Returns TRUE if the iMCU row is completed, FALSE if suspended.
- *
- * NB: input_buf is ignored; it is likely to be a NULL pointer.
- */
-
-METHODDEF(boolean)
-compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
-{
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
-  JDIMENSION MCU_col_num;	/* index of current MCU within row */
-  int blkn, ci, xindex, yindex, yoffset;
-  JDIMENSION start_col;
-  JBLOCKARRAY buffer[MAX_COMPS_IN_SCAN];
-  JBLOCKROW buffer_ptr;
-  jpeg_component_info *compptr;
-
-  /* Align the virtual buffers for the components used in this scan.
-   * NB: during first pass, this is safe only because the buffers will
-   * already be aligned properly, so jmemmgr.c won't need to do any I/O.
-   */
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    compptr = cinfo->cur_comp_info[ci];
-    buffer[ci] = (*cinfo->mem->access_virt_barray)
-      ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
-       coef->iMCU_row_num * compptr->v_samp_factor,
-       (JDIMENSION) compptr->v_samp_factor, FALSE);
-  }
-
-  /* Loop to process one whole iMCU row */
-  for (yoffset = coef->MCU_vert_offset; yoffset < coef->MCU_rows_per_iMCU_row;
-       yoffset++) {
-    for (MCU_col_num = coef->mcu_ctr; MCU_col_num < cinfo->MCUs_per_row;
-	 MCU_col_num++) {
-      /* Construct list of pointers to DCT blocks belonging to this MCU */
-      blkn = 0;			/* index of current DCT block within MCU */
-      for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-	compptr = cinfo->cur_comp_info[ci];
-	start_col = MCU_col_num * compptr->MCU_width;
-	for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
-	  buffer_ptr = buffer[ci][yindex+yoffset] + start_col;
-	  for (xindex = 0; xindex < compptr->MCU_width; xindex++) {
-	    coef->MCU_buffer[blkn++] = buffer_ptr++;
-	  }
-	}
-      }
-      /* Try to write the MCU. */
-      if (! (*cinfo->entropy->encode_mcu) (cinfo, coef->MCU_buffer)) {
-	/* Suspension forced; update state counters and exit */
-	coef->MCU_vert_offset = yoffset;
-	coef->mcu_ctr = MCU_col_num;
-	return FALSE;
-      }
-    }
-    /* Completed an MCU row, but perhaps not an iMCU row */
-    coef->mcu_ctr = 0;
-  }
-  /* Completed the iMCU row, advance counters for next one */
-  coef->iMCU_row_num++;
-  start_iMCU_row(cinfo);
-  return TRUE;
-}
-
-#endif /* FULL_COEF_BUFFER_SUPPORTED */
-
-
-/*
- * Initialize coefficient buffer controller.
- */
-
-GLOBAL(void)
-jinit_c_coef_controller (j_compress_ptr cinfo, boolean need_full_buffer)
-{
-  my_coef_ptr coef;
-
-  coef = (my_coef_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(my_coef_controller));
-  cinfo->coef = (struct jpeg_c_coef_controller *) coef;
-  coef->pub.start_pass = start_pass_coef;
-
-  /* Create the coefficient buffer. */
-  if (need_full_buffer) {
-#ifdef FULL_COEF_BUFFER_SUPPORTED
-    /* Allocate a full-image virtual array for each component, */
-    /* padded to a multiple of samp_factor DCT blocks in each direction. */
-    int ci;
-    jpeg_component_info *compptr;
-
-    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
-	 ci++, compptr++) {
-      coef->whole_image[ci] = (*cinfo->mem->request_virt_barray)
-	((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
-	 (JDIMENSION) jround_up((long) compptr->width_in_blocks,
-				(long) compptr->h_samp_factor),
-	 (JDIMENSION) jround_up((long) compptr->height_in_blocks,
-				(long) compptr->v_samp_factor),
-	 (JDIMENSION) compptr->v_samp_factor);
-    }
-#else
-    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
-#endif
-  } else {
-    /* We only need a single-MCU buffer. */
-    JBLOCKROW buffer;
-    int i;
-
-    buffer = (JBLOCKROW)
-      (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				  C_MAX_BLOCKS_IN_MCU * SIZEOF(JBLOCK));
-    for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
-      coef->MCU_buffer[i] = buffer + i;
-    }
-    coef->whole_image[0] = NULL; /* flag for no virtual arrays */
-  }
-}

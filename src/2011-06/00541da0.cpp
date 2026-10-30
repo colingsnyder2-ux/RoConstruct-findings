@@ -1,476 +1,92 @@
 // from server: 100% by auto
+// roc 2011-06 00541da0  unit: G3D::Sphere  size: 346 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 00541da0
+//
+// 00541da0  83ec1c               sub esp, 0x1c
+// 00541da3  56                   push esi
+// 00541da4  8b442428             mov eax, dword ptr [esp + 0x28]
+// 00541da8  f30f105810           movss xmm3, dword ptr [eax + 0x10]
+// 00541dad  f30f104004           movss xmm0, dword ptr [eax + 4]
+// 00541db2  f30f104808           movss xmm1, dword ptr [eax + 8]
+// 00541db7  f30f59cb             mulss xmm1, xmm3
+// 00541dbb  f30f10500c           movss xmm2, dword ptr [eax + 0xc]
+// 00541dc0  f30f106104           movss xmm4, dword ptr [ecx + 4]
+// 00541dc5  f30f59c3             mulss xmm0, xmm3
+// 00541dc9  f30f59d3             mulss xmm2, xmm3
+// 00541dcd  f30f105908           movss xmm3, dword ptr [ecx + 8]
+// 00541dd2  f30f59da             mulss xmm3, xmm2
+// 00541dd6  f30f59e1             mulss xmm4, xmm1
+// 00541dda  f30f58dc             addss xmm3, xmm4
+// 00541dde  f30f1021             movss xmm4, dword ptr [ecx]
+// 00541de2  f30f59e0             mulss xmm4, xmm0
+// 00541de6  f30f58dc             addss xmm3, xmm4
+// 00541dea  f30f585924           addss xmm3, dword ptr [ecx + 0x24]
+// 00541def  f30f115c2408         movss dword ptr [esp + 8], xmm3
+// 00541df5  f30f105910           movss xmm3, dword ptr [ecx + 0x10]
+// 00541dfa  f30f59d9             mulss xmm3, xmm1
+// 00541dfe  0f28e0               movaps xmm4, xmm0
+// 00541e01  f30f59610c           mulss xmm4, dword ptr [ecx + 0xc]
+// 00541e06  f30f58dc             addss xmm3, xmm4
+// 00541e0a  0f28e2               movaps xmm4, xmm2
+// 00541e0d  f30f596114           mulss xmm4, dword ptr [ecx + 0x14]
+// 00541e12  f30f58dc             addss xmm3, xmm4
+// 00541e16  f30f585928           addss xmm3, dword ptr [ecx + 0x28]
+// 00541e1b  f30f106104           movss xmm4, dword ptr [ecx + 4]
+// 00541e20  f30f115c240c         movss dword ptr [esp + 0xc], xmm3
+// 00541e26  f30f10591c           movss xmm3, dword ptr [ecx + 0x1c]
+// 00541e2b  f30f59d9             mulss xmm3, xmm1
+// 00541e2f  f30f104918           movss xmm1, dword ptr [ecx + 0x18]
+// 00541e34  f30f59c8             mulss xmm1, xmm0
+// 00541e38  f30f104120           movss xmm0, dword ptr [ecx + 0x20]
+// 00541e3d  f30f58d9             addss xmm3, xmm1
+// 00541e41  f30f104808           movss xmm1, dword ptr [eax + 8]
+// 00541e46  f30f59e1             mulss xmm4, xmm1
+// 00541e4a  f30f59c2             mulss xmm0, xmm2
+// 00541e4e  f30f105004           movss xmm2, dword ptr [eax + 4]
+// 00541e53  f30f58d8             addss xmm3, xmm0
+// 00541e57  f30f58592c           addss xmm3, dword ptr [ecx + 0x2c]
+// 00541e5c  f30f10400c           movss xmm0, dword ptr [eax + 0xc]
+// 00541e61  f30f115c2410         movss dword ptr [esp + 0x10], xmm3
+// 00541e67  0f28da               movaps xmm3, xmm2
+// 00541e6a  f30f5919             mulss xmm3, dword ptr [ecx]
+// 00541e6e  f30f58dc             addss xmm3, xmm4
+// 00541e72  f30f106108           movss xmm4, dword ptr [ecx + 8]
+// 00541e77  f30f59e0             mulss xmm4, xmm0
+// 00541e7b  f30f58dc             addss xmm3, xmm4
+// 00541e7f  f30f115c2414         movss dword ptr [esp + 0x14], xmm3
+// 00541e85  0f28d9               movaps xmm3, xmm1
+// 00541e88  f30f595910           mulss xmm3, dword ptr [ecx + 0x10]
+// 00541e8d  0f28e2               movaps xmm4, xmm2
+// 00541e90  f30f59610c           mulss xmm4, dword ptr [ecx + 0xc]
+// 00541e95  f30f58dc             addss xmm3, xmm4
+// 00541e99  0f28e0               movaps xmm4, xmm0
+// 00541e9c  f30f596114           mulss xmm4, dword ptr [ecx + 0x14]
+// 00541ea1  f30f58dc             addss xmm3, xmm4
+// 00541ea5  f30f115c2418         movss dword ptr [esp + 0x18], xmm3
+// 00541eab  f30f10591c           movss xmm3, dword ptr [ecx + 0x1c]
+// 00541eb0  f30f59d9             mulss xmm3, xmm1
+// 00541eb4  f30f104918           movss xmm1, dword ptr [ecx + 0x18]
+// 00541eb9  f30f59ca             mulss xmm1, xmm2
+// 00541ebd  8b742424             mov esi, dword ptr [esp + 0x24]
+// 00541ec1  f30f58d9             addss xmm3, xmm1
+// 00541ec5  f30f104920           movss xmm1, dword ptr [ecx + 0x20]
+// 00541eca  8d442408             lea eax, [esp + 8]
+// 00541ece  50                   push eax
+// 00541ecf  8d4c2418             lea ecx, [esp + 0x18]
+// 00541ed3  f30f59c8             mulss xmm1, xmm0
+// 00541ed7  51                   push ecx
+// 00541ed8  f30f58d9             addss xmm3, xmm1
+// 00541edc  8bce                 mov ecx, esi
+// 00541ede  c744240c00000000     mov dword ptr [esp + 0xc], 0
+// 00541ee6  f30f115c2424         movss dword ptr [esp + 0x24], xmm3
+// 00541eec  e8ff050100           call 0x5524f0
+// 00541ef1  8bc6                 mov eax, esi
+// 00541ef3  5e                   pop esi
+// 00541ef4  83c41c               add esp, 0x1c
+// 00541ef7  c20800               ret 8
+// library rbx2016-g3d/CoordinateFrame.cpp (function ?toWorldSpace@CoordinateFrame@G3D@@QBE?AVPlane@2@ABV32@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d CoordinateFrame.cpp
-
-// Candidate translation unit (score above; library headers required).
-/**
- @file CoordinateFrame.cpp
-
- Coordinate frame class
-
- @maintainer Morgan McGuire, http://graphics.cs.williams.edu
-
- @created 2001-06-02
- @edited  2010-03-13
-
- Copyright 2000-2010, Morgan McGuire.
- All rights reserved.
-*/
-
-#include "G3D/platform.h"
-#include "G3D/CoordinateFrame.h"
-#include "G3D/Quat.h"
-#include "G3D/Matrix4.h"
-#include "G3D/Box.h"
-#include "G3D/AABox.h"
-#include "G3D/Sphere.h"
-#include "G3D/Triangle.h"
-#include "G3D/Ray.h"
-#include "G3D/Capsule.h"
-#include "G3D/Cylinder.h"
-#include "G3D/UprightFrame.h"
-#include "G3D/stringutils.h"
-#include "G3D/PhysicsFrame.h"
-#include "G3D/UprightFrame.h"
-
-
-namespace G3D {
-
-
-std::string CoordinateFrame::toXYZYPRDegreesString() const {
-    UprightFrame uframe(*this);
-    
-    return format("CFrame::fromXYZYPRDegrees(% 5.1ff, % 5.1ff, % 5.1ff, % 5.1ff, % 5.1ff, % 5.1ff)", 
-                  uframe.translation.x, uframe.translation.y, uframe.translation.z, 
-                  toDegrees(uframe.yaw), toDegrees(uframe.pitch), 0.0f);
-}
-
-CoordinateFrame CoordinateFrame::fromXYZYPRRadians(float x, float y, float z, float yaw, 
-                                                   float pitch, float roll) {
-    Matrix3 rotation = Matrix3::fromAxisAngleFast(Vector3::unitY(), yaw);
-    
-    rotation = Matrix3::fromAxisAngleFast(rotation.column(0), pitch) * rotation;
-    rotation = Matrix3::fromAxisAngleFast(rotation.column(2), roll) * rotation;
-
-    const Vector3 translation(x, y, z);
-    
-    return CoordinateFrame(rotation, translation);
-}
-
-
-void CoordinateFrame::getXYZYPRRadians(float& x, float& y, float& z, 
-                                       float& yaw, float& pitch, float& roll) const {
-    x = translation.x;
-    y = translation.y;
-    z = translation.z;
-    
-    const Vector3& look = lookVector();
-
-    if (abs(look.y) > 0.99f) {
-        // Looking nearly straight up or down
-
-        yaw   = G3D::pi() + atan2(look.x, look.z);
-        pitch = asin(look.y);
-        roll  = 0.0f;
-        
-    } else {
-
-        // Yaw cannot be affected by others, so pull it first
-        yaw = G3D::pi() + atan2(look.x, look.z);
-        
-        // Pitch is the elevation of the yaw vector
-        pitch = asin(look.y);
-        
-        Vector3 actualRight = rightVector();
-        Vector3 expectedRight = look.cross(Vector3::unitY());
-
-        roll = 0;//acos(actualRight.dot(expectedRight));  TODO
-    }
-}
-
-
-void CoordinateFrame::getXYZYPRDegrees(float& x, float& y, float& z, 
-                                       float& yaw, float& pitch, float& roll) const {
-    getXYZYPRRadians(x, y, z, yaw, pitch, roll);
-    yaw   = toDegrees(yaw);
-    pitch = toDegrees(pitch);
-    roll  = toDegrees(roll);
-}
-    
-
-CoordinateFrame CoordinateFrame::fromXYZYPRDegrees(float x, float y, float z, 
-                                                   float yaw, float pitch, float roll) {
-    return fromXYZYPRRadians(x, y, z, toRadians(yaw), toRadians(pitch), toRadians(roll));
-}
-
-
-Ray CoordinateFrame::lookRay() const {
-    return Ray::fromOriginAndDirection(translation, lookVector());
-}
-
-
-bool CoordinateFrame::fuzzyEq(const CoordinateFrame& other) const {
-
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (! G3D::fuzzyEq(other.rotation[r][c], rotation[r][c])) {
-                return false;
-            }
-        }
-        if (! G3D::fuzzyEq(translation[c], other.translation[c])) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-// ROBLOX
-bool CoordinateFrame::fuzzyEq(const CoordinateFrame& other, double absepsilon) const {
-
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (! G3D::fuzzyEq(other.rotation[r][c], rotation[r][c], absepsilon)) {
-                return false;
-            }
-        }
-        if (! G3D::fuzzyEq(translation[c], other.translation[c], absepsilon)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-// =============
-
-bool CoordinateFrame::fuzzyIsIdentity() const {
-    const Matrix3& I = Matrix3::identity();
-
-    for (int c = 0; c < 3; ++c) {
-        for (int r = 0; r < 3; ++r) {
-            if (fuzzyNe(I[r][c], rotation[r][c])) {
-                return false;
-            }
-        }
-        if (fuzzyNe(translation[c], 0)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-bool CoordinateFrame::isIdentity() const {
-    return 
-        (translation == Vector3::zero()) &&
-        (rotation == Matrix3::identity());
-}
-
-
-Matrix4 CoordinateFrame::toMatrix4() const {
-    return Matrix4(*this);
-}
-
-
-std::string CoordinateFrame::toXML() const {
-    return G3D::format(
-        "<COORDINATEFRAME>\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf\n</COORDINATEFRAME>\n",
-        rotation[0][0], rotation[0][1], rotation[0][2], translation.x,
-        rotation[1][0], rotation[1][1], rotation[1][2], translation.y,
-        rotation[2][0], rotation[2][1], rotation[2][2], translation.z,
-        0.0, 0.0, 0.0, 1.0);
-}
-
-//ROBLOX
-#if 0
-Plane CoordinateFrame::toObjectSpace(const Plane& p) const {
-    Vector3 N, P;
-    double d;
-    p.getEquation(N, d);
-    P = N * (float)d;
-    P = pointToObjectSpace(P);
-    N = normalToObjectSpace(N);
-    return Plane(N, P);
-}
-
-
-Plane CoordinateFrame::toWorldSpace(const Plane& p) const {
-    Vector3 N, P;
-    double d;
-    p.getEquation(N, d);
-    P = N * (float)d;
-    P = pointToWorldSpace(P);
-    N = normalToWorldSpace(N);
-    return Plane(N, P);
-}
-#else
-Plane CoordinateFrame::toObjectSpace(const Plane& p) const 
-{
-	return Plane(	normalToObjectSpace(p.normal()),
-					pointToObjectSpace(p.normal() * p.distance())	);
-}
-
-
-Plane CoordinateFrame::toWorldSpace(const Plane& p) const {
-	return Plane(	normalToWorldSpace(p.normal()), 
-					pointToWorldSpace(p.normal() * p.distance())	);
-}
-#endif
-// =============
-
-Triangle CoordinateFrame::toObjectSpace(const Triangle& t) const {
-    return Triangle(pointToObjectSpace(t.vertex(0)),
-        pointToObjectSpace(t.vertex(1)),
-        pointToObjectSpace(t.vertex(2)));
-}
-
-//ROBLOX
-Line CoordinateFrame::toWorldSpace(const Line& l) const {
-    return Line::fromPointAndUnitDirection(pointToWorldSpace(l.point()), vectorToWorldSpace(l.direction()));
-}
-//========
-
-Triangle CoordinateFrame::toWorldSpace(const Triangle& t) const {
-    return Triangle(pointToWorldSpace(t.vertex(0)),
-        pointToWorldSpace(t.vertex(1)),
-        pointToWorldSpace(t.vertex(2)));
-}
-
-
-Cylinder CoordinateFrame::toWorldSpace(const Cylinder& c) const {
-    return Cylinder(
-        pointToWorldSpace(c.point(0)), 
-        pointToWorldSpace(c.point(1)), 
-        c.radius());
-}
-
-
-Capsule CoordinateFrame::toWorldSpace(const Capsule& c) const {
-    return Capsule(
-        pointToWorldSpace(c.point(0)), 
-        pointToWorldSpace(c.point(1)), 
-        c.radius());
-}
-
-
-Box CoordinateFrame::toWorldSpace(const AABox& b) const {
-    Box b2(b);
-    return toWorldSpace(b2);
-}
-
-
-Box CoordinateFrame::toWorldSpace(const Box& b) const {
-    Box out(b);
-
-    for (int i = 0; i < 8; ++i) {
-        out._corner[i] = pointToWorldSpace(b._corner[i]);
-        debugAssert(! isNaN(out._corner[i].x));
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        out._axis[i] = vectorToWorldSpace(b._axis[i]);
-    }
-
-    out._center = pointToWorldSpace(b._center);
-
-    return out;
-}
-
-
-Box CoordinateFrame::toObjectSpace(const Box &b) const {
-    return inverse().toWorldSpace(b);
-}
-
-
-Box CoordinateFrame::toObjectSpace(const AABox& b) const {
-    return toObjectSpace(Box(b));
-}
-
-AABox CoordinateFrame::AABBtoWorldSpace(const AABox& b) const {
-	Vector3 center = b.center();
-	Vector3 halfSize = b.extent()*0.5f;
-
-	Vector3 newCenter = pointToWorldSpace(center);
-	Vector3 newHalfSize = Vector3(
-		fabs(rotation[0][0]) * halfSize[0] + fabs(rotation[0][1]) * halfSize[1] + fabs(rotation[0][2]) * halfSize[2],
-		fabs(rotation[1][0]) * halfSize[0] + fabs(rotation[1][1]) * halfSize[1] + fabs(rotation[1][2]) * halfSize[2],
-		fabs(rotation[2][0]) * halfSize[0] + fabs(rotation[2][1]) * halfSize[1] + fabs(rotation[2][2]) * halfSize[2]);
-
-	return AABox(newCenter - newHalfSize, newCenter + newHalfSize);
-}
-
-AABox CoordinateFrame::AABBtoObjectSpace(const AABox& b) const {
-	Vector3 center = b.center();
-	Vector3 halfSize = b.extent()*0.5f;
-
-	Vector3 newCenter = pointToObjectSpace(center);
-	Vector3 newHalfSize = Vector3(
-		fabs(rotation[0][0]) * halfSize[0] + fabs(rotation[1][0]) * halfSize[1] + fabs(rotation[2][0]) * halfSize[2],
-		fabs(rotation[0][1]) * halfSize[0] + fabs(rotation[1][1]) * halfSize[1] + fabs(rotation[2][1]) * halfSize[2],
-		fabs(rotation[0][2]) * halfSize[0] + fabs(rotation[1][2]) * halfSize[1] + fabs(rotation[2][2]) * halfSize[2]);
-
-	return AABox(newCenter - newHalfSize, newCenter + newHalfSize);
-}
-
-
-Sphere CoordinateFrame::toWorldSpace(const Sphere &b) const {
-    return Sphere(pointToWorldSpace(b.center), b.radius);
-}
-
-
-Sphere CoordinateFrame::toObjectSpace(const Sphere &b) const {
-    return Sphere(pointToObjectSpace(b.center), b.radius);
-}
-
-
-Ray CoordinateFrame::toWorldSpace(const Ray& r) const {
-    return Ray::fromOriginAndDirection(pointToWorldSpace(r.origin()), vectorToWorldSpace(r.direction()));
-}
-
-
-Ray CoordinateFrame::toObjectSpace(const Ray& r) const {
-    return Ray::fromOriginAndDirection(pointToObjectSpace(r.origin()), vectorToObjectSpace(r.direction()));
-}
-
-RBX::RbxRay CoordinateFrame::toObjectSpace(const RBX::RbxRay& r) const {
-	return RBX::RbxRay::fromOriginAndDirection(pointToObjectSpace(r.origin()), vectorToObjectSpace(r.direction()));
-}
-
-
-void CoordinateFrame::lookAt(const Vector3 &target) {
-    lookAt(target, Vector3::unitY());
-}
-
-
-void CoordinateFrame::lookAt(
-    const Vector3&  target,
-    Vector3         up) {
-
-    up = up.direction();
-
-    Vector3 look = (target - translation).direction();
-    if (fabs(look.dot(up)) > .99f) {
-        up = Vector3::unitX();
-        if (fabs(look.dot(up)) > .99f) {
-            up = Vector3::unitY();
-        }
-    }
-
-    up -= look * look.dot(up);
-    up.unitize();
-
-    Vector3 z = -look;
-    Vector3 x = -z.cross(up);
-    x.unitize();
-
-    Vector3 y = z.cross(x);
-
-    rotation.setColumn(0, x);
-    rotation.setColumn(1, y);
-    rotation.setColumn(2, z);
-}
-
-
-CoordinateFrame CoordinateFrame::lerp(
-    const CoordinateFrame&  other,
-    float                   alpha) const {
-
-    if (alpha == 1.0f) {
-        return other;
-    } else if (alpha == 0.0f) {
-        return *this;
-    } else {
-        const Quat q1(this->rotation);
-        const Quat q2(other.rotation);
-
-        return CoordinateFrame(
-            q1.slerp(q2, alpha).toRotationMatrix(),
-            translation * (1 - alpha) + other.translation * alpha);
-    }
-} 
-
-CoordinateFrame CoordinateFrame::nlerp(
-	const CoordinateFrame&  other,
-	float                   alpha) const
-{
-	if (alpha == 1.0f) {
-		return other;
-	} else if (alpha == 0.0f) {
-		return *this;
-	} else {
-		const Quat q1(this->rotation);
-		const Quat q2(other.rotation);
-
-		return CoordinateFrame(
-			q1.nlerp(q2, alpha).toRotationMatrix(),
-			translation * (1 - alpha) + other.translation * alpha);
-	}
-}
-
-void CoordinateFrame::pointToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = 0; i < v.size(); ++i) {
-        vout[i] = pointToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::normalToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const  {
-    vout.resize(v.size());
-
-    for (int i = 0; i < v.size(); ++i) {
-        vout[i] = normalToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::vectorToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = vectorToWorldSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::pointToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = pointToObjectSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::normalToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = normalToObjectSpace(v[i]);
-    }
-}
-
-
-void CoordinateFrame::vectorToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
-    vout.resize(v.size());
-
-    for (int i = v.size() - 1; i >= 0; --i) {
-        vout[i] = vectorToObjectSpace(v[i]);
-    }
-}
-
-btTransform CoordinateFrame::transformFromCFrame() const
-{
-    btMatrix3x3 rot(
-        rotation[0][0], rotation[0][1], rotation[0][2],
-        rotation[1][0], rotation[1][1], rotation[1][2],
-        rotation[2][0], rotation[2][1], rotation[2][2]);
-
-    return btTransform(rot, btVector3(translation.x, translation.y, translation.z));
-}
-
-} // namespace

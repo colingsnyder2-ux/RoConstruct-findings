@@ -1,1435 +1,724 @@
+// roc 2010-06 0088b870  unit: CXTPTabPaintManager::CAppearanceSetPropertyPageFlat  size: 2700 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 0088b870
+//
+// 0088b870  6aff                 push -1
+// 0088b872  6878b39b00           push 0x9bb378
+// 0088b877  64a100000000         mov eax, dword ptr fs:[0]
+// 0088b87d  50                   push eax
+// 0088b87e  81ecf8000000         sub esp, 0xf8
+// 0088b884  53                   push ebx
+// 0088b885  55                   push ebp
+// 0088b886  56                   push esi
+// 0088b887  57                   push edi
+// 0088b888  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
+// 0088b88d  33c4                 xor eax, esp
+// 0088b88f  50                   push eax
+// 0088b890  8d84240c010000       lea eax, [esp + 0x10c]
+// 0088b897  64a300000000         mov dword ptr fs:[0], eax
+// 0088b89d  894c2438             mov dword ptr [esp + 0x38], ecx
+// 0088b8a1  8bbc2420010000       mov edi, dword ptr [esp + 0x120]
+// 0088b8a8  8b4744               mov eax, dword ptr [edi + 0x44]
+// 0088b8ab  8b4f48               mov ecx, dword ptr [edi + 0x48]
+// 0088b8ae  8b574c               mov edx, dword ptr [edi + 0x4c]
+// 0088b8b1  89442418             mov dword ptr [esp + 0x18], eax
+// 0088b8b5  8b4750               mov eax, dword ptr [edi + 0x50]
+// 0088b8b8  894c241c             mov dword ptr [esp + 0x1c], ecx
+// 0088b8bc  8b4f60               mov ecx, dword ptr [edi + 0x60]
+// 0088b8bf  89442424             mov dword ptr [esp + 0x24], eax
+// 0088b8c3  89542420             mov dword ptr [esp + 0x20], edx
+// 0088b8c7  8b11                 mov edx, dword ptr [ecx]
+// 0088b8c9  8b4248               mov eax, dword ptr [edx + 0x48]
+// 0088b8cc  ffd0                 call eax
+// 0088b8ce  8be8                 mov ebp, eax
+// 0088b8d0  55                   push ebp
+// 0088b8d1  33c9                 xor ecx, ecx
+// 0088b8d3  83ec10               sub esp, 0x10
+// 0088b8d6  8bc4                 mov eax, esp
+// 0088b8d8  8908                 mov dword ptr [eax], ecx
+// 0088b8da  33db                 xor ebx, ebx
+// 0088b8dc  33d2                 xor edx, edx
+// 0088b8de  895004               mov dword ptr [eax + 4], edx
+// 0088b8e1  8d7301               lea esi, [ebx + 1]
+// 0088b8e4  897008               mov dword ptr [eax + 8], esi
+// 0088b8e7  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088b8ea  8d4c242c             lea ecx, [esp + 0x2c]
+// 0088b8ee  51                   push ecx
+// 0088b8ef  e86cc7ffff           call 0x888060
+// 0088b8f4  8b542430             mov edx, dword ptr [esp + 0x30]
+// 0088b8f8  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 0088b8fc  8b442434             mov eax, dword ptr [esp + 0x34]
+// 0088b900  8bb42434010000       mov esi, dword ptr [esp + 0x134]
+// 0088b907  89542440             mov dword ptr [esp + 0x40], edx
+// 0088b90b  8b54243c             mov edx, dword ptr [esp + 0x3c]
+// 0088b90f  894c2448             mov dword ptr [esp + 0x48], ecx
+// 0088b913  83c418               add esp, 0x18
+// 0088b916  8944242c             mov dword ptr [esp + 0x2c], eax
+// 0088b91a  8b06                 mov eax, dword ptr [esi]
+// 0088b91c  8d8c24fc000000       lea ecx, [esp + 0xfc]
+// 0088b923  89542434             mov dword ptr [esp + 0x34], edx
+// 0088b927  8b5058               mov edx, dword ptr [eax + 0x58]
+// 0088b92a  51                   push ecx
+// 0088b92b  8bce                 mov ecx, esi
+// 0088b92d  ffd2                 call edx
+// 0088b92f  899c24f8000000       mov dword ptr [esp + 0xf8], ebx
+// 0088b936  c78424f4000000e06da500 mov dword ptr [esp + 0xf4], 0xa56de0
+// 0088b941  8d8424fc000000       lea eax, [esp + 0xfc]
+// 0088b948  50                   push eax
+// 0088b949  899c2418010000       mov dword ptr [esp + 0x118], ebx
+// 0088b950  ff150ca19e00         call dword ptr [0x9ea10c]
+// 0088b956  50                   push eax
+// 0088b957  8d8c24f8000000       lea ecx, [esp + 0xf8]
+// 0088b95e  e807c6f1ff           call 0x7a7f6a
+// 0088b963  55                   push ebp
+// 0088b964  33c9                 xor ecx, ecx
+// 0088b966  83ec10               sub esp, 0x10
+// 0088b969  8bc4                 mov eax, esp
+// 0088b96b  8908                 mov dword ptr [eax], ecx
+// 0088b96d  895804               mov dword ptr [eax + 4], ebx
+// 0088b970  894808               mov dword ptr [eax + 8], ecx
+// 0088b973  b901000000           mov ecx, 1
+// 0088b978  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088b97b  8d4c243c             lea ecx, [esp + 0x3c]
+// 0088b97f  51                   push ecx
+// 0088b980  e8dbc6ffff           call 0x888060
+// 0088b985  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0088b989  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 0088b98d  83c408               add esp, 8
+// 0088b990  8bc4                 mov eax, esp
+// 0088b992  8910                 mov dword ptr [eax], edx
+// 0088b994  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0088b998  894804               mov dword ptr [eax + 4], ecx
+// 0088b99b  8b4c2444             mov ecx, dword ptr [esp + 0x44]
+// 0088b99f  895008               mov dword ptr [eax + 8], edx
+// 0088b9a2  56                   push esi
+// 0088b9a3  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088b9a6  e85559f7ff           call 0x801300
+// 0088b9ab  8bc8                 mov ecx, eax
+// 0088b9ad  e87eaefaff           call 0x836830
+// 0088b9b2  8b542418             mov edx, dword ptr [esp + 0x18]
+// 0088b9b6  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0088b9ba  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0088b9be  55                   push ebp
+// 0088b9bf  899424e4000000       mov dword ptr [esp + 0xe4], edx
+// 0088b9c6  8b542428             mov edx, dword ptr [esp + 0x28]
+// 0088b9ca  898c24ec000000       mov dword ptr [esp + 0xec], ecx
+// 0088b9d1  83c9ff               or ecx, 0xffffffff
+// 0088b9d4  898424e8000000       mov dword ptr [esp + 0xe8], eax
+// 0088b9db  83ec10               sub esp, 0x10
+// 0088b9de  8bc4                 mov eax, esp
+// 0088b9e0  8908                 mov dword ptr [eax], ecx
+// 0088b9e2  89942400010000       mov dword ptr [esp + 0x100], edx
+// 0088b9e9  0bd1                 or edx, ecx
+// 0088b9eb  895004               mov dword ptr [eax + 4], edx
+// 0088b9ee  0bc9                 or ecx, ecx
+// 0088b9f0  894808               mov dword ptr [eax + 8], ecx
+// 0088b9f3  33c9                 xor ecx, ecx
+// 0088b9f5  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088b9f8  8d8424f4000000       lea eax, [esp + 0xf4]
+// 0088b9ff  50                   push eax
+// 0088ba00  e85bc6ffff           call 0x888060
+// 0088ba05  8b442450             mov eax, dword ptr [esp + 0x50]
+// 0088ba09  83c418               add esp, 0x18
+// 0088ba0c  395828               cmp dword ptr [eax + 0x28], ebx
+// 0088ba0f  0f84a9010000         je 0x88bbbe
+// 0088ba15  8b5760               mov edx, dword ptr [edi + 0x60]
+// 0088ba18  397a04               cmp dword ptr [edx + 4], edi
+// 0088ba1b  0f850f010000         jne 0x88bb30
+// 0088ba21  8b481c               mov ecx, dword ptr [eax + 0x1c]
+// 0088ba24  8b81e4000000         mov eax, dword ptr [ecx + 0xe4]
+// 0088ba2a  8b10                 mov edx, dword ptr [eax]
+// 0088ba2c  8b8c24e0000000       mov ecx, dword ptr [esp + 0xe0]
+// 0088ba33  8b5218               mov edx, dword ptr [edx + 0x18]
+// 0088ba36  57                   push edi
+// 0088ba37  83ec10               sub esp, 0x10
+// 0088ba3a  89442428             mov dword ptr [esp + 0x28], eax
+// 0088ba3e  8bc4                 mov eax, esp
+// 0088ba40  8908                 mov dword ptr [eax], ecx
+// 0088ba42  8b8c24f8000000       mov ecx, dword ptr [esp + 0xf8]
+// 0088ba49  894804               mov dword ptr [eax + 4], ecx
+// 0088ba4c  8b8c24fc000000       mov ecx, dword ptr [esp + 0xfc]
+// 0088ba53  894808               mov dword ptr [eax + 8], ecx
+// 0088ba56  8b8c2400010000       mov ecx, dword ptr [esp + 0x100]
+// 0088ba5d  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088ba60  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 0088ba64  56                   push esi
+// 0088ba65  ffd2                 call edx
+// 0088ba67  8b4760               mov eax, dword ptr [edi + 0x60]
+// 0088ba6a  397804               cmp dword ptr [eax + 4], edi
+// 0088ba6d  7462                 je 0x88bad1
+// 0088ba6f  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 0088ba73  8b511c               mov edx, dword ptr [ecx + 0x1c]
+// 0088ba76  8b82e4000000         mov eax, dword ptr [edx + 0xe4]
+// 0088ba7c  8b484c               mov ecx, dword ptr [eax + 0x4c]
+// 0088ba7f  83f9ff               cmp ecx, -1
+// 0088ba82  7503                 jne 0x88ba87
+// 0088ba84  8b4848               mov ecx, dword ptr [eax + 0x48]
+// 0088ba87  8b504c               mov edx, dword ptr [eax + 0x4c]
+// 0088ba8a  83faff               cmp edx, -1
+// 0088ba8d  7505                 jne 0x88ba94
+// 0088ba8f  8b4048               mov eax, dword ptr [eax + 0x48]
+// 0088ba92  eb02                 jmp 0x88ba96
+// 0088ba94  8bc2                 mov eax, edx
+// 0088ba96  51                   push ecx
+// 0088ba97  50                   push eax
+// 0088ba98  8d4502               lea eax, [ebp + 2]
+// 0088ba9b  2503000080           and eax, 0x80000003
+// 0088baa0  7905                 jns 0x88baa7
+// 0088baa2  48                   dec eax
+// 0088baa3  83c8fc               or eax, 0xfffffffc
+// 0088baa6  40                   inc eax
+// 0088baa7  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0088baab  8b542424             mov edx, dword ptr [esp + 0x24]
+// 0088baaf  50                   push eax
+// 0088bab0  83ec10               sub esp, 0x10
+// 0088bab3  8bc4                 mov eax, esp
+// 0088bab5  8908                 mov dword ptr [eax], ecx
+// 0088bab7  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
+// 0088babb  895004               mov dword ptr [eax + 4], edx
+// 0088babe  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0088bac2  894808               mov dword ptr [eax + 8], ecx
+// 0088bac5  56                   push esi
+// 0088bac6  89500c               mov dword ptr [eax + 0xc], edx
+// 0088bac9  e8a2ceffff           call 0x888970
+// 0088bace  83c420               add esp, 0x20
+// 0088bad1  55                   push ebp
+// 0088bad2  33c9                 xor ecx, ecx
+// 0088bad4  83ec10               sub esp, 0x10
+// 0088bad7  8bc4                 mov eax, esp
+// 0088bad9  8908                 mov dword ptr [eax], ecx
+// 0088badb  895804               mov dword ptr [eax + 4], ebx
+// 0088bade  894808               mov dword ptr [eax + 8], ecx
+// 0088bae1  b902000000           mov ecx, 2
+// 0088bae6  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088bae9  8d44242c             lea eax, [esp + 0x2c]
+// 0088baed  50                   push eax
+// 0088baee  e86dc5ffff           call 0x888060
+// 0088baf3  8b4c2450             mov ecx, dword ptr [esp + 0x50]
+// 0088baf7  8b511c               mov edx, dword ptr [ecx + 0x1c]
+// 0088bafa  8b82e4000000         mov eax, dword ptr [edx + 0xe4]
+// 0088bb00  8b484c               mov ecx, dword ptr [eax + 0x4c]
+// 0088bb03  83c418               add esp, 0x18
+// 0088bb06  83f9ff               cmp ecx, -1
+// 0088bb09  7505                 jne 0x88bb10
+// 0088bb0b  8b4048               mov eax, dword ptr [eax + 0x48]
+// 0088bb0e  eb02                 jmp 0x88bb12
+// 0088bb10  8bc1                 mov eax, ecx
+// 0088bb12  8b5604               mov edx, dword ptr [esi + 4]
+// 0088bb15  50                   push eax
+// 0088bb16  52                   push edx
+// 0088bb17  8d8c24e8000000       lea ecx, [esp + 0xe8]
+// 0088bb1e  e81d3cf7ff           call 0x7ff740
+// 0088bb23  c684241401000001     mov byte ptr [esp + 0x114], 1
+// 0088bb2b  e91b020000           jmp 0x88bd4b
+// 0088bb30  8b525c               mov edx, dword ptr [edx + 0x5c]
+// 0088bb33  8b4f2c               mov ecx, dword ptr [edi + 0x2c]
+// 0088bb36  4a                   dec edx
+// 0088bb37  3bca                 cmp ecx, edx
+// 0088bb39  0f8d69020000         jge 0x88bda8
+// 0088bb3f  83fd02               cmp ebp, 2
+// 0088bb42  7404                 je 0x88bb48
+// 0088bb44  3beb                 cmp ebp, ebx
+// 0088bb46  753b                 jne 0x88bb83
+// 0088bb48  8b401c               mov eax, dword ptr [eax + 0x1c]
+// 0088bb4b  8b88e4000000         mov ecx, dword ptr [eax + 0xe4]
+// 0088bb51  8b414c               mov eax, dword ptr [ecx + 0x4c]
+// 0088bb54  83f8ff               cmp eax, -1
+// 0088bb57  7503                 jne 0x88bb5c
+// 0088bb59  8b4148               mov eax, dword ptr [ecx + 0x48]
+// 0088bb5c  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
+// 0088bb60  50                   push eax
+// 0088bb61  8b442428             mov eax, dword ptr [esp + 0x28]
+// 0088bb65  2bc1                 sub eax, ecx
+// 0088bb67  83e806               sub eax, 6
+// 0088bb6a  50                   push eax
+// 0088bb6b  83c103               add ecx, 3
+// 0088bb6e  6a01                 push 1
+// 0088bb70  51                   push ecx
+// 0088bb71  8b4c2430             mov ecx, dword ptr [esp + 0x30]
+// 0088bb75  49                   dec ecx
+// 0088bb76  51                   push ecx
+// 0088bb77  8bce                 mov ecx, esi
+// 0088bb79  e80c120f00           call 0x97cd8a
+// 0088bb7e  e925020000           jmp 0x88bda8
+// 0088bb83  8b501c               mov edx, dword ptr [eax + 0x1c]
+// 0088bb86  8b8ae4000000         mov ecx, dword ptr [edx + 0xe4]
+// 0088bb8c  8b414c               mov eax, dword ptr [ecx + 0x4c]
+// 0088bb8f  83f8ff               cmp eax, -1
+// 0088bb92  7503                 jne 0x88bb97
+// 0088bb94  8b4148               mov eax, dword ptr [ecx + 0x48]
+// 0088bb97  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0088bb9b  50                   push eax
+// 0088bb9c  8b442424             mov eax, dword ptr [esp + 0x24]
+// 0088bba0  2bc1                 sub eax, ecx
+// 0088bba2  6a01                 push 1
+// 0088bba4  83e806               sub eax, 6
+// 0088bba7  50                   push eax
+// 0088bba8  8b442430             mov eax, dword ptr [esp + 0x30]
+// 0088bbac  48                   dec eax
+// 0088bbad  83c103               add ecx, 3
+// 0088bbb0  50                   push eax
+// 0088bbb1  51                   push ecx
+// 0088bbb2  8bce                 mov ecx, esi
+// 0088bbb4  e8d1110f00           call 0x97cd8a
+// 0088bbb9  e9ea010000           jmp 0x88bda8
+// 0088bbbe  8b481c               mov ecx, dword ptr [eax + 0x1c]
+// 0088bbc1  8b81e4000000         mov eax, dword ptr [ecx + 0xe4]
+// 0088bbc7  8b10                 mov edx, dword ptr [eax]
+// 0088bbc9  8b8c24e0000000       mov ecx, dword ptr [esp + 0xe0]
+// 0088bbd0  8b5218               mov edx, dword ptr [edx + 0x18]
+// 0088bbd3  57                   push edi
+// 0088bbd4  83ec10               sub esp, 0x10
+// 0088bbd7  89442428             mov dword ptr [esp + 0x28], eax
+// 0088bbdb  8bc4                 mov eax, esp
+// 0088bbdd  8908                 mov dword ptr [eax], ecx
+// 0088bbdf  8b8c24f8000000       mov ecx, dword ptr [esp + 0xf8]
+// 0088bbe6  894804               mov dword ptr [eax + 4], ecx
+// 0088bbe9  8b8c24fc000000       mov ecx, dword ptr [esp + 0xfc]
+// 0088bbf0  894808               mov dword ptr [eax + 8], ecx
+// 0088bbf3  8b8c2400010000       mov ecx, dword ptr [esp + 0x100]
+// 0088bbfa  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088bbfd  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 0088bc01  56                   push esi
+// 0088bc02  ffd2                 call edx
+// 0088bc04  8b442438             mov eax, dword ptr [esp + 0x38]
+// 0088bc08  395824               cmp dword ptr [eax + 0x24], ebx
+// 0088bc0b  7478                 je 0x88bc85
+// 0088bc0d  8b4f60               mov ecx, dword ptr [edi + 0x60]
+// 0088bc10  397904               cmp dword ptr [ecx + 4], edi
+// 0088bc13  7529                 jne 0x88bc3e
+// 0088bc15  55                   push ebp
+// 0088bc16  33c9                 xor ecx, ecx
+// 0088bc18  83ec10               sub esp, 0x10
+// 0088bc1b  8bc4                 mov eax, esp
+// 0088bc1d  8908                 mov dword ptr [eax], ecx
+// 0088bc1f  895804               mov dword ptr [eax + 4], ebx
+// 0088bc22  894808               mov dword ptr [eax + 8], ecx
+// 0088bc25  8d54242c             lea edx, [esp + 0x2c]
+// 0088bc29  b901000000           mov ecx, 1
+// 0088bc2e  52                   push edx
+// 0088bc2f  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088bc32  e829c4ffff           call 0x888060
+// 0088bc37  8b442450             mov eax, dword ptr [esp + 0x50]
+// 0088bc3b  83c418               add esp, 0x18
+// 0088bc3e  8b401c               mov eax, dword ptr [eax + 0x1c]
+// 0088bc41  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 0088bc47  8b484c               mov ecx, dword ptr [eax + 0x4c]
+// 0088bc4a  83f9ff               cmp ecx, -1
+// 0088bc4d  7503                 jne 0x88bc52
+// 0088bc4f  8b4848               mov ecx, dword ptr [eax + 0x48]
+// 0088bc52  8b504c               mov edx, dword ptr [eax + 0x4c]
+// 0088bc55  83faff               cmp edx, -1
+// 0088bc58  7516                 jne 0x88bc70
+// 0088bc5a  8b4048               mov eax, dword ptr [eax + 0x48]
+// 0088bc5d  51                   push ecx
+// 0088bc5e  50                   push eax
+// 0088bc5f  8d4c2420             lea ecx, [esp + 0x20]
+// 0088bc63  51                   push ecx
+// 0088bc64  8bce                 mov ecx, esi
+// 0088bc66  e8cdcaf1ff           call 0x7a8738
+// 0088bc6b  e938010000           jmp 0x88bda8
+// 0088bc70  51                   push ecx
+// 0088bc71  8bc2                 mov eax, edx
+// 0088bc73  50                   push eax
+// 0088bc74  8d4c2420             lea ecx, [esp + 0x20]
+// 0088bc78  51                   push ecx
+// 0088bc79  8bce                 mov ecx, esi
+// 0088bc7b  e8b8caf1ff           call 0x7a8738
+// 0088bc80  e923010000           jmp 0x88bda8
+// 0088bc85  8b401c               mov eax, dword ptr [eax + 0x1c]
+// 0088bc88  83783802             cmp dword ptr [eax + 0x38], 2
+// 0088bc8c  7463                 je 0x88bcf1
+// 0088bc8e  8b5760               mov edx, dword ptr [edi + 0x60]
+// 0088bc91  397a04               cmp dword ptr [edx + 4], edi
+// 0088bc94  745b                 je 0x88bcf1
+// 0088bc96  8b80e4000000         mov eax, dword ptr [eax + 0xe4]
+// 0088bc9c  8b484c               mov ecx, dword ptr [eax + 0x4c]
+// 0088bc9f  83f9ff               cmp ecx, -1
+// 0088bca2  7503                 jne 0x88bca7
+// 0088bca4  8b4848               mov ecx, dword ptr [eax + 0x48]
+// 0088bca7  8b504c               mov edx, dword ptr [eax + 0x4c]
+// 0088bcaa  83faff               cmp edx, -1
+// 0088bcad  7505                 jne 0x88bcb4
+// 0088bcaf  8b4048               mov eax, dword ptr [eax + 0x48]
+// 0088bcb2  eb02                 jmp 0x88bcb6
+// 0088bcb4  8bc2                 mov eax, edx
+// 0088bcb6  51                   push ecx
+// 0088bcb7  50                   push eax
+// 0088bcb8  8d4502               lea eax, [ebp + 2]
+// 0088bcbb  2503000080           and eax, 0x80000003
+// 0088bcc0  7905                 jns 0x88bcc7
+// 0088bcc2  48                   dec eax
+// 0088bcc3  83c8fc               or eax, 0xfffffffc
+// 0088bcc6  40                   inc eax
+// 0088bcc7  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0088bccb  8b542424             mov edx, dword ptr [esp + 0x24]
+// 0088bccf  50                   push eax
+// 0088bcd0  83ec10               sub esp, 0x10
+// 0088bcd3  8bc4                 mov eax, esp
+// 0088bcd5  8908                 mov dword ptr [eax], ecx
+// 0088bcd7  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
+// 0088bcdb  895004               mov dword ptr [eax + 4], edx
+// 0088bcde  8b542440             mov edx, dword ptr [esp + 0x40]
+// 0088bce2  894808               mov dword ptr [eax + 8], ecx
+// 0088bce5  56                   push esi
+// 0088bce6  89500c               mov dword ptr [eax + 0xc], edx
+// 0088bce9  e882ccffff           call 0x888970
+// 0088bcee  83c420               add esp, 0x20
+// 0088bcf1  55                   push ebp
+// 0088bcf2  33c9                 xor ecx, ecx
+// 0088bcf4  83ec10               sub esp, 0x10
+// 0088bcf7  8bc4                 mov eax, esp
+// 0088bcf9  8908                 mov dword ptr [eax], ecx
+// 0088bcfb  895804               mov dword ptr [eax + 4], ebx
+// 0088bcfe  894808               mov dword ptr [eax + 8], ecx
+// 0088bd01  b902000000           mov ecx, 2
+// 0088bd06  89480c               mov dword ptr [eax + 0xc], ecx
+// 0088bd09  8d44242c             lea eax, [esp + 0x2c]
+// 0088bd0d  50                   push eax
+// 0088bd0e  e84dc3ffff           call 0x888060
+// 0088bd13  8b4c2450             mov ecx, dword ptr [esp + 0x50]
+// 0088bd17  8b511c               mov edx, dword ptr [ecx + 0x1c]
+// 0088bd1a  8b82e4000000         mov eax, dword ptr [edx + 0xe4]
+// 0088bd20  8b484c               mov ecx, dword ptr [eax + 0x4c]
+// 0088bd23  83c418               add esp, 0x18
+// 0088bd26  83f9ff               cmp ecx, -1
+// 0088bd29  7505                 jne 0x88bd30
+// 0088bd2b  8b4048               mov eax, dword ptr [eax + 0x48]
+// 0088bd2e  eb02                 jmp 0x88bd32
+// 0088bd30  8bc1                 mov eax, ecx
+// 0088bd32  8b5604               mov edx, dword ptr [esi + 4]
+// 0088bd35  50                   push eax
+// 0088bd36  52                   push edx
+// 0088bd37  8d8c24e8000000       lea ecx, [esp + 0xe8]
+// 0088bd3e  e8fd39f7ff           call 0x7ff740
+// 0088bd43  c684241401000002     mov byte ptr [esp + 0x114], 2
+// 0088bd4b  8b06                 mov eax, dword ptr [esi]
+// 0088bd4d  8b502c               mov edx, dword ptr [eax + 0x2c]
+// 0088bd50  6a05                 push 5
+// 0088bd52  8bce                 mov ecx, esi
+// 0088bd54  ffd2                 call edx
+// 0088bd56  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0088bd5a  8b54241c             mov edx, dword ptr [esp + 0x1c]
+// 0088bd5e  6a06                 push 6
+// 0088bd60  6a06                 push 6
+// 0088bd62  8944241c             mov dword ptr [esp + 0x1c], eax
+// 0088bd66  8b44242c             mov eax, dword ptr [esp + 0x2c]
+// 0088bd6a  50                   push eax
+// 0088bd6b  8b442424             mov eax, dword ptr [esp + 0x24]
+// 0088bd6f  51                   push ecx
+// 0088bd70  8b4e04               mov ecx, dword ptr [esi + 4]
+// 0088bd73  52                   push edx
+// 0088bd74  50                   push eax
+// 0088bd75  51                   push ecx
+// 0088bd76  ff15e0a09e00         call dword ptr [0x9ea0e0]
+// 0088bd7c  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0088bd80  3bc3                 cmp eax, ebx
+// 0088bd82  7504                 jne 0x88bd88
+// 0088bd84  33c0                 xor eax, eax
+// 0088bd86  eb03                 jmp 0x88bd8b
+// 0088bd88  8b4004               mov eax, dword ptr [eax + 4]
+// 0088bd8b  8b5604               mov edx, dword ptr [esi + 4]
+// 0088bd8e  50                   push eax
+// 0088bd8f  52                   push edx
+// 0088bd90  e89f110f00           call 0x97cf34
+// 0088bd95  8d8c24e0000000       lea ecx, [esp + 0xe0]
+// 0088bd9c  889c2414010000       mov byte ptr [esp + 0x114], bl
+// 0088bda3  e8283af7ff           call 0x7ff7d0
+// 0088bda8  8d8424f4000000       lea eax, [esp + 0xf4]
+// 0088bdaf  50                   push eax
+// 0088bdb0  8bce                 mov ecx, esi
+// 0088bdb2  e8e9110f00           call 0x97cfa0
+// 0088bdb7  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 0088bdbb  395924               cmp dword ptr [ecx + 0x24], ebx
+// 0088bdbe  0f84bb040000         je 0x88c27f
+// 0088bdc4  83fd03               cmp ebp, 3
+// 0088bdc7  0f87b2040000         ja 0x88c27f
+// 0088bdcd  ff24adecc28800       jmp dword ptr [ebp*4 + 0x88c2ec]
+// 0088bdd4  8b542428             mov edx, dword ptr [esp + 0x28]
+// 0088bdd8  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 0088bddc  89542440             mov dword ptr [esp + 0x40], edx
+// 0088bde0  42                   inc edx
+// 0088bde1  89542414             mov dword ptr [esp + 0x14], edx
+// 0088bde5  89542450             mov dword ptr [esp + 0x50], edx
+// 0088bde9  8b542430             mov edx, dword ptr [esp + 0x30]
+// 0088bded  83c2fe               add edx, -2
+// 0088bdf0  8954243c             mov dword ptr [esp + 0x3c], edx
+// 0088bdf4  89542460             mov dword ptr [esp + 0x60], edx
+// 0088bdf8  8b542430             mov edx, dword ptr [esp + 0x30]
+// 0088bdfc  4a                   dec edx
+// 0088bdfd  89542470             mov dword ptr [esp + 0x70], edx
+// 0088be01  8b542414             mov edx, dword ptr [esp + 0x14]
+// 0088be05  89942480000000       mov dword ptr [esp + 0x80], edx
+// 0088be0c  8b54243c             mov edx, dword ptr [esp + 0x3c]
+// 0088be10  8d4101               lea eax, [ecx + 1]
+// 0088be13  89942490000000       mov dword ptr [esp + 0x90], edx
+// 0088be1a  8b542428             mov edx, dword ptr [esp + 0x28]
+// 0088be1e  83c202               add edx, 2
+// 0088be21  894c2454             mov dword ptr [esp + 0x54], ecx
+// 0088be25  894c2464             mov dword ptr [esp + 0x64], ecx
+// 0088be29  899424a0000000       mov dword ptr [esp + 0xa0], edx
+// 0088be30  8b542414             mov edx, dword ptr [esp + 0x14]
+// 0088be34  83c102               add ecx, 2
+// 0088be37  83cdff               or ebp, 0xffffffff
+// 0088be3a  899424b0000000       mov dword ptr [esp + 0xb0], edx
+// 0088be41  8b542430             mov edx, dword ptr [esp + 0x30]
+// 0088be45  898c24b4000000       mov dword ptr [esp + 0xb4], ecx
+// 0088be4c  898c24d4000000       mov dword ptr [esp + 0xd4], ecx
+// 0088be53  6a14                 push 0x14
+// 0088be55  8d4c2444             lea ecx, [esp + 0x44]
+// 0088be59  89442448             mov dword ptr [esp + 0x48], eax
+// 0088be5d  89442478             mov dword ptr [esp + 0x78], eax
+// 0088be61  89842488000000       mov dword ptr [esp + 0x88], eax
+// 0088be68  89842498000000       mov dword ptr [esp + 0x98], eax
+// 0088be6f  898424a8000000       mov dword ptr [esp + 0xa8], eax
+// 0088be76  898424c8000000       mov dword ptr [esp + 0xc8], eax
+// 0088be7d  8b442440             mov eax, dword ptr [esp + 0x40]
+// 0088be81  51                   push ecx
+// 0088be82  83c2fd               add edx, -3
+// 0088be85  56                   push esi
+// 0088be86  895c2454             mov dword ptr [esp + 0x54], ebx
+// 0088be8a  896c2458             mov dword ptr [esp + 0x58], ebp
+// 0088be8e  896c2464             mov dword ptr [esp + 0x64], ebp
+// 0088be92  895c2468             mov dword ptr [esp + 0x68], ebx
+// 0088be96  c744247401000000     mov dword ptr [esp + 0x74], 1
+// 0088be9e  895c2478             mov dword ptr [esp + 0x78], ebx
+// 0088bea2  899c2484000000       mov dword ptr [esp + 0x84], ebx
+// 0088bea9  89ac2488000000       mov dword ptr [esp + 0x88], ebp
+// 0088beb0  89ac2494000000       mov dword ptr [esp + 0x94], ebp
+// 0088beb7  899c2498000000       mov dword ptr [esp + 0x98], ebx
+// 0088bebe  c78424a400000001000000 mov dword ptr [esp + 0xa4], 1
+// 0088bec9  899c24a8000000       mov dword ptr [esp + 0xa8], ebx
+// 0088bed0  89ac24b4000000       mov dword ptr [esp + 0xb4], ebp
+// 0088bed7  899c24b8000000       mov dword ptr [esp + 0xb8], ebx
+// 0088bede  899c24c4000000       mov dword ptr [esp + 0xc4], ebx
+// 0088bee5  89ac24c8000000       mov dword ptr [esp + 0xc8], ebp
+// 0088beec  899424cc000000       mov dword ptr [esp + 0xcc], edx
+// 0088bef3  c78424d400000001000000 mov dword ptr [esp + 0xd4], 1
+// 0088befe  899c24d8000000       mov dword ptr [esp + 0xd8], ebx
+// 0088bf05  898424dc000000       mov dword ptr [esp + 0xdc], eax
+// 0088bf0c  899c24e4000000       mov dword ptr [esp + 0xe4], ebx
+// 0088bf13  89ac24e8000000       mov dword ptr [esp + 0xe8], ebp
+// 0088bf1a  e8e153f7ff           call 0x801300
+// 0088bf1f  8bc8                 mov ecx, eax
+// 0088bf21  e84a41f7ff           call 0x800070
+// 0088bf26  e957030000           jmp 0x88c282
+// 0088bf2b  8b6c242c             mov ebp, dword ptr [esp + 0x2c]
+// 0088bf2f  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 0088bf33  8d4501               lea eax, [ebp + 1]
+// 0088bf36  896c2454             mov dword ptr [esp + 0x54], ebp
+// 0088bf3a  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088bf3e  83c5fe               add ebp, -2
+// 0088bf41  894c2440             mov dword ptr [esp + 0x40], ecx
+// 0088bf45  894c2460             mov dword ptr [esp + 0x60], ecx
+// 0088bf49  896c2464             mov dword ptr [esp + 0x64], ebp
+// 0088bf4d  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088bf51  89442444             mov dword ptr [esp + 0x44], eax
+// 0088bf55  8d4101               lea eax, [ecx + 1]
+// 0088bf58  83c102               add ecx, 2
+// 0088bf5b  894c2414             mov dword ptr [esp + 0x14], ecx
+// 0088bf5f  898c24a0000000       mov dword ptr [esp + 0xa0], ecx
+// 0088bf66  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 0088bf6a  83caff               or edx, 0xffffffff
+// 0088bf6d  896c2474             mov dword ptr [esp + 0x74], ebp
+// 0088bf71  8b6c242c             mov ebp, dword ptr [esp + 0x2c]
+// 0088bf75  41                   inc ecx
+// 0088bf76  45                   inc ebp
+// 0088bf77  898c24a4000000       mov dword ptr [esp + 0xa4], ecx
+// 0088bf7e  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 0088bf82  89ac2484000000       mov dword ptr [esp + 0x84], ebp
+// 0088bf89  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088bf8d  83c102               add ecx, 2
+// 0088bf90  8954244c             mov dword ptr [esp + 0x4c], edx
+// 0088bf94  89542458             mov dword ptr [esp + 0x58], edx
+// 0088bf98  89542478             mov dword ptr [esp + 0x78], edx
+// 0088bf9c  89942488000000       mov dword ptr [esp + 0x88], edx
+// 0088bfa3  89942498000000       mov dword ptr [esp + 0x98], edx
+// 0088bfaa  899424a8000000       mov dword ptr [esp + 0xa8], edx
+// 0088bfb1  899424bc000000       mov dword ptr [esp + 0xbc], edx
+// 0088bfb8  899424c8000000       mov dword ptr [esp + 0xc8], edx
+// 0088bfbf  8b542434             mov edx, dword ptr [esp + 0x34]
+// 0088bfc3  83c5fe               add ebp, -2
+// 0088bfc6  898c24b4000000       mov dword ptr [esp + 0xb4], ecx
+// 0088bfcd  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0088bfd1  83c2fd               add edx, -3
+// 0088bfd4  895c2448             mov dword ptr [esp + 0x48], ebx
+// 0088bfd8  89442450             mov dword ptr [esp + 0x50], eax
+// 0088bfdc  895c245c             mov dword ptr [esp + 0x5c], ebx
+// 0088bfe0  895c2468             mov dword ptr [esp + 0x68], ebx
+// 0088bfe4  c744246c01000000     mov dword ptr [esp + 0x6c], 1
+// 0088bfec  89442470             mov dword ptr [esp + 0x70], eax
+// 0088bff0  89ac2494000000       mov dword ptr [esp + 0x94], ebp
+// 0088bff7  898c24c0000000       mov dword ptr [esp + 0xc0], ecx
+// 0088bffe  89ac24c4000000       mov dword ptr [esp + 0xc4], ebp
+// 0088c005  899424d4000000       mov dword ptr [esp + 0xd4], edx
+// 0088c00c  c78424dc00000001000000 mov dword ptr [esp + 0xdc], 1
+// 0088c017  e902020000           jmp 0x88c21e
+// 0088c01c  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088c020  8d45fe               lea eax, [ebp - 2]
+// 0088c023  8b542428             mov edx, dword ptr [esp + 0x28]
+// 0088c027  4d                   dec ebp
+// 0088c028  896c2454             mov dword ptr [esp + 0x54], ebp
+// 0088c02c  8b6c2430             mov ebp, dword ptr [esp + 0x30]
+// 0088c030  4d                   dec ebp
+// 0088c031  896c2460             mov dword ptr [esp + 0x60], ebp
+// 0088c035  8b6c2430             mov ebp, dword ptr [esp + 0x30]
+// 0088c039  83c5fe               add ebp, -2
+// 0088c03c  896c243c             mov dword ptr [esp + 0x3c], ebp
+// 0088c040  896c2470             mov dword ptr [esp + 0x70], ebp
+// 0088c044  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088c048  4d                   dec ebp
+// 0088c049  896c2474             mov dword ptr [esp + 0x74], ebp
+// 0088c04d  8b6c243c             mov ebp, dword ptr [esp + 0x3c]
+// 0088c051  b901000000           mov ecx, 1
+// 0088c056  89ac2490000000       mov dword ptr [esp + 0x90], ebp
+// 0088c05d  8b6c2428             mov ebp, dword ptr [esp + 0x28]
+// 0088c061  89542440             mov dword ptr [esp + 0x40], edx
+// 0088c065  42                   inc edx
+// 0088c066  83c502               add ebp, 2
+// 0088c069  89542450             mov dword ptr [esp + 0x50], edx
+// 0088c06d  89942480000000       mov dword ptr [esp + 0x80], edx
+// 0088c074  899424b0000000       mov dword ptr [esp + 0xb0], edx
+// 0088c07b  8b542434             mov edx, dword ptr [esp + 0x34]
+// 0088c07f  89ac24a0000000       mov dword ptr [esp + 0xa0], ebp
+// 0088c086  8b6c2430             mov ebp, dword ptr [esp + 0x30]
+// 0088c08a  83c2fd               add edx, -3
+// 0088c08d  89442444             mov dword ptr [esp + 0x44], eax
+// 0088c091  894c244c             mov dword ptr [esp + 0x4c], ecx
+// 0088c095  89442464             mov dword ptr [esp + 0x64], eax
+// 0088c099  894c246c             mov dword ptr [esp + 0x6c], ecx
+// 0088c09d  894c2478             mov dword ptr [esp + 0x78], ecx
+// 0088c0a1  89842484000000       mov dword ptr [esp + 0x84], eax
+// 0088c0a8  898c248c000000       mov dword ptr [esp + 0x8c], ecx
+// 0088c0af  89842494000000       mov dword ptr [esp + 0x94], eax
+// 0088c0b6  898c2498000000       mov dword ptr [esp + 0x98], ecx
+// 0088c0bd  898424a4000000       mov dword ptr [esp + 0xa4], eax
+// 0088c0c4  898c24bc000000       mov dword ptr [esp + 0xbc], ecx
+// 0088c0cb  898424c4000000       mov dword ptr [esp + 0xc4], eax
+// 0088c0d2  8b44243c             mov eax, dword ptr [esp + 0x3c]
+// 0088c0d6  898c24c8000000       mov dword ptr [esp + 0xc8], ecx
+// 0088c0dd  898c24dc000000       mov dword ptr [esp + 0xdc], ecx
+// 0088c0e4  83c5fd               add ebp, -3
+// 0088c0e7  6a14                 push 0x14
+// 0088c0e9  8d4c2444             lea ecx, [esp + 0x44]
+// 0088c0ed  895c244c             mov dword ptr [esp + 0x4c], ebx
+// 0088c0f1  c744245cffffffff     mov dword ptr [esp + 0x5c], 0xffffffff
+// 0088c0f9  895c2460             mov dword ptr [esp + 0x60], ebx
+// 0088c0fd  895c246c             mov dword ptr [esp + 0x6c], ebx
+// 0088c101  899c2480000000       mov dword ptr [esp + 0x80], ebx
+// 0088c108  899c248c000000       mov dword ptr [esp + 0x8c], ebx
+// 0088c10f  c78424ac000000ffffffff mov dword ptr [esp + 0xac], 0xffffffff
+// 0088c11a  899424b8000000       mov dword ptr [esp + 0xb8], edx
+// 0088c121  89ac24c4000000       mov dword ptr [esp + 0xc4], ebp
+// 0088c128  898424d4000000       mov dword ptr [esp + 0xd4], eax
+// 0088c12f  899424d8000000       mov dword ptr [esp + 0xd8], edx
+// 0088c136  51                   push ecx
+// 0088c137  e913010000           jmp 0x88c24f
+// 0088c13c  8b442430             mov eax, dword ptr [esp + 0x30]
+// 0088c140  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 0088c144  8d68ff               lea ebp, [eax - 1]
+// 0088c147  896c2440             mov dword ptr [esp + 0x40], ebp
+// 0088c14b  896c2460             mov dword ptr [esp + 0x60], ebp
+// 0088c14f  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088c153  83c5fe               add ebp, -2
+// 0088c156  896c2464             mov dword ptr [esp + 0x64], ebp
+// 0088c15a  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088c15e  896c2474             mov dword ptr [esp + 0x74], ebp
+// 0088c162  83c5fe               add ebp, -2
+// 0088c165  8d5101               lea edx, [ecx + 1]
+// 0088c168  89ac2494000000       mov dword ptr [esp + 0x94], ebp
+// 0088c16f  8b6c2430             mov ebp, dword ptr [esp + 0x30]
+// 0088c173  89542444             mov dword ptr [esp + 0x44], edx
+// 0088c177  89942484000000       mov dword ptr [esp + 0x84], edx
+// 0088c17e  83c5fd               add ebp, -3
+// 0088c181  899424a4000000       mov dword ptr [esp + 0xa4], edx
+// 0088c188  8b54242c             mov edx, dword ptr [esp + 0x2c]
+// 0088c18c  83c202               add edx, 2
+// 0088c18f  89ac24a0000000       mov dword ptr [esp + 0xa0], ebp
+// 0088c196  89ac24c0000000       mov dword ptr [esp + 0xc0], ebp
+// 0088c19d  8b6c2434             mov ebp, dword ptr [esp + 0x34]
+// 0088c1a1  83c0fe               add eax, -2
+// 0088c1a4  899424b4000000       mov dword ptr [esp + 0xb4], edx
+// 0088c1ab  8d55fe               lea edx, [ebp - 2]
+// 0088c1ae  894c2454             mov dword ptr [esp + 0x54], ecx
+// 0088c1b2  b901000000           mov ecx, 1
+// 0088c1b7  83c5fd               add ebp, -3
+// 0088c1ba  895c2448             mov dword ptr [esp + 0x48], ebx
+// 0088c1be  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
+// 0088c1c6  89442450             mov dword ptr [esp + 0x50], eax
+// 0088c1ca  894c2458             mov dword ptr [esp + 0x58], ecx
+// 0088c1ce  895c245c             mov dword ptr [esp + 0x5c], ebx
+// 0088c1d2  895c2468             mov dword ptr [esp + 0x68], ebx
+// 0088c1d6  894c246c             mov dword ptr [esp + 0x6c], ecx
+// 0088c1da  89442470             mov dword ptr [esp + 0x70], eax
+// 0088c1de  894c2478             mov dword ptr [esp + 0x78], ecx
+// 0088c1e2  898c2488000000       mov dword ptr [esp + 0x88], ecx
+// 0088c1e9  898c2498000000       mov dword ptr [esp + 0x98], ecx
+// 0088c1f0  898c24a8000000       mov dword ptr [esp + 0xa8], ecx
+// 0088c1f7  c78424bc000000ffffffff mov dword ptr [esp + 0xbc], 0xffffffff
+// 0088c202  899424c4000000       mov dword ptr [esp + 0xc4], edx
+// 0088c209  898c24c8000000       mov dword ptr [esp + 0xc8], ecx
+// 0088c210  89ac24d4000000       mov dword ptr [esp + 0xd4], ebp
+// 0088c217  898c24dc000000       mov dword ptr [esp + 0xdc], ecx
+// 0088c21e  89842480000000       mov dword ptr [esp + 0x80], eax
+// 0088c225  89842490000000       mov dword ptr [esp + 0x90], eax
+// 0088c22c  898424b0000000       mov dword ptr [esp + 0xb0], eax
+// 0088c233  898424d0000000       mov dword ptr [esp + 0xd0], eax
+// 0088c23a  6a14                 push 0x14
+// 0088c23c  8d442444             lea eax, [esp + 0x44]
+// 0088c240  899c2480000000       mov dword ptr [esp + 0x80], ebx
+// 0088c247  899c2490000000       mov dword ptr [esp + 0x90], ebx
+// 0088c24e  50                   push eax
+// 0088c24f  56                   push esi
+// 0088c250  899c24a8000000       mov dword ptr [esp + 0xa8], ebx
+// 0088c257  899c24b8000000       mov dword ptr [esp + 0xb8], ebx
+// 0088c25e  899c24c4000000       mov dword ptr [esp + 0xc4], ebx
+// 0088c265  899c24d8000000       mov dword ptr [esp + 0xd8], ebx
+// 0088c26c  899c24e4000000       mov dword ptr [esp + 0xe4], ebx
+// 0088c273  e88850f7ff           call 0x801300
+// 0088c278  8bc8                 mov ecx, eax
+// 0088c27a  e8f13df7ff           call 0x800070
+// 0088c27f  83cdff               or ebp, 0xffffffff
+// 0088c282  8b5f44               mov ebx, dword ptr [edi + 0x44]
+// 0088c285  8b4c2438             mov ecx, dword ptr [esp + 0x38]
+// 0088c289  8b491c               mov ecx, dword ptr [ecx + 0x1c]
+// 0088c28c  8b11                 mov edx, dword ptr [ecx]
+// 0088c28e  6a01                 push 1
+// 0088c290  83ec10               sub esp, 0x10
+// 0088c293  8bc4                 mov eax, esp
+// 0088c295  8918                 mov dword ptr [eax], ebx
+// 0088c297  8b5f48               mov ebx, dword ptr [edi + 0x48]
+// 0088c29a  895804               mov dword ptr [eax + 4], ebx
+// 0088c29d  8b5f4c               mov ebx, dword ptr [edi + 0x4c]
+// 0088c2a0  895808               mov dword ptr [eax + 8], ebx
+// 0088c2a3  8b5f50               mov ebx, dword ptr [edi + 0x50]
+// 0088c2a6  57                   push edi
+// 0088c2a7  89580c               mov dword ptr [eax + 0xc], ebx
+// 0088c2aa  8b4268               mov eax, dword ptr [edx + 0x68]
+// 0088c2ad  56                   push esi
+// 0088c2ae  ffd0                 call eax
+// 0088c2b0  8d8c24f4000000       lea ecx, [esp + 0xf4]
+// 0088c2b7  89ac2414010000       mov dword ptr [esp + 0x114], ebp
+// 0088c2be  c78424f4000000e06da500 mov dword ptr [esp + 0xf4], 0xa56de0
+// 0088c2c9  e89233b8ff           call 0x40f660
+// 0088c2ce  8b8c240c010000       mov ecx, dword ptr [esp + 0x10c]
+// 0088c2d5  64890d00000000       mov dword ptr fs:[0], ecx
+// 0088c2dc  59                   pop ecx
+// 0088c2dd  5f                   pop edi
+// 0088c2de  5e                   pop esi
+// 0088c2df  5d                   pop ebp
+// 0088c2e0  5b                   pop ebx
+// 0088c2e1  81c404010000         add esp, 0x104
+// 0088c2e7  c20800               ret 8
+// 0088c2ea  8bff                 mov edi, edi
+// 0088c2ec  d4bd                 aam 0xbd
+// 0088c2ee  8800                 mov byte ptr [eax], al
+// 0088c2f0  2bbf88001cc0         sub edi, dword ptr [edi - 0x3fe3ff78]
+// 0088c2f6  8800                 mov byte ptr [eax], al
+// 0088c2f8  3cc1                 cmp al, 0xc1
+// 0088c2fa  8800                 mov byte ptr [eax], al
+// copied from an identical function in another client (function ?DrawSingleButton@CAppearanceSetPropertyPageFlat@CXTPTabPaintManager@@UAEXPAVCDC@@PAVCXTPTabManagerItem@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /MD /GS /EHsc
 // roc-lib: xtp-11.2.2-shared-mfc Source/TabManager/XTPTabPaintManagerAppearance.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPTabPaintManager.cpp: implementation of the CXTPTabPaintManager class.
-//
-// This file is a part of the XTREME TOOLKIT PRO MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-#include "Common/XTPDrawHelpers.h"
-#include "Common/XTPColorManager.h"
-#include "Common/XTPOffice2007Image.h"
-
-#include "XTPTabPaintManager.h"
-#include "XTPTabManager.h"
-#include "XTPTabPaintManager.inl"
-
-#ifndef _countof
-#define _countof(array) (sizeof(array)/sizeof(array[0]))
-#endif
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSet
-
-CXTPTabPaintManager::CAppearanceSet::CAppearanceSet()
-{
-	m_pPaintManager = NULL;
-	m_rcHeaderMargin.SetRect(0, 0, 0, 0);
-	m_nRowMargin = -2;
-	m_bButtonsReverseZOrder = FALSE;
-
-}
-CXTPTabPaintManager::CAppearanceSet::~CAppearanceSet()
-{
-}
-
-
-void CXTPTabPaintManager::CAppearanceSet::RefreshMetrics()
-{
-	CWindowDC dc (NULL);
-	CXTPFontDC fnt(&dc, m_pPaintManager->GetFont());
-	CSize szRect = dc.GetTextExtent(_T(" "), 1);
-
-	m_nButtonHeight = max(18, szRect.cy + 3);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSet::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-	rc.InflateRect(2, 2);
-
-	return rc;
-}
-
-int CXTPTabPaintManager::CAppearanceSet::GetButtonHeight(const CXTPTabManager* pTabManager)
-{
-	CSize szButtonMin(0);
-
-	int nMargin = m_pPaintManager->m_rcButtonMargin.top + m_pPaintManager->m_rcButtonMargin.bottom;
-
-	if (pTabManager) pTabManager->GetItemMetrics(NULL, &szButtonMin, NULL);
-	int nButtonHeight = max(m_nButtonHeight + nMargin, szButtonMin.cy);
-
-	if (!m_pPaintManager->m_bShowIcons)
-		return nButtonHeight;
-
-	CSize szIcon(m_pPaintManager->m_szIcon);
-	if (pTabManager) pTabManager->DrawIcon(NULL, 0, NULL, FALSE, szIcon);
-
-	return max(max(szIcon.cx, szIcon.cy) + 4 + nMargin, nButtonHeight);
-
-}
-
-
-void CXTPTabPaintManager::CAppearanceSet::DrawPolyLine(CDC* pDC, COLORREF clr, LPPOINT pts, int nCount)
-{
-	CXTPPenDC pen(*pDC, clr);
-	pDC->MoveTo(pts[0].x, pts[0].y);
-	CPoint pt(pts[0]);
-
-	for (int i = 1; i < nCount; i++)
-	{
-		pt.Offset(pts[i]);
-		pDC->LineTo(pt);
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSet::InflateRectEx(CRect& rc, CRect rcInflate, XTPTabPosition position)
-{
-	switch (position)
-	{
-		case xtpTabPositionTop: rc.top -= rcInflate.top; rc.left -= rcInflate.left; rc.bottom += rcInflate.bottom; rc.right += rcInflate.right; break;
-		case xtpTabPositionLeft: rc.left -= rcInflate.top; rc.bottom += rcInflate.right; rc.right += rcInflate.bottom;  rc.top -= rcInflate.left; break;
-		case xtpTabPositionBottom: rc.bottom += rcInflate.top; rc.right += rcInflate.right; rc.top -= rcInflate.bottom; rc.left -= rcInflate.left; break;
-		case xtpTabPositionRight: rc.right += rcInflate.top; rc.top -= rcInflate.left; rc.left -= rcInflate.bottom; rc.bottom += rcInflate.right; break;
-
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSet::DeflateRectEx(CRect& rc, CRect rcDeflate, XTPTabPosition position)
-{
-	InflateRectEx(rc, CRect(-rcDeflate.left, -rcDeflate.top, -rcDeflate.right, -rcDeflate.bottom), position);
-}
-
-void CXTPTabPaintManager::CAppearanceSet::DrawSingleLineBorder(CDC* pDC, CRect rc, XTPTabPosition position, COLORREF clrTopLeft, COLORREF clrBottomRight)
-{
-	switch (position)
-	{
-		case xtpTabPositionTop: HorizontalLine(pDC, rc.left, rc.top, rc.Width(), clrTopLeft); break;
-		case xtpTabPositionLeft: VerticalLine(pDC, rc.left, rc.top, rc.Height(), clrTopLeft); break;
-		case xtpTabPositionBottom: HorizontalLine(pDC, rc.left, rc.bottom - 1, rc.Width(), clrBottomRight); break;
-		case xtpTabPositionRight: VerticalLine(pDC, rc.right - 1, rc.top, rc.Height(), clrBottomRight); break;
-	}
-}
-
-
-COLORREF CXTPTabPaintManager::CAppearanceSet::FillButton(CDC* pDC, CXTPTabManagerItem* pItem, LPPOINT pts, int nCount, XTPTabPosition /*tabPosition*/, BOOL bAbsoulute)
-{
-	LPPOINT lpPointRgn = new POINT[nCount];
-	CPoint pt(0);
-	for (int i = 0; i < nCount; i++)
-	{
-		if (!bAbsoulute)
-		{
-			pt.Offset(pts[i]);
-			lpPointRgn[i] = pt;
-		}
-		else
-		{
-			lpPointRgn[i] = pts[i];
-		}
-	}
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	CRgn rgnClip;
-	rgnClip.CreateRectRgnIndirect(rcClip);
-
-
-	CRgn rgn;
-	rgn.CreatePolygonRgn(lpPointRgn, nCount, ALTERNATE);
-
-	pDC->SelectClipRgn(&rgn, RGN_AND);
-
-	CRect rcFill;
-	rgn.GetRgnBox(rcFill);
-
-	CBitmap bmp;
-	bmp.CreateCompatibleBitmap(pDC, rcFill.Width(), rcFill.Height());
-	CXTPCompatibleDC dcButton(pDC, &bmp);
-
-	COLORREF clrFill = GetColorSet()->FillPropertyButton(&dcButton, CRect(0, 0, rcFill.Width(), rcFill.Height()), pItem);
-
-	pDC->BitBlt(rcFill.left, rcFill.top, rcFill.Width(), rcFill.Height(), &dcButton, 0, 0, SRCCOPY);
-
-	pDC->SelectClipRgn(&rgnClip);
-	delete[] lpPointRgn;
-
-	return clrFill;
-}
-
-int CXTPTabPaintManager::CAppearanceSet::GetButtonLength(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	return m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, CXTPEmptyRect(), FALSE);
-}
-
-int CXTPTabPaintManager::CAppearanceSet::GetHeaderHeight(CXTPTabManager* pTabManager)
-{
-	int nMargin = m_rcHeaderMargin.top + m_rcHeaderMargin.bottom;
-
-	int nButtonHeight = GetButtonHeight(pTabManager) * pTabManager->GetRowCount() +
-		m_nRowMargin * (pTabManager->GetRowCount() - 1);
-
-	if (pTabManager->GetLayout() == xtpTabLayoutRotated)
-	{
-		for (int i = 0; i < pTabManager->GetItemCount(); i++)
-		{
-			CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-			if (pItem->GetButtonLength() > nButtonHeight)
-				nButtonHeight = pItem->GetButtonLength();
-		}
-
-	}
-
-	return nButtonHeight + nMargin;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSet::GetHeaderRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CRect rcHeader(rcControl);
-	int nHeight = GetHeaderHeight(pTabManager);
-
-	switch (pTabManager->GetPosition())
-	{
-		case xtpTabPositionTop: rcHeader.bottom = rcControl.top + nHeight; break;
-		case xtpTabPositionLeft: rcHeader.right = rcControl.left + nHeight; break;
-		case xtpTabPositionBottom: rcHeader.top = rcControl.bottom - nHeight; break;
-		case xtpTabPositionRight: rcHeader.left = rcControl.right - nHeight; break;
-	}
-	return rcHeader;
-}
-CRect CXTPTabPaintManager::CAppearanceSet::GetClientRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CRect rcClient(rcControl);
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-
-	switch (pTabManager->GetPosition())
-	{
-		case xtpTabPositionTop: rcClient.top = rcHeader.bottom - 1; break;
-		case xtpTabPositionLeft: rcClient.left = rcHeader.right - 1; break;
-		case xtpTabPositionBottom: rcClient.bottom = rcHeader.top + 1; break;
-		case xtpTabPositionRight: rcClient.right = rcHeader.left + 1; break;
-	}
-	return rcClient;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSet::GetClientMargin()
-{
-	return m_pPaintManager->m_rcClientMargin;
-}
-
-
-void CXTPTabPaintManager::CAppearanceSet::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
-{
-	DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-	rcClient = GetClientRect(rcClient, pTabManager);
-
-	DeflateRectEx(rcClient, GetClientMargin(), pTabManager->GetPosition());
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		DeflateRectEx(rcClient, CRect(2, 2, 2, 2), pTabManager->GetPosition());
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DeflateRectEx(rcClient, CRect(0, 2, 0, 0), pTabManager->GetPosition());
-	}
-}
-
-void CXTPTabPaintManager::CAppearanceSet::DrawWorkspacePart(CDC* pDC, LPRECT lpRect, XTPTabWorkspacePart workspacePart)
-{
-	if (!m_pPaintManager->m_bStaticFrame)
-	{
-
-		switch (workspacePart)
-		{
-		case xtpTabWorkspacePartBorder:
-			break;
-
-		case xtpTabWorkspacePartWidth:
-			lpRect->top -= 2;
-			lpRect->left -= 2;
-			lpRect->right += 2;
-			lpRect->bottom += 2;
-			break;
-
-		case xtpTabWorkspacePartVSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrHeaderFace.clrLight);
-			break;
-
-		case xtpTabWorkspacePartHSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrHeaderFace.clrLight);
-			break;
-		}
-	}
-	else
-	{
-
-		switch (workspacePart)
-		{
-		case xtpTabWorkspacePartBorder:
-			pDC->Draw3dRect(1, 0, lpRect->right - lpRect->left - 2, lpRect->bottom - lpRect->top - 1, GetXtremeColor(COLOR_3DFACE), GetXtremeColor(COLOR_3DFACE));
-			pDC->Draw3dRect(0, 0, lpRect->right - lpRect->left, lpRect->bottom - lpRect->top, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			break;
-
-		case xtpTabWorkspacePartWidth:
-			lpRect->top -= 1;
-			break;
-
-		case xtpTabWorkspacePartVSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrControlFace);
-			pDC->FillSolidRect(lpRect->right - 1, lpRect->top, 1, lpRect->bottom - lpRect->top, GetColorSet()->m_clrFrameBorder);
-			break;
-
-		case xtpTabWorkspacePartHSplitter:
-			pDC->FillSolidRect(lpRect, GetColorSet()->m_clrControlFace);
-			pDC->FillSolidRect(lpRect->left, lpRect->bottom - 1, lpRect->right - lpRect->left, 1, GetColorSet()->m_clrFrameBorder);
-			break;
-		}
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	if (!pItem->IsSelected())
-	{
-		if (!IsHorizontalTabPosition(pItem->GetTabManager()->GetPosition()))
-		{
-			HorizontalLine(pDC, rcItem.left + 2, rcItem.bottom, rcItem.Width() - 4, GetColorSet()->m_clrFrameBorder);
-		}
-		else
-		{
-			VerticalLine(pDC, rcItem.right, rcItem.top + 2, rcItem.Height() - 4, GetColorSet()->m_clrFrameBorder);
-		}
-	}
-	else
-	{
-		GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-		InflateRectEx(rcItem, CRect(0, 0, 0, 1), pItem->GetTabManager()->GetPosition());
-		pDC->Draw3dRect(rcItem, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-
-
-CRect CXTPTabPaintManager::CAppearanceSetVisualStudio::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrSelectedText);
-	}
-
-	return rcHeader;
-}
-
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage::RefreshMetrics()
-{
-	CAppearanceSet::RefreshMetrics();
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-	rc.InflateRect(2, 2);
-
-	return rc;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	InflateRectEx(rcHeader, CRect(0, 0, 0, 1), pTabManager->GetPosition());
-
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		Draw3dRect(pDC, rcClient, GetColorSet()->m_csPropertyPage.clrHighlight, GetColorSet()->m_csPropertyPage.clrDarkShadow);
-
-		HorizontalLine(pDC, rcClient.left + 1, rcClient.bottom - 2, rcClient.Width() - 2, GetColorSet()->m_csPropertyPage.clrShadow);
-		VerticalLine(pDC, rcClient.right - 2, rcClient.top + 1, rcClient.Height() - 2, GetColorSet()->m_csPropertyPage.clrShadow);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		switch (pTabManager->GetPosition())
-		{
-			case xtpTabPositionTop: HorizontalLine(pDC, rcClient.left, rcClient.top, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrHighlight); break;
-			case xtpTabPositionLeft: VerticalLine(pDC, rcClient.left, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrHighlight); break;
-			case xtpTabPositionBottom:
-				HorizontalLine(pDC, rcClient.left, rcClient.bottom - 1, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrDarkShadow);
-				HorizontalLine(pDC, rcClient.left, rcClient.bottom - 2, rcClient.Width(), GetColorSet()->m_csPropertyPage.clrShadow);
-				break;
-			case xtpTabPositionRight:
-				VerticalLine(pDC, rcClient.right - 1, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrDarkShadow);
-				VerticalLine(pDC, rcClient.right - 2, rcClient.top, rcClient.Height(), GetColorSet()->m_csPropertyPage.clrShadow);
-				break;
-		}
-
-	}
-
-
-	return rcHeader;
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage::GetClientMargin()
-{
-	CRect rc = m_pPaintManager->m_rcClientMargin;
-
-	if (m_pPaintManager->GetColorSet()->IsAppThemed() && m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		if (m_pPaintManager->GetPosition() == xtpTabPositionTop ||
-			m_pPaintManager->GetPosition() == xtpTabPositionLeft)
-		{
-			rc.bottom += 2;
-		}
-		rc.right += 2;
-	}
-
-	return rc;
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrShadow = GetColorSet()->m_csPropertyPage.clrShadow, clrHighlight = GetColorSet()->m_csPropertyPage.clrHighlight, clrDarkShadow = GetColorSet()->m_csPropertyPage.clrDarkShadow;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2, 2, 0);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			VerticalLine(pDC, rc.left, rc.top + 2, rc.Height() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.top + 1, clrHighlight);
-			HorizontalLine(pDC, rc.left + 2, rc.top, rc.Width() - 4, clrHighlight);
-
-			Pixel(pDC, rc.right - 2 , rc.top + 1, clrDarkShadow);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 2, rc.Height() - 3, clrDarkShadow);
-			VerticalLine(pDC, rc.right - 2, rc.top + 2, rc.Height() - 3, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-				HorizontalLine(pDC, rc.left + 1, rc.bottom - 1, rc.Width() - 3, clr);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2, 0, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			HorizontalLine(pDC, rc.left + 2, rc.top, rc.Width() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.top + 1, clrHighlight);
-
-			VerticalLine(pDC, rc.left, rc.top + 2, rc.Height() - 4, clrHighlight);
-
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 2, rc.Width() - 2, clrShadow);
-			HorizontalLine(pDC, rc.left + 2, rc.bottom - 1, rc.Width() - 3, clrDarkShadow);
-
-			Pixel(pDC, rc.left + 2, rc.bottom - 2, clrDarkShadow);
-			Pixel(pDC, rc.left + 2, rc.bottom - 1, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-				VerticalLine(pDC, rc.right - 1, rc.top + 1, rc.Height() - 3, clr);
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			VerticalLine(pDC, rc.left, rc.top + 1, rc.Height() - 2, clrHighlight);
-			Pixel(pDC, rc.left + 1, rc.bottom - 1, clrHighlight);
-
-			HorizontalLine(pDC, rc.left + 2, rc.bottom -1, rc.Width() - 4, clrShadow);
-			HorizontalLine(pDC, rc.left + 2, rc.bottom, rc.Width() - 4, clrDarkShadow);
-
-			Pixel(pDC, rc.right - 2, rc.bottom - 1, clrDarkShadow);
-
-			VerticalLine(pDC, rc.right - 1, rc.top, rc.Height() - 1, clrDarkShadow);
-			VerticalLine(pDC, rc.right - 2, rc.top, rc.Height() - 1, clrShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-			{
-				HorizontalLine(pDC, rc.left + 1, rc.top + 1, rc.Width() - 1, clr);
-				rc.bottom += 2;
-			}
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			if (pItem->IsSelected())
-				rc.InflateRect(2, 2);
-
-			COLORREF clr = GetColorSet()->FillPropertyButton(pDC, CRect(rc.left + 1, rc.top + 1, rc.right - 1, rc.bottom - 1), pItem);
-
-			HorizontalLine(pDC, rc.left + 1, rc.top, rc.Width() - 2, clrHighlight);
-			Pixel(pDC, rc.right - 1, rc.top + 1, clrHighlight);
-
-			VerticalLine(pDC, rc.right - 1, rc.top + 2, rc.Height() - 4, clrShadow);
-			VerticalLine(pDC, rc.right - 0, rc.top + 2, rc.Height() - 4, clrDarkShadow);
-
-			Pixel(pDC, rc.right - 1, rc.bottom - 2, clrDarkShadow);
-
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 2, rc.Width() - 2, clrShadow);
-			HorizontalLine(pDC, rc.left + 1, rc.bottom - 1, rc.Width() - 2, clrDarkShadow);
-
-			if (pItem->IsSelected() && pItem->GetItemRow() == 0)
-			{
-				VerticalLine(pDC, rc.left + 1, rc.top + 1, rc.Height() - 1, clr);
-				rc.right += 2;
-			}
-		}
-		break;
-
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rc, TRUE);
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-void CXTPTabPaintManager::CAppearanceSetPropertyPageSelected::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	if (pItem->IsSelected() || pItem->IsHighlighted())
-	{
-		CAppearanceSetPropertyPage::DrawSingleButton(pDC, pItem);
-	}
-	else
-	{
-		m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-	}
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetStateButtons
-
-CRect CXTPTabPaintManager::CAppearanceSetStateButtons::FillTabControl(CXTPTabManager* pTabManager, CDC* /*pDC*/, CRect rcControl)
-{
-	return GetHeaderRect(rcControl, pTabManager);
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetStateButtons::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	GetColorSet()->FillStateButton(pDC, rcItem, pItem);
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2003
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2003::RefreshMetrics()
-{
-	CAppearanceSet::RefreshMetrics();
-
-
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2003::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height(), rc.top, rc.right + 2, rc.bottom) :
-		CRect(rc.left, rc.top - rc.Width(), rc.right, rc.bottom + 2);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2003::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_csPropertyPage2003.clrFrameBorder, GetColorSet()->m_csPropertyPage2003.clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_csPropertyPage2003.clrFrameBorder, GetColorSet()->m_csPropertyPage2003.clrFrameBorder);
-	}
-
-	return rcHeader;
-}
-
-
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2003::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrBorder = GetColorSet()->m_csPropertyPage2003.clrDarkShadow, clrLeftHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderLeftHighlight, clrTopHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderTopHighlight;
-	if (pItem->IsSelected())
-	{
-		clrBorder = GetColorSet()->m_csPropertyPage2003.clrFrameBorder;
-		clrLeftHighlight = RGB(255, 255, 255);
-		clrTopHighlight = RGB(255, 255, 255);
-	}
-
-	if (pItem->IsHighlighted() && m_bDoubleHighlightedBorder)
-	{
-		clrLeftHighlight = clrTopHighlight = clrBorder = GetColorSet()->m_csStateButton.clrBorder.clrDark;
-	}
-
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			rc.bottom--;
-
-			POINT ptsFill[] = {{rc.right - 1, rc.bottom}, {0, 2 - rc.Height()}, {5 - rc.Width(), 0}, {3 - rc.Height(), rc.Height() - 3}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right, rc.bottom - 1}, {+0, 3 - rc.Height()}, {-2, -2}, {9 - rc.Width(), 0}, {-5, 2}, {3 - rc.Height(), rc.Height() - 3}, {-2, 0}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.bottom - 1}, {+0, 3 - rc.Height()}, {-2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 3, rc.top + 1}, {9 - rc.Width(), 0}, {-5, +3}, {4 - rc.Height(), rc.Height() - 4}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left - rc.Height() + 4, rc.bottom, rc.Width() + rc.Height() - 3, clrDark);
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			rc.right--;
-
-			POINT ptsFill[] = {{rc.right, rc.bottom - 1}, {2 - rc.Width(), 0}, {0, 5 - rc.Height()}, {rc.Width() - 2, 2 - rc.Width()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right - 1, rc.bottom}, {3 - rc.Width(), 0}, {-2, -2}, {0, 9 - rc.Height()}, {2, -5}, {rc.Width() - 3, 3 - rc.Width()}, {0, -2}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.bottom - 1}, {3 - rc.Width(), 0}, {-2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.left + 1, rc.bottom - 3}, {0, 9 - rc.Height()}, {+3, -5}, {rc.Width() - 4, 4 - rc.Width()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.right, rc.top - rc.Width() + 4, rc.Width() + rc.Height() - 3, clrDark);
-		}
-
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			POINT ptsFill[] = {{rc.right - 1, rc.top}, {0, rc.Height() - 1}, {5 - rc.Width(), 0}, {3 - rc.Height(), 2 - rc.Height()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.right, rc.top + 1}, {+0, rc.Height() - 3}, {-2, 2}, {9 - rc.Width(), 0}, {-5, -2}, {3 - rc.Height(), 3 - rc.Height()}, {-2, 0}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.right - 1, rc.top + 1}, {+0, rc.Height() - 3}, {-2, 2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 3, rc.bottom - 1}, {9 - rc.Width(), 0}, {-5, -3}, {4 - rc.Height(), 4 - rc.Height()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left - rc.Height() + 4, rc.top, rc.Width() + rc.Height() - 3, clrDark);
-
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			POINT ptsFill[] = {{rc.left + 1, rc.bottom - 1}, {rc.Width() - 2, 0}, {0, 5 - rc.Height()}, {2 - rc.Width(), 2 - rc.Width()}};
-			//POINT ptsFill[] = {{rc.left, rc.bottom - 1}, {rc.Width() - 1, 0}, {0, 5 - rc.Height()}, {2 - rc.Width(), 2 - rc.Width()}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, sizeof(ptsFill) / sizeof(ptsFill[0]), pItem->GetTabManager()->GetPosition());
-
-			POINT ptsBorder[] = {{rc.left + 1, rc.bottom}, {rc.Width() -3, 0}, {2, -2}, {0, 9 - rc.Height()}, {-2, -5}, {3 - rc.Width(), 3 - rc.Width()}, {0, -2}};
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsLeftHighlight[] = {{rc.left + 1, rc.bottom - 1}, {rc.Width() - 3, 0}, {2, -2}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsLeftHighlight, sizeof(ptsLeftHighlight) / sizeof(ptsLeftHighlight[0]));
-
-			POINT ptsTopHighlight[] = {{rc.right - 1, rc.bottom - 3}, {0, 9 - rc.Height()}, {-3, -5}, {4 - rc.Width(), 4 - rc.Width()}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsTopHighlight, sizeof(ptsTopHighlight) / sizeof(ptsTopHighlight[0]));
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.left, rc.top - rc.Width() + 4, rc.Width() + rc.Height() - 3, clrDark);
-
-
-		}
-		break;
-
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPage2007
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::RefreshMetrics()
-{
-	CAppearanceSet::RefreshMetrics();
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetPropertyPage2007::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-	if (!XTPOffice2007Images()->IsValid())
-		return CAppearanceSet::FillTabControl(pTabManager, pDC, rcControl);
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	pDC->FillSolidRect(rcHeader, GetColorSet()->m_clrHeaderFace.clrLight);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("RIBBONGROUPS"));
-		if (pImage) pImage->DrawImage(pDC, rcClient, pImage->GetSource(0, 1), CRect(8, 8, 8, 8));
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(),
-			GetColorSet()->m_csPropertyPage.clrShadow, GetColorSet()->m_csPropertyPage.clrShadow);
-	}
-
-	return rcHeader;
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawButtonBackground(CDC* pDC, CXTPTabManagerItem* pItem, CRect rc)
-{
-	CXTPOffice2007Image* pImage = XTPOffice2007Images()->LoadFile(_T("RIBBONTAB"));
-
-	int nState = 0;
-	if (pItem->IsSelected() && pItem->IsFocused())
-	{
-		nState = 5;
-	}
-	else if (pItem->IsSelected() && pItem->IsHighlighted())
-	{
-		nState = 4;
-	}
-	else if (pItem->IsSelected())
-	{
-		nState = 3;
-	}
-	else if (pItem->IsPressed())
-	{
-		nState = 2;
-	}
-	else if (pItem->IsHighlighted())
-	{
-		nState = 1;
-	}
-
-	if (pImage) pImage->DrawImage(pDC, rc, pImage->GetSource(nState, 6), CRect(5, 5, 5, 5), 0xFF00FF);
-}
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawRotatedButton(CDC* pDC, CRect rcItem, CXTPTabManagerItem* pItem, BOOL bSwap, LPFNDRAWROTATEDBITS pfnRotatedProc)
-{
-	const int cx = rcItem.Width();
-	const int cy = rcItem.Height();
-
-	BITMAPINFO BMI;
-	// Fill in the header info.
-	ZeroMemory (&BMI, sizeof(BITMAPINFO));
-	BMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	BMI.bmiHeader.biWidth = bSwap ? cy : cx;
-	BMI.bmiHeader.biHeight = bSwap ? cx : cy;
-	BMI.bmiHeader.biPlanes = 1;
-	BMI.bmiHeader.biBitCount = 32;
-	BMI.bmiHeader.biCompression = BI_RGB;   // No compression
-
-	UINT* pSrcBits = NULL;
-	HBITMAP hbmSrc = CreateDIBSection (NULL, &BMI, DIB_RGB_COLORS, (void **)&pSrcBits, 0, 0l);
-	if (!pSrcBits)
-		return;
-
-	BMI.bmiHeader.biWidth = cx;
-	BMI.bmiHeader.biHeight = cy;
-	UINT* pDestBits = NULL;
-	HBITMAP hbmDest = CreateDIBSection (NULL, &BMI, DIB_RGB_COLORS, (void **)&pDestBits, 0, 0l);
-	if (!pDestBits)
-		return;
-
-	CDC dc;
-	dc.CreateCompatibleDC(NULL);
-	HGDIOBJ hbmpOld = ::SelectObject(dc, hbmSrc);
-
-	CRect rcDraw(0, 0, bSwap ? cy: cx, bSwap ? cx : cy);
-
-	dc.FillSolidRect(rcDraw, GetColorSet()->m_clrHeaderFace.clrLight);
-
-	DrawButtonBackground(&dc, pItem, rcDraw);
-
-	(*pfnRotatedProc)(cx, cy, pSrcBits, pDestBits);
-
-	pDC->DrawState(rcItem.TopLeft(), rcItem.Size(), hbmDest, DST_BITMAP);
-
-	::SelectObject(dc, hbmpOld);
-
-	DeleteObject(hbmSrc);
-	DeleteObject(hbmDest);
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPage2007::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	if (!XTPOffice2007Images()->IsValid())
-	{
-		CAppearanceSet::DrawSingleButton(pDC, pItem);
-		return;
-	}
-
-	CRect rc = pItem->GetRect();
-
-	if (pItem->IsSelected() || pItem->IsHighlighted())
-	{
-		switch (pItem->GetTabManager()->GetPosition())
-		{
-			case xtpTabPositionTop:
-				DrawButtonBackground(pDC, pItem, rc);
-				break;
-
-			case xtpTabPositionBottom:
-				DrawRotatedButton(pDC, rc, pItem, FALSE, &CColorSetWinXP::DrawRotatedBitsBottom);
-				break;
-
-			case xtpTabPositionLeft:
-				DrawRotatedButton(pDC, rc, pItem, TRUE, &CColorSetWinXP::DrawRotatedBitsLeft);
-				break;
-
-			case xtpTabPositionRight:
-				DrawRotatedButton(pDC, rc, pItem, TRUE, &CColorSetWinXP::DrawRotatedBitsRight);
-				break;
-		}
-
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rc, TRUE);
-}
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisualStudio2005
-
-CRect CXTPTabPaintManager::CAppearanceSetVisualStudio2005::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height() / 2, rc.top, rc.right + rc.Height() / 2 , rc.bottom) :
-		CRect(rc.left, rc.top  - rc.Width() / 2, rc.right , rc.bottom  + rc.Width() / 2);
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisualStudio2005::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	COLORREF clrBorder = GetColorSet()->m_csPropertyPage2003.clrDarkShadow, clrLeftHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderLeftHighlight, clrTopHighlight = GetColorSet()->m_csPropertyPage2003.clrBorderTopHighlight;
-	if (pItem->IsSelected())
-	{
-		clrBorder = GetColorSet()->m_csPropertyPage2003.clrFrameBorder;
-		clrLeftHighlight = RGB(255, 255, 255);
-		clrTopHighlight = RGB(255, 255, 255);
-	}
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionBottom:
-		{
-			int nHeight2 = rc.Height() /2;
-
-			POINT ptsBorder[] = {{rc.right + nHeight2 - 4, rc.top + 1}, {-nHeight2 + 3 , nHeight2 * 2 - 6}, {-4, 4}, {-2, 1}, {-rc.Width() + 14, 0}, {-2, -1}, {-3, -3}, {-nHeight2 + 3 - 1 , -(nHeight2 * 2 - 6 + 2)}};
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right + nHeight2 - 4 - 1, rc.top + 1}, {-nHeight2 + 3 , nHeight2 * 2 - 6}, {-3, 3}, {-2, 1}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 4 + 3 - 4 - 2 - rc.Width() + 14, rc.top + 1 + nHeight2 * 2 - 6 + 4}
-				, {-2, -1}, {-2, -2}, {-nHeight2 + 3 - 1 , -(nHeight2 * 2 - 6 + 2)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-
-		}
-		break;
-
-	case xtpTabPositionTop:
-		{
-			int nHeight2 = rc.Height() /2;
-
-			POINT ptsBorder[] = {{rc.right + nHeight2 - 4, rc.bottom - 1}, {-nHeight2 + 3 , - nHeight2 * 2 + 6}, {-4, -4}, {-3, -1}, {-rc.Width() + 16, 0}, {-3, 1}, {-3, 3}, {-nHeight2 + 3 - 1 , (nHeight2 * 2 - 6 + 2)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right + nHeight2 - 4 - 1, rc.bottom - 1}, {-nHeight2 + 3 , - nHeight2 * 2 + 6}, {-3, -3}, {-3, -1}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 4 + 3 - 4 -2, rc.bottom - nHeight2 * 2 + 6 - 1-4}, {-rc.Width() + 16 -1, 0}, {-3, 1}, {-2, 2}, {-nHeight2 + 3 - 1 , (nHeight2 * 2 - 6 + 2)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			int nHeight2 = rc.Width() /2;
-
-			POINT ptsBorder[] = {{rc.left, rc.bottom + nHeight2 - 4}, {nHeight2 * 2 -6 + 1 , -nHeight2 + 3}, {4, -4}, {+1, -3}, {0, -rc.Height() + 16}, {-1, -3}, {-3, -3}, {-nHeight2 * 2 + 6 - 2, (- nHeight2 +3 -1)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.left, rc.bottom + nHeight2 - 5}, {nHeight2 * 2 -6 + 1 , -nHeight2 + 3}, {3, -3}, {+1, -3}, {0, -rc.Height() + 14}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.left + nHeight2 * 2 -6 + 2 + 4 -2 , rc.bottom - 4 -4 -rc.Height() + 16 -3}, {-2, -2}, {-nHeight2 * 2 + 6 - 2, (- nHeight2 +3 -1)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			int nHeight2 = rc.Width() /2;
-
-			POINT ptsBorder[] = {{rc.right - 1, rc.bottom + nHeight2 - 4}, {-(nHeight2 * 2 -6), -nHeight2 + 3}, {-4, -4}, {-1, -3}, {0, -rc.Height() + 16}, {1, -3}, {3, -3}, {nHeight2 * 2 - 6 + 2, (- nHeight2 +3 -1)}};
-
-			FillButton(pDC, pItem, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]), pItem->GetTabManager()->GetPosition());
-			DrawPolyLine(pDC, clrBorder, ptsBorder, sizeof(ptsBorder) / sizeof(ptsBorder[0]));
-
-			POINT ptsRightBorder[] = {{rc.right - 1, rc.bottom + nHeight2 - 5}, {-(nHeight2 * 2 -6), -nHeight2 + 3}, {-3, -3}, {-1, -3}};
-			DrawPolyLine(pDC, clrLeftHighlight, ptsRightBorder, sizeof(ptsRightBorder) / sizeof(ptsRightBorder[0]));
-
-			POINT ptsLeftBorder[] = {{rc.right - 1-(nHeight2 * 2 -6)-4-1 + 1, rc.bottom + nHeight2 - 4 -nHeight2 + 3 -4 -3}, {0, -rc.Height() + 16}, {1, -3}, {2, -2}, {nHeight2 * 2 - 6 + 2, (- nHeight2 +3 -1)}};
-			DrawPolyLine(pDC, clrTopHighlight, ptsLeftBorder, sizeof(ptsLeftBorder) / sizeof(ptsLeftBorder[0]));
-		}
-		break;
-
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetFlat
-
-void CXTPTabPaintManager::CAppearanceSetFlat::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-
-	InflateRectEx(rcItem, CRect(0, 0, 1, 0), pItem->GetTabManager()->GetPosition());
-
-	GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-	if (pItem->IsSelected())
-		InflateRectEx(rcItem, CRect(0, 0, 0, 1), pItem->GetTabManager()->GetPosition());
-
-	pDC->Draw3dRect(rcItem, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetFlat::FillTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcControl)
-{
-
-	CRect rcHeader = GetHeaderRect(rcControl, pTabManager);
-	GetColorSet()->FillHeader(pDC, rcHeader, pTabManager);
-
-	CRect rcClient = GetClientRect(rcControl, pTabManager);
-
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameBorder)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	if (m_pPaintManager->m_clientFrame == xtpTabFrameSingleLine)
-	{
-		GetColorSet()->FillClient(pDC, rcClient, pTabManager);
-		DrawSingleLineBorder(pDC, rcClient, pTabManager->GetPosition(), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-
-
-	return rcHeader;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetPropertyPageFlat
-
-void CXTPTabPaintManager::CAppearanceSetPropertyPageFlat::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem(pItem->GetRect());
-	XTPTabPosition tabPosition = pItem->GetTabManager()->GetPosition();
-
-	InflateRectEx(rcItem, CRect(0, 0, 1, 0), tabPosition);
-
-	CRect rcTab(rcItem);
-
-	CRect rcClip;
-	pDC->GetClipBox(rcClip);
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rcClip);
-	InflateRectEx(rcTab, CRect(0, 0, 0, 1), tabPosition);
-	XTPDrawHelpers()->ExcludeCorners(pDC, rcTab);
-
-	CRect rcEntry(rcItem);
-	InflateRectEx(rcEntry, CRect(-1, -1, -1, 0), tabPosition);
-
-	if (m_bVisualStudio2005Style)
-	{
-		if (pItem->IsSelected())
-		{
-			GetColorSet()->FillPropertyButton(pDC, rcEntry, pItem);
-			if (!pItem->IsSelected())
-				DrawSingleLineBorder(pDC, rcItem, XTPTabPosition((tabPosition + 2) % 4), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			InflateRectEx(rcItem, CRect(0, 0, 0, 2), tabPosition);
-
-			CXTPPenDC pen(*pDC, GetColorSet()->m_clrFrameBorder);
-			CGdiObject* pOldBrush = pDC->SelectStockObject(NULL_BRUSH);
-			pDC->RoundRect(rcItem, CPoint(6, 6));
-			pDC->SelectObject(pOldBrush);
-		}
-		else
-		{
-			if (pItem->GetIndex() < pItem->GetTabManager()->GetItemCount() - 1)
-			{
-				if (IsHorizontalTabPosition(tabPosition))
-					pDC->FillSolidRect(rcItem.right - 1, rcItem.top + 3, 1, rcItem.Height() - 6, GetColorSet()->m_clrFrameBorder);
-				else
-					pDC->FillSolidRect(rcItem.left + 3, rcItem.bottom - 1, rcItem.Width() - 6, 1, GetColorSet()->m_clrFrameBorder);
-			}
-		}
-
-	}
-	else
-	{
-
-		GetColorSet()->FillPropertyButton(pDC, rcEntry, pItem);
-
-		if (m_bBlurPoints)
-		{
-			if (pItem->IsSelected())
-				InflateRectEx(rcItem, CRect(0, 0, 0, 1), tabPosition);
-			pDC->Draw3dRect(rcItem, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-		}
-		else
-		{
-			if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-			{
-				if (!pItem->IsSelected())
-					DrawSingleLineBorder(pDC, rcItem, XTPTabPosition((tabPosition + 2) % 4), GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-			}
-
-			InflateRectEx(rcItem, CRect(0, 0, 0, 2), tabPosition);
-
-			CXTPPenDC pen(*pDC, GetColorSet()->m_clrFrameBorder);
-			CGdiObject* pOldBrush = pDC->SelectStockObject(NULL_BRUSH);
-			pDC->RoundRect(rcItem, CPoint(6, 6));
-			pDC->SelectObject(pOldBrush);
-		}
-	}
-
-	pDC->SelectClipRgn(&rgn);
-
-	if (m_bBlurPoints)
-	switch (tabPosition)
-	{
-	case xtpTabPositionTop:
-		{
-			POINT pts[] =
-			{
-				{rcTab.left, rcTab.top + 1}, {0, -1}, {rcTab.left + 1, rcTab.top}, {-1, 0},
-				{rcTab.right - 2, rcTab.top}, {+1, 0}, {rcTab.right - 1, rcTab.top + 1}, {0, -1},
-				{rcTab.left + 1, rcTab.top + 1}, {-1, 0}, {rcTab.right - 2, rcTab.top + 1}, {+1, 0},
-				{rcTab.left + 2, rcTab.top + 1}, {-1, 0}, {rcTab.left + 1, rcTab.top +2}, {0, -1},
-				{rcTab.right - 3, rcTab.top + 1}, {+1, 0}, {rcTab.right - 2, rcTab.top + 2}, {0, -1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-
-	case xtpTabPositionLeft:
-		{
-			POINT pts[] =
-			{
-				{rcTab.left, rcTab.top + 1}, {0, -1}, {rcTab.left + 1, rcTab.top}, {-1, 0},
-				{rcTab.left, rcTab.bottom - 2}, {0, +1}, {rcTab.left + 1, rcTab.bottom}, {-1, 0},
-				{rcTab.left + 1, rcTab.top + 1}, {-1, 0}, {rcTab.left + 1, rcTab.bottom - 2}, {-1, 0},
-				{rcTab.left + 2, rcTab.top + 1}, {-1, 0}, {rcTab.left + 1, rcTab.top +2}, {0, -1},
-				{rcTab.left + 2, rcTab.bottom - 2}, {-1, 0}, {rcTab.left + 1, rcTab.bottom - 3}, {0, +1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			POINT pts[] =
-			{
-				{rcTab.left, rcTab.bottom - 2}, {0, +1}, {rcTab.left + 1, rcTab.bottom -1}, {-1, 0},
-				{rcTab.right - 1, rcTab.bottom - 2}, {0, +1}, {rcTab.right - 2, rcTab.bottom - 1}, {+1, 0},
-				{rcTab.left + 1, rcTab.bottom - 2}, {0, +1}, {rcTab.right - 2, rcTab.bottom - 2}, {+1, 0},
-				{rcTab.left + 2, rcTab.bottom - 2}, {-1, 0}, {rcTab.left + 1, rcTab.bottom - 3}, {0, +1},
-				{rcTab.right - 3, rcTab.bottom - 2}, {+1, 0}, {rcTab.right - 2, rcTab.bottom - 3}, {0, +1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-
-	case xtpTabPositionRight:
-		{
-			POINT pts[] =
-			{
-				{rcTab.right - 1, rcTab.top + 1}, {0, -1}, {rcTab.right - 2, rcTab.top}, {+1, 0},
-				{rcTab.right - 1, rcTab.bottom - 2}, {0, +1}, {rcTab.right - 2, rcTab.bottom}, {+1, 0},
-				{rcTab.right - 2, rcTab.top + 1}, {+1, 0}, {rcTab.right - 2, rcTab.bottom - 2}, {+1, 0},
-				{rcTab.right - 3, rcTab.top + 1}, {+1, 0}, {rcTab.right - 2, rcTab.top +2}, {0, -1},
-				{rcTab.right - 3, rcTab.bottom - 2}, {+1, 0}, {rcTab.right - 2, rcTab.bottom - 3}, {0, +1},
-			};
-			XTPDrawHelpers()->BlurPoints(pDC, pts, _countof(pts));
-		}
-		break;
-	}
-
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceExcel
-
-void CXTPTabPaintManager::CAppearanceSetExcel::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rc(pItem->GetRect());
-
-	CXTPTabPaintManager::CColorSet::COLORSET_TAB_EXCEL& cs = pItem->IsSelected() ? GetColorSet()->m_csExcelSelected : GetColorSet()->m_csExcelNormal;
-
-	switch (pItem->GetTabManager()->GetPosition())
-	{
-	case xtpTabPositionTop:
-		{
-			rc.bottom -= 1;
-			int nMargin = rc.Height() / 2;
-			rc.OffsetRect(- nMargin / 2 , 0);
-
-			POINT ptsFill[] = {{rc.left, rc.bottom}, {nMargin, - nMargin * 2}, {rc.Width() - nMargin, 0}, {nMargin, nMargin * 2}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.bottom - 1, rc.left + nMargin + 1, rc.top);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + nMargin, rc.top + 1, rc.right, rc.top + 1);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right - 1, rc.top, rc.right + nMargin - 1, rc.bottom);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.bottom - 1, rc.left + nMargin, rc.top);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left + nMargin, rc.top, rc.right, rc.top);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.top, rc.right + nMargin, rc.bottom);
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left, rc.bottom, rc.Width() + nMargin, clrDark);
-
-		}
-		break;
-	case xtpTabPositionLeft:
-		{
-			rc.right -= 1;
-			int nMargin = rc.Width() / 2;
-			rc.OffsetRect(0, - nMargin / 2);
-
-			POINT ptsFill[] = {{rc.right, rc.top}, {-nMargin * 2, nMargin}, {0, rc.Height() - nMargin}, {nMargin * 2, nMargin}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.right - 1, rc.top + 1, rc.left, rc.top + nMargin + 1);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + nMargin, rc.left + 1, rc.bottom);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.left , rc.bottom - 1, rc.right, rc.bottom + nMargin - 1);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.right - 1, rc.top, rc.left, rc.top + nMargin);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.top + nMargin, rc.left, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.left, rc.bottom, rc.right, rc.bottom + nMargin);
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.right, rc.top, rc.Height() + nMargin, clrDark);
-
-		}
-		break;
-
-	case xtpTabPositionBottom:
-		{
-			rc.bottom -= 1;
-			int nMargin = rc.Height() / 2;
-			rc.OffsetRect(- nMargin /2 , 0);
-
-			POINT ptsFill[] = {{rc.left, rc.top + 1}, {nMargin, nMargin * 2}, {rc.Width() - nMargin, 0}, {nMargin, - nMargin * 2}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + 1, rc.left + nMargin + 1, rc.bottom);
-			LineEx(pDC, cs.clrTopOuterBorder, rc.left + nMargin, rc.bottom - 1, rc.right, rc.bottom - 1);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right - 1, rc.bottom, rc.right + nMargin - 1, rc.top);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left, rc.top + 1, rc.left + nMargin, rc.bottom);
-			LineEx(pDC, cs.clrTopInnerBorder, rc.left + nMargin, rc.bottom, rc.right, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.bottom, rc.right + nMargin, rc.top);
-
-			if (pItem->IsSelected())
-				HorizontalLine(pDC, rc.left, rc.top, rc.Width() + nMargin, clrDark);
-		}
-
-		break;
-
-	case xtpTabPositionRight:
-		{
-			rc.right -= 1;
-			int nMargin = rc.Width() / 2;
-			rc.OffsetRect(0, - nMargin / 2);
-
-			POINT ptsFill[] = {{rc.left + 1, rc.top}, {nMargin * 2, nMargin}, {0, rc.Height() - nMargin}, {- nMargin * 2, nMargin}};
-			COLORREF clrDark = FillButton(pDC, pItem, ptsFill, _countof(ptsFill), pItem->GetTabManager()->GetPosition(), FALSE);
-
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.left + 1, rc.top + 1, rc.right, rc.top + nMargin + 1);
-			LineEx(pDC, cs.clrLeftOuterBorder, rc.right - 1, rc.top + nMargin, rc.right - 1, rc.bottom);
-			LineEx(pDC, cs.clrRightOuterBorder, rc.right , rc.bottom - 1, rc.left, rc.bottom + nMargin - 1);
-
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.left + 1, rc.top, rc.right, rc.top + nMargin);
-			LineEx(pDC, cs.clrLeftInnerBorder, rc.right, rc.top + nMargin, rc.right, rc.bottom);
-			LineEx(pDC, cs.clrRightInnerBorder, rc.right, rc.bottom, rc.left, rc.bottom + nMargin);
-
-			if (pItem->IsSelected())
-				VerticalLine(pDC, rc.left, rc.top, rc.Height() + nMargin, clrDark);
-		}
-		break;
-	}
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, pItem->GetRect(), TRUE);
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetExcel::GetButtonDrawRect(const CXTPTabManagerItem* pItem)
-{
-	CRect rc = pItem->GetRect();
-
-	return pItem->GetTabManager()->IsHorizontalPosition() ?
-		CRect(rc.left - rc.Height() / 2, rc.top, rc.right + rc.Height() / 2 , rc.bottom) :
-		CRect(rc.left, rc.top  - rc.Width() / 2, rc.right, rc.bottom  + rc.Width() / 2);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// CAppearanceSetVisio
-
-
-void CXTPTabPaintManager::CAppearanceSetVisio::AdjustClientRect(CXTPTabManager* pTabManager, CRect& rcClient)
-{
-	DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	rcClient = GetClientRect(rcClient, pTabManager);
-
-	DeflateRectEx(rcClient, GetClientMargin(), pTabManager->GetPosition());
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisio::RepositionTabControl(CXTPTabManager* pTabManager, CDC* /*pDC*/, CRect rcClient)
-{
-
-	CAppearanceSet::DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	if (pTabManager->GetItemCount() == 0)
-		return;
-
-	int nButtonHeight = GetButtonHeight(pTabManager);
-
-	CRect rc(rcClient);
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		rc.left++;
-	}
-
-	rc.top++;
-
-	CRect rcItem(rc.left, rc.top, rc.right, rc.top);
-
-	for (int i = 0; i < pTabManager->GetItemCount(); i++)
-	{
-		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-		rcItem.bottom = rcItem.top + nButtonHeight;
-
-		pItem->SetRect(rcItem);
-
-		rcItem.top += nButtonHeight;
-
-		if (pItem->IsSelected())
-		{
-			int nBottom = max(rcItem.top + nButtonHeight, rc.bottom - (pTabManager->GetItemCount() - i - 1) * nButtonHeight);
-			nBottom = max(rcItem.top, min(nBottom, rc.bottom - 1));
-			rcItem.top = nBottom;
-		}
-	}
-}
-
-CRect CXTPTabPaintManager::CAppearanceSetVisio::GetHeaderRect(CRect /*rcControl*/, CXTPTabManager* /*pTabManager*/)
-{
-	return CXTPEmptyRect();
-}
-
-
-CRect CXTPTabPaintManager::CAppearanceSetVisio::GetClientRect(CRect rcControl, CXTPTabManager* pTabManager)
-{
-	CXTPTabManagerItem* pItem = pTabManager->GetSelectedItem();
-
-	if (pItem)
-	{
-		int nButtonHeight = GetButtonHeight(pTabManager);
-
-		rcControl.top += (pItem->GetIndex() + 1) * nButtonHeight + 1;
-
-		rcControl.bottom -= (pTabManager->GetItemCount() - pItem->GetIndex() - 1) * nButtonHeight;
-
-		rcControl.bottom = max(rcControl.top + nButtonHeight, rcControl.bottom);
-
-		if (pItem->GetIndex() == pTabManager->GetItemCount() - 1 &&
-			m_pPaintManager->m_clientFrame != xtpTabFrameNone) rcControl.bottom--;
-	}
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		rcControl.DeflateRect(1, 0, 1, 0);
-	}
-
-
-	return rcControl;
-}
-
-
-void CXTPTabPaintManager::CAppearanceSetVisio::DrawSingleButton(CDC* pDC, CXTPTabManagerItem* pItem)
-{
-	CRect rcItem = pItem->GetRect();
-
-	GetColorSet()->FillPropertyButton(pDC, rcItem, pItem);
-
-	pDC->Draw3dRect(rcItem, GetColorSet()->m_clrBorderHighlight, GetColorSet()->m_clrFrameBorder);
-
-	for (int y = rcItem.top + 4; y < rcItem.bottom - 3; y += 2)
-	{
-		HorizontalLine(pDC, rcItem.right - 7, y, 3, GetXtremeColor(XPCOLOR_TOOLBAR_GRIPPER));
-	}
-	rcItem.right -= 7;
-
-	m_pPaintManager->DrawSingleButtonIconAndText(pDC, pItem, rcItem, TRUE);
-}
-
-void CXTPTabPaintManager::CAppearanceSetVisio::DrawTabControl(CXTPTabManager* pTabManager, CDC* pDC, CRect rcClient)
-{
-	pDC->FillSolidRect(rcClient, GetColorSet()->m_clrControlFace);
-
-	CAppearanceSet::DeflateRectEx(rcClient, m_pPaintManager->m_rcControlMargin, pTabManager->GetPosition());
-
-	CRgn rgn;
-	rgn.CreateRectRgnIndirect(rcClient);
-	pDC->SelectClipRgn(&rgn);
-
-	if (m_pPaintManager->m_clientFrame != xtpTabFrameNone)
-	{
-		pDC->Draw3dRect(rcClient, GetColorSet()->m_clrFrameBorder, GetColorSet()->m_clrFrameBorder);
-	}
-	else if (pTabManager->GetItemCount() > 0)
-	{
-		HorizontalLine(pDC, rcClient.left, rcClient.top, rcClient.Width(), GetColorSet()->m_clrFrameBorder);
-	}
-
-	pDC->SetBkMode(TRANSPARENT);
-
-	for (int i = pTabManager->GetItemCount() - 1; i >= 0; i--)
-	{
-		CXTPTabManagerItem* pItem = pTabManager->GetItem(i);
-
-		CRect rcItem = pItem->GetRect();
-
-		if (CRect().IntersectRect(rcClient, rcItem) && !rcItem.IsRectEmpty())
-		{
-			DrawSingleButton(pDC, pItem);
-		}
-	}
-
-	pDC->SelectClipRgn(NULL);
-}

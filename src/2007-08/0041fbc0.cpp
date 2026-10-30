@@ -1,84 +1,23 @@
 // from server: 100% by auto
+// roc 2007-08 0041fbc0  unit: CXTTreeCtrl  size: 37 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 0041fbc0
+//
+// 0041fbc0  8b442404             mov eax, dword ptr [esp + 4]
+// 0041fbc4  56                   push esi
+// 0041fbc5  50                   push eax
+// 0041fbc6  8bf1                 mov esi, ecx
+// 0041fbc8  e825012100           call 0x62fcf2
+// 0041fbcd  85c0                 test eax, eax
+// 0041fbcf  7504                 jne 0x41fbd5
+// 0041fbd1  5e                   pop esi
+// 0041fbd2  c20400               ret 4
+// 0041fbd5  c6869000000000       mov byte ptr [esi + 0x90], 0
+// 0041fbdc  b801000000           mov eax, 1
+// 0041fbe1  5e                   pop esi
+// 0041fbe2  c20400               ret 4
+// library xtp-11.2.2-vc8/Source\Controls\XTTreeCtrlView.cpp (function ?PreCreateWindow@CXTTreeCtrlBase@@MAEHAAUtagCREATESTRUCTA@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/Controls/XTTreeCtrlView.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTTreeCtrl.cpp : implementation file
-//
-// This file is a part of the XTREME CONTROLS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTTreeCtrlView.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTTreeView
-
-CXTTreeView::CXTTreeView()
-{
-	m_pTreeCtrl = (CTreeCtrl_Friendly*)&GetTreeCtrl();
-
-}
-
-CXTTreeView::~CXTTreeView()
-{
-}
-
-IMPLEMENT_DYNCREATE(CXTTreeView, CTreeView)
-
-BEGIN_MESSAGE_MAP(CXTTreeView, CTreeView)
-	//{{AFX_MSG_MAP(CXTTreeView)
-	ON_TREECTRL_REFLECT()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTTreeCtrl
-
-CXTTreeCtrl::CXTTreeCtrl()
-{
-	m_pTreeCtrl = (CTreeCtrl_Friendly*)this;
-}
-
-CXTTreeCtrl::~CXTTreeCtrl()
-{
-}
-
-IMPLEMENT_DYNAMIC(CXTTreeCtrl, CTreeCtrl)
-
-BEGIN_MESSAGE_MAP(CXTTreeCtrl, CTreeCtrl)
-	//{{AFX_MSG_MAP(CXTTreeCtrl)
-	ON_TREECTRL_REFLECT()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTTreeCtrl message handlers

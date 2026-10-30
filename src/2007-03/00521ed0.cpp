@@ -1,674 +1,196 @@
+// roc 2007-03 00521ed0  unit: seg_00520000  size: 612 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00521ed0
+//
+// 00521ed0  83ec0c               sub esp, 0xc
+// 00521ed3  53                   push ebx
+// 00521ed4  55                   push ebp
+// 00521ed5  56                   push esi
+// 00521ed6  8b74241c             mov esi, dword ptr [esp + 0x1c]
+// 00521eda  8b866c010000         mov eax, dword ptr [esi + 0x16c]
+// 00521ee0  33ed                 xor ebp, ebp
+// 00521ee2  3bc5                 cmp eax, ebp
+// 00521ee4  0f94c3               sete bl
+// 00521ee7  57                   push edi
+// 00521ee8  8bbe98010000         mov edi, dword ptr [esi + 0x198]
+// 00521eee  32c9                 xor cl, cl
+// 00521ef0  84db                 test bl, bl
+// 00521ef2  897c2418             mov dword ptr [esp + 0x18], edi
+// 00521ef6  885c2420             mov byte ptr [esp + 0x20], bl
+// 00521efa  7408                 je 0x521f04
+// 00521efc  39ae70010000         cmp dword ptr [esi + 0x170], ebp
+// 00521f02  eb18                 jmp 0x521f1c
+// 00521f04  8b9670010000         mov edx, dword ptr [esi + 0x170]
+// 00521f0a  3bc2                 cmp eax, edx
+// 00521f0c  7f05                 jg 0x521f13
+// 00521f0e  83fa40               cmp edx, 0x40
+// 00521f11  7c02                 jl 0x521f15
+// 00521f13  b101                 mov cl, 1
+// 00521f15  83be2401000001       cmp dword ptr [esi + 0x124], 1
+// 00521f1c  7402                 je 0x521f20
+// 00521f1e  b101                 mov cl, 1
+// 00521f20  8b8674010000         mov eax, dword ptr [esi + 0x174]
+// 00521f26  3bc5                 cmp eax, ebp
+// 00521f28  740d                 je 0x521f37
+// 00521f2a  83c0ff               add eax, -1
+// 00521f2d  398678010000         cmp dword ptr [esi + 0x178], eax
+// 00521f33  7402                 je 0x521f37
+// 00521f35  b101                 mov cl, 1
+// 00521f37  83be780100000d       cmp dword ptr [esi + 0x178], 0xd
+// 00521f3e  7f04                 jg 0x521f44
+// 00521f40  84c9                 test cl, cl
+// 00521f42  743f                 je 0x521f83
+// 00521f44  8b06                 mov eax, dword ptr [esi]
+// 00521f46  c7401410000000       mov dword ptr [eax + 0x14], 0x10
+// 00521f4d  8b0e                 mov ecx, dword ptr [esi]
+// 00521f4f  8b966c010000         mov edx, dword ptr [esi + 0x16c]
+// 00521f55  895118               mov dword ptr [ecx + 0x18], edx
+// 00521f58  8b06                 mov eax, dword ptr [esi]
+// 00521f5a  8b8e70010000         mov ecx, dword ptr [esi + 0x170]
+// 00521f60  89481c               mov dword ptr [eax + 0x1c], ecx
+// 00521f63  8b16                 mov edx, dword ptr [esi]
+// 00521f65  8b8674010000         mov eax, dword ptr [esi + 0x174]
+// 00521f6b  894220               mov dword ptr [edx + 0x20], eax
+// 00521f6e  8b0e                 mov ecx, dword ptr [esi]
+// 00521f70  8b9678010000         mov edx, dword ptr [esi + 0x178]
+// 00521f76  895124               mov dword ptr [ecx + 0x24], edx
+// 00521f79  8b06                 mov eax, dword ptr [esi]
+// 00521f7b  8b08                 mov ecx, dword ptr [eax]
+// 00521f7d  56                   push esi
+// 00521f7e  ffd1                 call ecx
+// 00521f80  83c404               add esp, 4
+// 00521f83  39ae24010000         cmp dword ptr [esi + 0x124], ebp
+// 00521f89  896c2410             mov dword ptr [esp + 0x10], ebp
+// 00521f8d  0f8ed3000000         jle 0x522066
+// 00521f93  8d9628010000         lea edx, [esi + 0x128]
+// 00521f99  89542414             mov dword ptr [esp + 0x14], edx
+// 00521f9d  8d4900               lea ecx, [ecx]
+// 00521fa0  8b442414             mov eax, dword ptr [esp + 0x14]
+// 00521fa4  8b08                 mov ecx, dword ptr [eax]
+// 00521fa6  8b5904               mov ebx, dword ptr [ecx + 4]
+// 00521fa9  8beb                 mov ebp, ebx
+// 00521fab  c1e508               shl ebp, 8
+// 00521fae  03ae8c000000         add ebp, dword ptr [esi + 0x8c]
+// 00521fb4  807c242000           cmp byte ptr [esp + 0x20], 0
+// 00521fb9  752a                 jne 0x521fe5
+// 00521fbb  837d0000             cmp dword ptr [ebp], 0
+// 00521fbf  7d24                 jge 0x521fe5
+// 00521fc1  8b16                 mov edx, dword ptr [esi]
+// 00521fc3  c7421473000000       mov dword ptr [edx + 0x14], 0x73
+// 00521fca  8b06                 mov eax, dword ptr [esi]
+// 00521fcc  895818               mov dword ptr [eax + 0x18], ebx
+// 00521fcf  8b0e                 mov ecx, dword ptr [esi]
+// 00521fd1  c7411c00000000       mov dword ptr [ecx + 0x1c], 0
+// 00521fd8  8b16                 mov edx, dword ptr [esi]
+// 00521fda  8b4204               mov eax, dword ptr [edx + 4]
+// 00521fdd  6aff                 push -1
+// 00521fdf  56                   push esi
+// 00521fe0  ffd0                 call eax
+// 00521fe2  83c408               add esp, 8
+// 00521fe5  8bbe6c010000         mov edi, dword ptr [esi + 0x16c]
+// 00521feb  3bbe70010000         cmp edi, dword ptr [esi + 0x170]
+// 00521ff1  7f4d                 jg 0x522040
+// 00521ff3  8b44bd00             mov eax, dword ptr [ebp + edi*4]
+// 00521ff7  33c9                 xor ecx, ecx
+// 00521ff9  85c0                 test eax, eax
+// 00521ffb  0f9cc1               setl cl
+// 00521ffe  83e901               sub ecx, 1
+// 00522001  23c1                 and eax, ecx
+// 00522003  398674010000         cmp dword ptr [esi + 0x174], eax
+// 00522009  7420                 je 0x52202b
+// 0052200b  8b16                 mov edx, dword ptr [esi]
+// 0052200d  c7421473000000       mov dword ptr [edx + 0x14], 0x73
+// 00522014  8b06                 mov eax, dword ptr [esi]
+// 00522016  895818               mov dword ptr [eax + 0x18], ebx
+// 00522019  8b0e                 mov ecx, dword ptr [esi]
+// 0052201b  89791c               mov dword ptr [ecx + 0x1c], edi
+// 0052201e  8b16                 mov edx, dword ptr [esi]
+// 00522020  8b4204               mov eax, dword ptr [edx + 4]
+// 00522023  6aff                 push -1
+// 00522025  56                   push esi
+// 00522026  ffd0                 call eax
+// 00522028  83c408               add esp, 8
+// 0052202b  8b8e78010000         mov ecx, dword ptr [esi + 0x178]
+// 00522031  894cbd00             mov dword ptr [ebp + edi*4], ecx
+// 00522035  83c701               add edi, 1
+// 00522038  3bbe70010000         cmp edi, dword ptr [esi + 0x170]
+// 0052203e  7eb3                 jle 0x521ff3
+// 00522040  8b442410             mov eax, dword ptr [esp + 0x10]
+// 00522044  8344241404           add dword ptr [esp + 0x14], 4
+// 00522049  83c001               add eax, 1
+// 0052204c  3b8624010000         cmp eax, dword ptr [esi + 0x124]
+// 00522052  89442410             mov dword ptr [esp + 0x10], eax
+// 00522056  0f8c44ffffff         jl 0x521fa0
+// 0052205c  8b7c2418             mov edi, dword ptr [esp + 0x18]
+// 00522060  8a5c2420             mov bl, byte ptr [esp + 0x20]
+// 00522064  33ed                 xor ebp, ebp
+// 00522066  39ae74010000         cmp dword ptr [esi + 0x174], ebp
+// 0052206c  7516                 jne 0x522084
+// 0052206e  84db                 test bl, bl
+// 00522070  7409                 je 0x52207b
+// 00522072  c7470450155200       mov dword ptr [edi + 4], 0x521550
+// 00522079  eb1d                 jmp 0x522098
+// 0052207b  c7470490175200       mov dword ptr [edi + 4], 0x521790
+// 00522082  eb14                 jmp 0x522098
+// 00522084  84db                 test bl, bl
+// 00522086  7409                 je 0x522091
+// 00522088  c74704e0195200       mov dword ptr [edi + 4], 0x5219e0
+// 0052208f  eb07                 jmp 0x522098
+// 00522091  c74704d01a5200       mov dword ptr [edi + 4], 0x521ad0
+// 00522098  39ae24010000         cmp dword ptr [esi + 0x124], ebp
+// 0052209e  896c2410             mov dword ptr [esp + 0x10], ebp
+// 005220a2  7e72                 jle 0x522116
+// 005220a4  8d6f18               lea ebp, [edi + 0x18]
+// 005220a7  8d9e28010000         lea ebx, [esi + 0x128]
+// 005220ad  8d4900               lea ecx, [ecx]
+// 005220b0  807c242000           cmp byte ptr [esp + 0x20], 0
+// 005220b5  8b03                 mov eax, dword ptr [ebx]
+// 005220b7  741c                 je 0x5220d5
+// 005220b9  83be7401000000       cmp dword ptr [esi + 0x174], 0
+// 005220c0  7532                 jne 0x5220f4
+// 005220c2  8b4014               mov eax, dword ptr [eax + 0x14]
+// 005220c5  8d54872c             lea edx, [edi + eax*4 + 0x2c]
+// 005220c9  52                   push edx
+// 005220ca  50                   push eax
+// 005220cb  6a01                 push 1
+// 005220cd  56                   push esi
+// 005220ce  e89de8ffff           call 0x520970
+// 005220d3  eb1c                 jmp 0x5220f1
+// 005220d5  8b4018               mov eax, dword ptr [eax + 0x18]
+// 005220d8  8d7c872c             lea edi, [edi + eax*4 + 0x2c]
+// 005220dc  57                   push edi
+// 005220dd  50                   push eax
+// 005220de  6a00                 push 0
+// 005220e0  56                   push esi
+// 005220e1  e88ae8ffff           call 0x520970
+// 005220e6  8b07                 mov eax, dword ptr [edi]
+// 005220e8  8b4c2428             mov ecx, dword ptr [esp + 0x28]
+// 005220ec  89413c               mov dword ptr [ecx + 0x3c], eax
+// 005220ef  8bf9                 mov edi, ecx
+// 005220f1  83c410               add esp, 0x10
+// 005220f4  8b442410             mov eax, dword ptr [esp + 0x10]
+// 005220f8  c7450000000000       mov dword ptr [ebp], 0
+// 005220ff  83c001               add eax, 1
+// 00522102  83c304               add ebx, 4
+// 00522105  83c504               add ebp, 4
+// 00522108  3b8624010000         cmp eax, dword ptr [esi + 0x124]
+// 0052210e  89442410             mov dword ptr [esp + 0x10], eax
+// 00522112  7c9c                 jl 0x5220b0
+// 00522114  33ed                 xor ebp, ebp
+// 00522116  896f10               mov dword ptr [edi + 0x10], ebp
+// 00522119  896f0c               mov dword ptr [edi + 0xc], ebp
+// 0052211c  896f14               mov dword ptr [edi + 0x14], ebp
+// 0052211f  c6470800             mov byte ptr [edi + 8], 0
+// 00522123  8b96fc000000         mov edx, dword ptr [esi + 0xfc]
+// 00522129  895728               mov dword ptr [edi + 0x28], edx
+// 0052212c  5f                   pop edi
+// 0052212d  5e                   pop esi
+// 0052212e  5d                   pop ebp
+// 0052212f  5b                   pop ebx
+// 00522130  83c40c               add esp, 0xc
+// 00522133  c3                   ret 
+// library jpeg-6b/jdphuff.c (function _start_pass_phuff_decoder)
+
 // roc-lang: c
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdphuff.c
-
-// Candidate translation unit (score above; library headers required).
-/*
- * jdphuff.c
- *
- * Copyright (C) 1995-1997, Thomas G. Lane.
- * This file is part of the Independent JPEG Group's software.
- * For conditions of distribution and use, see the accompanying README file.
- *
- * This file contains Huffman entropy decoding routines for progressive JPEG.
- *
- * Much of the complexity here has to do with supporting input suspension.
- * If the data source module demands suspension, we want to be able to back
- * up to the start of the current MCU.  To do this, we copy state variables
- * into local working storage, and update them back to the permanent
- * storage only upon successful completion of an MCU.
- */
-
-#define JPEG_INTERNALS
-#include "jinclude.h"
-#include "jpeglib.h"
-#include "jdhuff.h"		/* Declarations shared with jdhuff.c */
-
-
-#ifdef D_PROGRESSIVE_SUPPORTED
-
-/*
- * Expanded entropy decoder object for progressive Huffman decoding.
- *
- * The savable_state subrecord contains fields that change within an MCU,
- * but must not be updated permanently until we complete the MCU.
- */
-
-typedef struct {
-  unsigned int EOBRUN;			/* remaining EOBs in EOBRUN */
-  int last_dc_val[MAX_COMPS_IN_SCAN];	/* last DC coef for each component */
-} savable_state;
-
-/* This macro is to work around compilers with missing or broken
- * structure assignment.  You'll need to fix this code if you have
- * such a compiler and you change MAX_COMPS_IN_SCAN.
- */
-
-#ifndef NO_STRUCT_ASSIGN
-#define ASSIGN_STATE(dest,src)  ((dest) = (src))
-#else
-#if MAX_COMPS_IN_SCAN == 4
-#define ASSIGN_STATE(dest,src)  \
-	((dest).EOBRUN = (src).EOBRUN, \
-	 (dest).last_dc_val[0] = (src).last_dc_val[0], \
-	 (dest).last_dc_val[1] = (src).last_dc_val[1], \
-	 (dest).last_dc_val[2] = (src).last_dc_val[2], \
-	 (dest).last_dc_val[3] = (src).last_dc_val[3])
-#endif
-#endif
-
-
-typedef struct {
-  struct jpeg_entropy_decoder pub; /* public fields */
-
-  /* These fields are loaded into local variables at start of each MCU.
-   * In case of suspension, we exit WITHOUT updating them.
-   */
-  bitread_perm_state bitstate;	/* Bit buffer at start of MCU */
-  savable_state saved;		/* Other state at start of MCU */
-
-  /* These fields are NOT loaded into local working state. */
-  unsigned int restarts_to_go;	/* MCUs left in this restart interval */
-
-  /* Pointers to derived tables (these workspaces have image lifespan) */
-  d_derived_tbl * derived_tbls[NUM_HUFF_TBLS];
-
-  d_derived_tbl * ac_derived_tbl; /* active table during an AC scan */
-} phuff_entropy_decoder;
-
-typedef phuff_entropy_decoder * phuff_entropy_ptr;
-
-/* Forward declarations */
-METHODDEF(boolean) decode_mcu_DC_first JPP((j_decompress_ptr cinfo,
-					    JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_AC_first JPP((j_decompress_ptr cinfo,
-					    JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_DC_refine JPP((j_decompress_ptr cinfo,
-					     JBLOCKROW *MCU_data));
-METHODDEF(boolean) decode_mcu_AC_refine JPP((j_decompress_ptr cinfo,
-					     JBLOCKROW *MCU_data));
-
-
-/*
- * Initialize for a Huffman-compressed scan.
- */
-
-METHODDEF(void)
-start_pass_phuff_decoder (j_decompress_ptr cinfo)
-{
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  boolean is_DC_band, bad;
-  int ci, coefi, tbl;
-  int *coef_bit_ptr;
-  jpeg_component_info * compptr;
-
-  is_DC_band = (cinfo->Ss == 0);
-
-  /* Validate scan parameters */
-  bad = FALSE;
-  if (is_DC_band) {
-    if (cinfo->Se != 0)
-      bad = TRUE;
-  } else {
-    /* need not check Ss/Se < 0 since they came from unsigned bytes */
-    if (cinfo->Ss > cinfo->Se || cinfo->Se >= DCTSIZE2)
-      bad = TRUE;
-    /* AC scans may have only one component */
-    if (cinfo->comps_in_scan != 1)
-      bad = TRUE;
-  }
-  if (cinfo->Ah != 0) {
-    /* Successive approximation refinement scan: must have Al = Ah-1. */
-    if (cinfo->Al != cinfo->Ah-1)
-      bad = TRUE;
-  }
-  if (cinfo->Al > 13)		/* need not check for < 0 */
-    bad = TRUE;
-  /* Arguably the maximum Al value should be less than 13 for 8-bit precision,
-   * but the spec doesn't say so, and we try to be liberal about what we
-   * accept.  Note: large Al values could result in out-of-range DC
-   * coefficients during early scans, leading to bizarre displays due to
-   * overflows in the IDCT math.  But we won't crash.
-   */
-  if (bad)
-    ERREXIT4(cinfo, JERR_BAD_PROGRESSION,
-	     cinfo->Ss, cinfo->Se, cinfo->Ah, cinfo->Al);
-  /* Update progression status, and verify that scan order is legal.
-   * Note that inter-scan inconsistencies are treated as warnings
-   * not fatal errors ... not clear if this is right way to behave.
-   */
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    int cindex = cinfo->cur_comp_info[ci]->component_index;
-    coef_bit_ptr = & cinfo->coef_bits[cindex][0];
-    if (!is_DC_band && coef_bit_ptr[0] < 0) /* AC without prior DC scan */
-      WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, 0);
-    for (coefi = cinfo->Ss; coefi <= cinfo->Se; coefi++) {
-      int expected = (coef_bit_ptr[coefi] < 0) ? 0 : coef_bit_ptr[coefi];
-      if (cinfo->Ah != expected)
-	WARNMS2(cinfo, JWRN_BOGUS_PROGRESSION, cindex, coefi);
-      coef_bit_ptr[coefi] = cinfo->Al;
-    }
-  }
-
-  /* Select MCU decoding routine */
-  if (cinfo->Ah == 0) {
-    if (is_DC_band)
-      entropy->pub.decode_mcu = decode_mcu_DC_first;
-    else
-      entropy->pub.decode_mcu = decode_mcu_AC_first;
-  } else {
-    if (is_DC_band)
-      entropy->pub.decode_mcu = decode_mcu_DC_refine;
-    else
-      entropy->pub.decode_mcu = decode_mcu_AC_refine;
-  }
-
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
-    compptr = cinfo->cur_comp_info[ci];
-    /* Make sure requested tables are present, and compute derived tables.
-     * We may build same derived table more than once, but it's not expensive.
-     */
-    if (is_DC_band) {
-      if (cinfo->Ah == 0) {	/* DC refinement needs no table */
-	tbl = compptr->dc_tbl_no;
-	jpeg_make_d_derived_tbl(cinfo, TRUE, tbl,
-				& entropy->derived_tbls[tbl]);
-      }
-    } else {
-      tbl = compptr->ac_tbl_no;
-      jpeg_make_d_derived_tbl(cinfo, FALSE, tbl,
-			      & entropy->derived_tbls[tbl]);
-      /* remember the single active table */
-      entropy->ac_derived_tbl = entropy->derived_tbls[tbl];
-    }
-    /* Initialize DC predictions to 0 */
-    entropy->saved.last_dc_val[ci] = 0;
-  }
-
-  /* Initialize bitread state variables */
-  entropy->bitstate.bits_left = 0;
-  entropy->bitstate.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
-  entropy->pub.insufficient_data = FALSE;
-
-  /* Initialize private state variables */
-  entropy->saved.EOBRUN = 0;
-
-  /* Initialize restart counter */
-  entropy->restarts_to_go = cinfo->restart_interval;
-}
-
-
-/*
- * Figure F.12: extend sign bit.
- * On some machines, a shift and add will be faster than a table lookup.
- */
-
-#ifdef AVOID_TABLES
-
-#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
-
-#else
-
-#define HUFF_EXTEND(x,s)  ((x) < extend_test[s] ? (x) + extend_offset[s] : (x))
-
-static const int extend_test[16] =   /* entry n is 2**(n-1) */
-  { 0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
-    0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000 };
-
-static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
-  { 0, ((-1)<<1) + 1, ((-1)<<2) + 1, ((-1)<<3) + 1, ((-1)<<4) + 1,
-    ((-1)<<5) + 1, ((-1)<<6) + 1, ((-1)<<7) + 1, ((-1)<<8) + 1,
-    ((-1)<<9) + 1, ((-1)<<10) + 1, ((-1)<<11) + 1, ((-1)<<12) + 1,
-    ((-1)<<13) + 1, ((-1)<<14) + 1, ((-1)<<15) + 1 };
-
-#endif /* AVOID_TABLES */
-
-
-/*
- * Check for a restart marker & resynchronize decoder.
- * Returns FALSE if must suspend.
- */
-
-LOCAL(boolean)
-process_restart (j_decompress_ptr cinfo)
-{
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  int ci;
-
-  /* Throw away any unused bits remaining in bit buffer; */
-  /* include any full bytes in next_marker's count of discarded bytes */
-  cinfo->marker->discarded_bytes += entropy->bitstate.bits_left / 8;
-  entropy->bitstate.bits_left = 0;
-
-  /* Advance past the RSTn marker */
-  if (! (*cinfo->marker->read_restart_marker) (cinfo))
-    return FALSE;
-
-  /* Re-initialize DC predictions to 0 */
-  for (ci = 0; ci < cinfo->comps_in_scan; ci++)
-    entropy->saved.last_dc_val[ci] = 0;
-  /* Re-init EOB run count, too */
-  entropy->saved.EOBRUN = 0;
-
-  /* Reset restart counter */
-  entropy->restarts_to_go = cinfo->restart_interval;
-
-  /* Reset out-of-data flag, unless read_restart_marker left us smack up
-   * against a marker.  In that case we will end up treating the next data
-   * segment as empty, and we can avoid producing bogus output pixels by
-   * leaving the flag set.
-   */
-  if (cinfo->unread_marker == 0)
-    entropy->pub.insufficient_data = FALSE;
-
-  return TRUE;
-}
-
-
-/*
- * Huffman MCU decoding.
- * Each of these routines decodes and returns one MCU's worth of
- * Huffman-compressed coefficients. 
- * The coefficients are reordered from zigzag order into natural array order,
- * but are not dequantized.
- *
- * The i'th block of the MCU is stored into the block pointed to by
- * MCU_data[i].  WE ASSUME THIS AREA IS INITIALLY ZEROED BY THE CALLER.
- *
- * We return FALSE if data source requested suspension.  In that case no
- * changes have been made to permanent state.  (Exception: some output
- * coefficients may already have been assigned.  This is harmless for
- * spectral selection, since we'll just re-assign them on the next call.
- * Successive approximation AC refinement has to be more careful, however.)
- */
-
-/*
- * MCU decoding for DC initial scan (either spectral selection,
- * or first pass of successive approximation).
- */
-
-METHODDEF(boolean)
-decode_mcu_DC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  int Al = cinfo->Al;
-  register int s, r;
-  int blkn, ci;
-  JBLOCKROW block;
-  BITREAD_STATE_VARS;
-  savable_state state;
-  d_derived_tbl * tbl;
-  jpeg_component_info * compptr;
-
-  /* Process restart marker if needed; may have to suspend */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0)
-      if (! process_restart(cinfo))
-	return FALSE;
-  }
-
-  /* If we've run out of data, just leave the MCU set to zeroes.
-   * This way, we return uniform gray for the remainder of the segment.
-   */
-  if (! entropy->pub.insufficient_data) {
-
-    /* Load up working state */
-    BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
-    ASSIGN_STATE(state, entropy->saved);
-
-    /* Outer loop handles each block in the MCU */
-
-    for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-      block = MCU_data[blkn];
-      ci = cinfo->MCU_membership[blkn];
-      compptr = cinfo->cur_comp_info[ci];
-      tbl = entropy->derived_tbls[compptr->dc_tbl_no];
-
-      /* Decode a single block's worth of coefficients */
-
-      /* Section F.2.2.1: decode the DC coefficient difference */
-      HUFF_DECODE(s, br_state, tbl, return FALSE, label1);
-      if (s) {
-	CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	r = GET_BITS(s);
-	s = HUFF_EXTEND(r, s);
-      }
-
-      /* Convert DC difference to actual value, update last_dc_val */
-      s += state.last_dc_val[ci];
-      state.last_dc_val[ci] = s;
-      /* Scale and output the coefficient (assumes jpeg_natural_order[0]=0) */
-      (*block)[0] = (JCOEF) (s << Al);
-    }
-
-    /* Completed MCU, so update state */
-    BITREAD_SAVE_STATE(cinfo,entropy->bitstate);
-    ASSIGN_STATE(entropy->saved, state);
-  }
-
-  /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
-
-  return TRUE;
-}
-
-
-/*
- * MCU decoding for AC initial scan (either spectral selection,
- * or first pass of successive approximation).
- */
-
-METHODDEF(boolean)
-decode_mcu_AC_first (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  int Se = cinfo->Se;
-  int Al = cinfo->Al;
-  register int s, k, r;
-  unsigned int EOBRUN;
-  JBLOCKROW block;
-  BITREAD_STATE_VARS;
-  d_derived_tbl * tbl;
-
-  /* Process restart marker if needed; may have to suspend */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0)
-      if (! process_restart(cinfo))
-	return FALSE;
-  }
-
-  /* If we've run out of data, just leave the MCU set to zeroes.
-   * This way, we return uniform gray for the remainder of the segment.
-   */
-  if (! entropy->pub.insufficient_data) {
-
-    /* Load up working state.
-     * We can avoid loading/saving bitread state if in an EOB run.
-     */
-    EOBRUN = entropy->saved.EOBRUN;	/* only part of saved state we need */
-
-    /* There is always only one block per MCU */
-
-    if (EOBRUN > 0)		/* if it's a band of zeroes... */
-      EOBRUN--;			/* ...process it now (we do nothing) */
-    else {
-      BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
-      block = MCU_data[0];
-      tbl = entropy->ac_derived_tbl;
-
-      for (k = cinfo->Ss; k <= Se; k++) {
-	HUFF_DECODE(s, br_state, tbl, return FALSE, label2);
-	r = s >> 4;
-	s &= 15;
-	if (s) {
-	  k += r;
-	  CHECK_BIT_BUFFER(br_state, s, return FALSE);
-	  r = GET_BITS(s);
-	  s = HUFF_EXTEND(r, s);
-	  /* Scale and output coefficient in natural (dezigzagged) order */
-	  (*block)[jpeg_natural_order[k]] = (JCOEF) (s << Al);
-	} else {
-	  if (r == 15) {	/* ZRL */
-	    k += 15;		/* skip 15 zeroes in band */
-	  } else {		/* EOBr, run length is 2^r + appended bits */
-	    EOBRUN = 1 << r;
-	    if (r) {		/* EOBr, r > 0 */
-	      CHECK_BIT_BUFFER(br_state, r, return FALSE);
-	      r = GET_BITS(r);
-	      EOBRUN += r;
-	    }
-	    EOBRUN--;		/* this band is processed at this moment */
-	    break;		/* force end-of-band */
-	  }
-	}
-      }
-
-      BITREAD_SAVE_STATE(cinfo,entropy->bitstate);
-    }
-
-    /* Completed MCU, so update state */
-    entropy->saved.EOBRUN = EOBRUN;	/* only part of saved state we need */
-  }
-
-  /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
-
-  return TRUE;
-}
-
-
-/*
- * MCU decoding for DC successive approximation refinement scan.
- * Note: we assume such scans can be multi-component, although the spec
- * is not very clear on the point.
- */
-
-METHODDEF(boolean)
-decode_mcu_DC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  int p1 = 1 << cinfo->Al;	/* 1 in the bit position being coded */
-  int blkn;
-  JBLOCKROW block;
-  BITREAD_STATE_VARS;
-
-  /* Process restart marker if needed; may have to suspend */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0)
-      if (! process_restart(cinfo))
-	return FALSE;
-  }
-
-  /* Not worth the cycles to check insufficient_data here,
-   * since we will not change the data anyway if we read zeroes.
-   */
-
-  /* Load up working state */
-  BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
-
-  /* Outer loop handles each block in the MCU */
-
-  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
-    block = MCU_data[blkn];
-
-    /* Encoded data is simply the next bit of the two's-complement DC value */
-    CHECK_BIT_BUFFER(br_state, 1, return FALSE);
-    if (GET_BITS(1))
-      (*block)[0] |= p1;
-    /* Note: since we use |=, repeating the assignment later is safe */
-  }
-
-  /* Completed MCU, so update state */
-  BITREAD_SAVE_STATE(cinfo,entropy->bitstate);
-
-  /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
-
-  return TRUE;
-}
-
-
-/*
- * MCU decoding for AC successive approximation refinement scan.
- */
-
-METHODDEF(boolean)
-decode_mcu_AC_refine (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
-{   
-  phuff_entropy_ptr entropy = (phuff_entropy_ptr) cinfo->entropy;
-  int Se = cinfo->Se;
-  int p1 = 1 << cinfo->Al;	/* 1 in the bit position being coded */
-  int m1 = (-1) << cinfo->Al;	/* -1 in the bit position being coded */
-  register int s, k, r;
-  unsigned int EOBRUN;
-  JBLOCKROW block;
-  JCOEFPTR thiscoef;
-  BITREAD_STATE_VARS;
-  d_derived_tbl * tbl;
-  int num_newnz;
-  int newnz_pos[DCTSIZE2];
-
-  /* Process restart marker if needed; may have to suspend */
-  if (cinfo->restart_interval) {
-    if (entropy->restarts_to_go == 0)
-      if (! process_restart(cinfo))
-	return FALSE;
-  }
-
-  /* If we've run out of data, don't modify the MCU.
-   */
-  if (! entropy->pub.insufficient_data) {
-
-    /* Load up working state */
-    BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
-    EOBRUN = entropy->saved.EOBRUN; /* only part of saved state we need */
-
-    /* There is always only one block per MCU */
-    block = MCU_data[0];
-    tbl = entropy->ac_derived_tbl;
-
-    /* If we are forced to suspend, we must undo the assignments to any newly
-     * nonzero coefficients in the block, because otherwise we'd get confused
-     * next time about which coefficients were already nonzero.
-     * But we need not undo addition of bits to already-nonzero coefficients;
-     * instead, we can test the current bit to see if we already did it.
-     */
-    num_newnz = 0;
-
-    /* initialize coefficient loop counter to start of band */
-    k = cinfo->Ss;
-
-    if (EOBRUN == 0) {
-      for (; k <= Se; k++) {
-	HUFF_DECODE(s, br_state, tbl, goto undoit, label3);
-	r = s >> 4;
-	s &= 15;
-	if (s) {
-	  if (s != 1)		/* size of new coef should always be 1 */
-	    WARNMS(cinfo, JWRN_HUFF_BAD_CODE);
-	  CHECK_BIT_BUFFER(br_state, 1, goto undoit);
-	  if (GET_BITS(1))
-	    s = p1;		/* newly nonzero coef is positive */
-	  else
-	    s = m1;		/* newly nonzero coef is negative */
-	} else {
-	  if (r != 15) {
-	    EOBRUN = 1 << r;	/* EOBr, run length is 2^r + appended bits */
-	    if (r) {
-	      CHECK_BIT_BUFFER(br_state, r, goto undoit);
-	      r = GET_BITS(r);
-	      EOBRUN += r;
-	    }
-	    break;		/* rest of block is handled by EOB logic */
-	  }
-	  /* note s = 0 for processing ZRL */
-	}
-	/* Advance over already-nonzero coefs and r still-zero coefs,
-	 * appending correction bits to the nonzeroes.  A correction bit is 1
-	 * if the absolute value of the coefficient must be increased.
-	 */
-	do {
-	  thiscoef = *block + jpeg_natural_order[k];
-	  if (*thiscoef != 0) {
-	    CHECK_BIT_BUFFER(br_state, 1, goto undoit);
-	    if (GET_BITS(1)) {
-	      if ((*thiscoef & p1) == 0) { /* do nothing if already set it */
-		if (*thiscoef >= 0)
-		  *thiscoef += p1;
-		else
-		  *thiscoef += m1;
-	      }
-	    }
-	  } else {
-	    if (--r < 0)
-	      break;		/* reached target zero coefficient */
-	  }
-	  k++;
-	} while (k <= Se);
-	if (s) {
-	  int pos = jpeg_natural_order[k];
-	  /* Output newly nonzero coefficient */
-	  (*block)[pos] = (JCOEF) s;
-	  /* Remember its position in case we have to suspend */
-	  newnz_pos[num_newnz++] = pos;
-	}
-      }
-    }
-
-    if (EOBRUN > 0) {
-      /* Scan any remaining coefficient positions after the end-of-band
-       * (the last newly nonzero coefficient, if any).  Append a correction
-       * bit to each already-nonzero coefficient.  A correction bit is 1
-       * if the absolute value of the coefficient must be increased.
-       */
-      for (; k <= Se; k++) {
-	thiscoef = *block + jpeg_natural_order[k];
-	if (*thiscoef != 0) {
-	  CHECK_BIT_BUFFER(br_state, 1, goto undoit);
-	  if (GET_BITS(1)) {
-	    if ((*thiscoef & p1) == 0) { /* do nothing if already changed it */
-	      if (*thiscoef >= 0)
-		*thiscoef += p1;
-	      else
-		*thiscoef += m1;
-	    }
-	  }
-	}
-      }
-      /* Count one block completed in EOB run */
-      EOBRUN--;
-    }
-
-    /* Completed MCU, so update state */
-    BITREAD_SAVE_STATE(cinfo,entropy->bitstate);
-    entropy->saved.EOBRUN = EOBRUN; /* only part of saved state we need */
-  }
-
-  /* Account for restart interval (no-op if not using restarts) */
-  entropy->restarts_to_go--;
-
-  return TRUE;
-
-undoit:
-  /* Re-zero any output coefficients that we made newly nonzero */
-  while (num_newnz > 0)
-    (*block)[newnz_pos[--num_newnz]] = 0;
-
-  return FALSE;
-}
-
-
-/*
- * Module initialization routine for progressive Huffman entropy decoding.
- */
-
-GLOBAL(void)
-jinit_phuff_decoder (j_decompress_ptr cinfo)
-{
-  phuff_entropy_ptr entropy;
-  int *coef_bit_ptr;
-  int ci, i;
-
-  entropy = (phuff_entropy_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				SIZEOF(phuff_entropy_decoder));
-  cinfo->entropy = (struct jpeg_entropy_decoder *) entropy;
-  entropy->pub.start_pass = start_pass_phuff_decoder;
-
-  /* Mark derived tables unallocated */
-  for (i = 0; i < NUM_HUFF_TBLS; i++) {
-    entropy->derived_tbls[i] = NULL;
-  }
-
-  /* Create progression status table */
-  cinfo->coef_bits = (int (*)[DCTSIZE2])
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
-				cinfo->num_components*DCTSIZE2*SIZEOF(int));
-  coef_bit_ptr = & cinfo->coef_bits[0][0];
-  for (ci = 0; ci < cinfo->num_components; ci++) 
-    for (i = 0; i < DCTSIZE2; i++)
-      *coef_bit_ptr++ = -1;
-}
-
-#endif /* D_PROGRESSIVE_SUPPORTED */

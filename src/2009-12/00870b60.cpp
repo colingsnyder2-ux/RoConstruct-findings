@@ -1,487 +1,59 @@
+// roc 2009-12 00870b60  unit: CXTPHookManager::CHookSink  size: 117 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00870b60
+//
+// 00870b60  56                   push esi
+// 00870b61  8bf1                 mov esi, ecx
+// 00870b63  8b4e08               mov ecx, dword ptr [esi + 8]
+// 00870b66  33c0                 xor eax, eax
+// 00870b68  85c9                 test ecx, ecx
+// 00870b6a  7e65                 jle 0x870bd1
+// 00870b6c  57                   push edi
+// 00870b6d  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 00870b71  85c0                 test eax, eax
+// 00870b73  7c16                 jl 0x870b8b
+// 00870b75  3bc1                 cmp eax, ecx
+// 00870b77  7d12                 jge 0x870b8b
+// 00870b79  8b5604               mov edx, dword ptr [esi + 4]
+// 00870b7c  3b3c82               cmp edi, dword ptr [edx + eax*4]
+// 00870b7f  740f                 je 0x870b90
+// 00870b81  40                   inc eax
+// 00870b82  3bc1                 cmp eax, ecx
+// 00870b84  7ceb                 jl 0x870b71
+// 00870b86  5f                   pop edi
+// 00870b87  5e                   pop esi
+// 00870b88  c20400               ret 4
+// 00870b8b  e87c2ff8ff           call 0x7f3b0c
+// 00870b90  83f8ff               cmp eax, -1
+// 00870b93  743b                 je 0x870bd0
+// 00870b95  6a01                 push 1
+// 00870b97  50                   push eax
+// 00870b98  8bce                 mov ecx, esi
+// 00870b9a  e8e1c6fbff           call 0x82d280
+// 00870b9f  837f0400             cmp dword ptr [edi + 4], 0
+// 00870ba3  740a                 je 0x870baf
+// 00870ba5  8b07                 mov eax, dword ptr [edi]
+// 00870ba7  8b10                 mov edx, dword ptr [eax]
+// 00870ba9  6a01                 push 1
+// 00870bab  8bcf                 mov ecx, edi
+// 00870bad  ffd2                 call edx
+// 00870baf  837e0800             cmp dword ptr [esi + 8], 0
+// 00870bb3  751b                 jne 0x870bd0
+// 00870bb5  8b4618               mov eax, dword ptr [esi + 0x18]
+// 00870bb8  50                   push eax
+// 00870bb9  e822fdffff           call 0x8708e0
+// 00870bbe  8bc8                 mov ecx, eax
+// 00870bc0  e80bbd0300           call 0x8ac8d0
+// 00870bc5  8b16                 mov edx, dword ptr [esi]
+// 00870bc7  8b4204               mov eax, dword ptr [edx + 4]
+// 00870bca  6a01                 push 1
+// 00870bcc  8bce                 mov ecx, esi
+// 00870bce  ffd0                 call eax
+// 00870bd0  5f                   pop edi
+// 00870bd1  5e                   pop esi
+// 00870bd2  c20400               ret 4
+// copied from an identical function in another client (function ?RemoveHook@CHookSink@CXTPHookManager@@QAEXPAVCXTPHookManagerHookAble@@@Z)
+
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPHookManager.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPHookManager.cpp : implementation of the CXTPHookManager class.
-//
-// This file is a part of the XTREME COMMANDBARS MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTPToolBar.h"
-#include "XTPHookManager.h"
-#include "XTPMouseManager.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-CXTPHookManagerHookAble::CXTPHookManagerHookAble()
-{
-	m_bAutoDestroy = FALSE;
-}
-
-CXTPHookManagerHookAble::~CXTPHookManagerHookAble()
-{
-
-}
-
-
-
-class CXTPHookManager::CHookSink : public CArray<CXTPHookManagerHookAble*, CXTPHookManagerHookAble*>
-{
-	friend class CXTPHookManager;
-
-public:
-	CHookSink(HWND hWnd);
-
-	~CHookSink();
-
-public:
-	int Find(CXTPHookManagerHookAble* pItem)
-	{
-		for (int i = 0; i < GetSize(); i++)
-		{
-			if (pItem == GetAt(i))
-				return  i;
-		}
-		return -1;
-	}
-
-	void RemoveHook(CXTPHookManagerHookAble* pHook)
-	{
-		int nIndex = Find(pHook);
-		if (nIndex != -1)
-		{
-			RemoveAt(nIndex);
-
-			if (pHook->m_bAutoDestroy)
-				delete pHook;
-
-			if (GetSize() == 0)
-			{
-				XTPHookManager()->m_mapHooks.RemoveKey(m_hWnd);
-				delete this;
-			}
-		}
-	}
-
-public:
-	BOOL OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult);
-
-protected:
-	WNDPROC m_pOldWndProc;
-	HWND m_hWnd;
-	BOOL m_bUnicode;
-#ifdef _AFXDLL
-	AFX_MODULE_STATE* m_pModuleState;
-#endif
-};
-
-#if (_MSC_VER <= 1200) && !defined(_WIN64)
-#define GetWindowLongPtrW GetWindowLongW
-#define GetWindowLongPtrA GetWindowLongA
-#define SetWindowLongPtrW SetWindowLongW
-#define SetWindowLongPtrA SetWindowLongA
-#endif
-
-CXTPHookManager::CHookSink::CHookSink(HWND hWnd)
-{
-#ifdef _AFXDLL
-	m_pModuleState = 0;
-#endif
-	m_bUnicode = IsWindowUnicode(hWnd);
-
-	m_hWnd = hWnd;
-
-	if (m_bUnicode)
-	{
-		m_pOldWndProc = (WNDPROC)GetWindowLongPtrW(hWnd, GWLP_WNDPROC);
-		SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)CXTPHookManager::HookWndProc);
-	}
-	else
-	{
-		m_pOldWndProc = (WNDPROC)GetWindowLongPtrA(hWnd, GWLP_WNDPROC);
-		SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)CXTPHookManager::HookWndProc);
-	}
-}
-
-CXTPHookManager::CHookSink::~CHookSink()
-{
-	if (m_bUnicode)
-		SetWindowLongPtrW(m_hWnd, GWLP_WNDPROC, (LONG_PTR)m_pOldWndProc);
-	else
-		SetWindowLongPtrA(m_hWnd, GWLP_WNDPROC, (LONG_PTR)m_pOldWndProc);
-
-	for (int i = (int)GetSize() - 1; i >= 0; i--)
-	{
-		CXTPHookManagerHookAble* pHookAble = GetAt(i);
-		if (pHookAble->m_bAutoDestroy)
-		{
-			delete pHookAble;
-		}
-	}
-}
-
-BOOL CXTPHookManager::CHookSink::OnHookMessage(HWND hWnd, UINT nMessage, WPARAM& wParam, LPARAM& lParam, LRESULT& lResult)
-{
-	int nCount = (int)GetSize();
-
-	for (int i = nCount - 1; i >= 0; i--)
-	{
-		int nResult = GetAt(i)->OnHookMessage(hWnd, nMessage, wParam, lParam, lResult);
-
-		if (nResult == TRUE)
-			return TRUE;
-		if (nResult == FALSE_EXIT)
-			return FALSE;
-	}
-	return FALSE;
-}
-
-
-CXTPHookManager::CXTPHookManager()
-{
-}
-
-CXTPHookManager* AFX_CDECL XTPHookManager()
-{
-	static CXTPHookManager s_managerInstance;
-	return &s_managerInstance;
-}
-
-CXTPHookManager::~CXTPHookManager()
-{
-	RemoveAll();
-}
-
-
-LRESULT CXTPHookManager::Default(WPARAM wParam, LPARAM lParam)
-{
-	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
-
-	CHookSink* pSink = Lookup(curMsg.hwnd);
-	ASSERT(pSink);
-	if (!pSink)
-		return 0;
-
-	WNDPROC wndProc = pSink->m_pOldWndProc;
-
-	LRESULT lResult = ::CallWindowProc(wndProc, curMsg.hwnd, curMsg.message, wParam, lParam);
-
-	return lResult;
-}
-
-LRESULT CXTPHookManager::Default()
-{
-	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
-	return Default(curMsg.wParam, curMsg.lParam);;
-}
-
-LRESULT CALLBACK CXTPHookManager::HookWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	MSG& curMsg = AfxGetThreadState()->m_lastSentMsg;
-	MSG  oldMsg = curMsg;
-	curMsg.hwnd = hWnd;
-	curMsg.message = message;
-	curMsg.wParam = wParam;
-	curMsg.lParam = lParam;
-
-	// Get hook object for this window. Get from hook map
-	CHookSink* pSink = XTPHookManager()->Lookup(hWnd);
-	ASSERT(pSink);
-	if (!pSink)
-		return 0;
-
-	SAFE_MANAGE_STATE(pSink->m_pModuleState);
-
-	LRESULT lResult = 0;
-	WNDPROC wndProc = pSink->m_pOldWndProc;
-
-	// Window is being destroyed: unhook all hooks (for this window)
-	// and pass message to orginal window proc
-	if (message == WM_NCDESTROY)
-	{
-		XTPHookManager()->RemoveAll(hWnd);
-	}
-	// pass to message hook
-	else
-	{
-		if (pSink->OnHookMessage(hWnd, message, wParam, lParam, lResult))
-		{
-			curMsg = oldMsg;
-			return lResult;
-		}
-	}
-	lResult = ::CallWindowProc(wndProc, hWnd, message, wParam, lParam);
-
-	curMsg = oldMsg;
-	return lResult;
-}
-
-void CXTPHookManager::SetHook(HWND hWnd, CXTPHookManagerHookAble* pHook)
-{
-	CHookSink* pSink = Lookup(hWnd);
-
-	if (pSink)
-	{
-		if (pSink->Find(pHook) == -1)
-		{
-			pSink->Add(pHook);
-		}
-
-	}
-	else
-	{
-		pSink = new CHookSink(hWnd);
-		pSink->Add(pHook);
-
-		m_mapHooks[hWnd] = pSink;
-	}
-
-#ifdef _AFXDLL
-	pSink->m_pModuleState = AfxGetModuleState();
-#endif
-
-
-}
-void CXTPHookManager::RemoveAll()
-{
-	HWND hWnd;
-	POSITION pos = m_mapHooks.GetStartPosition();
-	CHookSink* pSink;
-
-	while (pos)
-	{
-		m_mapHooks.GetNextAssoc(pos, hWnd, (void*&)pSink);
-		delete pSink;
-	}
-	m_mapHooks.RemoveAll();
-}
-
-void CXTPHookManager::RemoveAll(HWND hWnd)
-{
-	CHookSink* pSink = Lookup(hWnd);
-	if (pSink)
-	{
-		m_mapHooks.RemoveKey(hWnd);
-		delete pSink;
-	}
-}
-
-void CXTPHookManager::RemoveAll(CXTPHookManagerHookAble* pHook)
-{
-	ASSERT(pHook);
-	HWND hWnd;
-	CHookSink* pSink = NULL;
-
-	POSITION pos = m_mapHooks.GetStartPosition();
-	while (pos)
-	{
-		m_mapHooks.GetNextAssoc(pos, hWnd, (void*&)pSink);
-		pSink->RemoveHook(pHook);
-	}
-}
-
-CXTPHookManager::CHookSink* CXTPHookManager::Lookup(HWND hWnd)
-{
-	CHookSink* pSink;
-
-	if (m_mapHooks.Lookup(hWnd, (void*&)pSink))
-		return pSink;
-	return NULL;
-}
-
-void CXTPHookManager::RemoveHook(HWND hWnd, CXTPHookManagerHookAble* pHook)
-{
-	ASSERT(hWnd);
-	CHookSink* pSink = Lookup(hWnd);
-
-	if (pSink)
-	{
-		pSink->RemoveHook(pHook);
-	}
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-
-CThreadLocal<CXTPKeyboardManager> CXTPKeyboardManager::_xtpKeyboardThreadState;
-
-
-CXTPKeyboardManager::CXTPKeyboardManager()
-{
-	m_hHookKeyboard = 0;
-	m_hHookCallWndProc = 0;
-	m_hHookGetMessage = 0;
-
-#ifdef _AFXDLL
-	m_pModuleState = 0;
-#endif
-}
-
-void CXTPKeyboardManager::SetupKeyboardHook(BOOL bSetup)
-{
-	if (bSetup && m_hHookKeyboard == 0)
-	{
-		m_hHookKeyboard = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, AfxGetInstanceHandle(), GetCurrentThreadId());
-	}
-	if (!bSetup && m_hHookKeyboard)
-	{
-		UnhookWindowsHookEx(m_hHookKeyboard);
-		m_hHookKeyboard = 0;
-	}
-}
-
-
-void CXTPKeyboardManager::SetupCallWndProcHook(BOOL bSetup)
-{
-	if (bSetup && m_hHookCallWndProc == 0)
-	{
-		m_hHookCallWndProc = SetWindowsHookEx(WH_CALLWNDPROC, CallWndProc, AfxGetInstanceHandle(), GetCurrentThreadId());
-	}
-	if (!bSetup && m_hHookCallWndProc)
-	{
-		UnhookWindowsHookEx(m_hHookCallWndProc);
-		m_hHookCallWndProc = 0;
-	}
-}
-
-CXTPKeyboardManager::~CXTPKeyboardManager()
-{
-	SetupKeyboardHook(FALSE);
-	SetupCallWndProcHook(FALSE);
-}
-
-void CXTPKeyboardManager::HookKeyboard(CXTPHookManagerHookAble* pHook)
-{
-	SetupKeyboardHook(TRUE);
-	SetupCallWndProcHook(TRUE);
-
-#ifdef _AFXDLL
-	m_pModuleState = AfxGetModuleState();
-#endif
-
-	if (m_lstKeyboardHooks.Find(pHook) == NULL)
-	{
-		m_lstKeyboardHooks.AddTail(pHook);
-	}
-
-}
-void CXTPKeyboardManager::UnhookKeyboard(CXTPHookManagerHookAble* pHook)
-{
-	POSITION pos = m_lstKeyboardHooks.Find(pHook);
-
-	if (pos != NULL)
-	{
-		m_lstKeyboardHooks.RemoveAt(pos);
-	}
-
-	if (m_lstKeyboardHooks.IsEmpty())
-	{
-		SetupCallWndProcHook(FALSE);
-		SetupKeyboardHook(FALSE);
-	}
-
-}
-BOOL CXTPKeyboardManager::ProcessKeyboardHooks(UINT nMessage, WPARAM wParam, LPARAM lParam)
-{
-	POSITION pos = m_lstKeyboardHooks.GetTailPosition();
-	while (pos)
-	{
-		CXTPHookManagerHookAble* pHook = m_lstKeyboardHooks.GetPrev(pos);
-		LRESULT lResult = 0;
-		BOOL bResult = pHook->OnHookMessage(0, nMessage, wParam, lParam, lResult);
-		if (bResult)
-		{
-			return bResult != FALSE_EXIT;
-		}
-	}
-	return TRUE;
-}
-
-
-LRESULT CALLBACK CXTPKeyboardManager::CallWndProc(int code, WPARAM wParam, LPARAM lParam)
-{
-	CXTPKeyboardManager* pKeyboardManager = XTPKeyboardManager();
-
-	CWPSTRUCT* pMSG = (CWPSTRUCT*)lParam;
-
-	if (pMSG && pMSG->message == WM_ACTIVATEAPP && !pMSG->wParam)
-	{
-#ifdef _AFXDLL
-		AFX_MANAGE_STATE(pKeyboardManager->m_pModuleState);
-#endif
-
-		XTPMouseManager()->SendTrackLost();
-	}
-
-	return CallNextHookEx(pKeyboardManager->m_hHookCallWndProc, code, wParam, lParam);
-}
-
-
-LRESULT CALLBACK CXTPKeyboardManager::KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
-{
-	CXTPKeyboardManager* pKeyboardManager = XTPKeyboardManager();
-
-	if (code != HC_ACTION)
-		return CallNextHookEx(pKeyboardManager->m_hHookKeyboard, code, wParam, lParam);
-
-	if (pKeyboardManager->IsKeyboardHooked() && (!(HIWORD(lParam) & KF_UP)))
-	{
-		SAFE_MANAGE_STATE(pKeyboardManager->m_pModuleState);
-
-		if (!(HIWORD(lParam) & KF_ALTDOWN))
-		{
-			if (pKeyboardManager->ProcessKeyboardHooks(WM_KEYDOWN, wParam, lParam))
-			{
-				return TRUE;
-			}
-		}
-		else
-		{
-			if (wParam == VK_MENU && !XTPMouseManager()->IsMouseLocked())
-			{
-				if (!(HIWORD(lParam) & KF_REPEAT))
-				{
-					XTPMouseManager()->SendTrackLost();
-					return TRUE;
-				}
-			}
-			else
-			{
-				if (pKeyboardManager->ProcessKeyboardHooks(WM_KEYDOWN, wParam, lParam))
-				{
-					return TRUE;
-				}
-			}
-		}
-	}
-
-
-	return CallNextHookEx(pKeyboardManager->m_hHookKeyboard, code, wParam, lParam);
-
-}
-

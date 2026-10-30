@@ -1,1010 +1,225 @@
+// roc 2010-06 007cd830  unit: CRobloxReportView  size: 785 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 007cd830
+//
+// 007cd830  6aff                 push -1
+// 007cd832  68ec069b00           push 0x9b06ec
+// 007cd837  64a100000000         mov eax, dword ptr fs:[0]
+// 007cd83d  50                   push eax
+// 007cd83e  81ec9c000000         sub esp, 0x9c
+// 007cd844  53                   push ebx
+// 007cd845  55                   push ebp
+// 007cd846  56                   push esi
+// 007cd847  57                   push edi
+// 007cd848  a1b05fbe00           mov eax, dword ptr [0xbe5fb0]
+// 007cd84d  33c4                 xor eax, esp
+// 007cd84f  50                   push eax
+// 007cd850  8d8424b0000000       lea eax, [esp + 0xb0]
+// 007cd857  64a300000000         mov dword ptr fs:[0], eax
+// 007cd85d  8bd9                 mov ebx, ecx
+// 007cd85f  33ff                 xor edi, edi
+// 007cd861  53                   push ebx
+// 007cd862  8d4c2440             lea ecx, [esp + 0x40]
+// 007cd866  897c241c             mov dword ptr [esp + 0x1c], edi
+// 007cd86a  e871400300           call 0x8018e0
+// 007cd86f  8d4c241c             lea ecx, [esp + 0x1c]
+// 007cd873  89bc24b8000000       mov dword ptr [esp + 0xb8], edi
+// 007cd87a  ff15a4ce9e00         call dword ptr [0x9ecea4]
+// 007cd880  8bcb                 mov ecx, ebx
+// 007cd882  c68424b800000001     mov byte ptr [esp + 0xb8], 1
+// 007cd88a  e8ffa3fdff           call 0x7a7c8e
+// 007cd88f  85c0                 test eax, eax
+// 007cd891  7413                 je 0x7cd8a6
+// 007cd893  8d44241c             lea eax, [esp + 0x1c]
+// 007cd897  50                   push eax
+// 007cd898  8bcb                 mov ecx, ebx
+// 007cd89a  e8efa3fdff           call 0x7a7c8e
+// 007cd89f  8bc8                 mov ecx, eax
+// 007cd8a1  e8e2a6fdff           call 0x7a7f88
+// 007cd8a6  685089a500           push 0xa58950
+// 007cd8ab  8d4c2440             lea ecx, [esp + 0x40]
+// 007cd8af  e8a0a4fdff           call 0x7a7d54
+// 007cd8b4  8d4c241c             lea ecx, [esp + 0x1c]
+// 007cd8b8  ff15b0ce9e00         call dword ptr [0x9eceb0]
+// 007cd8be  50                   push eax
+// 007cd8bf  68c9000000           push 0xc9
+// 007cd8c4  8d4c2444             lea ecx, [esp + 0x44]
+// 007cd8c8  e8c7f61a00           call 0x97cf94
+// 007cd8cd  8bb424c4000000       mov esi, dword ptr [esp + 0xc4]
+// 007cd8d4  8d4c2414             lea ecx, [esp + 0x14]
+// 007cd8d8  51                   push ecx
+// 007cd8d9  8b0e                 mov ecx, dword ptr [esi]
+// 007cd8db  e8aef61a00           call 0x97cf8e
+// 007cd8e0  8bc8                 mov ecx, eax
+// 007cd8e2  c68424b800000002     mov byte ptr [esp + 0xb8], 2
+// 007cd8ea  ff15b0ce9e00         call dword ptr [0x9eceb0]
+// 007cd8f0  50                   push eax
+// 007cd8f1  68ca000000           push 0xca
+// 007cd8f6  8d4c2444             lea ecx, [esp + 0x44]
+// 007cd8fa  e895f61a00           call 0x97cf94
+// 007cd8ff  8d4c2414             lea ecx, [esp + 0x14]
+// 007cd903  c68424b800000001     mov byte ptr [esp + 0xb8], 1
+// 007cd90b  ff15f0ce9e00         call dword ptr [0x9ecef0]
+// 007cd911  8b0e                 mov ecx, dword ptr [esi]
+// 007cd913  8d542420             lea edx, [esp + 0x20]
+// 007cd917  52                   push edx
+// 007cd918  e86bf61a00           call 0x97cf88
+// 007cd91d  8bc8                 mov ecx, eax
+// 007cd91f  c68424b800000003     mov byte ptr [esp + 0xb8], 3
+// 007cd927  ff15b0ce9e00         call dword ptr [0x9eceb0]
+// 007cd92d  50                   push eax
+// 007cd92e  68cb000000           push 0xcb
+// 007cd933  8d4c2444             lea ecx, [esp + 0x44]
+// 007cd937  e858f61a00           call 0x97cf94
+// 007cd93c  8d4c2420             lea ecx, [esp + 0x20]
+// 007cd940  c68424b800000001     mov byte ptr [esp + 0xb8], 1
+// 007cd948  ff15f0ce9e00         call dword ptr [0x9ecef0]
+// 007cd94e  6a05                 push 5
+// 007cd950  8d4c2440             lea ecx, [esp + 0x40]
+// 007cd954  e82fa3fdff           call 0x7a7c88
+// 007cd959  8b44245c             mov eax, dword ptr [esp + 0x5c]
+// 007cd95d  50                   push eax
+// 007cd95e  ff15d8ba9e00         call dword ptr [0x9ebad8]
+// 007cd964  8b4e24               mov ecx, dword ptr [esi + 0x24]
+// 007cd967  8b462c               mov eax, dword ptr [esi + 0x2c]
+// 007cd96a  8b5628               mov edx, dword ptr [esi + 0x28]
+// 007cd96d  8d6e24               lea ebp, [esi + 0x24]
+// 007cd970  894c2428             mov dword ptr [esp + 0x28], ecx
+// 007cd974  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
+// 007cd977  89442430             mov dword ptr [esp + 0x30], eax
+// 007cd97b  8b8360030000         mov eax, dword ptr [ebx + 0x360]
+// 007cd981  8954242c             mov dword ptr [esp + 0x2c], edx
+// 007cd985  8b5614               mov edx, dword ptr [esi + 0x14]
+// 007cd988  894c2434             mov dword ptr [esp + 0x34], ecx
+// 007cd98c  8b4830               mov ecx, dword ptr [eax + 0x30]
+// 007cd98f  897830               mov dword ptr [eax + 0x30], edi
+// 007cd992  8bbc24c0000000       mov edi, dword ptr [esp + 0xc0]
+// 007cd999  89542414             mov dword ptr [esp + 0x14], edx
+// 007cd99d  8b17                 mov edx, dword ptr [edi]
+// 007cd99f  8b4224               mov eax, dword ptr [edx + 0x24]
+// 007cd9a2  894c2424             mov dword ptr [esp + 0x24], ecx
+// 007cd9a6  8bcf                 mov ecx, edi
+// 007cd9a8  ffd0                 call eax
+// 007cd9aa  6a00                 push 0
+// 007cd9ac  6a00                 push 0
+// 007cd9ae  6a00                 push 0
+// 007cd9b0  6a00                 push 0
+// 007cd9b2  8bcf                 mov ecx, edi
+// 007cd9b4  e8b7aefdff           call 0x7a8870
+// 007cd9b9  8b4368               mov eax, dword ptr [ebx + 0x68]
+// 007cd9bc  894614               mov dword ptr [esi + 0x14], eax
+// 007cd9bf  3b442414             cmp eax, dword ptr [esp + 0x14]
+// 007cd9c3  0f83be000000         jae 0x7cda87
+// 007cd9c9  8da42400000000       lea esp, [esp]
+// 007cd9d0  8b13                 mov edx, dword ptr [ebx]
+// 007cd9d2  8b8268010000         mov eax, dword ptr [edx + 0x168]
+// 007cd9d8  56                   push esi
+// 007cd9d9  57                   push edi
+// 007cd9da  8bcb                 mov ecx, ebx
+// 007cd9dc  ffd0                 call eax
+// 007cd9de  837e1000             cmp dword ptr [esi + 0x10], 0
+// 007cd9e2  0f849f000000         je 0x7cda87
+// 007cd9e8  8b4e14               mov ecx, dword ptr [esi + 0x14]
+// 007cd9eb  51                   push ecx
+// 007cd9ec  8d542420             lea edx, [esp + 0x20]
+// 007cd9f0  687476a000           push 0xa07674
+// 007cd9f5  52                   push edx
+// 007cd9f6  ff15acce9e00         call dword ptr [0x9eceac]
+// 007cd9fc  83c40c               add esp, 0xc
+// 007cd9ff  8d4c241c             lea ecx, [esp + 0x1c]
+// 007cda03  ff15b0ce9e00         call dword ptr [0x9eceb0]
+// 007cda09  50                   push eax
+// 007cda0a  68cc000000           push 0xcc
+// 007cda0f  8d4c2444             lea ecx, [esp + 0x44]
+// 007cda13  e87cf51a00           call 0x97cf94
+// 007cda18  8b4708               mov eax, dword ptr [edi + 8]
+// 007cda1b  6a0a                 push 0xa
+// 007cda1d  50                   push eax
+// 007cda1e  ff15b4a09e00         call dword ptr [0x9ea0b4]
+// 007cda24  8b4f08               mov ecx, dword ptr [edi + 8]
+// 007cda27  6a08                 push 8
+// 007cda29  51                   push ecx
+// 007cda2a  89442440             mov dword ptr [esp + 0x40], eax
+// 007cda2e  ff15b4a09e00         call dword ptr [0x9ea0b4]
+// 007cda34  8b542438             mov edx, dword ptr [esp + 0x38]
+// 007cda38  52                   push edx
+// 007cda39  50                   push eax
+// 007cda3a  6a00                 push 0
+// 007cda3c  6a00                 push 0
+// 007cda3e  55                   push ebp
+// 007cda3f  ff15c0bb9e00         call dword ptr [0x9ebbc0]
+// 007cda45  8b4708               mov eax, dword ptr [edi + 8]
+// 007cda48  6a02                 push 2
+// 007cda4a  55                   push ebp
+// 007cda4b  50                   push eax
+// 007cda4c  ff151ca19e00         call dword ptr [0x9ea11c]
+// 007cda52  8b13                 mov edx, dword ptr [ebx]
+// 007cda54  8b8288010000         mov eax, dword ptr [edx + 0x188]
+// 007cda5a  56                   push esi
+// 007cda5b  57                   push edi
+// 007cda5c  8bcb                 mov ecx, ebx
+// 007cda5e  ffd0                 call eax
+// 007cda60  ff4614               inc dword ptr [esi + 0x14]
+// 007cda63  6a00                 push 0
+// 007cda65  6a00                 push 0
+// 007cda67  e8f43d0300           call 0x801860
+// 007cda6c  85c0                 test eax, eax
+// 007cda6e  740f                 je 0x7cda7f
+// 007cda70  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 007cda74  394e14               cmp dword ptr [esi + 0x14], ecx
+// 007cda77  0f8253ffffff         jb 0x7cd9d0
+// 007cda7d  eb08                 jmp 0x7cda87
+// 007cda7f  c744241801000000     mov dword ptr [esp + 0x18], 1
+// 007cda87  8d4c243c             lea ecx, [esp + 0x3c]
+// 007cda8b  e88e9ffdff           call 0x7a7a1e
+// 007cda90  837c241800           cmp dword ptr [esp + 0x18], 0
+// 007cda95  751a                 jne 0x7cdab1
+// 007cda97  8b442414             mov eax, dword ptr [esp + 0x14]
+// 007cda9b  394614               cmp dword ptr [esi + 0x14], eax
+// 007cda9e  7407                 je 0x7cdaa7
+// 007cdaa0  3dffff0000           cmp eax, 0xffff
+// 007cdaa5  750a                 jne 0x7cdab1
+// 007cdaa7  c744241801000000     mov dword ptr [esp + 0x18], 1
+// 007cdaaf  eb08                 jmp 0x7cdab9
+// 007cdab1  c744241800000000     mov dword ptr [esp + 0x18], 0
+// 007cdab9  8b542418             mov edx, dword ptr [esp + 0x18]
+// 007cdabd  895610               mov dword ptr [esi + 0x10], edx
+// 007cdac0  8b07                 mov eax, dword ptr [edi]
+// 007cdac2  8b5028               mov edx, dword ptr [eax + 0x28]
+// 007cdac5  6aff                 push -1
+// 007cdac7  8bcf                 mov ecx, edi
+// 007cdac9  ffd2                 call edx
+// 007cdacb  8b8360030000         mov eax, dword ptr [ebx + 0x360]
+// 007cdad1  8b4c2424             mov ecx, dword ptr [esp + 0x24]
+// 007cdad5  8b542414             mov edx, dword ptr [esp + 0x14]
+// 007cdad9  894830               mov dword ptr [eax + 0x30], ecx
+// 007cdadc  8b442428             mov eax, dword ptr [esp + 0x28]
+// 007cdae0  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
+// 007cdae4  894500               mov dword ptr [ebp], eax
+// 007cdae7  8b442434             mov eax, dword ptr [esp + 0x34]
+// 007cdaeb  895614               mov dword ptr [esi + 0x14], edx
+// 007cdaee  8b542430             mov edx, dword ptr [esp + 0x30]
+// 007cdaf2  894d04               mov dword ptr [ebp + 4], ecx
+// 007cdaf5  895508               mov dword ptr [ebp + 8], edx
+// 007cdaf8  8d4c241c             lea ecx, [esp + 0x1c]
+// 007cdafc  89450c               mov dword ptr [ebp + 0xc], eax
+// 007cdaff  ff15f0ce9e00         call dword ptr [0x9ecef0]
+// 007cdb05  8d4c243c             lea ecx, [esp + 0x3c]
+// 007cdb09  c78424b8000000ffffffff mov dword ptr [esp + 0xb8], 0xffffffff
+// 007cdb14  c744243c5c84a500     mov dword ptr [esp + 0x3c], 0xa5845c
+// 007cdb1c  e8afa7fdff           call 0x7a82d0
+// 007cdb21  8b442418             mov eax, dword ptr [esp + 0x18]
+// 007cdb25  8b8c24b0000000       mov ecx, dword ptr [esp + 0xb0]
+// 007cdb2c  64890d00000000       mov dword ptr fs:[0], ecx
+// 007cdb33  59                   pop ecx
+// 007cdb34  5f                   pop edi
+// 007cdb35  5e                   pop esi
+// 007cdb36  5d                   pop ebp
+// 007cdb37  5b                   pop ebx
+// 007cdb38  81c4a8000000         add esp, 0xa8
+// 007cdb3e  c20800               ret 8
+// copied from an identical function in another client (function ?PaginateTo@CXTPReportView@@MAEHPAVCDC@@PAUCPrintInfo@@@Z)
+
 // roc-cl: 30729
 // roc-lang: cpp
 // roc-flags: /O2 /MD /GS /EHsc /Ob1
 // roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportView.cpp
-
-// Candidate translation unit (score above; library headers required).
-// XTPReportView.cpp : implementation of the CXTPReportView class.
-//
-// This file is a part of the XTREME REPORTCONTROL MFC class library.
-// (c)1998-2007 Codejock Software, All Rights Reserved.
-//
-// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
-// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
-// CONSENT OF CODEJOCK SOFTWARE.
-//
-// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
-// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
-// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
-// SINGLE COMPUTER.
-//
-// CONTACT INFORMATION:
-// support@codejock.com
-// http://www.codejock.com
-//
-/////////////////////////////////////////////////////////////////////////////
-
-#include "stdafx.h"
-
-#include "XTPReportView.h"
-#include "XTPReportColumn.h"
-#include "XTPReportColumns.h"
-#include "XTPReportRecordItem.h"
-#include "XTPReportRecordItemText.h"
-#include "XTPReportInplaceControls.h"
-#include "XTPReportRecord.h"
-#include "XTPReportRecords.h"
-
-#include "Common/XTPVC80Helpers.h"
-#include "Common/XTPResourceManager.h"
-#include "Common/XTPImageManager.h"
-
-#include "Common/Resource.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-
-BEGIN_MESSAGE_MAP(CXTPReportPageSetupDialog, CPageSetupDialog)
-	ON_BN_CLICKED(XTP_IDC_HEADER_FORMAT_BTN, OnBnClickedHeaderFormat)
-	ON_BN_CLICKED(XTP_IDC_FOOTER_FORMAT_BTN, OnBnClickedFooterFormat)
-END_MESSAGE_MAP()
-
-CXTPReportPageSetupDialog::CXTPReportPageSetupDialog(
-	CXTPReportViewPrintOptions* pOptions,
-	DWORD dwFlags, CWnd* pParentWnd)
-	: CPageSetupDialog(dwFlags, pParentWnd)
-{
-	ASSERT(pOptions);
-	m_pOptions = pOptions;
-
-	if (m_pOptions)
-	{
-		BOOL bIsInches = m_pOptions->IsMarginsMeasureInches();
-		DWORD dwMeasure = bIsInches ? PSD_INTHOUSANDTHSOFINCHES : PSD_INHUNDREDTHSOFMILLIMETERS;
-
-		m_psd.Flags &= ~PSD_INWININIINTLMEASURE;
-		m_psd.Flags |= dwMeasure;
-	}
-
-	m_psd.Flags |= PSD_ENABLEPAGESETUPTEMPLATEHANDLE;
-	m_psd.hPageSetupTemplate = XTPResourceManager()->LoadDialogTemplate2(MAKEINTRESOURCE(IDD));
-	ASSERT(m_psd.hPageSetupTemplate);
-
-	if (m_pOptions)
-	{
-		m_psd.rtMargin = m_pOptions->m_rcMargins;
-	}
-}
-
-CXTPReportPageSetupDialog::~CXTPReportPageSetupDialog()
-{
-}
-
-#ifndef rad1
-	#define rad1        0x0420
-	#define rad2        0x0421
-
-	#define grp4        0x0433
-#endif
-
-BOOL CXTPReportPageSetupDialog::OnInitDialog ()
-{
-	CPageSetupDialog::OnInitDialog();
-
-	ASSERT(m_pOptions);
-
-	VERIFY( m_ctrlHeaderFormat.SubclassDlgItem(XTP_IDC_HEADER_FORMAT, this) );
-	VERIFY( m_ctrlFooterFormat.SubclassDlgItem(XTP_IDC_FOOTER_FORMAT, this) );
-
-	VERIFY( m_ctrlHeaderFormatBtn.SubclassDlgItem(XTP_IDC_HEADER_FORMAT_BTN, this) );
-	VERIFY( m_ctrlFooterFormatBtn.SubclassDlgItem(XTP_IDC_FOOTER_FORMAT_BTN, this) );
-
-	if(m_pOptions && m_pOptions->GetPageHeader())
-	{
-		m_ctrlHeaderFormat.SetWindowText(m_pOptions->GetPageHeader()->m_strFormatString);
-	}
-
-	if(m_pOptions && m_pOptions->GetPageFooter())
-	{
-		m_ctrlFooterFormat.SetWindowText(m_pOptions->GetPageFooter()->m_strFormatString);
-	}
-
-	if (GetDlgItem(rad1))
-		GetDlgItem(rad1)->EnableWindow(TRUE); //1056 Portrait
-	if (GetDlgItem(rad2))
-		GetDlgItem(rad2)->EnableWindow(TRUE); //1057 Landscape
-
-	BOOL bIsInches = m_pOptions ? m_pOptions->IsMarginsMeasureInches() : FALSE;
-
-	UINT uStrID = bIsInches ? XTP_IDS_REPORT_MARGINS_INCH : XTP_IDS_REPORT_MARGINS_MM;
-	CString strCaption;
-	VERIFY(XTPResourceManager()->LoadString(&strCaption, uStrID));
-
-	if (!strCaption.IsEmpty() && GetDlgItem(grp4))
-	{
-		GetDlgItem(grp4)->SetWindowText(strCaption);
-	}
-
-	HICON hBtnIcon = XTPResourceManager()->LoadIcon(XTP_IDI_BTN_ARROW_R, CSize(0,0));
-	ASSERT(hBtnIcon);
-	if (hBtnIcon)
-	{
-		m_ctrlHeaderFormatBtn.SetIcon(hBtnIcon);
-		m_ctrlFooterFormatBtn.SetIcon(hBtnIcon);
-	}
-
-	return FALSE;
-}
-
-void CXTPReportPageSetupDialog::OnOK()
-{
-	if(m_pOptions && m_pOptions->GetPageHeader())
-	{
-		m_ctrlHeaderFormat.GetWindowText(m_pOptions->GetPageHeader()->m_strFormatString);
-	}
-
-	if(m_pOptions && m_pOptions->GetPageFooter())
-	{
-		m_ctrlFooterFormat.GetWindowText(m_pOptions->GetPageFooter()->m_strFormatString);
-	}
-
-	if (m_pOptions) m_pOptions->m_rcMargins = m_psd.rtMargin;
-
-	CPageSetupDialog::OnOK();
-}
-
-void CXTPReportPageSetupDialog::OnBnClickedHeaderFormat()
-{
-	CXTPPrintPageHeaderFooter::DoInsertHFFormatSpecifierViaMenu(
-		this, &m_ctrlHeaderFormat, &m_ctrlHeaderFormatBtn);
-}
-
-void CXTPReportPageSetupDialog::OnBnClickedFooterFormat()
-{
-	CXTPPrintPageHeaderFooter::DoInsertHFFormatSpecifierViaMenu(
-		this, &m_ctrlFooterFormat, &m_ctrlFooterFormatBtn);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportView
-
-IMPLEMENT_DYNCREATE(CXTPReportView, CView)
-
-CXTPReportView::CXTPReportView()
-{
-	m_pReport = NULL;
-	m_pPrintOptions = new CXTPReportViewPrintOptions();
-
-	m_bPrintSelection = FALSE;
-
-	m_bPrintDirect = FALSE;
-	m_bResizeControlWithView = TRUE;
-
-	m_bAllowCut = TRUE;
-	m_bAllowPaste = TRUE;
-
-	m_pScrollBar = NULL;
-
-}
-
-CXTPReportView::~CXTPReportView()
-{
-	CMDTARGET_RELEASE(m_pPrintOptions);
-	SAFE_DELETE(m_pReport);
-}
-
-
-CXTPReportControl& CXTPReportView::GetReportCtrl() const
-{
-	return m_pReport == NULL ? (CXTPReportControl&)m_wndReport : *m_pReport;
-}
-
-void CXTPReportView::SetReportCtrl(CXTPReportControl* pReport)
-{
-	if (::IsWindow(m_wndReport.GetSafeHwnd()))
-		m_wndReport.DestroyWindow();
-
-	m_pReport = pReport;
-}
-
-void CXTPReportView::SetScrollBarCtrl(CScrollBar* pScrollBar)
-{
-	m_pScrollBar = pScrollBar;
-}
-
-BEGIN_MESSAGE_MAP(CXTPReportView, CView)
-	//{{AFX_MSG_MAP(CXTPReportView)
-	ON_WM_ERASEBKGND()
-	ON_WM_SIZE()
-	ON_WM_CREATE()
-	ON_WM_SETFOCUS()
-	ON_WM_PAINT()
-	ON_COMMAND(ID_FILE_PRINT, OnFilePrint)
-	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
-	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateEditCut)
-	ON_WM_VSCROLL()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportView drawing
-
-void CXTPReportView::OnDraw(CDC* /*pDC*/)
-{
-}
-
-void CXTPReportView::OnPaint()
-{
-	Default();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportView diagnostics
-
-#ifdef _DEBUG
-void CXTPReportView::AssertValid() const
-{
-	CView::AssertValid();
-}
-
-void CXTPReportView::Dump(CDumpContext& dc) const
-{
-	CView::Dump(dc);
-}
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
-// CXTPReportView message handlers
-
-BOOL CXTPReportView::OnEraseBkgnd(CDC*)
-{
-	return TRUE;
-}
-
-CScrollBar* CXTPReportView::GetScrollBarCtrl(int nBar) const
-{
-	if (nBar == SB_VERT && m_pScrollBar)
-		return m_pScrollBar;
-
-	return CView::GetScrollBarCtrl(nBar);
-}
-
-void CXTPReportView::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
-{
-	if (m_pScrollBar && pScrollBar == m_pScrollBar)
-		GetReportCtrl().OnVScroll(nSBCode, nPos, 0);
-
-	CView::OnVScroll(nSBCode, nPos, pScrollBar);
-}
-
-void CXTPReportView::OnSize(UINT nType, int cx, int cy)
-{
-	CView::OnSize(nType, cx, cy);
-
-	if (m_pScrollBar && m_pScrollBar->GetSafeHwnd())
-	{
-		int nScroll = GetSystemMetrics(SM_CXVSCROLL);
-		m_pScrollBar->MoveWindow(cx - nScroll, 0, nScroll, cy);
-		cx -= nScroll;
-	}
-
-	if (m_bResizeControlWithView && GetReportCtrl().GetSafeHwnd())
-	{
-		GetReportCtrl().MoveWindow(0, 0, cx, cy);
-	}
-}
-
-int CXTPReportView::OnCreate(LPCREATESTRUCT lpCreateStruct)
-{
-	if (CView::OnCreate(lpCreateStruct) == -1)
-		return -1;
-
-	if (!GetReportCtrl().Create(WS_CHILD | WS_TABSTOP | WS_VISIBLE ,
-								CRect(0, 0, 0, 0), this, XTP_ID_REPORT_CONTROL))
-	{
-		TRACE(_T("Failed to create report control window\n"));
-		return -1;
-	}
-	return 0;
-}
-
-void CXTPReportView::OnSetFocus(CWnd* pOldWnd)
-{
-	CView::OnSetFocus(pOldWnd);
-
-	if(IsWindow(GetReportCtrl().GetSafeHwnd()))
-		GetReportCtrl().SetFocus();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CReportSampleView printing
-
-BOOL CXTPReportView::OnPreparePrinting(CPrintInfo* pInfo)
-{
-	if (GetReportCtrl().GetSelectedRows()->GetCount() > 0)
-	{
-		pInfo->m_pPD->m_pd.Flags &= ~PD_NOSELECTION;
-	}
-
-	pInfo->m_bDirect = m_bPrintDirect;
-
-	// default preparation
-	if (!DoPreparePrinting(pInfo))
-		return FALSE;
-
-	m_bPrintSelection = pInfo->m_pPD->PrintSelection();
-
-	return TRUE;
-}
-
-void CXTPReportView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo)
-{
-	ASSERT(m_aPageStart.GetSize() == 0);
-	m_aPageStart.RemoveAll();
-	m_aPageStart.Add(0);
-
-	CString str1, str2;
-	if (m_pPrintOptions && m_pPrintOptions->GetPageHeader())
-		str1 = m_pPrintOptions->GetPageHeader()->m_strFormatString;
-	if (m_pPrintOptions && m_pPrintOptions->GetPageFooter())
-		str2 = m_pPrintOptions->GetPageFooter()->m_strFormatString;
-
-	if (str1.Find(_T("&P")) >= 0 || str2.Find(_T("&P")) >= 0)
-	{
-		int nCurPage = pInfo->m_nCurPage;
-
-		pInfo->m_nCurPage = 65535;
-
-		if (PaginateTo(pDC, pInfo))
-		{
-			pInfo->SetMaxPage((int)m_aPageStart.GetSize() - 1);
-		}
-
-		pInfo->m_nCurPage = nCurPage;
-	}
-}
-
-void CXTPReportView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	m_aPageStart.RemoveAll();
-	m_bmpGrayDC.DeleteObject();
-}
-
-CXTPReportPaintManager* CXTPReportView::GetPaintManager() const
-{
-	return GetReportCtrl().GetPaintManager();
-}
-
-int CXTPReportView::GetColumnWidth(CXTPReportColumn* pColumnTest, int nTotalWidth)
-{
-	return pColumnTest->GetPrintWidth(nTotalWidth);
-}
-
-void CXTPReportView::PrintHeader(CDC* pDC, CRect rcHeader)
-{
-	GetPaintManager()->FillHeaderControl(pDC, rcHeader);
-
-	int x = rcHeader.left;
-
-	CXTPReportColumns* pColumns = GetReportCtrl().GetColumns();
-
-	for (int i = 0; i < pColumns->GetCount(); i++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(i);
-		if (!pColumn->IsVisible())
-			continue;
-
-		int nWidth = GetColumnWidth(pColumn, rcHeader.Width());
-		CRect rcItem(x, rcHeader.top, x + nWidth, rcHeader.bottom);
-
-		GetPaintManager()->DrawColumn(pDC, pColumn, GetReportCtrl().GetReportHeader(), rcItem);
-
-		x += nWidth;
-	}
-}
-
-void CXTPReportView::PrintFooter(CDC* pDC, CRect rcFooter)
-{
-	GetPaintManager()->FillFooter(pDC, rcFooter);
-
-	int x = rcFooter.left;
-
-	CXTPReportColumns* pColumns = GetReportCtrl().GetColumns();
-
-	for (int i = 0; i < pColumns->GetCount(); i++)
-	{
-		CXTPReportColumn* pColumn = pColumns->GetAt(i);
-		if (!pColumn->IsVisible())
-			continue;
-
-		int nWidth = GetColumnWidth(pColumn, rcFooter.Width());
-		CRect rcItem(x, rcFooter.top, x + nWidth, rcFooter.bottom);
-
-		GetPaintManager()->DrawColumnFooter(pDC, pColumn, GetReportCtrl().GetReportHeader(), rcItem);
-
-		x += nWidth;
-	}
-}
-
-void CXTPReportView::PrintRow(CDC* pDC, CXTPReportRow* pRow, CRect rcRow, int nPreviewHeight)
-{
-	if (pRow->IsGroupRow())
-	{
-		pRow->Draw(pDC, rcRow, 0);
-		return;
-	}
-
-	CXTPReportControl& wndReport = GetReportCtrl();
-
-	XTP_REPORTRECORDITEM_DRAWARGS drawArgs;
-	drawArgs.pDC = pDC;
-	drawArgs.pControl = &wndReport;
-	drawArgs.pRow = pRow;
-	int nIndentWidth = wndReport.GetHeaderIndent();
-	CXTPReportPaintManager* pPaintManager = GetPaintManager();
-
-	CXTPReportColumns* pColumns = wndReport.GetColumns();
-	int nColumnCount = pColumns->GetCount();
-
-	// paint row background
-	pPaintManager->FillRow(pDC, pRow, rcRow);
-
-	CRect rcItem(rcRow);
-	rcItem.bottom = rcItem.bottom - nPreviewHeight;
-
-	CXTPReportRecord* pRecord = pRow->GetRecord();
-	if (pRecord) // if drawing record, not group
-	{
-		BOOL bFirstVisibleColumn = TRUE;
-		int x = rcRow.left;
-		// paint record items
-		for (int nColumn = 0; nColumn < nColumnCount; nColumn++)
-		{
-			CXTPReportColumn* pColumn = pColumns->GetAt(nColumn);
-			if (pColumn && pColumn->IsVisible() && pRow->IsItemsVisible())
-			{
-				rcItem.left = x;
-				x = rcItem.right = rcItem.left + GetColumnWidth(pColumn, rcRow.Width());
-
-				if (bFirstVisibleColumn)
-				{
-					rcItem.left += nIndentWidth;
-					bFirstVisibleColumn = FALSE;
-				}
-
-				CRect rcGridItem(rcItem);
-				rcGridItem.left--;
-
-				CXTPReportRecordItem* pItem = pRecord->GetItem(pColumn);
-
-				if (pItem)
-				{
-
-					// draw item
-					drawArgs.pColumn = pColumn;
-					drawArgs.rcItem = rcItem;
-					drawArgs.nTextAlign = pColumn->GetAlignment();
-					drawArgs.pItem = pItem;
-					// draw item
-					pItem->Draw(&drawArgs);
-				}
-
-				// customize grid (is vertical grid required)
-				if (pRow->GetType() == xtpRowTypeHeader)
-				{
-					if (pColumn->GetDrawHeaderRowsVGrid())
-						pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
-				}
-				else if (pRow->GetType() == xtpRowTypeFooter)
-
-				{
-					if (pColumn->GetDrawFooterRowsVGrid())
-						pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
-				}
-				else
-				{
-					pPaintManager->DrawGrid(pDC, TRUE, rcGridItem);
-				}
-			}
-		}
-
-		if (nIndentWidth > 0)
-		{
-			// draw indent column
-			CRect rcIndent(rcRow);
-			rcIndent.right = rcRow.left + nIndentWidth;
-			pPaintManager->FillIndent(pDC, rcIndent);
-		}
-
-		if (pRow->IsPreviewVisible())
-		{
-			CXTPReportRecordItemPreview* pItem = pRecord->GetItemPreview();
-
-			CRect rcPreviewItem(rcRow);
-			rcPreviewItem.DeflateRect(nIndentWidth, rcPreviewItem.Height() - nPreviewHeight, 0, 0);
-
-			drawArgs.rcItem = rcPreviewItem;
-			drawArgs.nTextAlign = DT_LEFT;
-			drawArgs.pItem = pItem;
-			drawArgs.pColumn = NULL;
-
-			drawArgs.pItem->Draw(&drawArgs);
-		}
-	}
-
-	BOOL bGridVisible = pPaintManager->IsGridVisible(FALSE);
-
-	CRect rcFocus(rcRow.left, rcRow.top, rcRow.right, rcRow.bottom - (bGridVisible ? 1 : 0));
-
-	if (pRow->GetIndex() < wndReport.GetRows()->GetCount() - 1 && nIndentWidth > 0)
-	{
-		CXTPReportRow* pNextRow = wndReport.GetRows()->GetAt(pRow->GetIndex() + 1);
-		ASSERT(pNextRow);
-		if (pNextRow) rcFocus.left = rcRow.left +  min(nIndentWidth, pPaintManager->m_nTreeIndent * pNextRow->GetTreeDepth());
-	}
-
-	pPaintManager->DrawGrid(pDC, FALSE, rcFocus);
-}
-
-
-int CXTPReportView::PrintRows(CDC* pDC, CRect rcClient, long nIndexStart, int* pnPrintedRowsHeight)
-{
-	int y = rcClient.top;
-	CXTPReportRows* pRows = GetReportCtrl().GetRows();
-
-	for (; nIndexStart < pRows->GetCount(); nIndexStart++)
-	{
-		CXTPReportRow* pRow = pRows->GetAt(nIndexStart);
-
-		if (m_bPrintSelection && !pRow->IsSelected())
-		{
-			continue;
-		}
-
-		int nHeight = pRow->GetHeight(pDC, rcClient.Width());
-		int nPreviewHeight = 0;
-
-		if (pRow->IsPreviewVisible())
-		{
-			CXTPReportRecordItemPreview* pItem = pRow->GetRecord()->GetItemPreview();
-			nPreviewHeight = pItem->GetPreviewHeight(pDC, pRow, rcClient.Width());
-			nHeight += nPreviewHeight;
-		}
-
-		CRect rcRow(rcClient.left, y, rcClient.right, y + nHeight);
-
-		if (rcRow.bottom > rcClient.bottom)
-			break;
-
-		PrintRow(pDC, pRow, rcRow, nPreviewHeight);
-
-		y += rcRow.Height();
-	}
-
-	if(pnPrintedRowsHeight != NULL)
-		*pnPrintedRowsHeight = y - rcClient.top; // height of the printed rows
-
-	return nIndexStart;
-}
-
-
-long CXTPReportView::PrintReport(CDC* pDC, CPrintInfo* /*pInfo*/, CRect rcPage, long nIndexStart)
-{
-	int nHeaderHeight = 0;
-	int nFooterHeight = 0;
-
-	if (GetReportCtrl().IsHeaderVisible())
-		nHeaderHeight = GetPaintManager()->GetHeaderHeight(&GetReportCtrl(), pDC, rcPage.Width()-2);
-
-	if (GetReportCtrl().IsFooterVisible())
-		nFooterHeight = GetPaintManager()->GetFooterHeight(&GetReportCtrl(), pDC, rcPage.Width()-2);
-
-	CRect rcHeader(rcPage.left + 1, rcPage.top + 1, rcPage.right - 1, rcPage.top + 1 + nHeaderHeight);
-	CRect rcFooter(rcPage.left + 1, rcPage.bottom - nFooterHeight - 1, rcPage.right - 1, rcPage.bottom - 1);
-
-	if (nHeaderHeight)
-		PrintHeader(pDC, rcHeader);
-
-	CRect rcRows(rcHeader.left, rcHeader.bottom, rcHeader.right, rcFooter.top);
-
-	// print header rows (if exist and visible)
-	if (GetReportCtrl().GetHeaderRows()->GetCount() > 0 && GetReportCtrl().IsHeaderRowsVisible())
-	{
-		// print on the first page, at least
-		if (0 == nIndexStart || m_pPrintOptions->m_bRepeatHeaderRows)
-		{
-			 rcRows.top += PrintFixedRows(pDC, rcRows, TRUE);
-
-			// print divider
-			rcRows.top += PrintFixedRowsDivider(pDC, rcRows, TRUE);
-		}
-	}
-
-	// calculate space for footer rows
-	int nNeedForFooterRows = 0;
-
-	if (GetReportCtrl().GetFooterRows()->GetCount() > 0 && GetReportCtrl().IsFooterRowsVisible())
-	{
-		nNeedForFooterRows = GetReportCtrl().GetRowsHeight(GetReportCtrl().GetFooterRows(), rcRows.Width());
-		nNeedForFooterRows += GetPaintManager()->GetFooterRowsDividerHeight();
-
-		if (m_pPrintOptions->m_bRepeatFooterRows)
-		{
-			// decrease space for body rows, if footer rows to be repeated on every page.
-			rcRows.bottom = rcFooter.top - nNeedForFooterRows;
-		}
-	}
-
-	// print body rows
-	int nPrintedBodyRowsHeight = 0;
-	nIndexStart = PrintRows(pDC, rcRows, nIndexStart, &nPrintedBodyRowsHeight);
-
-	// print footer rows (if exist and visible)
-	if (nNeedForFooterRows > 0)
-	{
-		CRect rcFooterRows(rcRows);
-		rcFooterRows.top = rcRows.top + nPrintedBodyRowsHeight; //immediately after body rows
-		rcFooterRows.bottom = rcFooter.top;
-
-		// one more check, if there is enough space for footer divider + footer rows
-		if (rcFooterRows.Height() > nNeedForFooterRows)
-		{
-			// print divider
-			rcFooterRows.top += PrintFixedRowsDivider(pDC, rcFooterRows, FALSE);
-
-			// print footer rows
-			PrintFixedRows(pDC, rcFooterRows, FALSE);
-		}
-	}
-
-	if (nFooterHeight)
-		PrintFooter(pDC, rcFooter);
-
-	pDC->Draw3dRect(rcPage, 0, 0);
-
-	return nIndexStart;
-}
-
-int CXTPReportView::PrintFixedRowsDivider(CDC* pDC, const CRect& rc, BOOL bHeaderRows)
-{
-	CRect rcDiv(rc);
-
-	// get divider's height
-	int nHeight = bHeaderRows ? GetPaintManager()->GetHeaderRowsDividerHeight() : GetPaintManager()->GetFooterRowsDividerHeight();
-
-	rcDiv.bottom = rcDiv.top + nHeight;
-
-	GetPaintManager()->DrawFixedRowsDivider(pDC, rcDiv, &GetReportCtrl(), bHeaderRows, FALSE);
-
-	return nHeight;
-}
-
-long CXTPReportView::PrintPage(CDC* pDC, CPrintInfo* pInfo, CRect rcPage, long nIndexStart)
-{
-	if (!m_pPrintOptions || !pDC || !pInfo)
-	{
-		ASSERT(FALSE);
-		return INT_MAX;
-	}
-
-	CRect rcPageHeader = rcPage;
-	CRect rcPageFooter = rcPage;
-
-	CString strTitle = CXTPPrintPageHeaderFooter::GetParentFrameTitle(this);
-
-	m_pPrintOptions->GetPageHeader()->FormatTexts(pInfo, strTitle);
-	m_pPrintOptions->GetPageFooter()->FormatTexts(pInfo, strTitle);
-
-	pDC->SetBkColor(RGB(255, 255, 255));
-	m_pPrintOptions->GetPageFooter()->Draw(pDC, rcPageFooter, TRUE);
-	m_pPrintOptions->GetPageHeader()->Draw(pDC, rcPageHeader);
-
-	CRect rcReport = rcPage;
-
-	rcReport.top += rcPageHeader.Height() + 2;
-	rcReport.bottom -= rcPageFooter.Height() + 2;
-
-	long nNextRow = PrintReport(pDC, pInfo, rcReport, nIndexStart);
-
-	pDC->SetBkColor(RGB(255, 255, 255));
-	m_pPrintOptions->GetPageFooter()->Draw(pDC, rcPageFooter);
-
-	return nNextRow;
-}
-
-void CXTPReportView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
-{
-	if (!m_pPrintOptions || !pDC || !pInfo)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	CRect rcMargins = m_pPrintOptions->GetMarginsLP(pDC);
-	CRect rcPrint = pInfo->m_rectDraw;
-	rcPrint.DeflateRect(rcMargins);
-
-	//----------------------------------------------------------
-	if (!m_pPrintOptions->m_bBlackWhitePrinting)
-	{
-		_OnPrint2(pDC, pInfo, rcPrint);
-	}
-	else
-	{
-		CRect rcPrint00(0, 0, rcPrint.Width(), rcPrint.Height());
-
-		CDC memDC;
-		VERIFY(memDC.CreateCompatibleDC(pDC));
-		memDC.m_bPrinting = TRUE;
-
-		if (!m_bmpGrayDC.m_hObject || m_bmpGrayDC.GetBitmapDimension() != rcPrint00.Size())
-		{
-			m_bmpGrayDC.DeleteObject();
-			m_bmpGrayDC.CreateCompatibleBitmap(pDC, rcPrint00.Width(), rcPrint00.Height());
-		}
-
-		CXTPBitmapDC autpBmp(&memDC, &m_bmpGrayDC);
-
-		//----------------------------------------------------
-		memDC.FillSolidRect(rcPrint00, RGB(255, 255, 255));
-
-		_OnPrint2(&memDC, pInfo, rcPrint00);
-
-		int nCC = max(0, min(m_pPrintOptions->m_nBlackWhiteContrast, 255));
-		XTPImageManager()->BlackWhiteBitmap(memDC, rcPrint00, nCC);
-
-		pDC->BitBlt(rcPrint.left, rcPrint.top, rcPrint.Width(), rcPrint.Height(),
-					&memDC, 0, 0, SRCCOPY);
-	}
-}
-
-void CXTPReportView::_OnPrint2(CDC* pDC, CPrintInfo* pInfo, CRect rcPrint)
-{
-	if (!m_pPrintOptions || !pDC || !pInfo)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	UINT nPage = pInfo->m_nCurPage;
-	ASSERT(nPage <= (UINT)m_aPageStart.GetSize());
-	UINT nIndex = m_aPageStart[nPage-1];
-
-	// print as much as possible in the current page.
-	nIndex = PrintPage(pDC, pInfo, rcPrint, nIndex);
-
-	// update pagination information for page just printed
-	if (nPage == (UINT)m_aPageStart.GetSize())
-	{
-		m_aPageStart.Add(nIndex);
-	}
-	else
-	{
-		ASSERT(nPage < (UINT)m_aPageStart.GetSize());
-		m_aPageStart[nPage] = nIndex;
-	}
-}
-
-extern BOOL CALLBACK _XTPAbortProc(HDC, int);
-
-BOOL CXTPReportView::PaginateTo(CDC* pDC, CPrintInfo* pInfo)
-	// attempts pagination to pInfo->m_nCurPage, TRUE == success
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-
-	BOOL bAborted = FALSE;
-	CXTPPrintingDialog dlgPrintStatus(this);
-	CString strTemp;
-	if (GetParentFrame())
-		GetParentFrame()->GetWindowText(strTemp);
-
-	dlgPrintStatus.SetWindowText(_T("Calculating pages..."));
-
-	dlgPrintStatus.SetDlgItemText(AFX_IDC_PRINT_DOCNAME, strTemp);
-	dlgPrintStatus.SetDlgItemText(AFX_IDC_PRINT_PRINTERNAME, pInfo->m_pPD->GetDeviceName());
-	dlgPrintStatus.SetDlgItemText(AFX_IDC_PRINT_PORTNAME, pInfo->m_pPD->GetPortName());
-	dlgPrintStatus.ShowWindow(SW_SHOW);
-	dlgPrintStatus.UpdateWindow();
-
-	CRect rectSave = pInfo->m_rectDraw;
-	UINT nPageSave = pInfo->m_nCurPage;
-	BOOL bBlackWhiteSaved = m_pPrintOptions->m_bBlackWhitePrinting;
-	m_pPrintOptions->m_bBlackWhitePrinting = FALSE;
-
-	ASSERT(nPageSave > 1);
-	ASSERT(nPageSave >= (UINT)m_aPageStart.GetSize());
-	VERIFY(pDC->SaveDC() != 0);
-
-	pDC->IntersectClipRect(0, 0, 0, 0);
-	pInfo->m_nCurPage = (UINT)m_aPageStart.GetSize();
-	while (pInfo->m_nCurPage < nPageSave)
-	{
-		ASSERT(pInfo->m_nCurPage == (UINT)m_aPageStart.GetSize());
-		OnPrepareDC(pDC, pInfo);
-		if (!pInfo->m_bContinuePrinting)
-			break;
-
-		strTemp.Format(_T("%d"), pInfo->m_nCurPage);
-		dlgPrintStatus.SetDlgItemText(AFX_IDC_PRINT_PAGENUM, strTemp);
-
-		pInfo->m_rectDraw.SetRect(0, 0, pDC->GetDeviceCaps(HORZRES), pDC->GetDeviceCaps(VERTRES));
-		pDC->DPtoLP(&pInfo->m_rectDraw);
-		OnPrint(pDC, pInfo);
-		//if (pInfo->m_nCurPage == (UINT)m_aPageStart.GetSize())
-		//  break;
-		++pInfo->m_nCurPage;
-
-		if(!_XTPAbortProc(0, 0))
-		{
-			bAborted = TRUE;
-			break;
-		}
-	}
-	dlgPrintStatus.DestroyWindow();
-
-	BOOL bResult = !bAborted && (pInfo->m_nCurPage == nPageSave || nPageSave == 65535);
-
-	pInfo->m_bContinuePrinting = bResult;
-
-	pDC->RestoreDC(-1);
-	m_pPrintOptions->m_bBlackWhitePrinting = bBlackWhiteSaved;
-	pInfo->m_nCurPage = nPageSave;
-	pInfo->m_rectDraw = rectSave;
-	ASSERT_VALID(this);
-
-	return bResult;
-}
-
-void CXTPReportView::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
-{
-	ASSERT_VALID(this);
-	ASSERT_VALID(pDC);
-	ASSERT(pInfo != NULL);  // overriding OnPaint -- never get this.
-	if (!pInfo)
-		return;
-
-	if (pInfo->m_nCurPage == 1 && GetReportCtrl().GetRows()->GetCount() == 0)
-	{
-		pInfo->m_bContinuePrinting = TRUE;
-	}
-	else if (pInfo->m_nCurPage == (UINT)m_aPageStart.GetSize() &&
-		m_aPageStart[pInfo->m_nCurPage - 1] >= (UINT)GetReportCtrl().GetRows()->GetCount())
-	{
-		// can't paginate to that page, thus cannot print it.
-		pInfo->m_bContinuePrinting = FALSE;
-	}
-	else if (pInfo->m_nCurPage > (UINT)m_aPageStart.GetSize() &&
-		!PaginateTo(pDC, pInfo))
-	{
-		// can't paginate to that page, thus cannot print it.
-		pInfo->m_bContinuePrinting = FALSE;
-	}
-	pDC->SetMapMode(MM_ANISOTROPIC);
-
-	pDC->SetViewportExt(pDC->GetDeviceCaps(LOGPIXELSX),
-		pDC->GetDeviceCaps(LOGPIXELSY));
-
-	pDC->SetWindowExt(100, 100);
-
-	// ptOrg is in logical coordinates
-	pDC->OffsetWindowOrg(0, 0);
-
-	if (GetReportCtrl().GetExStyle() & WS_EX_RTLREADING)
-	{
-		pDC->SetTextAlign(TA_RTLREADING);
-	}
-
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Clipboard operations
-
-void CXTPReportView::OnUpdateEditCopy(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(GetReportCtrl().CanCopy());
-}
-
-void CXTPReportView::OnUpdateEditCut(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(m_bAllowCut && GetReportCtrl().CanCut());
-}
-
-void CXTPReportView::OnUpdateEditPaste(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(m_bAllowPaste && GetReportCtrl().CanPaste());
-}
-
-void CXTPReportView::OnEditCut()
-{
-	if (m_bAllowCut) GetReportCtrl().Cut();
-}
-
-void CXTPReportView::OnEditCopy()
-{
-	GetReportCtrl().Copy();
-}
-
-void CXTPReportView::OnEditPaste()
-{
-	if (m_bAllowPaste) GetReportCtrl().Paste();
-}
-
-void CXTPReportView::OnFilePageSetup()
-{
-	DWORD dwFlags = PSD_MARGINS | PSD_INWININIINTLMEASURE;
-	CXTPReportPageSetupDialog dlgPageSetup(GetPrintOptions(), dwFlags, this);
-
-	XTPGetPrinterDeviceDefaults(dlgPageSetup.m_psd.hDevMode, dlgPageSetup.m_psd.hDevNames);
-
-	int nDlgRes = (int)dlgPageSetup.DoModal();
-
-	if (nDlgRes == IDOK)
-	{
-		AfxGetApp()->SelectPrinter(dlgPageSetup.m_psd.hDevNames, dlgPageSetup.m_psd.hDevMode, FALSE);
-	}
-}
-
-int CXTPReportView::PrintFixedRows(CDC* pDC, CRect rcClient, BOOL bHeaderRows)
-{
-	int y = rcClient.top;
-
-	CXTPReportRows* pRows = bHeaderRows ? GetReportCtrl().GetHeaderRows() : GetReportCtrl().GetFooterRows();
-
-	for (int i = 0; i < pRows->GetCount(); ++i)
-	{
-		CXTPReportRow* pRow = pRows->GetAt(i);
-
-		int nHeight = pRow->GetHeight(pDC, rcClient.Width());
-
-		CRect rcRow(rcClient.left, y, rcClient.right, y + nHeight);
-
-		if (rcRow.bottom > rcClient.bottom)
-			break;
-
-		PrintRow(pDC, pRow, rcRow, 0);
-
-		y += rcRow.Height();
-	}
-
-	return y - rcClient.top; // height of all printed rows
-}
-
-/////////////////////////////////////////////////////////////////////////////
-//class CXTPReportViewPrintOptions
-
-IMPLEMENT_DYNAMIC(CXTPReportViewPrintOptions, CXTPPrintOptions)
-CXTPReportViewPrintOptions::CXTPReportViewPrintOptions()
-{
-	m_bRepeatHeaderRows = FALSE;
-	m_bRepeatFooterRows = FALSE;
-
-}
-
-LCID CXTPReportViewPrintOptions::GetActiveLCID()
-{
-	return CXTPReportControlLocale::GetActiveLCID();
-}
-
-void CXTPReportViewPrintOptions::Set(const CXTPReportViewPrintOptions* pSrc)
-{
-	if (pSrc)
-	{
-		CXTPPrintOptions::Set(pSrc);
-
-		m_bRepeatHeaderRows = pSrc->m_bRepeatHeaderRows;
-		m_bRepeatFooterRows = pSrc->m_bRepeatFooterRows;
-	}
-}
-
