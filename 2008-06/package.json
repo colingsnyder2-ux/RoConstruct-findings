@@ -8467,7 +8467,7 @@
     "verification/ogre-native-node-20261029/node-vtable-xrefs.json": "1e782cc4d2036e145ec21e4bd3f8752f7ffc1f4f23baacdf92ba8bbcaace8a6f",
     "verification/ogre-native-node-20261029/runtime-output.txt": "c4b4b20a096b0b55d3a13ffdba1e3f2361c29ecfe06c2e4fe8db318524202d3f",
     "verification/ogre-native-node-20261029/vector-precise-unit.cpp": "caeb837607e585e792b837e6caf165e93985f63a657fda88782bfa0ffeb4a71b",
-    "verification/library-blocker-audit-20261029/README.md": "ec2660a8488018006e62937a06624b44c7c46186107d27da10102388ca81445f",
+    "verification/library-blocker-audit-20261029/README.md": "3c4c9a32a981304bb570ef1a87e73834fced78ea317779e6ae66b5effbe0749d",
     "verification/library-blocker-audit-20261029/audit_current.py": "1a1aa8d477b152ba5c2b9d056461910f7262319064388d898f87c20ac5f65d9f",
     "verification/library-blocker-audit-20261029/boost-replay-blockers.json": "925773afa27ff19ba95d567c53e7a3de74af807c682da39797d38a6df75f19d6",
     "verification/library-blocker-audit-20261029/current-replay-summary.json": "ace03f7491bef5fcb7ccfce21f1d452955c4dee06527a72ee416e8a612ebba20",
@@ -8488,7 +8488,9 @@
     "verification/library-blocker-audit-20261029/roc_unit_37dc9d259436df0a.cpp.errors.json": "3e744444cdccba65c4526ff01ac47313c29b528579e8d1fa87bbe4f83e5e348f",
     "verification/library-blocker-audit-20261029/roc_unit_4349f38f33416276.cpp.errors.json": "e22eb614c6a62f96be36ddf4925be2172fdf6182878bd6bb5a379d98c6d408ea",
     "verification/library-blocker-audit-20261029/xtp-replay-blockers.json": "66971f7c02a6c0c064992210f67fb5c2d48e5ee8c5ef7fbf0c959cdb2f76f3ac",
-    "verification/ogre-native-node-20261029/placed.txt": "3c9ca99a4d5e68f03a4f486e70a1f23e3062a0208443fcca2f99618d37a6b083"
+    "verification/ogre-native-node-20261029/placed.txt": "3c9ca99a4d5e68f03a4f486e70a1f23e3062a0208443fcca2f99618d37a6b083",
+    "verification/library-blocker-audit-20261029/header-gate-causes.json": "051b82adb72a4b4971ca836b2430246305382ce03f40e29ec74157d33dc0fa7f",
+    "verification/library-blocker-audit-20261029/rbxgs-header-rejects.json": "41e9b63f0838737d773e5f38d8c99a2e7db8f427da55ee9d5f84758c84a3586f"
   },
   "format": 1,
   "large_files": {},

@@ -12,4 +12,6 @@ Probe scripts and JSON preserve this rejected integration route. The observed so
 
 G3D reject inspection also found generated exports using private copied headers and absolute include paths alongside real-header source copies. Do not weaken its gate for all generated files. Rebuild explicit candidates with adopted G3D2008 headers and DLL context before considering a reviewed module entry.
 
+The original Rbxgs replay input was recovered read-only and its SHA-256 exactly matches the audited snapshot. Its605 reject rows are preserved separately. A lexical source triage finds451 with includes and local class definitions,45 standalone-declaration units,103 with includes and no detected class definitions, and6 now containing aliases. These are source-screening categories, not safety or native-authenticity proofs. Manual inspection of the ArrowPanel examples in the103 category found raw writes at0x15c/0x160 beyond the older SDK layout and recovered external factory declarations. No-class-definition source can still have the wrong ABI. Do not automatically adopt these103 targets or weaken the header gate based on the lexical classifier.
+
 After the Ogre correction build and successful four-mode GPU runtime, placement was rerun and remains411. No new server credits or webhook delivery are claimed by this audit.
