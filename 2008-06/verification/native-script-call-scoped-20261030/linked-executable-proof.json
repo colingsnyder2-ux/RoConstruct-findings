@@ -5,7 +5,7 @@
    {
     "symbol": "?call@ScriptContext@RBX@@QAEXABVFunctionRef@Lua@2@V?$function1@IPAUlua_State@@V?$allocator@Vfunction_base@boost@@@std@@@boost@@V?$function2@XPAUlua_State@@IV?$allocator@Vfunction_base@boost@@@std@@@6@@Z",
     "owner": "linked:NativeScriptCall.obj",
-    "linked_address": "0049ad50",
+    "linked_address": "0049b5d0",
     "object_code_data_exact": true,
     "code_exact": true
    }
