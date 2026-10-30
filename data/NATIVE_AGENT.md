@@ -412,10 +412,32 @@ Make byte-exact mined 2008 functions come out of the real rbxgs C++ (native inte
 that is already 100% mined and whose method already exists in the rebuild but compiles differently. Credit comes
 only from the server's independent linked rebuild.
 
-## Setup (execute before mining)
+## Resume before setup
+
+A new chat, pasted copy of this guide, or reopened agent prompt is **not** an
+installation request. Reuse the recorded checkout, then run:
+
+```text
+roc native-try --help
+roc doctor
+roc rebuild 2008-06 doctor
+```
+
+If these checks pass, do not run `roc install`, `client-fetch`, `analyze`,
+`vtables`, `pull`, `lib-fetch`, package download, or compiler setup. This
+includes VS2008, the Windows SDK, and Python: retain their verified existing
+installations. Run only the command that repairs a prerequisite reported missing
+or stale by these checks. A Worker manifest check may establish currency, but
+does not authorize a download/extract unless its hash/version differs or a
+required native command is missing. Keep this checkout path and checkpoint
+between chats; another AI must resume it instead of bootstrapping a fresh copy.
+
+## Setup (repair only missing prerequisites before mining)
 
 Install missing dependencies yourself; downloads are authorized. Do not stop at a setup plan or ask the
-user to download dependencies manually. Reuse installed files. Group setup commands into one terminal
+user to download dependencies manually. Reuse installed files. Never execute this
+whole setup merely because a prompt opened: run first unmet prerequisite, then
+recheck. Group setup commands into one terminal
 invocation, run sequentially, and stop on the first failure. Retry a failed download before reporting a blocker.
 Use existing `roc` commands; do not import project modules from ad-hoc scripts.
 
