@@ -8491,7 +8491,7 @@
     "verification/ogre-native-node-20261029/placed.txt": "3c9ca99a4d5e68f03a4f486e70a1f23e3062a0208443fcca2f99618d37a6b083",
     "verification/library-blocker-audit-20261029/header-gate-causes.json": "051b82adb72a4b4971ca836b2430246305382ce03f40e29ec74157d33dc0fa7f",
     "verification/library-blocker-audit-20261029/rbxgs-header-rejects.json": "41e9b63f0838737d773e5f38d8c99a2e7db8f427da55ee9d5f84758c84a3586f",
-    "verification/constructor-bindings-20261030/README.md": "29f6c3ab23e2c450672abd1cb409860f0d7c8132e95fb6aaf422c13b51fae406",
+    "verification/constructor-bindings-20261030/README.md": "510b2bd346e18d780058d1ed2373fc0187352f83b025019f03cc22906b52fa51",
     "verification/constructor-bindings-20261030/audit_constructor_bindings.py": "d369029eaf16709af33f0bcedde49e69c5486134a273c3db228e8700fc43bbdb",
     "verification/constructor-bindings-20261030/baseline-audit.json": "6dd17d699269974d1167d2ac555a7bb639331b97fd6f2faf4a43190775b3b713",
     "verification/constructor-bindings-20261030/final-audit.json": "8c1ed7c06b78c694565d49952a242035a786505c918dcb532c0b089c0bf5ad62",
@@ -8521,7 +8521,10 @@
     "verification/constructor-bindings-20261030/rbxapp-build.txt": "a595526ba1213829602666dea21f505f5f7f7d1b658e5b64ec8cc1c7b7236e3d",
     "verification/constructor-bindings-20261030/rbxapp-replay.txt": "171f28e9aaaf4f9b6a2a58409ae3d2ba25cb94e0e0dde8aa598116c23ccd8e85",
     "verification/constructor-bindings-20261030/xtp-build.txt": "52d6e7afa9c57ec4b55824a8ea67d4793d3d1bde7176d165c978760917457528",
-    "verification/constructor-bindings-20261030/xtp-replay.txt": "d6e44942b61e7072d1df2e4804a86697c20d166642489ca7654a1f4935c9c6c8"
+    "verification/constructor-bindings-20261030/xtp-replay.txt": "d6e44942b61e7072d1df2e4804a86697c20d166642489ca7654a1f4935c9c6c8",
+    "verification/constructor-bindings-20261030/placed.json": "fae7c0002fa78d2800351f9d73c6dd1a8d10cdadbb5440f9a282fdf0e9466e68",
+    "verification/constructor-bindings-20261030/placed.txt": "cc2447faea56d6a9ef8781767f90ebe962a29c12c810f4d0a1c5716ae1124719",
+    "verification/constructor-bindings-20261030/rbxutil-build.txt": "3f99db030c7067c968309d7f59d1c51c4aa96fab3824d19c1c2a2877e4cdd7da"
   },
   "format": 1,
   "large_files": {},

@@ -14,3 +14,5 @@ Final same-scope audit: 54 matching observations, 12 conflicts. The remaining co
 Replay now preserves excluded.json and vdrop.json and remaps cached helpers only to retained or byte-identical providers. This prevents a native replay from re-enabling known bad swaps. The published source's swap installation suite passed 28 tests, including native context refresh, stale helpers and rejected installs.
 
 No server acceptance receipts or webhook deliveries are claimed. This campaign changes standalone library module configurations; the current native source queue accepts rbxgs source patches. The configured submitting contributor remains colin.
+
+After refreshing RbxUtil, placement rerun reports 422 distinct addresses (previous campaign: 411). RbxUtil now participates with 13 placed addresses; CodegenAnalogs remains freshness-deferred. Placement narrows address ambiguity and is not server native acceptance. RbxUtil link/runtime passes, but one primary Sound.cpp error (missing genuine fmod.hpp) and 22 fallback source/header errors remain.

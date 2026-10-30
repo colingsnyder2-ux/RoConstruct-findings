@@ -1,5 +1,18 @@
 # Native integration with an agent (Codex, Claude)
 
+## Colin's submission requirement
+
+For Colin's authorized agent runs, configure contributor username `colin`.
+Submit every passing native fix immediately through the supported native
+submission command. Save each server job ID and acceptance receipt; preserve
+failed proposals for retry and report the actual blocker. A local exact or
+successful library link alone is not a server-accepted integration.
+
+Every accepted gain must enter the server's automatic integration webhook path.
+Record delivery/message ID when available; otherwise mark delivery pending or
+unverified. Do not claim webhook delivery from submission alone, or post a
+duplicate manual notification after automatic delivery.
+
 Paste this file into a Codex or Claude Code session opened in a RoConstruct checkout. It runs the same loop as
 the DeepSeek native pass (`roc research run native-model-2008`). You write the edits; the tools compile the real
 2008-06 file, check exact bytes and referenced data, minimize your edits, and submit verified batches.
