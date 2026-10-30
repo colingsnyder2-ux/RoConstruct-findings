@@ -1,30 +1,14 @@
-// from server: 86% by colin
-struct ModelInstance {
-    char pad[0x9c];
-    int field_9c;
-    char pad2[0xbc - 0x9c - 4];
-    int field_bc;
-    int sub_52ff30();
-    void sub_5bafa0(int);
-    void sub_530de0(int);
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_release_app_bae8cc91ab3d5694.cpp
 
-extern "C" int __cdecl sub_630d36(int, int, int, int, int);
-extern unsigned char byte_8c0e09;
-
-void ModelInstance::sub_530de0(int a1) {
-    int v = *(int*)((char*)this - 0x9c);
-    ModelInstance* self = (ModelInstance*)((char*)this - 0x158);
-    int r = sub_630d36(v, 0, 0x898fc0, 0x881f4c, 0);
-    if (r != 0) {
-        int saved = *(int*)((char*)self + 0xbc);
-        if (self->sub_52ff30() != saved) {
-            goto check;
-        }
-    }
-    if (byte_8c0e09 == 0) {
-        return;
-    }
-check:
-    self->sub_5bafa0(a1);
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#include "roc_espeon_aug2007_fullstack_kernel_60f56010981b05b5.cpp"

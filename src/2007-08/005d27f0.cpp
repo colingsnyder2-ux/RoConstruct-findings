@@ -1,41 +1,14 @@
-// from server: 63% by colin
-struct Instance;
-struct Tool;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_release_app_e55cee99c127fae8.cpp
 
-extern "C" Instance* __stdcall sub_495820(Tool*);
-extern "C" int __stdcall sub_5a56b0(Instance*);
-extern "C" int __stdcall sub_5d2380(Instance*);
-extern "C" int __stdcall sub_4887e0(Instance*);
-extern "C" void __stdcall sub_5d2690(Instance*);
-
-struct Tool {
-    char pad[0xbc];
-    int field_bc;
-    void sub_541630(Instance*);
-    void func();
-};
-
-void Tool::func() {
-    Instance* p = sub_495820(this);
-    if (p) {
-        Instance* q = *(Instance**)((char*)p + 0x118);
-        if (q) {
-            if (sub_5a56b0(q)) {
-                Instance* r = (Instance*)sub_5d2380(q);
-                if (r) {
-                    int (*fp)(Instance*) = *(int (**)(Instance*))((*(int*)r) + 0x90);
-                    if (!fp(r)) {
-                        return;
-                    }
-                }
-            }
-        }
-        int v = *(int*)((char*)this + 0xbc);
-        if (v == sub_4887e0(p)) {
-            sub_5d2690(p);
-            sub_541630(*(Instance**)((char*)p + 0x118));
-        } else {
-            sub_541630((Instance*)sub_4887e0(p));
-        }
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#include "roc_espeon_aug2007_fullstack_kernel_d21874223bd5a2e9.cpp"

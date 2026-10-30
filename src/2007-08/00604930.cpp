@@ -1,47 +1,14 @@
-// from server: 50% by colin
-struct SleepStage;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_release_app_f894c612fb0cf69b.cpp
 
-struct Joint {
-    char pad[0x24];
-    float f24;
-    float f28;
-    float f2c;
-};
-
-struct Assembly {
-    char pad[0x28];
-    char data[0x30];
-};
-
-struct SleepStage {
-    char pad[8];
-    Assembly* field8;
-    char pad2[0x1c];
-    Assembly* field28;
-
-    Assembly* getAssembly(Assembly* a, Assembly* b);
-};
-
-extern "C" void __stdcall sub_475050(void* p);
-extern "C" void __stdcall sub_5095d0(void* dst, void* src);
-extern "C" void __stdcall sub_473200(void* p);
-
-Assembly* SleepStage::getAssembly(Assembly* a, Assembly* b)
-{
-    if (a == (Assembly*)this) {
-        sub_475050(b);
-        return b;
-    }
-    if (a == field8) {
-        Joint* j = (Joint*)((char*)this + 0x28);
-        sub_5095d0(b, j);
-        ((Joint*)b)->f24 = j->f24;
-        ((Joint*)b)->f28 = j->f28;
-        ((Joint*)b)->f2c = j->f2c;
-        return b;
-    }
-    Assembly* tmp = (Assembly*)((char*)this + 0x28);
-    Assembly* r = getAssembly(a, tmp);
-    sub_473200(r);
-    return b;
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#include "roc_espeon_aug2007_body_trivial_5449b42182b29fed.cpp"

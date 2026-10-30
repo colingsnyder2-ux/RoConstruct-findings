@@ -6844,5 +6844,139 @@
     "unit": "RBX::BodyMover",
     "updated": 1793313531.148822,
     "user": "coldek"
+  },
+  {
+    "created": 1793318670.1177063,
+    "id": "8fb3a8e3f3f34e989423ec4c1f01ecdf",
+    "model": "gpt-6",
+    "patches": {
+      "App/v8world/RotateJoint.cpp": [
+        [
+          "RotateJoint::removeFromKernel()\n\t{\n\t\tRBXASSERT(getKernel());\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}",
+          "RotateJoint::removeFromKernel()\n\t{\n\t\t                      ;\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "b4d895034e44f6651a04d0dc55b73bd39ad08c3ae0a3ad900faef2321edd5767",
+      "credits": 1,
+      "distinct_after": 9760,
+      "distinct_before": 9759,
+      "gains": [
+        "00645ae0"
+      ],
+      "input_hash": "c7b954c9ace8e5e4be3fe00cf947ee3ae55d77814841cf936550e775e6851e10",
+      "losses": [],
+      "new_distinct": [
+        "00645ae0"
+      ],
+      "overlay_hash": "be5d4c95218e5029ae9eabf093d5697e84d4b284b68a7b800ae1456f6d54f726",
+      "owned_after": 3285,
+      "owned_before": 3284,
+      "rebased": false,
+      "submitted_revision": "b4d895034e44f6651a04d0dc55b73bd39ad08c3ae0a3ad900faef2321edd5767"
+    },
+    "state": "accepted",
+    "unit": "RBX::RotatePJoint",
+    "updated": 1793319404.257967,
+    "user": "colin"
+  },
+  {
+    "created": 1793319048.6859803,
+    "id": "b3c4cb191d88467e9c762f01bf43f48a",
+    "model": "gpt-6",
+    "patches": {
+      "App/v8world/World.cpp": [
+        [
+          "World::~World()\n\t{\n\t\tRBXASSERT(numJoints == 0);\n\t\tRBXASSERT(numContacts == 0);\n\t\tRBXASSERT(primitives.size() == 0);\n\t\tRBXASSERT(breakableJoints.size() == 0);\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}",
+          "World::~World()\n\t{\n\t\t                         ;\n\t\t                           ;\n\t\t                                 ;\n\t\t                                      ;\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}"
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "3e6c1652a119108ecef834ce44017087d253efbbf3e83297cef6dd3832fdb761",
+      "credits": 1,
+      "distinct_after": 9761,
+      "distinct_before": 9760,
+      "gains": [
+        "005ea5e0"
+      ],
+      "input_hash": "dd4b5957da19c20eda759cdf203afa89b15844d3e17cdb78c71c2246eb352df3",
+      "losses": [],
+      "new_distinct": [
+        "005ea5e0"
+      ],
+      "overlay_hash": "aaa5695b13cf5772f92bb573c3cf59f9bc0d0aad398394e1e6fef0fd089db626",
+      "owned_after": 3286,
+      "owned_before": 3285,
+      "rebased": true,
+      "submitted_revision": "b4d895034e44f6651a04d0dc55b73bd39ad08c3ae0a3ad900faef2321edd5767"
+    },
+    "state": "accepted",
+    "unit": "RBX::ToolMouseCommand",
+    "updated": 1793319605.6700785,
+    "user": "colin"
+  },
+  {
+    "created": 1793320638.9559286,
+    "id": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+    "model": "gpt-6",
+    "patches": {
+      "App/tool/GroupDragTool.cpp": [
+        [
+          "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}",
+          "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\t                    ;\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}"
+        ]
+      ],
+      "App/util/Face.cpp": [
+        [
+          "\t\tRBXASSERT(tolerance > 0.0);",
+          ""
+        ]
+      ],
+      "App/v8world/Ball.cpp": [
+        [
+          "#include \"v8world/Ball.h\"",
+          "#pragma float_control(precise, off, push)\n#include \"v8world/Ball.h\""
+        ]
+      ]
+    },
+    "phase": "complete",
+    "receipt": {
+      "accepted": true,
+      "baseline_revision": "5f0ee49eb4e9dd383e198008878b9e9f393a4bf598ef0370b90afc148ba43933",
+      "credits": 5,
+      "distinct_after": 9766,
+      "distinct_before": 9761,
+      "gains": [
+        "00649130",
+        "00649170",
+        "00649190",
+        "006498b0",
+        "0066a630"
+      ],
+      "input_hash": "4b24d8429e2ed9b2db539182e21188b3fd5e2482167e05510cef799a1501a660",
+      "losses": [],
+      "new_distinct": [
+        "00649130",
+        "00649170",
+        "00649190",
+        "006498b0",
+        "0066a630"
+      ],
+      "overlay_hash": "25873cb18d362089f5e0b9a139689180e9e063bd341d4011d31f50a1a8c0f49d",
+      "owned_after": 3291,
+      "owned_before": 3286,
+      "rebased": false,
+      "submitted_revision": "5f0ee49eb4e9dd383e198008878b9e9f393a4bf598ef0370b90afc148ba43933"
+    },
+    "state": "accepted",
+    "unit": "RBX::Block, RBX::GroupDragTool, RBX::Ball",
+    "updated": 1793320832.4644697,
+    "user": "colin"
   }
 ]

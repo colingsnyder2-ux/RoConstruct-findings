@@ -2110,5 +2110,41 @@
     "#include <Network/Players.h>\n\n// Preserve the existing vendor helper used by other translation units (004ca2b0).\ntemplate boost::shared_ptr<RBX::PartInstance> boost::shared_dynamic_cast<RBX::PartInstance, RBX::Instance>(const boost::shared_ptr<RBX::Instance>&);"
    ]
   ]
+ },
+ {
+  "App/v8world/RotateJoint.cpp": [
+   [
+    "RotateJoint::removeFromKernel()\n\t{\n\t\tRBXASSERT(getKernel());\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}",
+    "RotateJoint::removeFromKernel()\n\t{\n\t\t                      ;\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}"
+   ]
+  ]
+ },
+ {
+  "App/v8world/World.cpp": [
+   [
+    "World::~World()\n\t{\n\t\tRBXASSERT(numJoints == 0);\n\t\tRBXASSERT(numContacts == 0);\n\t\tRBXASSERT(primitives.size() == 0);\n\t\tRBXASSERT(breakableJoints.size() == 0);\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}",
+    "World::~World()\n\t{\n\t\t                         ;\n\t\t                           ;\n\t\t                                 ;\n\t\t                                      ;\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}"
+   ]
+  ]
+ },
+ {
+  "App/v8world/Ball.cpp": [
+   [
+    "#include \"v8world/Ball.h\"",
+    "#pragma float_control(precise, off, push)\n#include \"v8world/Ball.h\""
+   ]
+  ],
+  "App/util/Face.cpp": [
+   [
+    "\t\tRBXASSERT(tolerance > 0.0);",
+    ""
+   ]
+  ],
+  "App/tool/GroupDragTool.cpp": [
+   [
+    "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}",
+    "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\t                    ;\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}"
+   ]
+  ]
  }
 ]

@@ -1,138 +1,28 @@
-// from server: 99% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view Part.cpp
+// roc-lib: rbxgs-view roc_espeon_aug2007_view_52a48c557d2a1d5d.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "Part.h"
-#include "RbxView/View.h"
-#include "v8datamodel/custommesh.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Surfaces.h"
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "../App/roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "../App/roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "../App/roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-namespace RBX
-{
-	namespace View
-	{
-		PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
-			: Render::Chunk(polygonOffset),
-			  partInstance(partInstance),
-			  view(view),
-			  materialInvalid(true),
-			  specialShape(NULL)
-		{
-			view->sceneManager->addModel(this);
-
-			childAddedConnection = Instance::event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1));
-			childRemovedConnection = Instance::event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1));
-			ancestorChangedConnection = Instance::event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1));
-			propertyChangedConnection = Instance::event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1));
-
-			partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
-		}
-
-		PartChunk::~PartChunk() {}
-
-		G3D::ReferenceCountedPointer<Render::Mesh> PartChunk::getMesh()
-		{
-			if (mesh.isNull())
-				updateMesh();
-
-			return mesh;
-		}
-
-		const G3D::CoordinateFrame& PartChunk::cframe()
-		{
-			coordinateFrame = partInstance->getCoordinateFrame();
-			return coordinateFrame;
-		}
-
-		void PartChunk::invalidateMaterial()
-		{
-			material = NULL;
-			materialInvalid = true;
-			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
-		}
-
-		void PartChunk::invalidateMesh()
-		{
-			mesh = NULL;
-			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
-		}
-
-		void PartChunk::onChildAdded(boost::shared_ptr<Instance> child)
-		{
-			SpecialShape* mesh = dynamic_cast<SpecialShape*>(child.get());
-			if (mesh)
-			{
-				specialShape = mesh;
-				shapePropertyChangedConnection = Instance::event_propertyChanged.connect(mesh, boost::bind(&PartChunk::onSpecialShapeChanged, this));
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onChildRemoved(boost::shared_ptr<Instance> child)
-		{
-			if (child.get() == specialShape)
-			{
-				shapePropertyChangedConnection.disconnect();
-				specialShape = NULL;
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onAncestorChanged(boost::shared_ptr<Instance> ancestor)
-		{
-			Workspace* workspace = Workspace::findWorkspace(partInstance.get());
-			if (!workspace || !partInstance->isDescendentOf(workspace))
-			{
-				view->sceneManager->removeModel(this);
-			}
-		}
-
-		void PartChunk::onPropertyChanged(const Reflection::PropertyDescriptor* descriptor)
-		{
-			if (*descriptor == PartInstance::prop_Size)
-			{
-				invalidateMesh();
-				invalidateMaterial();
-			}
-			else if (*descriptor == PartInstance::prop_shapeXml)
-			{
-				invalidateMesh();
-			}
-			else if (Surfaces::isSurfaceDescriptor(*descriptor))
-			{
-				invalidateMesh();
-			}
-		}
-
-		void PartChunk::onSpecialShapeChanged()
-		{
-			invalidateMesh();
-			invalidateMaterial();
-		}
-
-		Part::Part(const boost::shared_ptr<PartInstance>& partInstance, View* view)
-			: PartChunk(0.0f, partInstance, view)
-		{
-			if (partInstance->getCanAggregate())
-				view->sceneManager->setSleeping(this, true);
-
-			Notifier<PartInstance, CanAggregateChanged>::connect(partInstance, this);
-			invalidateMesh();
-			invalidateMaterial();
-		}
-
-		Part::~Part()
-		{
-			Notifier<PartInstance, CanAggregateChanged>::disconnect(partInstance, this);
-		}
-
-		void Part::onEvent(const PartInstance* source, CanAggregateChanged event)
-		{
-			view->sceneManager->setSleeping(this, event.canClump);
-		}
-	}
-}
+#include "Part.cpp"

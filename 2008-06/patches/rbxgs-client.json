@@ -1671,6 +1671,10 @@
   [
    "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\tRBXASSERT(captured());\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}",
    "GroupDragTool::onMouseMove(const UIEvent& uiEvent)\n\t{\n\t\t                     ;\n\n\t\tif (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)\n\t\t{\n\t\t\tdragging = true;\n\n\t\t\tmegaDragger->startDragging();\n\t\t\tmegaDragger->alignAndCleanParts();\n\t\t\tlastHit = megaDragger->hitObjectOrPlane(uiEvent);\n\t\t}\n\n\t\tonMouseIdle(uiEvent);\n\t}"
+  ],
+  [
+   "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}",
+   "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\t                    ;\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}"
   ]
  ],
  "App/v8datamodel/ToolMouseCommand.cpp": [
@@ -1919,6 +1923,10 @@
   [
    "\t\t\t\tif (overlapOn1[j].dot(normal) > tolerance)",
    "\t\t\t\tif (fabs(overlapOn1[j].dot(normal) + distance) > tolerance)"
+  ],
+  [
+   "\t\tRBXASSERT(tolerance > 0.0);",
+   ""
   ]
  ],
  "App/v8world/Block.cpp": [
@@ -2051,6 +2059,10 @@
   [
    "World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\t\tassertNotInStep();\n\n\t\tstd::set<Primitive*> ignore;\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tignore.insert(primitives[i]);\n\n\t\tfor (int i = 0; i < primitives.size(); i++)\n\t\t\tcreateJoints(primitives[i], &ignore);\n\t}",
    "World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)\n\t{\n\tstd::set<Primitive*> ignore;\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tignore.insert(primitives[i]);\n\n\tfor (int i = 0; i < primitives.size(); i++)\n\t\tcreateJoints(primitives[i], &ignore);\n}"
+  ],
+  [
+   "World::~World()\n\t{\n\t\tRBXASSERT(numJoints == 0);\n\t\tRBXASSERT(numContacts == 0);\n\t\tRBXASSERT(primitives.size() == 0);\n\t\tRBXASSERT(breakableJoints.size() == 0);\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}",
+   "World::~World()\n\t{\n\t\t                         ;\n\t\t                           ;\n\t\t                                 ;\n\t\t                                      ;\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}"
   ]
  ],
  "App/include/v8datamodel/TimerService.h": [
@@ -2111,6 +2123,10 @@
   [
    "RotateJoint::putInKernel(Kernel* _kernel)\n\t{\n\t\tMultiJoint::putInKernel(_kernel);\n\n\t\tBody* b0 = getAxlePrim()->getBody();\n\t\tBody* b1 = getHolePrim()->getBody();\n\n\t\tG3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;\n\n\t\tG3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);\n\t\tG3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);\n\n\t\tfor (int i = 0; i < 2; i++)\n\t\t{\n\t\t\tfloat multiplier = i == 0 ? -1.0f : 1.0f;\n\n\t\t\tG3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;\n\t\t\tG3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;\n\n\t\t\tPoint* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);\n\t\t\tPoint* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);\n\n\t\t\tPointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());\n\t\t\taddToMultiJoint(pAxleWorld, pHoleWorld, connector);\n\t\t}\n\n\t\tif (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)\n\t\t{\n\t\t\tG3D::Vector3 center0 = cAxleWorld.translation;\n\t\t\tG3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);\n\t\t\tG3D::Vector3 marker0 = perp * 10.0f + center0;\n\n\t\t\tPoint* pMarker0 = getKernel()->newPoint(b0, marker0);\n\t\t\tPoint* pMarker1 = getKernel()->newPoint(b1, marker0);\n\n\t\t\tRBXASSERT(!rotateConnector);\n\t\t\tRotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());\n\t\t\trotateConnector = connector;\n\t\t\taddToMultiJoint(pMarker0, pMarker1, connector);\n\t\t}\n\t}",
    "RotateJoint::putInKernel(Kernel* _kernel)\n\t{\n\t\tMultiJoint::putInKernel(_kernel);\n\n\t\tBody* b0 = getAxlePrim()->getBody();\n\t\tBody* b1 = getHolePrim()->getBody();\n\n\t\tG3D::CoordinateFrame cAxleWorld = b0->getCoordinateFrame() * jointCoord0;\n\t\tG3D::CoordinateFrame cHoleWorld = b1->getCoordinateFrame() * jointCoord1;\n\n\t\tG3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);\n\t\tG3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);\n\n\t\tfor (int i = 0; i < 2; i++)\n\t\t{\n\t\t\tfloat multiplier = i == 0 ? -1.0f : 1.0f;\n\n\t\t\tG3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;\n\t\t\tG3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;\n\n\t\t\tPoint* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);\n\t\t\tPoint* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);\n\n\t\t\tPointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());\n\t\t\taddToMultiJoint(pAxleWorld, pHoleWorld, connector);\n\t\t}\n\n\t\tif (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)\n\t\t{\n\t\t\tG3D::Vector3 center0 = cAxleWorld.translation;\n\t\t\tG3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);\n\t\t\tG3D::Vector3 marker0 = perp * 10.0f + center0;\n\n\t\t\tPoint* pMarker0 = getKernel()->newPoint(b0, marker0);\n\t\t\tPoint* pMarker1 = getKernel()->newPoint(b1, marker0);\n\n\t\t\t                           ;\n\t\t\tRotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());\n\t\t\trotateConnector = connector;\n\t\t\taddToMultiJoint(pMarker0, pMarker1, connector);\n\t\t}\n\t}"
+  ],
+  [
+   "RotateJoint::removeFromKernel()\n\t{\n\t\tRBXASSERT(getKernel());\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}",
+   "RotateJoint::removeFromKernel()\n\t{\n\t\t                      ;\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}"
   ]
  ],
  "App/v8datamodel/custommesh.cpp": [
@@ -2217,6 +2233,12 @@
   [
    "\tpublic:\n\t\tvirtual G3D::Vector2 getSize() = 0;",
    "\tpublic:\n\t\t// Native 00551c70 / 00551c90 / 00551cb0 / 00551cd0 fill vtable slots 1-4.\n\t\t// value28 is named for its proven native offset; no original spelling evidence exists.\n\t\tvirtual void setValue28(unsigned value) { value28 = value; }\n\t\tvirtual unsigned getValue28() const { return value28; }\n\t\tvirtual void setScale(float value) { scale = value; }\n\t\tvirtual float getScale() const { return scale; }\n\n\t\tvirtual G3D::Vector2 getSize() = 0;\n\t\tvirtual G3D::ReferenceCountedPointer<G3D::Texture> resolve(G3D::RenderDevice* rd) = 0;\n\t\tvirtual G3D::ReferenceCountedPointer<Render::TextureProxy> shade(const G3D::Color3& baseColor,\n\t\t\tconst G3D::ReferenceCountedPointer<Render::TextureProxy>& baseTex) = 0;"
+  ]
+ ],
+ "App/v8world/Ball.cpp": [
+  [
+   "#include \"v8world/Ball.h\"",
+   "#pragma float_control(precise, off, push)\n#include \"v8world/Ball.h\""
   ]
  ]
 }

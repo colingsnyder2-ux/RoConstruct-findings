@@ -1,87 +1,35 @@
-// from server: 75% by colin
-// roc 2007-08 005b3980  unit: RBX::Assembly  size: 102 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005b3980
-//
-// 005b3980  53                   push ebx
-// 005b3981  55                   push ebp
-// 005b3982  8b2dd8e67700         mov ebp, dword ptr [0x77e6d8]
-// 005b3988  56                   push esi
-// 005b3989  8bf1                 mov esi, ecx
-// 005b398b  57                   push edi
-// 005b398c  8b7e38               mov edi, dword ptr [esi + 0x38]
-// 005b398f  397e34               cmp dword ptr [esi + 0x34], edi
-// 005b3992  7602                 jbe 0x5b3996
-// 005b3994  ffd5                 call ebp
-// 005b3996  8b5e34               mov ebx, dword ptr [esi + 0x34]
-// 005b3999  3b5e38               cmp ebx, dword ptr [esi + 0x38]
-// 005b399c  7602                 jbe 0x5b39a0
-// 005b399e  ffd5                 call ebp
-// 005b39a0  3bdf                 cmp ebx, edi
-// 005b39a2  8bc3                 mov eax, ebx
-// 005b39a4  7415                 je 0x5b39bb
-// 005b39a6  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 005b39aa  8d9b00000000         lea ebx, [ebx]
-// 005b39b0  3908                 cmp dword ptr [eax], ecx
-// 005b39b2  7407                 je 0x5b39bb
-// 005b39b4  83c004               add eax, 4
-// 005b39b7  3bc7                 cmp eax, edi
-// 005b39b9  75f5                 jne 0x5b39b0
-// 005b39bb  8b4e38               mov ecx, dword ptr [esi + 0x38]
-// 005b39be  8d5004               lea edx, [eax + 4]
-// 005b39c1  2bca                 sub ecx, edx
-// 005b39c3  c1f902               sar ecx, 2
-// 005b39c6  85c9                 test ecx, ecx
-// 005b39c8  7e11                 jle 0x5b39db
-// 005b39ca  03c9                 add ecx, ecx
-// 005b39cc  03c9                 add ecx, ecx
-// 005b39ce  51                   push ecx
-// 005b39cf  52                   push edx
-// 005b39d0  51                   push ecx
-// 005b39d1  50                   push eax
-// 005b39d2  ff1548e77700         call dword ptr [0x77e748]
-// 005b39d8  83c410               add esp, 0x10
-// 005b39db  834638fc             add dword ptr [esi + 0x38], -4
-// 005b39df  5f                   pop edi
-// 005b39e0  5e                   pop esi
-// 005b39e1  5d                   pop ebp
-// 005b39e2  5b                   pop ebx
-// 005b39e3  c20400               ret 4
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_world_d3cafbc70783a934.cpp
 
-extern "C" {
-    void __stdcall _invalid_parameter_noinfo();
-    void* __cdecl memmove_s(void* dest, unsigned int destSize, const void* src, unsigned int count);
-}
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#define _MT 1
+#define _DLL 1
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-struct Assembly {
-    char pad[0x34];
-    int* begin;
-    int* end;
-    void remove(int value);
-};
-
-void Assembly::remove(int value) {
-    int* first = this->begin;
-    int* last = this->end;
-    if (first > last) {
-        _invalid_parameter_noinfo();
-    }
-    int* it = this->begin;
-    if (it > this->end) {
-        _invalid_parameter_noinfo();
-    }
-    int* found = it;
-    if (it != last) {
-        do {
-            if (*found == value) {
-                break;
-            }
-            ++found;
-        } while (found != last);
-    }
-    int* next = found + 1;
-    int count = (int)((this->end - next) >> 2);
-    if (count > 0) {
-        memmove_s(found, count * 4, next, count * 4);
-    }
-    this->end -= 1;
-}
+#include "v8world/Assembly.cpp"

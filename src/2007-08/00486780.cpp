@@ -1,53 +1,14 @@
-// from server: 31% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/GWindow.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs roc_espeon_aug2007_release_app_079dd24a67526503.cpp
 
 // Candidate translation unit (score above; library headers required).
-/**
- @file GWindow.cpp
-  
- @maintainer Morgan McGuire, matrix@graphics3d.com
- 
- @created 2004-11-16
- @edited  2006-01-16
- */
-
-#include "GLG3D/GWindow.h"
-#include "GLG3D/GApp.h"
-#include "GLG3D/GLCaps.h"
-
-namespace G3D {
-
-void GWindow::loadExtensions() {
-    GLCaps::init();
-}
-
-void GWindow::executeLoopBody() {
-    if (notDone()) {
-        if (loopBodyStack.last().isGApplet) {
-            loopBodyStack.last().applet->oneFrame();
-        } else {                
-            loopBodyStack.last().func(loopBodyStack.last().arg);
-        }
-    }
-}
-
-
-void GWindow::pushLoopBody(GApplet* applet) {
-    loopBodyStack.push(LoopBody(applet));
-    applet->beginRun();
-}
-
-
-void GWindow::popLoopBody() {
-    if (loopBodyStack.size() > 0) {
-        if (loopBodyStack.last().isGApplet) {
-            loopBodyStack.last().applet->endRun();
-            loopBodyStack.pop();
-        }
-    }
-}
-
-}
+#undef _RELEASEASSERT
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("v8world/Edge.h", "../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp")
+#pragma include_alias(<v8world/Edge.h>, <../roc_espeon_aug2007_edge_header_cb216aa0cb409651.cpp>)
+#pragma include_alias("v8world/Contact.h", "../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp")
+#pragma include_alias(<v8world/Contact.h>, <../roc_espeon_aug2007_contact_header_5ec74239b50ff6ca.cpp>)
+#include "roc_espeon_aug2007_fullstack_kernel_a72f4afc178082d4.cpp"

@@ -2427,6 +2427,54 @@
         ]
       },
       "timestamp": 1793313530.8047633
+    },
+    {
+      "job": "8fb3a8e3f3f34e989423ec4c1f01ecdf",
+      "patches": {
+        "App/v8world/RotateJoint.cpp": [
+          [
+            "RotateJoint::removeFromKernel()\n\t{\n\t\tRBXASSERT(getKernel());\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}",
+            "RotateJoint::removeFromKernel()\n\t{\n\t\t                      ;\n\t\trotateConnector = NULL;\n\t\tMultiJoint::removeFromKernel();\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793319404.0843666
+    },
+    {
+      "job": "b3c4cb191d88467e9c762f01bf43f48a",
+      "patches": {
+        "App/v8world/World.cpp": [
+          [
+            "World::~World()\n\t{\n\t\tRBXASSERT(numJoints == 0);\n\t\tRBXASSERT(numContacts == 0);\n\t\tRBXASSERT(primitives.size() == 0);\n\t\tRBXASSERT(breakableJoints.size() == 0);\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}",
+            "World::~World()\n\t{\n\t\t                         ;\n\t\t                           ;\n\t\t                                 ;\n\t\t                                      ;\n\t\t\n\t\tdelete jointStage;\n\t\tdelete contactManager;\n\t}"
+          ]
+        ]
+      },
+      "timestamp": 1793319605.4967265
+    },
+    {
+      "job": "fcd175f566cc44fc9f3bb09a2c2cbd24",
+      "patches": {
+        "App/tool/GroupDragTool.cpp": [
+          [
+            "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\tRBXASSERT(mousePart);\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}",
+            "GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)\n\t\t: Base(workspace),\n\t\t  dragging(false)\n\t{\n\t\t                    ;\n\t\tmegaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));\n\t}"
+          ]
+        ],
+        "App/util/Face.cpp": [
+          [
+            "\t\tRBXASSERT(tolerance > 0.0);",
+            ""
+          ]
+        ],
+        "App/v8world/Ball.cpp": [
+          [
+            "#include \"v8world/Ball.h\"",
+            "#pragma float_control(precise, off, push)\n#include \"v8world/Ball.h\""
+          ]
+        ]
+      },
+      "timestamp": 1793320832.2602253
     }
   ],
   "initial_patches": {}

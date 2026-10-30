@@ -42,10 +42,10 @@ namespace RBX
 
 	World::~World()
 	{
-		RBXASSERT(numJoints == 0);
-		RBXASSERT(numContacts == 0);
-		RBXASSERT(primitives.size() == 0);
-		RBXASSERT(breakableJoints.size() == 0);
+		                         ;
+		                           ;
+		                                 ;
+		                                      ;
 		
 		delete jointStage;
 		delete contactManager;

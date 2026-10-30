@@ -1,44 +1,28 @@
-// from server: 30% by colin
-// roc 2007-08 004ef720  unit: RBX::Render::SceneManager  size: 82 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004ef720
-//
-// 004ef720  6aff                 push -1
-// 004ef722  6848d37400           push 0x74d348
-// 004ef727  64a100000000         mov eax, dword ptr fs:[0]
-// 004ef72d  50                   push eax
-// 004ef72e  51                   push ecx
-// 004ef72f  56                   push esi
-// 004ef730  a188518b00           mov eax, dword ptr [0x8b5188]
-// 004ef735  33c4                 xor eax, esp
-// 004ef737  50                   push eax
-// 004ef738  8d44240c             lea eax, [esp + 0xc]
-// 004ef73c  64a300000000         mov dword ptr fs:[0], eax
-// 004ef742  8bf1                 mov esi, ecx
-// 004ef744  89742408             mov dword ptr [esp + 8], esi
-// 004ef748  c7063cf57900         mov dword ptr [esi], 0x79f53c
-// 004ef74e  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 004ef756  e835e1fdff           call 0x4cd890
-// 004ef75b  c70610f07900         mov dword ptr [esi], 0x79f010
-// 004ef761  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 004ef765  64890d00000000       mov dword ptr fs:[0], ecx
-// 004ef76c  59                   pop ecx
-// 004ef76d  5e                   pop esi
-// 004ef76e  83c410               add esp, 0x10
-// 004ef771  c3                   ret 
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS /EHsc /MD
+// roc-lib: rbxgs-view roc_espeon_aug2007_view_52a48c557d2a1d5d.cpp
 
-struct Resource {
-    void construct();
-};
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/KernelIndex.h", "../roc_espeon_aug2007_kernelindex_header_d7778b4d74bcf4c0.cpp")
+#pragma include_alias("v8kernel/Body.h", "../roc_espeon_aug2007_body_header_b251c002665e01af.cpp")
+#pragma include_alias("util/Extents.h", "../roc_espeon_aug2007_extents_inline_58e475d56d206314.cpp")
+#pragma include_alias("reflection/object.h", "../roc_espeon_aug2007_describedbase_e64c736f24da029d.cpp")
+#pragma include_alias("util/Debug.h", "../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp")
+#pragma include_alias(<util/Debug.h>, <../roc_espeon_aug2007_ctor_debugable_025e0cb3bb8217d3.cpp>)
+#pragma include_alias("util/Events.h", "../roc_espeon_aug2007_datamodel_header_e4d5a36bea2e4f16.cpp")
+#pragma include_alias("reflection/reflection.h", "../roc_espeon_aug2007_described_inline_3639f053c7370446.cpp")
+#pragma include_alias("v8tree/Instance.h", "../roc_espeon_aug2007_instance_header_47f25dc9e4368119.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "../roc_espeon_aug2007_part_header_7a4c998b489b0ddf.cpp")
+#pragma include_alias("v8world/Primitive.h", "../roc_espeon_aug2007_primitive_trivial_header_ac300ff64c6fc5e6.cpp")
+#pragma include_alias("v8datamodel/DataModel.h", "../roc_espeon_aug2007_datamodel_mutex_header_321a3c67de644a82.cpp")
+#pragma include_alias("v8tree/Verb.h", "../roc_espeon_aug2007_datamodel_header_c06d28d1a6b724f6.cpp")
+#pragma include_alias("util/Evaluator.h", "../roc_espeon_aug2007_datamodel_header_4ba4cf67c400aa66.cpp")
+#pragma include_alias(<boost/signals/signal_template.hpp>, <../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp>)
+#pragma include_alias("boost/signals/signal_template.hpp", "../roc_espeon_boost133_signals_header_a54048d539243d2e.cpp")
+#include "../App/roc_espeon_boost133_header_d432d72f8740aec3.cpp"
+#include "../App/roc_espeon_boost133_header_d9eb4711b7fc841c.cpp"
+#include "../App/roc_espeon_boost133_signals_header_be197e98651271fa.cpp"
 
-struct SceneManager : Resource {
-    SceneManager();
-};
-
-extern "C" void __cdecl sub_4CD890();
-
-SceneManager::SceneManager()
-{
-    *(void**)this = (void*)0x79f53c;
-    sub_4CD890();
-    *(void**)this = (void*)0x79f010;
-}
+#include "Part.cpp"
