@@ -1,0 +1,83 @@
+[
+ {
+  "slot": 27,
+  "dll_address": "0x1013f540",
+  "exports": [
+   "?createCamera@SceneManager@Ogre@@UAEPAVCamera@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a000"
+ },
+ {
+  "slot": 29,
+  "dll_address": "0x101397f0",
+  "exports": [
+   "?hasCamera@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6944c0"
+ },
+ {
+  "slot": 30,
+  "dll_address": "0x1013cb40",
+  "exports": [
+   "?destroyCamera@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698710"
+ },
+ {
+  "slot": 31,
+  "dll_address": "0x10131710",
+  "exports": [
+   "?destroyCamera@SceneManager@Ogre@@UAEXPAVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6985e0"
+ },
+ {
+  "slot": 32,
+  "dll_address": "0x1013ccd0",
+  "exports": [
+   "?destroyAllCameras@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6987c0"
+ },
+ {
+  "slot": 47,
+  "dll_address": "0x10139960",
+  "exports": [
+   "?hasSceneNode@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694630"
+ },
+ {
+  "slot": 80,
+  "dll_address": "0x1013ce10",
+  "exports": [
+   "?clearScene@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698890"
+ },
+ {
+  "slot": 81,
+  "dll_address": "0x10131d10",
+  "exports": [
+   "?setWorldGeometry@SceneManager@Ogre@@UAEXAAV?$SharedPtr@VDataStream@Ogre@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68be30"
+ },
+ {
+  "slot": 82,
+  "dll_address": "0x10131c80",
+  "exports": [
+   "?setWorldGeometry@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bda0"
+ }
+]
