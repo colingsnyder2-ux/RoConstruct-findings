@@ -1,0 +1,42 @@
+[
+ {
+  "old_symbol": "?injectMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "symbol": "?injectMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "address": "0069e140",
+  "code_exact": true,
+  "data_exact": true,
+  "size": 51,
+  "expected_size": 51,
+  "bad": []
+ },
+ {
+  "old_symbol": "?extractMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "symbol": "?extractMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+  "address": "0068ce80",
+  "code_exact": true,
+  "data_exact": true,
+  "size": 47,
+  "expected_size": 47,
+  "bad": []
+ },
+ {
+  "old_symbol": "?hasMovableObject@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "symbol": "?hasMovableObject@RbxSceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "address": "00699930",
+  "code_exact": true,
+  "data_exact": true,
+  "size": 189,
+  "expected_size": 189,
+  "bad": []
+ },
+ {
+  "old_symbol": "?extractMovableObject@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "symbol": "?extractMovableObject@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+  "address": "0069e180",
+  "code_exact": true,
+  "data_exact": true,
+  "size": 89,
+  "expected_size": 89,
+  "bad": []
+ }
+]

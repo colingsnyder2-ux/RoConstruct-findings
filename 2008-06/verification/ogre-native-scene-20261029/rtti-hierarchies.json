@@ -1,0 +1,57 @@
+[
+ {
+  "class": "RbxSceneManager@Ogre",
+  "hierarchies": [
+   [
+    {
+     "name": ".?AVRbxSceneManager@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVSceneManager@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    }
+   ]
+  ]
+ },
+ {
+  "class": "SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre",
+  "hierarchies": [
+   [
+    {
+     "name": ".?AVSceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVQueuedRenderableVisitor@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    }
+   ]
+  ]
+ },
+ {
+  "class": "SceneMgrQueuedRenderableVisitor@SceneManager@Ogre",
+  "hierarchies": []
+ },
+ {
+  "class": "ShadowCasterSceneQueryListener@RbxSceneManager@Ogre",
+  "hierarchies": [
+   [
+    {
+     "name": ".?AVShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    },
+    {
+     "name": ".?AVSceneQueryListener@Ogre@@",
+     "mdisp": 0,
+     "pdisp": "0xffffffff"
+    }
+   ]
+  ]
+ }
+]

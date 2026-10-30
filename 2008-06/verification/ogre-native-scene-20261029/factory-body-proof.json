@@ -1,0 +1,20 @@
+[
+ {
+  "address": "0068cef0",
+  "symbol": "?getTypeName@RbxSceneManager@Ogre@@UBEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 6,
+  "target_size": 6
+ },
+ {
+  "address": "0068cf00",
+  "symbol": "?initMetaData@RbxSceneManagerFactory@Ogre@@MBEXXZ",
+  "code_exact": true,
+  "data_exact": true,
+  "bad": [],
+  "size": 46,
+  "target_size": 46
+ }
+]

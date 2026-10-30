@@ -1,0 +1,14 @@
+[
+ {
+  "symbol": "??0RbxSceneManager@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+  "address": "0068e7c0",
+  "code_exact": true,
+  "data_exact": true
+ },
+ {
+  "symbol": "??1RbxSceneManager@Ogre@@UAE@XZ",
+  "address": "0069e220",
+  "code_exact": true,
+  "data_exact": true
+ }
+]

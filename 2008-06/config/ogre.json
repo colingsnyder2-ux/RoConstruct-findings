@@ -1,7 +1,18 @@
 {
  "name": "Ogre",
- "description": "Ogre code the 2008-06 exe links statically (Roblox's Ogre forks such as RbxSceneManager/RbxEntity, and header templates); OgreMain itself is rgmain.dll. No upstream layer: only exact mined ogre-* sources, swapped in by swap_build.py (verified layer).",
- "layers": [],
+ "description": "Exact exe-side Ogre forks and header templates with an explicit coherent RbxSceneManager state layer for real C++ global initialization; OgreMain remains rgmain.dll. All counted roots are forced and audited against code, referenced data and linker ownership.",
+ "layers": [
+  {
+   "name": "native-scene-state",
+   "mode": "recipe",
+   "recipe": "ogre-1.4.5-dll",
+   "files": [
+    "roc_native_scene_state_133ef0f703573e88.cpp"
+   ],
+   "direct": true,
+   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+  }
+ ],
  "test": "ogre_link",
  "verified": true,
  "test_includes": [
@@ -181,19 +192,40 @@
   },
   {
    "recipe": "ogre-1.4.5-dll",
-   "file": "roc_native_scene_callbacks_9975fd58eb7f0dbb.cpp",
+   "file": "roc_native_scene_state_133ef0f703573e88.cpp",
    "cl": "21022",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
    "addrs": [
     "00565ff0",
     "0069c5f0",
-    "0068b690"
+    "0068b690",
+    "0068cef0",
+    "0068cf00",
+    "0069e140",
+    "0068ce80",
+    "00699930",
+    "0069e180",
+    "0069dd00",
+    "0068e7c0",
+    "0069e220",
+    "00696a80"
    ],
    "symbols": {
     "00565ff0": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAUWorldFragment@SceneQuery@3@@Z",
     "0069c5f0": "?queryResult@ShadowCasterSceneQueryListener@RbxSceneManager@Ogre@@UAE_NPAVMovableObject@3@@Z",
-    "0068b690": "??1SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@UAE@XZ"
-   }
+    "0068b690": "??1SceneMgrQueuedRenderableVisitor@RbxSceneManager@Ogre@@UAE@XZ",
+    "0068cef0": "?getTypeName@RbxSceneManager@Ogre@@UBEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+    "0068cf00": "?initMetaData@RbxSceneManagerFactory@Ogre@@MBEXXZ",
+    "0069e140": "?injectMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+    "0068ce80": "?extractMovableObject@RbxSceneManager@Ogre@@UAEXPAVMovableObject@2@@Z",
+    "00699930": "?hasMovableObject@RbxSceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+    "0069e180": "?extractMovableObject@RbxSceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z",
+    "0069dd00": "?getMovableObjectCollection@RbxSceneManager@Ogre@@IAEPAUMovableObjectCollection@SceneManager@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+    "0068e7c0": "??0RbxSceneManager@Ogre@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+    "0069e220": "??1RbxSceneManager@Ogre@@UAE@XZ",
+    "00696a80": "?getMovableObject@RbxSceneManager@Ogre@@UBEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+   },
+   "provenance": "Coherent constructor-proven RbxSceneManager and genuine Ogre factory metadata; RTTI confirms hierarchy and type-name slot26. Owned methods avoid DLL-import aliases. Global String uses real CRT initialization in the explicit native state layer."
   },
   {
    "recipe": "ogre-1.4.5-dll",
@@ -253,19 +285,6 @@
   {
    "recipe": "ogre-1.6.4-dll",
    "file": "OgreSceneManager.cpp",
-   "cl": "21022",
-   "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
-   "addrs": [
-    "0069e140"
-   ],
-   "symbols": {
-    "0069e140": "?injectMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z"
-   },
-   "provenance": "Legacy Ogre1.6.4 map-producing root recompiled VC2005->VC2008; exact injectMovableObject preserved with compatible VC2008 STD map helpers. Original Ogre1.4.5 source identity not claimed."
-  },
-  {
-   "recipe": "ogre-1.6.4-dll",
-   "file": "OgreSceneManager.cpp",
    "cl": "50727",
    "flags": "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
    "addrs": [
@@ -276,5 +295,6 @@
    },
    "provenance": "Preserve the unrelated existing raw-pointer merge root and its original VC2005 helper context; migrate only the map-producing root."
   }
- ]
+ ],
+ "prefer_module_data": true
 }

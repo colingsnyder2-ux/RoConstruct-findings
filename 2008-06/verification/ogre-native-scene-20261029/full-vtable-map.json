@@ -1,0 +1,2245 @@
+[
+ {
+  "slot": 0,
+  "dll_address": "0x10131660",
+  "exports": [
+   "?initRenderQueue@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b6f0"
+ },
+ {
+  "slot": 1,
+  "dll_address": "0x10132560",
+  "exports": [
+   "?setViewport@SceneManager@Ogre@@MAEXPAVViewport@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c4f0"
+ },
+ {
+  "slot": 2,
+  "dll_address": "0x1013a2b0",
+  "exports": [
+   "?renderVisibleObjectsDefaultSequence@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a6b0"
+ },
+ {
+  "slot": 3,
+  "dll_address": "0x1013a190",
+  "exports": [
+   "?renderVisibleObjectsCustomSequence@SceneManager@Ogre@@MAEXPAVRenderQueueInvocationSequence@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694e40"
+ },
+ {
+  "slot": 4,
+  "dll_address": "0x10137050",
+  "exports": [
+   "?prepareRenderQueue@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a470"
+ },
+ {
+  "slot": 5,
+  "dll_address": "0x101400d0",
+  "exports": [
+   "?renderSingleObject@SceneManager@Ogre@@MAEXPBVRenderable@2@PBVPass@2@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69bc50"
+ },
+ {
+  "slot": 6,
+  "dll_address": "0x10143b20",
+  "exports": [
+   "?findLightsAffectingFrustum@SceneManager@Ogre@@MAEXPBVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e630"
+ },
+ {
+  "slot": 7,
+  "dll_address": "0x10135ba0",
+  "exports": [
+   "?initShadowVolumeMaterials@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x690b20"
+ },
+ {
+  "slot": 8,
+  "dll_address": "0x10141390",
+  "exports": [
+   "?ensureShadowTexturesCreated@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69d110"
+ },
+ {
+  "slot": 9,
+  "dll_address": "0x10141990",
+  "exports": [
+   "?destroyShadowTextures@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a950"
+ },
+ {
+  "slot": 10,
+  "dll_address": "0x1013b490",
+  "exports": [
+   "?prepareShadowTextures@SceneManager@Ogre@@MAEXPAVCamera@2@PAVViewport@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x696290"
+ },
+ {
+  "slot": 11,
+  "dll_address": "0x10140be0",
+  "exports": [
+   "?renderShadowVolumesToStencil@SceneManager@Ogre@@MAEXPBVLight@2@PBVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69c800"
+ },
+ {
+  "slot": 12,
+  "dll_address": "0x10132740",
+  "exports": [
+   "?setShadowVolumeStencilState@SceneManager@Ogre@@MAEX_N00@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c7b0"
+ },
+ {
+  "slot": 13,
+  "dll_address": "0x1013afd0",
+  "exports": [
+   "?findShadowCastersForLight@SceneManager@Ogre@@MAEABV?$vector@PAVShadowCaster@Ogre@@V?$allocator@PAVShadowCaster@Ogre@@@std@@@std@@PBVLight@2@PBVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6960e0"
+ },
+ {
+  "slot": 14,
+  "dll_address": "0x10137ee0",
+  "exports": [
+   "?renderBasicQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695aa0"
+ },
+ {
+  "slot": 15,
+  "dll_address": "0x1013f750",
+  "exports": [
+   "?renderAdditiveStencilShadowedQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69b2e0"
+ },
+ {
+  "slot": 16,
+  "dll_address": "0x10137ba0",
+  "exports": [
+   "?renderModulativeStencilShadowedQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694f60"
+ },
+ {
+  "slot": 17,
+  "dll_address": "0x1013a3d0",
+  "exports": [
+   "?renderTextureShadowCasterQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695260"
+ },
+ {
+  "slot": 18,
+  "dll_address": "0x1013ab30",
+  "exports": [
+   "?renderTextureShadowReceiverQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695960"
+ },
+ {
+  "slot": 19,
+  "dll_address": "0x1013a5a0",
+  "exports": [
+   "?renderModulativeTextureShadowedQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695420"
+ },
+ {
+  "slot": 20,
+  "dll_address": "0x1013fb40",
+  "exports": [
+   "?renderAdditiveTextureShadowedQueueGroupObjects@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69b6d0"
+ },
+ {
+  "slot": 21,
+  "dll_address": "0x10131f90",
+  "exports": [
+   "?renderObjects@SceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c070"
+ },
+ {
+  "slot": 22,
+  "dll_address": "0x10132100",
+  "exports": [
+   "?renderTransparentShadowCasterObjects@SceneManager@Ogre@@MAEXABVQueuedRenderableCollection@2@W4OrganisationMode@32@_NPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c1e0"
+ },
+ {
+  "slot": 23,
+  "dll_address": "0x101325e0",
+  "exports": [
+   "?updateRenderQueueSplitOptions@SceneManager@Ogre@@MAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c570"
+ },
+ {
+  "slot": 24,
+  "dll_address": "0x10138530",
+  "exports": [
+   "?updateRenderQueueGroupSplitOptions@SceneManager@Ogre@@MAEXPAVRenderQueueGroup@2@_N1@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c650"
+ },
+ {
+  "slot": 25,
+  "dll_address": "0x1001a3e0",
+  "exports": [],
+  "import_thunk": null,
+  "exe_address": "0x69eb00"
+ },
+ {
+  "slot": 26,
+  "dll_address": "0x1027327c",
+  "exports": [],
+  "import_thunk": "_purecall",
+  "exe_address": "0x68cef0"
+ },
+ {
+  "slot": 27,
+  "dll_address": "0x1013f540",
+  "exports": [
+   "?createCamera@SceneManager@Ogre@@UAEPAVCamera@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a000"
+ },
+ {
+  "slot": 28,
+  "dll_address": "0x101396f0",
+  "exports": [
+   "?getCamera@SceneManager@Ogre@@UBEPAVCamera@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6943c0"
+ },
+ {
+  "slot": 29,
+  "dll_address": "0x101397f0",
+  "exports": [
+   "?hasCamera@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6944c0"
+ },
+ {
+  "slot": 30,
+  "dll_address": "0x1013cb40",
+  "exports": [
+   "?destroyCamera@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698710"
+ },
+ {
+  "slot": 31,
+  "dll_address": "0x10131710",
+  "exports": [
+   "?destroyCamera@SceneManager@Ogre@@UAEXPAVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6985e0"
+ },
+ {
+  "slot": 32,
+  "dll_address": "0x1013ccd0",
+  "exports": [
+   "?destroyAllCameras@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6987c0"
+ },
+ {
+  "slot": 33,
+  "dll_address": "0x10131730",
+  "exports": [
+   "?createLight@SceneManager@Ogre@@UAEPAVLight@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b800"
+ },
+ {
+  "slot": 34,
+  "dll_address": "0x10131750",
+  "exports": [
+   "?getLight@SceneManager@Ogre@@UBEPAVLight@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b820"
+ },
+ {
+  "slot": 35,
+  "dll_address": "0x10131770",
+  "exports": [
+   "?hasLight@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b840"
+ },
+ {
+  "slot": 36,
+  "dll_address": "0x101319d0",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXPAVBillboardChain@2@@Z",
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXPAVBillboardSet@2@@Z",
+   "?destroyEntity@SceneManager@Ogre@@UAEXPAVEntity@2@@Z",
+   "?destroyLight@SceneManager@Ogre@@UAEXPAVLight@2@@Z",
+   "?destroyManualObject@SceneManager@Ogre@@UAEXPAVManualObject@2@@Z",
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXPAVRibbonTrail@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc80"
+ },
+ {
+  "slot": 37,
+  "dll_address": "0x10131790",
+  "exports": [
+   "?destroyLight@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b860"
+ },
+ {
+  "slot": 38,
+  "dll_address": "0x101317b0",
+  "exports": [
+   "?destroyAllLights@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b880"
+ },
+ {
+  "slot": 39,
+  "dll_address": "0x101326c0",
+  "exports": [
+   "?_notifyLightsDirty@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c730"
+ },
+ {
+  "slot": 40,
+  "dll_address": "0x101317c0",
+  "exports": [
+   "?_getLightsAffectingFrustum@SceneManager@Ogre@@UBEABV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b8a0"
+ },
+ {
+  "slot": 41,
+  "dll_address": "0x10143870",
+  "exports": [
+   "?_populateLightList@SceneManager@Ogre@@UAEXABVVector3@2@MAAV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e390"
+ },
+ {
+  "slot": 42,
+  "dll_address": "0x1013e860",
+  "exports": [
+   "?createSceneNode@SceneManager@Ogre@@UAEPAVSceneNode@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a300"
+ },
+ {
+  "slot": 43,
+  "dll_address": "0x1013e7f0",
+  "exports": [
+   "?createSceneNode@SceneManager@Ogre@@UAEPAVSceneNode@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a260"
+ },
+ {
+  "slot": 44,
+  "dll_address": "0x1013cf90",
+  "exports": [
+   "?destroySceneNode@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698a10"
+ },
+ {
+  "slot": 45,
+  "dll_address": "0x10131c70",
+  "exports": [
+   "?getCurrentFrameNumber@Root@Ogre@@QBEKXZ",
+   "?getRootSceneNode@SceneManager@Ogre@@UBEPAVSceneNode@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bd80"
+ },
+ {
+  "slot": 46,
+  "dll_address": "0x10139840",
+  "exports": [
+   "?getSceneNode@SceneManager@Ogre@@UBEPAVSceneNode@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694510"
+ },
+ {
+  "slot": 47,
+  "dll_address": "0x10139960",
+  "exports": [
+   "?hasSceneNode@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694630"
+ },
+ {
+  "slot": 48,
+  "dll_address": "0x10131800",
+  "exports": [
+   "?createEntity@SceneManager@Ogre@@UAEPAVEntity@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4PrefabType@12@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6a02d2"
+ },
+ {
+  "slot": 49,
+  "dll_address": "0x10142ec0",
+  "exports": [
+   "?createEntity@SceneManager@Ogre@@UAEPAVEntity@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69d960"
+ },
+ {
+  "slot": 50,
+  "dll_address": "0x10131990",
+  "exports": [
+   "?getEntity@SceneManager@Ogre@@UBEPAVEntity@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ba40"
+ },
+ {
+  "slot": 51,
+  "dll_address": "0x101319b0",
+  "exports": [
+   "?hasEntity@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ba60"
+ },
+ {
+  "slot": 52,
+  "dll_address": "0x101319e0",
+  "exports": [
+   "?destroyEntity@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ba80"
+ },
+ {
+  "slot": 53,
+  "dll_address": "0x101319d0",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXPAVBillboardChain@2@@Z",
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXPAVBillboardSet@2@@Z",
+   "?destroyEntity@SceneManager@Ogre@@UAEXPAVEntity@2@@Z",
+   "?destroyLight@SceneManager@Ogre@@UAEXPAVLight@2@@Z",
+   "?destroyManualObject@SceneManager@Ogre@@UAEXPAVManualObject@2@@Z",
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXPAVRibbonTrail@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc80"
+ },
+ {
+  "slot": 54,
+  "dll_address": "0x10131a00",
+  "exports": [
+   "?destroyAllEntities@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68baa0"
+ },
+ {
+  "slot": 55,
+  "dll_address": "0x10131a20",
+  "exports": [
+   "?createManualObject@SceneManager@Ogre@@UAEPAVManualObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bae0"
+ },
+ {
+  "slot": 56,
+  "dll_address": "0x10131a40",
+  "exports": [
+   "?getManualObject@SceneManager@Ogre@@UBEPAVManualObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bb00"
+ },
+ {
+  "slot": 57,
+  "dll_address": "0x10131a60",
+  "exports": [
+   "?hasManualObject@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bb20"
+ },
+ {
+  "slot": 58,
+  "dll_address": "0x10131a80",
+  "exports": [
+   "?destroyManualObject@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bb40"
+ },
+ {
+  "slot": 59,
+  "dll_address": "0x101319d0",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXPAVBillboardChain@2@@Z",
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXPAVBillboardSet@2@@Z",
+   "?destroyEntity@SceneManager@Ogre@@UAEXPAVEntity@2@@Z",
+   "?destroyLight@SceneManager@Ogre@@UAEXPAVLight@2@@Z",
+   "?destroyManualObject@SceneManager@Ogre@@UAEXPAVManualObject@2@@Z",
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXPAVRibbonTrail@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc80"
+ },
+ {
+  "slot": 60,
+  "dll_address": "0x10131aa0",
+  "exports": [
+   "?destroyAllManualObjects@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bb60"
+ },
+ {
+  "slot": 61,
+  "dll_address": "0x10131ab0",
+  "exports": [
+   "?createBillboardChain@SceneManager@Ogre@@UAEPAVBillboardChain@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bb80"
+ },
+ {
+  "slot": 62,
+  "dll_address": "0x10131ad0",
+  "exports": [
+   "?getBillboardChain@SceneManager@Ogre@@UBEPAVBillboardChain@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bba0"
+ },
+ {
+  "slot": 63,
+  "dll_address": "0x10131af0",
+  "exports": [
+   "?hasBillboardChain@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bbc0"
+ },
+ {
+  "slot": 64,
+  "dll_address": "0x10131b10",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bbe0"
+ },
+ {
+  "slot": 65,
+  "dll_address": "0x101319d0",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXPAVBillboardChain@2@@Z",
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXPAVBillboardSet@2@@Z",
+   "?destroyEntity@SceneManager@Ogre@@UAEXPAVEntity@2@@Z",
+   "?destroyLight@SceneManager@Ogre@@UAEXPAVLight@2@@Z",
+   "?destroyManualObject@SceneManager@Ogre@@UAEXPAVManualObject@2@@Z",
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXPAVRibbonTrail@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc80"
+ },
+ {
+  "slot": 66,
+  "dll_address": "0x10131b30",
+  "exports": [
+   "?destroyAllBillboardChains@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc00"
+ },
+ {
+  "slot": 67,
+  "dll_address": "0x10131b40",
+  "exports": [
+   "?createRibbonTrail@SceneManager@Ogre@@UAEPAVRibbonTrail@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc20"
+ },
+ {
+  "slot": 68,
+  "dll_address": "0x10131b60",
+  "exports": [
+   "?getRibbonTrail@SceneManager@Ogre@@UBEPAVRibbonTrail@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc40"
+ },
+ {
+  "slot": 69,
+  "dll_address": "0x10131b80",
+  "exports": [
+   "?hasRibbonTrail@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc60"
+ },
+ {
+  "slot": 70,
+  "dll_address": "0x10131ba0",
+  "exports": [
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc90"
+ },
+ {
+  "slot": 71,
+  "dll_address": "0x101319d0",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXPAVBillboardChain@2@@Z",
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXPAVBillboardSet@2@@Z",
+   "?destroyEntity@SceneManager@Ogre@@UAEXPAVEntity@2@@Z",
+   "?destroyLight@SceneManager@Ogre@@UAEXPAVLight@2@@Z",
+   "?destroyManualObject@SceneManager@Ogre@@UAEXPAVManualObject@2@@Z",
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXPAVRibbonTrail@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc80"
+ },
+ {
+  "slot": 72,
+  "dll_address": "0x10131bc0",
+  "exports": [
+   "?destroyAllRibbonTrails@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bcb0"
+ },
+ {
+  "slot": 73,
+  "dll_address": "0x10143040",
+  "exports": [
+   "?createParticleSystem@SceneManager@Ogre@@UAEPAVParticleSystem@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@I0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69daf0"
+ },
+ {
+  "slot": 74,
+  "dll_address": "0x10142f80",
+  "exports": [
+   "?createParticleSystem@SceneManager@Ogre@@UAEPAVParticleSystem@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69da20"
+ },
+ {
+  "slot": 75,
+  "dll_address": "0x10131bd0",
+  "exports": [
+   "?getParticleSystem@SceneManager@Ogre@@UBEPAVParticleSystem@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bcd0"
+ },
+ {
+  "slot": 76,
+  "dll_address": "0x10131c00",
+  "exports": [
+   "?hasParticleSystem@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bd00"
+ },
+ {
+  "slot": 77,
+  "dll_address": "0x10131c40",
+  "exports": [
+   "?destroyParticleSystem@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bd40"
+ },
+ {
+  "slot": 78,
+  "dll_address": "0x10131c20",
+  "exports": [
+   "?destroyParticleSystem@SceneManager@Ogre@@UAEXPAVParticleSystem@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bd20"
+ },
+ {
+  "slot": 79,
+  "dll_address": "0x10131c60",
+  "exports": [
+   "?destroyAllParticleSystems@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bd60"
+ },
+ {
+  "slot": 80,
+  "dll_address": "0x1013ce10",
+  "exports": [
+   "?clearScene@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698890"
+ },
+ {
+  "slot": 81,
+  "dll_address": "0x10131d10",
+  "exports": [
+   "?setWorldGeometry@SceneManager@Ogre@@UAEXAAV?$SharedPtr@VDataStream@Ogre@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68be30"
+ },
+ {
+  "slot": 82,
+  "dll_address": "0x10131c80",
+  "exports": [
+   "?setWorldGeometry@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bda0"
+ },
+ {
+  "slot": 83,
+  "dll_address": "0x10019d60",
+  "exports": [
+   "?estimateWorldGeometry@SceneManager@Ogre@@UAEIAAV?$SharedPtr@VDataStream@Ogre@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x78c540"
+ },
+ {
+  "slot": 84,
+  "dll_address": "0x1007a640",
+  "exports": [
+   "?_findRawAutoConstantEntryInt@GpuProgramParameters@Ogre@@QAEPBVAutoConstantEntry@12@I@Z",
+   "?estimateWorldGeometry@SceneManager@Ogre@@UAEIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+   "?objectQueryLights@Listener@MovableObject@Ogre@@UAEPBV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@PBV23@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x5f2310"
+ },
+ {
+  "slot": 85,
+  "dll_address": "0x101330a0",
+  "exports": [
+   "?getSuggestedViewpoint@SceneManager@Ogre@@UAE?AUViewPoint@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68d780"
+ },
+ {
+  "slot": 86,
+  "dll_address": "0x10019d70",
+  "exports": [
+   "?getOption@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAX@Z",
+   "?getOptionValues@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@4@@Z",
+   "?setOption@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBX@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x5eed40"
+ },
+ {
+  "slot": 87,
+  "dll_address": "0x10019d70",
+  "exports": [
+   "?getOption@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAX@Z",
+   "?getOptionValues@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@4@@Z",
+   "?setOption@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBX@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x5eed40"
+ },
+ {
+  "slot": 88,
+  "dll_address": "0x10019d80",
+  "exports": [
+   "?getOptionKeys@SceneManager@Ogre@@UAE_NAAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@Z",
+   "?hasOption@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+   "?sortLightsAffectingFrustum@ShadowListener@Ogre@@UAE_NAAV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e880"
+ },
+ {
+  "slot": 89,
+  "dll_address": "0x10019d70",
+  "exports": [
+   "?getOption@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAX@Z",
+   "?getOptionValues@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@4@@Z",
+   "?setOption@SceneManager@Ogre@@UAE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBX@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x5eed40"
+ },
+ {
+  "slot": 90,
+  "dll_address": "0x10019d80",
+  "exports": [
+   "?getOptionKeys@SceneManager@Ogre@@UAE_NAAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@Z",
+   "?hasOption@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+   "?sortLightsAffectingFrustum@ShadowListener@Ogre@@UAE_NAAV?$vector@PAVLight@Ogre@@V?$allocator@PAVLight@Ogre@@@std@@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e880"
+ },
+ {
+  "slot": 91,
+  "dll_address": "0x10131df0",
+  "exports": [
+   "?_updateSceneGraph@SceneManager@Ogre@@UAEXPAVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bec0"
+ },
+ {
+  "slot": 92,
+  "dll_address": "0x10131e10",
+  "exports": [
+   "?_findVisibleObjects@SceneManager@Ogre@@UAEXPAVCamera@2@PAUVisibleObjectsBoundsInfo@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bef0"
+ },
+ {
+  "slot": 93,
+  "dll_address": "0x10137fa0",
+  "exports": [
+   "?_applySceneAnimations@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695d20"
+ },
+ {
+  "slot": 94,
+  "dll_address": "0x10131e60",
+  "exports": [
+   "?_renderVisibleObjects@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bf40"
+ },
+ {
+  "slot": 95,
+  "dll_address": "0x1013d240",
+  "exports": [
+   "?_renderScene@SceneManager@Ogre@@UAEXPAVCamera@2@PAVViewport@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698cc0"
+ },
+ {
+  "slot": 96,
+  "dll_address": "0x101323e0",
+  "exports": [
+   "?_queueSkiesForRendering@SceneManager@Ogre@@UAEXPAVCamera@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68d7d0"
+ },
+ {
+  "slot": 97,
+  "dll_address": "0x10019640",
+  "exports": [
+   "?_notifyOwner@Billboard@Ogre@@QAEXPAVBillboardSet@2@@Z",
+   "?_setDestinationRenderSystem@SceneManager@Ogre@@UAEXPAVRenderSystem@2@@Z",
+   "?setClearStencil@CompositionPass@Ogre@@QAEXI@Z",
+   "?setLastIndex@MaterialBucket@InstancedGeometry@Ogre@@QAEXH@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bd90"
+ },
+ {
+  "slot": 98,
+  "dll_address": "0x10134c10",
+  "exports": [
+   "?setSkyPlane@SceneManager@Ogre@@UAEX_NABVPlane@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@MM0MHH2@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68eac0"
+ },
+ {
+  "slot": 99,
+  "dll_address": "0x10019d90",
+  "exports": [
+   "?isSkyPlaneEnabled@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e890"
+ },
+ {
+  "slot": 100,
+  "dll_address": "0x10031770",
+  "exports": [
+   "?getBillboardOrigin@BillboardSet@Ogre@@UBE?AW4BillboardOrigin@2@XZ",
+   "?getSkyPlaneNode@SceneManager@Ogre@@UBEPAVSceneNode@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e8a0"
+ },
+ {
+  "slot": 101,
+  "dll_address": "0x10019da0",
+  "exports": [
+   "?_getVertexAnimTempBufferInfo@Entity@Ogre@@QAEPAVTempBlendedBufferInfo@2@XZ",
+   "?getSkyPlaneGenParameters@SceneManager@Ogre@@UBEABUSkyPlaneGenParameters@12@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e8b0"
+ },
+ {
+  "slot": 102,
+  "dll_address": "0x10137270",
+  "exports": [
+   "?setSkyBox@SceneManager@Ogre@@UAEX_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@M0ABVQuaternion@2@1@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x692a10"
+ },
+ {
+  "slot": 103,
+  "dll_address": "0x100eeda0",
+  "exports": [
+   "?isEmitted@ParticleEmitter@Ogre@@UBE_NXZ",
+   "?isSkyBoxEnabled@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e8c0"
+ },
+ {
+  "slot": 104,
+  "dll_address": "0x10019db0",
+  "exports": [
+   "?getSkyBoxNode@SceneManager@Ogre@@UBEPAVSceneNode@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e8d0"
+ },
+ {
+  "slot": 105,
+  "dll_address": "0x10019dc0",
+  "exports": [
+   "?getSkyBoxGenParameters@SceneManager@Ogre@@UBEABUSkyBoxGenParameters@12@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e8e0"
+ },
+ {
+  "slot": 106,
+  "dll_address": "0x101377f0",
+  "exports": [
+   "?setSkyDome@SceneManager@Ogre@@UAEX_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@MMM0ABVQuaternion@2@HHH1@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6907b0"
+ },
+ {
+  "slot": 107,
+  "dll_address": "0x10019dd0",
+  "exports": [
+   "?isSkyDomeEnabled@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e8f0"
+ },
+ {
+  "slot": 108,
+  "dll_address": "0x10019de0",
+  "exports": [
+   "?getBillboardRotationType@BillboardSet@Ogre@@UBE?AW4BillboardRotationType@2@XZ",
+   "?getSkyDomeNode@SceneManager@Ogre@@UBEPAVSceneNode@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e900"
+ },
+ {
+  "slot": 109,
+  "dll_address": "0x10019df0",
+  "exports": [
+   "?getSkyDomeGenParameters@SceneManager@Ogre@@UBEABUSkyDomeGenParameters@12@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e910"
+ },
+ {
+  "slot": 110,
+  "dll_address": "0x101321d0",
+  "exports": [
+   "?getFogMode@SceneManager@Ogre@@UBE?AW4FogMode@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c230"
+ },
+ {
+  "slot": 111,
+  "dll_address": "0x101321e0",
+  "exports": [
+   "?getFogColour@SceneManager@Ogre@@UBEABVColourValue@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c240"
+ },
+ {
+  "slot": 112,
+  "dll_address": "0x101321f0",
+  "exports": [
+   "?getFogStart@SceneManager@Ogre@@UBEMXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c250"
+ },
+ {
+  "slot": 113,
+  "dll_address": "0x10132200",
+  "exports": [
+   "?getFogEnd@SceneManager@Ogre@@UBEMXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c260"
+ },
+ {
+  "slot": 114,
+  "dll_address": "0x10132210",
+  "exports": [
+   "?getFogDensity@SceneManager@Ogre@@UBEMXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x5d74b0"
+ },
+ {
+  "slot": 115,
+  "dll_address": "0x10143160",
+  "exports": [
+   "?createBillboardSet@SceneManager@Ogre@@UAEPAVBillboardSet@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@I@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69dc10"
+ },
+ {
+  "slot": 116,
+  "dll_address": "0x10132220",
+  "exports": [
+   "?getBillboardSet@SceneManager@Ogre@@UBEPAVBillboardSet@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c270"
+ },
+ {
+  "slot": 117,
+  "dll_address": "0x10132240",
+  "exports": [
+   "?hasBillboardSet@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c290"
+ },
+ {
+  "slot": 118,
+  "dll_address": "0x10132260",
+  "exports": [
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c2b0"
+ },
+ {
+  "slot": 119,
+  "dll_address": "0x101319d0",
+  "exports": [
+   "?destroyBillboardChain@SceneManager@Ogre@@UAEXPAVBillboardChain@2@@Z",
+   "?destroyBillboardSet@SceneManager@Ogre@@UAEXPAVBillboardSet@2@@Z",
+   "?destroyEntity@SceneManager@Ogre@@UAEXPAVEntity@2@@Z",
+   "?destroyLight@SceneManager@Ogre@@UAEXPAVLight@2@@Z",
+   "?destroyManualObject@SceneManager@Ogre@@UAEXPAVManualObject@2@@Z",
+   "?destroyRibbonTrail@SceneManager@Ogre@@UAEXPAVRibbonTrail@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bc80"
+ },
+ {
+  "slot": 120,
+  "dll_address": "0x10131a10",
+  "exports": [
+   "?destroyAllBillboardSets@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68bac0"
+ },
+ {
+  "slot": 121,
+  "dll_address": "0x10132280",
+  "exports": [
+   "?setDisplaySceneNodes@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c2d0"
+ },
+ {
+  "slot": 122,
+  "dll_address": "0x10019e00",
+  "exports": [
+   "?getDisplaySceneNodes@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e920"
+ },
+ {
+  "slot": 123,
+  "dll_address": "0x1013e9c0",
+  "exports": [
+   "?createAnimation@SceneManager@Ogre@@UAEPAVAnimation@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@M@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69a7d0"
+ },
+ {
+  "slot": 124,
+  "dll_address": "0x1013ac80",
+  "exports": [
+   "?getAnimation@SceneManager@Ogre@@UBEPAVAnimation@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695bd0"
+ },
+ {
+  "slot": 125,
+  "dll_address": "0x1013ad80",
+  "exports": [
+   "?hasAnimation@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695cd0"
+ },
+ {
+  "slot": 126,
+  "dll_address": "0x1013d790",
+  "exports": [
+   "?destroyAnimation@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6992c0"
+ },
+ {
+  "slot": 127,
+  "dll_address": "0x1013d8c0",
+  "exports": [
+   "?destroyAllAnimations@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6993f0"
+ },
+ {
+  "slot": 128,
+  "dll_address": "0x10132290",
+  "exports": [
+   "?createAnimationState@SceneManager@Ogre@@UAEPAVAnimationState@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c2e0"
+ },
+ {
+  "slot": 129,
+  "dll_address": "0x101322d0",
+  "exports": [
+   "?getAnimationState@SceneManager@Ogre@@UBEPAVAnimationState@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c330"
+ },
+ {
+  "slot": 130,
+  "dll_address": "0x101322e0",
+  "exports": [
+   "?hasAnimationState@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c340"
+ },
+ {
+  "slot": 131,
+  "dll_address": "0x101322f0",
+  "exports": [
+   "?destroyAnimationState@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c350"
+ },
+ {
+  "slot": 132,
+  "dll_address": "0x10132300",
+  "exports": [
+   "?destroyAllAnimationStates@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c360"
+ },
+ {
+  "slot": 133,
+  "dll_address": "0x10133d30",
+  "exports": [
+   "?manualRender@SceneManager@Ogre@@UAEXPAVRenderOperation@2@PAVPass@2@PAVViewport@2@ABVMatrix4@2@33_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c370"
+ },
+ {
+  "slot": 134,
+  "dll_address": "0x10131640",
+  "exports": [
+   "?getRenderQueue@SceneManager@Ogre@@UAEPAVRenderQueue@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b6d0"
+ },
+ {
+  "slot": 135,
+  "dll_address": "0x10140990",
+  "exports": [
+   "?addRenderQueueListener@SceneManager@Ogre@@UAEXPAVRenderQueueListener@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69c5b0"
+ },
+ {
+  "slot": 136,
+  "dll_address": "0x1013add0",
+  "exports": [
+   "?removeRenderQueueListener@SceneManager@Ogre@@UAEXPAVRenderQueueListener@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695ee0"
+ },
+ {
+  "slot": 137,
+  "dll_address": "0x1013ca80",
+  "exports": [
+   "?addSpecialCaseRenderQueue@SceneManager@Ogre@@UAEXE@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698520"
+ },
+ {
+  "slot": 138,
+  "dll_address": "0x1013caa0",
+  "exports": [
+   "?removeSpecialCaseRenderQueue@SceneManager@Ogre@@UAEXE@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698540"
+ },
+ {
+  "slot": 139,
+  "dll_address": "0x10137010",
+  "exports": [
+   "?clearSpecialCaseRenderQueues@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6929d0"
+ },
+ {
+  "slot": 140,
+  "dll_address": "0x101316f0",
+  "exports": [
+   "?setSpecialCaseRenderQueueMode@SceneManager@Ogre@@UAEXW4SpecialCaseRenderQueueMode@12@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b7a0"
+ },
+ {
+  "slot": 141,
+  "dll_address": "0x10131700",
+  "exports": [
+   "?getSpecialCaseRenderQueueMode@SceneManager@Ogre@@UAE?AW4SpecialCaseRenderQueueMode@12@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b7b0"
+ },
+ {
+  "slot": 142,
+  "dll_address": "0x1013cac0",
+  "exports": [
+   "?isRenderQueueToBeProcessed@SceneManager@Ogre@@UAE_NE@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x698560"
+ },
+ {
+  "slot": 143,
+  "dll_address": "0x101452d0",
+  "exports": [
+   "?setWorldGeometryRenderQueue@SceneManager@Ogre@@UAEXE@Z",
+   "?showBoundingBox@SceneNode@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b7c0"
+ },
+ {
+  "slot": 144,
+  "dll_address": "0x1009a350",
+  "exports": [
+   "?getShowBoundingBox@SceneNode@Ogre@@UBE_NXZ",
+   "?getUseIdentityProjection@ManualObject@Ogre@@QBE_NXZ",
+   "?getWorldGeometryRenderQueue@SceneManager@Ogre@@UAEEXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68b7d0"
+ },
+ {
+  "slot": 145,
+  "dll_address": "0x101325a0",
+  "exports": [
+   "?showBoundingBoxes@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c530"
+ },
+ {
+  "slot": 146,
+  "dll_address": "0x101325b0",
+  "exports": [
+   "?getShowBoundingBoxes@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c540"
+ },
+ {
+  "slot": 147,
+  "dll_address": "0x1013d980",
+  "exports": [
+   "?_notifyAutotrackingSceneNode@SceneManager@Ogre@@UAEXPAVSceneNode@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6994b0"
+ },
+ {
+  "slot": 148,
+  "dll_address": "0x101329b0",
+  "exports": [
+   "?createAABBQuery@SceneManager@Ogre@@UAEPAVAxisAlignedBoxSceneQuery@2@ABVAxisAlignedBox@2@K@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68cad0"
+ },
+ {
+  "slot": 149,
+  "dll_address": "0x10132a30",
+  "exports": [
+   "?createSphereQuery@SceneManager@Ogre@@UAEPAVSphereSceneQuery@2@ABVSphere@2@K@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68cb80"
+ },
+ {
+  "slot": 150,
+  "dll_address": "0x10132ab0",
+  "exports": [
+   "?createPlaneBoundedVolumeQuery@SceneManager@Ogre@@UAEPAVPlaneBoundedVolumeListSceneQuery@2@ABV?$vector@VPlaneBoundedVolume@Ogre@@V?$allocator@VPlaneBoundedVolume@Ogre@@@std@@@std@@K@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68cc30"
+ },
+ {
+  "slot": 151,
+  "dll_address": "0x10132b30",
+  "exports": [
+   "?createRayQuery@SceneManager@Ogre@@UAEPAVRaySceneQuery@2@ABVRay@2@K@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68cce0"
+ },
+ {
+  "slot": 152,
+  "dll_address": "0x10132bb0",
+  "exports": [
+   "?createIntersectionQuery@SceneManager@Ogre@@UAEPAVIntersectionSceneQuery@2@K@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68cd90"
+ },
+ {
+  "slot": 153,
+  "dll_address": "0x1016cdc0",
+  "exports": [
+   "?destroyInstance@BillboardChainFactory@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "?destroyInstance@BillboardParticleRendererFactory@Ogre@@UAEXPAVParticleSystemRenderer@2@@Z",
+   "?destroyInstance@BillboardSetFactory@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "?destroyInstance@EntityFactory@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "?destroyInstance@LightFactory@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "?destroyInstance@ManualObjectFactory@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "?destroyInstance@RibbonTrailFactory@Ogre@@UAEXPAVMovableObject@2@@Z",
+   "?destroyOverlayElement@OverlayElementFactory@Ogre@@UAEXPAVOverlayElement@2@@Z",
+   "?destroyQuery@SceneManager@Ogre@@UAEXPAVSceneQuery@2@@Z",
+   "?destroySystemImpl@ParticleSystemManager@Ogre@@IAEXPAVParticleSystem@2@@Z",
+   "?destroyVertexBufferBindingImpl@HardwareBufferManager@Ogre@@MAEXPAVVertexBufferBinding@2@@Z",
+   "?destroyVertexDeclarationImpl@HardwareBufferManager@Ogre@@MAEXPAVVertexDeclaration@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ce30"
+ },
+ {
+  "slot": 154,
+  "dll_address": "0x101359e0",
+  "exports": [
+   "?setShadowTechnique@SceneManager@Ogre@@UAEXW4ShadowTechnique@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68d980"
+ },
+ {
+  "slot": 155,
+  "dll_address": "0x10019e30",
+  "exports": [
+   "?getShadowTechnique@SceneManager@Ogre@@UBE?AW4ShadowTechnique@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e930"
+ },
+ {
+  "slot": 156,
+  "dll_address": "0x10019e60",
+  "exports": [
+   "?setShowDebugShadows@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e940"
+ },
+ {
+  "slot": 157,
+  "dll_address": "0x10019e70",
+  "exports": [
+   "?getShowDebugShadows@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e950"
+ },
+ {
+  "slot": 158,
+  "dll_address": "0x10132830",
+  "exports": [
+   "?setShadowColour@SceneManager@Ogre@@UAEXABVColourValue@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c8a0"
+ },
+ {
+  "slot": 159,
+  "dll_address": "0x10132890",
+  "exports": [
+   "?getShadowColour@SceneManager@Ogre@@UBEABVColourValue@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c900"
+ },
+ {
+  "slot": 160,
+  "dll_address": "0x101328c0",
+  "exports": [
+   "?setShadowDirectionalLightExtrusionDistance@SceneManager@Ogre@@UAEXM@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c930"
+ },
+ {
+  "slot": 161,
+  "dll_address": "0x101328d0",
+  "exports": [
+   "?getShadowDirectionalLightExtrusionDistance@SceneManager@Ogre@@UBEMXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c940"
+ },
+ {
+  "slot": 162,
+  "dll_address": "0x101328a0",
+  "exports": [
+   "?setShadowFarDistance@SceneManager@Ogre@@UAEXM@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c910"
+ },
+ {
+  "slot": 163,
+  "dll_address": "0x10019e80",
+  "exports": [
+   "?getShadowFarDistance@SceneManager@Ogre@@UBEMXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e960"
+ },
+ {
+  "slot": 164,
+  "dll_address": "0x101367f0",
+  "exports": [
+   "?setShadowIndexBufferSize@SceneManager@Ogre@@UAEXI@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c950"
+ },
+ {
+  "slot": 165,
+  "dll_address": "0x10019e90",
+  "exports": [
+   "?getShadowIndexBufferSize@SceneManager@Ogre@@UBEIXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e970"
+ },
+ {
+  "slot": 166,
+  "dll_address": "0x101387f0",
+  "exports": [
+   "?setShadowTextureSize@SceneManager@Ogre@@UAEXG@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6935b0"
+ },
+ {
+  "slot": 167,
+  "dll_address": "0x101334c0",
+  "exports": [
+   "?setShadowTextureConfig@SceneManager@Ogre@@UAEXIABUShadowTextureConfig@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68db40"
+ },
+ {
+  "slot": 168,
+  "dll_address": "0x101328e0",
+  "exports": [
+   "?setShadowTextureConfig@SceneManager@Ogre@@UAEXIGGW4PixelFormat@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ca00"
+ },
+ {
+  "slot": 169,
+  "dll_address": "0x10138900",
+  "exports": [
+   "?setShadowTexturePixelFormat@SceneManager@Ogre@@UAEXW4PixelFormat@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6936c0"
+ },
+ {
+  "slot": 170,
+  "dll_address": "0x10141330",
+  "exports": [
+   "?setShadowTextureCount@SceneManager@Ogre@@UAEXI@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69d7e0"
+ },
+ {
+  "slot": 171,
+  "dll_address": "0x101389c0",
+  "exports": [
+   "?setShadowTextureSettings@SceneManager@Ogre@@UAEXGGW4PixelFormat@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x693780"
+ },
+ {
+  "slot": 172,
+  "dll_address": "0x101335e0",
+  "exports": [
+   "?getShadowTexture@SceneManager@Ogre@@UAEABVTexturePtr@2@I@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68dc60"
+ },
+ {
+  "slot": 173,
+  "dll_address": "0x10019ea0",
+  "exports": [
+   "?setShadowDirLightTextureOffset@SceneManager@Ogre@@UAEXM@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e980"
+ },
+ {
+  "slot": 174,
+  "dll_address": "0x10019eb0",
+  "exports": [
+   "?getShadowDirLightTextureOffset@SceneManager@Ogre@@UBEMXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e990"
+ },
+ {
+  "slot": 175,
+  "dll_address": "0x10019ec0",
+  "exports": [
+   "?setShadowTextureFadeStart@SceneManager@Ogre@@UAEXM@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e9a0"
+ },
+ {
+  "slot": 176,
+  "dll_address": "0x10019ed0",
+  "exports": [
+   "?setShadowTextureFadeEnd@SceneManager@Ogre@@UAEXM@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e9b0"
+ },
+ {
+  "slot": 177,
+  "dll_address": "0x10132920",
+  "exports": [
+   "?setShadowTextureSelfShadow@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ca40"
+ },
+ {
+  "slot": 178,
+  "dll_address": "0x10019ee0",
+  "exports": [
+   "?getShadowTextureSelfShadow@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e9c0"
+ },
+ {
+  "slot": 179,
+  "dll_address": "0x101341e0",
+  "exports": [
+   "?setShadowTextureCasterMaterial@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x691900"
+ },
+ {
+  "slot": 180,
+  "dll_address": "0x101343f0",
+  "exports": [
+   "?setShadowTextureReceiverMaterial@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x691af0"
+ },
+ {
+  "slot": 181,
+  "dll_address": "0x10019ef0",
+  "exports": [
+   "?setShadowCasterRenderBackFaces@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e9d0"
+ },
+ {
+  "slot": 182,
+  "dll_address": "0x10019f00",
+  "exports": [
+   "?getShadowCasterRenderBackFaces@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e9e0"
+ },
+ {
+  "slot": 183,
+  "dll_address": "0x101368c0",
+  "exports": [
+   "?setShadowCameraSetup@SceneManager@Ogre@@UAEXABV?$SharedPtr@VShadowCameraSetup@Ogre@@@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x691d80"
+ },
+ {
+  "slot": 184,
+  "dll_address": "0x10132960",
+  "exports": [
+   "?getShadowCameraSetup@SceneManager@Ogre@@UBEABV?$SharedPtr@VShadowCameraSetup@Ogre@@@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ca80"
+ },
+ {
+  "slot": 185,
+  "dll_address": "0x10019f10",
+  "exports": [
+   "?setShadowUseInfiniteFarPlane@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68e9f0"
+ },
+ {
+  "slot": 186,
+  "dll_address": "0x10019f20",
+  "exports": [
+   "?isShadowTechniqueStencilBased@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea00"
+ },
+ {
+  "slot": 187,
+  "dll_address": "0x10019f30",
+  "exports": [
+   "?isShadowTechniqueTextureBased@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea10"
+ },
+ {
+  "slot": 188,
+  "dll_address": "0x10019f40",
+  "exports": [
+   "?isShadowTechniqueModulative@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea20"
+ },
+ {
+  "slot": 189,
+  "dll_address": "0x10019f50",
+  "exports": [
+   "?isShadowTechniqueAdditive@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea30"
+ },
+ {
+  "slot": 190,
+  "dll_address": "0x10019f60",
+  "exports": [
+   "?isShadowTechniqueIntegrated@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea40"
+ },
+ {
+  "slot": 191,
+  "dll_address": "0x10019f70",
+  "exports": [
+   "?isShadowTechniqueInUse@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea50"
+ },
+ {
+  "slot": 192,
+  "dll_address": "0x101409b0",
+  "exports": [
+   "?addShadowListener@SceneManager@Ogre@@UAEXPAVShadowListener@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69c5d0"
+ },
+ {
+  "slot": 193,
+  "dll_address": "0x1013aed0",
+  "exports": [
+   "?removeShadowListener@SceneManager@Ogre@@UAEXPAVShadowListener@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x695fe0"
+ },
+ {
+  "slot": 194,
+  "dll_address": "0x1013eb20",
+  "exports": [
+   "?createStaticGeometry@SceneManager@Ogre@@UAEPAVStaticGeometry@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69ac50"
+ },
+ {
+  "slot": 195,
+  "dll_address": "0x1013b8e0",
+  "exports": [
+   "?getStaticGeometry@SceneManager@Ogre@@UBEPAVStaticGeometry@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6966d0"
+ },
+ {
+  "slot": 196,
+  "dll_address": "0x1013ba00",
+  "exports": [
+   "?hasStaticGeometry@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6967f0"
+ },
+ {
+  "slot": 197,
+  "dll_address": "0x1013d9b0",
+  "exports": [
+   "?destroyStaticGeometry@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6994e0"
+ },
+ {
+  "slot": 198,
+  "dll_address": "0x10132970",
+  "exports": [
+   "?destroyStaticGeometry@SceneManager@Ogre@@UAEXPAVStaticGeometry@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ca90"
+ },
+ {
+  "slot": 199,
+  "dll_address": "0x1013da30",
+  "exports": [
+   "?destroyAllStaticGeometry@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x699560"
+ },
+ {
+  "slot": 200,
+  "dll_address": "0x1013ec70",
+  "exports": [
+   "?createInstancedGeometry@SceneManager@Ogre@@UAEPAVInstancedGeometry@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69add0"
+ },
+ {
+  "slot": 201,
+  "dll_address": "0x1013ba50",
+  "exports": [
+   "?getInstancedGeometry@SceneManager@Ogre@@UBEPAVInstancedGeometry@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x696840"
+ },
+ {
+  "slot": 202,
+  "dll_address": "0x1013dae0",
+  "exports": [
+   "?destroyInstancedGeometry@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x699610"
+ },
+ {
+  "slot": 203,
+  "dll_address": "0x10132990",
+  "exports": [
+   "?destroyInstancedGeometry@SceneManager@Ogre@@UAEXPAVInstancedGeometry@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68cab0"
+ },
+ {
+  "slot": 204,
+  "dll_address": "0x1013db60",
+  "exports": [
+   "?destroyAllInstancedGeometry@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x699690"
+ },
+ {
+  "slot": 205,
+  "dll_address": "0x10143330",
+  "exports": [
+   "?createMovableObject@SceneManager@Ogre@@UAEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0PBV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V12@@std@@@2@@5@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69ddf0"
+ },
+ {
+  "slot": 206,
+  "dll_address": "0x10132c20",
+  "exports": [
+   "?destroyMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ce50"
+ },
+ {
+  "slot": 207,
+  "dll_address": "0x101434c0",
+  "exports": [
+   "?destroyMovableObject@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69df80"
+ },
+ {
+  "slot": 208,
+  "dll_address": "0x10143560",
+  "exports": [
+   "?destroyAllMovableObjectsByType@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e020"
+ },
+ {
+  "slot": 209,
+  "dll_address": "0x1013dc10",
+  "exports": [
+   "?destroyAllMovableObjects@SceneManager@Ogre@@UAEXXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x699740"
+ },
+ {
+  "slot": 210,
+  "dll_address": "0x1013bc90",
+  "exports": [
+   "?getMovableObject@SceneManager@Ogre@@UBEPAVMovableObject@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x696a80"
+ },
+ {
+  "slot": 211,
+  "dll_address": "0x1013ddf0",
+  "exports": [
+   "?hasMovableObject@SceneManager@Ogre@@UBE_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x699930"
+ },
+ {
+  "slot": 212,
+  "dll_address": "0x10143640",
+  "exports": [
+   "?getMovableObjectIterator@SceneManager@Ogre@@UAE?AV?$MapIterator@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVMovableObject@Ogre@@@std@@@2@@std@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e110"
+ },
+ {
+  "slot": 213,
+  "dll_address": "0x10143670",
+  "exports": [
+   "?injectMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e140"
+ },
+ {
+  "slot": 214,
+  "dll_address": "0x10132c50",
+  "exports": [
+   "?extractMovableObject@SceneManager@Ogre@@UAEXPAVMovableObject@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ce80"
+ },
+ {
+  "slot": 215,
+  "dll_address": "0x101436b0",
+  "exports": [
+   "?extractMovableObject@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e180"
+ },
+ {
+  "slot": 216,
+  "dll_address": "0x10143710",
+  "exports": [
+   "?extractAllMovableObjectsByType@SceneManager@Ogre@@UAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69e1e0"
+ },
+ {
+  "slot": 217,
+  "dll_address": "0x10019f80",
+  "exports": [
+   "?setVisibilityMask@SceneManager@Ogre@@UAEXI@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea60"
+ },
+ {
+  "slot": 218,
+  "dll_address": "0x10019f90",
+  "exports": [
+   "?getVisibilityMask@SceneManager@Ogre@@UAEIXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea70"
+ },
+ {
+  "slot": 219,
+  "dll_address": "0x10019fa0",
+  "exports": [
+   "?setFindVisibleObjects@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea80"
+ },
+ {
+  "slot": 220,
+  "dll_address": "0x10019fb0",
+  "exports": [
+   "?getFindVisibleObjects@SceneManager@Ogre@@UAE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ea90"
+ },
+ {
+  "slot": 221,
+  "dll_address": "0x10132c80",
+  "exports": [
+   "?_injectRenderWithPass@SceneManager@Ogre@@UAEXPAVPass@2@PAVRenderable@2@_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68ceb0"
+ },
+ {
+  "slot": 222,
+  "dll_address": "0x101325d0",
+  "exports": [
+   "?_suppressRenderStateChanges@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c560"
+ },
+ {
+  "slot": 223,
+  "dll_address": "0x10019fc0",
+  "exports": [
+   "?_areRenderStateChangesSuppressed@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68eaa0"
+ },
+ {
+  "slot": 224,
+  "dll_address": "0x101399b0",
+  "exports": [
+   "?_setPass@SceneManager@Ogre@@UAEPBVPass@2@PBV32@_N1@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x694680"
+ },
+ {
+  "slot": 225,
+  "dll_address": "0x101325c0",
+  "exports": [
+   "?_suppressShadows@SceneManager@Ogre@@UAEX_N@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c550"
+ },
+ {
+  "slot": 226,
+  "dll_address": "0x10019fd0",
+  "exports": [
+   "?_areShadowsSuppressed@SceneManager@Ogre@@UBE_NXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68eab0"
+ },
+ {
+  "slot": 227,
+  "dll_address": "0x10131fd0",
+  "exports": [
+   "?_renderQueueGroupObjects@SceneManager@Ogre@@UAEXPAVRenderQueueGroup@2@W4OrganisationMode@QueuedRenderableCollection@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x68c0b0"
+ },
+ {
+  "slot": 228,
+  "dll_address": "0x103716e8",
+  "exports": [],
+  "import_thunk": null,
+  "exe_address": "0x68b8b0"
+ },
+ {
+  "slot": 229,
+  "dll_address": "0x100267f0",
+  "exports": [],
+  "import_thunk": null,
+  "exe_address": "0x65646f4e"
+ },
+ {
+  "slot": 230,
+  "dll_address": "0x101483c0",
+  "exports": [
+   "?queryResult@RegionSceneQuery@Ogre@@UAE_NPAUWorldFragment@SceneQuery@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x0"
+ },
+ {
+  "slot": 231,
+  "dll_address": "0x10148380",
+  "exports": [
+   "?queryResult@RegionSceneQuery@Ogre@@UAE_NPAVMovableObject@2@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6f6e2027"
+ },
+ {
+  "slot": 232,
+  "dll_address": "0x10371690",
+  "exports": [],
+  "import_thunk": null,
+  "exe_address": "0x6f662074"
+ },
+ {
+  "slot": 233,
+  "dll_address": "0x1001a560",
+  "exports": [],
+  "import_thunk": null,
+  "exe_address": "0x2e646e75"
+ },
+ {
+  "slot": 234,
+  "dll_address": "0x101476e0",
+  "exports": [
+   "?setAsBaseValue@AnimableValue@Ogre@@MAEXH@Z",
+   "?setIdentifier@CompositionPass@Ogre@@QAEXI@Z",
+   "?setQueryMask@SceneQuery@Ogre@@UAEXI@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x0"
+ },
+ {
+  "slot": 235,
+  "dll_address": "0x1001b910",
+  "exports": [
+   "?_getOriginalSceneCompositor@CompositorChain@Ogre@@QAEPAVCompositorInstance@2@XZ",
+   "?getHeight@Image@Ogre@@QBEIXZ",
+   "?getIdentifier@CompositionPass@Ogre@@QBEIXZ",
+   "?getQueryMask@SceneQuery@Ogre@@UBEIXZ",
+   "?getTarget@Viewport@Ogre@@QBEPAVRenderTarget@2@XZ",
+   "?getTechnique@CompositorInstance@Ogre@@QAEPAVCompositionTechnique@2@XZ",
+   "?getType@VertexElement@Ogre@@QBE?AW4VertexElementType@2@XZ",
+   "?getUsage@HardwareBuffer@Ogre@@QBE?AW4Usage@12@XZ",
+   "?useCountPointer@?$SharedPtr@VCompositor@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VFont@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VGpuProgram@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VHardwareIndexBuffer@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VHardwarePixelBuffer@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VHardwareVertexBuffer@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VHighLevelGpuProgram@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VMaterial@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VMesh@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VPatchMesh@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VSkeleton@Ogre@@@Ogre@@QBEPAIXZ",
+   "?useCountPointer@?$SharedPtr@VTexture@Ogre@@@Ogre@@QBEPAIXZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x20796b53"
+ },
+ {
+  "slot": 236,
+  "dll_address": "0x101476f0",
+  "exports": [
+   "?setQueryTypeMask@SceneQuery@Ogre@@UAEXI@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x6e616c70"
+ },
+ {
+  "slot": 237,
+  "dll_address": "0x102498e0",
+  "exports": [
+   "?getChain@CompositorInstance@Ogre@@QAEPAVCompositorChain@2@XZ",
+   "?getDepth@Image@Ogre@@QBEIXZ",
+   "?getLine@Exception@Ogre@@UBEJXZ",
+   "?getPass2TokenQuePosition@Compiler2Pass@Ogre@@IBEIXZ",
+   "?getQueryTypeMask@SceneQuery@Ogre@@UBEIXZ",
+   "?getSemantic@VertexElement@Ogre@@QBE?AW4VertexElementSemantic@2@XZ",
+   "?getTextureType@TextureUnitState@Ogre@@QBE?AW4TextureType@2@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x616d2065"
+ },
+ {
+  "slot": 238,
+  "dll_address": "0x10148230",
+  "exports": [
+   "?setWorldFragmentType@SceneQuery@Ogre@@UAEXW4WorldFragmentType@12@@Z"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x69726574"
+ },
+ {
+  "slot": 239,
+  "dll_address": "0x100ae460",
+  "exports": [
+   "?getCurrentTechnique@MaterialBucket@InstancedGeometry@Ogre@@QBEPAVTechnique@3@XZ",
+   "?getCurrentTechnique@MaterialBucket@StaticGeometry@Ogre@@QBEPAVTechnique@3@XZ",
+   "?getFloatLogicalBufferStruct@GpuProgramParameters@Ogre@@QBEPBUGpuLogicalBufferStruct@2@XZ",
+   "?getParent@Technique@Ogre@@QBEPAVMaterial@2@XZ",
+   "?getWorldFragmentType@SceneQuery@Ogre@@UBE?AW4WorldFragmentType@12@XZ"
+  ],
+  "import_thunk": null,
+  "exe_address": "0x27206c61"
+ }
+]

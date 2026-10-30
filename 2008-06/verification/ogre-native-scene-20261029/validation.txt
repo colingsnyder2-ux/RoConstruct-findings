@@ -1,0 +1,6 @@
+1101 source tests passed;3 skipped;3 subtests passed.
+46 targeted rebuild selection/dependency tests passed.
+All329 forced roots pass code/data and actual library-map ownership;327 prior addresses preserved.
+68/68 registered native targets replay exact,0 compile failures.
+Root/RbxSceneManager lifecycle and prior subentity/CPU-shadow/container runtime exit0.
+Placed411 distinct;2 stale modules deferred. No server credit or full renderer completion claimed.
