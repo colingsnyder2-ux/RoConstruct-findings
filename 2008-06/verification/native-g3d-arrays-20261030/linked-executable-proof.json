@@ -1,0 +1,67 @@
+[
+ {
+  "target": "0047f640",
+  "linked_proofs": [
+   {
+    "symbol": "?realloc@?$Array@M@G3D@@AAEXH@Z",
+    "owner": "linked:NativeContainerInstantiations.obj",
+    "linked_address": "0041d5f0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "0048ae50",
+  "linked_proofs": [
+   {
+    "symbol": "?append@?$Array@VVector4@G3D@@@G3D@@QAEXABVVector4@2@@Z",
+    "owner": "linked:NativeContainerInstantiations.obj",
+    "linked_address": "0041d6f0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "005098f0",
+  "linked_proofs": [
+   {
+    "symbol": "?append@?$Array@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@G3D@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z",
+    "owner": "linked:NativeContainerInstantiations.obj",
+    "linked_address": "0041d860",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "00510840",
+  "linked_proofs": [
+   {
+    "symbol": "?realloc@?$Array@VVector4@G3D@@@G3D@@AAEXH@Z",
+    "owner": "linked:NativeContainerInstantiations.obj",
+    "linked_address": "0041d3a0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ },
+ {
+  "target": "005109e0",
+  "linked_proofs": [
+   {
+    "symbol": "??0Plane@G3D@@QAE@XZ",
+    "owner": "linked:NativeContainerInstantiations.obj",
+    "linked_address": "0041d6a0",
+    "object_code_data_exact": true,
+    "code_exact": true
+   }
+  ],
+  "code_exact_in_executable": true
+ }
+]
