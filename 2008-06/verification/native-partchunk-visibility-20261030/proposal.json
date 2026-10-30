@@ -1,0 +1,18 @@
+{
+  "client": "2008-06",
+  "base_revision": "7bd14fe31e1061befcf22efeb1f3b761e7389b057a997fe459ecc8db0fe2f142",
+  "model": "gpt-6.1-sol",
+  "targets": [
+    "00565950"
+  ],
+  "declarations": [],
+  "patches": {
+    "RbxView/NativePartChunkVisibility.cpp": [
+      [
+        "",
+        "#include \"Part.h\"\nbool RBX::View::PartChunk::castsShadows() const { return true; }\nbool RBX::View::PartChunk::cullable() const { return true; }\n"
+      ]
+    ]
+  },
+  "evidence": "The existing SDK RBX::View::PartChunk declares castsShadows and cullable; both real OpenRBX methods return true. The 2008 binary names its class RBX::ViewNew::PartChunk, and four related target vtables point slots 3 and 4 to the same folded 00565950 body (b0 01 c3). The SDK Part COFF vtable places the corresponding methods at the same slots. The namespace difference and shared target require independent ABI and ownership review. Both methods compile against the real SDK header, force-link at one executable address and pass the normal tree fixture 10 times. The 2008 target is already globally integrated, so no new distinct credit is claimed. Local full force-link has 45 unresolved symbols; this includes other private overlay changes, and M4b remains unresolved. This packet contains only the two definitions and must be independently rebuilt against the server baseline."
+}

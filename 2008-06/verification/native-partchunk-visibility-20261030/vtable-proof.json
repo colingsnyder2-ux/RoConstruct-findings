@@ -1,0 +1,46 @@
+{
+  "target_vtables": [
+    {
+      "class": "RBX::ViewNew::PartChunk",
+      "vtable": "00826ec4",
+      "slots": [
+        3,
+        4
+      ],
+      "target": "00565950"
+    },
+    {
+      "class": "RBX::ViewNew::Decal",
+      "vtable": "00826ef8",
+      "slots": [
+        3,
+        4
+      ],
+      "target": "00565950"
+    },
+    {
+      "class": "RBX::ViewNew::Texture",
+      "vtable": "00826f2c",
+      "slots": [
+        3,
+        4
+      ],
+      "target": "00565950"
+    },
+    {
+      "class": "RBX::ViewNew::Part",
+      "vtable": "00826f94",
+      "slots": [
+        3,
+        4
+      ],
+      "target": "00565950"
+    }
+  ],
+  "sdk_class": "RBX::View::PartChunk",
+  "sdk_slots": {
+    "3": "?castsShadows@PartChunk@View@RBX@@UBE_NXZ",
+    "4": "?cullable@PartChunk@View@RBX@@UBE_NXZ"
+  },
+  "namespace_difference": true
+}

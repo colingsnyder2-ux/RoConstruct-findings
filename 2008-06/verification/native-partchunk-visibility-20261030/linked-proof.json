@@ -1,0 +1,386 @@
+[
+  {
+    "target": "00565950",
+    "linked_proofs": [
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VCamera@RBX@@W4CameraType@12@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Camera.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isReadOnly@?$GetImpl@P8DebugSettings@RBX@@BEMXZ@?$PropDescriptor@VDebugSettings@RBX@@M@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:DebugSettings.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isReadOnly@?$GetImpl@P8DebugSettings@RBX@@BEHXZ@?$PropDescriptor@VDebugSettings@RBX@@H@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:DebugSettings.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isReadOnly@?$GetImpl@P8DebugSettings@RBX@@BE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ@?$PropDescriptor@VDebugSettings@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:DebugSettings.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@W4AssertAction@Debugable@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:DebugSettings.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@W4ErrorReporting@DebugSettings@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:DebugSettings.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?shouldRender3dAdorn@Explosion@RBX@@EBE_NXZ",
+        "owner": "linked:Explosion.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VFaceInstance@RBX@@W4NormalId@2@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:FaceInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VFeature@RBX@@W4NormalId@2@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Feature.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VFeature@RBX@@W4TopBottom@12@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Feature.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VFeature@RBX@@W4LeftRight@12@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Feature.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VFeature@RBX@@W4InOut@12@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Feature.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?canUnequip@Tool@RBX@@UAE_NXZ",
+        "owner": "linked:Flag.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@VBrickColor@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:FlagStand.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?shouldRender2d@Humanoid@RBX@@EBE_NXZ",
+        "owner": "linked:glue_humanoid.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?shouldRender3dAdorn@Humanoid@RBX@@EBE_NXZ",
+        "owner": "linked:glue_humanoid.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@M@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:glue_link_stubs.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isAligned@Joint@RBX@@UAE_NXZ",
+        "owner": "linked:glue_misc.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?shouldRender3dAdorn@Feature@RBX@@EBE_NXZ",
+        "owner": "linked:glue_misc.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?canSendItems@ClientProxy@Server@Network@RBX@@EAE_NXZ",
+        "owner": "linked:glue_server.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$FaceEnumDescriptor@W4SurfaceType@RBX@@@?A0x25bda216@RBX@@UBE_NXZ",
+        "owner": "linked:glue_surfaces.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$FaceEnumDescriptor@W4InputType@Controller@RBX@@@?A0x25bda216@RBX@@UBE_NXZ",
+        "owner": "linked:glue_surfaces.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isBreakable@GlueJoint@RBX@@EBE_NXZ",
+        "owner": "linked:GlueJoint.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?preventBodySleep@BodyMover@RBX@@MBE_NXZ",
+        "owner": "linked:Gyro.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isWriteOnly@?$SetImpl@P8HopperBin@RBX@@AEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z@?$PropDescriptor@VHopperBin@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Hopper.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@VTextureId@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Hopper.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isVisible@GuiItem@RBX@@MBE_NXZ",
+        "owner": "linked:Hopper.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?drawEnabled@BackpackItem@RBX@@UBE_NXZ",
+        "owner": "linked:Hopper.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VHopperBin@RBX@@W4BinType@12@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Hopper.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@VVector3@G3D@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Humanoid.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isReadOnly@?$GetImpl@P8Instance@RBX@@BE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ@?$PropDescriptor@VInstance@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Instance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@_N@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Instance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?canStepUi@RotateVJoint@RBX@@EBE_NXZ",
+        "owner": "linked:JointInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?canStepUi@RotatePJoint@RBX@@EBE_NXZ",
+        "owner": "linked:JointInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@VCoordinateFrame@G3D@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:JointInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@PAVPartInstance@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:JointInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@VColor3@G3D@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Lighting.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Message.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?castsShadows@PartChunk@View@RBX@@UBE_NXZ",
+        "owner": "linked:NativePartChunkVisibility.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?cullable@PartChunk@View@RBX@@UBE_NXZ",
+        "owner": "linked:NativePartChunkVisibility.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@H@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:NetworkSettings.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?shouldRender3dAdorn@NewNullTool@RBX@@EBE_NXZ",
+        "owner": "linked:NullTool.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@W4FormFactor@PartInstance@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:PartInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VPartInstance@RBX@@W4PartType@Part@2@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:PartInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isReadOnly@?$GetImpl@P8Players@Network@RBX@@BEHXZ@?$PropDescriptor@VPlayers@Network@RBX@@H@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Players.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isWriteOnly@?$SetImpl@P8PVInstance@RBX@@AEXABVCoordinateFrame@G3D@@@Z@?$PropDescriptor@VPVInstance@RBX@@VCoordinateFrame@G3D@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:PVInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$EnumPropDescriptor@VPVInstance@RBX@@W4ControllerType@Controller@2@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:PVInstance.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isAlive@State@Humanoid@RBX@@UBE_NXZ",
+        "owner": "linked:Running.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasStringValue@?$TypedPropertyDescriptor@VContentId@RBX@@@Reflection@RBX@@UBE_NXZ",
+        "owner": "linked:Script.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasIntelligence@HardwareController@RBX@@MBE_NXZ",
+        "owner": "linked:UserController.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isUserController@HardwareController@RBX@@MBE_NXZ",
+        "owner": "linked:UserController.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasIntelligence@AIController@RBX@@MBE_NXZ",
+        "owner": "linked:UserController.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?hasIntelligence@PlayerController@RBX@@EBE_NXZ",
+        "owner": "linked:UserController.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      },
+      {
+        "symbol": "?isUserController@PlayerController@RBX@@EBE_NXZ",
+        "owner": "linked:UserController.obj",
+        "linked_address": "00404080",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  }
+]
