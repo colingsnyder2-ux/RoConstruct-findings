@@ -1,0 +1,14 @@
+{
+  "baseline_unresolved": 77,
+  "candidate_unresolved": 74,
+  "new_unresolved": [],
+  "resolved": [
+    "?cachesShadows@AggregateChunk@Render@RBX@@UBE_NXZ",
+    "?castsShadows@PartChunk@View@RBX@@UBE_NXZ",
+    "?cullable@PartChunk@View@RBX@@UBE_NXZ"
+  ],
+  "baseline_duplicates": 26,
+  "candidate_duplicates": 26,
+  "new_duplicates": [],
+  "removed_duplicates": []
+}

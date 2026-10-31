@@ -8530,7 +8530,12 @@
     "verification/native-exhaustive-link-control-20261030/receipt-exhaustive.json": "9786b293a53c25ce25372d8212a27a425dcb4bef25f1bb46678874a2ba17cdd0",
     "verification/native-exhaustive-link-control-20261030/baseline-full-force-result.json": "6ffc1e133723441b31a3ad29534eead4cc581a0acd19a45e9d38be184cb7fea2",
     "verification/native-exhaustive-link-control-20261030/candidate-full-force-result.json": "f35697425886c8e70f6f299b011ab757e96298dec9b88772e1aa0953d3fd559e",
-    "verification/native-exhaustive-link-control-20261030/full-force-comparison.json": "179149c8af414f4ae3defdf2f09cd97efce4b1897e9a68a128124d54894d8287"
+    "verification/native-exhaustive-link-control-20261030/full-force-comparison.json": "179149c8af414f4ae3defdf2f09cd97efce4b1897e9a68a128124d54894d8287",
+    "verification/native-renderer-link-repair-20261030/renderer-README.md": "68939d4a3f21c642aa0695ea0a83c617a54c5a419421b1c3738370c7f3ac9e19",
+    "verification/native-renderer-link-repair-20261030/renderer-packet.json": "1d9e38c6c5aac8cf0dad6578365512440b9f3c02fe489add054354a4abaa1bb4",
+    "verification/native-renderer-link-repair-20261030/renderer-receipt.json": "35df25ee8e26a485ecd0a225ed82a31a54407d6034c38ec771a7c6a26ec2f681",
+    "verification/native-renderer-link-repair-20261030/renderer-full-force-result.json": "3d80c56fb9353db5e5738d816c2c03c137380ec5f8339071edc5310550080cbd",
+    "verification/native-renderer-link-repair-20261030/renderer-full-force-comparison.json": "7834445a300bc08b9bafc1e3c1414f8b1020dd64bc6fc61f9e3c25aae3043995"
   },
   "format": 1,
   "large_files": {},
