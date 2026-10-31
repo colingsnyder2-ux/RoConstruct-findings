@@ -8500,7 +8500,15 @@
     "verification/native-server-template-batch-20261030/receipt.json": "28c27faea146da9676008be767a8ba47995ef137543641f4dba84520743b69bb",
     "verification/native-server-template-batch-20261030/pairing.json": "068c2438d94bdbbb5fa0512c1573a373f3dc809fc5d7875be1389ccc4c1ff40b",
     "verification/native-server-template-batch-20261030/selected.json": "325b25bcb30cd734b471e89ba59bf9d61af551db8d64b2b8132740bdc5548ac8",
-    "verification/native-server-template-batch-20261030/compile-results.json": "b8cfe43d2a71c548f931c7b320203004b8503465ead1f00aa45cf9490ad87227"
+    "verification/native-server-template-batch-20261030/compile-results.json": "b8cfe43d2a71c548f931c7b320203004b8503465ead1f00aa45cf9490ad87227",
+    "verification/native-server-template-split-20261030/README-split.md": "e37dc202a61567d846c53e1ec9cf6cf434cbf104ffa4edd789f2447d21d81e6a",
+    "verification/native-server-template-split-20261030/packet-split.json": "d7529fdd22a71e0e0883dcb4682e3e9cbaf71a5874d9e983e94fb43fa5179baa",
+    "verification/native-server-template-split-20261030/receipt-split.json": "21c15d078d6a1b16b0d3372b761f18d2f31b0967c49759f288998d802a682b20",
+    "verification/native-server-template-split-20261030/forced-baseline-result.json": "07c08da1ecd36c4bc844a6c0eb21e3408ccd0ec6989e67a32552d078845c601d",
+    "verification/native-server-template-split-20261030/forced-split-result.json": "d755dacb7e7b20e7e635d57375b42b1b77b51fe6f6b98a742be416d3aecf27ba",
+    "verification/native-server-template-split-20261030/forced-split-linked-proofs.json": "699f53a907055ff89bc33a3c49b2b6f26d54411f27dedca81254c65087d35449",
+    "verification/native-server-template-split-20261030/forced-split-selected.json": "29b81df68a860312e31b2121bd570d273502001aca761f614be5c7ff944c79bd",
+    "verification/native-server-template-split-20261030/baseline-provider-audit.json": "601b33ff743e949cf6ceb3755f4115001548db4a0eb40437bc9812e7b7347d90"
   },
   "format": 1,
   "large_files": {},
