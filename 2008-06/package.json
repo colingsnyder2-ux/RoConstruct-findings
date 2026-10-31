@@ -8494,7 +8494,13 @@
     "verification/native-mfcatl-force-owned-20261030/report-before.json": "2a70f18e222503f2aa19190c1acb65b502f51284633f9d05bbb4427a70feb02b",
     "verification/native-mfcatl-force-owned-20261030/report-after.json": "5bef55bcabf493f55325c2d69b712b9124043953bc4243113637d337817e5f26",
     "verification/native-mfcatl-force-owned-20261030/force_verified.h": "3d0eec033bd07d7a318ad536d2365976f797de9f69bc681e0772ca3388a50598",
-    "verification/native-mfcatl-force-owned-20261030/README.md": "1c9d4c8c6af216ffb495a78f3dc40e80b1df29ccde812a939bd02e608553c5a2"
+    "verification/native-mfcatl-force-owned-20261030/README.md": "1c9d4c8c6af216ffb495a78f3dc40e80b1df29ccde812a939bd02e608553c5a2",
+    "verification/native-server-template-batch-20261030/README.md": "4929bd08c0b6966ad5ce8662afec83ddc42a0a332c153b465f01187b961be3bb",
+    "verification/native-server-template-batch-20261030/packet.json": "259cfc46e6fac951b42e95cc772b7745149a05a2d3513284da7abdbb105c213a",
+    "verification/native-server-template-batch-20261030/receipt.json": "28c27faea146da9676008be767a8ba47995ef137543641f4dba84520743b69bb",
+    "verification/native-server-template-batch-20261030/pairing.json": "068c2438d94bdbbb5fa0512c1573a373f3dc809fc5d7875be1389ccc4c1ff40b",
+    "verification/native-server-template-batch-20261030/selected.json": "325b25bcb30cd734b471e89ba59bf9d61af551db8d64b2b8132740bdc5548ac8",
+    "verification/native-server-template-batch-20261030/compile-results.json": "b8cfe43d2a71c548f931c7b320203004b8503465ead1f00aa45cf9490ad87227"
   },
   "format": 1,
   "large_files": {},
