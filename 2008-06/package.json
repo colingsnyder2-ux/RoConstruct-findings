@@ -8508,7 +8508,15 @@
     "verification/native-server-template-split-20261030/forced-split-result.json": "d755dacb7e7b20e7e635d57375b42b1b77b51fe6f6b98a742be416d3aecf27ba",
     "verification/native-server-template-split-20261030/forced-split-linked-proofs.json": "699f53a907055ff89bc33a3c49b2b6f26d54411f27dedca81254c65087d35449",
     "verification/native-server-template-split-20261030/forced-split-selected.json": "29b81df68a860312e31b2121bd570d273502001aca761f614be5c7ff944c79bd",
-    "verification/native-server-template-split-20261030/baseline-provider-audit.json": "601b33ff743e949cf6ceb3755f4115001548db4a0eb40437bc9812e7b7347d90"
+    "verification/native-server-template-split-20261030/baseline-provider-audit.json": "601b33ff743e949cf6ceb3755f4115001548db4a0eb40437bc9812e7b7347d90",
+    "verification/native-server-template-expanded-20261030/README-expanded.md": "161e14b11efee036b3e45850dea194c3ee9ac7c9593cbd8c093a8a4e08db90a1",
+    "verification/native-server-template-expanded-20261030/packet-expanded.json": "93f4578df9e1f3c01645f22497aaac8b99b0b997860bd88b4314a9b1ff08d8a8",
+    "verification/native-server-template-expanded-20261030/receipt-expanded.json": "66810afaf674dd6436ea27409cef0596b2161347a9576bbe5d6e9c04ec1bf8e7",
+    "verification/native-server-template-expanded-20261030/trimmed-compile-results.json": "e6b33c2f9b471ae032252ba660352df90e4f3c405da89ac56ee9758994e9d795",
+    "verification/native-server-template-expanded-20261030/trimmed-selected.json": "b4c9c7f0b75b4e9829a391ab40443e5ee26f57171548eb6c02fb604885af5fcd",
+    "verification/native-server-template-expanded-20261030/forced-expanded-result.json": "69e23743a4ba5380d2d0257ef01fb70e0b8ce6ee1be711d233cba966303a7f87",
+    "verification/native-server-template-expanded-20261030/forced-expanded-linked-proofs.json": "7ddedd55daea4e956874774b55aac95b33a82b9015c36bfdae7f0c2531c98fff",
+    "verification/native-server-template-expanded-20261030/forced-expanded-selected.json": "3e2464022603c18c79cdc9ecfa73b2c893fefeaa9280d1ccfc14893336b39835"
   },
   "format": 1,
   "large_files": {},

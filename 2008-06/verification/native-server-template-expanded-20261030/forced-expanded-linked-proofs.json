@@ -1,0 +1,1276 @@
+[
+  {
+    "target": "004124c0",
+    "linked_proofs": [
+      {
+        "symbol": "?resize@?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@QAEXIV?$shared_ptr@VInstance@RBX@@@boost@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004080c0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00422fc0",
+    "linked_proofs": [
+      {
+        "symbol": "??$?0VInstance@RBX@@@?$shared_ptr@VScript@RBX@@@boost@@QAE@ABV?$shared_ptr@VInstance@RBX@@@1@Udynamic_cast_tag@detail@1@@Z",
+        "owner": "linked:NativeValueConversions.obj",
+        "linked_address": "00402de0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004236d0",
+    "linked_proofs": [
+      {
+        "symbol": "??$dynamic_pointer_cast@VScript@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VScript@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+        "owner": "linked:NativeValueConversions.obj",
+        "linked_address": "00402e70",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004386e0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Dec@const_iterator@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAEXXZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403ec0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00456360",
+    "linked_proofs": [
+      {
+        "symbol": "??$?0VInstance@RBX@@@?$shared_ptr@VItem@Stats@RBX@@@boost@@QAE@ABV?$shared_ptr@VInstance@RBX@@@1@Udynamic_cast_tag@detail@1@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402c90",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00456ee0",
+    "linked_proofs": [
+      {
+        "symbol": "??$dynamic_pointer_cast@VItem@Stats@RBX@@VInstance@3@@boost@@YA?AV?$shared_ptr@VItem@Stats@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402db0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0046af90",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00419350",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0046b070",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@$0A@@std@@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00419430",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0046d580",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408ba0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00489aa0",
+    "linked_proofs": [
+      {
+        "symbol": "?realloc@?$Array@VRect2D@G3D@@@G3D@@AAEXH@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "004023b0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0048ae50",
+    "linked_proofs": [
+      {
+        "symbol": "?append@?$Array@VVector4@G3D@@@G3D@@QAEXABVVector4@2@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402780",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004a1c70",
+    "linked_proofs": [
+      {
+        "symbol": "??$?0VInstance@RBX@@@?$shared_ptr@VPlayer@Network@RBX@@@boost@@QAE@ABV?$shared_ptr@VInstance@RBX@@@1@Udynamic_cast_tag@detail@1@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402b70",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004a2150",
+    "linked_proofs": [
+      {
+        "symbol": "??$dynamic_pointer_cast@VPlayer@Network@RBX@@VInstance@3@@boost@@YA?AV?$shared_ptr@VPlayer@Network@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402d50",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004a24c0",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004055f0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004a27a0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Erase@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004058d0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004a3390",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407420",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004a3470",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004082c0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004ab090",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$args2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_NH@detail@signals@boost@@QAE@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403800",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004ad760",
+    "linked_proofs": [
+      {
+        "symbol": "??$?RUconnection_slot_pair@detail@signals@boost@@@?$caller@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_NV?$function@$$A6AXV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@_N@ZV?$allocator@X@2@@boost@@@?$call_bound2@X@detail@signals@boost@@QBE?AUunusable@234@ABUconnection_slot_pair@234@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00405470",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004dc540",
+    "linked_proofs": [
+      {
+        "symbol": "?allocate@?$allocator@F@std@@QAEPAFI@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403a70",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004dca70",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Uninit_fill_n@PAVVector3@G3D@@IV12@V?$allocator@VVector3@G3D@@@std@@@std@@YAXPAVVector3@G3D@@IABV12@AAV?$allocator@VVector3@G3D@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004045d0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004dd360",
+    "linked_proofs": [
+      {
+        "symbol": "?reserve@?$vector@FV?$allocator@F@std@@@std@@QAEXI@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00405b10",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004dd7d0",
+    "linked_proofs": [
+      {
+        "symbol": "?reserve@?$vector@VVector3@G3D@@V?$allocator@VVector3@G3D@@@std@@@std@@QAEXI@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00405be0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004ddbc0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Insert_n@?$vector@VVector3@G3D@@V?$allocator@VVector3@G3D@@@std@@@std@@IAEXV?$_Vector_const_iterator@VVector3@G3D@@V?$allocator@VVector3@G3D@@@std@@@2@IABVVector3@G3D@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00405cf0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "004ddf10",
+    "linked_proofs": [
+      {
+        "symbol": "?push_back@?$vector@FV?$allocator@F@std@@@std@@QAEXABF@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408050",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005556d0",
+    "linked_proofs": [
+      {
+        "symbol": "??A?$map@PAVIRunView@RBX@@_NU?$less@PAVIRunView@RBX@@@std@@V?$allocator@U?$pair@QAVIRunView@RBX@@_N@std@@@4@@std@@QAEAA_NABQAVIRunView@RBX@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407220",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0057b170",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$args2@V?$shared_ptr@VInstance@RBX@@@boost@@HH@detail@signals@boost@@QAE@V?$shared_ptr@VInstance@RBX@@@3@H@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040d200",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0057b3a0",
+    "linked_proofs": [
+      {
+        "symbol": "??R?$signal2@XV?$shared_ptr@VInstance@RBX@@@boost@@HU?$last_value@X@2@HU?$less@H@std@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@H@ZV?$allocator@X@std@@@2@@boost@@QAE?AUunusable@?$last_value@X@1@V?$shared_ptr@VInstance@RBX@@@1@H@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040e2c0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0057b570",
+    "linked_proofs": [
+      {
+        "symbol": "?fire@?$SignalDescImpl@$01$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@H@Z@Reflection@RBX@@QAEXPAVSignalSource@23@V?$shared_ptr@VInstance@RBX@@@boost@@H@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040e490",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005870c0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Min@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403510",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005870e0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Rrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403430",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00587140",
+    "linked_proofs": [
+      {
+        "symbol": "?_Dec@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403cc0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00587310",
+    "linked_proofs": [
+      {
+        "symbol": "?_Lrotate@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403bd0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005876d0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00404490",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005892b0",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAE@ABU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@1@ABV?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@1@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407320",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005b7190",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@QAE@XZ",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040d0f0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005b7210",
+    "linked_proofs": [
+      {
+        "symbol": "?_Lbound@?$_Tree@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@IBEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@2@ABVSoundId@Soundscape@RBX@@@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040d170",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005b78e0",
+    "linked_proofs": [
+      {
+        "symbol": "??0_Node@?$_Tree_nod@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@QAE@PAU012@00ABU?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@2@D@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040d460",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005b9a30",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040dad0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005b9f30",
+    "linked_proofs": [
+      {
+        "symbol": "?insert@?$_Tree@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@2@@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040d9e0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005ba660",
+    "linked_proofs": [
+      {
+        "symbol": "?insert@?$_Tree@V?$_Tmap_traits@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@2@@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040ddb0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005bab80",
+    "linked_proofs": [
+      {
+        "symbol": "??A?$map@VSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@U?$less@VSoundId@Soundscape@RBX@@@std@@V?$allocator@U?$pair@$$CBVSoundId@Soundscape@RBX@@V?$shared_ptr@VSound@Soundscape@RBX@@@boost@@@std@@@7@@std@@QAEAAV?$shared_ptr@VSound@Soundscape@RBX@@@boost@@ABVSoundId@Soundscape@RBX@@@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040e050",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005d4080",
+    "linked_proofs": [
+      {
+        "symbol": "??$dynamic_pointer_cast@VPartInstance@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VPartInstance@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402d20",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005eb180",
+    "linked_proofs": [
+      {
+        "symbol": "?_Construct_n@?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAEXIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004064c0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "005eb210",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@QAE@I@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004077d0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00600d60",
+    "linked_proofs": [
+      {
+        "symbol": "??$?0VInstance@RBX@@@?$shared_ptr@VTextDisplay@RBX@@@boost@@QAE@ABV?$shared_ptr@VInstance@RBX@@@1@Udynamic_cast_tag@detail@1@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402c00",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00601ac0",
+    "linked_proofs": [
+      {
+        "symbol": "??$dynamic_pointer_cast@VTextDisplay@RBX@@VInstance@2@@boost@@YA?AV?$shared_ptr@VTextDisplay@RBX@@@0@ABV?$shared_ptr@VInstance@RBX@@@0@@Z",
+        "owner": "linked:NativeContainerInstantiations.obj",
+        "linked_address": "00402d80",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00620f40",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$vector@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@QAE@ABV01@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409be0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006335a0",
+    "linked_proofs": [
+      {
+        "symbol": "??R?$function1@XVCoordinateFrame@G3D@@V?$allocator@X@std@@@boost@@QBEXVCoordinateFrame@G3D@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00404b90",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00633700",
+    "linked_proofs": [
+      {
+        "symbol": "??$?RUconnection_slot_pair@detail@signals@boost@@@?$caller@VCoordinateFrame@G3D@@V?$function@$$A6AXVCoordinateFrame@G3D@@@ZV?$allocator@X@std@@@boost@@@?$call_bound1@X@detail@signals@boost@@QBE?AUunusable@234@ABUconnection_slot_pair@234@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00405360",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00638b10",
+    "linked_proofs": [
+      {
+        "symbol": "??$?RV?$slot_call_iterator@U?$caller@NV?$function1@XNV?$allocator@Vfunction_base@boost@@@std@@@boost@@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@boost@@@?$last_value@X@boost@@QBE?AUunusable@01@V?$slot_call_iterator@U?$caller@NV?$function1@XNV?$allocator@Vfunction_base@boost@@@std@@@boost@@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@1@0@Z",
+        "owner": "linked:NativeTemplateInstantiations.obj",
+        "linked_address": "0040e140",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00639300",
+    "linked_proofs": [
+      {
+        "symbol": "??R?$signal1@XVCoordinateFrame@G3D@@U?$last_value@X@boost@@HU?$less@H@std@@V?$function@$$A6AXVCoordinateFrame@G3D@@@ZV?$allocator@X@std@@@4@@boost@@QAE?AUunusable@?$last_value@X@1@VCoordinateFrame@G3D@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040bcb0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006395d0",
+    "linked_proofs": [
+      {
+        "symbol": "??R?$signal1@XVBrickColor@RBX@@U?$last_value@X@boost@@HU?$less@H@std@@V?$function@$$A6AXVBrickColor@RBX@@@ZV?$allocator@X@std@@@4@@boost@@QAE?AUunusable@?$last_value@X@1@VBrickColor@RBX@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040be40",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00650e70",
+    "linked_proofs": [
+      {
+        "symbol": "?_Max@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@PAU342@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004034f0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006510a0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Lbound@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@IBEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403b80",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006510f0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Inc@const_iterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAEXXZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00403d50",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651550",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004072d0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006515a0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Tidy@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@$0A@@std@@@std@@IAEXXZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407f20",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651680",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Copy_opt@PAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV12@@std@@YAPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@PAV10@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004084a0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006516d0",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408bb0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006517d0",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@QAE@ABU01@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408e10",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651860",
+    "linked_proofs": [
+      {
+        "symbol": "?destroy@?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@QAEXPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408610",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006518b0",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Uninit_move@PAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV12@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@YAPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@PAV10@00AAV?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@0@U_Swap_move_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408700",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651a20",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Move_backward_opt@PAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV12@Uforward_iterator_tag@2@@std@@YAPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@PAV10@00Uforward_iterator_tag@0@U_Swap_move_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408870",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651ae0",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@ABV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@1@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004090e0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651d40",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Destroy_range@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@std@@YAXPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@0AAV?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@0@U_Nonscalar_ptr_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408fc0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651dd0",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Uninit_fill_n@PAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@IV12@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@YAXPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@0@IABV10@AAV?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409050",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00651f50",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409230",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00652270",
+    "linked_proofs": [
+      {
+        "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@2@D@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409940",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00652310",
+    "linked_proofs": [
+      {
+        "symbol": "?_Buynode@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@2@PAU342@00ABU?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@2@D@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004099e0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006523b0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Erase@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@$0A@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409550",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006524b0",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Unchecked_move_backward@PAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV12@@stdext@@YAPAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@PAV12@00@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409650",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00652c80",
+    "linked_proofs": [
+      {
+        "symbol": "??A?$map@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@@std@@QAEAAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@1@ABQAVTeam@RBX@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409a80",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00652de0",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$vector@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@QAE?AV?$_Vector_iterator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@2@V?$_Vector_const_iterator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@2@0@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00409cf0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653170",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040a480",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653250",
+    "linked_proofs": [
+      {
+        "symbol": "?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040ad60",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653340",
+    "linked_proofs": [
+      {
+        "symbol": "?insert@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@_N@2@ABU?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040ae50",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653430",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040af40",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653730",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040b240",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653a10",
+    "linked_proofs": [
+      {
+        "symbol": "?_Erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040b520",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653aa0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Erase@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040b5b0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653b50",
+    "linked_proofs": [
+      {
+        "symbol": "?resize@?$vector@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@QAEXIV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040ac50",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653c60",
+    "linked_proofs": [
+      {
+        "symbol": "?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040c730",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00653ea0",
+    "linked_proofs": [
+      {
+        "symbol": "?insert@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@2@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040c970",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00654170",
+    "linked_proofs": [
+      {
+        "symbol": "?resize@?$vector@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@QAEXI@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040c6c0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006541e0",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040cb50",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00654250",
+    "linked_proofs": [
+      {
+        "symbol": "??A?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@@std@@QAEAAV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@1@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040cbc0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00654360",
+    "linked_proofs": [
+      {
+        "symbol": "??A?$map@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@@std@@QAEAAV?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@1@ABQAVTeam@RBX@@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040ccd0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00654470",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040cde0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00654550",
+    "linked_proofs": [
+      {
+        "symbol": "?erase@?$_Tree@V?$_Tmap_traits@PAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@U?$less@PAVTeam@RBX@@@4@V?$allocator@U?$pair@QAVTeam@RBX@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@std@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@0@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040cec0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00655800",
+    "linked_proofs": [
+      {
+        "symbol": "??1?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HU?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@H@std@@@2@@2@@std@@@2@$0A@@std@@@std@@QAE@XZ",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "0040cfa0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006790b0",
+    "linked_proofs": [
+      {
+        "symbol": "?_Construct_n@?$vector@MV?$allocator@M@std@@@std@@QAEXIABM@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407030",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006791e0",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Sort@PAPAVPrimitive@RBX@@H@std@@YAXPAPAVPrimitive@RBX@@0H@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407590",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "006798b0",
+    "linked_proofs": [
+      {
+        "symbol": "??0?$vector@MV?$allocator@M@std@@@std@@QAE@I@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00407df0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "00679920",
+    "linked_proofs": [
+      {
+        "symbol": "?push_back@?$vector@MV?$allocator@M@std@@@std@@QAEXABM@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00408250",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0067f170",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Copy_opt@PAVVector3@G3D@@PAV12@@std@@YAPAVVector3@G3D@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004040d0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0067f1d0",
+    "linked_proofs": [
+      {
+        "symbol": "??$_Copy_backward_opt@PAVVector3@G3D@@PAV12@@std@@YAPAVVector3@G3D@@PAV12@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "00404240",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  },
+  {
+    "target": "0068d450",
+    "linked_proofs": [
+      {
+        "symbol": "??Y?$_Vector_const_iterator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$allocator@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@@2@@std@@QAEAAV01@H@Z",
+        "owner": "linked:NativeMeshSignals.obj",
+        "linked_address": "004033b0",
+        "object_code_data_exact": true,
+        "code_exact": true
+      }
+    ],
+    "code_exact_in_executable": true
+  }
+]
