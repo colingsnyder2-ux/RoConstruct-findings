@@ -8480,7 +8480,16 @@
     "verification/native-lua-c-force-20261030/report-before.json": "26e95384376a4a2a69bff20b9a4a56dc144412e1212087851ca025977fc47e81",
     "verification/native-lua-c-force-20261030/report-after.json": "26e95384376a4a2a69bff20b9a4a56dc144412e1212087851ca025977fc47e81",
     "verification/native-lua-c-force-20261030/force_verified.h": "24a2fc2f70f0ff2c368709e092b63d0112a4516783ec54ba21dc810dd02867d1",
-    "verification/native-lua-c-force-20261030/README.md": "6fa3a9d80d28d1ccc8d8d3907a2361d9c02d21e4173c81b00ea5b34c642c8863"
+    "verification/native-lua-c-force-20261030/README.md": "6fa3a9d80d28d1ccc8d8d3907a2361d9c02d21e4173c81b00ea5b34c642c8863",
+    "config/ogre-native-headers.json": "6cb076009d214d09a5f35dc579c6467b44d51f6b721bcd47af63c55e003642ea",
+    "tests/ogre_native_vectors.cpp": "990e05910ecc4f86ba246977458fe496b0ab957c7e3cdeb616a74f5d92d52919",
+    "tests/verify_ogre_native_vectors.py": "03f79872c760d5ad1f6adeefe077cc63f37cc4c33a45cf6ba963e0d27d3879f1",
+    "verification/native-ogre-force-owned-20261030/report-before.json": "7e32196999ee22ca4e54e5e5b688e739d6e681d43219fdeab06edee893256390",
+    "verification/native-ogre-force-owned-20261030/report-after.json": "7e32196999ee22ca4e54e5e5b688e739d6e681d43219fdeab06edee893256390",
+    "verification/native-ogre-force-owned-20261030/force_verified.h": "467317f27f6e23dc11a75d000e5460a5688065c253554086b0fe03587e18df65",
+    "verification/native-ogre-force-owned-20261030/forced-runtime-result.json": "258216c32b8ecc5b519464da02d694d26a2fb9c2b399f770b8044b7639ef3ffb",
+    "verification/native-ogre-force-owned-20261030/linked-executable-proof.json": "e3678f3c360482f1a0c65e8c898f7fd00b3a768258919737da641371e7965fed",
+    "verification/native-ogre-force-owned-20261030/README.md": "ea4910da0fb58b52a21ac530244583936b9e2c1f2a237e09b9c926500908e357"
   },
   "format": 1,
   "large_files": {},
