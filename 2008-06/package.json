@@ -8516,7 +8516,15 @@
     "verification/native-server-template-expanded-20261030/trimmed-selected.json": "b4c9c7f0b75b4e9829a391ab40443e5ee26f57171548eb6c02fb604885af5fcd",
     "verification/native-server-template-expanded-20261030/forced-expanded-result.json": "69e23743a4ba5380d2d0257ef01fb70e0b8ce6ee1be711d233cba966303a7f87",
     "verification/native-server-template-expanded-20261030/forced-expanded-linked-proofs.json": "7ddedd55daea4e956874774b55aac95b33a82b9015c36bfdae7f0c2531c98fff",
-    "verification/native-server-template-expanded-20261030/forced-expanded-selected.json": "3e2464022603c18c79cdc9ecfa73b2c893fefeaa9280d1ccfc14893336b39835"
+    "verification/native-server-template-expanded-20261030/forced-expanded-selected.json": "3e2464022603c18c79cdc9ecfa73b2c893fefeaa9280d1ccfc14893336b39835",
+    "verification/native-functionref-expanded-20261030/README.md": "8c0de289408f261818f0f25b2ef4c5b5b4d833e747ba463bcbdeac717e0bbcf1",
+    "verification/native-functionref-expanded-20261030/packet.json": "492663c5f6f736f7b0345eb8a7ebb99bf65b05752cabfdf21097d0bb8f57aedc",
+    "verification/native-functionref-expanded-20261030/receipt.json": "03abdd47d064eaf7e1bba414fa2e0c1c5e7c7fadeb602d93884da3d3947592b0",
+    "verification/native-functionref-expanded-20261030/compile-results-full.json": "d975181fedf572d41883553db5da19ada61290ca300857e67ec86f9948f688a0",
+    "verification/native-functionref-expanded-20261030/forced-runtime.cpp": "34aab5ec9a50b461d2dbceb3f2d6a388bf8b11acc99a091ad86902f45b74e3da",
+    "verification/native-functionref-expanded-20261030/forced-result.json": "75a1a7a7e677a6591c4397b187423d476540cd7334e925d5c620e43fd10dd75d",
+    "verification/native-functionref-expanded-20261030/linked-proofs.json": "fdfa5a767e19f038e6df6ae6cdc25bc44a24b5723e6b46470ddcf5b32dad19f2",
+    "verification/native-functionref-expanded-20261030/selected.json": "9e4136e12a151fdb0f718f7d374c44f545aa8f40b9cc2e655fa518b7b62f5434"
   },
   "format": 1,
   "large_files": {},
